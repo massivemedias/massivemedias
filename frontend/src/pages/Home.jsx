@@ -19,7 +19,7 @@ import {
 import ServiceCard from '../components/ServiceCard';
 import Counter from '../components/Counter';
 import MassiveLogo from '../assets/massive-logo.svg';
-import { img } from '../utils/paths';
+import { img, thumb } from '../utils/paths';
 
 const services = [
   {
@@ -27,42 +27,42 @@ const services = [
     title: 'Impression Fine Art',
     description: 'Tirages premium sur Canon Pro-1000. Posters, affiches, photos d\'art sur papiers professionnels Canon, Ilford et Hahnemühle.',
     link: '/services/impression-fine-art',
-    image: img('/images/prints/Prints1.jpeg'),
+    image: thumb('/images/prints/Prints1.jpeg'),
   },
   {
     icon: Sticker,
     title: 'Stickers Custom',
     description: 'Die-cut sur mesure avec la Silhouette Cameo 5. Matte, glossy, transparent, holographique basic ou premium.',
     link: '/services/stickers-custom',
-    image: img('/images/stickers/Stickers1.jpeg'),
+    image: thumb('/images/stickers/Stickers1.jpeg'),
   },
   {
     icon: Shirt,
     title: 'Sublimation & Merch',
     description: 'T-shirts, hoodies, mugs, thermos, tapis de souris, porte-clés et plus. Impression sublimation sur mesure.',
     link: '/services/sublimation-merch',
-    image: img('/images/textile/Textile1.jpeg'),
+    image: thumb('/images/textile/Textile1.jpeg'),
   },
   {
     icon: FileText,
     title: 'Flyers & Cartes',
     description: 'Flyers A6, cartes postales, cartes d\'affaires. Impression rapide et locale pour tes événements et promotions.',
     link: '/services/flyers-cartes',
-    image: img('/images/prints/Prints5.jpeg'),
+    image: thumb('/images/prints/Prints5.jpeg'),
   },
   {
     icon: Palette,
     title: 'Design Graphique',
     description: 'Logos, identités visuelles, affiches, packaging. En partenariat avec Christopher Gagnon, infographiste.',
     link: '/services/design-graphique',
-    image: img('/images/prints/Prints10.jpeg'),
+    image: thumb('/images/prints/Prints10.jpeg'),
   },
   {
     icon: Code,
     title: 'Développement Web',
     description: 'Sites vitrines, e-commerce, landing pages. Technologies modernes : React, Strapi, WordPress, Shopify.',
     link: '/services/developpement-web',
-    image: img('/images/locale/locale1.jpeg'),
+    image: thumb('/images/locale/locale1.jpeg'),
   }
 ];
 
@@ -101,12 +101,12 @@ const advantages = [
 
 /* Images pour le carrousel de réalisations */
 const featuredProjects = [
-  { image: img('/images/prints/Prints2.jpeg'), title: 'Tirages Fine Art', category: 'Impression' },
-  { image: img('/images/stickers/Stickers3.jpeg'), title: 'Stickers Holographiques', category: 'Stickers' },
-  { image: img('/images/textile/Textile3.jpeg'), title: 'T-shirts Sublimation', category: 'Merch' },
-  { image: img('/images/prints/Prints8.jpeg'), title: 'Affiches Événement', category: 'Impression' },
-  { image: img('/images/stickers/Stickers5.jpeg'), title: 'Die-Cut Custom', category: 'Stickers' },
-  { image: img('/images/textile/Textile5.jpeg'), title: 'Mugs & Accessoires', category: 'Merch' },
+  { image: thumb('/images/prints/Prints2.jpeg'), title: 'Tirages Fine Art', category: 'Impression' },
+  { image: thumb('/images/stickers/Stickers3.jpeg'), title: 'Stickers Holographiques', category: 'Stickers' },
+  { image: thumb('/images/textile/Textile3.jpeg'), title: 'T-shirts Sublimation', category: 'Merch' },
+  { image: thumb('/images/prints/Prints8.jpeg'), title: 'Affiches Événement', category: 'Impression' },
+  { image: thumb('/images/stickers/Stickers5.jpeg'), title: 'Die-Cut Custom', category: 'Stickers' },
+  { image: thumb('/images/textile/Textile5.jpeg'), title: 'Mugs & Accessoires', category: 'Merch' },
 ];
 
 function Home() {
@@ -122,16 +122,16 @@ function Home() {
         {/* Background image locale + overlay */}
         <div className="absolute inset-0">
           <img
-            src={img('/images/locale/locale3.jpeg')}
+            src={thumb('/images/locale/locale3.jpeg')}
             alt=""
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0" style={{
-            background: 'linear-gradient(180deg, rgba(10,10,10,0.85) 0%, rgba(26,0,51,0.92) 100%)'
+            background: 'linear-gradient(180deg, rgba(45,0,89,0.88) 0%, rgba(58,0,112,0.95) 100%)'
           }}></div>
           {/* Pattern subtil par-dessus */}
           <div className="absolute inset-0 opacity-10" style={{
-            backgroundImage: 'radial-gradient(circle, rgba(255,0,164,0.3) 1px, transparent 1px)',
+            backgroundImage: 'radial-gradient(circle, rgba(163,72,254,0.15) 1px, transparent 1px)',
             backgroundSize: '50px 50px'
           }}></div>
         </div>
@@ -199,7 +199,7 @@ function Home() {
         </div>
 
         {/* Fondu vers le bas */}
-        <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-black to-transparent"></div>
+        <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-purple-dark to-transparent"></div>
       </section>
 
       {/* ============ SERVICES ============ */}
@@ -267,7 +267,7 @@ function Home() {
                 alt={project.title}
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-70 group-hover:opacity-90 transition-opacity duration-300"></div>
+              <div className="absolute inset-0 bg-gradient-to-t from-purple-dark/80 via-purple-dark/20 to-transparent opacity-70 group-hover:opacity-90 transition-opacity duration-300"></div>
               <div className="absolute bottom-0 left-0 right-0 p-6 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
                 <span className="text-magenta text-sm font-semibold uppercase tracking-wider">{project.category}</span>
                 <h3 className="text-white text-xl font-heading font-bold mt-1">{project.title}</h3>
@@ -319,10 +319,10 @@ function Home() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
               viewport={{ once: true }}
-              className="p-8 rounded-xl border border-purple-main/30 backdrop-blur-sm hover:border-magenta/50 transition-all duration-300"
-              style={{ background: 'rgba(49, 0, 81, 0.3)' }}
+              className="p-8 rounded-xl border white/8 hover:border-white/15 transition-all duration-300"
+              style={{ background: 'rgba(255, 255, 255, 0.04)' }}
             >
-              <div className="mb-4 p-3 rounded-lg w-fit" style={{ background: 'rgba(255, 82, 160, 0.1)' }}>
+              <div className="mb-4 p-3 rounded-lg w-fit" style={{ background: 'rgba(163, 72, 254, 0.12)' }}>
                 <advantage.icon size={28} className="text-magenta" />
               </div>
               <h3 className="font-heading text-xl font-bold text-white mb-3">
@@ -347,11 +347,11 @@ function Home() {
         >
           {/* Image de fond */}
           <img
-            src={img('/images/locale/locale5.jpeg')}
+            src={thumb('/images/locale/locale5.jpeg')}
             alt=""
             className="absolute inset-0 w-full h-full object-cover"
           />
-          <div className="absolute inset-0" style={{ background: 'linear-gradient(145deg, rgba(49,0,81,0.92), rgba(70,1,94,0.88))' }}></div>
+          <div className="absolute inset-0" style={{ background: 'rgba(45, 0, 89, 0.92)' }}></div>
 
           <div className="relative z-10 p-12 md:p-16 text-center">
             <h2 className="text-4xl md:text-5xl font-heading font-bold text-white mb-6">

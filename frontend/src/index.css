@@ -12,20 +12,20 @@
   --color-peach: #FFA47F;
   --color-electric-purple: #A348FE;
   --color-purple-bright: #8100D1;
-  --color-purple-dark: #1A002D;
-  --color-purple-mid: #3A0066;
-  --color-purple-main: #5B0099;
-  --color-grey-light: #E8D8F8;
-  --color-grey-muted: #B0A0C0;
+  --color-purple-dark: #2D0059;
+  --color-purple-mid: #4A0080;
+  --color-purple-main: #6B00B3;
+  --color-grey-light: #EDE5F5;
+  --color-grey-muted: #B8A8CC;
 
   /* Polices */
   --font-heading: 'Space Grotesk', sans-serif;
   --font-body: 'Inter', sans-serif;
 
-  /* Ombres */
-  --shadow-glow: 0 0 20px rgba(255, 82, 160, 0.3);
-  --shadow-glow-intense: 0 0 40px rgba(255, 82, 160, 0.5);
-  --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.5);
+  /* Ombres — clean, pas de glow */
+  --shadow-soft: 0 2px 12px rgba(0, 0, 0, 0.15);
+  --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.2);
+  --shadow-elevated: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
 /* =============================================
@@ -36,8 +36,7 @@ body {
   margin: 0;
   padding: 0;
   font-family: 'Inter', sans-serif;
-  background: linear-gradient(180deg, #0A0A0A, #1A002D);
-  background-attachment: fixed;
+  background: #3A0070;
   color: #FFFFFF;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -57,65 +56,64 @@ h1, h2, h3, h4, h5, h6 {
    Composants custom
    ============================================= */
 
-/* Bouton primaire (CTA pink) */
+/* Bouton primaire (CTA) */
 .btn-primary {
-  padding: 1rem 2rem;
+  padding: 0.75rem 1.75rem;
   border-radius: 9999px;
   font-weight: 600;
   color: #FFFFFF;
   background: linear-gradient(135deg, #A348FE, #FF52A0);
-  box-shadow: 0 0 20px rgba(255, 82, 160, 0.3);
   border: none;
   cursor: pointer;
   text-decoration: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.3s, box-shadow 0.3s;
+  transition: transform 0.2s, opacity 0.2s;
 }
 
 .btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 0 40px rgba(255, 82, 160, 0.5);
+  transform: translateY(-1px);
+  opacity: 0.9;
 }
 
 /* Bouton outline */
 .btn-outline {
-  padding: 1rem 2rem;
+  padding: 0.75rem 1.75rem;
   border-radius: 9999px;
   font-weight: 600;
   color: #FFFFFF;
-  border: 2px solid #FFFFFF;
+  border: 2px solid rgba(255, 255, 255, 0.4);
   background: transparent;
   cursor: pointer;
   text-decoration: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.3s, color 0.3s, transform 0.3s;
+  transition: background 0.2s, border-color 0.2s, transform 0.2s;
 }
 
 .btn-outline:hover {
-  background: #FFFFFF;
-  color: #0A0A0A;
-  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.7);
+  transform: translateY(-1px);
 }
 
 /* Carte de service */
 .card-service {
   padding: 2rem;
   border-radius: 1rem;
-  background: linear-gradient(145deg, #3A0066, #5B0099);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   cursor: pointer;
-  transition: transform 0.3s, box-shadow 0.3s;
+  transition: transform 0.2s, background 0.2s;
   text-decoration: none;
   display: block;
 }
 
 .card-service:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 0 40px rgba(255, 82, 160, 0.5);
+  transform: translateY(-4px);
+  background: rgba(255, 255, 255, 0.1);
 }
 
 /* Texte avec dégradé */
@@ -139,9 +137,9 @@ h1, h2, h3, h4, h5, h6 {
   padding: 0.75rem 1rem;
   border-radius: 0.5rem;
   color: #FFFFFF;
-  border: 2px solid #5B0099;
-  background: rgba(58, 0, 102, 0.5);
-  transition: border-color 0.3s, box-shadow 0.3s;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.06);
+  transition: border-color 0.2s;
   font-family: 'Inter', sans-serif;
   font-size: 1rem;
   box-sizing: border-box;
@@ -149,25 +147,24 @@ h1, h2, h3, h4, h5, h6 {
 
 .input-field:focus {
   outline: none;
-  border-color: #FF52A0;
-  box-shadow: 0 0 20px rgba(255, 82, 160, 0.3);
+  border-color: #A348FE;
 }
 
 .input-field::placeholder {
-  color: #B0A0C0;
+  color: #B8A8CC;
 }
 
-/* Sélecteurs (même style que les inputs) */
+/* Sélecteurs */
 select.input-field {
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23B0A0C0' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23B8A8CC' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 1rem center;
   padding-right: 2.5rem;
 }
 
 select.input-field option {
-  background: #3A0066;
+  background: #4A0080;
   color: #FFFFFF;
 }
 
@@ -181,43 +178,26 @@ select.input-field option {
   padding: 0.75rem 1rem;
   text-align: left;
   font-weight: 600;
-  border-bottom: 2px solid #FF52A0;
-  background: #3A0066;
+  border-bottom: 2px solid #A348FE;
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .price-table td {
   padding: 0.75rem 1rem;
-  border-bottom: 1px solid rgba(255, 82, 160, 0.2);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .price-table tr:hover td {
-  background: rgba(58, 0, 102, 0.3);
+  background: rgba(255, 255, 255, 0.03);
 }
 
-/* Background gradients (classes utilitaires custom) */
+/* Background classes */
 .bg-gradient-bg {
-  background: linear-gradient(180deg, #0A0A0A, #1A002D);
+  background: #3A0070;
 }
 
 .bg-gradient-card {
-  background: linear-gradient(145deg, #3A0066, #5B0099);
-}
-
-/* =============================================
-   Animations
-   ============================================= */
-
-@keyframes glow-pulse {
-  0%, 100% {
-    box-shadow: 0 0 20px rgba(255, 82, 160, 0.3);
-  }
-  50% {
-    box-shadow: 0 0 40px rgba(255, 82, 160, 0.5);
-  }
-}
-
-.animate-glow-pulse {
-  animation: glow-pulse 2s ease-in-out infinite;
+  background: rgba(255, 255, 255, 0.06);
 }
 
 /* =============================================
@@ -225,18 +205,18 @@ select.input-field option {
    ============================================= */
 
 ::-webkit-scrollbar {
-  width: 10px;
+  width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #0A0A0A;
+  background: #2D0059;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #A348FE, #FF52A0);
-  border-radius: 5px;
+  background: #6B00B3;
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #FF52A0;
+  background: #8100D1;
 }

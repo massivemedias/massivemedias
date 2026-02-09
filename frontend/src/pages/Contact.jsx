@@ -94,7 +94,7 @@ function Contact() {
                   href="https://instagram.com/massivemedias" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="p-3 rounded-full bg-purple-main hover:bg-magenta transition-all duration-300 hover:shadow-glow"
+                  className="p-3 rounded-full bg-purple-main hover:bg-magenta transition-all duration-300 hover:opacity-80"
                 >
                   <Instagram size={24} />
                 </a>
@@ -102,7 +102,7 @@ function Contact() {
                   href="https://facebook.com/massivemedias" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="p-3 rounded-full bg-purple-main hover:bg-magenta transition-all duration-300 hover:shadow-glow"
+                  className="p-3 rounded-full bg-purple-main hover:bg-magenta transition-all duration-300 hover:opacity-80"
                 >
                   <Facebook size={24} />
                 </a>

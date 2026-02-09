@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, ArrowLeft, CheckCircle, Wrench, Users } from 'lucide-react';
 import { useState } from 'react';
 import servicesData from '../data/services';
+import { toFull } from '../utils/paths';
 
 function ServiceDetail() {
   const { slug } = useParams();
@@ -33,7 +34,7 @@ function ServiceDetail() {
       <section className="relative py-32 md:py-40 overflow-hidden">
         <div className="absolute inset-0">
           <img src={service.heroImage} alt={service.title} className="w-full h-full object-cover" />
-          <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(10,10,10,0.85) 0%, rgba(26,0,51,0.95) 100%)' }}></div>
+          <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(45,0,89,0.88) 0%, rgba(58,0,112,0.95) 100%)' }}></div>
         </div>
 
         <div className="relative z-10 section-container !py-0">
@@ -51,7 +52,7 @@ function ServiceDetail() {
             </div>
 
             <div className="flex items-center gap-4 mb-6">
-              <div className="p-4 rounded-xl" style={{ background: 'rgba(255, 82, 160, 0.15)', backdropFilter: 'blur(10px)' }}>
+              <div className="p-4 rounded-xl" style={{ background: 'rgba(255, 255, 255, 0.1)', backdropFilter: 'blur(10px)' }}>
                 <Icon size={36} className="text-magenta" />
               </div>
               <div>
@@ -151,7 +152,7 @@ function ServiceDetail() {
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   loading="lazy"
                 />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-300 flex items-center justify-center">
+                <div className="absolute inset-0 bg-transparent group-hover:bg-purple-dark/40 transition-colors duration-300 flex items-center justify-center">
                   <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/20 backdrop-blur-sm rounded-full p-3">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
                       <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
@@ -184,7 +185,7 @@ function ServiceDetail() {
                 transition={{ duration: 0.4, delay: index * 0.1 }}
                 viewport={{ once: true }}
                 className="p-6 rounded-xl border border-purple-main/30 relative"
-                style={{ background: 'rgba(49, 0, 81, 0.3)' }}
+                style={{ background: 'rgba(255, 255, 255, 0.04)' }}
               >
                 <div className="absolute -top-3 -left-1 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold" style={{ background: 'linear-gradient(135deg, #A348FE, #FF52A0)' }}>
                   {item.step}
@@ -253,7 +254,7 @@ function ServiceDetail() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
               {service.pricing.tables.map((table, tableIndex) => (
                 <div key={tableIndex} className="rounded-xl overflow-hidden border border-purple-main/30">
-                  <div className="p-4 border-b border-purple-main/30" style={{ background: 'rgba(49, 0, 81, 0.5)' }}>
+                  <div className="p-4 border-b border-purple-main/30" style={{ background: 'rgba(255, 255, 255, 0.05)' }}>
                     <h3 className="text-white font-heading font-bold">{table.subtitle}</h3>
                   </div>
                   <table className="price-table">
@@ -304,7 +305,7 @@ function ServiceDetail() {
                   transition={{ duration: 0.4, delay: index * 0.1 }}
                   viewport={{ once: true }}
                   className="p-6 rounded-xl border border-purple-main/30 text-center"
-                  style={{ background: 'rgba(49, 0, 81, 0.3)' }}
+                  style={{ background: 'rgba(255, 255, 255, 0.04)' }}
                 >
                   <h4 className="text-white font-heading font-bold mb-2">{item.name}</h4>
                   <p className="text-grey-muted text-sm">{item.desc}</p>
@@ -335,7 +336,7 @@ function ServiceDetail() {
                   transition={{ duration: 0.3, delay: index * 0.05 }}
                   viewport={{ once: true }}
                   className="px-5 py-2.5 rounded-full text-sm font-semibold text-white border border-purple-main/50"
-                  style={{ background: 'rgba(49, 0, 81, 0.5)' }}
+                  style={{ background: 'rgba(255, 255, 255, 0.05)' }}
                 >
                   {tech}
                 </motion.span>
@@ -439,7 +440,7 @@ function ServiceDetail() {
               onClick={(e) => e.stopPropagation()}
             >
               <img
-                src={lightboxImage}
+                src={toFull(lightboxImage)}
                 alt={service.title}
                 className="w-full h-full object-contain rounded-lg"
               />

@@ -2,7 +2,7 @@ import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
 import { Users, Zap, MapPin, Printer, Scissors, Shirt, Monitor } from 'lucide-react';
 import MassiveLogo from '../assets/massive-logo.svg';
-import { img } from '../utils/paths';
+import { img, thumb } from '../utils/paths';
 
 function APropos() {
   const equipment = [
@@ -33,8 +33,8 @@ function APropos() {
       {/* Hero avec photo de l'espace */}
       <section className="relative py-32 overflow-hidden">
         <div className="absolute inset-0">
-          <img src={img('/images/locale/locale3.jpeg')} alt="Espace Versatile" className="w-full h-full object-cover" />
-          <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(10,10,10,0.85) 0%, rgba(26,0,51,0.95) 100%)' }}></div>
+          <img src={thumb('/images/locale/locale3.jpeg')} alt="Espace Versatile" className="w-full h-full object-cover" />
+          <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(45,0,89,0.88) 0%, rgba(58,0,112,0.95) 100%)' }}></div>
         </div>
 
         <div className="relative z-10 section-container !py-0 text-center">
@@ -82,10 +82,10 @@ function APropos() {
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <img src={img('/images/locale/locale1.jpeg')} alt="Studio Massive Medias" className="rounded-xl w-full h-48 object-cover" />
-              <img src={img('/images/locale/locale2.jpeg')} alt="Espace de travail" className="rounded-xl w-full h-48 object-cover" />
-              <img src={img('/images/locale/locale4.jpeg')} alt="Équipement" className="rounded-xl w-full h-48 object-cover" />
-              <img src={img('/images/locale/locale5.jpeg')} alt="Productions" className="rounded-xl w-full h-48 object-cover" />
+              <img src={thumb('/images/locale/locale1.jpeg')} alt="Studio Massive Medias" className="rounded-xl w-full h-48 object-cover" />
+              <img src={thumb('/images/locale/locale2.jpeg')} alt="Espace de travail" className="rounded-xl w-full h-48 object-cover" />
+              <img src={thumb('/images/locale/locale4.jpeg')} alt="Équipement" className="rounded-xl w-full h-48 object-cover" />
+              <img src={thumb('/images/locale/locale5.jpeg')} alt="Productions" className="rounded-xl w-full h-48 object-cover" />
             </div>
           </div>
         </motion.div>
@@ -114,7 +114,7 @@ function APropos() {
                 viewport={{ once: true }}
                 className="flex items-start gap-6 mb-8 relative"
               >
-                <div className="w-16 h-16 rounded-full flex items-center justify-center flex-shrink-0 z-10 border-2 border-magenta" style={{ background: 'linear-gradient(145deg, #3A0066, #5B0099)' }}>
+                <div className="w-16 h-16 rounded-full flex items-center justify-center flex-shrink-0 z-10 border-2 border-magenta" style={{ background: 'rgba(255, 255, 255, 0.06)' }}>
                   <span className="text-magenta font-heading font-bold text-xs text-center leading-tight">{item.year}</span>
                 </div>
                 <div className="pt-3">
@@ -145,13 +145,13 @@ function APropos() {
               transition={{ duration: 0.5 }}
               viewport={{ once: true }}
               className="rounded-2xl overflow-hidden border border-purple-main/30"
-              style={{ background: 'linear-gradient(145deg, #3A0066, #5B0099)' }}
+              style={{ background: 'rgba(255, 255, 255, 0.06)' }}
             >
               <div className="h-64 overflow-hidden">
-                <img src={img('/images/locale/locale8.jpeg')} alt="Michael Sanchez" className="w-full h-full object-cover" />
+                <img src={thumb('/images/locale/locale8.jpeg')} alt="Michael Sanchez" className="w-full h-full object-cover" />
               </div>
               <div className="p-8">
-                <div className="mb-3 p-2 rounded-lg w-fit" style={{ background: 'rgba(255, 82, 160, 0.1)' }}>
+                <div className="mb-3 p-2 rounded-lg w-fit" style={{ background: 'rgba(163, 72, 254, 0.12)' }}>
                   <Users size={24} className="text-magenta" />
                 </div>
                 <h3 className="text-2xl font-heading font-bold text-white mb-1">
@@ -174,13 +174,13 @@ function APropos() {
               transition={{ duration: 0.5, delay: 0.2 }}
               viewport={{ once: true }}
               className="rounded-2xl overflow-hidden border border-purple-main/30"
-              style={{ background: 'linear-gradient(145deg, #3A0066, #5B0099)' }}
+              style={{ background: 'rgba(255, 255, 255, 0.06)' }}
             >
               <div className="h-64 overflow-hidden">
-                <img src={img('/images/locale/locale9.jpeg')} alt="Christopher Gagnon" className="w-full h-full object-cover" />
+                <img src={thumb('/images/locale/locale9.jpeg')} alt="Christopher Gagnon" className="w-full h-full object-cover" />
               </div>
               <div className="p-8">
-                <div className="mb-3 p-2 rounded-lg w-fit" style={{ background: 'rgba(255, 82, 160, 0.1)' }}>
+                <div className="mb-3 p-2 rounded-lg w-fit" style={{ background: 'rgba(163, 72, 254, 0.12)' }}>
                   <Zap size={24} className="text-magenta" />
                 </div>
                 <h3 className="text-2xl font-heading font-bold text-white mb-1">
@@ -213,9 +213,9 @@ function APropos() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
             {/* Photos d'équipement */}
             <div className="grid grid-cols-2 gap-4">
-              <img src={img('/images/locale/locale6.jpeg')} alt="Canon Pro-1000" className="rounded-xl w-full h-40 object-cover" />
-              <img src={img('/images/locale/locale7.jpeg')} alt="Cameo 5" className="rounded-xl w-full h-40 object-cover" />
-              <img src={img('/images/locale/locale10.jpeg')} alt="Presses" className="rounded-xl w-full h-40 object-cover col-span-2" />
+              <img src={thumb('/images/locale/locale6.jpeg')} alt="Canon Pro-1000" className="rounded-xl w-full h-40 object-cover" />
+              <img src={thumb('/images/locale/locale7.jpeg')} alt="Cameo 5" className="rounded-xl w-full h-40 object-cover" />
+              <img src={thumb('/images/locale/locale10.jpeg')} alt="Presses" className="rounded-xl w-full h-40 object-cover col-span-2" />
             </div>
             
             {/* Liste d'équipements */}
@@ -228,9 +228,9 @@ function APropos() {
                   transition={{ duration: 0.3, delay: index * 0.08 }}
                   viewport={{ once: true }}
                   className="flex items-start gap-4 p-4 rounded-xl border border-purple-main/30"
-                  style={{ background: 'rgba(49, 0, 81, 0.3)' }}
+                  style={{ background: 'rgba(255, 255, 255, 0.04)' }}
                 >
-                  <div className="p-2 rounded-lg flex-shrink-0" style={{ background: 'rgba(255, 82, 160, 0.1)' }}>
+                  <div className="p-2 rounded-lg flex-shrink-0" style={{ background: 'rgba(163, 72, 254, 0.12)' }}>
                     <item.icon size={20} className="text-magenta" />
                   </div>
                   <div>
@@ -252,7 +252,7 @@ function APropos() {
           className="mb-20"
         >
           <div className="rounded-2xl overflow-hidden relative">
-            <img src={img('/images/locale/locale11.jpeg')} alt="Espace Versatile" className="w-full h-80 object-cover" />
+            <img src={thumb('/images/locale/locale11.jpeg')} alt="Espace Versatile" className="w-full h-80 object-cover" />
             <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, transparent 0%, rgba(26,0,51,0.95) 100%)' }}></div>
             <div className="absolute bottom-0 left-0 right-0 p-8 md:p-12">
               <div className="flex items-center gap-2 mb-3">
@@ -280,13 +280,13 @@ function APropos() {
             Aussi dans l'univers Massive
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-            <div className="p-8 rounded-2xl border border-purple-main/30" style={{ background: 'linear-gradient(145deg, #3A0066, #5B0099)' }}>
+            <div className="p-8 rounded-2xl border border-purple-main/30" style={{ background: 'rgba(255, 255, 255, 0.06)' }}>
               <h3 className="text-2xl font-heading font-bold text-white mb-3">Maudite Machine</h3>
               <p className="text-grey-light leading-relaxed">
                 Compositeur de musique électronique et producteur. Sets et productions dark disco / indie dance. Sorties sur plusieurs labels, performances lors d'événements majeurs au Canada.
               </p>
             </div>
-            <div className="p-8 rounded-2xl border border-purple-main/30" style={{ background: 'linear-gradient(145deg, #3A0066, #5B0099)' }}>
+            <div className="p-8 rounded-2xl border border-purple-main/30" style={{ background: 'rgba(255, 255, 255, 0.06)' }}>
               <h3 className="text-2xl font-heading font-bold text-white mb-3">VRSTL Records</h3>
               <p className="text-grey-light leading-relaxed">
                 Label canadien dédié à l'Indie Dance et la Dark Minimal. Direction artistique, gestion des sorties, distribution digitale et promotion.

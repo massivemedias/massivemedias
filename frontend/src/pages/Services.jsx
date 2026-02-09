@@ -2,7 +2,7 @@ import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
 import { Printer, Sticker, Shirt, FileText, Palette, Code } from 'lucide-react';
 import ServiceCard from '../components/ServiceCard';
-import { img } from '../utils/paths';
+import { img, thumb } from '../utils/paths';
 
 function Services() {
   const services = [
@@ -11,42 +11,42 @@ function Services() {
       title: 'Impression Fine Art',
       description: 'Tirages premium sur Canon Pro-1000. Posters, affiches, photos d\'art sur papiers professionnels Canon, Ilford et Hahnemühle. Qualité galerie pour vos expositions et ventes d\'art.',
       link: '/services/impression-fine-art',
-      image: img('/images/prints/Prints1.jpeg'),
+      image: thumb('/images/prints/Prints1.jpeg'),
     },
     {
       icon: Sticker,
       title: 'Stickers Custom',
       description: 'Die-cut sur mesure avec la Silhouette Cameo 5. Matte, glossy, transparent, holographique basic ou premium. Découpe précise à la forme de ton design.',
       link: '/services/stickers-custom',
-      image: img('/images/stickers/Stickers1.jpeg'),
+      image: thumb('/images/stickers/Stickers1.jpeg'),
     },
     {
       icon: Shirt,
       title: 'Sublimation & Merch',
       description: 'T-shirts, hoodies, mugs, thermos, tapis de souris, porte-clés et plus. Impression sublimation permanente et vibrante pour ton merch d\'artiste.',
       link: '/services/sublimation-merch',
-      image: img('/images/textile/Textile1.jpeg'),
+      image: thumb('/images/textile/Textile1.jpeg'),
     },
     {
       icon: FileText,
       title: 'Flyers & Cartes',
       description: 'Flyers A6, cartes postales, cartes d\'affaires. Impression rapide et locale pour tes événements, shows et promotions. Prix compétitifs.',
       link: '/services/flyers-cartes',
-      image: img('/images/prints/Prints5.jpeg'),
+      image: thumb('/images/prints/Prints5.jpeg'),
     },
     {
       icon: Palette,
       title: 'Design Graphique',
       description: 'Logos, identités visuelles, affiches, packaging, supports marketing. En partenariat avec Christopher Gagnon, infographiste avec près de 10 ans d\'expérience.',
       link: '/services/design-graphique',
-      image: img('/images/prints/Prints10.jpeg'),
+      image: thumb('/images/prints/Prints10.jpeg'),
     },
     {
       icon: Code,
       title: 'Développement Web',
       description: 'Sites vitrines, e-commerce, landing pages. Technologies modernes : React, Strapi, WordPress, Shopify. Du site d\'artiste à la boutique complète.',
       link: '/services/developpement-web',
-      image: img('/images/locale/locale1.jpeg'),
+      image: thumb('/images/locale/locale1.jpeg'),
     }
   ];
 
@@ -60,8 +60,8 @@ function Services() {
       {/* Hero avec image de fond */}
       <section className="relative py-32 overflow-hidden">
         <div className="absolute inset-0">
-          <img src={img('/images/locale/locale5.jpeg')} alt="" className="w-full h-full object-cover" />
-          <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(10,10,10,0.9) 0%, rgba(26,0,51,0.95) 100%)' }}></div>
+          <img src={thumb('/images/locale/locale5.jpeg')} alt="" className="w-full h-full object-cover" />
+          <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(45,0,89,0.88) 0%, rgba(58,0,112,0.95) 100%)' }}></div>
         </div>
 
         <div className="relative z-10 section-container !py-0">
@@ -123,10 +123,10 @@ function Services() {
             transition={{ duration: 0.5 }}
             viewport={{ once: true }}
             className="rounded-2xl overflow-hidden border border-magenta/30"
-            style={{ background: 'linear-gradient(145deg, #3A0066, #5B0099)' }}
+            style={{ background: 'rgba(255, 255, 255, 0.06)' }}
           >
             <div className="p-2">
-              <img src={img('/images/prints/Prints3.jpeg')} alt="Package Lancement Artiste" className="w-full h-48 object-cover rounded-xl" />
+              <img src={thumb('/images/prints/Prints3.jpeg')} alt="Package Lancement Artiste" className="w-full h-48 object-cover rounded-xl" />
             </div>
             <div className="p-8">
               <div className="text-magenta text-sm font-semibold uppercase tracking-wider mb-2">Le plus populaire</div>
@@ -162,10 +162,10 @@ function Services() {
             transition={{ duration: 0.5, delay: 0.1 }}
             viewport={{ once: true }}
             className="rounded-2xl overflow-hidden border border-purple-main/30"
-            style={{ background: 'linear-gradient(145deg, #3A0066, #5B0099)' }}
+            style={{ background: 'rgba(255, 255, 255, 0.06)' }}
           >
             <div className="p-2">
-              <img src={img('/images/stickers/Stickers3.jpeg')} alt="Package Événement" className="w-full h-48 object-cover rounded-xl" />
+              <img src={thumb('/images/stickers/Stickers3.jpeg')} alt="Package Événement" className="w-full h-48 object-cover rounded-xl" />
             </div>
             <div className="p-8">
               <div className="text-electric-purple text-sm font-semibold uppercase tracking-wider mb-2">Événements</div>

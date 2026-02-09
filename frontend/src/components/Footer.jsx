@@ -6,7 +6,7 @@ function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-gradient-to-b from-purple-dark to-black border-t border-purple-main/30 py-12 mt-20">
+    <footer className="border-t border-white/10 py-12 mt-20" style={{ background: '#2D0059' }}>
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
           {/* Colonne 1 — Logo + tagline */}
@@ -120,7 +120,7 @@ function Footer() {
                 href="https://instagram.com/massivemedias" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="p-2 rounded-full bg-purple-main hover:bg-magenta transition-all duration-300 hover:shadow-glow"
+                className="p-2 rounded-full bg-purple-main hover:bg-magenta transition-all duration-300 hover:opacity-80"
               >
                 <Instagram size={20} />
               </a>
@@ -128,7 +128,7 @@ function Footer() {
                 href="https://facebook.com/massivemedias" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="p-2 rounded-full bg-purple-main hover:bg-magenta transition-all duration-300 hover:shadow-glow"
+                className="p-2 rounded-full bg-purple-main hover:bg-magenta transition-all duration-300 hover:opacity-80"
               >
                 <Facebook size={20} />
               </a>
@@ -137,7 +137,7 @@ function Footer() {
         </div>
 
         {/* Bas de footer */}
-        <div className="border-t border-purple-main/30 pt-8 text-center text-grey-muted text-sm">
+        <div className="border-t white/10 pt-8 text-center text-grey-muted text-sm">
           <p>
             © 2013-{currentYear} Massive Medias. Tous droits réservés. NEQ 2269057891
           </p>

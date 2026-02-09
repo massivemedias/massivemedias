@@ -2,7 +2,7 @@ import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Printer, Sticker, Palette, Code, Shirt, FileText, Package } from 'lucide-react';
-import { img } from '../utils/paths';
+import { img, thumb } from '../utils/paths';
 
 function Tarifs() {
   return (
@@ -15,8 +15,8 @@ function Tarifs() {
       {/* Hero */}
       <section className="relative py-32 overflow-hidden">
         <div className="absolute inset-0">
-          <img src={img('/images/prints/Prints6.jpeg')} alt="" className="w-full h-full object-cover" />
-          <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(10,10,10,0.92) 0%, rgba(26,0,51,0.95) 100%)' }}></div>
+          <img src={thumb('/images/prints/Prints6.jpeg')} alt="" className="w-full h-full object-cover" />
+          <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(45,0,89,0.88) 0%, rgba(58,0,112,0.95) 100%)' }}></div>
         </div>
         <div className="relative z-10 section-container !py-0 text-center">
           <motion.div
@@ -45,7 +45,7 @@ function Tarifs() {
           className="mb-16"
         >
           <div className="flex items-center gap-3 mb-6">
-            <div className="p-3 rounded-lg" style={{ background: 'rgba(255, 82, 160, 0.1)' }}>
+            <div className="p-3 rounded-lg" style={{ background: 'rgba(163, 72, 254, 0.12)' }}>
               <Printer size={28} className="text-magenta" />
             </div>
             <h2 className="text-3xl font-heading font-bold text-white">Impressions Fine Art</h2>
@@ -108,7 +108,7 @@ function Tarifs() {
           className="mb-16"
         >
           <div className="flex items-center gap-3 mb-6">
-            <div className="p-3 rounded-lg" style={{ background: 'rgba(255, 82, 160, 0.1)' }}>
+            <div className="p-3 rounded-lg" style={{ background: 'rgba(163, 72, 254, 0.12)' }}>
               <Sticker size={28} className="text-magenta" />
             </div>
             <h2 className="text-3xl font-heading font-bold text-white">Stickers personnalisés</h2>
@@ -117,7 +117,7 @@ function Tarifs() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="rounded-xl overflow-hidden border border-purple-main/30">
-              <div className="p-4 border-b border-purple-main/30" style={{ background: 'rgba(49, 0, 81, 0.5)' }}>
+              <div className="p-4 border-b border-purple-main/30" style={{ background: 'rgba(255, 255, 255, 0.05)' }}>
                 <h3 className="text-white font-heading font-bold">Stickers ronds 2,5" holographiques</h3>
               </div>
               <table className="price-table">
@@ -154,7 +154,7 @@ function Tarifs() {
             </div>
 
             <div className="rounded-xl overflow-hidden border border-purple-main/30">
-              <div className="p-4 border-b border-purple-main/30" style={{ background: 'rgba(49, 0, 81, 0.5)' }}>
+              <div className="p-4 border-b border-purple-main/30" style={{ background: 'rgba(255, 255, 255, 0.05)' }}>
                 <h3 className="text-white font-heading font-bold">Stickers A4 custom découpés</h3>
               </div>
               <table className="price-table">
@@ -191,7 +191,7 @@ function Tarifs() {
           className="mb-16"
         >
           <div className="flex items-center gap-3 mb-6">
-            <div className="p-3 rounded-lg" style={{ background: 'rgba(255, 82, 160, 0.1)' }}>
+            <div className="p-3 rounded-lg" style={{ background: 'rgba(163, 72, 254, 0.12)' }}>
               <Palette size={28} className="text-magenta" />
             </div>
             <h2 className="text-3xl font-heading font-bold text-white">Design Graphique</h2>
@@ -252,7 +252,7 @@ function Tarifs() {
           className="mb-16"
         >
           <div className="flex items-center gap-3 mb-6">
-            <div className="p-3 rounded-lg" style={{ background: 'rgba(255, 82, 160, 0.1)' }}>
+            <div className="p-3 rounded-lg" style={{ background: 'rgba(163, 72, 254, 0.12)' }}>
               <Code size={28} className="text-magenta" />
             </div>
             <h2 className="text-3xl font-heading font-bold text-white">Développement Web</h2>
@@ -303,7 +303,7 @@ function Tarifs() {
           className="mb-16"
         >
           <div className="flex items-center gap-3 mb-6">
-            <div className="p-3 rounded-lg" style={{ background: 'rgba(255, 82, 160, 0.1)' }}>
+            <div className="p-3 rounded-lg" style={{ background: 'rgba(163, 72, 254, 0.12)' }}>
               <Package size={28} className="text-magenta" />
             </div>
             <h2 className="text-3xl font-heading font-bold text-white">Packages combinés</h2>
@@ -311,9 +311,9 @@ function Tarifs() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Package Lancement Artiste */}
-            <div className="rounded-2xl overflow-hidden border-2 border-magenta/50 animate-glow-pulse" style={{ background: 'linear-gradient(145deg, #3A0066, #5B0099)' }}>
+            <div className="rounded-2xl overflow-hidden border-2 border-magenta/40" style={{ background: 'rgba(255, 255, 255, 0.06)' }}>
               <div className="p-2">
-                <img src={img('/images/prints/Prints3.jpeg')} alt="Package Lancement" className="w-full h-40 object-cover rounded-xl" />
+                <img src={thumb('/images/prints/Prints3.jpeg')} alt="Package Lancement" className="w-full h-40 object-cover rounded-xl" />
               </div>
               <div className="p-8">
                 <div className="text-magenta text-xs font-semibold uppercase tracking-wider mb-2">Le plus populaire</div>
@@ -334,9 +334,9 @@ function Tarifs() {
             </div>
 
             {/* Package Événement */}
-            <div className="rounded-2xl overflow-hidden border border-purple-main/30" style={{ background: 'linear-gradient(145deg, #3A0066, #5B0099)' }}>
+            <div className="rounded-2xl overflow-hidden border border-purple-main/30" style={{ background: 'rgba(255, 255, 255, 0.06)' }}>
               <div className="p-2">
-                <img src={img('/images/stickers/Stickers3.jpeg')} alt="Package Événement" className="w-full h-40 object-cover rounded-xl" />
+                <img src={thumb('/images/stickers/Stickers3.jpeg')} alt="Package Événement" className="w-full h-40 object-cover rounded-xl" />
               </div>
               <div className="p-8">
                 <div className="text-electric-purple text-xs font-semibold uppercase tracking-wider mb-2">Événements</div>
