@@ -10,7 +10,7 @@ export default defineConfig({
   ],
   // Base path: '/massivemedias/' pour GitHub Pages (massivemedias.github.io/massivemedias/)
   // Changer en '/' quand le custom domain massivemedias.com sera actif
-  base: '/massivemedias/',
+    base: '/',
   build: {
     outDir: 'dist',
     sourcemap: false,
