@@ -45,7 +45,7 @@ function Tarifs() {
           className="mb-16"
         >
           <div className="flex items-center gap-3 mb-6">
-            <div className="p-3 rounded-lg" style={{ background: 'rgba(255, 0, 164, 0.1)' }}>
+            <div className="p-3 rounded-lg" style={{ background: 'rgba(255, 82, 160, 0.1)' }}>
               <Printer size={28} className="text-magenta" />
             </div>
             <h2 className="text-3xl font-heading font-bold text-white">Impressions Fine Art</h2>
@@ -108,7 +108,7 @@ function Tarifs() {
           className="mb-16"
         >
           <div className="flex items-center gap-3 mb-6">
-            <div className="p-3 rounded-lg" style={{ background: 'rgba(255, 0, 164, 0.1)' }}>
+            <div className="p-3 rounded-lg" style={{ background: 'rgba(255, 82, 160, 0.1)' }}>
               <Sticker size={28} className="text-magenta" />
             </div>
             <h2 className="text-3xl font-heading font-bold text-white">Stickers personnalisés</h2>
@@ -191,7 +191,7 @@ function Tarifs() {
           className="mb-16"
         >
           <div className="flex items-center gap-3 mb-6">
-            <div className="p-3 rounded-lg" style={{ background: 'rgba(255, 0, 164, 0.1)' }}>
+            <div className="p-3 rounded-lg" style={{ background: 'rgba(255, 82, 160, 0.1)' }}>
               <Palette size={28} className="text-magenta" />
             </div>
             <h2 className="text-3xl font-heading font-bold text-white">Design Graphique</h2>
@@ -252,7 +252,7 @@ function Tarifs() {
           className="mb-16"
         >
           <div className="flex items-center gap-3 mb-6">
-            <div className="p-3 rounded-lg" style={{ background: 'rgba(255, 0, 164, 0.1)' }}>
+            <div className="p-3 rounded-lg" style={{ background: 'rgba(255, 82, 160, 0.1)' }}>
               <Code size={28} className="text-magenta" />
             </div>
             <h2 className="text-3xl font-heading font-bold text-white">Développement Web</h2>
@@ -303,7 +303,7 @@ function Tarifs() {
           className="mb-16"
         >
           <div className="flex items-center gap-3 mb-6">
-            <div className="p-3 rounded-lg" style={{ background: 'rgba(255, 0, 164, 0.1)' }}>
+            <div className="p-3 rounded-lg" style={{ background: 'rgba(255, 82, 160, 0.1)' }}>
               <Package size={28} className="text-magenta" />
             </div>
             <h2 className="text-3xl font-heading font-bold text-white">Packages combinés</h2>
@@ -311,7 +311,7 @@ function Tarifs() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Package Lancement Artiste */}
-            <div className="rounded-2xl overflow-hidden border-2 border-magenta/50 animate-glow-pulse" style={{ background: 'linear-gradient(145deg, #310051, #46015E)' }}>
+            <div className="rounded-2xl overflow-hidden border-2 border-magenta/50 animate-glow-pulse" style={{ background: 'linear-gradient(145deg, #3A0066, #5B0099)' }}>
               <div className="p-2">
                 <img src={img('/images/prints/Prints3.jpeg')} alt="Package Lancement" className="w-full h-40 object-cover rounded-xl" />
               </div>
@@ -334,7 +334,7 @@ function Tarifs() {
             </div>
 
             {/* Package Événement */}
-            <div className="rounded-2xl overflow-hidden border border-purple-main/30" style={{ background: 'linear-gradient(145deg, #310051, #46015E)' }}>
+            <div className="rounded-2xl overflow-hidden border border-purple-main/30" style={{ background: 'linear-gradient(145deg, #3A0066, #5B0099)' }}>
               <div className="p-2">
                 <img src={img('/images/stickers/Stickers3.jpeg')} alt="Package Événement" className="w-full h-40 object-cover rounded-xl" />
               </div>

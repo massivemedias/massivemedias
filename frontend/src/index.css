@@ -3,25 +3,28 @@
 
 /* =============================================
    MASSIVE MEDIAS — Design Tokens (Tailwind v4)
+   Palette: #FF52A0, #FFA47F, #8100D1, #A348FE
    ============================================= */
 
 @theme {
   /* Couleurs custom */
-  --color-magenta: #FF00A4;
-  --color-electric-purple: #D700FE;
-  --color-purple-dark: #1A0033;
-  --color-purple-mid: #310051;
-  --color-purple-main: #46015E;
-  --color-grey-light: #E0D0F0;
-  --color-grey-muted: #A090B0;
+  --color-magenta: #FF52A0;
+  --color-peach: #FFA47F;
+  --color-electric-purple: #A348FE;
+  --color-purple-bright: #8100D1;
+  --color-purple-dark: #1A002D;
+  --color-purple-mid: #3A0066;
+  --color-purple-main: #5B0099;
+  --color-grey-light: #E8D8F8;
+  --color-grey-muted: #B0A0C0;
 
   /* Polices */
   --font-heading: 'Space Grotesk', sans-serif;
   --font-body: 'Inter', sans-serif;
 
   /* Ombres */
-  --shadow-glow: 0 0 20px rgba(255, 0, 164, 0.3);
-  --shadow-glow-intense: 0 0 40px rgba(255, 0, 164, 0.5);
+  --shadow-glow: 0 0 20px rgba(255, 82, 160, 0.3);
+  --shadow-glow-intense: 0 0 40px rgba(255, 82, 160, 0.5);
   --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.5);
 }
 
@@ -33,7 +36,7 @@ body {
   margin: 0;
   padding: 0;
   font-family: 'Inter', sans-serif;
-  background: linear-gradient(180deg, #0A0A0A, #1A0033);
+  background: linear-gradient(180deg, #0A0A0A, #1A002D);
   background-attachment: fixed;
   color: #FFFFFF;
   -webkit-font-smoothing: antialiased;
@@ -46,7 +49,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 ::selection {
-  background: #FF00A4;
+  background: #FF52A0;
   color: #FFFFFF;
 }
 
@@ -54,14 +57,14 @@ h1, h2, h3, h4, h5, h6 {
    Composants custom
    ============================================= */
 
-/* Bouton primaire (CTA magenta) */
+/* Bouton primaire (CTA pink) */
 .btn-primary {
   padding: 1rem 2rem;
   border-radius: 9999px;
   font-weight: 600;
   color: #FFFFFF;
-  background: linear-gradient(135deg, #D700FE, #FF00A4);
-  box-shadow: 0 0 20px rgba(255, 0, 164, 0.3);
+  background: linear-gradient(135deg, #A348FE, #FF52A0);
+  box-shadow: 0 0 20px rgba(255, 82, 160, 0.3);
   border: none;
   cursor: pointer;
   text-decoration: none;
@@ -73,7 +76,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 0 40px rgba(255, 0, 164, 0.5);
+  box-shadow: 0 0 40px rgba(255, 82, 160, 0.5);
 }
 
 /* Bouton outline */
@@ -102,7 +105,7 @@ h1, h2, h3, h4, h5, h6 {
 .card-service {
   padding: 2rem;
   border-radius: 1rem;
-  background: linear-gradient(145deg, #310051, #46015E);
+  background: linear-gradient(145deg, #3A0066, #5B0099);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
   cursor: pointer;
   transition: transform 0.3s, box-shadow 0.3s;
@@ -112,12 +115,12 @@ h1, h2, h3, h4, h5, h6 {
 
 .card-service:hover {
   transform: translateY(-8px);
-  box-shadow: 0 0 40px rgba(255, 0, 164, 0.5);
+  box-shadow: 0 0 40px rgba(255, 82, 160, 0.5);
 }
 
 /* Texte avec dégradé */
 .text-gradient {
-  background: linear-gradient(135deg, #D700FE, #FF00A4);
+  background: linear-gradient(135deg, #A348FE, #FF52A0);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -136,8 +139,8 @@ h1, h2, h3, h4, h5, h6 {
   padding: 0.75rem 1rem;
   border-radius: 0.5rem;
   color: #FFFFFF;
-  border: 2px solid #46015E;
-  background: rgba(49, 0, 81, 0.5);
+  border: 2px solid #5B0099;
+  background: rgba(58, 0, 102, 0.5);
   transition: border-color 0.3s, box-shadow 0.3s;
   font-family: 'Inter', sans-serif;
   font-size: 1rem;
@@ -146,25 +149,25 @@ h1, h2, h3, h4, h5, h6 {
 
 .input-field:focus {
   outline: none;
-  border-color: #FF00A4;
-  box-shadow: 0 0 20px rgba(255, 0, 164, 0.3);
+  border-color: #FF52A0;
+  box-shadow: 0 0 20px rgba(255, 82, 160, 0.3);
 }
 
 .input-field::placeholder {
-  color: #A090B0;
+  color: #B0A0C0;
 }
 
 /* Sélecteurs (même style que les inputs) */
 select.input-field {
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23A090B0' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23B0A0C0' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 1rem center;
   padding-right: 2.5rem;
 }
 
 select.input-field option {
-  background: #310051;
+  background: #3A0066;
   color: #FFFFFF;
 }
 
@@ -178,26 +181,26 @@ select.input-field option {
   padding: 0.75rem 1rem;
   text-align: left;
   font-weight: 600;
-  border-bottom: 2px solid #FF00A4;
-  background: #310051;
+  border-bottom: 2px solid #FF52A0;
+  background: #3A0066;
 }
 
 .price-table td {
   padding: 0.75rem 1rem;
-  border-bottom: 1px solid rgba(255, 0, 164, 0.2);
+  border-bottom: 1px solid rgba(255, 82, 160, 0.2);
 }
 
 .price-table tr:hover td {
-  background: rgba(49, 0, 81, 0.3);
+  background: rgba(58, 0, 102, 0.3);
 }
 
 /* Background gradients (classes utilitaires custom) */
 .bg-gradient-bg {
-  background: linear-gradient(180deg, #0A0A0A, #1A0033);
+  background: linear-gradient(180deg, #0A0A0A, #1A002D);
 }
 
 .bg-gradient-card {
-  background: linear-gradient(145deg, #310051, #46015E);
+  background: linear-gradient(145deg, #3A0066, #5B0099);
 }
 
 /* =============================================
@@ -206,10 +209,10 @@ select.input-field option {
 
 @keyframes glow-pulse {
   0%, 100% {
-    box-shadow: 0 0 20px rgba(255, 0, 164, 0.3);
+    box-shadow: 0 0 20px rgba(255, 82, 160, 0.3);
   }
   50% {
-    box-shadow: 0 0 40px rgba(255, 0, 164, 0.5);
+    box-shadow: 0 0 40px rgba(255, 82, 160, 0.5);
   }
 }
 
@@ -230,10 +233,10 @@ select.input-field option {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #D700FE, #FF00A4);
+  background: linear-gradient(135deg, #A348FE, #FF52A0);
   border-radius: 5px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #FF00A4;
+  background: #FF52A0;
 }

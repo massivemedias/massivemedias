@@ -123,7 +123,7 @@ function Services() {
             transition={{ duration: 0.5 }}
             viewport={{ once: true }}
             className="rounded-2xl overflow-hidden border border-magenta/30"
-            style={{ background: 'linear-gradient(145deg, #310051, #46015E)' }}
+            style={{ background: 'linear-gradient(145deg, #3A0066, #5B0099)' }}
           >
             <div className="p-2">
               <img src={img('/images/prints/Prints3.jpeg')} alt="Package Lancement Artiste" className="w-full h-48 object-cover rounded-xl" />
@@ -162,7 +162,7 @@ function Services() {
             transition={{ duration: 0.5, delay: 0.1 }}
             viewport={{ once: true }}
             className="rounded-2xl overflow-hidden border border-purple-main/30"
-            style={{ background: 'linear-gradient(145deg, #310051, #46015E)' }}
+            style={{ background: 'linear-gradient(145deg, #3A0066, #5B0099)' }}
           >
             <div className="p-2">
               <img src={img('/images/stickers/Stickers3.jpeg')} alt="Package Événement" className="w-full h-48 object-cover rounded-xl" />

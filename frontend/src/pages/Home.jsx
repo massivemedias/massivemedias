@@ -322,7 +322,7 @@ function Home() {
               className="p-8 rounded-xl border border-purple-main/30 backdrop-blur-sm hover:border-magenta/50 transition-all duration-300"
               style={{ background: 'rgba(49, 0, 81, 0.3)' }}
             >
-              <div className="mb-4 p-3 rounded-lg w-fit" style={{ background: 'rgba(255, 0, 164, 0.1)' }}>
+              <div className="mb-4 p-3 rounded-lg w-fit" style={{ background: 'rgba(255, 82, 160, 0.1)' }}>
                 <advantage.icon size={28} className="text-magenta" />
               </div>
               <h3 className="font-heading text-xl font-bold text-white mb-3">

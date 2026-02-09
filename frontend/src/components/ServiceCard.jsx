@@ -8,7 +8,7 @@ function ServiceCard({ icon: Icon, title, description, link, image }) {
       whileHover={{ y: -8 }}
       transition={{ duration: 0.3 }}
     >
-      <Link to={link} className="block rounded-2xl overflow-hidden h-full group" style={{ background: 'linear-gradient(145deg, #310051, #46015E)', boxShadow: '0 4px 20px rgba(0,0,0,0.5)' }}>
+      <Link to={link} className="block rounded-2xl overflow-hidden h-full group" style={{ background: 'linear-gradient(145deg, #3A0066, #5B0099)', boxShadow: '0 4px 20px rgba(0,0,0,0.5)' }}>
         {/* Image */}
         {image && (
           <div className="relative h-48 overflow-hidden">
@@ -18,7 +18,7 @@ function ServiceCard({ icon: Icon, title, description, link, image }) {
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-purple-dark/90 to-transparent"></div>
-            <div className="absolute bottom-3 left-4 p-2 rounded-lg" style={{ background: 'rgba(255, 0, 164, 0.15)', backdropFilter: 'blur(8px)' }}>
+            <div className="absolute bottom-3 left-4 p-2 rounded-lg" style={{ background: 'rgba(255, 82, 160, 0.15)', backdropFilter: 'blur(8px)' }}>
               <Icon size={24} className="text-magenta" />
             </div>
           </div>
@@ -26,7 +26,7 @@ function ServiceCard({ icon: Icon, title, description, link, image }) {
 
         <div className="p-6 flex flex-col" style={{ minHeight: image ? 'auto' : '100%' }}>
           {!image && (
-            <div className="mb-4 p-3 rounded-lg w-fit" style={{ background: 'rgba(255, 0, 164, 0.1)' }}>
+            <div className="mb-4 p-3 rounded-lg w-fit" style={{ background: 'rgba(255, 82, 160, 0.1)' }}>
               <Icon size={32} className="text-magenta" />
             </div>
           )}

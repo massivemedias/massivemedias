@@ -51,7 +51,7 @@ function ServiceDetail() {
             </div>
 
             <div className="flex items-center gap-4 mb-6">
-              <div className="p-4 rounded-xl" style={{ background: 'rgba(255, 0, 164, 0.15)', backdropFilter: 'blur(10px)' }}>
+              <div className="p-4 rounded-xl" style={{ background: 'rgba(255, 82, 160, 0.15)', backdropFilter: 'blur(10px)' }}>
                 <Icon size={36} className="text-magenta" />
               </div>
               <div>
@@ -186,7 +186,7 @@ function ServiceDetail() {
                 className="p-6 rounded-xl border border-purple-main/30 relative"
                 style={{ background: 'rgba(49, 0, 81, 0.3)' }}
               >
-                <div className="absolute -top-3 -left-1 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold" style={{ background: 'linear-gradient(135deg, #D700FE, #FF00A4)' }}>
+                <div className="absolute -top-3 -left-1 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold" style={{ background: 'linear-gradient(135deg, #A348FE, #FF52A0)' }}>
                   {item.step}
                 </div>
                 <h3 className="text-white font-heading font-bold text-lg mt-2 mb-2">

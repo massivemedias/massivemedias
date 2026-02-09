@@ -141,14 +141,14 @@ function Portfolio() {
               className="px-6 py-2.5 rounded-full font-semibold text-sm transition-all duration-300"
               style={{
                 background: activeCategory === cat.id
-                  ? 'linear-gradient(135deg, #D700FE, #FF00A4)'
+                  ? 'linear-gradient(135deg, #A348FE, #FF52A0)'
                   : 'rgba(49, 0, 81, 0.5)',
                 color: '#FFFFFF',
                 border: activeCategory === cat.id
                   ? 'none'
                   : '1px solid rgba(70, 1, 94, 0.5)',
                 boxShadow: activeCategory === cat.id
-                  ? '0 0 20px rgba(255, 0, 164, 0.3)'
+                  ? '0 0 20px rgba(255, 82, 160, 0.3)'
                   : 'none',
               }}
             >

@@ -114,7 +114,7 @@ function APropos() {
                 viewport={{ once: true }}
                 className="flex items-start gap-6 mb-8 relative"
               >
-                <div className="w-16 h-16 rounded-full flex items-center justify-center flex-shrink-0 z-10 border-2 border-magenta" style={{ background: 'linear-gradient(145deg, #310051, #46015E)' }}>
+                <div className="w-16 h-16 rounded-full flex items-center justify-center flex-shrink-0 z-10 border-2 border-magenta" style={{ background: 'linear-gradient(145deg, #3A0066, #5B0099)' }}>
                   <span className="text-magenta font-heading font-bold text-xs text-center leading-tight">{item.year}</span>
                 </div>
                 <div className="pt-3">
@@ -145,13 +145,13 @@ function APropos() {
               transition={{ duration: 0.5 }}
               viewport={{ once: true }}
               className="rounded-2xl overflow-hidden border border-purple-main/30"
-              style={{ background: 'linear-gradient(145deg, #310051, #46015E)' }}
+              style={{ background: 'linear-gradient(145deg, #3A0066, #5B0099)' }}
             >
               <div className="h-64 overflow-hidden">
                 <img src={img('/images/locale/locale8.jpeg')} alt="Michael Sanchez" className="w-full h-full object-cover" />
               </div>
               <div className="p-8">
-                <div className="mb-3 p-2 rounded-lg w-fit" style={{ background: 'rgba(255, 0, 164, 0.1)' }}>
+                <div className="mb-3 p-2 rounded-lg w-fit" style={{ background: 'rgba(255, 82, 160, 0.1)' }}>
                   <Users size={24} className="text-magenta" />
                 </div>
                 <h3 className="text-2xl font-heading font-bold text-white mb-1">
@@ -174,13 +174,13 @@ function APropos() {
               transition={{ duration: 0.5, delay: 0.2 }}
               viewport={{ once: true }}
               className="rounded-2xl overflow-hidden border border-purple-main/30"
-              style={{ background: 'linear-gradient(145deg, #310051, #46015E)' }}
+              style={{ background: 'linear-gradient(145deg, #3A0066, #5B0099)' }}
             >
               <div className="h-64 overflow-hidden">
                 <img src={img('/images/locale/locale9.jpeg')} alt="Christopher Gagnon" className="w-full h-full object-cover" />
               </div>
               <div className="p-8">
-                <div className="mb-3 p-2 rounded-lg w-fit" style={{ background: 'rgba(255, 0, 164, 0.1)' }}>
+                <div className="mb-3 p-2 rounded-lg w-fit" style={{ background: 'rgba(255, 82, 160, 0.1)' }}>
                   <Zap size={24} className="text-magenta" />
                 </div>
                 <h3 className="text-2xl font-heading font-bold text-white mb-1">
@@ -230,7 +230,7 @@ function APropos() {
                   className="flex items-start gap-4 p-4 rounded-xl border border-purple-main/30"
                   style={{ background: 'rgba(49, 0, 81, 0.3)' }}
                 >
-                  <div className="p-2 rounded-lg flex-shrink-0" style={{ background: 'rgba(255, 0, 164, 0.1)' }}>
+                  <div className="p-2 rounded-lg flex-shrink-0" style={{ background: 'rgba(255, 82, 160, 0.1)' }}>
                     <item.icon size={20} className="text-magenta" />
                   </div>
                   <div>
@@ -280,13 +280,13 @@ function APropos() {
             Aussi dans l'univers Massive
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-            <div className="p-8 rounded-2xl border border-purple-main/30" style={{ background: 'linear-gradient(145deg, #310051, #46015E)' }}>
+            <div className="p-8 rounded-2xl border border-purple-main/30" style={{ background: 'linear-gradient(145deg, #3A0066, #5B0099)' }}>
               <h3 className="text-2xl font-heading font-bold text-white mb-3">Maudite Machine</h3>
               <p className="text-grey-light leading-relaxed">
                 Compositeur de musique électronique et producteur. Sets et productions dark disco / indie dance. Sorties sur plusieurs labels, performances lors d'événements majeurs au Canada.
               </p>
             </div>
-            <div className="p-8 rounded-2xl border border-purple-main/30" style={{ background: 'linear-gradient(145deg, #310051, #46015E)' }}>
+            <div className="p-8 rounded-2xl border border-purple-main/30" style={{ background: 'linear-gradient(145deg, #3A0066, #5B0099)' }}>
               <h3 className="text-2xl font-heading font-bold text-white mb-3">VRSTL Records</h3>
               <p className="text-grey-light leading-relaxed">
                 Label canadien dédié à l'Indie Dance et la Dark Minimal. Direction artistique, gestion des sorties, distribution digitale et promotion.

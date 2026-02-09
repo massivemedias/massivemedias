@@ -53,7 +53,7 @@ function Header() {
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.2 }}
                     className="absolute top-full left-0 mt-2 w-64 rounded-xl overflow-hidden shadow-glow"
-                    style={{ background: 'linear-gradient(145deg, #310051, #46015E)' }}
+                    style={{ background: 'linear-gradient(145deg, #3A0066, #5B0099)' }}
                   >
                     {services.map((service, index) => (
                       <Link
