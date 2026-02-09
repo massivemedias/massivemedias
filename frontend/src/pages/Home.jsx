@@ -19,6 +19,7 @@ import {
 import ServiceCard from '../components/ServiceCard';
 import Counter from '../components/Counter';
 import MassiveLogo from '../assets/massive-logo.svg';
+import { img } from '../utils/paths';
 
 const services = [
   {
@@ -26,42 +27,42 @@ const services = [
     title: 'Impression Fine Art',
     description: 'Tirages premium sur Canon Pro-1000. Posters, affiches, photos d\'art sur papiers professionnels Canon, Ilford et Hahnemühle.',
     link: '/services/impression-fine-art',
-    image: '/images/prints/Prints1.jpeg',
+    image: img('/images/prints/Prints1.jpeg'),
   },
   {
     icon: Sticker,
     title: 'Stickers Custom',
     description: 'Die-cut sur mesure avec la Silhouette Cameo 5. Matte, glossy, transparent, holographique basic ou premium.',
     link: '/services/stickers-custom',
-    image: '/images/stickers/Stickers1.jpeg',
+    image: img('/images/stickers/Stickers1.jpeg'),
   },
   {
     icon: Shirt,
     title: 'Sublimation & Merch',
     description: 'T-shirts, hoodies, mugs, thermos, tapis de souris, porte-clés et plus. Impression sublimation sur mesure.',
     link: '/services/sublimation-merch',
-    image: '/images/textile/Textile1.jpeg',
+    image: img('/images/textile/Textile1.jpeg'),
   },
   {
     icon: FileText,
     title: 'Flyers & Cartes',
     description: 'Flyers A6, cartes postales, cartes d\'affaires. Impression rapide et locale pour tes événements et promotions.',
     link: '/services/flyers-cartes',
-    image: '/images/prints/Prints5.jpeg',
+    image: img('/images/prints/Prints5.jpeg'),
   },
   {
     icon: Palette,
     title: 'Design Graphique',
     description: 'Logos, identités visuelles, affiches, packaging. En partenariat avec Christopher Gagnon, infographiste.',
     link: '/services/design-graphique',
-    image: '/images/prints/Prints10.jpeg',
+    image: img('/images/prints/Prints10.jpeg'),
   },
   {
     icon: Code,
     title: 'Développement Web',
     description: 'Sites vitrines, e-commerce, landing pages. Technologies modernes : React, Strapi, WordPress, Shopify.',
     link: '/services/developpement-web',
-    image: '/images/locale/locale1.jpeg',
+    image: img('/images/locale/locale1.jpeg'),
   }
 ];
 
@@ -100,12 +101,12 @@ const advantages = [
 
 /* Images pour le carrousel de réalisations */
 const featuredProjects = [
-  { image: '/images/prints/Prints2.jpeg', title: 'Tirages Fine Art', category: 'Impression' },
-  { image: '/images/stickers/Stickers3.jpeg', title: 'Stickers Holographiques', category: 'Stickers' },
-  { image: '/images/textile/Textile3.jpeg', title: 'T-shirts Sublimation', category: 'Merch' },
-  { image: '/images/prints/Prints8.jpeg', title: 'Affiches Événement', category: 'Impression' },
-  { image: '/images/stickers/Stickers5.jpeg', title: 'Die-Cut Custom', category: 'Stickers' },
-  { image: '/images/textile/Textile5.jpeg', title: 'Mugs & Accessoires', category: 'Merch' },
+  { image: img('/images/prints/Prints2.jpeg'), title: 'Tirages Fine Art', category: 'Impression' },
+  { image: img('/images/stickers/Stickers3.jpeg'), title: 'Stickers Holographiques', category: 'Stickers' },
+  { image: img('/images/textile/Textile3.jpeg'), title: 'T-shirts Sublimation', category: 'Merch' },
+  { image: img('/images/prints/Prints8.jpeg'), title: 'Affiches Événement', category: 'Impression' },
+  { image: img('/images/stickers/Stickers5.jpeg'), title: 'Die-Cut Custom', category: 'Stickers' },
+  { image: img('/images/textile/Textile5.jpeg'), title: 'Mugs & Accessoires', category: 'Merch' },
 ];
 
 function Home() {
@@ -121,7 +122,7 @@ function Home() {
         {/* Background image locale + overlay */}
         <div className="absolute inset-0">
           <img
-            src="/images/locale/locale3.jpeg"
+            src={img('/images/locale/locale3.jpeg')}
             alt=""
             className="w-full h-full object-cover"
           />
@@ -346,7 +347,7 @@ function Home() {
         >
           {/* Image de fond */}
           <img
-            src="/images/locale/locale5.jpeg"
+            src={img('/images/locale/locale5.jpeg')}
             alt=""
             className="absolute inset-0 w-full h-full object-cover"
           />

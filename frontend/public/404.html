@@ -4,9 +4,8 @@
     <meta charset="utf-8">
     <title>Massive Medias</title>
     <script type="text/javascript">
-      // SPA redirect for GitHub Pages
-      // Converts the path to a query string so index.html can pick it up
-      var pathSegmentsToKeep = 0;
+      // SPA redirect for GitHub Pages with base path /massivemedias/
+      var pathSegmentsToKeep = 1; // Keep /massivemedias/
       var l = window.location;
       l.replace(
         l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +

@@ -1,4 +1,5 @@
 import { Printer, Sticker, Shirt, FileText, Palette, Code } from 'lucide-react';
+import { img } from '../utils/paths';
 
 const servicesData = {
   'impression-fine-art': {
@@ -6,7 +7,7 @@ const servicesData = {
     icon: Printer,
     title: 'Impression Fine Art',
     subtitle: 'Tirages qualité galerie sur papiers premium',
-    heroImage: '/images/prints/Prints1.jpeg',
+    heroImage: img('/images/prints/Prints1.jpeg'),
     description: `Le Fine Art désigne des impressions photographiques ou artistiques réalisées sur des papiers d'archives haut de gamme (coton, alpha-cellulose) avec des encres pigmentées à haute longévité. Ces tirages respectent les standards des galeries d'art et musées, avec une durée de conservation pouvant dépasser 100 ans.
 
 Chaque impression fait l'objet d'un calibrage colorimétrique rigoureux pour garantir une fidélité optimale aux intentions de l'artiste.`,
@@ -39,14 +40,14 @@ Chaque impression fait l'objet d'un calibrage colorimétrique rigoureux pour gar
       ],
     },
     gallery: [
-      '/images/prints/Prints2.jpeg',
-      '/images/prints/Prints3.jpeg',
-      '/images/prints/Prints7.jpeg',
-      '/images/prints/Prints8.jpeg',
-      '/images/prints/Prints11.jpeg',
-      '/images/prints/Prints14.jpeg',
-      '/images/prints/Prints16.jpeg',
-      '/images/prints/Prints20.jpeg',
+      img('/images/prints/Prints2.jpeg'),
+      img('/images/prints/Prints3.jpeg'),
+      img('/images/prints/Prints7.jpeg'),
+      img('/images/prints/Prints8.jpeg'),
+      img('/images/prints/Prints11.jpeg'),
+      img('/images/prints/Prints14.jpeg'),
+      img('/images/prints/Prints16.jpeg'),
+      img('/images/prints/Prints20.jpeg'),
     ],
     equipment: [
       { name: 'Canon imagePROGRAF PRO-1000', desc: 'Imprimante fine art 12 couleurs, jusqu\'à 17" (A2+). Qualité musée.' },
@@ -64,7 +65,7 @@ Chaque impression fait l'objet d'un calibrage colorimétrique rigoureux pour gar
     icon: Sticker,
     title: 'Stickers Custom',
     subtitle: 'Autocollants découpés sur mesure pour créateurs',
-    heroImage: '/images/stickers/Stickers1.jpeg',
+    heroImage: img('/images/stickers/Stickers1.jpeg'),
     description: `Autocollants découpés sur mesure pour artistes, labels, événements et marques. Service complet incluant la création graphique du visuel si nécessaire.
 
 Découpés à la forme exacte de ton design avec la Silhouette Cameo 5, chaque sticker est fini avec une lamination pour résister à l'eau, aux UV et aux rayures.`,
@@ -109,14 +110,14 @@ Découpés à la forme exacte de ton design avec la Silhouette Cameo 5, chaque s
       ],
     },
     gallery: [
-      '/images/stickers/Stickers2.jpg',
-      '/images/stickers/Stickers3.jpeg',
-      '/images/stickers/Stickers4.jpeg',
-      '/images/stickers/Stickers5.jpeg',
-      '/images/stickers/Stickers9.jpeg',
-      '/images/stickers/Stickers10.jpeg',
-      '/images/stickers/Stickers11.jpeg',
-      '/images/stickers/Stickers15.jpeg',
+      img('/images/stickers/Stickers2.jpg'),
+      img('/images/stickers/Stickers3.jpeg'),
+      img('/images/stickers/Stickers4.jpeg'),
+      img('/images/stickers/Stickers5.jpeg'),
+      img('/images/stickers/Stickers9.jpeg'),
+      img('/images/stickers/Stickers10.jpeg'),
+      img('/images/stickers/Stickers11.jpeg'),
+      img('/images/stickers/Stickers15.jpeg'),
     ],
     equipment: [
       { name: 'Silhouette Cameo 5', desc: 'Découpe de précision jusqu\'à 12" de large. Contour, kiss-cut, die-cut.' },
@@ -134,7 +135,7 @@ Découpés à la forme exacte de ton design avec la Silhouette Cameo 5, chaque s
     icon: Shirt,
     title: 'Sublimation & Merch',
     subtitle: 'T-shirts, mugs, accessoires — ton merch sur mesure',
-    heroImage: '/images/textile/Textile1.jpeg',
+    heroImage: img('/images/textile/Textile1.jpeg'),
     description: `Impression sublimation sur textile et objets. La sublimation produit des couleurs vibrantes et permanentes qui ne craquent pas, ne s'effacent pas et résistent au lavage.
 
 Idéal pour le merch d'artiste, les événements, les cadeaux corporatifs ou tout projet personnalisé. Du t-shirt au thermos en passant par les mugs et les tapis de souris.`,
@@ -170,14 +171,14 @@ Idéal pour le merch d'artiste, les événements, les cadeaux corporatifs ou tou
       ],
     },
     gallery: [
-      '/images/textile/Textile2.jpeg',
-      '/images/textile/Textile3.jpeg',
-      '/images/textile/Textile5.jpeg',
-      '/images/textile/Textile7.jpeg',
-      '/images/textile/Textile9.jpeg',
-      '/images/textile/Textile13.jpeg',
-      '/images/textile/Textile17.jpeg',
-      '/images/textile/Textile20.jpeg',
+      img('/images/textile/Textile2.jpeg'),
+      img('/images/textile/Textile3.jpeg'),
+      img('/images/textile/Textile5.jpeg'),
+      img('/images/textile/Textile7.jpeg'),
+      img('/images/textile/Textile9.jpeg'),
+      img('/images/textile/Textile13.jpeg'),
+      img('/images/textile/Textile17.jpeg'),
+      img('/images/textile/Textile20.jpeg'),
     ],
     equipment: [
       { name: 'Heat Press Bettersub', desc: 'Presse à chaud grand format pour t-shirts, hoodies et textiles.' },
@@ -195,7 +196,7 @@ Idéal pour le merch d'artiste, les événements, les cadeaux corporatifs ou tou
     icon: FileText,
     title: 'Flyers & Cartes',
     subtitle: 'Impression rapide pour événements et promotions',
-    heroImage: '/images/prints/Prints5.jpeg',
+    heroImage: img('/images/prints/Prints5.jpeg'),
     description: `Flyers, cartes postales, cartes d'affaires — tout ce dont tu as besoin pour promouvoir ton événement, ton show ou ton projet. Impression locale rapide, qualité pro.
 
 Parfait pour les artistes, promoteurs d'événements, labels, cafés et commerces du Mile-End et Plateau.`,
@@ -232,14 +233,14 @@ Parfait pour les artistes, promoteurs d'événements, labels, cafés et commerce
       ],
     },
     gallery: [
-      '/images/prints/Prints4.JPG',
-      '/images/prints/Prints6.jpeg',
-      '/images/prints/Prints9.jpeg',
-      '/images/prints/Prints12.jpeg',
-      '/images/prints/Prints15.jpeg',
-      '/images/prints/Prints18.jpeg',
-      '/images/prints/Prints22.jpeg',
-      '/images/prints/Prints25.jpeg',
+      img('/images/prints/Prints4.JPG'),
+      img('/images/prints/Prints6.jpeg'),
+      img('/images/prints/Prints9.jpeg'),
+      img('/images/prints/Prints12.jpeg'),
+      img('/images/prints/Prints15.jpeg'),
+      img('/images/prints/Prints18.jpeg'),
+      img('/images/prints/Prints22.jpeg'),
+      img('/images/prints/Prints25.jpeg'),
     ],
     equipment: [
       { name: 'Canon imagePROGRAF PRO-1000', desc: 'Qualité supérieure même pour les flyers — 12 couleurs pigmentées.' },
@@ -257,7 +258,7 @@ Parfait pour les artistes, promoteurs d'événements, labels, cafés et commerce
     icon: Palette,
     title: 'Design Graphique',
     subtitle: 'Identités visuelles, affiches et créations pour artistes',
-    heroImage: '/images/prints/Prints10.jpeg',
+    heroImage: img('/images/prints/Prints10.jpeg'),
     description: `Service complet de design graphique en partenariat avec Christopher Gagnon, infographiste avec près de 10 ans d'expérience. De la conception de logo à l'identité visuelle complète, en passant par les affiches d'événements et les pochettes d'album.
 
 On connaît la scène créative montréalaise. On sait ce qui marche visuellement pour les artistes, labels, promoteurs et commerces locaux.`,
@@ -291,14 +292,14 @@ On connaît la scène créative montréalaise. On sait ce qui marche visuellemen
       ],
     },
     gallery: [
-      '/images/prints/Prints13.jpeg',
-      '/images/prints/Prints17.jpeg',
-      '/images/prints/Prints19.jpeg',
-      '/images/prints/Prints21.jpeg',
-      '/images/prints/Prints23.jpeg',
-      '/images/prints/Prints24.jpeg',
-      '/images/stickers/Stickers12.jpeg',
-      '/images/stickers/Stickers14.jpeg',
+      img('/images/prints/Prints13.jpeg'),
+      img('/images/prints/Prints17.jpeg'),
+      img('/images/prints/Prints19.jpeg'),
+      img('/images/prints/Prints21.jpeg'),
+      img('/images/prints/Prints23.jpeg'),
+      img('/images/prints/Prints24.jpeg'),
+      img('/images/stickers/Stickers12.jpeg'),
+      img('/images/stickers/Stickers14.jpeg'),
     ],
     team: {
       name: 'Christopher Gagnon',
@@ -317,7 +318,7 @@ On connaît la scène créative montréalaise. On sait ce qui marche visuellemen
     icon: Code,
     title: 'Développement Web',
     subtitle: 'Sites vitrines, e-commerce et landing pages pour créateurs',
-    heroImage: '/images/locale/locale1.jpeg',
+    heroImage: img('/images/locale/locale1.jpeg'),
     description: `Sites web modernes, performants et optimisés SEO pour artistes, créateurs et petites entreprises. Du portfolio d'artiste à la boutique e-commerce complète, on maîtrise les technologies qui comptent.
 
 15+ années d'expérience en développement web. Le fondateur de Massive Medias est programmeur-analyste de formation — ce n'est pas un side-project, c'est notre expertise première.`,
@@ -349,14 +350,14 @@ On connaît la scène créative montréalaise. On sait ce qui marche visuellemen
       ],
     },
     gallery: [
-      '/images/locale/locale2.jpeg',
-      '/images/locale/locale4.jpeg',
-      '/images/locale/locale6.jpeg',
-      '/images/locale/locale12.jpeg',
-      '/images/locale/locale13.jpeg',
-      '/images/locale/locale14.jpeg',
-      '/images/prints/Prints26.jpeg',
-      '/images/stickers/Stickers13.jpeg',
+      img('/images/locale/locale2.jpeg'),
+      img('/images/locale/locale4.jpeg'),
+      img('/images/locale/locale6.jpeg'),
+      img('/images/locale/locale12.jpeg'),
+      img('/images/locale/locale13.jpeg'),
+      img('/images/locale/locale14.jpeg'),
+      img('/images/prints/Prints26.jpeg'),
+      img('/images/stickers/Stickers13.jpeg'),
     ],
     technologies: [
       'React / Next.js',

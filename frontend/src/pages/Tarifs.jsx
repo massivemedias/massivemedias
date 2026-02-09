@@ -2,6 +2,7 @@ import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Printer, Sticker, Palette, Code, Shirt, FileText, Package } from 'lucide-react';
+import { img } from '../utils/paths';
 
 function Tarifs() {
   return (
@@ -14,7 +15,7 @@ function Tarifs() {
       {/* Hero */}
       <section className="relative py-32 overflow-hidden">
         <div className="absolute inset-0">
-          <img src="/images/prints/Prints6.jpeg" alt="" className="w-full h-full object-cover" />
+          <img src={img('/images/prints/Prints6.jpeg')} alt="" className="w-full h-full object-cover" />
           <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(10,10,10,0.92) 0%, rgba(26,0,51,0.95) 100%)' }}></div>
         </div>
         <div className="relative z-10 section-container !py-0 text-center">
@@ -312,7 +313,7 @@ function Tarifs() {
             {/* Package Lancement Artiste */}
             <div className="rounded-2xl overflow-hidden border-2 border-magenta/50 animate-glow-pulse" style={{ background: 'linear-gradient(145deg, #310051, #46015E)' }}>
               <div className="p-2">
-                <img src="/images/prints/Prints3.jpeg" alt="Package Lancement" className="w-full h-40 object-cover rounded-xl" />
+                <img src={img('/images/prints/Prints3.jpeg')} alt="Package Lancement" className="w-full h-40 object-cover rounded-xl" />
               </div>
               <div className="p-8">
                 <div className="text-magenta text-xs font-semibold uppercase tracking-wider mb-2">Le plus populaire</div>
@@ -335,7 +336,7 @@ function Tarifs() {
             {/* Package Événement */}
             <div className="rounded-2xl overflow-hidden border border-purple-main/30" style={{ background: 'linear-gradient(145deg, #310051, #46015E)' }}>
               <div className="p-2">
-                <img src="/images/stickers/Stickers3.jpeg" alt="Package Événement" className="w-full h-40 object-cover rounded-xl" />
+                <img src={img('/images/stickers/Stickers3.jpeg')} alt="Package Événement" className="w-full h-40 object-cover rounded-xl" />
               </div>
               <div className="p-8">
                 <div className="text-electric-purple text-xs font-semibold uppercase tracking-wider mb-2">Événements</div>

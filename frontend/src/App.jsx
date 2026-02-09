@@ -9,9 +9,12 @@ import Portfolio from './pages/Portfolio';
 import Tarifs from './pages/Tarifs';
 import './index.css';
 
+// Base path pour GitHub Pages — changer en '/' avec custom domain
+const basename = import.meta.env.BASE_URL;
+
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={basename}>
       <Routes>
         <Route element={<MainLayout />}>
           <Route index element={<Home />} />

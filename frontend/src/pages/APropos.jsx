@@ -2,6 +2,7 @@ import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
 import { Users, Zap, MapPin, Printer, Scissors, Shirt, Monitor } from 'lucide-react';
 import MassiveLogo from '../assets/massive-logo.svg';
+import { img } from '../utils/paths';
 
 function APropos() {
   const equipment = [
@@ -32,7 +33,7 @@ function APropos() {
       {/* Hero avec photo de l'espace */}
       <section className="relative py-32 overflow-hidden">
         <div className="absolute inset-0">
-          <img src="/images/locale/locale3.jpeg" alt="Espace Versatile" className="w-full h-full object-cover" />
+          <img src={img('/images/locale/locale3.jpeg')} alt="Espace Versatile" className="w-full h-full object-cover" />
           <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(10,10,10,0.85) 0%, rgba(26,0,51,0.95) 100%)' }}></div>
         </div>
 
@@ -81,10 +82,10 @@ function APropos() {
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <img src="/images/locale/locale1.jpeg" alt="Studio Massive Medias" className="rounded-xl w-full h-48 object-cover" />
-              <img src="/images/locale/locale2.jpeg" alt="Espace de travail" className="rounded-xl w-full h-48 object-cover" />
-              <img src="/images/locale/locale4.jpeg" alt="Équipement" className="rounded-xl w-full h-48 object-cover" />
-              <img src="/images/locale/locale5.jpeg" alt="Productions" className="rounded-xl w-full h-48 object-cover" />
+              <img src={img('/images/locale/locale1.jpeg')} alt="Studio Massive Medias" className="rounded-xl w-full h-48 object-cover" />
+              <img src={img('/images/locale/locale2.jpeg')} alt="Espace de travail" className="rounded-xl w-full h-48 object-cover" />
+              <img src={img('/images/locale/locale4.jpeg')} alt="Équipement" className="rounded-xl w-full h-48 object-cover" />
+              <img src={img('/images/locale/locale5.jpeg')} alt="Productions" className="rounded-xl w-full h-48 object-cover" />
             </div>
           </div>
         </motion.div>
@@ -147,7 +148,7 @@ function APropos() {
               style={{ background: 'linear-gradient(145deg, #310051, #46015E)' }}
             >
               <div className="h-64 overflow-hidden">
-                <img src="/images/locale/locale8.jpeg" alt="Michael Sanchez" className="w-full h-full object-cover" />
+                <img src={img('/images/locale/locale8.jpeg')} alt="Michael Sanchez" className="w-full h-full object-cover" />
               </div>
               <div className="p-8">
                 <div className="mb-3 p-2 rounded-lg w-fit" style={{ background: 'rgba(255, 0, 164, 0.1)' }}>
@@ -176,7 +177,7 @@ function APropos() {
               style={{ background: 'linear-gradient(145deg, #310051, #46015E)' }}
             >
               <div className="h-64 overflow-hidden">
-                <img src="/images/locale/locale9.jpeg" alt="Christopher Gagnon" className="w-full h-full object-cover" />
+                <img src={img('/images/locale/locale9.jpeg')} alt="Christopher Gagnon" className="w-full h-full object-cover" />
               </div>
               <div className="p-8">
                 <div className="mb-3 p-2 rounded-lg w-fit" style={{ background: 'rgba(255, 0, 164, 0.1)' }}>
@@ -212,9 +213,9 @@ function APropos() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
             {/* Photos d'équipement */}
             <div className="grid grid-cols-2 gap-4">
-              <img src="/images/locale/locale6.jpeg" alt="Canon Pro-1000" className="rounded-xl w-full h-40 object-cover" />
-              <img src="/images/locale/locale7.jpeg" alt="Cameo 5" className="rounded-xl w-full h-40 object-cover" />
-              <img src="/images/locale/locale10.jpeg" alt="Presses" className="rounded-xl w-full h-40 object-cover col-span-2" />
+              <img src={img('/images/locale/locale6.jpeg')} alt="Canon Pro-1000" className="rounded-xl w-full h-40 object-cover" />
+              <img src={img('/images/locale/locale7.jpeg')} alt="Cameo 5" className="rounded-xl w-full h-40 object-cover" />
+              <img src={img('/images/locale/locale10.jpeg')} alt="Presses" className="rounded-xl w-full h-40 object-cover col-span-2" />
             </div>
             
             {/* Liste d'équipements */}
@@ -251,7 +252,7 @@ function APropos() {
           className="mb-20"
         >
           <div className="rounded-2xl overflow-hidden relative">
-            <img src="/images/locale/locale11.jpeg" alt="Espace Versatile" className="w-full h-80 object-cover" />
+            <img src={img('/images/locale/locale11.jpeg')} alt="Espace Versatile" className="w-full h-80 object-cover" />
             <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, transparent 0%, rgba(26,0,51,0.95) 100%)' }}></div>
             <div className="absolute bottom-0 left-0 right-0 p-8 md:p-12">
               <div className="flex items-center gap-2 mb-3">
