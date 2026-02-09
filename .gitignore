@@ -1,0 +1,55 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+.vite/
+*.local
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Strapi
+.cache/
+.strapi/
+*.db
+*.db-*
+
+# Old site backup
+_old/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
+
+# Coverage
+coverage/
+
+# Large media files (videos)
+*.mp4
+*.mov
+*.avi
+*.flv
+*.wmv
+*.MOV
+
+# Backend (not deployed to GitHub Pages)
+backend/node_modules/
+backend/.cache/
+backend/.strapi/
+backend/build/
+backend/*.db
+backend/*.db-*
