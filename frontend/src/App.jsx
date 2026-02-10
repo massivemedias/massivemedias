@@ -7,10 +7,20 @@ import Contact from './pages/Contact';
 import APropos from './pages/APropos';
 import Portfolio from './pages/Portfolio';
 import Tarifs from './pages/Tarifs';
+import { useLang } from './i18n/LanguageContext';
 import './index.css';
 
 // Base path pour GitHub Pages — changer en '/' avec custom domain
 const basename = import.meta.env.BASE_URL;
+
+function ComingSoon({ section }) {
+  const { t } = useLang();
+  return (
+    <div className="section-container pt-32 text-white text-center">
+      <h1 className="text-4xl font-heading">{section} — {t('common.comingSoon')}</h1>
+    </div>
+  );
+}
 
 function App() {
   return (
@@ -26,9 +36,9 @@ function App() {
           <Route path="/a-propos" element={<APropos />} />
           
           {/* Routes à venir */}
-          <Route path="/boutique" element={<div className="section-container pt-32 text-white text-center"><h1 className="text-4xl font-heading">Boutique — Bientôt disponible</h1></div>} />
-          <Route path="/boutique/:slug" element={<div className="section-container pt-32 text-white text-center"><h1 className="text-4xl font-heading">Produit — Bientôt disponible</h1></div>} />
-          <Route path="/panier" element={<div className="section-container pt-32 text-white text-center"><h1 className="text-4xl font-heading">Panier — Bientôt disponible</h1></div>} />
+          <Route path="/boutique" element={<ComingSoon section="Boutique" />} />
+          <Route path="/boutique/:slug" element={<ComingSoon section="Product" />} />
+          <Route path="/panier" element={<ComingSoon section="Cart" />} />
         </Route>
       </Routes>
     </BrowserRouter>

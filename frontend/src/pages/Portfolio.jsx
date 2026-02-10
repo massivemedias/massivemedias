@@ -2,119 +2,192 @@ import { Helmet } from 'react-helmet-async';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 import { img, thumb } from '../utils/paths';
-
-const categories = [
-  { id: 'all', label: 'Tout' },
-  { id: 'prints', label: 'Impressions' },
-  { id: 'stickers', label: 'Stickers' },
-  { id: 'textile', label: 'Textile & Merch' },
-  { id: 'locale', label: 'Studio' },
-];
+import { useLang } from '../i18n/LanguageContext';
 
 /* Paths bruts — résolus au rendu via thumb() (grille) et img() (lightbox) */
 const projects = [
   // Prints
-  { path: '/images/prints/Prints1.jpeg', title: 'Tirage Fine Art', category: 'prints' },
-  { path: '/images/prints/Prints2.jpeg', title: 'Affiche photographique', category: 'prints' },
-  { path: '/images/prints/Prints3.jpeg', title: 'Print galerie', category: 'prints' },
-  { path: '/images/prints/Prints4.JPG', title: 'Poster artistique', category: 'prints' },
-  { path: '/images/prints/Prints5.jpeg', title: 'Impression sur Hahnemühle', category: 'prints' },
-  { path: '/images/prints/Prints6.jpeg', title: 'Tirage photo pro', category: 'prints' },
-  { path: '/images/prints/Prints7.jpeg', title: 'Fine art Canon Pro-1000', category: 'prints' },
-  { path: '/images/prints/Prints8.jpeg', title: 'Affiche événement', category: 'prints' },
-  { path: '/images/prints/Prints9.jpeg', title: 'Impression grand format', category: 'prints' },
-  { path: '/images/prints/Prints10.jpeg', title: 'Print premium', category: 'prints' },
-  { path: '/images/prints/Prints11.jpeg', title: 'Tirage d\'exposition', category: 'prints' },
-  { path: '/images/prints/Prints12.jpeg', title: 'Poster collector', category: 'prints' },
-  { path: '/images/prints/Prints13.jpeg', title: 'Fine art encadré', category: 'prints' },
-  { path: '/images/prints/Prints14.jpeg', title: 'Photo d\'art', category: 'prints' },
-  { path: '/images/prints/Prints15.jpeg', title: 'Impression Ilford', category: 'prints' },
-  { path: '/images/prints/Prints16.jpeg', title: 'Tirage couleur', category: 'prints' },
-  { path: '/images/prints/Prints17.jpeg', title: 'Affiche promo', category: 'prints' },
-  { path: '/images/prints/Prints18.jpeg', title: 'Print artistique', category: 'prints' },
-  { path: '/images/prints/Prints19.jpeg', title: 'Impression sur papier coton', category: 'prints' },
-  { path: '/images/prints/Prints20.jpeg', title: 'Poster grand format', category: 'prints' },
-  { path: '/images/prints/Prints21.jpeg', title: 'Fine art galerie', category: 'prints' },
-  { path: '/images/prints/Prints22.jpeg', title: 'Tirage photographique', category: 'prints' },
-  { path: '/images/prints/Prints23.jpeg', title: 'Print limited edition', category: 'prints' },
-  { path: '/images/prints/Prints24.jpeg', title: 'Impression professionnelle', category: 'prints' },
-  { path: '/images/prints/Prints25.jpeg', title: 'Affiche artistique', category: 'prints' },
-  { path: '/images/prints/Prints26.jpeg', title: 'Tirage premium', category: 'prints' },
+  { path: '/images/prints/Prints1.jpeg', titleKey: 'fineArtPrint', category: 'prints' },
+  { path: '/images/prints/Prints2.jpeg', titleKey: 'photoGraphicPoster', category: 'prints' },
+  { path: '/images/prints/Prints3.jpeg', titleKey: 'galleryPrint', category: 'prints' },
+  { path: '/images/prints/Prints4.JPG', titleKey: 'artisticPoster', category: 'prints' },
+  { path: '/images/prints/Prints5.jpeg', titleKey: 'fineArtPaper', category: 'prints' },
+  { path: '/images/prints/Prints6.jpeg', titleKey: 'proPhotoPrint', category: 'prints' },
+  { path: '/images/prints/Prints7.jpeg', titleKey: 'largeFormatFineArt', category: 'prints' },
+  { path: '/images/prints/Prints8.jpeg', titleKey: 'eventPoster', category: 'prints' },
+  { path: '/images/prints/Prints9.jpeg', titleKey: 'largeFormatPrint', category: 'prints' },
+  { path: '/images/prints/Prints10.jpeg', titleKey: 'premiumPrint', category: 'prints' },
+  { path: '/images/prints/Prints11.jpeg', titleKey: 'exhibitionPrint', category: 'prints' },
+  { path: '/images/prints/Prints12.jpeg', titleKey: 'collectorPoster', category: 'prints' },
+  { path: '/images/prints/Prints13.jpeg', titleKey: 'framedFineArt', category: 'prints' },
+  { path: '/images/prints/Prints14.jpeg', titleKey: 'artPhoto', category: 'prints' },
+  { path: '/images/prints/Prints15.jpeg', titleKey: 'premiumPaperPrint', category: 'prints' },
+  { path: '/images/prints/Prints16.jpeg', titleKey: 'colorPrint', category: 'prints' },
+  { path: '/images/prints/Prints17.jpeg', titleKey: 'promoPoster', category: 'prints' },
+  { path: '/images/prints/Prints18.jpeg', titleKey: 'artisticPrint', category: 'prints' },
+  { path: '/images/prints/Prints19.jpeg', titleKey: 'cottonPaperPrint', category: 'prints' },
+  { path: '/images/prints/Prints20.jpeg', titleKey: 'largeFormatPoster', category: 'prints' },
+  { path: '/images/prints/Prints21.jpeg', titleKey: 'galleryFineArt', category: 'prints' },
+  { path: '/images/prints/Prints22.jpeg', titleKey: 'photographicPrint', category: 'prints' },
+  { path: '/images/prints/Prints23.jpeg', titleKey: 'limitedEdition', category: 'prints' },
+  { path: '/images/prints/Prints24.jpeg', titleKey: 'proPrint', category: 'prints' },
+  { path: '/images/prints/Prints25.jpeg', titleKey: 'artisticPoster2', category: 'prints' },
+  { path: '/images/prints/Prints26.jpeg', titleKey: 'premiumPrint2', category: 'prints' },
   // Stickers
-  { path: '/images/stickers/Stickers1.jpeg', title: 'Stickers holographiques', category: 'stickers' },
-  { path: '/images/stickers/Stickers2.jpg', title: 'Die-cut personnalisé', category: 'stickers' },
-  { path: '/images/stickers/Stickers3.jpeg', title: 'Stickers vinyle matte', category: 'stickers' },
-  { path: '/images/stickers/Stickers4.jpeg', title: 'Autocollants label', category: 'stickers' },
-  { path: '/images/stickers/Stickers5.jpeg', title: 'Stickers glossy', category: 'stickers' },
-  { path: '/images/stickers/Stickers9.jpeg', title: 'Stickers transparent', category: 'stickers' },
-  { path: '/images/stickers/Stickers10.jpeg', title: 'Pack stickers custom', category: 'stickers' },
-  { path: '/images/stickers/Stickers11.jpeg', title: 'Die-cut contour', category: 'stickers' },
-  { path: '/images/stickers/Stickers12.jpeg', title: 'Stickers événement', category: 'stickers' },
-  { path: '/images/stickers/Stickers13.jpeg', title: 'Stickers promo', category: 'stickers' },
-  { path: '/images/stickers/Stickers14.jpeg', title: 'Autocollants sur mesure', category: 'stickers' },
-  { path: '/images/stickers/Stickers15.jpeg', title: 'Stickers holographiques premium', category: 'stickers' },
+  { path: '/images/stickers/Stickers1.jpeg', titleKey: 'holoStickers', category: 'stickers' },
+  { path: '/images/stickers/Stickers2.jpg', titleKey: 'customDieCut', category: 'stickers' },
+  { path: '/images/stickers/Stickers3.jpeg', titleKey: 'matteVinyl', category: 'stickers' },
+  { path: '/images/stickers/Stickers4.jpeg', titleKey: 'labelStickers', category: 'stickers' },
+  { path: '/images/stickers/Stickers5.jpeg', titleKey: 'glossyStickers', category: 'stickers' },
+  { path: '/images/stickers/Stickers9.jpeg', titleKey: 'clearStickers', category: 'stickers' },
+  { path: '/images/stickers/Stickers10.jpeg', titleKey: 'customPack', category: 'stickers' },
+  { path: '/images/stickers/Stickers11.jpeg', titleKey: 'contourDieCut', category: 'stickers' },
+  { path: '/images/stickers/Stickers12.jpeg', titleKey: 'eventStickers', category: 'stickers' },
+  { path: '/images/stickers/Stickers13.jpeg', titleKey: 'promoStickers', category: 'stickers' },
+  { path: '/images/stickers/Stickers14.jpeg', titleKey: 'customStickers', category: 'stickers' },
+  { path: '/images/stickers/Stickers15.jpeg', titleKey: 'premiumHolo', category: 'stickers' },
   // Textile
-  { path: '/images/textile/Textile1.jpeg', title: 'T-shirt sublimation', category: 'textile' },
-  { path: '/images/textile/Textile2.jpeg', title: 'Hoodie custom', category: 'textile' },
-  { path: '/images/textile/Textile3.jpeg', title: 'Merch artiste', category: 'textile' },
-  { path: '/images/textile/Textile4.jpeg', title: 'Mug personnalisé', category: 'textile' },
-  { path: '/images/textile/Textile5.jpeg', title: 'Thermos sublimation', category: 'textile' },
-  { path: '/images/textile/Textile6.jpeg', title: 'Tapis de souris', category: 'textile' },
-  { path: '/images/textile/Textile7.jpeg', title: 'Porte-clés sublimation', category: 'textile' },
-  { path: '/images/textile/Textile8.jpeg', title: 'T-shirt all-over print', category: 'textile' },
-  { path: '/images/textile/Textile9.jpeg', title: 'Accessoire custom', category: 'textile' },
-  { path: '/images/textile/Textile10.jpeg', title: 'Collection merch', category: 'textile' },
-  { path: '/images/textile/Textile11.jpeg', title: 'Sublimation textile', category: 'textile' },
-  { path: '/images/textile/Textile13.jpeg', title: 'Gobelet personnalisé', category: 'textile' },
-  { path: '/images/textile/Textile14.jpeg', title: 'Vêtement imprimé', category: 'textile' },
-  { path: '/images/textile/Textile15.jpeg', title: 'Merch événement', category: 'textile' },
-  { path: '/images/textile/Textile16.jpeg', title: 'Article promo', category: 'textile' },
-  { path: '/images/textile/Textile17.jpeg', title: 'Casquette sublimation', category: 'textile' },
-  { path: '/images/textile/Textile18.jpeg', title: 'Textile personnalisé', category: 'textile' },
-  { path: '/images/textile/Textile19.jpeg', title: 'Poche sublimation', category: 'textile' },
-  { path: '/images/textile/Textile20.jpeg', title: 'Chandail custom', category: 'textile' },
-  { path: '/images/textile/Textile21.jpeg', title: 'Objet promo', category: 'textile' },
-  { path: '/images/textile/Textile22.jpeg', title: 'Collection textile', category: 'textile' },
-  { path: '/images/textile/Textile23.jpeg', title: 'Sublimation drinkware', category: 'textile' },
-  { path: '/images/textile/Textile24.jpeg', title: 'Merch personnalisé', category: 'textile' },
-  { path: '/images/textile/Textile25.jpeg', title: 'Article sur mesure', category: 'textile' },
+  { path: '/images/textile/Textile1.jpeg', titleKey: 'subTshirt', category: 'textile' },
+  { path: '/images/textile/Textile2.jpeg', titleKey: 'customHoodie', category: 'textile' },
+  { path: '/images/textile/Textile3.jpeg', titleKey: 'artistMerch', category: 'textile' },
+  { path: '/images/textile/Textile4.jpeg', titleKey: 'customMug', category: 'textile' },
+  { path: '/images/textile/Textile5.jpeg', titleKey: 'subTumbler', category: 'textile' },
+  { path: '/images/textile/Textile6.jpeg', titleKey: 'mousepad', category: 'textile' },
+  { path: '/images/textile/Textile7.jpeg', titleKey: 'subKeychain', category: 'textile' },
+  { path: '/images/textile/Textile8.jpeg', titleKey: 'allOverTshirt', category: 'textile' },
+  { path: '/images/textile/Textile9.jpeg', titleKey: 'customAccessory', category: 'textile' },
+  { path: '/images/textile/Textile10.jpeg', titleKey: 'merchCollection', category: 'textile' },
+  { path: '/images/textile/Textile11.jpeg', titleKey: 'textileSub', category: 'textile' },
+  { path: '/images/textile/Textile13.jpeg', titleKey: 'customTumbler', category: 'textile' },
+  { path: '/images/textile/Textile14.jpeg', titleKey: 'printedClothing', category: 'textile' },
+  { path: '/images/textile/Textile15.jpeg', titleKey: 'eventMerch', category: 'textile' },
+  { path: '/images/textile/Textile16.jpeg', titleKey: 'promoItem', category: 'textile' },
+  { path: '/images/textile/Textile17.jpeg', titleKey: 'subCap', category: 'textile' },
+  { path: '/images/textile/Textile18.jpeg', titleKey: 'customTextile', category: 'textile' },
+  { path: '/images/textile/Textile19.jpeg', titleKey: 'subPouch', category: 'textile' },
+  { path: '/images/textile/Textile20.jpeg', titleKey: 'customSweater', category: 'textile' },
+  { path: '/images/textile/Textile21.jpeg', titleKey: 'promoObject', category: 'textile' },
+  { path: '/images/textile/Textile22.jpeg', titleKey: 'textileCollection', category: 'textile' },
+  { path: '/images/textile/Textile23.jpeg', titleKey: 'drinkwareSub', category: 'textile' },
+  { path: '/images/textile/Textile24.jpeg', titleKey: 'personalizedMerch', category: 'textile' },
+  { path: '/images/textile/Textile25.jpeg', titleKey: 'customItem', category: 'textile' },
   // Locale / studio
-  { path: '/images/locale/locale1.jpeg', title: 'Espace de travail', category: 'locale' },
-  { path: '/images/locale/locale2.jpeg', title: 'Studio production', category: 'locale' },
-  { path: '/images/locale/locale3.jpeg', title: 'Versatile espace', category: 'locale' },
-  { path: '/images/locale/locale4.jpeg', title: 'Zone impression', category: 'locale' },
-  { path: '/images/locale/locale5.jpeg', title: 'Atelier', category: 'locale' },
-  { path: '/images/locale/locale6.jpeg', title: 'Canon Pro-1000', category: 'locale' },
-  { path: '/images/locale/locale7.jpeg', title: 'Silhouette Cameo 5', category: 'locale' },
-  { path: '/images/locale/locale8.jpeg', title: 'Espace collab', category: 'locale' },
-  { path: '/images/locale/locale9.jpeg', title: 'Vue studio', category: 'locale' },
-  { path: '/images/locale/locale10.jpeg', title: 'Presses sublimation', category: 'locale' },
-  { path: '/images/locale/locale11.jpeg', title: 'Mile-End', category: 'locale' },
-  { path: '/images/locale/locale12.jpeg', title: 'Production', category: 'locale' },
-  { path: '/images/locale/locale13.jpeg', title: 'Espace Versatile', category: 'locale' },
-  { path: '/images/locale/locale14.jpeg', title: 'Atelier créatif', category: 'locale' },
+  { path: '/images/locale/locale1.jpeg', titleKey: 'workspace', category: 'locale' },
+  { path: '/images/locale/locale2.jpeg', titleKey: 'productionStudio', category: 'locale' },
+  { path: '/images/locale/locale3.jpeg', titleKey: 'versatileSpace', category: 'locale' },
+  { path: '/images/locale/locale4.jpeg', titleKey: 'printZone', category: 'locale' },
+  { path: '/images/locale/locale5.jpeg', titleKey: 'workshop', category: 'locale' },
+  { path: '/images/locale/locale6.jpeg', titleKey: 'largeFormatPrinter', category: 'locale' },
+  { path: '/images/locale/locale7.jpeg', titleKey: 'proCuttingGear', category: 'locale' },
+  { path: '/images/locale/locale8.jpeg', titleKey: 'collabSpace', category: 'locale' },
+  { path: '/images/locale/locale9.jpeg', titleKey: 'studioView', category: 'locale' },
+  { path: '/images/locale/locale10.jpeg', titleKey: 'subPresses', category: 'locale' },
+  { path: '/images/locale/locale11.jpeg', titleKey: 'mileEnd', category: 'locale' },
+  { path: '/images/locale/locale12.jpeg', titleKey: 'production', category: 'locale' },
+  { path: '/images/locale/locale13.jpeg', titleKey: 'versatileSpace2', category: 'locale' },
+  { path: '/images/locale/locale14.jpeg', titleKey: 'creativeWorkshop', category: 'locale' },
 ];
 
+// Titres par langue
+const projectTitles = {
+  fr: {
+    fineArtPrint: 'Tirage Fine Art', photoGraphicPoster: 'Affiche photographique', galleryPrint: 'Print galerie',
+    artisticPoster: 'Poster artistique', fineArtPaper: 'Impression sur papier fine art', proPhotoPrint: 'Tirage photo pro',
+    largeFormatFineArt: 'Impression fine art grand format', eventPoster: 'Affiche événement',
+    largeFormatPrint: 'Impression grand format', premiumPrint: 'Print premium', exhibitionPrint: "Tirage d'exposition",
+    collectorPoster: 'Poster collector', framedFineArt: 'Fine art encadré', artPhoto: "Photo d'art",
+    premiumPaperPrint: 'Impression papier premium', colorPrint: 'Tirage couleur', promoPoster: 'Affiche promo',
+    artisticPrint: 'Print artistique', cottonPaperPrint: 'Impression sur papier coton',
+    largeFormatPoster: 'Poster grand format', galleryFineArt: 'Fine art galerie',
+    photographicPrint: 'Tirage photographique', limitedEdition: 'Print limited edition',
+    proPrint: 'Impression professionnelle', artisticPoster2: 'Affiche artistique', premiumPrint2: 'Tirage premium',
+    holoStickers: 'Stickers holographiques', customDieCut: 'Die-cut personnalisé',
+    matteVinyl: 'Stickers vinyle matte', labelStickers: 'Autocollants label', glossyStickers: 'Stickers glossy',
+    clearStickers: 'Stickers transparent', customPack: 'Pack stickers custom', contourDieCut: 'Die-cut contour',
+    eventStickers: 'Stickers événement', promoStickers: 'Stickers promo',
+    customStickers: 'Autocollants sur mesure', premiumHolo: 'Stickers holographiques premium',
+    subTshirt: 'T-shirt sublimation', customHoodie: 'Hoodie custom', artistMerch: 'Merch artiste',
+    customMug: 'Mug personnalisé', subTumbler: 'Thermos sublimation', mousepad: 'Tapis de souris',
+    subKeychain: 'Porte-clés sublimation', allOverTshirt: 'T-shirt all-over print',
+    customAccessory: 'Accessoire custom', merchCollection: 'Collection merch',
+    textileSub: 'Sublimation textile', customTumbler: 'Gobelet personnalisé',
+    printedClothing: 'Vêtement imprimé', eventMerch: 'Merch événement', promoItem: 'Article promo',
+    subCap: 'Casquette sublimation', customTextile: 'Textile personnalisé',
+    subPouch: 'Poche sublimation', customSweater: 'Chandail custom', promoObject: 'Objet promo',
+    textileCollection: 'Collection textile', drinkwareSub: 'Sublimation drinkware',
+    personalizedMerch: 'Merch personnalisé', customItem: 'Article sur mesure',
+    workspace: 'Espace de travail', productionStudio: 'Studio production', versatileSpace: 'Versatile espace',
+    printZone: 'Zone impression', workshop: 'Atelier', largeFormatPrinter: 'Imprimante grand format',
+    proCuttingGear: 'Matériel de découpe pro', collabSpace: 'Espace collab', studioView: 'Vue studio',
+    subPresses: 'Presses sublimation', mileEnd: 'Mile-End', production: 'Production',
+    versatileSpace2: 'Espace Versatile', creativeWorkshop: 'Atelier créatif',
+  },
+  en: {
+    fineArtPrint: 'Fine Art Print', photoGraphicPoster: 'Photographic Poster', galleryPrint: 'Gallery Print',
+    artisticPoster: 'Artistic Poster', fineArtPaper: 'Fine Art Paper Print', proPhotoPrint: 'Pro Photo Print',
+    largeFormatFineArt: 'Large Format Fine Art', eventPoster: 'Event Poster',
+    largeFormatPrint: 'Large Format Print', premiumPrint: 'Premium Print', exhibitionPrint: 'Exhibition Print',
+    collectorPoster: 'Collector Poster', framedFineArt: 'Framed Fine Art', artPhoto: 'Art Photo',
+    premiumPaperPrint: 'Premium Paper Print', colorPrint: 'Color Print', promoPoster: 'Promo Poster',
+    artisticPrint: 'Artistic Print', cottonPaperPrint: 'Cotton Paper Print',
+    largeFormatPoster: 'Large Format Poster', galleryFineArt: 'Gallery Fine Art',
+    photographicPrint: 'Photographic Print', limitedEdition: 'Limited Edition Print',
+    proPrint: 'Professional Print', artisticPoster2: 'Artistic Poster', premiumPrint2: 'Premium Print',
+    holoStickers: 'Holographic Stickers', customDieCut: 'Custom Die-Cut',
+    matteVinyl: 'Matte Vinyl Stickers', labelStickers: 'Label Stickers', glossyStickers: 'Glossy Stickers',
+    clearStickers: 'Clear Stickers', customPack: 'Custom Sticker Pack', contourDieCut: 'Contour Die-Cut',
+    eventStickers: 'Event Stickers', promoStickers: 'Promo Stickers',
+    customStickers: 'Custom Stickers', premiumHolo: 'Premium Holographic Stickers',
+    subTshirt: 'Sublimation T-Shirt', customHoodie: 'Custom Hoodie', artistMerch: 'Artist Merch',
+    customMug: 'Custom Mug', subTumbler: 'Sublimation Tumbler', mousepad: 'Mousepad',
+    subKeychain: 'Sublimation Keychain', allOverTshirt: 'All-Over Print T-Shirt',
+    customAccessory: 'Custom Accessory', merchCollection: 'Merch Collection',
+    textileSub: 'Textile Sublimation', customTumbler: 'Custom Tumbler',
+    printedClothing: 'Printed Clothing', eventMerch: 'Event Merch', promoItem: 'Promo Item',
+    subCap: 'Sublimation Cap', customTextile: 'Custom Textile',
+    subPouch: 'Sublimation Pouch', customSweater: 'Custom Sweater', promoObject: 'Promo Object',
+    textileCollection: 'Textile Collection', drinkwareSub: 'Drinkware Sublimation',
+    personalizedMerch: 'Personalized Merch', customItem: 'Custom Item',
+    workspace: 'Workspace', productionStudio: 'Production Studio', versatileSpace: 'Versatile Space',
+    printZone: 'Print Zone', workshop: 'Workshop', largeFormatPrinter: 'Large Format Printer',
+    proCuttingGear: 'Pro Cutting Gear', collabSpace: 'Collab Space', studioView: 'Studio View',
+    subPresses: 'Sublimation Presses', mileEnd: 'Mile-End', production: 'Production',
+    versatileSpace2: 'Versatile Space', creativeWorkshop: 'Creative Workshop',
+  },
+};
+
 function Portfolio() {
+  const { lang, t } = useLang();
   const [activeCategory, setActiveCategory] = useState('all');
   const [lightboxImage, setLightboxImage] = useState(null);
+
+  const cats = t('portfolioPage.categories');
+  const categories = [
+    { id: 'all', label: cats.all },
+    { id: 'prints', label: cats.prints },
+    { id: 'stickers', label: cats.stickers },
+    { id: 'textile', label: cats.textile },
+    { id: 'locale', label: cats.locale },
+  ];
 
   const filteredProjects = activeCategory === 'all'
     ? projects
     : projects.filter(p => p.category === activeCategory);
 
+  const getTitle = (key) => projectTitles[lang]?.[key] || projectTitles.fr[key] || key;
+
   return (
     <>
       <Helmet>
-        <title>Portfolio — Massive Medias</title>
-        <meta name="description" content="Galerie de nos réalisations : impressions fine art, stickers, merch textile, design graphique et plus." />
+        <title>{t('portfolioPage.seo.title')}</title>
+        <meta name="description" content={t('portfolioPage.seo.description')} />
       </Helmet>
 
       {/* Hero */}
       <section className="relative py-32 overflow-hidden">
         <div className="absolute inset-0">
           <img src={thumb('/images/prints/Prints2.jpeg')} alt="" className="w-full h-full object-cover" />
-          <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(45,0,89,0.88) 0%, rgba(58,0,112,0.95) 100%)' }}></div>
+          <div className="absolute inset-0" style={{ background: 'var(--hero-gradient)' }}></div>
         </div>
         <div className="relative z-10 section-container !py-0 text-center">
           <motion.div
@@ -123,10 +196,10 @@ function Portfolio() {
             transition={{ duration: 0.8 }}
           >
             <h1 className="text-5xl md:text-7xl font-heading font-bold text-white mb-6">
-              Portfolio
+              {t('portfolioPage.hero.title')}
             </h1>
-            <p className="text-xl md:text-2xl text-grey-light max-w-3xl mx-auto">
-              Un aperçu de nos réalisations. Chaque projet est unique, chaque détail compte.
+            <p className="text-xl md:text-2xl text-white/70 max-w-3xl mx-auto">
+              {t('portfolioPage.hero.subtitle')}
             </p>
           </motion.div>
         </div>
@@ -142,15 +215,13 @@ function Portfolio() {
               className="px-6 py-2.5 rounded-full font-semibold text-sm transition-all duration-300"
               style={{
                 background: activeCategory === cat.id
-                  ? 'linear-gradient(135deg, #A348FE, #FF52A0)'
-                  : 'rgba(255, 255, 255, 0.06)',
-                color: '#FFFFFF',
+                  ? 'linear-gradient(135deg, #8100D1, #FF52A0)'
+                  : 'var(--bg-glass)',
+                color: activeCategory === cat.id ? '#FFFFFF' : 'var(--color-heading)',
                 border: activeCategory === cat.id
                   ? 'none'
-                  : '1px solid rgba(70, 1, 94, 0.5)',
-                boxShadow: activeCategory === cat.id
-                  ? 'none'
-                  : 'none',
+                  : '1px solid var(--bg-card-border)',
+                boxShadow: 'none',
               }}
             >
               {cat.label}
@@ -160,7 +231,7 @@ function Portfolio() {
 
         {/* Compteur */}
         <p className="text-center text-grey-muted mb-8">
-          {filteredProjects.length} projet{filteredProjects.length > 1 ? 's' : ''}
+          {filteredProjects.length} {filteredProjects.length > 1 ? t('common.projectsPlural') : t('common.projects')}
         </p>
 
         {/* Grille */}
@@ -183,13 +254,13 @@ function Portfolio() {
               >
                 <img
                   src={thumb(project.path)}
-                  alt={project.title}
+                  alt={getTitle(project.titleKey)}
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   loading="lazy"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-purple-dark/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                  <p className="text-white font-heading font-bold text-sm">{project.title}</p>
+                  <p className="text-white font-heading font-bold text-sm">{getTitle(project.titleKey)}</p>
                 </div>
               </motion.div>
             ))}
@@ -218,11 +289,11 @@ function Portfolio() {
             >
               <img
                 src={img(lightboxImage.path)}
-                alt={lightboxImage.title}
+                alt={getTitle(lightboxImage.titleKey)}
                 className="w-full h-full object-contain rounded-lg"
               />
-              <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-purple-dark/80 to-transparent rounded-b-lg">
-                <h3 className="text-white font-heading font-bold text-xl">{lightboxImage.title}</h3>
+              <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/80 to-transparent rounded-b-lg">
+                <h3 className="text-white font-heading font-bold text-xl">{getTitle(lightboxImage.titleKey)}</h3>
               </div>
               <button
                 onClick={() => setLightboxImage(null)}

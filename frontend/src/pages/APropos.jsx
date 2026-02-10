@@ -3,38 +3,29 @@ import { motion } from 'framer-motion';
 import { Users, Zap, MapPin, Printer, Scissors, Shirt, Monitor } from 'lucide-react';
 import MassiveLogo from '../assets/massive-logo.svg';
 import { img, thumb } from '../utils/paths';
+import { useLang } from '../i18n/LanguageContext';
+
+const equipmentIcons = [Printer, Scissors, Shirt, Shirt, Monitor, Printer, Monitor];
 
 function APropos() {
-  const equipment = [
-    { name: 'Canon imagePROGRAF PRO-1000', desc: 'Impression fine art 12 couleurs, jusqu\'à 17"', icon: Printer },
-    { name: 'Silhouette Cameo 5', desc: 'Découpe stickers et vinyle de précision', icon: Scissors },
-    { name: 'Heat Press Bettersub', desc: 'Presse à chaud sublimation grand format', icon: Shirt },
-    { name: 'Heat Press Cricut', desc: 'Presse à chaud compacte polyvalente', icon: Shirt },
-    { name: 'Lamineuse VEVOR 25"', desc: 'Lamination et finition professionnelle', icon: Monitor },
-    { name: 'Epson ET-2850', desc: 'Impression courante et épreuves', icon: Printer },
-    { name: 'MacBook Pro M1 + M4', desc: 'Production, design et développement', icon: Monitor },
-  ];
+  const { t } = useLang();
 
-  const timeline = [
-    { year: '2018-2019', event: 'Début impression et matériel promotionnel pour la scène musicale' },
-    { year: '2020', event: 'Massive Medias devient activité structurée. Lancement officiel.' },
-    { year: '2023-2024', event: 'Acquisition équipements professionnels — Canon Pro-1000, Cameo 5, presses sublimation' },
-    { year: '2025', event: 'Enregistrement officiel au REQ. Recentrage: prints, stickers, graphisme, web' },
-    { year: '2026', event: 'Incorporation provinciale prévue. Lancement Merch-as-a-Service.' },
-  ];
+  const equipmentItems = t('aboutPage.equipment.items');
+  const timelineEvents = t('aboutPage.timeline.events');
+  const historyParagraphs = t('aboutPage.history.paragraphs');
 
   return (
     <>
       <Helmet>
-        <title>À propos — Massive Medias</title>
-        <meta name="description" content="Studio de production créative fondé en 2020 à Montréal. L'équipe, l'espace et notre histoire." />
+        <title>{t('aboutPage.seo.title')}</title>
+        <meta name="description" content={t('aboutPage.seo.description')} />
       </Helmet>
 
       {/* Hero avec photo de l'espace */}
       <section className="relative py-32 overflow-hidden">
         <div className="absolute inset-0">
           <img src={thumb('/images/locale/locale3.jpeg')} alt="Espace Versatile" className="w-full h-full object-cover" />
-          <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(45,0,89,0.88) 0%, rgba(58,0,112,0.95) 100%)' }}></div>
+          <div className="absolute inset-0" style={{ background: 'var(--hero-gradient)' }}></div>
         </div>
 
         <div className="relative z-10 section-container !py-0 text-center">
@@ -45,10 +36,10 @@ function APropos() {
             className="max-w-4xl mx-auto"
           >
             <h1 className="text-5xl md:text-7xl font-heading font-bold text-white mb-6">
-              À propos
+              {t('aboutPage.hero.title')}
             </h1>
-            <p className="text-xl md:text-2xl text-grey-light">
-              Un studio créatif ancré dans le Mile-End, au cœur de la scène artistique montréalaise.
+            <p className="text-xl md:text-2xl text-white/70">
+              {t('aboutPage.hero.subtitle')}
             </p>
           </motion.div>
         </div>
@@ -67,18 +58,12 @@ function APropos() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
               <h2 className="text-4xl font-heading font-bold text-gradient mb-6">
-                L'histoire
+                {t('aboutPage.history.title')}
               </h2>
               <div className="text-grey-light space-y-4 text-lg leading-relaxed">
-                <p>
-                  Massive Medias est un studio de production créative établi depuis 2020 dans le Mile-End, au cœur de l'écosystème artistique montréalais.
-                </p>
-                <p>
-                  L'entreprise offre quatre services intégrés destinés aux artistes visuels, photographes, musiciens et créateurs indépendants : impressions fine art, stickers personnalisés, design graphique et développement web.
-                </p>
-                <p>
-                  Notre philosophie : offrir un service local, personnalisé et de qualité professionnelle, sans les délais et les complications des services en ligne. Pas de shipping, pas d'attente. Pick-up au Mile-End ou livraison locale.
-                </p>
+                {historyParagraphs.map((p, i) => (
+                  <p key={i}>{p}</p>
+                ))}
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -99,13 +84,12 @@ function APropos() {
           className="mb-20"
         >
           <h2 className="text-4xl font-heading font-bold text-gradient mb-10 text-center">
-            Notre parcours
+            {t('aboutPage.timeline.title')}
           </h2>
           <div className="relative max-w-3xl mx-auto">
-            {/* Ligne verticale */}
             <div className="absolute left-8 top-0 bottom-0 w-px bg-gradient-to-b from-magenta to-electric-purple"></div>
             
-            {timeline.map((item, index) => (
+            {timelineEvents.map((item, index) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, x: -20 }}
@@ -114,7 +98,7 @@ function APropos() {
                 viewport={{ once: true }}
                 className="flex items-start gap-6 mb-8 relative"
               >
-                <div className="w-16 h-16 rounded-full flex items-center justify-center flex-shrink-0 z-10 border-2 border-magenta" style={{ background: 'rgba(255, 255, 255, 0.06)' }}>
+                <div className="w-16 h-16 rounded-full flex items-center justify-center flex-shrink-0 z-10 border-2 border-magenta" style={{ background: 'var(--bg-card)' }}>
                   <span className="text-magenta font-heading font-bold text-xs text-center leading-tight">{item.year}</span>
                 </div>
                 <div className="pt-3">
@@ -134,7 +118,7 @@ function APropos() {
           className="mb-20"
         >
           <h2 className="text-4xl font-heading font-bold text-gradient mb-10 text-center">
-            L'équipe
+            {t('aboutPage.team.title')}
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -144,25 +128,25 @@ function APropos() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
               viewport={{ once: true }}
-              className="rounded-2xl overflow-hidden border border-purple-main/30"
-              style={{ background: 'rgba(255, 255, 255, 0.06)' }}
+              className="rounded-2xl overflow-hidden border border-purple-main/30 transition-colors duration-300"
+              style={{ background: 'var(--bg-card)', boxShadow: 'var(--card-shadow)' }}
             >
               <div className="h-64 overflow-hidden">
                 <img src={thumb('/images/locale/locale8.jpeg')} alt="Michael Sanchez" className="w-full h-full object-cover" />
               </div>
               <div className="p-8">
-                <div className="mb-3 p-2 rounded-lg w-fit" style={{ background: 'rgba(163, 72, 254, 0.12)' }}>
+                <div className="mb-3 p-2 rounded-lg w-fit" style={{ background: 'var(--icon-bg)' }}>
                   <Users size={24} className="text-magenta" />
                 </div>
-                <h3 className="text-2xl font-heading font-bold text-white mb-1">
-                  Michael "Mika" Sanchez
+                <h3 className="text-2xl font-heading font-bold text-heading mb-1">
+                  {t('aboutPage.team.mika.name')}
                 </h3>
-                <p className="text-magenta font-semibold mb-4">Fondateur</p>
+                <p className="text-magenta font-semibold mb-4">{t('aboutPage.team.mika.role')}</p>
                 <p className="text-grey-light leading-relaxed">
-                  Fondateur de Massive Medias, Mika est aussi compositeur de musique électronique et producteur sous le nom <strong className="text-white">Maudite Machine</strong> et fondateur du label <strong className="text-white">VRSTL Records</strong>. Programmeur-analyste de formation, il combine expertise technique et connaissance intime de la scène créative montréalaise.
+                  {t('aboutPage.team.mika.bio')}
                 </p>
                 <p className="text-grey-light leading-relaxed mt-3">
-                  15+ années d'expérience en développement web et design graphique. Expertise en gestion de la couleur et calibration pour l'impression Fine Art.
+                  {t('aboutPage.team.mika.bio2')}
                 </p>
               </div>
             </motion.div>
@@ -173,25 +157,25 @@ function APropos() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
               viewport={{ once: true }}
-              className="rounded-2xl overflow-hidden border border-purple-main/30"
-              style={{ background: 'rgba(255, 255, 255, 0.06)' }}
+              className="rounded-2xl overflow-hidden border border-purple-main/30 transition-colors duration-300"
+              style={{ background: 'var(--bg-card)', boxShadow: 'var(--card-shadow)' }}
             >
               <div className="h-64 overflow-hidden">
                 <img src={thumb('/images/locale/locale9.jpeg')} alt="Christopher Gagnon" className="w-full h-full object-cover" />
               </div>
               <div className="p-8">
-                <div className="mb-3 p-2 rounded-lg w-fit" style={{ background: 'rgba(163, 72, 254, 0.12)' }}>
+                <div className="mb-3 p-2 rounded-lg w-fit" style={{ background: 'var(--icon-bg)' }}>
                   <Zap size={24} className="text-magenta" />
                 </div>
-                <h3 className="text-2xl font-heading font-bold text-white mb-1">
-                  Christopher Gagnon
+                <h3 className="text-2xl font-heading font-bold text-heading mb-1">
+                  {t('aboutPage.team.chris.name')}
                 </h3>
-                <p className="text-magenta font-semibold mb-4">Partenaire Design</p>
+                <p className="text-magenta font-semibold mb-4">{t('aboutPage.team.chris.role')}</p>
                 <p className="text-grey-light leading-relaxed">
-                  Infographiste diplômé avec près de 10 ans d'expérience. Spécialisé en identité visuelle, packaging et design web. Christopher apporte une expertise créative complète à chaque projet.
+                  {t('aboutPage.team.chris.bio')}
                 </p>
                 <p className="text-grey-light leading-relaxed mt-3">
-                  Portfolio : Soundwave Festival, Laboratoire Bio Stratège, ChromaPur, Nutramazonie, NextGen Football et plus encore.
+                  {t('aboutPage.team.chris.bio2')}
                 </p>
               </div>
             </motion.div>
@@ -207,38 +191,39 @@ function APropos() {
           className="mb-20"
         >
           <h2 className="text-4xl font-heading font-bold text-gradient mb-10 text-center">
-            Notre équipement
+            {t('aboutPage.equipment.title')}
           </h2>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
-            {/* Photos d'équipement */}
             <div className="grid grid-cols-2 gap-4">
-              <img src={thumb('/images/locale/locale6.jpeg')} alt="Canon Pro-1000" className="rounded-xl w-full h-40 object-cover" />
-              <img src={thumb('/images/locale/locale7.jpeg')} alt="Cameo 5" className="rounded-xl w-full h-40 object-cover" />
+              <img src={thumb('/images/locale/locale6.jpeg')} alt="Large format printer" className="rounded-xl w-full h-40 object-cover" />
+              <img src={thumb('/images/locale/locale7.jpeg')} alt="Cutting gear" className="rounded-xl w-full h-40 object-cover" />
               <img src={thumb('/images/locale/locale10.jpeg')} alt="Presses" className="rounded-xl w-full h-40 object-cover col-span-2" />
             </div>
             
-            {/* Liste d'équipements */}
             <div className="space-y-4">
-              {equipment.map((item, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, x: 20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.3, delay: index * 0.08 }}
-                  viewport={{ once: true }}
-                  className="flex items-start gap-4 p-4 rounded-xl border border-purple-main/30"
-                  style={{ background: 'rgba(255, 255, 255, 0.04)' }}
-                >
-                  <div className="p-2 rounded-lg flex-shrink-0" style={{ background: 'rgba(163, 72, 254, 0.12)' }}>
-                    <item.icon size={20} className="text-magenta" />
-                  </div>
-                  <div>
-                    <h4 className="text-white font-semibold">{item.name}</h4>
-                    <p className="text-grey-muted text-sm">{item.desc}</p>
-                  </div>
-                </motion.div>
-              ))}
+              {equipmentItems.map((item, index) => {
+                const Icon = equipmentIcons[index] || Monitor;
+                return (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, x: 20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3, delay: index * 0.08 }}
+                    viewport={{ once: true }}
+                    className="flex items-start gap-4 p-4 rounded-xl border border-purple-main/30 transition-colors duration-300"
+                    style={{ background: 'var(--bg-glass)', boxShadow: 'var(--card-shadow)' }}
+                  >
+                    <div className="p-2 rounded-lg flex-shrink-0" style={{ background: 'var(--icon-bg)' }}>
+                      <Icon size={20} className="text-magenta" />
+                    </div>
+                    <div>
+                      <h4 className="text-heading font-semibold">{item.name}</h4>
+                      <p className="text-grey-muted text-sm">{item.desc}</p>
+                    </div>
+                  </motion.div>
+                );
+              })}
             </div>
           </div>
         </motion.div>
@@ -253,17 +238,17 @@ function APropos() {
         >
           <div className="rounded-2xl overflow-hidden relative">
             <img src={thumb('/images/locale/locale11.jpeg')} alt="Espace Versatile" className="w-full h-80 object-cover" />
-            <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, transparent 0%, rgba(26,0,51,0.95) 100%)' }}></div>
+            <div className="absolute inset-0" style={{ background: 'var(--space-overlay)' }}></div>
             <div className="absolute bottom-0 left-0 right-0 p-8 md:p-12">
               <div className="flex items-center gap-2 mb-3">
                 <MapPin size={20} className="text-magenta" />
-                <span className="text-magenta font-semibold">Mile-End, Montréal</span>
+                <span className="text-magenta font-semibold">{t('aboutPage.space.location')}</span>
               </div>
-              <h2 className="text-3xl md:text-4xl font-heading font-bold text-white mb-4">
-                L'espace Versatile
+              <h2 className="text-3xl md:text-4xl font-heading font-bold text-heading mb-4">
+                {t('aboutPage.space.title')}
               </h2>
               <p className="text-grey-light text-lg max-w-2xl">
-                On opère depuis l'espace collaboratif Versatile, au 7049 rue Saint-Urbain dans le Mile-End. Un lieu de création partagé avec une quinzaine de créateurs : vidéastes, photographes, designers, artistes. Pick-up disponible sur rendez-vous.
+                {t('aboutPage.space.description')}
               </p>
             </div>
           </div>
@@ -277,19 +262,19 @@ function APropos() {
           viewport={{ once: true }}
         >
           <h2 className="text-4xl font-heading font-bold text-gradient mb-8 text-center">
-            Aussi dans l'univers Massive
+            {t('aboutPage.universe.title')}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-            <div className="p-8 rounded-2xl border border-purple-main/30" style={{ background: 'rgba(255, 255, 255, 0.06)' }}>
-              <h3 className="text-2xl font-heading font-bold text-white mb-3">Maudite Machine</h3>
+            <div className="p-8 rounded-2xl border border-purple-main/30 transition-colors duration-300" style={{ background: 'var(--bg-card)', boxShadow: 'var(--card-shadow)' }}>
+              <h3 className="text-2xl font-heading font-bold text-heading mb-3">{t('aboutPage.universe.mauditeMachine.title')}</h3>
               <p className="text-grey-light leading-relaxed">
-                Compositeur de musique électronique et producteur. Sets et productions dark disco / indie dance. Sorties sur plusieurs labels, performances lors d'événements majeurs au Canada.
+                {t('aboutPage.universe.mauditeMachine.description')}
               </p>
             </div>
-            <div className="p-8 rounded-2xl border border-purple-main/30" style={{ background: 'rgba(255, 255, 255, 0.06)' }}>
-              <h3 className="text-2xl font-heading font-bold text-white mb-3">VRSTL Records</h3>
+            <div className="p-8 rounded-2xl border border-purple-main/30 transition-colors duration-300" style={{ background: 'var(--bg-card)', boxShadow: 'var(--card-shadow)' }}>
+              <h3 className="text-2xl font-heading font-bold text-heading mb-3">{t('aboutPage.universe.vrstl.title')}</h3>
               <p className="text-grey-light leading-relaxed">
-                Label canadien dédié à l'Indie Dance et la Dark Minimal. Direction artistique, gestion des sorties, distribution digitale et promotion.
+                {t('aboutPage.universe.vrstl.description')}
               </p>
             </div>
           </div>

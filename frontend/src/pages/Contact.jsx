@@ -1,9 +1,18 @@
 import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
-import { Mail, MapPin, Instagram, Facebook } from 'lucide-react';
-import { useState } from 'react';
+import { Mail, MapPin, Instagram, Facebook, Send, CheckCircle, AlertCircle } from 'lucide-react';
+import { useState, useRef } from 'react';
+import emailjs from '@emailjs/browser';
+import { useLang } from '../i18n/LanguageContext';
+
+// EmailJS config
+const EMAILJS_SERVICE_ID = 'service_zeuwh04';
+const EMAILJS_TEMPLATE_ID = 'template_contact';
+const EMAILJS_PUBLIC_KEY = '_e6k6nftsmZZxs29b';
 
 function Contact() {
+  const { t } = useLang();
+  const formRef = useRef();
   const [formData, setFormData] = useState({
     nom: '',
     email: '',
@@ -14,12 +23,34 @@ function Contact() {
     urgence: '',
     message: ''
   });
+  const [status, setStatus] = useState('idle');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // TODO: Intégrer avec Strapi
-    console.log('Form submitted:', formData);
-    alert('Merci! On a bien reçu ta demande. On te revient dans les 24 heures.');
+    setStatus('sending');
+
+    try {
+      await emailjs.sendForm(
+        EMAILJS_SERVICE_ID,
+        EMAILJS_TEMPLATE_ID,
+        formRef.current,
+        EMAILJS_PUBLIC_KEY
+      );
+      setStatus('success');
+      setFormData({
+        nom: '',
+        email: '',
+        telephone: '',
+        entreprise: '',
+        service: '',
+        budget: '',
+        urgence: '',
+        message: ''
+      });
+    } catch (error) {
+      console.error('EmailJS error:', error);
+      setStatus('error');
+    }
   };
 
   const handleChange = (e) => {
@@ -27,13 +58,20 @@ function Contact() {
       ...formData,
       [e.target.name]: e.target.value
     });
+    if (status === 'error' || status === 'success') {
+      setStatus('idle');
+    }
   };
+
+  const serviceOptions = t('contactPage.form.serviceOptions');
+  const budgetOptions = t('contactPage.form.budgetOptions');
+  const urgencyOptions = t('contactPage.form.urgencyOptions');
 
   return (
     <>
       <Helmet>
-        <title>Contact — Massive Medias</title>
-        <meta name="description" content="Demande de soumission et contact. On te revient dans les 24h." />
+        <title>{t('contactPage.seo.title')}</title>
+        <meta name="description" content={t('contactPage.seo.description')} />
       </Helmet>
 
       <section className="section-container pt-32">
@@ -43,11 +81,11 @@ function Contact() {
           transition={{ duration: 0.8 }}
           className="text-center max-w-4xl mx-auto mb-16"
         >
-          <h1 className="text-5xl md:text-7xl font-heading font-bold text-white mb-6">
-            Contact
+          <h1 className="text-5xl md:text-7xl font-heading font-bold text-heading mb-6">
+            {t('contactPage.hero.title')}
           </h1>
           <p className="text-xl text-grey-light">
-            Un projet en tête? Une question sur nos services? Envoie-nous un message et on te revient rapidement.
+            {t('contactPage.hero.subtitle')}
           </p>
         </motion.div>
 
@@ -60,41 +98,41 @@ function Contact() {
             className="space-y-8"
           >
             <div>
-              <h3 className="font-heading text-2xl font-bold text-white mb-6">
-                Coordonnées
+              <h3 className="font-heading text-2xl font-bold text-heading mb-6">
+                {t('contactPage.info.title')}
               </h3>
               
               <div className="space-y-4">
                 <div className="flex items-start gap-3">
                   <MapPin className="text-magenta mt-1" size={20} />
                   <div>
-                    <p className="text-white font-semibold">Mile-End, Montréal, QC</p>
-                    <p className="text-grey-muted text-sm">Sur rendez-vous</p>
+                    <p className="text-heading font-semibold">{t('contactPage.info.location')}</p>
+                    <p className="text-grey-muted text-sm">{t('contactPage.info.byAppointment')}</p>
                   </div>
                 </div>
 
                 <div className="flex items-start gap-3">
                   <Mail className="text-magenta mt-1" size={20} />
                   <a 
-                    href="mailto:info@massivemedias.com"
-                    className="text-white hover:text-magenta transition-colors"
+                    href="mailto:massivemedias@gmail.com"
+                    className="text-heading hover:text-magenta transition-colors"
                   >
-                    info@massivemedias.com
+                    massivemedias@gmail.com
                   </a>
                 </div>
               </div>
             </div>
 
             <div>
-              <h3 className="font-heading text-xl font-bold text-white mb-4">
-                Réseaux sociaux
+              <h3 className="font-heading text-xl font-bold text-heading mb-4">
+                {t('contactPage.info.social')}
               </h3>
               <div className="flex gap-4">
                 <a 
                   href="https://instagram.com/massivemedias" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="p-3 rounded-full bg-purple-main hover:bg-magenta transition-all duration-300 hover:opacity-80"
+                  className="p-3 rounded-full bg-purple-bright text-white hover:bg-magenta transition-all duration-300"
                 >
                   <Instagram size={24} />
                 </a>
@@ -102,7 +140,7 @@ function Contact() {
                   href="https://facebook.com/massivemedias" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="p-3 rounded-full bg-purple-main hover:bg-magenta transition-all duration-300 hover:opacity-80"
+                  className="p-3 rounded-full bg-purple-bright text-white hover:bg-magenta transition-all duration-300"
                 >
                   <Facebook size={24} />
                 </a>
@@ -117,156 +155,204 @@ function Contact() {
             transition={{ duration: 0.8, delay: 0.4 }}
             className="lg:col-span-2"
           >
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {status === 'success' ? (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="text-center py-16 px-8 rounded-2xl transition-colors duration-300"
+                style={{ background: 'var(--bg-glass)', border: '1px solid var(--bg-card-border)' }}
+              >
+                <CheckCircle size={64} className="text-green-400 mx-auto mb-6" />
+                <h3 className="font-heading text-3xl font-bold text-heading mb-4">
+                  {t('contactPage.form.successTitle')}
+                </h3>
+                <p className="text-grey-light text-lg mb-8">
+                  {t('contactPage.form.successMessage')}
+                </p>
+                <button
+                  onClick={() => setStatus('idle')}
+                  className="btn-outline"
+                >
+                  {t('contactPage.form.sendAnother')}
+                </button>
+              </motion.div>
+            ) : (
+              <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label htmlFor="nom" className="block text-heading font-semibold mb-2">
+                      {t('contactPage.form.fullName')} *
+                    </label>
+                    <input
+                      type="text"
+                      id="nom"
+                      name="nom"
+                      required
+                      value={formData.nom}
+                      onChange={handleChange}
+                      placeholder={t('contactPage.form.namePlaceholder')}
+                      className="input-field"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="email" className="block text-heading font-semibold mb-2">
+                      {t('contactPage.form.email')} *
+                    </label>
+                    <input
+                      type="email"
+                      id="email"
+                      name="email"
+                      required
+                      value={formData.email}
+                      onChange={handleChange}
+                      placeholder={t('contactPage.form.emailPlaceholder')}
+                      className="input-field"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label htmlFor="telephone" className="block text-heading font-semibold mb-2">
+                      {t('contactPage.form.phone')}
+                    </label>
+                    <input
+                      type="tel"
+                      id="telephone"
+                      name="telephone"
+                      value={formData.telephone}
+                      onChange={handleChange}
+                      placeholder={t('contactPage.form.phonePlaceholder')}
+                      className="input-field"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="entreprise" className="block text-heading font-semibold mb-2">
+                      {t('contactPage.form.company')}
+                    </label>
+                    <input
+                      type="text"
+                      id="entreprise"
+                      name="entreprise"
+                      value={formData.entreprise}
+                      onChange={handleChange}
+                      placeholder={t('contactPage.form.companyPlaceholder')}
+                      className="input-field"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div>
+                    <label htmlFor="service" className="block text-heading font-semibold mb-2">
+                      {t('contactPage.form.service')}
+                    </label>
+                    <select
+                      id="service"
+                      name="service"
+                      value={formData.service}
+                      onChange={handleChange}
+                      className="input-field"
+                    >
+                      <option value="">{t('contactPage.form.selectPlaceholder')}</option>
+                      {serviceOptions.map((opt, i) => (
+                        <option key={i} value={opt}>{opt}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label htmlFor="budget" className="block text-heading font-semibold mb-2">
+                      {t('contactPage.form.budget')}
+                    </label>
+                    <select
+                      id="budget"
+                      name="budget"
+                      value={formData.budget}
+                      onChange={handleChange}
+                      className="input-field"
+                    >
+                      <option value="">{t('contactPage.form.selectPlaceholder')}</option>
+                      {budgetOptions.map((opt, i) => (
+                        <option key={i} value={opt}>{opt}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label htmlFor="urgence" className="block text-heading font-semibold mb-2">
+                      {t('contactPage.form.urgency')}
+                    </label>
+                    <select
+                      id="urgence"
+                      name="urgence"
+                      value={formData.urgence}
+                      onChange={handleChange}
+                      className="input-field"
+                    >
+                      <option value="">{t('contactPage.form.selectPlaceholder')}</option>
+                      {urgencyOptions.map((opt, i) => (
+                        <option key={i} value={opt}>{opt}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
                 <div>
-                  <label htmlFor="nom" className="block text-white font-semibold mb-2">
-                    Nom complet *
+                  <label htmlFor="message" className="block text-heading font-semibold mb-2">
+                    {t('contactPage.form.message')} *
                   </label>
-                  <input
-                    type="text"
-                    id="nom"
-                    name="nom"
+                  <textarea
+                    id="message"
+                    name="message"
                     required
-                    value={formData.nom}
+                    value={formData.message}
                     onChange={handleChange}
-                    placeholder="Ton nom"
-                    className="input-field"
+                    rows={6}
+                    placeholder={t('contactPage.form.messagePlaceholder')}
+                    className="input-field resize-none"
                   />
                 </div>
 
-                <div>
-                  <label htmlFor="email" className="block text-white font-semibold mb-2">
-                    Email *
-                  </label>
-                  <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    required
-                    value={formData.email}
-                    onChange={handleChange}
-                    placeholder="ton@email.com"
-                    className="input-field"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label htmlFor="telephone" className="block text-white font-semibold mb-2">
-                    Téléphone
-                  </label>
-                  <input
-                    type="tel"
-                    id="telephone"
-                    name="telephone"
-                    value={formData.telephone}
-                    onChange={handleChange}
-                    placeholder="514-xxx-xxxx"
-                    className="input-field"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="entreprise" className="block text-white font-semibold mb-2">
-                    Entreprise / Projet
-                  </label>
-                  <input
-                    type="text"
-                    id="entreprise"
-                    name="entreprise"
-                    value={formData.entreprise}
-                    onChange={handleChange}
-                    placeholder="Nom de ton entreprise ou projet"
-                    className="input-field"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div>
-                  <label htmlFor="service" className="block text-white font-semibold mb-2">
-                    Service
-                  </label>
-                  <select
-                    id="service"
-                    name="service"
-                    value={formData.service}
-                    onChange={handleChange}
-                    className="input-field"
+                {status === 'error' && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex items-center gap-3 p-4 rounded-lg border border-red-500/30"
+                    style={{ background: 'rgba(239, 68, 68, 0.1)' }}
                   >
-                    <option value="">Sélectionne...</option>
-                    <option value="fine-art">Impression Fine Art</option>
-                    <option value="stickers">Stickers Custom</option>
-                    <option value="sublimation">Sublimation & Merch</option>
-                    <option value="flyers">Flyers & Cartes</option>
-                    <option value="design">Design Graphique</option>
-                    <option value="web">Développement Web</option>
-                    <option value="package">Package complet</option>
-                    <option value="autre">Autre</option>
-                  </select>
-                </div>
+                    <AlertCircle size={20} className="text-red-400 flex-shrink-0" />
+                    <p className="text-red-300 text-sm">
+                      {t('contactPage.form.errorMessage')}{' '}
+                      <a href="mailto:massivemedias@gmail.com" className="underline">massivemedias@gmail.com</a>
+                    </p>
+                  </motion.div>
+                )}
 
-                <div>
-                  <label htmlFor="budget" className="block text-white font-semibold mb-2">
-                    Budget estimé
-                  </label>
-                  <select
-                    id="budget"
-                    name="budget"
-                    value={formData.budget}
-                    onChange={handleChange}
-                    className="input-field"
-                  >
-                    <option value="">Sélectionne...</option>
-                    <option value="moins-500">Moins de 500$</option>
-                    <option value="500-1000">500$ - 1 000$</option>
-                    <option value="1000-3000">1 000$ - 3 000$</option>
-                    <option value="3000-plus">3 000$+</option>
-                    <option value="pas-sure">Je ne sais pas encore</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label htmlFor="urgence" className="block text-white font-semibold mb-2">
-                    Urgence
-                  </label>
-                  <select
-                    id="urgence"
-                    name="urgence"
-                    value={formData.urgence}
-                    onChange={handleChange}
-                    className="input-field"
-                  >
-                    <option value="">Sélectionne...</option>
-                    <option value="standard">Standard (5-7 jours)</option>
-                    <option value="rush">Rush (24-48h)</option>
-                    <option value="flexible">Flexible</option>
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label htmlFor="message" className="block text-white font-semibold mb-2">
-                  Décris ton projet *
-                </label>
-                <textarea
-                  id="message"
-                  name="message"
-                  required
-                  value={formData.message}
-                  onChange={handleChange}
-                  rows={6}
-                  placeholder="Dis-nous ce que tu as en tête..."
-                  className="input-field resize-none"
-                />
-              </div>
-
-              <button type="submit" className="btn-primary w-full md:w-auto">
-                Envoyer ma demande
-              </button>
-            </form>
+                <button
+                  type="submit"
+                  disabled={status === 'sending'}
+                  className="btn-primary w-full md:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {status === 'sending' ? (
+                    <>
+                      <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      {t('contactPage.form.sending')}
+                    </>
+                  ) : (
+                    <>
+                      {t('contactPage.form.submit')}
+                      <Send className="ml-2" size={18} />
+                    </>
+                  )}
+                </button>
+              </form>
+            )}
           </motion.div>
         </div>
       </section>

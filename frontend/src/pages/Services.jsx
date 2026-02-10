@@ -1,67 +1,46 @@
 import { Helmet } from 'react-helmet-async';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Printer, Sticker, Shirt, FileText, Palette, Code } from 'lucide-react';
 import ServiceCard from '../components/ServiceCard';
 import { img, thumb } from '../utils/paths';
+import { useLang } from '../i18n/LanguageContext';
+
+const serviceIcons = [Printer, Sticker, Shirt, FileText, Palette, Code];
+const serviceLinks = [
+  '/services/impression-fine-art',
+  '/services/stickers-custom',
+  '/services/sublimation-merch',
+  '/services/flyers-cartes',
+  '/services/design-graphique',
+  '/services/developpement-web',
+];
+const serviceImages = [
+  thumb('/images/prints/Prints1.jpeg'),
+  thumb('/images/stickers/Stickers1.jpeg'),
+  thumb('/images/textile/Textile1.jpeg'),
+  thumb('/images/prints/Prints5.jpeg'),
+  thumb('/images/prints/Prints10.jpeg'),
+  thumb('/images/locale/locale1.jpeg'),
+];
 
 function Services() {
-  const services = [
-    {
-      icon: Printer,
-      title: 'Impression Fine Art',
-      description: 'Tirages premium sur Canon Pro-1000. Posters, affiches, photos d\'art sur papiers professionnels Canon, Ilford et Hahnemühle. Qualité galerie pour vos expositions et ventes d\'art.',
-      link: '/services/impression-fine-art',
-      image: thumb('/images/prints/Prints1.jpeg'),
-    },
-    {
-      icon: Sticker,
-      title: 'Stickers Custom',
-      description: 'Die-cut sur mesure avec la Silhouette Cameo 5. Matte, glossy, transparent, holographique basic ou premium. Découpe précise à la forme de ton design.',
-      link: '/services/stickers-custom',
-      image: thumb('/images/stickers/Stickers1.jpeg'),
-    },
-    {
-      icon: Shirt,
-      title: 'Sublimation & Merch',
-      description: 'T-shirts, hoodies, mugs, thermos, tapis de souris, porte-clés et plus. Impression sublimation permanente et vibrante pour ton merch d\'artiste.',
-      link: '/services/sublimation-merch',
-      image: thumb('/images/textile/Textile1.jpeg'),
-    },
-    {
-      icon: FileText,
-      title: 'Flyers & Cartes',
-      description: 'Flyers A6, cartes postales, cartes d\'affaires. Impression rapide et locale pour tes événements, shows et promotions. Prix compétitifs.',
-      link: '/services/flyers-cartes',
-      image: thumb('/images/prints/Prints5.jpeg'),
-    },
-    {
-      icon: Palette,
-      title: 'Design Graphique',
-      description: 'Logos, identités visuelles, affiches, packaging, supports marketing. En partenariat avec Christopher Gagnon, infographiste avec près de 10 ans d\'expérience.',
-      link: '/services/design-graphique',
-      image: thumb('/images/prints/Prints10.jpeg'),
-    },
-    {
-      icon: Code,
-      title: 'Développement Web',
-      description: 'Sites vitrines, e-commerce, landing pages. Technologies modernes : React, Strapi, WordPress, Shopify. Du site d\'artiste à la boutique complète.',
-      link: '/services/developpement-web',
-      image: thumb('/images/locale/locale1.jpeg'),
-    }
-  ];
+  const { t } = useLang();
+
+  const serviceCards = t('servicesPage.serviceCards');
 
   return (
     <>
       <Helmet>
-        <title>Services — Massive Medias</title>
-        <meta name="description" content="Impression, stickers, sublimation, flyers, design graphique et développement web. Tous nos services créatifs." />
+        <title>{t('servicesPage.seo.title')}</title>
+        <meta name="description" content={t('servicesPage.seo.description')} />
       </Helmet>
 
       {/* Hero avec image de fond */}
       <section className="relative py-32 overflow-hidden">
         <div className="absolute inset-0">
           <img src={thumb('/images/locale/locale5.jpeg')} alt="" className="w-full h-full object-cover" />
-          <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(45,0,89,0.88) 0%, rgba(58,0,112,0.95) 100%)' }}></div>
+          <div className="absolute inset-0" style={{ background: 'var(--hero-gradient)' }}></div>
         </div>
 
         <div className="relative z-10 section-container !py-0">
@@ -72,10 +51,10 @@ function Services() {
             className="text-center max-w-4xl mx-auto"
           >
             <h1 className="text-5xl md:text-7xl font-heading font-bold text-white mb-6">
-              Nos services
+              {t('servicesPage.hero.title')}
             </h1>
-            <p className="text-xl md:text-2xl text-grey-light">
-              De l'impression fine art aux stickers custom, de la sublimation textile au développement web — on couvre toute la chaîne de production créative.
+            <p className="text-xl md:text-2xl text-white/70">
+              {t('servicesPage.hero.subtitle')}
             </p>
           </motion.div>
         </div>
@@ -84,15 +63,21 @@ function Services() {
       {/* Grille de services */}
       <section className="section-container">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {services.map((service, index) => (
+          {serviceCards.map((card, index) => (
             <motion.div
-              key={service.title}
+              key={index}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
               viewport={{ once: true }}
             >
-              <ServiceCard {...service} />
+              <ServiceCard
+                icon={serviceIcons[index]}
+                title={card.title}
+                description={card.description}
+                link={serviceLinks[index]}
+                image={serviceImages[index]}
+              />
             </motion.div>
           ))}
         </div>
@@ -107,11 +92,11 @@ function Services() {
           viewport={{ once: true }}
           className="text-center mb-12"
         >
-          <h2 className="text-4xl md:text-5xl font-heading font-bold text-white mb-4">
-            Packages combinés
+          <h2 className="text-4xl md:text-5xl font-heading font-bold text-heading mb-4">
+            {t('servicesPage.packages.title')}
           </h2>
           <p className="text-xl text-grey-light max-w-2xl mx-auto">
-            Pour les créateurs qui veulent une solution complète.
+            {t('servicesPage.packages.subtitle')}
           </p>
         </motion.div>
 
@@ -122,36 +107,26 @@ function Services() {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
             viewport={{ once: true }}
-            className="rounded-2xl overflow-hidden border border-magenta/30"
-            style={{ background: 'rgba(255, 255, 255, 0.06)' }}
+            className="rounded-2xl overflow-hidden border border-magenta/30 transition-colors duration-300"
+            style={{ background: 'var(--bg-card)', boxShadow: 'var(--card-shadow)' }}
           >
             <div className="p-2">
-              <img src={thumb('/images/prints/Prints3.jpeg')} alt="Package Lancement Artiste" className="w-full h-48 object-cover rounded-xl" />
+              <img src={thumb('/images/prints/Prints3.jpeg')} alt={t('servicesPage.packageArtist.title')} className="w-full h-48 object-cover rounded-xl" />
             </div>
             <div className="p-8">
-              <div className="text-magenta text-sm font-semibold uppercase tracking-wider mb-2">Le plus populaire</div>
-              <h3 className="text-2xl font-heading font-bold text-white mb-2">Package Lancement Artiste</h3>
-              <div className="text-4xl font-heading font-bold text-gradient mb-4">2 800$</div>
-              <p className="text-grey-muted text-sm mb-6 line-through">Valeur séparée: 4 660$ — Économie de 40%</p>
+              <div className="text-magenta text-sm font-semibold uppercase tracking-wider mb-2">{t('servicesPage.packageArtist.badge')}</div>
+              <h3 className="text-2xl font-heading font-bold text-heading mb-2">{t('servicesPage.packageArtist.title')}</h3>
+              <div className="text-4xl font-heading font-bold text-gradient mb-4">{t('servicesPage.packageArtist.price')}</div>
+              <p className="text-grey-muted text-sm mb-6 line-through">{t('servicesPage.packageArtist.originalPrice')}</p>
               <ul className="space-y-3 text-grey-light mb-8">
-                <li className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-magenta"></div>
-                  25 prints A3+
-                </li>
-                <li className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-magenta"></div>
-                  100 stickers promotionnels
-                </li>
-                <li className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-magenta"></div>
-                  10 affiches A2
-                </li>
-                <li className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-magenta"></div>
-                  Site vitrine 5 pages
-                </li>
+                {t('servicesPage.packageArtist.items').map((item, i) => (
+                  <li key={i} className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-magenta"></div>
+                    {item}
+                  </li>
+                ))}
               </ul>
-              <a href="/contact" className="btn-primary w-full text-center">Demander ce package</a>
+              <Link to="/contact" className="btn-primary w-full text-center">{t('common.requestPackage')}</Link>
             </div>
           </motion.div>
 
@@ -161,36 +136,26 @@ function Services() {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
             viewport={{ once: true }}
-            className="rounded-2xl overflow-hidden border border-purple-main/30"
-            style={{ background: 'rgba(255, 255, 255, 0.06)' }}
+            className="rounded-2xl overflow-hidden border border-purple-main/30 transition-colors duration-300"
+            style={{ background: 'var(--bg-card)', boxShadow: 'var(--card-shadow)' }}
           >
             <div className="p-2">
-              <img src={thumb('/images/stickers/Stickers3.jpeg')} alt="Package Événement" className="w-full h-48 object-cover rounded-xl" />
+              <img src={thumb('/images/stickers/Stickers3.jpeg')} alt={t('servicesPage.packageEvent.title')} className="w-full h-48 object-cover rounded-xl" />
             </div>
             <div className="p-8">
-              <div className="text-electric-purple text-sm font-semibold uppercase tracking-wider mb-2">Événements</div>
-              <h3 className="text-2xl font-heading font-bold text-white mb-2">Package Événement</h3>
-              <div className="text-4xl font-heading font-bold text-gradient mb-4">900$</div>
-              <p className="text-grey-muted text-sm mb-6 line-through">Valeur séparée: 1 410$ — Économie de 36%</p>
+              <div className="text-electric-purple text-sm font-semibold uppercase tracking-wider mb-2">{t('servicesPage.packageEvent.badge')}</div>
+              <h3 className="text-2xl font-heading font-bold text-heading mb-2">{t('servicesPage.packageEvent.title')}</h3>
+              <div className="text-4xl font-heading font-bold text-gradient mb-4">{t('servicesPage.packageEvent.price')}</div>
+              <p className="text-grey-muted text-sm mb-6 line-through">{t('servicesPage.packageEvent.originalPrice')}</p>
               <ul className="space-y-3 text-grey-light mb-8">
-                <li className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-magenta"></div>
-                  150 flyers 8,5x11"
-                </li>
-                <li className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-magenta"></div>
-                  25 affiches 11x17"
-                </li>
-                <li className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-magenta"></div>
-                  200 stickers 2,5" holographiques
-                </li>
-                <li className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-magenta"></div>
-                  Landing page événement
-                </li>
+                {t('servicesPage.packageEvent.items').map((item, i) => (
+                  <li key={i} className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-magenta"></div>
+                    {item}
+                  </li>
+                ))}
               </ul>
-              <a href="/contact" className="btn-primary w-full text-center">Demander ce package</a>
+              <Link to="/contact" className="btn-primary w-full text-center">{t('common.requestPackage')}</Link>
             </div>
           </motion.div>
         </div>

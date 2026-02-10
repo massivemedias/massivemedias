@@ -1,12 +1,15 @@
 import { Link } from 'react-router-dom';
 import { Instagram, Facebook, Mail } from 'lucide-react';
 import MassiveLogo from '../assets/massive-logo.svg';
+import { useLang } from '../i18n/LanguageContext';
 
 function Footer() {
+  const { t } = useLang();
   const currentYear = new Date().getFullYear();
+  const services = t('nav.servicesList');
 
   return (
-    <footer className="border-t border-white/10 py-12 mt-20" style={{ background: '#2D0059' }}>
+    <footer className="py-12 mt-20 transition-colors duration-300" style={{ background: 'var(--bg-footer)', borderTop: '1px solid var(--footer-border)' }}>
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
           {/* Colonne 1 — Logo + tagline */}
@@ -16,45 +19,45 @@ function Footer() {
               alt="Massive Medias" 
               className="h-12 w-auto mb-4"
             />
-            <p className="text-magenta font-semibold mb-2">Create. Print. Repeat.</p>
+            <p className="text-magenta font-semibold mb-2">{t('footer.tagline')}</p>
             <p className="text-grey-muted text-sm">
-              Studio de production créative<br />
-              Montréal, QC
+              {t('footer.studioDesc')}<br />
+              {t('footer.location')}
             </p>
           </div>
 
           {/* Colonne 2 — Navigation */}
           <div>
-            <h4 className="font-heading font-bold text-white mb-4">Navigation</h4>
+            <h4 className="font-heading font-bold text-heading mb-4">{t('footer.navTitle')}</h4>
             <ul className="space-y-2 text-grey-light">
               <li>
                 <Link to="/services" className="hover:text-magenta transition-colors duration-300">
-                  Services
+                  {t('nav.services')}
                 </Link>
               </li>
               <li>
                 <Link to="/tarifs" className="hover:text-magenta transition-colors duration-300">
-                  Tarifs
+                  {t('nav.tarifs')}
                 </Link>
               </li>
               <li>
                 <Link to="/portfolio" className="hover:text-magenta transition-colors duration-300">
-                  Portfolio
+                  {t('nav.portfolio')}
                 </Link>
               </li>
               <li>
                 <Link to="/boutique" className="hover:text-magenta transition-colors duration-300">
-                  Boutique
+                  {t('nav.boutique')}
                 </Link>
               </li>
               <li>
                 <Link to="/a-propos" className="hover:text-magenta transition-colors duration-300">
-                  À propos
+                  {t('nav.aPropos')}
                 </Link>
               </li>
               <li>
                 <Link to="/contact" className="hover:text-magenta transition-colors duration-300">
-                  Contact
+                  {t('nav.contact')}
                 </Link>
               </li>
             </ul>
@@ -62,47 +65,24 @@ function Footer() {
 
           {/* Colonne 3 — Services */}
           <div>
-            <h4 className="font-heading font-bold text-white mb-4">Services</h4>
+            <h4 className="font-heading font-bold text-heading mb-4">{t('footer.servicesTitle')}</h4>
             <ul className="space-y-2 text-grey-light">
-              <li>
-                <Link to="/services/impression-fine-art" className="hover:text-magenta transition-colors duration-300">
-                  Impression Fine Art
-                </Link>
-              </li>
-              <li>
-                <Link to="/services/stickers-custom" className="hover:text-magenta transition-colors duration-300">
-                  Stickers Custom
-                </Link>
-              </li>
-              <li>
-                <Link to="/services/sublimation-merch" className="hover:text-magenta transition-colors duration-300">
-                  Sublimation & Merch
-                </Link>
-              </li>
-              <li>
-                <Link to="/services/flyers-cartes" className="hover:text-magenta transition-colors duration-300">
-                  Flyers & Cartes
-                </Link>
-              </li>
-              <li>
-                <Link to="/services/design-graphique" className="hover:text-magenta transition-colors duration-300">
-                  Design Graphique
-                </Link>
-              </li>
-              <li>
-                <Link to="/services/developpement-web" className="hover:text-magenta transition-colors duration-300">
-                  Développement Web
-                </Link>
-              </li>
+              {services.map((service) => (
+                <li key={service.slug}>
+                  <Link to={`/services/${service.slug}`} className="hover:text-magenta transition-colors duration-300">
+                    {service.name}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
           {/* Colonne 4 — Contact */}
           <div>
-            <h4 className="font-heading font-bold text-white mb-4">Contact</h4>
+            <h4 className="font-heading font-bold text-heading mb-4">{t('footer.contactTitle')}</h4>
             <ul className="space-y-3 text-grey-light">
-              <li>Mile-End, Montréal</li>
-              <li>Sur rendez-vous</li>
+              <li>{t('footer.mileEnd')}</li>
+              <li>{t('footer.byAppointment')}</li>
               <li>
                 <a 
                   href="mailto:info@massivemedias.com" 
@@ -120,7 +100,7 @@ function Footer() {
                 href="https://instagram.com/massivemedias" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="p-2 rounded-full bg-purple-main hover:bg-magenta transition-all duration-300 hover:opacity-80"
+                className="p-2 rounded-full bg-purple-bright text-white hover:bg-magenta transition-all duration-300"
               >
                 <Instagram size={20} />
               </a>
@@ -128,7 +108,7 @@ function Footer() {
                 href="https://facebook.com/massivemedias" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="p-2 rounded-full bg-purple-main hover:bg-magenta transition-all duration-300 hover:opacity-80"
+                className="p-2 rounded-full bg-purple-bright text-white hover:bg-magenta transition-all duration-300"
               >
                 <Facebook size={20} />
               </a>
@@ -137,9 +117,9 @@ function Footer() {
         </div>
 
         {/* Bas de footer */}
-        <div className="border-t white/10 pt-8 text-center text-grey-muted text-sm">
+        <div className="pt-8 text-center text-grey-muted text-sm" style={{ borderTop: '1px solid var(--footer-border)' }}>
           <p>
-            © 2013-{currentYear} Massive Medias. Tous droits réservés. NEQ 2269057891
+            © 2013-{currentYear} {t('footer.copyright')}
           </p>
         </div>
       </div>

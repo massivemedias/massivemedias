@@ -12,9 +12,9 @@ const servicesData = {
 
 Chaque impression fait l'objet d'un calibrage colorimétrique rigoureux pour garantir une fidélité optimale aux intentions de l'artiste.`,
     highlights: [
-      'Canon imagePROGRAF PRO-1000 — 12 encres pigmentées',
-      'Accès Canon imagePROGRAF PRO-2600 pour grands formats (24")',
-      'Papiers Hahnemühle, Ilford, Canon Premium',
+      'Imprimante professionnelle fine art — 12 encres pigmentées',
+      'Accès imprimante grand format pour tirages 24" et plus',
+      'Papiers fine art professionnels premium',
       'Calibration professionnelle, profils ICC sur mesure',
       'Durée de conservation 100+ ans',
       'Pick-up gratuit Mile-End, livraison locale',
@@ -23,7 +23,7 @@ Chaque impression fait l'objet d'un calibrage colorimétrique rigoureux pour gar
       { step: 1, title: 'Réception du fichier', desc: 'Envoi de ton fichier haute résolution (ou création graphique sur demande)' },
       { step: 2, title: 'Analyse colorimétrique', desc: 'Calibration selon le papier choisi, profil ICC adapté' },
       { step: 3, title: 'Soft proofing', desc: 'Prévisualisation numérique et validation avant impression' },
-      { step: 4, title: 'Impression', desc: 'Tirage sur Canon Pro-1000 avec profil ICC personnalisé' },
+      { step: 4, title: 'Impression', desc: 'Tirage sur imprimante professionnelle grand format avec profil ICC personnalisé' },
       { step: 5, title: 'Séchage & contrôle', desc: 'Séchage 24h, contrôle qualité, lamination optionnelle' },
       { step: 6, title: 'Finition', desc: 'Emballage protection ou encadrement selon ta commande' },
     ],
@@ -50,13 +50,13 @@ Chaque impression fait l'objet d'un calibrage colorimétrique rigoureux pour gar
       thumb('/images/prints/Prints20.jpeg'),
     ],
     equipment: [
-      { name: 'Canon imagePROGRAF PRO-1000', desc: 'Imprimante fine art 12 couleurs, jusqu\'à 17" (A2+). Qualité musée.' },
-      { name: 'Canon imagePROGRAF PRO-2600', desc: 'Grand format jusqu\'à 24" via partenariat. Expositions et tirages oversize.' },
+      { name: 'Imprimante fine art professionnelle', desc: 'Impression 12 couleurs, jusqu\'à 17" (A2+). Qualité musée.' },
+      { name: 'Imprimante grand format', desc: 'Grand format jusqu\'à 24" via partenariat. Expositions et tirages oversize.' },
       { name: 'Lamineuse VEVOR 25"', desc: 'Lamination et protection des tirages pour une durabilité maximale.' },
     ],
     seo: {
       title: 'Impression Fine Art Montréal — Massive Medias',
-      description: 'Tirages fine art qualité galerie sur Canon Pro-1000. Papiers Hahnemühle, Ilford. Pick-up gratuit Mile-End. 15-20% sous Etsy.',
+      description: 'Tirages fine art qualité galerie sur imprimante professionnelle grand format. Papiers fine art premium. Pick-up gratuit Mile-End. 15-20% sous Etsy.',
     },
   },
 
@@ -68,9 +68,9 @@ Chaque impression fait l'objet d'un calibrage colorimétrique rigoureux pour gar
     heroImage: thumb('/images/stickers/Stickers1.jpeg'),
     description: `Autocollants découpés sur mesure pour artistes, labels, événements et marques. Service complet incluant la création graphique du visuel si nécessaire.
 
-Découpés à la forme exacte de ton design avec la Silhouette Cameo 5, chaque sticker est fini avec une lamination pour résister à l'eau, aux UV et aux rayures.`,
+Découpés à la forme exacte de ton design avec notre équipement de découpe professionnel, chaque sticker est fini avec une lamination pour résister à l'eau, aux UV et aux rayures.`,
     highlights: [
-      'Silhouette Cameo 5 — découpe de précision',
+      'Équipement de découpe de précision professionnel',
       'Vinyle matte, glossy, transparent, holographique',
       'Découpe contour à la forme exacte du design',
       'Lamination incluse — résistant eau, UV, rayures',
@@ -83,7 +83,7 @@ Découpés à la forme exacte de ton design avec la Silhouette Cameo 5, chaque s
       { step: 3, title: 'Validation', desc: 'Aperçu numérique pour validation avant production' },
       { step: 4, title: 'Impression', desc: 'Impression haute qualité sur vinyle de ton choix' },
       { step: 5, title: 'Lamination', desc: 'Couche protectrice pour durabilité maximale' },
-      { step: 6, title: 'Découpe & livraison', desc: 'Découpe de précision Cameo 5 et remise/livraison' },
+      { step: 6, title: 'Découpe & livraison', desc: 'Découpe de précision professionnelle et remise/livraison' },
     ],
     pricing: {
       title: 'Tarifs Stickers',
@@ -120,13 +120,13 @@ Découpés à la forme exacte de ton design avec la Silhouette Cameo 5, chaque s
       thumb('/images/stickers/Stickers15.jpeg'),
     ],
     equipment: [
-      { name: 'Silhouette Cameo 5', desc: 'Découpe de précision jusqu\'à 12" de large. Contour, kiss-cut, die-cut.' },
+      { name: 'Découpeuse professionnelle', desc: 'Découpe de précision jusqu\'à 12" de large. Contour, kiss-cut, die-cut.' },
       { name: 'Lamineuse VEVOR 25"', desc: 'Lamination matte ou glossy pour protection eau/UV/rayures.' },
       { name: 'Epson ET-2850', desc: 'Impression vinyle haute qualité, couleurs vibrantes.' },
     ],
     seo: {
       title: 'Stickers Custom Montréal — Massive Medias',
-      description: 'Stickers die-cut personnalisés. Holographique, matte, glossy, transparent. Design inclus. Silhouette Cameo 5. Montréal.',
+      description: 'Stickers die-cut personnalisés. Holographique, matte, glossy, transparent. Design inclus. Découpe pro. Montréal.',
     },
   },
 
@@ -243,9 +243,9 @@ Parfait pour les artistes, promoteurs d'événements, labels, cafés et commerce
       thumb('/images/prints/Prints25.jpeg'),
     ],
     equipment: [
-      { name: 'Canon imagePROGRAF PRO-1000', desc: 'Qualité supérieure même pour les flyers — 12 couleurs pigmentées.' },
+      { name: 'Imprimante professionnelle', desc: 'Qualité supérieure même pour les flyers — 12 couleurs pigmentées.' },
       { name: 'Epson ET-2850', desc: 'Volume d\'impression rapide pour les séries courantes.' },
-      { name: 'Silhouette Cameo 5', desc: 'Découpe de précision pour formats personnalisés.' },
+      { name: 'Découpeuse professionnelle', desc: 'Découpe de précision pour formats personnalisés.' },
     ],
     seo: {
       title: 'Flyers & Cartes Montréal — Massive Medias',

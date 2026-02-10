@@ -20,106 +20,53 @@ import ServiceCard from '../components/ServiceCard';
 import Counter from '../components/Counter';
 import MassiveLogo from '../assets/massive-logo.svg';
 import { img, thumb } from '../utils/paths';
+import { useLang } from '../i18n/LanguageContext';
 
-const services = [
-  {
-    icon: Printer,
-    title: 'Impression Fine Art',
-    description: 'Tirages premium sur Canon Pro-1000. Posters, affiches, photos d\'art sur papiers professionnels Canon, Ilford et Hahnemühle.',
-    link: '/services/impression-fine-art',
-    image: thumb('/images/prints/Prints1.jpeg'),
-  },
-  {
-    icon: Sticker,
-    title: 'Stickers Custom',
-    description: 'Die-cut sur mesure avec la Silhouette Cameo 5. Matte, glossy, transparent, holographique basic ou premium.',
-    link: '/services/stickers-custom',
-    image: thumb('/images/stickers/Stickers1.jpeg'),
-  },
-  {
-    icon: Shirt,
-    title: 'Sublimation & Merch',
-    description: 'T-shirts, hoodies, mugs, thermos, tapis de souris, porte-clés et plus. Impression sublimation sur mesure.',
-    link: '/services/sublimation-merch',
-    image: thumb('/images/textile/Textile1.jpeg'),
-  },
-  {
-    icon: FileText,
-    title: 'Flyers & Cartes',
-    description: 'Flyers A6, cartes postales, cartes d\'affaires. Impression rapide et locale pour tes événements et promotions.',
-    link: '/services/flyers-cartes',
-    image: thumb('/images/prints/Prints5.jpeg'),
-  },
-  {
-    icon: Palette,
-    title: 'Design Graphique',
-    description: 'Logos, identités visuelles, affiches, packaging. En partenariat avec Christopher Gagnon, infographiste.',
-    link: '/services/design-graphique',
-    image: thumb('/images/prints/Prints10.jpeg'),
-  },
-  {
-    icon: Code,
-    title: 'Développement Web',
-    description: 'Sites vitrines, e-commerce, landing pages. Technologies modernes : React, Strapi, WordPress, Shopify.',
-    link: '/services/developpement-web',
-    image: thumb('/images/locale/locale1.jpeg'),
-  }
+const serviceIcons = [Printer, Sticker, Shirt, FileText, Palette, Code];
+const serviceLinks = [
+  '/services/impression-fine-art',
+  '/services/stickers-custom',
+  '/services/sublimation-merch',
+  '/services/flyers-cartes',
+  '/services/design-graphique',
+  '/services/developpement-web',
+];
+const serviceImages = [
+  thumb('/images/prints/Prints1.jpeg'),
+  thumb('/images/stickers/Stickers1.jpeg'),
+  thumb('/images/textile/Textile1.jpeg'),
+  thumb('/images/prints/Prints5.jpeg'),
+  thumb('/images/prints/Prints10.jpeg'),
+  thumb('/images/locale/locale1.jpeg'),
 ];
 
-const advantages = [
-  {
-    icon: Truck,
-    title: 'Livraison locale gratuite',
-    description: 'Basé dans le Mile-End à Montréal. Pick-up ou livraison locale, zéro frais de shipping, zéro délai postal.'
-  },
-  {
-    icon: Award,
-    title: 'Qualité professionnelle',
-    description: 'Canon Pro-1000, papiers Ilford et Hahnemühle, Silhouette Cameo 5. Du matériel pro pour des résultats pro.'
-  },
-  {
-    icon: Users,
-    title: 'Service personnalisé',
-    description: 'Un seul interlocuteur de A à Z. On comprend ton projet parce qu\'on vient du même milieu créatif.'
-  },
-  {
-    icon: Zap,
-    title: 'Solution complète',
-    description: 'Impression + design + web + merch. Pas besoin de courir entre 4 fournisseurs différents.'
-  },
-  {
-    icon: DollarSign,
-    title: 'Prix compétitifs',
-    description: 'Fine art 20% sous la concurrence. Pas de frais cachés, pas de minimum excessif.'
-  },
-  {
-    icon: Music,
-    title: 'La scène, on connaît',
-    description: 'Musiciens, photographes, artistes visuels, promoteurs d\'événements — c\'est notre monde depuis le jour 1.'
-  }
-];
+const advantageIcons = [Truck, Award, Users, Zap, DollarSign, Music];
 
-/* Images pour le carrousel de réalisations */
-const featuredProjects = [
-  { image: thumb('/images/prints/Prints2.jpeg'), title: 'Tirages Fine Art', category: 'Impression' },
-  { image: thumb('/images/stickers/Stickers3.jpeg'), title: 'Stickers Holographiques', category: 'Stickers' },
-  { image: thumb('/images/textile/Textile3.jpeg'), title: 'T-shirts Sublimation', category: 'Merch' },
-  { image: thumb('/images/prints/Prints8.jpeg'), title: 'Affiches Événement', category: 'Impression' },
-  { image: thumb('/images/stickers/Stickers5.jpeg'), title: 'Die-Cut Custom', category: 'Stickers' },
-  { image: thumb('/images/textile/Textile5.jpeg'), title: 'Mugs & Accessoires', category: 'Merch' },
+const featuredProjectImages = [
+  thumb('/images/prints/Prints2.jpeg'),
+  thumb('/images/stickers/Stickers3.jpeg'),
+  thumb('/images/textile/Textile3.jpeg'),
+  thumb('/images/prints/Prints8.jpeg'),
+  thumb('/images/stickers/Stickers5.jpeg'),
+  thumb('/images/textile/Textile5.jpeg'),
 ];
 
 function Home() {
+  const { t } = useLang();
+
+  const serviceCards = t('home.serviceCards');
+  const advantages = t('home.advantages');
+  const featuredProjects = t('home.featuredProjects');
+
   return (
     <>
       <Helmet>
-        <title>Massive Medias — Studio de production créative, Montréal</title>
-        <meta name="description" content="Impression fine art, stickers custom, sublimation, design graphique et développement web à Montréal. Service local depuis 2013." />
+        <title>{t('home.seo.title')}</title>
+        <meta name="description" content={t('home.seo.description')} />
       </Helmet>
 
       {/* ============ HERO ============ */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-        {/* Background image locale + overlay */}
         <div className="absolute inset-0">
           <img
             src={thumb('/images/locale/locale3.jpeg')}
@@ -127,11 +74,10 @@ function Home() {
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0" style={{
-            background: 'linear-gradient(180deg, rgba(45,0,89,0.88) 0%, rgba(58,0,112,0.95) 100%)'
+            background: 'var(--hero-gradient)'
           }}></div>
-          {/* Pattern subtil par-dessus */}
           <div className="absolute inset-0 opacity-10" style={{
-            backgroundImage: 'radial-gradient(circle, rgba(163,72,254,0.15) 1px, transparent 1px)',
+            backgroundImage: `radial-gradient(circle, var(--pattern-dot) 1px, transparent 1px)`,
             backgroundSize: '50px 50px'
           }}></div>
         </div>
@@ -142,17 +88,15 @@ function Home() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            {/* Tagline au-dessus */}
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3, duration: 0.6 }}
-              className="text-grey-muted text-sm tracking-[0.3em] uppercase mb-8"
+              className="text-white/60 text-sm tracking-[0.3em] uppercase mb-8"
             >
-              Create. Print. Repeat.
+              {t('home.hero.tagline')}
             </motion.p>
 
-            {/* LOGO MASSIVE — centré, grand, le vrai SVG */}
             <motion.img
               src={MassiveLogo}
               alt="MASSIVE"
@@ -167,18 +111,18 @@ function Home() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5, duration: 0.6 }}
-              className="text-2xl md:text-3xl text-grey-light mb-4 font-light"
+              className="text-2xl md:text-3xl text-white/80 mb-4 font-light"
             >
-              Studio de production créative à Montréal
+              {t('home.hero.subtitle')}
             </motion.p>
 
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.7, duration: 0.6 }}
-              className="text-lg text-grey-muted mb-12 max-w-3xl mx-auto"
+              className="text-lg text-white/50 mb-12 max-w-3xl mx-auto"
             >
-              Impression fine art · Stickers · Merch · Design · Web
+              {t('home.hero.services')}
             </motion.p>
 
             <motion.div
@@ -188,17 +132,16 @@ function Home() {
               className="flex flex-col sm:flex-row gap-4 justify-center items-center"
             >
               <Link to="/services" className="btn-primary">
-                Voir nos services
+                {t('home.hero.cta1')}
                 <ArrowRight className="ml-2" size={20} />
               </Link>
-              <Link to="/contact" className="btn-outline">
-                Demander une soumission
+              <Link to="/contact" className="btn-outline !text-white !border-white/25 hover:!bg-white/10 hover:!border-white/50">
+                {t('home.hero.cta2')}
               </Link>
             </motion.div>
           </motion.div>
         </div>
 
-        {/* Fondu vers le bas */}
         <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-purple-dark to-transparent"></div>
       </section>
 
@@ -211,30 +154,36 @@ function Home() {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <h2 className="text-5xl md:text-6xl font-heading font-bold text-white mb-4">
-            Tout sous un même toit.
+          <h2 className="text-5xl md:text-6xl font-heading font-bold text-heading mb-4">
+            {t('home.servicesSection.title')}
           </h2>
           <p className="text-xl text-grey-light max-w-2xl mx-auto">
-            De l'idée à l'objet fini, on s'occupe de tout.
+            {t('home.servicesSection.subtitle')}
           </p>
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {services.map((service, index) => (
+          {serviceCards.map((card, index) => (
             <motion.div
-              key={service.title}
+              key={index}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
               viewport={{ once: true }}
             >
-              <ServiceCard {...service} />
+              <ServiceCard
+                icon={serviceIcons[index]}
+                title={card.title}
+                description={card.description}
+                link={serviceLinks[index]}
+                image={serviceImages[index]}
+              />
             </motion.div>
           ))}
         </div>
       </section>
 
-      {/* ============ PROJETS RÉCENTS (galerie photo) ============ */}
+      {/* ============ PROJETS RÉCENTS ============ */}
       <section className="section-container">
         <motion.div
           initial={{ opacity: 0 }}
@@ -243,11 +192,11 @@ function Home() {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <h2 className="text-5xl md:text-6xl font-heading font-bold text-white mb-4">
-            Nos réalisations
+          <h2 className="text-5xl md:text-6xl font-heading font-bold text-heading mb-4">
+            {t('home.projectsSection.title')}
           </h2>
           <p className="text-xl text-grey-light max-w-2xl mx-auto">
-            Quelques projets qui parlent d'eux-mêmes.
+            {t('home.projectsSection.subtitle')}
           </p>
         </motion.div>
 
@@ -263,7 +212,7 @@ function Home() {
               style={{ aspectRatio: '4/3' }}
             >
               <img
-                src={project.image}
+                src={featuredProjectImages[index]}
                 alt={project.title}
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
               />
@@ -278,7 +227,7 @@ function Home() {
 
         <div className="text-center mt-12">
           <Link to="/portfolio" className="btn-outline">
-            Voir tout le portfolio
+            {t('home.projectsSection.viewAll')}
             <ArrowRight className="ml-2" size={20} />
           </Link>
         </div>
@@ -287,12 +236,12 @@ function Home() {
       {/* ============ CHIFFRES ============ */}
       <section className="section-container">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-          <Counter end={2020} suffix="" label="Depuis" />
-          <Counter end={500} suffix="+" label="Projets livrés" />
-          <Counter end={100} suffix="%" label="Local, Montréal" />
+          <Counter end={2020} suffix="" label={t('home.stats.since')} />
+          <Counter end={500} suffix="+" label={t('home.stats.projects')} />
+          <Counter end={100} suffix="%" label={t('home.stats.local')} />
           <div className="text-center p-6">
             <div className="text-5xl md:text-6xl font-heading font-bold text-gradient mb-2">24-48h</div>
-            <div className="text-grey-light text-lg">Délai standard</div>
+            <div className="text-grey-light text-lg">{t('home.stats.delay')}</div>
           </div>
         </div>
       </section>
@@ -306,33 +255,36 @@ function Home() {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <h2 className="text-5xl md:text-6xl font-heading font-bold text-white mb-4">
-            Pourquoi Massive?
+          <h2 className="text-5xl md:text-6xl font-heading font-bold text-heading mb-4">
+            {t('home.why.title')}
           </h2>
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {advantages.map((advantage, index) => (
-            <motion.div
-              key={advantage.title}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              viewport={{ once: true }}
-              className="p-8 rounded-xl border white/8 hover:border-white/15 transition-all duration-300"
-              style={{ background: 'rgba(255, 255, 255, 0.04)' }}
-            >
-              <div className="mb-4 p-3 rounded-lg w-fit" style={{ background: 'rgba(163, 72, 254, 0.12)' }}>
-                <advantage.icon size={28} className="text-magenta" />
-              </div>
-              <h3 className="font-heading text-xl font-bold text-white mb-3">
-                {advantage.title}
-              </h3>
-              <p className="text-grey-light">
-                {advantage.description}
-              </p>
-            </motion.div>
-          ))}
+          {advantages.map((advantage, index) => {
+            const Icon = advantageIcons[index];
+            return (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                viewport={{ once: true }}
+                className="p-8 rounded-xl transition-all duration-300"
+                style={{ background: 'var(--bg-glass)', border: '1px solid var(--bg-card-border)', boxShadow: 'var(--card-shadow)' }}
+              >
+                <div className="mb-4 p-3 rounded-lg w-fit" style={{ background: 'var(--icon-bg)' }}>
+                  <Icon size={28} className="text-magenta" />
+                </div>
+                <h3 className="font-heading text-xl font-bold text-heading mb-3">
+                  {advantage.title}
+                </h3>
+                <p className="text-grey-light">
+                  {advantage.description}
+                </p>
+              </motion.div>
+            );
+          })}
         </div>
       </section>
 
@@ -345,23 +297,22 @@ function Home() {
           viewport={{ once: true }}
           className="relative rounded-3xl overflow-hidden"
         >
-          {/* Image de fond */}
           <img
             src={thumb('/images/locale/locale5.jpeg')}
             alt=""
             className="absolute inset-0 w-full h-full object-cover"
           />
-          <div className="absolute inset-0" style={{ background: 'rgba(45, 0, 89, 0.92)' }}></div>
+          <div className="absolute inset-0" style={{ background: 'var(--overlay-cta)' }}></div>
 
           <div className="relative z-10 p-12 md:p-16 text-center">
             <h2 className="text-4xl md:text-5xl font-heading font-bold text-white mb-6">
-              Prêt à lancer ton projet?
+              {t('home.cta.title')}
             </h2>
-            <p className="text-xl text-grey-light mb-8 max-w-2xl mx-auto">
-              Dis-nous ce que tu as en tête. Soumission rapide, sans engagement.
+            <p className="text-xl text-white/70 mb-8 max-w-2xl mx-auto">
+              {t('home.cta.subtitle')}
             </p>
             <Link to="/contact" className="btn-primary">
-              Demander une soumission
+              {t('home.cta.button')}
               <ArrowRight className="ml-2" size={20} />
             </Link>
           </div>

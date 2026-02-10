@@ -3,11 +3,14 @@ import { Helmet } from 'react-helmet-async';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, ArrowLeft, CheckCircle, Wrench, Users } from 'lucide-react';
 import { useState } from 'react';
-import servicesData from '../data/services';
 import { toFull } from '../utils/paths';
+import { useLang } from '../i18n/LanguageContext';
+import getServicesData from '../data/getServicesData';
 
 function ServiceDetail() {
+  const { lang, t } = useLang();
   const { slug } = useParams();
+  const servicesData = getServicesData(lang);
   const service = servicesData[slug];
   const [lightboxImage, setLightboxImage] = useState(null);
 
@@ -17,7 +20,6 @@ function ServiceDetail() {
 
   const Icon = service.icon;
 
-  // Obtenir services adjacents pour navigation
   const slugs = Object.keys(servicesData);
   const currentIndex = slugs.indexOf(slug);
   const prevService = currentIndex > 0 ? servicesData[slugs[currentIndex - 1]] : null;
@@ -34,7 +36,7 @@ function ServiceDetail() {
       <section className="relative py-32 md:py-40 overflow-hidden">
         <div className="absolute inset-0">
           <img src={service.heroImage} alt={service.title} className="w-full h-full object-cover" />
-          <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(45,0,89,0.88) 0%, rgba(58,0,112,0.95) 100%)' }}></div>
+          <div className="absolute inset-0" style={{ background: 'var(--hero-gradient)' }}></div>
         </div>
 
         <div className="relative z-10 section-container !py-0">
@@ -44,10 +46,9 @@ function ServiceDetail() {
             transition={{ duration: 0.8 }}
             className="max-w-4xl"
           >
-            {/* Breadcrumb */}
             <div className="flex items-center gap-2 mb-6 text-sm">
-              <Link to="/services" className="text-grey-muted hover:text-magenta transition-colors">Services</Link>
-              <span className="text-grey-muted">/</span>
+              <Link to="/services" className="text-white/50 hover:text-magenta transition-colors">{t('serviceDetail.breadcrumbServices')}</Link>
+              <span className="text-white/50">/</span>
               <span className="text-magenta">{service.title}</span>
             </div>
 
@@ -62,17 +63,17 @@ function ServiceDetail() {
               </div>
             </div>
 
-            <p className="text-xl md:text-2xl text-grey-light mb-8">
+            <p className="text-xl md:text-2xl text-white/70 mb-8">
               {service.subtitle}
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4">
               <Link to="/contact" className="btn-primary">
-                Demander une soumission
+                {t('serviceDetail.requestQuote')}
                 <ArrowRight className="ml-2" size={20} />
               </Link>
-              <a href="#tarifs" className="btn-outline">
-                Voir les tarifs
+              <a href="#tarifs" className="btn-outline !text-white !border-white/25 hover:!bg-white/10 hover:!border-white/50">
+                {t('serviceDetail.viewPricing')}
               </a>
             </div>
           </motion.div>
@@ -91,7 +92,7 @@ function ServiceDetail() {
         >
           <div>
             <h2 className="text-3xl font-heading font-bold text-gradient mb-6">
-              Le service
+              {t('serviceDetail.theService')}
             </h2>
             {service.description.split('\n\n').map((paragraph, i) => (
               <p key={i} className="text-grey-light text-lg leading-relaxed mb-4">
@@ -100,10 +101,10 @@ function ServiceDetail() {
             ))}
           </div>
 
-          <div className="p-8 rounded-2xl border border-purple-main/30" style={{ background: 'linear-gradient(145deg, rgba(49,0,81,0.4), rgba(70,1,94,0.3))' }}>
-            <h3 className="text-xl font-heading font-bold text-white mb-6 flex items-center gap-2">
+          <div className="p-8 rounded-2xl border border-purple-main/30 transition-colors duration-300" style={{ background: 'var(--highlight-bg)', boxShadow: 'var(--card-shadow)' }}>
+            <h3 className="text-xl font-heading font-bold text-heading mb-6 flex items-center gap-2">
               <CheckCircle size={22} className="text-magenta" />
-              Points forts
+              {t('serviceDetail.highlights')}
             </h3>
             <ul className="space-y-4">
               {service.highlights.map((highlight, index) => (
@@ -132,7 +133,7 @@ function ServiceDetail() {
           className="mb-20"
         >
           <h2 className="text-3xl font-heading font-bold text-gradient mb-8 text-center">
-            Exemples de réalisations
+            {t('serviceDetail.gallery')}
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {service.gallery.map((image, index) => (
@@ -148,7 +149,7 @@ function ServiceDetail() {
               >
                 <img
                   src={image}
-                  alt={`${service.title} - exemple ${index + 1}`}
+                  alt={`${service.title} - ${index + 1}`}
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   loading="lazy"
                 />
@@ -174,7 +175,7 @@ function ServiceDetail() {
           className="mb-20"
         >
           <h2 className="text-3xl font-heading font-bold text-gradient mb-10 text-center">
-            Notre processus
+            {t('serviceDetail.process')}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {service.process.map((item, index) => (
@@ -184,13 +185,13 @@ function ServiceDetail() {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: index * 0.1 }}
                 viewport={{ once: true }}
-                className="p-6 rounded-xl border border-purple-main/30 relative"
-                style={{ background: 'rgba(255, 255, 255, 0.04)' }}
+                className="p-6 rounded-xl border border-purple-main/30 relative transition-colors duration-300"
+                style={{ background: 'var(--bg-glass)', boxShadow: 'var(--card-shadow)' }}
               >
-                <div className="absolute -top-3 -left-1 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold" style={{ background: 'linear-gradient(135deg, #A348FE, #FF52A0)' }}>
+                <div className="absolute -top-3 -left-1 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold text-white" style={{ background: 'linear-gradient(135deg, #8100D1, #FF52A0)' }}>
                   {item.step}
                 </div>
-                <h3 className="text-white font-heading font-bold text-lg mt-2 mb-2">
+                <h3 className="text-heading font-heading font-bold text-lg mt-2 mb-2">
                   {item.title}
                 </h3>
                 <p className="text-grey-muted text-sm leading-relaxed">
@@ -215,9 +216,8 @@ function ServiceDetail() {
           </h2>
           <p className="text-grey-muted text-center mb-8">{service.pricing.note}</p>
 
-          {/* Si le service a un seul tableau de prix */}
           {service.pricing.headers && (
-            <div className="rounded-xl overflow-hidden border border-purple-main/30 max-w-4xl mx-auto">
+            <div className="rounded-xl overflow-hidden border border-purple-main/30 max-w-4xl mx-auto" style={{ boxShadow: 'var(--card-shadow)' }}>
               <table className="price-table">
                 <thead>
                   <tr>
@@ -232,14 +232,11 @@ function ServiceDetail() {
                       {row.map((cell, j) => (
                         <td
                           key={j}
-                          className={j === 0 ? 'text-white font-semibold' : j === 1 ? 'text-gradient font-bold' : 'text-grey-muted'}
+                          className={j === 0 ? 'text-heading font-semibold' : j === 1 ? 'text-gradient font-bold' : 'text-grey-muted'}
                         >
-                          {/* Si c'est la colonne "Réf. Etsy", barrer le texte */}
-                          {service.pricing.headers[j]?.includes('Réf') && cell !== '—' ? (
-                            <span className="line-through">{cell}</span>
-                          ) : (
-                            cell
-                          )}
+                          {service.pricing.headers[j]?.includes('Réf') || service.pricing.headers[j]?.includes('Ref') ? (
+                            cell !== '—' ? <span className="line-through">{cell}</span> : cell
+                          ) : cell}
                         </td>
                       ))}
                     </tr>
@@ -249,13 +246,12 @@ function ServiceDetail() {
             </div>
           )}
 
-          {/* Si le service a plusieurs tableaux (comme stickers) */}
           {service.pricing.tables && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
               {service.pricing.tables.map((table, tableIndex) => (
-                <div key={tableIndex} className="rounded-xl overflow-hidden border border-purple-main/30">
-                  <div className="p-4 border-b border-purple-main/30" style={{ background: 'rgba(255, 255, 255, 0.05)' }}>
-                    <h3 className="text-white font-heading font-bold">{table.subtitle}</h3>
+                <div key={tableIndex} className="rounded-xl overflow-hidden border border-purple-main/30" style={{ boxShadow: 'var(--card-shadow)' }}>
+                  <div className="p-4 border-b border-purple-main/30" style={{ background: 'var(--bg-glass-alt)' }}>
+                    <h3 className="text-heading font-heading font-bold">{table.subtitle}</h3>
                   </div>
                   <table className="price-table">
                     <thead>
@@ -269,7 +265,7 @@ function ServiceDetail() {
                       {table.rows.map((row, i) => (
                         <tr key={i}>
                           {row.map((cell, j) => (
-                            <td key={j} className={j === 0 ? 'text-white font-semibold' : j === 1 ? 'text-gradient font-bold' : 'text-grey-muted'}>
+                            <td key={j} className={j === 0 ? 'text-heading font-semibold' : j === 1 ? 'text-gradient font-bold' : 'text-grey-muted'}>
                               {cell}
                             </td>
                           ))}
@@ -294,7 +290,7 @@ function ServiceDetail() {
           >
             <h2 className="text-3xl font-heading font-bold text-gradient mb-8 text-center flex items-center justify-center gap-3">
               <Wrench size={28} className="text-magenta" />
-              Équipement utilisé
+              {t('serviceDetail.equipment')}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
               {service.equipment.map((item, index) => (
@@ -304,10 +300,10 @@ function ServiceDetail() {
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, delay: index * 0.1 }}
                   viewport={{ once: true }}
-                  className="p-6 rounded-xl border border-purple-main/30 text-center"
-                  style={{ background: 'rgba(255, 255, 255, 0.04)' }}
+                  className="p-6 rounded-xl border border-purple-main/30 text-center transition-colors duration-300"
+                  style={{ background: 'var(--bg-glass)', boxShadow: 'var(--card-shadow)' }}
                 >
-                  <h4 className="text-white font-heading font-bold mb-2">{item.name}</h4>
+                  <h4 className="text-heading font-heading font-bold mb-2">{item.name}</h4>
                   <p className="text-grey-muted text-sm">{item.desc}</p>
                 </motion.div>
               ))}
@@ -315,7 +311,7 @@ function ServiceDetail() {
           </motion.div>
         )}
 
-        {/* ============ TECHNOLOGIES (pour web seulement) ============ */}
+        {/* ============ TECHNOLOGIES ============ */}
         {service.technologies && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -325,7 +321,7 @@ function ServiceDetail() {
             className="mb-20"
           >
             <h2 className="text-3xl font-heading font-bold text-gradient mb-8 text-center">
-              Technologies maîtrisées
+              {t('serviceDetail.technologies')}
             </h2>
             <div className="flex flex-wrap justify-center gap-3 max-w-3xl mx-auto">
               {service.technologies.map((tech, index) => (
@@ -335,8 +331,8 @@ function ServiceDetail() {
                   whileInView={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.3, delay: index * 0.05 }}
                   viewport={{ once: true }}
-                  className="px-5 py-2.5 rounded-full text-sm font-semibold text-white border border-purple-main/50"
-                  style={{ background: 'rgba(255, 255, 255, 0.05)' }}
+                  className="px-5 py-2.5 rounded-full text-sm font-semibold border border-purple-main/50 transition-colors duration-300"
+                  style={{ background: 'var(--bg-glass-alt)', color: 'var(--color-heading)' }}
                 >
                   {tech}
                 </motion.span>
@@ -345,7 +341,7 @@ function ServiceDetail() {
           </motion.div>
         )}
 
-        {/* ============ ÉQUIPE DESIGN (pour design graphique seulement) ============ */}
+        {/* ============ ÉQUIPE DESIGN ============ */}
         {service.team && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -356,14 +352,14 @@ function ServiceDetail() {
           >
             <h2 className="text-3xl font-heading font-bold text-gradient mb-8 text-center flex items-center justify-center gap-3">
               <Users size={28} className="text-magenta" />
-              L'équipe design
+              {t('serviceDetail.team')}
             </h2>
-            <div className="max-w-2xl mx-auto p-8 rounded-2xl border border-purple-main/30 text-center" style={{ background: 'linear-gradient(145deg, rgba(49,0,81,0.4), rgba(70,1,94,0.3))' }}>
-              <h3 className="text-2xl font-heading font-bold text-white mb-1">{service.team.name}</h3>
+            <div className="max-w-2xl mx-auto p-8 rounded-2xl border border-purple-main/30 text-center transition-colors duration-300" style={{ background: 'var(--highlight-bg)', boxShadow: 'var(--card-shadow)' }}>
+              <h3 className="text-2xl font-heading font-bold text-heading mb-1">{service.team.name}</h3>
               <p className="text-magenta font-semibold mb-4">{service.team.role}</p>
               <p className="text-grey-light leading-relaxed mb-4">{service.team.bio}</p>
               <p className="text-grey-muted text-sm">
-                <strong className="text-grey-light">Portfolio :</strong> {service.team.portfolio}
+                <strong className="text-grey-light">{t('serviceDetail.portfolioLabel')} :</strong> {service.team.portfolio}
               </p>
             </div>
           </motion.div>
@@ -375,23 +371,23 @@ function ServiceDetail() {
           whileInView={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
-          className="mb-20 p-12 rounded-2xl text-center border border-magenta/30"
-          style={{ background: 'linear-gradient(145deg, rgba(49,0,81,0.6), rgba(70,1,94,0.4))' }}
+          className="mb-20 p-12 rounded-2xl text-center border border-magenta/30 transition-colors duration-300"
+          style={{ background: 'var(--cta-bg)', boxShadow: 'var(--card-shadow)' }}
         >
-          <h2 className="text-3xl md:text-4xl font-heading font-bold text-white mb-4">
-            Prêt à commander?
+          <h2 className="text-3xl md:text-4xl font-heading font-bold text-heading mb-4">
+            {t('serviceDetail.ctaTitle')}
           </h2>
           <p className="text-grey-light text-lg mb-8 max-w-2xl mx-auto">
-            Envoie-nous les détails de ton projet. Soumission gratuite dans les 24h.
+            {t('serviceDetail.ctaSubtitle')}
           </p>
           <Link to="/contact" className="btn-primary">
-            Demander une soumission
+            {t('serviceDetail.requestQuote')}
             <ArrowRight className="ml-2" size={20} />
           </Link>
         </motion.div>
 
         {/* ============ NAVIGATION SERVICES ============ */}
-        <div className="flex justify-between items-center py-8 border-t border-purple-main/30">
+        <div className="flex justify-between items-center py-8" style={{ borderTop: '1px solid var(--footer-border)' }}>
           {prevService ? (
             <Link
               to={`/services/${prevService.slug}`}
@@ -399,7 +395,7 @@ function ServiceDetail() {
             >
               <ArrowLeft size={20} className="transition-transform group-hover:-translate-x-1" />
               <div>
-                <div className="text-xs text-grey-muted">Précédent</div>
+                <div className="text-xs text-grey-muted">{t('serviceDetail.prev')}</div>
                 <div className="font-heading font-bold">{prevService.title}</div>
               </div>
             </Link>
@@ -411,7 +407,7 @@ function ServiceDetail() {
               className="flex items-center gap-3 text-grey-light hover:text-magenta transition-colors text-right group"
             >
               <div>
-                <div className="text-xs text-grey-muted">Suivant</div>
+                <div className="text-xs text-grey-muted">{t('serviceDetail.next')}</div>
                 <div className="font-heading font-bold">{nextService.title}</div>
               </div>
               <ArrowRight size={20} className="transition-transform group-hover:translate-x-1" />
