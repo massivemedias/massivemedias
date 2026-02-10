@@ -9,7 +9,7 @@ function Footer() {
   const services = t('nav.servicesList');
 
   return (
-    <footer className="py-12 mt-20 transition-colors duration-300" style={{ background: 'var(--bg-footer)', borderTop: '1px solid var(--footer-border)' }}>
+    <footer className="py-12 mt-20 transition-colors duration-300 footer-bg footer-border">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
           {/* Colonne 1 — Logo + tagline */}
@@ -117,7 +117,7 @@ function Footer() {
         </div>
 
         {/* Bas de footer */}
-        <div className="pt-8 text-center text-grey-muted text-sm" style={{ borderTop: '1px solid var(--footer-border)' }}>
+        <div className="pt-8 text-center text-grey-muted text-sm footer-border">
           <p>
             © 2013-{currentYear} {t('footer.copyright')}
           </p>

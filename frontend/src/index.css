@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
 /* =============================================
@@ -26,7 +26,7 @@
 
   /* Polices */
   --font-heading: 'Space Grotesk', sans-serif;
-  --font-body: 'Inter', sans-serif;
+  --font-body: -apple-system, 'SF Pro Display', 'Helvetica Neue', sans-serif;
 
   /* Ombres */
   --shadow-soft: 0 1px 8px rgba(0, 0, 0, 0.12);
@@ -93,7 +93,7 @@
   --color-purple-main: #F0EBF7;
   --color-grey-light: #2D1A40;
   --color-grey-muted: #7A6B90;
-  --color-heading: #1E0E30;
+  --color-heading: #4F4F4F;
 
   /* Theme properties — Light & airy */
   --bg-body: #FFFFFF;
@@ -146,7 +146,7 @@
 body {
   margin: 0;
   padding: 0;
-  font-family: 'Inter', sans-serif;
+  font-family: -apple-system, 'SF Pro Display', 'Helvetica Neue', sans-serif;
   background: var(--bg-body);
   color: var(--color-heading);
   -webkit-font-smoothing: antialiased;
@@ -157,6 +157,11 @@ body {
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Space Grotesk', sans-serif;
   font-weight: 700;
+}
+
+/* Gros titres avec letter-spacing serré */
+.hero-title {
+  letter-spacing: -2px;
 }
 
 ::selection {
@@ -257,7 +262,7 @@ h1, h2, h3, h4, h5, h6 {
   border: 1px solid var(--bg-input-border);
   background: var(--bg-input);
   transition: border-color 0.2s, background 0.2s, color 0.2s;
-  font-family: 'Inter', sans-serif;
+  font-family: -apple-system, 'SF Pro Display', 'Helvetica Neue', sans-serif;
   font-size: 1rem;
   box-sizing: border-box;
 }
@@ -317,6 +322,126 @@ select.input-field option {
 
 .bg-gradient-card {
   background: var(--bg-card);
+}
+
+/* =============================================
+   Classes de layout et style (remplace inline styles)
+   ============================================= */
+
+/* Header */
+.header-bg {
+  background: var(--bg-header);
+  backdrop-filter: blur(16px);
+}
+
+.header-dropdown {
+  background: var(--header-dropdown-bg);
+  box-shadow: var(--header-dropdown-shadow);
+}
+
+.nav-link {
+  color: var(--nav-text);
+}
+
+.nav-link:hover {
+  color: var(--nav-text-hover);
+}
+
+.header-item-hover:hover {
+  background: var(--header-item-hover);
+}
+
+.toggle-button {
+  color: var(--toggle-text);
+  border: 1px solid var(--toggle-border);
+}
+
+.toggle-button:hover {
+  border-color: var(--toggle-hover-border);
+}
+
+/* Logo */
+.logo-header {
+  width: 149px;
+  height: 36px;
+}
+
+.logo-home {
+  width: 100%;
+  max-width: 750px;
+  height: auto;
+}
+
+/* Hero sections */
+.hero-overlay {
+  background: var(--hero-gradient);
+}
+
+.hero-pattern {
+  background-image: radial-gradient(circle, var(--pattern-dot) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.overlay-cta {
+  background: var(--overlay-cta);
+}
+
+.space-overlay {
+  background: var(--space-overlay);
+}
+
+/* Glassmorphism & Cards */
+.bg-glass {
+  background: var(--bg-glass);
+  border: 1px solid var(--bg-card-border);
+}
+
+.bg-glass-alt {
+  background: var(--bg-glass-alt);
+}
+
+.icon-bg {
+  background: var(--icon-bg);
+}
+
+.icon-glass {
+  background: var(--icon-glass);
+  backdrop-filter: var(--icon-glass-blur);
+}
+
+.card-border {
+  border: 1px solid var(--bg-card-border);
+}
+
+.card-shadow {
+  box-shadow: var(--card-shadow);
+}
+
+/* CTA backgrounds */
+.cta-bg {
+  background: var(--cta-bg);
+}
+
+.cta-text-bg {
+  background: var(--cta-text-bg);
+}
+
+.highlight-bg {
+  background: var(--highlight-bg);
+}
+
+/* Footer */
+.footer-bg {
+  background: var(--bg-footer);
+}
+
+.footer-border {
+  border-top: 1px solid var(--footer-border);
+}
+
+/* Header border */
+.header-border {
+  border-bottom: 1px solid var(--header-border);
 }
 
 /* =============================================

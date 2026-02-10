@@ -103,8 +103,7 @@ function Home() {
             <motion.img
               src={theme === 'light' ? MassiveLogoLight : MassiveLogoDark}
               alt="MASSIVE"
-              className="mx-auto mb-10 transition-opacity duration-300"
-              style={{ width: '100%', maxWidth: '750px', height: 'auto' }}
+              className="mx-auto mb-10 transition-opacity duration-300 logo-home"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.1, duration: 0.8, ease: 'easeOut' }}
@@ -157,7 +156,7 @@ function Home() {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <h2 className="text-5xl md:text-6xl font-heading font-bold text-heading mb-4">
+          <h2 className="text-5xl md:text-6xl font-heading font-bold text-heading mb-4 hero-title">
             {t('home.servicesSection.title')}
           </h2>
           <p className="text-xl text-grey-light max-w-2xl mx-auto">
@@ -195,7 +194,7 @@ function Home() {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <h2 className="text-5xl md:text-6xl font-heading font-bold text-heading mb-4">
+          <h2 className="text-5xl md:text-6xl font-heading font-bold text-heading mb-4 hero-title">
             {t('home.projectsSection.title')}
           </h2>
           <p className="text-xl text-grey-light max-w-2xl mx-auto">
@@ -243,7 +242,7 @@ function Home() {
           <Counter end={500} suffix="+" label={t('home.stats.projects')} />
           <Counter end={100} suffix="%" label={t('home.stats.local')} />
           <div className="text-center p-6">
-            <div className="text-5xl md:text-6xl font-heading font-bold text-gradient mb-2">24-48h</div>
+            <div className="text-5xl md:text-6xl font-heading font-bold text-gradient mb-2 hero-title">24-48h</div>
             <div className="text-grey-light text-lg">{t('home.stats.delay')}</div>
           </div>
         </div>
@@ -258,7 +257,7 @@ function Home() {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <h2 className="text-5xl md:text-6xl font-heading font-bold text-heading mb-4">
+          <h2 className="text-5xl md:text-6xl font-heading font-bold text-heading mb-4 hero-title">
             {t('home.why.title')}
           </h2>
         </motion.div>
