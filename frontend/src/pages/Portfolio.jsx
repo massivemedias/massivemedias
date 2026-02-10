@@ -1,6 +1,7 @@
 import { Helmet } from 'react-helmet-async';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
+import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { img, thumb } from '../utils/paths';
 import { useLang } from '../i18n/LanguageContext';
 
@@ -160,6 +161,7 @@ function Portfolio() {
   const { lang, t } = useLang();
   const [activeCategory, setActiveCategory] = useState('all');
   const [lightboxImage, setLightboxImage] = useState(null);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
 
   const cats = t('portfolioPage.categories');
   const categories = [
@@ -175,6 +177,30 @@ function Portfolio() {
     : projects.filter(p => p.category === activeCategory);
 
   const getTitle = (key) => projectTitles[lang]?.[key] || projectTitles.fr[key] || key;
+
+  const openLightbox = (project, index) => {
+    setLightboxImage(project);
+    setLightboxIndex(index);
+  };
+
+  const goToPrevious = (e) => {
+    e.stopPropagation();
+    const newIndex = lightboxIndex > 0 ? lightboxIndex - 1 : filteredProjects.length - 1;
+    setLightboxIndex(newIndex);
+    setLightboxImage(filteredProjects[newIndex]);
+  };
+
+  const goToNext = (e) => {
+    e.stopPropagation();
+    const newIndex = lightboxIndex < filteredProjects.length - 1 ? lightboxIndex + 1 : 0;
+    setLightboxIndex(newIndex);
+    setLightboxImage(filteredProjects[newIndex]);
+  };
+
+  const closeLightbox = () => {
+    setLightboxImage(null);
+    setLightboxIndex(0);
+  };
 
   return (
     <>
@@ -250,7 +276,7 @@ function Portfolio() {
                 transition={{ duration: 0.3, delay: Math.min(index * 0.02, 0.3) }}
                 className="group relative rounded-xl overflow-hidden cursor-pointer"
                 style={{ aspectRatio: '1' }}
-                onClick={() => setLightboxImage(project)}
+                onClick={() => openLightbox(project, index)}
               >
                 <img
                   src={thumb(project.path)}
@@ -268,7 +294,7 @@ function Portfolio() {
         </motion.div>
       </section>
 
-      {/* Lightbox */}
+      {/* Lightbox avec navigation */}
       <AnimatePresence>
         {lightboxImage && (
           <motion.div
@@ -278,30 +304,65 @@ function Portfolio() {
             transition={{ duration: 0.3 }}
             className="fixed inset-0 z-[100] flex items-center justify-center p-4 cursor-pointer"
             style={{ background: 'rgba(0, 0, 0, 0.95)' }}
-            onClick={() => setLightboxImage(null)}
+            onClick={closeLightbox}
           >
+            {/* Bouton Fermer (top-right) */}
+            <button
+              onClick={closeLightbox}
+              className="absolute top-4 right-4 z-[110] text-white/70 hover:text-white transition-colors w-12 h-12 flex items-center justify-center rounded-full"
+              style={{ background: 'rgba(0,0,0,0.5)' }}
+              aria-label="Fermer"
+            >
+              <X size={28} />
+            </button>
+
+            {/* Flèche Précédent (gauche) */}
+            <button
+              onClick={goToPrevious}
+              className="absolute left-4 top-1/2 -translate-y-1/2 z-[110] text-white/70 hover:text-white transition-all duration-200 w-12 h-12 md:w-14 md:h-14 flex items-center justify-center rounded-full hover:scale-110"
+              style={{ background: 'rgba(0,0,0,0.5)' }}
+              aria-label="Photo précédente"
+            >
+              <ChevronLeft size={32} />
+            </button>
+
+            {/* Flèche Suivant (droite) */}
+            <button
+              onClick={goToNext}
+              className="absolute right-4 top-1/2 -translate-y-1/2 z-[110] text-white/70 hover:text-white transition-all duration-200 w-12 h-12 md:w-14 md:h-14 flex items-center justify-center rounded-full hover:scale-110"
+              style={{ background: 'rgba(0,0,0,0.5)' }}
+              aria-label="Photo suivante"
+            >
+              <ChevronRight size={32} />
+            </button>
+
+            {/* Container image centré */}
             <motion.div
-              initial={{ scale: 0.9 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0.9 }}
-              className="relative max-w-5xl max-h-[90vh] w-full"
+              key={lightboxImage.path}
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="relative w-full h-full flex items-center justify-center"
               onClick={(e) => e.stopPropagation()}
             >
-              <img
-                src={img(lightboxImage.path)}
-                alt={getTitle(lightboxImage.titleKey)}
-                className="w-full h-full object-contain rounded-lg"
-              />
-              <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/80 to-transparent rounded-b-lg">
-                <h3 className="text-white font-heading font-bold text-xl">{getTitle(lightboxImage.titleKey)}</h3>
+              <div className="relative max-w-7xl max-h-[90vh] w-full h-full flex items-center justify-center">
+                <img
+                  src={img(lightboxImage.path)}
+                  alt={getTitle(lightboxImage.titleKey)}
+                  className="max-w-full max-h-full w-auto h-auto object-contain rounded-lg"
+                  style={{ maxHeight: '90vh' }}
+                />
+                {/* Titre en bas */}
+                <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6 bg-gradient-to-t from-black/80 to-transparent rounded-b-lg">
+                  <h3 className="text-white font-heading font-bold text-lg md:text-xl text-center">
+                    {getTitle(lightboxImage.titleKey)}
+                  </h3>
+                  <p className="text-white/60 text-sm text-center mt-1">
+                    {lightboxIndex + 1} / {filteredProjects.length}
+                  </p>
+                </div>
               </div>
-              <button
-                onClick={() => setLightboxImage(null)}
-                className="absolute top-4 right-4 text-white/70 hover:text-white text-3xl font-bold transition-colors w-10 h-10 flex items-center justify-center rounded-full"
-                style={{ background: 'rgba(0,0,0,0.5)' }}
-              >
-                &times;
-              </button>
             </motion.div>
           </motion.div>
         )}
