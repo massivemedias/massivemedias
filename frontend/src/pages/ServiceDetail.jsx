@@ -1,7 +1,7 @@
 import { useParams, Link, Navigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, ArrowLeft, CheckCircle, Wrench, Users, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { ArrowRight, ArrowLeft, CheckCircle, Wrench, Users, ChevronLeft, ChevronRight, X, ExternalLink, Globe, Palette, Code as CodeIcon, Smartphone, Search, Gauge, Shield } from 'lucide-react';
 import { useState, useCallback, useEffect } from 'react';
 import { toFull } from '../utils/paths';
 import { useLang } from '../i18n/LanguageContext';
@@ -161,47 +161,170 @@ function ServiceDetail() {
           </div>
         </motion.div>
 
-        {/* ============ GALERIE ============ */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-          className="mb-20"
-        >
-          <h2 className="text-3xl font-heading font-bold text-gradient mb-8 text-center">
-            {t('serviceDetail.gallery')}
-          </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {service.gallery.map((image, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, scale: 0.95 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.4, delay: index * 0.05 }}
-                viewport={{ once: true }}
-                className="group relative rounded-xl overflow-hidden cursor-pointer"
-                style={{ aspectRatio: '1' }}
-                onClick={() => openLightbox(image, index)}
-              >
-                <img
-                  src={image}
-                  alt={`${service.title} - ${index + 1}`}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                  loading="lazy"
-                />
-                <div className="absolute inset-0 bg-transparent group-hover:bg-purple-dark/40 transition-colors duration-300 flex items-center justify-center">
-                  <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/20 backdrop-blur-sm rounded-full p-3">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-                      <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
-                      <line x1="11" y1="8" x2="11" y2="14" /><line x1="8" y1="11" x2="14" y2="11" />
-                    </svg>
+        {/* ============ CE QUE COMPREND UN SITE (whatWeDeliver) ============ */}
+        {service.whatWeDeliver && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+            className="mb-20"
+          >
+            <h2 className="text-3xl font-heading font-bold text-gradient mb-3 text-center">
+              {t('serviceDetail.whatWeDeliver') || 'Ce que comprend votre site'}
+            </h2>
+            <p className="text-grey-muted text-center mb-10 max-w-2xl mx-auto">
+              {t('serviceDetail.whatWeDeliverSub') || 'Chaque projet inclut un ensemble complet de services professionnels'}
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {service.whatWeDeliver.map((item, index) => {
+                const deliverIcons = [Palette, CodeIcon, Smartphone, Search, Gauge, Shield];
+                const DeliverIcon = deliverIcons[index] || Globe;
+                return (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: index * 0.08 }}
+                    viewport={{ once: true }}
+                    className="p-6 rounded-xl border border-purple-main/30 transition-colors duration-300"
+                    style={{ background: 'var(--bg-glass)', boxShadow: 'var(--card-shadow)' }}
+                  >
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="p-2 rounded-lg" style={{ background: 'var(--icon-bg)' }}>
+                        <DeliverIcon size={20} className="text-magenta" />
+                      </div>
+                      <h3 className="text-heading font-heading font-bold">{item.title}</h3>
+                    </div>
+                    <p className="text-grey-muted text-sm leading-relaxed">{item.desc}</p>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </motion.div>
+        )}
+
+        {/* ============ PROJETS WEB RÉALISÉS (webProjects) ============ */}
+        {service.webProjects && service.webProjects.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+            className="mb-20"
+          >
+            <h2 className="text-3xl font-heading font-bold text-gradient mb-3 text-center">
+              {t('serviceDetail.webProjectsTitle') || 'Sites réalisés'}
+            </h2>
+            <p className="text-grey-muted text-center mb-10 max-w-2xl mx-auto">
+              {t('serviceDetail.webProjectsSub') || 'Une sélection de projets web livrés pour nos clients'}
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {service.webProjects.map((project, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: index * 0.08 }}
+                  viewport={{ once: true }}
+                  className="group rounded-2xl overflow-hidden border border-purple-main/30 transition-all duration-300 hover:border-magenta/40 cursor-pointer"
+                  style={{ background: 'var(--bg-card)', boxShadow: 'var(--card-shadow)' }}
+                  onClick={() => window.open(project.url, '_blank', 'noopener,noreferrer')}
+                >
+                  {/* Screenshot */}
+                  <div className="relative overflow-hidden" style={{ aspectRatio: '16/10' }}>
+                    <img
+                      src={project.screenshot}
+                      alt={project.name}
+                      className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/20 backdrop-blur-sm rounded-full p-2">
+                      <ExternalLink size={16} className="text-white" />
+                    </div>
                   </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
+
+                  {/* Info */}
+                  <div className="p-6">
+                    <div className="flex items-center gap-3 mb-3">
+                      <img
+                        src={project.logo}
+                        alt={`${project.name} logo`}
+                        className="w-8 h-8 object-contain rounded"
+                        style={{ filter: 'var(--logo-filter, none)' }}
+                      />
+                      <div>
+                        <h3 className="text-heading font-heading font-bold text-lg">{project.name}</h3>
+                      </div>
+                    </div>
+                    <p className="text-grey-muted text-sm leading-relaxed mb-4">{project.desc}</p>
+                    <div className="flex flex-wrap gap-2">
+                      {project.tags.map((tag, i) => (
+                        <span
+                          key={i}
+                          className="px-3 py-1 rounded-full text-xs font-semibold border border-purple-main/30"
+                          style={{ background: 'var(--bg-glass-alt)', color: 'var(--color-heading)' }}
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                    <div className="mt-4 flex items-center gap-2 text-magenta text-sm font-semibold group-hover:gap-3 transition-all duration-300">
+                      <Globe size={14} />
+                      <span>{project.url.replace('https://', '').replace('http://', '').replace(/\/$/, '')}</span>
+                      <ArrowRight size={14} className="transition-transform duration-300 group-hover:translate-x-1" />
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {/* ============ GALERIE (si elle contient des images) ============ */}
+        {service.gallery && service.gallery.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+            className="mb-20"
+          >
+            <h2 className="text-3xl font-heading font-bold text-gradient mb-8 text-center">
+              {t('serviceDetail.gallery')}
+            </h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {service.gallery.map((image, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.4, delay: index * 0.05 }}
+                  viewport={{ once: true }}
+                  className="group relative rounded-xl overflow-hidden cursor-pointer"
+                  style={{ aspectRatio: '1' }}
+                  onClick={() => openLightbox(image, index)}
+                >
+                  <img
+                    src={image}
+                    alt={`${service.title} - ${index + 1}`}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    loading="lazy"
+                  />
+                  <div className="absolute inset-0 bg-transparent group-hover:bg-purple-dark/40 transition-colors duration-300 flex items-center justify-center">
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/20 backdrop-blur-sm rounded-full p-3">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+                        <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+                        <line x1="11" y1="8" x2="11" y2="14" /><line x1="8" y1="11" x2="14" y2="11" />
+                      </svg>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
 
         {/* ============ PROCESSUS ============ */}
         <motion.div

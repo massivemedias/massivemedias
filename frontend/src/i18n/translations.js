@@ -434,6 +434,10 @@ const translations = {
       ctaSubtitle: 'Envoie-nous les détails de ton projet. Soumission gratuite dans les 24h.',
       prev: 'Précédent',
       next: 'Suivant',
+      whatWeDeliver: 'Ce que comprend votre site',
+      whatWeDeliverSub: 'Chaque projet inclut un ensemble complet de services professionnels',
+      webProjectsTitle: 'Sites et applications réalisés',
+      webProjectsSub: 'Une sélection de projets web livrés pour nos clients',
     },
   },
 
@@ -875,6 +879,10 @@ const translations = {
       ctaSubtitle: "Send us your project details. Free quote within 24 hours.",
       prev: 'Previous',
       next: 'Next',
+      whatWeDeliver: 'What Your Website Includes',
+      whatWeDeliverSub: 'Every project comes with a complete set of professional services',
+      webProjectsTitle: 'Websites and Applications Built',
+      webProjectsSub: 'A selection of web projects delivered for our clients',
     },
   },
 };
