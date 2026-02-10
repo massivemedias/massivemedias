@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, X, ChevronDown, ShoppingCart, Sun, Moon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import MassiveLogo from '../assets/massive-logo.svg';
+import MassiveLogoDark from '../assets/massive-logo.svg';
+import MassiveLogoLight from '../assets/massive-logo-light.png';
 import { useLang } from '../i18n/LanguageContext';
 import { useTheme } from '../i18n/ThemeContext';
 
@@ -21,9 +22,9 @@ function Header() {
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3">
             <img 
-              src={MassiveLogo} 
+              src={theme === 'light' ? MassiveLogoLight : MassiveLogoDark} 
               alt="Massive Medias" 
-              className="h-9 w-auto"
+              className="h-9 w-auto transition-opacity duration-300"
             />
           </Link>
 

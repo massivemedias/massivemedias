@@ -88,54 +88,54 @@
 
 [data-theme="light"] {
   /* Override Tailwind theme colors */
-  --color-purple-dark: #FAFAFF;
-  --color-purple-mid: #F0EBF7;
-  --color-purple-main: #E0D5F0;
-  --color-grey-light: #3D2A57;
+  --color-purple-dark: #FFFFFF;
+  --color-purple-mid: #F8F6FB;
+  --color-purple-main: #F0EBF7;
+  --color-grey-light: #2D1A40;
   --color-grey-muted: #7A6B90;
   --color-heading: #1E0E30;
 
-  /* Theme properties */
-  --bg-body: #FAFAFF;
-  --bg-card: rgba(255, 255, 255, 0.85);
-  --bg-card-border: rgba(129, 0, 209, 0.1);
-  --bg-header: rgba(255, 255, 255, 0.92);
-  --bg-footer: #F0EBF7;
+  /* Theme properties — Light & airy */
+  --bg-body: #FFFFFF;
+  --bg-card: rgba(255, 255, 255, 0.95);
+  --bg-card-border: rgba(129, 0, 209, 0.08);
+  --bg-header: rgba(255, 255, 255, 0.95);
+  --bg-footer: #FAFAFF;
   --bg-input: #FFFFFF;
-  --bg-input-border: rgba(129, 0, 209, 0.2);
-  --bg-glass: rgba(129, 0, 209, 0.04);
-  --bg-glass-alt: rgba(129, 0, 209, 0.06);
-  --bg-table-head: rgba(129, 0, 209, 0.06);
+  --bg-input-border: rgba(129, 0, 209, 0.15);
+  --bg-glass: rgba(248, 246, 251, 0.6);
+  --bg-glass-alt: rgba(240, 235, 247, 0.5);
+  --bg-table-head: rgba(240, 235, 247, 0.5);
   --bg-select-option: #FFFFFF;
-  --hero-gradient: linear-gradient(180deg, rgba(129,0,209,0.82) 0%, rgba(57,31,88,0.92) 100%);
-  --icon-bg: rgba(129, 0, 209, 0.08);
-  --highlight-bg: rgba(129, 0, 209, 0.06);
-  --cta-bg: rgba(129, 0, 209, 0.06);
-  --cta-text-bg: rgba(129, 0, 209, 0.04);
+  --hero-gradient: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(248,246,251,0.35) 100%);
+  --icon-bg: rgba(129, 0, 209, 0.06);
+  --highlight-bg: rgba(240, 235, 247, 0.5);
+  --cta-bg: rgba(248, 246, 251, 0.6);
+  --cta-text-bg: rgba(255, 255, 255, 0.7);
   --header-dropdown-bg: #FFFFFF;
-  --header-dropdown-shadow: 0 8px 32px rgba(129, 0, 209, 0.12);
-  --header-item-hover: rgba(129, 0, 209, 0.06);
-  --header-border: rgba(129, 0, 209, 0.1);
-  --nav-text: rgba(30, 14, 48, 0.7);
+  --header-dropdown-shadow: 0 8px 32px rgba(129, 0, 209, 0.08);
+  --header-item-hover: rgba(129, 0, 209, 0.04);
+  --header-border: rgba(129, 0, 209, 0.08);
+  --nav-text: rgba(30, 14, 48, 0.65);
   --nav-text-hover: #1E0E30;
-  --outline-border: rgba(129, 0, 209, 0.3);
-  --outline-hover-bg: rgba(129, 0, 209, 0.06);
-  --outline-hover-border: rgba(129, 0, 209, 0.5);
-  --table-border: rgba(129, 0, 209, 0.08);
-  --table-hover: rgba(129, 0, 209, 0.03);
+  --outline-border: rgba(129, 0, 209, 0.25);
+  --outline-hover-bg: rgba(129, 0, 209, 0.04);
+  --outline-hover-border: rgba(129, 0, 209, 0.4);
+  --table-border: rgba(129, 0, 209, 0.06);
+  --table-hover: rgba(129, 0, 209, 0.02);
   --scrollbar-track: #FAFAFF;
-  --scrollbar-thumb: #D5C8E8;
+  --scrollbar-thumb: #E0D5F0;
   --scrollbar-thumb-hover: #8100D1;
-  --card-shadow: 0 2px 16px rgba(129, 0, 209, 0.06);
-  --pattern-dot: rgba(129, 0, 209, 0.08);
-  --overlay-cta: rgba(90, 0, 155, 0.90);
-  --icon-glass: rgba(255, 255, 255, 0.8);
-  --icon-glass-blur: blur(8px);
-  --toggle-border: rgba(129, 0, 209, 0.2);
-  --toggle-text: rgba(30, 14, 48, 0.7);
-  --toggle-hover-border: rgba(129, 0, 209, 0.4);
-  --space-overlay: linear-gradient(180deg, transparent 0%, rgba(248,245,252,0.95) 100%);
-  --footer-border: rgba(129, 0, 209, 0.1);
+  --card-shadow: 0 2px 20px rgba(129, 0, 209, 0.04);
+  --pattern-dot: rgba(129, 0, 209, 0.05);
+  --overlay-cta: rgba(255, 255, 255, 0.85);
+  --icon-glass: rgba(255, 255, 255, 0.9);
+  --icon-glass-blur: blur(12px);
+  --toggle-border: rgba(129, 0, 209, 0.15);
+  --toggle-text: rgba(30, 14, 48, 0.65);
+  --toggle-hover-border: rgba(129, 0, 209, 0.3);
+  --space-overlay: linear-gradient(180deg, transparent 0%, rgba(255,255,255,0.92) 100%);
+  --footer-border: rgba(129, 0, 209, 0.08);
   --btn-outline-text: #1E0E30;
 }
 
