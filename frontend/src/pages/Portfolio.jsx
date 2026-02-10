@@ -31,9 +31,6 @@ const projects = [
   { path: '/images/prints/Prints21.jpeg', titleKey: 'print', category: 'prints' },
   { path: '/images/prints/Prints22.jpeg', titleKey: 'print', category: 'prints' },
   { path: '/images/prints/Prints23.jpeg', titleKey: 'print', category: 'prints' },
-  { path: '/images/prints/Prints24.jpeg', titleKey: 'print', category: 'prints' },
-  { path: '/images/prints/Prints25.jpeg', titleKey: 'print', category: 'prints' },
-  { path: '/images/prints/Prints26.jpeg', titleKey: 'print', category: 'prints' },
   // Stickers
   { path: '/images/stickers/Stickers1.jpeg', titleKey: 'sticker', category: 'stickers' },
   { path: '/images/stickers/Stickers2.jpg', titleKey: 'sticker', category: 'stickers' },
@@ -59,10 +56,6 @@ const projects = [
   { path: '/images/textile/Textile9.jpeg', titleKey: 'textile', category: 'textile' },
   { path: '/images/textile/Textile10.jpeg', titleKey: 'textile', category: 'textile' },
   { path: '/images/textile/Textile11.jpeg', titleKey: 'textile', category: 'textile' },
-  { path: '/images/textile/Textile13.jpeg', titleKey: 'textile', category: 'textile' },
-  { path: '/images/textile/Textile14.jpeg', titleKey: 'textile', category: 'textile' },
-  { path: '/images/textile/Textile15.jpeg', titleKey: 'textile', category: 'textile' },
-  { path: '/images/textile/Textile16.jpeg', titleKey: 'textile', category: 'textile' },
   { path: '/images/textile/Textile17.jpeg', titleKey: 'textile', category: 'textile' },
   { path: '/images/textile/Textile18.jpeg', titleKey: 'textile', category: 'textile' },
   { path: '/images/textile/Textile19.jpeg', titleKey: 'textile', category: 'textile' },
@@ -73,20 +66,11 @@ const projects = [
   { path: '/images/textile/Textile24.jpeg', titleKey: 'textile', category: 'textile' },
   { path: '/images/textile/Textile25.jpeg', titleKey: 'textile', category: 'textile' },
   // Locale / studio
-  { path: '/images/locale/locale1.jpeg', titleKey: 'workspace', category: 'locale' },
   { path: '/images/locale/locale2.jpeg', titleKey: 'workspace', category: 'locale' },
   { path: '/images/locale/locale3.jpeg', titleKey: 'workspace', category: 'locale' },
-  { path: '/images/locale/locale4.jpeg', titleKey: 'workspace', category: 'locale' },
-  { path: '/images/locale/locale5.jpeg', titleKey: 'workspace', category: 'locale' },
-  { path: '/images/locale/locale6.jpeg', titleKey: 'workspace', category: 'locale' },
-  { path: '/images/locale/locale7.jpeg', titleKey: 'workspace', category: 'locale' },
-  { path: '/images/locale/locale8.jpeg', titleKey: 'workspace', category: 'locale' },
   { path: '/images/locale/locale9.jpeg', titleKey: 'workspace', category: 'locale' },
   { path: '/images/locale/locale10.jpeg', titleKey: 'workspace', category: 'locale' },
   { path: '/images/locale/locale11.jpeg', titleKey: 'workspace', category: 'locale' },
-  { path: '/images/locale/locale12.jpeg', titleKey: 'workspace', category: 'locale' },
-  { path: '/images/locale/locale13.jpeg', titleKey: 'workspace', category: 'locale' },
-  { path: '/images/locale/locale14.jpeg', titleKey: 'workspace', category: 'locale' },
 ];
 
 // Titres par langue — Simplifiés
