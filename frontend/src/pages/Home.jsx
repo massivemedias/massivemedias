@@ -97,7 +97,7 @@ function Home() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3, duration: 0.6 }}
-              className="mx-auto mb-8 h-[14px] md:h-[18px] w-auto"
+              className="mx-auto mb-8 h-[24px] w-auto"
             />
 
             <motion.img
