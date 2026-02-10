@@ -215,7 +215,7 @@ const translations = {
       },
       stickers: {
         title: 'Stickers personnalisés',
-        subtitle: 'Découpe de précision professionnelle · Vinyle matte, glossy, transparent, holographique · Création graphique incluse',
+        subtitle: 'Découpe de précision professionnelle · Vinyle matte, glossy, transparent, holographique · Création graphique du sticker incluse',
         table1Title: 'Stickers ronds 2,5" holographiques',
         table1Headers: ['Quantité', 'Prix', 'Prix/unité'],
         table2Title: 'Stickers A4 custom découpés',
@@ -656,7 +656,7 @@ const translations = {
       },
       stickers: {
         title: 'Custom Stickers',
-        subtitle: 'Professional precision cutting · Matte, glossy, clear, holographic vinyl · Graphic design included',
+        subtitle: 'Professional precision cutting · Matte, glossy, clear, holographic vinyl · Sticker graphic design included',
         table1Title: 'Round 2.5" holographic stickers',
         table1Headers: ['Quantity', 'Price', 'Price/unit'],
         table2Title: 'Custom cut A4 stickers',

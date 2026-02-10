@@ -18,10 +18,10 @@ const serviceLinks = [
 const serviceImages = [
   thumb('/images/prints/Prints1.jpeg'),
   thumb('/images/stickers/Stickers1.jpeg'),
-  thumb('/images/textile/Textile1.jpeg'),
+  thumb('/images/stickers/Stickers3.jpeg'),
   thumb('/images/prints/Prints5.jpeg'),
   thumb('/images/prints/Prints10.jpeg'),
-  thumb('/images/locale/locale1.jpeg'),
+  thumb('/images/locale/locale11.jpeg'),
 ];
 
 function Services() {
@@ -39,7 +39,7 @@ function Services() {
       {/* Hero avec image de fond */}
       <section className="relative py-32 overflow-hidden">
         <div className="absolute inset-0">
-          <img src={thumb('/images/locale/locale5.jpeg')} alt="" className="w-full h-full object-cover" />
+          <img src={thumb('/images/locale/locale10.jpeg')} alt="" className="w-full h-full object-cover" />
           <div className="absolute inset-0" style={{ background: 'var(--hero-gradient)' }}></div>
         </div>
 

@@ -36,10 +36,10 @@ const serviceLinks = [
 const serviceImages = [
   thumb('/images/prints/Prints1.jpeg'),
   thumb('/images/stickers/Stickers1.jpeg'),
-  thumb('/images/textile/Textile1.jpeg'),
+  thumb('/images/stickers/Stickers3.jpeg'),
   thumb('/images/prints/Prints5.jpeg'),
   thumb('/images/prints/Prints10.jpeg'),
-  thumb('/images/locale/locale1.jpeg'),
+  thumb('/images/locale/locale11.jpeg'),
 ];
 
 const advantageIcons = [Truck, Award, Users, Zap, DollarSign, Music];
@@ -47,10 +47,10 @@ const advantageIcons = [Truck, Award, Users, Zap, DollarSign, Music];
 const featuredProjectImages = [
   thumb('/images/prints/Prints2.jpeg'),
   thumb('/images/stickers/Stickers3.jpeg'),
-  thumb('/images/textile/Textile3.jpeg'),
+  thumb('/images/prints/Prints7.jpeg'),
   thumb('/images/prints/Prints8.jpeg'),
   thumb('/images/stickers/Stickers5.jpeg'),
-  thumb('/images/textile/Textile5.jpeg'),
+  thumb('/images/locale/locale9.jpeg'),
 ];
 
 function Home() {
@@ -300,7 +300,7 @@ function Home() {
           className="relative rounded-3xl overflow-hidden"
         >
           <img
-            src={thumb('/images/locale/locale5.jpeg')}
+            src={thumb('/images/locale/locale10.jpeg')}
             alt=""
             className="absolute inset-0 w-full h-full object-cover"
           />

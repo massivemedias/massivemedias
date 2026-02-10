@@ -314,6 +314,14 @@ select.input-field option {
 
 .price-table tr:hover td {
   background: var(--table-hover);
+  color: var(--color-heading);
+}
+
+.price-table tr:hover td.text-gradient {
+  background: linear-gradient(135deg, #FF9B3D, #FF52A0) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
 }
 
 /* Background classes */

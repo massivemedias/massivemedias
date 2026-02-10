@@ -74,7 +74,8 @@ Cut to the exact shape of your design with our professional cutting equipment, e
       'Matte, glossy, clear, holographic vinyl',
       'Contour cut to the exact shape of the design',
       'Lamination included - water, UV, scratch resistant',
-      'Graphic design included in the price',
+      'Sticker graphic design included in the price',
+      'Local delivery available',
       'Fast turnaround: 24-72h',
     ],
     process: [
@@ -121,7 +122,7 @@ Cut to the exact shape of your design with our professional cutting equipment, e
     ],
     equipment: [
       { name: 'Professional cutter', desc: 'Precision cutting up to 12" wide. Contour, kiss-cut, die-cut.' },
-      { name: 'Professional laminator', desc: 'Matte or glossy lamination for water/UV/scratch protection.' },
+      { name: 'Laminator', desc: 'Matte or glossy lamination for water/UV/scratch protection.' },
       { name: 'Vinyl printer', desc: 'High quality vinyl printing, vibrant colors.' },
     ],
     seo: {
@@ -135,7 +136,7 @@ Cut to the exact shape of your design with our professional cutting equipment, e
     icon: Shirt,
     title: 'Sublimation & Merch',
     subtitle: 'T-shirts, mugs, accessories - your custom merch',
-    heroImage: thumb('/images/textile/Textile1.jpeg'),
+    heroImage: thumb('/images/stickers/Stickers3.jpeg'),
     description: `Sublimation printing on textiles and objects. Sublimation produces vibrant and permanent colors that don't crack, don't fade and are wash-resistant.
 
 Ideal for artist merch, events, corporate gifts or any custom project. From t-shirts to tumblers, mugs and mousepads.`,
@@ -171,14 +172,14 @@ Ideal for artist merch, events, corporate gifts or any custom project. From t-sh
       ],
     },
     gallery: [
-      thumb('/images/textile/Textile2.jpeg'),
-      thumb('/images/textile/Textile3.jpeg'),
-      thumb('/images/textile/Textile5.jpeg'),
-      thumb('/images/textile/Textile7.jpeg'),
-      thumb('/images/textile/Textile9.jpeg'),
-      thumb('/images/textile/Textile13.jpeg'),
-      thumb('/images/textile/Textile17.jpeg'),
-      thumb('/images/textile/Textile20.jpeg'),
+      thumb('/images/prints/Prints5.jpeg'),
+      thumb('/images/prints/Prints10.jpeg'),
+      thumb('/images/prints/Prints16.jpeg'),
+      thumb('/images/prints/Prints20.jpeg'),
+      thumb('/images/stickers/Stickers1.jpeg'),
+      thumb('/images/stickers/Stickers5.jpeg'),
+      thumb('/images/stickers/Stickers9.jpeg'),
+      thumb('/images/stickers/Stickers12.jpeg'),
     ],
     equipment: [
       { name: 'Large format heat press', desc: 'Large format heat press for t-shirts, hoodies and textiles.' },
@@ -240,11 +241,11 @@ Perfect for artists, event promoters, labels, cafes and businesses in Mile-End a
       thumb('/images/prints/Prints15.jpeg'),
       thumb('/images/prints/Prints18.jpeg'),
       thumb('/images/prints/Prints22.jpeg'),
-      thumb('/images/prints/Prints25.jpeg'),
+      thumb('/images/prints/Prints23.jpeg'),
     ],
     equipment: [
       { name: 'Professional printer', desc: 'Superior quality even for flyers - 12 pigmented colors.' },
-      { name: 'Standard printer', desc: 'Fast volume printing for standard runs.' },
+      { name: '3x Inkjet printers', desc: 'Fast volume printing for standard runs.' },
       { name: 'Professional cutter', desc: 'Precision cutting for custom formats.' },
     ],
     seo: {
@@ -297,7 +298,7 @@ We know the Montreal creative scene. We know what works visually for artists, la
       thumb('/images/prints/Prints19.jpeg'),
       thumb('/images/prints/Prints21.jpeg'),
       thumb('/images/prints/Prints23.jpeg'),
-      thumb('/images/prints/Prints24.jpeg'),
+      thumb('/images/prints/Prints22.jpeg'),
       thumb('/images/stickers/Stickers12.jpeg'),
       thumb('/images/stickers/Stickers14.jpeg'),
     ],
@@ -318,7 +319,7 @@ We know the Montreal creative scene. We know what works visually for artists, la
     icon: Code,
     title: 'Web Development',
     subtitle: 'Showcase sites, e-commerce and landing pages for creators',
-    heroImage: thumb('/images/locale/locale1.jpeg'),
+    heroImage: thumb('/images/locale/locale11.jpeg'),
     description: `Modern, fast and SEO-optimized websites for artists, creators and small businesses. From artist portfolios to complete e-commerce stores, we master the technologies that matter.
 
 15+ years of web development experience. The founder of Massive Medias is a trained programmer-analyst - this isn't a side project, it's our primary expertise.`,
@@ -351,12 +352,12 @@ We know the Montreal creative scene. We know what works visually for artists, la
     },
     gallery: [
       thumb('/images/locale/locale2.jpeg'),
-      thumb('/images/locale/locale4.jpeg'),
-      thumb('/images/locale/locale6.jpeg'),
-      thumb('/images/locale/locale12.jpeg'),
-      thumb('/images/locale/locale13.jpeg'),
-      thumb('/images/locale/locale14.jpeg'),
-      thumb('/images/prints/Prints26.jpeg'),
+      thumb('/images/locale/locale3.jpeg'),
+      thumb('/images/locale/locale9.jpeg'),
+      thumb('/images/locale/locale10.jpeg'),
+      thumb('/images/locale/locale11.jpeg'),
+      thumb('/images/prints/Prints1.jpeg'),
+      thumb('/images/prints/Prints15.jpeg'),
       thumb('/images/stickers/Stickers13.jpeg'),
     ],
     technologies: [

@@ -74,7 +74,8 @@ Découpés à la forme exacte de ton design avec notre équipement de découpe p
       'Vinyle matte, glossy, transparent, holographique',
       'Découpe contour à la forme exacte du design',
       'Lamination incluse - résistant eau, UV, rayures',
-      'Création graphique incluse dans le prix',
+      'Création graphique du sticker incluse dans le prix',
+      'Livraison locale disponible',
       'Délai rapide : 24-72h',
     ],
     process: [
@@ -121,7 +122,7 @@ Découpés à la forme exacte de ton design avec notre équipement de découpe p
     ],
     equipment: [
       { name: 'Découpeuse professionnelle', desc: 'Découpe de précision jusqu\'à 12" de large. Contour, kiss-cut, die-cut.' },
-      { name: 'Lamineuse professionnelle', desc: 'Lamination matte ou glossy pour protection eau/UV/rayures.' },
+      { name: 'Lamineuse', desc: 'Lamination matte ou glossy pour protection eau/UV/rayures.' },
       { name: 'Imprimante vinyle', desc: 'Impression vinyle haute qualité, couleurs vibrantes.' },
     ],
     seo: {
@@ -135,7 +136,7 @@ Découpés à la forme exacte de ton design avec notre équipement de découpe p
     icon: Shirt,
     title: 'Sublimation & Merch',
     subtitle: 'T-shirts, mugs, accessoires - ton merch sur mesure',
-    heroImage: thumb('/images/textile/Textile1.jpeg'),
+    heroImage: thumb('/images/stickers/Stickers3.jpeg'),
     description: `Impression sublimation sur textile et objets. La sublimation produit des couleurs vibrantes et permanentes qui ne craquent pas, ne s'effacent pas et résistent au lavage.
 
 Idéal pour le merch d'artiste, les événements, les cadeaux corporatifs ou tout projet personnalisé. Du t-shirt au thermos en passant par les mugs et les tapis de souris.`,
@@ -171,14 +172,14 @@ Idéal pour le merch d'artiste, les événements, les cadeaux corporatifs ou tou
       ],
     },
     gallery: [
-      thumb('/images/textile/Textile2.jpeg'),
-      thumb('/images/textile/Textile3.jpeg'),
-      thumb('/images/textile/Textile5.jpeg'),
-      thumb('/images/textile/Textile7.jpeg'),
-      thumb('/images/textile/Textile9.jpeg'),
-      thumb('/images/textile/Textile13.jpeg'),
-      thumb('/images/textile/Textile17.jpeg'),
-      thumb('/images/textile/Textile20.jpeg'),
+      thumb('/images/prints/Prints5.jpeg'),
+      thumb('/images/prints/Prints10.jpeg'),
+      thumb('/images/prints/Prints16.jpeg'),
+      thumb('/images/prints/Prints20.jpeg'),
+      thumb('/images/stickers/Stickers1.jpeg'),
+      thumb('/images/stickers/Stickers5.jpeg'),
+      thumb('/images/stickers/Stickers9.jpeg'),
+      thumb('/images/stickers/Stickers12.jpeg'),
     ],
     equipment: [
       { name: 'Presse à chaud grand format', desc: 'Presse à chaud grand format pour t-shirts, hoodies et textiles.' },
@@ -240,11 +241,11 @@ Parfait pour les artistes, promoteurs d'événements, labels, cafés et commerce
       thumb('/images/prints/Prints15.jpeg'),
       thumb('/images/prints/Prints18.jpeg'),
       thumb('/images/prints/Prints22.jpeg'),
-      thumb('/images/prints/Prints25.jpeg'),
+      thumb('/images/prints/Prints23.jpeg'),
     ],
     equipment: [
       { name: 'Imprimante professionnelle', desc: 'Qualité supérieure même pour les flyers - 12 couleurs pigmentées.' },
-      { name: 'Imprimante courante', desc: 'Volume d\'impression rapide pour les séries courantes.' },
+      { name: '3x Imprimantes jet d\'encre', desc: 'Volume d\'impression rapide pour les séries courantes.' },
       { name: 'Découpeuse professionnelle', desc: 'Découpe de précision pour formats personnalisés.' },
     ],
     seo: {
@@ -297,7 +298,7 @@ On connaît la scène créative montréalaise. On sait ce qui marche visuellemen
       thumb('/images/prints/Prints19.jpeg'),
       thumb('/images/prints/Prints21.jpeg'),
       thumb('/images/prints/Prints23.jpeg'),
-      thumb('/images/prints/Prints24.jpeg'),
+      thumb('/images/prints/Prints22.jpeg'),
       thumb('/images/stickers/Stickers12.jpeg'),
       thumb('/images/stickers/Stickers14.jpeg'),
     ],
@@ -318,7 +319,7 @@ On connaît la scène créative montréalaise. On sait ce qui marche visuellemen
     icon: Code,
     title: 'Développement Web',
     subtitle: 'Sites vitrines, e-commerce et landing pages pour créateurs',
-    heroImage: thumb('/images/locale/locale1.jpeg'),
+    heroImage: thumb('/images/locale/locale11.jpeg'),
     description: `Sites web modernes, performants et optimisés SEO pour artistes, créateurs et petites entreprises. Du portfolio d'artiste à la boutique e-commerce complète, on maîtrise les technologies qui comptent.
 
 15+ années d'expérience en développement web. Le fondateur de Massive Medias est programmeur-analyste de formation - ce n'est pas un side-project, c'est notre expertise première.`,
@@ -351,12 +352,12 @@ On connaît la scène créative montréalaise. On sait ce qui marche visuellemen
     },
     gallery: [
       thumb('/images/locale/locale2.jpeg'),
-      thumb('/images/locale/locale4.jpeg'),
-      thumb('/images/locale/locale6.jpeg'),
-      thumb('/images/locale/locale12.jpeg'),
-      thumb('/images/locale/locale13.jpeg'),
-      thumb('/images/locale/locale14.jpeg'),
-      thumb('/images/prints/Prints26.jpeg'),
+      thumb('/images/locale/locale3.jpeg'),
+      thumb('/images/locale/locale9.jpeg'),
+      thumb('/images/locale/locale10.jpeg'),
+      thumb('/images/locale/locale11.jpeg'),
+      thumb('/images/prints/Prints1.jpeg'),
+      thumb('/images/prints/Prints15.jpeg'),
       thumb('/images/stickers/Stickers13.jpeg'),
     ],
     technologies: [

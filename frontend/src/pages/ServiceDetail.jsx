@@ -1,8 +1,8 @@
 import { useParams, Link, Navigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, ArrowLeft, CheckCircle, Wrench, Users } from 'lucide-react';
-import { useState } from 'react';
+import { ArrowRight, ArrowLeft, CheckCircle, Wrench, Users, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { useState, useCallback, useEffect } from 'react';
 import { toFull } from '../utils/paths';
 import { useLang } from '../i18n/LanguageContext';
 import getServicesData from '../data/getServicesData';
@@ -13,10 +13,47 @@ function ServiceDetail() {
   const servicesData = getServicesData(lang);
   const service = servicesData[slug];
   const [lightboxImage, setLightboxImage] = useState(null);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
 
   if (!service) {
     return <Navigate to="/services" replace />;
   }
+
+  const openLightbox = useCallback((image, index) => {
+    setLightboxImage(image);
+    setLightboxIndex(index);
+  }, []);
+
+  const closeLightbox = useCallback(() => {
+    setLightboxImage(null);
+  }, []);
+
+  const goToPrevious = useCallback((e) => {
+    e.stopPropagation();
+    if (!service.gallery) return;
+    const newIndex = (lightboxIndex - 1 + service.gallery.length) % service.gallery.length;
+    setLightboxIndex(newIndex);
+    setLightboxImage(service.gallery[newIndex]);
+  }, [lightboxIndex, service.gallery]);
+
+  const goToNext = useCallback((e) => {
+    e.stopPropagation();
+    if (!service.gallery) return;
+    const newIndex = (lightboxIndex + 1) % service.gallery.length;
+    setLightboxIndex(newIndex);
+    setLightboxImage(service.gallery[newIndex]);
+  }, [lightboxIndex, service.gallery]);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (!lightboxImage) return;
+      if (e.key === 'Escape') closeLightbox();
+      if (e.key === 'ArrowLeft') goToPrevious(e);
+      if (e.key === 'ArrowRight') goToNext(e);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [lightboxImage, closeLightbox, goToPrevious, goToNext]);
 
   const Icon = service.icon;
 
@@ -145,7 +182,7 @@ function ServiceDetail() {
                 viewport={{ once: true }}
                 className="group relative rounded-xl overflow-hidden cursor-pointer"
                 style={{ aspectRatio: '1' }}
-                onClick={() => setLightboxImage(image)}
+                onClick={() => openLightbox(image, index)}
               >
                 <img
                   src={image}
@@ -426,28 +463,58 @@ function ServiceDetail() {
             transition={{ duration: 0.3 }}
             className="fixed inset-0 z-[100] flex items-center justify-center p-4 cursor-pointer"
             style={{ background: 'rgba(0, 0, 0, 0.95)' }}
-            onClick={() => setLightboxImage(null)}
+            onClick={closeLightbox}
           >
+            {/* Flèche gauche */}
+            {service.gallery && service.gallery.length > 1 && (
+              <button
+                onClick={goToPrevious}
+                className="absolute left-2 md:left-6 top-1/2 -translate-y-1/2 z-[110] text-white/70 hover:text-white transition-colors w-12 h-12 flex items-center justify-center rounded-full"
+                style={{ background: 'rgba(0,0,0,0.5)' }}
+              >
+                <ChevronLeft size={28} />
+              </button>
+            )}
+
+            {/* Flèche droite */}
+            {service.gallery && service.gallery.length > 1 && (
+              <button
+                onClick={goToNext}
+                className="absolute right-2 md:right-6 top-1/2 -translate-y-1/2 z-[110] text-white/70 hover:text-white transition-colors w-12 h-12 flex items-center justify-center rounded-full"
+                style={{ background: 'rgba(0,0,0,0.5)' }}
+              >
+                <ChevronRight size={28} />
+              </button>
+            )}
+
             <motion.div
-              initial={{ scale: 0.9 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0.9 }}
-              className="relative max-w-5xl max-h-[90vh] w-full"
+              key={lightboxImage}
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="relative max-w-5xl max-h-[90vh] w-full flex items-center justify-center"
               onClick={(e) => e.stopPropagation()}
             >
               <img
                 src={toFull(lightboxImage)}
                 alt={service.title}
-                className="w-full h-full object-contain rounded-lg"
+                className="max-w-full max-h-[85vh] object-contain rounded-lg"
               />
               <button
-                onClick={() => setLightboxImage(null)}
-                className="absolute top-4 right-4 text-white/70 hover:text-white text-3xl font-bold transition-colors w-10 h-10 flex items-center justify-center rounded-full"
+                onClick={closeLightbox}
+                className="absolute top-4 right-4 text-white/70 hover:text-white transition-colors w-10 h-10 flex items-center justify-center rounded-full"
                 style={{ background: 'rgba(0,0,0,0.5)' }}
               >
-                &times;
+                <X size={20} />
               </button>
             </motion.div>
+
+            {/* Indicateur */}
+            {service.gallery && service.gallery.length > 1 && (
+              <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-[110] text-white/50 text-sm">
+                {lightboxIndex + 1} / {service.gallery.length}
+              </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
