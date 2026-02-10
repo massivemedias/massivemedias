@@ -1,6 +1,6 @@
 import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
-import { Users, Zap, MapPin, Printer, Scissors, Shirt, Monitor } from 'lucide-react';
+import { MapPin, Printer, Scissors, Shirt, Monitor } from 'lucide-react';
 import MassiveLogo from '../assets/massive-logo.svg';
 import { img, thumb } from '../utils/paths';
 import { useLang } from '../i18n/LanguageContext';
@@ -67,10 +67,10 @@ function APropos() {
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <img src={thumb('/images/locale/locale1.jpeg')} alt="Studio Massive Medias" className="rounded-xl w-full h-48 object-cover" />
-              <img src={thumb('/images/locale/locale2.jpeg')} alt="Espace de travail" className="rounded-xl w-full h-48 object-cover" />
-              <img src={thumb('/images/locale/locale4.jpeg')} alt="Équipement" className="rounded-xl w-full h-48 object-cover" />
-              <img src={thumb('/images/locale/locale5.jpeg')} alt="Productions" className="rounded-xl w-full h-48 object-cover" />
+              <img src={thumb('/images/locale/locale2.jpeg')} alt="Studio Massive Medias" className="rounded-xl w-full h-48 object-cover" />
+              <img src={thumb('/images/locale/locale9.jpeg')} alt="Espace de travail" className="rounded-xl w-full h-48 object-cover" />
+              <img src={thumb('/images/locale/locale10.jpeg')} alt="Équipement" className="rounded-xl w-full h-48 object-cover" />
+              <img src={thumb('/images/locale/locale11.jpeg')} alt="Productions" className="rounded-xl w-full h-48 object-cover" />
             </div>
           </div>
         </motion.div>
@@ -109,79 +109,6 @@ function APropos() {
           </div>
         </motion.div>
 
-        {/* L'équipe */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-          className="mb-20"
-        >
-          <h2 className="text-4xl font-heading font-bold text-gradient mb-10 text-center">
-            {t('aboutPage.team.title')}
-          </h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Mika */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              viewport={{ once: true }}
-              className="rounded-2xl overflow-hidden border border-purple-main/30 transition-colors duration-300"
-              style={{ background: 'var(--bg-card)', boxShadow: 'var(--card-shadow)' }}
-            >
-              <div className="h-64 overflow-hidden">
-                <img src={thumb('/images/locale/locale8.jpeg')} alt="Michael Sanchez" className="w-full h-full object-cover" />
-              </div>
-              <div className="p-8">
-                <div className="mb-3 p-2 rounded-lg w-fit" style={{ background: 'var(--icon-bg)' }}>
-                  <Users size={24} className="text-magenta" />
-                </div>
-                <h3 className="text-2xl font-heading font-bold text-heading mb-1">
-                  {t('aboutPage.team.mika.name')}
-                </h3>
-                <p className="text-magenta font-semibold mb-4">{t('aboutPage.team.mika.role')}</p>
-                <p className="text-grey-light leading-relaxed">
-                  {t('aboutPage.team.mika.bio')}
-                </p>
-                <p className="text-grey-light leading-relaxed mt-3">
-                  {t('aboutPage.team.mika.bio2')}
-                </p>
-              </div>
-            </motion.div>
-
-            {/* Christopher */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              viewport={{ once: true }}
-              className="rounded-2xl overflow-hidden border border-purple-main/30 transition-colors duration-300"
-              style={{ background: 'var(--bg-card)', boxShadow: 'var(--card-shadow)' }}
-            >
-              <div className="h-64 overflow-hidden">
-                <img src={thumb('/images/locale/locale9.jpeg')} alt="Christopher Gagnon" className="w-full h-full object-cover" />
-              </div>
-              <div className="p-8">
-                <div className="mb-3 p-2 rounded-lg w-fit" style={{ background: 'var(--icon-bg)' }}>
-                  <Zap size={24} className="text-magenta" />
-                </div>
-                <h3 className="text-2xl font-heading font-bold text-heading mb-1">
-                  {t('aboutPage.team.chris.name')}
-                </h3>
-                <p className="text-magenta font-semibold mb-4">{t('aboutPage.team.chris.role')}</p>
-                <p className="text-grey-light leading-relaxed">
-                  {t('aboutPage.team.chris.bio')}
-                </p>
-                <p className="text-grey-light leading-relaxed mt-3">
-                  {t('aboutPage.team.chris.bio2')}
-                </p>
-              </div>
-            </motion.div>
-          </div>
-        </motion.div>
-
         {/* Équipement */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -196,9 +123,8 @@ function APropos() {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
             <div className="grid grid-cols-2 gap-4">
-              <img src={thumb('/images/locale/locale6.jpeg')} alt="Large format printer" className="rounded-xl w-full h-40 object-cover" />
-              <img src={thumb('/images/locale/locale7.jpeg')} alt="Cutting gear" className="rounded-xl w-full h-40 object-cover" />
-              <img src={thumb('/images/locale/locale10.jpeg')} alt="Presses" className="rounded-xl w-full h-40 object-cover col-span-2" />
+              <img src={thumb('/images/locale/locale3.jpeg')} alt="Studio" className="rounded-xl w-full h-40 object-cover" />
+              <img src={thumb('/images/locale/locale10.jpeg')} alt="Équipement" className="rounded-xl w-full h-40 object-cover" />
             </div>
             
             <div className="space-y-4">

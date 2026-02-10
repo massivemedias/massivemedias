@@ -52,7 +52,7 @@ Chaque impression fait l'objet d'un calibrage colorimétrique rigoureux pour gar
     equipment: [
       { name: 'Imprimante fine art professionnelle', desc: 'Impression 12 couleurs, jusqu\'à 17" (A2+). Qualité musée.' },
       { name: 'Imprimante grand format', desc: 'Grand format jusqu\'à 24" via partenariat. Expositions et tirages oversize.' },
-      { name: 'Lamineuse VEVOR 25"', desc: 'Lamination et protection des tirages pour une durabilité maximale.' },
+      { name: 'Lamineuse professionnelle', desc: 'Lamination et protection des tirages pour une durabilité maximale.' },
     ],
     seo: {
       title: 'Impression Fine Art Montréal - Massive Medias',
@@ -121,8 +121,8 @@ Découpés à la forme exacte de ton design avec notre équipement de découpe p
     ],
     equipment: [
       { name: 'Découpeuse professionnelle', desc: 'Découpe de précision jusqu\'à 12" de large. Contour, kiss-cut, die-cut.' },
-      { name: 'Lamineuse VEVOR 25"', desc: 'Lamination matte ou glossy pour protection eau/UV/rayures.' },
-      { name: 'Epson ET-2850', desc: 'Impression vinyle haute qualité, couleurs vibrantes.' },
+      { name: 'Lamineuse professionnelle', desc: 'Lamination matte ou glossy pour protection eau/UV/rayures.' },
+      { name: 'Imprimante vinyle', desc: 'Impression vinyle haute qualité, couleurs vibrantes.' },
     ],
     seo: {
       title: 'Stickers Custom Montréal - Massive Medias',
@@ -140,8 +140,8 @@ Découpés à la forme exacte de ton design avec notre équipement de découpe p
 
 Idéal pour le merch d'artiste, les événements, les cadeaux corporatifs ou tout projet personnalisé. Du t-shirt au thermos en passant par les mugs et les tapis de souris.`,
     highlights: [
-      'Presse Bettersub - grand format textile',
-      'Presse Cricut - objets et accessoires',
+      'Presse à chaud grand format - textile',
+      'Presse à chaud compacte - objets et accessoires',
       'Kit pincement gobelets - drinkware sublimation',
       'Impression permanente - ne craque pas, ne s\'efface pas',
       'Couleurs vibrantes, résistant au lavage',
@@ -181,8 +181,8 @@ Idéal pour le merch d'artiste, les événements, les cadeaux corporatifs ou tou
       thumb('/images/textile/Textile20.jpeg'),
     ],
     equipment: [
-      { name: 'Heat Press Bettersub', desc: 'Presse à chaud grand format pour t-shirts, hoodies et textiles.' },
-      { name: 'Heat Press Cricut', desc: 'Presse compacte polyvalente pour objets et accessoires.' },
+      { name: 'Presse à chaud grand format', desc: 'Presse à chaud grand format pour t-shirts, hoodies et textiles.' },
+      { name: 'Presse à chaud compacte', desc: 'Presse compacte polyvalente pour objets et accessoires.' },
       { name: 'Kit pincement gobelets', desc: 'Sublimation sur gobelets, thermos et drinkware.' },
     ],
     seo: {
@@ -244,7 +244,7 @@ Parfait pour les artistes, promoteurs d'événements, labels, cafés et commerce
     ],
     equipment: [
       { name: 'Imprimante professionnelle', desc: 'Qualité supérieure même pour les flyers - 12 couleurs pigmentées.' },
-      { name: 'Epson ET-2850', desc: 'Volume d\'impression rapide pour les séries courantes.' },
+      { name: 'Imprimante courante', desc: 'Volume d\'impression rapide pour les séries courantes.' },
       { name: 'Découpeuse professionnelle', desc: 'Découpe de précision pour formats personnalisés.' },
     ],
     seo: {

@@ -1,12 +1,21 @@
 import { Helmet } from 'react-helmet-async';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
-import { ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X, ExternalLink } from 'lucide-react';
 import { img, thumb } from '../utils/paths';
 import { useLang } from '../i18n/LanguageContext';
 
 /* Paths bruts - résolus au rendu via thumb() (grille) et img() (lightbox) */
 const projects = [
+  // Web - Sites et applications
+  { path: '/images/web/sonaa.webp', titleKey: 'sonaa', category: 'web', url: 'https://sonaa.ca' },
+  { path: '/images/web/recrutementspvm.webp', titleKey: 'recrutementspvm', category: 'web', url: 'https://recrutementspvm.ca' },
+  { path: '/images/web/mauditemachine.webp', titleKey: 'mauditemachine', category: 'web', url: 'https://mauditemachine.com' },
+  { path: '/images/web/spvm.webp', titleKey: 'spvm', category: 'web', url: 'https://spvm.qc.ca' },
+  { path: '/images/web/sarahlatulippe.webp', titleKey: 'sarahlatulippe', category: 'web', url: 'https://sarahlatulippe.com' },
+  { path: '/images/web/lapresse.webp', titleKey: 'lapresse', category: 'web', url: 'https://lapresse.ca' },
+  { path: '/images/web/qrgenerator.webp', titleKey: 'qrgenerator', category: 'web', url: 'https://main.d15strqjqfjba7.amplifyapp.com/' },
+  { path: '/images/web/boutiquemaude.webp', titleKey: 'boutiquemaude', category: 'web', url: 'https://boutiquemaude.com' },
   // Prints
   { path: '/images/prints/Prints1.jpeg', titleKey: 'print', category: 'prints' },
   { path: '/images/prints/Prints2.jpeg', titleKey: 'print', category: 'prints' },
@@ -52,19 +61,33 @@ const projects = [
   { path: '/images/locale/locale11.jpeg', titleKey: 'workspace', category: 'locale' },
 ];
 
-// Titres par langue - Simplifiés
+// Titres par langue
 const projectTitles = {
   fr: {
     print: 'Fine Art Print',
     sticker: 'Stickers',
-    textile: 'Impression sur textile',
     workspace: 'Workspace',
+    sonaa: 'Sonaa - Actualites technologiques',
+    recrutementspvm: 'Recrutement SPVM',
+    mauditemachine: 'Maudite Machine - Artiste electronique',
+    spvm: 'SPVM - Service de police de Montreal',
+    sarahlatulippe: 'Sarah Latulippe - Photographe',
+    lapresse: 'La Presse - Journal du Quebec',
+    qrgenerator: 'Generateur de Code QR',
+    boutiquemaude: 'Boutique Maude - Pret-a-porter',
   },
   en: {
     print: 'Fine Art Print',
     sticker: 'Stickers',
-    textile: 'Textile Print',
     workspace: 'Workspace',
+    sonaa: 'Sonaa - Tech News',
+    recrutementspvm: 'SPVM Recruitment',
+    mauditemachine: 'Maudite Machine - Electronic Music Artist',
+    spvm: 'SPVM - Montreal Police Service',
+    sarahlatulippe: 'Sarah Latulippe - Photographer',
+    lapresse: 'La Presse - Quebec Newspaper',
+    qrgenerator: 'QR Code Generator',
+    boutiquemaude: 'Boutique Maude - Fashion',
   },
 };
 
@@ -77,9 +100,9 @@ function Portfolio() {
   const cats = t('portfolioPage.categories');
   const categories = [
     { id: 'all', label: cats.all },
+    { id: 'web', label: cats.web || 'Web' },
     { id: 'prints', label: cats.prints },
     { id: 'stickers', label: cats.stickers },
-    { id: 'textile', label: cats.textile },
     { id: 'locale', label: cats.locale },
   ];
 
@@ -186,18 +209,27 @@ function Portfolio() {
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ duration: 0.3, delay: Math.min(index * 0.02, 0.3) }}
                 className="group relative rounded-xl overflow-hidden cursor-pointer"
-                style={{ aspectRatio: '1' }}
-                onClick={() => openLightbox(project, index)}
+                style={{ aspectRatio: project.category === 'web' ? '16/10' : '1' }}
+                onClick={() => {
+                  if (project.url) {
+                    window.open(project.url, '_blank', 'noopener,noreferrer');
+                  } else {
+                    openLightbox(project, index);
+                  }
+                }}
               >
                 <img
                   src={thumb(project.path)}
                   alt={getTitle(project.titleKey)}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  className={`w-full h-full transition-transform duration-500 group-hover:scale-105 ${project.category === 'web' ? 'object-cover object-top' : 'object-cover'}`}
                   loading="lazy"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-purple-dark/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                  <p className="text-white font-heading font-bold text-sm">{getTitle(project.titleKey)}</p>
+                  <p className="text-white font-heading font-bold text-sm flex items-center gap-2">
+                    {getTitle(project.titleKey)}
+                    {project.url && <ExternalLink size={14} />}
+                  </p>
                 </div>
               </motion.div>
             ))}

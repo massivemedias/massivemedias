@@ -52,7 +52,7 @@ Each print undergoes rigorous color calibration to ensure optimal fidelity to th
     equipment: [
       { name: 'Professional fine art printer', desc: '12-color printing, up to 17" (A2+). Museum quality.' },
       { name: 'Large format printer', desc: 'Large format up to 24" via partnership. Exhibitions and oversize prints.' },
-      { name: 'VEVOR 25" Laminator', desc: 'Lamination and print protection for maximum durability.' },
+      { name: 'Professional laminator', desc: 'Lamination and print protection for maximum durability.' },
     ],
     seo: {
       title: 'Fine Art Printing Montreal - Massive Medias',
@@ -121,8 +121,8 @@ Cut to the exact shape of your design with our professional cutting equipment, e
     ],
     equipment: [
       { name: 'Professional cutter', desc: 'Precision cutting up to 12" wide. Contour, kiss-cut, die-cut.' },
-      { name: 'VEVOR 25" Laminator', desc: 'Matte or glossy lamination for water/UV/scratch protection.' },
-      { name: 'Epson ET-2850', desc: 'High quality vinyl printing, vibrant colors.' },
+      { name: 'Professional laminator', desc: 'Matte or glossy lamination for water/UV/scratch protection.' },
+      { name: 'Vinyl printer', desc: 'High quality vinyl printing, vibrant colors.' },
     ],
     seo: {
       title: 'Custom Stickers Montreal - Massive Medias',
@@ -140,8 +140,8 @@ Cut to the exact shape of your design with our professional cutting equipment, e
 
 Ideal for artist merch, events, corporate gifts or any custom project. From t-shirts to tumblers, mugs and mousepads.`,
     highlights: [
-      'Bettersub Press - large format textile',
-      'Cricut Press - objects and accessories',
+      'Large format heat press - textile',
+      'Compact heat press - objects and accessories',
       'Tumbler pinch kit - drinkware sublimation',
       "Permanent printing - doesn't crack, doesn't fade",
       'Vibrant colors, wash-resistant',
@@ -181,8 +181,8 @@ Ideal for artist merch, events, corporate gifts or any custom project. From t-sh
       thumb('/images/textile/Textile20.jpeg'),
     ],
     equipment: [
-      { name: 'Heat Press Bettersub', desc: 'Large format heat press for t-shirts, hoodies and textiles.' },
-      { name: 'Heat Press Cricut', desc: 'Compact versatile press for objects and accessories.' },
+      { name: 'Large format heat press', desc: 'Large format heat press for t-shirts, hoodies and textiles.' },
+      { name: 'Compact heat press', desc: 'Compact versatile press for objects and accessories.' },
       { name: 'Tumbler pinch kit', desc: 'Sublimation on tumblers, bottles and drinkware.' },
     ],
     seo: {
@@ -244,7 +244,7 @@ Perfect for artists, event promoters, labels, cafes and businesses in Mile-End a
     ],
     equipment: [
       { name: 'Professional printer', desc: 'Superior quality even for flyers - 12 pigmented colors.' },
-      { name: 'Epson ET-2850', desc: 'Fast volume printing for standard runs.' },
+      { name: 'Standard printer', desc: 'Fast volume printing for standard runs.' },
       { name: 'Professional cutter', desc: 'Precision cutting for custom formats.' },
     ],
     seo: {

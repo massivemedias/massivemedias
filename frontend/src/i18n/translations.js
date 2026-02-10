@@ -275,9 +275,9 @@ const translations = {
       },
       categories: {
         all: 'Tout',
+        web: 'Sites Web',
         prints: 'Impressions',
         stickers: 'Stickers',
-        textile: 'Textile & Merch',
         locale: 'Studio',
       },
     },
@@ -328,13 +328,13 @@ const translations = {
       equipment: {
         title: 'Notre équipement',
         items: [
-          { name: 'Impression fine art pro', desc: 'Impression professionnelle 12 couleurs, jusqu\'à 17"' },
+          { name: 'Imprimante fine art', desc: 'Impression professionnelle 12 couleurs, jusqu\'à 17"' },
           { name: 'Découpe professionnelle', desc: 'Découpe stickers et vinyle de précision' },
-          { name: 'Heat Press Bettersub', desc: 'Presse à chaud sublimation grand format' },
-          { name: 'Heat Press Cricut', desc: 'Presse à chaud compacte polyvalente' },
-          { name: 'Lamineuse VEVOR 25"', desc: 'Lamination et finition professionnelle' },
-          { name: 'Epson ET-2850', desc: 'Impression courante et épreuves' },
-          { name: 'MacBook Pro M1 + M4', desc: 'Production, design et développement' },
+          { name: 'Presse à chaud grand format', desc: 'Sublimation textile grand format' },
+          { name: 'Presse à chaud compacte', desc: 'Presse polyvalente pour objets et accessoires' },
+          { name: 'Lamineuse', desc: 'Lamination et finition professionnelle' },
+          { name: 'Imprimante courante', desc: 'Impression courante et épreuves' },
+          { name: 'Station de travail', desc: 'Production, design et développement' },
         ],
       },
       space: {
@@ -716,9 +716,9 @@ const translations = {
       },
       categories: {
         all: 'All',
+        web: 'Websites',
         prints: 'Prints',
         stickers: 'Stickers',
-        textile: 'Textile & Merch',
         locale: 'Studio',
       },
     },
@@ -769,13 +769,13 @@ const translations = {
       equipment: {
         title: 'Our Equipment',
         items: [
-          { name: 'Pro fine art printer', desc: 'Professional 12-color printing, up to 17"' },
+          { name: 'Fine art printer', desc: 'Professional 12-color printing, up to 17"' },
           { name: 'Professional cutter', desc: 'Precision sticker and vinyl cutting' },
-          { name: 'Heat Press Bettersub', desc: 'Large format sublimation heat press' },
-          { name: 'Heat Press Cricut', desc: 'Compact versatile heat press' },
-          { name: 'VEVOR 25" Laminator', desc: 'Professional lamination and finishing' },
-          { name: 'Epson ET-2850', desc: 'Everyday printing and proofs' },
-          { name: 'MacBook Pro M1 + M4', desc: 'Production, design and development' },
+          { name: 'Large format heat press', desc: 'Large format textile sublimation' },
+          { name: 'Compact heat press', desc: 'Versatile press for objects and accessories' },
+          { name: 'Laminator', desc: 'Professional lamination and finishing' },
+          { name: 'Standard printer', desc: 'Everyday printing and proofs' },
+          { name: 'Workstation', desc: 'Production, design and development' },
         ],
       },
       space: {
