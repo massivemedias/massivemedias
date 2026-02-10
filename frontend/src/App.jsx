@@ -10,14 +10,14 @@ import Tarifs from './pages/Tarifs';
 import { useLang } from './i18n/LanguageContext';
 import './index.css';
 
-// Base path pour GitHub Pages — changer en '/' avec custom domain
+// Base path pour GitHub Pages - changer en '/' avec custom domain
 const basename = import.meta.env.BASE_URL;
 
 function ComingSoon({ section }) {
   const { t } = useLang();
   return (
     <div className="section-container pt-32 text-white text-center">
-      <h1 className="text-4xl font-heading">{section} — {t('common.comingSoon')}</h1>
+      <h1 className="text-4xl font-heading">{section} - {t('common.comingSoon')}</h1>
     </div>
   );
 }

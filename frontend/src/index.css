@@ -2,13 +2,13 @@
 @import "tailwindcss";
 
 /* =============================================
-   MASSIVE MEDIAS — Design Tokens (Tailwind v4)
+   MASSIVE MEDIAS - Design Tokens (Tailwind v4)
    Palette : #FF52A0 (magenta), #FF9B3D (orange),
              #8100D1 (violet), #391F58 (sombre)
    ============================================= */
 
 @theme {
-  /* Brand colors (fixed — never change with theme) */
+  /* Brand colors (fixed - never change with theme) */
   --color-magenta: #FF52A0;
   --color-orange: #FF9B3D;
   --color-purple-bright: #8100D1;
@@ -95,7 +95,7 @@
   --color-grey-muted: #7A6B90;
   --color-heading: #353535;
 
-  /* Theme properties — Light & airy */
+  /* Theme properties - Light & airy */
   --bg-body: #FFFFFF;
   --bg-card: rgba(255, 255, 255, 0.95);
   --bg-card-border: rgba(129, 0, 209, 0.08);

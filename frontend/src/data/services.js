@@ -12,7 +12,7 @@ const servicesData = {
 
 Chaque impression fait l'objet d'un calibrage colorimétrique rigoureux pour garantir une fidélité optimale aux intentions de l'artiste.`,
     highlights: [
-      'Imprimante professionnelle fine art — 12 encres pigmentées',
+      'Imprimante professionnelle fine art - 12 encres pigmentées',
       'Accès imprimante grand format pour tirages 24" et plus',
       'Papiers fine art professionnels premium',
       'Calibration professionnelle, profils ICC sur mesure',
@@ -34,7 +34,7 @@ Chaque impression fait l'objet d'un calibrage colorimétrique rigoureux pour gar
       rows: [
         ['A4 (8×10")', '45$', '75$', '59$ + shipping'],
         ['A3 (12×18")', '55$', '95$', '76$ + shipping'],
-        ['A3+ (13×19")', '65$', '110$', '—'],
+        ['A3+ (13×19")', '65$', '110$', '-'],
         ['A2 (18×24")', '95$', '150$', '132$ + shipping'],
         ['24×36" (grand format)', '150$', 'Sur demande', '189$ + shipping'],
       ],
@@ -55,7 +55,7 @@ Chaque impression fait l'objet d'un calibrage colorimétrique rigoureux pour gar
       { name: 'Lamineuse VEVOR 25"', desc: 'Lamination et protection des tirages pour une durabilité maximale.' },
     ],
     seo: {
-      title: 'Impression Fine Art Montréal — Massive Medias',
+      title: 'Impression Fine Art Montréal - Massive Medias',
       description: 'Tirages fine art qualité galerie sur imprimante professionnelle grand format. Papiers fine art premium. Pick-up gratuit Mile-End. 15-20% sous Etsy.',
     },
   },
@@ -73,12 +73,12 @@ Découpés à la forme exacte de ton design avec notre équipement de découpe p
       'Équipement de découpe de précision professionnel',
       'Vinyle matte, glossy, transparent, holographique',
       'Découpe contour à la forme exacte du design',
-      'Lamination incluse — résistant eau, UV, rayures',
+      'Lamination incluse - résistant eau, UV, rayures',
       'Création graphique incluse dans le prix',
       'Délai rapide : 24-72h',
     ],
     process: [
-      { step: 1, title: 'Brief créatif', desc: 'Dis-nous ce que tu veux — logo, illustration, texte, forme custom' },
+      { step: 1, title: 'Brief créatif', desc: 'Dis-nous ce que tu veux - logo, illustration, texte, forme custom' },
       { step: 2, title: 'Création graphique', desc: 'On crée ou adapte ton visuel pour la découpe (inclus dans le prix)' },
       { step: 3, title: 'Validation', desc: 'Aperçu numérique pour validation avant production' },
       { step: 4, title: 'Impression', desc: 'Impression haute qualité sur vinyle de ton choix' },
@@ -125,7 +125,7 @@ Découpés à la forme exacte de ton design avec notre équipement de découpe p
       { name: 'Epson ET-2850', desc: 'Impression vinyle haute qualité, couleurs vibrantes.' },
     ],
     seo: {
-      title: 'Stickers Custom Montréal — Massive Medias',
+      title: 'Stickers Custom Montréal - Massive Medias',
       description: 'Stickers die-cut personnalisés. Holographique, matte, glossy, transparent. Design inclus. Découpe pro. Montréal.',
     },
   },
@@ -134,16 +134,16 @@ Découpés à la forme exacte de ton design avec notre équipement de découpe p
     slug: 'sublimation-merch',
     icon: Shirt,
     title: 'Sublimation & Merch',
-    subtitle: 'T-shirts, mugs, accessoires — ton merch sur mesure',
+    subtitle: 'T-shirts, mugs, accessoires - ton merch sur mesure',
     heroImage: thumb('/images/textile/Textile1.jpeg'),
     description: `Impression sublimation sur textile et objets. La sublimation produit des couleurs vibrantes et permanentes qui ne craquent pas, ne s'effacent pas et résistent au lavage.
 
 Idéal pour le merch d'artiste, les événements, les cadeaux corporatifs ou tout projet personnalisé. Du t-shirt au thermos en passant par les mugs et les tapis de souris.`,
     highlights: [
-      'Presse Bettersub — grand format textile',
-      'Presse Cricut — objets et accessoires',
-      'Kit pincement gobelets — drinkware sublimation',
-      'Impression permanente — ne craque pas, ne s\'efface pas',
+      'Presse Bettersub - grand format textile',
+      'Presse Cricut - objets et accessoires',
+      'Kit pincement gobelets - drinkware sublimation',
+      'Impression permanente - ne craque pas, ne s\'efface pas',
       'Couleurs vibrantes, résistant au lavage',
       'Petites et moyennes séries',
     ],
@@ -152,7 +152,7 @@ Idéal pour le merch d'artiste, les événements, les cadeaux corporatifs ou tou
       { step: 2, title: 'Design', desc: 'Envoi de ton visuel ou création graphique sur demande' },
       { step: 3, title: 'Validation', desc: 'Mockup numérique pour approbation avant production' },
       { step: 4, title: 'Impression sublimation', desc: 'Impression du transfert sur papier sublimation spécialisé' },
-      { step: 5, title: 'Pressage', desc: 'Transfert à haute température et pression — couleurs permanentes' },
+      { step: 5, title: 'Pressage', desc: 'Transfert à haute température et pression - couleurs permanentes' },
       { step: 6, title: 'Contrôle & livraison', desc: 'Vérification qualité et remise/livraison' },
     ],
     pricing: {
@@ -186,7 +186,7 @@ Idéal pour le merch d'artiste, les événements, les cadeaux corporatifs ou tou
       { name: 'Kit pincement gobelets', desc: 'Sublimation sur gobelets, thermos et drinkware.' },
     ],
     seo: {
-      title: 'Sublimation & Merch Montréal — Massive Medias',
+      title: 'Sublimation & Merch Montréal - Massive Medias',
       description: 'T-shirts, mugs, thermos, accessoires en sublimation. Merch d\'artiste sur mesure. Production locale Montréal.',
     },
   },
@@ -197,7 +197,7 @@ Idéal pour le merch d'artiste, les événements, les cadeaux corporatifs ou tou
     title: 'Flyers & Cartes',
     subtitle: 'Impression rapide pour événements et promotions',
     heroImage: thumb('/images/prints/Prints5.jpeg'),
-    description: `Flyers, cartes postales, cartes d'affaires — tout ce dont tu as besoin pour promouvoir ton événement, ton show ou ton projet. Impression locale rapide, qualité pro.
+    description: `Flyers, cartes postales, cartes d'affaires - tout ce dont tu as besoin pour promouvoir ton événement, ton show ou ton projet. Impression locale rapide, qualité pro.
 
 Parfait pour les artistes, promoteurs d'événements, labels, cafés et commerces du Mile-End et Plateau.`,
     highlights: [
@@ -243,12 +243,12 @@ Parfait pour les artistes, promoteurs d'événements, labels, cafés et commerce
       thumb('/images/prints/Prints25.jpeg'),
     ],
     equipment: [
-      { name: 'Imprimante professionnelle', desc: 'Qualité supérieure même pour les flyers — 12 couleurs pigmentées.' },
+      { name: 'Imprimante professionnelle', desc: 'Qualité supérieure même pour les flyers - 12 couleurs pigmentées.' },
       { name: 'Epson ET-2850', desc: 'Volume d\'impression rapide pour les séries courantes.' },
       { name: 'Découpeuse professionnelle', desc: 'Découpe de précision pour formats personnalisés.' },
     ],
     seo: {
-      title: 'Flyers & Cartes Montréal — Massive Medias',
+      title: 'Flyers & Cartes Montréal - Massive Medias',
       description: 'Flyers, cartes postales, cartes d\'affaires. Impression rapide et locale à Montréal. Qualité pro, prix compétitifs.',
     },
   },
@@ -263,7 +263,7 @@ Parfait pour les artistes, promoteurs d'événements, labels, cafés et commerce
 
 On connaît la scène créative montréalaise. On sait ce qui marche visuellement pour les artistes, labels, promoteurs et commerces locaux.`,
     highlights: [
-      'Suite Adobe CC — Photoshop, Illustrator, InDesign, Lightroom',
+      'Suite Adobe CC - Photoshop, Illustrator, InDesign, Lightroom',
       'Partenariat avec Christopher Gagnon (10 ans exp.)',
       'Logos, identités visuelles complètes',
       'Affiches, flyers, pochettes album',
@@ -288,7 +288,7 @@ On connaît la scène créative montréalaise. On sait ce qui marche visuellemen
         ['Affiche / flyer événement', '150$ – 300$', '3-5 jours'],
         ['Pochette album / single', '200$ – 400$', '5-7 jours'],
         ['Retouche photo (par image)', '15$ – 50$', '24-48h'],
-        ['Design stickers', 'Inclus', '—'],
+        ['Design stickers', 'Inclus', '-'],
       ],
     },
     gallery: [
@@ -308,7 +308,7 @@ On connaît la scène créative montréalaise. On sait ce qui marche visuellemen
       portfolio: 'Soundwave Festival, Laboratoire Bio Stratège, ChromaPur, Nutramazonie, NextGen Football, Belette Trois-Mille.',
     },
     seo: {
-      title: 'Design Graphique Montréal — Massive Medias',
+      title: 'Design Graphique Montréal - Massive Medias',
       description: 'Logos, identités visuelles, affiches, pochettes album. Design graphique professionnel pour créateurs à Montréal.',
     },
   },
@@ -321,7 +321,7 @@ On connaît la scène créative montréalaise. On sait ce qui marche visuellemen
     heroImage: thumb('/images/locale/locale1.jpeg'),
     description: `Sites web modernes, performants et optimisés SEO pour artistes, créateurs et petites entreprises. Du portfolio d'artiste à la boutique e-commerce complète, on maîtrise les technologies qui comptent.
 
-15+ années d'expérience en développement web. Le fondateur de Massive Medias est programmeur-analyste de formation — ce n'est pas un side-project, c'est notre expertise première.`,
+15+ années d'expérience en développement web. Le fondateur de Massive Medias est programmeur-analyste de formation - ce n'est pas un side-project, c'est notre expertise première.`,
     highlights: [
       'React, Angular, Node.js, AWS',
       'CMS headless (Strapi), WordPress, Shopify',
@@ -372,7 +372,7 @@ On connaît la scène créative montréalaise. On sait ce qui marche visuellemen
       'Framer Motion',
     ],
     seo: {
-      title: 'Développement Web Montréal — Massive Medias',
+      title: 'Développement Web Montréal - Massive Medias',
       description: 'Sites vitrines, e-commerce, landing pages. React, Strapi, WordPress, Shopify. 15+ ans d\'expérience. Montréal.',
     },
   },

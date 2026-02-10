@@ -5,7 +5,7 @@ import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { img, thumb } from '../utils/paths';
 import { useLang } from '../i18n/LanguageContext';
 
-/* Paths bruts — résolus au rendu via thumb() (grille) et img() (lightbox) */
+/* Paths bruts - résolus au rendu via thumb() (grille) et img() (lightbox) */
 const projects = [
   // Prints
   { path: '/images/prints/Prints1.jpeg', titleKey: 'print', category: 'prints' },
@@ -73,7 +73,7 @@ const projects = [
   { path: '/images/locale/locale11.jpeg', titleKey: 'workspace', category: 'locale' },
 ];
 
-// Titres par langue — Simplifiés
+// Titres par langue - Simplifiés
 const projectTitles = {
   fr: {
     print: 'Fine Art Print',

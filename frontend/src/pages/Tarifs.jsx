@@ -81,7 +81,7 @@ function Tarifs() {
                   <td className="text-heading font-semibold">A3+ (13×19")</td>
                   <td className="text-gradient font-bold">65$</td>
                   <td>110$</td>
-                  <td className="text-grey-muted">—</td>
+                  <td className="text-grey-muted">-</td>
                 </tr>
                 <tr>
                   <td className="text-heading font-semibold">A2 (18×24")</td>

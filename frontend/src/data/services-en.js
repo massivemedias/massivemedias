@@ -12,7 +12,7 @@ const servicesDataEn = {
 
 Each print undergoes rigorous color calibration to ensure optimal fidelity to the artist's intentions.`,
     highlights: [
-      'Professional fine art printer — 12 pigmented inks',
+      'Professional fine art printer - 12 pigmented inks',
       'Large format printer access for 24"+ prints',
       'Premium professional fine art papers',
       'Professional calibration, custom ICC profiles',
@@ -34,7 +34,7 @@ Each print undergoes rigorous color calibration to ensure optimal fidelity to th
       rows: [
         ['A4 (8×10")', '$45', '$75', '$59 + shipping'],
         ['A3 (12×18")', '$55', '$95', '$76 + shipping'],
-        ['A3+ (13×19")', '$65', '$110', '—'],
+        ['A3+ (13×19")', '$65', '$110', '-'],
         ['A2 (18×24")', '$95', '$150', '$132 + shipping'],
         ['24×36" (large format)', '$150', 'On request', '$189 + shipping'],
       ],
@@ -55,7 +55,7 @@ Each print undergoes rigorous color calibration to ensure optimal fidelity to th
       { name: 'VEVOR 25" Laminator', desc: 'Lamination and print protection for maximum durability.' },
     ],
     seo: {
-      title: 'Fine Art Printing Montreal — Massive Medias',
+      title: 'Fine Art Printing Montreal - Massive Medias',
       description: 'Gallery-quality fine art prints on professional large format printer. Premium fine art papers. Free pick-up Mile-End. 15-20% below Etsy.',
     },
   },
@@ -73,12 +73,12 @@ Cut to the exact shape of your design with our professional cutting equipment, e
       'Professional precision cutting equipment',
       'Matte, glossy, clear, holographic vinyl',
       'Contour cut to the exact shape of the design',
-      'Lamination included — water, UV, scratch resistant',
+      'Lamination included - water, UV, scratch resistant',
       'Graphic design included in the price',
       'Fast turnaround: 24-72h',
     ],
     process: [
-      { step: 1, title: 'Creative brief', desc: 'Tell us what you want — logo, illustration, text, custom shape' },
+      { step: 1, title: 'Creative brief', desc: 'Tell us what you want - logo, illustration, text, custom shape' },
       { step: 2, title: 'Graphic design', desc: 'We create or adapt your visual for cutting (included in price)' },
       { step: 3, title: 'Validation', desc: 'Digital preview for validation before production' },
       { step: 4, title: 'Printing', desc: 'High quality printing on your choice of vinyl' },
@@ -125,7 +125,7 @@ Cut to the exact shape of your design with our professional cutting equipment, e
       { name: 'Epson ET-2850', desc: 'High quality vinyl printing, vibrant colors.' },
     ],
     seo: {
-      title: 'Custom Stickers Montreal — Massive Medias',
+      title: 'Custom Stickers Montreal - Massive Medias',
       description: 'Custom die-cut stickers. Holographic, matte, glossy, clear. Design included. Pro cutting. Montreal.',
     },
   },
@@ -134,16 +134,16 @@ Cut to the exact shape of your design with our professional cutting equipment, e
     slug: 'sublimation-merch',
     icon: Shirt,
     title: 'Sublimation & Merch',
-    subtitle: 'T-shirts, mugs, accessories — your custom merch',
+    subtitle: 'T-shirts, mugs, accessories - your custom merch',
     heroImage: thumb('/images/textile/Textile1.jpeg'),
     description: `Sublimation printing on textiles and objects. Sublimation produces vibrant and permanent colors that don't crack, don't fade and are wash-resistant.
 
 Ideal for artist merch, events, corporate gifts or any custom project. From t-shirts to tumblers, mugs and mousepads.`,
     highlights: [
-      'Bettersub Press — large format textile',
-      'Cricut Press — objects and accessories',
-      'Tumbler pinch kit — drinkware sublimation',
-      "Permanent printing — doesn't crack, doesn't fade",
+      'Bettersub Press - large format textile',
+      'Cricut Press - objects and accessories',
+      'Tumbler pinch kit - drinkware sublimation',
+      "Permanent printing - doesn't crack, doesn't fade",
       'Vibrant colors, wash-resistant',
       'Small and medium runs',
     ],
@@ -152,7 +152,7 @@ Ideal for artist merch, events, corporate gifts or any custom project. From t-sh
       { step: 2, title: 'Design', desc: 'Send your visual or request graphic design' },
       { step: 3, title: 'Validation', desc: 'Digital mockup for approval before production' },
       { step: 4, title: 'Sublimation printing', desc: 'Transfer printing on specialized sublimation paper' },
-      { step: 5, title: 'Pressing', desc: 'High temperature and pressure transfer — permanent colors' },
+      { step: 5, title: 'Pressing', desc: 'High temperature and pressure transfer - permanent colors' },
       { step: 6, title: 'Quality check & delivery', desc: 'Quality verification and pick-up/delivery' },
     ],
     pricing: {
@@ -186,7 +186,7 @@ Ideal for artist merch, events, corporate gifts or any custom project. From t-sh
       { name: 'Tumbler pinch kit', desc: 'Sublimation on tumblers, bottles and drinkware.' },
     ],
     seo: {
-      title: 'Sublimation & Merch Montreal — Massive Medias',
+      title: 'Sublimation & Merch Montreal - Massive Medias',
       description: "T-shirts, mugs, tumblers, accessories in sublimation. Custom artist merch. Local production in Montreal.",
     },
   },
@@ -197,7 +197,7 @@ Ideal for artist merch, events, corporate gifts or any custom project. From t-sh
     title: 'Flyers & Cards',
     subtitle: 'Fast printing for events and promotions',
     heroImage: thumb('/images/prints/Prints5.jpeg'),
-    description: `Flyers, postcards, business cards — everything you need to promote your event, show or project. Fast local printing, professional quality.
+    description: `Flyers, postcards, business cards - everything you need to promote your event, show or project. Fast local printing, professional quality.
 
 Perfect for artists, event promoters, labels, cafes and businesses in Mile-End and Plateau.`,
     highlights: [
@@ -243,12 +243,12 @@ Perfect for artists, event promoters, labels, cafes and businesses in Mile-End a
       thumb('/images/prints/Prints25.jpeg'),
     ],
     equipment: [
-      { name: 'Professional printer', desc: 'Superior quality even for flyers — 12 pigmented colors.' },
+      { name: 'Professional printer', desc: 'Superior quality even for flyers - 12 pigmented colors.' },
       { name: 'Epson ET-2850', desc: 'Fast volume printing for standard runs.' },
       { name: 'Professional cutter', desc: 'Precision cutting for custom formats.' },
     ],
     seo: {
-      title: 'Flyers & Cards Montreal — Massive Medias',
+      title: 'Flyers & Cards Montreal - Massive Medias',
       description: 'Flyers, postcards, business cards. Fast local printing in Montreal. Pro quality, competitive pricing.',
     },
   },
@@ -263,7 +263,7 @@ Perfect for artists, event promoters, labels, cafes and businesses in Mile-End a
 
 We know the Montreal creative scene. We know what works visually for artists, labels, promoters and local businesses.`,
     highlights: [
-      'Adobe CC Suite — Photoshop, Illustrator, InDesign, Lightroom',
+      'Adobe CC Suite - Photoshop, Illustrator, InDesign, Lightroom',
       'Partnership with Christopher Gagnon (10 years exp.)',
       'Logos, complete visual identities',
       'Posters, flyers, album covers',
@@ -288,7 +288,7 @@ We know the Montreal creative scene. We know what works visually for artists, la
         ['Event poster / flyer', '$150 – $300', '3-5 days'],
         ['Album / single cover', '$200 – $400', '5-7 days'],
         ['Photo retouching (per image)', '$15 – $50', '24-48h'],
-        ['Sticker design', 'Included', '—'],
+        ['Sticker design', 'Included', '-'],
       ],
     },
     gallery: [
@@ -308,7 +308,7 @@ We know the Montreal creative scene. We know what works visually for artists, la
       portfolio: 'Soundwave Festival, Laboratoire Bio Stratège, ChromaPur, Nutramazonie, NextGen Football, Belette Trois-Mille.',
     },
     seo: {
-      title: 'Graphic Design Montreal — Massive Medias',
+      title: 'Graphic Design Montreal - Massive Medias',
       description: 'Logos, visual identities, posters, album covers. Professional graphic design for creators in Montreal.',
     },
   },
@@ -321,7 +321,7 @@ We know the Montreal creative scene. We know what works visually for artists, la
     heroImage: thumb('/images/locale/locale1.jpeg'),
     description: `Modern, fast and SEO-optimized websites for artists, creators and small businesses. From artist portfolios to complete e-commerce stores, we master the technologies that matter.
 
-15+ years of web development experience. The founder of Massive Medias is a trained programmer-analyst — this isn't a side project, it's our primary expertise.`,
+15+ years of web development experience. The founder of Massive Medias is a trained programmer-analyst - this isn't a side project, it's our primary expertise.`,
     highlights: [
       'React, Angular, Node.js, AWS',
       'Headless CMS (Strapi), WordPress, Shopify',
@@ -372,7 +372,7 @@ We know the Montreal creative scene. We know what works visually for artists, la
       'Framer Motion',
     ],
     seo: {
-      title: 'Web Development Montreal — Massive Medias',
+      title: 'Web Development Montreal - Massive Medias',
       description: 'Showcase sites, e-commerce, landing pages. React, Strapi, WordPress, Shopify. 15+ years experience. Montreal.',
     },
   },

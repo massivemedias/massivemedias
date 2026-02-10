@@ -24,7 +24,7 @@ export function img(path) {
 
 /**
  * Chemin vers le thumbnail (800px, WebP quality 75).
- * Utilisé pour les grilles, cartes, héros — chargement ultra-rapide.
+ * Utilisé pour les grilles, cartes, héros - chargement ultra-rapide.
  * Transforme /images/prints/X.jpeg → /images/thumbs/prints/X.webp
  */
 export function thumb(path) {

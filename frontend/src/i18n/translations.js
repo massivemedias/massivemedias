@@ -46,7 +46,7 @@ const translations = {
     // ──────────── HOME ────────────
     home: {
       seo: {
-        title: 'Massive Medias — Studio de production créative, Montréal',
+        title: 'Massive Medias - Studio de production créative, Montréal',
         description: 'Impression fine art, stickers custom, sublimation, design graphique et développement web à Montréal. Service local depuis 2013.',
       },
       hero: {
@@ -131,7 +131,7 @@ const translations = {
         },
         {
           title: 'La scène, on connaît',
-          description: "Musiciens, photographes, artistes visuels, promoteurs d'événements — c'est notre monde depuis le jour 1.",
+          description: "Musiciens, photographes, artistes visuels, promoteurs d'événements - c'est notre monde depuis le jour 1.",
         },
       ],
       cta: {
@@ -144,12 +144,12 @@ const translations = {
     // ──────────── SERVICES PAGE ────────────
     servicesPage: {
       seo: {
-        title: 'Services — Massive Medias',
+        title: 'Services - Massive Medias',
         description: 'Impression, stickers, sublimation, flyers, design graphique et développement web. Tous nos services créatifs.',
       },
       hero: {
         title: 'Nos services',
-        subtitle: "De l'impression fine art aux stickers custom, de la sublimation textile au développement web — on couvre toute la chaîne de production créative.",
+        subtitle: "De l'impression fine art aux stickers custom, de la sublimation textile au développement web - on couvre toute la chaîne de production créative.",
       },
       serviceCards: [
         {
@@ -185,14 +185,14 @@ const translations = {
         badge: 'Le plus populaire',
         title: 'Package Lancement Artiste',
         price: '2 800$',
-        originalPrice: 'Valeur séparée: 4 660$ — Économie de 40%',
+        originalPrice: 'Valeur séparée: 4 660$ - Économie de 40%',
         items: ['25 prints A3+', '100 stickers promotionnels', '10 affiches A2', 'Site vitrine 5 pages'],
       },
       packageEvent: {
         badge: 'Événements',
         title: 'Package Événement',
         price: '900$',
-        originalPrice: 'Valeur séparée: 1 410$ — Économie de 36%',
+        originalPrice: 'Valeur séparée: 1 410$ - Économie de 36%',
         items: ['150 flyers 8,5x11"', '25 affiches 11x17"', '200 stickers 2,5" holographiques', 'Landing page événement'],
       },
     },
@@ -200,7 +200,7 @@ const translations = {
     // ──────────── TARIFS PAGE ────────────
     tarifsPage: {
       seo: {
-        title: 'Tarifs — Massive Medias',
+        title: 'Tarifs - Massive Medias',
         description: 'Grille tarifaire complète : impressions fine art, stickers, design graphique, développement web et packages combinés.',
       },
       hero: {
@@ -231,7 +231,7 @@ const translations = {
           ['Affiche / flyer événement', '150$ – 300$', '3-5 jours'],
           ['Pochette album / single', '200$ – 400$', '5-7 jours'],
           ['Retouche photo (par image)', '15$ – 50$', '24-48h'],
-          ['Design stickers', 'Inclus', '—'],
+          ['Design stickers', 'Inclus', '-'],
         ],
       },
       web: {
@@ -266,7 +266,7 @@ const translations = {
     // ──────────── PORTFOLIO PAGE ────────────
     portfolioPage: {
       seo: {
-        title: 'Portfolio — Massive Medias',
+        title: 'Portfolio - Massive Medias',
         description: 'Galerie de nos réalisations : impressions fine art, stickers, merch textile, design graphique et plus.',
       },
       hero: {
@@ -285,7 +285,7 @@ const translations = {
     // ──────────── A PROPOS PAGE ────────────
     aboutPage: {
       seo: {
-        title: 'À propos — Massive Medias',
+        title: 'À propos - Massive Medias',
         description: "Studio de production créative fondé en 2020 à Montréal. L'équipe, l'espace et notre histoire.",
       },
       hero: {
@@ -358,7 +358,7 @@ const translations = {
     // ──────────── CONTACT PAGE ────────────
     contactPage: {
       seo: {
-        title: 'Contact — Massive Medias',
+        title: 'Contact - Massive Medias',
         description: 'Demande de soumission et contact. On te revient dans les 24h.',
       },
       hero: {
@@ -487,7 +487,7 @@ const translations = {
     // ──────────── HOME ────────────
     home: {
       seo: {
-        title: 'Massive Medias — Creative Production Studio, Montreal',
+        title: 'Massive Medias - Creative Production Studio, Montreal',
         description: 'Fine art printing, custom stickers, sublimation, graphic design and web development in Montreal. Local service since 2013.',
       },
       hero: {
@@ -572,7 +572,7 @@ const translations = {
         },
         {
           title: 'We Know the Scene',
-          description: "Musicians, photographers, visual artists, event promoters — it's been our world since day 1.",
+          description: "Musicians, photographers, visual artists, event promoters - it's been our world since day 1.",
         },
       ],
       cta: {
@@ -585,12 +585,12 @@ const translations = {
     // ──────────── SERVICES PAGE ────────────
     servicesPage: {
       seo: {
-        title: 'Services — Massive Medias',
+        title: 'Services - Massive Medias',
         description: 'Printing, stickers, sublimation, flyers, graphic design and web development. All our creative services.',
       },
       hero: {
         title: 'Our Services',
-        subtitle: 'From fine art printing to custom stickers, from textile sublimation to web development — we cover the entire creative production chain.',
+        subtitle: 'From fine art printing to custom stickers, from textile sublimation to web development - we cover the entire creative production chain.',
       },
       serviceCards: [
         {
@@ -626,14 +626,14 @@ const translations = {
         badge: 'Most popular',
         title: 'Artist Launch Package',
         price: '$2,800',
-        originalPrice: 'Separate value: $4,660 — Save 40%',
+        originalPrice: 'Separate value: $4,660 - Save 40%',
         items: ['25 A3+ prints', '100 promotional stickers', '10 A2 posters', '5-page showcase website'],
       },
       packageEvent: {
         badge: 'Events',
         title: 'Event Package',
         price: '$900',
-        originalPrice: 'Separate value: $1,410 — Save 36%',
+        originalPrice: 'Separate value: $1,410 - Save 36%',
         items: ['150 flyers 8.5x11"', '25 posters 11x17"', '200 holographic 2.5" stickers', 'Event landing page'],
       },
     },
@@ -641,7 +641,7 @@ const translations = {
     // ──────────── TARIFS PAGE ────────────
     tarifsPage: {
       seo: {
-        title: 'Pricing — Massive Medias',
+        title: 'Pricing - Massive Medias',
         description: 'Complete pricing: fine art printing, stickers, graphic design, web development and combined packages.',
       },
       hero: {
@@ -672,7 +672,7 @@ const translations = {
           ['Event poster / flyer', '$150 – $300', '3-5 days'],
           ['Album / single cover', '$200 – $400', '5-7 days'],
           ['Photo retouching (per image)', '$15 – $50', '24-48h'],
-          ['Sticker design', 'Included', '—'],
+          ['Sticker design', 'Included', '-'],
         ],
       },
       web: {
@@ -707,7 +707,7 @@ const translations = {
     // ──────────── PORTFOLIO PAGE ────────────
     portfolioPage: {
       seo: {
-        title: 'Portfolio — Massive Medias',
+        title: 'Portfolio - Massive Medias',
         description: 'Gallery of our work: fine art prints, stickers, textile merch, graphic design and more.',
       },
       hero: {
@@ -726,7 +726,7 @@ const translations = {
     // ──────────── A PROPOS PAGE ────────────
     aboutPage: {
       seo: {
-        title: 'About — Massive Medias',
+        title: 'About - Massive Medias',
         description: 'Creative production studio founded in 2020 in Montreal. The team, the space and our story.',
       },
       hero: {
@@ -799,7 +799,7 @@ const translations = {
     // ──────────── CONTACT PAGE ────────────
     contactPage: {
       seo: {
-        title: 'Contact — Massive Medias',
+        title: 'Contact - Massive Medias',
         description: "Quote request and contact. We'll get back to you within 24 hours.",
       },
       hero: {

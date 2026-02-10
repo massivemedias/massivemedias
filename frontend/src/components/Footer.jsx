@@ -12,7 +12,7 @@ function Footer() {
     <footer className="py-12 mt-20 transition-colors duration-300 footer-bg footer-border">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
-          {/* Colonne 1 — Logo + tagline */}
+          {/* Colonne 1 - Logo + tagline */}
           <div>
             <img 
               src={MassiveLogo} 
@@ -26,7 +26,7 @@ function Footer() {
             </p>
           </div>
 
-          {/* Colonne 2 — Navigation */}
+          {/* Colonne 2 - Navigation */}
           <div>
             <h4 className="font-heading font-bold text-heading mb-4">{t('footer.navTitle')}</h4>
             <ul className="space-y-2 text-grey-light">
@@ -63,7 +63,7 @@ function Footer() {
             </ul>
           </div>
 
-          {/* Colonne 3 — Services */}
+          {/* Colonne 3 - Services */}
           <div>
             <h4 className="font-heading font-bold text-heading mb-4">{t('footer.servicesTitle')}</h4>
             <ul className="space-y-2 text-grey-light">
@@ -77,7 +77,7 @@ function Footer() {
             </ul>
           </div>
 
-          {/* Colonne 4 — Contact */}
+          {/* Colonne 4 - Contact */}
           <div>
             <h4 className="font-heading font-bold text-heading mb-4">{t('footer.contactTitle')}</h4>
             <ul className="space-y-3 text-grey-light">

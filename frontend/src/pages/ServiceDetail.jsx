@@ -235,7 +235,7 @@ function ServiceDetail() {
                           className={j === 0 ? 'text-heading font-semibold' : j === 1 ? 'text-gradient font-bold' : 'text-grey-muted'}
                         >
                           {service.pricing.headers[j]?.includes('Réf') || service.pricing.headers[j]?.includes('Ref') ? (
-                            cell !== '—' ? <span className="line-through">{cell}</span> : cell
+                            cell !== '-' ? <span className="line-through">{cell}</span> : cell
                           ) : cell}
                         </td>
                       ))}
