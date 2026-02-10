@@ -19,9 +19,9 @@ const serviceImages = [
   thumb('/images/prints/Prints1.jpeg'),
   thumb('/images/stickers/Stickers1.jpeg'),
   thumb('/images/stickers/Stickers3.jpeg'),
-  thumb('/images/prints/Prints5.jpeg'),
-  thumb('/images/prints/Prints10.jpeg'),
-  thumb('/images/locale/locale11.jpeg'),
+  thumb('/images/flyers/coagule.webp'),
+  thumb('/images/graphism/logo_massive.webp'),
+  thumb('/images/web/devweb_hero.webp'),
 ];
 
 function Services() {
