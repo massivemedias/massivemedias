@@ -92,7 +92,7 @@ function Home() {
             transition={{ duration: 0.8 }}
           >
             <motion.img
-              src="/images/create-print-repeat-v2.png"
+              src="/images/cpr-tagline.png"
               alt="Create. Print. Repeat."
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
