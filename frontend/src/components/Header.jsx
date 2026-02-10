@@ -24,7 +24,8 @@ function Header() {
             <img 
               src={theme === 'light' ? MassiveLogoLight : MassiveLogoDark} 
               alt="Massive Medias" 
-              className="h-9 w-auto transition-opacity duration-300"
+              className="transition-opacity duration-300"
+              style={{ width: '149px', height: '36px' }}
             />
           </Link>
 

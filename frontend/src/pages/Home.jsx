@@ -18,9 +18,11 @@ import {
 } from 'lucide-react';
 import ServiceCard from '../components/ServiceCard';
 import Counter from '../components/Counter';
-import MassiveLogo from '../assets/massive-logo.svg';
+import MassiveLogoDark from '../assets/massive-logo.svg';
+import MassiveLogoLight from '../assets/massive-logo-light.png';
 import { img, thumb } from '../utils/paths';
 import { useLang } from '../i18n/LanguageContext';
+import { useTheme } from '../i18n/ThemeContext';
 
 const serviceIcons = [Printer, Sticker, Shirt, FileText, Palette, Code];
 const serviceLinks = [
@@ -53,6 +55,7 @@ const featuredProjectImages = [
 
 function Home() {
   const { t } = useLang();
+  const { theme } = useTheme();
 
   const serviceCards = t('home.serviceCards');
   const advantages = t('home.advantages');
@@ -98,9 +101,9 @@ function Home() {
             </motion.p>
 
             <motion.img
-              src={MassiveLogo}
+              src={theme === 'light' ? MassiveLogoLight : MassiveLogoDark}
               alt="MASSIVE"
-              className="mx-auto mb-10"
+              className="mx-auto mb-10 transition-opacity duration-300"
               style={{ width: '100%', maxWidth: '750px', height: 'auto' }}
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
