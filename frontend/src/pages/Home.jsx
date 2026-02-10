@@ -91,14 +91,14 @@ function Home() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <motion.p
+            <motion.img
+              src="/images/create-print-repeat.png"
+              alt="Create. Print. Repeat."
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3, duration: 0.6 }}
-              className="text-white/60 text-sm tracking-[0.3em] uppercase mb-8"
-            >
-              {t('home.hero.tagline')}
-            </motion.p>
+              className="mx-auto mb-8 h-[14px] md:h-[18px] w-auto"
+            />
 
             <motion.img
               src={theme === 'light' ? MassiveLogoLight : MassiveLogoDark}
