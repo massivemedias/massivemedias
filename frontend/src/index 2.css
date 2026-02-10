@@ -1,0 +1,239 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
+@import "tailwindcss";
+
+/* =============================================
+   MASSIVE MEDIAS — Design Tokens (Tailwind v4)
+   ============================================= */
+
+@theme {
+  /* Couleurs custom */
+  --color-magenta: #FF00A4;
+  --color-electric-purple: #D700FE;
+  --color-purple-dark: #1A0033;
+  --color-purple-mid: #310051;
+  --color-purple-main: #46015E;
+  --color-grey-light: #E0D0F0;
+  --color-grey-muted: #A090B0;
+
+  /* Polices */
+  --font-heading: 'Space Grotesk', sans-serif;
+  --font-body: 'Inter', sans-serif;
+
+  /* Ombres */
+  --shadow-glow: 0 0 20px rgba(255, 0, 164, 0.3);
+  --shadow-glow-intense: 0 0 40px rgba(255, 0, 164, 0.5);
+  --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+/* =============================================
+   Styles globaux
+   ============================================= */
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', sans-serif;
+  background: linear-gradient(180deg, #0A0A0A, #1A0033);
+  background-attachment: fixed;
+  color: #FFFFFF;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+}
+
+::selection {
+  background: #FF00A4;
+  color: #FFFFFF;
+}
+
+/* =============================================
+   Composants custom
+   ============================================= */
+
+/* Bouton primaire (CTA magenta) */
+.btn-primary {
+  padding: 1rem 2rem;
+  border-radius: 9999px;
+  font-weight: 600;
+  color: #FFFFFF;
+  background: linear-gradient(135deg, #D700FE, #FF00A4);
+  box-shadow: 0 0 20px rgba(255, 0, 164, 0.3);
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 40px rgba(255, 0, 164, 0.5);
+}
+
+/* Bouton outline */
+.btn-outline {
+  padding: 1rem 2rem;
+  border-radius: 9999px;
+  font-weight: 600;
+  color: #FFFFFF;
+  border: 2px solid #FFFFFF;
+  background: transparent;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.3s, color 0.3s, transform 0.3s;
+}
+
+.btn-outline:hover {
+  background: #FFFFFF;
+  color: #0A0A0A;
+  transform: translateY(-2px);
+}
+
+/* Carte de service */
+.card-service {
+  padding: 2rem;
+  border-radius: 1rem;
+  background: linear-gradient(145deg, #310051, #46015E);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+  transition: transform 0.3s, box-shadow 0.3s;
+  text-decoration: none;
+  display: block;
+}
+
+.card-service:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 0 40px rgba(255, 0, 164, 0.5);
+}
+
+/* Texte avec dégradé */
+.text-gradient {
+  background: linear-gradient(135deg, #D700FE, #FF00A4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Section container */
+.section-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 5rem 1rem;
+}
+
+/* Champs de formulaire */
+.input-field {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  color: #FFFFFF;
+  border: 2px solid #46015E;
+  background: rgba(49, 0, 81, 0.5);
+  transition: border-color 0.3s, box-shadow 0.3s;
+  font-family: 'Inter', sans-serif;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: #FF00A4;
+  box-shadow: 0 0 20px rgba(255, 0, 164, 0.3);
+}
+
+.input-field::placeholder {
+  color: #A090B0;
+}
+
+/* Sélecteurs (même style que les inputs) */
+select.input-field {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23A090B0' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  padding-right: 2.5rem;
+}
+
+select.input-field option {
+  background: #310051;
+  color: #FFFFFF;
+}
+
+/* Tableaux de prix */
+.price-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.price-table th {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-weight: 600;
+  border-bottom: 2px solid #FF00A4;
+  background: #310051;
+}
+
+.price-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(255, 0, 164, 0.2);
+}
+
+.price-table tr:hover td {
+  background: rgba(49, 0, 81, 0.3);
+}
+
+/* Background gradients (classes utilitaires custom) */
+.bg-gradient-bg {
+  background: linear-gradient(180deg, #0A0A0A, #1A0033);
+}
+
+.bg-gradient-card {
+  background: linear-gradient(145deg, #310051, #46015E);
+}
+
+/* =============================================
+   Animations
+   ============================================= */
+
+@keyframes glow-pulse {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(255, 0, 164, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(255, 0, 164, 0.5);
+  }
+}
+
+.animate-glow-pulse {
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+
+/* =============================================
+   Scrollbar personnalisée
+   ============================================= */
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0A0A0A;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #D700FE, #FF00A4);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #FF00A4;
+}
