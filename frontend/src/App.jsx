@@ -8,6 +8,7 @@ import APropos from './pages/APropos';
 import Portfolio from './pages/Portfolio';
 import Tarifs from './pages/Tarifs';
 import { useLang } from './i18n/LanguageContext';
+import ScrollToTop from './components/ScrollToTop';
 import './index.css';
 
 // Base path pour GitHub Pages - changer en '/' avec custom domain
@@ -25,6 +26,7 @@ function ComingSoon({ section }) {
 function App() {
   return (
     <BrowserRouter basename={basename}>
+      <ScrollToTop />
       <Routes>
         <Route element={<MainLayout />}>
           <Route index element={<Home />} />
