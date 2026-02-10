@@ -72,7 +72,7 @@ function Home() {
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0">
           <img
-            src={thumb('/images/locale/locale3.jpeg')}
+            src={thumb('/images/locale/locale11.jpeg')}
             alt=""
             className="w-full h-full object-cover"
           />
