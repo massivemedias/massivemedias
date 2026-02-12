@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Menu, X, ChevronDown, ShoppingCart, Sun, Moon } from 'lucide-react';
+import { Menu, X, ChevronDown, ShoppingCart, Sparkles, Moon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import MassiveLogoDark from '../assets/massive-logo.svg';
-import MassiveLogoLight from '../assets/massive-logo-light.png';
+import MassiveLogo from '../assets/massive-logo.svg';
 import { useLang } from '../i18n/LanguageContext';
 import { useTheme } from '../i18n/ThemeContext';
 
@@ -22,7 +21,7 @@ function Header() {
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3">
             <img 
-              src={theme === 'light' ? MassiveLogoLight : MassiveLogoDark} 
+              src={MassiveLogo} 
               alt="Massive Medias" 
               className="transition-opacity duration-300 logo-header"
             />
@@ -84,9 +83,9 @@ function Header() {
             <button
               onClick={toggleTheme}
               className="p-2 rounded-md transition-all duration-200 toggle-button"
-              title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
+              title={theme === 'dark' ? 'Vibrant mode' : 'Dark mode'}
             >
-              {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+              {theme === 'dark' ? <Sparkles size={16} /> : <Moon size={16} />}
             </button>
 
             {/* Language Toggle */}
@@ -112,7 +111,7 @@ function Header() {
               onClick={toggleTheme}
               className="p-2 rounded-md transition-all duration-200 toggle-button"
             >
-              {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
+              {theme === 'dark' ? <Sparkles size={14} /> : <Moon size={14} />}
             </button>
             <button
               onClick={toggleLang}

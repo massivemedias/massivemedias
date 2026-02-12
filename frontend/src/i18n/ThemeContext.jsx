@@ -6,7 +6,7 @@ export function ThemeProvider({ children }) {
   const [theme, setTheme] = useState(() => {
     try {
       const saved = localStorage.getItem('massive-theme');
-      return saved === 'light' ? 'light' : 'dark';
+      return saved === 'vibrant' ? 'vibrant' : 'dark';
     } catch {
       return 'dark';
     }
@@ -18,7 +18,7 @@ export function ThemeProvider({ children }) {
 
   const toggleTheme = useCallback(() => {
     setTheme(prev => {
-      const next = prev === 'dark' ? 'light' : 'dark';
+      const next = prev === 'dark' ? 'vibrant' : 'dark';
       try { localStorage.setItem('massive-theme', next); } catch {}
       return next;
     });

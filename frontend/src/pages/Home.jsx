@@ -18,8 +18,7 @@ import {
 } from 'lucide-react';
 import ServiceCard from '../components/ServiceCard';
 import Counter from '../components/Counter';
-import MassiveLogoDark from '../assets/massive-logo.svg';
-import MassiveLogoLight from '../assets/massive-logo-light.png';
+import MassiveLogo from '../assets/massive-logo.svg';
 import { img, thumb } from '../utils/paths';
 import { useLang } from '../i18n/LanguageContext';
 import { useTheme } from '../i18n/ThemeContext';
@@ -101,7 +100,7 @@ function Home() {
             />
 
             <motion.img
-              src={theme === 'light' ? MassiveLogoLight : MassiveLogoDark}
+              src={MassiveLogo}
               alt="MASSIVE"
               className="mx-auto mb-10 transition-opacity duration-300 logo-home"
               initial={{ opacity: 0, scale: 0.9 }}
