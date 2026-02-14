@@ -1,2 +1,0 @@
-VITE_API_URL=http://localhost:1337/api
-VITE_STRIPE_PUBLIC_KEY=your_stripe_public_key_here

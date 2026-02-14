@@ -16,7 +16,7 @@ function Header() {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 transition-colors duration-300 header-bg">
-      <nav className="container mx-auto px-4 py-3">
+      <nav className="container mx-auto px-4 py-2">
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3">

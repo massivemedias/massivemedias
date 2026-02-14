@@ -7,7 +7,7 @@ import { useLang } from '../i18n/LanguageContext';
 
 // EmailJS config
 const EMAILJS_SERVICE_ID = 'service_zeuwh04';
-const EMAILJS_TEMPLATE_ID = 'template_contact';
+const EMAILJS_TEMPLATE_ID = 'template_nql27fl';
 const EMAILJS_PUBLIC_KEY = '_e6k6nftsmZZxs29b';
 
 function Contact() {

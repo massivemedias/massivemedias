@@ -3,14 +3,14 @@
 
 /* =============================================
    MASSIVE MEDIAS - Design Tokens (Tailwind v4)
-   Palette : #FF52A0 (magenta), #FF9B3D (orange),
+   Palette : #FF52A0 (magenta), #FFB800 (or/gold),
              #8100D1 (violet), #391F58 (sombre)
    ============================================= */
 
 @theme {
   /* Brand colors (fixed - never change with theme) */
   --color-magenta: #FF52A0;
-  --color-orange: #FF9B3D;
+  --color-orange: #ff9b3c;
   --color-purple-bright: #8100D1;
   --color-electric-purple: #A348FE;
 
@@ -42,7 +42,7 @@
   --bg-body: #1E0E30;
   --bg-card: rgba(255, 255, 255, 0.06);
   --bg-card-border: rgba(255, 255, 255, 0.08);
-  --bg-header: rgba(30, 14, 48, 0.92);
+  --bg-header: rgba(108, 0, 255, 0.94);
   --bg-footer: #150B22;
   --bg-input: rgba(57, 31, 88, 0.4);
   --bg-input-border: rgba(255, 255, 255, 0.1);
@@ -100,7 +100,7 @@
   --bg-body: #2D006B;
   --bg-card: rgba(255, 255, 255, 0.08);
   --bg-card-border: rgba(255, 82, 160, 0.15);
-  --bg-header: rgba(45, 0, 107, 0.94);
+  --bg-header: rgba(108, 0, 255, 0.94);
   --bg-footer: #1A0040;
   --bg-input: rgba(58, 0, 136, 0.5);
   --bg-input-border: rgba(255, 82, 160, 0.2);
@@ -183,7 +183,7 @@ h1, h2, h3, h4, h5, h6 {
   font-size: 0.875rem;
   letter-spacing: 0.01em;
   color: #FFFFFF;
-  background: #e0468c;
+  background: #FF52A0;
   border: none;
   cursor: pointer;
   text-decoration: none;
@@ -195,7 +195,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .btn-primary:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 24px rgba(129, 0, 209, 0.35);
+  box-shadow: 0 6px 24px rgba(255, 82, 160, 0.4);
 }
 
 /* Bouton outline */
@@ -242,7 +242,7 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Texte avec dégradé */
 .text-gradient {
-  background: linear-gradient(135deg, #FF9B3D, #FF52A0);
+  background: linear-gradient(135deg, #ff9b3c, #FF52A0);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -319,7 +319,7 @@ select.input-field option {
 }
 
 .price-table tr:hover td.text-gradient {
-  background: linear-gradient(135deg, #FF9B3D, #FF52A0) !important;
+  background: linear-gradient(135deg, #ff9b3c, #FF52A0) !important;
   -webkit-background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
   background-clip: text !important;
