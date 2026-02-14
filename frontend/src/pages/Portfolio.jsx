@@ -62,6 +62,9 @@ const projects = [
   { path: '/images/locale/locale11.jpeg', titleKey: 'workspace', category: 'locale' },
 ];
 
+// Ordre des sections pour l'affichage "Tout"
+const sectionOrder = ['web', 'prints', 'stickers', 'locale'];
+
 // Titres par langue
 const projectTitles = {
   fr: {
@@ -112,10 +115,11 @@ function Portfolio() {
     : projects.filter(p => p.category === activeCategory);
 
   const getTitle = (key) => projectTitles[lang]?.[key] || projectTitles.fr[key] || key;
+  const getCategoryLabel = (catId) => cats[catId] || catId;
 
-  const openLightbox = (project, index) => {
+  const openLightbox = (project, globalIndex) => {
     setLightboxImage(project);
-    setLightboxIndex(index);
+    setLightboxIndex(globalIndex);
   };
 
   const goToPrevious = (e) => {
@@ -136,6 +140,42 @@ function Portfolio() {
     setLightboxImage(null);
     setLightboxIndex(0);
   };
+
+  // Rendu d'une carte projet
+  const renderCard = (project, index) => (
+    <motion.div
+      key={project.path}
+      initial={{ opacity: 0, scale: 0.95 }}
+      whileInView={{ opacity: 1, scale: 1 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.3, delay: Math.min(index * 0.03, 0.3) }}
+      className="group relative rounded-xl overflow-hidden cursor-pointer"
+      style={{ aspectRatio: project.category === 'web' ? '16/10' : '1' }}
+      onClick={() => {
+        if (project.url) {
+          window.open(project.url, '_blank', 'noopener,noreferrer');
+        } else {
+          // Trouver l'index global dans filteredProjects pour le lightbox
+          const globalIdx = filteredProjects.indexOf(project);
+          openLightbox(project, globalIdx >= 0 ? globalIdx : 0);
+        }
+      }}
+    >
+      <img
+        src={thumb(project.path)}
+        alt={getTitle(project.titleKey)}
+        className={`w-full h-full transition-transform duration-500 group-hover:scale-105 ${project.category === 'web' ? 'object-cover object-top' : 'object-cover'}`}
+        loading="lazy"
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-purple-dark/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+      <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+        <p className="text-white font-heading font-bold text-sm flex items-center gap-2">
+          {getTitle(project.titleKey)}
+          {project.url && <ExternalLink size={14} />}
+        </p>
+      </div>
+    </motion.div>
+  );
 
   return (
     <>
@@ -195,47 +235,40 @@ function Portfolio() {
           {filteredProjects.length} {filteredProjects.length > 1 ? t('common.projectsPlural') : t('common.projects')}
         </p>
 
-        {/* Grille */}
-        <motion.div
-          layout
-          className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
-        >
-          <AnimatePresence mode="popLayout">
-            {filteredProjects.map((project, index) => (
-              <motion.div
-                key={project.path}
-                layout
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.3, delay: Math.min(index * 0.02, 0.3) }}
-                className="group relative rounded-xl overflow-hidden cursor-pointer"
-                style={{ aspectRatio: project.category === 'web' ? '16/10' : '1' }}
-                onClick={() => {
-                  if (project.url) {
-                    window.open(project.url, '_blank', 'noopener,noreferrer');
-                  } else {
-                    openLightbox(project, index);
-                  }
-                }}
-              >
-                <img
-                  src={thumb(project.path)}
-                  alt={getTitle(project.titleKey)}
-                  className={`w-full h-full transition-transform duration-500 group-hover:scale-105 ${project.category === 'web' ? 'object-cover object-top' : 'object-cover'}`}
-                  loading="lazy"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-purple-dark/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                  <p className="text-white font-heading font-bold text-sm flex items-center gap-2">
-                    {getTitle(project.titleKey)}
-                    {project.url && <ExternalLink size={14} />}
-                  </p>
+        {/* Affichage par sections quand "Tout" est sélectionné */}
+        {activeCategory === 'all' ? (
+          <div className="space-y-16">
+            {sectionOrder.map((sectionId) => {
+              const sectionProjects = projects.filter(p => p.category === sectionId);
+              if (sectionProjects.length === 0) return null;
+              return (
+                <div key={sectionId}>
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    whileInView={{ opacity: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5 }}
+                    className="flex items-center gap-4 mb-8"
+                  >
+                    <h2 className="text-2xl md:text-3xl font-heading font-bold text-heading whitespace-nowrap">
+                      {getCategoryLabel(sectionId)}
+                    </h2>
+                    <div className="flex-1 h-px" style={{ background: 'var(--bg-card-border)' }}></div>
+                    <span className="text-grey-muted text-sm whitespace-nowrap">{sectionProjects.length} {sectionProjects.length > 1 ? t('common.projectsPlural') : t('common.projects')}</span>
+                  </motion.div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {sectionProjects.map((project, index) => renderCard(project, index))}
+                  </div>
                 </div>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </motion.div>
+              );
+            })}
+          </div>
+        ) : (
+          /* Grille filtrée */
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {filteredProjects.map((project, index) => renderCard(project, index))}
+          </div>
+        )}
       </section>
 
       {/* Lightbox avec navigation */}

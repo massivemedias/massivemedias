@@ -48,7 +48,6 @@ Each print undergoes rigorous color calibration to ensure optimal fidelity to th
       thumb('/images/prints/Prints14.jpeg'),
       thumb('/images/prints/Prints16.jpeg'),
       thumb('/images/prints/Prints20.jpeg'),
-      thumb('/images/prints/Prints24.jpeg'),
     ],
     equipment: [
       { name: 'Professional fine art printer', desc: '12-color printing, up to 17" (A2+). Museum quality.' },
@@ -243,6 +242,7 @@ Perfect for artists, event promoters, labels, cafes and businesses in Mile-End a
       thumb('/images/prints/Prints6.jpeg'),
       thumb('/images/prints/Prints9.jpeg'),
       thumb('/images/prints/Prints12.jpeg'),
+      thumb('/images/prints/Prints24.jpeg'),
     ],
     equipment: [
       { name: 'Professional printer', desc: 'Superior quality even for flyers - 12 pigmented colors.' },

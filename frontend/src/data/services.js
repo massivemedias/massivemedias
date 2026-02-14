@@ -48,7 +48,6 @@ Chaque impression fait l'objet d'un calibrage colorimétrique rigoureux pour gar
       thumb('/images/prints/Prints14.jpeg'),
       thumb('/images/prints/Prints16.jpeg'),
       thumb('/images/prints/Prints20.jpeg'),
-      thumb('/images/prints/Prints24.jpeg'),
     ],
     equipment: [
       { name: 'Imprimante fine art professionnelle', desc: 'Impression 12 couleurs, jusqu\'à 17" (A2+). Qualité musée.' },
@@ -243,6 +242,7 @@ Parfait pour les artistes, promoteurs d'événements, labels, cafés et commerce
       thumb('/images/prints/Prints6.jpeg'),
       thumb('/images/prints/Prints9.jpeg'),
       thumb('/images/prints/Prints12.jpeg'),
+      thumb('/images/prints/Prints24.jpeg'),
     ],
     equipment: [
       { name: 'Imprimante professionnelle', desc: 'Qualité supérieure même pour les flyers - 12 couleurs pigmentées.' },
