@@ -40,6 +40,7 @@ const projects = [
   { path: '/images/prints/Prints21.jpeg', titleKey: 'print', category: 'prints' },
   { path: '/images/prints/Prints22.jpeg', titleKey: 'print', category: 'prints' },
   { path: '/images/prints/Prints23.jpeg', titleKey: 'print', category: 'prints' },
+  { path: '/images/prints/Prints24.jpeg', titleKey: 'print', category: 'prints' },
   // Stickers
   { path: '/images/stickers/Stickers1.jpeg', titleKey: 'sticker', category: 'stickers' },
   { path: '/images/stickers/Stickers2.jpg', titleKey: 'sticker', category: 'stickers' },

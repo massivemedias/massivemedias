@@ -48,6 +48,7 @@ Each print undergoes rigorous color calibration to ensure optimal fidelity to th
       thumb('/images/prints/Prints14.jpeg'),
       thumb('/images/prints/Prints16.jpeg'),
       thumb('/images/prints/Prints20.jpeg'),
+      thumb('/images/prints/Prints24.jpeg'),
     ],
     equipment: [
       { name: 'Professional fine art printer', desc: '12-color printing, up to 17" (A2+). Museum quality.' },
