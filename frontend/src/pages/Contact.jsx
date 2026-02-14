@@ -2,13 +2,9 @@ import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
 import { Mail, MapPin, Instagram, Facebook, Send, CheckCircle, AlertCircle } from 'lucide-react';
 import { useState, useRef } from 'react';
-import emailjs from '@emailjs/browser';
 import { useLang } from '../i18n/LanguageContext';
 
-// EmailJS config
-const EMAILJS_SERVICE_ID = 'service_zeuwh04';
-const EMAILJS_TEMPLATE_ID = 'template_nql27fl';
-const EMAILJS_PUBLIC_KEY = '_e6k6nftsmZZxs29b';
+const FORMSPREE_ENDPOINT = 'https://formspree.io/f/xzdardoe';
 
 function Contact() {
   const { t } = useLang();
@@ -30,12 +26,12 @@ function Contact() {
     setStatus('sending');
 
     try {
-      await emailjs.sendForm(
-        EMAILJS_SERVICE_ID,
-        EMAILJS_TEMPLATE_ID,
-        formRef.current,
-        EMAILJS_PUBLIC_KEY
-      );
+      const response = await fetch(FORMSPREE_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+      if (!response.ok) throw new Error('Form submission failed');
       setStatus('success');
       setFormData({
         nom: '',
@@ -48,7 +44,7 @@ function Contact() {
         message: ''
       });
     } catch (error) {
-      console.error('EmailJS error:', error);
+      console.error('Form error:', error);
       setStatus('error');
     }
   };
