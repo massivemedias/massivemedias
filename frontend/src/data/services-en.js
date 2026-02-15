@@ -7,7 +7,7 @@ const servicesDataEn = {
     icon: Printer,
     title: 'Fine Art Printing',
     subtitle: 'Gallery-quality prints on premium papers',
-    heroImage: thumb('/images/prints/Prints1.jpeg'),
+    heroImage: thumb('/images/prints/Prints1.webp'),
     description: `Fine Art refers to photographic or artistic prints made on high-end archival papers (cotton, alpha-cellulose) with pigmented inks for maximum longevity. These prints meet gallery and museum standards, with a conservation life exceeding 100 years.
 
 Each print undergoes rigorous color calibration to ensure optimal fidelity to the artist's intentions.`,
@@ -40,14 +40,14 @@ Each print undergoes rigorous color calibration to ensure optimal fidelity to th
       ],
     },
     gallery: [
-      thumb('/images/prints/Prints2.jpeg'),
-      thumb('/images/prints/Prints3.jpeg'),
-      thumb('/images/prints/Prints7.jpeg'),
-      thumb('/images/prints/Prints8.jpeg'),
-      thumb('/images/prints/Prints11.jpeg'),
-      thumb('/images/prints/Prints14.jpeg'),
-      thumb('/images/prints/Prints16.jpeg'),
-      thumb('/images/prints/Prints20.jpeg'),
+      thumb('/images/prints/FineArt1.webp'),
+      thumb('/images/prints/FineArt4.webp'),
+      thumb('/images/prints/FineArt5.webp'),
+      thumb('/images/prints/FineArt6.webp'),
+      thumb('/images/prints/FineArt-Photo.webp'),
+      thumb('/images/prints/Prints21.webp'),
+      thumb('/images/prints/Prints23.webp'),
+      thumb('/images/prints/Prints24.webp'),
     ],
     equipment: [
       { name: 'Professional fine art printer', desc: '12-color printing, up to 17" (A2+). Museum quality.' },
@@ -65,7 +65,7 @@ Each print undergoes rigorous color calibration to ensure optimal fidelity to th
     icon: Sticker,
     title: 'Custom Stickers',
     subtitle: 'Custom die-cut stickers for creators',
-    heroImage: thumb('/images/stickers/Stickers1.jpeg'),
+    heroImage: thumb('/images/stickers/Stickers-Cosmo.webp'),
     description: `Custom die-cut stickers for artists, labels, events and brands. Complete service including graphic design if needed.
 
 Cut to the exact shape of your design with our professional cutting equipment, each sticker is finished with lamination for water, UV and scratch resistance.`,
@@ -91,7 +91,7 @@ Cut to the exact shape of your design with our professional cutting equipment, e
       note: 'Graphic design included in all prices',
       tables: [
         {
-          subtitle: 'Round 2.5" holographic stickers',
+          subtitle: 'Custom stickers (all shapes)',
           headers: ['Quantity', 'Price', 'Price/unit'],
           rows: [
             ['50', '$50', '$1.00'],
@@ -100,25 +100,16 @@ Cut to the exact shape of your design with our professional cutting equipment, e
             ['250', '$175', '$0.70'],
           ],
         },
-        {
-          subtitle: 'Custom cut A4 stickers',
-          headers: ['Quantity', 'Price', 'Price/sheet'],
-          rows: [
-            ['10 sheets', '$70', '$7.00'],
-            ['25 sheets', '$150', '$6.00'],
-          ],
-        },
       ],
     },
     gallery: [
-      thumb('/images/stickers/Stickers2.jpg'),
-      thumb('/images/stickers/Stickers3.jpeg'),
-      thumb('/images/stickers/Stickers4.jpeg'),
-      thumb('/images/stickers/Stickers5.jpeg'),
-      thumb('/images/stickers/Stickers9.jpeg'),
-      thumb('/images/stickers/Stickers10.jpeg'),
-      thumb('/images/stickers/Stickers11.jpeg'),
-      thumb('/images/stickers/Stickers15.jpeg'),
+      thumb('/images/stickers/Stickers-Cosmo-2.webp'),
+      thumb('/images/stickers/Stickers-Cosmovision.webp'),
+      thumb('/images/stickers/Stickers-Digital.webp'),
+      thumb('/images/stickers/Stickers-Fusion-State-Rec.webp'),
+      thumb('/images/stickers/Stickers-Maudite-Machine.webp'),
+      thumb('/images/stickers/Stickers-Vrstl.webp'),
+      thumb('/images/stickers/Stickers-massive.webp'),
     ],
     equipment: [
       { name: 'Professional cutter', desc: 'Precision cutting up to 12" wide. Contour, kiss-cut, die-cut.' },
@@ -136,7 +127,7 @@ Cut to the exact shape of your design with our professional cutting equipment, e
     icon: Shirt,
     title: 'Sublimation & Merch',
     subtitle: 'T-shirts, mugs, accessories - your custom merch',
-    heroImage: thumb('/images/stickers/Stickers3.jpeg'),
+    heroImage: thumb('/images/textile/Textile1.webp'),
     description: `Sublimation printing on textiles and objects. Sublimation produces vibrant and permanent colors that don't crack, don't fade and are wash-resistant.
 
 Ideal for artist merch, events, corporate gifts or any custom project. From t-shirts to tumblers, mugs and mousepads.`,
@@ -158,11 +149,11 @@ Ideal for artist merch, events, corporate gifts or any custom project. From t-sh
     ],
     pricing: {
       title: 'Sublimation & Merch Pricing',
-      note: 'Price per unit, volume discounts available. Contact us for a quote.',
-      headers: ['Product', 'Starting at', 'Turnaround'],
+      note: 'Per unit pricing · Volume discounts available on request',
+      headers: ['Product', 'Price', 'Turnaround'],
       rows: [
-        ['Sublimation t-shirt', '$35', '3-5 days'],
-        ['Hoodie / sweater', '$55', '5-7 days'],
+        ['Sublimation t-shirt', '$30', '3-5 days'],
+        ['Hoodie / sweater', '$50', '5-7 days'],
         ['Mug 11oz', '$20', '2-3 days'],
         ['Mug 15oz', '$25', '2-3 days'],
         ['Tumbler / bottle', '$30', '3-5 days'],
@@ -172,14 +163,14 @@ Ideal for artist merch, events, corporate gifts or any custom project. From t-sh
       ],
     },
     gallery: [
-      thumb('/images/prints/Prints5.jpeg'),
-      thumb('/images/prints/Prints10.jpeg'),
-      thumb('/images/prints/Prints16.jpeg'),
-      thumb('/images/prints/Prints20.jpeg'),
-      thumb('/images/stickers/Stickers1.jpeg'),
-      thumb('/images/stickers/Stickers5.jpeg'),
-      thumb('/images/stickers/Stickers9.jpeg'),
-      thumb('/images/stickers/Stickers12.jpeg'),
+      thumb('/images/textile/Textile2.webp'),
+      thumb('/images/textile/Textile3.webp'),
+      thumb('/images/textile/Textile4.webp'),
+      thumb('/images/textile/Textile5.webp'),
+      thumb('/images/textile/Textile6.webp'),
+      thumb('/images/textile/Textile7.webp'),
+      thumb('/images/textile/Textile9.webp'),
+      thumb('/images/textile/Textile10.webp'),
     ],
     equipment: [
       { name: 'Large format heat press', desc: 'Large format heat press for t-shirts, hoodies and textiles.' },
@@ -238,11 +229,9 @@ Perfect for artists, event promoters, labels, cafes and businesses in Mile-End a
       thumb('/images/flyers/discodyssee.webp'),
       thumb('/images/flyers/from_vision.webp'),
       thumb('/images/flyers/rituals.webp'),
-      thumb('/images/prints/Prints4.JPG'),
-      thumb('/images/prints/Prints6.jpeg'),
-      thumb('/images/prints/Prints9.jpeg'),
-      thumb('/images/prints/Prints12.jpeg'),
-      thumb('/images/prints/Prints24.jpeg'),
+      thumb('/images/prints/Prints24.webp'),
+      thumb('/images/prints/FineArt-Photo.webp'),
+      thumb('/images/prints/FineArt1.webp'),
     ],
     equipment: [
       { name: 'Professional printer', desc: 'Superior quality even for flyers - 12 pigmented colors.' },
@@ -299,14 +288,13 @@ We work with industry-standard professional tools - Adobe Illustrator for vector
       ],
     },
     gallery: [
-      thumb('/images/graphism/creation_icone_logo.webp'),
+      thumb('/images/graphism/logo_massive.webp'),
       thumb('/images/graphism/onomiko.webp'),
       thumb('/images/graphism/lumiere_noire.webp'),
       thumb('/images/graphism/sony_delite_logo.webp'),
       thumb('/images/graphism/massive_sticker.webp'),
       thumb('/images/graphism/maudite_machine_sticker.webp'),
       thumb('/images/graphism/vrstl_sticker.webp'),
-      thumb('/images/graphism/creation_pdf.webp'),
     ],
     team: {
       name: 'Christopher Gagnon',

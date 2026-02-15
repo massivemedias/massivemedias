@@ -2,16 +2,18 @@ import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useLang } from '../i18n/LanguageContext';
+import { useTheme } from '../i18n/ThemeContext';
 
 function ServiceCard({ icon: Icon, title, description, link, image }) {
   const { t } = useLang();
+  const { theme } = useTheme();
 
   return (
     <motion.div
-      whileHover={{ y: -8 }}
+      whileHover={{ y: theme === 'light' ? -3 : -8 }}
       transition={{ duration: 0.3 }}
     >
-      <Link to={link} className="block rounded-2xl overflow-hidden h-full group transition-colors duration-300" style={{ background: 'var(--bg-card)', border: '1px solid var(--bg-card-border)', boxShadow: 'var(--card-shadow)' }}>
+      <Link to={link} className={`block overflow-hidden h-full group transition-colors duration-300 ${theme === 'light' ? 'rounded-xl' : 'rounded-2xl'}`} style={{ background: 'var(--bg-card)', border: '1px solid var(--bg-card-border)', boxShadow: 'var(--card-shadow)' }}>
         {/* Image */}
         {image && (
           <div className="relative h-48 overflow-hidden">

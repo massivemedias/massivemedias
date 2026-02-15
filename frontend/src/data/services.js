@@ -7,7 +7,7 @@ const servicesData = {
     icon: Printer,
     title: 'Impression Fine Art',
     subtitle: 'Tirages qualité galerie sur papiers premium',
-    heroImage: thumb('/images/prints/Prints1.jpeg'),
+    heroImage: thumb('/images/prints/Prints1.webp'),
     description: `Le Fine Art désigne des impressions photographiques ou artistiques réalisées sur des papiers d'archives haut de gamme (coton, alpha-cellulose) avec des encres pigmentées à haute longévité. Ces tirages respectent les standards des galeries d'art et musées, avec une durée de conservation pouvant dépasser 100 ans.
 
 Chaque impression fait l'objet d'un calibrage colorimétrique rigoureux pour garantir une fidélité optimale aux intentions de l'artiste.`,
@@ -40,14 +40,14 @@ Chaque impression fait l'objet d'un calibrage colorimétrique rigoureux pour gar
       ],
     },
     gallery: [
-      thumb('/images/prints/Prints2.jpeg'),
-      thumb('/images/prints/Prints3.jpeg'),
-      thumb('/images/prints/Prints7.jpeg'),
-      thumb('/images/prints/Prints8.jpeg'),
-      thumb('/images/prints/Prints11.jpeg'),
-      thumb('/images/prints/Prints14.jpeg'),
-      thumb('/images/prints/Prints16.jpeg'),
-      thumb('/images/prints/Prints20.jpeg'),
+      thumb('/images/prints/FineArt1.webp'),
+      thumb('/images/prints/FineArt4.webp'),
+      thumb('/images/prints/FineArt5.webp'),
+      thumb('/images/prints/FineArt6.webp'),
+      thumb('/images/prints/FineArt-Photo.webp'),
+      thumb('/images/prints/Prints21.webp'),
+      thumb('/images/prints/Prints23.webp'),
+      thumb('/images/prints/Prints24.webp'),
     ],
     equipment: [
       { name: 'Imprimante fine art professionnelle', desc: 'Impression 12 couleurs, jusqu\'à 17" (A2+). Qualité musée.' },
@@ -65,7 +65,7 @@ Chaque impression fait l'objet d'un calibrage colorimétrique rigoureux pour gar
     icon: Sticker,
     title: 'Stickers Custom',
     subtitle: 'Autocollants découpés sur mesure pour créateurs',
-    heroImage: thumb('/images/stickers/Stickers1.jpeg'),
+    heroImage: thumb('/images/stickers/Stickers-Cosmo.webp'),
     description: `Autocollants découpés sur mesure pour artistes, labels, événements et marques. Service complet incluant la création graphique du visuel si nécessaire.
 
 Découpés à la forme exacte de ton design avec notre équipement de découpe professionnel, chaque sticker est fini avec une lamination pour résister à l'eau, aux UV et aux rayures.`,
@@ -91,7 +91,7 @@ Découpés à la forme exacte de ton design avec notre équipement de découpe p
       note: 'Design graphique inclus dans tous les prix',
       tables: [
         {
-          subtitle: 'Stickers ronds 2,5" holographiques',
+          subtitle: 'Stickers custom (toutes formes)',
           headers: ['Quantité', 'Prix', 'Prix/unité'],
           rows: [
             ['50', '50$', '1,00$'],
@@ -100,25 +100,16 @@ Découpés à la forme exacte de ton design avec notre équipement de découpe p
             ['250', '175$', '0,70$'],
           ],
         },
-        {
-          subtitle: 'Stickers A4 custom découpés',
-          headers: ['Quantité', 'Prix', 'Prix/feuille'],
-          rows: [
-            ['10 feuilles', '70$', '7,00$'],
-            ['25 feuilles', '150$', '6,00$'],
-          ],
-        },
       ],
     },
     gallery: [
-      thumb('/images/stickers/Stickers2.jpg'),
-      thumb('/images/stickers/Stickers3.jpeg'),
-      thumb('/images/stickers/Stickers4.jpeg'),
-      thumb('/images/stickers/Stickers5.jpeg'),
-      thumb('/images/stickers/Stickers9.jpeg'),
-      thumb('/images/stickers/Stickers10.jpeg'),
-      thumb('/images/stickers/Stickers11.jpeg'),
-      thumb('/images/stickers/Stickers15.jpeg'),
+      thumb('/images/stickers/Stickers-Cosmo-2.webp'),
+      thumb('/images/stickers/Stickers-Cosmovision.webp'),
+      thumb('/images/stickers/Stickers-Digital.webp'),
+      thumb('/images/stickers/Stickers-Fusion-State-Rec.webp'),
+      thumb('/images/stickers/Stickers-Maudite-Machine.webp'),
+      thumb('/images/stickers/Stickers-Vrstl.webp'),
+      thumb('/images/stickers/Stickers-massive.webp'),
     ],
     equipment: [
       { name: 'Découpeuse professionnelle', desc: 'Découpe de précision jusqu\'à 12" de large. Contour, kiss-cut, die-cut.' },
@@ -136,7 +127,7 @@ Découpés à la forme exacte de ton design avec notre équipement de découpe p
     icon: Shirt,
     title: 'Sublimation & Merch',
     subtitle: 'T-shirts, mugs, accessoires - ton merch sur mesure',
-    heroImage: thumb('/images/stickers/Stickers3.jpeg'),
+    heroImage: thumb('/images/textile/Textile1.webp'),
     description: `Impression sublimation sur textile et objets. La sublimation produit des couleurs vibrantes et permanentes qui ne craquent pas, ne s'effacent pas et résistent au lavage.
 
 Idéal pour le merch d'artiste, les événements, les cadeaux corporatifs ou tout projet personnalisé. Du t-shirt au thermos en passant par les mugs et les tapis de souris.`,
@@ -158,11 +149,11 @@ Idéal pour le merch d'artiste, les événements, les cadeaux corporatifs ou tou
     ],
     pricing: {
       title: 'Tarifs Sublimation & Merch',
-      note: 'Prix par unité, dégressif selon quantité. Contacte-nous pour un devis.',
-      headers: ['Produit', 'À partir de', 'Délai'],
+      note: 'Prix à l\'unité · Rabais volume disponibles sur demande',
+      headers: ['Produit', 'Prix', 'Délai'],
       rows: [
-        ['T-shirt sublimation', '35$', '3-5 jours'],
-        ['Hoodie / chandail', '55$', '5-7 jours'],
+        ['T-shirt sublimation', '30$', '3-5 jours'],
+        ['Hoodie / chandail', '50$', '5-7 jours'],
         ['Mug 11oz', '20$', '2-3 jours'],
         ['Mug 15oz', '25$', '2-3 jours'],
         ['Thermos / bouteille', '30$', '3-5 jours'],
@@ -172,14 +163,14 @@ Idéal pour le merch d'artiste, les événements, les cadeaux corporatifs ou tou
       ],
     },
     gallery: [
-      thumb('/images/prints/Prints5.jpeg'),
-      thumb('/images/prints/Prints10.jpeg'),
-      thumb('/images/prints/Prints16.jpeg'),
-      thumb('/images/prints/Prints20.jpeg'),
-      thumb('/images/stickers/Stickers1.jpeg'),
-      thumb('/images/stickers/Stickers5.jpeg'),
-      thumb('/images/stickers/Stickers9.jpeg'),
-      thumb('/images/stickers/Stickers12.jpeg'),
+      thumb('/images/textile/Textile2.webp'),
+      thumb('/images/textile/Textile3.webp'),
+      thumb('/images/textile/Textile4.webp'),
+      thumb('/images/textile/Textile5.webp'),
+      thumb('/images/textile/Textile6.webp'),
+      thumb('/images/textile/Textile7.webp'),
+      thumb('/images/textile/Textile9.webp'),
+      thumb('/images/textile/Textile10.webp'),
     ],
     equipment: [
       { name: 'Presse à chaud grand format', desc: 'Presse à chaud grand format pour t-shirts, hoodies et textiles.' },
@@ -238,11 +229,9 @@ Parfait pour les artistes, promoteurs d'événements, labels, cafés et commerce
       thumb('/images/flyers/discodyssee.webp'),
       thumb('/images/flyers/from_vision.webp'),
       thumb('/images/flyers/rituals.webp'),
-      thumb('/images/prints/Prints4.JPG'),
-      thumb('/images/prints/Prints6.jpeg'),
-      thumb('/images/prints/Prints9.jpeg'),
-      thumb('/images/prints/Prints12.jpeg'),
-      thumb('/images/prints/Prints24.jpeg'),
+      thumb('/images/prints/Prints24.webp'),
+      thumb('/images/prints/FineArt-Photo.webp'),
+      thumb('/images/prints/FineArt1.webp'),
     ],
     equipment: [
       { name: 'Imprimante professionnelle', desc: 'Qualité supérieure même pour les flyers - 12 couleurs pigmentées.' },
@@ -299,14 +288,13 @@ Nous travaillons avec les outils professionnels de l'industrie - Adobe Illustrat
       ],
     },
     gallery: [
-      thumb('/images/graphism/creation_icone_logo.webp'),
+      thumb('/images/graphism/logo_massive.webp'),
       thumb('/images/graphism/onomiko.webp'),
       thumb('/images/graphism/lumiere_noire.webp'),
       thumb('/images/graphism/sony_delite_logo.webp'),
       thumb('/images/graphism/massive_sticker.webp'),
       thumb('/images/graphism/maudite_machine_sticker.webp'),
       thumb('/images/graphism/vrstl_sticker.webp'),
-      thumb('/images/graphism/creation_pdf.webp'),
     ],
     team: {
       name: 'Christopher Gagnon',

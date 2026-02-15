@@ -1,14 +1,19 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Menu, X, ChevronDown, ShoppingCart, Sparkles, Moon } from 'lucide-react';
+import { Menu, X, ChevronDown, ShoppingCart, Sparkles, Sun, UserCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import MassiveLogo from '../assets/massive-logo.svg';
+import MassiveLogoVibrant from '../assets/massive-logo.svg';
+import MassiveLogoLight from '../assets/massive-logo-light.png';
 import { useLang } from '../i18n/LanguageContext';
 import { useTheme } from '../i18n/ThemeContext';
+import { useCart } from '../contexts/CartContext';
+import { useAuth } from '../contexts/AuthContext';
 
 function Header() {
   const { lang, toggleLang, t } = useLang();
   const { theme, toggleTheme } = useTheme();
+  const { cartCount } = useCart();
+  const { user } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [servicesDropdownOpen, setServicesDropdownOpen] = useState(false);
 
@@ -20,9 +25,9 @@ function Header() {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3">
-            <img 
-              src={MassiveLogo} 
-              alt="Massive Medias" 
+            <img
+              src={theme === 'light' ? MassiveLogoLight : MassiveLogoVibrant}
+              alt="Massive Medias"
               className="transition-opacity duration-300 logo-header"
             />
           </Link>
@@ -83,9 +88,9 @@ function Header() {
             <button
               onClick={toggleTheme}
               className="p-2 rounded-md transition-all duration-200 toggle-button"
-              title={theme === 'dark' ? 'Vibrant mode' : 'Dark mode'}
+              title={theme === 'light' ? 'Vibrant mode' : 'Light mode'}
             >
-              {theme === 'dark' ? <Sparkles size={16} /> : <Moon size={16} />}
+              {theme === 'light' ? <Sparkles size={16} /> : <Sun size={16} />}
             </button>
 
             {/* Language Toggle */}
@@ -96,12 +101,24 @@ function Header() {
               {lang === 'fr' ? 'EN' : 'FR'}
             </button>
 
+            {/* Account / Login */}
+            <Link to={user ? '/account' : '/login'} className="p-2 transition-colors duration-200 nav-link" title={user ? t('nav.account') : t('nav.login')}>
+              <UserCircle size={20} />
+            </Link>
+
             {/* Panier */}
             <Link to="/panier" className="relative p-2 transition-colors duration-200 nav-link">
               <ShoppingCart size={20} />
-              <span className="absolute -top-1 -right-1 bg-magenta text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-bold text-[10px]">
-                0
-              </span>
+              {cartCount > 0 && (
+                <motion.span
+                  key={cartCount}
+                  initial={{ scale: 0.5 }}
+                  animate={{ scale: 1 }}
+                  className="absolute -top-1 -right-1 bg-magenta text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-bold text-[10px]"
+                >
+                  {cartCount}
+                </motion.span>
+              )}
             </Link>
           </div>
 
@@ -111,7 +128,7 @@ function Header() {
               onClick={toggleTheme}
               className="p-2 rounded-md transition-all duration-200 toggle-button"
             >
-              {theme === 'dark' ? <Sparkles size={14} /> : <Moon size={14} />}
+              {theme === 'light' ? <Sparkles size={14} /> : <Sun size={14} />}
             </button>
             <button
               onClick={toggleLang}
@@ -175,7 +192,8 @@ function Header() {
                   { to: '/portfolio', label: t('nav.portfolio') },
                   { to: '/boutique', label: t('nav.boutique') },
                   { to: '/a-propos', label: t('nav.aPropos') },
-                  { to: '/panier', label: `${t('nav.panier')} (0)` },
+                  { to: '/panier', label: `${t('nav.panier')}${cartCount > 0 ? ` (${cartCount})` : ''}` },
+                  { to: user ? '/account' : '/login', label: user ? t('nav.account') : t('nav.login') },
                 ].map(item => (
                   <Link
                     key={item.to}

@@ -12,6 +12,7 @@
   "dependencies": {
     "@emailjs/browser": "^4.4.1",
     "@stripe/stripe-js": "^8.7.0",
+    "@supabase/supabase-js": "^2.95.3",
     "@tailwindcss/vite": "^4.1.18",
     "autoprefixer": "^10.4.24",
     "axios": "^1.13.5",

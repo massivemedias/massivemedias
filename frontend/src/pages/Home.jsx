@@ -18,7 +18,8 @@ import {
 } from 'lucide-react';
 import ServiceCard from '../components/ServiceCard';
 import Counter from '../components/Counter';
-import MassiveLogo from '../assets/massive-logo.svg';
+import MassiveLogoVibrant from '../assets/massive-logo.svg';
+import MassiveLogoLight from '../assets/massive-logo-light.png';
 import { img, thumb } from '../utils/paths';
 import { useLang } from '../i18n/LanguageContext';
 import { useTheme } from '../i18n/ThemeContext';
@@ -33,23 +34,23 @@ const serviceLinks = [
   '/services/developpement-web',
 ];
 const serviceImages = [
-  thumb('/images/prints/Prints1.jpeg'),
-  thumb('/images/stickers/Stickers1.jpeg'),
-  thumb('/images/stickers/Stickers3.jpeg'),
-  thumb('/images/prints/Prints5.jpeg'),
-  thumb('/images/prints/Prints10.jpeg'),
-  thumb('/images/locale/locale11.jpeg'),
+  thumb('/images/prints/Prints1.webp'),
+  thumb('/images/stickers/Stickers-Cosmo.webp'),
+  thumb('/images/textile/Textile1.webp'),
+  thumb('/images/flyers/coagule.webp'),
+  thumb('/images/graphism/logo_massive.webp'),
+  thumb('/images/web/devweb_hero.webp'),
 ];
 
 const advantageIcons = [Truck, Award, Users, Zap, DollarSign, Music];
 
 const featuredProjectImages = [
-  thumb('/images/prints/Prints2.jpeg'),
-  thumb('/images/stickers/Stickers3.jpeg'),
-  thumb('/images/prints/Prints7.jpeg'),
-  thumb('/images/prints/Prints8.jpeg'),
-  thumb('/images/stickers/Stickers5.jpeg'),
-  thumb('/images/locale/locale9.jpeg'),
+  thumb('/images/prints/FineArt1.webp'),
+  thumb('/images/stickers/Stickers-Cosmovision.webp'),
+  thumb('/images/textile/Textile2.webp'),
+  thumb('/images/flyers/discodyssee.webp'),
+  thumb('/images/stickers/Stickers-Vrstl.webp'),
+  thumb('/images/textile/Textile9.webp'),
 ];
 
 function Home() {
@@ -71,7 +72,7 @@ function Home() {
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0">
           <img
-            src={thumb('/images/locale/locale9.jpeg')}
+            src={thumb('/images/locale/locale9.webp')}
             alt=""
             className="w-full h-full object-cover"
           />
@@ -97,10 +98,11 @@ function Home() {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3, duration: 0.6 }}
               className="mx-auto mb-8 h-[24px] w-auto"
+              style={theme === 'light' ? { filter: 'brightness(0)' } : undefined}
             />
 
             <motion.img
-              src={MassiveLogo}
+              src={theme === 'light' ? MassiveLogoLight : MassiveLogoVibrant}
               alt="MASSIVE"
               className="mx-auto mb-10 transition-opacity duration-300 logo-home"
               initial={{ opacity: 0, scale: 0.9 }}
@@ -112,7 +114,7 @@ function Home() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5, duration: 0.6 }}
-              className="text-2xl md:text-3xl text-white/80 mb-4 font-light"
+              className={`text-2xl md:text-3xl mb-4 font-light ${theme === 'light' ? 'text-heading/80' : 'text-white/80'}`}
             >
               {t('home.hero.subtitle')}
             </motion.p>
@@ -121,7 +123,7 @@ function Home() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.7, duration: 0.6 }}
-              className="text-lg text-white/50 mb-12 max-w-3xl mx-auto"
+              className={`text-lg mb-12 max-w-3xl mx-auto ${theme === 'light' ? 'text-grey-muted' : 'text-white/50'}`}
             >
               {t('home.hero.services')}
             </motion.p>
@@ -136,7 +138,7 @@ function Home() {
                 {t('home.hero.cta1')}
                 <ArrowRight className="ml-2" size={20} />
               </Link>
-              <Link to="/contact" className="btn-outline !text-white !border-white/25 hover:!bg-white/10 hover:!border-white/50">
+              <Link to="/contact" className={`btn-outline ${theme === 'light' ? '' : '!text-white !border-white/25 hover:!bg-white/10 hover:!border-white/50'}`}>
                 {t('home.hero.cta2')}
               </Link>
             </motion.div>
@@ -217,7 +219,7 @@ function Home() {
                 alt={project.title}
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-purple-dark/80 via-purple-dark/20 to-transparent opacity-70 group-hover:opacity-90 transition-opacity duration-300"></div>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent opacity-70 group-hover:opacity-90 transition-opacity duration-300"></div>
               <div className="absolute bottom-0 left-0 right-0 p-6 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
                 <span className="text-magenta text-sm font-semibold uppercase tracking-wider">{project.category}</span>
                 <h3 className="text-white text-xl font-heading font-bold mt-1">{project.title}</h3>
@@ -299,7 +301,7 @@ function Home() {
           className="relative rounded-3xl overflow-hidden"
         >
           <img
-            src={thumb('/images/locale/locale10.jpeg')}
+            src={thumb('/images/locale/locale10.webp')}
             alt=""
             className="absolute inset-0 w-full h-full object-cover"
           />

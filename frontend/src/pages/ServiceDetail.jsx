@@ -5,10 +5,12 @@ import { ArrowRight, ArrowLeft, CheckCircle, Wrench, Users, ChevronLeft, Chevron
 import { useState, useCallback, useEffect } from 'react';
 import { toFull } from '../utils/paths';
 import { useLang } from '../i18n/LanguageContext';
+import { useTheme } from '../i18n/ThemeContext';
 import getServicesData from '../data/getServicesData';
 
 function ServiceDetail() {
   const { lang, t } = useLang();
+  const { theme } = useTheme();
   const { slug } = useParams();
   const servicesData = getServicesData(lang);
   const service = servicesData[slug];
@@ -84,23 +86,23 @@ function ServiceDetail() {
             className="max-w-4xl"
           >
             <div className="flex items-center gap-2 mb-6 text-sm">
-              <Link to="/services" className="text-white/50 hover:text-magenta transition-colors">{t('serviceDetail.breadcrumbServices')}</Link>
-              <span className="text-white/50">/</span>
+              <Link to="/services" className="text-grey-muted hover:text-magenta transition-colors">{t('serviceDetail.breadcrumbServices')}</Link>
+              <span className="text-grey-muted">/</span>
               <span className="text-magenta">{service.title}</span>
             </div>
 
             <div className="flex items-center gap-4 mb-6">
-              <div className="p-4 rounded-xl" style={{ background: 'rgba(255, 255, 255, 0.1)', backdropFilter: 'blur(10px)' }}>
+              <div className="p-4 rounded-xl" style={{ background: 'var(--icon-bg)', backdropFilter: 'blur(10px)' }}>
                 <Icon size={36} className="text-magenta" />
               </div>
               <div>
-                <h1 className="text-4xl md:text-6xl font-heading font-bold text-white">
+                <h1 className="text-4xl md:text-6xl font-heading font-bold text-heading">
                   {service.title}
                 </h1>
               </div>
             </div>
 
-            <p className="text-xl md:text-2xl text-white/70 mb-8">
+            <p className="text-xl md:text-2xl text-grey-light mb-8">
               {service.subtitle}
             </p>
 
@@ -109,7 +111,7 @@ function ServiceDetail() {
                 {t('serviceDetail.requestQuote')}
                 <ArrowRight className="ml-2" size={20} />
               </Link>
-              <a href="#tarifs" className="btn-outline !text-white !border-white/25 hover:!bg-white/10 hover:!border-white/50">
+              <a href="#tarifs" className="btn-outline">
                 {t('serviceDetail.viewPricing')}
               </a>
             </div>
@@ -312,7 +314,7 @@ function ServiceDetail() {
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                     loading="lazy"
                   />
-                  <div className="absolute inset-0 bg-transparent group-hover:bg-purple-dark/40 transition-colors duration-300 flex items-center justify-center">
+                  <div className="absolute inset-0 bg-transparent group-hover:bg-black/40 transition-colors duration-300 flex items-center justify-center">
                     <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/20 backdrop-blur-sm rounded-full p-3">
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
                         <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
@@ -348,7 +350,7 @@ function ServiceDetail() {
                 className="p-6 rounded-xl border border-purple-main/30 relative transition-colors duration-300"
                 style={{ background: 'var(--bg-glass)', boxShadow: 'var(--card-shadow)' }}
               >
-                <div className="absolute -top-3 -left-1 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold text-white" style={{ background: 'linear-gradient(135deg, #8100D1, #FF52A0)' }}>
+                <div className="absolute -top-3 -left-1 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold text-white" style={{ background: theme === 'light' ? '#1A1A1A' : 'linear-gradient(135deg, #8100D1, #FF52A0)' }}>
                   {item.step}
                 </div>
                 <h3 className="text-heading font-heading font-bold text-lg mt-2 mb-2">

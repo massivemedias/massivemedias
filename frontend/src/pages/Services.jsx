@@ -16,9 +16,9 @@ const serviceLinks = [
   '/services/developpement-web',
 ];
 const serviceImages = [
-  thumb('/images/prints/Prints1.jpeg'),
-  thumb('/images/stickers/Stickers1.jpeg'),
-  thumb('/images/stickers/Stickers3.jpeg'),
+  thumb('/images/prints/Prints1.webp'),
+  thumb('/images/stickers/Stickers-Cosmo.webp'),
+  thumb('/images/textile/Textile1.webp'),
   thumb('/images/flyers/coagule.webp'),
   thumb('/images/graphism/logo_massive.webp'),
   thumb('/images/web/devweb_hero.webp'),
@@ -39,7 +39,7 @@ function Services() {
       {/* Hero avec image de fond */}
       <section className="relative py-32 overflow-hidden">
         <div className="absolute inset-0">
-          <img src={thumb('/images/locale/locale10.jpeg')} alt="" className="w-full h-full object-cover" />
+          <img src={thumb('/images/locale/locale10.webp')} alt="" className="w-full h-full object-cover" />
           <div className="absolute inset-0" style={{ background: 'var(--hero-gradient)' }}></div>
         </div>
 
@@ -50,10 +50,10 @@ function Services() {
             transition={{ duration: 0.8 }}
             className="text-center max-w-4xl mx-auto"
           >
-            <h1 className="text-5xl md:text-7xl font-heading font-bold text-white mb-6">
+            <h1 className="text-5xl md:text-7xl font-heading font-bold text-heading mb-6">
               {t('servicesPage.hero.title')}
             </h1>
-            <p className="text-xl md:text-2xl text-white/70">
+            <p className="text-xl md:text-2xl text-grey-light">
               {t('servicesPage.hero.subtitle')}
             </p>
           </motion.div>
@@ -111,7 +111,7 @@ function Services() {
             style={{ background: 'var(--bg-card)', boxShadow: 'var(--card-shadow)' }}
           >
             <div className="p-2">
-              <img src={thumb('/images/prints/Prints3.jpeg')} alt={t('servicesPage.packageArtist.title')} className="w-full h-48 object-cover rounded-xl" />
+              <img src={thumb('/images/prints/FineArt1.webp')} alt={t('servicesPage.packageArtist.title')} className="w-full h-48 object-cover rounded-xl" />
             </div>
             <div className="p-8">
               <div className="text-magenta text-sm font-semibold uppercase tracking-wider mb-2">{t('servicesPage.packageArtist.badge')}</div>
@@ -140,7 +140,7 @@ function Services() {
             style={{ background: 'var(--bg-card)', boxShadow: 'var(--card-shadow)' }}
           >
             <div className="p-2">
-              <img src={thumb('/images/stickers/Stickers3.jpeg')} alt={t('servicesPage.packageEvent.title')} className="w-full h-48 object-cover rounded-xl" />
+              <img src={thumb('/images/stickers/Stickers-Cosmovision.webp')} alt={t('servicesPage.packageEvent.title')} className="w-full h-48 object-cover rounded-xl" />
             </div>
             <div className="p-8">
               <div className="text-electric-purple text-sm font-semibold uppercase tracking-wider mb-2">{t('servicesPage.packageEvent.badge')}</div>

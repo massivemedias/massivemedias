@@ -3,11 +3,13 @@ import { motion } from 'framer-motion';
 import { Mail, MapPin, Instagram, Facebook, Send, CheckCircle, AlertCircle } from 'lucide-react';
 import { useState, useRef } from 'react';
 import { useLang } from '../i18n/LanguageContext';
+import { useTheme } from '../i18n/ThemeContext';
 
 const FORMSPREE_ENDPOINT = 'https://formspree.io/f/xzdardoe';
 
 function Contact() {
   const { t } = useLang();
+  const { theme } = useTheme();
   const formRef = useRef();
   const [formData, setFormData] = useState({
     nom: '',
@@ -124,19 +126,19 @@ function Contact() {
                 {t('contactPage.info.social')}
               </h3>
               <div className="flex gap-4">
-                <a 
-                  href="https://instagram.com/massivemedias" 
-                  target="_blank" 
+                <a
+                  href="https://instagram.com/massivemedias"
+                  target="_blank"
                   rel="noopener noreferrer"
-                  className="p-3 rounded-full bg-purple-bright text-white hover:bg-magenta transition-all duration-300"
+                  className={`p-3 rounded-full text-white hover:bg-magenta transition-all duration-300 ${theme === 'light' ? 'bg-neutral-800' : 'bg-purple-bright'}`}
                 >
                   <Instagram size={24} />
                 </a>
-                <a 
-                  href="https://facebook.com/massivemedias" 
-                  target="_blank" 
+                <a
+                  href="https://facebook.com/massivemedias"
+                  target="_blank"
                   rel="noopener noreferrer"
-                  className="p-3 rounded-full bg-purple-bright text-white hover:bg-magenta transition-all duration-300"
+                  className={`p-3 rounded-full text-white hover:bg-magenta transition-all duration-300 ${theme === 'light' ? 'bg-neutral-800' : 'bg-purple-bright'}`}
                 >
                   <Facebook size={24} />
                 </a>

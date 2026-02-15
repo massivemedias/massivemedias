@@ -24,7 +24,7 @@ function APropos() {
       {/* Hero avec photo de l'espace */}
       <section className="relative py-32 overflow-hidden">
         <div className="absolute inset-0">
-          <img src={thumb('/images/locale/locale3.jpeg')} alt="Espace Versatile" className="w-full h-full object-cover" />
+          <img src={thumb('/images/locale/locale3.webp')} alt="Espace Versatile" className="w-full h-full object-cover" />
           <div className="absolute inset-0" style={{ background: 'var(--hero-gradient)' }}></div>
         </div>
 
@@ -35,10 +35,10 @@ function APropos() {
             transition={{ duration: 0.8 }}
             className="max-w-4xl mx-auto"
           >
-            <h1 className="text-5xl md:text-7xl font-heading font-bold text-white mb-6">
+            <h1 className="text-5xl md:text-7xl font-heading font-bold text-heading mb-6">
               {t('aboutPage.hero.title')}
             </h1>
-            <p className="text-xl md:text-2xl text-white/70">
+            <p className="text-xl md:text-2xl text-grey-light">
               {t('aboutPage.hero.subtitle')}
             </p>
           </motion.div>
@@ -67,10 +67,10 @@ function APropos() {
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <img src={thumb('/images/locale/locale2.jpeg')} alt="Studio Massive Medias" className="rounded-xl w-full h-48 object-cover" />
-              <img src={thumb('/images/locale/locale9.jpeg')} alt="Espace de travail" className="rounded-xl w-full h-48 object-cover" />
-              <img src={thumb('/images/locale/locale10.jpeg')} alt="Équipement" className="rounded-xl w-full h-48 object-cover" />
-              <img src={thumb('/images/locale/locale11.jpeg')} alt="Productions" className="rounded-xl w-full h-48 object-cover" />
+              <img src={thumb('/images/locale/locale2.webp')} alt="Studio Massive Medias" className="rounded-xl w-full h-48 object-cover" />
+              <img src={thumb('/images/locale/locale9.webp')} alt="Espace de travail" className="rounded-xl w-full h-48 object-cover" />
+              <img src={thumb('/images/locale/locale10.webp')} alt="Équipement" className="rounded-xl w-full h-48 object-cover" />
+              <img src={thumb('/images/locale/locale11.webp')} alt="Productions" className="rounded-xl w-full h-48 object-cover" />
             </div>
           </div>
         </motion.div>
@@ -123,8 +123,8 @@ function APropos() {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
             <div className="grid grid-cols-2 gap-4">
-              <img src={thumb('/images/locale/locale3.jpeg')} alt="Studio" className="rounded-xl w-full h-40 object-cover" />
-              <img src={thumb('/images/locale/locale10.jpeg')} alt="Équipement" className="rounded-xl w-full h-40 object-cover" />
+              <img src={thumb('/images/locale/locale3.webp')} alt="Studio" className="rounded-xl w-full h-40 object-cover" />
+              <img src={thumb('/images/locale/locale10.webp')} alt="Équipement" className="rounded-xl w-full h-40 object-cover" />
             </div>
             
             <div className="space-y-4">
@@ -163,7 +163,7 @@ function APropos() {
           className="mb-20"
         >
           <div className="rounded-2xl overflow-hidden relative">
-            <img src={thumb('/images/locale/locale11.jpeg')} alt="Espace Versatile" className="w-full h-80 object-cover" />
+            <img src={thumb('/images/locale/locale11.webp')} alt="Espace Versatile" className="w-full h-80 object-cover" />
             <div className="absolute inset-0" style={{ background: 'var(--space-overlay)' }}></div>
             <div className="absolute bottom-0 left-0 right-0 p-8 md:p-12">
               <div className="flex items-center gap-2 mb-3">

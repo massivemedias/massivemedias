@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { ChevronLeft, ChevronRight, X, ExternalLink } from 'lucide-react';
 import { img, thumb } from '../utils/paths';
 import { useLang } from '../i18n/LanguageContext';
+import { useTheme } from '../i18n/ThemeContext';
 
 /* Paths bruts - résolus au rendu via thumb() (grille) et img() (lightbox) */
 const projects = [
@@ -17,59 +18,63 @@ const projects = [
   { path: '/images/web/qrgenerator.webp', titleKey: 'qrgenerator', category: 'web', url: 'https://main.d15strqjqfjba7.amplifyapp.com/' },
   { path: '/images/web/boutiquemaude.webp', titleKey: 'boutiquemaude', category: 'web', url: 'https://boutiquemaude.com' },
   // Prints
-  { path: '/images/prints/Prints1.jpeg', titleKey: 'print', category: 'prints' },
-  { path: '/images/prints/Prints2.jpeg', titleKey: 'print', category: 'prints' },
-  { path: '/images/prints/Prints3.jpeg', titleKey: 'print', category: 'prints' },
-  { path: '/images/prints/Prints4.JPG', titleKey: 'print', category: 'prints' },
-  { path: '/images/prints/Prints5.jpeg', titleKey: 'print', category: 'prints' },
-  { path: '/images/prints/Prints6.jpeg', titleKey: 'print', category: 'prints' },
-  { path: '/images/prints/Prints7.jpeg', titleKey: 'print', category: 'prints' },
-  { path: '/images/prints/Prints8.jpeg', titleKey: 'print', category: 'prints' },
-  { path: '/images/prints/Prints9.jpeg', titleKey: 'print', category: 'prints' },
-  { path: '/images/prints/Prints10.jpeg', titleKey: 'print', category: 'prints' },
-  { path: '/images/prints/Prints11.jpeg', titleKey: 'print', category: 'prints' },
-  { path: '/images/prints/Prints12.jpeg', titleKey: 'print', category: 'prints' },
-  { path: '/images/prints/Prints13.jpeg', titleKey: 'print', category: 'prints' },
-  { path: '/images/prints/Prints14.jpeg', titleKey: 'print', category: 'prints' },
-  { path: '/images/prints/Prints15.jpeg', titleKey: 'print', category: 'prints' },
-  { path: '/images/prints/Prints16.jpeg', titleKey: 'print', category: 'prints' },
-  { path: '/images/prints/Prints17.jpeg', titleKey: 'print', category: 'prints' },
-  { path: '/images/prints/Prints18.jpeg', titleKey: 'print', category: 'prints' },
-  { path: '/images/prints/Prints19.jpeg', titleKey: 'print', category: 'prints' },
-  { path: '/images/prints/Prints20.jpeg', titleKey: 'print', category: 'prints' },
-  { path: '/images/prints/Prints21.jpeg', titleKey: 'print', category: 'prints' },
-  { path: '/images/prints/Prints22.jpeg', titleKey: 'print', category: 'prints' },
-  { path: '/images/prints/Prints23.jpeg', titleKey: 'print', category: 'prints' },
-  { path: '/images/prints/Prints24.jpeg', titleKey: 'print', category: 'prints' },
+  { path: '/images/prints/Prints1.webp', titleKey: 'print', category: 'prints' },
+  { path: '/images/prints/FineArt1.webp', titleKey: 'print', category: 'prints' },
+  { path: '/images/prints/FineArt4.webp', titleKey: 'print', category: 'prints' },
+  { path: '/images/prints/FineArt5.webp', titleKey: 'print', category: 'prints' },
+  { path: '/images/prints/FineArt6.webp', titleKey: 'print', category: 'prints' },
+  { path: '/images/prints/FineArt-Photo.webp', titleKey: 'print', category: 'prints' },
+  { path: '/images/prints/Prints21.webp', titleKey: 'print', category: 'prints' },
+  { path: '/images/prints/Prints23.webp', titleKey: 'print', category: 'prints' },
+  { path: '/images/prints/Prints24.webp', titleKey: 'print', category: 'prints' },
   // Stickers
-  { path: '/images/stickers/Stickers1.jpeg', titleKey: 'sticker', category: 'stickers' },
-  { path: '/images/stickers/Stickers2.jpg', titleKey: 'sticker', category: 'stickers' },
-  { path: '/images/stickers/Stickers3.jpeg', titleKey: 'sticker', category: 'stickers' },
-  { path: '/images/stickers/Stickers4.jpeg', titleKey: 'sticker', category: 'stickers' },
-  { path: '/images/stickers/Stickers5.jpeg', titleKey: 'sticker', category: 'stickers' },
-  { path: '/images/stickers/Stickers9.jpeg', titleKey: 'sticker', category: 'stickers' },
-  { path: '/images/stickers/Stickers10.jpeg', titleKey: 'sticker', category: 'stickers' },
-  { path: '/images/stickers/Stickers11.jpeg', titleKey: 'sticker', category: 'stickers' },
-  { path: '/images/stickers/Stickers12.jpeg', titleKey: 'sticker', category: 'stickers' },
-  { path: '/images/stickers/Stickers13.jpeg', titleKey: 'sticker', category: 'stickers' },
-  { path: '/images/stickers/Stickers14.jpeg', titleKey: 'sticker', category: 'stickers' },
-  { path: '/images/stickers/Stickers15.jpeg', titleKey: 'sticker', category: 'stickers' },
+  { path: '/images/stickers/Stickers-Cosmo.webp', titleKey: 'sticker', category: 'stickers' },
+  { path: '/images/stickers/Stickers-Cosmo-2.webp', titleKey: 'sticker', category: 'stickers' },
+  { path: '/images/stickers/Stickers-Cosmovision.webp', titleKey: 'sticker', category: 'stickers' },
+  { path: '/images/stickers/Stickers-Digital.webp', titleKey: 'sticker', category: 'stickers' },
+  { path: '/images/stickers/Stickers-Fusion-State-Rec.webp', titleKey: 'sticker', category: 'stickers' },
+  { path: '/images/stickers/Stickers-Maudite-Machine.webp', titleKey: 'sticker', category: 'stickers' },
+  { path: '/images/stickers/Stickers-Vrstl.webp', titleKey: 'sticker', category: 'stickers' },
+  { path: '/images/stickers/Stickers-massive.webp', titleKey: 'sticker', category: 'stickers' },
+  // Textile
+  { path: '/images/textile/Textile1.webp', titleKey: 'textile', category: 'textile' },
+  { path: '/images/textile/Textile2.webp', titleKey: 'textile', category: 'textile' },
+  { path: '/images/textile/Textile3.webp', titleKey: 'textile', category: 'textile' },
+  { path: '/images/textile/Textile4.webp', titleKey: 'textile', category: 'textile' },
+  { path: '/images/textile/Textile5.webp', titleKey: 'textile', category: 'textile' },
+  { path: '/images/textile/Textile6.webp', titleKey: 'textile', category: 'textile' },
+  { path: '/images/textile/Textile7.webp', titleKey: 'textile', category: 'textile' },
+  { path: '/images/textile/Textile9.webp', titleKey: 'textile', category: 'textile' },
+  { path: '/images/textile/Textile10.webp', titleKey: 'textile', category: 'textile' },
+  { path: '/images/textile/Textile11.webp', titleKey: 'textile', category: 'textile' },
+  { path: '/images/textile/Textile12.webp', titleKey: 'textile', category: 'textile' },
+  { path: '/images/textile/Textile13.webp', titleKey: 'textile', category: 'textile' },
   // Locale / studio
-  { path: '/images/locale/locale2.jpeg', titleKey: 'workspace', category: 'locale' },
-  { path: '/images/locale/locale3.jpeg', titleKey: 'workspace', category: 'locale' },
-  { path: '/images/locale/locale9.jpeg', titleKey: 'workspace', category: 'locale' },
-  { path: '/images/locale/locale10.jpeg', titleKey: 'workspace', category: 'locale' },
-  { path: '/images/locale/locale11.jpeg', titleKey: 'workspace', category: 'locale' },
+  { path: '/images/locale/locale1.webp', titleKey: 'workspace', category: 'locale' },
+  { path: '/images/locale/locale2.webp', titleKey: 'workspace', category: 'locale' },
+  { path: '/images/locale/locale3.webp', titleKey: 'workspace', category: 'locale' },
+  { path: '/images/locale/locale4.webp', titleKey: 'workspace', category: 'locale' },
+  { path: '/images/locale/locale5.webp', titleKey: 'workspace', category: 'locale' },
+  { path: '/images/locale/locale6.webp', titleKey: 'workspace', category: 'locale' },
+  { path: '/images/locale/locale7.webp', titleKey: 'workspace', category: 'locale' },
+  { path: '/images/locale/locale8.webp', titleKey: 'workspace', category: 'locale' },
+  { path: '/images/locale/locale9.webp', titleKey: 'workspace', category: 'locale' },
+  { path: '/images/locale/locale10.webp', titleKey: 'workspace', category: 'locale' },
+  { path: '/images/locale/locale11.webp', titleKey: 'workspace', category: 'locale' },
+  { path: '/images/locale/locale12.webp', titleKey: 'workspace', category: 'locale' },
+  { path: '/images/locale/locale13.webp', titleKey: 'workspace', category: 'locale' },
+  { path: '/images/locale/locale14.webp', titleKey: 'workspace', category: 'locale' },
 ];
 
 // Ordre des sections pour l'affichage "Tout"
-const sectionOrder = ['web', 'prints', 'stickers', 'locale'];
+const sectionOrder = ['web', 'prints', 'stickers', 'textile', 'locale'];
 
 // Titres par langue
 const projectTitles = {
   fr: {
     print: 'Fine Art Print',
     sticker: 'Stickers',
+    textile: 'Sublimation & Merch',
     workspace: 'Workspace',
     sonaa: 'Sonaa - Actualites technologiques',
     recrutementspvm: 'Recrutement SPVM',
@@ -83,6 +88,7 @@ const projectTitles = {
   en: {
     print: 'Fine Art Print',
     sticker: 'Stickers',
+    textile: 'Sublimation & Merch',
     workspace: 'Workspace',
     sonaa: 'Sonaa - Tech News',
     recrutementspvm: 'SPVM Recruitment',
@@ -97,6 +103,7 @@ const projectTitles = {
 
 function Portfolio() {
   const { lang, t } = useLang();
+  const { theme } = useTheme();
   const [activeCategory, setActiveCategory] = useState('all');
   const [lightboxImage, setLightboxImage] = useState(null);
   const [lightboxIndex, setLightboxIndex] = useState(0);
@@ -107,6 +114,7 @@ function Portfolio() {
     { id: 'web', label: cats.web || 'Web' },
     { id: 'prints', label: cats.prints },
     { id: 'stickers', label: cats.stickers },
+    { id: 'textile', label: cats.textile || 'Textile' },
     { id: 'locale', label: cats.locale },
   ];
 
@@ -167,7 +175,7 @@ function Portfolio() {
         className={`w-full h-full transition-transform duration-500 group-hover:scale-105 ${project.category === 'web' ? 'object-cover object-top' : 'object-cover'}`}
         loading="lazy"
       />
-      <div className="absolute inset-0 bg-gradient-to-t from-purple-dark/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
       <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
         <p className="text-white font-heading font-bold text-sm flex items-center gap-2">
           {getTitle(project.titleKey)}
@@ -187,7 +195,7 @@ function Portfolio() {
       {/* Hero */}
       <section className="relative py-32 overflow-hidden">
         <div className="absolute inset-0">
-          <img src={thumb('/images/prints/Prints2.jpeg')} alt="" className="w-full h-full object-cover" />
+          <img src={thumb('/images/prints/FineArt1.webp')} alt="" className="w-full h-full object-cover" />
           <div className="absolute inset-0" style={{ background: 'var(--hero-gradient)' }}></div>
         </div>
         <div className="relative z-10 section-container !py-0 text-center">
@@ -196,10 +204,10 @@ function Portfolio() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <h1 className="text-5xl md:text-7xl font-heading font-bold text-white mb-6">
+            <h1 className="text-5xl md:text-7xl font-heading font-bold text-heading mb-6">
               {t('portfolioPage.hero.title')}
             </h1>
-            <p className="text-xl md:text-2xl text-white/70 max-w-3xl mx-auto">
+            <p className="text-xl md:text-2xl text-grey-light max-w-3xl mx-auto">
               {t('portfolioPage.hero.subtitle')}
             </p>
           </motion.div>
@@ -216,7 +224,7 @@ function Portfolio() {
               className="px-6 py-2.5 rounded-full font-semibold text-sm transition-all duration-300"
               style={{
                 background: activeCategory === cat.id
-                  ? 'linear-gradient(135deg, #8100D1, #FF52A0)'
+                  ? (theme === 'light' ? '#1A1A1A' : 'linear-gradient(135deg, #8100D1, #FF52A0)')
                   : 'var(--bg-glass)',
                 color: activeCategory === cat.id ? '#FFFFFF' : 'var(--color-heading)',
                 border: activeCategory === cat.id
