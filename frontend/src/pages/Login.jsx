@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, User, ArrowRight, Eye, EyeOff } from 'lucide-react';
+import { ArrowRight, Eye, EyeOff } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -70,8 +70,8 @@ function Login() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="rounded-2xl border border-purple-main/30 p-8 md:p-10"
-            style={{ background: 'var(--bg-card)', boxShadow: 'var(--card-shadow)' }}
+            className="rounded-2xl border border-purple-main/30 p-8 md:p-10 backdrop-blur-xl"
+            style={{ background: 'var(--bg-card-solid, var(--bg-card))', boxShadow: '0 8px 40px rgba(0, 0, 0, 0.3)' }}
           >
             <h1 className="text-3xl font-heading font-bold text-heading mb-2 text-center">
               {mode === 'forgot' ? t('auth.forgotTitle') : mode === 'register' ? t('auth.registerTitle') : t('auth.loginTitle')}
@@ -92,45 +92,39 @@ function Login() {
                 {mode === 'register' && (
                   <div>
                     <label className="block text-sm text-grey-light mb-1.5">{t('auth.fullName')}</label>
-                    <div className="relative">
-                      <User size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-grey-muted" />
-                      <input
-                        type="text"
-                        value={fullName}
-                        onChange={e => setFullName(e.target.value)}
-                        className="input-field pl-10"
-                        placeholder={t('auth.fullNamePlaceholder')}
-                        required
-                      />
-                    </div>
+                    <input
+                      type="text"
+                      value={fullName}
+                      onChange={e => setFullName(e.target.value)}
+                      className="input-field"
+                      placeholder={t('auth.fullNamePlaceholder')}
+                      required
+                    />
                   </div>
                 )}
 
                 <div>
                   <label className="block text-sm text-grey-light mb-1.5">{t('auth.email')}</label>
-                  <div className="relative">
-                    <Mail size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-grey-muted" />
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={e => setEmail(e.target.value)}
-                      className="input-field pl-10"
-                      placeholder={t('auth.emailPlaceholder')}
-                      required
-                    />
-                  </div>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    className="input-field"
+                    placeholder={t('auth.emailPlaceholder')}
+                    required
+                  />
                 </div>
 
                 {mode !== 'forgot' && (
                   <div>
                     <label className="block text-sm text-grey-light mb-1.5">{t('auth.password')}</label>
                     <div className="relative">
-                      <Lock size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-grey-muted" />
                       <input
                         type={showPassword ? 'text' : 'password'}
                         value={password}
                         onChange={e => setPassword(e.target.value)}
-                        className="input-field pl-10 pr-10"
+                        className="input-field"
+                        style={{ paddingRight: '2.5rem' }}
                         placeholder="••••••••"
                         required
                         minLength={6}
@@ -150,12 +144,12 @@ function Login() {
                   <div>
                     <label className="block text-sm text-grey-light mb-1.5">{t('auth.confirmPassword')}</label>
                     <div className="relative">
-                      <Lock size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-grey-muted" />
                       <input
                         type={showPassword ? 'text' : 'password'}
                         value={confirmPassword}
                         onChange={e => setConfirmPassword(e.target.value)}
-                        className="input-field pl-10"
+                        className="input-field"
+                        style={{ paddingRight: '2.5rem' }}
                         placeholder="••••••••"
                         required
                         minLength={6}

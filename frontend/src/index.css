@@ -49,6 +49,7 @@
 
   --bg-body: #FFFFFF;
   --bg-card: #FFFFFF;
+  --bg-card-solid: #FFFFFF;
   --bg-card-border: rgba(129, 0, 209, 0.10);
   --bg-header: rgba(255, 255, 255, 0.96);
   --bg-footer: #1E0E30;
@@ -110,6 +111,7 @@
   /* Theme properties - Bold & Vibrant */
   --bg-body: #2D006B;
   --bg-card: rgba(255, 255, 255, 0.08);
+  --bg-card-solid: rgba(30, 0, 70, 0.85);
   --bg-card-border: rgba(255, 82, 160, 0.15);
   --bg-header: rgba(108, 0, 255, 0.94);
   --bg-footer: #1A0040;

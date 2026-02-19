@@ -1,11 +1,22 @@
+import { useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { CheckCircle } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
+import { useCart } from '../contexts/CartContext';
 
 function CheckoutSuccess() {
-  const { t } = useLang();
+  const { t, lang } = useLang();
+  const { clearCart } = useCart();
+  const [searchParams] = useSearchParams();
+  const paymentIntent = searchParams.get('payment_intent');
+  const isFr = lang === 'fr';
+
+  // Clear cart on successful payment
+  useEffect(() => {
+    clearCart();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <>
@@ -22,7 +33,14 @@ function CheckoutSuccess() {
         >
           <CheckCircle size={64} className="text-green-400 mx-auto mb-6" />
           <h1 className="text-4xl font-heading font-bold text-heading mb-4">{t('checkout.successTitle')}</h1>
-          <p className="text-grey-light text-lg mb-8">{t('checkout.successMessage')}</p>
+          <p className="text-grey-light text-lg mb-4">{t('checkout.successMessage')}</p>
+
+          {paymentIntent && (
+            <p className="text-grey-muted text-sm mb-8">
+              {isFr ? 'Référence' : 'Reference'}: <span className="font-mono text-heading">{paymentIntent.slice(-8)}</span>
+            </p>
+          )}
+
           <div className="flex gap-4 justify-center">
             <Link to="/boutique" className="btn-primary">{t('checkout.continueShopping')}</Link>
             <Link to="/account" className="px-6 py-3 rounded-lg border border-purple-main/30 text-heading hover:border-magenta/50 transition-colors">

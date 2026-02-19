@@ -102,8 +102,13 @@ function Header() {
             </button>
 
             {/* Account / Login */}
-            <Link to={user ? '/account' : '/login'} className="p-2 transition-colors duration-200 nav-link" title={user ? t('nav.account') : t('nav.login')}>
+            <Link to={user ? '/account' : '/login'} className="flex items-center gap-1.5 p-2 transition-colors duration-200 nav-link" title={user ? t('nav.account') : t('nav.login')}>
               <UserCircle size={20} />
+              {user && (
+                <span className="text-sm font-medium max-w-[100px] truncate">
+                  {user.user_metadata?.full_name?.split(' ')[0] || user.email?.split('@')[0]}
+                </span>
+              )}
             </Link>
 
             {/* Panier */}
@@ -193,7 +198,7 @@ function Header() {
                   { to: '/boutique', label: t('nav.boutique') },
                   { to: '/a-propos', label: t('nav.aPropos') },
                   { to: '/panier', label: `${t('nav.panier')}${cartCount > 0 ? ` (${cartCount})` : ''}` },
-                  { to: user ? '/account' : '/login', label: user ? t('nav.account') : t('nav.login') },
+                  { to: user ? '/account' : '/login', label: user ? `${user.user_metadata?.full_name?.split(' ')[0] || t('nav.account')}` : t('nav.login') },
                 ].map(item => (
                   <Link
                     key={item.to}

@@ -29,14 +29,14 @@ Chaque impression fait l'objet d'un calibrage colorimétrique rigoureux pour gar
     ],
     pricing: {
       title: 'Tarifs Impression Fine Art',
-      note: '15-20% sous Etsy/Printify, qualité supérieure, zéro frais de shipping',
-      headers: ['Format', 'Sans cadre', 'Avec cadre noir', 'Réf. Etsy'],
+      note: 'Canon Pro : bonne qualité pour tout surtout les images ou photos avec une bonne luminosité (brillant) · Ilford : très bon pour la photographie (évite les reflets de lumière sur le papier) · Ajouter 25$ pour un cadre noir ou blanc',
+      headers: ['Format', 'Canon Pro', 'Ilford'],
       rows: [
-        ['A4 (8×10")', '45$', '75$', '59$ + shipping'],
-        ['A3 (12×18")', '55$', '95$', '76$ + shipping'],
-        ['A3+ (13×19")', '65$', '110$', '-'],
-        ['A2 (18×24")', '95$', '150$', '132$ + shipping'],
-        ['24×36" (grand format)', '150$', 'Sur demande', '189$ + shipping'],
+        ['A4 (8×10")', '16$', '26$'],
+        ['A3 (11×17")', '28$', '32$'],
+        ['A3+ (13×19")', '30$', '45$'],
+        ['A2 (18×24")', '42$', '62$'],
+        ['24×36"', '65$', '95$'],
       ],
     },
     gallery: [

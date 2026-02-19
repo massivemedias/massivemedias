@@ -29,14 +29,14 @@ Each print undergoes rigorous color calibration to ensure optimal fidelity to th
     ],
     pricing: {
       title: 'Fine Art Printing Pricing',
-      note: '15-20% below Etsy/Printify, superior quality, zero shipping fees',
-      headers: ['Format', 'Unframed', 'Black frame', 'Etsy Ref.'],
+      note: 'Canon Pro: great quality for everything, especially images or photos with good brightness (glossy) · Ilford: excellent for photography (reduces light reflections on paper) · Add $25 for a black or white frame',
+      headers: ['Format', 'Canon Pro', 'Ilford'],
       rows: [
-        ['A4 (8×10")', '$45', '$75', '$59 + shipping'],
-        ['A3 (12×18")', '$55', '$95', '$76 + shipping'],
-        ['A3+ (13×19")', '$65', '$110', '-'],
-        ['A2 (18×24")', '$95', '$150', '$132 + shipping'],
-        ['24×36" (large format)', '$150', 'On request', '$189 + shipping'],
+        ['A4 (8×10")', '$16', '$26'],
+        ['A3 (11×17")', '$28', '$32'],
+        ['A3+ (13×19")', '$30', '$45'],
+        ['A2 (18×24")', '$42', '$62'],
+        ['24×36"', '$65', '$95'],
       ],
     },
     gallery: [
