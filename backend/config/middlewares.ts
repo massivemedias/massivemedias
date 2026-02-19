@@ -7,7 +7,13 @@ const config: Core.Config.Middlewares = [
   {
     name: 'strapi::cors',
     config: {
-      origin: ['http://localhost:3000', 'http://localhost:5173', 'https://massivemedias.com'],
+      origin: [
+        'http://localhost:3000',
+        'http://localhost:5173',
+        'https://massivemedias.com',
+        'https://www.massivemedias.com',
+        process.env.RENDER_EXTERNAL_URL || '',
+      ].filter(Boolean),
       methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
       headers: ['Content-Type', 'Authorization', 'Origin', 'Accept'],
     },
