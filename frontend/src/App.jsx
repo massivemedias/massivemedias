@@ -7,7 +7,13 @@ import Contact from './pages/Contact';
 import APropos from './pages/APropos';
 import Portfolio from './pages/Portfolio';
 import Tarifs from './pages/Tarifs';
+import Boutique from './pages/Boutique';
 import BoutiqueStickers from './pages/BoutiqueStickers';
+import BoutiqueFineArt from './pages/BoutiqueFineArt';
+import BoutiqueSublimation from './pages/BoutiqueSublimation';
+import BoutiqueFlyers from './pages/BoutiqueFlyers';
+import BoutiqueDesign from './pages/BoutiqueDesign';
+import BoutiqueWeb from './pages/BoutiqueWeb';
 import Panier from './pages/Panier';
 import Login from './pages/Login';
 import Account from './pages/Account';
@@ -46,8 +52,13 @@ function App() {
           <Route path="/a-propos" element={<APropos />} />
           
           {/* Boutique */}
-          <Route path="/boutique" element={<BoutiqueStickers />} />
+          <Route path="/boutique" element={<Boutique />} />
           <Route path="/boutique/stickers" element={<BoutiqueStickers />} />
+          <Route path="/boutique/fine-art" element={<BoutiqueFineArt />} />
+          <Route path="/boutique/sublimation" element={<BoutiqueSublimation />} />
+          <Route path="/boutique/flyers" element={<BoutiqueFlyers />} />
+          <Route path="/boutique/design" element={<BoutiqueDesign />} />
+          <Route path="/boutique/web" element={<BoutiqueWeb />} />
           <Route path="/panier" element={<Panier />} />
 
           {/* Auth & Account */}

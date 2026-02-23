@@ -34,7 +34,9 @@ function PriceSection({ icon: Icon, titleKey, subtitleKey, headersKey, rowsKey, 
               <tr key={i}>
                 <td className="text-heading font-semibold">{row[0]}</td>
                 <td className="text-gradient font-bold">{row[1]}</td>
-                {row[2] !== undefined && <td className="text-grey-muted">{row[2]}</td>}
+                {row.slice(2).map((cell, j) => (
+                  <td key={j} className="text-grey-muted">{cell}</td>
+                ))}
               </tr>
             ))}
           </tbody>

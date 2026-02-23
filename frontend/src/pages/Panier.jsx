@@ -23,8 +23,8 @@ function Panier() {
           <p className="text-grey-light mb-8">
             {isFr ? 'Ajoutez des produits pour commencer.' : 'Add products to get started.'}
           </p>
-          <Link to="/boutique/stickers" className="btn-primary">
-            {isFr ? 'Voir les stickers' : 'Browse stickers'}
+          <Link to="/boutique" className="btn-primary">
+            {isFr ? 'Voir la boutique' : 'Browse shop'}
           </Link>
         </div>
       </>
@@ -54,7 +54,7 @@ function Panier() {
               <div className="flex-grow min-w-0">
                 <h3 className="font-semibold text-heading">{item.productName}</h3>
                 <p className="text-grey-muted text-sm truncate">
-                  {item.finish} · {item.shape} · {item.size} · {item.quantity}x
+                  {[item.finish, item.shape, item.size, `${item.quantity}x`].filter(Boolean).join(' · ')}
                 </p>
               </div>
               <div className="text-right flex-shrink-0">
@@ -84,7 +84,7 @@ function Panier() {
 
         {/* Actions */}
         <div className="flex flex-col sm:flex-row gap-4">
-          <Link to="/boutique/stickers" className="btn-outline flex-1 justify-center">
+          <Link to="/boutique" className="btn-outline flex-1 justify-center">
             <ArrowLeft size={18} className="mr-2" />
             {isFr ? 'Continuer mes achats' : 'Continue shopping'}
           </Link>
