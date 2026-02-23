@@ -58,6 +58,11 @@
     },
     "notes": {
       "type": "text"
+    },
+    "files": {
+      "type": "media",
+      "multiple": true,
+      "allowedTypes": ["images", "files"]
     }
   }
 }

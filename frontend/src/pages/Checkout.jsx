@@ -1,15 +1,16 @@
 import { useState } from 'react';
-import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, User, AlertCircle } from 'lucide-react';
+import { ArrowLeft, User, AlertCircle, Paperclip } from 'lucide-react';
 import { Elements } from '@stripe/react-stripe-js';
+import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
 import { stripePromise } from '../lib/stripe';
 import { createPaymentIntent } from '../services/orderService';
 import CheckoutForm from '../components/CheckoutForm';
+import FileUpload from '../components/FileUpload';
 
 function Checkout() {
   const { t, lang } = useLang();
@@ -21,6 +22,8 @@ function Checkout() {
   const [clientSecret, setClientSecret] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const [extraFiles, setExtraFiles] = useState([]);
 
   const [formData, setFormData] = useState({
     nom: user?.user_metadata?.full_name || '',
@@ -41,6 +44,12 @@ function Checkout() {
     setError('');
 
     try {
+      // Collect fileIds from cart items + extra checkout files
+      const allFileIds = [
+        ...items.flatMap(item => (item.uploadedFiles || []).map(f => f.id)),
+        ...extraFiles.map(f => f.id),
+      ];
+
       const { clientSecret: secret } = await createPaymentIntent({
         items,
         customerEmail: formData.email,
@@ -49,6 +58,7 @@ function Checkout() {
         designReady: formData.designReady === 'yes',
         notes: formData.message,
         supabaseUserId: user?.id || '',
+        fileIds: allFileIds.length > 0 ? allFileIds : undefined,
       });
 
       setClientSecret(secret);
@@ -77,9 +87,7 @@ function Checkout() {
 
   return (
     <>
-      <Helmet>
-        <title>{t('checkout.title')} - Massive Medias</title>
-      </Helmet>
+      <SEO title={`${t('checkout.title')} - Massive Medias`} description="" noindex />
 
       <section className="section-container pt-32 pb-20">
         <div className="max-w-4xl mx-auto">
@@ -177,6 +185,29 @@ function Checkout() {
                         />
                       </div>
 
+                      {/* Files from cart items summary */}
+                      {items.some(item => item.uploadedFiles?.length > 0) && (
+                        <div className="p-4 rounded-lg" style={{ background: 'var(--bg-glass)', border: '1px solid var(--bg-card-border)' }}>
+                          <p className="text-heading font-semibold text-sm mb-2 flex items-center gap-2">
+                            <Paperclip size={14} className="text-magenta" />
+                            {isFr ? 'Fichiers joints aux produits' : 'Files attached to products'}
+                          </p>
+                          {items.filter(item => item.uploadedFiles?.length > 0).map((item, i) => (
+                            <div key={i} className="text-grey-muted text-xs mb-1">
+                              <span className="text-heading">{item.productName}:</span>{' '}
+                              {item.uploadedFiles.map(f => f.name).join(', ')}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Extra file upload */}
+                      <FileUpload
+                        files={extraFiles}
+                        onFilesChange={setExtraFiles}
+                        label={isFr ? 'Fichiers supplémentaires (optionnel)' : 'Additional files (optional)'}
+                      />
+
                       {error && (
                         <div className="flex items-center gap-3 p-4 rounded-lg border border-red-500/30" style={{ background: 'rgba(239, 68, 68, 0.1)' }}>
                           <AlertCircle size={20} className="text-red-400 flex-shrink-0" />
@@ -262,7 +293,15 @@ function Checkout() {
                         <img src={item.image} alt="" className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />
                         <div className="flex-grow min-w-0">
                           <p className="text-heading text-sm font-medium truncate">{item.productName}</p>
-                          <p className="text-grey-muted text-xs">{item.finish} · {item.shape} · {item.quantity}x</p>
+                          <p className="text-grey-muted text-xs">
+                            {[item.finish, item.shape, `${item.quantity}x`].filter(Boolean).join(' · ')}
+                          </p>
+                          {item.uploadedFiles?.length > 0 && (
+                            <p className="text-magenta text-xs flex items-center gap-1">
+                              <Paperclip size={10} />
+                              {item.uploadedFiles.length} {isFr ? 'fichier(s)' : 'file(s)'}
+                            </p>
+                          )}
                         </div>
                         <p className="text-heading font-semibold text-sm flex-shrink-0">{item.totalPrice}$</p>
                       </div>

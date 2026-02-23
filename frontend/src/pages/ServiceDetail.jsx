@@ -1,9 +1,10 @@
 import { useParams, Link, Navigate } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, ArrowLeft, CheckCircle, Wrench, Users, ChevronLeft, ChevronRight, X, ExternalLink, Globe, Palette, Code as CodeIcon, Smartphone, Search, Gauge, Shield } from 'lucide-react';
 import { useState, useCallback, useEffect } from 'react';
 import { toFull } from '../utils/paths';
+import SEO from '../components/SEO';
+import { getServiceSchema } from '../components/seo/schemas';
 import { useLang } from '../i18n/LanguageContext';
 import { useTheme } from '../i18n/ThemeContext';
 import getServicesData from '../data/getServicesData';
@@ -66,10 +67,21 @@ function ServiceDetail() {
 
   return (
     <>
-      <Helmet>
-        <title>{service.seo.title}</title>
-        <meta name="description" content={service.seo.description} />
-      </Helmet>
+      <SEO
+        title={service.seo.title}
+        description={service.seo.description}
+        ogImage={service.heroImage}
+        breadcrumbs={[
+          { name: lang === 'fr' ? 'Accueil' : 'Home', url: '/' },
+          { name: t('nav.services'), url: '/services' },
+          { name: service.title },
+        ]}
+        jsonLd={getServiceSchema({
+          name: service.title,
+          description: service.seo.description,
+          url: `/services/${slug}`,
+        })}
+      />
 
       {/* ============ HERO ============ */}
       <section className="relative py-32 md:py-40 overflow-hidden">

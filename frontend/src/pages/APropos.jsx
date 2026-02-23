@@ -1,14 +1,14 @@
-import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
 import { MapPin, Printer, Scissors, Shirt, Monitor } from 'lucide-react';
 import MassiveLogo from '../assets/massive-logo.svg';
 import { img, thumb } from '../utils/paths';
+import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
 
 const equipmentIcons = [Printer, Scissors, Shirt, Shirt, Monitor, Printer, Monitor];
 
 function APropos() {
-  const { t } = useLang();
+  const { t, lang } = useLang();
 
   const equipmentItems = t('aboutPage.equipment.items');
   const timelineEvents = t('aboutPage.timeline.events');
@@ -16,10 +16,14 @@ function APropos() {
 
   return (
     <>
-      <Helmet>
-        <title>{t('aboutPage.seo.title')}</title>
-        <meta name="description" content={t('aboutPage.seo.description')} />
-      </Helmet>
+      <SEO
+        title={t('aboutPage.seo.title')}
+        description={t('aboutPage.seo.description')}
+        breadcrumbs={[
+          { name: lang === 'fr' ? 'Accueil' : 'Home', url: '/' },
+          { name: t('nav.about') },
+        ]}
+      />
 
       {/* Hero avec photo de l'espace */}
       <section className="relative py-32 overflow-hidden">

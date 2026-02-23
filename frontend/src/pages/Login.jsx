@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowRight, Eye, EyeOff } from 'lucide-react';
+import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -60,9 +60,7 @@ function Login() {
 
   return (
     <>
-      <Helmet>
-        <title>{mode === 'register' ? t('auth.registerTitle') : t('auth.loginTitle')} - Massive Medias</title>
-      </Helmet>
+      <SEO title={`${mode === 'register' ? t('auth.registerTitle') : t('auth.loginTitle')} - Massive Medias`} description="" noindex />
 
       <section className="section-container pt-32 pb-20">
         <div className="max-w-md mx-auto">

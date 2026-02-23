@@ -1,4 +1,3 @@
-import { Helmet } from 'react-helmet-async';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
@@ -6,6 +5,8 @@ import {
   ChevronDown, ChevronLeft, ChevronRight, X,
   Sparkles, Wrench, ZoomIn
 } from 'lucide-react';
+import SEO from './SEO';
+import { getFAQSchema } from './seo/schemas';
 import { useLang } from '../i18n/LanguageContext';
 import { toFull } from '../utils/paths';
 import getServicesData from '../data/getServicesData';
@@ -50,10 +51,18 @@ function BoutiqueProductLayout({
 
   return (
     <>
-      <Helmet>
-        <title>{t(pageTitle)}</title>
-        <meta name="description" content={t(metaDescription)} />
-      </Helmet>
+      <SEO
+        title={t(pageTitle)}
+        description={t(metaDescription)}
+        ogType="product"
+        ogImage={images[0]}
+        breadcrumbs={[
+          { name: lang === 'fr' ? 'Accueil' : 'Home', url: '/' },
+          { name: lang === 'fr' ? 'Boutique' : 'Shop', url: '/boutique' },
+          { name: t(productTitle) },
+        ]}
+        jsonLd={faqData.length > 0 ? getFAQSchema(faqData) : undefined}
+      />
 
       <div className="section-container pt-28 max-w-7xl mx-auto">
 

@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
-import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
 import { Link, useSearchParams } from 'react-router-dom';
 import { CheckCircle } from 'lucide-react';
+import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
 import { useCart } from '../contexts/CartContext';
 
@@ -20,9 +20,7 @@ function CheckoutSuccess() {
 
   return (
     <>
-      <Helmet>
-        <title>{t('checkout.successTitle')} - Massive Medias</title>
-      </Helmet>
+      <SEO title={`${t('checkout.successTitle')} - Massive Medias`} description="" noindex />
 
       <section className="section-container pt-32 pb-20">
         <motion.div

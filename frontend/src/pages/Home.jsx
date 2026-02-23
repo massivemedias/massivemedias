@@ -1,13 +1,12 @@
-import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { 
-  ArrowRight, 
-  Printer, 
-  Sticker, 
-  Shirt, 
-  FileText, 
-  Palette, 
+import {
+  ArrowRight,
+  Printer,
+  Sticker,
+  Shirt,
+  FileText,
+  Palette,
   Code,
   Truck,
   Award,
@@ -18,6 +17,8 @@ import {
 } from 'lucide-react';
 import ServiceCard from '../components/ServiceCard';
 import Counter from '../components/Counter';
+import SEO from '../components/SEO';
+import { getOrganizationSchema, getLocalBusinessSchema } from '../components/seo/schemas';
 import MassiveLogoVibrant from '../assets/massive-logo.svg';
 import MassiveLogoLight from '../assets/massive-logo-light.png';
 import { img, thumb } from '../utils/paths';
@@ -63,10 +64,12 @@ function Home() {
 
   return (
     <>
-      <Helmet>
-        <title>{t('home.seo.title')}</title>
-        <meta name="description" content={t('home.seo.description')} />
-      </Helmet>
+      <SEO
+        title={t('home.seo.title')}
+        description={t('home.seo.description')}
+        breadcrumbs={[{ name: lang === 'fr' ? 'Accueil' : 'Home' }]}
+        jsonLd={[getOrganizationSchema(), getLocalBusinessSchema(lang)]}
+      />
 
       {/* ============ HERO ============ */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">

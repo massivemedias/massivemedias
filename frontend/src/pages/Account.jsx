@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
 import { User, Mail, Package, LogOut, Loader2 } from 'lucide-react';
+import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 import { getMyOrders } from '../services/orderService';
@@ -64,9 +64,7 @@ function Account() {
 
   return (
     <>
-      <Helmet>
-        <title>{t('account.title')} - Massive Medias</title>
-      </Helmet>
+      <SEO title={`${t('account.title')} - Massive Medias`} description="" noindex />
 
       <section className="section-container pt-32 pb-20">
         <div className="max-w-4xl mx-auto">

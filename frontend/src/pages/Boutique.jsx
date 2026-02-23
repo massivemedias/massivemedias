@@ -1,7 +1,7 @@
-import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ArrowRight, ShoppingCart, MessageSquare } from 'lucide-react';
+import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
 import { thumb } from '../utils/paths';
 import getServicesData from '../data/getServicesData';
@@ -57,13 +57,16 @@ function Boutique() {
 
   return (
     <>
-      <Helmet>
-        <title>{lang === 'fr' ? 'Boutique | Massive Medias' : 'Shop | Massive Medias'}</title>
-        <meta name="description" content={lang === 'fr'
+      <SEO
+        title={lang === 'fr' ? 'Boutique | Massive Medias' : 'Shop | Massive Medias'}
+        description={lang === 'fr'
           ? 'Boutique Massive Medias. Stickers, impressions fine art, sublimation, flyers, design graphique, d\u00e9veloppement web. Montr\u00e9al.'
-          : 'Massive Medias Shop. Stickers, fine art prints, sublimation, flyers, graphic design, web development. Montreal.'
-        } />
-      </Helmet>
+          : 'Massive Medias Shop. Stickers, fine art prints, sublimation, flyers, graphic design, web development. Montreal.'}
+        breadcrumbs={[
+          { name: lang === 'fr' ? 'Accueil' : 'Home', url: '/' },
+          { name: lang === 'fr' ? 'Boutique' : 'Shop' },
+        ]}
+      />
 
       {/* Hero */}
       <section className="relative py-32 overflow-hidden">

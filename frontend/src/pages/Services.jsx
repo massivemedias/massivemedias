@@ -1,8 +1,8 @@
-import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Printer, Sticker, Shirt, FileText, Palette, Code } from 'lucide-react';
 import ServiceCard from '../components/ServiceCard';
+import SEO from '../components/SEO';
 import { img, thumb } from '../utils/paths';
 import { useLang } from '../i18n/LanguageContext';
 
@@ -25,16 +25,20 @@ const serviceImages = [
 ];
 
 function Services() {
-  const { t } = useLang();
+  const { t, lang } = useLang();
 
   const serviceCards = t('servicesPage.serviceCards');
 
   return (
     <>
-      <Helmet>
-        <title>{t('servicesPage.seo.title')}</title>
-        <meta name="description" content={t('servicesPage.seo.description')} />
-      </Helmet>
+      <SEO
+        title={t('servicesPage.seo.title')}
+        description={t('servicesPage.seo.description')}
+        breadcrumbs={[
+          { name: lang === 'fr' ? 'Accueil' : 'Home', url: '/' },
+          { name: t('nav.services') },
+        ]}
+      />
 
       {/* Hero avec image de fond */}
       <section className="relative py-32 overflow-hidden">

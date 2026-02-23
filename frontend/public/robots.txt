@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://massivemedias.com/sitemap.xml
+
+Disallow: /panier
+Disallow: /checkout
+Disallow: /checkout/success
+Disallow: /checkout/cancel
+Disallow: /login
+Disallow: /account

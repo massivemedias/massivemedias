@@ -3,6 +3,7 @@ import { ShoppingCart, Check, Frame } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../../contexts/CartContext';
 import { useLang } from '../../i18n/LanguageContext';
+import FileUpload from '../FileUpload';
 import {
   fineArtPrinterTiers, fineArtFormats, fineArtFramePrice,
   getFineArtPrice, fineArtImages,
@@ -16,6 +17,7 @@ function ConfiguratorFineArt() {
   const [format, setFormat] = useState('a4');
   const [withFrame, setWithFrame] = useState(false);
   const [added, setAdded] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState([]);
 
   const priceInfo = getFineArtPrice(tier, format, withFrame);
   const tierLabel = fineArtPrinterTiers.find(t => t.id === tier);
@@ -33,6 +35,7 @@ function ConfiguratorFineArt() {
       unitPrice: priceInfo.price,
       totalPrice: priceInfo.price,
       image: fineArtImages[0],
+      uploadedFiles,
     });
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
@@ -119,6 +122,13 @@ function ConfiguratorFineArt() {
           <span className="text-magenta font-semibold text-sm">+{fineArtFramePrice}$</span>
         </label>
       </div>
+
+      {/* File upload */}
+      <FileUpload
+        files={uploadedFiles}
+        onFilesChange={setUploadedFiles}
+        label={lang === 'fr' ? 'Votre fichier haute résolution (TIFF, PNG, JPG, PSD, PDF)' : 'Your high-resolution file (TIFF, PNG, JPG, PSD, PDF)'}
+      />
 
       {/* Price display */}
       {priceInfo && (

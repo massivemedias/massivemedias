@@ -3,6 +3,7 @@ import { ShoppingCart, Check, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../../contexts/CartContext';
 import { useLang } from '../../i18n/LanguageContext';
+import FileUpload from '../FileUpload';
 import {
   stickerFinishes, stickerShapes, stickerSizes,
   stickerPriceTiers, getStickerPrice, stickerImages,
@@ -17,6 +18,7 @@ function ConfiguratorStickers() {
   const [size, setSize] = useState('2.5in');
   const [qtyIndex, setQtyIndex] = useState(0);
   const [added, setAdded] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState([]);
 
   const tiers = stickerPriceTiers;
   const currentTier = tiers[qtyIndex] || tiers[0];
@@ -37,6 +39,7 @@ function ConfiguratorStickers() {
       unitPrice: priceInfo.unitPrice,
       totalPrice: priceInfo.price,
       image: stickerImages[0],
+      uploadedFiles,
     });
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
@@ -156,6 +159,13 @@ function ConfiguratorStickers() {
           })}
         </div>
       </div>
+
+      {/* File upload */}
+      <FileUpload
+        files={uploadedFiles}
+        onFilesChange={setUploadedFiles}
+        label={lang === 'fr' ? 'Votre design (PNG, SVG, AI, PDF)' : 'Your design (PNG, SVG, AI, PDF)'}
+      />
 
       {/* Price display */}
       {priceInfo && (

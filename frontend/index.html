@@ -9,19 +9,18 @@
     <meta name="description" content="Massive Medias — Studio de production créative à Montréal. Impression fine art, stickers, merch, design graphique et développement web." />
     <title>Massive Medias — Studio de production créative, Montréal</title>
 
-    <!-- SPA redirect handler for GitHub Pages -->
-    <script type="text/javascript">
-      (function(l) {
-        if (l.search[1] === '/' ) {
-          var decoded = l.search.slice(1).split('&').map(function(s) { 
-            return s.replace(/~and~/g, '&')
-          }).join('?');
-          window.history.replaceState(null, null,
-              l.pathname.slice(0, -1) + decoded + l.hash
-          );
-        }
-      }(window.location))
-    </script>
+    <!-- OpenGraph fallback (pour bots qui n'exécutent pas le JS) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Massive Medias" />
+    <meta property="og:title" content="Massive Medias — Studio de production créative, Montréal" />
+    <meta property="og:description" content="Impression fine art, stickers custom, sublimation, design graphique et développement web à Montréal." />
+    <meta property="og:image" content="https://massivemedias.com/og-image.jpg" />
+    <meta property="og:url" content="https://massivemedias.com" />
+    <meta property="og:locale" content="fr_CA" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Massive Medias — Studio de production créative, Montréal" />
+    <meta name="twitter:description" content="Impression fine art, stickers custom, sublimation, design graphique et développement web à Montréal." />
+    <meta name="twitter:image" content="https://massivemedias.com/og-image.jpg" />
   </head>
   <body>
     <div id="root"></div>

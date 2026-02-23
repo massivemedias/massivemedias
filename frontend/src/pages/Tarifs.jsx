@@ -1,8 +1,8 @@
-import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Printer, Sticker, Palette, Code, Shirt, FileText, Package } from 'lucide-react';
 import { thumb } from '../utils/paths';
+import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
 
 function PriceSection({ icon: Icon, titleKey, subtitleKey, headersKey, rowsKey, noteKey, t }) {
@@ -48,14 +48,18 @@ function PriceSection({ icon: Icon, titleKey, subtitleKey, headersKey, rowsKey, 
 }
 
 function Tarifs() {
-  const { t } = useLang();
+  const { t, lang } = useLang();
 
   return (
     <>
-      <Helmet>
-        <title>{t('tarifsPage.seo.title')}</title>
-        <meta name="description" content={t('tarifsPage.seo.description')} />
-      </Helmet>
+      <SEO
+        title={t('tarifsPage.seo.title')}
+        description={t('tarifsPage.seo.description')}
+        breadcrumbs={[
+          { name: lang === 'fr' ? 'Accueil' : 'Home', url: '/' },
+          { name: t('nav.tarifs') },
+        ]}
+      />
 
       {/* Hero */}
       <section className="relative py-32 overflow-hidden">

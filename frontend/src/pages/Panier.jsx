@@ -1,7 +1,7 @@
-import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Trash2, ShoppingCart, ArrowLeft, ArrowRight } from 'lucide-react';
+import { Trash2, ShoppingCart, ArrowLeft, ArrowRight, Paperclip } from 'lucide-react';
+import SEO from '../components/SEO';
 import { useCart } from '../contexts/CartContext';
 import { useLang } from '../i18n/LanguageContext';
 
@@ -14,7 +14,7 @@ function Panier() {
   if (items.length === 0) {
     return (
       <>
-        <Helmet><title>{isFr ? 'Panier | Massive Medias' : 'Cart | Massive Medias'}</title></Helmet>
+        <SEO title={isFr ? 'Panier | Massive Medias' : 'Cart | Massive Medias'} description="" noindex />
         <div className="section-container pt-32 max-w-2xl mx-auto text-center">
           <ShoppingCart size={64} className="text-grey-muted mx-auto mb-6" />
           <h1 className="text-3xl font-heading font-bold text-heading mb-4">
@@ -33,7 +33,7 @@ function Panier() {
 
   return (
     <>
-      <Helmet><title>{isFr ? 'Panier | Massive Medias' : 'Cart | Massive Medias'}</title></Helmet>
+      <SEO title={isFr ? 'Panier | Massive Medias' : 'Cart | Massive Medias'} description="" noindex />
 
       <div className="section-container pt-28 max-w-4xl mx-auto">
         <h1 className="text-3xl md:text-4xl font-heading font-bold text-heading mb-8">
@@ -56,6 +56,12 @@ function Panier() {
                 <p className="text-grey-muted text-sm truncate">
                   {[item.finish, item.shape, item.size, `${item.quantity}x`].filter(Boolean).join(' · ')}
                 </p>
+                {item.uploadedFiles?.length > 0 && (
+                  <p className="text-magenta text-xs flex items-center gap-1 mt-0.5">
+                    <Paperclip size={12} />
+                    {item.uploadedFiles.length} {isFr ? 'fichier(s) joint(s)' : 'file(s) attached'}
+                  </p>
+                )}
               </div>
               <div className="text-right flex-shrink-0">
                 <p className="font-bold text-heading">{item.totalPrice}$</p>

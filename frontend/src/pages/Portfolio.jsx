@@ -1,8 +1,8 @@
-import { Helmet } from 'react-helmet-async';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 import { ChevronLeft, ChevronRight, X, ExternalLink } from 'lucide-react';
 import { img, thumb } from '../utils/paths';
+import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
 import { useTheme } from '../i18n/ThemeContext';
 
@@ -187,10 +187,14 @@ function Portfolio() {
 
   return (
     <>
-      <Helmet>
-        <title>{t('portfolioPage.seo.title')}</title>
-        <meta name="description" content={t('portfolioPage.seo.description')} />
-      </Helmet>
+      <SEO
+        title={t('portfolioPage.seo.title')}
+        description={t('portfolioPage.seo.description')}
+        breadcrumbs={[
+          { name: lang === 'fr' ? 'Accueil' : 'Home', url: '/' },
+          { name: t('nav.portfolio') },
+        ]}
+      />
 
       {/* Hero */}
       <section className="relative py-32 overflow-hidden">

@@ -2,11 +2,13 @@ import { useState } from 'react';
 import { ArrowRight, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useLang } from '../../i18n/LanguageContext';
+import FileUpload from '../FileUpload';
 import { designServices } from '../../data/products';
 
 function ConfiguratorDesign() {
   const { lang } = useLang();
   const [selected, setSelected] = useState('logo');
+  const [uploadedFiles, setUploadedFiles] = useState([]);
 
   const service = designServices.find(s => s.id === selected);
 
@@ -64,9 +66,16 @@ function ConfiguratorDesign() {
           : '\ud83c\udfa8 Sticker design is included in the sticker production price.'}
       </div>
 
+      {/* File upload */}
+      <FileUpload
+        files={uploadedFiles}
+        onFilesChange={setUploadedFiles}
+        label={lang === 'fr' ? 'Références / brief' : 'References / brief'}
+      />
+
       {/* Request quote */}
       <Link
-        to={`/contact?service=design-graphique&type=${selected}`}
+        to={`/contact?service=design-graphique&type=${selected}${uploadedFiles.length > 0 ? `&fileIds=${uploadedFiles.map(f => f.id).join(',')}` : ''}`}
         className="btn-primary w-full justify-center text-base py-3.5 mb-3"
       >
         {lang === 'fr' ? 'Demander un devis' : 'Request a quote'}

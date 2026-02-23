@@ -3,6 +3,7 @@ import { ShoppingCart, Check, Palette } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../../contexts/CartContext';
 import { useLang } from '../../i18n/LanguageContext';
+import FileUpload from '../FileUpload';
 import {
   sublimationProducts, sublimationPriceTiers, sublimationDesignPrice,
   getSublimationPrice, sublimationImages,
@@ -16,6 +17,7 @@ function ConfiguratorSublimation() {
   const [qtyIndex, setQtyIndex] = useState(0);
   const [withDesign, setWithDesign] = useState(false);
   const [added, setAdded] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState([]);
 
   const tiers = sublimationPriceTiers[product] || [];
   const priceInfo = getSublimationPrice(product, qtyIndex, withDesign);
@@ -40,6 +42,7 @@ function ConfiguratorSublimation() {
       unitPrice: priceInfo.unitPrice,
       totalPrice: priceInfo.price,
       image: sublimationImages[0],
+      uploadedFiles,
     });
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
@@ -123,6 +126,13 @@ function ConfiguratorSublimation() {
           <span className="text-magenta font-semibold text-sm">+{sublimationDesignPrice}$</span>
         </label>
       </div>
+
+      {/* File upload */}
+      <FileUpload
+        files={uploadedFiles}
+        onFilesChange={setUploadedFiles}
+        label={lang === 'fr' ? 'Votre design (PNG, JPG, SVG, PDF)' : 'Your design (PNG, JPG, SVG, PDF)'}
+      />
 
       {/* Price display */}
       {priceInfo && (

@@ -2,11 +2,13 @@ import { useState } from 'react';
 import { ArrowRight, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useLang } from '../../i18n/LanguageContext';
+import FileUpload from '../FileUpload';
 import { webServices, webHourlyRate } from '../../data/products';
 
 function ConfiguratorWeb() {
   const { lang } = useLang();
   const [selected, setSelected] = useState('showcase');
+  const [uploadedFiles, setUploadedFiles] = useState([]);
 
   const service = webServices.find(s => s.id === selected);
 
@@ -65,9 +67,16 @@ function ConfiguratorWeb() {
           : `\u23f1\ufe0f Hourly rate: ${webHourlyRate} (Web, Design, Restoration)`}
       </div>
 
+      {/* File upload */}
+      <FileUpload
+        files={uploadedFiles}
+        onFilesChange={setUploadedFiles}
+        label={lang === 'fr' ? 'Documents / références' : 'Documents / references'}
+      />
+
       {/* Request quote */}
       <Link
-        to={`/contact?service=developpement-web&type=${selected}`}
+        to={`/contact?service=developpement-web&type=${selected}${uploadedFiles.length > 0 ? `&fileIds=${uploadedFiles.map(f => f.id).join(',')}` : ''}`}
         className="btn-primary w-full justify-center text-base py-3.5 mb-3"
       >
         {lang === 'fr' ? 'Demander un devis' : 'Request a quote'}

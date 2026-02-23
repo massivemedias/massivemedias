@@ -1,14 +1,14 @@
-import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
 import { Mail, MapPin, Instagram, Facebook, Send, CheckCircle, AlertCircle } from 'lucide-react';
 import { useState, useRef } from 'react';
+import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
 import { useTheme } from '../i18n/ThemeContext';
 
 const FORMSPREE_ENDPOINT = 'https://formspree.io/f/xzdardoe';
 
 function Contact() {
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const { theme } = useTheme();
   const formRef = useRef();
   const [formData, setFormData] = useState({
@@ -67,10 +67,14 @@ function Contact() {
 
   return (
     <>
-      <Helmet>
-        <title>{t('contactPage.seo.title')}</title>
-        <meta name="description" content={t('contactPage.seo.description')} />
-      </Helmet>
+      <SEO
+        title={t('contactPage.seo.title')}
+        description={t('contactPage.seo.description')}
+        breadcrumbs={[
+          { name: lang === 'fr' ? 'Accueil' : 'Home', url: '/' },
+          { name: t('nav.contact') },
+        ]}
+      />
 
       <section className="section-container pt-32">
         <motion.div

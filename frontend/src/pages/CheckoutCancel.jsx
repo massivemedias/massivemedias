@@ -1,7 +1,7 @@
-import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { XCircle } from 'lucide-react';
+import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
 
 function CheckoutCancel() {
@@ -9,9 +9,7 @@ function CheckoutCancel() {
 
   return (
     <>
-      <Helmet>
-        <title>{t('checkout.cancelTitle')} - Massive Medias</title>
-      </Helmet>
+      <SEO title={`${t('checkout.cancelTitle')} - Massive Medias`} description="" noindex />
 
       <section className="section-container pt-32 pb-20">
         <motion.div

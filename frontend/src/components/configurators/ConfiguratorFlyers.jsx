@@ -3,6 +3,7 @@ import { ShoppingCart, Check } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../../contexts/CartContext';
 import { useLang } from '../../i18n/LanguageContext';
+import FileUpload from '../FileUpload';
 import {
   flyerSides, flyerPriceTiers, getFlyerPrice, flyerImages,
 } from '../../data/products';
@@ -14,6 +15,7 @@ function ConfiguratorFlyers() {
   const [side, setSide] = useState('recto');
   const [qtyIndex, setQtyIndex] = useState(0);
   const [added, setAdded] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState([]);
 
   const priceInfo = getFlyerPrice(side, qtyIndex);
   const sideLabel = flyerSides.find(s => s.id === side);
@@ -30,6 +32,7 @@ function ConfiguratorFlyers() {
       unitPrice: priceInfo.unitPrice,
       totalPrice: priceInfo.price,
       image: flyerImages[0],
+      uploadedFiles,
     });
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
@@ -89,6 +92,13 @@ function ConfiguratorFlyers() {
           })}
         </div>
       </div>
+
+      {/* File upload */}
+      <FileUpload
+        files={uploadedFiles}
+        onFilesChange={setUploadedFiles}
+        label={lang === 'fr' ? 'Votre fichier (PDF, PNG, JPG, AI)' : 'Your file (PDF, PNG, JPG, AI)'}
+      />
 
       {/* Price display */}
       {priceInfo && (

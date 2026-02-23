@@ -12,7 +12,7 @@ const getStripe = () => {
 export default factories.createCoreController('api::order.order', ({ strapi }) => ({
 
   async createPaymentIntent(ctx) {
-    const { items, customerEmail, customerName, customerPhone, designReady, notes, supabaseUserId } = ctx.request.body as any;
+    const { items, customerEmail, customerName, customerPhone, designReady, notes, supabaseUserId, fileIds } = ctx.request.body as any;
 
     // Validate
     if (!items || !Array.isArray(items) || items.length === 0) {
@@ -46,7 +46,7 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
       });
 
       // Create order in Strapi with status "pending"
-      await strapi.documents('api::order.order').create({
+      const order = await strapi.documents('api::order.order').create({
         data: {
           stripePaymentIntentId: paymentIntent.id,
           customerEmail,
@@ -62,6 +62,14 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
           notes: notes || '',
         },
       });
+
+      // Link uploaded files to the order
+      if (fileIds && Array.isArray(fileIds) && fileIds.length > 0) {
+        await strapi.documents('api::order.order').update({
+          documentId: order.documentId,
+          data: { files: fileIds },
+        });
+      }
 
       // Return client_secret to frontend
       ctx.body = {
