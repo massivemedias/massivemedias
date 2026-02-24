@@ -383,7 +383,7 @@ function ServiceDetail() {
           <p className="text-grey-muted text-center mb-8">{service.pricing.note}</p>
 
           {service.pricing.headers && (
-            <div className="rounded-xl overflow-hidden border border-purple-main/30 max-w-4xl mx-auto card-shadow">
+            <div className="rounded-xl overflow-hidden border border-purple-main/30 max-w-5xl mx-auto card-shadow">
               <table className="price-table">
                 <thead>
                   <tr>
@@ -413,7 +413,7 @@ function ServiceDetail() {
           )}
 
           {service.pricing.tables && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            <div className={`gap-8 mx-auto ${service.pricing.tables.length === 1 ? 'max-w-5xl' : 'grid grid-cols-1 md:grid-cols-2 max-w-5xl'}`}>
               {service.pricing.tables.map((table, tableIndex) => (
                 <div key={tableIndex} className="rounded-xl overflow-hidden border border-purple-main/30 card-shadow">
                   <div className="p-4 border-b border-purple-main/30 bg-glass-alt">
