@@ -17,6 +17,11 @@ function ServiceDetail() {
   const service = servicesData[slug];
   const [lightboxImage, setLightboxImage] = useState(null);
   const [lightboxIndex, setLightboxIndex] = useState(0);
+  const [flippedCards, setFlippedCards] = useState({});
+
+  const toggleCard = useCallback((index) => {
+    setFlippedCards(prev => ({ ...prev, [index]: !prev[index] }));
+  }, []);
 
   if (!service) {
     return <Navigate to="/" replace />;
@@ -230,62 +235,126 @@ function ServiceDetail() {
               {t('serviceDetail.webProjectsSub') || 'Une sélection de projets web livrés pour nos clients'}
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {service.webProjects.map((project, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: index * 0.08 }}
-                  viewport={{ once: true }}
-                  className="group rounded-2xl overflow-hidden border border-purple-main/30 transition-all duration-300 hover:border-magenta/40 cursor-pointer card-bg card-shadow"
-                  onClick={() => window.open(project.url, '_blank', 'noopener,noreferrer')}
-                >
-                  {/* Screenshot */}
-                  <div className="relative overflow-hidden aspect-[16/10]">
-                    <img
-                      src={project.screenshot}
-                      alt={project.name}
-                      className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
-                      loading="lazy"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                    <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/20 backdrop-blur-sm rounded-full p-2">
-                      <ExternalLink size={16} className="text-white" />
-                    </div>
-                  </div>
-
-                  {/* Info */}
-                  <div className="p-6">
-                    <div className="flex items-center gap-3 mb-3">
-                      <img
-                        src={project.logo}
-                        alt={`${project.name} logo`}
-                        className="w-8 h-8 object-contain rounded"
-                        style={{ filter: 'var(--logo-filter, none)' }}
-                      />
-                      <div>
-                        <h3 className="text-heading font-heading font-bold text-lg">{project.name}</h3>
-                      </div>
-                    </div>
-                    <p className="text-grey-muted text-sm leading-relaxed mb-4">{project.desc}</p>
-                    <div className="flex flex-wrap gap-2">
-                      {project.tags.map((tag, i) => (
-                        <span
-                          key={i}
-                          className="px-3 py-1 rounded-full text-xs font-semibold border border-purple-main/30 glass-alt-text"
+              {service.webProjects.map((project, index) => {
+                const isFlipped = !!flippedCards[index];
+                return (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: index * 0.08 }}
+                    viewport={{ once: true }}
+                    className="rounded-2xl overflow-hidden border border-purple-main/30 transition-all duration-300 hover:border-magenta/40 card-bg card-shadow"
+                  >
+                    <AnimatePresence mode="wait">
+                      {!isFlipped ? (
+                        <motion.div
+                          key="logo"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          transition={{ duration: 0.3 }}
+                          className="group"
                         >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                    <div className="mt-4 flex items-center gap-2 text-magenta text-sm font-semibold group-hover:gap-3 transition-all duration-300">
-                      <Globe size={14} />
-                      <span>{project.url.replace('https://', '').replace('http://', '').replace(/\/$/, '')}</span>
-                      <ArrowRight size={14} className="transition-transform duration-300 group-hover:translate-x-1" />
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
+                          <div className="relative aspect-[16/10] flex items-center justify-center bg-glass">
+                            <div className="flex flex-col items-center">
+                              <img
+                                src={project.logo}
+                                alt={`${project.name} logo`}
+                                className="w-24 h-24 md:w-32 md:h-32 object-contain"
+                                style={{ filter: 'var(--logo-filter, none)' }}
+                              />
+                              <span className="text-grey-muted text-xs mt-3 md:hidden">
+                                {lang === 'fr' ? 'Tap pour voir' : 'Tap to preview'}
+                              </span>
+                            </div>
+                            <div
+                              className="absolute inset-0 flex items-center justify-center group-hover:bg-black/10 transition-all duration-300 cursor-pointer"
+                              onClick={() => toggleCard(index)}
+                            >
+                              <div className="opacity-0 group-hover:opacity-100 transition-all duration-300 transform -translate-x-2 group-hover:translate-x-0 bg-magenta/90 backdrop-blur-sm rounded-full p-3">
+                                <ArrowRight size={20} className="text-white" />
+                              </div>
+                            </div>
+                          </div>
+                          <div className="p-6">
+                            <div className="flex items-center gap-3 mb-3">
+                              <img
+                                src={project.logo}
+                                alt={`${project.name} logo`}
+                                className="w-8 h-8 object-contain rounded"
+                                style={{ filter: 'var(--logo-filter, none)' }}
+                              />
+                              <h3 className="text-heading font-heading font-bold text-lg">{project.name}</h3>
+                            </div>
+                            <p className="text-grey-muted text-sm leading-relaxed mb-4">{project.desc}</p>
+                            <div className="flex flex-wrap gap-2">
+                              {project.tags.map((tag, i) => (
+                                <span key={i} className="px-3 py-1 rounded-full text-xs font-semibold border border-purple-main/30 glass-alt-text">
+                                  {tag}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        </motion.div>
+                      ) : (
+                        <motion.div
+                          key="screenshot"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          transition={{ duration: 0.3 }}
+                        >
+                          <div className="relative overflow-hidden aspect-[16/10]">
+                            <img
+                              src={project.screenshot}
+                              alt={project.name}
+                              className="w-full h-full object-cover object-top"
+                              loading="lazy"
+                            />
+                            <button
+                              onClick={() => toggleCard(index)}
+                              className="absolute top-3 left-3 bg-black/50 backdrop-blur-sm rounded-full p-2 text-white/80 hover:text-white hover:bg-black/70 transition-all duration-300"
+                            >
+                              <ArrowLeft size={16} />
+                            </button>
+                            <a
+                              href={project.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="absolute top-3 right-3 bg-black/50 backdrop-blur-sm rounded-full p-2 text-white/80 hover:text-white hover:bg-black/70 transition-all duration-300"
+                            >
+                              <ExternalLink size={16} />
+                            </a>
+                          </div>
+                          <div className="p-6">
+                            <div className="flex items-center gap-3 mb-3">
+                              <img
+                                src={project.logo}
+                                alt={`${project.name} logo`}
+                                className="w-8 h-8 object-contain rounded"
+                                style={{ filter: 'var(--logo-filter, none)' }}
+                              />
+                              <h3 className="text-heading font-heading font-bold text-lg">{project.name}</h3>
+                            </div>
+                            <p className="text-grey-muted text-sm leading-relaxed mb-4">{project.desc}</p>
+                            <a
+                              href={project.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-2 text-magenta text-sm font-semibold hover:gap-3 transition-all duration-300"
+                            >
+                              <Globe size={14} />
+                              <span>{project.url.replace('https://', '').replace('http://', '').replace(/\/$/, '')}</span>
+                              <ExternalLink size={14} />
+                            </a>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
+                );
+              })}
             </div>
           </motion.div>
         )}
