@@ -307,8 +307,8 @@ function BoutiqueProductLayout({
                   onClick={() => setLightbox(i)}
                 >
                   <img src={imgSrc} alt="" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-300 flex items-center justify-center">
-                    <ZoomIn size={28} className="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <div className="absolute inset-0 transition-colors duration-300 flex items-center justify-center">
+                    <ZoomIn size={28} className="text-white drop-shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   </div>
                 </motion.div>
               ))}
