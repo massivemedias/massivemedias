@@ -4,6 +4,7 @@ import { img, thumb } from '../utils/paths';
 const servicesDataEn = {
   'prints': {
     slug: 'prints',
+    boutiqueSlug: 'fine-art',
     icon: Printer,
     title: 'Prints',
     subtitle: 'Fine art, flyers, cards - professional quality printing',
@@ -85,6 +86,7 @@ We also print flyers, postcards and business cards - everything you need to prom
 
   'stickers': {
     slug: 'stickers',
+    boutiqueSlug: 'stickers',
     icon: Sticker,
     title: 'Stickers',
     subtitle: 'Custom die-cut stickers for creators',
@@ -127,7 +129,6 @@ Cut to the exact shape of your design with our professional cutting equipment, e
       ],
     },
     gallery: [
-      thumb('/images/stickers/Stickers-Cosmo-2.webp'),
       thumb('/images/stickers/Stickers-Cosmovision.webp'),
       thumb('/images/stickers/Stickers-Digital.webp'),
       thumb('/images/stickers/Stickers-Fusion-State-Rec.webp'),
@@ -148,6 +149,7 @@ Cut to the exact shape of your design with our professional cutting equipment, e
 
   'merch': {
     slug: 'merch',
+    boutiqueSlug: 'sublimation',
     icon: Shirt,
     title: 'Merch',
     subtitle: 'T-shirts, mugs, accessories - your custom merch',

@@ -68,7 +68,6 @@ export function getStickerPrice(finish, shape, qty) {
 
 export const stickerImages = [
   img('/images/stickers/Stickers-Cosmo.webp'),
-  img('/images/stickers/Stickers-Cosmo-2.webp'),
   img('/images/stickers/Stickers-Cosmovision.webp'),
   img('/images/stickers/Stickers-Digital.webp'),
   img('/images/stickers/Stickers-Fusion-State-Rec.webp'),

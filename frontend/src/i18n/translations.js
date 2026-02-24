@@ -265,6 +265,7 @@ const translations = {
     serviceDetail: {
       breadcrumbServices: 'Services',
       requestQuote: 'Demander une soumission',
+      goToShop: 'Commander en ligne',
       viewPricing: 'Voir les tarifs',
       theService: 'Le service',
       highlights: 'Points forts',
@@ -275,7 +276,7 @@ const translations = {
       team: "L'équipe design",
       portfolioLabel: 'Portfolio',
       ctaTitle: 'Prêt à commander?',
-      ctaSubtitle: 'Envoie-nous les détails de ton projet. Soumission gratuite dans les 24h.',
+      ctaSubtitle: 'Configure ton projet en ligne et commande directement, ou contacte-nous pour une soumission gratuite.',
       prev: 'Précédent',
       next: 'Suivant',
       whatWeDeliver: 'Ce que comprend votre site',
@@ -610,6 +611,7 @@ const translations = {
     serviceDetail: {
       breadcrumbServices: 'Services',
       requestQuote: 'Request a Quote',
+      goToShop: 'Order Online',
       viewPricing: 'View pricing',
       theService: 'The Service',
       highlights: 'Highlights',
@@ -620,7 +622,7 @@ const translations = {
       team: 'The Design Team',
       portfolioLabel: 'Portfolio',
       ctaTitle: 'Ready to Order?',
-      ctaSubtitle: "Send us your project details. Free quote within 24 hours.",
+      ctaSubtitle: 'Configure your project online and order directly, or contact us for a free quote.',
       prev: 'Previous',
       next: 'Next',
       whatWeDeliver: 'What Your Website Includes',

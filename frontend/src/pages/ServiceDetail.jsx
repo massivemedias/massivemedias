@@ -543,10 +543,18 @@ function ServiceDetail() {
           <p className="text-grey-light text-lg mb-8 max-w-2xl mx-auto">
             {t('serviceDetail.ctaSubtitle')}
           </p>
-          <Link to="/contact" className="btn-primary">
-            {t('serviceDetail.requestQuote')}
-            <ArrowRight className="ml-2" size={20} />
-          </Link>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            {service.boutiqueSlug && (
+              <Link to={`/boutique/${service.boutiqueSlug}`} className="btn-primary">
+                {t('serviceDetail.goToShop')}
+                <ArrowRight className="ml-2" size={20} />
+              </Link>
+            )}
+            <Link to="/contact" className={service.boutiqueSlug ? 'btn-outline' : 'btn-primary'}>
+              {t('serviceDetail.requestQuote')}
+              <ArrowRight className="ml-2" size={20} />
+            </Link>
+          </div>
         </motion.div>
 
         {/* ============ NAVIGATION SERVICES ============ */}

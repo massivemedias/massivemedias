@@ -4,6 +4,7 @@ import { img, thumb } from '../utils/paths';
 const servicesData = {
   'prints': {
     slug: 'prints',
+    boutiqueSlug: 'fine-art',
     icon: Printer,
     title: 'Prints',
     subtitle: 'Fine art, flyers, cartes - impression qualité pro',
@@ -85,6 +86,7 @@ Nous imprimons aussi des flyers, cartes postales et cartes d'affaires - tout ce 
 
   'stickers': {
     slug: 'stickers',
+    boutiqueSlug: 'stickers',
     icon: Sticker,
     title: 'Stickers',
     subtitle: 'Autocollants découpés sur mesure pour créateurs',
@@ -127,7 +129,6 @@ Découpés à la forme exacte de ton design avec notre équipement de découpe p
       ],
     },
     gallery: [
-      thumb('/images/stickers/Stickers-Cosmo-2.webp'),
       thumb('/images/stickers/Stickers-Cosmovision.webp'),
       thumb('/images/stickers/Stickers-Digital.webp'),
       thumb('/images/stickers/Stickers-Fusion-State-Rec.webp'),
@@ -148,6 +149,7 @@ Découpés à la forme exacte de ton design avec notre équipement de découpe p
 
   'merch': {
     slug: 'merch',
+    boutiqueSlug: 'sublimation',
     icon: Shirt,
     title: 'Merch',
     subtitle: 'T-shirts, mugs, accessoires - ton merch sur mesure',
