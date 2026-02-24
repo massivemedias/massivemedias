@@ -21,6 +21,18 @@
     <meta name="twitter:title" content="Massive Medias — Studio de production créative, Montréal" />
     <meta name="twitter:description" content="Impression fine art, stickers custom, sublimation, design graphique et développement web à Montréal." />
     <meta name="twitter:image" content="https://massivemedias.com/og-image.jpg" />
+
+    <!-- Anti-FOUC: applique le thème avant le rendu -->
+    <script>
+      (function() {
+        try {
+          var b = localStorage.getItem('massive-brightness');
+          if (b !== null && Number(b) < 88) {
+            document.documentElement.setAttribute('data-theme', 'vibrant');
+          }
+        } catch(e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

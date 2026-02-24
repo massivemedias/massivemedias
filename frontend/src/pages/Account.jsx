@@ -82,7 +82,7 @@ function Account() {
             </div>
 
             {/* Profile */}
-            <div className="rounded-2xl border border-purple-main/30 p-8 mb-8" style={{ background: 'var(--bg-card)', boxShadow: 'var(--card-shadow)' }}>
+            <div className="rounded-2xl border border-purple-main/30 p-8 mb-8 card-bg card-shadow">
               <h2 className="text-2xl font-heading font-bold text-heading mb-6 flex items-center gap-2">
                 <User size={22} className="text-magenta" />
                 {t('account.profile')}
@@ -94,13 +94,13 @@ function Account() {
                 </div>
                 <div className="flex items-center gap-3">
                   <User size={16} className="text-grey-muted" />
-                  <span>{user?.user_metadata?.full_name || '—'}</span>
+                  <span>{user?.user_metadata?.full_name || '-'}</span>
                 </div>
               </div>
             </div>
 
             {/* Orders */}
-            <div className="rounded-2xl border border-purple-main/30 p-8" style={{ background: 'var(--bg-card)', boxShadow: 'var(--card-shadow)' }}>
+            <div className="rounded-2xl border border-purple-main/30 p-8 card-bg card-shadow">
               <h2 className="text-2xl font-heading font-bold text-heading mb-6 flex items-center gap-2">
                 <Package size={22} className="text-magenta" />
                 {t('account.orders')}
@@ -120,8 +120,7 @@ function Account() {
                   {orders.map((order) => (
                     <div
                       key={order.documentId || order.id}
-                      className="p-4 rounded-xl"
-                      style={{ background: 'var(--bg-glass)', border: '1px solid var(--bg-card-border)' }}
+                      className="p-4 rounded-xl bg-glass"
                     >
                       <div className="flex items-center justify-between mb-3">
                         <div>
@@ -144,7 +143,7 @@ function Account() {
                       {order.items && (
                         <div className="text-grey-muted text-xs space-y-1">
                           {order.items.map((item, i) => (
-                            <p key={i}>{item.productName} — {item.finish}, {item.quantity}x</p>
+                            <p key={i}>{item.productName} - {item.finish}, {item.quantity}x</p>
                           ))}
                         </div>
                       )}

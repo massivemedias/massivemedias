@@ -1,6 +1,5 @@
 import { motion } from 'framer-motion';
 import { MapPin, Printer, Scissors, Shirt, Monitor } from 'lucide-react';
-import MassiveLogo from '../assets/massive-logo.svg';
 import { img, thumb } from '../utils/paths';
 import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
@@ -26,11 +25,8 @@ function APropos() {
       />
 
       {/* Hero avec photo de l'espace */}
-      <section className="relative py-32 overflow-hidden">
-        <div className="absolute inset-0">
-          <img src={thumb('/images/locale/locale3.webp')} alt="Espace Versatile" className="w-full h-full object-cover" />
-          <div className="absolute inset-0" style={{ background: 'var(--hero-gradient)' }}></div>
-        </div>
+      <section className="relative py-16 overflow-hidden">
+        <div className="absolute inset-0 hero-aurora"></div>
 
         <div className="relative z-10 section-container !py-0 text-center">
           <motion.div
@@ -102,7 +98,7 @@ function APropos() {
                 viewport={{ once: true }}
                 className="flex items-start gap-6 mb-8 relative"
               >
-                <div className="w-16 h-16 rounded-full flex items-center justify-center flex-shrink-0 z-10 border-2 border-magenta" style={{ background: 'var(--bg-card)' }}>
+                <div className="w-16 h-16 rounded-full flex items-center justify-center flex-shrink-0 z-10 border-2 border-magenta card-bg">
                   <span className="text-magenta font-heading font-bold text-xs text-center leading-tight">{item.year}</span>
                 </div>
                 <div className="pt-3">
@@ -141,10 +137,9 @@ function APropos() {
                     whileInView={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.3, delay: index * 0.08 }}
                     viewport={{ once: true }}
-                    className="flex items-start gap-4 p-4 rounded-xl border border-purple-main/30 transition-colors duration-300"
-                    style={{ background: 'var(--bg-glass)', boxShadow: 'var(--card-shadow)' }}
+                    className="flex items-start gap-4 p-4 rounded-xl border border-purple-main/30 transition-colors duration-300 glass-shadow"
                   >
-                    <div className="p-2 rounded-lg flex-shrink-0" style={{ background: 'var(--icon-bg)' }}>
+                    <div className="p-2 rounded-lg flex-shrink-0 icon-bg">
                       <Icon size={20} className="text-magenta" />
                     </div>
                     <div>
@@ -168,7 +163,7 @@ function APropos() {
         >
           <div className="rounded-2xl overflow-hidden relative">
             <img src={thumb('/images/locale/locale11.webp')} alt="Espace Versatile" className="w-full h-80 object-cover" />
-            <div className="absolute inset-0" style={{ background: 'var(--space-overlay)' }}></div>
+            <div className="absolute inset-0 space-overlay"></div>
             <div className="absolute bottom-0 left-0 right-0 p-8 md:p-12">
               <div className="flex items-center gap-2 mb-3">
                 <MapPin size={20} className="text-magenta" />
@@ -195,13 +190,13 @@ function APropos() {
             {t('aboutPage.universe.title')}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-            <div className="p-8 rounded-2xl border border-purple-main/30 transition-colors duration-300" style={{ background: 'var(--bg-card)', boxShadow: 'var(--card-shadow)' }}>
+            <div className="p-8 rounded-2xl border border-purple-main/30 transition-colors duration-300 card-bg card-shadow">
               <h3 className="text-2xl font-heading font-bold text-heading mb-3">{t('aboutPage.universe.mauditeMachine.title')}</h3>
               <p className="text-grey-light leading-relaxed">
                 {t('aboutPage.universe.mauditeMachine.description')}
               </p>
             </div>
-            <div className="p-8 rounded-2xl border border-purple-main/30 transition-colors duration-300" style={{ background: 'var(--bg-card)', boxShadow: 'var(--card-shadow)' }}>
+            <div className="p-8 rounded-2xl border border-purple-main/30 transition-colors duration-300 card-bg card-shadow">
               <h3 className="text-2xl font-heading font-bold text-heading mb-3">{t('aboutPage.universe.vrstl.title')}</h3>
               <p className="text-grey-light leading-relaxed">
                 {t('aboutPage.universe.vrstl.description')}

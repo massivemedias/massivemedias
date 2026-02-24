@@ -13,7 +13,7 @@ function ServiceCard({ icon: Icon, title, description, link, image }) {
       whileHover={{ y: theme === 'light' ? -3 : -8 }}
       transition={{ duration: 0.3 }}
     >
-      <Link to={link} className={`block overflow-hidden h-full group transition-colors duration-300 ${theme === 'light' ? 'rounded-xl' : 'rounded-2xl'}`} style={{ background: 'var(--bg-card)', border: '1px solid var(--bg-card-border)', boxShadow: 'var(--card-shadow)' }}>
+      <Link to={link} className={`block overflow-hidden h-full group transition-colors duration-300 card-bg-bordered ${theme === 'light' ? 'rounded-xl' : 'rounded-2xl'}`}>
         {/* Image */}
         {image && (
           <div className="relative h-48 overflow-hidden">
@@ -23,16 +23,16 @@ function ServiceCard({ icon: Icon, title, description, link, image }) {
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-purple-dark/90 to-transparent"></div>
-            <div className="absolute bottom-3 left-4 p-2 rounded-lg" style={{ background: 'var(--icon-glass)', backdropFilter: 'var(--icon-glass-blur)' }}>
-              <Icon size={24} className="text-magenta" />
+            <div className="absolute bottom-3 left-4 p-2 rounded-lg icon-glass">
+              <Icon size={24} className="text-white" />
             </div>
           </div>
         )}
 
         <div className="p-6 flex flex-col" style={{ minHeight: image ? 'auto' : '100%' }}>
           {!image && (
-            <div className="mb-4 p-3 rounded-lg w-fit" style={{ background: 'var(--icon-bg)' }}>
-              <Icon size={32} className="text-magenta" />
+            <div className="mb-4 p-3 rounded-lg w-fit icon-bg">
+              <Icon size={32} className="text-white" />
             </div>
           )}
 

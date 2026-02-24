@@ -51,10 +51,9 @@ function ConfiguratorFlyers() {
               key={s.id}
               onClick={() => setSide(s.id)}
               className={`flex flex-col items-center justify-center min-w-[7rem] py-2.5 px-4 rounded-lg text-xs font-medium transition-all border-2 ${side === s.id
-                ? 'border-magenta'
-                : 'border-transparent hover:border-grey-muted/30'
+                ? 'border-magenta option-selected'
+                : 'border-transparent hover:border-grey-muted/30 option-default'
               }`}
-              style={{ background: side === s.id ? 'var(--highlight-bg)' : 'var(--bg-glass)' }}
             >
               <span className="text-heading leading-tight text-center font-semibold text-sm">
                 {lang === 'fr' ? s.labelFr : s.labelEn}
@@ -80,10 +79,9 @@ function ConfiguratorFlyers() {
                 key={tier.qty}
                 onClick={() => setQtyIndex(i)}
                 className={`flex flex-col items-center py-2.5 px-4 rounded-lg text-xs font-medium transition-all border-2 min-w-[5rem] ${qtyIndex === i
-                  ? 'border-magenta'
-                  : 'border-transparent hover:border-grey-muted/30'
+                  ? 'border-magenta option-selected'
+                  : 'border-transparent hover:border-grey-muted/30 option-default'
                 }`}
-                style={{ background: qtyIndex === i ? 'var(--highlight-bg)' : 'var(--bg-glass)' }}
               >
                 <span className="text-heading font-bold text-sm">{tier.qty}</span>
                 <span className="text-grey-muted mt-0.5">{p ? `${p.price}$` : ''}</span>
@@ -102,7 +100,7 @@ function ConfiguratorFlyers() {
 
       {/* Price display */}
       {priceInfo && (
-        <div className="p-5 rounded-xl mb-5" style={{ background: 'var(--highlight-bg)', border: '1px solid var(--bg-card-border)' }}>
+        <div className="p-5 rounded-xl mb-5 highlight-bordered">
           <div className="flex items-baseline gap-3">
             <span className="text-3xl font-heading font-bold text-heading">{priceInfo.price}$</span>
             <span className="text-grey-muted text-sm">

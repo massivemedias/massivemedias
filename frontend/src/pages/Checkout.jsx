@@ -161,11 +161,11 @@ function Checkout() {
                           {isFr ? 'Avez-vous votre design prêt?' : 'Do you have your design ready?'}
                         </label>
                         <div className="flex gap-4">
-                          <label className={`flex items-center gap-2 px-4 py-2.5 rounded-lg cursor-pointer transition-all ${formData.designReady === 'yes' ? 'bg-magenta text-white' : 'text-heading'}`} style={formData.designReady !== 'yes' ? { background: 'var(--bg-glass)', border: '1px solid var(--bg-card-border)' } : undefined}>
+                          <label className={`flex items-center gap-2 px-4 py-2.5 rounded-lg cursor-pointer transition-all ${formData.designReady === 'yes' ? 'bg-magenta text-white' : 'text-heading bg-glass'}`}>
                             <input type="radio" name="designReady" value="yes" checked={formData.designReady === 'yes'} onChange={handleChange} className="hidden" />
                             {isFr ? 'Oui' : 'Yes'}
                           </label>
-                          <label className={`flex items-center gap-2 px-4 py-2.5 rounded-lg cursor-pointer transition-all ${formData.designReady === 'no' ? 'bg-magenta text-white' : 'text-heading'}`} style={formData.designReady !== 'no' ? { background: 'var(--bg-glass)', border: '1px solid var(--bg-card-border)' } : undefined}>
+                          <label className={`flex items-center gap-2 px-4 py-2.5 rounded-lg cursor-pointer transition-all ${formData.designReady === 'no' ? 'bg-magenta text-white' : 'text-heading bg-glass'}`}>
                             <input type="radio" name="designReady" value="no" checked={formData.designReady === 'no'} onChange={handleChange} className="hidden" />
                             {isFr ? 'Non, j\'ai besoin du design' : 'No, I need design help'}
                           </label>
@@ -187,7 +187,7 @@ function Checkout() {
 
                       {/* Files from cart items summary */}
                       {items.some(item => item.uploadedFiles?.length > 0) && (
-                        <div className="p-4 rounded-lg" style={{ background: 'var(--bg-glass)', border: '1px solid var(--bg-card-border)' }}>
+                        <div className="p-4 rounded-lg bg-glass">
                           <p className="text-heading font-semibold text-sm mb-2 flex items-center gap-2">
                             <Paperclip size={14} className="text-magenta" />
                             {isFr ? 'Fichiers joints aux produits' : 'Files attached to products'}
@@ -209,7 +209,7 @@ function Checkout() {
                       />
 
                       {error && (
-                        <div className="flex items-center gap-3 p-4 rounded-lg border border-red-500/30" style={{ background: 'rgba(239, 68, 68, 0.1)' }}>
+                        <div className="flex items-center gap-3 p-4 rounded-lg border border-red-500/30 error-bg">
                           <AlertCircle size={20} className="text-red-400 flex-shrink-0" />
                           <p className="text-red-400 text-sm">{error}</p>
                         </div>
@@ -249,7 +249,7 @@ function Checkout() {
                     </button>
 
                     {/* Customer info summary */}
-                    <div className="p-4 rounded-xl mb-6" style={{ background: 'var(--bg-glass)', border: '1px solid var(--bg-card-border)' }}>
+                    <div className="p-4 rounded-xl mb-6 bg-glass">
                       <p className="text-heading font-semibold">{formData.nom}</p>
                       <p className="text-grey-muted text-sm">{formData.email}</p>
                       {formData.telephone && <p className="text-grey-muted text-sm">{formData.telephone}</p>}
@@ -282,7 +282,7 @@ function Checkout() {
 
               {/* Right: Order Summary */}
               <div className="lg:col-span-2">
-                <div className="rounded-2xl border border-purple-main/30 p-6 sticky top-28" style={{ background: 'var(--bg-card)', boxShadow: 'var(--card-shadow)' }}>
+                <div className="rounded-2xl border border-purple-main/30 p-6 sticky top-28 card-bg card-shadow">
                   <h3 className="font-heading font-bold text-heading mb-4">
                     {t('checkout.orderSummary')}
                   </h3>
@@ -308,7 +308,7 @@ function Checkout() {
                     ))}
                   </div>
 
-                  <div className="border-t pt-4" style={{ borderColor: 'var(--bg-card-border)' }}>
+                  <div className="border-t pt-4 card-border">
                     <div className="flex justify-between items-center">
                       <span className="text-heading font-semibold">{isFr ? 'Total' : 'Total'}</span>
                       <span className="text-2xl font-heading font-bold text-gradient">{cartTotal}$</span>

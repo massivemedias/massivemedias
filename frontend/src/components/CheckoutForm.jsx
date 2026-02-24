@@ -39,7 +39,7 @@ function CheckoutForm({ cartTotal }) {
           <CreditCard size={20} className="text-magenta" />
           {t('checkout.paymentInfo')}
         </h3>
-        <div className="p-4 rounded-xl" style={{ background: 'var(--bg-glass)', border: '1px solid var(--bg-card-border)' }}>
+        <div className="p-4 rounded-xl bg-glass">
           <PaymentElement
             options={{
               layout: 'tabs',
@@ -49,7 +49,7 @@ function CheckoutForm({ cartTotal }) {
       </div>
 
       {errorMessage && (
-        <div className="flex items-center gap-3 p-4 rounded-lg border border-red-500/30" style={{ background: 'rgba(239, 68, 68, 0.1)' }}>
+        <div className="flex items-center gap-3 p-4 rounded-lg border border-red-500/30 error-bg">
           <AlertCircle size={20} className="text-red-400 flex-shrink-0" />
           <p className="text-red-400 text-sm">{errorMessage}</p>
         </div>

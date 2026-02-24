@@ -4,7 +4,6 @@ import { ChevronLeft, ChevronRight, X, ExternalLink } from 'lucide-react';
 import { img, thumb } from '../utils/paths';
 import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
-import { useTheme } from '../i18n/ThemeContext';
 
 /* Paths bruts - résolus au rendu via thumb() (grille) et img() (lightbox) */
 const projects = [
@@ -103,7 +102,6 @@ const projectTitles = {
 
 function Portfolio() {
   const { lang, t } = useLang();
-  const { theme } = useTheme();
   const [activeCategory, setActiveCategory] = useState('all');
   const [lightboxImage, setLightboxImage] = useState(null);
   const [lightboxIndex, setLightboxIndex] = useState(0);
@@ -157,8 +155,7 @@ function Portfolio() {
       whileInView={{ opacity: 1, scale: 1 }}
       viewport={{ once: true }}
       transition={{ duration: 0.3, delay: Math.min(index * 0.03, 0.3) }}
-      className="group relative rounded-xl overflow-hidden cursor-pointer"
-      style={{ aspectRatio: project.category === 'web' ? '16/10' : '1' }}
+      className={`group relative rounded-xl overflow-hidden cursor-pointer ${project.category === 'web' ? 'aspect-[16/10]' : 'aspect-square'}`}
       onClick={() => {
         if (project.url) {
           window.open(project.url, '_blank', 'noopener,noreferrer');
@@ -197,11 +194,8 @@ function Portfolio() {
       />
 
       {/* Hero */}
-      <section className="relative py-32 overflow-hidden">
-        <div className="absolute inset-0">
-          <img src={thumb('/images/prints/FineArt1.webp')} alt="" className="w-full h-full object-cover" />
-          <div className="absolute inset-0" style={{ background: 'var(--hero-gradient)' }}></div>
-        </div>
+      <section className="relative py-16 overflow-hidden">
+        <div className="absolute inset-0 hero-aurora"></div>
         <div className="relative z-10 section-container !py-0 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -225,17 +219,7 @@ function Portfolio() {
             <button
               key={cat.id}
               onClick={() => setActiveCategory(cat.id)}
-              className="px-6 py-2.5 rounded-full font-semibold text-sm transition-all duration-300"
-              style={{
-                background: activeCategory === cat.id
-                  ? (theme === 'light' ? '#1A1A1A' : 'linear-gradient(135deg, #8100D1, #FF52A0)')
-                  : 'var(--bg-glass)',
-                color: activeCategory === cat.id ? '#FFFFFF' : 'var(--color-heading)',
-                border: activeCategory === cat.id
-                  ? 'none'
-                  : '1px solid var(--bg-card-border)',
-                boxShadow: 'none',
-              }}
+              className={`filter-btn ${activeCategory === cat.id ? 'filter-btn-active' : ''}`}
             >
               {cat.label}
             </button>
@@ -291,15 +275,13 @@ function Portfolio() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4 cursor-pointer"
-            style={{ background: 'rgba(0, 0, 0, 0.95)' }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 cursor-pointer lightbox-overlay"
             onClick={closeLightbox}
           >
             {/* Bouton Fermer (top-right) */}
             <button
               onClick={closeLightbox}
-              className="absolute top-4 right-4 z-[110] text-white/70 hover:text-white transition-colors w-12 h-12 flex items-center justify-center rounded-full"
-              style={{ background: 'rgba(0,0,0,0.5)' }}
+              className="absolute top-4 right-4 z-[110] text-white/70 hover:text-white transition-colors w-12 h-12 flex items-center justify-center rounded-full lightbox-btn"
               aria-label="Fermer"
             >
               <X size={28} />
@@ -308,8 +290,7 @@ function Portfolio() {
             {/* Flèche Précédent (gauche) */}
             <button
               onClick={goToPrevious}
-              className="absolute left-4 top-1/2 -translate-y-1/2 z-[110] text-white/70 hover:text-white transition-all duration-200 w-12 h-12 md:w-14 md:h-14 flex items-center justify-center rounded-full hover:scale-110"
-              style={{ background: 'rgba(0,0,0,0.5)' }}
+              className="absolute left-4 top-1/2 -translate-y-1/2 z-[110] text-white/70 hover:text-white transition-all duration-200 w-12 h-12 md:w-14 md:h-14 flex items-center justify-center rounded-full hover:scale-110 lightbox-btn"
               aria-label="Photo précédente"
             >
               <ChevronLeft size={32} />
@@ -318,8 +299,7 @@ function Portfolio() {
             {/* Flèche Suivant (droite) */}
             <button
               onClick={goToNext}
-              className="absolute right-4 top-1/2 -translate-y-1/2 z-[110] text-white/70 hover:text-white transition-all duration-200 w-12 h-12 md:w-14 md:h-14 flex items-center justify-center rounded-full hover:scale-110"
-              style={{ background: 'rgba(0,0,0,0.5)' }}
+              className="absolute right-4 top-1/2 -translate-y-1/2 z-[110] text-white/70 hover:text-white transition-all duration-200 w-12 h-12 md:w-14 md:h-14 flex items-center justify-center rounded-full hover:scale-110 lightbox-btn"
               aria-label="Photo suivante"
             >
               <ChevronRight size={32} />

@@ -1,22 +1,27 @@
-import { Printer, Sticker, Shirt, FileText, Palette, Code } from 'lucide-react';
+import { Printer, Sticker, Shirt, Palette } from 'lucide-react';
 import { img, thumb } from '../utils/paths';
 
 const servicesDataEn = {
-  'impression-fine-art': {
-    slug: 'impression-fine-art',
+  'prints': {
+    slug: 'prints',
     icon: Printer,
-    title: 'Fine Art Printing',
-    subtitle: 'Gallery-quality prints on premium papers',
+    title: 'Prints',
+    subtitle: 'Fine art, flyers, cards - professional quality printing',
     heroImage: thumb('/images/prints/Prints1.webp'),
     description: `Fine Art refers to photographic or artistic prints made on high-end archival papers (cotton, alpha-cellulose) with pigmented inks for maximum longevity. These prints meet gallery and museum standards, with a conservation life exceeding 100 years.
 
-Each print undergoes rigorous color calibration to ensure optimal fidelity to the artist's intentions.`,
+Each print undergoes rigorous color calibration to ensure optimal fidelity to the artist's intentions.
+
+We also print flyers, postcards and business cards - everything you need to promote your event, show or project. Fast local printing, professional quality.`,
     highlights: [
       'Professional fine art printer - 12 pigmented inks',
       'Large format printer access for 24"+ prints',
       'Premium professional fine art papers',
       'Professional calibration, custom ICC profiles',
       '100+ year conservation life',
+      'Flyers A6, A5, letter (8.5×11")',
+      'Postcards and business cards',
+      'Premium 300g+ paper, matte or glossy',
       'Free pick-up Mile-End, local delivery',
     ],
     process: [
@@ -28,14 +33,30 @@ Each print undergoes rigorous color calibration to ensure optimal fidelity to th
       { step: 6, title: 'Finishing', desc: 'Protective packaging or framing per your order' },
     ],
     pricing: {
-      title: 'Fine Art Printing Pricing',
-      note: 'Studio Series (Epson ET-15000): great quality for everything, ideal for images with good brightness · Museum Series (Canon PRO-1000 / PRO-2600): superior quality for photography and gallery prints · Add $30 for a black or white frame',
-      headers: ['Format', 'Studio Series (Epson ET-15000)', 'Museum Series (Canon PRO-1000 & PRO-2600)'],
-      rows: [
-        ['A4 (8.5×11")', '$16', '$35'],
-        ['A3 (11×17")', '$22', '$65'],
-        ['A3+ (13×19")', '$30', '$95'],
-        ['A2 (18×24")', '$42', '$125'],
+      title: 'Prints Pricing',
+      note: 'Studio Series: great quality for everything · Museum Series: superior quality for photography and gallery prints · Add $30 for a black or white frame',
+      tables: [
+        {
+          subtitle: 'Fine Art Printing',
+          headers: ['Format', 'Studio Series (Epson ET-15000)', 'Museum Series (Canon PRO-1000 / PRO-2600)'],
+          rows: [
+            ['A4 (8.5×11")', '$16', '$35'],
+            ['A3 (11×17")', '$22', '$65'],
+            ['A3+ (13×19")', '$30', '$95'],
+            ['A2 (18×24")', '$42', '$125'],
+          ],
+        },
+        {
+          subtitle: 'Flyers & Postcards (A6 / 4"×6")',
+          headers: ['Quantity', 'Total Price', 'Price/unit'],
+          rows: [
+            ['50', '$40', '$0.80'],
+            ['100', '$65', '$0.65'],
+            ['150', '$90', '$0.60'],
+            ['250', '$130', '$0.52'],
+            ['500', '$225', '$0.45'],
+          ],
+        },
       ],
     },
     gallery: [
@@ -47,22 +68,28 @@ Each print undergoes rigorous color calibration to ensure optimal fidelity to th
       thumb('/images/prints/Prints21.webp'),
       thumb('/images/prints/Prints23.webp'),
       thumb('/images/prints/Prints24.webp'),
+      thumb('/images/flyers/coagule.webp'),
+      thumb('/images/flyers/discodyssee.webp'),
+      thumb('/images/flyers/from_vision.webp'),
+      thumb('/images/flyers/rituals.webp'),
     ],
     equipment: [
       { name: 'Professional fine art printer', desc: '12-color printing, up to 17" (A2+). Museum quality.' },
       { name: 'Large format printer', desc: 'Large format up to 24" via partnership. Exhibitions and oversize prints.' },
       { name: 'Professional laminator', desc: 'Lamination and print protection for maximum durability.' },
+      { name: '3x Inkjet printers', desc: 'Fast volume printing for standard runs.' },
+      { name: 'Professional cutter', desc: 'Precision cutting for custom formats.' },
     ],
     seo: {
-      title: 'Fine Art Printing Montreal - Massive Medias',
-      description: 'Gallery-quality fine art prints on professional large format printer. Premium fine art papers. Free pick-up Mile-End. 15-20% below Etsy.',
+      title: 'Prints - Fine Art, Flyers & Cards | Montreal - Massive Medias',
+      description: 'Gallery-quality fine art prints, flyers, postcards and business cards. Professional local printing in Montreal.',
     },
   },
 
-  'stickers-custom': {
-    slug: 'stickers-custom',
+  'stickers': {
+    slug: 'stickers',
     icon: Sticker,
-    title: 'Custom Stickers',
+    title: 'Stickers',
     subtitle: 'Custom die-cut stickers for creators',
     heroImage: thumb('/images/stickers/Stickers-Cosmo.webp'),
     description: `Custom die-cut stickers for artists, labels, events and brands. Complete service including graphic design if needed.
@@ -122,10 +149,10 @@ Cut to the exact shape of your design with our professional cutting equipment, e
     },
   },
 
-  'sublimation-merch': {
-    slug: 'sublimation-merch',
+  'merch': {
+    slug: 'merch',
     icon: Shirt,
-    title: 'Sublimation & Merch',
+    title: 'Merch',
     subtitle: 'T-shirts, mugs, accessories - your custom merch',
     heroImage: thumb('/images/textile/Textile1.webp'),
     description: `Sublimation printing on textiles and objects. Sublimation produces vibrant and permanent colors that don't crack, don't fade and are wash-resistant.
@@ -170,6 +197,9 @@ Ideal for artist merch, events, corporate gifts or any custom project. From t-sh
       thumb('/images/textile/Textile7.webp'),
       thumb('/images/textile/Textile9.webp'),
       thumb('/images/textile/Textile10.webp'),
+      thumb('/images/textile/Textile11.webp'),
+      thumb('/images/textile/Textile12.webp'),
+      thumb('/images/textile/Textile13.webp'),
     ],
     equipment: [
       { name: 'Large format heat press', desc: 'Large format heat press for t-shirts, hoodies and textiles.' },
@@ -177,109 +207,78 @@ Ideal for artist merch, events, corporate gifts or any custom project. From t-sh
       { name: 'Tumbler pinch kit', desc: 'Sublimation on tumblers, bottles and drinkware.' },
     ],
     seo: {
-      title: 'Sublimation & Merch Montreal - Massive Medias',
+      title: 'Merch & Sublimation Montreal - Massive Medias',
       description: "T-shirts, mugs, tumblers, accessories in sublimation. Custom artist merch. Local production in Montreal.",
     },
   },
 
-  'flyers-cartes': {
-    slug: 'flyers-cartes',
-    icon: FileText,
-    title: 'Flyers & Cards',
-    subtitle: 'Fast printing for events and promotions',
-    heroImage: thumb('/images/flyers/coagule.webp'),
-    description: `Flyers, postcards, business cards - everything you need to promote your event, show or project. Fast local printing, professional quality.
-
-Perfect for artists, event promoters, labels, cafes and businesses in Mile-End and Plateau.`,
-    highlights: [
-      'Flyers A6, A5, letter (8.5×11")',
-      'Postcards and business cards',
-      'Premium 300g+ paper, matte or glossy',
-      'Single or double-sided printing',
-      'Express turnaround available (24h)',
-      'Graphic design available as an option',
-    ],
-    process: [
-      { step: 1, title: 'Brief', desc: 'Format, quantity, single/double-sided, desired finish' },
-      { step: 2, title: 'Design (optional)', desc: "Graphic design if you don't have a print-ready file" },
-      { step: 3, title: 'Validation', desc: 'Digital proof for approval' },
-      { step: 4, title: 'Printing', desc: 'High quality printing on premium paper' },
-      { step: 5, title: 'Cutting & finishing', desc: 'Precision cutting and finishing per your order' },
-      { step: 6, title: 'Delivery', desc: 'Mile-End pick-up or local delivery' },
-    ],
-    pricing: {
-      title: 'Flyers & Postcards Pricing (A6 / 4"×6")',
-      note: 'Prices aligned with local market and Vistaprint.',
-      headers: ['Quantity', 'Total Price', 'Price/unit'],
-      rows: [
-        ['50', '$40', '$0.80'],
-        ['100', '$65', '$0.65'],
-        ['150', '$90', '$0.60'],
-        ['250', '$130', '$0.52'],
-        ['500', '$225', '$0.45'],
-      ],
-    },
-    gallery: [
-      thumb('/images/flyers/coagule.webp'),
-      thumb('/images/flyers/discodyssee.webp'),
-      thumb('/images/flyers/from_vision.webp'),
-      thumb('/images/flyers/rituals.webp'),
-      thumb('/images/prints/Prints24.webp'),
-      thumb('/images/prints/FineArt-Photo.webp'),
-      thumb('/images/prints/FineArt1.webp'),
-    ],
-    equipment: [
-      { name: 'Professional printer', desc: 'Superior quality even for flyers - 12 pigmented colors.' },
-      { name: '3x Inkjet printers', desc: 'Fast volume printing for standard runs.' },
-      { name: 'Professional cutter', desc: 'Precision cutting for custom formats.' },
-    ],
-    seo: {
-      title: 'Flyers & Cards Montreal - Massive Medias',
-      description: 'Flyers, postcards, business cards. Fast local printing in Montreal. Pro quality, competitive pricing.',
-    },
-  },
-
-  'design-graphique': {
-    slug: 'design-graphique',
+  'design': {
+    slug: 'design',
     icon: Palette,
-    title: 'Graphic Design',
-    subtitle: 'Logos, visual identities, posters and digital creations',
+    title: 'Design',
+    subtitle: 'Graphic design, web design, development and SEO',
     heroImage: thumb('/images/graphism/logo_massive.webp'),
-    description: `Complete graphic design and digital creation service. From logo design to full visual identity, including event posters, album covers and icon design.
+    description: `Complete graphic design, web design and development service. From logo design to full visual identity, including event posters, album covers and icon design.
 
-We work with industry-standard professional tools - Adobe Illustrator for vector creations and logos, Figma for interface design and interactive prototyping, and Photoshop for retouching and compositing. Every creation is delivered in formats optimized for both print and digital.`,
+Modern, fast and SEO-optimized websites for artists, creators and small businesses. From artist portfolios to complete e-commerce stores.
+
+15+ years of web development experience. The founder of Massive Medias is a trained programmer-analyst. We work with Adobe Illustrator, Figma, Photoshop and modern web technologies.`,
     highlights: [
       'Adobe Illustrator - Vector logos and visual identities',
       'Figma - UI/UX mockups and interactive prototyping',
       'Adobe Photoshop - Photo retouching and compositing',
-      'Adobe InDesign - Layout and multi-page documents',
       'Logos and complete visual identities',
       'Posters, flyers and album covers',
-      'Icon and pictogram design',
-      'Sticker and decal creation',
-      'Professional photo retouching',
-      'Print-ready and web-optimized files',
+      'Custom web design and responsive',
+      'Full front-end and back-end development',
+      'Technical SEO and organic search optimization',
+      'CMS integration (WordPress, Strapi, Shopify)',
+      'Hosting, domain and maintenance',
+    ],
+    whatWeDeliver: [
+      { title: 'Web Design', desc: 'Custom UI/UX mockups, color palette, typography and visual identity aligned with your brand.' },
+      { title: 'Development', desc: 'Clean, maintainable code with React, Angular or WordPress depending on your needs.' },
+      { title: 'Responsive', desc: 'Perfectly adaptive design on mobile, tablet and desktop. Mobile-first approach.' },
+      { title: 'SEO & Ranking', desc: 'On-page optimization, meta tags, sitemap, schema markup, Google Analytics and Search Console.' },
+      { title: 'Performance', desc: 'Optimized WebP images, lazy loading, minification, CDN. 90+ PageSpeed score.' },
+      { title: 'Security', desc: 'SSL certificate, security headers, anti-spam protection, automatic backups.' },
     ],
     process: [
-      { step: 1, title: 'Creative brief', desc: 'Discussion about your vision, references, target audience' },
-      { step: 2, title: 'Research & moodboard', desc: 'Visual exploration, color palette, artistic direction on Figma' },
-      { step: 3, title: 'Vector creation', desc: 'Design on Illustrator - logos, shapes, custom typography' },
-      { step: 4, title: 'Iterations', desc: 'Refinement based on your feedback (2 revision rounds included)' },
-      { step: 5, title: 'Finalization', desc: 'Final high-resolution files - AI, EPS, SVG, PNG, PDF' },
-      { step: 6, title: 'Delivery', desc: 'Complete package: print-ready, web, social media, favicon' },
+      { step: 1, title: 'Creative brief', desc: 'Discussion about your vision, references, target audience and goals' },
+      { step: 2, title: 'Research & moodboard', desc: 'Visual exploration, color palette, artistic direction, site architecture' },
+      { step: 3, title: 'Creation & design', desc: 'Design on Illustrator/Figma - logos, mockups, visual identity' },
+      { step: 4, title: 'Development', desc: 'Clean code, modern technologies, responsive, API integrations' },
+      { step: 5, title: 'SEO & Optimization', desc: 'Search ranking, performance, accessibility, multi-device testing' },
+      { step: 6, title: 'Delivery & launch', desc: 'Final files, go-live, CMS training, post-launch monitoring' },
     ],
     pricing: {
-      title: 'Graphic Design Pricing',
+      title: 'Design & Web Pricing',
       note: 'Sticker design is included in the sticker production price.',
-      headers: ['Service', 'Price', 'Timeline'],
-      rows: [
-        ['Logo design', '$300 - $600', '5-10 days'],
-        ['Complete visual identity', '$800 - $1,500', '2-3 weeks'],
-        ['Event poster / flyer', '$150 - $300', '3-5 days'],
-        ['Album / single cover', '$200 - $400', '5-7 days'],
-        ['Icon set design', '$200 - $500', '3-7 days'],
-        ['Photo retouching (per image)', '$15 - $50', '24-48h'],
-        ['Sticker design', 'Included', '-'],
+      tables: [
+        {
+          subtitle: 'Graphic Design',
+          headers: ['Service', 'Price', 'Timeline'],
+          rows: [
+            ['Logo design', '$300 - $600', '5-10 days'],
+            ['Complete visual identity', '$800 - $1,500', '2-3 weeks'],
+            ['Event poster / flyer', '$150 - $300', '3-5 days'],
+            ['Album / single cover', '$200 - $400', '5-7 days'],
+            ['Icon set design', '$200 - $500', '3-7 days'],
+            ['Photo retouching (per image)', '$15 - $50', '24-48h'],
+          ],
+        },
+        {
+          subtitle: 'Web Development & SEO',
+          headers: ['Service', 'Price'],
+          rows: [
+            ['Event landing page', '$900'],
+            ['Artist/label showcase site (5-10 pages)', '$2,000 - $3,500'],
+            ['Simple e-commerce site', '$4,000 - $6,000'],
+            ['Existing site redesign', 'On quote'],
+            ['Monthly maintenance', '$100 - $200/mo'],
+            ['Hourly rate (Web, Design, Restoration)', '$85/h'],
+          ],
+        },
       ],
     },
     gallery: [
@@ -291,69 +290,6 @@ We work with industry-standard professional tools - Adobe Illustrator for vector
       thumb('/images/graphism/maudite_machine_sticker.webp'),
       thumb('/images/graphism/vrstl_sticker.webp'),
     ],
-    team: {
-      name: 'Christopher Gagnon',
-      role: 'Partner Graphic Designer',
-      bio: 'Graduate graphic designer with nearly 10 years of experience. Specialized in visual identity, packaging and web design.',
-      portfolio: 'Soundwave Festival, Laboratoire Bio Stratège, ChromaPur, Nutramazonie, NextGen Football, Belette Trois-Mille.',
-    },
-    seo: {
-      title: 'Graphic Design Montreal - Massive Medias',
-      description: 'Logos, visual identities, posters, album covers. Professional graphic design for creators in Montreal.',
-    },
-  },
-
-  'developpement-web': {
-    slug: 'developpement-web',
-    icon: Code,
-    title: 'Web Development',
-    subtitle: 'Showcase sites, e-commerce and landing pages for creators',
-    heroImage: thumb('/images/web/devweb_hero.webp'),
-    description: `Modern, fast and SEO-optimized websites for artists, creators and small businesses. From artist portfolios to complete e-commerce stores, we master the technologies that matter.
-
-15+ years of web development experience. The founder of Massive Medias is a trained programmer-analyst - this isn't a side project, it's our primary expertise.`,
-    highlights: [
-      'Custom web design and visual identity',
-      'Full front-end and back-end development',
-      'Responsive design - mobile, tablet, desktop',
-      'Technical SEO and organic search optimization',
-      'Performance optimization (Core Web Vitals)',
-      'CMS integration (WordPress, Strapi, Shopify)',
-      'Contact forms and API integrations',
-      'SSL certificate and HTTPS security',
-      'Hosting and domain name',
-      'Ongoing maintenance and updates',
-    ],
-    whatWeDeliver: [
-      { title: 'Web Design', desc: 'Custom UI/UX mockups, color palette, typography and visual identity aligned with your brand.' },
-      { title: 'Development', desc: 'Clean, maintainable code with React, Angular or WordPress depending on your needs.' },
-      { title: 'Responsive', desc: 'Perfectly adaptive design on mobile, tablet and desktop. Mobile-first approach.' },
-      { title: 'SEO & Ranking', desc: 'On-page optimization, meta tags, sitemap, schema markup, Google Analytics and Search Console.' },
-      { title: 'Performance', desc: 'Optimized WebP images, lazy loading, minification, CDN. 90+ PageSpeed score.' },
-      { title: 'Security', desc: 'SSL certificate, security headers, anti-spam protection, automatic backups.' },
-    ],
-    process: [
-      { step: 1, title: 'Consultation', desc: 'Discussion of your needs, goals, budget and competitive analysis' },
-      { step: 2, title: 'Architecture & wireframes', desc: 'Site structure, sitemap, user journey, low-fidelity mockups' },
-      { step: 3, title: 'Web Design', desc: 'High-fidelity mockups, palette, typography, complete visual identity' },
-      { step: 4, title: 'Development', desc: 'Clean code, modern technologies, responsive, API integrations' },
-      { step: 5, title: 'SEO & Optimization', desc: 'Search ranking, performance, accessibility, multi-device testing' },
-      { step: 6, title: 'Launch & training', desc: 'Go-live, CMS training, documentation, post-launch monitoring' },
-    ],
-    pricing: {
-      title: 'Web Development & Design Pricing',
-      note: 'Every project is unique. These prices are indicative ranges.',
-      headers: ['Service', 'Price'],
-      rows: [
-        ['Event landing page', '$900'],
-        ['Artist/label showcase site (5-10 pages)', '$2,000 - $3,500'],
-        ['Simple e-commerce site', '$4,000 - $6,000'],
-        ['Existing site redesign', 'On quote'],
-        ['Monthly maintenance', '$100 - $200/mo'],
-        ['Hourly rate (Web, Design, Restoration)', '$85/h'],
-      ],
-    },
-    gallery: [],
     webProjects: [
       {
         name: 'Sonaa.ca',
@@ -434,9 +370,15 @@ We work with industry-standard professional tools - Adobe Illustrator for vector
       'Google Analytics',
       'Search Console',
     ],
+    team: {
+      name: 'Christopher Gagnon',
+      role: 'Partner Graphic Designer',
+      bio: 'Graduate graphic designer with nearly 10 years of experience. Specialized in visual identity, packaging and web design.',
+      portfolio: 'Soundwave Festival, Laboratoire Bio Stratège, ChromaPur, Nutramazonie, NextGen Football, Belette Trois-Mille.',
+    },
     seo: {
-      title: 'Web Development Montreal - Massive Medias',
-      description: 'Showcase sites, e-commerce, landing pages. React, Strapi, WordPress, Shopify. 15+ years experience. Montreal.',
+      title: 'Graphic Design & Web Montreal - Massive Medias',
+      description: 'Logos, visual identities, websites, e-commerce, SEO. Professional graphic design and web development in Montreal.',
     },
   },
 };

@@ -25,10 +25,9 @@ function ConfiguratorDesign() {
               key={s.id}
               onClick={() => setSelected(s.id)}
               className={`w-full flex items-center justify-between p-3.5 rounded-lg text-sm font-medium transition-all border-2 text-left ${selected === s.id
-                ? 'border-magenta'
-                : 'border-transparent hover:border-grey-muted/30'
+                ? 'border-magenta option-selected'
+                : 'border-transparent hover:border-grey-muted/30 option-default'
               }`}
-              style={{ background: selected === s.id ? 'var(--highlight-bg)' : 'var(--bg-glass)' }}
             >
               <span className="text-heading">
                 {lang === 'fr' ? s.labelFr : s.labelEn}
@@ -43,7 +42,7 @@ function ConfiguratorDesign() {
 
       {/* Selected service details */}
       {service && (
-        <div className="p-5 rounded-xl mb-5" style={{ background: 'var(--highlight-bg)', border: '1px solid var(--bg-card-border)' }}>
+        <div className="p-5 rounded-xl mb-5 highlight-bordered">
           <div className="flex items-baseline gap-3 mb-2">
             <span className="text-2xl font-heading font-bold text-heading">{service.priceRange}</span>
           </div>
@@ -60,7 +59,7 @@ function ConfiguratorDesign() {
       )}
 
       {/* Note about sticker design */}
-      <div className="p-3 rounded-lg mb-5 text-xs text-grey-muted" style={{ background: 'var(--bg-glass)', border: '1px solid var(--bg-card-border)' }}>
+      <div className="p-3 rounded-lg mb-5 text-xs text-grey-muted bg-glass">
         {lang === 'fr'
           ? '\ud83c\udfa8 Le design de stickers est inclus dans le prix de production des stickers.'
           : '\ud83c\udfa8 Sticker design is included in the sticker production price.'}

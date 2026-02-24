@@ -5,9 +5,7 @@ import {
   Printer,
   Sticker,
   Shirt,
-  FileText,
   Palette,
-  Code,
   Truck,
   Award,
   Users,
@@ -19,28 +17,22 @@ import ServiceCard from '../components/ServiceCard';
 import Counter from '../components/Counter';
 import SEO from '../components/SEO';
 import { getOrganizationSchema, getLocalBusinessSchema } from '../components/seo/schemas';
-import MassiveLogoVibrant from '../assets/massive-logo.svg';
-import MassiveLogoLight from '../assets/massive-logo-light.png';
+import MassiveLogo from '../components/MassiveLogo';
 import { img, thumb } from '../utils/paths';
 import { useLang } from '../i18n/LanguageContext';
-import { useTheme } from '../i18n/ThemeContext';
 
-const serviceIcons = [Printer, Sticker, Shirt, FileText, Palette, Code];
+const serviceIcons = [Printer, Sticker, Shirt, Palette];
 const serviceLinks = [
-  '/services/impression-fine-art',
-  '/services/stickers-custom',
-  '/services/sublimation-merch',
-  '/services/flyers-cartes',
-  '/services/design-graphique',
-  '/services/developpement-web',
+  '/services/prints',
+  '/services/stickers',
+  '/services/merch',
+  '/services/design',
 ];
 const serviceImages = [
   thumb('/images/prints/Prints1.webp'),
   thumb('/images/stickers/Stickers-Cosmo.webp'),
   thumb('/images/textile/Textile1.webp'),
-  thumb('/images/flyers/coagule.webp'),
   thumb('/images/graphism/logo_massive.webp'),
-  thumb('/images/web/devweb_hero.webp'),
 ];
 
 const advantageIcons = [Truck, Award, Users, Zap, DollarSign, Music];
@@ -55,9 +47,7 @@ const featuredProjectImages = [
 ];
 
 function Home() {
-  const { t } = useLang();
-  const { theme } = useTheme();
-
+  const { t, lang } = useLang();
   const serviceCards = t('home.serviceCards');
   const advantages = t('home.advantages');
   const featuredProjects = t('home.featuredProjects');
@@ -73,20 +63,7 @@ function Home() {
 
       {/* ============ HERO ============ */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0">
-          <img
-            src={thumb('/images/locale/locale9.webp')}
-            alt=""
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0" style={{
-            background: 'var(--hero-gradient)'
-          }}></div>
-          <div className="absolute inset-0 opacity-10" style={{
-            backgroundImage: `radial-gradient(circle, var(--pattern-dot) 1px, transparent 1px)`,
-            backgroundSize: '50px 50px'
-          }}></div>
-        </div>
+        <div className="absolute inset-0 hero-aurora"></div>
 
         <div className="relative z-10 text-center max-w-5xl mx-auto px-4 py-20">
           <motion.div
@@ -100,24 +77,23 @@ function Home() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3, duration: 0.6 }}
-              className="mx-auto mb-8 h-[24px] w-auto"
-              style={theme === 'light' ? { filter: 'brightness(0)' } : undefined}
+              className="mx-auto mb-8 h-[24px] w-auto cpr-invert"
             />
 
-            <motion.img
-              src={theme === 'light' ? MassiveLogoLight : MassiveLogoVibrant}
-              alt="MASSIVE"
-              className="mx-auto mb-10 transition-opacity duration-300 logo-home"
+            <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.1, duration: 0.8, ease: 'easeOut' }}
-            />
+              className="mx-auto mb-10 logo-home"
+            >
+              <MassiveLogo className="w-full h-full transition-colors duration-300" />
+            </motion.div>
 
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5, duration: 0.6 }}
-              className={`text-2xl md:text-3xl mb-4 font-light ${theme === 'light' ? 'text-heading/80' : 'text-white/80'}`}
+              className="text-2xl md:text-3xl mb-4 font-light hero-subtitle"
             >
               {t('home.hero.subtitle')}
             </motion.p>
@@ -126,7 +102,7 @@ function Home() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.7, duration: 0.6 }}
-              className={`text-lg mb-12 max-w-3xl mx-auto ${theme === 'light' ? 'text-grey-muted' : 'text-white/50'}`}
+              className="text-lg mb-12 max-w-3xl mx-auto hero-services"
             >
               {t('home.hero.services')}
             </motion.p>
@@ -137,18 +113,18 @@ function Home() {
               transition={{ delay: 0.9, duration: 0.5 }}
               className="flex flex-col sm:flex-row gap-4 justify-center items-center"
             >
-              <Link to="/services" className="btn-primary">
+              <Link to="/contact" className="btn-primary">
                 {t('home.hero.cta1')}
                 <ArrowRight className="ml-2" size={20} />
               </Link>
-              <Link to="/contact" className={`btn-outline ${theme === 'light' ? '' : '!text-white !border-white/25 hover:!bg-white/10 hover:!border-white/50'}`}>
+              <Link to="/contact" className="btn-outline btn-outline-hero">
                 {t('home.hero.cta2')}
               </Link>
             </motion.div>
           </motion.div>
         </div>
 
-        <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-purple-dark to-transparent"></div>
+        <div className="absolute bottom-0 left-0 right-0 h-40 hero-fade"></div>
       </section>
 
       {/* ============ SERVICES ============ */}
@@ -168,7 +144,7 @@ function Home() {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
           {serviceCards.map((card, index) => (
             <motion.div
               key={index}
@@ -214,8 +190,7 @@ function Home() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: index * 0.08 }}
               viewport={{ once: true }}
-              className="group relative rounded-xl overflow-hidden cursor-pointer"
-              style={{ aspectRatio: '4/3' }}
+              className="group relative rounded-xl overflow-hidden cursor-pointer aspect-[4/3]"
             >
               <img
                 src={featuredProjectImages[index]}
@@ -231,19 +206,13 @@ function Home() {
           ))}
         </div>
 
-        <div className="text-center mt-12">
-          <Link to="/portfolio" className="btn-outline">
-            {t('home.projectsSection.viewAll')}
-            <ArrowRight className="ml-2" size={20} />
-          </Link>
-        </div>
       </section>
 
       {/* ============ CHIFFRES ============ */}
       <section className="section-container">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-          <Counter end={2020} suffix="" label={t('home.stats.since')} />
-          <Counter end={500} suffix="+" label={t('home.stats.projects')} />
+          <Counter end={2024} suffix="" label={t('home.stats.since')} />
+          <Counter end={50} suffix="+" label={t('home.stats.projects')} />
           <Counter end={100} suffix="%" label={t('home.stats.local')} />
           <div className="text-center p-6">
             <div className="text-5xl md:text-6xl font-heading font-bold text-gradient mb-2 hero-title">24-48h</div>
@@ -276,10 +245,9 @@ function Home() {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 viewport={{ once: true }}
-                className="p-8 rounded-xl transition-all duration-300"
-                style={{ background: 'var(--bg-glass)', border: '1px solid var(--bg-card-border)', boxShadow: 'var(--card-shadow)' }}
+                className="p-8 rounded-xl transition-all duration-300 bg-glass card-shadow"
               >
-                <div className="mb-4 p-3 rounded-lg w-fit" style={{ background: 'var(--icon-bg)' }}>
+                <div className="mb-4 p-3 rounded-lg w-fit icon-bg">
                   <Icon size={28} className="text-magenta" />
                 </div>
                 <h3 className="font-heading text-xl font-bold text-heading mb-3">
@@ -308,7 +276,7 @@ function Home() {
             alt=""
             className="absolute inset-0 w-full h-full object-cover"
           />
-          <div className="absolute inset-0" style={{ background: 'var(--overlay-cta)' }}></div>
+          <div className="absolute inset-0 overlay-cta"></div>
 
           <div className="relative z-10 p-12 md:p-16 text-center">
             <h2 className="text-4xl md:text-5xl font-heading font-bold text-white mb-6">

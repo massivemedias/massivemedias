@@ -19,7 +19,7 @@ function ServiceDetail() {
   const [lightboxIndex, setLightboxIndex] = useState(0);
 
   if (!service) {
-    return <Navigate to="/services" replace />;
+    return <Navigate to="/" replace />;
   }
 
   const openLightbox = useCallback((image, index) => {
@@ -73,7 +73,7 @@ function ServiceDetail() {
         ogImage={service.heroImage}
         breadcrumbs={[
           { name: lang === 'fr' ? 'Accueil' : 'Home', url: '/' },
-          { name: t('nav.services'), url: '/services' },
+          { name: lang === 'fr' ? 'Accueil' : 'Home', url: '/' },
           { name: service.title },
         ]}
         jsonLd={getServiceSchema({
@@ -84,11 +84,8 @@ function ServiceDetail() {
       />
 
       {/* ============ HERO ============ */}
-      <section className="relative py-32 md:py-40 overflow-hidden">
-        <div className="absolute inset-0">
-          <img src={service.heroImage} alt={service.title} className="w-full h-full object-cover" />
-          <div className="absolute inset-0" style={{ background: 'var(--hero-gradient)' }}></div>
-        </div>
+      <section className="relative py-16 md:py-20 overflow-hidden">
+        <div className="absolute inset-0 hero-aurora"></div>
 
         <div className="relative z-10 section-container !py-0">
           <motion.div
@@ -98,13 +95,13 @@ function ServiceDetail() {
             className="max-w-4xl"
           >
             <div className="flex items-center gap-2 mb-6 text-sm">
-              <Link to="/services" className="text-grey-muted hover:text-magenta transition-colors">{t('serviceDetail.breadcrumbServices')}</Link>
+              <Link to="/" className="text-grey-muted hover:text-magenta transition-colors">{lang === 'fr' ? 'Accueil' : 'Home'}</Link>
               <span className="text-grey-muted">/</span>
               <span className="text-magenta">{service.title}</span>
             </div>
 
             <div className="flex items-center gap-4 mb-6">
-              <div className="p-4 rounded-xl" style={{ background: 'var(--icon-bg)', backdropFilter: 'blur(10px)' }}>
+              <div className="p-4 rounded-xl icon-bg-blur">
                 <Icon size={36} className="text-magenta" />
               </div>
               <div>
@@ -152,7 +149,7 @@ function ServiceDetail() {
             ))}
           </div>
 
-          <div className="p-8 rounded-2xl border border-purple-main/30 transition-colors duration-300" style={{ background: 'var(--highlight-bg)', boxShadow: 'var(--card-shadow)' }}>
+          <div className="p-8 rounded-2xl border border-purple-main/30 transition-colors duration-300 highlight-shadow">
             <h3 className="text-xl font-heading font-bold text-heading mb-6 flex items-center gap-2">
               <CheckCircle size={22} className="text-magenta" />
               {t('serviceDetail.highlights')}
@@ -201,11 +198,10 @@ function ServiceDetail() {
                     whileInView={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4, delay: index * 0.08 }}
                     viewport={{ once: true }}
-                    className="p-6 rounded-xl border border-purple-main/30 transition-colors duration-300"
-                    style={{ background: 'var(--bg-glass)', boxShadow: 'var(--card-shadow)' }}
+                    className="p-6 rounded-xl border border-purple-main/30 transition-colors duration-300 glass-shadow"
                   >
                     <div className="flex items-center gap-3 mb-3">
-                      <div className="p-2 rounded-lg" style={{ background: 'var(--icon-bg)' }}>
+                      <div className="p-2 rounded-lg icon-bg">
                         <DeliverIcon size={20} className="text-magenta" />
                       </div>
                       <h3 className="text-heading font-heading font-bold">{item.title}</h3>
@@ -241,12 +237,11 @@ function ServiceDetail() {
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, delay: index * 0.08 }}
                   viewport={{ once: true }}
-                  className="group rounded-2xl overflow-hidden border border-purple-main/30 transition-all duration-300 hover:border-magenta/40 cursor-pointer"
-                  style={{ background: 'var(--bg-card)', boxShadow: 'var(--card-shadow)' }}
+                  className="group rounded-2xl overflow-hidden border border-purple-main/30 transition-all duration-300 hover:border-magenta/40 cursor-pointer card-bg card-shadow"
                   onClick={() => window.open(project.url, '_blank', 'noopener,noreferrer')}
                 >
                   {/* Screenshot */}
-                  <div className="relative overflow-hidden" style={{ aspectRatio: '16/10' }}>
+                  <div className="relative overflow-hidden aspect-[16/10]">
                     <img
                       src={project.screenshot}
                       alt={project.name}
@@ -277,8 +272,7 @@ function ServiceDetail() {
                       {project.tags.map((tag, i) => (
                         <span
                           key={i}
-                          className="px-3 py-1 rounded-full text-xs font-semibold border border-purple-main/30"
-                          style={{ background: 'var(--bg-glass-alt)', color: 'var(--color-heading)' }}
+                          className="px-3 py-1 rounded-full text-xs font-semibold border border-purple-main/30 glass-alt-text"
                         >
                           {tag}
                         </span>
@@ -316,8 +310,7 @@ function ServiceDetail() {
                   whileInView={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.4, delay: index * 0.05 }}
                   viewport={{ once: true }}
-                  className="group relative rounded-xl overflow-hidden cursor-pointer"
-                  style={{ aspectRatio: '1' }}
+                  className="group relative rounded-xl overflow-hidden cursor-pointer aspect-square"
                   onClick={() => openLightbox(image, index)}
                 >
                   <img
@@ -359,8 +352,7 @@ function ServiceDetail() {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: index * 0.1 }}
                 viewport={{ once: true }}
-                className="p-6 rounded-xl border border-purple-main/30 relative transition-colors duration-300"
-                style={{ background: 'var(--bg-glass)', boxShadow: 'var(--card-shadow)' }}
+                className="p-6 rounded-xl border border-purple-main/30 relative transition-colors duration-300 glass-shadow"
               >
                 <div className="absolute -top-3 -left-1 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold text-white" style={{ background: theme === 'light' ? '#1A1A1A' : 'linear-gradient(135deg, #8100D1, #FF52A0)' }}>
                   {item.step}
@@ -391,7 +383,7 @@ function ServiceDetail() {
           <p className="text-grey-muted text-center mb-8">{service.pricing.note}</p>
 
           {service.pricing.headers && (
-            <div className="rounded-xl overflow-hidden border border-purple-main/30 max-w-4xl mx-auto" style={{ boxShadow: 'var(--card-shadow)' }}>
+            <div className="rounded-xl overflow-hidden border border-purple-main/30 max-w-4xl mx-auto card-shadow">
               <table className="price-table">
                 <thead>
                   <tr>
@@ -423,8 +415,8 @@ function ServiceDetail() {
           {service.pricing.tables && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
               {service.pricing.tables.map((table, tableIndex) => (
-                <div key={tableIndex} className="rounded-xl overflow-hidden border border-purple-main/30" style={{ boxShadow: 'var(--card-shadow)' }}>
-                  <div className="p-4 border-b border-purple-main/30" style={{ background: 'var(--bg-glass-alt)' }}>
+                <div key={tableIndex} className="rounded-xl overflow-hidden border border-purple-main/30 card-shadow">
+                  <div className="p-4 border-b border-purple-main/30 bg-glass-alt">
                     <h3 className="text-heading font-heading font-bold">{table.subtitle}</h3>
                   </div>
                   <table className="price-table">
@@ -474,8 +466,7 @@ function ServiceDetail() {
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, delay: index * 0.1 }}
                   viewport={{ once: true }}
-                  className="p-6 rounded-xl border border-purple-main/30 text-center transition-colors duration-300"
-                  style={{ background: 'var(--bg-glass)', boxShadow: 'var(--card-shadow)' }}
+                  className="p-6 rounded-xl border border-purple-main/30 text-center transition-colors duration-300 glass-shadow"
                 >
                   <h4 className="text-heading font-heading font-bold mb-2">{item.name}</h4>
                   <p className="text-grey-muted text-sm">{item.desc}</p>
@@ -505,8 +496,7 @@ function ServiceDetail() {
                   whileInView={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.3, delay: index * 0.05 }}
                   viewport={{ once: true }}
-                  className="px-5 py-2.5 rounded-full text-sm font-semibold border border-purple-main/50 transition-colors duration-300"
-                  style={{ background: 'var(--bg-glass-alt)', color: 'var(--color-heading)' }}
+                  className="px-5 py-2.5 rounded-full text-sm font-semibold border border-purple-main/50 transition-colors duration-300 glass-alt-text"
                 >
                   {tech}
                 </motion.span>
@@ -528,7 +518,7 @@ function ServiceDetail() {
               <Users size={28} className="text-magenta" />
               {t('serviceDetail.team')}
             </h2>
-            <div className="max-w-2xl mx-auto p-8 rounded-2xl border border-purple-main/30 text-center transition-colors duration-300" style={{ background: 'var(--highlight-bg)', boxShadow: 'var(--card-shadow)' }}>
+            <div className="max-w-2xl mx-auto p-8 rounded-2xl border border-purple-main/30 text-center transition-colors duration-300 highlight-shadow">
               <h3 className="text-2xl font-heading font-bold text-heading mb-1">{service.team.name}</h3>
               <p className="text-magenta font-semibold mb-4">{service.team.role}</p>
               <p className="text-grey-light leading-relaxed mb-4">{service.team.bio}</p>
@@ -545,8 +535,7 @@ function ServiceDetail() {
           whileInView={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
-          className="mb-20 p-12 rounded-2xl text-center border border-magenta/30 transition-colors duration-300"
-          style={{ background: 'var(--cta-bg)', boxShadow: 'var(--card-shadow)' }}
+          className="mb-20 p-12 rounded-2xl text-center border border-magenta/30 transition-colors duration-300 cta-shadow"
         >
           <h2 className="text-3xl md:text-4xl font-heading font-bold text-heading mb-4">
             {t('serviceDetail.ctaTitle')}
@@ -561,7 +550,7 @@ function ServiceDetail() {
         </motion.div>
 
         {/* ============ NAVIGATION SERVICES ============ */}
-        <div className="flex justify-between items-center py-8" style={{ borderTop: '1px solid var(--footer-border)' }}>
+        <div className="flex justify-between items-center py-8 footer-border">
           {prevService ? (
             <Link
               to={`/services/${prevService.slug}`}
@@ -598,16 +587,14 @@ function ServiceDetail() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4 cursor-pointer"
-            style={{ background: 'rgba(0, 0, 0, 0.95)' }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 cursor-pointer lightbox-overlay"
             onClick={closeLightbox}
           >
             {/* Flèche gauche */}
             {service.gallery && service.gallery.length > 1 && (
               <button
                 onClick={goToPrevious}
-                className="absolute left-2 md:left-6 top-1/2 -translate-y-1/2 z-[110] text-white/70 hover:text-white transition-colors w-12 h-12 flex items-center justify-center rounded-full"
-                style={{ background: 'rgba(0,0,0,0.5)' }}
+                className="absolute left-2 md:left-6 top-1/2 -translate-y-1/2 z-[110] text-white/70 hover:text-white transition-colors w-12 h-12 flex items-center justify-center rounded-full lightbox-btn"
               >
                 <ChevronLeft size={28} />
               </button>
@@ -617,8 +604,7 @@ function ServiceDetail() {
             {service.gallery && service.gallery.length > 1 && (
               <button
                 onClick={goToNext}
-                className="absolute right-2 md:right-6 top-1/2 -translate-y-1/2 z-[110] text-white/70 hover:text-white transition-colors w-12 h-12 flex items-center justify-center rounded-full"
-                style={{ background: 'rgba(0,0,0,0.5)' }}
+                className="absolute right-2 md:right-6 top-1/2 -translate-y-1/2 z-[110] text-white/70 hover:text-white transition-colors w-12 h-12 flex items-center justify-center rounded-full lightbox-btn"
               >
                 <ChevronRight size={28} />
               </button>
@@ -639,8 +625,7 @@ function ServiceDetail() {
               />
               <button
                 onClick={closeLightbox}
-                className="absolute top-4 right-4 text-white/70 hover:text-white transition-colors w-10 h-10 flex items-center justify-center rounded-full"
-                style={{ background: 'rgba(0,0,0,0.5)' }}
+                className="absolute top-4 right-4 text-white/70 hover:text-white transition-colors w-10 h-10 flex items-center justify-center rounded-full lightbox-btn"
               >
                 <X size={20} />
               </button>

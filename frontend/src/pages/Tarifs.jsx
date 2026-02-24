@@ -15,14 +15,14 @@ function PriceSection({ icon: Icon, titleKey, subtitleKey, headersKey, rowsKey, 
       className="mb-16"
     >
       <div className="flex items-center gap-3 mb-6">
-        <div className="p-3 rounded-lg" style={{ background: 'var(--icon-bg)' }}>
+        <div className="p-3 rounded-lg icon-bg">
           <Icon size={28} className="text-magenta" />
         </div>
         <h2 className="text-3xl font-heading font-bold text-heading">{t(titleKey)}</h2>
       </div>
       <p className="text-grey-light mb-6">{t(subtitleKey)}</p>
 
-      <div className="rounded-xl overflow-hidden border border-purple-main/30" style={{ boxShadow: 'var(--card-shadow)' }}>
+      <div className="rounded-xl overflow-hidden border border-purple-main/30 card-shadow">
         <table className="price-table">
           <thead>
             <tr>
@@ -62,11 +62,8 @@ function Tarifs() {
       />
 
       {/* Hero */}
-      <section className="relative py-32 overflow-hidden">
-        <div className="absolute inset-0">
-          <img src={thumb('/images/prints/FineArt1.webp')} alt="" className="w-full h-full object-cover" />
-          <div className="absolute inset-0" style={{ background: 'var(--hero-gradient)' }}></div>
-        </div>
+      <section className="relative py-16 overflow-hidden">
+        <div className="absolute inset-0 hero-aurora"></div>
         <div className="relative z-10 section-container !py-0 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -156,7 +153,7 @@ function Tarifs() {
           className="mb-16"
         >
           <div className="flex items-center gap-3 mb-6">
-            <div className="p-3 rounded-lg" style={{ background: 'var(--icon-bg)' }}>
+            <div className="p-3 rounded-lg icon-bg">
               <Package size={28} className="text-magenta" />
             </div>
             <h2 className="text-3xl font-heading font-bold text-heading">{t('tarifsPage.packages.title')}</h2>
@@ -164,7 +161,7 @@ function Tarifs() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Package Lancement Artiste */}
-            <div className="rounded-2xl overflow-hidden border-2 border-magenta/40 transition-colors duration-300" style={{ background: 'var(--bg-card)', boxShadow: 'var(--card-shadow)' }}>
+            <div className="rounded-2xl overflow-hidden border-2 border-magenta/40 transition-colors duration-300 card-bg card-shadow">
               <div className="p-2">
                 <img src={thumb('/images/prints/FineArt4.webp')} alt={t('tarifsPage.packages.artistTitle')} className="w-full h-40 object-cover rounded-xl" />
               </div>
@@ -186,7 +183,7 @@ function Tarifs() {
             </div>
 
             {/* Package Événement */}
-            <div className="rounded-2xl overflow-hidden border border-purple-main/30 transition-colors duration-300" style={{ background: 'var(--bg-card)', boxShadow: 'var(--card-shadow)' }}>
+            <div className="rounded-2xl overflow-hidden border border-purple-main/30 transition-colors duration-300 card-bg card-shadow">
               <div className="p-2">
                 <img src={thumb('/images/stickers/Stickers-Cosmovision.webp')} alt={t('tarifsPage.packages.eventTitle')} className="w-full h-40 object-cover rounded-xl" />
               </div>
@@ -215,8 +212,7 @@ function Tarifs() {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           viewport={{ once: true }}
-          className="text-center p-12 rounded-2xl border border-purple-main/30 transition-colors duration-300"
-          style={{ background: 'var(--cta-text-bg)', boxShadow: 'var(--card-shadow)' }}
+          className="text-center p-12 rounded-2xl border border-purple-main/30 transition-colors duration-300 cta-text-bg card-shadow"
         >
           <h2 className="text-3xl font-heading font-bold text-heading mb-4">
             {t('tarifsPage.cta.title')}

@@ -1,22 +1,27 @@
-import { Printer, Sticker, Shirt, FileText, Palette, Code } from 'lucide-react';
+import { Printer, Sticker, Shirt, Palette } from 'lucide-react';
 import { img, thumb } from '../utils/paths';
 
 const servicesData = {
-  'impression-fine-art': {
-    slug: 'impression-fine-art',
+  'prints': {
+    slug: 'prints',
     icon: Printer,
-    title: 'Impression Fine Art',
-    subtitle: 'Tirages qualité galerie sur papiers premium',
+    title: 'Prints',
+    subtitle: 'Fine art, flyers, cartes - impression qualité pro',
     heroImage: thumb('/images/prints/Prints1.webp'),
     description: `Le Fine Art désigne des impressions photographiques ou artistiques réalisées sur des papiers d'archives haut de gamme (coton, alpha-cellulose) avec des encres pigmentées à haute longévité. Ces tirages respectent les standards des galeries d'art et musées, avec une durée de conservation pouvant dépasser 100 ans.
 
-Chaque impression fait l'objet d'un calibrage colorimétrique rigoureux pour garantir une fidélité optimale aux intentions de l'artiste.`,
+Chaque impression fait l'objet d'un calibrage colorimétrique rigoureux pour garantir une fidélité optimale aux intentions de l'artiste.
+
+Nous imprimons aussi des flyers, cartes postales et cartes d'affaires - tout ce dont tu as besoin pour promouvoir ton événement, ton show ou ton projet. Impression locale rapide, qualité pro.`,
     highlights: [
       'Imprimante professionnelle fine art - 12 encres pigmentées',
       'Accès imprimante grand format pour tirages 24" et plus',
       'Papiers fine art professionnels premium',
       'Calibration professionnelle, profils ICC sur mesure',
       'Durée de conservation 100+ ans',
+      'Flyers A6, A5, lettre (8,5×11")',
+      'Cartes postales et cartes d\'affaires',
+      'Papier premium 300g+ mat ou brillant',
       'Pick-up gratuit Mile-End, livraison locale',
     ],
     process: [
@@ -28,14 +33,30 @@ Chaque impression fait l'objet d'un calibrage colorimétrique rigoureux pour gar
       { step: 6, title: 'Finition', desc: 'Emballage protection ou encadrement selon ta commande' },
     ],
     pricing: {
-      title: 'Tarifs Impression Fine Art',
-      note: 'Série Studio (Epson ET-15000) : bonne qualité pour tout, idéale pour les images avec bonne luminosité · Série Musée (Canon PRO-1000 / PRO-2600) : qualité supérieure pour la photographie et les tirages galerie · Ajouter 30$ pour un cadre noir ou blanc',
-      headers: ['Format', 'Série Studio (Epson ET-15000)', 'Série Musée (Canon PRO-1000 et PRO-2600)'],
-      rows: [
-        ['A4 (8.5×11")', '16$', '35$'],
-        ['A3 (11×17")', '22$', '65$'],
-        ['A3+ (13×19")', '30$', '95$'],
-        ['A2 (18×24")', '42$', '125$'],
+      title: 'Tarifs Prints',
+      note: 'Série Studio : bonne qualité pour tout · Série Musée : qualité supérieure pour la photographie et les tirages galerie · Ajouter 30$ pour un cadre noir ou blanc',
+      tables: [
+        {
+          subtitle: 'Impression Fine Art',
+          headers: ['Format', 'Série Studio (Epson ET-15000)', 'Série Musée (Canon PRO-1000 / PRO-2600)'],
+          rows: [
+            ['A4 (8.5×11")', '16$', '35$'],
+            ['A3 (11×17")', '22$', '65$'],
+            ['A3+ (13×19")', '30$', '95$'],
+            ['A2 (18×24")', '42$', '125$'],
+          ],
+        },
+        {
+          subtitle: 'Flyers & Cartes Postales (A6 / 4"×6")',
+          headers: ['Quantité', 'Prix total', 'Prix/unité'],
+          rows: [
+            ['50', '40$', '0,80$'],
+            ['100', '65$', '0,65$'],
+            ['150', '90$', '0,60$'],
+            ['250', '130$', '0,52$'],
+            ['500', '225$', '0,45$'],
+          ],
+        },
       ],
     },
     gallery: [
@@ -47,22 +68,28 @@ Chaque impression fait l'objet d'un calibrage colorimétrique rigoureux pour gar
       thumb('/images/prints/Prints21.webp'),
       thumb('/images/prints/Prints23.webp'),
       thumb('/images/prints/Prints24.webp'),
+      thumb('/images/flyers/coagule.webp'),
+      thumb('/images/flyers/discodyssee.webp'),
+      thumb('/images/flyers/from_vision.webp'),
+      thumb('/images/flyers/rituals.webp'),
     ],
     equipment: [
       { name: 'Imprimante fine art professionnelle', desc: 'Impression 12 couleurs, jusqu\'à 17" (A2+). Qualité musée.' },
       { name: 'Imprimante grand format', desc: 'Grand format jusqu\'à 24" via partenariat. Expositions et tirages oversize.' },
       { name: 'Lamineuse professionnelle', desc: 'Lamination et protection des tirages pour une durabilité maximale.' },
+      { name: '3x Imprimantes jet d\'encre', desc: 'Volume d\'impression rapide pour les séries courantes.' },
+      { name: 'Découpeuse professionnelle', desc: 'Découpe de précision pour formats personnalisés.' },
     ],
     seo: {
-      title: 'Impression Fine Art Montréal - Massive Medias',
-      description: 'Tirages fine art qualité galerie sur imprimante professionnelle grand format. Papiers fine art premium. Pick-up gratuit Mile-End. 15-20% sous Etsy.',
+      title: 'Prints - Fine Art, Flyers & Cartes | Montréal - Massive Medias',
+      description: 'Tirages fine art qualité galerie, flyers, cartes postales et cartes d\'affaires. Impression professionnelle locale à Montréal.',
     },
   },
 
-  'stickers-custom': {
-    slug: 'stickers-custom',
+  'stickers': {
+    slug: 'stickers',
     icon: Sticker,
-    title: 'Stickers Custom',
+    title: 'Stickers',
     subtitle: 'Autocollants découpés sur mesure pour créateurs',
     heroImage: thumb('/images/stickers/Stickers-Cosmo.webp'),
     description: `Autocollants découpés sur mesure pour artistes, labels, événements et marques. Service complet incluant la création graphique du visuel si nécessaire.
@@ -122,10 +149,10 @@ Découpés à la forme exacte de ton design avec notre équipement de découpe p
     },
   },
 
-  'sublimation-merch': {
-    slug: 'sublimation-merch',
+  'merch': {
+    slug: 'merch',
     icon: Shirt,
-    title: 'Sublimation & Merch',
+    title: 'Merch',
     subtitle: 'T-shirts, mugs, accessoires - ton merch sur mesure',
     heroImage: thumb('/images/textile/Textile1.webp'),
     description: `Impression sublimation sur textile et objets. La sublimation produit des couleurs vibrantes et permanentes qui ne craquent pas, ne s'effacent pas et résistent au lavage.
@@ -170,6 +197,9 @@ Idéal pour le merch d'artiste, les événements, les cadeaux corporatifs ou tou
       thumb('/images/textile/Textile7.webp'),
       thumb('/images/textile/Textile9.webp'),
       thumb('/images/textile/Textile10.webp'),
+      thumb('/images/textile/Textile11.webp'),
+      thumb('/images/textile/Textile12.webp'),
+      thumb('/images/textile/Textile13.webp'),
     ],
     equipment: [
       { name: 'Presse à chaud grand format', desc: 'Presse à chaud grand format pour t-shirts, hoodies et textiles.' },
@@ -177,109 +207,78 @@ Idéal pour le merch d'artiste, les événements, les cadeaux corporatifs ou tou
       { name: 'Kit pincement gobelets', desc: 'Sublimation sur gobelets, thermos et drinkware.' },
     ],
     seo: {
-      title: 'Sublimation & Merch Montréal - Massive Medias',
+      title: 'Merch & Sublimation Montréal - Massive Medias',
       description: 'T-shirts, mugs, thermos, accessoires en sublimation. Merch d\'artiste sur mesure. Production locale Montréal.',
     },
   },
 
-  'flyers-cartes': {
-    slug: 'flyers-cartes',
-    icon: FileText,
-    title: 'Flyers & Cartes',
-    subtitle: 'Impression rapide pour événements et promotions',
-    heroImage: thumb('/images/flyers/coagule.webp'),
-    description: `Flyers, cartes postales, cartes d'affaires - tout ce dont tu as besoin pour promouvoir ton événement, ton show ou ton projet. Impression locale rapide, qualité pro.
-
-Parfait pour les artistes, promoteurs d'événements, labels, cafés et commerces du Mile-End et Plateau.`,
-    highlights: [
-      'Flyers A6, A5, lettre (8,5×11")',
-      'Cartes postales et cartes d\'affaires',
-      'Papier premium 300g+ mat ou brillant',
-      'Impression recto ou recto-verso',
-      'Délai express disponible (24h)',
-      'Design graphique disponible en option',
-    ],
-    process: [
-      { step: 1, title: 'Brief', desc: 'Format, quantité, recto/verso, finition souhaitée' },
-      { step: 2, title: 'Design (optionnel)', desc: 'Création graphique si tu n\'as pas de fichier prêt' },
-      { step: 3, title: 'Validation', desc: 'Épreuve numérique pour approbation' },
-      { step: 4, title: 'Impression', desc: 'Impression haute qualité sur papier premium' },
-      { step: 5, title: 'Découpe & finition', desc: 'Découpe de précision et finition selon ta commande' },
-      { step: 6, title: 'Livraison', desc: 'Pick-up Mile-End ou livraison locale' },
-    ],
-    pricing: {
-      title: 'Tarifs Flyers & Cartes Postales (A6 / 4"×6")',
-      note: 'Prix alignés avec le marché local et Vistaprint.',
-      headers: ['Quantité', 'Prix total', 'Prix/unité'],
-      rows: [
-        ['50', '40$', '0,80$'],
-        ['100', '65$', '0,65$'],
-        ['150', '90$', '0,60$'],
-        ['250', '130$', '0,52$'],
-        ['500', '225$', '0,45$'],
-      ],
-    },
-    gallery: [
-      thumb('/images/flyers/coagule.webp'),
-      thumb('/images/flyers/discodyssee.webp'),
-      thumb('/images/flyers/from_vision.webp'),
-      thumb('/images/flyers/rituals.webp'),
-      thumb('/images/prints/Prints24.webp'),
-      thumb('/images/prints/FineArt-Photo.webp'),
-      thumb('/images/prints/FineArt1.webp'),
-    ],
-    equipment: [
-      { name: 'Imprimante professionnelle', desc: 'Qualité supérieure même pour les flyers - 12 couleurs pigmentées.' },
-      { name: '3x Imprimantes jet d\'encre', desc: 'Volume d\'impression rapide pour les séries courantes.' },
-      { name: 'Découpeuse professionnelle', desc: 'Découpe de précision pour formats personnalisés.' },
-    ],
-    seo: {
-      title: 'Flyers & Cartes Montréal - Massive Medias',
-      description: 'Flyers, cartes postales, cartes d\'affaires. Impression rapide et locale à Montréal. Qualité pro, prix compétitifs.',
-    },
-  },
-
-  'design-graphique': {
-    slug: 'design-graphique',
+  'design': {
+    slug: 'design',
     icon: Palette,
-    title: 'Design Graphique',
-    subtitle: 'Logos, identités visuelles, affiches et créations digitales',
+    title: 'Design',
+    subtitle: 'Design graphique, web design, développement et référencement',
     heroImage: thumb('/images/graphism/logo_massive.webp'),
-    description: `Service complet de design graphique et création digitale. De la conception de logos à l'identité visuelle complète, en passant par les affiches d'événements, les pochettes d'album et le design d'icônes.
+    description: `Service complet de design graphique, web design et développement. De la conception de logos à l'identité visuelle complète, en passant par les affiches d'événements, les pochettes d'album et le design d'icônes.
 
-Nous travaillons avec les outils professionnels de l'industrie - Adobe Illustrator pour les créations vectorielles et logos, Figma pour le design d'interfaces et prototypage, et Photoshop pour la retouche et le compositing. Chaque création est livrée en formats optimisés pour le print et le digital.`,
+Sites web modernes, performants et optimisés SEO pour artistes, créateurs et petites entreprises. Du portfolio d'artiste à la boutique e-commerce complète.
+
+15+ années d'expérience en développement web. Le fondateur de Massive Medias est programmeur-analyste de formation. Nous travaillons avec Adobe Illustrator, Figma, Photoshop et les technologies web modernes.`,
     highlights: [
       'Adobe Illustrator - Logos vectoriels et identités visuelles',
       'Figma - Maquettes UI/UX et prototypage interactif',
       'Adobe Photoshop - Retouche photo et compositing',
-      'Adobe InDesign - Mise en page et documents multi-pages',
       'Logos et identités visuelles complètes',
       'Affiches, flyers et pochettes album',
-      'Design d\'icônes et pictogrammes',
-      'Création de stickers et autocollants',
-      'Retouche photo professionnelle',
-      'Fichiers print-ready et web-optimized',
+      'Web design sur mesure et responsive',
+      'Développement front-end et back-end complet',
+      'SEO technique et référencement naturel',
+      'Intégration CMS (WordPress, Strapi, Shopify)',
+      'Hébergement, domaine et maintenance',
+    ],
+    whatWeDeliver: [
+      { title: 'Web Design', desc: 'Maquettes UI/UX sur mesure, palette de couleurs, typographie et identité visuelle cohérente avec ta marque.' },
+      { title: 'Développement', desc: 'Code propre et maintenable avec React, Angular ou WordPress selon tes besoins.' },
+      { title: 'Responsive', desc: 'Design adaptatif parfait sur mobile, tablette et desktop. Mobile-first.' },
+      { title: 'SEO & Référencement', desc: 'Optimisation on-page, méta-tags, sitemap, schema markup, Google Analytics et Search Console.' },
+      { title: 'Performance', desc: 'Images optimisées WebP, lazy loading, minification, CDN. Score 90+ sur PageSpeed.' },
+      { title: 'Sécurité', desc: 'Certificat SSL, headers sécurisés, protection anti-spam, sauvegardes automatiques.' },
     ],
     process: [
-      { step: 1, title: 'Brief créatif', desc: 'Discussion sur ta vision, tes références, ton public cible' },
-      { step: 2, title: 'Recherche & moodboard', desc: 'Exploration visuelle, palette de couleurs, direction artistique sur Figma' },
-      { step: 3, title: 'Création vectorielle', desc: 'Design sur Illustrator - logos, formes, typographie custom' },
-      { step: 4, title: 'Itérations', desc: 'Raffinement selon tes commentaires (2 rondes de révisions incluses)' },
-      { step: 5, title: 'Finalisation', desc: 'Fichiers finaux haute résolution - AI, EPS, SVG, PNG, PDF' },
-      { step: 6, title: 'Livraison', desc: 'Package complet : print-ready, web, réseaux sociaux, favicon' },
+      { step: 1, title: 'Brief créatif', desc: 'Discussion sur ta vision, tes références, ton public cible et tes objectifs' },
+      { step: 2, title: 'Recherche & moodboard', desc: 'Exploration visuelle, palette de couleurs, direction artistique, architecture du site' },
+      { step: 3, title: 'Création & design', desc: 'Design sur Illustrator/Figma - logos, maquettes, identité visuelle' },
+      { step: 4, title: 'Développement', desc: 'Code propre, technologies modernes, responsive, intégrations API' },
+      { step: 5, title: 'SEO & Optimisation', desc: 'Référencement, performances, accessibilité, tests multi-devices' },
+      { step: 6, title: 'Livraison & lancement', desc: 'Fichiers finaux, mise en ligne, formation CMS, suivi post-lancement' },
     ],
     pricing: {
-      title: 'Tarifs Design Graphique',
+      title: 'Tarifs Design & Web',
       note: 'Le design de stickers est inclus dans le prix de production des stickers.',
-      headers: ['Service', 'Prix', 'Délai'],
-      rows: [
-        ['Création logo', '300$ - 600$', '5-10 jours'],
-        ['Identité visuelle complète', '800$ - 1 500$', '2-3 semaines'],
-        ['Affiche / flyer événement', '150$ - 300$', '3-5 jours'],
-        ['Pochette album / single', '200$ - 400$', '5-7 jours'],
-        ['Design d\'icônes (set)', '200$ - 500$', '3-7 jours'],
-        ['Retouche photo (par image)', '15$ - 50$', '24-48h'],
-        ['Design stickers', 'Inclus', '-'],
+      tables: [
+        {
+          subtitle: 'Design Graphique',
+          headers: ['Service', 'Prix', 'Délai'],
+          rows: [
+            ['Création logo', '300$ - 600$', '5-10 jours'],
+            ['Identité visuelle complète', '800$ - 1 500$', '2-3 semaines'],
+            ['Affiche / flyer événement', '150$ - 300$', '3-5 jours'],
+            ['Pochette album / single', '200$ - 400$', '5-7 jours'],
+            ['Design d\'icônes (set)', '200$ - 500$', '3-7 jours'],
+            ['Retouche photo (par image)', '15$ - 50$', '24-48h'],
+          ],
+        },
+        {
+          subtitle: 'Développement Web & Référencement',
+          headers: ['Service', 'Prix'],
+          rows: [
+            ['Landing page événement', '900$'],
+            ['Site vitrine artiste/label (5-10 pages)', '2 000$ - 3 500$'],
+            ['Site e-commerce simple', '4 000$ - 6 000$'],
+            ['Refonte site existant', 'Sur soumission'],
+            ['Maintenance mensuelle', '100$ - 200$/mois'],
+            ['Taux horaire (Web, Design, Restauration)', '85$/h'],
+          ],
+        },
       ],
     },
     gallery: [
@@ -291,69 +290,6 @@ Nous travaillons avec les outils professionnels de l'industrie - Adobe Illustrat
       thumb('/images/graphism/maudite_machine_sticker.webp'),
       thumb('/images/graphism/vrstl_sticker.webp'),
     ],
-    team: {
-      name: 'Christopher Gagnon',
-      role: 'Infographiste partenaire',
-      bio: 'Diplômé en design graphique avec près de 10 ans d\'expérience. Spécialisé en identité visuelle, packaging et design web.',
-      portfolio: 'Soundwave Festival, Laboratoire Bio Stratège, ChromaPur, Nutramazonie, NextGen Football, Belette Trois-Mille.',
-    },
-    seo: {
-      title: 'Design Graphique Montréal - Massive Medias',
-      description: 'Logos, identités visuelles, affiches, pochettes album. Design graphique professionnel pour créateurs à Montréal.',
-    },
-  },
-
-  'developpement-web': {
-    slug: 'developpement-web',
-    icon: Code,
-    title: 'Développement Web',
-    subtitle: 'Sites vitrines, e-commerce et landing pages pour créateurs',
-    heroImage: thumb('/images/web/devweb_hero.webp'),
-    description: `Sites web modernes, performants et optimisés SEO pour artistes, créateurs et petites entreprises. Du portfolio d'artiste à la boutique e-commerce complète, on maîtrise les technologies qui comptent.
-
-15+ années d'expérience en développement web. Le fondateur de Massive Medias est programmeur-analyste de formation - ce n'est pas un side-project, c'est notre expertise première.`,
-    highlights: [
-      'Web design sur mesure et identité visuelle',
-      'Développement front-end et back-end complet',
-      'Responsive design - mobile, tablette, desktop',
-      'SEO technique et référencement naturel',
-      'Optimisation des performances (Core Web Vitals)',
-      'Intégration CMS (WordPress, Strapi, Shopify)',
-      'Formulaires de contact et intégrations API',
-      'Certificat SSL et sécurité HTTPS',
-      'Hébergement et nom de domaine',
-      'Maintenance et mises à jour continues',
-    ],
-    whatWeDeliver: [
-      { title: 'Web Design', desc: 'Maquettes UI/UX sur mesure, palette de couleurs, typographie et identité visuelle cohérente avec ta marque.' },
-      { title: 'Développement', desc: 'Code propre et maintenable avec React, Angular ou WordPress selon tes besoins.' },
-      { title: 'Responsive', desc: 'Design adaptatif parfait sur mobile, tablette et desktop. Mobile-first.' },
-      { title: 'SEO & Référencement', desc: 'Optimisation on-page, méta-tags, sitemap, schema markup, Google Analytics et Search Console.' },
-      { title: 'Performance', desc: 'Images optimisées WebP, lazy loading, minification, CDN. Score 90+ sur PageSpeed.' },
-      { title: 'Sécurité', desc: 'Certificat SSL, headers sécurisés, protection anti-spam, sauvegardes automatiques.' },
-    ],
-    process: [
-      { step: 1, title: 'Consultation', desc: 'Discussion de tes besoins, objectifs, budget et analyse de la concurrence' },
-      { step: 2, title: 'Architecture & wireframes', desc: 'Structure du site, arborescence, parcours utilisateur, maquettes basse fidélité' },
-      { step: 3, title: 'Web Design', desc: 'Maquettes haute fidélité, palette, typographie, identité visuelle complète' },
-      { step: 4, title: 'Développement', desc: 'Code propre, technologies modernes, responsive, intégrations API' },
-      { step: 5, title: 'SEO & Optimisation', desc: 'Référencement, performances, accessibilité, tests multi-devices' },
-      { step: 6, title: 'Lancement & formation', desc: 'Mise en ligne, formation CMS, documentation, suivi post-lancement' },
-    ],
-    pricing: {
-      title: 'Tarifs Développement Web & Design',
-      note: 'Chaque projet est unique. Ces prix sont des fourchettes indicatives.',
-      headers: ['Service', 'Prix'],
-      rows: [
-        ['Landing page événement', '900$'],
-        ['Site vitrine artiste/label (5-10 pages)', '2 000$ - 3 500$'],
-        ['Site e-commerce simple', '4 000$ - 6 000$'],
-        ['Refonte site existant', 'Sur soumission'],
-        ['Maintenance mensuelle', '100$ - 200$/mois'],
-        ['Taux horaire (Web, Design, Restauration)', '85$/h'],
-      ],
-    },
-    gallery: [],
     webProjects: [
       {
         name: 'Sonaa.ca',
@@ -434,9 +370,15 @@ Nous travaillons avec les outils professionnels de l'industrie - Adobe Illustrat
       'Google Analytics',
       'Search Console',
     ],
+    team: {
+      name: 'Christopher Gagnon',
+      role: 'Infographiste partenaire',
+      bio: 'Diplômé en design graphique avec près de 10 ans d\'expérience. Spécialisé en identité visuelle, packaging et design web.',
+      portfolio: 'Soundwave Festival, Laboratoire Bio Stratège, ChromaPur, Nutramazonie, NextGen Football, Belette Trois-Mille.',
+    },
     seo: {
-      title: 'Développement Web Montréal - Massive Medias',
-      description: 'Sites vitrines, e-commerce, landing pages. React, Strapi, WordPress, Shopify. 15+ ans d\'expérience. Montréal.',
+      title: 'Design Graphique & Web Montréal - Massive Medias',
+      description: 'Logos, identités visuelles, sites web, e-commerce, SEO. Design graphique et développement web professionnel à Montréal.',
     },
   },
 };

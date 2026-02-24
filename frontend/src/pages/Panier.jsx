@@ -47,8 +47,7 @@ function Panier() {
               key={i}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="flex items-center gap-4 p-4 rounded-xl"
-              style={{ background: 'var(--bg-glass)', border: '1px solid var(--bg-card-border)' }}
+              className="flex items-center gap-4 p-4 rounded-xl bg-glass"
             >
               <img src={item.image} alt="" className="w-16 h-16 rounded-lg object-cover flex-shrink-0" />
               <div className="flex-grow min-w-0">
@@ -78,7 +77,7 @@ function Panier() {
         </div>
 
         {/* Summary */}
-        <div className="p-6 rounded-xl mb-8" style={{ background: 'var(--highlight-bg)', border: '1px solid var(--bg-card-border)' }}>
+        <div className="p-6 rounded-xl mb-8 highlight-bordered">
           <div className="flex justify-between items-center mb-2">
             <span className="text-heading font-semibold">{isFr ? 'Sous-total' : 'Subtotal'}</span>
             <span className="text-2xl font-heading font-bold text-heading">{cartTotal}$</span>

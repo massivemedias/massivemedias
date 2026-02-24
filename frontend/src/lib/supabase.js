@@ -9,7 +9,7 @@ try {
     supabaseClient = createClient(supabaseUrl, supabaseAnonKey);
   }
 } catch {
-  console.warn('Supabase initialization failed — auth disabled');
+  console.warn('Supabase initialization failed - auth disabled');
 }
 
 export const supabase = supabaseClient;

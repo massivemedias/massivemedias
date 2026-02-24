@@ -41,11 +41,8 @@ function Services() {
       />
 
       {/* Hero avec image de fond */}
-      <section className="relative py-32 overflow-hidden">
-        <div className="absolute inset-0">
-          <img src={thumb('/images/locale/locale10.webp')} alt="" className="w-full h-full object-cover" />
-          <div className="absolute inset-0" style={{ background: 'var(--hero-gradient)' }}></div>
-        </div>
+      <section className="relative py-16 overflow-hidden">
+        <div className="absolute inset-0 hero-aurora"></div>
 
         <div className="relative z-10 section-container !py-0">
           <motion.div
@@ -111,8 +108,7 @@ function Services() {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
             viewport={{ once: true }}
-            className="rounded-2xl overflow-hidden border border-magenta/30 transition-colors duration-300"
-            style={{ background: 'var(--bg-card)', boxShadow: 'var(--card-shadow)' }}
+            className="rounded-2xl overflow-hidden border border-magenta/30 transition-colors duration-300 card-bg card-shadow"
           >
             <div className="p-2">
               <img src={thumb('/images/prints/FineArt1.webp')} alt={t('servicesPage.packageArtist.title')} className="w-full h-48 object-cover rounded-xl" />
@@ -140,8 +136,7 @@ function Services() {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
             viewport={{ once: true }}
-            className="rounded-2xl overflow-hidden border border-purple-main/30 transition-colors duration-300"
-            style={{ background: 'var(--bg-card)', boxShadow: 'var(--card-shadow)' }}
+            className="rounded-2xl overflow-hidden border border-purple-main/30 transition-colors duration-300 card-bg card-shadow"
           >
             <div className="p-2">
               <img src={thumb('/images/stickers/Stickers-Cosmovision.webp')} alt={t('servicesPage.packageEvent.title')} className="w-full h-48 object-cover rounded-xl" />

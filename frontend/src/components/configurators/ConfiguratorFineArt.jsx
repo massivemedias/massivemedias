@@ -16,6 +16,7 @@ function ConfiguratorFineArt() {
   const [tier, setTier] = useState('studio');
   const [format, setFormat] = useState('a4');
   const [withFrame, setWithFrame] = useState(false);
+  const [frameColor, setFrameColor] = useState('black');
   const [added, setAdded] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState([]);
 
@@ -29,7 +30,11 @@ function ConfiguratorFineArt() {
       productId: 'fine-art-print',
       productName: lang === 'fr' ? 'Impression Fine Art' : 'Fine Art Print',
       finish: lang === 'fr' ? tierLabel?.labelFr : tierLabel?.labelEn,
-      shape: withFrame ? (lang === 'fr' ? 'Avec cadre' : 'With frame') : null,
+      shape: withFrame
+        ? (lang === 'fr'
+          ? `Cadre ${frameColor === 'black' ? 'noir' : 'blanc'}`
+          : `${frameColor === 'black' ? 'Black' : 'White'} frame`)
+        : null,
       size: formatLabel?.label,
       quantity: 1,
       unitPrice: priceInfo.price,
@@ -54,10 +59,9 @@ function ConfiguratorFineArt() {
               key={t.id}
               onClick={() => setTier(t.id)}
               className={`flex flex-col items-center justify-center min-w-[7rem] py-2.5 px-3 rounded-lg text-xs font-medium transition-all border-2 ${tier === t.id
-                ? 'border-magenta'
-                : 'border-transparent hover:border-grey-muted/30'
+                ? 'border-magenta option-selected'
+                : 'border-transparent hover:border-grey-muted/30 option-default'
               }`}
-              style={{ background: tier === t.id ? 'var(--highlight-bg)' : 'var(--bg-glass)' }}
             >
               <span className="text-heading leading-tight text-center font-semibold">
                 {lang === 'fr' ? t.labelFr : t.labelEn}
@@ -81,10 +85,9 @@ function ConfiguratorFineArt() {
                 key={f.id}
                 onClick={() => setFormat(f.id)}
                 className={`flex flex-col items-center py-2.5 px-4 rounded-lg text-xs font-medium transition-all border-2 min-w-[5rem] ${format === f.id
-                  ? 'border-magenta'
-                  : 'border-transparent hover:border-grey-muted/30'
+                  ? 'border-magenta option-selected'
+                  : 'border-transparent hover:border-grey-muted/30 option-default'
                 }`}
-                style={{ background: format === f.id ? 'var(--highlight-bg)' : 'var(--bg-glass)' }}
               >
                 <span className="text-heading font-bold text-sm">{f.label}</span>
                 <span className="text-grey-muted mt-0.5">{price}$</span>
@@ -96,12 +99,7 @@ function ConfiguratorFineArt() {
 
       {/* Frame option */}
       <div className="mb-6">
-        <label className="flex items-center gap-3 p-4 rounded-lg cursor-pointer transition-all border-2"
-          style={{
-            background: withFrame ? 'var(--highlight-bg)' : 'var(--bg-glass)',
-            borderColor: withFrame ? '#FF52A0' : 'transparent',
-          }}
-        >
+        <label className={`flex items-center gap-3 p-4 rounded-lg cursor-pointer transition-all border-2 ${withFrame ? 'checkbox-active' : 'option-default'}`}>
           <input
             type="checkbox"
             checked={withFrame}
@@ -115,12 +113,34 @@ function ConfiguratorFineArt() {
             <span className="text-heading font-medium text-sm">
               {lang === 'fr' ? 'Ajouter un cadre' : 'Add a frame'}
             </span>
-            <span className="text-grey-muted text-xs ml-2">
-              {lang === 'fr' ? '(noir ou blanc)' : '(black or white)'}
-            </span>
           </div>
           <span className="text-magenta font-semibold text-sm">+{fineArtFramePrice}$</span>
         </label>
+
+        {withFrame && (
+          <div className="flex gap-2 mt-3 ml-1">
+            <button
+              onClick={() => setFrameColor('black')}
+              className={`flex items-center gap-2 py-2 px-4 rounded-lg text-xs font-medium transition-all border-2 ${frameColor === 'black'
+                ? 'border-magenta option-selected'
+                : 'border-transparent hover:border-grey-muted/30 option-default'
+              }`}
+            >
+              <span className="w-4 h-4 rounded-full bg-black border border-grey-muted/30" />
+              <span className="text-heading font-semibold">{lang === 'fr' ? 'Noir' : 'Black'}</span>
+            </button>
+            <button
+              onClick={() => setFrameColor('white')}
+              className={`flex items-center gap-2 py-2 px-4 rounded-lg text-xs font-medium transition-all border-2 ${frameColor === 'white'
+                ? 'border-magenta option-selected'
+                : 'border-transparent hover:border-grey-muted/30 option-default'
+              }`}
+            >
+              <span className="w-4 h-4 rounded-full bg-white border border-grey-muted/30" />
+              <span className="text-heading font-semibold">{lang === 'fr' ? 'Blanc' : 'White'}</span>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* File upload */}
@@ -132,7 +152,7 @@ function ConfiguratorFineArt() {
 
       {/* Price display */}
       {priceInfo && (
-        <div className="p-5 rounded-xl mb-5" style={{ background: 'var(--highlight-bg)', border: '1px solid var(--bg-card-border)' }}>
+        <div className="p-5 rounded-xl mb-5 highlight-bordered">
           <div className="flex items-baseline gap-3">
             <span className="text-3xl font-heading font-bold text-heading">{priceInfo.price}$</span>
           </div>

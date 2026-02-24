@@ -124,7 +124,7 @@ function FileUpload({ files = [], onFilesChange, label, maxFiles = 5 }) {
                 : 'Drag files here or click to browse'}
             </span>
             <span className="text-grey-muted/60 text-xs">
-              PNG, JPG, TIFF, SVG, PDF, AI, EPS, PSD — max 50 MB
+              PNG, JPG, TIFF, SVG, PDF, AI, EPS, PSD - max 50 MB
             </span>
           </div>
         )}
@@ -140,8 +140,7 @@ function FileUpload({ files = [], onFilesChange, label, maxFiles = 5 }) {
           {files.map((file, i) => (
             <div
               key={file.id || i}
-              className="flex items-center gap-3 p-2.5 rounded-lg text-sm"
-              style={{ background: 'var(--bg-glass)', border: '1px solid var(--bg-card-border)' }}
+              className="flex items-center gap-3 p-2.5 rounded-lg text-sm bg-glass"
             >
               {isImage(file.mime) ? (
                 <FileImage size={16} className="text-magenta flex-shrink-0" />

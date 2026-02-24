@@ -61,10 +61,9 @@ function ConfiguratorSublimation() {
               key={p.id}
               onClick={() => handleProductChange(p.id)}
               className={`flex flex-col items-center justify-center min-w-[6rem] py-2.5 px-4 rounded-lg text-xs font-medium transition-all border-2 ${product === p.id
-                ? 'border-magenta'
-                : 'border-transparent hover:border-grey-muted/30'
+                ? 'border-magenta option-selected'
+                : 'border-transparent hover:border-grey-muted/30 option-default'
               }`}
-              style={{ background: product === p.id ? 'var(--highlight-bg)' : 'var(--bg-glass)' }}
             >
               <span className="text-heading leading-tight text-center font-semibold text-sm">
                 {lang === 'fr' ? p.labelFr : p.labelEn}
@@ -85,10 +84,9 @@ function ConfiguratorSublimation() {
               key={tier.qty}
               onClick={() => setQtyIndex(i)}
               className={`flex flex-col items-center py-2.5 px-4 rounded-lg text-xs font-medium transition-all border-2 min-w-[5rem] ${qtyIndex === i
-                ? 'border-magenta'
-                : 'border-transparent hover:border-grey-muted/30'
+                ? 'border-magenta option-selected'
+                : 'border-transparent hover:border-grey-muted/30 option-default'
               }`}
-              style={{ background: qtyIndex === i ? 'var(--highlight-bg)' : 'var(--bg-glass)' }}
             >
               <span className="text-heading font-bold text-sm">{tier.qty}</span>
               <span className="text-grey-muted mt-0.5">{tier.unitPrice}$/u</span>
@@ -99,11 +97,7 @@ function ConfiguratorSublimation() {
 
       {/* Design option */}
       <div className="mb-6">
-        <label className="flex items-center gap-3 p-4 rounded-lg cursor-pointer transition-all border-2"
-          style={{
-            background: withDesign ? 'var(--highlight-bg)' : 'var(--bg-glass)',
-            borderColor: withDesign ? '#FF52A0' : 'transparent',
-          }}
+        <label className={`flex items-center gap-3 p-4 rounded-lg cursor-pointer transition-all border-2 ${withDesign ? 'checkbox-active' : 'option-default'}`}
         >
           <input
             type="checkbox"
@@ -136,7 +130,7 @@ function ConfiguratorSublimation() {
 
       {/* Price display */}
       {priceInfo && (
-        <div className="p-5 rounded-xl mb-5" style={{ background: 'var(--highlight-bg)', border: '1px solid var(--bg-card-border)' }}>
+        <div className="p-5 rounded-xl mb-5 highlight-bordered">
           <div className="flex items-baseline gap-3">
             <span className="text-3xl font-heading font-bold text-heading">{priceInfo.price}$</span>
             <span className="text-grey-muted text-sm">

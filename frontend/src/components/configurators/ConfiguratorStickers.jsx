@@ -63,10 +63,9 @@ function ConfiguratorStickers() {
               key={f.id}
               onClick={() => setFinish(f.id)}
               className={`flex flex-col items-center justify-center min-w-[4.5rem] py-2.5 px-3 rounded-lg text-xs font-medium transition-all border-2 ${finish === f.id
-                ? 'border-magenta'
-                : 'border-transparent hover:border-grey-muted/30'
+                ? 'border-magenta option-selected'
+                : 'border-transparent hover:border-grey-muted/30 option-default'
               }`}
-              style={{ background: finish === f.id ? 'var(--highlight-bg)' : 'var(--bg-glass)' }}
             >
               <span className={`w-4 h-4 rounded-full mb-1.5 border ${
                 f.id === 'matte' ? 'bg-gray-400 border-gray-400' :
@@ -93,10 +92,9 @@ function ConfiguratorStickers() {
               key={s.id}
               onClick={() => handleShapeChange(s.id)}
               className={`flex flex-col items-center justify-center min-w-[4.5rem] py-2.5 px-3 rounded-lg text-xs font-medium transition-all border-2 ${shape === s.id
-                ? 'border-magenta'
-                : 'border-transparent hover:border-grey-muted/30'
+                ? 'border-magenta option-selected'
+                : 'border-transparent hover:border-grey-muted/30 option-default'
               }`}
-              style={{ background: shape === s.id ? 'var(--highlight-bg)' : 'var(--bg-glass)' }}
             >
               <span className={`mb-1.5 ${
                 s.id === 'round' ? 'w-4 h-4 rounded-full border-2 border-current' :
@@ -123,10 +121,9 @@ function ConfiguratorStickers() {
               key={s.id}
               onClick={() => setSize(s.id)}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-all border-2 ${size === s.id
-                ? 'border-magenta text-heading'
-                : 'border-transparent text-heading hover:border-grey-muted/30'
+                ? 'border-magenta text-heading option-selected'
+                : 'border-transparent text-heading hover:border-grey-muted/30 option-default'
               }`}
-              style={{ background: size === s.id ? 'var(--highlight-bg)' : 'var(--bg-glass)' }}
             >
               {s.label}
             </button>
@@ -147,10 +144,9 @@ function ConfiguratorStickers() {
                 key={tier.qty}
                 onClick={() => setQtyIndex(i)}
                 className={`flex flex-col items-center py-2.5 px-4 rounded-lg text-xs font-medium transition-all border-2 min-w-[5rem] ${qtyIndex === i
-                  ? 'border-magenta'
-                  : 'border-transparent hover:border-grey-muted/30'
+                  ? 'border-magenta option-selected'
+                  : 'border-transparent hover:border-grey-muted/30 option-default'
                 }`}
-                style={{ background: qtyIndex === i ? 'var(--highlight-bg)' : 'var(--bg-glass)' }}
               >
                 <span className="text-heading font-bold text-sm">{tier.qty}</span>
                 <span className="text-grey-muted mt-0.5">{p ? `${p.price}$` : ''}</span>
@@ -169,7 +165,7 @@ function ConfiguratorStickers() {
 
       {/* Price display */}
       {priceInfo && (
-        <div className="p-5 rounded-xl mb-5" style={{ background: 'var(--highlight-bg)', border: '1px solid var(--bg-card-border)' }}>
+        <div className="p-5 rounded-xl mb-5 highlight-bordered">
           <div className="flex items-baseline gap-3">
             <span className="text-3xl font-heading font-bold text-heading">{priceInfo.price}$</span>
             <span className="text-grey-muted text-sm">

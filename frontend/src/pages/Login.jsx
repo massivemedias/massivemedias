@@ -68,8 +68,7 @@ function Login() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="rounded-2xl border border-purple-main/30 p-8 md:p-10 backdrop-blur-xl"
-            style={{ background: 'var(--bg-card-solid, var(--bg-card))', boxShadow: '0 8px 40px rgba(0, 0, 0, 0.3)' }}
+            className="rounded-2xl border border-purple-main/30 p-8 md:p-10 backdrop-blur-xl login-card"
           >
             <h1 className="text-3xl font-heading font-bold text-heading mb-2 text-center">
               {mode === 'forgot' ? t('auth.forgotTitle') : mode === 'register' ? t('auth.registerTitle') : t('auth.loginTitle')}

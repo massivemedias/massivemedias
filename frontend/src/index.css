@@ -3,14 +3,14 @@
 
 /* =============================================
    MASSIVE MEDIAS - Design Tokens (Tailwind v4)
-   Palette : #FF52A0 (magenta), #FFB800 (or/gold),
-             #8100D1 (violet), #391F58 (sombre)
+   Palette : #FF52A0 (magenta), #FFCC00 (gold),
+             #4900A8 (violet), #200048 (sombre)
    ============================================= */
 
 @theme {
   /* Brand colors (fixed - never change with theme) */
   --color-magenta: #FF52A0;
-  --color-orange: #ff9b3c;
+  --color-gold: #FFCC00;
   --color-purple-bright: #8100D1;
   --color-electric-purple: #A348FE;
 
@@ -39,7 +39,7 @@
    ============================================= */
 
 :root {
-  /* Override theme-adaptive colors for white mode — purple/magenta palette */
+  /* Override theme-adaptive colors for white mode - purple/magenta palette */
   --color-purple-dark: #FFFFFF;
   --color-purple-mid: #F8F5FC;
   --color-purple-main: #D9CCE8;
@@ -100,33 +100,33 @@
    ============================================= */
 
 [data-theme="vibrant"] {
-  /* Override Tailwind theme colors */
-  --color-purple-dark: #1A0040;
-  --color-purple-mid: #2D006B;
-  --color-purple-main: #3A0088;
+  /* Override Tailwind theme colors - base #4900A8 */
+  --color-purple-dark: #200048;
+  --color-purple-mid: #3A0080;
+  --color-purple-main: #4900A8;
   --color-grey-light: #E8D4FF;
   --color-grey-muted: #B89CDB;
   --color-heading: #FFFFFF;
 
   /* Theme properties - Bold & Vibrant */
-  --bg-body: #2D006B;
+  --bg-body: #4900A8;
   --bg-card: rgba(255, 255, 255, 0.08);
-  --bg-card-solid: rgba(30, 0, 70, 0.85);
+  --bg-card-solid: rgba(40, 0, 90, 0.85);
   --bg-card-border: rgba(255, 82, 160, 0.15);
-  --bg-header: rgba(108, 0, 255, 0.94);
-  --bg-footer: #1A0040;
-  --bg-input: rgba(58, 0, 136, 0.5);
+  --bg-header: rgba(73, 0, 168, 0.96);
+  --bg-footer: #200048;
+  --bg-input: rgba(73, 0, 168, 0.5);
   --bg-input-border: rgba(255, 82, 160, 0.2);
   --bg-glass: rgba(255, 255, 255, 0.06);
   --bg-glass-alt: rgba(255, 255, 255, 0.08);
-  --bg-table-head: rgba(58, 0, 136, 0.6);
-  --bg-select-option: #3A0088;
-  --hero-gradient: linear-gradient(180deg, rgba(45,0,107,0.85) 0%, rgba(26,0,64,0.92) 100%);
+  --bg-table-head: rgba(73, 0, 168, 0.6);
+  --bg-select-option: #4900A8;
+  --hero-gradient: linear-gradient(180deg, rgba(73,0,168,0.85) 0%, rgba(32,0,72,0.92) 100%);
   --icon-bg: rgba(255, 82, 160, 0.12);
-  --highlight-bg: linear-gradient(145deg, rgba(58,0,136,0.5), rgba(45,0,107,0.4));
-  --cta-bg: linear-gradient(145deg, rgba(58,0,136,0.7), rgba(45,0,107,0.5));
-  --cta-text-bg: linear-gradient(145deg, rgba(58,0,136,0.5), rgba(45,0,107,0.4));
-  --header-dropdown-bg: #3A0088;
+  --highlight-bg: linear-gradient(145deg, rgba(73,0,168,0.5), rgba(58,0,128,0.4));
+  --cta-bg: linear-gradient(145deg, rgba(73,0,168,0.7), rgba(58,0,128,0.5));
+  --cta-text-bg: linear-gradient(145deg, rgba(73,0,168,0.5), rgba(58,0,128,0.4));
+  --header-dropdown-bg: #4900A8;
   --header-dropdown-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   --header-item-hover: rgba(255, 255, 255, 0.1);
   --header-border: rgba(255, 82, 160, 0.15);
@@ -137,18 +137,18 @@
   --outline-hover-border: rgba(255, 82, 160, 0.6);
   --table-border: rgba(255, 82, 160, 0.08);
   --table-hover: rgba(255, 82, 160, 0.05);
-  --scrollbar-track: #2D006B;
-  --scrollbar-thumb: #5A1E9E;
+  --scrollbar-track: #3A0080;
+  --scrollbar-thumb: #6A20C0;
   --scrollbar-thumb-hover: #FF52A0;
   --card-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
   --pattern-dot: rgba(255, 82, 160, 0.12);
-  --overlay-cta: rgba(45, 0, 107, 0.92);
+  --overlay-cta: rgba(73, 0, 168, 0.92);
   --icon-glass: rgba(255, 255, 255, 0.12);
   --icon-glass-blur: blur(8px);
   --toggle-border: rgba(255, 82, 160, 0.3);
   --toggle-text: rgba(255, 255, 255, 0.85);
   --toggle-hover-border: rgba(255, 82, 160, 0.5);
-  --space-overlay: linear-gradient(180deg, transparent 0%, rgba(26,0,64,0.95) 100%);
+  --space-overlay: linear-gradient(180deg, transparent 0%, rgba(32,0,72,0.95) 100%);
   --footer-border: rgba(255, 82, 160, 0.12);
   --btn-outline-text: #FFFFFF;
   --footer-text: #FFFFFF;
@@ -166,12 +166,12 @@
   border-radius: 9999px;
 }
 
-[data-theme="vibrant"] .btn-primary:hover {
-  box-shadow: 0 6px 24px rgba(255, 82, 160, 0.4);
-}
-
+[data-theme="vibrant"] .btn-primary:hover,
 [data-theme="vibrant"] .btn-outline:hover {
-  transform: translateY(-1px);
+  background-color: #FFCC00;
+  color: rgb(42, 42, 42);
+  border-color: #FFCC00;
+  box-shadow: 0 4px 16px rgba(255, 204, 0, 0.3);
 }
 
 [data-theme="vibrant"] .card-service {
@@ -179,12 +179,11 @@
 }
 
 [data-theme="vibrant"] .card-service:hover {
-  transform: translateY(-4px);
   border-color: rgba(255, 82, 160, 0.3);
 }
 
 [data-theme="vibrant"] .text-gradient {
-  background: linear-gradient(135deg, #ff9b3c, #FF52A0);
+  background: linear-gradient(135deg, #FFCC00, #FF52A0);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -196,7 +195,7 @@
 }
 
 [data-theme="vibrant"] .price-table tr:hover td.text-gradient {
-  background: linear-gradient(135deg, #ff9b3c, #FF52A0) !important;
+  background: linear-gradient(135deg, #FFCC00, #FF52A0) !important;
   -webkit-background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
   background-clip: text !important;
@@ -210,6 +209,27 @@
 [data-theme="vibrant"] h2,
 [data-theme="vibrant"] h3 {
   font-weight: 700;
+}
+
+/* =============================================
+   Hero Gradient Animation
+   ============================================= */
+
+@keyframes hero-shift {
+  0%, 100% { background-position: 0% 0%; }
+  50% { background-position: 100% 100%; }
+}
+
+/* Hero aurora - dynamic via brightness engine CSS vars */
+.hero-aurora {
+  background:
+    radial-gradient(ellipse 120% 80% at 15% 20%, var(--aurora-glow1), transparent),
+    radial-gradient(ellipse 100% 70% at 85% 80%, var(--aurora-glow2), transparent),
+    radial-gradient(ellipse 80% 60% at 50% 50%, var(--aurora-glow3), transparent),
+    linear-gradient(135deg, var(--aurora-bg-start) 0%, var(--aurora-bg-mid) 50%, var(--aurora-bg-end) 100%);
+  background-size: 200% 200%;
+  animation: hero-shift 20s ease-in-out infinite;
+  transition: background 0.3s;
 }
 
 /* =============================================
@@ -256,19 +276,19 @@ h1, h2, h3, h4, h5, h6 {
   font-size: 0.875rem;
   letter-spacing: 0.01em;
   color: #FFFFFF;
-  background: #FF52A0;
+  background: #A600FF;
   border: none;
   cursor: pointer;
   text-decoration: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s, color 0.2s, border-color 0.2s;
 }
 
 .btn-primary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(255, 82, 160, 0.2);
+  transform: scale(1.04);
+  box-shadow: 0 4px 12px rgba(166, 0, 255, 0.3);
 }
 
 /* Bouton outline */
@@ -294,6 +314,39 @@ h1, h2, h3, h4, h5, h6 {
   border-color: var(--outline-hover-border);
 }
 
+/* Boutons filtres (portfolio, etc.) */
+.filter-btn {
+  padding: 0.625rem 1.5rem;
+  border-radius: 9999px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  background: transparent;
+  color: var(--color-heading);
+  border: 1.5px solid var(--outline-border);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+}
+
+.filter-btn:hover {
+  background: #FFCC00;
+  color: rgb(42, 42, 42);
+  border-color: #FFCC00;
+  transform: scale(1.04);
+  box-shadow: 0 4px 16px rgba(255, 204, 0, 0.3);
+}
+
+.filter-btn-active {
+  background: #FF52A0;
+  color: #FFFFFF;
+  border-color: #FF52A0;
+}
+
+.filter-btn-active:hover {
+  background: #FFCC00;
+  color: rgb(42, 42, 42);
+  border-color: #FFCC00;
+}
+
 /* Carte de service */
 .card-service {
   padding: 2rem;
@@ -308,11 +361,11 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .card-service:hover {
-  transform: translateY(-2px);
+  transform: scale(1.04);
   border-color: rgba(255, 82, 160, 0.25);
 }
 
-/* Texte avec dégradé — purple/magenta en light, orange/magenta en vibrant */
+/* Texte avec dégradé - purple/magenta en light, orange/magenta en vibrant */
 .text-gradient {
   background: linear-gradient(135deg, #8100D1, #FF52A0);
   -webkit-background-clip: text;
@@ -436,11 +489,55 @@ select.input-field option {
 
 .toggle-button {
   color: var(--toggle-text);
-  border: 1px solid var(--toggle-border);
 }
 
 .toggle-button:hover {
   border-color: var(--toggle-hover-border);
+  cursor: pointer;
+}
+
+/* Brightness Fader Slider */
+.brightness-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #1a1a1a 0%, #4900A8 50%, #ffffff 100%);
+  outline: none;
+  cursor: pointer;
+}
+
+.brightness-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #FF52A0;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+
+.brightness-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+.brightness-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #FF52A0;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+}
+
+.brightness-slider::-moz-range-track {
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #1a1a1a 0%, #4900A8 50%, #ffffff 100%);
 }
 
 /* Logo */
@@ -549,7 +646,208 @@ select.input-field option {
 }
 
 /* =============================================
-   Boutique — Product page components
+   Utility classes - extracted from inline styles
+   ============================================= */
+
+/* Cards with background + shadow */
+.card-bg {
+  background: var(--bg-card);
+  box-shadow: var(--card-shadow);
+}
+
+.card-bg-bordered {
+  background: var(--bg-card);
+  border: 1px solid var(--bg-card-border);
+  box-shadow: var(--card-shadow);
+}
+
+/* Glass with shadow */
+.glass-shadow {
+  background: var(--bg-glass);
+  box-shadow: var(--card-shadow);
+}
+
+/* Highlight with shadow */
+.highlight-shadow {
+  background: var(--highlight-bg);
+  box-shadow: var(--card-shadow);
+}
+
+/* Highlight with border */
+.highlight-bordered {
+  background: var(--highlight-bg);
+  border: 1px solid var(--bg-card-border);
+}
+
+/* Glass bordered with top accent */
+.glass-accent-top {
+  background: var(--bg-glass);
+  border: 1px solid var(--bg-card-border);
+  border-top: 2px solid #FF52A0;
+}
+
+/* CTA text bg with border */
+.cta-text-bordered {
+  background: var(--cta-text-bg);
+  border: 1px solid var(--bg-card-border);
+}
+
+/* CTA bg with shadow */
+.cta-shadow {
+  background: var(--cta-bg);
+  box-shadow: var(--card-shadow);
+}
+
+/* Glass alt with heading color */
+.glass-alt-text {
+  background: var(--bg-glass-alt);
+  color: var(--color-heading);
+}
+
+/* Icon bg + blur */
+.icon-bg-blur {
+  background: var(--icon-bg);
+  backdrop-filter: blur(10px);
+}
+
+/* Error bg */
+.error-bg {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* Lightbox overlay */
+.lightbox-overlay {
+  background: rgba(0, 0, 0, 0.95);
+}
+
+.lightbox-btn {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+/* Hero bottom fade */
+.hero-fade {
+  background: linear-gradient(to top, var(--bg-body), transparent);
+}
+
+/* Highlight border (for separation) */
+.highlight-border-y {
+  background: var(--highlight-bg);
+  border-top: 1px solid var(--bg-card-border);
+  border-bottom: 1px solid var(--bg-card-border);
+}
+
+/* Option selection states */
+.option-selected {
+  background: var(--highlight-bg);
+}
+
+.option-default {
+  background: var(--bg-glass);
+}
+
+/* Checkbox active */
+.checkbox-active {
+  background: var(--highlight-bg);
+  border-color: #FF52A0;
+}
+
+/* Category filter active (dark bg) */
+.filter-active {
+  background: #A600FF;
+  color: #FFFFFF;
+}
+
+:root .filter-active {
+  background: #1A1A1A;
+  color: #FFFFFF;
+}
+
+[data-theme="vibrant"] .filter-active {
+  background: linear-gradient(135deg, #8100D1, #FF52A0);
+  color: #FFFFFF;
+}
+
+/* Hero subtitle & services text - theme-adaptive */
+.hero-subtitle {
+  color: var(--color-heading);
+  opacity: 0.8;
+}
+
+.hero-services {
+  color: var(--color-grey-muted);
+}
+
+[data-theme="vibrant"] .hero-services {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Outline button on hero (vibrant override) */
+[data-theme="vibrant"] .btn-outline-hero {
+  color: #FFFFFF;
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+[data-theme="vibrant"] .btn-outline-hero:hover {
+  background-color: #FFCC00;
+  color: rgb(42, 42, 42);
+  border-color: #FFCC00;
+  transform: scale(1.04);
+  box-shadow: 0 4px 16px rgba(255, 204, 0, 0.3);
+}
+
+/* Social icon button */
+.social-icon-btn {
+  padding: 0.5rem;
+  border-radius: 9999px;
+  color: #FFFFFF;
+  transition: background 0.3s;
+}
+
+.social-icon-btn:hover {
+  background: #FF52A0;
+}
+
+:root .social-icon-btn {
+  background: #1A1A1A;
+}
+
+[data-theme="vibrant"] .social-icon-btn {
+  background: var(--color-purple-bright);
+}
+
+/* Footer text - always on dark bg */
+.footer-heading {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: #FFFFFF;
+}
+
+.footer-links {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.footer-muted {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* CPR tagline filter for light mode */
+:root .cpr-invert {
+  filter: brightness(0);
+}
+
+[data-theme="vibrant"] .cpr-invert {
+  filter: none;
+}
+
+/* Login card */
+.login-card {
+  background: var(--bg-card-solid, var(--bg-card));
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.3);
+}
+
+/* =============================================
+   Boutique - Product page components
    ============================================= */
 
 /* Sticky configurateur desktop */

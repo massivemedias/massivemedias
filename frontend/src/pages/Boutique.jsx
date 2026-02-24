@@ -9,42 +9,42 @@ import getServicesData from '../data/getServicesData';
 const boutiqueItems = [
   {
     slug: 'stickers',
-    serviceKey: 'stickers-custom',
+    serviceKey: 'stickers',
     startingPrice: '30$',
     hasCart: true,
     image: thumb('/images/stickers/Stickers-Cosmo.webp'),
   },
   {
     slug: 'fine-art',
-    serviceKey: 'impression-fine-art',
+    serviceKey: 'prints',
     startingPrice: '16$',
     hasCart: true,
     image: thumb('/images/prints/FineArt1.webp'),
   },
   {
     slug: 'sublimation',
-    serviceKey: 'sublimation-merch',
+    serviceKey: 'merch',
     startingPrice: '30$',
     hasCart: true,
     image: thumb('/images/textile/Textile1.webp'),
   },
   {
     slug: 'flyers',
-    serviceKey: 'flyers-cartes',
+    serviceKey: 'prints',
     startingPrice: '40$',
     hasCart: true,
     image: thumb('/images/flyers/coagule.webp'),
   },
   {
     slug: 'design',
-    serviceKey: 'design-graphique',
+    serviceKey: 'design',
     startingPrice: '150$',
     hasCart: false,
     image: thumb('/images/graphism/logo_massive.webp'),
   },
   {
     slug: 'web',
-    serviceKey: 'developpement-web',
+    serviceKey: 'design',
     startingPrice: '900$',
     hasCart: false,
     image: thumb('/images/web/devweb_hero.webp'),
@@ -69,11 +69,8 @@ function Boutique() {
       />
 
       {/* Hero */}
-      <section className="relative py-32 overflow-hidden">
-        <div className="absolute inset-0">
-          <img src={thumb('/images/stickers/Stickers-Cosmo.webp')} alt="" className="w-full h-full object-cover" />
-          <div className="absolute inset-0" style={{ background: 'var(--hero-gradient)' }} />
-        </div>
+      <section className="relative py-16 overflow-hidden">
+        <div className="absolute inset-0 hero-aurora"></div>
         <div className="relative z-10 section-container !py-0 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -109,10 +106,9 @@ function Boutique() {
               >
                 <Link
                   to={`/boutique/${item.slug}`}
-                  className="group block rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1"
-                  style={{ background: 'var(--bg-card)', border: '1px solid var(--bg-card-border)', boxShadow: 'var(--card-shadow)' }}
+                  className="group block rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1 card-bg-bordered"
                 >
-                  <div className="relative overflow-hidden" style={{ aspectRatio: '16/10' }}>
+                  <div className="relative overflow-hidden aspect-[16/10]">
                     <img
                       src={item.image}
                       alt={service.title}
@@ -164,8 +160,7 @@ function Boutique() {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           viewport={{ once: true }}
-          className="text-center p-12 rounded-2xl mb-8"
-          style={{ background: 'var(--cta-text-bg)', border: '1px solid var(--bg-card-border)' }}
+          className="text-center p-12 rounded-2xl mb-8 cta-text-bordered"
         >
           <h2 className="text-3xl font-heading font-bold text-heading mb-4">
             {lang === 'fr' ? 'Besoin d\'aide pour choisir?' : 'Need help choosing?'}
@@ -179,9 +174,6 @@ function Boutique() {
             <Link to="/contact" className="btn-primary">
               {lang === 'fr' ? 'Nous contacter' : 'Contact us'}
               <ArrowRight className="ml-2" size={20} />
-            </Link>
-            <Link to="/tarifs" className="btn-outline">
-              {lang === 'fr' ? 'Voir tous les tarifs' : 'View all pricing'}
             </Link>
           </div>
         </motion.div>

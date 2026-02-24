@@ -82,11 +82,10 @@ function BoutiqueProductLayout({
         {/* ============ HERO PRODUCT (2 cols) ============ */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 mb-16">
 
-          {/* LEFT — Gallery */}
+          {/* LEFT - Gallery */}
           <div className="lg:col-span-7">
             <div
-              className="relative rounded-xl overflow-hidden mb-4 cursor-pointer group"
-              style={{ aspectRatio: '4/3' }}
+              className="relative rounded-xl overflow-hidden mb-4 cursor-pointer group aspect-[4/3]"
               onClick={() => setLightbox(mainImage)}
             >
               <img
@@ -102,15 +101,13 @@ function BoutiqueProductLayout({
               )}
               <button
                 onClick={(e) => { e.stopPropagation(); prevImage(); }}
-                className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full flex items-center justify-center text-heading transition-colors"
-                style={{ background: 'var(--bg-card)', border: '1px solid var(--bg-card-border)' }}
+                className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full flex items-center justify-center text-heading transition-colors card-bg card-border"
               >
                 <ChevronLeft size={20} />
               </button>
               <button
                 onClick={(e) => { e.stopPropagation(); nextImage(); }}
-                className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full flex items-center justify-center text-heading transition-colors"
-                style={{ background: 'var(--bg-card)', border: '1px solid var(--bg-card-border)' }}
+                className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full flex items-center justify-center text-heading transition-colors card-bg card-border"
               >
                 <ChevronRight size={20} />
               </button>
@@ -128,7 +125,7 @@ function BoutiqueProductLayout({
             </div>
           </div>
 
-          {/* RIGHT — Configurator (sticky on desktop) */}
+          {/* RIGHT - Configurator (sticky on desktop) */}
           <div className="lg:col-span-5 sticky-config">
             <h1 className="text-3xl md:text-4xl font-heading font-bold text-heading mb-2">
               {t(productTitle)}
@@ -147,8 +144,7 @@ function BoutiqueProductLayout({
       {/* ============ TRUST BAR (full width) ============ */}
       {trustItems && trustItems.length > 0 && (
         <div
-          className="py-6 mb-16"
-          style={{ background: 'var(--highlight-bg)', borderTop: '1px solid var(--bg-card-border)', borderBottom: '1px solid var(--bg-card-border)' }}
+          className="py-6 mb-16 highlight-border-y"
         >
           <div className="max-w-7xl mx-auto px-6 flex items-center justify-center flex-wrap gap-x-8 gap-y-3">
             {trustItems.map((item, i) => {
@@ -196,10 +192,9 @@ function BoutiqueProductLayout({
                     whileInView={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4, delay: i * 0.1 }}
                     viewport={{ once: true }}
-                    className="p-6 rounded-xl"
-                    style={{ background: 'var(--bg-glass)', border: '1px solid var(--bg-card-border)', borderTop: '2px solid #FF52A0' }}
+                    className="p-6 rounded-xl glass-accent-top"
                   >
-                    <div className="mb-4 p-3.5 rounded-lg w-fit" style={{ background: 'var(--icon-bg)' }}>
+                    <div className="mb-4 p-3.5 rounded-lg w-fit icon-bg">
                       <Icon size={28} className="text-magenta" />
                     </div>
                     <h3 className="font-heading font-bold text-heading text-lg mb-2">
@@ -240,8 +235,7 @@ function BoutiqueProductLayout({
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, delay: index * 0.08 }}
                   viewport={{ once: true }}
-                  className="p-6 rounded-xl relative"
-                  style={{ background: 'var(--bg-glass)', border: '1px solid var(--bg-card-border)' }}
+                  className="p-6 rounded-xl relative bg-glass"
                 >
                   <div className="absolute -top-3 -left-1 process-step-number">
                     {item.step}
@@ -279,8 +273,7 @@ function BoutiqueProductLayout({
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, delay: index * 0.1 }}
                   viewport={{ once: true }}
-                  className="p-6 rounded-xl text-center"
-                  style={{ background: 'var(--bg-glass)', border: '1px solid var(--bg-card-border)' }}
+                  className="p-6 rounded-xl text-center bg-glass"
                 >
                   <h4 className="text-heading font-heading font-bold mb-2">{item.name}</h4>
                   <p className="text-grey-muted text-sm">{item.desc}</p>
@@ -310,8 +303,7 @@ function BoutiqueProductLayout({
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, delay: i * 0.05 }}
                   viewport={{ once: true }}
-                  className="relative rounded-xl overflow-hidden cursor-pointer group"
-                  style={{ aspectRatio: '1/1' }}
+                  className="relative rounded-xl overflow-hidden cursor-pointer group aspect-square"
                   onClick={() => setLightbox(i)}
                 >
                   <img src={imgSrc} alt="" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
@@ -379,8 +371,7 @@ function BoutiqueProductLayout({
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           viewport={{ once: true }}
-          className="text-center p-12 rounded-2xl mb-8"
-          style={{ background: 'var(--cta-text-bg)', border: '1px solid var(--bg-card-border)' }}
+          className="text-center p-12 rounded-2xl mb-8 cta-text-bordered"
         >
           <h2 className="text-3xl font-heading font-bold text-heading mb-4">
             {lang === 'fr' ? 'Besoin d\'un projet custom?' : 'Need a custom project?'}

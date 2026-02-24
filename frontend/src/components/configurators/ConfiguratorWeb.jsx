@@ -32,10 +32,9 @@ function ConfiguratorWeb() {
               key={s.id}
               onClick={() => setSelected(s.id)}
               className={`w-full flex items-center justify-between p-3.5 rounded-lg text-sm font-medium transition-all border-2 text-left ${selected === s.id
-                ? 'border-magenta'
-                : 'border-transparent hover:border-grey-muted/30'
+                ? 'border-magenta option-selected'
+                : 'border-transparent hover:border-grey-muted/30 option-default'
               }`}
-              style={{ background: selected === s.id ? 'var(--highlight-bg)' : 'var(--bg-glass)' }}
             >
               <span className="text-heading">
                 {lang === 'fr' ? s.labelFr : s.labelEn}
@@ -50,7 +49,7 @@ function ConfiguratorWeb() {
 
       {/* Selected service details */}
       {service && (
-        <div className="p-5 rounded-xl mb-5" style={{ background: 'var(--highlight-bg)', border: '1px solid var(--bg-card-border)' }}>
+        <div className="p-5 rounded-xl mb-5 highlight-bordered">
           <div className="flex items-baseline gap-3 mb-2">
             <span className="text-2xl font-heading font-bold text-heading">{getPrice(service)}</span>
           </div>
@@ -61,7 +60,7 @@ function ConfiguratorWeb() {
       )}
 
       {/* Hourly rate note */}
-      <div className="p-3 rounded-lg mb-5 text-xs text-grey-muted" style={{ background: 'var(--bg-glass)', border: '1px solid var(--bg-card-border)' }}>
+      <div className="p-3 rounded-lg mb-5 text-xs text-grey-muted bg-glass">
         {lang === 'fr'
           ? `\u23f1\ufe0f Taux horaire : ${webHourlyRate} (Web, Design, Restauration)`
           : `\u23f1\ufe0f Hourly rate: ${webHourlyRate} (Web, Design, Restoration)`}

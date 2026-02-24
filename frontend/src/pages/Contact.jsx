@@ -3,13 +3,11 @@ import { Mail, MapPin, Instagram, Facebook, Send, CheckCircle, AlertCircle } fro
 import { useState, useRef } from 'react';
 import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
-import { useTheme } from '../i18n/ThemeContext';
 
 const FORMSPREE_ENDPOINT = 'https://formspree.io/f/xzdardoe';
 
 function Contact() {
   const { t, lang } = useLang();
-  const { theme } = useTheme();
   const formRef = useRef();
   const [formData, setFormData] = useState({
     nom: '',
@@ -134,7 +132,7 @@ function Contact() {
                   href="https://instagram.com/massivemedias"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`p-3 rounded-full text-white hover:bg-magenta transition-all duration-300 ${theme === 'light' ? 'bg-neutral-800' : 'bg-purple-bright'}`}
+                  className="p-3 rounded-full text-white hover:bg-magenta transition-all duration-300 social-icon-btn"
                 >
                   <Instagram size={24} />
                 </a>
@@ -142,7 +140,7 @@ function Contact() {
                   href="https://facebook.com/massivemedias"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`p-3 rounded-full text-white hover:bg-magenta transition-all duration-300 ${theme === 'light' ? 'bg-neutral-800' : 'bg-purple-bright'}`}
+                  className="p-3 rounded-full text-white hover:bg-magenta transition-all duration-300 social-icon-btn"
                 >
                   <Facebook size={24} />
                 </a>
@@ -161,8 +159,7 @@ function Contact() {
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="text-center py-16 px-8 rounded-2xl transition-colors duration-300"
-                style={{ background: 'var(--bg-glass)', border: '1px solid var(--bg-card-border)' }}
+                className="text-center py-16 px-8 rounded-2xl transition-colors duration-300 bg-glass"
               >
                 <CheckCircle size={64} className="text-green-400 mx-auto mb-6" />
                 <h3 className="font-heading text-3xl font-bold text-heading mb-4">
@@ -322,8 +319,7 @@ function Contact() {
                   <motion.div
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="flex items-center gap-3 p-4 rounded-lg border border-red-500/30"
-                    style={{ background: 'rgba(239, 68, 68, 0.1)' }}
+                    className="flex items-center gap-3 p-4 rounded-lg border border-red-500/30 error-bg"
                   >
                     <AlertCircle size={20} className="text-red-400 flex-shrink-0" />
                     <p className="text-red-300 text-sm">

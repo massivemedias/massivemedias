@@ -1,12 +1,9 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import MainLayout from './layouts/MainLayout';
 import Home from './pages/Home';
-import Services from './pages/Services';
 import ServiceDetail from './pages/ServiceDetail';
 import Contact from './pages/Contact';
 import APropos from './pages/APropos';
-import Portfolio from './pages/Portfolio';
-import Tarifs from './pages/Tarifs';
 import Boutique from './pages/Boutique';
 import BoutiqueStickers from './pages/BoutiqueStickers';
 import BoutiqueFineArt from './pages/BoutiqueFineArt';
@@ -45,12 +42,20 @@ function App() {
       <Routes>
         <Route element={<MainLayout />}>
           <Route index element={<Home />} />
-          <Route path="/services" element={<Services />} />
           <Route path="/services/:slug" element={<ServiceDetail />} />
-          <Route path="/tarifs" element={<Tarifs />} />
-          <Route path="/portfolio" element={<Portfolio />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/a-propos" element={<APropos />} />
+
+          {/* Redirects - anciens slugs → nouveaux */}
+          <Route path="/services" element={<Navigate to="/" replace />} />
+          <Route path="/tarifs" element={<Navigate to="/" replace />} />
+          <Route path="/portfolio" element={<Navigate to="/" replace />} />
+          <Route path="/services/impression-fine-art" element={<Navigate to="/services/prints" replace />} />
+          <Route path="/services/flyers-cartes" element={<Navigate to="/services/prints" replace />} />
+          <Route path="/services/stickers-custom" element={<Navigate to="/services/stickers" replace />} />
+          <Route path="/services/sublimation-merch" element={<Navigate to="/services/merch" replace />} />
+          <Route path="/services/design-graphique" element={<Navigate to="/services/design" replace />} />
+          <Route path="/services/developpement-web" element={<Navigate to="/services/design" replace />} />
           
           {/* Boutique */}
           <Route path="/boutique" element={<Boutique />} />
