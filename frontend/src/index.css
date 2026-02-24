@@ -4,7 +4,7 @@
 /* =============================================
    MASSIVE MEDIAS - Design Tokens (Tailwind v4)
    Palette : #FF52A0 (magenta), #FFCC00 (gold),
-             #4900A8 (violet), #200048 (sombre)
+             #410081 (violet), #200048 (sombre)
    ============================================= */
 
 @theme {
@@ -100,33 +100,33 @@
    ============================================= */
 
 [data-theme="vibrant"] {
-  /* Override Tailwind theme colors - base #4900A8 */
+  /* Override Tailwind theme colors - base #410081 */
   --color-purple-dark: #200048;
   --color-purple-mid: #3A0080;
-  --color-purple-main: #4900A8;
+  --color-purple-main: #410081;
   --color-grey-light: #E8D4FF;
   --color-grey-muted: #B89CDB;
   --color-heading: #FFFFFF;
 
   /* Theme properties - Bold & Vibrant */
-  --bg-body: #4900A8;
+  --bg-body: #410081;
   --bg-card: rgba(255, 255, 255, 0.08);
-  --bg-card-solid: rgba(40, 0, 90, 0.85);
+  --bg-card-solid: rgba(35, 0, 70, 0.85);
   --bg-card-border: rgba(255, 82, 160, 0.15);
-  --bg-header: rgba(73, 0, 168, 0.96);
+  --bg-header: rgba(65, 0, 129, 0.96);
   --bg-footer: #200048;
-  --bg-input: rgba(73, 0, 168, 0.5);
+  --bg-input: rgba(65, 0, 129, 0.5);
   --bg-input-border: rgba(255, 82, 160, 0.2);
   --bg-glass: rgba(255, 255, 255, 0.06);
   --bg-glass-alt: rgba(255, 255, 255, 0.08);
-  --bg-table-head: rgba(73, 0, 168, 0.6);
-  --bg-select-option: #4900A8;
-  --hero-gradient: linear-gradient(180deg, rgba(73,0,168,0.85) 0%, rgba(32,0,72,0.92) 100%);
+  --bg-table-head: rgba(65, 0, 129, 0.6);
+  --bg-select-option: #410081;
+  --hero-gradient: linear-gradient(180deg, rgba(65,0,129,0.85) 0%, rgba(32,0,72,0.92) 100%);
   --icon-bg: rgba(255, 82, 160, 0.12);
-  --highlight-bg: linear-gradient(145deg, rgba(73,0,168,0.5), rgba(58,0,128,0.4));
-  --cta-bg: linear-gradient(145deg, rgba(73,0,168,0.7), rgba(58,0,128,0.5));
-  --cta-text-bg: linear-gradient(145deg, rgba(73,0,168,0.5), rgba(58,0,128,0.4));
-  --header-dropdown-bg: #4900A8;
+  --highlight-bg: linear-gradient(145deg, rgba(65,0,129,0.5), rgba(50,0,100,0.4));
+  --cta-bg: linear-gradient(145deg, rgba(65,0,129,0.7), rgba(50,0,100,0.5));
+  --cta-text-bg: linear-gradient(145deg, rgba(65,0,129,0.5), rgba(50,0,100,0.4));
+  --header-dropdown-bg: #410081;
   --header-dropdown-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   --header-item-hover: rgba(255, 255, 255, 0.1);
   --header-border: rgba(255, 82, 160, 0.15);
@@ -142,7 +142,7 @@
   --scrollbar-thumb-hover: #FF52A0;
   --card-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
   --pattern-dot: rgba(255, 82, 160, 0.12);
-  --overlay-cta: rgba(73, 0, 168, 0.92);
+  --overlay-cta: rgba(65, 0, 129, 0.92);
   --icon-glass: rgba(255, 255, 255, 0.12);
   --icon-glass-blur: blur(8px);
   --toggle-border: rgba(255, 82, 160, 0.3);
@@ -183,7 +183,7 @@
 }
 
 [data-theme="vibrant"] .text-gradient {
-  background: linear-gradient(135deg, #FFCC00, #FF52A0);
+  background: #FFCC02;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -195,7 +195,7 @@
 }
 
 [data-theme="vibrant"] .price-table tr:hover td.text-gradient {
-  background: linear-gradient(135deg, #FFCC00, #FF52A0) !important;
+  background: #FFCC02 !important;
   -webkit-background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
   background-clip: text !important;
@@ -502,7 +502,7 @@ select.input-field option {
   appearance: none;
   height: 4px;
   border-radius: 2px;
-  background: linear-gradient(90deg, #1a1a1a 0%, #4900A8 50%, #ffffff 100%);
+  background: linear-gradient(90deg, #1a1a1a 0%, #410081 50%, #ffffff 100%);
   outline: none;
   cursor: pointer;
 }
@@ -537,7 +537,7 @@ select.input-field option {
 .brightness-slider::-moz-range-track {
   height: 4px;
   border-radius: 2px;
-  background: linear-gradient(90deg, #1a1a1a 0%, #4900A8 50%, #ffffff 100%);
+  background: linear-gradient(90deg, #1a1a1a 0%, #410081 50%, #ffffff 100%);
 }
 
 /* Logo */
