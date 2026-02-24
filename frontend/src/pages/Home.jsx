@@ -45,6 +45,14 @@ const featuredProjectImages = [
   thumb('/images/stickers/Stickers-Vrstl.webp'),
   thumb('/images/textile/Textile9.webp'),
 ];
+const featuredProjectLinks = [
+  '/boutique/fine-art',
+  '/boutique/stickers',
+  '/boutique/sublimation',
+  '/boutique/flyers',
+  '/boutique/stickers',
+  '/boutique/sublimation',
+];
 
 function Home() {
   const { t, lang } = useLang();
@@ -184,25 +192,26 @@ function Home() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {featuredProjects.map((project, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.08 }}
-              viewport={{ once: true }}
-              className="group relative rounded-xl overflow-hidden cursor-pointer aspect-[4/3]"
-            >
-              <img
-                src={featuredProjectImages[index]}
-                alt={project.title}
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent opacity-70 group-hover:opacity-90 transition-opacity duration-300"></div>
-              <div className="absolute bottom-0 left-0 right-0 p-6 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
-                <span className="text-magenta text-sm font-semibold uppercase tracking-wider">{project.category}</span>
-                <h3 className="text-white text-xl font-heading font-bold mt-1">{project.title}</h3>
-              </div>
-            </motion.div>
+            <Link key={index} to={featuredProjectLinks[index]}>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.08 }}
+                viewport={{ once: true }}
+                className="group relative rounded-xl overflow-hidden cursor-pointer aspect-[4/3]"
+              >
+                <img
+                  src={featuredProjectImages[index]}
+                  alt={project.title}
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent opacity-70 group-hover:opacity-90 transition-opacity duration-300"></div>
+                <div className="absolute bottom-0 left-0 right-0 p-6 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+                  <span className="text-magenta text-sm font-semibold uppercase tracking-wider">{project.category}</span>
+                  <h3 className="text-white text-xl font-heading font-bold mt-1">{project.title}</h3>
+                </div>
+              </motion.div>
+            </Link>
           ))}
         </div>
 
