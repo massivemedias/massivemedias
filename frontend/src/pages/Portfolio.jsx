@@ -29,7 +29,6 @@ const projects = [
   // Stickers
   { path: '/images/stickers/Stickers-Cosmo.webp', titleKey: 'sticker', category: 'stickers' },
   { path: '/images/stickers/Stickers-Cosmovision.webp', titleKey: 'sticker', category: 'stickers' },
-  { path: '/images/stickers/Stickers-Digital.webp', titleKey: 'sticker', category: 'stickers' },
   { path: '/images/stickers/Stickers-Fusion-State-Rec.webp', titleKey: 'sticker', category: 'stickers' },
   { path: '/images/stickers/Stickers-Maudite-Machine.webp', titleKey: 'sticker', category: 'stickers' },
   { path: '/images/stickers/Stickers-Vrstl.webp', titleKey: 'sticker', category: 'stickers' },

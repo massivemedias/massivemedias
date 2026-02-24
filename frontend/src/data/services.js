@@ -130,7 +130,6 @@ Découpés à la forme exacte de ton design avec notre équipement de découpe p
     },
     gallery: [
       thumb('/images/stickers/Stickers-Cosmovision.webp'),
-      thumb('/images/stickers/Stickers-Digital.webp'),
       thumb('/images/stickers/Stickers-Fusion-State-Rec.webp'),
       thumb('/images/stickers/Stickers-Maudite-Machine.webp'),
       thumb('/images/stickers/Stickers-Vrstl.webp'),

@@ -130,7 +130,6 @@ Cut to the exact shape of your design with our professional cutting equipment, e
     },
     gallery: [
       thumb('/images/stickers/Stickers-Cosmovision.webp'),
-      thumb('/images/stickers/Stickers-Digital.webp'),
       thumb('/images/stickers/Stickers-Fusion-State-Rec.webp'),
       thumb('/images/stickers/Stickers-Maudite-Machine.webp'),
       thumb('/images/stickers/Stickers-Vrstl.webp'),
