@@ -1,18 +1,19 @@
 import { useCallback, useRef } from 'react';
 import { Moon, Sun } from 'lucide-react';
 import { useTheme } from '../i18n/ThemeContext';
+import { THEME_COUNT } from '../utils/brightnessEngine';
 
 function BrightnessFader({ size = 'default' }) {
-  const { brightness, setBrightness } = useTheme();
+  const { step, setStep } = useTheme();
   const rafRef = useRef(null);
 
   const handleInput = useCallback((e) => {
     const val = Number(e.target.value);
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
     rafRef.current = requestAnimationFrame(() => {
-      setBrightness(val);
+      setStep(val);
     });
-  }, [setBrightness]);
+  }, [setStep]);
 
   const compact = size === 'compact';
 
@@ -22,13 +23,13 @@ function BrightnessFader({ size = 'default' }) {
       <input
         type="range"
         min="0"
-        max="100"
+        max={THEME_COUNT - 1}
         step="1"
-        value={brightness}
+        value={step}
         onInput={handleInput}
         onChange={handleInput}
         className="brightness-slider"
-        aria-label="Brightness"
+        aria-label="Thème"
         style={{ width: compact ? '60px' : '80px' }}
       />
       <Sun size={compact ? 12 : 14} className="text-current opacity-60 flex-shrink-0" />

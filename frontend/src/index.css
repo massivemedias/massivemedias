@@ -168,10 +168,10 @@
 
 [data-theme="vibrant"] .btn-primary:hover,
 [data-theme="vibrant"] .btn-outline:hover {
-  background-color: #FFCC00;
-  color: rgb(42, 42, 42);
-  border-color: #FFCC00;
-  box-shadow: 0 4px 16px rgba(255, 204, 0, 0.3);
+  background-color: var(--btn-primary-hover-bg, #FFCC00);
+  color: var(--btn-primary-hover-text, rgb(42, 42, 42));
+  border-color: var(--btn-primary-hover-bg, #FFCC00);
+  box-shadow: 0 4px 16px var(--btn-primary-shadow, rgba(255, 204, 0, 0.3));
 }
 
 [data-theme="vibrant"] .card-service {
@@ -179,11 +179,11 @@
 }
 
 [data-theme="vibrant"] .card-service:hover {
-  border-color: rgba(255, 82, 160, 0.3);
+  border-color: var(--outline-hover-border);
 }
 
 [data-theme="vibrant"] .text-gradient {
-  background: #FFCC02;
+  background: var(--logo-accent, #FFCC02);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -191,11 +191,11 @@
 }
 
 [data-theme="vibrant"] .price-table th {
-  border-bottom: 2px solid #FF52A0;
+  border-bottom: 2px solid var(--accent-color, #FF52A0);
 }
 
 [data-theme="vibrant"] .price-table tr:hover td.text-gradient {
-  background: #FFCC02 !important;
+  background: var(--logo-accent, #FFCC02) !important;
   -webkit-background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
   background-clip: text !important;
@@ -268,7 +268,7 @@ h1, h2, h3, h4, h5, h6 {
    Composants custom
    ============================================= */
 
-/* Bouton primaire */
+/* Bouton primaire - couleur dynamique via thème */
 .btn-primary {
   padding: 0.75rem 1.75rem;
   border-radius: 8px;
@@ -276,7 +276,7 @@ h1, h2, h3, h4, h5, h6 {
   font-size: 0.875rem;
   letter-spacing: 0.01em;
   color: #FFFFFF;
-  background: #A600FF;
+  background: var(--btn-primary-bg, #A600FF);
   border: none;
   cursor: pointer;
   text-decoration: none;
@@ -288,7 +288,9 @@ h1, h2, h3, h4, h5, h6 {
 
 .btn-primary:hover {
   transform: scale(1.04);
-  box-shadow: 0 4px 12px rgba(166, 0, 255, 0.3);
+  background: var(--btn-primary-hover-bg, #FF52A0);
+  color: var(--btn-primary-hover-text, #FFFFFF);
+  box-shadow: 0 4px 12px var(--btn-primary-shadow, rgba(166, 0, 255, 0.3));
 }
 
 /* Bouton outline */
@@ -328,23 +330,23 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .filter-btn:hover {
-  background: #FFCC00;
-  color: rgb(42, 42, 42);
-  border-color: #FFCC00;
+  background: var(--filter-hover-bg, #FFCC00);
+  color: var(--filter-hover-text, rgb(42, 42, 42));
+  border-color: var(--filter-hover-bg, #FFCC00);
   transform: scale(1.04);
-  box-shadow: 0 4px 16px rgba(255, 204, 0, 0.3);
+  box-shadow: 0 4px 16px var(--btn-primary-shadow, rgba(255, 204, 0, 0.3));
 }
 
 .filter-btn-active {
-  background: #FF52A0;
+  background: var(--filter-active-bg, #FF52A0);
   color: #FFFFFF;
-  border-color: #FF52A0;
+  border-color: var(--filter-active-bg, #FF52A0);
 }
 
 .filter-btn-active:hover {
-  background: #FFCC00;
-  color: rgb(42, 42, 42);
-  border-color: #FFCC00;
+  background: var(--filter-hover-bg, #FFCC00);
+  color: var(--filter-hover-text, rgb(42, 42, 42));
+  border-color: var(--filter-hover-bg, #FFCC00);
 }
 
 /* Carte de service */
@@ -365,9 +367,9 @@ h1, h2, h3, h4, h5, h6 {
   border-color: rgba(255, 82, 160, 0.25);
 }
 
-/* Texte avec dégradé - purple/magenta en light, orange/magenta en vibrant */
+/* Texte avec dégradé - adapté au thème */
 .text-gradient {
-  background: linear-gradient(135deg, #8100D1, #FF52A0);
+  background: linear-gradient(135deg, var(--logo-main, #8100D1), var(--logo-accent, #FF52A0));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -444,7 +446,7 @@ select.input-field option {
 }
 
 .price-table tr:hover td.text-gradient {
-  background: linear-gradient(135deg, #8100D1, #FF52A0);
+  background: linear-gradient(135deg, var(--logo-main, #8100D1), var(--logo-accent, #FF52A0));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -496,13 +498,24 @@ select.input-field option {
   cursor: pointer;
 }
 
-/* Brightness Fader Slider */
+/* Theme Fader Slider - 10 crans */
 .brightness-slider {
   -webkit-appearance: none;
   appearance: none;
   height: 4px;
   border-radius: 2px;
-  background: linear-gradient(90deg, #1a1a1a 0%, #410081 50%, #ffffff 100%);
+  background: linear-gradient(90deg,
+    #410081 0%,
+    #0C1E3A 11%,
+    #0D3040 22%,
+    #0B2818 33%,
+    #2E0A1A 44%,
+    #2A1A10 55%,
+    #1A1A28 66%,
+    #2D3748 77%,
+    #E8E0D8 88%,
+    #FFFFFF 100%
+  );
   outline: none;
   cursor: pointer;
 }
@@ -513,11 +526,11 @@ select.input-field option {
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  background: #FF52A0;
+  background: var(--accent-color, #FF52A0);
   border: 2px solid rgba(255, 255, 255, 0.9);
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
   cursor: pointer;
-  transition: transform 0.15s;
+  transition: transform 0.15s, background 0.2s;
 }
 
 .brightness-slider::-webkit-slider-thumb:hover {
@@ -528,7 +541,7 @@ select.input-field option {
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  background: #FF52A0;
+  background: var(--accent-color, #FF52A0);
   border: 2px solid rgba(255, 255, 255, 0.9);
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
   cursor: pointer;
@@ -537,7 +550,18 @@ select.input-field option {
 .brightness-slider::-moz-range-track {
   height: 4px;
   border-radius: 2px;
-  background: linear-gradient(90deg, #1a1a1a 0%, #410081 50%, #ffffff 100%);
+  background: linear-gradient(90deg,
+    #410081 0%,
+    #0C1E3A 11%,
+    #0D3040 22%,
+    #0B2818 33%,
+    #2E0A1A 44%,
+    #2A1A10 55%,
+    #1A1A28 66%,
+    #2D3748 77%,
+    #E8E0D8 88%,
+    #FFFFFF 100%
+  );
 }
 
 /* Logo */
@@ -748,22 +772,22 @@ select.input-field option {
 /* Checkbox active */
 .checkbox-active {
   background: var(--highlight-bg);
-  border-color: #FF52A0;
+  border-color: var(--accent-color, #FF52A0);
 }
 
 /* Category filter active (dark bg) */
 .filter-active {
-  background: #A600FF;
+  background: var(--filter-active-bg, #A600FF);
   color: #FFFFFF;
 }
 
 :root .filter-active {
-  background: #1A1A1A;
+  background: var(--filter-active-bg, #1A1A1A);
   color: #FFFFFF;
 }
 
 [data-theme="vibrant"] .filter-active {
-  background: linear-gradient(135deg, #8100D1, #FF52A0);
+  background: var(--filter-active-bg, #FF52A0);
   color: #FFFFFF;
 }
 
@@ -788,11 +812,11 @@ select.input-field option {
 }
 
 [data-theme="vibrant"] .btn-outline-hero:hover {
-  background-color: #FFCC00;
-  color: rgb(42, 42, 42);
-  border-color: #FFCC00;
+  background-color: var(--btn-primary-hover-bg, #FFCC00);
+  color: var(--btn-primary-hover-text, rgb(42, 42, 42));
+  border-color: var(--btn-primary-hover-bg, #FFCC00);
   transform: scale(1.04);
-  box-shadow: 0 4px 16px rgba(255, 204, 0, 0.3);
+  box-shadow: 0 4px 16px var(--btn-primary-shadow, rgba(255, 204, 0, 0.3));
 }
 
 /* Social icon button */
@@ -804,7 +828,7 @@ select.input-field option {
 }
 
 .social-icon-btn:hover {
-  background: #FF52A0;
+  background: var(--accent-color, #FF52A0);
 }
 
 :root .social-icon-btn {
@@ -870,12 +894,12 @@ select.input-field option {
   font-weight: 700;
   font-size: 0.875rem;
   color: #FFFFFF;
-  background: #FF52A0;
+  background: var(--accent-color, #FF52A0);
   flex-shrink: 0;
 }
 
 [data-theme="vibrant"] .process-step-number {
-  background: linear-gradient(135deg, #8100D1, #FF52A0);
+  background: var(--accent-color, #FF52A0);
 }
 
 /* Trust bar separateurs */

@@ -38,9 +38,14 @@
     <script>
       (function() {
         try {
-          var b = localStorage.getItem('massive-brightness');
-          if (b !== null && Number(b) < 88) {
+          var s = localStorage.getItem('massive-theme-step');
+          if (s !== null && Number(s) <= 7) {
             document.documentElement.setAttribute('data-theme', 'vibrant');
+          } else if (s === null) {
+            var b = localStorage.getItem('massive-brightness');
+            if (b !== null && Number(b) < 88) {
+              document.documentElement.setAttribute('data-theme', 'vibrant');
+            }
           }
         } catch(e) {}
       })();
