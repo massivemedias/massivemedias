@@ -7,7 +7,7 @@ const servicesData = {
     icon: Printer,
     title: 'Prints',
     subtitle: 'Fine art, flyers, cartes - impression qualité pro',
-    heroImage: thumb('/images/prints/Prints1.webp'),
+    heroImage: thumb('/images/prints/Prints17.webp'),
     description: `Le Fine Art désigne des impressions photographiques ou artistiques réalisées sur des papiers d'archives haut de gamme (coton, alpha-cellulose) avec des encres pigmentées à haute longévité. Ces tirages respectent les standards des galeries d'art et musées, avec une durée de conservation pouvant dépasser 100 ans.
 
 Chaque impression fait l'objet d'un calibrage colorimétrique rigoureux pour garantir une fidélité optimale aux intentions de l'artiste.
@@ -62,16 +62,14 @@ Nous imprimons aussi des flyers, cartes postales et cartes d'affaires - tout ce 
     gallery: [
       thumb('/images/prints/FineArt1.webp'),
       thumb('/images/prints/FineArt4.webp'),
-      thumb('/images/prints/FineArt5.webp'),
       thumb('/images/prints/FineArt6.webp'),
       thumb('/images/prints/FineArt-Photo.webp'),
-      thumb('/images/prints/Prints21.webp'),
-      thumb('/images/prints/Prints23.webp'),
+      thumb('/images/prints/Prints7.webp'),
+      thumb('/images/prints/Prints13.webp'),
+      thumb('/images/prints/Prints17.webp'),
+      thumb('/images/prints/Prints18.webp'),
+      thumb('/images/prints/Prints22.webp'),
       thumb('/images/prints/Prints24.webp'),
-      thumb('/images/flyers/coagule.webp'),
-      thumb('/images/flyers/discodyssee.webp'),
-      thumb('/images/flyers/from_vision.webp'),
-      thumb('/images/flyers/rituals.webp'),
     ],
     equipment: [
       { name: 'Imprimante fine art professionnelle', desc: 'Impression 12 couleurs, jusqu\'à 17" (A2+). Qualité musée.' },

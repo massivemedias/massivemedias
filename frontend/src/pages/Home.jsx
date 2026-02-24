@@ -29,7 +29,7 @@ const serviceLinks = [
   '/services/design',
 ];
 const serviceImages = [
-  thumb('/images/prints/Prints1.webp'),
+  thumb('/images/prints/Prints17.webp'),
   thumb('/images/stickers/Stickers-Cosmo.webp'),
   thumb('/images/textile/Textile1.webp'),
   thumb('/images/graphism/logo_massive.webp'),

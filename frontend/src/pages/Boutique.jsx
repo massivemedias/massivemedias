@@ -33,7 +33,7 @@ const boutiqueItems = [
     serviceKey: 'prints',
     startingPrice: '40$',
     hasCart: true,
-    image: thumb('/images/flyers/coagule.webp'),
+    image: thumb('/images/flyers/discodyssee.webp'),
   },
   {
     slug: 'design',

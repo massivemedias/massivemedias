@@ -16,10 +16,10 @@ const serviceLinks = [
   '/services/developpement-web',
 ];
 const serviceImages = [
-  thumb('/images/prints/Prints1.webp'),
+  thumb('/images/prints/Prints17.webp'),
   thumb('/images/stickers/Stickers-Cosmo.webp'),
   thumb('/images/textile/Textile1.webp'),
-  thumb('/images/flyers/coagule.webp'),
+  thumb('/images/flyers/discodyssee.webp'),
   thumb('/images/graphism/logo_massive.webp'),
   thumb('/images/web/devweb_hero.webp'),
 ];

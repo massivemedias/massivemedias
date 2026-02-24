@@ -7,7 +7,7 @@ const servicesDataEn = {
     icon: Printer,
     title: 'Prints',
     subtitle: 'Fine art, flyers, cards - professional quality printing',
-    heroImage: thumb('/images/prints/Prints1.webp'),
+    heroImage: thumb('/images/prints/Prints17.webp'),
     description: `Fine Art refers to photographic or artistic prints made on high-end archival papers (cotton, alpha-cellulose) with pigmented inks for maximum longevity. These prints meet gallery and museum standards, with a conservation life exceeding 100 years.
 
 Each print undergoes rigorous color calibration to ensure optimal fidelity to the artist's intentions.
@@ -62,16 +62,14 @@ We also print flyers, postcards and business cards - everything you need to prom
     gallery: [
       thumb('/images/prints/FineArt1.webp'),
       thumb('/images/prints/FineArt4.webp'),
-      thumb('/images/prints/FineArt5.webp'),
       thumb('/images/prints/FineArt6.webp'),
       thumb('/images/prints/FineArt-Photo.webp'),
-      thumb('/images/prints/Prints21.webp'),
-      thumb('/images/prints/Prints23.webp'),
+      thumb('/images/prints/Prints7.webp'),
+      thumb('/images/prints/Prints13.webp'),
+      thumb('/images/prints/Prints17.webp'),
+      thumb('/images/prints/Prints18.webp'),
+      thumb('/images/prints/Prints22.webp'),
       thumb('/images/prints/Prints24.webp'),
-      thumb('/images/flyers/coagule.webp'),
-      thumb('/images/flyers/discodyssee.webp'),
-      thumb('/images/flyers/from_vision.webp'),
-      thumb('/images/flyers/rituals.webp'),
     ],
     equipment: [
       { name: 'Professional fine art printer', desc: '12-color printing, up to 17" (A2+). Museum quality.' },

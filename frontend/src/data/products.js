@@ -145,12 +145,14 @@ export function getFineArtPrice(tier, format, withFrame) {
 export const fineArtImages = [
   img('/images/prints/FineArt1.webp'),
   img('/images/prints/FineArt4.webp'),
-  img('/images/prints/FineArt5.webp'),
   img('/images/prints/FineArt6.webp'),
   img('/images/prints/FineArt-Photo.webp'),
-  img('/images/prints/Prints1.webp'),
-  img('/images/prints/Prints21.webp'),
-  img('/images/prints/Prints23.webp'),
+  img('/images/prints/Prints7.webp'),
+  img('/images/prints/Prints13.webp'),
+  img('/images/prints/Prints17.webp'),
+  img('/images/prints/Prints18.webp'),
+  img('/images/prints/Prints22.webp'),
+  img('/images/prints/Prints24.webp'),
 ];
 
 export const fineArtFaq = {
@@ -269,7 +271,6 @@ export function getFlyerPrice(side, qtyIndex) {
 }
 
 export const flyerImages = [
-  img('/images/flyers/coagule.webp'),
   img('/images/flyers/discodyssee.webp'),
   img('/images/flyers/from_vision.webp'),
   img('/images/flyers/rituals.webp'),
