@@ -65,7 +65,6 @@ We also print flyers, postcards and business cards - everything you need to prom
       thumb('/images/prints/FineArt6.webp'),
       thumb('/images/prints/FineArt-Photo.webp'),
       thumb('/images/prints/Prints7.webp'),
-      thumb('/images/prints/Prints13.webp'),
       thumb('/images/prints/Prints17.webp'),
       thumb('/images/prints/Prints18.webp'),
       thumb('/images/prints/Prints22.webp'),

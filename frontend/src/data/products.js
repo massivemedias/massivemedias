@@ -148,7 +148,6 @@ export const fineArtImages = [
   img('/images/prints/FineArt6.webp'),
   img('/images/prints/FineArt-Photo.webp'),
   img('/images/prints/Prints7.webp'),
-  img('/images/prints/Prints13.webp'),
   img('/images/prints/Prints17.webp'),
   img('/images/prints/Prints18.webp'),
   img('/images/prints/Prints22.webp'),

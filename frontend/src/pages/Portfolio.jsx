@@ -22,7 +22,6 @@ const projects = [
   { path: '/images/prints/FineArt6.webp', titleKey: 'print', category: 'prints' },
   { path: '/images/prints/FineArt-Photo.webp', titleKey: 'print', category: 'prints' },
   { path: '/images/prints/Prints7.webp', titleKey: 'print', category: 'prints' },
-  { path: '/images/prints/Prints13.webp', titleKey: 'print', category: 'prints' },
   { path: '/images/prints/Prints17.webp', titleKey: 'print', category: 'prints' },
   { path: '/images/prints/Prints18.webp', titleKey: 'print', category: 'prints' },
   { path: '/images/prints/Prints22.webp', titleKey: 'print', category: 'prints' },
