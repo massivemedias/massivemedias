@@ -104,14 +104,14 @@ function ServiceDetail() {
             className="max-w-4xl"
           >
             <div className="flex items-center gap-2 mb-6 text-sm">
-              <Link to="/" className="text-grey-muted hover:text-magenta transition-colors">{lang === 'fr' ? 'Accueil' : 'Home'}</Link>
+              <Link to="/" className="text-grey-muted hover:text-accent transition-colors">{lang === 'fr' ? 'Accueil' : 'Home'}</Link>
               <span className="text-grey-muted">/</span>
-              <span className="text-magenta">{service.title}</span>
+              <span className="text-accent">{service.title}</span>
             </div>
 
             <div className="flex items-center gap-4 mb-6">
               <div className="p-4 rounded-xl icon-bg-blur">
-                <Icon size={36} className="text-magenta" />
+                <Icon size={36} className="text-accent" />
               </div>
               <div>
                 <h1 className="text-4xl md:text-6xl font-heading font-bold text-heading">
@@ -160,7 +160,7 @@ function ServiceDetail() {
 
           <div className="p-8 rounded-2xl border border-purple-main/30 transition-colors duration-300 highlight-shadow">
             <h3 className="text-xl font-heading font-bold text-heading mb-6 flex items-center gap-2">
-              <CheckCircle size={22} className="text-magenta" />
+              <CheckCircle size={22} className="text-accent" />
               {t('serviceDetail.highlights')}
             </h3>
             <ul className="space-y-4">
@@ -173,7 +173,7 @@ function ServiceDetail() {
                   viewport={{ once: true }}
                   className="flex items-start gap-3"
                 >
-                  <div className="w-2 h-2 rounded-full bg-magenta mt-2 flex-shrink-0"></div>
+                  <div className="w-2 h-2 rounded-full bg-accent mt-2 flex-shrink-0"></div>
                   <span className="text-grey-light">{highlight}</span>
                 </motion.li>
               ))}
@@ -211,7 +211,7 @@ function ServiceDetail() {
                   >
                     <div className="flex items-center gap-3 mb-3">
                       <div className="p-2 rounded-lg icon-bg">
-                        <DeliverIcon size={20} className="text-magenta" />
+                        <DeliverIcon size={20} className="text-accent" />
                       </div>
                       <h3 className="text-heading font-heading font-bold">{item.title}</h3>
                     </div>
@@ -248,7 +248,7 @@ function ServiceDetail() {
                     whileInView={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4, delay: index * 0.08 }}
                     viewport={{ once: true }}
-                    className="rounded-2xl overflow-hidden border border-purple-main/30 transition-all duration-300 hover:border-magenta/40 card-bg card-shadow"
+                    className="rounded-2xl overflow-hidden border border-purple-main/30 transition-all duration-300 hover:border-accent/40 card-bg card-shadow"
                   >
                     <AnimatePresence mode="wait">
                       {!isFlipped ? (
@@ -276,7 +276,7 @@ function ServiceDetail() {
                               className="absolute inset-0 flex items-center justify-center group-hover:bg-black/10 transition-all duration-300 cursor-pointer"
                               onClick={() => toggleCard(index)}
                             >
-                              <div className="opacity-0 group-hover:opacity-100 transition-all duration-300 transform -translate-x-2 group-hover:translate-x-0 bg-magenta/90 backdrop-blur-sm rounded-full p-3">
+                              <div className="opacity-0 group-hover:opacity-100 transition-all duration-300 transform -translate-x-2 group-hover:translate-x-0 bg-accent/90 backdrop-blur-sm rounded-full p-3">
                                 <ArrowRight size={20} className="text-white" />
                               </div>
                             </div>
@@ -346,7 +346,7 @@ function ServiceDetail() {
                               href={project.url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="flex items-center gap-2 text-magenta text-sm font-semibold hover:gap-3 transition-all duration-300"
+                              className="flex items-center gap-2 text-accent text-sm font-semibold hover:gap-3 transition-all duration-300"
                             >
                               <Globe size={14} />
                               <span>{project.url.replace('https://', '').replace('http://', '').replace(/\/$/, '')}</span>
@@ -427,7 +427,7 @@ function ServiceDetail() {
                 viewport={{ once: true }}
                 className="p-6 rounded-xl border border-purple-main/30 relative transition-colors duration-300 glass-shadow"
               >
-                <div className="absolute -top-3 -left-1 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold text-white" style={{ background: theme === 'light' ? '#1A1A1A' : 'linear-gradient(135deg, #8100D1, #FF52A0)' }}>
+                <div className="absolute -top-3 -left-1 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold text-white" style={{ background: theme === 'light' ? '#1A1A1A' : `linear-gradient(135deg, var(--logo-main, #8100D1), var(--accent-color, #FF52A0))` }}>
                   {item.step}
                 </div>
                 <h3 className="text-heading font-heading font-bold text-lg mt-2 mb-2">
@@ -565,7 +565,7 @@ function ServiceDetail() {
             className="mb-20"
           >
             <h2 className="text-3xl font-heading font-bold text-gradient mb-8 text-center flex items-center justify-center gap-3">
-              <Wrench size={28} className="text-magenta" />
+              <Wrench size={28} className="text-accent" />
               {t('serviceDetail.equipment')}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
@@ -625,12 +625,12 @@ function ServiceDetail() {
             className="mb-20"
           >
             <h2 className="text-3xl font-heading font-bold text-gradient mb-8 text-center flex items-center justify-center gap-3">
-              <Users size={28} className="text-magenta" />
+              <Users size={28} className="text-accent" />
               {t('serviceDetail.team')}
             </h2>
             <div className="max-w-2xl mx-auto p-8 rounded-2xl border border-purple-main/30 text-center transition-colors duration-300 highlight-shadow">
               <h3 className="text-2xl font-heading font-bold text-heading mb-1">{service.team.name}</h3>
-              <p className="text-magenta font-semibold mb-4">{service.team.role}</p>
+              <p className="text-accent font-semibold mb-4">{service.team.role}</p>
               <p className="text-grey-light leading-relaxed mb-4">{service.team.bio}</p>
               <p className="text-grey-muted text-sm">
                 <strong className="text-grey-light">{t('serviceDetail.portfolioLabel')} :</strong> {service.team.portfolio}
@@ -668,7 +668,7 @@ function ServiceDetail() {
                     <span className="text-heading font-semibold pr-4">{item.q}</span>
                     <ChevronDown
                       size={20}
-                      className={`text-magenta flex-shrink-0 transition-transform duration-300 ${openFaq === index ? 'rotate-180' : ''}`}
+                      className={`text-accent flex-shrink-0 transition-transform duration-300 ${openFaq === index ? 'rotate-180' : ''}`}
                     />
                   </button>
                   <AnimatePresence>
@@ -698,7 +698,7 @@ function ServiceDetail() {
           whileInView={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
-          className="mb-20 p-12 rounded-2xl text-center border border-magenta/30 transition-colors duration-300 cta-shadow"
+          className="mb-20 p-12 rounded-2xl text-center border border-accent/30 transition-colors duration-300 cta-shadow"
         >
           <h2 className="text-3xl md:text-4xl font-heading font-bold text-heading mb-4">
             {t('serviceDetail.ctaTitle')}
@@ -725,7 +725,7 @@ function ServiceDetail() {
           {prevService ? (
             <Link
               to={`/services/${prevService.slug}`}
-              className="flex items-center gap-3 text-grey-light hover:text-magenta transition-colors group"
+              className="flex items-center gap-3 text-grey-light hover:text-accent transition-colors group"
             >
               <ArrowLeft size={20} className="transition-transform group-hover:-translate-x-1" />
               <div>
@@ -738,7 +738,7 @@ function ServiceDetail() {
           {nextService ? (
             <Link
               to={`/services/${nextService.slug}`}
-              className="flex items-center gap-3 text-grey-light hover:text-magenta transition-colors text-right group"
+              className="flex items-center gap-3 text-grey-light hover:text-accent transition-colors text-right group"
             >
               <div>
                 <div className="text-xs text-grey-muted">{t('serviceDetail.next')}</div>

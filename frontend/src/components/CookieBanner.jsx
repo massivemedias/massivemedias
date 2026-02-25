@@ -55,7 +55,7 @@ function CookieBanner() {
           <div className="flex items-center gap-3 mb-3">
             <div className="w-9 h-9 rounded-xl flex items-center justify-center"
               style={{ background: 'var(--icon-bg)' }}>
-              <Shield size={18} className="text-magenta" />
+              <Shield size={18} className="text-accent" />
             </div>
             <h3 className="text-heading font-heading font-bold text-base">{t.title}</h3>
           </div>
@@ -71,7 +71,7 @@ function CookieBanner() {
                   <span className="text-heading text-sm font-semibold">{t.necessary}</span>
                   <p className="text-grey-muted text-xs mt-0.5">{t.necessaryDesc}</p>
                 </div>
-                <span className="text-xs text-magenta font-medium whitespace-nowrap ml-3">{t.always}</span>
+                <span className="text-xs text-accent font-medium whitespace-nowrap ml-3">{t.always}</span>
               </div>
 
               {/* Analytics */}

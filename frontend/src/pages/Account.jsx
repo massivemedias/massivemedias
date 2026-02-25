@@ -84,7 +84,7 @@ function Account() {
             {/* Profile */}
             <div className="rounded-2xl border border-purple-main/30 p-8 mb-8 card-bg card-shadow">
               <h2 className="text-2xl font-heading font-bold text-heading mb-6 flex items-center gap-2">
-                <User size={22} className="text-magenta" />
+                <User size={22} className="text-accent" />
                 {t('account.profile')}
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-grey-light">
@@ -102,7 +102,7 @@ function Account() {
             {/* Orders */}
             <div className="rounded-2xl border border-purple-main/30 p-8 card-bg card-shadow">
               <h2 className="text-2xl font-heading font-bold text-heading mb-6 flex items-center gap-2">
-                <Package size={22} className="text-magenta" />
+                <Package size={22} className="text-accent" />
                 {t('account.orders')}
               </h2>
 

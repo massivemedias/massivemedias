@@ -44,7 +44,6 @@ function Contact() {
         message: ''
       });
     } catch (error) {
-      console.error('Form error:', error);
       setStatus('error');
     }
   };
@@ -104,7 +103,7 @@ function Contact() {
               
               <div className="space-y-4">
                 <div className="flex items-start gap-3">
-                  <MapPin className="text-magenta mt-1" size={20} />
+                  <MapPin className="text-accent mt-1" size={20} />
                   <div>
                     <p className="text-heading font-semibold">{t('contactPage.info.location')}</p>
                     <p className="text-grey-muted text-sm">{t('contactPage.info.byAppointment')}</p>
@@ -112,10 +111,10 @@ function Contact() {
                 </div>
 
                 <div className="flex items-start gap-3">
-                  <Mail className="text-magenta mt-1" size={20} />
+                  <Mail className="text-accent mt-1" size={20} />
                   <a 
                     href="mailto:massivemedias@gmail.com"
-                    className="text-heading hover:text-magenta transition-colors"
+                    className="text-heading hover:text-accent transition-colors"
                   >
                     massivemedias@gmail.com
                   </a>
@@ -132,7 +131,7 @@ function Contact() {
                   href="https://instagram.com/massivemedias"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="p-3 rounded-full text-white hover:bg-magenta transition-all duration-300 social-icon-btn"
+                  className="p-3 rounded-full text-white hover:bg-accent transition-all duration-300 social-icon-btn"
                 >
                   <Instagram size={24} />
                 </a>
@@ -140,7 +139,7 @@ function Contact() {
                   href="https://facebook.com/massivemedias"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="p-3 rounded-full text-white hover:bg-magenta transition-all duration-300 social-icon-btn"
+                  className="p-3 rounded-full text-white hover:bg-accent transition-all duration-300 social-icon-btn"
                 >
                   <Facebook size={24} />
                 </a>

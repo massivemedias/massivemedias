@@ -61,7 +61,7 @@ function ConfiguratorSublimation() {
               key={p.id}
               onClick={() => handleProductChange(p.id)}
               className={`flex flex-col items-center justify-center min-w-[6rem] py-2.5 px-4 rounded-lg text-xs font-medium transition-all border-2 ${product === p.id
-                ? 'border-magenta option-selected'
+                ? 'border-accent option-selected'
                 : 'border-transparent hover:border-grey-muted/30 option-default'
               }`}
             >
@@ -84,7 +84,7 @@ function ConfiguratorSublimation() {
               key={tier.qty}
               onClick={() => setQtyIndex(i)}
               className={`flex flex-col items-center py-2.5 px-4 rounded-lg text-xs font-medium transition-all border-2 min-w-[5rem] ${qtyIndex === i
-                ? 'border-magenta option-selected'
+                ? 'border-accent option-selected'
                 : 'border-transparent hover:border-grey-muted/30 option-default'
               }`}
             >
@@ -105,19 +105,19 @@ function ConfiguratorSublimation() {
             onChange={(e) => setWithDesign(e.target.checked)}
             className="sr-only"
           />
-          <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${withDesign ? 'bg-magenta border-magenta' : 'border-grey-muted/50'}`}>
+          <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${withDesign ? 'bg-accent border-accent' : 'border-grey-muted/50'}`}>
             {withDesign && <Check size={14} className="text-white" />}
           </div>
           <div className="flex-1">
             <span className="text-heading font-medium text-sm flex items-center gap-1.5">
-              <Palette size={14} className="text-magenta" />
+              <Palette size={14} className="text-accent" />
               {lang === 'fr' ? 'Cr\u00e9ation graphique' : 'Graphic design'}
             </span>
             <span className="text-grey-muted text-xs block mt-0.5">
               {lang === 'fr' ? 'Si vous n\'avez pas de design pr\u00eat' : 'If you don\'t have a ready design'}
             </span>
           </div>
-          <span className="text-magenta font-semibold text-sm">+{sublimationDesignPrice}$</span>
+          <span className="text-accent font-semibold text-sm">+{sublimationDesignPrice}$</span>
         </label>
       </div>
 

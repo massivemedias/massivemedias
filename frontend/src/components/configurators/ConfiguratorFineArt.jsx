@@ -59,7 +59,7 @@ function ConfiguratorFineArt() {
               key={t.id}
               onClick={() => setTier(t.id)}
               className={`flex flex-col items-center justify-center min-w-[7rem] py-2.5 px-3 rounded-lg text-xs font-medium transition-all border-2 ${tier === t.id
-                ? 'border-magenta option-selected'
+                ? 'border-accent option-selected'
                 : 'border-transparent hover:border-grey-muted/30 option-default'
               }`}
             >
@@ -85,7 +85,7 @@ function ConfiguratorFineArt() {
                 key={f.id}
                 onClick={() => setFormat(f.id)}
                 className={`flex flex-col items-center py-2.5 px-4 rounded-lg text-xs font-medium transition-all border-2 min-w-[5rem] ${format === f.id
-                  ? 'border-magenta option-selected'
+                  ? 'border-accent option-selected'
                   : 'border-transparent hover:border-grey-muted/30 option-default'
                 }`}
               >
@@ -106,7 +106,7 @@ function ConfiguratorFineArt() {
             onChange={(e) => setWithFrame(e.target.checked)}
             className="sr-only"
           />
-          <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${withFrame ? 'bg-magenta border-magenta' : 'border-grey-muted/50'}`}>
+          <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${withFrame ? 'bg-accent border-accent' : 'border-grey-muted/50'}`}>
             {withFrame && <Check size={14} className="text-white" />}
           </div>
           <div className="flex-1">
@@ -114,7 +114,7 @@ function ConfiguratorFineArt() {
               {lang === 'fr' ? 'Ajouter un cadre' : 'Add a frame'}
             </span>
           </div>
-          <span className="text-magenta font-semibold text-sm">+{fineArtFramePrice}$</span>
+          <span className="text-accent font-semibold text-sm">+{fineArtFramePrice}$</span>
         </label>
 
         {withFrame && (
@@ -122,7 +122,7 @@ function ConfiguratorFineArt() {
             <button
               onClick={() => setFrameColor('black')}
               className={`flex items-center gap-2 py-2 px-4 rounded-lg text-xs font-medium transition-all border-2 ${frameColor === 'black'
-                ? 'border-magenta option-selected'
+                ? 'border-accent option-selected'
                 : 'border-transparent hover:border-grey-muted/30 option-default'
               }`}
             >
@@ -132,7 +132,7 @@ function ConfiguratorFineArt() {
             <button
               onClick={() => setFrameColor('white')}
               className={`flex items-center gap-2 py-2 px-4 rounded-lg text-xs font-medium transition-all border-2 ${frameColor === 'white'
-                ? 'border-magenta option-selected'
+                ? 'border-accent option-selected'
                 : 'border-transparent hover:border-grey-muted/30 option-default'
               }`}
             >

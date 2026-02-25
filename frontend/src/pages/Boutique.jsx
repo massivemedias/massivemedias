@@ -128,7 +128,7 @@ function Boutique() {
                           {item.startingPrice}
                         </div>
                       </div>
-                      <div className={`px-2.5 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider ${item.hasCart ? 'bg-magenta text-white' : 'bg-white/20 text-white backdrop-blur-sm'}`}>
+                      <div className={`px-2.5 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider ${item.hasCart ? 'bg-accent text-white' : 'bg-white/20 text-white backdrop-blur-sm'}`}>
                         {item.hasCart
                           ? (lang === 'fr' ? 'Commander' : 'Order')
                           : (lang === 'fr' ? 'Devis' : 'Quote')}
@@ -137,7 +137,7 @@ function Boutique() {
                   </div>
                   <div className="p-6">
                     <div className="flex items-center gap-3 mb-2">
-                      {service.icon && <service.icon size={20} className="text-magenta flex-shrink-0" />}
+                      {service.icon && <service.icon size={20} className="text-accent flex-shrink-0" />}
                       <h2 className="text-xl font-heading font-bold text-heading">
                         {item.titleOverride ? item.titleOverride[lang] : service.title}
                       </h2>
@@ -145,7 +145,7 @@ function Boutique() {
                     <p className="text-grey-muted text-sm mb-4 line-clamp-2">
                       {item.subtitleOverride ? item.subtitleOverride[lang] : service.subtitle}
                     </p>
-                    <span className="inline-flex items-center gap-1.5 text-magenta text-sm font-semibold group-hover:gap-2.5 transition-all">
+                    <span className="inline-flex items-center gap-1.5 text-accent text-sm font-semibold group-hover:gap-2.5 transition-all">
                       {item.hasCart
                         ? (<><ShoppingCart size={16} />{lang === 'fr' ? 'Voir les options' : 'See options'}</>)
                         : (<><MessageSquare size={16} />{lang === 'fr' ? 'Demander un devis' : 'Request a quote'}</>)}
@@ -213,30 +213,30 @@ function Boutique() {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: index * 0.1 }}
                 viewport={{ once: true }}
-                className={`p-8 rounded-2xl border transition-all duration-300 relative ${pkg.popular ? 'border-magenta/50 card-bg card-shadow' : 'border-purple-main/30 card-bg-bordered'}`}
+                className={`p-8 rounded-2xl border transition-all duration-300 relative ${pkg.popular ? 'border-accent/50 card-bg card-shadow' : 'border-purple-main/30 card-bg-bordered'}`}
               >
                 {pkg.popular && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-magenta text-white text-xs font-bold uppercase tracking-wider">
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-accent text-white text-xs font-bold uppercase tracking-wider">
                     {lang === 'fr' ? 'Populaire' : 'Popular'}
                   </div>
                 )}
                 <div className="flex items-center gap-3 mb-4">
-                  <pkg.icon size={24} className="text-magenta" />
+                  <pkg.icon size={24} className="text-accent" />
                   <h3 className="text-xl font-heading font-bold text-heading">{pkg.title}</h3>
                 </div>
                 <div className="text-2xl font-heading font-bold text-gradient mb-4">{pkg.price}</div>
                 <ul className="space-y-2 mb-6">
                   {pkg.items.map((item, i) => (
                     <li key={i} className="flex items-start gap-2 text-grey-light text-sm">
-                      <span className="w-1.5 h-1.5 rounded-full bg-magenta mt-1.5 flex-shrink-0" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-accent mt-1.5 flex-shrink-0" />
                       {item}
                     </li>
                   ))}
                 </ul>
-                <div className="text-magenta text-sm font-semibold">{pkg.saving}</div>
+                <div className="text-accent text-sm font-semibold">{pkg.saving}</div>
                 <Link
                   to="/contact"
-                  className="mt-4 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all duration-300 border border-magenta/30 hover:bg-magenta hover:text-white text-magenta"
+                  className="mt-4 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all duration-300 border border-accent/30 hover:bg-accent hover:text-white text-accent"
                 >
                   {lang === 'fr' ? 'Demander un devis' : 'Request a quote'}
                   <ArrowRight size={16} />

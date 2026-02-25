@@ -56,7 +56,7 @@ function Panier() {
                   {[item.finish, item.shape, item.size, `${item.quantity}x`].filter(Boolean).join(' · ')}
                 </p>
                 {item.uploadedFiles?.length > 0 && (
-                  <p className="text-magenta text-xs flex items-center gap-1 mt-0.5">
+                  <p className="text-accent text-xs flex items-center gap-1 mt-0.5">
                     <Paperclip size={12} />
                     {item.uploadedFiles.length} {isFr ? 'fichier(s) joint(s)' : 'file(s) attached'}
                   </p>

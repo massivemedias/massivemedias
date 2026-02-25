@@ -87,7 +87,7 @@ function APropos() {
             {t('aboutPage.timeline.title')}
           </h2>
           <div className="relative max-w-3xl mx-auto">
-            <div className="absolute left-8 top-0 bottom-0 w-px bg-gradient-to-b from-magenta to-electric-purple"></div>
+            <div className="absolute left-8 top-0 bottom-0 w-px bg-gradient-to-b from-accent to-electric-purple"></div>
             
             {timelineEvents.map((item, index) => (
               <motion.div
@@ -98,8 +98,8 @@ function APropos() {
                 viewport={{ once: true }}
                 className="flex items-start gap-6 mb-8 relative"
               >
-                <div className="w-16 h-16 rounded-full flex items-center justify-center flex-shrink-0 z-10 border-2 border-magenta card-bg">
-                  <span className="text-magenta font-heading font-bold text-xs text-center leading-tight">{item.year}</span>
+                <div className="w-16 h-16 rounded-full flex items-center justify-center flex-shrink-0 z-10 border-2 border-accent card-bg">
+                  <span className="text-accent font-heading font-bold text-xs text-center leading-tight">{item.year}</span>
                 </div>
                 <div className="pt-3">
                   <p className="text-grey-light text-lg">{item.event}</p>
@@ -140,7 +140,7 @@ function APropos() {
                     className="flex items-start gap-4 p-4 rounded-xl border border-purple-main/30 transition-colors duration-300 glass-shadow"
                   >
                     <div className="p-2 rounded-lg flex-shrink-0 icon-bg">
-                      <Icon size={20} className="text-magenta" />
+                      <Icon size={20} className="text-accent" />
                     </div>
                     <div>
                       <h4 className="text-heading font-semibold">{item.name}</h4>
@@ -166,8 +166,8 @@ function APropos() {
             <div className="absolute inset-0 space-overlay"></div>
             <div className="absolute bottom-0 left-0 right-0 p-8 md:p-12">
               <div className="flex items-center gap-2 mb-3">
-                <MapPin size={20} className="text-magenta" />
-                <span className="text-magenta font-semibold">{t('aboutPage.space.location')}</span>
+                <MapPin size={20} className="text-accent" />
+                <span className="text-accent font-semibold">{t('aboutPage.space.location')}</span>
               </div>
               <h2 className="text-3xl md:text-4xl font-heading font-bold text-heading mb-4">
                 {t('aboutPage.space.title')}

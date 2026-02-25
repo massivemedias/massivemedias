@@ -51,7 +51,7 @@ function ConfiguratorFlyers() {
               key={s.id}
               onClick={() => setSide(s.id)}
               className={`flex flex-col items-center justify-center min-w-[7rem] py-2.5 px-4 rounded-lg text-xs font-medium transition-all border-2 ${side === s.id
-                ? 'border-magenta option-selected'
+                ? 'border-accent option-selected'
                 : 'border-transparent hover:border-grey-muted/30 option-default'
               }`}
             >
@@ -79,7 +79,7 @@ function ConfiguratorFlyers() {
                 key={tier.qty}
                 onClick={() => setQtyIndex(i)}
                 className={`flex flex-col items-center py-2.5 px-4 rounded-lg text-xs font-medium transition-all border-2 min-w-[5rem] ${qtyIndex === i
-                  ? 'border-magenta option-selected'
+                  ? 'border-accent option-selected'
                   : 'border-transparent hover:border-grey-muted/30 option-default'
                 }`}
               >

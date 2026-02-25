@@ -311,8 +311,8 @@ const PALETTES = [PALETTE_0, PALETTE_1, PALETTE_2, PALETTE_3, PALETTE_4, PALETTE
 export const THEME_COUNT = PALETTES.length;
 
 export const THEME_NAMES = [
-  'Violet', 'Nuit', 'Océan', 'Forêt', 'Bordeaux',
-  'Espresso', 'Charbon', 'Ardoise', 'Crème', 'Blanc'
+  'Massive', 'Midnight', 'Ocean', 'Forest', 'Rosé',
+  'Espresso', 'Ember', 'Slate', 'Crème', 'Light'
 ];
 
 export const THEME_COLORS = [

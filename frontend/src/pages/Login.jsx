@@ -80,7 +80,7 @@ function Login() {
             {resetSent ? (
               <div className="text-center">
                 <div className="text-green-400 mb-4">{t('auth.resetSent')}</div>
-                <button onClick={() => { setMode('login'); setResetSent(false); }} className="text-magenta hover:underline">
+                <button onClick={() => { setMode('login'); setResetSent(false); }} className="text-accent hover:underline">
                   {t('auth.backToLogin')}
                 </button>
               </div>
@@ -178,7 +178,7 @@ function Login() {
                   <button
                     type="button"
                     onClick={() => setMode('forgot')}
-                    className="block w-full text-center text-sm text-grey-muted hover:text-magenta transition-colors"
+                    className="block w-full text-center text-sm text-grey-muted hover:text-accent transition-colors"
                   >
                     {t('auth.forgotPassword')}
                   </button>
@@ -192,7 +192,7 @@ function Login() {
                   {mode === 'login' ? t('auth.noAccount') : t('auth.hasAccount')}{' '}
                   <button
                     onClick={() => { setMode(mode === 'login' ? 'register' : 'login'); setError(''); }}
-                    className="text-magenta hover:underline font-medium"
+                    className="text-accent hover:underline font-medium"
                   >
                     {mode === 'login' ? t('auth.registerLink') : t('auth.loginLink')}
                   </button>
@@ -204,7 +204,7 @@ function Login() {
               <div className="mt-6 pt-6 border-t border-purple-main/20 text-center">
                 <button
                   onClick={() => { setMode('login'); setResetSent(false); setError(''); }}
-                  className="text-magenta hover:underline font-medium text-sm"
+                  className="text-accent hover:underline font-medium text-sm"
                 >
                   {t('auth.backToLogin')}
                 </button>

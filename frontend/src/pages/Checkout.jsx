@@ -96,7 +96,7 @@ function Checkout() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <Link to="/panier" className="inline-flex items-center gap-2 text-grey-muted hover:text-magenta transition-colors mb-6 text-sm">
+            <Link to="/panier" className="inline-flex items-center gap-2 text-grey-muted hover:text-accent transition-colors mb-6 text-sm">
               <ArrowLeft size={16} />
               {t('checkout.backToCart')}
             </Link>
@@ -114,7 +114,7 @@ function Checkout() {
                     animate={{ opacity: 1, x: 0 }}
                   >
                     <h2 className="text-xl font-heading font-bold text-heading mb-6 flex items-center gap-2">
-                      <User size={20} className="text-magenta" />
+                      <User size={20} className="text-accent" />
                       {t('checkout.customerInfo')}
                     </h2>
 
@@ -161,11 +161,11 @@ function Checkout() {
                           {isFr ? 'Avez-vous votre design prêt?' : 'Do you have your design ready?'}
                         </label>
                         <div className="flex gap-4">
-                          <label className={`flex items-center gap-2 px-4 py-2.5 rounded-lg cursor-pointer transition-all ${formData.designReady === 'yes' ? 'bg-magenta text-white' : 'text-heading bg-glass'}`}>
+                          <label className={`flex items-center gap-2 px-4 py-2.5 rounded-lg cursor-pointer transition-all ${formData.designReady === 'yes' ? 'bg-accent text-white' : 'text-heading bg-glass'}`}>
                             <input type="radio" name="designReady" value="yes" checked={formData.designReady === 'yes'} onChange={handleChange} className="hidden" />
                             {isFr ? 'Oui' : 'Yes'}
                           </label>
-                          <label className={`flex items-center gap-2 px-4 py-2.5 rounded-lg cursor-pointer transition-all ${formData.designReady === 'no' ? 'bg-magenta text-white' : 'text-heading bg-glass'}`}>
+                          <label className={`flex items-center gap-2 px-4 py-2.5 rounded-lg cursor-pointer transition-all ${formData.designReady === 'no' ? 'bg-accent text-white' : 'text-heading bg-glass'}`}>
                             <input type="radio" name="designReady" value="no" checked={formData.designReady === 'no'} onChange={handleChange} className="hidden" />
                             {isFr ? 'Non, j\'ai besoin du design' : 'No, I need design help'}
                           </label>
@@ -189,7 +189,7 @@ function Checkout() {
                       {items.some(item => item.uploadedFiles?.length > 0) && (
                         <div className="p-4 rounded-lg bg-glass">
                           <p className="text-heading font-semibold text-sm mb-2 flex items-center gap-2">
-                            <Paperclip size={14} className="text-magenta" />
+                            <Paperclip size={14} className="text-accent" />
                             {isFr ? 'Fichiers joints aux produits' : 'Files attached to products'}
                           </p>
                           {items.filter(item => item.uploadedFiles?.length > 0).map((item, i) => (
@@ -297,7 +297,7 @@ function Checkout() {
                             {[item.finish, item.shape, `${item.quantity}x`].filter(Boolean).join(' · ')}
                           </p>
                           {item.uploadedFiles?.length > 0 && (
-                            <p className="text-magenta text-xs flex items-center gap-1">
+                            <p className="text-accent text-xs flex items-center gap-1">
                               <Paperclip size={10} />
                               {item.uploadedFiles.length} {isFr ? 'fichier(s)' : 'file(s)'}
                             </p>

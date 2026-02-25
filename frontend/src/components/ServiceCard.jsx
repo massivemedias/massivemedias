@@ -44,7 +44,7 @@ function ServiceCard({ icon: Icon, title, description, link, image }) {
             {description}
           </p>
 
-          <div className="flex items-center gap-2 text-magenta font-semibold text-sm">
+          <div className="flex items-center gap-2 text-accent font-semibold text-sm">
             <span>{t('common.learnMore')}</span>
             <ArrowRight size={18} className="transition-transform duration-300 group-hover:translate-x-2" />
           </div>

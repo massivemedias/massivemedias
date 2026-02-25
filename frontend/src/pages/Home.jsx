@@ -208,7 +208,7 @@ function Home() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent opacity-70 group-hover:opacity-90 transition-opacity duration-300"></div>
                 <div className="absolute bottom-0 left-0 right-0 p-6 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
-                  <span className="text-magenta text-sm font-semibold uppercase tracking-wider">{project.category}</span>
+                  <span className="text-accent text-sm font-semibold uppercase tracking-wider">{project.category}</span>
                   <h3 className="text-white text-xl font-heading font-bold mt-1">{project.title}</h3>
                 </div>
               </motion.div>
@@ -258,7 +258,7 @@ function Home() {
                 className="p-8 rounded-xl transition-all duration-300 bg-glass card-shadow"
               >
                 <div className="mb-4 p-3 rounded-lg w-fit icon-bg">
-                  <Icon size={28} className="text-magenta" />
+                  <Icon size={28} className="text-accent" />
                 </div>
                 <h3 className="font-heading text-xl font-bold text-heading mb-3">
                   {advantage.title}
@@ -296,13 +296,13 @@ function Home() {
               viewport={{ once: true }}
               className="p-8 rounded-xl transition-all duration-300 bg-glass card-shadow relative"
             >
-              <Quote size={32} className="text-magenta/20 absolute top-4 right-4" />
+              <Quote size={32} className="text-accent/20 absolute top-4 right-4" />
               <p className="text-grey-light leading-relaxed mb-6 italic">
                 "{item.text}"
               </p>
               <div>
                 <div className="text-heading font-heading font-bold">{item.name}</div>
-                <div className="text-magenta text-sm">{item.role}</div>
+                <div className="text-accent text-sm">{item.role}</div>
               </div>
             </motion.div>
           ))}

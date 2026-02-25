@@ -32,14 +32,14 @@ function ConfiguratorWeb() {
               key={s.id}
               onClick={() => setSelected(s.id)}
               className={`w-full flex items-center justify-between p-3.5 rounded-lg text-sm font-medium transition-all border-2 text-left ${selected === s.id
-                ? 'border-magenta option-selected'
+                ? 'border-accent option-selected'
                 : 'border-transparent hover:border-grey-muted/30 option-default'
               }`}
             >
               <span className="text-heading">
                 {lang === 'fr' ? s.labelFr : s.labelEn}
               </span>
-              <span className="text-magenta font-semibold text-xs whitespace-nowrap ml-2">
+              <span className="text-accent font-semibold text-xs whitespace-nowrap ml-2">
                 {getPrice(s)}
               </span>
             </button>

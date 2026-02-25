@@ -36,7 +36,7 @@ function CheckoutForm({ cartTotal }) {
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
         <h3 className="text-lg font-heading font-bold text-heading mb-4 flex items-center gap-2">
-          <CreditCard size={20} className="text-magenta" />
+          <CreditCard size={20} className="text-accent" />
           {t('checkout.paymentInfo')}
         </h3>
         <div className="p-4 rounded-xl bg-glass">

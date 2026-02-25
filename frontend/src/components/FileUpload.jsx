@@ -93,7 +93,7 @@ function FileUpload({ files = [], onFilesChange, label, maxFiles = 5 }) {
       {/* Drop zone */}
       <div
         className={`relative border-2 border-dashed rounded-xl p-5 text-center cursor-pointer transition-all ${
-          dragOver ? 'border-magenta bg-magenta/5' : 'border-grey-muted/30 hover:border-grey-muted/50'
+          dragOver ? 'border-accent bg-accent/5' : 'border-grey-muted/30 hover:border-grey-muted/50'
         }`}
         onClick={() => inputRef.current?.click()}
         onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
@@ -110,7 +110,7 @@ function FileUpload({ files = [], onFilesChange, label, maxFiles = 5 }) {
         />
         {uploading ? (
           <div className="flex flex-col items-center gap-2 py-2">
-            <Loader2 size={24} className="text-magenta animate-spin" />
+            <Loader2 size={24} className="text-accent animate-spin" />
             <span className="text-grey-muted text-sm">
               {isFr ? 'Upload en cours...' : 'Uploading...'}
             </span>
@@ -143,9 +143,9 @@ function FileUpload({ files = [], onFilesChange, label, maxFiles = 5 }) {
               className="flex items-center gap-3 p-2.5 rounded-lg text-sm bg-glass"
             >
               {isImage(file.mime) ? (
-                <FileImage size={16} className="text-magenta flex-shrink-0" />
+                <FileImage size={16} className="text-accent flex-shrink-0" />
               ) : (
-                <FileText size={16} className="text-magenta flex-shrink-0" />
+                <FileText size={16} className="text-accent flex-shrink-0" />
               )}
               <span className="text-heading truncate flex-1">{file.name}</span>
               {file.size && (

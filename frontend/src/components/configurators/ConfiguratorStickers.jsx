@@ -63,7 +63,7 @@ function ConfiguratorStickers() {
               key={f.id}
               onClick={() => setFinish(f.id)}
               className={`flex flex-col items-center justify-center min-w-[4.5rem] py-2.5 px-3 rounded-lg text-xs font-medium transition-all border-2 ${finish === f.id
-                ? 'border-magenta option-selected'
+                ? 'border-accent option-selected'
                 : 'border-transparent hover:border-grey-muted/30 option-default'
               }`}
             >
@@ -92,7 +92,7 @@ function ConfiguratorStickers() {
               key={s.id}
               onClick={() => handleShapeChange(s.id)}
               className={`flex flex-col items-center justify-center min-w-[4.5rem] py-2.5 px-3 rounded-lg text-xs font-medium transition-all border-2 ${shape === s.id
-                ? 'border-magenta option-selected'
+                ? 'border-accent option-selected'
                 : 'border-transparent hover:border-grey-muted/30 option-default'
               }`}
             >
@@ -121,7 +121,7 @@ function ConfiguratorStickers() {
               key={s.id}
               onClick={() => setSize(s.id)}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-all border-2 ${size === s.id
-                ? 'border-magenta text-heading option-selected'
+                ? 'border-accent text-heading option-selected'
                 : 'border-transparent text-heading hover:border-grey-muted/30 option-default'
               }`}
             >
@@ -144,7 +144,7 @@ function ConfiguratorStickers() {
                 key={tier.qty}
                 onClick={() => setQtyIndex(i)}
                 className={`flex flex-col items-center py-2.5 px-4 rounded-lg text-xs font-medium transition-all border-2 min-w-[5rem] ${qtyIndex === i
-                  ? 'border-magenta option-selected'
+                  ? 'border-accent option-selected'
                   : 'border-transparent hover:border-grey-muted/30 option-default'
                 }`}
               >
@@ -174,11 +174,11 @@ function ConfiguratorStickers() {
           </div>
           <div className="flex items-center gap-2 mt-2">
             {finish === 'holographic' && (
-              <span className="text-magenta text-xs font-medium">
+              <span className="text-accent text-xs font-medium">
                 {lang === 'fr' ? 'Holographique (Effets Sp\u00e9ciaux)' : 'Holographic (Special Effects)'}
               </span>
             )}
-            <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-magenta/10 text-magenta">
+            <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-accent/10 text-accent">
               <Sparkles size={12} />
               {lang === 'fr' ? 'Design inclus' : 'Design included'}
             </span>

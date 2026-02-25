@@ -18,7 +18,7 @@ function Footer() {
           {/* Colonne 1 - Logo + tagline */}
           <div>
             <MassiveLogo className="h-12 w-auto mb-4 transition-colors duration-300" />
-            <p className="text-magenta font-semibold mb-2">{t('footer.tagline')}</p>
+            <p className="text-accent font-semibold mb-2">{t('footer.tagline')}</p>
             <p className="text-sm footer-muted">
               {t('footer.studioDesc')}<br />
               {t('footer.location')}
@@ -30,17 +30,17 @@ function Footer() {
             <h4 className="font-heading font-bold mb-4 footer-heading">{t('footer.navTitle')}</h4>
             <ul className="space-y-2 footer-links">
               <li>
-                <Link to="/boutique" className="hover:text-magenta transition-colors duration-300">
+                <Link to="/boutique" className="hover:text-accent transition-colors duration-300">
                   {t('nav.boutique')}
                 </Link>
               </li>
               <li>
-                <Link to="/a-propos" className="hover:text-magenta transition-colors duration-300">
+                <Link to="/a-propos" className="hover:text-accent transition-colors duration-300">
                   {t('nav.aPropos')}
                 </Link>
               </li>
               <li>
-                <Link to="/contact" className="hover:text-magenta transition-colors duration-300">
+                <Link to="/contact" className="hover:text-accent transition-colors duration-300">
                   {t('nav.contact')}
                 </Link>
               </li>
@@ -53,7 +53,7 @@ function Footer() {
             <ul className="space-y-2 footer-links">
               {services.map((service) => (
                 <li key={service.slug}>
-                  <Link to={`/services/${service.slug}`} className="hover:text-magenta transition-colors duration-300">
+                  <Link to={`/services/${service.slug}`} className="hover:text-accent transition-colors duration-300">
                     {service.name}
                   </Link>
                 </li>
@@ -70,7 +70,7 @@ function Footer() {
               <li>
                 <a
                   href="mailto:info@massivemedias.com"
-                  className="hover:text-magenta transition-colors duration-300 flex items-center gap-2"
+                  className="hover:text-accent transition-colors duration-300 flex items-center gap-2"
                 >
                   <Mail size={16} />
                   info@massivemedias.com
@@ -84,7 +84,7 @@ function Footer() {
                 href="https://instagram.com/massivemedias"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-2 rounded-full text-white hover:bg-magenta transition-all duration-300 social-icon-btn"
+                className="p-2 rounded-full text-white hover:bg-accent transition-all duration-300 social-icon-btn"
               >
                 <Instagram size={20} />
               </a>
@@ -92,7 +92,7 @@ function Footer() {
                 href="https://facebook.com/massivemedias"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-2 rounded-full text-white hover:bg-magenta transition-all duration-300 social-icon-btn"
+                className="p-2 rounded-full text-white hover:bg-accent transition-all duration-300 social-icon-btn"
               >
                 <Facebook size={20} />
               </a>
@@ -142,12 +142,12 @@ function Footer() {
                 value={nlEmail}
                 onChange={(e) => setNlEmail(e.target.value)}
                 placeholder={lang === 'fr' ? 'ton@email.com' : 'your@email.com'}
-                className="flex-1 px-4 py-2.5 rounded-lg text-sm border border-purple-main/30 bg-transparent text-heading placeholder:text-grey-muted focus:outline-none focus:border-magenta transition-colors"
+                className="flex-1 px-4 py-2.5 rounded-lg text-sm border border-purple-main/30 bg-transparent text-heading placeholder:text-grey-muted focus:outline-none focus:border-accent transition-colors"
               />
               <button
                 type="submit"
                 disabled={nlStatus === 'sending'}
-                className="px-4 py-2.5 rounded-lg bg-magenta text-white text-sm font-semibold hover:bg-magenta/80 transition-colors flex items-center gap-2 disabled:opacity-50"
+                className="px-4 py-2.5 rounded-lg bg-accent text-white text-sm font-semibold hover:bg-accent/80 transition-colors flex items-center gap-2 disabled:opacity-50"
               >
                 <Send size={16} />
               </button>

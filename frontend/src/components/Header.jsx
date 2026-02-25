@@ -78,7 +78,7 @@ function Header() {
                   key={cartCount}
                   initial={{ scale: 0.5 }}
                   animate={{ scale: 1 }}
-                  className="absolute -top-1 -right-1 bg-magenta text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-bold text-[10px]"
+                  className="absolute -top-1 -right-1 bg-accent text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-bold text-[10px]"
                 >
                   {cartCount}
                 </motion.span>
@@ -88,7 +88,7 @@ function Header() {
 
           {/* Mobile Controls */}
           <div className="flex items-center gap-2 lg:hidden">
-            <BrightnessFader size="compact" />
+            <BrightnessFader />
             <button
               onClick={toggleLang}
               className="text-sm font-semibold tracking-wide px-2.5 py-1 rounded-md transition-all duration-200 toggle-button"

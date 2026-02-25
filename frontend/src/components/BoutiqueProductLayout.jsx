@@ -68,11 +68,11 @@ function BoutiqueProductLayout({
 
         {/* ============ BREADCRUMB ============ */}
         <div className="flex items-center gap-2 mb-8 text-sm">
-          <Link to="/" className="text-grey-muted hover:text-magenta transition-colors">
+          <Link to="/" className="text-grey-muted hover:text-accent transition-colors">
             {lang === 'fr' ? 'Accueil' : 'Home'}
           </Link>
           <span className="text-grey-muted">/</span>
-          <Link to="/boutique" className="text-grey-muted hover:text-magenta transition-colors">
+          <Link to="/boutique" className="text-grey-muted hover:text-accent transition-colors">
             {lang === 'fr' ? 'Boutique' : 'Shop'}
           </Link>
           <span className="text-grey-muted">/</span>
@@ -94,7 +94,7 @@ function BoutiqueProductLayout({
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               />
               {badge && (
-                <div className="absolute top-4 left-4 px-3 py-1.5 rounded-full bg-magenta text-white text-xs font-semibold flex items-center gap-1.5">
+                <div className="absolute top-4 left-4 px-3 py-1.5 rounded-full bg-accent text-white text-xs font-semibold flex items-center gap-1.5">
                   {badge.icon && <badge.icon size={14} />}
                   {t(badge)}
                 </div>
@@ -117,7 +117,7 @@ function BoutiqueProductLayout({
                 <button
                   key={i}
                   onClick={() => setMainImage(i)}
-                  className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${mainImage === i ? 'border-magenta' : 'border-transparent opacity-60 hover:opacity-100'}`}
+                  className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${mainImage === i ? 'border-accent' : 'border-transparent opacity-60 hover:opacity-100'}`}
                 >
                   <img src={img} alt="" className="w-full h-full object-cover" />
                 </button>
@@ -133,7 +133,7 @@ function BoutiqueProductLayout({
             <p className="text-grey-muted mb-4">
               {t(productSubtitle)}
             </p>
-            <div className="w-10 h-0.5 bg-magenta mb-6" />
+            <div className="w-10 h-0.5 bg-accent mb-6" />
 
             {/* Service-specific configurator */}
             {children}
@@ -152,7 +152,7 @@ function BoutiqueProductLayout({
               return (
                 <div key={i} className="flex items-center gap-3">
                   {i > 0 && <div className="trust-divider hidden sm:block" />}
-                  <Icon size={18} className="text-magenta flex-shrink-0" />
+                  <Icon size={18} className="text-accent flex-shrink-0" />
                   <span className="text-sm text-grey-muted font-medium">
                     {t(item)}
                   </span>
@@ -195,7 +195,7 @@ function BoutiqueProductLayout({
                     className="p-6 rounded-xl glass-accent-top"
                   >
                     <div className="mb-4 p-3.5 rounded-lg w-fit icon-bg">
-                      <Icon size={28} className="text-magenta" />
+                      <Icon size={28} className="text-accent" />
                     </div>
                     <h3 className="font-heading font-bold text-heading text-lg mb-2">
                       {t(feature)}
@@ -262,7 +262,7 @@ function BoutiqueProductLayout({
             className="mb-20"
           >
             <h2 className="text-3xl md:text-4xl font-heading font-bold text-heading mb-10 text-center flex items-center justify-center gap-3">
-              <Wrench size={28} className="text-magenta" />
+              <Wrench size={28} className="text-accent" />
               {lang === 'fr' ? 'Notre \u00e9quipement' : 'Our equipment'}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
@@ -335,7 +335,7 @@ function BoutiqueProductLayout({
                   className="rounded-xl overflow-hidden transition-all"
                   style={{
                     border: '1px solid var(--bg-card-border)',
-                    borderLeft: openFaq === i ? '3px solid #FF52A0' : '1px solid var(--bg-card-border)',
+                    borderLeft: openFaq === i ? '3px solid var(--accent-color, #FF52A0)' : '1px solid var(--bg-card-border)',
                   }}
                 >
                   <button
@@ -394,7 +394,7 @@ function BoutiqueProductLayout({
               {ctaLinks.map((link, i) => (
                 <span key={i} className="flex items-center gap-4">
                   {i > 0 && <span className="text-grey-muted/30">&middot;</span>}
-                  <Link to={link.to} className="text-grey-muted hover:text-magenta transition-colors">
+                  <Link to={link.to} className="text-grey-muted hover:text-accent transition-colors">
                     {t(link)}
                   </Link>
                 </span>
