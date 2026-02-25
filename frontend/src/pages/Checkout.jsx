@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, User, AlertCircle, Paperclip } from 'lucide-react';
@@ -7,7 +7,7 @@ import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
-import { stripePromise } from '../lib/stripe';
+import { getStripePromise } from '../lib/stripe';
 import { createPaymentIntent } from '../services/orderService';
 import CheckoutForm from '../components/CheckoutForm';
 import FileUpload from '../components/FileUpload';
@@ -20,8 +20,13 @@ function Checkout() {
 
   const [step, setStep] = useState('info'); // 'info' | 'payment'
   const [clientSecret, setClientSecret] = useState('');
+  const [stripePromise, setStripePromise] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    getStripePromise()?.then(setStripePromise);
+  }, []);
 
   const [extraFiles, setExtraFiles] = useState([]);
 

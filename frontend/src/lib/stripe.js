@@ -1,7 +1,11 @@
-import { loadStripe } from '@stripe/stripe-js';
+let stripePromiseCache = null;
 
-const stripePublicKey = import.meta.env.VITE_STRIPE_PUBLIC_KEY;
-
-export const stripePromise = stripePublicKey
-  ? loadStripe(stripePublicKey)
-  : null;
+export function getStripePromise() {
+  if (stripePromiseCache) return stripePromiseCache;
+  const key = import.meta.env.VITE_STRIPE_PUBLIC_KEY;
+  if (!key) return null;
+  return import('@stripe/stripe-js').then(({ loadStripe }) => {
+    stripePromiseCache = loadStripe(key);
+    return stripePromiseCache;
+  });
+}
