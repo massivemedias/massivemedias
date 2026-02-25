@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Menu, X, ShoppingCart, UserCircle, Truck } from 'lucide-react';
+import { Menu, X, ShoppingCart, UserCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import MassiveLogo from './MassiveLogo';
 import { useLang } from '../i18n/LanguageContext';
@@ -151,10 +151,6 @@ function Header() {
           )}
         </AnimatePresence>
       </nav>
-      <div className="text-center py-1 text-[11px] font-medium tracking-wide border-t border-purple-main/10 delivery-banner">
-        <Truck size={12} className="inline mr-1.5 -mt-px" />
-        {lang === 'fr' ? 'Livraison locale gratuite · Mile-End, Montréal' : 'Free local delivery · Mile-End, Montreal'}
-      </div>
     </header>
   );
 }
