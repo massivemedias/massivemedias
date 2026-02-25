@@ -67,10 +67,10 @@ function APropos() {
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <img src={thumb('/images/locale/locale2.webp')} alt="Studio Massive Medias" className="rounded-xl w-full h-48 object-cover" />
-              <img src={thumb('/images/locale/locale9.webp')} alt="Espace de travail" className="rounded-xl w-full h-48 object-cover" />
-              <img src={thumb('/images/locale/locale10.webp')} alt="Équipement" className="rounded-xl w-full h-48 object-cover" />
-              <img src={thumb('/images/locale/locale11.webp')} alt="Productions" className="rounded-xl w-full h-48 object-cover" />
+              <img src={thumb('/images/locale/locale2.webp')} alt="Studio Massive Medias" className="rounded-xl w-full h-48 object-cover" loading="lazy" />
+              <img src={thumb('/images/locale/locale9.webp')} alt="Espace de travail" className="rounded-xl w-full h-48 object-cover" loading="lazy" />
+              <img src={thumb('/images/locale/locale10.webp')} alt="Équipement" className="rounded-xl w-full h-48 object-cover" loading="lazy" />
+              <img src={thumb('/images/locale/locale11.webp')} alt="Productions" className="rounded-xl w-full h-48 object-cover" loading="lazy" />
             </div>
           </div>
         </motion.div>
@@ -123,8 +123,8 @@ function APropos() {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
             <div className="grid grid-cols-2 gap-4">
-              <img src={thumb('/images/locale/locale3.webp')} alt="Studio" className="rounded-xl w-full h-40 object-cover" />
-              <img src={thumb('/images/locale/locale10.webp')} alt="Équipement" className="rounded-xl w-full h-40 object-cover" />
+              <img src={thumb('/images/locale/locale3.webp')} alt="Studio" className="rounded-xl w-full h-40 object-cover" loading="lazy" />
+              <img src={thumb('/images/locale/locale10.webp')} alt="Équipement" className="rounded-xl w-full h-40 object-cover" loading="lazy" />
             </div>
             
             <div className="space-y-4">
@@ -162,7 +162,7 @@ function APropos() {
           className="mb-20"
         >
           <div className="rounded-2xl overflow-hidden relative">
-            <img src={thumb('/images/locale/locale11.webp')} alt="Espace Versatile" className="w-full h-80 object-cover" />
+            <img src={thumb('/images/locale/locale11.webp')} alt="Espace Versatile" className="w-full h-80 object-cover" loading="lazy" />
             <div className="absolute inset-0 space-overlay"></div>
             <div className="absolute bottom-0 left-0 right-0 p-8 md:p-12">
               <div className="flex items-center gap-2 mb-3">

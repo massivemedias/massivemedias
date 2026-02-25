@@ -267,6 +267,7 @@ function ServiceDetail() {
                                 alt={`${project.name} logo`}
                                 className="w-24 h-24 md:w-32 md:h-32 object-contain"
                                 style={{ filter: 'var(--logo-filter, none)' }}
+                                loading="lazy"
                               />
                               <span className="text-grey-muted text-xs mt-3 md:hidden">
                                 {lang === 'fr' ? 'Tap pour voir' : 'Tap to preview'}

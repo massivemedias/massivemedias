@@ -119,7 +119,7 @@ function BoutiqueProductLayout({
                   onClick={() => setMainImage(i)}
                   className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${mainImage === i ? 'border-accent' : 'border-transparent opacity-60 hover:opacity-100'}`}
                 >
-                  <img src={img} alt="" className="w-full h-full object-cover" />
+                  <img src={img} alt="" className="w-full h-full object-cover" loading="lazy" />
                 </button>
               ))}
             </div>
@@ -306,7 +306,7 @@ function BoutiqueProductLayout({
                   className="relative rounded-xl overflow-hidden cursor-pointer group aspect-square"
                   onClick={() => setLightbox(i)}
                 >
-                  <img src={imgSrc} alt="" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                  <img src={imgSrc} alt="" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" loading="lazy" />
                   <div className="absolute inset-0 transition-colors duration-300 flex items-center justify-center">
                     <ZoomIn size={28} className="text-white drop-shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   </div>
