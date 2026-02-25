@@ -1,0 +1,55 @@
+{
+  "kind": "collectionType",
+  "collectionName": "news_articles",
+  "info": {
+    "singularName": "news-article",
+    "pluralName": "news-articles",
+    "displayName": "News Article",
+    "description": "News and announcements"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "titleFr": {
+      "type": "string",
+      "required": true
+    },
+    "titleEn": {
+      "type": "string",
+      "required": true
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "titleEn"
+    },
+    "contentFr": {
+      "type": "richtext",
+      "required": true
+    },
+    "contentEn": {
+      "type": "richtext",
+      "required": true
+    },
+    "excerptFr": {
+      "type": "text"
+    },
+    "excerptEn": {
+      "type": "text"
+    },
+    "coverImage": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["images"]
+    },
+    "category": {
+      "type": "enumeration",
+      "enum": ["announcement", "blog", "promo", "update"],
+      "default": "announcement"
+    },
+    "pinned": {
+      "type": "boolean",
+      "default": false
+    }
+  }
+}

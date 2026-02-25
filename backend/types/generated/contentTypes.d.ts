@@ -430,6 +430,141 @@ export interface AdminUser extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiContactSubmissionContactSubmission
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'contact_submissions';
+  info: {
+    description: 'Contact form submissions';
+    displayName: 'Contact Submission';
+    pluralName: 'contact-submissions';
+    singularName: 'contact-submission';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    budget: Schema.Attribute.String;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    email: Schema.Attribute.Email & Schema.Attribute.Required;
+    entreprise: Schema.Attribute.String;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::contact-submission.contact-submission'
+    > &
+      Schema.Attribute.Private;
+    message: Schema.Attribute.Text & Schema.Attribute.Required;
+    nom: Schema.Attribute.String & Schema.Attribute.Required;
+    notes: Schema.Attribute.Text;
+    publishedAt: Schema.Attribute.DateTime;
+    service: Schema.Attribute.String;
+    status: Schema.Attribute.Enumeration<
+      ['new', 'read', 'replied', 'archived']
+    > &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'new'>;
+    telephone: Schema.Attribute.String;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    urgence: Schema.Attribute.String;
+  };
+}
+
+export interface ApiExpenseExpense extends Struct.CollectionTypeSchema {
+  collectionName: 'expenses';
+  info: {
+    description: 'Business expenses for accounting';
+    displayName: 'Expense';
+    pluralName: 'expenses';
+    singularName: 'expense';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    amount: Schema.Attribute.Decimal & Schema.Attribute.Required;
+    category: Schema.Attribute.Enumeration<
+      [
+        'materials',
+        'shipping',
+        'software',
+        'marketing',
+        'rent',
+        'equipment',
+        'taxes',
+        'other',
+      ]
+    > &
+      Schema.Attribute.Required;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    date: Schema.Attribute.Date & Schema.Attribute.Required;
+    description: Schema.Attribute.String & Schema.Attribute.Required;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::expense.expense'
+    > &
+      Schema.Attribute.Private;
+    notes: Schema.Attribute.Text;
+    publishedAt: Schema.Attribute.DateTime;
+    receipt: Schema.Attribute.Media<'images' | 'files'>;
+    receiptNumber: Schema.Attribute.String;
+    taxDeductible: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    tpsAmount: Schema.Attribute.Decimal & Schema.Attribute.DefaultTo<0>;
+    tvqAmount: Schema.Attribute.Decimal & Schema.Attribute.DefaultTo<0>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    vendor: Schema.Attribute.String;
+  };
+}
+
+export interface ApiNewsArticleNewsArticle extends Struct.CollectionTypeSchema {
+  collectionName: 'news_articles';
+  info: {
+    description: 'News and announcements';
+    displayName: 'News Article';
+    pluralName: 'news-articles';
+    singularName: 'news-article';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    category: Schema.Attribute.Enumeration<
+      ['announcement', 'blog', 'promo', 'update']
+    > &
+      Schema.Attribute.DefaultTo<'announcement'>;
+    contentEn: Schema.Attribute.RichText & Schema.Attribute.Required;
+    contentFr: Schema.Attribute.RichText & Schema.Attribute.Required;
+    coverImage: Schema.Attribute.Media<'images'>;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    excerptEn: Schema.Attribute.Text;
+    excerptFr: Schema.Attribute.Text;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::news-article.news-article'
+    > &
+      Schema.Attribute.Private;
+    pinned: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    publishedAt: Schema.Attribute.DateTime;
+    slug: Schema.Attribute.UID<'titleEn'>;
+    titleEn: Schema.Attribute.String & Schema.Attribute.Required;
+    titleFr: Schema.Attribute.String & Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
   collectionName: 'orders';
   info: {
@@ -450,6 +585,7 @@ export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
     customerName: Schema.Attribute.String & Schema.Attribute.Required;
     customerPhone: Schema.Attribute.String;
     designReady: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    files: Schema.Attribute.Media<'images' | 'files', true>;
     items: Schema.Attribute.JSON & Schema.Attribute.Required;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<'oneToMany', 'api::order.order'> &
@@ -475,6 +611,93 @@ export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
     subtotal: Schema.Attribute.Integer & Schema.Attribute.Required;
     supabaseUserId: Schema.Attribute.String;
     total: Schema.Attribute.Integer & Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiProductProduct extends Struct.CollectionTypeSchema {
+  collectionName: 'products';
+  info: {
+    description: 'Products and pricing';
+    displayName: 'Product';
+    pluralName: 'products';
+    singularName: 'product';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    active: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    category: Schema.Attribute.Enumeration<
+      ['stickers', 'fine-art', 'sublimation', 'flyers', 'design', 'web']
+    > &
+      Schema.Attribute.Required;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    descriptionEn: Schema.Attribute.RichText;
+    descriptionFr: Schema.Attribute.RichText;
+    faqEn: Schema.Attribute.JSON;
+    faqFr: Schema.Attribute.JSON;
+    highlightsEn: Schema.Attribute.JSON;
+    highlightsFr: Schema.Attribute.JSON;
+    images: Schema.Attribute.Media<'images', true>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::product.product'
+    > &
+      Schema.Attribute.Private;
+    name: Schema.Attribute.String & Schema.Attribute.Required;
+    nameEn: Schema.Attribute.String & Schema.Attribute.Required;
+    nameFr: Schema.Attribute.String & Schema.Attribute.Required;
+    pricingData: Schema.Attribute.JSON & Schema.Attribute.Required;
+    publishedAt: Schema.Attribute.DateTime;
+    slug: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    sortOrder: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiSiteContentSiteContent extends Struct.SingleTypeSchema {
+  collectionName: 'site_contents';
+  info: {
+    description: 'Editable site texts and images';
+    displayName: 'Site Content';
+    pluralName: 'site-contents';
+    singularName: 'site-content';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    aboutTextEn: Schema.Attribute.RichText;
+    aboutTextFr: Schema.Attribute.RichText;
+    announcementActive: Schema.Attribute.Boolean &
+      Schema.Attribute.DefaultTo<false>;
+    announcementEn: Schema.Attribute.String;
+    announcementFr: Schema.Attribute.String;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    heroImages: Schema.Attribute.Media<'images', true>;
+    heroSubtitleEn: Schema.Attribute.Text;
+    heroSubtitleFr: Schema.Attribute.Text;
+    heroTaglineEn: Schema.Attribute.String;
+    heroTaglineFr: Schema.Attribute.String;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::site-content.site-content'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -992,7 +1215,12 @@ declare module '@strapi/strapi' {
       'admin::transfer-token': AdminTransferToken;
       'admin::transfer-token-permission': AdminTransferTokenPermission;
       'admin::user': AdminUser;
+      'api::contact-submission.contact-submission': ApiContactSubmissionContactSubmission;
+      'api::expense.expense': ApiExpenseExpense;
+      'api::news-article.news-article': ApiNewsArticleNewsArticle;
       'api::order.order': ApiOrderOrder;
+      'api::product.product': ApiProductProduct;
+      'api::site-content.site-content': ApiSiteContentSiteContent;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;
       'plugin::i18n.locale': PluginI18NLocale;

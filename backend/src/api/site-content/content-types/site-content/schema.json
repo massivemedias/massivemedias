@@ -1,0 +1,48 @@
+{
+  "kind": "singleType",
+  "collectionName": "site_contents",
+  "info": {
+    "singularName": "site-content",
+    "pluralName": "site-contents",
+    "displayName": "Site Content",
+    "description": "Editable site texts and images"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "heroTaglineFr": {
+      "type": "string"
+    },
+    "heroTaglineEn": {
+      "type": "string"
+    },
+    "heroSubtitleFr": {
+      "type": "text"
+    },
+    "heroSubtitleEn": {
+      "type": "text"
+    },
+    "aboutTextFr": {
+      "type": "richtext"
+    },
+    "aboutTextEn": {
+      "type": "richtext"
+    },
+    "announcementFr": {
+      "type": "string"
+    },
+    "announcementEn": {
+      "type": "string"
+    },
+    "announcementActive": {
+      "type": "boolean",
+      "default": false
+    },
+    "heroImages": {
+      "type": "media",
+      "multiple": true,
+      "allowedTypes": ["images"]
+    }
+  }
+}

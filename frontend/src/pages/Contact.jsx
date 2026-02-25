@@ -3,8 +3,7 @@ import { Mail, MapPin, Instagram, Facebook, Send, CheckCircle, AlertCircle } fro
 import { useState, useRef } from 'react';
 import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
-
-const FORMSPREE_ENDPOINT = 'https://formspree.io/f/xzdardoe';
+import api from '../services/api';
 
 function Contact() {
   const { t, lang } = useLang();
@@ -26,12 +25,7 @@ function Contact() {
     setStatus('sending');
 
     try {
-      const response = await fetch(FORMSPREE_ENDPOINT, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-        body: JSON.stringify(formData)
-      });
-      if (!response.ok) throw new Error('Form submission failed');
+      await api.post('/contact-submissions/submit', formData);
       setStatus('success');
       setFormData({
         nom: '',

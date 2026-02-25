@@ -1,0 +1,58 @@
+{
+  "kind": "collectionType",
+  "collectionName": "expenses",
+  "info": {
+    "singularName": "expense",
+    "pluralName": "expenses",
+    "displayName": "Expense",
+    "description": "Business expenses for accounting"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "description": {
+      "type": "string",
+      "required": true
+    },
+    "amount": {
+      "type": "decimal",
+      "required": true
+    },
+    "category": {
+      "type": "enumeration",
+      "enum": ["materials", "shipping", "software", "marketing", "rent", "equipment", "taxes", "other"],
+      "required": true
+    },
+    "date": {
+      "type": "date",
+      "required": true
+    },
+    "vendor": {
+      "type": "string"
+    },
+    "receiptNumber": {
+      "type": "string"
+    },
+    "receipt": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["images", "files"]
+    },
+    "taxDeductible": {
+      "type": "boolean",
+      "default": false
+    },
+    "tpsAmount": {
+      "type": "decimal",
+      "default": 0
+    },
+    "tvqAmount": {
+      "type": "decimal",
+      "default": 0
+    },
+    "notes": {
+      "type": "text"
+    }
+  }
+}

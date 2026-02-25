@@ -24,5 +24,21 @@ export default {
         auth: false,
       },
     },
+    {
+      method: 'GET',
+      path: '/orders/clients',
+      handler: 'order.clients',
+      config: {
+        auth: false,
+      },
+    },
+    {
+      method: 'GET',
+      path: '/orders/stats',
+      handler: 'order.stats',
+      config: {
+        auth: false,
+      },
+    },
   ],
 };

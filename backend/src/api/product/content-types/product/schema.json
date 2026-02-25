@@ -1,0 +1,72 @@
+{
+  "kind": "collectionType",
+  "collectionName": "products",
+  "info": {
+    "singularName": "product",
+    "pluralName": "products",
+    "displayName": "Product",
+    "description": "Products and pricing"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "slug": {
+      "type": "string",
+      "unique": true,
+      "required": true
+    },
+    "category": {
+      "type": "enumeration",
+      "enum": ["stickers", "fine-art", "sublimation", "flyers", "design", "web"],
+      "required": true
+    },
+    "nameFr": {
+      "type": "string",
+      "required": true
+    },
+    "nameEn": {
+      "type": "string",
+      "required": true
+    },
+    "descriptionFr": {
+      "type": "richtext"
+    },
+    "descriptionEn": {
+      "type": "richtext"
+    },
+    "pricingData": {
+      "type": "json",
+      "required": true
+    },
+    "images": {
+      "type": "media",
+      "multiple": true,
+      "allowedTypes": ["images"]
+    },
+    "highlightsFr": {
+      "type": "json"
+    },
+    "highlightsEn": {
+      "type": "json"
+    },
+    "faqFr": {
+      "type": "json"
+    },
+    "faqEn": {
+      "type": "json"
+    },
+    "sortOrder": {
+      "type": "integer",
+      "default": 0
+    },
+    "active": {
+      "type": "boolean",
+      "default": true
+    }
+  }
+}

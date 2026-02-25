@@ -150,4 +150,147 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
 
     ctx.body = { received: true };
   },
+
+  async clients(ctx) {
+    const orders = await strapi.documents('api::order.order').findMany({
+      filters: { status: { $ne: 'cancelled' } },
+      sort: 'createdAt:desc',
+    });
+
+    const clientMap = new Map<string, any>();
+
+    for (const order of orders) {
+      const key = order.customerEmail.toLowerCase();
+      if (clientMap.has(key)) {
+        const client = clientMap.get(key);
+        client.orderCount += 1;
+        client.totalSpent += order.total;
+        if (new Date(order.createdAt) > new Date(client.lastOrderDate)) {
+          client.lastOrderDate = order.createdAt;
+        }
+      } else {
+        clientMap.set(key, {
+          email: order.customerEmail,
+          name: order.customerName,
+          phone: order.customerPhone || '',
+          supabaseUserId: order.supabaseUserId || '',
+          orderCount: 1,
+          totalSpent: order.total,
+          lastOrderDate: order.createdAt,
+        });
+      }
+    }
+
+    const clients = Array.from(clientMap.values()).sort((a, b) => b.totalSpent - a.totalSpent);
+
+    ctx.body = { clients, total: clients.length };
+  },
+
+  async stats(ctx) {
+    // Fetch all non-cancelled orders
+    const orders = await strapi.documents('api::order.order').findMany({
+      filters: { status: { $ne: 'cancelled' } },
+      sort: 'createdAt:desc',
+    });
+
+    // Fetch all expenses
+    const expenses = await strapi.documents('api::expense.expense').findMany({
+      sort: 'date:desc',
+    });
+
+    // Revenue calculations (order totals are in cents)
+    const paidOrders = orders.filter((o: any) => o.status !== 'pending');
+    const totalRevenue = paidOrders.reduce((sum: number, o: any) => sum + (o.total || 0), 0);
+
+    // Monthly revenue breakdown
+    const monthlyRevenue: Record<string, { revenue: number; orders: number }> = {};
+    for (const order of paidOrders) {
+      const month = (order.createdAt as string).slice(0, 7); // "YYYY-MM"
+      if (!monthlyRevenue[month]) {
+        monthlyRevenue[month] = { revenue: 0, orders: 0 };
+      }
+      monthlyRevenue[month].revenue += order.total;
+      monthlyRevenue[month].orders += 1;
+    }
+
+    // Expense calculations (amounts are in dollars)
+    const totalExpenses = expenses.reduce((sum: number, e: any) => sum + (parseFloat(e.amount) || 0), 0);
+    const totalTpsPaid = expenses.reduce((sum: number, e: any) => sum + (parseFloat(e.tpsAmount) || 0), 0);
+    const totalTvqPaid = expenses.reduce((sum: number, e: any) => sum + (parseFloat(e.tvqAmount) || 0), 0);
+
+    // Monthly expenses breakdown
+    const monthlyExpenses: Record<string, number> = {};
+    const expensesByCategory: Record<string, number> = {};
+    for (const expense of expenses) {
+      const month = (expense.date as string).slice(0, 7);
+      const amount = Number(expense.amount) || 0;
+      monthlyExpenses[month] = (monthlyExpenses[month] || 0) + amount;
+      expensesByCategory[expense.category] = (expensesByCategory[expense.category] || 0) + amount;
+    }
+
+    // Tax calculations (TPS 5%, TVQ 9.975% on revenue in dollars)
+    const revenueInDollars = totalRevenue / 100;
+    const tpsCollected = revenueInDollars * 0.05;
+    const tvqCollected = revenueInDollars * 0.09975;
+
+    // Order status breakdown
+    const statusBreakdown: Record<string, number> = {};
+    for (const order of orders) {
+      statusBreakdown[order.status] = (statusBreakdown[order.status] || 0) + 1;
+    }
+
+    // Top clients
+    const clientMap = new Map<string, { email: string; name: string; totalSpent: number; orderCount: number }>();
+    for (const order of paidOrders) {
+      const key = order.customerEmail.toLowerCase();
+      if (clientMap.has(key)) {
+        const c = clientMap.get(key)!;
+        c.totalSpent += order.total;
+        c.orderCount += 1;
+      } else {
+        clientMap.set(key, {
+          email: order.customerEmail,
+          name: order.customerName,
+          totalSpent: order.total,
+          orderCount: 1,
+        });
+      }
+    }
+    const topClients = Array.from(clientMap.values()).sort((a, b) => b.totalSpent - a.totalSpent).slice(0, 10);
+
+    ctx.body = {
+      revenue: {
+        total: totalRevenue,
+        totalDollars: revenueInDollars,
+        monthly: Object.entries(monthlyRevenue)
+          .map(([month, data]) => ({ month, ...data }))
+          .sort((a, b) => a.month.localeCompare(b.month)),
+      },
+      expenses: {
+        total: totalExpenses,
+        monthly: Object.entries(monthlyExpenses)
+          .map(([month, amount]) => ({ month, amount }))
+          .sort((a, b) => a.month.localeCompare(b.month)),
+        byCategory: expensesByCategory,
+      },
+      taxes: {
+        tpsCollected: Math.round(tpsCollected * 100) / 100,
+        tvqCollected: Math.round(tvqCollected * 100) / 100,
+        tpsPaid: totalTpsPaid,
+        tvqPaid: totalTvqPaid,
+        tpsNet: Math.round((tpsCollected - totalTpsPaid) * 100) / 100,
+        tvqNet: Math.round((tvqCollected - totalTvqPaid) * 100) / 100,
+      },
+      profit: {
+        gross: Math.round((revenueInDollars - totalExpenses) * 100) / 100,
+        net: Math.round((revenueInDollars - totalExpenses - (tpsCollected - totalTpsPaid) - (tvqCollected - totalTvqPaid)) * 100) / 100,
+      },
+      orderStats: {
+        total: orders.length,
+        byStatus: statusBreakdown,
+        averageValue: paidOrders.length > 0 ? Math.round(totalRevenue / paidOrders.length) : 0,
+      },
+      topClients,
+    };
+  },
 }));

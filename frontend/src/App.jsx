@@ -24,6 +24,8 @@ const Checkout = lazy(() => import('./pages/Checkout'));
 const CheckoutSuccess = lazy(() => import('./pages/CheckoutSuccess'));
 const CheckoutCancel = lazy(() => import('./pages/CheckoutCancel'));
 const NotFound = lazy(() => import('./pages/NotFound'));
+const News = lazy(() => import('./pages/News'));
+const MmAdmin = lazy(() => import('./pages/MmAdmin'));
 const ProtectedRoute = lazy(() => import('./components/ProtectedRoute'));
 
 // Base path pour GitHub Pages
@@ -74,6 +76,12 @@ function App() {
             {/* Auth & Account */}
             <Route path="/login" element={<Login />} />
             <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
+
+            {/* News */}
+            <Route path="/nouvelles" element={<News />} />
+
+            {/* Admin redirect */}
+            <Route path="/mm-admin" element={<MmAdmin />} />
 
             {/* Checkout */}
             <Route path="/checkout" element={<Checkout />} />
