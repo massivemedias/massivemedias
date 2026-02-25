@@ -69,6 +69,7 @@ function Panier() {
               <button
                 onClick={() => removeFromCart(i)}
                 className="p-2 text-grey-muted hover:text-red-500 transition-colors flex-shrink-0"
+                aria-label={isFr ? `Supprimer ${item.productName}` : `Remove ${item.productName}`}
               >
                 <Trash2 size={18} />
               </button>

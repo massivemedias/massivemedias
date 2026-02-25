@@ -56,6 +56,7 @@ function Header() {
             <button
               onClick={toggleLang}
               className="text-sm font-semibold tracking-wide px-3 py-1.5 rounded-md transition-all duration-200 toggle-button"
+              aria-label={lang === 'fr' ? 'Switch to English' : 'Passer en français'}
             >
               {lang === 'fr' ? 'EN' : 'FR'}
             </button>
@@ -71,7 +72,7 @@ function Header() {
             </Link>
 
             {/* Panier */}
-            <Link to="/panier" className="relative p-2 transition-colors duration-200 nav-link">
+            <Link to="/panier" className="relative p-2 transition-colors duration-200 nav-link" aria-label={t('nav.panier')}>
               <ShoppingCart size={20} />
               {cartCount > 0 && (
                 <motion.span
@@ -92,12 +93,14 @@ function Header() {
             <button
               onClick={toggleLang}
               className="text-sm font-semibold tracking-wide px-2.5 py-1 rounded-md transition-all duration-200 toggle-button"
+              aria-label={lang === 'fr' ? 'Switch to English' : 'Passer en français'}
             >
               {lang === 'fr' ? 'EN' : 'FR'}
             </button>
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="p-2 transition-colors nav-link"
+              aria-label={mobileMenuOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
             >
               {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>

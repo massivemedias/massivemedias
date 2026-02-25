@@ -320,6 +320,7 @@ function ServiceDetail() {
                             <button
                               onClick={() => toggleCard(index)}
                               className="absolute top-3 left-3 bg-black/50 backdrop-blur-sm rounded-full p-2 text-white/80 hover:text-white hover:bg-black/70 transition-all duration-300"
+                              aria-label={lang === 'fr' ? 'Retour' : 'Back'}
                             >
                               <ArrowLeft size={16} />
                             </button>
@@ -328,6 +329,7 @@ function ServiceDetail() {
                               target="_blank"
                               rel="noopener noreferrer"
                               className="absolute top-3 right-3 bg-black/50 backdrop-blur-sm rounded-full p-2 text-white/80 hover:text-white hover:bg-black/70 transition-all duration-300"
+                              aria-label={`${lang === 'fr' ? 'Visiter' : 'Visit'} ${project.name}`}
                             >
                               <ExternalLink size={16} />
                             </a>
@@ -767,6 +769,7 @@ function ServiceDetail() {
               <button
                 onClick={goToPrevious}
                 className="absolute left-2 md:left-6 top-1/2 -translate-y-1/2 z-[110] text-white/70 hover:text-white transition-colors w-12 h-12 flex items-center justify-center rounded-full lightbox-btn"
+                aria-label={lang === 'fr' ? 'Image précédente' : 'Previous image'}
               >
                 <ChevronLeft size={28} />
               </button>
@@ -777,6 +780,7 @@ function ServiceDetail() {
               <button
                 onClick={goToNext}
                 className="absolute right-2 md:right-6 top-1/2 -translate-y-1/2 z-[110] text-white/70 hover:text-white transition-colors w-12 h-12 flex items-center justify-center rounded-full lightbox-btn"
+                aria-label={lang === 'fr' ? 'Image suivante' : 'Next image'}
               >
                 <ChevronRight size={28} />
               </button>
@@ -798,6 +802,7 @@ function ServiceDetail() {
               <button
                 onClick={closeLightbox}
                 className="absolute top-4 right-4 text-white/70 hover:text-white transition-colors w-10 h-10 flex items-center justify-center rounded-full lightbox-btn"
+                aria-label={lang === 'fr' ? 'Fermer' : 'Close'}
               >
                 <X size={20} />
               </button>

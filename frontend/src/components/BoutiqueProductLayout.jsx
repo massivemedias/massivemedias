@@ -102,12 +102,14 @@ function BoutiqueProductLayout({
               <button
                 onClick={(e) => { e.stopPropagation(); prevImage(); }}
                 className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full flex items-center justify-center text-heading transition-colors card-bg card-border"
+                aria-label={lang === 'fr' ? 'Image précédente' : 'Previous image'}
               >
                 <ChevronLeft size={20} />
               </button>
               <button
                 onClick={(e) => { e.stopPropagation(); nextImage(); }}
                 className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full flex items-center justify-center text-heading transition-colors card-bg card-border"
+                aria-label={lang === 'fr' ? 'Image suivante' : 'Next image'}
               >
                 <ChevronRight size={20} />
               </button>
@@ -417,24 +419,27 @@ function BoutiqueProductLayout({
             <button
               onClick={(e) => { e.stopPropagation(); setLightbox((lightbox - 1 + images.length) % images.length); }}
               className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 text-white/70 hover:text-white w-12 h-12 flex items-center justify-center"
+              aria-label={lang === 'fr' ? 'Image précédente' : 'Previous image'}
             >
               <ChevronLeft size={32} />
             </button>
             <button
               onClick={(e) => { e.stopPropagation(); setLightbox((lightbox + 1) % images.length); }}
               className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 text-white/70 hover:text-white w-12 h-12 flex items-center justify-center"
+              aria-label={lang === 'fr' ? 'Image suivante' : 'Next image'}
             >
               <ChevronRight size={32} />
             </button>
             <button
               onClick={() => setLightbox(null)}
               className="absolute top-4 right-4 text-white/70 hover:text-white w-10 h-10 flex items-center justify-center"
+              aria-label={lang === 'fr' ? 'Fermer' : 'Close'}
             >
               <X size={28} />
             </button>
             <img
               src={toFull(images[lightbox])}
-              alt=""
+              alt={t(productTitle)}
               className="max-w-full max-h-[85vh] object-contain rounded-lg"
               onClick={(e) => e.stopPropagation()}
             />

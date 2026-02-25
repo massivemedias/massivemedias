@@ -132,6 +132,7 @@ function Contact() {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="p-3 rounded-full text-white hover:bg-accent transition-all duration-300 social-icon-btn"
+                  aria-label="Instagram"
                 >
                   <Instagram size={24} />
                 </a>
@@ -140,6 +141,7 @@ function Contact() {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="p-3 rounded-full text-white hover:bg-accent transition-all duration-300 social-icon-btn"
+                  aria-label="Facebook"
                 >
                   <Facebook size={24} />
                 </a>
