@@ -93,7 +93,7 @@ function ServiceDetail() {
       />
 
       {/* ============ HERO ============ */}
-      <section className="relative py-16 md:py-20 overflow-hidden">
+      <section className="relative py-[2.08rem] md:py-[2.6rem] overflow-hidden">
         <div className="absolute inset-0 hero-aurora"></div>
 
         <div className="relative z-10 section-container !py-0">
@@ -152,7 +152,7 @@ function ServiceDetail() {
               {t('serviceDetail.theService')}
             </h2>
             {service.description.split('\n\n').map((paragraph, i) => (
-              <p key={i} className="text-grey-light text-lg leading-relaxed mb-4">
+              <p key={i} className="text-grey-light text-base leading-relaxed mb-4">
                 {paragraph}
               </p>
             ))}
