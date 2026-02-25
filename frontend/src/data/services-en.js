@@ -33,6 +33,19 @@ We also print flyers, postcards and business cards - everything you need to prom
       { step: 5, title: 'Drying & quality check', desc: '24h drying, quality control, optional lamination' },
       { step: 6, title: 'Finishing', desc: 'Protective packaging or framing per your order' },
     ],
+    comparison: {
+      title: 'Studio vs Museum: Which Series to Choose?',
+      headers: ['Criteria', 'Studio Series', 'Museum Series'],
+      rows: [
+        ['Printer', 'Epson ET-15000', 'Canon PRO-1000 / PRO-2600'],
+        ['Inks', '4 pigment inks', '12 pigment inks'],
+        ['Color gamut', 'Excellent', 'Ultra-wide (gallery grade)'],
+        ['Longevity', '50+ years', '100+ years (archival)'],
+        ['Max paper size', 'A2 (18×24")', 'A1 (24×36")'],
+        ['Best for', 'Decor, gifts, posters', 'Exhibitions, galleries, collectors'],
+        ['ICC Profile', 'Standard', 'Custom per print'],
+      ],
+    },
     pricing: {
       title: 'Prints Pricing',
       note: 'Studio Series: great quality for everything · Museum Series: superior quality for photography and gallery prints · Add $30 for a black or white frame',
@@ -77,6 +90,13 @@ We also print flyers, postcards and business cards - everything you need to prom
       { name: 'Professional laminator', desc: 'Lamination and print protection for maximum durability.' },
       { name: '3x Inkjet printers', desc: 'Fast volume printing for standard runs.' },
       { name: 'Professional cutter', desc: 'Precision cutting for custom formats.' },
+    ],
+    faq: [
+      { q: 'What is the difference between Studio and Museum Series?', a: 'The Studio Series (Epson ET-15000) offers excellent quality for decoration and gifts. The Museum Series (Canon PRO-1000/PRO-2600) uses 12-color pigment inks for gallery-grade fidelity and 100+ year longevity.' },
+      { q: 'What file format should I provide?', a: 'Ideally a high-resolution file (300 DPI minimum) in TIFF, PNG or JPEG. We can also work from PSD or PDF files.' },
+      { q: 'Do you offer framing?', a: 'Yes, we offer framing on request starting at $30. Black, white or natural wood frames available.' },
+      { q: 'What is the production time?', a: 'Generally 24 to 48 hours for standard prints. Volume orders or large format may require 3 to 5 days.' },
+      { q: 'Can I pick up in person?', a: 'Yes! Free pick-up in Mile-End. We also offer local delivery in Montreal.' },
     ],
     seo: {
       title: 'Prints - Fine Art, Flyers & Cards | Montreal - Massive Medias',
@@ -139,6 +159,13 @@ Cut to the exact shape of your design with our professional cutting equipment, e
       { name: 'Professional cutter', desc: 'Precision cutting up to 12" wide. Contour, kiss-cut, die-cut.' },
       { name: 'Laminator', desc: 'Matte or glossy lamination for water/UV/scratch protection.' },
       { name: 'Vinyl printer', desc: 'High quality vinyl printing, vibrant colors.' },
+    ],
+    faq: [
+      { q: 'What finishes are available?', a: 'We offer glossy, matte, holographic, clear and prismatic. Each finish has its advantages depending on the use case.' },
+      { q: 'Is graphic design included?', a: 'Yes! Creating or adapting your visual for die-cutting is included in the price. You can also provide a print-ready file.' },
+      { q: 'What is the minimum quantity?', a: 'Starting from 10 identical stickers. The more you order, the lower the unit price.' },
+      { q: 'Are the stickers waterproof?', a: 'Yes, all our stickers are laminated and resistant to water, UV and scratches. Outdoor durability of 3 to 5 years.' },
+      { q: 'Can I get a fully custom shape?', a: 'Absolutely! Our stickers are die-cut to match the exact shape of your design.' },
     ],
     seo: {
       title: 'Custom Stickers Montreal - Massive Medias',
@@ -203,6 +230,13 @@ Ideal for artist merch, events, corporate gifts or any custom project. From t-sh
       { name: 'Large format heat press', desc: 'Large format heat press for t-shirts, hoodies and textiles.' },
       { name: 'Compact heat press', desc: 'Compact versatile press for objects and accessories.' },
       { name: 'Tumbler pinch kit', desc: 'Sublimation on tumblers, bottles and drinkware.' },
+    ],
+    faq: [
+      { q: 'What is sublimation?', a: 'Sublimation is a printing process that transfers ink directly into the fabric fiber through heat and pressure. Colors are permanent, won\'t crack or peel in the wash.' },
+      { q: 'Can you print on any fabric?', a: 'Sublimation works on polyester or high-polyester-content fabrics, and on coated substrates (mugs, tumblers, etc.). 100% cotton t-shirts require special treatment.' },
+      { q: 'What is the minimum order?', a: 'Starting from a single unit! No minimum. Perfect for prototypes or small runs.' },
+      { q: 'Is design included?', a: 'Adapting your visual for sublimation is included. If you don\'t have a design, we can create one for a graphic design fee.' },
+      { q: 'What products can be sublimated?', a: 'T-shirts, hoodies, mugs, tumblers, mousepads, keychains, cushions, and more. Contact us for all options.' },
     ],
     seo: {
       title: 'Merch & Sublimation Montreal - Massive Medias',
@@ -374,6 +408,13 @@ Modern, fast and SEO-optimized websites for artists, creators and small business
       bio: 'Graduate graphic designer with nearly 10 years of experience. Specialized in visual identity, packaging and web design.',
       portfolio: 'Soundwave Festival, Laboratoire Bio Stratège, ChromaPur, Nutramazonie, NextGen Football, Belette Trois-Mille.',
     },
+    faq: [
+      { q: 'How much does a logo cost?', a: 'Logos start at $150 for a simple concept. A complete visual identity (logo + colors + typography + variations) starts at $400.' },
+      { q: 'How much does a website cost?', a: 'Showcase websites start at $900. E-commerce or advanced features are quoted based on project complexity.' },
+      { q: 'What is the timeline for a website?', a: 'Expect 2 to 4 weeks for a showcase site, 4 to 8 weeks for e-commerce. It depends on complexity and feedback speed.' },
+      { q: 'Is SEO included?', a: 'Yes! Every website includes basic SEO optimization: meta tags, sitemap, schema markup, Google Analytics and Search Console.' },
+      { q: 'Do you offer maintenance?', a: 'Yes, we offer monthly maintenance packages including updates, backups, performance monitoring and technical support.' },
+    ],
     seo: {
       title: 'Graphic Design & Web Montreal - Massive Medias',
       description: 'Logos, visual identities, websites, e-commerce, SEO. Professional graphic design and web development in Montreal.',

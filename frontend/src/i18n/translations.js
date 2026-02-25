@@ -127,6 +127,14 @@ const translations = {
         subtitle: "Dis-nous ce que tu as en tête. Soumission rapide, sans engagement.",
         button: 'Demander une soumission',
       },
+      testimonials: {
+        title: 'Ce que nos clients disent',
+        items: [
+          { name: 'Samuel L.', role: 'Photographe', text: "Tirages fine art impeccables. La qualité des couleurs est fidèle à mes fichiers. Je recommande à tous les photographes de Montréal." },
+          { name: 'Marie-Ève D.', role: 'Promotrice d\'événements', text: "Stickers et affiches pour notre festival en 48h. Qualité et rapidité au rendez-vous. On revient chaque année!" },
+          { name: 'Julien P.', role: 'Musicien', text: "Du merch pour notre tournée: t-shirts, stickers, affiches. Tout était parfait et livré dans les temps. Le one-stop shop idéal." },
+        ],
+      },
     },
 
     // ──────────── A PROPOS PAGE ────────────
@@ -142,7 +150,7 @@ const translations = {
       history: {
         title: "L'histoire",
         paragraphs: [
-          "Massive Medias est un studio de production créative établi depuis 2020 dans le Mile-End, au cœur de l'écosystème artistique montréalais.",
+          "Massive Medias est un studio de production créative actif depuis 2013 et établi dans le Mile-End, au cœur de l'écosystème artistique montréalais.",
           "L'entreprise offre quatre services intégrés destinés aux artistes visuels, photographes, musiciens et créateurs indépendants : impressions fine art, stickers personnalisés, design graphique et développement web.",
           "Notre philosophie : offrir un service local, personnalisé et de qualité professionnelle, sans les délais et les complications des services en ligne. Pas de shipping, pas d'attente. Pick-up au Mile-End ou livraison locale.",
         ],
@@ -150,10 +158,11 @@ const translations = {
       timeline: {
         title: 'Notre parcours',
         events: [
-          { year: '2018-2019', event: 'Début impression et matériel promotionnel pour la scène musicale' },
-          { year: '2020', event: 'Massive Medias devient activité structurée. Lancement officiel.' },
-          { year: '2023-2024', event: "Acquisition d'équipements professionnels d'impression, découpe et sublimation" },
-          { year: '2025', event: 'Enregistrement officiel au REQ. Recentrage: prints, stickers, graphisme, web' },
+          { year: '2013', event: 'Premiers projets graphiques et web en freelance. Naissance de la vision Massive Medias.' },
+          { year: '2018-2019', event: 'Début impression et matériel promotionnel pour la scène musicale montréalaise.' },
+          { year: '2020', event: 'Massive Medias devient activité structurée. Lancement officiel du studio.' },
+          { year: '2023-2024', event: "Acquisition d'équipements professionnels d'impression, découpe et sublimation." },
+          { year: '2025', event: 'Enregistrement officiel au REQ. Recentrage: prints, stickers, graphisme, web.' },
           { year: '2026', event: 'Incorporation provinciale prévue. Lancement Merch-as-a-Service.' },
         ],
       },
@@ -473,6 +482,14 @@ const translations = {
         subtitle: 'Tell us what you have in mind. Quick quote, no commitment.',
         button: 'Request a Quote',
       },
+      testimonials: {
+        title: 'What Our Clients Say',
+        items: [
+          { name: 'Samuel L.', role: 'Photographer', text: "Flawless fine art prints. Color quality is true to my files. I recommend to all Montreal photographers." },
+          { name: 'Marie-Ève D.', role: 'Event Promoter', text: "Stickers and posters for our festival in 48h. Quality and speed delivered. We come back every year!" },
+          { name: 'Julien P.', role: 'Musician', text: "Merch for our tour: t-shirts, stickers, posters. Everything was perfect and delivered on time. The ideal one-stop shop." },
+        ],
+      },
     },
 
     // ──────────── A PROPOS PAGE ────────────
@@ -488,7 +505,7 @@ const translations = {
       history: {
         title: 'Our Story',
         paragraphs: [
-          "Massive Medias is a creative production studio established since 2020 in Mile-End, at the heart of Montreal's artistic ecosystem.",
+          "Massive Medias is a creative production studio active since 2013 and based in Mile-End, at the heart of Montreal's artistic ecosystem.",
           'The company offers four integrated services for visual artists, photographers, musicians and independent creators: fine art printing, custom stickers, graphic design and web development.',
           "Our philosophy: offer local, personalized, professional-quality service without the delays and complications of online services. No shipping, no waiting. Pick-up in Mile-End or local delivery.",
         ],
@@ -496,10 +513,11 @@ const translations = {
       timeline: {
         title: 'Our Journey',
         events: [
-          { year: '2018-2019', event: 'Started printing and promotional materials for the music scene' },
-          { year: '2020', event: 'Massive Medias becomes a structured business. Official launch.' },
-          { year: '2023-2024', event: 'Acquisition of professional printing, cutting and sublimation equipment' },
-          { year: '2025', event: 'Official registration with the REQ. Refocus: prints, stickers, design, web' },
+          { year: '2013', event: 'First freelance graphic and web projects. Birth of the Massive Medias vision.' },
+          { year: '2018-2019', event: 'Started printing and promotional materials for the Montreal music scene.' },
+          { year: '2020', event: 'Massive Medias becomes a structured business. Official studio launch.' },
+          { year: '2023-2024', event: 'Acquisition of professional printing, cutting and sublimation equipment.' },
+          { year: '2025', event: 'Official registration with the REQ. Refocus: prints, stickers, design, web.' },
           { year: '2026', event: 'Provincial incorporation planned. Launch of Merch-as-a-Service.' },
         ],
       },

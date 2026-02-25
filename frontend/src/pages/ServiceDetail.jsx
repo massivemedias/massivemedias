@@ -1,10 +1,10 @@
 import { useParams, Link, Navigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, ArrowLeft, CheckCircle, Wrench, Users, ChevronLeft, ChevronRight, X, ExternalLink, Globe, Palette, Code as CodeIcon, Smartphone, Search, Gauge, Shield } from 'lucide-react';
+import { ArrowRight, ArrowLeft, CheckCircle, Wrench, Users, ChevronLeft, ChevronRight, X, ExternalLink, Globe, Palette, Code as CodeIcon, Smartphone, Search, Gauge, Shield, ChevronDown } from 'lucide-react';
 import { useState, useCallback, useEffect } from 'react';
 import { toFull } from '../utils/paths';
 import SEO from '../components/SEO';
-import { getServiceSchema } from '../components/seo/schemas';
+import { getServiceSchema, getFAQSchema } from '../components/seo/schemas';
 import { useLang } from '../i18n/LanguageContext';
 import { useTheme } from '../i18n/ThemeContext';
 import getServicesData from '../data/getServicesData';
@@ -18,6 +18,7 @@ function ServiceDetail() {
   const [lightboxImage, setLightboxImage] = useState(null);
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [flippedCards, setFlippedCards] = useState({});
+  const [openFaq, setOpenFaq] = useState(null);
 
   const toggleCard = useCallback((index) => {
     setFlippedCards(prev => ({ ...prev, [index]: !prev[index] }));
@@ -81,11 +82,14 @@ function ServiceDetail() {
           { name: lang === 'fr' ? 'Accueil' : 'Home', url: '/' },
           { name: service.title },
         ]}
-        jsonLd={getServiceSchema({
-          name: service.title,
-          description: service.seo.description,
-          url: `/services/${slug}`,
-        })}
+        jsonLd={[
+          getServiceSchema({
+            name: service.title,
+            description: service.seo.description,
+            url: `/services/${slug}`,
+          }),
+          ...(service.faq ? [getFAQSchema(service.faq)] : []),
+        ]}
       />
 
       {/* ============ HERO ============ */}
@@ -437,6 +441,43 @@ function ServiceDetail() {
           </div>
         </motion.div>
 
+        {/* ============ COMPARATIF ============ */}
+        {service.comparison && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+            className="mb-20"
+          >
+            <h2 className="text-3xl font-heading font-bold text-gradient mb-8 text-center">
+              {service.comparison.title}
+            </h2>
+            <div className="rounded-xl overflow-hidden border border-purple-main/30 max-w-5xl mx-auto card-shadow">
+              <table className="price-table">
+                <thead>
+                  <tr>
+                    {service.comparison.headers.map((header, i) => (
+                      <th key={i}>{header}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {service.comparison.rows.map((row, i) => (
+                    <tr key={i}>
+                      {row.map((cell, j) => (
+                        <td key={j} className={j === 0 ? 'text-heading font-semibold' : 'text-grey-light'}>
+                          {cell}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </motion.div>
+        )}
+
         {/* ============ TARIFS ============ */}
         <motion.div
           id="tarifs"
@@ -594,6 +635,59 @@ function ServiceDetail() {
               <p className="text-grey-muted text-sm">
                 <strong className="text-grey-light">{t('serviceDetail.portfolioLabel')} :</strong> {service.team.portfolio}
               </p>
+            </div>
+          </motion.div>
+        )}
+
+        {/* ============ FAQ ============ */}
+        {service.faq && service.faq.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+            className="mb-20"
+          >
+            <h2 className="text-3xl font-heading font-bold text-gradient mb-8 text-center">
+              {lang === 'fr' ? 'Questions fréquentes' : 'Frequently Asked Questions'}
+            </h2>
+            <div className="max-w-3xl mx-auto space-y-3">
+              {service.faq.map((item, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 10 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: index * 0.05 }}
+                  viewport={{ once: true }}
+                  className="rounded-xl border border-purple-main/30 overflow-hidden transition-colors duration-300"
+                >
+                  <button
+                    onClick={() => setOpenFaq(openFaq === index ? null : index)}
+                    className="w-full flex items-center justify-between p-5 text-left transition-colors duration-200 hover:bg-glass-alt"
+                  >
+                    <span className="text-heading font-semibold pr-4">{item.q}</span>
+                    <ChevronDown
+                      size={20}
+                      className={`text-magenta flex-shrink-0 transition-transform duration-300 ${openFaq === index ? 'rotate-180' : ''}`}
+                    />
+                  </button>
+                  <AnimatePresence>
+                    {openFaq === index && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="overflow-hidden"
+                      >
+                        <p className="px-5 pb-5 text-grey-light leading-relaxed border-t border-purple-main/20 pt-4">
+                          {item.a}
+                        </p>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+              ))}
             </div>
           </motion.div>
         )}

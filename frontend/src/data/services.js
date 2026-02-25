@@ -33,6 +33,19 @@ Nous imprimons aussi des flyers, cartes postales et cartes d'affaires - tout ce 
       { step: 5, title: 'Séchage & contrôle', desc: 'Séchage 24h, contrôle qualité, lamination optionnelle' },
       { step: 6, title: 'Finition', desc: 'Emballage protection ou encadrement selon ta commande' },
     ],
+    comparison: {
+      title: 'Studio vs Musée : quelle série choisir?',
+      headers: ['Critère', 'Série Studio', 'Série Musée'],
+      rows: [
+        ['Imprimante', 'Epson ET-15000', 'Canon PRO-1000 / PRO-2600'],
+        ['Encres', '4 couleurs pigmentées', '12 couleurs pigmentées'],
+        ['Gamut couleur', 'Excellent', 'Ultra-large (galerie)'],
+        ['Longévité', '50+ ans', '100+ ans (archival)'],
+        ['Papier max', 'A2 (18×24")', 'A1 (24×36")'],
+        ['Idéal pour', 'Décoration, cadeaux, affiches', 'Expositions, galeries, collectionneurs'],
+        ['Profil ICC', 'Standard', 'Sur mesure par tirage'],
+      ],
+    },
     pricing: {
       title: 'Tarifs Prints',
       note: 'Série Studio : bonne qualité pour tout · Série Musée : qualité supérieure pour la photographie et les tirages galerie · Ajouter 30$ pour un cadre noir ou blanc',
@@ -77,6 +90,13 @@ Nous imprimons aussi des flyers, cartes postales et cartes d'affaires - tout ce 
       { name: 'Lamineuse professionnelle', desc: 'Lamination et protection des tirages pour une durabilité maximale.' },
       { name: '3x Imprimantes jet d\'encre', desc: 'Volume d\'impression rapide pour les séries courantes.' },
       { name: 'Découpeuse professionnelle', desc: 'Découpe de précision pour formats personnalisés.' },
+    ],
+    faq: [
+      { q: 'Quelle est la différence entre Série Studio et Série Musée?', a: 'La Série Studio (Epson ET-15000) offre une qualité excellente pour décoration et cadeaux. La Série Musée (Canon PRO-1000/PRO-2600) utilise des encres pigmentées 12 couleurs pour une fidélité galerie et une longévité de 100+ ans.' },
+      { q: 'Quel format de fichier dois-je fournir?', a: 'Idéalement un fichier haute résolution (300 DPI minimum) en TIFF, PNG ou JPEG. On peut aussi travailler à partir de fichiers PSD ou PDF.' },
+      { q: 'Offrez-vous l\'encadrement?', a: 'Oui, on propose l\'encadrement sur demande à partir de 30$. Cadres noirs, blancs ou bois naturel disponibles.' },
+      { q: 'Quel est le délai de production?', a: 'Généralement 24 à 48 heures pour les tirages standards. Les commandes en volume ou grand format peuvent nécessiter 3 à 5 jours.' },
+      { q: 'Peut-on récupérer sur place?', a: 'Oui! Pick-up gratuit au Mile-End. On offre aussi la livraison locale à Montréal.' },
     ],
     seo: {
       title: 'Prints - Fine Art, Flyers & Cartes | Montréal - Massive Medias',
@@ -139,6 +159,13 @@ Découpés à la forme exacte de ton design avec notre équipement de découpe p
       { name: 'Découpeuse professionnelle', desc: 'Découpe de précision jusqu\'à 12" de large. Contour, kiss-cut, die-cut.' },
       { name: 'Lamineuse', desc: 'Lamination matte ou glossy pour protection eau/UV/rayures.' },
       { name: 'Imprimante vinyle', desc: 'Impression vinyle haute qualité, couleurs vibrantes.' },
+    ],
+    faq: [
+      { q: 'Quels types de finis sont disponibles?', a: 'On offre glossy (brillant), matte, holographique, transparent et prismatique. Chaque fini a ses avantages selon l\'utilisation.' },
+      { q: 'Le design graphique est-il inclus?', a: 'Oui! La création ou adaptation de ton visuel pour la découpe est incluse dans le prix. Tu peux aussi fournir un fichier prêt.' },
+      { q: 'Quelle est la quantité minimum?', a: 'À partir de 10 stickers identiques. Plus la quantité augmente, plus le prix unitaire diminue.' },
+      { q: 'Les stickers sont-ils résistants à l\'eau?', a: 'Oui, tous nos stickers sont laminés et résistants à l\'eau, aux UV et aux rayures. Durabilité extérieure de 3 à 5 ans.' },
+      { q: 'Peut-on avoir une forme totalement custom?', a: 'Absolument! Nos stickers sont découpés sur mesure (die-cut) selon la forme exacte de ton design.' },
     ],
     seo: {
       title: 'Stickers Custom Montréal - Massive Medias',
@@ -203,6 +230,13 @@ Idéal pour le merch d'artiste, les événements, les cadeaux corporatifs ou tou
       { name: 'Presse à chaud grand format', desc: 'Presse à chaud grand format pour t-shirts, hoodies et textiles.' },
       { name: 'Presse à chaud compacte', desc: 'Presse compacte polyvalente pour objets et accessoires.' },
       { name: 'Kit pincement gobelets', desc: 'Sublimation sur gobelets, thermos et drinkware.' },
+    ],
+    faq: [
+      { q: 'Qu\'est-ce que la sublimation?', a: 'La sublimation est un procédé d\'impression qui transfère l\'encre directement dans la fibre du tissu via chaleur et pression. Les couleurs sont permanentes, ne craquent pas et ne se décollent pas au lavage.' },
+      { q: 'Peut-on imprimer sur n\'importe quel tissu?', a: 'La sublimation fonctionne sur les tissus en polyester ou à forte teneur en polyester, et sur les substrats traités (mugs, thermos, etc.). Les t-shirts 100% coton nécessitent un traitement spécial.' },
+      { q: 'Quelle est la quantité minimum?', a: 'À partir d\'une seule unité! Pas de minimum. Idéal pour les prototypes ou les petites séries.' },
+      { q: 'Le design est-il inclus?', a: 'L\'adaptation de ton visuel pour la sublimation est incluse. Si tu n\'as pas de design, on peut le créer moyennant des frais de design graphique.' },
+      { q: 'Quels produits peut-on sublimer?', a: 'T-shirts, hoodies, mugs, thermos, tapis de souris, porte-clés, coussins, et plus encore. Contacte-nous pour les options.' },
     ],
     seo: {
       title: 'Merch & Sublimation Montréal - Massive Medias',
@@ -374,6 +408,13 @@ Sites web modernes, performants et optimisés SEO pour artistes, créateurs et p
       bio: 'Diplômé en design graphique avec près de 10 ans d\'expérience. Spécialisé en identité visuelle, packaging et design web.',
       portfolio: 'Soundwave Festival, Laboratoire Bio Stratège, ChromaPur, Nutramazonie, NextGen Football, Belette Trois-Mille.',
     },
+    faq: [
+      { q: 'Combien coûte un logo?', a: 'Les logos débutent à 150$ pour un concept simple. Une identité visuelle complète (logo + couleurs + typographie + déclinaisons) commence à 400$.' },
+      { q: 'Combien coûte un site web?', a: 'Les sites vitrines débutent à 900$. Les sites e-commerce ou avec fonctionnalités avancées sont sur devis selon la complexité du projet.' },
+      { q: 'Quel est le délai pour un site web?', a: 'Comptez 2 à 4 semaines pour un site vitrine, 4 à 8 semaines pour un e-commerce. Tout dépend de la complexité et de la rapidité des retours.' },
+      { q: 'Le SEO est-il inclus?', a: 'Oui! Chaque site inclut l\'optimisation SEO de base : méta-tags, sitemap, schema markup, Google Analytics et Search Console.' },
+      { q: 'Offrez-vous la maintenance?', a: 'Oui, on offre des forfaits de maintenance mensuelle incluant mises à jour, sauvegardes, monitoring de performance et support technique.' },
+    ],
     seo: {
       title: 'Design Graphique & Web Montréal - Massive Medias',
       description: 'Logos, identités visuelles, sites web, e-commerce, SEO. Design graphique et développement web professionnel à Montréal.',

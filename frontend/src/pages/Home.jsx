@@ -11,7 +11,8 @@ import {
   Users,
   Zap,
   DollarSign,
-  Music
+  Music,
+  Quote
 } from 'lucide-react';
 import ServiceCard from '../components/ServiceCard';
 import Counter from '../components/Counter';
@@ -220,8 +221,8 @@ function Home() {
       {/* ============ CHIFFRES ============ */}
       <section className="section-container">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-          <Counter end={2024} suffix="" label={t('home.stats.since')} />
-          <Counter end={50} suffix="+" label={t('home.stats.projects')} />
+          <Counter end={2013} suffix="" label={t('home.stats.since')} />
+          <Counter end={150} suffix="+" label={t('home.stats.projects')} />
           <Counter end={100} suffix="%" label={t('home.stats.local')} />
           <div className="text-center p-6">
             <div className="text-5xl md:text-6xl font-heading font-bold text-gradient mb-2 hero-title">24-48h</div>
@@ -268,6 +269,43 @@ function Home() {
               </motion.div>
             );
           })}
+        </div>
+      </section>
+
+      {/* ============ TÉMOIGNAGES ============ */}
+      <section className="section-container">
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          transition={{ duration: 0.8 }}
+          viewport={{ once: true }}
+          className="text-center mb-12"
+        >
+          <h2 className="text-5xl md:text-6xl font-heading font-bold text-heading mb-4 hero-title">
+            {t('home.testimonials.title')}
+          </h2>
+        </motion.div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+          {t('home.testimonials.items').map((item, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+              viewport={{ once: true }}
+              className="p-8 rounded-xl transition-all duration-300 bg-glass card-shadow relative"
+            >
+              <Quote size={32} className="text-magenta/20 absolute top-4 right-4" />
+              <p className="text-grey-light leading-relaxed mb-6 italic">
+                "{item.text}"
+              </p>
+              <div>
+                <div className="text-heading font-heading font-bold">{item.name}</div>
+                <div className="text-magenta text-sm">{item.role}</div>
+              </div>
+            </motion.div>
+          ))}
         </div>
       </section>
 

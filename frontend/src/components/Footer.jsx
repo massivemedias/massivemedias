@@ -1,10 +1,13 @@
 import { Link } from 'react-router-dom';
-import { Instagram, Facebook, Mail } from 'lucide-react';
+import { Instagram, Facebook, Mail, Send } from 'lucide-react';
+import { useState } from 'react';
 import MassiveLogo from './MassiveLogo';
 import { useLang } from '../i18n/LanguageContext';
 
 function Footer() {
-  const { t } = useLang();
+  const { t, lang } = useLang();
+  const [nlEmail, setNlEmail] = useState('');
+  const [nlStatus, setNlStatus] = useState(null);
   const currentYear = new Date().getFullYear();
   const services = t('nav.servicesList');
 
@@ -94,6 +97,59 @@ function Footer() {
                 <Facebook size={20} />
               </a>
             </div>
+          </div>
+        </div>
+
+        {/* Newsletter */}
+        <div className="py-8 footer-border">
+          <div className="max-w-xl mx-auto text-center">
+            <h4 className="font-heading font-bold mb-2 footer-heading">
+              {lang === 'fr' ? 'Reste dans la loop' : 'Stay in the Loop'}
+            </h4>
+            <p className="text-sm footer-muted mb-4">
+              {lang === 'fr'
+                ? 'Promos, nouveaux services et projets. Pas de spam, promis.'
+                : 'Promos, new services and projects. No spam, promise.'}
+            </p>
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                if (!nlEmail) return;
+                setNlStatus('sending');
+                try {
+                  const res = await fetch('https://formspree.io/f/xzdardoe', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: nlEmail, _subject: 'Newsletter signup' }),
+                  });
+                  setNlStatus(res.ok ? 'ok' : 'error');
+                  if (res.ok) setNlEmail('');
+                } catch { setNlStatus('error'); }
+              }}
+              className="flex gap-2 max-w-md mx-auto"
+            >
+              <input
+                type="email"
+                required
+                value={nlEmail}
+                onChange={(e) => setNlEmail(e.target.value)}
+                placeholder={lang === 'fr' ? 'ton@email.com' : 'your@email.com'}
+                className="flex-1 px-4 py-2.5 rounded-lg text-sm border border-purple-main/30 bg-transparent text-heading placeholder:text-grey-muted focus:outline-none focus:border-magenta transition-colors"
+              />
+              <button
+                type="submit"
+                disabled={nlStatus === 'sending'}
+                className="px-4 py-2.5 rounded-lg bg-magenta text-white text-sm font-semibold hover:bg-magenta/80 transition-colors flex items-center gap-2 disabled:opacity-50"
+              >
+                <Send size={16} />
+              </button>
+            </form>
+            {nlStatus === 'ok' && (
+              <p className="text-green-500 text-sm mt-2">{lang === 'fr' ? 'Inscrit! Merci.' : 'Subscribed! Thanks.'}</p>
+            )}
+            {nlStatus === 'error' && (
+              <p className="text-red-500 text-sm mt-2">{lang === 'fr' ? 'Erreur. Réessaie.' : 'Error. Try again.'}</p>
+            )}
           </div>
         </div>
 

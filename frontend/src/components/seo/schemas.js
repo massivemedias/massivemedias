@@ -8,7 +8,7 @@ export function getOrganizationSchema() {
     url: SITE_URL,
     logo: `${SITE_URL}/og-image.jpg`,
     email: 'info@massivemedias.com',
-    foundingDate: '2020',
+    foundingDate: '2013',
     sameAs: [
       'https://instagram.com/massivemedias',
       'https://facebook.com/massivemedias',
