@@ -177,7 +177,9 @@ export const fineArtFaq = {
 
 export const sublimationProducts = [
   { id: 'tshirt', labelFr: 'T-shirt', labelEn: 'T-shirt' },
+  { id: 'crewneck', labelFr: 'Crewneck', labelEn: 'Crewneck' },
   { id: 'hoodie', labelFr: 'Hoodie', labelEn: 'Hoodie' },
+  { id: 'bag', labelFr: 'Sac banane', labelEn: 'Fanny Pack' },
 ];
 
 export const sublimationPriceTiers = {
@@ -186,10 +188,20 @@ export const sublimationPriceTiers = {
     { qty: 5, unitPrice: 25, price: 125 },
     { qty: 10, unitPrice: 22, price: 220 },
   ],
+  crewneck: [
+    { qty: 1, unitPrice: 45, price: 45 },
+    { qty: 5, unitPrice: 40, price: 200 },
+    { qty: 10, unitPrice: 35, price: 350 },
+  ],
   hoodie: [
     { qty: 1, unitPrice: 50, price: 50 },
     { qty: 5, unitPrice: 45, price: 225 },
     { qty: 10, unitPrice: 40, price: 400 },
+  ],
+  bag: [
+    { qty: 1, unitPrice: 80, price: 80 },
+    { qty: 5, unitPrice: 70, price: 350 },
+    { qty: 10, unitPrice: 60, price: 600 },
   ],
 };
 
@@ -222,7 +234,7 @@ export const sublimationImages = [
 export const sublimationFaq = {
   fr: [
     { q: 'Qu\'est-ce que la sublimation?', a: 'La sublimation est un procédé d\'impression qui transfère l\'encre directement dans la fibre du tissu à haute température. Le résultat est une impression permanente qui ne craque pas, ne s\'efface pas et résiste au lavage.' },
-    { q: 'Sur quels produits imprimez-vous?', a: 'T-shirts, hoodies, mugs, thermos, tapis de souris, porte-clés, et bien plus. Contactez-nous pour des produits spécifiques.' },
+    { q: 'Sur quels produits imprimez-vous?', a: 'T-shirts, crewnecks, hoodies, sacs bananes, mugs, thermos, tapis de souris, porte-clés, et bien plus. Les sacs bananes sont parfaits pour y mettre ton logo!' },
     { q: 'Puis-je fournir mon propre design?', a: 'Oui! Si vous avez un design prêt, le prix est celui affiché. Si vous avez besoin de création graphique, un supplément de 100-150$ s\'applique selon la complexité.' },
     { q: 'Quelle est la quantité minimale?', a: 'Nous acceptons les commandes à partir d\'une seule unité. Les prix sont dégressifs à partir de 5 et 10 unités.' },
     { q: 'L\'impression est-elle vraiment permanente?', a: 'Oui, la sublimation produit une impression permanente intégrée dans la fibre. Pas de texture en relief, pas de craquement après lavage. Les couleurs restent vibrantes.' },
@@ -230,7 +242,7 @@ export const sublimationFaq = {
   ],
   en: [
     { q: 'What is sublimation?', a: 'Sublimation is a printing process that transfers ink directly into the fabric fiber at high temperature. The result is a permanent print that doesn\'t crack, doesn\'t fade, and is wash-resistant.' },
-    { q: 'What products do you print on?', a: 'T-shirts, hoodies, mugs, tumblers, mousepads, keychains, and more. Contact us for specific products.' },
+    { q: 'What products do you print on?', a: 'T-shirts, crewnecks, hoodies, fanny packs, mugs, tumblers, mousepads, keychains, and more. Fanny packs are perfect for putting your logo on!' },
     { q: 'Can I provide my own design?', a: 'Yes! If you have a ready design, the price shown applies. If you need graphic design, an additional $100-150 applies depending on complexity.' },
     { q: 'What is the minimum quantity?', a: 'We accept orders starting from a single unit. Prices decrease at 5 and 10 units.' },
     { q: 'Is the print really permanent?', a: 'Yes, sublimation produces a permanent print integrated into the fiber. No raised texture, no cracking after washing. Colors stay vibrant.' },
