@@ -655,7 +655,6 @@ select.input-field option {
 
 .card-bg-bordered {
   background: var(--bg-card);
-  border: 1px solid var(--bg-card-border);
   box-shadow: var(--card-shadow);
 }
 
