@@ -665,6 +665,71 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiServicePageServicePage extends Struct.CollectionTypeSchema {
+  collectionName: 'service_pages';
+  info: {
+    description: 'Pages de services \u00E9ditables (Prints, Stickers, Merch, Design)';
+    displayName: 'Service Page';
+    pluralName: 'service-pages';
+    singularName: 'service-page';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    active: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    boutiqueSlug: Schema.Attribute.String;
+    comparisonEn: Schema.Attribute.JSON;
+    comparisonFr: Schema.Attribute.JSON;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    descriptionEn: Schema.Attribute.RichText;
+    descriptionFr: Schema.Attribute.RichText;
+    equipmentEn: Schema.Attribute.JSON;
+    equipmentFr: Schema.Attribute.JSON;
+    faqEn: Schema.Attribute.JSON;
+    faqFr: Schema.Attribute.JSON;
+    gallery: Schema.Attribute.Media<'images', true>;
+    heroImage: Schema.Attribute.Media<'images'>;
+    highlightsEn: Schema.Attribute.JSON;
+    highlightsFr: Schema.Attribute.JSON;
+    iconName: Schema.Attribute.String;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::service-page.service-page'
+    > &
+      Schema.Attribute.Private;
+    pricingEn: Schema.Attribute.JSON;
+    pricingFr: Schema.Attribute.JSON;
+    processEn: Schema.Attribute.JSON;
+    processFr: Schema.Attribute.JSON;
+    publishedAt: Schema.Attribute.DateTime;
+    seo: Schema.Attribute.Component<'shared.seo-meta', false>;
+    slug: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    sortOrder: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    subtitleEn: Schema.Attribute.Text;
+    subtitleFr: Schema.Attribute.Text;
+    teamEn: Schema.Attribute.JSON;
+    teamFr: Schema.Attribute.JSON;
+    technologiesEn: Schema.Attribute.JSON;
+    technologiesFr: Schema.Attribute.JSON;
+    titleEn: Schema.Attribute.String & Schema.Attribute.Required;
+    titleFr: Schema.Attribute.String & Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    webProjectImages: Schema.Attribute.Media<'images', true>;
+    webProjectsEn: Schema.Attribute.JSON;
+    webProjectsFr: Schema.Attribute.JSON;
+    whatWeDeliverEn: Schema.Attribute.JSON;
+    whatWeDeliverFr: Schema.Attribute.JSON;
+  };
+}
+
 export interface ApiSiteContentSiteContent extends Struct.SingleTypeSchema {
   collectionName: 'site_contents';
   info: {
@@ -1290,6 +1355,7 @@ declare module '@strapi/strapi' {
       'api::news-article.news-article': ApiNewsArticleNewsArticle;
       'api::order.order': ApiOrderOrder;
       'api::product.product': ApiProductProduct;
+      'api::service-page.service-page': ApiServicePageServicePage;
       'api::site-content.site-content': ApiSiteContentSiteContent;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;

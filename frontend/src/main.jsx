@@ -6,6 +6,7 @@ import { CartProvider } from './contexts/CartContext'
 import { AuthProvider } from './contexts/AuthContext'
 import { CookieProvider } from './contexts/CookieContext'
 import { SiteContentProvider } from './hooks/useSiteContent'
+import { ServicePagesProvider } from './hooks/useServicePages'
 import './index.css'
 import App from './App.jsx'
 
@@ -14,6 +15,7 @@ createRoot(document.getElementById('root')).render(
     <ThemeProvider>
       <LanguageProvider>
         <SiteContentProvider>
+        <ServicePagesProvider>
         <CookieProvider>
           <AuthProvider>
             <CartProvider>
@@ -21,6 +23,7 @@ createRoot(document.getElementById('root')).render(
             </CartProvider>
           </AuthProvider>
         </CookieProvider>
+        </ServicePagesProvider>
         </SiteContentProvider>
       </LanguageProvider>
     </ThemeProvider>

@@ -1,0 +1,65 @@
+{
+  "kind": "collectionType",
+  "collectionName": "service_pages",
+  "info": {
+    "singularName": "service-page",
+    "pluralName": "service-pages",
+    "displayName": "Service Page",
+    "description": "Pages de services éditables (Prints, Stickers, Merch, Design)"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "slug": { "type": "string", "unique": true, "required": true },
+    "boutiqueSlug": { "type": "string" },
+    "iconName": { "type": "string" },
+    "titleFr": { "type": "string", "required": true },
+    "titleEn": { "type": "string", "required": true },
+    "subtitleFr": { "type": "text" },
+    "subtitleEn": { "type": "text" },
+    "heroImage": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["images"]
+    },
+    "descriptionFr": { "type": "richtext" },
+    "descriptionEn": { "type": "richtext" },
+    "highlightsFr": { "type": "json" },
+    "highlightsEn": { "type": "json" },
+    "processFr": { "type": "json" },
+    "processEn": { "type": "json" },
+    "pricingFr": { "type": "json" },
+    "pricingEn": { "type": "json" },
+    "equipmentFr": { "type": "json" },
+    "equipmentEn": { "type": "json" },
+    "faqFr": { "type": "json" },
+    "faqEn": { "type": "json" },
+    "gallery": {
+      "type": "media",
+      "multiple": true,
+      "allowedTypes": ["images"]
+    },
+    "seo": {
+      "type": "component",
+      "component": "shared.seo-meta"
+    },
+    "comparisonFr": { "type": "json" },
+    "comparisonEn": { "type": "json" },
+    "whatWeDeliverFr": { "type": "json" },
+    "whatWeDeliverEn": { "type": "json" },
+    "webProjectsFr": { "type": "json" },
+    "webProjectsEn": { "type": "json" },
+    "webProjectImages": {
+      "type": "media",
+      "multiple": true,
+      "allowedTypes": ["images"]
+    },
+    "technologiesFr": { "type": "json" },
+    "technologiesEn": { "type": "json" },
+    "teamFr": { "type": "json" },
+    "teamEn": { "type": "json" },
+    "sortOrder": { "type": "integer", "default": 0 },
+    "active": { "type": "boolean", "default": true }
+  }
+}

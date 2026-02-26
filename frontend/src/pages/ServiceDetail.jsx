@@ -1,20 +1,61 @@
 import { useParams, Link, Navigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, ArrowLeft, CheckCircle, Wrench, Users, ChevronLeft, ChevronRight, X, ExternalLink, Globe, Palette, Code as CodeIcon, Smartphone, Search, Gauge, Shield, ChevronDown } from 'lucide-react';
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { toFull } from '../utils/paths';
 import SEO from '../components/SEO';
 import { getServiceSchema, getFAQSchema } from '../components/seo/schemas';
 import { useLang } from '../i18n/LanguageContext';
 import { useTheme } from '../i18n/ThemeContext';
 import getServicesData from '../data/getServicesData';
+import { useServicePages } from '../hooks/useServicePages';
+import { bl, mediaUrl } from '../utils/cms';
+import { getIcon } from '../utils/iconMap';
+
+function buildServiceFromCMS(cms, lang) {
+  if (!cms) return null;
+  const l = (field) => bl(cms, field, lang);
+  const j = (field) => cms[`${field}${lang === 'en' ? 'En' : 'Fr'}`] || cms[`${field}Fr`] || null;
+  const pricing = j('pricing');
+  return {
+    slug: cms.slug,
+    boutiqueSlug: cms.boutiqueSlug || null,
+    icon: getIcon(cms.iconName),
+    title: l('title'),
+    subtitle: l('subtitle'),
+    heroImage: mediaUrl(cms.heroImage),
+    description: l('description'),
+    highlights: j('highlights') || [],
+    process: j('process') || [],
+    pricing: pricing || {},
+    equipment: j('equipment'),
+    faq: j('faq') || [],
+    gallery: cms.gallery?.map(img => mediaUrl(img)) || [],
+    comparison: j('comparison') || null,
+    whatWeDeliver: j('whatWeDeliver') || null,
+    webProjects: j('webProjects') || null,
+    technologies: j('technologies') || null,
+    team: j('team') || null,
+    seo: {
+      title: bl(cms.seo, 'title', lang) || l('title'),
+      description: bl(cms.seo, 'description', lang) || l('subtitle'),
+    },
+  };
+}
 
 function ServiceDetail() {
   const { lang, t } = useLang();
   const { theme } = useTheme();
   const { slug } = useParams();
-  const servicesData = getServicesData(lang);
-  const service = servicesData[slug];
+  const { servicePages } = useServicePages() || {};
+  const fallbackData = getServicesData(lang);
+
+  const service = useMemo(() => {
+    const cmsPage = servicePages?.find(s => s.slug === slug);
+    if (cmsPage) return buildServiceFromCMS(cmsPage, lang);
+    return fallbackData[slug] || null;
+  }, [servicePages, slug, lang, fallbackData]);
+
   const [lightboxImage, setLightboxImage] = useState(null);
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [flippedCards, setFlippedCards] = useState({});
@@ -66,10 +107,20 @@ function ServiceDetail() {
 
   const Icon = service.icon;
 
-  const slugs = Object.keys(servicesData);
-  const currentIndex = slugs.indexOf(slug);
-  const prevService = currentIndex > 0 ? servicesData[slugs[currentIndex - 1]] : null;
-  const nextService = currentIndex < slugs.length - 1 ? servicesData[slugs[currentIndex + 1]] : null;
+  // Build ordered slug list from CMS (sorted) or fallback data
+  const allServices = useMemo(() => {
+    if (servicePages?.length) {
+      return servicePages.map(sp => ({
+        slug: sp.slug,
+        title: bl(sp, 'title', lang),
+      }));
+    }
+    return Object.values(fallbackData).map(s => ({ slug: s.slug, title: s.title }));
+  }, [servicePages, fallbackData, lang]);
+
+  const currentIndex = allServices.findIndex(s => s.slug === slug);
+  const prevService = currentIndex > 0 ? allServices[currentIndex - 1] : null;
+  const nextService = currentIndex < allServices.length - 1 ? allServices[currentIndex + 1] : null;
 
   return (
     <>
