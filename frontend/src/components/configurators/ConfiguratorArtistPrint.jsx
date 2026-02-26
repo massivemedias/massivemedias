@@ -31,7 +31,7 @@ function ConfiguratorArtistPrint({ artist, selectedPrint }) {
     if (!priceInfo) return;
     addToCart({
       productId: `artist-print-${artist.slug}-${selectedPrint.id}`,
-      productName: `${artist.name} — ${printTitle}`,
+      productName: `${artist.name} - ${printTitle}`,
       finish: lang === 'fr' ? tierLabel?.labelFr : tierLabel?.labelEn,
       shape: withFrame
         ? (lang === 'fr'
@@ -179,8 +179,8 @@ function ConfiguratorArtistPrint({ artist, selectedPrint }) {
           <div className="flex items-center gap-2 mt-2">
             <span className="text-grey-muted text-xs">
               {tier === 'museum'
-                ? (lang === 'fr' ? 'Qualité musée — 12 encres pigmentées, conservation 100+ ans' : 'Museum quality — 12 pigmented inks, 100+ year archival')
-                : (lang === 'fr' ? 'Qualité studio — impression professionnelle pigmentée' : 'Studio quality — professional pigmented printing')}
+                ? (lang === 'fr' ? 'Qualité musée - 12 encres pigmentées, conservation 100+ ans' : 'Museum quality - 12 pigmented inks, 100+ year archival')
+                : (lang === 'fr' ? 'Qualité studio - impression professionnelle pigmentée' : 'Studio quality - professional pigmented printing')}
             </span>
           </div>
         </div>

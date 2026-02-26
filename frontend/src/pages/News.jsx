@@ -112,7 +112,7 @@ function News() {
   return (
     <>
       <SEO
-        title={lang === 'fr' ? 'Nouvelles — Massive Medias' : 'News — Massive Medias'}
+        title={lang === 'fr' ? 'Nouvelles - Massive Medias' : 'News - Massive Medias'}
         description={lang === 'fr' ? 'Dernières nouvelles, annonces et promotions de Massive Medias.' : 'Latest news, announcements and promotions from Massive Medias.'}
         breadcrumbs={[
           { name: lang === 'fr' ? 'Accueil' : 'Home', url: '/' },

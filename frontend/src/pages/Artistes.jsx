@@ -12,7 +12,7 @@ function Artistes() {
   return (
     <>
       <SEO
-        title={lang === 'fr' ? 'Artistes — Tirages Fine Art | Massive Medias' : 'Artists — Fine Art Prints | Massive Medias'}
+        title={lang === 'fr' ? 'Artistes - Tirages Fine Art | Massive Medias' : 'Artists - Fine Art Prints | Massive Medias'}
         description={lang === 'fr'
           ? 'Découvrez les artistes de Massive Medias. Tirages fine art professionnels, qualité galerie. Montréal.'
           : 'Discover Massive Medias artists. Professional fine art prints, gallery quality. Montreal.'}

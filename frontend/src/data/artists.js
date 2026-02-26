@@ -1,7 +1,7 @@
 import { thumb } from '../utils/paths';
 
 /**
- * Artist print pricing — returns final client price (production + artist margin included)
+ * Artist print pricing - returns final client price (production + artist margin included)
  */
 export function getArtistPrintPrice(pricing, tier, format, withFrame) {
   const prices = tier === 'museum' ? pricing.museum : pricing.studio;
@@ -32,8 +32,8 @@ const artistsData = {
       en: 'Urban Photography & Light',
     },
     bio: {
-      fr: "Photographe montréalais avec un oeil unique pour la composition et la lumière. Ses oeuvres capturent l'essence de la ville à travers des perspectives inattendues — architecture, reflets, textures urbaines. Chaque tirage est une invitation à voir Montréal autrement.",
-      en: "Montreal photographer with a unique eye for composition and light. His work captures the essence of the city through unexpected perspectives — architecture, reflections, urban textures. Each print is an invitation to see Montreal differently.",
+      fr: "Photographe montréalais avec un oeil unique pour la composition et la lumière. Ses oeuvres capturent l'essence de la ville à travers des perspectives inattendues - architecture, reflets, textures urbaines. Chaque tirage est une invitation à voir Montréal autrement.",
+      en: "Montreal photographer with a unique eye for composition and light. His work captures the essence of the city through unexpected perspectives - architecture, reflections, urban textures. Each print is an invitation to see Montreal differently.",
     },
     avatar: null,
     heroImage: thumb('/images/prints/Printstoutcourt.webp'),

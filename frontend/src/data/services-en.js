@@ -331,7 +331,7 @@ We work with Adobe Illustrator, Figma and Photoshop to create impactful visuals 
     boutiqueSlug: 'web',
     icon: Globe,
     title: 'Web',
-    subtitle: 'Websites, e-commerce, SEO — modern and high-performance development',
+    subtitle: 'Websites, e-commerce, SEO - modern and high-performance development',
     heroImage: thumb('/images/web/DevWebHero.webp'),
     description: `Modern, fast and SEO-optimized websites for artists, creators and small businesses. From artist portfolios to complete e-commerce stores.
 
@@ -465,7 +465,7 @@ We work with Adobe Illustrator, Figma and Photoshop to create impactful visuals 
       { q: 'What is the timeline for a website?', a: 'Expect 2 to 4 weeks for a showcase site, 4 to 8 weeks for e-commerce. It depends on complexity and feedback speed.' },
       { q: 'Is SEO included?', a: 'Yes! Every website includes basic SEO optimization: meta tags, sitemap, schema markup, Google Analytics and Search Console.' },
       { q: 'Do you offer maintenance?', a: 'Yes, we offer monthly maintenance packages including updates, backups, performance monitoring and technical support.' },
-      { q: 'What technologies do you use?', a: 'React, Angular, WordPress, Shopify, Node.js, Strapi — we choose the best tech for your project and needs.' },
+      { q: 'What technologies do you use?', a: 'React, Angular, WordPress, Shopify, Node.js, Strapi - we choose the best tech for your project and needs.' },
     ],
     seo: {
       title: 'Web Development Montreal - Massive Medias',

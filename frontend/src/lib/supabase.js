@@ -9,7 +9,7 @@ try {
     supabaseClient = createClient(supabaseUrl, supabaseAnonKey);
   }
 } catch {
-  // silently fail — auth features disabled
+  // silently fail - auth features disabled
 }
 
 export const supabase = supabaseClient;

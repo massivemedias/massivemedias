@@ -1,5 +1,5 @@
 /**
- * Bilingual field helper — picks Fr or En value based on current language.
+ * Bilingual field helper - picks Fr or En value based on current language.
  * Usage: bl(content, 'heroSubtitle', lang)
  * → returns content.heroSubtitleFr or content.heroSubtitleEn
  */

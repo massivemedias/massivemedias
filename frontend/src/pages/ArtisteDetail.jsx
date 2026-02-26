@@ -59,18 +59,18 @@ function ArtisteDetail() {
   ];
 
   const processSteps = lang === 'fr' ? [
-    { step: '1', title: 'Choisissez', desc: 'Sélectionnez une oeuvre et configurez votre tirage — série, format et cadre.' },
+    { step: '1', title: 'Choisissez', desc: 'Sélectionnez une oeuvre et configurez votre tirage - série, format et cadre.' },
     { step: '2', title: 'On imprime', desc: 'Impression professionnelle dans nos studios. Soft proofing et contrôle qualité avant envoi.' },
     { step: '3', title: 'Livraison', desc: 'Pick-up gratuit au Mile-End ou livraison sécurisée à votre porte.' },
   ] : [
-    { step: '1', title: 'Choose', desc: 'Select an artwork and configure your print — series, format and frame.' },
+    { step: '1', title: 'Choose', desc: 'Select an artwork and configure your print - series, format and frame.' },
     { step: '2', title: 'We print', desc: 'Professional printing in our studios. Soft proofing and quality control before shipping.' },
     { step: '3', title: 'Delivery', desc: 'Free Mile-End pick-up or secure delivery to your door.' },
   ];
 
   const equipmentItems = [
-    { name: 'Epson ET-15000', desc: lang === 'fr' ? '4 encres pigmentées — Série Studio' : '4 pigmented inks — Studio Series' },
-    { name: 'Canon PRO-1000', desc: lang === 'fr' ? '12 encres pigmentées — Série Musée' : '12 pigmented inks — Museum Series' },
+    { name: 'Epson ET-15000', desc: lang === 'fr' ? '4 encres pigmentées - Série Studio' : '4 pigmented inks - Studio Series' },
+    { name: 'Canon PRO-1000', desc: lang === 'fr' ? '12 encres pigmentées - Série Musée' : '12 pigmented inks - Museum Series' },
     { name: lang === 'fr' ? 'Papiers Fine Art' : 'Fine Art Papers', desc: lang === 'fr' ? 'Hahnemühle, Canson, Ilford' : 'Hahnemühle, Canson, Ilford' },
   ];
 
@@ -91,7 +91,7 @@ function ArtisteDetail() {
   return (
     <>
       <SEO
-        title={`${artist.name} — ${tagline} | Massive Medias`}
+        title={`${artist.name} - ${tagline} | Massive Medias`}
         description={bio.slice(0, 160)}
         breadcrumbs={[
           { name: lang === 'fr' ? 'Accueil' : 'Home', url: '/' },
@@ -342,7 +342,7 @@ function ArtisteDetail() {
                     {lang === 'fr' ? 'Série Studio' : 'Studio Series'}
                   </h3>
                 </div>
-                <p className="text-grey-muted text-xs mt-1">Epson ET-15000 — 4 {lang === 'fr' ? 'encres pigmentées' : 'pigmented inks'}</p>
+                <p className="text-grey-muted text-xs mt-1">Epson ET-15000 - 4 {lang === 'fr' ? 'encres pigmentées' : 'pigmented inks'}</p>
               </div>
               <table className="price-table">
                 <thead>
@@ -371,7 +371,7 @@ function ArtisteDetail() {
                     {lang === 'fr' ? 'Série Musée' : 'Museum Series'}
                   </h3>
                 </div>
-                <p className="text-grey-muted text-xs mt-1">Canon PRO-1000 — 12 {lang === 'fr' ? 'encres pigmentées' : 'pigmented inks'}</p>
+                <p className="text-grey-muted text-xs mt-1">Canon PRO-1000 - 12 {lang === 'fr' ? 'encres pigmentées' : 'pigmented inks'}</p>
               </div>
               <table className="price-table">
                 <thead>

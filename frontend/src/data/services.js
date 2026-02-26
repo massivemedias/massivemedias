@@ -331,7 +331,7 @@ Nous travaillons avec Adobe Illustrator, Figma et Photoshop pour créer des visu
     boutiqueSlug: 'web',
     icon: Globe,
     title: 'Web',
-    subtitle: 'Sites web, e-commerce, SEO — développement moderne et performant',
+    subtitle: 'Sites web, e-commerce, SEO - développement moderne et performant',
     heroImage: thumb('/images/web/DevWebHero.webp'),
     description: `Sites web modernes, performants et optimisés SEO pour artistes, créateurs et petites entreprises. Du portfolio d'artiste à la boutique e-commerce complète.
 
@@ -465,7 +465,7 @@ Nous travaillons avec Adobe Illustrator, Figma et Photoshop pour créer des visu
       { q: 'Quel est le délai pour un site web?', a: 'Comptez 2 à 4 semaines pour un site vitrine, 4 à 8 semaines pour un e-commerce. Tout dépend de la complexité et de la rapidité des retours.' },
       { q: 'Le SEO est-il inclus?', a: 'Oui! Chaque site inclut l\'optimisation SEO de base : méta-tags, sitemap, schema markup, Google Analytics et Search Console.' },
       { q: 'Offrez-vous la maintenance?', a: 'Oui, on offre des forfaits de maintenance mensuelle incluant mises à jour, sauvegardes, monitoring de performance et support technique.' },
-      { q: 'Quelles technologies utilisez-vous?', a: 'React, Angular, WordPress, Shopify, Node.js, Strapi — on choisit la techno la mieux adaptée à ton projet et tes besoins.' },
+      { q: 'Quelles technologies utilisez-vous?', a: 'React, Angular, WordPress, Shopify, Node.js, Strapi - on choisit la techno la mieux adaptée à ton projet et tes besoins.' },
     ],
     seo: {
       title: 'Développement Web Montréal - Massive Medias',
