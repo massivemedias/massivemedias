@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import MainLayout from './layouts/MainLayout';
 import Home from './pages/Home';
+import ErrorBoundary from './components/ErrorBoundary';
 import { useLang } from './i18n/LanguageContext';
 import ScrollToTop from './components/ScrollToTop';
 import './index.css';
@@ -44,6 +45,7 @@ function App() {
   return (
     <BrowserRouter basename={basename}>
       <ScrollToTop />
+      <ErrorBoundary>
       <Suspense fallback={null}>
         <Routes>
           <Route element={<MainLayout />}>
@@ -93,6 +95,7 @@ function App() {
           </Route>
         </Routes>
       </Suspense>
+      </ErrorBoundary>
     </BrowserRouter>
   );
 }

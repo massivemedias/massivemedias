@@ -24,13 +24,17 @@ api.interceptors.request.use(
 );
 
 // Intercepteur pour gérer les erreurs
+// Ne redirige vers /login que pour les requêtes authentifiées (pas les requêtes publiques)
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      // Déconnexion si non autorisé
+    if (error.response?.status === 401 && error.config?.headers?.Authorization) {
       localStorage.removeItem('token');
-      window.location.href = '/login';
+      // Ne redirige que si on est déjà sur une page protégée
+      const protectedPaths = ['/account', '/checkout', '/mm-admin'];
+      if (protectedPaths.some(p => window.location.pathname.startsWith(p))) {
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }

@@ -49,5 +49,5 @@ export function SiteContentProvider({ children }) {
 }
 
 export function useSiteContent() {
-  return useContext(SiteContentContext);
+  return useContext(SiteContentContext) || { content: null, loading: false };
 }
