@@ -251,7 +251,7 @@ function Home() {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {featuredProjects
             ? featuredProjects.map((project, index) => (
                 <Link key={index} to={project.link || '#'}>
@@ -260,7 +260,7 @@ function Home() {
                     whileInView={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: index * 0.08 }}
                     viewport={{ once: true }}
-                    className="group relative rounded-xl overflow-hidden cursor-pointer aspect-[4/3]"
+                    className="group relative rounded-lg overflow-hidden cursor-pointer aspect-square"
                   >
                     <img
                       src={project.image}
@@ -269,9 +269,9 @@ function Home() {
                       loading="lazy"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent opacity-70 group-hover:opacity-90 transition-opacity duration-300"></div>
-                    <div className="absolute bottom-0 left-0 right-0 p-6 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
-                      <span className="text-accent text-sm font-semibold uppercase tracking-wider">{project.category}</span>
-                      <h3 className="text-white text-xl font-heading font-bold mt-1">{project.title}</h3>
+                    <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+                      <span className="text-accent text-xs font-semibold uppercase tracking-wider">{project.category}</span>
+                      <h3 className="text-white text-base font-heading font-bold mt-0.5">{project.title}</h3>
                     </div>
                   </motion.div>
                 </Link>
@@ -283,7 +283,7 @@ function Home() {
                     whileInView={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: index * 0.08 }}
                     viewport={{ once: true }}
-                    className="group relative rounded-xl overflow-hidden cursor-pointer aspect-[4/3]"
+                    className="group relative rounded-lg overflow-hidden cursor-pointer aspect-square"
                   >
                     <img
                       src={fallbackFeaturedProjectImages[index]}
@@ -292,9 +292,9 @@ function Home() {
                       loading="lazy"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent opacity-70 group-hover:opacity-90 transition-opacity duration-300"></div>
-                    <div className="absolute bottom-0 left-0 right-0 p-6 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
-                      <span className="text-accent text-sm font-semibold uppercase tracking-wider">{project.category}</span>
-                      <h3 className="text-white text-xl font-heading font-bold mt-1">{project.title}</h3>
+                    <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+                      <span className="text-accent text-xs font-semibold uppercase tracking-wider">{project.category}</span>
+                      <h3 className="text-white text-base font-heading font-bold mt-0.5">{project.title}</h3>
                     </div>
                   </motion.div>
                 </Link>
