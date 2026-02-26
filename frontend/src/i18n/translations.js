@@ -50,7 +50,7 @@ const translations = {
       hero: {
         tagline: 'Create. Print. Repeat.',
         subtitle: 'Studio de production créative à Montréal',
-        services: 'Prints · Stickers · Merch · Design',
+        services: 'Prints · Stickers · Merch · Design · Web',
         cta1: 'Voir nos services',
         cta2: 'Demander une soumission',
       },
@@ -410,7 +410,7 @@ const translations = {
       hero: {
         tagline: 'Create. Print. Repeat.',
         subtitle: 'Creative Production Studio in Montreal',
-        services: 'Prints · Stickers · Merch · Design',
+        services: 'Prints · Stickers · Merch · Design · Web',
         cta1: 'View Our Services',
         cta2: 'Request a Quote',
       },
