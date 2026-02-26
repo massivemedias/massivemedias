@@ -13,8 +13,8 @@ function APropos() {
   const { t, lang } = useLang();
   const { content } = useSiteContent();
 
-  // ── Equipment ──
-  const cmsEquipment = content?.aboutEquipment;
+  // ── Equipment (fallback si vide) ──
+  const cmsEquipment = content?.aboutEquipment?.length ? content.aboutEquipment : null;
   const equipmentItems = cmsEquipment
     ? cmsEquipment.map((item) => ({
         name: bl(item, 'name', lang),
@@ -24,7 +24,7 @@ function APropos() {
     : null;
 
   // ── Timeline ──
-  const cmsTimeline = content?.aboutTimeline;
+  const cmsTimeline = content?.aboutTimeline?.length ? content.aboutTimeline : null;
   const timelineEvents = cmsTimeline
     ? cmsTimeline.map((ev) => ({
         year: ev.year,
@@ -33,10 +33,10 @@ function APropos() {
     : null;
 
   // ── Team ──
-  const cmsTeam = content?.aboutTeam;
+  const cmsTeam = content?.aboutTeam?.length ? content.aboutTeam : null;
 
   // ── Universe ──
-  const cmsUniverse = content?.aboutUniverse;
+  const cmsUniverse = content?.aboutUniverse?.length ? content.aboutUniverse : null;
 
   // Fallback data
   const fbEquipmentItems = t('aboutPage.equipment.items');

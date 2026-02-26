@@ -33,10 +33,17 @@ export function SiteContentProvider({ children }) {
       }
     })
     .then(res => {
-      setContent(res.data.data);
+      // Strapi v5 flat format: res.data.data = { id, documentId, field1, ... }
+      // Strapi v4 format: res.data.data = { id, attributes: { field1, ... } }
+      const raw = res.data?.data;
+      const data = raw?.attributes || raw;
+      if (data && typeof data === 'object') {
+        setContent(data);
+      }
       setLoading(false);
     })
-    .catch(() => {
+    .catch((err) => {
+      console.warn('[SiteContent] API unavailable, using fallbacks', err?.response?.status || err.message);
       setLoading(false);
     });
   }, []);

@@ -59,8 +59,8 @@ function Home() {
   const { t, lang } = useLang();
   const { content } = useSiteContent();
 
-  // ── Service Cards ──
-  const cmsServiceCards = Array.isArray(content?.serviceCards) ? content.serviceCards : null;
+  // ── Service Cards (fallback si vide ou absent) ──
+  const cmsServiceCards = content?.serviceCards?.length ? content.serviceCards : null;
   const serviceCards = cmsServiceCards
     ? cmsServiceCards.map((c) => ({
         title: bl(c, 'title', lang),
@@ -72,7 +72,7 @@ function Home() {
     : null;
 
   // ── Featured Projects ──
-  const cmsFeaturedProjects = Array.isArray(content?.featuredProjects) ? content.featuredProjects : null;
+  const cmsFeaturedProjects = content?.featuredProjects?.length ? content.featuredProjects : null;
   const featuredProjects = cmsFeaturedProjects
     ? cmsFeaturedProjects.map((p) => ({
         title: bl(p, 'title', lang),
@@ -83,10 +83,10 @@ function Home() {
     : null;
 
   // ── Stats ──
-  const cmsStats = Array.isArray(content?.stats) ? content.stats : null;
+  const cmsStats = content?.stats?.length ? content.stats : null;
 
   // ── Advantages ──
-  const cmsAdvantages = Array.isArray(content?.advantages) ? content.advantages : null;
+  const cmsAdvantages = content?.advantages?.length ? content.advantages : null;
   const advantages = cmsAdvantages
     ? cmsAdvantages.map((a) => ({
         title: bl(a, 'title', lang),
@@ -96,7 +96,7 @@ function Home() {
     : null;
 
   // ── Testimonials ──
-  const cmsTestimonials = Array.isArray(content?.testimonials) ? content.testimonials : null;
+  const cmsTestimonials = content?.testimonials?.length ? content.testimonials : null;
   const testimonials = cmsTestimonials
     ? cmsTestimonials.map((tm) => ({
         name: tm.name,
