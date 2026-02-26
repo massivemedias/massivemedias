@@ -1,5 +1,5 @@
 import { Printer, Sticker, Shirt, Palette } from 'lucide-react';
-import { img, thumb } from '../utils/paths';
+import { thumb } from '../utils/paths';
 
 const servicesData = {
   'prints': {
@@ -8,7 +8,7 @@ const servicesData = {
     icon: Printer,
     title: 'Prints',
     subtitle: 'Fine art, flyers, cartes - impression qualité pro',
-    heroImage: thumb('/images/prints/Printstoutcourt.webp'),
+    heroImage: thumb('/images/prints/PrintsHero.webp'),
     description: `Le Fine Art désigne des impressions photographiques ou artistiques réalisées sur des papiers d'archives haut de gamme (coton, alpha-cellulose) avec des encres pigmentées à haute longévité. Ces tirages respectent les standards des galeries d'art et musées, avec une durée de conservation pouvant dépasser 100 ans.
 
 Chaque impression fait l'objet d'un calibrage colorimétrique rigoureux pour garantir une fidélité optimale aux intentions de l'artiste.
@@ -74,6 +74,9 @@ Nous imprimons aussi des flyers, cartes postales et cartes d'affaires - tout ce 
       ],
     },
     gallery: [
+      thumb('/images/prints/PrintsPortfolio1.webp'),
+      thumb('/images/prints/PrintsPortfolio2.webp'),
+      thumb('/images/prints/PrintsTailleHero.webp'),
       thumb('/images/prints/PrintsFlatlay.webp'),
       thumb('/images/prints/PrintsFormats.webp'),
       thumb('/images/prints/FineArt1.webp'),
@@ -112,7 +115,7 @@ Nous imprimons aussi des flyers, cartes postales et cartes d'affaires - tout ce 
     icon: Sticker,
     title: 'Stickers',
     subtitle: 'Autocollants découpés sur mesure pour créateurs',
-    heroImage: thumb('/images/stickers/Stickers-Cosmo.webp'),
+    heroImage: thumb('/images/stickers/StickersHero.webp'),
     description: `Autocollants découpés sur mesure pour artistes, labels, événements et marques. Service complet incluant la création graphique du visuel si nécessaire.
 
 Découpés à la forme exacte de ton design avec notre équipement de découpe professionnel, chaque sticker est fini avec une lamination pour résister à l'eau, aux UV et aux rayures.`,
@@ -151,6 +154,7 @@ Découpés à la forme exacte de ton design avec notre équipement de découpe p
       ],
     },
     gallery: [
+      thumb('/images/stickers/StickersPortfolio.webp'),
       thumb('/images/stickers/Stickers-Cosmovision.webp'),
       thumb('/images/stickers/Stickers-Fusion-State-Rec.webp'),
       thumb('/images/stickers/Stickers-Maudite-Machine.webp'),
@@ -181,7 +185,7 @@ Découpés à la forme exacte de ton design avec notre équipement de découpe p
     icon: Shirt,
     title: 'Merch',
     subtitle: 'T-shirts, crewnecks, hoodies, sacs bananes, mugs - ton merch sur mesure',
-    heroImage: thumb('/images/textile/Textile1.webp'),
+    heroImage: thumb('/images/textile/MerchHero.webp'),
     description: `Impression sublimation sur textile et objets. La sublimation produit des couleurs vibrantes et permanentes qui ne craquent pas, ne s'effacent pas et résistent au lavage.
 
 Idéal pour le merch d'artiste, les événements, les cadeaux corporatifs ou tout projet personnalisé. T-shirts, crewnecks, hoodies, sacs bananes avec ton logo, mugs, thermos et plus encore.`,
@@ -258,7 +262,7 @@ Idéal pour le merch d'artiste, les événements, les cadeaux corporatifs ou tou
     icon: Palette,
     title: 'Design',
     subtitle: 'Design graphique, web design, développement et référencement',
-    heroImage: thumb('/images/graphism/GraphicDesign.webp'),
+    heroImage: thumb('/images/graphism/GraphicDesignHero.webp'),
     description: `Service complet de design graphique, web design et développement. De la conception de logos à l'identité visuelle complète, en passant par les affiches d'événements, les pochettes d'album et le design d'icônes.
 
 Sites web modernes, performants et optimisés SEO pour artistes, créateurs et petites entreprises. Du portfolio d'artiste à la boutique e-commerce complète.

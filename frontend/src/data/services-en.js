@@ -1,5 +1,5 @@
 import { Printer, Sticker, Shirt, Palette } from 'lucide-react';
-import { img, thumb } from '../utils/paths';
+import { thumb } from '../utils/paths';
 
 const servicesDataEn = {
   'prints': {
@@ -8,7 +8,7 @@ const servicesDataEn = {
     icon: Printer,
     title: 'Prints',
     subtitle: 'Fine art, flyers, cards - professional quality printing',
-    heroImage: thumb('/images/prints/Printstoutcourt.webp'),
+    heroImage: thumb('/images/prints/PrintsHero.webp'),
     description: `Fine Art refers to photographic or artistic prints made on high-end archival papers (cotton, alpha-cellulose) with pigmented inks for maximum longevity. These prints meet gallery and museum standards, with a conservation life exceeding 100 years.
 
 Each print undergoes rigorous color calibration to ensure optimal fidelity to the artist's intentions.
@@ -74,6 +74,9 @@ We also print flyers, postcards and business cards - everything you need to prom
       ],
     },
     gallery: [
+      thumb('/images/prints/PrintsPortfolio1.webp'),
+      thumb('/images/prints/PrintsPortfolio2.webp'),
+      thumb('/images/prints/PrintsTailleHero.webp'),
       thumb('/images/prints/PrintsFlatlay.webp'),
       thumb('/images/prints/PrintsFormats.webp'),
       thumb('/images/prints/FineArt1.webp'),
@@ -112,7 +115,7 @@ We also print flyers, postcards and business cards - everything you need to prom
     icon: Sticker,
     title: 'Stickers',
     subtitle: 'Custom die-cut stickers for creators',
-    heroImage: thumb('/images/stickers/Stickers-Cosmo.webp'),
+    heroImage: thumb('/images/stickers/StickersHero.webp'),
     description: `Custom die-cut stickers for artists, labels, events and brands. Complete service including graphic design if needed.
 
 Cut to the exact shape of your design with our professional cutting equipment, each sticker is finished with lamination for water, UV and scratch resistance.`,
@@ -151,6 +154,7 @@ Cut to the exact shape of your design with our professional cutting equipment, e
       ],
     },
     gallery: [
+      thumb('/images/stickers/StickersPortfolio.webp'),
       thumb('/images/stickers/Stickers-Cosmovision.webp'),
       thumb('/images/stickers/Stickers-Fusion-State-Rec.webp'),
       thumb('/images/stickers/Stickers-Maudite-Machine.webp'),
@@ -181,7 +185,7 @@ Cut to the exact shape of your design with our professional cutting equipment, e
     icon: Shirt,
     title: 'Merch',
     subtitle: 'T-shirts, crewnecks, hoodies, fanny packs, mugs - your custom merch',
-    heroImage: thumb('/images/textile/Textile1.webp'),
+    heroImage: thumb('/images/textile/MerchHero.webp'),
     description: `Sublimation printing on textiles and objects. Sublimation produces vibrant and permanent colors that don't crack, don't fade and are wash-resistant.
 
 Ideal for artist merch, events, corporate gifts or any custom project. T-shirts, crewnecks, hoodies, fanny packs with your logo, mugs, tumblers and more.`,
@@ -258,7 +262,7 @@ Ideal for artist merch, events, corporate gifts or any custom project. T-shirts,
     icon: Palette,
     title: 'Design',
     subtitle: 'Graphic design, web design, development and SEO',
-    heroImage: thumb('/images/graphism/GraphicDesign.webp'),
+    heroImage: thumb('/images/graphism/GraphicDesignHero.webp'),
     description: `Complete graphic design, web design and development service. From logo design to full visual identity, including event posters, album covers and icon design.
 
 Modern, fast and SEO-optimized websites for artists, creators and small businesses. From artist portfolios to complete e-commerce stores.

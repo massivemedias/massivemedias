@@ -31,11 +31,11 @@ const fallbackServiceLinks = [
   '/services/design',
 ];
 const fallbackServiceImages = [
-  thumb('/images/prints/PrintsTaille.webp'),
-  thumb('/images/stickers/Stickers-Cosmo.webp'),
-  thumb('/images/textile/Textile1.webp'),
-  thumb('/images/graphism/GraphicDesign.webp'),
-  thumb('/images/graphism/DevWebSeo.webp'),
+  thumb('/images/prints/PrintsHero.webp'),
+  thumb('/images/stickers/StickersHero.webp'),
+  thumb('/images/textile/MerchHero.webp'),
+  thumb('/images/graphism/GraphicDesignHero.webp'),
+  thumb('/images/web/DevWebHero.webp'),
 ];
 const fallbackAdvantageIcons = [Truck, Award, Users, Zap, DollarSign, Music];
 const fallbackFeaturedProjectImages = [
@@ -60,7 +60,7 @@ function Home() {
   const { content } = useSiteContent();
 
   // ── Service Cards ──
-  const cmsServiceCards = content?.serviceCards;
+  const cmsServiceCards = Array.isArray(content?.serviceCards) ? content.serviceCards : null;
   const serviceCards = cmsServiceCards
     ? cmsServiceCards.map((c) => ({
         title: bl(c, 'title', lang),
@@ -72,7 +72,7 @@ function Home() {
     : null;
 
   // ── Featured Projects ──
-  const cmsFeaturedProjects = content?.featuredProjects;
+  const cmsFeaturedProjects = Array.isArray(content?.featuredProjects) ? content.featuredProjects : null;
   const featuredProjects = cmsFeaturedProjects
     ? cmsFeaturedProjects.map((p) => ({
         title: bl(p, 'title', lang),
@@ -83,10 +83,10 @@ function Home() {
     : null;
 
   // ── Stats ──
-  const cmsStats = content?.stats;
+  const cmsStats = Array.isArray(content?.stats) ? content.stats : null;
 
   // ── Advantages ──
-  const cmsAdvantages = content?.advantages;
+  const cmsAdvantages = Array.isArray(content?.advantages) ? content.advantages : null;
   const advantages = cmsAdvantages
     ? cmsAdvantages.map((a) => ({
         title: bl(a, 'title', lang),
@@ -96,7 +96,7 @@ function Home() {
     : null;
 
   // ── Testimonials ──
-  const cmsTestimonials = content?.testimonials;
+  const cmsTestimonials = Array.isArray(content?.testimonials) ? content.testimonials : null;
   const testimonials = cmsTestimonials
     ? cmsTestimonials.map((tm) => ({
         name: tm.name,
@@ -121,7 +121,7 @@ function Home() {
       />
 
       {/* ============ HERO ============ */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      <section className="relative min-h-[80vh] md:min-h-screen flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 hero-aurora"></div>
 
         <div className="relative z-10 text-center max-w-5xl mx-auto px-4 py-20">
@@ -180,6 +180,15 @@ function Home() {
                 {(content && bl(content, 'heroCta2', lang)) || t('home.hero.cta2')}
               </Link>
             </motion.div>
+
+            <motion.img
+              src={thumb('/images/web/DevWebHero.webp')}
+              alt="Massive Medias - Create. Print. Repeat."
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1.1, duration: 0.8 }}
+              className="hidden md:block mx-auto mt-16 max-w-2xl w-full h-auto drop-shadow-2xl pointer-events-none"
+            />
           </motion.div>
         </div>
 
@@ -203,43 +212,33 @@ function Home() {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5 max-w-7xl mx-auto">
-          {serviceCards
-            ? serviceCards.map((card, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  viewport={{ once: true }}
-                >
-                  <ServiceCard
-                    icon={card.icon}
-                    title={card.title}
-                    description={card.description}
-                    link={card.link}
-                    image={card.image}
-                  />
-                </motion.div>
-              ))
-            : fbServiceCards.map((card, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  viewport={{ once: true }}
-                >
-                  <ServiceCard
-                    icon={getIcon(fallbackServiceIcons[index])}
-                    title={card.title}
-                    description={card.description}
-                    link={fallbackServiceLinks[index]}
-                    image={fallbackServiceImages[index]}
-                  />
-                </motion.div>
-              ))
-          }
+        <div className="flex flex-wrap justify-center gap-5 max-w-6xl mx-auto">
+          {(serviceCards
+            ? serviceCards
+            : fbServiceCards.map((card, index) => ({
+                ...card,
+                icon: getIcon(fallbackServiceIcons[index]),
+                link: fallbackServiceLinks[index],
+                image: fallbackServiceImages[index],
+              }))
+          ).map((card, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+              viewport={{ once: true }}
+              className="w-full sm:w-[calc(50%-0.625rem)] lg:w-[calc(33.333%-0.875rem)]"
+            >
+              <ServiceCard
+                icon={card.icon}
+                title={card.title}
+                description={card.description}
+                link={card.link}
+                image={card.image}
+              />
+            </motion.div>
+          ))}
         </div>
       </section>
 
