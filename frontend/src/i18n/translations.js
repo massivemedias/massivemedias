@@ -13,6 +13,7 @@ const translations = {
         { name: 'Stickers', slug: 'stickers' },
         { name: 'Merch', slug: 'merch' },
         { name: 'Design', slug: 'design' },
+        { name: 'Web', slug: 'web' },
       ],
     },
 
@@ -72,11 +73,11 @@ const translations = {
         },
         {
           title: 'Design',
-          description: 'Logos, identités visuelles, affiches, packaging. Design graphique et création visuelle.',
+          description: 'Logos, identités visuelles, affiches, pochettes, packaging. Design graphique professionnel.',
         },
         {
-          title: 'Web & SEO',
-          description: 'Sites web, e-commerce, référencement naturel. Développement web moderne et optimisation SEO.',
+          title: 'Web',
+          description: 'Sites web, e-commerce, SEO et référencement. Développement web moderne et performant.',
         },
       ],
       projectsSection: {
@@ -372,6 +373,7 @@ const translations = {
         { name: 'Stickers', slug: 'stickers' },
         { name: 'Merch', slug: 'merch' },
         { name: 'Design', slug: 'design' },
+        { name: 'Web', slug: 'web' },
       ],
     },
 
@@ -431,11 +433,11 @@ const translations = {
         },
         {
           title: 'Design',
-          description: 'Logos, visual identities, posters, packaging. Graphic design and visual creation.',
+          description: 'Logos, visual identities, posters, packaging. Professional graphic design.',
         },
         {
-          title: 'Web & SEO',
-          description: 'Websites, e-commerce, search engine optimization. Modern web development and SEO.',
+          title: 'Web',
+          description: 'Websites, e-commerce, SEO and search ranking. Modern and performant web development.',
         },
       ],
       projectsSection: {

@@ -63,7 +63,7 @@ function App() {
             <Route path="/services/stickers-custom" element={<Navigate to="/services/stickers" replace />} />
             <Route path="/services/sublimation-merch" element={<Navigate to="/services/merch" replace />} />
             <Route path="/services/design-graphique" element={<Navigate to="/services/design" replace />} />
-            <Route path="/services/developpement-web" element={<Navigate to="/services/design" replace />} />
+            <Route path="/services/developpement-web" element={<Navigate to="/services/web" replace />} />
 
             {/* Boutique */}
             <Route path="/boutique" element={<Boutique />} />

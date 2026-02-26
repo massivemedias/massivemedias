@@ -5,40 +5,42 @@ import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
 import { thumb } from '../utils/paths';
 import getServicesData from '../data/getServicesData';
+import { useBoutiqueItems } from '../hooks/useBoutiqueItems';
 
-const boutiqueItems = [
+// Fallback data if CMS is down
+const fallbackItems = [
   {
     slug: 'stickers',
     serviceKey: 'stickers',
-    startingPrice: '30$',
+    startingPrice: 30,
     hasCart: true,
     image: thumb('/images/stickers/Stickers-Cosmo.webp'),
   },
   {
     slug: 'fine-art',
     serviceKey: 'prints',
-    startingPrice: '16$',
+    startingPrice: 16,
     hasCart: true,
     image: thumb('/images/prints/FineArt1.webp'),
   },
   {
     slug: 'sublimation',
     serviceKey: 'merch',
-    startingPrice: '30$',
+    startingPrice: 30,
     hasCart: true,
     image: thumb('/images/textile/Textile1.webp'),
   },
   {
     slug: 'flyers',
     serviceKey: 'prints',
-    startingPrice: '40$',
+    startingPrice: 40,
     hasCart: true,
     image: thumb('/images/flyers/discodyssee.webp'),
   },
   {
     slug: 'design',
     serviceKey: 'design',
-    startingPrice: '150$',
+    startingPrice: 150,
     hasCart: false,
     image: thumb('/images/graphism/logo_massive.webp'),
     titleOverride: { fr: 'Design Graphique', en: 'Graphic Design' },
@@ -46,8 +48,8 @@ const boutiqueItems = [
   },
   {
     slug: 'web',
-    serviceKey: 'design',
-    startingPrice: '900$',
+    serviceKey: 'web',
+    startingPrice: 900,
     hasCart: false,
     image: thumb('/images/web/devweb_hero.webp'),
     titleOverride: { fr: 'Développement Web', en: 'Web Development' },
@@ -55,16 +57,51 @@ const boutiqueItems = [
   },
 ];
 
+const fallbackPackages = (lang) => [
+  {
+    name: lang === 'fr' ? 'Pack Artiste' : 'Artist Pack',
+    price: lang === 'fr' ? 'À partir de 120$' : 'Starting at $120',
+    items: lang === 'fr'
+      ? ['50 stickers die-cut', '10 tirages fine art 8×10"', 'Design graphique inclus']
+      : ['50 die-cut stickers', '10 fine art prints 8×10"', 'Graphic design included'],
+    popular: false,
+    ctaType: 'price',
+  },
+  {
+    name: lang === 'fr' ? 'Pack Événement' : 'Event Pack',
+    price: lang === 'fr' ? 'À partir de 250$' : 'Starting at $250',
+    items: lang === 'fr'
+      ? ['100 flyers A6', '100 stickers promo', 'Affiche 18×24" (x5)', 'Création graphique incluse']
+      : ['100 A6 flyers', '100 promo stickers', '18×24" poster (x5)', 'Graphic design included'],
+    popular: true,
+    ctaType: 'price',
+  },
+  {
+    name: lang === 'fr' ? 'Pack Lancement' : 'Launch Pack',
+    price: lang === 'fr' ? 'Sur devis' : 'Custom quote',
+    items: lang === 'fr'
+      ? ['Site web vitrine', 'Logo + identité visuelle', '200 stickers + 200 flyers', 'Merch (t-shirts sublimation)']
+      : ['Showcase website', 'Logo + visual identity', '200 stickers + 200 flyers', 'Merch (sublimation t-shirts)'],
+    popular: false,
+    ctaType: 'quote',
+  },
+];
+
 function Boutique() {
   const { lang } = useLang();
   const servicesData = getServicesData(lang);
+  const { boutiqueItems: cmsItems, packages: cmsPackages } = useBoutiqueItems(lang);
+
+  // Use CMS data or fallback
+  const items = cmsItems || fallbackItems;
+  const packages = cmsPackages || fallbackPackages(lang);
 
   return (
     <>
       <SEO
         title={lang === 'fr' ? 'Boutique | Massive Medias' : 'Shop | Massive Medias'}
         description={lang === 'fr'
-          ? 'Boutique Massive Medias. Stickers, impressions fine art, sublimation, flyers, design graphique, d\u00e9veloppement web. Montr\u00e9al.'
+          ? 'Boutique Massive Medias. Stickers, impressions fine art, sublimation, flyers, design graphique, développement web. Montréal.'
           : 'Massive Medias Shop. Stickers, fine art prints, sublimation, flyers, graphic design, web development. Montreal.'}
         breadcrumbs={[
           { name: lang === 'fr' ? 'Accueil' : 'Home', url: '/' },
@@ -86,7 +123,7 @@ function Boutique() {
             </h1>
             <p className="text-xl md:text-2xl text-grey-light max-w-3xl mx-auto">
               {lang === 'fr'
-                ? 'Tous nos services de cr\u00e9ation et production. Commandez en ligne ou demandez un devis.'
+                ? 'Tous nos services de création et production. Commandez en ligne ou demandez un devis.'
                 : 'All our creation and production services. Order online or request a quote.'}
             </p>
           </motion.div>
@@ -97,9 +134,12 @@ function Boutique() {
 
         {/* Service cards grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
-          {boutiqueItems.map((item, i) => {
+          {items.map((item, i) => {
             const service = servicesData[item.serviceKey];
-            if (!service) return null;
+            const title = item.title || (item.titleOverride ? item.titleOverride[lang] : service?.title) || item.slug;
+            const subtitle = item.subtitle || (item.subtitleOverride ? item.subtitleOverride[lang] : service?.subtitle) || '';
+            const price = typeof item.startingPrice === 'number' ? `${item.startingPrice}$` : item.startingPrice;
+
             return (
               <motion.div
                 key={item.slug}
@@ -115,7 +155,7 @@ function Boutique() {
                   <div className="relative overflow-hidden aspect-[16/10]">
                     <img
                       src={item.image}
-                      alt={service.title}
+                      alt={title}
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                       loading="lazy"
                     />
@@ -123,10 +163,10 @@ function Boutique() {
                     <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between">
                       <div>
                         <div className="text-white/70 text-xs font-medium mb-1">
-                          {lang === 'fr' ? '\u00c0 partir de' : 'Starting at'}
+                          {lang === 'fr' ? 'À partir de' : 'Starting at'}
                         </div>
                         <div className="text-white text-2xl font-heading font-bold">
-                          {item.startingPrice}
+                          {price}
                         </div>
                       </div>
                       <div className={`px-2.5 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider ${item.hasCart ? 'bg-accent text-white' : 'bg-white/20 text-white backdrop-blur-sm'}`}>
@@ -138,13 +178,13 @@ function Boutique() {
                   </div>
                   <div className="p-6">
                     <div className="flex items-center gap-3 mb-2">
-                      {service.icon && <service.icon size={20} className="text-accent flex-shrink-0" />}
+                      {service?.icon && <service.icon size={20} className="text-accent flex-shrink-0" />}
                       <h2 className="text-xl font-heading font-bold text-heading">
-                        {item.titleOverride ? item.titleOverride[lang] : service.title}
+                        {title}
                       </h2>
                     </div>
                     <p className="text-grey-muted text-sm mb-4 line-clamp-2">
-                      {item.subtitleOverride ? item.subtitleOverride[lang] : service.subtitle}
+                      {subtitle}
                     </p>
                     <span className="inline-flex items-center gap-1.5 text-accent text-sm font-semibold group-hover:gap-2.5 transition-all">
                       {item.hasCart
@@ -178,36 +218,7 @@ function Boutique() {
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              {
-                icon: Package,
-                title: lang === 'fr' ? 'Pack Artiste' : 'Artist Pack',
-                price: lang === 'fr' ? 'À partir de 120$' : 'Starting at $120',
-                items: lang === 'fr'
-                  ? ['50 stickers die-cut', '10 tirages fine art 8×10"', 'Design graphique inclus']
-                  : ['50 die-cut stickers', '10 fine art prints 8×10"', 'Graphic design included'],
-                saving: lang === 'fr' ? 'Économie ~15%' : 'Save ~15%',
-              },
-              {
-                icon: Package,
-                title: lang === 'fr' ? 'Pack Événement' : 'Event Pack',
-                price: lang === 'fr' ? 'À partir de 250$' : 'Starting at $250',
-                items: lang === 'fr'
-                  ? ['100 flyers A6', '100 stickers promo', 'Affiche 18×24" (x5)', 'Création graphique incluse']
-                  : ['100 A6 flyers', '100 promo stickers', '18×24" poster (x5)', 'Graphic design included'],
-                saving: lang === 'fr' ? 'Économie ~20%' : 'Save ~20%',
-                popular: true,
-              },
-              {
-                icon: Package,
-                title: lang === 'fr' ? 'Pack Lancement' : 'Launch Pack',
-                price: lang === 'fr' ? 'Sur devis' : 'Custom quote',
-                items: lang === 'fr'
-                  ? ['Site web vitrine', 'Logo + identité visuelle', '200 stickers + 200 flyers', 'Merch (t-shirts sublimation)']
-                  : ['Showcase website', 'Logo + visual identity', '200 stickers + 200 flyers', 'Merch (sublimation t-shirts)'],
-                saving: lang === 'fr' ? 'Meilleur rapport qualité-prix' : 'Best value',
-              },
-            ].map((pkg, index) => (
+            {packages.map((pkg, index) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, y: 20 }}
@@ -222,8 +233,8 @@ function Boutique() {
                   </div>
                 )}
                 <div className="flex items-center gap-3 mb-4">
-                  <pkg.icon size={24} className="text-accent" />
-                  <h3 className="text-xl font-heading font-bold text-heading">{pkg.title}</h3>
+                  <Package size={24} className="text-accent" />
+                  <h3 className="text-xl font-heading font-bold text-heading">{pkg.name}</h3>
                 </div>
                 <div className="text-2xl font-heading font-bold text-gradient mb-4">{pkg.price}</div>
                 <ul className="space-y-2 mb-6">
@@ -234,12 +245,13 @@ function Boutique() {
                     </li>
                   ))}
                 </ul>
-                <div className="text-accent text-sm font-semibold">{pkg.saving}</div>
                 <Link
                   to="/contact"
                   className="mt-4 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all duration-300 border border-accent/30 hover:bg-accent hover:text-white text-accent"
                 >
-                  {lang === 'fr' ? 'Demander un devis' : 'Request a quote'}
+                  {pkg.ctaType === 'quote'
+                    ? (lang === 'fr' ? 'Demander un devis' : 'Request a quote')
+                    : (lang === 'fr' ? 'Demander un devis' : 'Request a quote')}
                   <ArrowRight size={16} />
                 </Link>
               </motion.div>

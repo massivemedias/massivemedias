@@ -28,7 +28,7 @@ const fallbackServiceLinks = [
   '/services/stickers',
   '/services/merch',
   '/services/design',
-  '/services/design',
+  '/services/web',
 ];
 const fallbackServiceImages = [
   thumb('/images/prints/PrintsHero.webp'),

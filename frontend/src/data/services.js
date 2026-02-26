@@ -1,4 +1,4 @@
-import { Printer, Sticker, Shirt, Palette } from 'lucide-react';
+import { Printer, Sticker, Shirt, Palette, Globe } from 'lucide-react';
 import { thumb } from '../utils/paths';
 
 const servicesData = {
@@ -261,43 +261,28 @@ Idéal pour le merch d'artiste, les événements, les cadeaux corporatifs ou tou
     slug: 'design',
     icon: Palette,
     title: 'Design',
-    subtitle: 'Design graphique, web design, développement et référencement',
+    subtitle: 'Logos, identités visuelles, affiches et pochettes',
     heroImage: thumb('/images/graphism/GraphicDesignHero.webp'),
-    description: `Service complet de design graphique, web design et développement. De la conception de logos à l'identité visuelle complète, en passant par les affiches d'événements, les pochettes d'album et le design d'icônes.
+    description: `Service complet de design graphique. De la conception de logos à l'identité visuelle complète, en passant par les affiches d'événements, les pochettes d'album et le design d'icônes.
 
-Sites web modernes, performants et optimisés SEO pour artistes, créateurs et petites entreprises. Du portfolio d'artiste à la boutique e-commerce complète.
-
-15+ années d'expérience en développement web. Le fondateur de Massive Medias est programmeur-analyste de formation. Nous travaillons avec Adobe Illustrator, Figma, Photoshop et les technologies web modernes.`,
+Nous travaillons avec Adobe Illustrator, Figma et Photoshop pour créer des visuels percutants et cohérents avec ta marque.`,
     highlights: [
       'Adobe Illustrator - Logos vectoriels et identités visuelles',
       'Figma - Maquettes UI/UX et prototypage interactif',
       'Adobe Photoshop - Retouche photo et compositing',
       'Logos et identités visuelles complètes',
       'Affiches, flyers et pochettes album',
-      'Web design sur mesure et responsive',
-      'Développement front-end et back-end complet',
-      'SEO technique et référencement naturel',
-      'Intégration CMS (WordPress, Strapi, Shopify)',
-      'Hébergement, domaine et maintenance',
-    ],
-    whatWeDeliver: [
-      { title: 'Web Design', desc: 'Maquettes UI/UX sur mesure, palette de couleurs, typographie et identité visuelle cohérente avec ta marque.' },
-      { title: 'Développement', desc: 'Code propre et maintenable avec React, Angular ou WordPress selon tes besoins.' },
-      { title: 'Responsive', desc: 'Design adaptatif parfait sur mobile, tablette et desktop. Mobile-first.' },
-      { title: 'SEO & Référencement', desc: 'Optimisation on-page, méta-tags, sitemap, schema markup, Google Analytics et Search Console.' },
-      { title: 'Performance', desc: 'Images optimisées WebP, lazy loading, minification, CDN. Score 90+ sur PageSpeed.' },
-      { title: 'Sécurité', desc: 'Certificat SSL, headers sécurisés, protection anti-spam, sauvegardes automatiques.' },
+      'Packaging et design d\'emballage',
+      'Design d\'icônes et pictogrammes',
     ],
     process: [
       { step: 1, title: 'Brief créatif', desc: 'Discussion sur ta vision, tes références, ton public cible et tes objectifs' },
-      { step: 2, title: 'Recherche & moodboard', desc: 'Exploration visuelle, palette de couleurs, direction artistique, architecture du site' },
+      { step: 2, title: 'Recherche & moodboard', desc: 'Exploration visuelle, palette de couleurs, direction artistique' },
       { step: 3, title: 'Création & design', desc: 'Design sur Illustrator/Figma - logos, maquettes, identité visuelle' },
-      { step: 4, title: 'Développement', desc: 'Code propre, technologies modernes, responsive, intégrations API' },
-      { step: 5, title: 'SEO & Optimisation', desc: 'Référencement, performances, accessibilité, tests multi-devices' },
-      { step: 6, title: 'Livraison & lancement', desc: 'Fichiers finaux, mise en ligne, formation CMS, suivi post-lancement' },
+      { step: 4, title: 'Livraison', desc: 'Fichiers finaux dans tous les formats nécessaires (SVG, PDF, PNG, etc.)' },
     ],
     pricing: {
-      title: 'Tarifs Design & Web',
+      title: 'Tarifs Design Graphique',
       note: 'Le design de stickers est inclus dans le prix de production des stickers.',
       tables: [
         {
@@ -312,6 +297,75 @@ Sites web modernes, performants et optimisés SEO pour artistes, créateurs et p
             ['Retouche photo (par image)', '15$ - 50$', '24-48h'],
           ],
         },
+      ],
+    },
+    gallery: [
+      thumb('/images/graphism/GraphicDesign.webp'),
+      thumb('/images/graphism/logo_massive.webp'),
+      thumb('/images/graphism/onomiko.webp'),
+      thumb('/images/graphism/lumiere_noire.webp'),
+      thumb('/images/graphism/sony_delite_logo.webp'),
+      thumb('/images/graphism/massive_sticker.webp'),
+      thumb('/images/graphism/maudite_machine_sticker.webp'),
+      thumb('/images/graphism/vrstl_sticker.webp'),
+    ],
+    team: {
+      name: 'Christopher Gagnon',
+      role: 'Infographiste partenaire',
+      bio: 'Diplômé en design graphique avec près de 10 ans d\'expérience. Spécialisé en identité visuelle, packaging et design web.',
+      portfolio: 'Soundwave Festival, Laboratoire Bio Stratège, ChromaPur, Nutramazonie, NextGen Football, Belette Trois-Mille.',
+    },
+    faq: [
+      { q: 'Combien coûte un logo?', a: 'Les logos débutent à 300$ pour un concept simple. Une identité visuelle complète (logo + couleurs + typographie + déclinaisons) commence à 800$.' },
+      { q: 'Quel est le délai?', a: 'Comptez 5 à 10 jours pour un logo, 2 à 3 semaines pour une identité complète. Tout dépend de la complexité et de la rapidité des retours.' },
+      { q: 'Quels formats de fichiers sont livrés?', a: 'Tu reçois les fichiers vectoriels (AI, SVG, PDF) ainsi que les exports PNG/JPEG en haute résolution. Tout ce qu\'il faut pour le web et l\'impression.' },
+    ],
+    seo: {
+      title: 'Design Graphique Montréal - Massive Medias',
+      description: 'Logos, identités visuelles, affiches, pochettes album. Design graphique professionnel à Montréal.',
+    },
+  },
+
+  'web': {
+    slug: 'web',
+    boutiqueSlug: 'web',
+    icon: Globe,
+    title: 'Web',
+    subtitle: 'Sites web, e-commerce, SEO — développement moderne et performant',
+    heroImage: thumb('/images/web/DevWebHero.webp'),
+    description: `Sites web modernes, performants et optimisés SEO pour artistes, créateurs et petites entreprises. Du portfolio d'artiste à la boutique e-commerce complète.
+
+15+ années d'expérience en développement web. Le fondateur de Massive Medias est programmeur-analyste de formation. Nous travaillons avec les technologies web les plus modernes pour créer des sites rapides, sécurisés et bien référencés.`,
+    highlights: [
+      'Développement front-end et back-end complet',
+      'React, Angular, WordPress, Shopify',
+      'SEO technique et référencement naturel',
+      'Sites responsive mobile-first',
+      'E-commerce et paiement intégré',
+      'Intégration CMS (WordPress, Strapi, Shopify)',
+      'Hébergement, domaine et maintenance',
+      'Performance optimisée - Score 90+ PageSpeed',
+    ],
+    whatWeDeliver: [
+      { title: 'Web Design', desc: 'Maquettes UI/UX sur mesure, palette de couleurs, typographie et identité visuelle cohérente avec ta marque.' },
+      { title: 'Développement', desc: 'Code propre et maintenable avec React, Angular ou WordPress selon tes besoins.' },
+      { title: 'Responsive', desc: 'Design adaptatif parfait sur mobile, tablette et desktop. Mobile-first.' },
+      { title: 'SEO & Référencement', desc: 'Optimisation on-page, méta-tags, sitemap, schema markup, Google Analytics et Search Console.' },
+      { title: 'Performance', desc: 'Images optimisées WebP, lazy loading, minification, CDN. Score 90+ sur PageSpeed.' },
+      { title: 'Sécurité', desc: 'Certificat SSL, headers sécurisés, protection anti-spam, sauvegardes automatiques.' },
+    ],
+    process: [
+      { step: 1, title: 'Brief & objectifs', desc: 'Discussion sur ta vision, ton public cible, tes besoins fonctionnels et tes objectifs' },
+      { step: 2, title: 'Architecture & design', desc: 'Structure du site, wireframes, maquettes UI/UX, direction visuelle' },
+      { step: 3, title: 'Développement', desc: 'Code propre, technologies modernes, responsive, intégrations API' },
+      { step: 4, title: 'SEO & Optimisation', desc: 'Référencement, performances, accessibilité, tests multi-devices' },
+      { step: 5, title: 'Tests & QA', desc: 'Tests cross-browser, responsive, performance, sécurité' },
+      { step: 6, title: 'Lancement & suivi', desc: 'Mise en ligne, formation CMS, monitoring, suivi post-lancement' },
+    ],
+    pricing: {
+      title: 'Tarifs Développement Web',
+      note: 'Chaque projet inclut le SEO de base, le responsive et l\'optimisation performance.',
+      tables: [
         {
           subtitle: 'Développement Web & Référencement',
           headers: ['Service', 'Prix'],
@@ -326,17 +380,6 @@ Sites web modernes, performants et optimisés SEO pour artistes, créateurs et p
         },
       ],
     },
-    gallery: [
-      thumb('/images/graphism/GraphicDesign.webp'),
-      thumb('/images/graphism/DevWeb.webp'),
-      thumb('/images/graphism/logo_massive.webp'),
-      thumb('/images/graphism/onomiko.webp'),
-      thumb('/images/graphism/lumiere_noire.webp'),
-      thumb('/images/graphism/sony_delite_logo.webp'),
-      thumb('/images/graphism/massive_sticker.webp'),
-      thumb('/images/graphism/maudite_machine_sticker.webp'),
-      thumb('/images/graphism/vrstl_sticker.webp'),
-    ],
     webProjects: [
       {
         name: 'Sonaa.ca',
@@ -417,22 +460,16 @@ Sites web modernes, performants et optimisés SEO pour artistes, créateurs et p
       'Google Analytics',
       'Search Console',
     ],
-    team: {
-      name: 'Christopher Gagnon',
-      role: 'Infographiste partenaire',
-      bio: 'Diplômé en design graphique avec près de 10 ans d\'expérience. Spécialisé en identité visuelle, packaging et design web.',
-      portfolio: 'Soundwave Festival, Laboratoire Bio Stratège, ChromaPur, Nutramazonie, NextGen Football, Belette Trois-Mille.',
-    },
     faq: [
-      { q: 'Combien coûte un logo?', a: 'Les logos débutent à 150$ pour un concept simple. Une identité visuelle complète (logo + couleurs + typographie + déclinaisons) commence à 400$.' },
       { q: 'Combien coûte un site web?', a: 'Les sites vitrines débutent à 900$. Les sites e-commerce ou avec fonctionnalités avancées sont sur devis selon la complexité du projet.' },
       { q: 'Quel est le délai pour un site web?', a: 'Comptez 2 à 4 semaines pour un site vitrine, 4 à 8 semaines pour un e-commerce. Tout dépend de la complexité et de la rapidité des retours.' },
       { q: 'Le SEO est-il inclus?', a: 'Oui! Chaque site inclut l\'optimisation SEO de base : méta-tags, sitemap, schema markup, Google Analytics et Search Console.' },
       { q: 'Offrez-vous la maintenance?', a: 'Oui, on offre des forfaits de maintenance mensuelle incluant mises à jour, sauvegardes, monitoring de performance et support technique.' },
+      { q: 'Quelles technologies utilisez-vous?', a: 'React, Angular, WordPress, Shopify, Node.js, Strapi — on choisit la techno la mieux adaptée à ton projet et tes besoins.' },
     ],
     seo: {
-      title: 'Design Graphique & Web Montréal - Massive Medias',
-      description: 'Logos, identités visuelles, sites web, e-commerce, SEO. Design graphique et développement web professionnel à Montréal.',
+      title: 'Développement Web Montréal - Massive Medias',
+      description: 'Sites web, e-commerce, SEO et référencement. Développement web moderne et performant à Montréal. 15+ ans d\'expérience.',
     },
   },
 };
