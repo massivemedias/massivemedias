@@ -39,12 +39,12 @@ const fallbackServiceImages = [
 ];
 const fallbackAdvantageIcons = [Truck, Award, Users, Zap, DollarSign, Music];
 const fallbackFeaturedProjectImages = [
-  thumb('/images/prints/FineArt1.webp'),
-  thumb('/images/stickers/Stickers-Cosmovision.webp'),
-  thumb('/images/textile/Textile2.webp'),
-  thumb('/images/flyers/discodyssee.webp'),
-  thumb('/images/stickers/Stickers-Vrstl.webp'),
-  thumb('/images/textile/Textile9.webp'),
+  thumb('/images/realisations/prints/FineArt1.webp'),
+  thumb('/images/realisations/stickers/Stickers-Cosmovision.webp'),
+  thumb('/images/realisations/textile/Textile2.webp'),
+  thumb('/images/realisations/flyers/discodyssee.webp'),
+  thumb('/images/realisations/stickers/Stickers-Vrstl.webp'),
+  thumb('/images/realisations/textile/Textile9.webp'),
 ];
 const fallbackFeaturedProjectLinks = [
   '/boutique/fine-art',

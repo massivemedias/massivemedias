@@ -67,12 +67,12 @@ export function getStickerPrice(finish, shape, qty) {
 }
 
 export const stickerImages = [
-  img('/images/stickers/Stickers-Cosmo.webp'),
-  img('/images/stickers/Stickers-Cosmovision.webp'),
-  img('/images/stickers/Stickers-Fusion-State-Rec.webp'),
-  img('/images/stickers/Stickers-Maudite-Machine.webp'),
-  img('/images/stickers/Stickers-Vrstl.webp'),
-  img('/images/stickers/Stickers-massive.webp'),
+  img('/images/realisations/stickers/Stickers-Cosmo.webp'),
+  img('/images/realisations/stickers/Stickers-Cosmovision.webp'),
+  img('/images/realisations/stickers/Stickers-Fusion-State-Rec.webp'),
+  img('/images/realisations/stickers/Stickers-Maudite-Machine.webp'),
+  img('/images/realisations/stickers/Stickers-Vrstl.webp'),
+  img('/images/realisations/stickers/Stickers-massive.webp'),
 ];
 
 export const stickerHighlights = {
@@ -141,15 +141,15 @@ export function getFineArtPrice(tier, format, withFrame) {
 }
 
 export const fineArtImages = [
-  img('/images/prints/FineArt1.webp'),
-  img('/images/prints/FineArt4.webp'),
-  img('/images/prints/FineArt6.webp'),
-  img('/images/prints/FineArt-Photo.webp'),
-  img('/images/prints/Prints7.webp'),
-  img('/images/prints/Prints17.webp'),
-  img('/images/prints/Prints18.webp'),
-  img('/images/prints/Prints22.webp'),
-  img('/images/prints/Prints24.webp'),
+  img('/images/realisations/prints/FineArt1.webp'),
+  img('/images/realisations/prints/FineArt4.webp'),
+  img('/images/realisations/prints/FineArt6.webp'),
+  img('/images/realisations/prints/FineArt-Photo.webp'),
+  img('/images/realisations/prints/Prints7.webp'),
+  img('/images/realisations/prints/Prints17.webp'),
+  img('/images/realisations/prints/Prints18.webp'),
+  img('/images/realisations/prints/Prints22.webp'),
+  img('/images/realisations/prints/Prints24.webp'),
 ];
 
 export const fineArtFaq = {
@@ -221,14 +221,14 @@ export function getSublimationPrice(product, qtyIndex, withDesign) {
 }
 
 export const sublimationImages = [
-  img('/images/textile/Textile1.webp'),
-  img('/images/textile/Textile2.webp'),
-  img('/images/textile/Textile3.webp'),
-  img('/images/textile/Textile4.webp'),
-  img('/images/textile/Textile5.webp'),
-  img('/images/textile/Textile6.webp'),
-  img('/images/textile/Textile7.webp'),
-  img('/images/textile/Textile9.webp'),
+  img('/images/realisations/textile/Textile1.webp'),
+  img('/images/realisations/textile/Textile2.webp'),
+  img('/images/realisations/textile/Textile3.webp'),
+  img('/images/realisations/textile/Textile4.webp'),
+  img('/images/realisations/textile/Textile5.webp'),
+  img('/images/realisations/textile/Textile6.webp'),
+  img('/images/realisations/textile/Textile7.webp'),
+  img('/images/realisations/textile/Textile9.webp'),
 ];
 
 export const sublimationFaq = {
@@ -280,11 +280,11 @@ export function getFlyerPrice(side, qtyIndex) {
 }
 
 export const flyerImages = [
-  img('/images/flyers/discodyssee.webp'),
-  img('/images/flyers/from_vision.webp'),
-  img('/images/flyers/rituals.webp'),
-  img('/images/prints/Prints24.webp'),
-  img('/images/prints/FineArt-Photo.webp'),
+  img('/images/realisations/flyers/discodyssee.webp'),
+  img('/images/realisations/flyers/from_vision.webp'),
+  img('/images/realisations/flyers/rituals.webp'),
+  img('/images/realisations/prints/Prints24.webp'),
+  img('/images/realisations/prints/FineArt-Photo.webp'),
 ];
 
 export const flyerFaq = {
