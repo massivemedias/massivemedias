@@ -181,14 +181,6 @@ function Home() {
               </Link>
             </motion.div>
 
-            <motion.img
-              src={thumb('/images/web/DevWebHero.webp')}
-              alt="Massive Medias - Create. Print. Repeat."
-              initial={{ opacity: 0, y: 40 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1.1, duration: 0.8 }}
-              className="hidden md:block mx-auto mt-16 max-w-2xl w-full h-auto drop-shadow-2xl pointer-events-none"
-            />
           </motion.div>
         </div>
 
