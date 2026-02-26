@@ -5,7 +5,7 @@ const ThemeContext = createContext();
 
 const STORAGE_KEY = 'massive-theme-step';
 const OLD_STORAGE_KEY = 'massive-brightness';
-const DEFAULT_STEP = THEME_COUNT - 1; // 7 = Blanc
+const DEFAULT_STEP = 0; // 0 = Massive (violet profond)
 
 export function ThemeProvider({ children }) {
   const [step, setStepState] = useState(() => {
