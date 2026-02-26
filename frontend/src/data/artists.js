@@ -46,8 +46,8 @@ const artistsData = {
       { id: 'mok-006', titleFr: 'Oeuvre VI', titleEn: 'Artwork VI', image: thumb('/images/prints/Printstoutcourt.webp'), limited: false },
     ],
     pricing: {
-      studio: { a4: 25, a3: 35, a3plus: 45, a2: 55 },
-      museum: { a4: 45, a3: 75, a3plus: 100, a2: 130 },
+      studio: { a4: 35, a3: 50, a3plus: 65, a2: 85 },
+      museum: { a4: 75, a3: 120, a3plus: 160, a2: 225 },
       framePrice: 20,
     },
   },
