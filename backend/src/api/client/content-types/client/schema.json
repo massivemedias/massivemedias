@@ -1,0 +1,65 @@
+{
+  "kind": "collectionType",
+  "collectionName": "clients",
+  "info": {
+    "singularName": "client",
+    "pluralName": "clients",
+    "displayName": "Client",
+    "description": "CRM — Fiches clients avec historique et notes"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "email": {
+      "type": "email",
+      "unique": true,
+      "required": true
+    },
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "phone": {
+      "type": "string"
+    },
+    "company": {
+      "type": "string"
+    },
+    "notesFr": {
+      "type": "text"
+    },
+    "notesEn": {
+      "type": "text"
+    },
+    "tags": {
+      "type": "json"
+    },
+    "supabaseUserId": {
+      "type": "string"
+    },
+    "totalSpent": {
+      "type": "decimal",
+      "default": 0
+    },
+    "orderCount": {
+      "type": "integer",
+      "default": 0
+    },
+    "lastOrderDate": {
+      "type": "date"
+    },
+    "files": {
+      "type": "media",
+      "multiple": true,
+      "allowedTypes": ["images", "files"]
+    },
+    "orders": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::order.order",
+      "mappedBy": "client"
+    }
+  }
+}

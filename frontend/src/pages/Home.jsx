@@ -228,6 +228,7 @@ function Home() {
                 description={card.description}
                 link={card.link}
                 image={card.image}
+                mirror={index === 1}
               />
             </motion.div>
           ))}

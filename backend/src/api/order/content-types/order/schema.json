@@ -63,6 +63,12 @@
       "type": "media",
       "multiple": true,
       "allowedTypes": ["images", "files"]
+    },
+    "client": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::client.client",
+      "inversedBy": "orders"
     }
   }
 }

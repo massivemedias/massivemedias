@@ -1,0 +1,59 @@
+{
+  "kind": "collectionType",
+  "collectionName": "service_packages",
+  "info": {
+    "singularName": "service-package",
+    "pluralName": "service-packages",
+    "displayName": "Forfait",
+    "description": "Forfaits de services (Pack Artiste, Pack Événement, etc.)"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "nameFr": {
+      "type": "string",
+      "required": true
+    },
+    "nameEn": {
+      "type": "string",
+      "required": true
+    },
+    "descriptionFr": {
+      "type": "text"
+    },
+    "descriptionEn": {
+      "type": "text"
+    },
+    "items": {
+      "type": "json",
+      "required": true
+    },
+    "priceFr": {
+      "type": "string",
+      "required": true
+    },
+    "priceEn": {
+      "type": "string",
+      "required": true
+    },
+    "popular": {
+      "type": "boolean",
+      "default": false
+    },
+    "ctaType": {
+      "type": "enumeration",
+      "enum": ["price", "quote"],
+      "default": "price"
+    },
+    "sortOrder": {
+      "type": "integer",
+      "default": 0
+    },
+    "active": {
+      "type": "boolean",
+      "default": true
+    }
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "kind": "collectionType",
+  "collectionName": "boutique_items",
+  "info": {
+    "singularName": "boutique-item",
+    "pluralName": "boutique-items",
+    "displayName": "Boutique Item",
+    "description": "Items affichés sur la page Boutique"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "slug": {
+      "type": "string",
+      "unique": true,
+      "required": true
+    },
+    "titleFr": {
+      "type": "string",
+      "required": true
+    },
+    "titleEn": {
+      "type": "string",
+      "required": true
+    },
+    "subtitleFr": {
+      "type": "string"
+    },
+    "subtitleEn": {
+      "type": "string"
+    },
+    "serviceKey": {
+      "type": "string"
+    },
+    "startingPrice": {
+      "type": "decimal"
+    },
+    "image": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["images"]
+    },
+    "hasCart": {
+      "type": "boolean",
+      "default": true
+    },
+    "sortOrder": {
+      "type": "integer",
+      "default": 0
+    },
+    "active": {
+      "type": "boolean",
+      "default": true
+    }
+  }
+}

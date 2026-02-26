@@ -3,10 +3,22 @@ import { Mail, MapPin, Instagram, Facebook, Send, CheckCircle, AlertCircle } fro
 import { useState, useRef } from 'react';
 import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
+import { useSiteContent } from '../hooks/useSiteContent';
+import { bl } from '../utils/cms';
 import api from '../services/api';
+
+const socialIconMap = {
+  instagram: Instagram,
+  facebook: Facebook,
+  whatsapp: null, // SVG inline
+};
 
 function Contact() {
   const { t, lang } = useLang();
+  const { content } = useSiteContent();
+
+  const contactEmail = content?.contactEmail || 'info@massivemedias.com';
+  const cmsSocialLinks = content?.socialLinks;
   const formRef = useRef();
   const [formData, setFormData] = useState({
     nom: '',
@@ -106,11 +118,11 @@ function Contact() {
 
                 <div className="flex items-start gap-3">
                   <Mail className="text-accent mt-1" size={20} />
-                  <a 
-                    href="mailto:massivemedias@gmail.com"
+                  <a
+                    href={`mailto:${contactEmail}`}
                     className="text-heading hover:text-accent transition-colors"
                   >
-                    massivemedias@gmail.com
+                    {contactEmail}
                   </a>
                 </div>
               </div>
@@ -121,24 +133,32 @@ function Contact() {
                 {t('contactPage.info.social')}
               </h3>
               <div className="flex gap-4">
-                <a
-                  href="https://instagram.com/massivemedias"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="p-3 rounded-full text-white hover:bg-accent transition-all duration-300 social-icon-btn"
-                  aria-label="Instagram"
-                >
-                  <Instagram size={24} />
-                </a>
-                <a
-                  href="https://facebook.com/massivemedias"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="p-3 rounded-full text-white hover:bg-accent transition-all duration-300 social-icon-btn"
-                  aria-label="Facebook"
-                >
-                  <Facebook size={24} />
-                </a>
+                {cmsSocialLinks
+                  ? cmsSocialLinks.map((social, index) => {
+                      const platform = social.platform?.toLowerCase();
+                      const Icon = socialIconMap[platform];
+                      return (
+                        <a
+                          key={index}
+                          href={social.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-3 rounded-full text-white hover:bg-accent transition-all duration-300 social-icon-btn"
+                          aria-label={social.label || platform}
+                        >
+                          {Icon ? <Icon size={24} /> : <Instagram size={24} />}
+                        </a>
+                      );
+                    })
+                  : <>
+                      <a href="https://instagram.com/massivemedias" target="_blank" rel="noopener noreferrer" className="p-3 rounded-full text-white hover:bg-accent transition-all duration-300 social-icon-btn" aria-label="Instagram">
+                        <Instagram size={24} />
+                      </a>
+                      <a href="https://facebook.com/massivemedias" target="_blank" rel="noopener noreferrer" className="p-3 rounded-full text-white hover:bg-accent transition-all duration-300 social-icon-btn" aria-label="Facebook">
+                        <Facebook size={24} />
+                      </a>
+                    </>
+                }
               </div>
             </div>
           </motion.div>
@@ -319,7 +339,7 @@ function Contact() {
                     <AlertCircle size={20} className="text-red-400 flex-shrink-0" />
                     <p className="text-red-300 text-sm">
                       {t('contactPage.form.errorMessage')}{' '}
-                      <a href="mailto:massivemedias@gmail.com" className="underline">massivemedias@gmail.com</a>
+                      <a href={`mailto:${contactEmail}`} className="underline">{contactEmail}</a>
                     </p>
                   </motion.div>
                 )}

@@ -161,6 +161,10 @@
       "type": "component",
       "component": "shared.seo-meta"
     },
+    "contactPageTitleFr": { "type": "string" },
+    "contactPageTitleEn": { "type": "string" },
+    "contactPageSubtitleFr": { "type": "text" },
+    "contactPageSubtitleEn": { "type": "text" },
 
     "footerTaglineFr": { "type": "string" },
     "footerTaglineEn": { "type": "string" },

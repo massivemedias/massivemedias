@@ -45,6 +45,31 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
         },
       });
 
+      // Find or create Client record
+      let client = null;
+      try {
+        const existingClients = await strapi.documents('api::client.client').findMany({
+          filters: { email: customerEmail.toLowerCase() },
+        });
+
+        if (existingClients.length > 0) {
+          client = existingClients[0];
+        } else {
+          client = await strapi.documents('api::client.client').create({
+            data: {
+              email: customerEmail.toLowerCase(),
+              name: customerName,
+              phone: customerPhone || '',
+              supabaseUserId: supabaseUserId || '',
+              totalSpent: 0,
+              orderCount: 0,
+            },
+          });
+        }
+      } catch (err) {
+        strapi.log.warn('Could not create/find client:', err);
+      }
+
       // Create order in Strapi with status "pending"
       const order = await strapi.documents('api::order.order').create({
         data: {
@@ -60,6 +85,7 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
           status: 'pending',
           designReady: designReady !== false,
           notes: notes || '',
+          ...(client ? { client: client.documentId } : {}),
         },
       });
 
@@ -124,11 +150,32 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
       });
 
       if (orders.length > 0) {
+        const order = orders[0];
         await strapi.documents('api::order.order').update({
-          documentId: orders[0].documentId,
+          documentId: order.documentId,
           data: { status: 'paid' },
         });
-        strapi.log.info(`Order ${orders[0].documentId} marked as paid`);
+        strapi.log.info(`Order ${order.documentId} marked as paid`);
+
+        // Update client stats
+        try {
+          const clients = await strapi.documents('api::client.client').findMany({
+            filters: { email: order.customerEmail.toLowerCase() },
+          });
+          if (clients.length > 0) {
+            const client = clients[0];
+            await strapi.documents('api::client.client').update({
+              documentId: client.documentId,
+              data: {
+                totalSpent: (Number(client.totalSpent) || 0) + (order.total || 0) / 100,
+                orderCount: (client.orderCount || 0) + 1,
+                lastOrderDate: new Date().toISOString().split('T')[0],
+              },
+            });
+          }
+        } catch (err) {
+          strapi.log.warn('Could not update client stats:', err);
+        }
       }
     }
 
@@ -152,36 +199,11 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
   },
 
   async clients(ctx) {
-    const orders = await strapi.documents('api::order.order').findMany({
-      filters: { status: { $ne: 'cancelled' } },
-      sort: 'createdAt:desc',
+    // Read from Client collection (CRM)
+    const clients = await strapi.documents('api::client.client').findMany({
+      sort: 'totalSpent:desc',
+      populate: ['files'],
     });
-
-    const clientMap = new Map<string, any>();
-
-    for (const order of orders) {
-      const key = order.customerEmail.toLowerCase();
-      if (clientMap.has(key)) {
-        const client = clientMap.get(key);
-        client.orderCount += 1;
-        client.totalSpent += order.total;
-        if (new Date(order.createdAt) > new Date(client.lastOrderDate)) {
-          client.lastOrderDate = order.createdAt;
-        }
-      } else {
-        clientMap.set(key, {
-          email: order.customerEmail,
-          name: order.customerName,
-          phone: order.customerPhone || '',
-          supabaseUserId: order.supabaseUserId || '',
-          orderCount: 1,
-          totalSpent: order.total,
-          lastOrderDate: order.createdAt,
-        });
-      }
-    }
-
-    const clients = Array.from(clientMap.values()).sort((a, b) => b.totalSpent - a.totalSpent);
 
     ctx.body = { clients, total: clients.length };
   },

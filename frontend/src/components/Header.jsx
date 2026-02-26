@@ -42,9 +42,6 @@ function Header() {
             <Link to="/boutique" className="transition-colors duration-200 font-medium text-sm nav-link">
               {t('nav.boutique')}
             </Link>
-            <Link to="/nouvelles" className="transition-colors duration-200 font-medium text-sm nav-link">
-              {lang === 'fr' ? 'Nouvelles' : 'News'}
-            </Link>
             <Link to="/a-propos" className="transition-colors duration-200 font-medium text-sm nav-link">
               {t('nav.aPropos')}
             </Link>
@@ -135,7 +132,6 @@ function Header() {
 
                 {[
                   { to: '/boutique', label: t('nav.boutique') },
-                  { to: '/nouvelles', label: lang === 'fr' ? 'Nouvelles' : 'News' },
                   { to: '/a-propos', label: t('nav.aPropos') },
                   { to: '/panier', label: `${t('nav.panier')}${cartCount > 0 ? ` (${cartCount})` : ''}` },
                   { to: user ? '/account' : '/login', label: user ? `${user.user_metadata?.full_name?.split(' ')[0] || t('nav.account')}` : t('nav.login') },

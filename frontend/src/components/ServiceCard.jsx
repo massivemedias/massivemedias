@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { useLang } from '../i18n/LanguageContext';
 import { useTheme } from '../i18n/ThemeContext';
 
-function ServiceCard({ icon: Icon, title, description, link, image }) {
+function ServiceCard({ icon: Icon, title, description, link, image, mirror }) {
   const { t } = useLang();
   const { theme } = useTheme();
 
@@ -20,7 +20,7 @@ function ServiceCard({ icon: Icon, title, description, link, image }) {
             <img
               src={image}
               alt={title}
-              className="w-[85%] h-[85%] object-contain transition-transform duration-500 group-hover:scale-110 drop-shadow-xl"
+              className={`w-[85%] h-[85%] object-contain transition-transform duration-500 group-hover:scale-110 drop-shadow-xl${mirror ? ' -scale-x-100' : ''}`}
               loading="lazy"
             />
             <div className="absolute bottom-3 left-4 p-2 rounded-lg icon-glass">

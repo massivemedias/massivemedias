@@ -60,11 +60,6 @@ function Footer() {
                 </Link>
               </li>
               <li>
-                <Link to="/nouvelles" className="hover:text-accent transition-colors duration-300">
-                  {lang === 'fr' ? 'Nouvelles' : 'News'}
-                </Link>
-              </li>
-              <li>
                 <Link to="/a-propos" className="hover:text-accent transition-colors duration-300">
                   {t('nav.aPropos')}
                 </Link>
