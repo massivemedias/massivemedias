@@ -20,7 +20,7 @@ function ServiceCard({ icon: Icon, title, description, link, image, mirror }) {
             <img
               src={image}
               alt={title}
-              className={`w-[85%] h-[85%] object-contain transition-transform duration-500 group-hover:scale-110 drop-shadow-xl${mirror ? ' -scale-x-100' : ''}`}
+              className={`w-[85%] h-[85%] object-contain transition-transform duration-500 drop-shadow-xl${mirror ? ' -scale-x-100 group-hover:-scale-x-110 group-hover:scale-y-110' : ' group-hover:scale-110'}`}
               loading="lazy"
             />
             <div className="absolute bottom-3 left-4 p-2 rounded-lg icon-glass">
