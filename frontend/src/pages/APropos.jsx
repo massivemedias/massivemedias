@@ -1,26 +1,64 @@
 import { motion } from 'framer-motion';
-import { MapPin, Printer, Scissors, Shirt, Monitor } from 'lucide-react';
+import { MapPin, Monitor } from 'lucide-react';
 import { img, thumb } from '../utils/paths';
 import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
+import { useSiteContent } from '../hooks/useSiteContent';
+import { bl, mediaUrl } from '../utils/cms';
+import { getIcon } from '../utils/iconMap';
 
-const equipmentIcons = [Printer, Scissors, Shirt, Shirt, Monitor, Printer, Monitor];
+const fallbackEquipmentIcons = ['Printer', 'Scissors', 'Shirt', 'Shirt', 'Monitor', 'Printer', 'Monitor'];
 
 function APropos() {
   const { t, lang } = useLang();
+  const { content } = useSiteContent();
 
-  const equipmentItems = t('aboutPage.equipment.items');
-  const timelineEvents = t('aboutPage.timeline.events');
-  const historyParagraphs = t('aboutPage.history.paragraphs');
+  // ── Equipment ──
+  const cmsEquipment = content?.aboutEquipment;
+  const equipmentItems = cmsEquipment
+    ? cmsEquipment.map((item) => ({
+        name: bl(item, 'name', lang),
+        desc: bl(item, 'desc', lang),
+        icon: getIcon(item.iconName),
+      }))
+    : null;
+
+  // ── Timeline ──
+  const cmsTimeline = content?.aboutTimeline;
+  const timelineEvents = cmsTimeline
+    ? cmsTimeline.map((ev) => ({
+        year: ev.year,
+        event: bl(ev, 'event', lang),
+      }))
+    : null;
+
+  // ── Team ──
+  const cmsTeam = content?.aboutTeam;
+
+  // ── Universe ──
+  const cmsUniverse = content?.aboutUniverse;
+
+  // Fallback data
+  const fbEquipmentItems = t('aboutPage.equipment.items');
+  const fbTimelineEvents = t('aboutPage.timeline.events');
+  const fbHistoryParagraphs = t('aboutPage.history.paragraphs');
+
+  // History paragraphs from CMS (richtext field: aboutTextFr/En) or fallback
+  const historyParagraphs = (content && bl(content, 'aboutText', lang))
+    ? bl(content, 'aboutText', lang).split('\n').filter(Boolean)
+    : fbHistoryParagraphs;
+
+  // History images
+  const historyImages = content?.aboutHistoryImages;
 
   return (
     <>
       <SEO
-        title={t('aboutPage.seo.title')}
-        description={t('aboutPage.seo.description')}
+        title={content?.aboutSeo ? bl(content.aboutSeo, 'title', lang) || t('aboutPage.seo.title') : t('aboutPage.seo.title')}
+        description={content?.aboutSeo ? bl(content.aboutSeo, 'description', lang) || t('aboutPage.seo.description') : t('aboutPage.seo.description')}
         breadcrumbs={[
           { name: lang === 'fr' ? 'Accueil' : 'Home', url: '/' },
-          { name: t('nav.about') },
+          { name: t('nav.aPropos') },
         ]}
       />
 
@@ -36,10 +74,10 @@ function APropos() {
             className="max-w-4xl mx-auto"
           >
             <h1 className="text-5xl md:text-7xl font-heading font-bold text-heading mb-6">
-              {t('aboutPage.hero.title')}
+              {(content && bl(content, 'aboutHeroTitle', lang)) || t('aboutPage.hero.title')}
             </h1>
             <p className="text-xl md:text-2xl text-grey-light">
-              {t('aboutPage.hero.subtitle')}
+              {(content && bl(content, 'aboutHeroSubtitle', lang)) || t('aboutPage.hero.subtitle')}
             </p>
           </motion.div>
         </div>
@@ -58,7 +96,7 @@ function APropos() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
               <h2 className="text-4xl font-heading font-bold text-gradient mb-6">
-                {t('aboutPage.history.title')}
+                {(content && bl(content, 'aboutHistoryTitle', lang)) || t('aboutPage.history.title')}
               </h2>
               <div className="text-grey-light space-y-4 text-lg leading-relaxed">
                 {historyParagraphs.map((p, i) => (
@@ -67,10 +105,17 @@ function APropos() {
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <img src={thumb('/images/locale/locale2.webp')} alt="Studio Massive Medias" className="rounded-xl w-full h-48 object-cover" loading="lazy" />
-              <img src={thumb('/images/locale/locale9.webp')} alt="Espace de travail" className="rounded-xl w-full h-48 object-cover" loading="lazy" />
-              <img src={thumb('/images/locale/locale10.webp')} alt="Équipement" className="rounded-xl w-full h-48 object-cover" loading="lazy" />
-              <img src={thumb('/images/locale/locale11.webp')} alt="Productions" className="rounded-xl w-full h-48 object-cover" loading="lazy" />
+              {historyImages && historyImages.length > 0
+                ? historyImages.slice(0, 4).map((img, i) => (
+                    <img key={i} src={mediaUrl(img)} alt="" className="rounded-xl w-full h-48 object-cover" loading="lazy" />
+                  ))
+                : <>
+                    <img src={thumb('/images/locale/locale2.webp')} alt="Studio Massive Medias" className="rounded-xl w-full h-48 object-cover" loading="lazy" />
+                    <img src={thumb('/images/locale/locale9.webp')} alt="Espace de travail" className="rounded-xl w-full h-48 object-cover" loading="lazy" />
+                    <img src={thumb('/images/locale/locale10.webp')} alt="Équipement" className="rounded-xl w-full h-48 object-cover" loading="lazy" />
+                    <img src={thumb('/images/locale/locale11.webp')} alt="Productions" className="rounded-xl w-full h-48 object-cover" loading="lazy" />
+                  </>
+              }
             </div>
           </div>
         </motion.div>
@@ -84,12 +129,12 @@ function APropos() {
           className="mb-20"
         >
           <h2 className="text-4xl font-heading font-bold text-gradient mb-10 text-center">
-            {t('aboutPage.timeline.title')}
+            {(content && bl(content, 'aboutTimelineTitle', lang)) || t('aboutPage.timeline.title')}
           </h2>
           <div className="relative max-w-3xl mx-auto">
             <div className="absolute left-8 top-0 bottom-0 w-px bg-gradient-to-b from-accent to-electric-purple"></div>
-            
-            {timelineEvents.map((item, index) => (
+
+            {(timelineEvents || fbTimelineEvents).map((item, index) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, x: -20 }}
@@ -118,18 +163,25 @@ function APropos() {
           className="mb-20"
         >
           <h2 className="text-4xl font-heading font-bold text-gradient mb-10 text-center">
-            {t('aboutPage.equipment.title')}
+            {(content && bl(content, 'aboutEquipmentTitle', lang)) || t('aboutPage.equipment.title')}
           </h2>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
             <div className="grid grid-cols-2 gap-4">
-              <img src={thumb('/images/locale/locale3.webp')} alt="Studio" className="rounded-xl w-full h-40 object-cover" loading="lazy" />
-              <img src={thumb('/images/locale/locale10.webp')} alt="Équipement" className="rounded-xl w-full h-40 object-cover" loading="lazy" />
+              {content?.aboutEquipmentImages && content.aboutEquipmentImages.length > 0
+                ? content.aboutEquipmentImages.slice(0, 2).map((eqImg, i) => (
+                    <img key={i} src={mediaUrl(eqImg)} alt="" className="rounded-xl w-full h-40 object-cover" loading="lazy" />
+                  ))
+                : <>
+                    <img src={thumb('/images/locale/locale3.webp')} alt="Studio" className="rounded-xl w-full h-40 object-cover" loading="lazy" />
+                    <img src={thumb('/images/locale/locale10.webp')} alt="Équipement" className="rounded-xl w-full h-40 object-cover" loading="lazy" />
+                  </>
+              }
             </div>
-            
+
             <div className="space-y-4">
-              {equipmentItems.map((item, index) => {
-                const Icon = equipmentIcons[index] || Monitor;
+              {(equipmentItems || fbEquipmentItems).map((item, index) => {
+                const Icon = equipmentItems ? item.icon : getIcon(fallbackEquipmentIcons[index]);
                 return (
                   <motion.div
                     key={index}
@@ -143,8 +195,8 @@ function APropos() {
                       <Icon size={20} className="text-accent" />
                     </div>
                     <div>
-                      <h4 className="text-heading font-semibold">{item.name}</h4>
-                      <p className="text-grey-muted text-sm">{item.desc}</p>
+                      <h4 className="text-heading font-semibold">{equipmentItems ? item.name : item.name}</h4>
+                      <p className="text-grey-muted text-sm">{equipmentItems ? item.desc : item.desc}</p>
                     </div>
                   </motion.div>
                 );
@@ -162,18 +214,25 @@ function APropos() {
           className="mb-20"
         >
           <div className="rounded-2xl overflow-hidden relative">
-            <img src={thumb('/images/locale/locale11.webp')} alt="Espace Versatile" className="w-full h-80 object-cover" loading="lazy" />
+            <img
+              src={content?.aboutSpaceImage ? mediaUrl(content.aboutSpaceImage) : thumb('/images/locale/locale11.webp')}
+              alt="Espace Versatile"
+              className="w-full h-80 object-cover"
+              loading="lazy"
+            />
             <div className="absolute inset-0 space-overlay"></div>
             <div className="absolute bottom-0 left-0 right-0 p-8 md:p-12">
               <div className="flex items-center gap-2 mb-3">
                 <MapPin size={20} className="text-accent" />
-                <span className="text-accent font-semibold">{t('aboutPage.space.location')}</span>
+                <span className="text-accent font-semibold">
+                  {(content && bl(content, 'aboutSpaceLocation', lang)) || t('aboutPage.space.location')}
+                </span>
               </div>
               <h2 className="text-3xl md:text-4xl font-heading font-bold text-heading mb-4">
-                {t('aboutPage.space.title')}
+                {(content && bl(content, 'aboutSpaceTitle', lang)) || t('aboutPage.space.title')}
               </h2>
               <p className="text-grey-light text-lg max-w-2xl">
-                {t('aboutPage.space.description')}
+                {(content && bl(content, 'aboutSpaceDescription', lang)) || t('aboutPage.space.description')}
               </p>
             </div>
           </div>
@@ -187,21 +246,35 @@ function APropos() {
           viewport={{ once: true }}
         >
           <h2 className="text-4xl font-heading font-bold text-gradient mb-8 text-center">
-            {t('aboutPage.universe.title')}
+            {(content && bl(content, 'aboutUniverseTitle', lang)) || t('aboutPage.universe.title')}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-            <div className="p-8 rounded-2xl border border-purple-main/30 transition-colors duration-300 card-bg card-shadow">
-              <h3 className="text-2xl font-heading font-bold text-heading mb-3">{t('aboutPage.universe.mauditeMachine.title')}</h3>
-              <p className="text-grey-light leading-relaxed">
-                {t('aboutPage.universe.mauditeMachine.description')}
-              </p>
-            </div>
-            <div className="p-8 rounded-2xl border border-purple-main/30 transition-colors duration-300 card-bg card-shadow">
-              <h3 className="text-2xl font-heading font-bold text-heading mb-3">{t('aboutPage.universe.vrstl.title')}</h3>
-              <p className="text-grey-light leading-relaxed">
-                {t('aboutPage.universe.vrstl.description')}
-              </p>
-            </div>
+            {cmsUniverse
+              ? cmsUniverse.map((project, index) => (
+                  <a key={index} href={project.url || '#'} target="_blank" rel="noopener noreferrer" className="block">
+                    <div className="p-8 rounded-2xl border border-purple-main/30 transition-colors duration-300 card-bg card-shadow">
+                      <h3 className="text-2xl font-heading font-bold text-heading mb-3">{bl(project, 'title', lang)}</h3>
+                      <p className="text-grey-light leading-relaxed">
+                        {bl(project, 'description', lang)}
+                      </p>
+                    </div>
+                  </a>
+                ))
+              : <>
+                  <div className="p-8 rounded-2xl border border-purple-main/30 transition-colors duration-300 card-bg card-shadow">
+                    <h3 className="text-2xl font-heading font-bold text-heading mb-3">{t('aboutPage.universe.mauditeMachine.title')}</h3>
+                    <p className="text-grey-light leading-relaxed">
+                      {t('aboutPage.universe.mauditeMachine.description')}
+                    </p>
+                  </div>
+                  <div className="p-8 rounded-2xl border border-purple-main/30 transition-colors duration-300 card-bg card-shadow">
+                    <h3 className="text-2xl font-heading font-bold text-heading mb-3">{t('aboutPage.universe.vrstl.title')}</h3>
+                    <p className="text-grey-light leading-relaxed">
+                      {t('aboutPage.universe.vrstl.description')}
+                    </p>
+                  </div>
+                </>
+            }
           </div>
         </motion.div>
 

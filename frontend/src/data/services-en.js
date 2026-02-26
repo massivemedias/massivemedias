@@ -8,7 +8,7 @@ const servicesDataEn = {
     icon: Printer,
     title: 'Prints',
     subtitle: 'Fine art, flyers, cards - professional quality printing',
-    heroImage: thumb('/images/prints/Prints17.webp'),
+    heroImage: thumb('/images/prints/Printstoutcourt.webp'),
     description: `Fine Art refers to photographic or artistic prints made on high-end archival papers (cotton, alpha-cellulose) with pigmented inks for maximum longevity. These prints meet gallery and museum standards, with a conservation life exceeding 100 years.
 
 Each print undergoes rigorous color calibration to ensure optimal fidelity to the artist's intentions.
@@ -74,6 +74,8 @@ We also print flyers, postcards and business cards - everything you need to prom
       ],
     },
     gallery: [
+      thumb('/images/prints/PrintsFlatlay.webp'),
+      thumb('/images/prints/PrintsFormats.webp'),
       thumb('/images/prints/FineArt1.webp'),
       thumb('/images/prints/FineArt4.webp'),
       thumb('/images/prints/FineArt6.webp'),
@@ -256,7 +258,7 @@ Ideal for artist merch, events, corporate gifts or any custom project. T-shirts,
     icon: Palette,
     title: 'Design',
     subtitle: 'Graphic design, web design, development and SEO',
-    heroImage: thumb('/images/graphism/logo_massive.webp'),
+    heroImage: thumb('/images/graphism/GraphicDesign.webp'),
     description: `Complete graphic design, web design and development service. From logo design to full visual identity, including event posters, album covers and icon design.
 
 Modern, fast and SEO-optimized websites for artists, creators and small businesses. From artist portfolios to complete e-commerce stores.
@@ -321,6 +323,8 @@ Modern, fast and SEO-optimized websites for artists, creators and small business
       ],
     },
     gallery: [
+      thumb('/images/graphism/GraphicDesign.webp'),
+      thumb('/images/graphism/DevWeb.webp'),
       thumb('/images/graphism/logo_massive.webp'),
       thumb('/images/graphism/onomiko.webp'),
       thumb('/images/graphism/lumiere_noire.webp'),

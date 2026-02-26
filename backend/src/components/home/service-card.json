@@ -1,0 +1,21 @@
+{
+  "collectionName": "components_home_service_cards",
+  "info": {
+    "displayName": "Service Card",
+    "icon": "layout",
+    "description": "Homepage service card with bilingual text"
+  },
+  "attributes": {
+    "titleFr": { "type": "string", "required": true },
+    "titleEn": { "type": "string", "required": true },
+    "descriptionFr": { "type": "text", "required": true },
+    "descriptionEn": { "type": "text", "required": true },
+    "link": { "type": "string", "required": true },
+    "iconName": { "type": "string", "required": true },
+    "image": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["images"]
+    }
+  }
+}

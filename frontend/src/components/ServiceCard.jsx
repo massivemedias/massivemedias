@@ -16,14 +16,13 @@ function ServiceCard({ icon: Icon, title, description, link, image }) {
       <Link to={link} className={`block overflow-hidden h-full group transition-colors duration-300 card-bg-bordered ${theme === 'light' ? 'rounded-xl' : 'rounded-2xl'}`}>
         {/* Image */}
         {image && (
-          <div className="relative h-48 overflow-hidden">
+          <div className="relative aspect-square overflow-hidden flex items-center justify-center">
             <img
               src={image}
               alt={title}
-              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+              className="w-[85%] h-[85%] object-contain transition-transform duration-500 group-hover:scale-110 drop-shadow-xl"
               loading="lazy"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-purple-dark/90 to-transparent"></div>
             <div className="absolute bottom-3 left-4 p-2 rounded-lg icon-glass">
               <Icon size={24} className="text-white" />
             </div>

@@ -1,0 +1,20 @@
+{
+  "collectionName": "components_about_universe_projects",
+  "info": {
+    "displayName": "Universe Project",
+    "icon": "globe",
+    "description": "Associated project in the Massive universe"
+  },
+  "attributes": {
+    "titleFr": { "type": "string", "required": true },
+    "titleEn": { "type": "string", "required": true },
+    "descriptionFr": { "type": "text", "required": true },
+    "descriptionEn": { "type": "text", "required": true },
+    "url": { "type": "string" },
+    "image": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["images"]
+    }
+  }
+}

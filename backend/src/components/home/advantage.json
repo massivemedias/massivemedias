@@ -1,0 +1,15 @@
+{
+  "collectionName": "components_home_advantages",
+  "info": {
+    "displayName": "Advantage",
+    "icon": "check",
+    "description": "Homepage advantage/benefit item"
+  },
+  "attributes": {
+    "titleFr": { "type": "string", "required": true },
+    "titleEn": { "type": "string", "required": true },
+    "descriptionFr": { "type": "text", "required": true },
+    "descriptionEn": { "type": "text", "required": true },
+    "iconName": { "type": "string", "required": true }
+  }
+}

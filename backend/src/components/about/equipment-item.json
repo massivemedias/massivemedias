@@ -1,0 +1,15 @@
+{
+  "collectionName": "components_about_equipment_items",
+  "info": {
+    "displayName": "Equipment Item",
+    "icon": "wrench",
+    "description": "Equipment item for About page"
+  },
+  "attributes": {
+    "nameFr": { "type": "string", "required": true },
+    "nameEn": { "type": "string", "required": true },
+    "descFr": { "type": "string", "required": true },
+    "descEn": { "type": "string", "required": true },
+    "iconName": { "type": "string" }
+  }
+}

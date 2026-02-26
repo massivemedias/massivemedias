@@ -72,7 +72,11 @@ const translations = {
         },
         {
           title: 'Design',
-          description: 'Logos, identités visuelles, affiches, packaging, sites web, e-commerce. Design graphique et développement web.',
+          description: 'Logos, identités visuelles, affiches, packaging. Design graphique et création visuelle.',
+        },
+        {
+          title: 'Web & SEO',
+          description: 'Sites web, e-commerce, référencement naturel. Développement web moderne et optimisation SEO.',
         },
       ],
       projectsSection: {
@@ -427,7 +431,11 @@ const translations = {
         },
         {
           title: 'Design',
-          description: 'Logos, visual identities, posters, packaging, websites, e-commerce. Graphic design and web development.',
+          description: 'Logos, visual identities, posters, packaging. Graphic design and visual creation.',
+        },
+        {
+          title: 'Web & SEO',
+          description: 'Websites, e-commerce, search engine optimization. Modern web development and SEO.',
         },
       ],
       projectsSection: {

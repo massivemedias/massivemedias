@@ -1,0 +1,21 @@
+{
+  "collectionName": "components_home_featured_projects",
+  "info": {
+    "displayName": "Featured Project",
+    "icon": "picture",
+    "description": "Homepage featured project gallery item"
+  },
+  "attributes": {
+    "titleFr": { "type": "string", "required": true },
+    "titleEn": { "type": "string", "required": true },
+    "categoryFr": { "type": "string", "required": true },
+    "categoryEn": { "type": "string", "required": true },
+    "link": { "type": "string", "required": true },
+    "image": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["images"],
+      "required": true
+    }
+  }
+}

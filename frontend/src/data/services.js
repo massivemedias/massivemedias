@@ -8,7 +8,7 @@ const servicesData = {
     icon: Printer,
     title: 'Prints',
     subtitle: 'Fine art, flyers, cartes - impression qualité pro',
-    heroImage: thumb('/images/prints/Prints17.webp'),
+    heroImage: thumb('/images/prints/Printstoutcourt.webp'),
     description: `Le Fine Art désigne des impressions photographiques ou artistiques réalisées sur des papiers d'archives haut de gamme (coton, alpha-cellulose) avec des encres pigmentées à haute longévité. Ces tirages respectent les standards des galeries d'art et musées, avec une durée de conservation pouvant dépasser 100 ans.
 
 Chaque impression fait l'objet d'un calibrage colorimétrique rigoureux pour garantir une fidélité optimale aux intentions de l'artiste.
@@ -74,6 +74,8 @@ Nous imprimons aussi des flyers, cartes postales et cartes d'affaires - tout ce 
       ],
     },
     gallery: [
+      thumb('/images/prints/PrintsFlatlay.webp'),
+      thumb('/images/prints/PrintsFormats.webp'),
       thumb('/images/prints/FineArt1.webp'),
       thumb('/images/prints/FineArt4.webp'),
       thumb('/images/prints/FineArt6.webp'),
@@ -256,7 +258,7 @@ Idéal pour le merch d'artiste, les événements, les cadeaux corporatifs ou tou
     icon: Palette,
     title: 'Design',
     subtitle: 'Design graphique, web design, développement et référencement',
-    heroImage: thumb('/images/graphism/logo_massive.webp'),
+    heroImage: thumb('/images/graphism/GraphicDesign.webp'),
     description: `Service complet de design graphique, web design et développement. De la conception de logos à l'identité visuelle complète, en passant par les affiches d'événements, les pochettes d'album et le design d'icônes.
 
 Sites web modernes, performants et optimisés SEO pour artistes, créateurs et petites entreprises. Du portfolio d'artiste à la boutique e-commerce complète.
@@ -321,6 +323,8 @@ Sites web modernes, performants et optimisés SEO pour artistes, créateurs et p
       ],
     },
     gallery: [
+      thumb('/images/graphism/GraphicDesign.webp'),
+      thumb('/images/graphism/DevWeb.webp'),
       thumb('/images/graphism/logo_massive.webp'),
       thumb('/images/graphism/onomiko.webp'),
       thumb('/images/graphism/lumiere_noire.webp'),

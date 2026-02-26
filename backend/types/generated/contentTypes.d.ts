@@ -668,7 +668,7 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
 export interface ApiSiteContentSiteContent extends Struct.SingleTypeSchema {
   collectionName: 'site_contents';
   info: {
-    description: 'Editable site texts and images';
+    description: 'All editable site content organized by section';
     displayName: 'Site Content';
     pluralName: 'site-contents';
     singularName: 'site-content';
@@ -677,27 +677,97 @@ export interface ApiSiteContentSiteContent extends Struct.SingleTypeSchema {
     draftAndPublish: true;
   };
   attributes: {
+    aboutEquipment: Schema.Attribute.Component<'about.equipment-item', true>;
+    aboutEquipmentImages: Schema.Attribute.Media<'images', true>;
+    aboutEquipmentTitleEn: Schema.Attribute.String;
+    aboutEquipmentTitleFr: Schema.Attribute.String;
+    aboutHeroSubtitleEn: Schema.Attribute.Text;
+    aboutHeroSubtitleFr: Schema.Attribute.Text;
+    aboutHeroTitleEn: Schema.Attribute.String;
+    aboutHeroTitleFr: Schema.Attribute.String;
+    aboutHistoryImages: Schema.Attribute.Media<'images', true>;
+    aboutHistoryTitleEn: Schema.Attribute.String;
+    aboutHistoryTitleFr: Schema.Attribute.String;
+    aboutSeo: Schema.Attribute.Component<'shared.seo-meta', false>;
+    aboutSpaceDescriptionEn: Schema.Attribute.Text;
+    aboutSpaceDescriptionFr: Schema.Attribute.Text;
+    aboutSpaceImage: Schema.Attribute.Media<'images'>;
+    aboutSpaceLocationEn: Schema.Attribute.String;
+    aboutSpaceLocationFr: Schema.Attribute.String;
+    aboutSpaceTitleEn: Schema.Attribute.String;
+    aboutSpaceTitleFr: Schema.Attribute.String;
+    aboutTeam: Schema.Attribute.Component<'about.team-member', true>;
+    aboutTeamTitleEn: Schema.Attribute.String;
+    aboutTeamTitleFr: Schema.Attribute.String;
     aboutTextEn: Schema.Attribute.RichText;
     aboutTextFr: Schema.Attribute.RichText;
+    aboutTimeline: Schema.Attribute.Component<'about.timeline-event', true>;
+    aboutTimelineTitleEn: Schema.Attribute.String;
+    aboutTimelineTitleFr: Schema.Attribute.String;
+    aboutUniverse: Schema.Attribute.Component<'about.universe-project', true>;
+    aboutUniverseTitleEn: Schema.Attribute.String;
+    aboutUniverseTitleFr: Schema.Attribute.String;
+    advantages: Schema.Attribute.Component<'home.advantage', true>;
+    advantagesTitleEn: Schema.Attribute.String;
+    advantagesTitleFr: Schema.Attribute.String;
     announcementActive: Schema.Attribute.Boolean &
       Schema.Attribute.DefaultTo<false>;
     announcementEn: Schema.Attribute.String;
     announcementFr: Schema.Attribute.String;
+    contactEmail: Schema.Attribute.Email;
+    contactPhone: Schema.Attribute.String;
+    contactSeo: Schema.Attribute.Component<'shared.seo-meta', false>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    ctaBackgroundImage: Schema.Attribute.Media<'images'>;
+    ctaButtonEn: Schema.Attribute.String;
+    ctaButtonFr: Schema.Attribute.String;
+    ctaSubtitleEn: Schema.Attribute.Text;
+    ctaSubtitleFr: Schema.Attribute.Text;
+    ctaTitleEn: Schema.Attribute.String;
+    ctaTitleFr: Schema.Attribute.String;
+    featuredProjects: Schema.Attribute.Component<'home.featured-project', true>;
+    footerLocationEn: Schema.Attribute.String;
+    footerLocationFr: Schema.Attribute.String;
+    footerStudioDescEn: Schema.Attribute.Text;
+    footerStudioDescFr: Schema.Attribute.Text;
+    footerTaglineEn: Schema.Attribute.String;
+    footerTaglineFr: Schema.Attribute.String;
+    heroCta1En: Schema.Attribute.String;
+    heroCta1Fr: Schema.Attribute.String;
+    heroCta2En: Schema.Attribute.String;
+    heroCta2Fr: Schema.Attribute.String;
     heroImages: Schema.Attribute.Media<'images', true>;
+    heroServicesEn: Schema.Attribute.String;
+    heroServicesFr: Schema.Attribute.String;
     heroSubtitleEn: Schema.Attribute.Text;
     heroSubtitleFr: Schema.Attribute.Text;
     heroTaglineEn: Schema.Attribute.String;
     heroTaglineFr: Schema.Attribute.String;
+    homeSeo: Schema.Attribute.Component<'shared.seo-meta', false>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
       'api::site-content.site-content'
     > &
       Schema.Attribute.Private;
+    newsletterFormEndpoint: Schema.Attribute.String;
+    projectsSectionSubtitleEn: Schema.Attribute.Text;
+    projectsSectionSubtitleFr: Schema.Attribute.Text;
+    projectsSectionTitleEn: Schema.Attribute.String;
+    projectsSectionTitleFr: Schema.Attribute.String;
     publishedAt: Schema.Attribute.DateTime;
+    serviceCards: Schema.Attribute.Component<'home.service-card', true>;
+    servicesSectionSubtitleEn: Schema.Attribute.Text;
+    servicesSectionSubtitleFr: Schema.Attribute.Text;
+    servicesSectionTitleEn: Schema.Attribute.String;
+    servicesSectionTitleFr: Schema.Attribute.String;
+    socialLinks: Schema.Attribute.Component<'footer.social-link', true>;
+    stats: Schema.Attribute.Component<'home.stat-item', true>;
+    testimonials: Schema.Attribute.Component<'home.testimonial', true>;
+    testimonialsTitleEn: Schema.Attribute.String;
+    testimonialsTitleFr: Schema.Attribute.String;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;

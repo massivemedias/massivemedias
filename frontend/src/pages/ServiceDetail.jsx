@@ -97,43 +97,60 @@ function ServiceDetail() {
         <div className="absolute inset-0 hero-aurora"></div>
 
         <div className="relative z-10 section-container !py-0">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="max-w-4xl"
-          >
-            <div className="flex items-center gap-2 mb-6 text-sm">
-              <Link to="/" className="text-grey-muted hover:text-accent transition-colors">{lang === 'fr' ? 'Accueil' : 'Home'}</Link>
-              <span className="text-grey-muted">/</span>
-              <span className="text-accent">{service.title}</span>
-            </div>
-
-            <div className="flex items-center gap-4 mb-6">
-              <div className="p-4 rounded-xl icon-bg-blur">
-                <Icon size={36} className="text-accent" />
+          <div className="flex flex-col lg:flex-row items-center gap-12">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              className="max-w-4xl lg:flex-1"
+            >
+              <div className="flex items-center gap-2 mb-6 text-sm">
+                <Link to="/" className="text-grey-muted hover:text-accent transition-colors">{lang === 'fr' ? 'Accueil' : 'Home'}</Link>
+                <span className="text-grey-muted">/</span>
+                <span className="text-accent">{service.title}</span>
               </div>
-              <div>
-                <h1 className="text-4xl md:text-6xl font-heading font-bold text-heading">
-                  {service.title}
-                </h1>
+
+              <div className="flex items-center gap-4 mb-6">
+                <div className="p-4 rounded-xl icon-bg-blur">
+                  <Icon size={36} className="text-accent" />
+                </div>
+                <div>
+                  <h1 className="text-4xl md:text-6xl font-heading font-bold text-heading">
+                    {service.title}
+                  </h1>
+                </div>
               </div>
-            </div>
 
-            <p className="text-xl md:text-2xl text-grey-light mb-8">
-              {service.subtitle}
-            </p>
+              <p className="text-xl md:text-2xl text-grey-light mb-8">
+                {service.subtitle}
+              </p>
 
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Link to="/contact" className="btn-primary">
-                {t('serviceDetail.requestQuote')}
-                <ArrowRight className="ml-2" size={20} />
-              </Link>
-              <a href="#tarifs" className="btn-outline">
-                {t('serviceDetail.viewPricing')}
-              </a>
-            </div>
-          </motion.div>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Link to="/contact" className="btn-primary">
+                  {t('serviceDetail.requestQuote')}
+                  <ArrowRight className="ml-2" size={20} />
+                </Link>
+                <a href="#tarifs" className="btn-outline">
+                  {t('serviceDetail.viewPricing')}
+                </a>
+              </div>
+            </motion.div>
+
+            {service.heroImage && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+                className="hidden lg:block lg:flex-1 max-w-md"
+              >
+                <img
+                  src={service.heroImage}
+                  alt={service.title}
+                  className="w-full h-auto object-contain drop-shadow-2xl"
+                />
+              </motion.div>
+            )}
+          </div>
         </div>
       </section>
 

@@ -2,10 +2,6 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   ArrowRight,
-  Printer,
-  Sticker,
-  Shirt,
-  Palette,
   Truck,
   Award,
   Users,
@@ -21,24 +17,28 @@ import { getOrganizationSchema, getLocalBusinessSchema } from '../components/seo
 import MassiveLogo from '../components/MassiveLogo';
 import { img, thumb } from '../utils/paths';
 import { useLang } from '../i18n/LanguageContext';
+import { useSiteContent } from '../hooks/useSiteContent';
+import { bl, mediaUrl } from '../utils/cms';
+import { getIcon } from '../utils/iconMap';
 
-const serviceIcons = [Printer, Sticker, Shirt, Palette];
-const serviceLinks = [
+// Fallback icons & data if CMS not available
+const fallbackServiceIcons = ['Printer', 'Sticker', 'Shirt', 'Palette', 'Globe'];
+const fallbackServiceLinks = [
   '/services/prints',
   '/services/stickers',
   '/services/merch',
   '/services/design',
+  '/services/design',
 ];
-const serviceImages = [
-  thumb('/images/prints/Prints17.webp'),
+const fallbackServiceImages = [
+  thumb('/images/prints/PrintsTaille.webp'),
   thumb('/images/stickers/Stickers-Cosmo.webp'),
   thumb('/images/textile/Textile1.webp'),
-  thumb('/images/graphism/logo_massive.webp'),
+  thumb('/images/graphism/GraphicDesign.webp'),
+  thumb('/images/graphism/DevWebSeo.webp'),
 ];
-
-const advantageIcons = [Truck, Award, Users, Zap, DollarSign, Music];
-
-const featuredProjectImages = [
+const fallbackAdvantageIcons = [Truck, Award, Users, Zap, DollarSign, Music];
+const fallbackFeaturedProjectImages = [
   thumb('/images/prints/FineArt1.webp'),
   thumb('/images/stickers/Stickers-Cosmovision.webp'),
   thumb('/images/textile/Textile2.webp'),
@@ -46,7 +46,7 @@ const featuredProjectImages = [
   thumb('/images/stickers/Stickers-Vrstl.webp'),
   thumb('/images/textile/Textile9.webp'),
 ];
-const featuredProjectLinks = [
+const fallbackFeaturedProjectLinks = [
   '/boutique/fine-art',
   '/boutique/stickers',
   '/boutique/sublimation',
@@ -57,15 +57,65 @@ const featuredProjectLinks = [
 
 function Home() {
   const { t, lang } = useLang();
-  const serviceCards = t('home.serviceCards');
-  const advantages = t('home.advantages');
-  const featuredProjects = t('home.featuredProjects');
+  const { content } = useSiteContent();
+
+  // ── Service Cards ──
+  const cmsServiceCards = content?.serviceCards;
+  const serviceCards = cmsServiceCards
+    ? cmsServiceCards.map((c) => ({
+        title: bl(c, 'title', lang),
+        description: bl(c, 'description', lang),
+        icon: getIcon(c.iconName),
+        link: c.link,
+        image: mediaUrl(c.image, null),
+      }))
+    : null;
+
+  // ── Featured Projects ──
+  const cmsFeaturedProjects = content?.featuredProjects;
+  const featuredProjects = cmsFeaturedProjects
+    ? cmsFeaturedProjects.map((p) => ({
+        title: bl(p, 'title', lang),
+        category: bl(p, 'category', lang),
+        link: p.link,
+        image: mediaUrl(p.image, null),
+      }))
+    : null;
+
+  // ── Stats ──
+  const cmsStats = content?.stats;
+
+  // ── Advantages ──
+  const cmsAdvantages = content?.advantages;
+  const advantages = cmsAdvantages
+    ? cmsAdvantages.map((a) => ({
+        title: bl(a, 'title', lang),
+        description: bl(a, 'description', lang),
+        icon: getIcon(a.iconName),
+      }))
+    : null;
+
+  // ── Testimonials ──
+  const cmsTestimonials = content?.testimonials;
+  const testimonials = cmsTestimonials
+    ? cmsTestimonials.map((tm) => ({
+        name: tm.name,
+        role: bl(tm, 'role', lang),
+        text: bl(tm, 'text', lang),
+      }))
+    : null;
+
+  // Fallback data from translations
+  const fbServiceCards = t('home.serviceCards');
+  const fbAdvantages = t('home.advantages');
+  const fbFeaturedProjects = t('home.featuredProjects');
+  const fbTestimonials = t('home.testimonials.items');
 
   return (
     <>
       <SEO
-        title={t('home.seo.title')}
-        description={t('home.seo.description')}
+        title={content?.homeSeo ? bl(content.homeSeo, 'title', lang) || t('home.seo.title') : t('home.seo.title')}
+        description={content?.homeSeo ? bl(content.homeSeo, 'description', lang) || t('home.seo.description') : t('home.seo.description')}
         breadcrumbs={[{ name: lang === 'fr' ? 'Accueil' : 'Home' }]}
         jsonLd={[getOrganizationSchema(), getLocalBusinessSchema(lang)]}
       />
@@ -90,9 +140,9 @@ function Home() {
             />
 
             <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
+              initial={{ opacity: 0, scale: 0.7 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.1, duration: 0.8, ease: 'easeOut' }}
+              transition={{ delay: 0.1, duration: 2, ease: [0.25, 0.1, 0.25, 1] }}
               className="mx-auto mb-10 logo-home"
             >
               <MassiveLogo className="w-full h-full transition-colors duration-300" />
@@ -104,7 +154,7 @@ function Home() {
               transition={{ delay: 0.5, duration: 0.6 }}
               className="text-2xl md:text-3xl mb-4 font-light hero-subtitle"
             >
-              {t('home.hero.subtitle')}
+              {(content && bl(content, 'heroSubtitle', lang)) || t('home.hero.subtitle')}
             </motion.p>
 
             <motion.p
@@ -113,7 +163,7 @@ function Home() {
               transition={{ delay: 0.7, duration: 0.6 }}
               className="text-lg mb-12 max-w-3xl mx-auto hero-services"
             >
-              {t('home.hero.services')}
+              {(content && bl(content, 'heroServices', lang)) || t('home.hero.services')}
             </motion.p>
 
             <motion.div
@@ -123,11 +173,11 @@ function Home() {
               className="flex flex-col sm:flex-row gap-4 justify-center items-center"
             >
               <Link to="/contact" className="btn-primary">
-                {t('home.hero.cta1')}
+                {(content && bl(content, 'heroCta1', lang)) || t('home.hero.cta1')}
                 <ArrowRight className="ml-2" size={20} />
               </Link>
               <Link to="/contact" className="btn-outline btn-outline-hero">
-                {t('home.hero.cta2')}
+                {(content && bl(content, 'heroCta2', lang)) || t('home.hero.cta2')}
               </Link>
             </motion.div>
           </motion.div>
@@ -146,31 +196,50 @@ function Home() {
           className="text-center mb-16"
         >
           <h2 className="text-5xl md:text-6xl font-heading font-bold text-heading mb-4 hero-title">
-            {t('home.servicesSection.title')}
+            {(content && bl(content, 'servicesSectionTitle', lang)) || t('home.servicesSection.title')}
           </h2>
           <p className="text-xl text-grey-light max-w-2xl mx-auto">
-            {t('home.servicesSection.subtitle')}
+            {(content && bl(content, 'servicesSectionSubtitle', lang)) || t('home.servicesSection.subtitle')}
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-          {serviceCards.map((card, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              viewport={{ once: true }}
-            >
-              <ServiceCard
-                icon={serviceIcons[index]}
-                title={card.title}
-                description={card.description}
-                link={serviceLinks[index]}
-                image={serviceImages[index]}
-              />
-            </motion.div>
-          ))}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5 max-w-7xl mx-auto">
+          {serviceCards
+            ? serviceCards.map((card, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                >
+                  <ServiceCard
+                    icon={card.icon}
+                    title={card.title}
+                    description={card.description}
+                    link={card.link}
+                    image={card.image}
+                  />
+                </motion.div>
+              ))
+            : fbServiceCards.map((card, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                >
+                  <ServiceCard
+                    icon={getIcon(fallbackServiceIcons[index])}
+                    title={card.title}
+                    description={card.description}
+                    link={fallbackServiceLinks[index]}
+                    image={fallbackServiceImages[index]}
+                  />
+                </motion.div>
+              ))
+          }
         </div>
       </section>
 
@@ -184,51 +253,91 @@ function Home() {
           className="text-center mb-16"
         >
           <h2 className="text-5xl md:text-6xl font-heading font-bold text-heading mb-4 hero-title">
-            {t('home.projectsSection.title')}
+            {(content && bl(content, 'projectsSectionTitle', lang)) || t('home.projectsSection.title')}
           </h2>
           <p className="text-xl text-grey-light max-w-2xl mx-auto">
-            {t('home.projectsSection.subtitle')}
+            {(content && bl(content, 'projectsSectionSubtitle', lang)) || t('home.projectsSection.subtitle')}
           </p>
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {featuredProjects.map((project, index) => (
-            <Link key={index} to={featuredProjectLinks[index]}>
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.08 }}
-                viewport={{ once: true }}
-                className="group relative rounded-xl overflow-hidden cursor-pointer aspect-[4/3]"
-              >
-                <img
-                  src={featuredProjectImages[index]}
-                  alt={project.title}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                  loading="lazy"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent opacity-70 group-hover:opacity-90 transition-opacity duration-300"></div>
-                <div className="absolute bottom-0 left-0 right-0 p-6 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
-                  <span className="text-accent text-sm font-semibold uppercase tracking-wider">{project.category}</span>
-                  <h3 className="text-white text-xl font-heading font-bold mt-1">{project.title}</h3>
-                </div>
-              </motion.div>
-            </Link>
-          ))}
+          {featuredProjects
+            ? featuredProjects.map((project, index) => (
+                <Link key={index} to={project.link || '#'}>
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.08 }}
+                    viewport={{ once: true }}
+                    className="group relative rounded-xl overflow-hidden cursor-pointer aspect-[4/3]"
+                  >
+                    <img
+                      src={project.image}
+                      alt={project.title}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent opacity-70 group-hover:opacity-90 transition-opacity duration-300"></div>
+                    <div className="absolute bottom-0 left-0 right-0 p-6 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+                      <span className="text-accent text-sm font-semibold uppercase tracking-wider">{project.category}</span>
+                      <h3 className="text-white text-xl font-heading font-bold mt-1">{project.title}</h3>
+                    </div>
+                  </motion.div>
+                </Link>
+              ))
+            : fbFeaturedProjects.map((project, index) => (
+                <Link key={index} to={fallbackFeaturedProjectLinks[index]}>
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.08 }}
+                    viewport={{ once: true }}
+                    className="group relative rounded-xl overflow-hidden cursor-pointer aspect-[4/3]"
+                  >
+                    <img
+                      src={fallbackFeaturedProjectImages[index]}
+                      alt={project.title}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent opacity-70 group-hover:opacity-90 transition-opacity duration-300"></div>
+                    <div className="absolute bottom-0 left-0 right-0 p-6 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+                      <span className="text-accent text-sm font-semibold uppercase tracking-wider">{project.category}</span>
+                      <h3 className="text-white text-xl font-heading font-bold mt-1">{project.title}</h3>
+                    </div>
+                  </motion.div>
+                </Link>
+              ))
+          }
         </div>
-
       </section>
 
       {/* ============ CHIFFRES ============ */}
       <section className="section-container">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-          <Counter end={2013} suffix="" label={t('home.stats.since')} />
-          <Counter end={150} suffix="+" label={t('home.stats.projects')} />
-          <Counter end={100} suffix="%" label={t('home.stats.local')} />
-          <div className="text-center p-6">
-            <div className="text-5xl md:text-6xl font-heading font-bold text-gradient mb-2 hero-title">24-48h</div>
-            <div className="text-grey-light text-lg">{t('home.stats.delay')}</div>
-          </div>
+          {cmsStats
+            ? cmsStats.map((stat, index) => (
+                stat.isCounter
+                  ? <Counter key={index} end={Number(stat.value)} suffix={stat.suffix || ''} label={bl(stat, 'label', lang)} />
+                  : (
+                    <div key={index} className="text-center p-6">
+                      <div className="text-5xl md:text-6xl font-heading font-bold text-gradient mb-2 hero-title">
+                        {stat.value}{stat.suffix || ''}
+                      </div>
+                      <div className="text-grey-light text-lg">{bl(stat, 'label', lang)}</div>
+                    </div>
+                  )
+              ))
+            : <>
+                <Counter end={2013} suffix="" label={t('home.stats.since')} />
+                <Counter end={150} suffix="+" label={t('home.stats.projects')} />
+                <Counter end={100} suffix="%" label={t('home.stats.local')} />
+                <div className="text-center p-6">
+                  <div className="text-5xl md:text-6xl font-heading font-bold text-gradient mb-2 hero-title">24-48h</div>
+                  <div className="text-grey-light text-lg">{t('home.stats.delay')}</div>
+                </div>
+              </>
+          }
         </div>
       </section>
 
@@ -242,34 +351,59 @@ function Home() {
           className="text-center mb-16"
         >
           <h2 className="text-5xl md:text-6xl font-heading font-bold text-heading mb-4 hero-title">
-            {t('home.why.title')}
+            {(content && bl(content, 'advantagesTitle', lang)) || t('home.why.title')}
           </h2>
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {advantages.map((advantage, index) => {
-            const Icon = advantageIcons[index];
-            return (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                viewport={{ once: true }}
-                className="p-8 rounded-xl transition-all duration-300 bg-glass card-shadow"
-              >
-                <div className="mb-4 p-3 rounded-lg w-fit icon-bg">
-                  <Icon size={28} className="text-accent" />
-                </div>
-                <h3 className="font-heading text-xl font-bold text-heading mb-3">
-                  {advantage.title}
-                </h3>
-                <p className="text-grey-light">
-                  {advantage.description}
-                </p>
-              </motion.div>
-            );
-          })}
+          {advantages
+            ? advantages.map((advantage, index) => {
+                const Icon = advantage.icon;
+                return (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                    viewport={{ once: true }}
+                    className="p-8 rounded-xl transition-all duration-300 bg-glass card-shadow"
+                  >
+                    <div className="mb-4 p-3 rounded-lg w-fit icon-bg">
+                      <Icon size={28} className="text-accent" />
+                    </div>
+                    <h3 className="font-heading text-xl font-bold text-heading mb-3">
+                      {advantage.title}
+                    </h3>
+                    <p className="text-grey-light">
+                      {advantage.description}
+                    </p>
+                  </motion.div>
+                );
+              })
+            : fbAdvantages.map((advantage, index) => {
+                const Icon = fallbackAdvantageIcons[index];
+                return (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                    viewport={{ once: true }}
+                    className="p-8 rounded-xl transition-all duration-300 bg-glass card-shadow"
+                  >
+                    <div className="mb-4 p-3 rounded-lg w-fit icon-bg">
+                      <Icon size={28} className="text-accent" />
+                    </div>
+                    <h3 className="font-heading text-xl font-bold text-heading mb-3">
+                      {advantage.title}
+                    </h3>
+                    <p className="text-grey-light">
+                      {advantage.description}
+                    </p>
+                  </motion.div>
+                );
+              })
+          }
         </div>
       </section>
 
@@ -283,12 +417,12 @@ function Home() {
           className="text-center mb-12"
         >
           <h2 className="text-5xl md:text-6xl font-heading font-bold text-heading mb-4 hero-title">
-            {t('home.testimonials.title')}
+            {(content && bl(content, 'testimonialsTitle', lang)) || t('home.testimonials.title')}
           </h2>
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-          {t('home.testimonials.items').map((item, index) => (
+          {(testimonials || fbTestimonials).map((item, index) => (
             <motion.div
               key={index}
               initial={{ opacity: 0, y: 20 }}
@@ -320,7 +454,7 @@ function Home() {
           className="relative rounded-3xl overflow-hidden"
         >
           <img
-            src={thumb('/images/locale/locale10.webp')}
+            src={content ? mediaUrl(content.ctaBackgroundImage, thumb('/images/locale/locale10.webp')) : thumb('/images/locale/locale10.webp')}
             alt=""
             className="absolute inset-0 w-full h-full object-cover"
             loading="lazy"
@@ -329,13 +463,13 @@ function Home() {
 
           <div className="relative z-10 p-12 md:p-16 text-center">
             <h2 className="text-4xl md:text-5xl font-heading font-bold text-white mb-6">
-              {t('home.cta.title')}
+              {(content && bl(content, 'ctaTitle', lang)) || t('home.cta.title')}
             </h2>
             <p className="text-xl text-white/70 mb-8 max-w-2xl mx-auto">
-              {t('home.cta.subtitle')}
+              {(content && bl(content, 'ctaSubtitle', lang)) || t('home.cta.subtitle')}
             </p>
             <Link to="/contact" className="btn-primary">
-              {t('home.cta.button')}
+              {(content && bl(content, 'ctaButton', lang)) || t('home.cta.button')}
               <ArrowRight className="ml-2" size={20} />
             </Link>
           </div>

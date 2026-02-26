@@ -1,0 +1,14 @@
+{
+  "collectionName": "components_shared_seo_metas",
+  "info": {
+    "displayName": "SEO Meta",
+    "icon": "search",
+    "description": "SEO title and description bilingual"
+  },
+  "attributes": {
+    "titleFr": { "type": "string", "required": true },
+    "titleEn": { "type": "string", "required": true },
+    "descriptionFr": { "type": "text", "required": true },
+    "descriptionEn": { "type": "text", "required": true }
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "collectionName": "components_about_timeline_events",
+  "info": {
+    "displayName": "Timeline Event",
+    "icon": "clock",
+    "description": "Timeline event for the About page"
+  },
+  "attributes": {
+    "year": { "type": "string", "required": true },
+    "eventFr": { "type": "text", "required": true },
+    "eventEn": { "type": "text", "required": true }
+  }
+}

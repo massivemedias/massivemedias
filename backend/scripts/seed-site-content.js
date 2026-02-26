@@ -1,6 +1,18 @@
-import type { Core } from '@strapi/strapi';
+/**
+ * Seed script for Site Content single type.
+ * Uses Strapi's internal Document Service API (no token needed).
+ *
+ * Usage:
+ *   cd backend
+ *   node scripts/seed-site-content.js
+ *
+ * Prerequisites:
+ *   - Strapi must NOT be running (this script boots its own instance)
+ */
 
-const siteContentSeedData = {
+const { createStrapi } = require('@strapi/strapi');
+
+const siteContentData = {
   announcementFr: '',
   announcementEn: '',
   announcementActive: false,
@@ -87,14 +99,17 @@ const siteContentSeedData = {
     descriptionFr: "Studio de production créative fondé en 2020 à Montréal. L'équipe, l'espace et notre histoire.",
     descriptionEn: 'Creative production studio founded in 2020 in Montreal. The team, the space and our story.',
   },
+
   aboutHeroTitleFr: 'À propos',
   aboutHeroTitleEn: 'About',
   aboutHeroSubtitleFr: 'Un studio créatif ancré dans le Mile-End, au cœur de la scène artistique montréalaise.',
   aboutHeroSubtitleEn: "A creative studio rooted in Mile-End, at the heart of Montreal's artistic scene.",
+
   aboutHistoryTitleFr: "L'histoire",
   aboutHistoryTitleEn: 'Our Story',
   aboutTextFr: "Massive Medias est un studio de production créative actif depuis 2013 et établi dans le Mile-End, au cœur de l'écosystème artistique montréalais.\nL'entreprise offre quatre services intégrés destinés aux artistes visuels, photographes, musiciens et créateurs indépendants : impressions fine art, stickers personnalisés, design graphique et développement web.\nNotre philosophie : offrir un service local, personnalisé et de qualité professionnelle, sans les délais et les complications des services en ligne. Pas de shipping, pas d'attente. Pick-up au Mile-End ou livraison locale.",
   aboutTextEn: "Massive Medias is a creative production studio active since 2013 and based in Mile-End, at the heart of Montreal's artistic ecosystem.\nThe company offers four integrated services for visual artists, photographers, musicians and independent creators: fine art printing, custom stickers, graphic design and web development.\nOur philosophy: offer local, personalized, professional-quality service without the delays and complications of online services. No shipping, no waiting. Pick-up in Mile-End or local delivery.",
+
   aboutTimelineTitleFr: 'Notre parcours',
   aboutTimelineTitleEn: 'Our Journey',
   aboutTimeline: [
@@ -105,12 +120,14 @@ const siteContentSeedData = {
     { year: '2025', eventFr: 'Enregistrement officiel au REQ. Recentrage: prints, stickers, graphisme, web.', eventEn: 'Official registration with the REQ. Refocus: prints, stickers, design, web.' },
     { year: '2026', eventFr: 'Incorporation provinciale prévue. Lancement Merch-as-a-Service.', eventEn: 'Provincial incorporation planned. Launch of Merch-as-a-Service.' },
   ],
+
   aboutTeamTitleFr: "L'équipe",
   aboutTeamTitleEn: 'The Team',
   aboutTeam: [
     { name: 'Michael "Mika" Sanchez', roleFr: 'Fondateur', roleEn: 'Founder', bioFr: "Fondateur de Massive Medias, Mika est aussi compositeur de musique électronique et producteur sous le nom Maudite Machine et fondateur du label VRSTL Records. Programmeur-analyste de formation, il combine expertise technique et connaissance intime de la scène créative montréalaise.", bioEn: 'Founder of Massive Medias, Mika is also an electronic music composer and producer under the name Maudite Machine and founder of the label VRSTL Records. Trained as a programmer-analyst, he combines technical expertise with an intimate knowledge of the Montreal creative scene.', bio2Fr: "15+ années d'expérience en développement web et design graphique. Expertise en gestion de la couleur et calibration pour l'impression Fine Art.", bio2En: '15+ years of experience in web development and graphic design. Expertise in color management and calibration for Fine Art printing.' },
     { name: 'Christopher Gagnon', roleFr: 'Partenaire Design', roleEn: 'Design Partner', bioFr: "Infographiste diplômé avec près de 10 ans d'expérience. Spécialisé en identité visuelle, packaging et design web. Christopher apporte une expertise créative complète à chaque projet.", bioEn: 'Graduate graphic designer with nearly 10 years of experience. Specialized in visual identity, packaging and web design. Christopher brings complete creative expertise to every project.', bio2Fr: 'Portfolio : Soundwave Festival, Laboratoire Bio Stratège, ChromaPur, Nutramazonie, NextGen Football et plus encore.', bio2En: 'Portfolio: Soundwave Festival, Laboratoire Bio Stratège, ChromaPur, Nutramazonie, NextGen Football and more.' },
   ],
+
   aboutEquipmentTitleFr: 'Notre équipement',
   aboutEquipmentTitleEn: 'Our Equipment',
   aboutEquipment: [
@@ -122,24 +139,28 @@ const siteContentSeedData = {
     { nameFr: 'Imprimante courante', nameEn: 'Standard printer', descFr: 'Impression courante et épreuves', descEn: 'Everyday printing and proofs', iconName: 'Printer' },
     { nameFr: 'Station de travail', nameEn: 'Workstation', descFr: 'Production, design et développement', descEn: 'Production, design and development', iconName: 'Monitor' },
   ],
+
   aboutSpaceLocationFr: 'Mile-End, Montréal',
   aboutSpaceLocationEn: 'Mile-End, Montreal',
   aboutSpaceTitleFr: "L'espace Versatile",
   aboutSpaceTitleEn: 'The Versatile Space',
   aboutSpaceDescriptionFr: "On opère depuis l'espace collaboratif Versatile, au 7049 rue Saint-Urbain dans le Mile-End. Un lieu de création partagé avec une quinzaine de créateurs : vidéastes, photographes, designers, artistes. Pick-up disponible sur rendez-vous.",
   aboutSpaceDescriptionEn: "We operate from the Versatile collaborative space, at 7049 Saint-Urbain Street in Mile-End. A shared creative space with about fifteen creators: videographers, photographers, designers, artists. Pick-up available by appointment.",
+
   aboutUniverseTitleFr: "Aussi dans l'univers Massive",
   aboutUniverseTitleEn: 'Also in the Massive Universe',
   aboutUniverse: [
     { titleFr: 'Maudite Machine', titleEn: 'Maudite Machine', descriptionFr: "Compositeur de musique électronique et producteur. Sets et productions dark disco / indie dance. Sorties sur plusieurs labels, performances lors d'événements majeurs au Canada.", descriptionEn: 'Electronic music composer and producer. Dark disco / indie dance sets and productions. Releases on multiple labels, performances at major events across Canada.', url: 'https://mauditemachine.com' },
     { titleFr: 'VRSTL Records', titleEn: 'VRSTL Records', descriptionFr: "Label canadien dédié à l'Indie Dance et la Dark Minimal. Direction artistique, gestion des sorties, distribution digitale et promotion.", descriptionEn: 'Canadian label dedicated to Indie Dance and Dark Minimal. Art direction, release management, digital distribution and promotion.', url: 'https://vrstl.com' },
   ],
+
   contactSeo: {
     titleFr: 'Contact - Massive Medias',
     titleEn: 'Contact - Massive Medias',
     descriptionFr: 'Demande de soumission et contact. On te revient dans les 24h.',
     descriptionEn: "Quote request and contact. We'll get back to you within 24 hours.",
   },
+
   footerTaglineFr: 'Create. Print. Repeat.',
   footerTaglineEn: 'Create. Print. Repeat.',
   footerStudioDescFr: 'Studio de production créative',
@@ -149,66 +170,70 @@ const siteContentSeedData = {
   contactEmail: 'info@massivemedias.com',
   contactPhone: '',
   socialLinks: [
-    { platform: 'instagram', url: 'https://instagram.com/massivemedias', label: 'Instagram' },
-    { platform: 'facebook', url: 'https://facebook.com/massivemedias', label: 'Facebook' },
-    { platform: 'whatsapp', url: 'https://wa.me/15146531423', label: 'WhatsApp' },
+    { platform: 'Instagram', url: 'https://instagram.com/massivemedias', label: 'Instagram' },
+    { platform: 'Facebook', url: 'https://facebook.com/massivemedias', label: 'Facebook' },
+    { platform: 'WhatsApp', url: 'https://wa.me/15146531423', label: 'WhatsApp' },
   ],
   newsletterFormEndpoint: 'https://formspree.io/f/xzdardoe',
 };
 
-export default {
-  register(/* { strapi }: { strapi: Core.Strapi } */) {},
+async function seed() {
+  console.log('Seeding Site Content...\n');
 
-  async bootstrap({ strapi }: { strapi: Core.Strapi }) {
-    // Only seed if SEED_CONTENT env var is set
-    if (process.env.SEED_CONTENT !== 'true') return;
+  const strapi = await createStrapi({ appDir: process.cwd() }).load();
 
-    console.log('[seed] Checking Site Content...');
+  try {
+    // Check if content exists
+    const existing = await strapi.documents('api::site-content.site-content').findFirst();
 
-    try {
-      const existing = await strapi.documents('api::site-content.site-content').findFirst();
+    if (existing) {
+      console.log(`  Site Content exists (id: ${existing.id}). Updating...`);
+      await strapi.documents('api::site-content.site-content').update({
+        documentId: existing.documentId,
+        data: siteContentData,
+        status: 'published',
+      });
+      console.log('  Site Content updated and published!');
+    } else {
+      console.log('  No existing Site Content. Creating...');
+      await strapi.documents('api::site-content.site-content').create({
+        data: siteContentData,
+        status: 'published',
+      });
+      console.log('  Site Content created and published!');
+    }
 
-      if (existing) {
-        console.log(`[seed] Site Content exists (documentId: ${existing.documentId}). Updating...`);
-        await strapi.documents('api::site-content.site-content').update({
-          documentId: existing.documentId,
-          data: siteContentSeedData as any,
-          status: 'published',
-        });
-        console.log('[seed] Site Content updated and published!');
-      } else {
-        console.log('[seed] No Site Content found. Creating...');
-        await strapi.documents('api::site-content.site-content').create({
-          data: siteContentSeedData as any,
-          status: 'published',
-        });
-        console.log('[seed] Site Content created and published!');
-      }
+    // Also set public permissions for site-content.find
+    const publicRole = await strapi.db.query('plugin::users-permissions.role').findOne({
+      where: { type: 'public' },
+    });
 
-      // Set public permissions
-      const publicRole = await strapi.db.query('plugin::users-permissions.role').findOne({
-        where: { type: 'public' },
+    if (publicRole) {
+      const existingPerm = await strapi.db.query('plugin::users-permissions.permission').findOne({
+        where: { action: 'api::site-content.site-content.find', role: publicRole.id },
       });
 
-      if (publicRole) {
-        const existingPerm = await strapi.db.query('plugin::users-permissions.permission').findOne({
-          where: { action: 'api::site-content.site-content.find' },
+      if (!existingPerm) {
+        await strapi.db.query('plugin::users-permissions.permission').create({
+          data: { action: 'api::site-content.site-content.find', role: publicRole.id },
         });
-
-        if (!existingPerm) {
-          await strapi.db.query('plugin::users-permissions.permission').create({
-            data: { action: 'api::site-content.site-content.find', role: publicRole.id },
-          });
-          console.log('[seed] Public permission for site-content.find added!');
-        }
-      }
-
-      console.log('[seed] Done!');
-    } catch (err: any) {
-      console.error('[seed] Error:', err.message);
-      if (err.details?.errors) {
-        err.details.errors.forEach((e: any) => console.error('[seed]  -', e.path?.join('.'), ':', e.message));
+        console.log('  Public permission for site-content.find added!');
+      } else {
+        console.log('  Public permission already exists.');
       }
     }
-  },
-};
+
+    console.log('\nSeed complete!\n');
+    console.log('Next steps:');
+    console.log('  1. Start Strapi: npm run develop');
+    console.log('  2. Open admin -> Content Manager -> Site Content');
+    console.log('  3. Upload images for service cards, featured projects, etc.');
+    console.log('  4. Start frontend: npm run dev -- verify CMS data loads\n');
+  } catch (err) {
+    console.error('Seed failed:', err);
+  } finally {
+    await strapi.destroy();
+  }
+}
+
+seed();

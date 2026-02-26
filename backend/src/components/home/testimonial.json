@@ -1,0 +1,15 @@
+{
+  "collectionName": "components_home_testimonials",
+  "info": {
+    "displayName": "Testimonial",
+    "icon": "quote",
+    "description": "Client testimonial"
+  },
+  "attributes": {
+    "name": { "type": "string", "required": true },
+    "roleFr": { "type": "string", "required": true },
+    "roleEn": { "type": "string", "required": true },
+    "textFr": { "type": "text", "required": true },
+    "textEn": { "type": "text", "required": true }
+  }
+}
