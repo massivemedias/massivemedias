@@ -30,7 +30,6 @@ function buildServiceFromCMS(cms, lang) {
     pricing: pricing || {},
     equipment: j('equipment'),
     faq: j('faq') || [],
-    portfolio: cms.portfolio?.map(img => mediaUrl(img)) || [],
     gallery: cms.gallery?.map(img => mediaUrl(img)) || [],
     comparison: j('comparison') || null,
     whatWeDeliver: j('whatWeDeliver') || null,
@@ -66,11 +65,10 @@ function ServiceDetail() {
     setFlippedCards(prev => ({ ...prev, [index]: !prev[index] }));
   }, []);
 
-  // All images for lightbox navigation (portfolio + gallery combined)
+  // All images for lightbox navigation
   const allImages = useMemo(() => [
-    ...(service?.portfolio || []),
     ...(service?.gallery || []),
-  ], [service?.portfolio, service?.gallery]);
+  ], [service?.gallery]);
 
   if (!service) {
     return <Navigate to="/" replace />;
@@ -214,13 +212,13 @@ function ServiceDetail() {
 
       <div className="section-container max-w-6xl mx-auto">
 
-        {/* ============ DESCRIPTION + HIGHLIGHTS ============ */}
+        {/* ============ DESCRIPTION + HIGHLIGHTS (or SHOWCASE) ============ */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           viewport={{ once: true }}
-          className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-20"
+          className={`grid grid-cols-1 lg:grid-cols-2 gap-12 ${service.showcaseRight ? 'mb-12' : 'mb-20'}`}
         >
           <div>
             <h2 className="text-3xl font-heading font-bold text-gradient mb-6">
@@ -233,68 +231,90 @@ function ServiceDetail() {
             ))}
           </div>
 
-          <div className="p-8 rounded-2xl border border-purple-main/30 transition-colors duration-300 highlight-shadow">
-            <h3 className="text-xl font-heading font-bold text-heading mb-6 flex items-center gap-2">
-              <CheckCircle size={22} className="text-accent" />
-              {t('serviceDetail.highlights')}
-            </h3>
-            <ul className="space-y-4">
-              {service.highlights.map((highlight, index) => (
-                <motion.li
-                  key={index}
-                  initial={{ opacity: 0, x: -10 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.3, delay: index * 0.08 }}
-                  viewport={{ once: true }}
-                  className="flex items-start gap-3"
-                >
-                  <div className="w-2 h-2 rounded-full bg-accent mt-2 flex-shrink-0"></div>
-                  <span className="text-grey-light">{highlight}</span>
-                </motion.li>
-              ))}
-            </ul>
-          </div>
+          {service.showcaseRight ? (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              viewport={{ once: true }}
+              className="rounded-2xl overflow-hidden"
+            >
+              <img
+                src={service.showcaseRight}
+                alt={service.title}
+                className="w-full h-full object-cover rounded-2xl"
+                loading="lazy"
+              />
+            </motion.div>
+          ) : (
+            <div className="p-8 rounded-2xl border border-purple-main/30 transition-colors duration-300 highlight-shadow">
+              <h3 className="text-xl font-heading font-bold text-heading mb-6 flex items-center gap-2">
+                <CheckCircle size={22} className="text-accent" />
+                {t('serviceDetail.highlights')}
+              </h3>
+              <ul className="space-y-4">
+                {service.highlights.map((highlight, index) => (
+                  <motion.li
+                    key={index}
+                    initial={{ opacity: 0, x: -10 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3, delay: index * 0.08 }}
+                    viewport={{ once: true }}
+                    className="flex items-start gap-3"
+                  >
+                    <div className="w-2 h-2 rounded-full bg-accent mt-2 flex-shrink-0"></div>
+                    <span className="text-grey-light">{highlight}</span>
+                  </motion.li>
+                ))}
+              </ul>
+            </div>
+          )}
         </motion.div>
 
-        {/* ============ PORTFOLIO (mockups AI / images vitrine) ============ */}
-        {service.portfolio && service.portfolio.length > 0 && (
+        {/* ============ SHOWCASE LEFT + HIGHLIGHTS (si showcase) ============ */}
+        {service.showcaseLeft && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
-            className="mb-20"
+            className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-20"
           >
-            <h2 className="text-3xl font-heading font-bold text-gradient mb-8 text-center">
-              {t('serviceDetail.portfolioLabel') || 'Portfolio'}
-            </h2>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-              {service.portfolio.map((image, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.4, delay: index * 0.05 }}
-                  viewport={{ once: true }}
-                  className="group relative rounded-xl overflow-hidden cursor-pointer aspect-square"
-                  onClick={() => openLightbox(image, index)}
-                >
-                  <img
-                    src={image}
-                    alt={`${service.title} - ${index + 1}`}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                    loading="lazy"
-                  />
-                  <div className="absolute inset-0 transition-colors duration-300 flex items-center justify-center">
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/30 backdrop-blur-sm rounded-full p-3">
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-                        <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
-                        <line x1="11" y1="8" x2="11" y2="14" /><line x1="8" y1="11" x2="14" y2="11" />
-                      </svg>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+              viewport={{ once: true }}
+              className="rounded-2xl overflow-hidden"
+            >
+              <img
+                src={service.showcaseLeft}
+                alt={service.title}
+                className="w-full h-full object-cover rounded-2xl"
+                loading="lazy"
+              />
+            </motion.div>
+
+            <div className="p-8 rounded-2xl border border-purple-main/30 transition-colors duration-300 highlight-shadow">
+              <h3 className="text-xl font-heading font-bold text-heading mb-6 flex items-center gap-2">
+                <CheckCircle size={22} className="text-accent" />
+                {t('serviceDetail.highlights')}
+              </h3>
+              <ul className="space-y-4">
+                {service.highlights.map((highlight, index) => (
+                  <motion.li
+                    key={index}
+                    initial={{ opacity: 0, x: -10 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3, delay: index * 0.08 }}
+                    viewport={{ once: true }}
+                    className="flex items-start gap-3"
+                  >
+                    <div className="w-2 h-2 rounded-full bg-accent mt-2 flex-shrink-0"></div>
+                    <span className="text-grey-light">{highlight}</span>
+                  </motion.li>
+                ))}
+              </ul>
             </div>
           </motion.div>
         )}
@@ -498,7 +518,7 @@ function ServiceDetail() {
             </h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {service.gallery.map((image, index) => {
-                const globalIndex = (service.portfolio?.length || 0) + index;
+                const globalIndex = index;
                 return (
                 <motion.div
                   key={index}

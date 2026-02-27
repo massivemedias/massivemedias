@@ -73,13 +73,8 @@ We also print flyers, postcards and business cards - everything you need to prom
         },
       ],
     },
-    portfolio: [
-      thumb('/images/prints/PrintsPortfolio1.webp'),
-      thumb('/images/prints/PrintsPortfolio2.webp'),
-      thumb('/images/prints/PrintsTailleHero.webp'),
-      thumb('/images/prints/PrintsFlatlay.webp'),
-      thumb('/images/prints/PrintsFormats.webp'),
-    ],
+    showcaseRight: thumb('/images/prints/PrintsTaille.webp'),
+    showcaseLeft: thumb('/images/prints/PrintsFormats.webp'),
     gallery: [
       thumb('/images/realisations/prints/FineArt1.webp'),
       thumb('/images/realisations/prints/FineArt4.webp'),
@@ -155,9 +150,6 @@ Cut to the exact shape of your design with our professional cutting equipment, e
         },
       ],
     },
-    portfolio: [
-      thumb('/images/stickers/StickersPortfolio.webp'),
-    ],
     gallery: [
       thumb('/images/realisations/stickers/Stickers-Cosmovision.webp'),
       thumb('/images/realisations/stickers/Stickers-Fusion-State-Rec.webp'),
