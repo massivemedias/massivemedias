@@ -30,6 +30,7 @@ function buildServiceFromCMS(cms, lang) {
     pricing: pricing || {},
     equipment: j('equipment'),
     faq: j('faq') || [],
+    portfolio: cms.portfolio?.map(img => mediaUrl(img)) || [],
     gallery: cms.gallery?.map(img => mediaUrl(img)) || [],
     comparison: j('comparison') || null,
     whatWeDeliver: j('whatWeDeliver') || null,
@@ -80,19 +81,19 @@ function ServiceDetail() {
 
   const goToPrevious = useCallback((e) => {
     e.stopPropagation();
-    if (!service.gallery) return;
-    const newIndex = (lightboxIndex - 1 + service.gallery.length) % service.gallery.length;
+    if (!allImages.length) return;
+    const newIndex = (lightboxIndex - 1 + allImages.length) % allImages.length;
     setLightboxIndex(newIndex);
-    setLightboxImage(service.gallery[newIndex]);
-  }, [lightboxIndex, service.gallery]);
+    setLightboxImage(allImages[newIndex]);
+  }, [lightboxIndex, allImages]);
 
   const goToNext = useCallback((e) => {
     e.stopPropagation();
-    if (!service.gallery) return;
-    const newIndex = (lightboxIndex + 1) % service.gallery.length;
+    if (!allImages.length) return;
+    const newIndex = (lightboxIndex + 1) % allImages.length;
     setLightboxIndex(newIndex);
-    setLightboxImage(service.gallery[newIndex]);
-  }, [lightboxIndex, service.gallery]);
+    setLightboxImage(allImages[newIndex]);
+  }, [lightboxIndex, allImages]);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -106,6 +107,12 @@ function ServiceDetail() {
   }, [lightboxImage, closeLightbox, goToPrevious, goToNext]);
 
   const Icon = service.icon;
+
+  // All images for lightbox navigation (portfolio + gallery combined)
+  const allImages = useMemo(() => [
+    ...(service.portfolio || []),
+    ...(service.gallery || []),
+  ], [service.portfolio, service.gallery]);
 
   // Build ordered slug list from CMS (sorted) or fallback data
   const allServices = useMemo(() => {
@@ -248,6 +255,49 @@ function ServiceDetail() {
             </ul>
           </div>
         </motion.div>
+
+        {/* ============ PORTFOLIO (mockups AI / images vitrine) ============ */}
+        {service.portfolio && service.portfolio.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+            className="mb-20"
+          >
+            <h2 className="text-3xl font-heading font-bold text-gradient mb-8 text-center">
+              {t('serviceDetail.portfolioLabel') || 'Portfolio'}
+            </h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+              {service.portfolio.map((image, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.4, delay: index * 0.05 }}
+                  viewport={{ once: true }}
+                  className="group relative rounded-xl overflow-hidden cursor-pointer aspect-square"
+                  onClick={() => openLightbox(image, index)}
+                >
+                  <img
+                    src={image}
+                    alt={`${service.title} - ${index + 1}`}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    loading="lazy"
+                  />
+                  <div className="absolute inset-0 transition-colors duration-300 flex items-center justify-center">
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/30 backdrop-blur-sm rounded-full p-3">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+                        <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+                        <line x1="11" y1="8" x2="11" y2="14" /><line x1="8" y1="11" x2="14" y2="11" />
+                      </svg>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
 
         {/* ============ CE QUE COMPREND UN SITE (whatWeDeliver) ============ */}
         {service.whatWeDeliver && (
@@ -447,7 +497,9 @@ function ServiceDetail() {
               {t('serviceDetail.gallery')}
             </h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {service.gallery.map((image, index) => (
+              {service.gallery.map((image, index) => {
+                const globalIndex = (service.portfolio?.length || 0) + index;
+                return (
                 <motion.div
                   key={index}
                   initial={{ opacity: 0, scale: 0.95 }}
@@ -455,7 +507,7 @@ function ServiceDetail() {
                   transition={{ duration: 0.4, delay: index * 0.05 }}
                   viewport={{ once: true }}
                   className="group relative rounded-xl overflow-hidden cursor-pointer aspect-square"
-                  onClick={() => openLightbox(image, index)}
+                  onClick={() => openLightbox(image, globalIndex)}
                 >
                   <img
                     src={image}
@@ -472,7 +524,8 @@ function ServiceDetail() {
                     </div>
                   </div>
                 </motion.div>
-              ))}
+                );
+              })}
             </div>
           </motion.div>
         )}
@@ -833,7 +886,7 @@ function ServiceDetail() {
             onClick={closeLightbox}
           >
             {/* Flèche gauche */}
-            {service.gallery && service.gallery.length > 1 && (
+            {allImages.length > 1 && (
               <button
                 onClick={goToPrevious}
                 className="absolute left-2 md:left-6 top-1/2 -translate-y-1/2 z-[110] text-white/70 hover:text-white transition-colors w-12 h-12 flex items-center justify-center rounded-full lightbox-btn"
@@ -844,7 +897,7 @@ function ServiceDetail() {
             )}
 
             {/* Flèche droite */}
-            {service.gallery && service.gallery.length > 1 && (
+            {allImages.length > 1 && (
               <button
                 onClick={goToNext}
                 className="absolute right-2 md:right-6 top-1/2 -translate-y-1/2 z-[110] text-white/70 hover:text-white transition-colors w-12 h-12 flex items-center justify-center rounded-full lightbox-btn"
@@ -877,9 +930,9 @@ function ServiceDetail() {
             </motion.div>
 
             {/* Indicateur */}
-            {service.gallery && service.gallery.length > 1 && (
+            {allImages.length > 1 && (
               <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-[110] text-white/50 text-sm">
-                {lightboxIndex + 1} / {service.gallery.length}
+                {lightboxIndex + 1} / {allImages.length}
               </div>
             )}
           </motion.div>
