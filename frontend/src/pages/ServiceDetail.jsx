@@ -66,6 +66,12 @@ function ServiceDetail() {
     setFlippedCards(prev => ({ ...prev, [index]: !prev[index] }));
   }, []);
 
+  // All images for lightbox navigation (portfolio + gallery combined)
+  const allImages = useMemo(() => [
+    ...(service?.portfolio || []),
+    ...(service?.gallery || []),
+  ], [service?.portfolio, service?.gallery]);
+
   if (!service) {
     return <Navigate to="/" replace />;
   }
@@ -107,12 +113,6 @@ function ServiceDetail() {
   }, [lightboxImage, closeLightbox, goToPrevious, goToNext]);
 
   const Icon = service.icon;
-
-  // All images for lightbox navigation (portfolio + gallery combined)
-  const allImages = useMemo(() => [
-    ...(service.portfolio || []),
-    ...(service.gallery || []),
-  ], [service.portfolio, service.gallery]);
 
   // Build ordered slug list from CMS (sorted) or fallback data
   const allServices = useMemo(() => {
