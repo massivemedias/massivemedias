@@ -570,7 +570,6 @@ select.input-field option {
 /* Glassmorphism & Cards */
 .bg-glass {
   background: var(--bg-glass);
-  border: 1px solid var(--bg-card-border);
 }
 
 .bg-glass-alt {
