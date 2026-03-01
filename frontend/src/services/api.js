@@ -41,13 +41,30 @@ api.interceptors.response.use(
 );
 
 export async function uploadFile(file) {
-  const formData = new FormData();
-  formData.append('files', file);
-  const { data } = await api.post('/orders/upload', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  });
-  // Strapi returns an array of uploaded files
-  return data[0];
+  const { supabase } = await import('../lib/supabase');
+  if (!supabase) throw new Error('Storage not available');
+
+  const timestamp = Date.now();
+  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+  const path = `orders/${timestamp}-${safeName}`;
+
+  const { data, error } = await supabase.storage
+    .from('order-files')
+    .upload(path, file, { upsert: false });
+
+  if (error) throw error;
+
+  const { data: urlData } = supabase.storage
+    .from('order-files')
+    .getPublicUrl(data.path);
+
+  return {
+    id: data.id || data.path,
+    name: file.name,
+    url: urlData.publicUrl,
+    size: Math.round(file.size / 1000),
+    mime: file.type,
+  };
 }
 
 export default api;
