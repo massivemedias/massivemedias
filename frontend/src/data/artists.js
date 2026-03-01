@@ -51,6 +51,33 @@ const artistsData = {
       framePrice: 20,
     },
   },
+  'psyqu33n': {
+    slug: 'psyqu33n',
+    name: 'Psyqu33n',
+    tagline: {
+      fr: 'Lumiere interieure & art visionnaire',
+      en: 'Inner Light & Visionary Art',
+    },
+    bio: {
+      fr: "Mon art est une exploration de la lumiere interieure, un voyage a travers les couches de l'etre pour reveler ce qui, souvent, reste cache. Mes figures, souvent feminines mais universelles dans leur essence, sont des guides - guerisseuses, deesses, ames eclairees. La lumiere est au coeur de mon travail : le jour, mes oeuvres revelent une histoire. La nuit, grace a l'usage de peintures fluorescentes, elles s'illuminent differemment, devoilant d'autres verites, d'autres dimensions.",
+      en: "My art is an exploration of inner light, a journey through layers of being to reveal what often remains hidden. My figures, often feminine but universal in their essence, are guides - healers, goddesses, enlightened souls. Light is at the heart of my work: by day, my pieces reveal a story. At night, through the use of fluorescent paints, they illuminate differently, unveiling other truths, other dimensions.",
+    },
+    avatar: null,
+    heroImage: thumb('/images/prints/Printstoutcourt.webp'),
+    prints: [
+      { id: 'psyqu33n-001', titleFr: 'Oeuvre I', titleEn: 'Artwork I', image: thumb('/images/prints/Printstoutcourt.webp'), limited: false },
+      { id: 'psyqu33n-002', titleFr: 'Oeuvre II', titleEn: 'Artwork II', image: thumb('/images/prints/Printstoutcourt.webp'), limited: false },
+      { id: 'psyqu33n-003', titleFr: 'Oeuvre III', titleEn: 'Artwork III', image: thumb('/images/prints/Printstoutcourt.webp'), limited: false },
+      { id: 'psyqu33n-004', titleFr: 'Oeuvre IV', titleEn: 'Artwork IV', image: thumb('/images/prints/Printstoutcourt.webp'), limited: false },
+      { id: 'psyqu33n-005', titleFr: 'Oeuvre V', titleEn: 'Artwork V', image: thumb('/images/prints/Printstoutcourt.webp'), limited: false },
+      { id: 'psyqu33n-006', titleFr: 'Oeuvre VI', titleEn: 'Artwork VI', image: thumb('/images/prints/Printstoutcourt.webp'), limited: false },
+    ],
+    pricing: {
+      studio: { a4: 35, a3: 50, a3plus: 65, a2: 85 },
+      museum: { a4: 75, a3: 120, a3plus: 160, a2: 225 },
+      framePrice: 20,
+    },
+  },
 };
 
 export default artistsData;
