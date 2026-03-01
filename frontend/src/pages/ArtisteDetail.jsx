@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, Camera, Award, Shield, Truck, Palette, MessageSquare, ChevronDown, CheckCircle, Image } from 'lucide-react';
+import { ArrowRight, Camera, Award, Shield, Truck, Palette, MessageSquare, ChevronDown, CheckCircle, Image, ExternalLink } from 'lucide-react';
 import SEO from '../components/SEO';
 import ArtistPrintCard from '../components/ArtistPrintCard';
 import ConfiguratorArtistPrint from '../components/configurators/ConfiguratorArtistPrint';
@@ -185,6 +185,25 @@ function ArtisteDetail({ subdomainSlug }) {
               {lang === 'fr' ? 'L\'artiste' : 'The Artist'}
             </h2>
             <p className="text-grey-light text-base leading-relaxed mb-4">{bio}</p>
+            {artist.socials && (
+              <div className="flex gap-3 mt-6">
+                {artist.socials.instagram && (
+                  <a href={artist.socials.instagram} target="_blank" rel="noopener noreferrer" className="btn-outline !py-2 !px-4 text-sm">
+                    Instagram <ExternalLink size={14} className="ml-1" />
+                  </a>
+                )}
+                {artist.socials.facebook && (
+                  <a href={artist.socials.facebook} target="_blank" rel="noopener noreferrer" className="btn-outline !py-2 !px-4 text-sm">
+                    Facebook <ExternalLink size={14} className="ml-1" />
+                  </a>
+                )}
+                {artist.socials.gallea && (
+                  <a href={artist.socials.gallea} target="_blank" rel="noopener noreferrer" className="btn-outline !py-2 !px-4 text-sm">
+                    Gallea <ExternalLink size={14} className="ml-1" />
+                  </a>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="p-8 rounded-2xl border border-purple-main/30 transition-colors duration-300 highlight-shadow">
@@ -209,6 +228,37 @@ function ArtisteDetail({ subdomainSlug }) {
             </ul>
           </div>
         </motion.div>
+
+        {/* ============ DEMARCHE ARTISTIQUE ============ */}
+        {artist.demarche && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+            className="mb-20"
+          >
+            <h2 className="text-3xl font-heading font-bold text-gradient mb-10 text-center">
+              {lang === 'fr' ? 'Demarche artistique' : 'Artistic Approach'}
+            </h2>
+            <div className="max-w-3xl mx-auto space-y-8">
+              {(lang === 'fr' ? artist.demarche.fr : artist.demarche.en).map((section, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 15 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: index * 0.08 }}
+                  viewport={{ once: true }}
+                >
+                  {section.title && (
+                    <h3 className="text-xl font-heading font-bold text-heading mb-3">{section.title}</h3>
+                  )}
+                  <p className="text-grey-light leading-relaxed">{section.text}</p>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
 
         {/* ============ OEUVRES ============ */}
         <motion.div
