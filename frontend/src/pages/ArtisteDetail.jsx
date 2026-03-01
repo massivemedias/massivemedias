@@ -202,6 +202,11 @@ function ArtisteDetail({ subdomainSlug }) {
                     Gallea <ExternalLink size={14} className="ml-1" />
                   </a>
                 )}
+                {artist.socials.website && (
+                  <a href={artist.socials.website} target="_blank" rel="noopener noreferrer" className="btn-outline !py-2 !px-4 text-sm">
+                    Site web <ExternalLink size={14} className="ml-1" />
+                  </a>
+                )}
               </div>
             )}
           </div>
