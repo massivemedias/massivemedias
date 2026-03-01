@@ -536,7 +536,7 @@ function ArtisteDetail({ subdomainSlug }) {
           whileInView={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
-          className="mb-20 p-12 rounded-2xl text-center border border-accent/30 transition-colors duration-300 cta-shadow"
+          className="mb-20 p-12 rounded-2xl text-center transition-colors duration-300 cta-shadow"
         >
           <h2 className="text-3xl md:text-4xl font-heading font-bold text-heading mb-4">
             {lang === 'fr' ? 'Tu es artiste? Rejoins la plateforme.' : 'Are you an artist? Join the platform.'}
