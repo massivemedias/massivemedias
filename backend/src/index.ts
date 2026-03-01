@@ -326,7 +326,7 @@ export default {
 
         for (const action of permActions) {
           const existingPerm = await strapi.db.query('plugin::users-permissions.permission').findOne({
-            where: { action },
+            where: { action, role: publicRole.id },
           });
 
           if (!existingPerm) {
