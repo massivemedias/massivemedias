@@ -316,7 +316,7 @@ function ArtisteDetail({ subdomainSlug }) {
               {lang === 'fr' ? 'Configurez votre tirage' : 'Configure Your Print'}
             </h2>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-8 max-w-5xl mx-auto">
               {/* Preview */}
               <div className="relative rounded-2xl overflow-hidden aspect-square border border-purple-main/30 card-shadow">
                 <img
@@ -327,7 +327,7 @@ function ArtisteDetail({ subdomainSlug }) {
               </div>
 
               {/* Options */}
-              <div className={`p-6 rounded-2xl border border-purple-main/30 transition-colors duration-300 highlight-shadow lg:sticky lg:top-24 self-start`}>
+              <div className={`p-4 sm:p-6 rounded-2xl border border-purple-main/30 transition-colors duration-300 highlight-shadow lg:sticky lg:top-24 self-start`}>
                 <ConfiguratorArtistPrint
                   artist={artist}
                   selectedPrint={selectedPrint}

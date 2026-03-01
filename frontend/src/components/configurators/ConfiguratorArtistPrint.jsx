@@ -56,9 +56,9 @@ function ConfiguratorArtistPrint({ artist, selectedPrint }) {
   };
 
   return (
-    <div>
+    <div className="space-y-4">
       {/* Selected print info */}
-      <div className="mb-5 p-4 rounded-xl bg-glass flex items-center gap-4">
+      <div className="p-4 rounded-xl bg-glass flex items-center gap-4">
         <img
           src={selectedPrint.image}
           alt={printTitle}
@@ -71,48 +71,48 @@ function ConfiguratorArtistPrint({ artist, selectedPrint }) {
       </div>
 
       {/* Printer tier selector */}
-      <div className="mb-5">
+      <div>
         <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2.5">
-          {lang === 'fr' ? 'Qualité d\'impression' : 'Print Quality'}
+          {lang === 'fr' ? 'Qualit\u00e9 d\'impression' : 'Print Quality'}
         </label>
-        <div className="flex flex-wrap gap-2">
+        <div className="space-y-2">
           {artistPrinterTiers.map(t => (
             <button
               key={t.id}
               onClick={() => setTier(t.id)}
-              className={`flex flex-col items-center justify-center min-w-[7rem] py-2.5 px-3 rounded-lg text-xs font-medium transition-all border-2 ${tier === t.id
+              className={`block w-full text-center py-3.5 px-4 rounded-lg text-xs font-medium transition-all border-2 ${tier === t.id
                 ? 'border-accent option-selected'
                 : 'border-transparent hover:border-grey-muted/30 option-default'
               }`}
             >
-              <span className="text-heading leading-tight text-center font-semibold">
+              <span className="text-heading font-semibold text-sm">
                 {lang === 'fr' ? t.labelFr : t.labelEn}
               </span>
-              <span className="text-grey-muted mt-0.5 text-[10px]">{t.desc}</span>
+              <span className="text-grey-muted ml-2 text-[11px]">{t.desc}</span>
             </button>
           ))}
         </div>
       </div>
 
       {/* Format selector */}
-      <div className="mb-5">
+      <div>
         <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2.5">
           Format
         </label>
-        <div className="flex flex-wrap gap-2">
+        <div className="grid grid-cols-2 gap-2">
           {artistFormats.map(f => {
             const price = getFormatPrice(f.id);
             return (
               <button
                 key={f.id}
                 onClick={() => setFormat(f.id)}
-                className={`flex flex-col items-center py-2.5 px-4 rounded-lg text-xs font-medium transition-all border-2 min-w-[5rem] ${format === f.id
+                className={`block w-full text-center py-3.5 px-3 rounded-lg text-xs font-medium transition-all border-2 ${format === f.id
                   ? 'border-accent option-selected'
                   : 'border-transparent hover:border-grey-muted/30 option-default'
                 }`}
               >
-                <span className="text-heading font-bold text-sm">{f.label}</span>
-                {price != null && <span className="text-grey-muted mt-0.5">{price}$</span>}
+                <div className="text-heading font-bold text-sm">{f.label}</div>
+                {price != null && <div className="text-grey-muted mt-0.5">{price}$</div>}
               </button>
             );
           })}
@@ -120,15 +120,15 @@ function ConfiguratorArtistPrint({ artist, selectedPrint }) {
       </div>
 
       {/* Frame option */}
-      <div className="mb-6">
-        <label className={`flex items-center gap-3 p-4 rounded-lg cursor-pointer transition-all border-2 ${withFrame ? 'checkbox-active' : 'option-default'}`}>
+      <div>
+        <label className={`flex items-center gap-3 w-full p-4 rounded-lg cursor-pointer transition-all border-2 ${withFrame ? 'checkbox-active' : 'option-default'}`}>
           <input
             type="checkbox"
             checked={withFrame}
             onChange={(e) => setWithFrame(e.target.checked)}
             className="sr-only"
           />
-          <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${withFrame ? 'bg-accent border-accent' : 'border-grey-muted/50'}`}>
+          <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${withFrame ? 'bg-accent border-accent' : 'border-grey-muted/50'}`}>
             {withFrame && <Check size={14} className="text-white" />}
           </div>
           <div className="flex-1">
@@ -140,10 +140,10 @@ function ConfiguratorArtistPrint({ artist, selectedPrint }) {
         </label>
 
         {withFrame && (
-          <div className="flex gap-2 mt-3 ml-1">
+          <div className="grid grid-cols-2 gap-2 mt-3">
             <button
               onClick={() => setFrameColor('black')}
-              className={`flex items-center gap-2 py-2 px-4 rounded-lg text-xs font-medium transition-all border-2 ${frameColor === 'black'
+              className={`flex items-center justify-center gap-2 w-full py-3 px-4 rounded-lg text-xs font-medium transition-all border-2 ${frameColor === 'black'
                 ? 'border-accent option-selected'
                 : 'border-transparent hover:border-grey-muted/30 option-default'
               }`}
@@ -153,7 +153,7 @@ function ConfiguratorArtistPrint({ artist, selectedPrint }) {
             </button>
             <button
               onClick={() => setFrameColor('white')}
-              className={`flex items-center gap-2 py-2 px-4 rounded-lg text-xs font-medium transition-all border-2 ${frameColor === 'white'
+              className={`flex items-center justify-center gap-2 w-full py-3 px-4 rounded-lg text-xs font-medium transition-all border-2 ${frameColor === 'white'
                 ? 'border-accent option-selected'
                 : 'border-transparent hover:border-grey-muted/30 option-default'
               }`}
@@ -167,7 +167,7 @@ function ConfiguratorArtistPrint({ artist, selectedPrint }) {
 
       {/* Price display */}
       {priceInfo && (
-        <div className="p-5 rounded-xl mb-5 highlight-bordered">
+        <div className="p-5 rounded-xl highlight-bordered">
           <div className="flex items-baseline gap-3">
             <span className="text-3xl font-heading font-bold text-heading">{priceInfo.price}$</span>
           </div>
@@ -179,27 +179,27 @@ function ConfiguratorArtistPrint({ artist, selectedPrint }) {
           <div className="flex items-center gap-2 mt-2">
             <span className="text-grey-muted text-xs">
               {tier === 'museum'
-                ? (lang === 'fr' ? 'Qualité musée - 12 encres pigmentées, conservation 100+ ans' : 'Museum quality - 12 pigmented inks, 100+ year archival')
-                : (lang === 'fr' ? 'Qualité studio - impression professionnelle pigmentée' : 'Studio quality - professional pigmented printing')}
+                ? (lang === 'fr' ? 'Qualit\u00e9 mus\u00e9e - 12 encres pigment\u00e9es, conservation 100+ ans' : 'Museum quality - 12 pigmented inks, 100+ year archival')
+                : (lang === 'fr' ? 'Qualit\u00e9 studio - impression professionnelle pigment\u00e9e' : 'Studio quality - professional pigmented printing')}
             </span>
           </div>
         </div>
       )}
 
       {/* Add to cart */}
-      <button onClick={handleAddToCart} className="btn-primary w-full justify-center text-base py-3.5 mb-3">
+      <button onClick={handleAddToCart} className="btn-primary w-full justify-center text-base py-4">
         {added ? (
-          <><Check size={20} className="mr-2" />{lang === 'fr' ? 'Ajouté au panier!' : 'Added to cart!'}</>
+          <><Check size={20} className="mr-2" />{lang === 'fr' ? 'Ajout\u00e9 au panier!' : 'Added to cart!'}</>
         ) : (
           <><ShoppingCart size={20} className="mr-2" />{lang === 'fr' ? 'Ajouter au panier' : 'Add to cart'}</>
         )}
       </button>
 
-      <Link to="/panier" className="btn-outline w-full justify-center text-sm py-2.5">
+      <Link to="/panier" className="btn-outline w-full justify-center text-sm py-3">
         {lang === 'fr' ? 'Voir le panier' : 'View cart'}
       </Link>
 
-      <p className="text-grey-muted text-xs mt-3 text-center">
+      <p className="text-grey-muted text-xs text-center">
         {lang === 'fr'
           ? 'Impression professionnelle par Massive Medias. Soft proofing inclus.'
           : 'Professional printing by Massive Medias. Soft proofing included.'}
