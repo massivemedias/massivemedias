@@ -11,6 +11,22 @@ const getStripe = () => {
 
 export default factories.createCoreController('api::order.order', ({ strapi }) => ({
 
+  async uploadFile(ctx) {
+    const { request: { files } } = ctx as any;
+
+    if (!files || !files.files) {
+      return ctx.badRequest('No file provided');
+    }
+
+    const fileArray = Array.isArray(files.files) ? files.files : [files.files];
+    const uploadedFiles = await strapi.plugin('upload').service('upload').upload({
+      data: {},
+      files: fileArray,
+    });
+
+    ctx.body = uploadedFiles;
+  },
+
   async createPaymentIntent(ctx) {
     const { items, customerEmail, customerName, customerPhone, designReady, notes, supabaseUserId, fileIds } = ctx.request.body as any;
 

@@ -40,5 +40,13 @@ export default {
         auth: false,
       },
     },
+    {
+      method: 'POST',
+      path: '/orders/upload',
+      handler: 'order.uploadFile',
+      config: {
+        auth: false,
+      },
+    },
   ],
 };

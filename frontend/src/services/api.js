@@ -43,7 +43,7 @@ api.interceptors.response.use(
 export async function uploadFile(file) {
   const formData = new FormData();
   formData.append('files', file);
-  const { data } = await api.post('/upload', formData, {
+  const { data } = await api.post('/orders/upload', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   });
   // Strapi returns an array of uploaded files
