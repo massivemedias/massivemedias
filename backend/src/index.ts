@@ -321,6 +321,7 @@ export default {
           'api::site-content.site-content.find',
           'api::service-page.service-page.find',
           'api::service-page.service-page.findOne',
+          'plugin::upload.content-api.upload',
         ];
 
         for (const action of permActions) {
