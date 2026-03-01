@@ -19,6 +19,7 @@ function ConfiguratorFineArt() {
   const [frameColor, setFrameColor] = useState('black');
   const [added, setAdded] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState([]);
+  const [notes, setNotes] = useState('');
 
   const priceInfo = getFineArtPrice(tier, format, withFrame);
   const tierLabel = fineArtPrinterTiers.find(t => t.id === tier);
@@ -41,6 +42,7 @@ function ConfiguratorFineArt() {
       totalPrice: priceInfo.price,
       image: fineArtImages[0],
       uploadedFiles,
+      notes,
     });
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
@@ -149,6 +151,20 @@ function ConfiguratorFineArt() {
         onFilesChange={setUploadedFiles}
         label={lang === 'fr' ? 'Votre fichier haute résolution (TIFF, PNG, JPG, PSD, PDF)' : 'Your high-resolution file (TIFF, PNG, JPG, PSD, PDF)'}
       />
+
+      {/* Notes */}
+      <div className="mb-5">
+        <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2.5">
+          {lang === 'fr' ? 'Notes / Description' : 'Notes / Description'}
+        </label>
+        <textarea
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          rows={3}
+          placeholder={lang === 'fr' ? 'Decrivez le produit souhaite (format, finition, details...)' : 'Describe the desired product (format, finish, details...)'}
+          className="w-full rounded-lg border-2 border-grey-muted/20 bg-transparent px-4 py-3 text-sm text-heading placeholder:text-grey-muted/50 focus:border-accent focus:outline-none transition-colors resize-none"
+        />
+      </div>
 
       {/* Price display */}
       {priceInfo && (

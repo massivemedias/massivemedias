@@ -9,6 +9,7 @@ function ConfiguratorDesign() {
   const { lang } = useLang();
   const [selected, setSelected] = useState('logo');
   const [uploadedFiles, setUploadedFiles] = useState([]);
+  const [notes, setNotes] = useState('');
 
   const service = designServices.find(s => s.id === selected);
 
@@ -72,9 +73,23 @@ function ConfiguratorDesign() {
         label={lang === 'fr' ? 'Références / brief' : 'References / brief'}
       />
 
+      {/* Notes */}
+      <div className="mb-5">
+        <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2.5">
+          {lang === 'fr' ? 'Notes / Description' : 'Notes / Description'}
+        </label>
+        <textarea
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          rows={3}
+          placeholder={lang === 'fr' ? 'Decrivez votre projet (objectif, style, references...)' : 'Describe your project (goal, style, references...)'}
+          className="w-full rounded-lg border-2 border-grey-muted/20 bg-transparent px-4 py-3 text-sm text-heading placeholder:text-grey-muted/50 focus:border-accent focus:outline-none transition-colors resize-none"
+        />
+      </div>
+
       {/* Request quote */}
       <Link
-        to={`/contact?service=design-graphique&type=${selected}${uploadedFiles.length > 0 ? `&fileIds=${uploadedFiles.map(f => f.id).join(',')}` : ''}`}
+        to={`/contact?service=design-graphique&type=${selected}${uploadedFiles.length > 0 ? `&fileIds=${uploadedFiles.map(f => f.id).join(',')}` : ''}${notes ? `&notes=${encodeURIComponent(notes)}` : ''}`}
         className="btn-primary w-full justify-center text-base py-3.5 mb-3"
       >
         {lang === 'fr' ? 'Demander un devis' : 'Request a quote'}

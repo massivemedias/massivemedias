@@ -18,6 +18,7 @@ function ConfiguratorSublimation() {
   const [withDesign, setWithDesign] = useState(false);
   const [added, setAdded] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState([]);
+  const [notes, setNotes] = useState('');
 
   const tiers = sublimationPriceTiers[product] || [];
   const priceInfo = getSublimationPrice(product, qtyIndex, withDesign);
@@ -43,6 +44,7 @@ function ConfiguratorSublimation() {
       totalPrice: priceInfo.price,
       image: sublimationImages[0],
       uploadedFiles,
+      notes,
     });
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
@@ -127,6 +129,20 @@ function ConfiguratorSublimation() {
         onFilesChange={setUploadedFiles}
         label={lang === 'fr' ? 'Votre design (PNG, JPG, SVG, PDF)' : 'Your design (PNG, JPG, SVG, PDF)'}
       />
+
+      {/* Notes */}
+      <div className="mb-5">
+        <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2.5">
+          {lang === 'fr' ? 'Notes / Description' : 'Notes / Description'}
+        </label>
+        <textarea
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          rows={3}
+          placeholder={lang === 'fr' ? 'Decrivez le produit souhaite (taille, couleur, placement...)' : 'Describe the desired product (size, color, placement...)'}
+          className="w-full rounded-lg border-2 border-grey-muted/20 bg-transparent px-4 py-3 text-sm text-heading placeholder:text-grey-muted/50 focus:border-accent focus:outline-none transition-colors resize-none"
+        />
+      </div>
 
       {/* Price display */}
       {priceInfo && (
