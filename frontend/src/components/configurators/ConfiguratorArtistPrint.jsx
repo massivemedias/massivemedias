@@ -16,6 +16,7 @@ function ConfiguratorArtistPrint({ artist, selectedPrint }) {
   const [withFrame, setWithFrame] = useState(false);
   const [frameColor, setFrameColor] = useState('black');
   const [added, setAdded] = useState(false);
+  const [notes, setNotes] = useState('');
 
   // Reset added state when print changes
   useEffect(() => { setAdded(false); }, [selectedPrint?.id]);
@@ -44,6 +45,7 @@ function ConfiguratorArtistPrint({ artist, selectedPrint }) {
       totalPrice: priceInfo.price,
       image: selectedPrint.image,
       uploadedFiles: [],
+      notes,
     });
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
@@ -163,6 +165,20 @@ function ConfiguratorArtistPrint({ artist, selectedPrint }) {
             </button>
           </div>
         )}
+      </div>
+
+      {/* Notes */}
+      <div>
+        <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2.5">
+          {lang === 'fr' ? 'Notes / Description' : 'Notes / Description'}
+        </label>
+        <textarea
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          rows={3}
+          placeholder={lang === 'fr' ? 'Decrivez vos preferences (dedicace, message, details...)' : 'Describe your preferences (dedication, message, details...)'}
+          className="w-full rounded-lg border-2 border-grey-muted/20 bg-transparent px-4 py-3 text-sm text-heading placeholder:text-grey-muted/50 focus:border-accent focus:outline-none transition-colors resize-none"
+        />
       </div>
 
       {/* Price display */}
