@@ -12,7 +12,7 @@ function BoutiqueFineArt() {
   ];
 
   const features = [
-    { icon: Printer, fr: 'Impression 12 couleurs', en: '12-color printing', descFr: 'Imprimante professionnelle Canon PRO-1000/PRO-2600 avec 12 encres pigment\u00e9es pour une fid\u00e9lit\u00e9 de couleur exceptionnelle.', descEn: 'Professional Canon PRO-1000/PRO-2600 printer with 12 pigmented inks for exceptional color fidelity.' },
+    { icon: Printer, fr: 'Impression 12 couleurs', en: '12-color printing', descFr: 'Impression professionnelle 12 encres pigment\u00e9es pour une fid\u00e9lit\u00e9 de couleur exceptionnelle, qualit\u00e9 galerie.', descEn: 'Professional 12-color pigment printing for exceptional color fidelity, gallery quality.' },
     { icon: Shield, fr: 'Papiers d\'archives', en: 'Archival papers', descFr: 'Papiers fine art premium : coton, alpha-cellulose. Standards galerie et mus\u00e9e. Conservation 100+ ans.', descEn: 'Premium fine art papers: cotton, alpha-cellulose. Gallery and museum standards. 100+ year conservation.' },
     { icon: Sparkles, fr: 'Soft proofing inclus', en: 'Soft proofing included', descFr: 'Calibration colorim\u00e9trique rigoureuse et pr\u00e9visualisation num\u00e9rique avant impression pour valider les couleurs.', descEn: 'Rigorous color calibration and digital preview before printing to validate colors.' },
   ];

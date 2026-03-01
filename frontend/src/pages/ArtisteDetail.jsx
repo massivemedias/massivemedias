@@ -70,20 +70,20 @@ function ArtisteDetail({ subdomainSlug }) {
   ];
 
   const equipmentItems = [
-    { name: 'Epson ET-15000', desc: lang === 'fr' ? '4 encres pigmentées - Série Studio' : '4 pigmented inks - Studio Series' },
-    { name: 'Canon PRO-1000', desc: lang === 'fr' ? '12 encres pigmentées - Série Musée' : '12 pigmented inks - Museum Series' },
-    { name: lang === 'fr' ? 'Papiers Fine Art' : 'Fine Art Papers', desc: lang === 'fr' ? 'Hahnemühle, Canson, Ilford' : 'Hahnemühle, Canson, Ilford' },
+    { name: lang === 'fr' ? 'Impression pigmentée 4 couleurs' : '4-Color Pigment Printing', desc: lang === 'fr' ? 'Qualite decoration - Serie Studio' : 'Decoration quality - Studio Series' },
+    { name: lang === 'fr' ? 'Impression pigmentée 12 couleurs' : '12-Color Pigment Printing', desc: lang === 'fr' ? 'Qualite galerie - Serie Musee' : 'Gallery quality - Museum Series' },
+    { name: lang === 'fr' ? 'Papiers Fine Art' : 'Fine Art Papers', desc: 'Hahnemuhle, Canson, Ilford' },
   ];
 
   const faqItems = lang === 'fr' ? [
     { q: 'Comment se passe la commande?', a: 'Sélectionnez l\'oeuvre, la qualité d\'impression, le format et le cadre. Ajoutez au panier et procédez au paiement. Nous imprimons et préparons votre commande sous 24-48h.' },
-    { q: 'Quelle est la différence entre Studio et Musée?', a: 'La Série Studio utilise une Epson 4 couleurs, parfaite pour la décoration. La Série Musée utilise une Canon PRO-1000 12 couleurs pour une qualité galerie, idéale pour les collectionneurs.' },
+    { q: 'Quelle est la différence entre Studio et Musée?', a: 'La Série Studio utilise une imprimante 4 encres pigmentées, parfaite pour la décoration. La Série Musée utilise une imprimante 12 encres pigmentées pour une qualité galerie, idéale pour les collectionneurs.' },
     { q: 'Puis-je récupérer sur place?', a: 'Oui! Pick-up gratuit au Mile-End (7049 rue Saint-Urbain, Montréal). Livraison locale aussi disponible.' },
     { q: 'Les tirages sont-ils signés?', a: 'Les tirages sont imprimés professionnellement par Massive Medias en collaboration avec l\'artiste. Contactez-nous pour les tirages signés ou numérotés.' },
     { q: 'Offrez-vous l\'encadrement?', a: 'Oui, cadre noir ou blanc disponible. Ajoutez l\'option cadre directement dans le configurateur.' },
   ] : [
     { q: 'How does ordering work?', a: 'Select the artwork, print quality, format and frame. Add to cart and proceed to payment. We print and prepare your order within 24-48h.' },
-    { q: 'What\'s the difference between Studio and Museum?', a: 'Studio Series uses an Epson 4-color printer, perfect for decoration. Museum Series uses a Canon PRO-1000 12-color printer for gallery quality, ideal for collectors.' },
+    { q: 'What\'s the difference between Studio and Museum?', a: 'Studio Series uses a 4-color pigment printer, perfect for decoration. Museum Series uses a 12-color pigment printer for gallery quality, ideal for collectors.' },
     { q: 'Can I pick up in person?', a: 'Yes! Free pick-up in Mile-End (7049 rue Saint-Urbain, Montreal). Local delivery also available.' },
     { q: 'Are the prints signed?', a: 'Prints are professionally printed by Massive Medias in collaboration with the artist. Contact us for signed or numbered editions.' },
     { q: 'Do you offer framing?', a: 'Yes, black or white frame available. Add the frame option directly in the configurator.' },
@@ -393,7 +393,7 @@ function ArtisteDetail({ subdomainSlug }) {
                     {lang === 'fr' ? 'Série Studio' : 'Studio Series'}
                   </h3>
                 </div>
-                <p className="text-grey-muted text-xs mt-1">Epson ET-15000 - 4 {lang === 'fr' ? 'encres pigmentées' : 'pigmented inks'}</p>
+                <p className="text-grey-muted text-xs mt-1">4 {lang === 'fr' ? 'encres pigmentées' : 'pigmented inks'}</p>
               </div>
               <table className="price-table">
                 <thead>
@@ -422,7 +422,7 @@ function ArtisteDetail({ subdomainSlug }) {
                     {lang === 'fr' ? 'Série Musée' : 'Museum Series'}
                   </h3>
                 </div>
-                <p className="text-grey-muted text-xs mt-1">Canon PRO-1000 - 12 {lang === 'fr' ? 'encres pigmentées' : 'pigmented inks'}</p>
+                <p className="text-grey-muted text-xs mt-1">12 {lang === 'fr' ? 'encres pigmentées' : 'pigmented inks'}</p>
               </div>
               <table className="price-table">
                 <thead>

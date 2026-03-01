@@ -37,7 +37,7 @@ Nous imprimons aussi des flyers, cartes postales et cartes d'affaires - tout ce 
       title: 'Studio vs Musée : quelle série choisir?',
       headers: ['Critère', 'Série Studio', 'Série Musée'],
       rows: [
-        ['Imprimante', 'Epson ET-15000', 'Canon PRO-1000 / PRO-2600'],
+        ['Impression', 'Pigmentation 4 couleurs', 'Pigmentation 12 couleurs'],
         ['Encres', '4 couleurs pigmentées', '12 couleurs pigmentées'],
         ['Gamut couleur', 'Excellent', 'Ultra-large (galerie)'],
         ['Longévité', '50+ ans', '100+ ans (archival)'],
@@ -52,7 +52,7 @@ Nous imprimons aussi des flyers, cartes postales et cartes d'affaires - tout ce 
       tables: [
         {
           subtitle: 'Impression Fine Art',
-          headers: ['Format', 'Série Studio (Epson ET-15000)', 'Série Musée (Canon PRO-1000 / PRO-2600)'],
+          headers: ['Format', 'Série Studio (4 pigments)', 'Série Musée (12 pigments)'],
           rows: [
             ['A4 (8.5×11")', '16$', '35$'],
             ['A3 (11×17")', '22$', '65$'],
@@ -94,7 +94,7 @@ Nous imprimons aussi des flyers, cartes postales et cartes d'affaires - tout ce 
       { name: 'Découpeuse professionnelle', desc: 'Découpe de précision pour formats personnalisés.' },
     ],
     faq: [
-      { q: 'Quelle est la différence entre Série Studio et Série Musée?', a: 'La Série Studio (Epson ET-15000) offre une qualité excellente pour décoration et cadeaux. La Série Musée (Canon PRO-1000/PRO-2600) utilise des encres pigmentées 12 couleurs pour une fidélité galerie et une longévité de 100+ ans.' },
+      { q: 'Quelle est la différence entre Série Studio et Série Musée?', a: 'La Série Studio utilise une imprimante 4 encres pigmentées, excellente pour decoration et cadeaux. La Série Musée utilise une imprimante 12 encres pigmentées pour une fidélité galerie et une longévité de 100+ ans.' },
       { q: 'Quel format de fichier dois-je fournir?', a: 'Idéalement un fichier haute résolution (300 DPI minimum) en TIFF, PNG ou JPEG. On peut aussi travailler à partir de fichiers PSD ou PDF.' },
       { q: 'Offrez-vous l\'encadrement?', a: 'Oui, on propose l\'encadrement sur demande à partir de 30$. Cadres noirs, blancs ou bois naturel disponibles.' },
       { q: 'Quel est le délai de production?', a: 'Généralement 24 à 48 heures pour les tirages standards. Les commandes en volume ou grand format peuvent nécessiter 3 à 5 jours.' },

@@ -120,8 +120,8 @@ export const stickerFaq = {
 // =============================================
 
 export const fineArtPrinterTiers = [
-  { id: 'studio', labelFr: 'Série Studio', labelEn: 'Studio Series', desc: 'Epson ET-15000' },
-  { id: 'museum', labelFr: 'Série Musée', labelEn: 'Museum Series', desc: 'Canon PRO-1000 / PRO-2600' },
+  { id: 'studio', labelFr: 'Série Studio', labelEn: 'Studio Series', desc: '4 encres pigmentées / 4 pigmented inks' },
+  { id: 'museum', labelFr: 'Série Musée', labelEn: 'Museum Series', desc: '12 encres pigmentées / 12 pigmented inks' },
 ];
 
 export const fineArtFormats = [
@@ -154,7 +154,7 @@ export const fineArtImages = [
 
 export const fineArtFaq = {
   fr: [
-    { q: 'Quelle est la différence entre Série Studio et Série Musée?', a: 'La Série Studio (Epson ET-15000) offre une excellente qualité pour tous les usages, idéale pour les images avec bonne luminosité. La Série Musée (Canon PRO-1000/PRO-2600) utilise 12 encres pigmentées pour une qualité supérieure, parfaite pour la photographie et les tirages galerie.' },
+    { q: 'Quelle est la différence entre Série Studio et Série Musée?', a: 'La Série Studio utilise une imprimante 4 encres pigmentées, excellente pour tous les usages. La Série Musée utilise une imprimante 12 encres pigmentées pour une qualité supérieure, parfaite pour la photographie et les tirages galerie.' },
     { q: 'Quels papiers utilisez-vous?', a: 'Nous utilisons des papiers fine art professionnels premium : coton, alpha-cellulose, papiers d\'archives. Chaque papier est calibré avec un profil ICC sur mesure pour des couleurs fidèles.' },
     { q: 'Quelle est la durée de conservation?', a: 'Nos tirages fine art ont une durée de conservation de 100+ ans grâce aux encres pigmentées et papiers d\'archives. C\'est le standard des galeries et musées.' },
     { q: 'Puis-je faire encadrer mon tirage?', a: 'Oui! Nous offrons l\'option cadre noir ou blanc pour 30$ supplémentaires. Vous pouvez l\'ajouter directement dans le configurateur.' },
@@ -162,7 +162,7 @@ export const fineArtFaq = {
     { q: 'La livraison est-elle disponible?', a: 'Pick-up gratuit au Mile-End. Livraison locale disponible à Montréal. Envoi postal avec emballage protection pour le reste du Canada.' },
   ],
   en: [
-    { q: 'What is the difference between Studio and Museum Series?', a: 'The Studio Series (Epson ET-15000) offers excellent quality for all uses, ideal for images with good brightness. The Museum Series (Canon PRO-1000/PRO-2600) uses 12 pigmented inks for superior quality, perfect for photography and gallery prints.' },
+    { q: 'What is the difference between Studio and Museum Series?', a: 'The Studio Series uses a 4-color pigment printer, excellent for all uses. The Museum Series uses a 12-color pigment printer for superior quality, perfect for photography and gallery prints.' },
     { q: 'What papers do you use?', a: 'We use premium professional fine art papers: cotton, alpha-cellulose, archival papers. Each paper is calibrated with a custom ICC profile for accurate colors.' },
     { q: 'What is the conservation lifespan?', a: 'Our fine art prints have a 100+ year conservation life thanks to pigmented inks and archival papers. This is the gallery and museum standard.' },
     { q: 'Can I get my print framed?', a: 'Yes! We offer a black or white frame option for an additional $30. You can add it directly in the configurator.' },

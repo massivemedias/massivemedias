@@ -12,8 +12,8 @@ export function getArtistPrintPrice(pricing, tier, format, withFrame) {
 }
 
 export const artistPrinterTiers = [
-  { id: 'studio', labelFr: 'Série Studio', labelEn: 'Studio Series', desc: 'Epson ET-15000' },
-  { id: 'museum', labelFr: 'Série Musée', labelEn: 'Museum Series', desc: 'Canon PRO-1000' },
+  { id: 'studio', labelFr: 'Série Studio', labelEn: 'Studio Series', desc: '4 encres pigmentées / 4 pigmented inks' },
+  { id: 'museum', labelFr: 'Série Musée', labelEn: 'Museum Series', desc: '12 encres pigmentées / 12 pigmented inks' },
 ];
 
 export const artistFormats = [

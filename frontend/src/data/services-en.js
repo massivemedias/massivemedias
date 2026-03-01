@@ -37,7 +37,7 @@ We also print flyers, postcards and business cards - everything you need to prom
       title: 'Studio vs Museum: Which Series to Choose?',
       headers: ['Criteria', 'Studio Series', 'Museum Series'],
       rows: [
-        ['Printer', 'Epson ET-15000', 'Canon PRO-1000 / PRO-2600'],
+        ['Printing', '4-color pigment', '12-color pigment'],
         ['Inks', '4 pigment inks', '12 pigment inks'],
         ['Color gamut', 'Excellent', 'Ultra-wide (gallery grade)'],
         ['Longevity', '50+ years', '100+ years (archival)'],
@@ -52,7 +52,7 @@ We also print flyers, postcards and business cards - everything you need to prom
       tables: [
         {
           subtitle: 'Fine Art Printing',
-          headers: ['Format', 'Studio Series (Epson ET-15000)', 'Museum Series (Canon PRO-1000 / PRO-2600)'],
+          headers: ['Format', 'Studio Series (4 pigments)', 'Museum Series (12 pigments)'],
           rows: [
             ['A4 (8.5×11")', '$16', '$35'],
             ['A3 (11×17")', '$22', '$65'],
@@ -94,7 +94,7 @@ We also print flyers, postcards and business cards - everything you need to prom
       { name: 'Professional cutter', desc: 'Precision cutting for custom formats.' },
     ],
     faq: [
-      { q: 'What is the difference between Studio and Museum Series?', a: 'The Studio Series (Epson ET-15000) offers excellent quality for decoration and gifts. The Museum Series (Canon PRO-1000/PRO-2600) uses 12-color pigment inks for gallery-grade fidelity and 100+ year longevity.' },
+      { q: 'What is the difference between Studio and Museum Series?', a: 'The Studio Series uses a 4-color pigment printer, excellent for decoration and gifts. The Museum Series uses a 12-color pigment printer for gallery-grade fidelity and 100+ year longevity.' },
       { q: 'What file format should I provide?', a: 'Ideally a high-resolution file (300 DPI minimum) in TIFF, PNG or JPEG. We can also work from PSD or PDF files.' },
       { q: 'Do you offer framing?', a: 'Yes, we offer framing on request starting at $30. Black, white or natural wood frames available.' },
       { q: 'What is the production time?', a: 'Generally 24 to 48 hours for standard prints. Volume orders or large format may require 3 to 5 days.' },
