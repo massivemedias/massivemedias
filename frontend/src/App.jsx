@@ -42,7 +42,16 @@ function ComingSoon({ section }) {
   );
 }
 
+function getSubdomainSlug() {
+  const host = window.location.hostname;
+  const match = host.match(/^([^.]+)\.massivemedias\.com$/);
+  if (match && match[1] !== 'www') return match[1];
+  return null;
+}
+
 function App() {
+  const subdomainSlug = getSubdomainSlug();
+
   return (
     <BrowserRouter basename={basename}>
       <ScrollToTop />
@@ -50,7 +59,7 @@ function App() {
       <Suspense fallback={null}>
         <Routes>
           <Route element={<MainLayout />}>
-            <Route index element={<Home />} />
+            <Route index element={subdomainSlug ? <ArtisteDetail subdomainSlug={subdomainSlug} /> : <Home />} />
             <Route path="/services/:slug" element={<ServiceDetail />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/a-propos" element={<APropos />} />

@@ -9,8 +9,9 @@ import { useLang } from '../i18n/LanguageContext';
 import { useTheme } from '../i18n/ThemeContext';
 import artistsData, { artistFormats } from '../data/artists';
 
-function ArtisteDetail() {
-  const { slug } = useParams();
+function ArtisteDetail({ subdomainSlug }) {
+  const { slug: routeSlug } = useParams();
+  const slug = subdomainSlug || routeSlug;
   const { lang } = useLang();
   const { theme } = useTheme();
   const artist = artistsData[slug];
