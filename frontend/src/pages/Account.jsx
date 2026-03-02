@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { User, Mail, Phone, MapPin, Building2, Package, LogOut, Loader2, Pencil, Check, X, Lock, Eye, EyeOff, ChevronDown, ChevronUp } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { User, Mail, Phone, MapPin, Building2, Package, LogOut, Loader2, Pencil, Check, X, Lock, Eye, EyeOff, ChevronDown, ChevronUp, Shield } from 'lucide-react';
 import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -16,7 +16,7 @@ const STATUS_COLORS = {
   refunded: 'bg-grey-500/20 text-grey-400',
 };
 
-// Editable field row component
+// Editable field row
 function ProfileField({ icon: Icon, label, value, onSave, type = 'text', placeholder }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value || '');
@@ -34,17 +34,23 @@ function ProfileField({ icon: Icon, label, value, onSave, type = 'text', placeho
     setEditing(false);
   };
 
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') handleSave();
+    if (e.key === 'Escape') handleCancel();
+  };
+
   return (
-    <div className="flex items-center gap-4 py-3 border-b border-purple-main/10 last:border-0">
-      <Icon size={16} className="text-grey-muted flex-shrink-0" />
+    <div className="flex items-start gap-4 py-4 border-b border-purple-main/10 last:border-0">
+      <Icon size={16} className="text-grey-muted flex-shrink-0 mt-1" />
       <div className="flex-grow min-w-0">
-        <p className="text-xs text-grey-muted mb-0.5">{label}</p>
+        <p className="text-[11px] text-grey-muted uppercase tracking-wider font-medium mb-1">{label}</p>
         {editing ? (
           <div className="flex items-center gap-2">
             <input
               type={type}
               value={draft}
               onChange={e => setDraft(e.target.value)}
+              onKeyDown={handleKeyDown}
               className="input-field text-sm py-1.5"
               placeholder={placeholder}
               autoFocus
@@ -57,12 +63,12 @@ function ProfileField({ icon: Icon, label, value, onSave, type = 'text', placeho
             </button>
           </div>
         ) : (
-          <p className="text-heading text-sm truncate">{value || <span className="text-grey-muted italic">-</span>}</p>
+          <p className="text-heading text-sm">{value || <span className="text-grey-muted/50 italic text-xs">-</span>}</p>
         )}
       </div>
       {!editing && (
-        <button onClick={() => setEditing(true)} className="text-accent hover:text-accent/80 transition-colors text-xs font-medium flex-shrink-0">
-          <Pencil size={14} />
+        <button onClick={() => setEditing(true)} className="text-accent hover:text-accent/80 transition-colors text-xs font-medium flex-shrink-0 mt-1">
+          {saving ? '...' : <Pencil size={14} />}
         </button>
       )}
     </div>
@@ -73,14 +79,18 @@ function Account() {
   const { t, lang } = useLang();
   const { user, signOut, updateProfile, updatePassword } = useAuth();
   const isFr = lang === 'fr';
-
   const meta = user?.user_metadata || {};
 
+  // Tabs
+  const [activeTab, setActiveTab] = useState('profile');
+
+  // Orders
   const [orders, setOrders] = useState([]);
   const [ordersLoading, setOrdersLoading] = useState(true);
   const [ordersError, setOrdersError] = useState(false);
+  const [expandedOrder, setExpandedOrder] = useState(null);
 
-  // Password change
+  // Password
   const [changingPassword, setChangingPassword] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPwd, setConfirmPwd] = useState('');
@@ -89,15 +99,18 @@ function Account() {
   const [pwdSuccess, setPwdSuccess] = useState(false);
   const [pwdLoading, setPwdLoading] = useState(false);
 
-  // Expanded order
-  const [expandedOrder, setExpandedOrder] = useState(null);
-
   // Save feedback
   const [saveMsg, setSaveMsg] = useState('');
 
+  const tabs = [
+    { id: 'profile', label: isFr ? 'Mon profil' : 'My Profile', icon: User },
+    { id: 'orders', label: isFr ? 'Commandes' : 'Orders', icon: Package },
+    { id: 'address', label: isFr ? 'Adresse' : 'Address', icon: MapPin },
+    { id: 'security', label: isFr ? 'Securite' : 'Security', icon: Shield },
+  ];
+
   useEffect(() => {
     if (!user?.id) return;
-
     let cancelled = false;
     async function fetchOrders() {
       try {
@@ -113,11 +126,10 @@ function Account() {
     return () => { cancelled = true; };
   }, [user?.id]);
 
-  const formatDate = (dateStr) => {
-    return new Date(dateStr).toLocaleDateString(isFr ? 'fr-CA' : 'en-CA', {
+  const formatDate = (dateStr) =>
+    new Date(dateStr).toLocaleDateString(isFr ? 'fr-CA' : 'en-CA', {
       year: 'numeric', month: 'long', day: 'numeric',
     });
-  };
 
   const getStatusLabel = (status) => {
     const labels = {
@@ -146,7 +158,6 @@ function Account() {
     e.preventDefault();
     setPwdError('');
     setPwdSuccess(false);
-
     if (newPassword.length < 6) {
       setPwdError(isFr ? 'Minimum 6 caracteres.' : 'Minimum 6 characters.');
       return;
@@ -155,21 +166,16 @@ function Account() {
       setPwdError(isFr ? 'Les mots de passe ne correspondent pas.' : 'Passwords do not match.');
       return;
     }
-
     setPwdLoading(true);
     const { error } = await updatePassword(newPassword);
     setPwdLoading(false);
-
     if (error) {
       setPwdError(error.message);
     } else {
       setPwdSuccess(true);
       setNewPassword('');
       setConfirmPwd('');
-      setTimeout(() => {
-        setChangingPassword(false);
-        setPwdSuccess(false);
-      }, 2000);
+      setTimeout(() => { setChangingPassword(false); setPwdSuccess(false); }, 2000);
     }
   };
 
@@ -178,276 +184,352 @@ function Account() {
       <SEO title={`${t('account.title')} - Massive Medias`} description="" noindex />
 
       <section className="section-container pt-32 pb-20">
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-3xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <div className="flex items-center justify-between mb-10">
-              <h1 className="text-4xl font-heading font-bold text-heading">{t('account.title')}</h1>
+            {/* Header */}
+            <div className="flex items-center justify-between mb-2">
+              <h1 className="text-3xl md:text-4xl font-heading font-bold text-heading">{t('account.title')}</h1>
               <button onClick={signOut} className="flex items-center gap-2 text-grey-muted hover:text-red-400 transition-colors text-sm">
                 <LogOut size={16} />
                 {t('auth.logout')}
               </button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+            {/* Welcome line */}
+            <p className="text-grey-muted mb-8">
+              {isFr ? 'Bonjour' : 'Hello'} <span className="text-heading font-medium">{meta.full_name || user?.email}</span>
+            </p>
 
-              {/* Left column - Profile */}
-              <div className="lg:col-span-2 space-y-6">
-
-                {/* Identity */}
-                <div className="rounded-2xl border border-purple-main/30 p-6 card-bg card-shadow">
-                  <h2 className="text-lg font-heading font-bold text-heading mb-4 flex items-center gap-2">
-                    <User size={18} className="text-accent" />
-                    {t('account.profile')}
-                  </h2>
-
-                  {saveMsg && (
-                    <p className="text-green-400 text-xs mb-3">{saveMsg}</p>
+            {/* Tab navigation */}
+            <div className="flex gap-1 mb-8 border-b border-purple-main/20 overflow-x-auto scrollbar-hide">
+              {tabs.map(tab => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex items-center gap-2 px-4 py-3 text-sm font-medium whitespace-nowrap transition-all border-b-2 -mb-px ${
+                    activeTab === tab.id
+                      ? 'border-accent text-accent'
+                      : 'border-transparent text-grey-muted hover:text-heading hover:border-grey-muted/30'
+                  }`}
+                >
+                  <tab.icon size={16} />
+                  {tab.label}
+                  {tab.id === 'orders' && orders.length > 0 && (
+                    <span className="text-[10px] bg-accent/20 text-accent rounded-full px-1.5 py-0.5 font-bold">{orders.length}</span>
                   )}
+                </button>
+              ))}
+            </div>
 
-                  <ProfileField
-                    icon={User}
-                    label={isFr ? 'Nom complet' : 'Full name'}
-                    value={meta.full_name}
-                    placeholder={isFr ? 'Ton nom' : 'Your name'}
-                    onSave={v => handleProfileSave('full_name', v)}
-                  />
-                  <ProfileField
-                    icon={Mail}
-                    label={isFr ? 'Courriel' : 'Email'}
-                    value={user?.email}
-                    type="email"
-                    placeholder="email@example.com"
-                    onSave={v => handleProfileSave('email', v)}
-                  />
-                  <ProfileField
-                    icon={Phone}
-                    label={isFr ? 'Telephone' : 'Phone'}
-                    value={meta.phone}
-                    type="tel"
-                    placeholder="514-xxx-xxxx"
-                    onSave={v => handleProfileSave('phone', v)}
-                  />
-                  <ProfileField
-                    icon={Building2}
-                    label={isFr ? 'Entreprise' : 'Company'}
-                    value={meta.company}
-                    placeholder={isFr ? 'Nom de l\'entreprise' : 'Company name'}
-                    onSave={v => handleProfileSave('company', v)}
-                  />
+            {/* Save feedback */}
+            <AnimatePresence>
+              {saveMsg && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="mb-4 p-3 rounded-lg bg-green-500/10 border border-green-500/20 text-green-400 text-sm flex items-center gap-2"
+                >
+                  <Check size={16} />
+                  {saveMsg}
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-                  {/* Password */}
-                  <div className="pt-3 mt-1">
-                    {changingPassword ? (
-                      <form onSubmit={handlePasswordChange} className="space-y-3">
-                        <p className="text-xs text-grey-muted mb-1">{isFr ? 'Nouveau mot de passe' : 'New password'}</p>
-                        <div className="relative">
-                          <input
-                            type={showPwd ? 'text' : 'password'}
-                            value={newPassword}
-                            onChange={e => setNewPassword(e.target.value)}
-                            className="input-field text-sm py-1.5"
-                            placeholder="••••••••"
-                            required
-                            minLength={6}
-                          />
-                          <button
-                            type="button"
-                            onClick={() => setShowPwd(!showPwd)}
-                            className="absolute right-2 top-1/2 -translate-y-1/2 text-grey-muted"
-                          >
-                            {showPwd ? <EyeOff size={14} /> : <Eye size={14} />}
-                          </button>
-                        </div>
-                        <input
-                          type={showPwd ? 'text' : 'password'}
-                          value={confirmPwd}
-                          onChange={e => setConfirmPwd(e.target.value)}
-                          className="input-field text-sm py-1.5"
-                          placeholder={isFr ? 'Confirmer' : 'Confirm'}
-                          required
-                          minLength={6}
+            {/* Tab content */}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeTab}
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                transition={{ duration: 0.2 }}
+              >
+
+                {/* ── PROFILE TAB ── */}
+                {activeTab === 'profile' && (
+                  <div className="rounded-2xl border border-purple-main/30 p-6 md:p-8 card-bg card-shadow">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8">
+                      <div>
+                        <ProfileField
+                          icon={User}
+                          label={isFr ? 'Nom complet' : 'Full name'}
+                          value={meta.full_name}
+                          placeholder={isFr ? 'Ton nom' : 'Your name'}
+                          onSave={v => handleProfileSave('full_name', v)}
                         />
-                        {pwdError && <p className="text-red-400 text-xs">{pwdError}</p>}
-                        {pwdSuccess && <p className="text-green-400 text-xs">{isFr ? 'Mot de passe mis a jour!' : 'Password updated!'}</p>}
-                        <div className="flex gap-2">
-                          <button type="submit" disabled={pwdLoading} className="btn-primary text-xs py-1.5 px-4">
-                            {pwdLoading ? '...' : (isFr ? 'Sauvegarder' : 'Save')}
-                          </button>
-                          <button type="button" onClick={() => { setChangingPassword(false); setPwdError(''); }} className="text-grey-muted hover:text-heading text-xs">
-                            {isFr ? 'Annuler' : 'Cancel'}
-                          </button>
-                        </div>
-                      </form>
-                    ) : (
-                      <div className="flex items-center gap-4 py-3">
-                        <Lock size={16} className="text-grey-muted flex-shrink-0" />
-                        <div className="flex-grow">
-                          <p className="text-xs text-grey-muted mb-0.5">{isFr ? 'Mot de passe' : 'Password'}</p>
-                          <p className="text-heading text-sm">••••••••</p>
-                        </div>
-                        <button onClick={() => setChangingPassword(true)} className="text-accent hover:text-accent/80 transition-colors text-xs font-medium flex-shrink-0">
-                          <Pencil size={14} />
-                        </button>
+                        <ProfileField
+                          icon={Mail}
+                          label={isFr ? 'Courriel' : 'Email'}
+                          value={user?.email}
+                          type="email"
+                          placeholder="email@example.com"
+                          onSave={v => handleProfileSave('email', v)}
+                        />
                       </div>
-                    )}
+                      <div>
+                        <ProfileField
+                          icon={Phone}
+                          label={isFr ? 'Telephone' : 'Phone'}
+                          value={meta.phone}
+                          type="tel"
+                          placeholder="514-xxx-xxxx"
+                          onSave={v => handleProfileSave('phone', v)}
+                        />
+                        <ProfileField
+                          icon={Building2}
+                          label={isFr ? 'Entreprise' : 'Company'}
+                          value={meta.company}
+                          placeholder={isFr ? 'Nom de l\'entreprise' : 'Company name'}
+                          onSave={v => handleProfileSave('company', v)}
+                        />
+                      </div>
+                    </div>
                   </div>
-                </div>
+                )}
 
-                {/* Address */}
-                <div className="rounded-2xl border border-purple-main/30 p-6 card-bg card-shadow">
-                  <h2 className="text-lg font-heading font-bold text-heading mb-4 flex items-center gap-2">
-                    <MapPin size={18} className="text-accent" />
-                    {isFr ? 'Adresse' : 'Address'}
-                  </h2>
-                  <ProfileField
-                    icon={MapPin}
-                    label={isFr ? 'Adresse' : 'Street address'}
-                    value={meta.address}
-                    placeholder={isFr ? '123 rue Exemple' : '123 Example St'}
-                    onSave={v => handleProfileSave('address', v)}
-                  />
-                  <ProfileField
-                    icon={MapPin}
-                    label={isFr ? 'Ville' : 'City'}
-                    value={meta.city}
-                    placeholder={isFr ? 'Montreal' : 'Montreal'}
-                    onSave={v => handleProfileSave('city', v)}
-                  />
-                  <ProfileField
-                    icon={MapPin}
-                    label={isFr ? 'Province / Etat' : 'Province / State'}
-                    value={meta.province}
-                    placeholder="QC"
-                    onSave={v => handleProfileSave('province', v)}
-                  />
-                  <ProfileField
-                    icon={MapPin}
-                    label={isFr ? 'Code postal' : 'Postal code'}
-                    value={meta.postal_code}
-                    placeholder="H2X 1Y4"
-                    onSave={v => handleProfileSave('postal_code', v)}
-                  />
-                </div>
-              </div>
-
-              {/* Right column - Orders */}
-              <div className="lg:col-span-3">
-                <div className="rounded-2xl border border-purple-main/30 p-6 card-bg card-shadow">
-                  <h2 className="text-lg font-heading font-bold text-heading mb-6 flex items-center gap-2">
-                    <Package size={18} className="text-accent" />
-                    {t('account.orders')}
-                  </h2>
-
-                  {ordersLoading ? (
-                    <div className="flex items-center gap-3 text-grey-muted py-8 justify-center">
-                      <Loader2 size={18} className="animate-spin" />
-                      <span>{isFr ? 'Chargement...' : 'Loading...'}</span>
-                    </div>
-                  ) : ordersError ? (
-                    <p className="text-grey-muted text-center py-8">{isFr ? 'Erreur au chargement des commandes.' : 'Error loading orders.'}</p>
-                  ) : orders.length === 0 ? (
-                    <div className="text-center py-8">
-                      <Package size={40} className="text-grey-muted/30 mx-auto mb-3" />
-                      <p className="text-grey-muted">{t('account.noOrders')}</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {orders.map((order) => {
-                        const isExpanded = expandedOrder === (order.documentId || order.id);
-                        return (
-                          <div
-                            key={order.documentId || order.id}
-                            className="rounded-xl bg-glass overflow-hidden"
-                          >
-                            {/* Order header - clickable */}
-                            <button
-                              onClick={() => setExpandedOrder(isExpanded ? null : (order.documentId || order.id))}
-                              className="w-full p-4 flex items-center justify-between text-left hover:bg-white/5 transition-colors"
-                            >
-                              <div className="flex items-center gap-4">
+                {/* ── ORDERS TAB ── */}
+                {activeTab === 'orders' && (
+                  <div className="rounded-2xl border border-purple-main/30 p-6 md:p-8 card-bg card-shadow">
+                    {ordersLoading ? (
+                      <div className="flex items-center gap-3 text-grey-muted py-12 justify-center">
+                        <Loader2 size={20} className="animate-spin" />
+                        <span>{isFr ? 'Chargement...' : 'Loading...'}</span>
+                      </div>
+                    ) : ordersError ? (
+                      <p className="text-grey-muted text-center py-12">{isFr ? 'Erreur au chargement des commandes.' : 'Error loading orders.'}</p>
+                    ) : orders.length === 0 ? (
+                      <div className="text-center py-12">
+                        <Package size={48} className="text-grey-muted/20 mx-auto mb-4" />
+                        <p className="text-grey-muted mb-1">{t('account.noOrders')}</p>
+                        <p className="text-grey-muted/60 text-sm">
+                          {isFr ? 'Tes commandes apparaitront ici.' : 'Your orders will appear here.'}
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {orders.map((order) => {
+                          const isExpanded = expandedOrder === (order.documentId || order.id);
+                          return (
+                            <div key={order.documentId || order.id} className="rounded-xl bg-glass overflow-hidden">
+                              <button
+                                onClick={() => setExpandedOrder(isExpanded ? null : (order.documentId || order.id))}
+                                className="w-full p-4 flex items-center justify-between text-left hover:bg-white/5 transition-colors"
+                              >
                                 <div>
-                                  <p className="text-heading font-semibold text-sm">
-                                    {formatDate(order.createdAt)}
-                                  </p>
+                                  <p className="text-heading font-semibold text-sm">{formatDate(order.createdAt)}</p>
                                   <p className="text-grey-muted text-xs">
                                     {order.items?.length || 0} {(order.items?.length || 0) > 1 ? (isFr ? 'articles' : 'items') : (isFr ? 'article' : 'item')}
                                   </p>
                                 </div>
-                              </div>
-                              <div className="flex items-center gap-3">
-                                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${STATUS_COLORS[order.status] || 'bg-grey-500/20 text-grey-400'}`}>
-                                  {getStatusLabel(order.status)}
-                                </span>
-                                <span className="text-heading font-bold text-sm">
-                                  {((order.total || 0) / 100).toFixed(2)}$
-                                </span>
-                                {isExpanded ? <ChevronUp size={16} className="text-grey-muted" /> : <ChevronDown size={16} className="text-grey-muted" />}
-                              </div>
-                            </button>
-
-                            {/* Expanded details */}
-                            {isExpanded && (
-                              <motion.div
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: 'auto' }}
-                                className="border-t border-purple-main/10 px-4 pb-4"
-                              >
-                                {/* Items list */}
-                                {order.items && (
-                                  <div className="mt-3 space-y-2">
-                                    {order.items.map((item, i) => (
-                                      <div key={i} className="flex items-center gap-3 py-2">
-                                        {item.image && (
-                                          <img src={item.image} alt="" className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
-                                        )}
-                                        <div className="flex-grow min-w-0">
-                                          <p className="text-heading text-sm font-medium truncate">{item.productName}</p>
-                                          <p className="text-grey-muted text-xs">
-                                            {[item.finish, item.shape, item.size, `${item.quantity}x`].filter(Boolean).join(' - ')}
-                                          </p>
-                                          {item.notes && (
-                                            <p className="text-grey-muted text-xs mt-0.5 italic">"{item.notes}"</p>
-                                          )}
-                                        </div>
-                                        <span className="text-heading text-sm font-medium flex-shrink-0">{item.totalPrice}$</span>
-                                      </div>
-                                    ))}
-                                  </div>
-                                )}
-
-                                {/* Order notes */}
-                                {order.notes && (
-                                  <div className="mt-3 p-3 rounded-lg bg-purple-main/10">
-                                    <p className="text-xs text-grey-muted mb-1">{isFr ? 'Notes' : 'Notes'}</p>
-                                    <p className="text-heading text-xs whitespace-pre-wrap">{order.notes}</p>
-                                  </div>
-                                )}
-
-                                {/* Order meta */}
-                                <div className="mt-3 flex flex-wrap gap-x-6 gap-y-1 text-xs text-grey-muted">
-                                  {order.designReady !== undefined && (
-                                    <span>
-                                      {isFr ? 'Design pret' : 'Design ready'}: {order.designReady ? (isFr ? 'Oui' : 'Yes') : (isFr ? 'Non' : 'No')}
-                                    </span>
-                                  )}
-                                  <span>
-                                    {isFr ? 'Devise' : 'Currency'}: {(order.currency || 'cad').toUpperCase()}
+                                <div className="flex items-center gap-3">
+                                  <span className={`px-3 py-1 rounded-full text-xs font-semibold ${STATUS_COLORS[order.status] || 'bg-grey-500/20 text-grey-400'}`}>
+                                    {getStatusLabel(order.status)}
                                   </span>
+                                  <span className="text-heading font-bold text-sm">{((order.total || 0) / 100).toFixed(2)}$</span>
+                                  {isExpanded ? <ChevronUp size={16} className="text-grey-muted" /> : <ChevronDown size={16} className="text-grey-muted" />}
                                 </div>
-                              </motion.div>
-                            )}
-                          </div>
-                        );
-                      })}
+                              </button>
+
+                              {isExpanded && (
+                                <motion.div
+                                  initial={{ opacity: 0, height: 0 }}
+                                  animate={{ opacity: 1, height: 'auto' }}
+                                  className="border-t border-purple-main/10 px-4 pb-4"
+                                >
+                                  {order.items && (
+                                    <div className="mt-3 space-y-2">
+                                      {order.items.map((item, i) => (
+                                        <div key={i} className="flex items-center gap-3 py-2">
+                                          {item.image && <img src={item.image} alt="" className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />}
+                                          <div className="flex-grow min-w-0">
+                                            <p className="text-heading text-sm font-medium truncate">{item.productName}</p>
+                                            <p className="text-grey-muted text-xs">
+                                              {[item.finish, item.shape, item.size, `${item.quantity}x`].filter(Boolean).join(' - ')}
+                                            </p>
+                                            {item.notes && <p className="text-grey-muted text-xs mt-0.5 italic">"{item.notes}"</p>}
+                                          </div>
+                                          <span className="text-heading text-sm font-medium flex-shrink-0">{item.totalPrice}$</span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
+                                  {order.notes && (
+                                    <div className="mt-3 p-3 rounded-lg bg-purple-main/10">
+                                      <p className="text-xs text-grey-muted mb-1">Notes</p>
+                                      <p className="text-heading text-xs whitespace-pre-wrap">{order.notes}</p>
+                                    </div>
+                                  )}
+                                  <div className="mt-3 flex flex-wrap gap-x-6 gap-y-1 text-xs text-grey-muted">
+                                    {order.designReady !== undefined && (
+                                      <span>{isFr ? 'Design pret' : 'Design ready'}: {order.designReady ? (isFr ? 'Oui' : 'Yes') : (isFr ? 'Non' : 'No')}</span>
+                                    )}
+                                    <span>{isFr ? 'Devise' : 'Currency'}: {(order.currency || 'cad').toUpperCase()}</span>
+                                  </div>
+                                </motion.div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* ── ADDRESS TAB ── */}
+                {activeTab === 'address' && (
+                  <div className="rounded-2xl border border-purple-main/30 p-6 md:p-8 card-bg card-shadow">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8">
+                      <div>
+                        <ProfileField
+                          icon={MapPin}
+                          label={isFr ? 'Adresse' : 'Street address'}
+                          value={meta.address}
+                          placeholder={isFr ? '123 rue Exemple' : '123 Example St'}
+                          onSave={v => handleProfileSave('address', v)}
+                        />
+                        <ProfileField
+                          icon={MapPin}
+                          label={isFr ? 'Ville' : 'City'}
+                          value={meta.city}
+                          placeholder="Montreal"
+                          onSave={v => handleProfileSave('city', v)}
+                        />
+                      </div>
+                      <div>
+                        <ProfileField
+                          icon={MapPin}
+                          label={isFr ? 'Province / Etat' : 'Province / State'}
+                          value={meta.province}
+                          placeholder="QC"
+                          onSave={v => handleProfileSave('province', v)}
+                        />
+                        <ProfileField
+                          icon={MapPin}
+                          label={isFr ? 'Code postal' : 'Postal code'}
+                          value={meta.postal_code}
+                          placeholder="H2X 1Y4"
+                          onSave={v => handleProfileSave('postal_code', v)}
+                        />
+                      </div>
                     </div>
-                  )}
-                </div>
-              </div>
-            </div>
+                    <ProfileField
+                      icon={MapPin}
+                      label={isFr ? 'Pays' : 'Country'}
+                      value={meta.country || 'Canada'}
+                      placeholder="Canada"
+                      onSave={v => handleProfileSave('country', v)}
+                    />
+                  </div>
+                )}
+
+                {/* ── SECURITY TAB ── */}
+                {activeTab === 'security' && (
+                  <div className="rounded-2xl border border-purple-main/30 p-6 md:p-8 card-bg card-shadow">
+                    {/* Password section */}
+                    <div className="mb-6">
+                      <h3 className="text-heading font-semibold text-sm mb-4 flex items-center gap-2">
+                        <Lock size={16} className="text-accent" />
+                        {isFr ? 'Mot de passe' : 'Password'}
+                      </h3>
+
+                      {changingPassword ? (
+                        <form onSubmit={handlePasswordChange} className="max-w-sm space-y-4">
+                          <div>
+                            <label className="text-[11px] text-grey-muted uppercase tracking-wider font-medium mb-1.5 block">
+                              {isFr ? 'Nouveau mot de passe' : 'New password'}
+                            </label>
+                            <div className="relative">
+                              <input
+                                type={showPwd ? 'text' : 'password'}
+                                value={newPassword}
+                                onChange={e => setNewPassword(e.target.value)}
+                                className="input-field text-sm"
+                                placeholder="••••••••"
+                                required
+                                minLength={6}
+                              />
+                              <button
+                                type="button"
+                                onClick={() => setShowPwd(!showPwd)}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-grey-muted hover:text-heading transition-colors"
+                              >
+                                {showPwd ? <EyeOff size={16} /> : <Eye size={16} />}
+                              </button>
+                            </div>
+                          </div>
+                          <div>
+                            <label className="text-[11px] text-grey-muted uppercase tracking-wider font-medium mb-1.5 block">
+                              {isFr ? 'Confirmer' : 'Confirm'}
+                            </label>
+                            <input
+                              type={showPwd ? 'text' : 'password'}
+                              value={confirmPwd}
+                              onChange={e => setConfirmPwd(e.target.value)}
+                              className="input-field text-sm"
+                              placeholder="••••••••"
+                              required
+                              minLength={6}
+                            />
+                          </div>
+                          {pwdError && <p className="text-red-400 text-xs">{pwdError}</p>}
+                          {pwdSuccess && (
+                            <p className="text-green-400 text-xs flex items-center gap-1">
+                              <Check size={14} /> {isFr ? 'Mot de passe mis a jour!' : 'Password updated!'}
+                            </p>
+                          )}
+                          <div className="flex gap-3 pt-1">
+                            <button type="submit" disabled={pwdLoading} className="btn-primary text-sm py-2 px-6">
+                              {pwdLoading ? '...' : (isFr ? 'Sauvegarder' : 'Save')}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => { setChangingPassword(false); setPwdError(''); setNewPassword(''); setConfirmPwd(''); }}
+                              className="text-grey-muted hover:text-heading text-sm transition-colors"
+                            >
+                              {isFr ? 'Annuler' : 'Cancel'}
+                            </button>
+                          </div>
+                        </form>
+                      ) : (
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-heading text-sm">••••••••</p>
+                            <p className="text-grey-muted text-xs mt-1">
+                              {isFr ? 'Change ton mot de passe regulierement pour securiser ton compte.' : 'Change your password regularly to secure your account.'}
+                            </p>
+                          </div>
+                          <button
+                            onClick={() => setChangingPassword(true)}
+                            className="text-accent hover:text-accent/80 transition-colors text-sm font-medium flex items-center gap-1.5"
+                          >
+                            <Pencil size={14} />
+                            {isFr ? 'Modifier' : 'Edit'}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Email section */}
+                    <div className="pt-6 border-t border-purple-main/10">
+                      <h3 className="text-heading font-semibold text-sm mb-2 flex items-center gap-2">
+                        <Mail size={16} className="text-accent" />
+                        {isFr ? 'Email du compte' : 'Account email'}
+                      </h3>
+                      <p className="text-heading text-sm">{user?.email}</p>
+                      <p className="text-grey-muted text-xs mt-1">
+                        {isFr ? 'L\'email est utilise pour la connexion et les notifications de commande.' : 'Email is used for login and order notifications.'}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+              </motion.div>
+            </AnimatePresence>
           </motion.div>
         </div>
       </section>
