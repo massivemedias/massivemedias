@@ -28,7 +28,7 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
   },
 
   async createPaymentIntent(ctx) {
-    const { items, customerEmail, customerName, customerPhone, designReady, notes, supabaseUserId, fileIds } = ctx.request.body as any;
+    const { items, customerEmail, customerName, customerPhone, designReady, notes, supabaseUserId, fileUrls } = ctx.request.body as any;
 
     // Validate
     if (!items || !Array.isArray(items) || items.length === 0) {
@@ -86,32 +86,36 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
         strapi.log.warn('Could not create/find client:', err);
       }
 
-      // Create order in Strapi with status "pending"
-      const order = await strapi.documents('api::order.order').create({
-        data: {
-          stripePaymentIntentId: paymentIntent.id,
-          customerEmail,
-          customerName,
-          customerPhone: customerPhone || '',
-          supabaseUserId: supabaseUserId || '',
-          items,
-          subtotal: amountInCents,
-          total: amountInCents,
-          currency: 'cad',
-          status: 'pending',
-          designReady: designReady !== false,
-          notes: notes || '',
-          ...(client ? { client: client.documentId } : {}),
-        },
-      });
+      // Build items with file URLs embedded
+      const itemsWithFiles = items.map((item: any) => ({
+        ...item,
+        uploadedFiles: item.uploadedFiles || [],
+      }));
 
-      // Link uploaded files to the order
-      if (fileIds && Array.isArray(fileIds) && fileIds.length > 0) {
-        await strapi.documents('api::order.order').update({
-          documentId: order.documentId,
-          data: { files: fileIds },
-        });
+      // Create order in Strapi with status "pending"
+      const orderData: any = {
+        stripePaymentIntentId: paymentIntent.id,
+        customerEmail,
+        customerName,
+        customerPhone: customerPhone || '',
+        supabaseUserId: supabaseUserId || '',
+        items: itemsWithFiles,
+        subtotal: amountInCents,
+        total: amountInCents,
+        currency: 'cad',
+        status: 'pending',
+        designReady: designReady !== false,
+        notes: notes || '',
+      };
+
+      // Link client relation using Strapi v5 connect syntax
+      if (client) {
+        orderData.client = { connect: [{ documentId: client.documentId }] };
       }
+
+      const order = await strapi.documents('api::order.order').create({
+        data: orderData,
+      });
 
       // Return client_secret to frontend
       ctx.body = {

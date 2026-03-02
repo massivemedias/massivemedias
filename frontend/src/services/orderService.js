@@ -1,6 +1,6 @@
 import api from './api';
 
-export async function createPaymentIntent({ items, customerEmail, customerName, customerPhone, designReady, notes, supabaseUserId, fileIds }) {
+export async function createPaymentIntent({ items, customerEmail, customerName, customerPhone, designReady, notes, supabaseUserId }) {
   const { data } = await api.post('/orders/create-payment-intent', {
     items,
     customerEmail,
@@ -9,7 +9,6 @@ export async function createPaymentIntent({ items, customerEmail, customerName, 
     designReady,
     notes,
     supabaseUserId,
-    fileIds,
   });
   return data;
 }

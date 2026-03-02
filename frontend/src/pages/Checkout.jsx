@@ -49,21 +49,28 @@ function Checkout() {
     setError('');
 
     try {
-      // Collect fileIds from cart items + extra checkout files
-      const allFileIds = [
-        ...items.flatMap(item => (item.uploadedFiles || []).map(f => f.id)),
-        ...extraFiles.map(f => f.id),
-      ];
+      // Include extra checkout files in the items data
+      const itemsToSend = items.map(item => ({
+        ...item,
+        uploadedFiles: item.uploadedFiles || [],
+      }));
+
+      // Add extra files info to notes if any
+      const extraFileNames = extraFiles.map(f => f.name).join(', ');
+      const fullNotes = [
+        formData.message,
+        extraFiles.length > 0 ? `Fichiers supplementaires: ${extraFileNames}` : '',
+        ...extraFiles.map(f => f.url).filter(Boolean),
+      ].filter(Boolean).join('\n');
 
       const { clientSecret: secret } = await createPaymentIntent({
-        items,
+        items: itemsToSend,
         customerEmail: formData.email,
         customerName: formData.nom,
         customerPhone: formData.telephone,
         designReady: formData.designReady === 'yes',
-        notes: formData.message,
+        notes: fullNotes,
         supabaseUserId: user?.id || '',
-        fileIds: allFileIds.length > 0 ? allFileIds : undefined,
       });
 
       setClientSecret(secret);
