@@ -31,12 +31,37 @@ function Login() {
     }
   }, [passwordRecovery]);
 
-  // Also detect recovery tokens in URL hash (Supabase redirects with #access_token=...&type=recovery)
+  // Detect recovery tokens or errors in URL hash
   useEffect(() => {
     const hash = window.location.hash;
-    if (hash && hash.includes('type=recovery')) {
+    if (!hash) return;
+
+    // Parse hash parameters
+    const params = new URLSearchParams(hash.substring(1));
+
+    // Check for errors (expired link, etc.)
+    const errorCode = params.get('error_code');
+    const errorDesc = params.get('error_description');
+    if (errorCode || errorDesc) {
+      if (errorCode === 'otp_expired') {
+        setError(isFr
+          ? 'Le lien a expire. Demande un nouveau lien de reinitialisation.'
+          : 'The link has expired. Request a new reset link.');
+        setMode('forgot');
+      } else {
+        setError(errorDesc?.replace(/\+/g, ' ') || (isFr ? 'Une erreur est survenue.' : 'An error occurred.'));
+      }
+      // Clean URL hash
+      window.history.replaceState(null, '', window.location.pathname);
+      return;
+    }
+
+    // Check for recovery flow
+    if (hash.includes('type=recovery')) {
       setMode('update-password');
       setError('');
+      // Clean URL hash
+      window.history.replaceState(null, '', window.location.pathname);
     }
   }, []);
 
