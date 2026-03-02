@@ -1,9 +1,28 @@
+import { useState, useMemo } from 'react';
 import { Scissors, Shield, Sparkles, Truck, Droplets, Tag, Gift, Music, Package } from 'lucide-react';
 import BoutiqueProductLayout from '../components/BoutiqueProductLayout';
 import ConfiguratorStickers from '../components/configurators/ConfiguratorStickers';
 import { stickerImages, stickerFaq } from '../data/products';
+import { img } from '../utils/paths';
+
+// Image de finition par type (affichee en premier dans la galerie)
+const finishImages = {
+  matte: img('/images/stickers/finish-matte.webp'),
+  glossy: img('/images/stickers/finish-glossy.webp'),
+  holographic: img('/images/stickers/finish-holographic.webp'),
+  'broken-glass': img('/images/stickers/finish-broken-glass.webp'),
+  stars: img('/images/stickers/finish-stars.webp'),
+};
 
 function BoutiqueStickers() {
+  const [selectedFinish, setSelectedFinish] = useState('matte');
+
+  // Image de finition en premier, puis les images de realisations
+  const allImages = useMemo(() => {
+    const finishImg = finishImages[selectedFinish];
+    return finishImg ? [finishImg, ...stickerImages] : stickerImages;
+  }, [selectedFinish]);
+
   const trustItems = [
     { icon: Scissors, fr: 'D\u00e9coupe pr\u00e9cision', en: 'Precision cutting' },
     { icon: Shield, fr: 'Durabilit\u00e9 3-5 ans', en: '3-5 year durability' },
@@ -25,18 +44,18 @@ function BoutiqueStickers() {
   ];
 
   const ctaLinks = [
-    { to: '/boutique/design', fr: 'Design Graphique', en: 'Graphic Design' },
-    { to: '/boutique/fine-art', fr: 'Impression Fine Art', en: 'Fine Art Print' },
-    { to: '/boutique/sublimation', fr: 'Sublimation & Merch', en: 'Sublimation & Merch' },
+    { to: '/boutique/design', fr: 'Design', en: 'Design' },
+    { to: '/boutique/fine-art', fr: 'Prints', en: 'Prints' },
+    { to: '/boutique/sublimation', fr: 'Merch', en: 'Merch' },
   ];
 
   return (
     <BoutiqueProductLayout
       serviceSlug="stickers-custom"
-      pageTitle={{ fr: 'Stickers Custom \u2014 Boutique | Massive Medias', en: 'Custom Stickers \u2014 Shop | Massive Medias' }}
+      pageTitle={{ fr: 'Stickers Custom - Boutique | Massive Medias', en: 'Custom Stickers - Shop | Massive Medias' }}
       metaDescription={{
-        fr: 'Commandez vos stickers custom. Vinyle matte, glossy, transparent, holographique. D\u00e9coupe de pr\u00e9cision. Design inclus.',
-        en: 'Order your custom stickers. Matte, glossy, clear, holographic vinyl. Precision cutting. Design included.',
+        fr: 'Commandez vos stickers custom. Vinyle matte, glossy, holographique, verre brise, etoiles. Decoupe de precision. Design inclus.',
+        en: 'Order your custom stickers. Matte, glossy, holographic, broken glass, stars vinyl. Precision cutting. Design included.',
       }}
       productTitle={{ fr: 'Stickers Custom', en: 'Custom Stickers' }}
       productSubtitle={{
@@ -52,11 +71,12 @@ function BoutiqueStickers() {
         en: 'Professional stickers built to last.',
       }}
       useCases={useCases}
-      images={stickerImages}
+      images={allImages}
       faq={stickerFaq}
       ctaLinks={ctaLinks}
+      galleryResetKey={selectedFinish}
     >
-      <ConfiguratorStickers />
+      <ConfiguratorStickers onFinishChange={setSelectedFinish} />
     </BoutiqueProductLayout>
   );
 }

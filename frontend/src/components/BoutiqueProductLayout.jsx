@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ChevronDown, ChevronLeft, ChevronRight, X,
@@ -26,6 +26,7 @@ function BoutiqueProductLayout({
   images,
   faq,
   ctaLinks,
+  galleryResetKey,
   children,
 }) {
   const { lang } = useLang();
@@ -35,6 +36,11 @@ function BoutiqueProductLayout({
   // Gallery state
   const [mainImage, setMainImage] = useState(0);
   const [lightbox, setLightbox] = useState(null);
+
+  // Reset to first image when gallery content changes (e.g. finish selection)
+  useEffect(() => {
+    if (galleryResetKey !== undefined) setMainImage(0);
+  }, [galleryResetKey]);
 
   // FAQ state
   const [openFaq, setOpenFaq] = useState(null);

@@ -3,8 +3,9 @@ import { img } from '../utils/paths';
 export const stickerFinishes = [
   { id: 'matte', labelFr: 'Vinyle Matte', labelEn: 'Matte Vinyl', descFr: 'Toucher veloute, sans reflet', descEn: 'Smooth feel, glare-free' },
   { id: 'glossy', labelFr: 'Vinyle Glossy', labelEn: 'Glossy Vinyl', descFr: 'Brillant, couleurs eclatantes', descEn: 'Shiny, vibrant colors' },
-  { id: 'transparent', labelFr: 'Vinyle Transparent', labelEn: 'Clear Vinyl', descFr: 'Invisible sur toute surface', descEn: 'Invisible on any surface' },
   { id: 'holographic', labelFr: 'Holographique', labelEn: 'Holographic', descFr: 'Reflets arc-en-ciel, effet wow', descEn: 'Rainbow reflections, wow effect' },
+  { id: 'broken-glass', labelFr: 'Verre Brise', labelEn: 'Broken Glass', descFr: 'Eclats cristallins, reflets prismatiques', descEn: 'Crystal shards, prismatic reflections' },
+  { id: 'stars', labelFr: 'Etoiles', labelEn: 'Stars', descFr: 'Motif etoiles scintillantes', descEn: 'Sparkling star pattern' },
 ];
 
 export const stickerShapes = [
@@ -51,7 +52,7 @@ export const diecutPriceTiers = stickerPriceTiers;
 
 export function getStickerPrice(finish, shape, qty) {
   let tiers;
-  if (finish === 'holographic') {
+  if (finish === 'holographic' || finish === 'broken-glass' || finish === 'stars') {
     tiers = holographicPriceTiers;
   } else {
     // matte, glossy, transparent = Standard pricing

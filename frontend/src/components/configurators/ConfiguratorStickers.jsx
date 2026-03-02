@@ -9,7 +9,7 @@ import {
   stickerPriceTiers, getStickerPrice, stickerImages,
 } from '../../data/products';
 
-function ConfiguratorStickers() {
+function ConfiguratorStickers({ onFinishChange }) {
   const { lang } = useLang();
   const { addToCart } = useCart();
 
@@ -63,7 +63,7 @@ function ConfiguratorStickers() {
           {stickerFinishes.map(f => (
             <button
               key={f.id}
-              onClick={() => setFinish(f.id)}
+              onClick={() => { setFinish(f.id); onFinishChange?.(f.id); }}
               className={`flex flex-col items-center justify-center min-w-[4.5rem] py-2.5 px-3 rounded-lg text-xs font-medium transition-all border-2 ${finish === f.id
                 ? 'border-accent option-selected'
                 : 'border-transparent hover:border-grey-muted/30 option-default'
@@ -72,7 +72,8 @@ function ConfiguratorStickers() {
               <span className={`w-4 h-4 rounded-full mb-1.5 border ${
                 f.id === 'matte' ? 'bg-gray-400 border-gray-400' :
                 f.id === 'glossy' ? 'bg-white border-gray-300 shadow-sm' :
-                f.id === 'transparent' ? 'bg-transparent border-gray-300 border-dashed' :
+                f.id === 'broken-glass' ? 'bg-gradient-to-br from-cyan-200 via-white to-cyan-400 border-cyan-300' :
+                f.id === 'stars' ? 'bg-gradient-to-br from-yellow-200 via-amber-300 to-yellow-400 border-yellow-300' :
                 'bg-gradient-to-br from-pink-300 via-purple-300 to-cyan-300 border-transparent'
               }`} />
               <span className="text-heading leading-tight text-center font-semibold">
@@ -202,9 +203,9 @@ function ConfiguratorStickers() {
             </span>
           </div>
           <div className="flex items-center gap-2 mt-2">
-            {finish === 'holographic' && (
+            {(finish === 'holographic' || finish === 'broken-glass' || finish === 'stars') && (
               <span className="text-accent text-xs font-medium">
-                {lang === 'fr' ? 'Holographique (Effets Sp\u00e9ciaux)' : 'Holographic (Special Effects)'}
+                {lang === 'fr' ? 'Effets Speciaux' : 'Special Effects'}
               </span>
             )}
             <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-accent/10 text-accent">
