@@ -1,7 +1,7 @@
 import { useParams, Link, Navigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, ArrowLeft, CheckCircle, Wrench, Users, ChevronLeft, ChevronRight, X, ExternalLink, Globe, Palette, Code as CodeIcon, Smartphone, Search, Gauge, Shield, ChevronDown, ShoppingCart } from 'lucide-react';
-import { useState, useCallback, useEffect, useMemo, lazy, Suspense } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef, lazy, Suspense } from 'react';
 import { toFull } from '../utils/paths';
 import SEO from '../components/SEO';
 import { getServiceSchema, getFAQSchema } from '../components/seo/schemas';
@@ -69,6 +69,14 @@ function ServiceDetail() {
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [openFaq, setOpenFaq] = useState(null);
   const [configuratorOpen, setConfiguratorOpen] = useState(false);
+  const configuratorRef = useRef(null);
+
+  const openConfigurator = useCallback(() => {
+    setConfiguratorOpen(true);
+    setTimeout(() => {
+      configuratorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+  }, []);
 
   // All images for lightbox navigation
   const allImages = useMemo(() => [
@@ -187,7 +195,14 @@ function ServiceDetail() {
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4">
-                <Link to="/contact" className="btn-primary">
+                {service.boutiqueSlug && configuratorMap[service.boutiqueSlug] && (
+                  <button onClick={openConfigurator} className="btn-primary cursor-pointer">
+                    <ShoppingCart className="mr-2" size={20} />
+                    {lang === 'fr' ? 'Commander en ligne' : 'Order online'}
+                    <ChevronDown className="ml-2" size={20} />
+                  </button>
+                )}
+                <Link to="/contact" className={service.boutiqueSlug && configuratorMap[service.boutiqueSlug] ? 'btn-outline' : 'btn-primary'}>
                   {t('serviceDetail.requestQuote')}
                   <ArrowRight className="ml-2" size={20} />
                 </Link>
@@ -772,6 +787,8 @@ function ServiceDetail() {
 
         {/* ============ CTA / CONFIGURATEUR ============ */}
         <motion.div
+          ref={configuratorRef}
+          id="configurateur"
           initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8 }}
@@ -788,13 +805,19 @@ function ServiceDetail() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               {service.boutiqueSlug && configuratorMap[service.boutiqueSlug] && (
                 <button
-                  onClick={() => setConfiguratorOpen(!configuratorOpen)}
+                  onClick={() => {
+                    if (configuratorOpen) {
+                      setConfiguratorOpen(false);
+                    } else {
+                      openConfigurator();
+                    }
+                  }}
                   className="btn-primary cursor-pointer"
                 >
                   <ShoppingCart className="mr-2" size={20} />
                   {configuratorOpen
                     ? (lang === 'fr' ? 'Fermer' : 'Close')
-                    : (lang === 'fr' ? 'Commander' : 'Order')}
+                    : (lang === 'fr' ? 'Commander en ligne' : 'Order online')}
                   <ChevronDown className={`ml-2 transition-transform duration-300 ${configuratorOpen ? 'rotate-180' : ''}`} size={20} />
                 </button>
               )}
