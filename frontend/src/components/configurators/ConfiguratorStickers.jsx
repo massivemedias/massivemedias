@@ -75,8 +75,11 @@ function ConfiguratorStickers() {
                 f.id === 'transparent' ? 'bg-transparent border-gray-300 border-dashed' :
                 'bg-gradient-to-br from-pink-300 via-purple-300 to-cyan-300 border-transparent'
               }`} />
-              <span className="text-heading leading-tight text-center">
+              <span className="text-heading leading-tight text-center font-semibold">
                 {lang === 'fr' ? f.labelFr.replace('Vinyle ', '') : f.labelEn.replace(' Vinyl', '')}
+              </span>
+              <span className="text-grey-muted mt-0.5 text-[10px]">
+                {lang === 'fr' ? f.descFr : f.descEn}
               </span>
             </button>
           ))}
@@ -104,8 +107,11 @@ function ConfiguratorStickers() {
                 s.id === 'rectangle' ? 'w-5 h-3.5 rounded-sm border-2 border-current' :
                 'w-5 h-4 border-2 border-current border-dashed rounded-lg'
               } text-grey-muted`} />
-              <span className="text-heading leading-tight text-center">
+              <span className="text-heading leading-tight text-center font-semibold">
                 {lang === 'fr' ? s.labelFr : s.labelEn}
+              </span>
+              <span className="text-grey-muted mt-0.5 text-[10px]">
+                {lang === 'fr' ? s.descFr : s.descEn}
               </span>
             </button>
           ))}
@@ -141,17 +147,24 @@ function ConfiguratorStickers() {
         <div className="flex flex-wrap gap-2">
           {tiers.map((tier, i) => {
             const p = getStickerPrice(finish, shape, tier.qty);
+            const baseUnitPrice = tiers[0].unitPrice;
+            const savings = i > 0 ? Math.round((1 - tier.unitPrice / baseUnitPrice) * 100) : 0;
             return (
               <button
                 key={tier.qty}
                 onClick={() => setQtyIndex(i)}
-                className={`flex flex-col items-center py-2.5 px-4 rounded-lg text-xs font-medium transition-all border-2 min-w-[5rem] ${qtyIndex === i
+                className={`flex flex-col items-center py-2.5 px-4 rounded-lg text-xs font-medium transition-all border-2 min-w-[5rem] relative ${qtyIndex === i
                   ? 'border-accent option-selected'
                   : 'border-transparent hover:border-grey-muted/30 option-default'
                 }`}
               >
+                {savings > 0 && (
+                  <span className="absolute -top-2 -right-1 text-[9px] font-bold text-accent bg-accent/10 rounded-full px-1.5">
+                    -{savings}%
+                  </span>
+                )}
                 <span className="text-heading font-bold text-sm">{tier.qty}</span>
-                <span className="text-grey-muted mt-0.5">{p ? `${p.price}$` : ''}</span>
+                <span className="text-grey-muted mt-0.5">{p ? `${p.unitPrice.toFixed(2)}$/u` : ''}</span>
               </button>
             );
           })}

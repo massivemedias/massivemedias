@@ -8,7 +8,11 @@ import {
   Zap,
   DollarSign,
   Music,
-  Quote
+  Quote,
+  Shield,
+  Heart,
+  Clock,
+  MapPin
 } from 'lucide-react';
 import ServiceCard from '../components/ServiceCard';
 import Counter from '../components/Counter';
@@ -331,6 +335,85 @@ function Home() {
               </>
           }
         </div>
+      </section>
+
+      {/* ============ ILS NOUS FONT CONFIANCE ============ */}
+      <section className="section-container !py-12">
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          transition={{ duration: 0.8 }}
+          viewport={{ once: true }}
+          className="text-center"
+        >
+          <p className="text-sm uppercase tracking-widest text-grey-muted mb-8 font-medium">
+            {lang === 'fr' ? 'Ils nous font confiance' : 'Trusted by'}
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-6 opacity-50 grayscale hover:opacity-70 hover:grayscale-0 transition-all duration-500">
+            {[
+              { name: 'Maudite Machine', src: '/images/logos/mauditemachine-logo.png' },
+              { name: 'VRSTL', src: '/images/logos/vrstl-logo.png' },
+              { name: 'Cosmovision', src: '/images/logos/cosmovision-logo.png' },
+              { name: 'Fusion State Rec.', src: '/images/logos/fusionstate-logo.png' },
+              { name: 'Sony Delite', src: '/images/logos/sonydelite-logo.png' },
+            ].map((logo) => (
+              <img
+                key={logo.name}
+                src={logo.src}
+                alt={logo.name}
+                className="h-8 md:h-10 w-auto object-contain"
+                onError={(e) => {
+                  // Fallback: show text if logo image not found
+                  e.target.style.display = 'none';
+                  e.target.parentElement.insertAdjacentHTML('beforeend',
+                    `<span class="text-heading font-heading font-bold text-lg md:text-xl opacity-40">${logo.name}</span>`
+                  );
+                }}
+              />
+            ))}
+          </div>
+        </motion.div>
+      </section>
+
+      {/* ============ LA PROMESSE MASSIVE ============ */}
+      <section className="section-container !py-12">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true }}
+        >
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto">
+            {[
+              { icon: Shield, fr: 'La promesse Massive', en: 'The Massive Promise', descFr: 'Satisfaction garantie ou on refait', descEn: 'Satisfaction guaranteed or we redo it' },
+              { icon: MapPin, fr: 'Imprime a Montreal', en: 'Printed in Montreal', descFr: 'Production 100% locale, Mile-End', descEn: '100% local production, Mile-End' },
+              { icon: Clock, fr: 'Delai rapide', en: 'Fast turnaround', descFr: '24-48h sur la plupart des produits', descEn: '24-48h on most products' },
+              { icon: Heart, fr: 'Design inclus', en: 'Design included', descFr: 'Creation graphique incluse', descEn: 'Graphic design included' },
+            ].map((item, i) => {
+              const Icon = item.icon;
+              return (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 10 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: i * 0.1 }}
+                  viewport={{ once: true }}
+                  className="text-center"
+                >
+                  <div className="w-12 h-12 mx-auto mb-3 rounded-xl flex items-center justify-center icon-bg">
+                    <Icon size={22} className="text-accent" />
+                  </div>
+                  <h3 className="text-heading font-heading font-bold text-sm mb-1">
+                    {lang === 'fr' ? item.fr : item.en}
+                  </h3>
+                  <p className="text-grey-muted text-xs">
+                    {lang === 'fr' ? item.descFr : item.descEn}
+                  </p>
+                </motion.div>
+              );
+            })}
+          </div>
+        </motion.div>
       </section>
 
       {/* ============ AVANTAGES ============ */}

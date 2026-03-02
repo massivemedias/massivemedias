@@ -80,9 +80,14 @@ function ConfiguratorSublimation() {
                   className="w-full h-24 object-cover"
                 />
                 <div className="p-2 text-center">
-                  <span className="text-heading font-semibold text-sm">
+                  <span className="text-heading font-semibold text-sm block">
                     {lang === 'fr' ? p.labelFr : p.labelEn}
                   </span>
+                  {p.descFr && (
+                    <span className="text-grey-muted text-[10px] block mt-0.5">
+                      {lang === 'fr' ? p.descFr : p.descEn}
+                    </span>
+                  )}
                 </div>
                 {product === p.id && (
                   <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-accent flex items-center justify-center">
@@ -101,19 +106,27 @@ function ConfiguratorSublimation() {
           {lang === 'fr' ? 'Quantit\u00e9' : 'Quantity'}
         </label>
         <div className="flex flex-wrap gap-2">
-          {tiers.map((tier, i) => (
-            <button
-              key={tier.qty}
-              onClick={() => setQtyIndex(i)}
-              className={`flex flex-col items-center py-2.5 px-4 rounded-lg text-xs font-medium transition-all border-2 min-w-[5rem] ${qtyIndex === i
-                ? 'border-accent option-selected'
-                : 'border-transparent hover:border-grey-muted/30 option-default'
-              }`}
-            >
-              <span className="text-heading font-bold text-sm">{tier.qty}</span>
-              <span className="text-grey-muted mt-0.5">{tier.unitPrice}$/u</span>
-            </button>
-          ))}
+          {tiers.map((tier, i) => {
+            const savings = i > 0 ? Math.round((1 - tier.unitPrice / tiers[0].unitPrice) * 100) : 0;
+            return (
+              <button
+                key={tier.qty}
+                onClick={() => setQtyIndex(i)}
+                className={`flex flex-col items-center py-2.5 px-4 rounded-lg text-xs font-medium transition-all border-2 min-w-[5rem] relative ${qtyIndex === i
+                  ? 'border-accent option-selected'
+                  : 'border-transparent hover:border-grey-muted/30 option-default'
+                }`}
+              >
+                {savings > 0 && (
+                  <span className="absolute -top-2 -right-1 text-[9px] font-bold text-accent bg-accent/10 rounded-full px-1.5">
+                    -{savings}%
+                  </span>
+                )}
+                <span className="text-heading font-bold text-sm">{tier.qty}</span>
+                <span className="text-grey-muted mt-0.5">{tier.unitPrice}$/u</span>
+              </button>
+            );
+          })}
         </div>
       </div>
 

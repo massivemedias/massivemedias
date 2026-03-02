@@ -15,7 +15,6 @@ const Boutique = lazy(() => import('./pages/Boutique'));
 const BoutiqueStickers = lazy(() => import('./pages/BoutiqueStickers'));
 const BoutiqueFineArt = lazy(() => import('./pages/BoutiqueFineArt'));
 const BoutiqueSublimation = lazy(() => import('./pages/BoutiqueSublimation'));
-const BoutiqueFlyers = lazy(() => import('./pages/BoutiqueFlyers'));
 const BoutiqueDesign = lazy(() => import('./pages/BoutiqueDesign'));
 const BoutiqueWeb = lazy(() => import('./pages/BoutiqueWeb'));
 const Panier = lazy(() => import('./pages/Panier'));
@@ -80,7 +79,7 @@ function App() {
             <Route path="/boutique/stickers" element={<BoutiqueStickers />} />
             <Route path="/boutique/fine-art" element={<BoutiqueFineArt />} />
             <Route path="/boutique/sublimation" element={<BoutiqueSublimation />} />
-            <Route path="/boutique/flyers" element={<BoutiqueFlyers />} />
+            <Route path="/boutique/flyers" element={<Navigate to="/boutique/fine-art" replace />} />
             <Route path="/boutique/design" element={<BoutiqueDesign />} />
             <Route path="/boutique/web" element={<BoutiqueWeb />} />
             <Route path="/panier" element={<Panier />} />

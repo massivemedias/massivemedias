@@ -22,6 +22,7 @@ function BoutiqueProductLayout({
   features,
   featuresTitle,
   featuresSubtitle,
+  useCases,
   images,
   faq,
   ctaLinks,
@@ -204,6 +205,51 @@ function BoutiqueProductLayout({
                     </h3>
                     <p className="text-grey-muted text-sm leading-relaxed">
                       {lang === 'fr' ? feature.descFr : feature.descEn}
+                    </p>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </motion.div>
+        )}
+
+        {/* ============ USE CASES ============ */}
+        {useCases && useCases.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+            className="mb-20"
+          >
+            <h2 className="text-3xl md:text-4xl font-heading font-bold text-heading mb-3 text-center">
+              {lang === 'fr' ? 'Idees d\'utilisation' : 'Use Cases'}
+            </h2>
+            <p className="text-grey-muted text-center mb-10 max-w-xl mx-auto">
+              {lang === 'fr'
+                ? 'Comment nos clients utilisent ce produit.'
+                : 'How our clients use this product.'}
+            </p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {useCases.map((uc, i) => {
+                const Icon = uc.icon;
+                return (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, y: 10 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: i * 0.08 }}
+                    viewport={{ once: true }}
+                    className="p-5 rounded-xl text-center bg-glass"
+                  >
+                    <div className="w-10 h-10 mx-auto mb-3 rounded-lg flex items-center justify-center icon-bg">
+                      <Icon size={20} className="text-accent" />
+                    </div>
+                    <h3 className="font-heading font-bold text-heading text-sm mb-1">
+                      {t(uc)}
+                    </h3>
+                    <p className="text-grey-muted text-xs">
+                      {lang === 'fr' ? uc.descFr : uc.descEn}
                     </p>
                   </motion.div>
                 );

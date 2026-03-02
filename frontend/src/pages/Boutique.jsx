@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { ArrowRight, ShoppingCart, MessageSquare, Package } from 'lucide-react';
+import { ArrowRight, ShoppingCart, MessageSquare, Package, Shield, MapPin, Clock, Heart, Sparkles, Tag } from 'lucide-react';
 import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
 import { thumb } from '../utils/paths';
@@ -12,10 +12,12 @@ const localImages = {
   stickers: thumb('/images/stickers/StickersHero.webp'),
   'fine-art': thumb('/images/prints/PrintsHero.webp'),
   sublimation: thumb('/images/textile/MerchHero.webp'),
-  flyers: thumb('/images/prints/PrintsPortfolio1.webp'),
   design: thumb('/images/graphism/GraphicDesignHero.webp'),
   web: thumb('/images/web/DevWebHero.webp'),
 };
+
+// Slugs with product photos on white/light backgrounds (use object-contain)
+const containSlugs = new Set(['stickers', 'fine-art', 'sublimation', 'web']);
 
 // Fallback data if CMS is down
 const fallbackItems = [
@@ -41,19 +43,12 @@ const fallbackItems = [
     image: thumb('/images/textile/MerchHero.webp'),
   },
   {
-    slug: 'flyers',
-    serviceKey: 'prints',
-    startingPrice: 40,
-    hasCart: true,
-    image: thumb('/images/prints/PrintsPortfolio1.webp'),
-  },
-  {
     slug: 'design',
     serviceKey: 'design',
     startingPrice: 150,
     hasCart: false,
     image: thumb('/images/graphism/GraphicDesignHero.webp'),
-    titleOverride: { fr: 'Design Graphique', en: 'Graphic Design' },
+    titleOverride: { fr: 'Design', en: 'Design' },
     subtitleOverride: { fr: 'Logos, identité visuelle, affiches et retouche photo', en: 'Logos, visual identity, posters and photo retouching' },
   },
   {
@@ -62,7 +57,7 @@ const fallbackItems = [
     startingPrice: 900,
     hasCart: false,
     image: thumb('/images/web/DevWebHero.webp'),
-    titleOverride: { fr: 'Développement Web', en: 'Web Development' },
+    titleOverride: { fr: 'Web', en: 'Web' },
     subtitleOverride: { fr: 'Sites web sur mesure, SEO et référencement', en: 'Custom websites, SEO and search ranking' },
   },
 ];
@@ -169,7 +164,7 @@ function Boutique() {
                     <img
                       src={item.image}
                       alt={title}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      className={`w-full h-full transition-transform duration-500 group-hover:scale-105 ${containSlugs.has(item.slug) ? 'object-contain p-4' : 'object-cover'}`}
                       loading="lazy"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
@@ -211,6 +206,88 @@ function Boutique() {
             );
           })}
         </div>
+
+        {/* ── Trust Promise Bar ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          viewport={{ once: true }}
+          className="mb-20 py-8 rounded-2xl highlight-bordered"
+        >
+          <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-4">
+            {[
+              { icon: Shield, fr: 'Satisfaction garantie', en: 'Satisfaction guaranteed' },
+              { icon: MapPin, fr: 'Imprime a Montreal', en: 'Printed in Montreal' },
+              { icon: Clock, fr: 'Delai 24-48h', en: '24-48h turnaround' },
+              { icon: Heart, fr: 'Design inclus', en: 'Design included' },
+            ].map((item, i) => {
+              const Icon = item.icon;
+              return (
+                <div key={i} className="flex items-center gap-2.5">
+                  <Icon size={18} className="text-accent flex-shrink-0" />
+                  <span className="text-sm font-medium text-heading">
+                    {lang === 'fr' ? item.fr : item.en}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </motion.div>
+
+        {/* ── Shop by Usage ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true }}
+          className="mb-20"
+        >
+          <div className="text-center mb-10">
+            <h2 className="text-3xl md:text-4xl font-heading font-bold text-gradient mb-3">
+              {lang === 'fr' ? 'Par usage' : 'Shop by Use'}
+            </h2>
+            <p className="text-grey-muted max-w-2xl mx-auto">
+              {lang === 'fr'
+                ? 'Trouvez les produits adaptes a votre besoin.'
+                : 'Find the right products for your needs.'}
+            </p>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[
+              { fr: 'Evenements', en: 'Events', descFr: 'Flyers, affiches, stickers promo', descEn: 'Flyers, posters, promo stickers', icon: Sparkles, link: '/boutique/flyers' },
+              { fr: 'Branding', en: 'Branding', descFr: 'Cartes, stickers, merch', descEn: 'Cards, stickers, merch', icon: Tag, link: '/boutique/stickers' },
+              { fr: 'Deco & Cadeau', en: 'Decor & Gifts', descFr: 'Tirages fine art, cadres', descEn: 'Fine art prints, frames', icon: Heart, link: '/boutique/fine-art' },
+              { fr: 'Merch', en: 'Merch', descFr: 'T-shirts, hoodies, sacs', descEn: 'T-shirts, hoodies, bags', icon: Package, link: '/boutique/sublimation' },
+            ].map((item, i) => {
+              const Icon = item.icon;
+              return (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 10 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: i * 0.08 }}
+                  viewport={{ once: true }}
+                >
+                  <Link
+                    to={item.link}
+                    className="block p-6 rounded-xl text-center transition-all duration-300 hover:-translate-y-1 card-bg-bordered group"
+                  >
+                    <div className="w-12 h-12 mx-auto mb-3 rounded-xl flex items-center justify-center icon-bg group-hover:scale-110 transition-transform">
+                      <Icon size={22} className="text-accent" />
+                    </div>
+                    <h3 className="text-heading font-heading font-bold text-sm mb-1">
+                      {lang === 'fr' ? item.fr : item.en}
+                    </h3>
+                    <p className="text-grey-muted text-xs">
+                      {lang === 'fr' ? item.descFr : item.descEn}
+                    </p>
+                  </Link>
+                </motion.div>
+              );
+            })}
+          </div>
+        </motion.div>
 
         {/* Packages */}
         <motion.div

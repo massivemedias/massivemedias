@@ -68,7 +68,9 @@ function ConfiguratorFineArt() {
               <span className="text-heading leading-tight text-center font-semibold">
                 {lang === 'fr' ? t.labelFr : t.labelEn}
               </span>
-              <span className="text-grey-muted mt-0.5 text-[10px]">{t.desc}</span>
+              <span className="text-grey-muted mt-0.5 text-[10px]">
+                {lang === 'fr' ? t.descFr : t.descEn}
+              </span>
             </button>
           ))}
         </div>

@@ -1,4 +1,4 @@
-import { Shirt, Shield, Sparkles, Truck } from 'lucide-react';
+import { Shirt, Shield, Sparkles, Truck, Music, Users, Gift, Store } from 'lucide-react';
 import BoutiqueProductLayout from '../components/BoutiqueProductLayout';
 import ConfiguratorSublimation from '../components/configurators/ConfiguratorSublimation';
 import { sublimationImages, sublimationFaq } from '../data/products';
@@ -15,6 +15,13 @@ function BoutiqueSublimation() {
     { icon: Shirt, fr: 'Impression permanente', en: 'Permanent print', descFr: 'La sublimation transf\u00e8re l\'encre directement dans la fibre. Pas de texture en relief, pas de craquement apr\u00e8s lavage.', descEn: 'Sublimation transfers ink directly into the fiber. No raised texture, no cracking after washing.' },
     { icon: Shield, fr: 'Qualit\u00e9 durable', en: 'Lasting quality', descFr: 'Couleurs vibrantes qui ne s\'effacent pas au lavage. R\u00e9sultat professionnel garanti pour votre merch.', descEn: 'Vibrant colors that don\'t fade in the wash. Guaranteed professional result for your merch.' },
     { icon: Sparkles, fr: 'Polyvalence', en: 'Versatility', descFr: 'T-shirts, hoodies, mugs, thermos, tapis de souris et plus. Tout votre merch en un seul endroit.', descEn: 'T-shirts, hoodies, mugs, tumblers, mousepads and more. All your merch in one place.' },
+  ];
+
+  const useCases = [
+    { icon: Music, fr: 'Merch artiste', en: 'Artist merch', descFr: 'T-shirts et hoodies de concert', descEn: 'Concert t-shirts and hoodies' },
+    { icon: Users, fr: 'Equipe', en: 'Team', descFr: 'Uniformes et vetements de marque', descEn: 'Uniforms and branded apparel' },
+    { icon: Gift, fr: 'Cadeau promo', en: 'Promo gifts', descFr: 'Goodies pour evenements', descEn: 'Goodies for events' },
+    { icon: Store, fr: 'Boutique en ligne', en: 'Online store', descFr: 'Vente de merch personnalise', descEn: 'Selling custom merch' },
   ];
 
   const ctaLinks = [
@@ -44,6 +51,7 @@ function BoutiqueSublimation() {
         fr: 'La meilleure technique pour du merch durable et vibrant.',
         en: 'The best technique for durable, vibrant merch.',
       }}
+      useCases={useCases}
       images={sublimationImages}
       faq={sublimationFaq}
       ctaLinks={ctaLinks}

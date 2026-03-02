@@ -1,6 +1,7 @@
 import { Outlet } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import Header from '../components/Header';
+import AnnouncementBar from '../components/AnnouncementBar';
 import Footer from '../components/Footer';
 import CookieBanner from '../components/CookieBanner';
 import { useAnalytics } from '../hooks/useAnalytics';
@@ -12,7 +13,10 @@ function MainLayout() {
     <HelmetProvider>
       <div className="min-h-screen flex flex-col">
         <Header />
-        <main className="flex-grow pt-20">
+        <div className="pt-20">
+          <AnnouncementBar />
+        </div>
+        <main className="flex-grow">
           <Outlet />
         </main>
         <Footer />

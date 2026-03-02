@@ -296,7 +296,6 @@ We work with Adobe Illustrator, Figma and Photoshop to create impactful visuals 
       ],
     },
     gallery: [
-      thumb('/images/graphism/GraphicDesign.webp'),
       thumb('/images/graphism/logo_massive.webp'),
       thumb('/images/graphism/onomiko.webp'),
       thumb('/images/graphism/lumiere_noire.webp'),
@@ -380,7 +379,7 @@ We work with Adobe Illustrator, Figma and Photoshop to create impactful visuals 
       {
         name: 'Sonaa.ca',
         desc: 'Tech news portal with automated content aggregation',
-        url: 'https://sonaa.ca',
+        url: 'https://massivemedias.github.io/Sonaa/',
         screenshot: thumb('/images/web/sonaa.webp'),
         logo: '/images/logos/sonaa.svg',
         tags: ['React', 'API', 'SEO'],

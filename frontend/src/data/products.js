@@ -1,17 +1,17 @@
 import { img } from '../utils/paths';
 
 export const stickerFinishes = [
-  { id: 'matte', labelFr: 'Vinyle Matte', labelEn: 'Matte Vinyl' },
-  { id: 'glossy', labelFr: 'Vinyle Glossy', labelEn: 'Glossy Vinyl' },
-  { id: 'transparent', labelFr: 'Vinyle Transparent', labelEn: 'Clear Vinyl' },
-  { id: 'holographic', labelFr: 'Holographique', labelEn: 'Holographic' },
+  { id: 'matte', labelFr: 'Vinyle Matte', labelEn: 'Matte Vinyl', descFr: 'Toucher veloute, sans reflet', descEn: 'Smooth feel, glare-free' },
+  { id: 'glossy', labelFr: 'Vinyle Glossy', labelEn: 'Glossy Vinyl', descFr: 'Brillant, couleurs eclatantes', descEn: 'Shiny, vibrant colors' },
+  { id: 'transparent', labelFr: 'Vinyle Transparent', labelEn: 'Clear Vinyl', descFr: 'Invisible sur toute surface', descEn: 'Invisible on any surface' },
+  { id: 'holographic', labelFr: 'Holographique', labelEn: 'Holographic', descFr: 'Reflets arc-en-ciel, effet wow', descEn: 'Rainbow reflections, wow effect' },
 ];
 
 export const stickerShapes = [
-  { id: 'round', labelFr: 'Rond', labelEn: 'Round' },
-  { id: 'square', labelFr: 'Carré', labelEn: 'Square' },
-  { id: 'rectangle', labelFr: 'Rectangle', labelEn: 'Rectangle' },
-  { id: 'diecut', labelFr: 'Die-cut (custom)', labelEn: 'Die-cut (custom)' },
+  { id: 'round', labelFr: 'Rond', labelEn: 'Round', descFr: 'Classique et polyvalent', descEn: 'Classic and versatile' },
+  { id: 'square', labelFr: 'Carré', labelEn: 'Square', descFr: 'Moderne et structure', descEn: 'Modern and structured' },
+  { id: 'rectangle', labelFr: 'Rectangle', labelEn: 'Rectangle', descFr: 'Ideal pour etiquettes', descEn: 'Ideal for labels' },
+  { id: 'diecut', labelFr: 'Die-cut (custom)', labelEn: 'Die-cut (custom)', descFr: 'Decoupe a ta forme', descEn: 'Cut to your shape' },
 ];
 
 export const stickerSizes = [
@@ -104,6 +104,8 @@ export const stickerFaq = {
     { q: 'Quelle est la qualité du vinyle?', a: 'Nous utilisons du vinyle professionnel avec lamination intégrée. Résistant à l\'eau, aux UV et aux rayures. Durée de vie extérieure de 3-5 ans.' },
     { q: 'La livraison est-elle disponible?', a: 'Livraison locale gratuite à Montréal (Mile-End et environs). Envoi postal disponible partout au Canada.' },
     { q: 'Le design est vraiment inclus?', a: 'Oui, la création ou l\'adaptation graphique de votre sticker est incluse dans tous nos prix. On s\'assure que votre design est optimisé pour l\'impression.' },
+    { q: 'Que se passe-t-il si je ne suis pas satisfait?', a: 'La promesse Massive : si le résultat ne correspond pas à ce qui a été validé, on refait votre commande. On valide toujours un proof numérique avec vous avant production.' },
+    { q: 'Puis-je voir un proof avant impression?', a: 'Oui, nous envoyons toujours un proof numérique par courriel avant de lancer la production. Vous validez les couleurs, la forme et les détails.' },
   ],
   en: [
     { q: 'What files should I provide?', a: 'Ideally a vector file (AI, SVG, PDF) or high-resolution PNG (300 DPI minimum) with transparent background. If you don\'t have a ready file, our graphic design service is included in the price.' },
@@ -112,6 +114,8 @@ export const stickerFaq = {
     { q: 'What is the vinyl quality?', a: 'We use professional-grade vinyl with integrated lamination. Water, UV, and scratch resistant. Outdoor lifespan of 3-5 years.' },
     { q: 'Is delivery available?', a: 'Free local delivery in Montreal (Mile-End area). Postal shipping available across Canada.' },
     { q: 'Is design really included?', a: 'Yes, graphic creation or adaptation of your sticker is included in all our prices. We make sure your design is optimized for printing.' },
+    { q: 'What if I\'m not satisfied?', a: 'The Massive Promise: if the result doesn\'t match what was validated, we redo your order. We always validate a digital proof with you before production.' },
+    { q: 'Can I see a proof before printing?', a: 'Yes, we always send a digital proof by email before starting production. You validate colors, shape and details.' },
   ],
 };
 
@@ -120,8 +124,8 @@ export const stickerFaq = {
 // =============================================
 
 export const fineArtPrinterTiers = [
-  { id: 'studio', labelFr: 'Série Studio', labelEn: 'Studio Series', desc: '4 encres pigmentées / 4 pigmented inks' },
-  { id: 'museum', labelFr: 'Série Musée', labelEn: 'Museum Series', desc: '12 encres pigmentées / 12 pigmented inks' },
+  { id: 'studio', labelFr: 'Serie Studio', labelEn: 'Studio Series', desc: '4 encres pigmentees / 4 pigmented inks', descFr: 'Couleurs vibrantes, qualite pro', descEn: 'Vibrant colors, pro quality' },
+  { id: 'museum', labelFr: 'Serie Musee', labelEn: 'Museum Series', desc: '12 encres pigmentees / 12 pigmented inks', descFr: 'Fidelite museale, gamut etendu', descEn: 'Museum accuracy, extended gamut' },
 ];
 
 export const fineArtFormats = [
@@ -176,10 +180,10 @@ export const fineArtFaq = {
 // =============================================
 
 export const sublimationProducts = [
-  { id: 'tshirt', labelFr: 'T-shirt', labelEn: 'T-shirt' },
-  { id: 'crewneck', labelFr: 'Crewneck', labelEn: 'Crewneck' },
-  { id: 'hoodie', labelFr: 'Hoodie', labelEn: 'Hoodie' },
-  { id: 'bag', labelFr: 'Sac banane', labelEn: 'Fanny Pack' },
+  { id: 'tshirt', labelFr: 'T-shirt', labelEn: 'T-shirt', descFr: 'Leger et confortable, all-over', descEn: 'Light and comfortable, all-over' },
+  { id: 'crewneck', labelFr: 'Crewneck', labelEn: 'Crewneck', descFr: 'Style decontracte, coton epais', descEn: 'Casual style, thick cotton' },
+  { id: 'hoodie', labelFr: 'Hoodie', labelEn: 'Hoodie', descFr: 'Chaleureux et streetwear', descEn: 'Warm and streetwear' },
+  { id: 'bag', labelFr: 'Sac banane', labelEn: 'Fanny Pack', descFr: 'Compact et tendance', descEn: 'Compact and trendy' },
 ];
 
 export const sublimationPriceTiers = {

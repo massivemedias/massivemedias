@@ -296,7 +296,6 @@ Nous travaillons avec Adobe Illustrator, Figma et Photoshop pour créer des visu
       ],
     },
     gallery: [
-      thumb('/images/graphism/GraphicDesign.webp'),
       thumb('/images/graphism/logo_massive.webp'),
       thumb('/images/graphism/onomiko.webp'),
       thumb('/images/graphism/lumiere_noire.webp'),
@@ -380,7 +379,7 @@ Nous travaillons avec Adobe Illustrator, Figma et Photoshop pour créer des visu
       {
         name: 'Sonaa.ca',
         desc: 'Portail d\'actualités technologiques avec agrégation de contenu automatisée',
-        url: 'https://sonaa.ca',
+        url: 'https://massivemedias.github.io/Sonaa/',
         screenshot: thumb('/images/web/sonaa.webp'),
         logo: '/images/logos/sonaa.svg',
         tags: ['React', 'API', 'SEO'],

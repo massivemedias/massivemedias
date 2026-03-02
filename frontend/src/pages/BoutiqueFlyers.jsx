@@ -1,4 +1,4 @@
-import { FileText, Shield, Sparkles, Truck } from 'lucide-react';
+import { FileText, Shield, Sparkles, Truck, Music, Users, Briefcase, Megaphone } from 'lucide-react';
 import BoutiqueProductLayout from '../components/BoutiqueProductLayout';
 import ConfiguratorFlyers from '../components/configurators/ConfiguratorFlyers';
 import { flyerImages, flyerFaq } from '../data/products';
@@ -15,6 +15,13 @@ function BoutiqueFlyers() {
     { icon: FileText, fr: 'Papier premium', en: 'Premium paper', descFr: 'Papier 300g+ en finition matte ou brillante. Qualit\u00e9 sup\u00e9rieure \u00e0 l\'impression en ligne standard.', descEn: 'Premium 300g+ paper in matte or glossy finish. Quality superior to standard online printing.' },
     { icon: Shield, fr: 'Impression pro', en: 'Pro printing', descFr: 'Imprimante professionnelle 12 couleurs pigment\u00e9es. Couleurs vibrantes et pr\u00e9cises m\u00eame pour les flyers.', descEn: 'Professional 12-color pigmented printer. Vibrant and precise colors even for flyers.' },
     { icon: Sparkles, fr: 'Service rapide', en: 'Fast service', descFr: 'D\u00e9lai standard 24-48h. Service express le jour m\u00eame disponible pour les urgences.', descEn: 'Standard 24-48h turnaround. Same-day express service available for urgent needs.' },
+  ];
+
+  const useCases = [
+    { icon: Music, fr: 'Evenements', en: 'Events', descFr: 'Flyers de soiree, concert', descEn: 'Party flyers, concerts' },
+    { icon: Briefcase, fr: 'Cartes d\'affaires', en: 'Business cards', descFr: 'Cartes pros sur papier epais', descEn: 'Pro cards on thick paper' },
+    { icon: Megaphone, fr: 'Marketing', en: 'Marketing', descFr: 'Prospectus et promos', descEn: 'Leaflets and promos' },
+    { icon: Users, fr: 'Networking', en: 'Networking', descFr: 'Distribution en main propre', descEn: 'Hand-to-hand distribution' },
   ];
 
   const ctaLinks = [
@@ -44,6 +51,7 @@ function BoutiqueFlyers() {
         fr: 'Impression locale rapide, qualit\u00e9 professionnelle.',
         en: 'Fast local printing, professional quality.',
       }}
+      useCases={useCases}
       images={flyerImages}
       faq={flyerFaq}
       ctaLinks={ctaLinks}
