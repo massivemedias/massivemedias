@@ -27,6 +27,7 @@ function BoutiqueProductLayout({
   faq,
   ctaLinks,
   galleryResetKey,
+  containMainCount,
   children,
 }) {
   const { lang } = useLang();
@@ -98,7 +99,7 @@ function BoutiqueProductLayout({
               <img
                 src={images[mainImage]}
                 alt={t(productTitle)}
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                className={`w-full h-full transition-transform duration-500 group-hover:scale-105 ${containMainCount && mainImage < containMainCount ? 'object-contain p-4' : 'object-cover'}`}
               />
               {badge && (
                 <div className="absolute top-4 left-4 px-3 py-1.5 rounded-full bg-accent text-white text-xs font-semibold flex items-center gap-1.5">

@@ -75,6 +75,7 @@ function BoutiqueStickers() {
       faq={stickerFaq}
       ctaLinks={ctaLinks}
       galleryResetKey={selectedFinish}
+      containMainCount={1}
     >
       <ConfiguratorStickers onFinishChange={setSelectedFinish} />
     </BoutiqueProductLayout>
