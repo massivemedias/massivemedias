@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { ArrowRight, ShoppingCart, MessageSquare, Package, Shield, MapPin, Clock, Heart, Sparkles, Tag } from 'lucide-react';
+import { ArrowRight, ShoppingCart, MessageSquare, Package, Shield, MapPin, Clock, Heart, Sparkles, Tag, Lock, Scissors, Frame, Shirt, Coffee, ShoppingBag } from 'lucide-react';
 import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
 import { thumb } from '../utils/paths';
@@ -92,6 +92,15 @@ const fallbackPackages = (lang) => [
   },
 ];
 
+const merchMassiveItems = [
+  { fr: 'Stickers Massive', en: 'Massive Stickers', icon: Scissors },
+  { fr: 'Prints Massive', en: 'Massive Prints', icon: Frame },
+  { fr: 'T-Shirts', en: 'T-Shirts', icon: Shirt },
+  { fr: 'Hoodies', en: 'Hoodies', icon: Shirt },
+  { fr: 'Mugs', en: 'Mugs', icon: Coffee },
+  { fr: 'Tote Bags', en: 'Tote Bags', icon: ShoppingBag },
+];
+
 function Boutique() {
   const { lang } = useLang();
   const servicesData = getServicesData(lang);
@@ -139,6 +148,79 @@ function Boutique() {
       </section>
 
       <div className="section-container max-w-7xl mx-auto">
+
+        {/* ── Merch Massive (Coming Soon) ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true }}
+          className="mb-16"
+        >
+          <div className="text-center mb-10">
+            <h2 className="text-3xl md:text-4xl font-heading font-bold text-gradient mb-3">
+              Merch Massive
+            </h2>
+            <p className="text-grey-muted max-w-2xl mx-auto">
+              {lang === 'fr'
+                ? 'Notre collection de produits arrives bientot.'
+                : 'Our product collection coming soon.'}
+            </p>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+            {merchMassiveItems.map((item, i) => {
+              const Icon = item.icon;
+              return (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 10 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: i * 0.06 }}
+                  viewport={{ once: true }}
+                  className="relative rounded-2xl overflow-hidden card-bg-bordered opacity-50 cursor-default"
+                >
+                  <div className="aspect-[16/10] bg-glass flex items-center justify-center">
+                    <Icon size={48} className="text-grey-muted/40" />
+                  </div>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="px-3 py-1.5 rounded-full bg-glass backdrop-blur-sm text-grey-muted text-xs font-semibold uppercase tracking-wider border border-white/10 flex items-center gap-1.5">
+                      <Lock size={12} />
+                      {lang === 'fr' ? 'Bientot' : 'Coming Soon'}
+                    </span>
+                  </div>
+                  <div className="p-4 text-center">
+                    <h3 className="text-sm font-heading font-bold text-grey-muted">
+                      {lang === 'fr' ? item.fr : item.en}
+                    </h3>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        </motion.div>
+
+        {/* ── Separateur ── */}
+        <div className="mb-16 flex items-center gap-4">
+          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent" />
+        </div>
+
+        {/* ── Impression Custom ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true }}
+          className="text-center mb-10"
+        >
+          <h2 className="text-3xl md:text-4xl font-heading font-bold text-gradient mb-3">
+            {lang === 'fr' ? 'Impression Custom' : 'Custom Printing'}
+          </h2>
+          <p className="text-grey-muted max-w-2xl mx-auto">
+            {lang === 'fr'
+              ? 'Commandez en ligne ou demandez un devis.'
+              : 'Order online or request a quote.'}
+          </p>
+        </motion.div>
 
         {/* Service cards grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
