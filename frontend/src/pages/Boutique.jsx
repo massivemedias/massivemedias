@@ -1,96 +1,8 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { ArrowRight, ShoppingCart, MessageSquare, Package, Shield, MapPin, Clock, Heart, Sparkles, Tag, Lock, Scissors, Frame, Shirt, Coffee, ShoppingBag } from 'lucide-react';
+import { ArrowRight, Lock, Scissors, Frame, Shirt, Coffee, ShoppingBag } from 'lucide-react';
 import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
-import { thumb } from '../utils/paths';
-import getServicesData from '../data/getServicesData';
-import { useBoutiqueItems } from '../hooks/useBoutiqueItems';
-
-// Local 3D mockup images per slug (always preferred over CMS images)
-const localImages = {
-  stickers: thumb('/images/stickers/StickersHero.webp'),
-  'fine-art': thumb('/images/prints/PrintsHero.webp'),
-  sublimation: thumb('/images/textile/MerchHero.webp'),
-  design: thumb('/images/graphism/GraphicDesignHero.webp'),
-  web: thumb('/images/web/DevWebHero.webp'),
-};
-
-// Slugs with product photos on white/light backgrounds (use object-contain)
-const containSlugs = new Set(['stickers', 'fine-art', 'sublimation', 'web']);
-
-// Fallback data if CMS is down
-const fallbackItems = [
-  {
-    slug: 'stickers',
-    serviceKey: 'stickers',
-    startingPrice: 30,
-    hasCart: true,
-    image: thumb('/images/stickers/StickersHero.webp'),
-  },
-  {
-    slug: 'fine-art',
-    serviceKey: 'prints',
-    startingPrice: 16,
-    hasCart: true,
-    image: thumb('/images/prints/PrintsHero.webp'),
-  },
-  {
-    slug: 'sublimation',
-    serviceKey: 'merch',
-    startingPrice: 30,
-    hasCart: true,
-    image: thumb('/images/textile/MerchHero.webp'),
-  },
-  {
-    slug: 'design',
-    serviceKey: 'design',
-    startingPrice: 150,
-    hasCart: false,
-    image: thumb('/images/graphism/GraphicDesignHero.webp'),
-    titleOverride: { fr: 'Design', en: 'Design' },
-    subtitleOverride: { fr: 'Logos, identité visuelle, affiches et retouche photo', en: 'Logos, visual identity, posters and photo retouching' },
-  },
-  {
-    slug: 'web',
-    serviceKey: 'web',
-    startingPrice: 900,
-    hasCart: false,
-    image: thumb('/images/web/DevWebHero.webp'),
-    titleOverride: { fr: 'Web', en: 'Web' },
-    subtitleOverride: { fr: 'Sites web sur mesure, SEO et référencement', en: 'Custom websites, SEO and search ranking' },
-  },
-];
-
-const fallbackPackages = (lang) => [
-  {
-    name: lang === 'fr' ? 'Pack Artiste' : 'Artist Pack',
-    price: lang === 'fr' ? 'À partir de 120$' : 'Starting at $120',
-    items: lang === 'fr'
-      ? ['50 stickers die-cut', '10 tirages fine art 8×10"', 'Design graphique inclus']
-      : ['50 die-cut stickers', '10 fine art prints 8×10"', 'Graphic design included'],
-    popular: false,
-    ctaType: 'price',
-  },
-  {
-    name: lang === 'fr' ? 'Pack Événement' : 'Event Pack',
-    price: lang === 'fr' ? 'À partir de 250$' : 'Starting at $250',
-    items: lang === 'fr'
-      ? ['100 flyers A6', '100 stickers promo', 'Affiche 18×24" (x5)', 'Création graphique incluse']
-      : ['100 A6 flyers', '100 promo stickers', '18×24" poster (x5)', 'Graphic design included'],
-    popular: true,
-    ctaType: 'price',
-  },
-  {
-    name: lang === 'fr' ? 'Pack Lancement' : 'Launch Pack',
-    price: lang === 'fr' ? 'Sur devis' : 'Custom quote',
-    items: lang === 'fr'
-      ? ['Site web vitrine', 'Logo + identité visuelle', '200 stickers + 200 flyers', 'Merch (t-shirts sublimation)']
-      : ['Showcase website', 'Logo + visual identity', '200 stickers + 200 flyers', 'Merch (sublimation t-shirts)'],
-    popular: false,
-    ctaType: 'quote',
-  },
-];
 
 const merchMassiveItems = [
   { fr: 'Stickers Massive', en: 'Massive Stickers', icon: Scissors },
@@ -103,23 +15,14 @@ const merchMassiveItems = [
 
 function Boutique() {
   const { lang } = useLang();
-  const servicesData = getServicesData(lang);
-  const { boutiqueItems: cmsItems, packages: cmsPackages } = useBoutiqueItems(lang);
-
-  // Use CMS data or fallback, always override images with local 3D mockups
-  const items = (cmsItems || fallbackItems).map(item => ({
-    ...item,
-    image: localImages[item.slug] || item.image,
-  }));
-  const packages = cmsPackages || fallbackPackages(lang);
 
   return (
     <>
       <SEO
         title={lang === 'fr' ? 'Boutique | Massive Medias' : 'Shop | Massive Medias'}
         description={lang === 'fr'
-          ? 'Boutique Massive Medias. Stickers, impressions fine art, sublimation, flyers, design graphique, développement web. Montréal.'
-          : 'Massive Medias Shop. Stickers, fine art prints, sublimation, flyers, graphic design, web development. Montreal.'}
+          ? 'Boutique Massive Medias. Merch officiel - stickers, prints, t-shirts, hoodies, mugs. Bientot disponible.'
+          : 'Massive Medias Shop. Official merch - stickers, prints, t-shirts, hoodies, mugs. Coming soon.'}
         breadcrumbs={[
           { name: lang === 'fr' ? 'Accueil' : 'Home', url: '/' },
           { name: lang === 'fr' ? 'Boutique' : 'Shop' },
@@ -140,8 +43,8 @@ function Boutique() {
             </h1>
             <p className="text-xl md:text-2xl text-grey-light max-w-3xl mx-auto">
               {lang === 'fr'
-                ? 'Tous nos services de création et production. Commandez en ligne ou demandez un devis.'
-                : 'All our creation and production services. Order online or request a quote.'}
+                ? 'Merch officiel Massive Medias. Notre collection arrive bientot.'
+                : 'Official Massive Medias merch. Our collection is coming soon.'}
             </p>
           </motion.div>
         </div>
@@ -163,7 +66,7 @@ function Boutique() {
             </h2>
             <p className="text-grey-muted max-w-2xl mx-auto">
               {lang === 'fr'
-                ? 'Notre collection de produits arrives bientot.'
+                ? 'Notre collection de produits arrive bientot.'
                 : 'Our product collection coming soon.'}
             </p>
           </div>
@@ -199,239 +102,7 @@ function Boutique() {
           </div>
         </motion.div>
 
-        {/* ── Separateur ── */}
-        <div className="mb-16 flex items-center gap-4">
-          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent" />
-        </div>
-
-        {/* ── Impression Custom ── */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-          className="text-center mb-10"
-        >
-          <h2 className="text-3xl md:text-4xl font-heading font-bold text-gradient mb-3">
-            {lang === 'fr' ? 'Impression Custom' : 'Custom Printing'}
-          </h2>
-          <p className="text-grey-muted max-w-2xl mx-auto">
-            {lang === 'fr'
-              ? 'Commandez en ligne ou demandez un devis.'
-              : 'Order online or request a quote.'}
-          </p>
-        </motion.div>
-
-        {/* Service cards grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
-          {items.map((item, i) => {
-            const service = servicesData[item.serviceKey];
-            const title = item.title || (item.titleOverride ? item.titleOverride[lang] : service?.title) || item.slug;
-            const subtitle = item.subtitle || (item.subtitleOverride ? item.subtitleOverride[lang] : service?.subtitle) || '';
-            const price = typeof item.startingPrice === 'number' ? `${item.startingPrice}$` : item.startingPrice;
-
-            return (
-              <motion.div
-                key={item.slug}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: i * 0.08 }}
-                viewport={{ once: true }}
-              >
-                <Link
-                  to={`/boutique/${item.slug}`}
-                  className="group block rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1 card-bg-bordered"
-                >
-                  <div className="relative overflow-hidden aspect-[16/10]">
-                    <img
-                      src={item.image}
-                      alt={title}
-                      className={`w-full h-full transition-transform duration-500 group-hover:scale-105 ${containSlugs.has(item.slug) ? 'object-contain p-4' : 'object-cover'}`}
-                      loading="lazy"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                    <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between">
-                      <div>
-                        <div className="text-white/70 text-xs font-medium mb-1">
-                          {lang === 'fr' ? 'À partir de' : 'Starting at'}
-                        </div>
-                        <div className="text-white text-2xl font-heading font-bold">
-                          {price}
-                        </div>
-                      </div>
-                      <div className={`px-2.5 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider ${item.hasCart ? 'bg-accent text-white' : 'bg-white/20 text-white backdrop-blur-sm'}`}>
-                        {item.hasCart
-                          ? (lang === 'fr' ? 'Commander' : 'Order')
-                          : (lang === 'fr' ? 'Devis' : 'Quote')}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="p-6">
-                    <div className="flex items-center gap-3 mb-2">
-                      {service?.icon && <service.icon size={20} className="text-accent flex-shrink-0" />}
-                      <h2 className="text-xl font-heading font-bold text-heading">
-                        {title}
-                      </h2>
-                    </div>
-                    <p className="text-grey-muted text-sm mb-4 line-clamp-2">
-                      {subtitle}
-                    </p>
-                    <span className="inline-flex items-center gap-1.5 text-accent text-sm font-semibold group-hover:gap-2.5 transition-all">
-                      {item.hasCart
-                        ? (<><ShoppingCart size={16} />{lang === 'fr' ? 'Voir les options' : 'See options'}</>)
-                        : (<><MessageSquare size={16} />{lang === 'fr' ? 'Demander un devis' : 'Request a quote'}</>)}
-                      <ArrowRight size={16} />
-                    </span>
-                  </div>
-                </Link>
-              </motion.div>
-            );
-          })}
-        </div>
-
-        {/* ── Trust Promise Bar ── */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          viewport={{ once: true }}
-          className="mb-20 py-8 rounded-2xl highlight-bordered"
-        >
-          <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-4">
-            {[
-              { icon: Shield, fr: 'Satisfaction garantie', en: 'Satisfaction guaranteed' },
-              { icon: MapPin, fr: 'Imprime a Montreal', en: 'Printed in Montreal' },
-              { icon: Clock, fr: 'Delai 24-48h', en: '24-48h turnaround' },
-              { icon: Heart, fr: 'Design inclus', en: 'Design included' },
-            ].map((item, i) => {
-              const Icon = item.icon;
-              return (
-                <div key={i} className="flex items-center gap-2.5">
-                  <Icon size={18} className="text-accent flex-shrink-0" />
-                  <span className="text-sm font-medium text-heading">
-                    {lang === 'fr' ? item.fr : item.en}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </motion.div>
-
-        {/* ── Shop by Usage ── */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-          className="mb-20"
-        >
-          <div className="text-center mb-10">
-            <h2 className="text-3xl md:text-4xl font-heading font-bold text-gradient mb-3">
-              {lang === 'fr' ? 'Par usage' : 'Shop by Use'}
-            </h2>
-            <p className="text-grey-muted max-w-2xl mx-auto">
-              {lang === 'fr'
-                ? 'Trouvez les produits adaptes a votre besoin.'
-                : 'Find the right products for your needs.'}
-            </p>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[
-              { fr: 'Evenements', en: 'Events', descFr: 'Flyers, affiches, stickers promo', descEn: 'Flyers, posters, promo stickers', icon: Sparkles, link: '/boutique/flyers' },
-              { fr: 'Branding', en: 'Branding', descFr: 'Cartes, stickers, merch', descEn: 'Cards, stickers, merch', icon: Tag, link: '/boutique/stickers' },
-              { fr: 'Deco & Cadeau', en: 'Decor & Gifts', descFr: 'Tirages fine art, cadres', descEn: 'Fine art prints, frames', icon: Heart, link: '/boutique/fine-art' },
-              { fr: 'Merch', en: 'Merch', descFr: 'T-shirts, hoodies, sacs', descEn: 'T-shirts, hoodies, bags', icon: Package, link: '/boutique/sublimation' },
-            ].map((item, i) => {
-              const Icon = item.icon;
-              return (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: 10 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: i * 0.08 }}
-                  viewport={{ once: true }}
-                >
-                  <Link
-                    to={item.link}
-                    className="block p-6 rounded-xl text-center transition-all duration-300 hover:-translate-y-1 card-bg-bordered group"
-                  >
-                    <div className="w-12 h-12 mx-auto mb-3 rounded-xl flex items-center justify-center icon-bg group-hover:scale-110 transition-transform">
-                      <Icon size={22} className="text-accent" />
-                    </div>
-                    <h3 className="text-heading font-heading font-bold text-sm mb-1">
-                      {lang === 'fr' ? item.fr : item.en}
-                    </h3>
-                    <p className="text-grey-muted text-xs">
-                      {lang === 'fr' ? item.descFr : item.descEn}
-                    </p>
-                  </Link>
-                </motion.div>
-              );
-            })}
-          </div>
-        </motion.div>
-
-        {/* Packages */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-          className="mb-20"
-        >
-          <div className="text-center mb-10">
-            <h2 className="text-3xl md:text-4xl font-heading font-bold text-gradient mb-3">
-              {lang === 'fr' ? 'Packages multi-services' : 'Multi-Service Packages'}
-            </h2>
-            <p className="text-grey-muted max-w-2xl mx-auto">
-              {lang === 'fr'
-                ? 'Combinez plusieurs services et économisez. Idéal pour les lancements, événements et projets complets.'
-                : 'Combine multiple services and save. Ideal for launches, events and full projects.'}
-            </p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {packages.map((pkg, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: index * 0.1 }}
-                viewport={{ once: true }}
-                className={`p-8 rounded-2xl border transition-all duration-300 relative ${pkg.popular ? 'border-accent/50 card-bg card-shadow' : 'border-purple-main/30 card-bg-bordered'}`}
-              >
-                {pkg.popular && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-accent text-white text-xs font-bold uppercase tracking-wider">
-                    {lang === 'fr' ? 'Populaire' : 'Popular'}
-                  </div>
-                )}
-                <div className="flex items-center gap-3 mb-4">
-                  <Package size={24} className="text-accent" />
-                  <h3 className="text-xl font-heading font-bold text-heading">{pkg.name}</h3>
-                </div>
-                <div className="text-2xl font-heading font-bold text-gradient mb-4">{pkg.price}</div>
-                <ul className="space-y-2 mb-6">
-                  {pkg.items.map((item, i) => (
-                    <li key={i} className="flex items-start gap-2 text-grey-light text-sm">
-                      <span className="w-1.5 h-1.5 rounded-full bg-accent mt-1.5 flex-shrink-0" />
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-                <Link
-                  to="/contact"
-                  className="mt-4 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all duration-300 border border-accent/30 hover:bg-accent hover:text-white text-accent"
-                >
-                  {pkg.ctaType === 'quote'
-                    ? (lang === 'fr' ? 'Demander un devis' : 'Request a quote')
-                    : (lang === 'fr' ? 'Demander un devis' : 'Request a quote')}
-                  <ArrowRight size={16} />
-                </Link>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
-
-        {/* CTA */}
+        {/* CTA - Services custom */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -440,16 +111,16 @@ function Boutique() {
           className="text-center p-12 rounded-2xl mb-8 cta-text-bordered"
         >
           <h2 className="text-3xl font-heading font-bold text-heading mb-4">
-            {lang === 'fr' ? 'Besoin d\'aide pour choisir?' : 'Need help choosing?'}
+            {lang === 'fr' ? 'Besoin d\'impression custom?' : 'Need custom printing?'}
           </h2>
           <p className="text-grey-light text-lg mb-8 max-w-2xl mx-auto">
             {lang === 'fr'
-              ? 'Contactez-nous pour discuter de votre projet. On vous guidera vers la meilleure solution.'
-              : 'Contact us to discuss your project. We\'ll guide you to the best solution.'}
+              ? 'Stickers, prints fine art, sublimation, design graphique - consultez nos services.'
+              : 'Stickers, fine art prints, sublimation, graphic design - check out our services.'}
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4">
-            <Link to="/contact" className="btn-primary">
-              {lang === 'fr' ? 'Nous contacter' : 'Contact us'}
+            <Link to="/services" className="btn-primary">
+              {lang === 'fr' ? 'Voir nos services' : 'See our services'}
               <ArrowRight className="ml-2" size={20} />
             </Link>
           </div>
