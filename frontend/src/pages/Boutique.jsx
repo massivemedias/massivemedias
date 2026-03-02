@@ -7,6 +7,16 @@ import { thumb } from '../utils/paths';
 import getServicesData from '../data/getServicesData';
 import { useBoutiqueItems } from '../hooks/useBoutiqueItems';
 
+// Local 3D mockup images per slug (always preferred over CMS images)
+const localImages = {
+  stickers: thumb('/images/stickers/StickersHero.webp'),
+  'fine-art': thumb('/images/prints/PrintsHero.webp'),
+  sublimation: thumb('/images/textile/MerchHero.webp'),
+  flyers: thumb('/images/prints/PrintsPortfolio1.webp'),
+  design: thumb('/images/graphism/GraphicDesignHero.webp'),
+  web: thumb('/images/web/DevWebHero.webp'),
+};
+
 // Fallback data if CMS is down
 const fallbackItems = [
   {
@@ -92,8 +102,11 @@ function Boutique() {
   const servicesData = getServicesData(lang);
   const { boutiqueItems: cmsItems, packages: cmsPackages } = useBoutiqueItems(lang);
 
-  // Use CMS data or fallback
-  const items = cmsItems || fallbackItems;
+  // Use CMS data or fallback, always override images with local 3D mockups
+  const items = (cmsItems || fallbackItems).map(item => ({
+    ...item,
+    image: localImages[item.slug] || item.image,
+  }));
   const packages = cmsPackages || fallbackPackages(lang);
 
   return (
