@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User, Mail, Phone, MapPin, Building2, Package, LogOut, Loader2, Pencil, Check, X, Lock, Eye, EyeOff, ChevronDown, ChevronUp, Shield } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Building2, Package, LogOut, Loader2, Check, Lock, Eye, EyeOff, ChevronDown, ChevronUp, Shield, Pencil, Save } from 'lucide-react';
 import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -16,61 +16,20 @@ const STATUS_COLORS = {
   refunded: 'bg-grey-500/20 text-grey-400',
 };
 
-// Editable field row
-function ProfileField({ icon: Icon, label, value, onSave, type = 'text', placeholder }) {
-  const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState(value || '');
-  const [saving, setSaving] = useState(false);
-
-  const handleSave = async () => {
-    setSaving(true);
-    await onSave(draft);
-    setSaving(false);
-    setEditing(false);
-  };
-
-  const handleCancel = () => {
-    setDraft(value || '');
-    setEditing(false);
-  };
-
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter') handleSave();
-    if (e.key === 'Escape') handleCancel();
-  };
-
+function FormInput({ icon: Icon, label, value, onChange, type = 'text', placeholder }) {
   return (
-    <div className="flex items-start gap-4 py-4 border-b border-purple-main/10 last:border-0">
-      <Icon size={16} className="text-grey-muted flex-shrink-0 mt-1" />
-      <div className="flex-grow min-w-0">
-        <p className="text-[11px] text-grey-muted uppercase tracking-wider font-medium mb-1">{label}</p>
-        {editing ? (
-          <div className="flex items-center gap-2">
-            <input
-              type={type}
-              value={draft}
-              onChange={e => setDraft(e.target.value)}
-              onKeyDown={handleKeyDown}
-              className="input-field text-sm py-1.5"
-              placeholder={placeholder}
-              autoFocus
-            />
-            <button onClick={handleSave} disabled={saving} className="text-green-400 hover:text-green-300 transition-colors flex-shrink-0">
-              <Check size={18} />
-            </button>
-            <button onClick={handleCancel} className="text-grey-muted hover:text-red-400 transition-colors flex-shrink-0">
-              <X size={18} />
-            </button>
-          </div>
-        ) : (
-          <p className="text-heading text-sm">{value || <span className="text-grey-muted/50 italic text-xs">-</span>}</p>
-        )}
-      </div>
-      {!editing && (
-        <button onClick={() => setEditing(true)} className="text-accent hover:text-accent/80 transition-colors text-xs font-medium flex-shrink-0 mt-1">
-          {saving ? '...' : <Pencil size={14} />}
-        </button>
-      )}
+    <div className="mb-4">
+      <label className="flex items-center gap-2 text-[11px] text-grey-muted uppercase tracking-wider font-medium mb-1.5">
+        <Icon size={14} />
+        {label}
+      </label>
+      <input
+        type={type}
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        className="input-field text-sm"
+        placeholder={placeholder}
+      />
     </div>
   );
 }
@@ -99,8 +58,42 @@ function Account() {
   const [pwdSuccess, setPwdSuccess] = useState(false);
   const [pwdLoading, setPwdLoading] = useState(false);
 
+  // Profile form
+  const [profileForm, setProfileForm] = useState({
+    full_name: meta.full_name || '',
+    phone: meta.phone || '',
+    company: meta.company || '',
+  });
+  const [profileSaving, setProfileSaving] = useState(false);
+
+  // Address form
+  const [addressForm, setAddressForm] = useState({
+    address: meta.address || '',
+    city: meta.city || '',
+    province: meta.province || '',
+    postal_code: meta.postal_code || '',
+    country: meta.country || 'Canada',
+  });
+  const [addressSaving, setAddressSaving] = useState(false);
+
   // Save feedback
   const [saveMsg, setSaveMsg] = useState('');
+
+  // Sync forms when user metadata changes
+  useEffect(() => {
+    setProfileForm({
+      full_name: meta.full_name || '',
+      phone: meta.phone || '',
+      company: meta.company || '',
+    });
+    setAddressForm({
+      address: meta.address || '',
+      city: meta.city || '',
+      province: meta.province || '',
+      postal_code: meta.postal_code || '',
+      country: meta.country || 'Canada',
+    });
+  }, [user]);
 
   const tabs = [
     { id: 'profile', label: isFr ? 'Mon profil' : 'My Profile', icon: User },
@@ -144,14 +137,30 @@ function Account() {
     return labels[status] || status;
   };
 
-  const handleProfileSave = async (field, value) => {
-    const { error } = await updateProfile({ [field]: value });
+  const handleProfileSave = async (e) => {
+    e.preventDefault();
+    setProfileSaving(true);
+    const { error } = await updateProfile(profileForm);
+    setProfileSaving(false);
     if (error) {
       setSaveMsg(isFr ? 'Erreur lors de la sauvegarde.' : 'Error saving.');
     } else {
-      setSaveMsg(isFr ? 'Sauvegarde!' : 'Saved!');
+      setSaveMsg(isFr ? 'Profil sauvegarde!' : 'Profile saved!');
     }
-    setTimeout(() => setSaveMsg(''), 2000);
+    setTimeout(() => setSaveMsg(''), 3000);
+  };
+
+  const handleAddressSave = async (e) => {
+    e.preventDefault();
+    setAddressSaving(true);
+    const { error } = await updateProfile(addressForm);
+    setAddressSaving(false);
+    if (error) {
+      setSaveMsg(isFr ? 'Erreur lors de la sauvegarde.' : 'Error saving.');
+    } else {
+      setSaveMsg(isFr ? 'Adresse sauvegardee!' : 'Address saved!');
+    }
+    setTimeout(() => setSaveMsg(''), 3000);
   };
 
   const handlePasswordChange = async (e) => {
@@ -252,44 +261,59 @@ function Account() {
 
                 {/* ── PROFILE TAB ── */}
                 {activeTab === 'profile' && (
-                  <div className="rounded-2xl border border-purple-main/30 p-6 md:p-8 card-bg card-shadow">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8">
-                      <div>
-                        <ProfileField
-                          icon={User}
-                          label={isFr ? 'Nom complet' : 'Full name'}
-                          value={meta.full_name}
-                          placeholder={isFr ? 'Ton nom' : 'Your name'}
-                          onSave={v => handleProfileSave('full_name', v)}
-                        />
-                        <ProfileField
-                          icon={Mail}
-                          label={isFr ? 'Courriel' : 'Email'}
-                          value={user?.email}
+                  <form onSubmit={handleProfileSave} className="rounded-2xl border border-purple-main/30 p-6 md:p-8 card-bg card-shadow">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6">
+                      <FormInput
+                        icon={User}
+                        label={isFr ? 'Nom complet' : 'Full name'}
+                        value={profileForm.full_name}
+                        placeholder={isFr ? 'Ton nom' : 'Your name'}
+                        onChange={v => setProfileForm(p => ({ ...p, full_name: v }))}
+                      />
+                      <FormInput
+                        icon={Phone}
+                        label={isFr ? 'Telephone' : 'Phone'}
+                        value={profileForm.phone}
+                        type="tel"
+                        placeholder="514-xxx-xxxx"
+                        onChange={v => setProfileForm(p => ({ ...p, phone: v }))}
+                      />
+                      <FormInput
+                        icon={Building2}
+                        label={isFr ? 'Entreprise' : 'Company'}
+                        value={profileForm.company}
+                        placeholder={isFr ? 'Nom de l\'entreprise' : 'Company name'}
+                        onChange={v => setProfileForm(p => ({ ...p, company: v }))}
+                      />
+                      <div className="mb-4">
+                        <label className="flex items-center gap-2 text-[11px] text-grey-muted uppercase tracking-wider font-medium mb-1.5">
+                          <Mail size={14} />
+                          {isFr ? 'Courriel' : 'Email'}
+                        </label>
+                        <input
                           type="email"
-                          placeholder="email@example.com"
-                          onSave={v => handleProfileSave('email', v)}
+                          value={user?.email || ''}
+                          disabled
+                          className="input-field text-sm opacity-60 cursor-not-allowed"
                         />
-                      </div>
-                      <div>
-                        <ProfileField
-                          icon={Phone}
-                          label={isFr ? 'Telephone' : 'Phone'}
-                          value={meta.phone}
-                          type="tel"
-                          placeholder="514-xxx-xxxx"
-                          onSave={v => handleProfileSave('phone', v)}
-                        />
-                        <ProfileField
-                          icon={Building2}
-                          label={isFr ? 'Entreprise' : 'Company'}
-                          value={meta.company}
-                          placeholder={isFr ? 'Nom de l\'entreprise' : 'Company name'}
-                          onSave={v => handleProfileSave('company', v)}
-                        />
+                        <p className="text-grey-muted/50 text-[10px] mt-1">
+                          {isFr ? 'Le courriel ne peut pas etre modifie ici.' : 'Email cannot be changed here.'}
+                        </p>
                       </div>
                     </div>
-                  </div>
+                    <button
+                      type="submit"
+                      disabled={profileSaving}
+                      className="btn-primary text-sm py-2.5 px-8 mt-2"
+                    >
+                      {profileSaving ? (
+                        <Loader2 size={16} className="animate-spin mr-2" />
+                      ) : (
+                        <Save size={16} className="mr-2" />
+                      )}
+                      {isFr ? 'Sauvegarder' : 'Save'}
+                    </button>
+                  </form>
                 )}
 
                 {/* ── ORDERS TAB ── */}
@@ -382,49 +406,59 @@ function Account() {
 
                 {/* ── ADDRESS TAB ── */}
                 {activeTab === 'address' && (
-                  <div className="rounded-2xl border border-purple-main/30 p-6 md:p-8 card-bg card-shadow">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8">
-                      <div>
-                        <ProfileField
+                  <form onSubmit={handleAddressSave} className="rounded-2xl border border-purple-main/30 p-6 md:p-8 card-bg card-shadow">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6">
+                      <div className="md:col-span-2">
+                        <FormInput
                           icon={MapPin}
                           label={isFr ? 'Adresse' : 'Street address'}
-                          value={meta.address}
+                          value={addressForm.address}
                           placeholder={isFr ? '123 rue Exemple' : '123 Example St'}
-                          onSave={v => handleProfileSave('address', v)}
-                        />
-                        <ProfileField
-                          icon={MapPin}
-                          label={isFr ? 'Ville' : 'City'}
-                          value={meta.city}
-                          placeholder="Montreal"
-                          onSave={v => handleProfileSave('city', v)}
+                          onChange={v => setAddressForm(a => ({ ...a, address: v }))}
                         />
                       </div>
-                      <div>
-                        <ProfileField
-                          icon={MapPin}
-                          label={isFr ? 'Province / Etat' : 'Province / State'}
-                          value={meta.province}
-                          placeholder="QC"
-                          onSave={v => handleProfileSave('province', v)}
-                        />
-                        <ProfileField
-                          icon={MapPin}
-                          label={isFr ? 'Code postal' : 'Postal code'}
-                          value={meta.postal_code}
-                          placeholder="H2X 1Y4"
-                          onSave={v => handleProfileSave('postal_code', v)}
-                        />
-                      </div>
+                      <FormInput
+                        icon={MapPin}
+                        label={isFr ? 'Ville' : 'City'}
+                        value={addressForm.city}
+                        placeholder="Montreal"
+                        onChange={v => setAddressForm(a => ({ ...a, city: v }))}
+                      />
+                      <FormInput
+                        icon={MapPin}
+                        label={isFr ? 'Province / Etat' : 'Province / State'}
+                        value={addressForm.province}
+                        placeholder="QC"
+                        onChange={v => setAddressForm(a => ({ ...a, province: v }))}
+                      />
+                      <FormInput
+                        icon={MapPin}
+                        label={isFr ? 'Code postal' : 'Postal code'}
+                        value={addressForm.postal_code}
+                        placeholder="H2X 1Y4"
+                        onChange={v => setAddressForm(a => ({ ...a, postal_code: v }))}
+                      />
+                      <FormInput
+                        icon={MapPin}
+                        label={isFr ? 'Pays' : 'Country'}
+                        value={addressForm.country}
+                        placeholder="Canada"
+                        onChange={v => setAddressForm(a => ({ ...a, country: v }))}
+                      />
                     </div>
-                    <ProfileField
-                      icon={MapPin}
-                      label={isFr ? 'Pays' : 'Country'}
-                      value={meta.country || 'Canada'}
-                      placeholder="Canada"
-                      onSave={v => handleProfileSave('country', v)}
-                    />
-                  </div>
+                    <button
+                      type="submit"
+                      disabled={addressSaving}
+                      className="btn-primary text-sm py-2.5 px-8 mt-2"
+                    >
+                      {addressSaving ? (
+                        <Loader2 size={16} className="animate-spin mr-2" />
+                      ) : (
+                        <Save size={16} className="mr-2" />
+                      )}
+                      {isFr ? 'Sauvegarder' : 'Save'}
+                    </button>
+                  </form>
                 )}
 
                 {/* ── SECURITY TAB ── */}
