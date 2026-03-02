@@ -74,25 +74,31 @@ function ConfiguratorFineArt() {
         </div>
       </div>
 
-      {/* Format selector */}
+      {/* Format selector - visual size cards */}
       <div className="mb-5">
         <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2.5">
           Format
         </label>
-        <div className="flex flex-wrap gap-2">
+        <div className="grid grid-cols-4 gap-2">
           {fineArtFormats.map(f => {
             const price = tier === 'museum' ? f.museumPrice : f.studioPrice;
+            // Proportional height to visually represent size differences
+            const heights = { a4: 'h-14', a3: 'h-18', a3plus: 'h-20', a2: 'h-24' };
+            const widths = { a4: 'w-10', a3: 'w-12', a3plus: 'w-14', a2: 'w-16' };
             return (
               <button
                 key={f.id}
                 onClick={() => setFormat(f.id)}
-                className={`flex flex-col items-center py-2.5 px-4 rounded-lg text-xs font-medium transition-all border-2 min-w-[5rem] ${format === f.id
-                  ? 'border-accent option-selected'
+                className={`flex flex-col items-center py-3 px-2 rounded-xl text-xs font-medium transition-all border-2 ${format === f.id
+                  ? 'border-accent ring-1 ring-accent/30 option-selected'
                   : 'border-transparent hover:border-grey-muted/30 option-default'
                 }`}
               >
-                <span className="text-heading font-bold text-sm">{f.label}</span>
-                <span className="text-grey-muted mt-0.5">{price}$</span>
+                <div className={`${heights[f.id] || 'h-14'} ${widths[f.id] || 'w-10'} rounded border-2 border-current text-grey-muted/40 mb-2 flex items-center justify-center`}>
+                  <span className="text-[8px] text-grey-muted">{f.id.toUpperCase()}</span>
+                </div>
+                <span className="text-heading font-bold text-xs">{f.label}</span>
+                <span className="text-accent font-semibold mt-0.5">{price}$</span>
               </button>
             );
           })}

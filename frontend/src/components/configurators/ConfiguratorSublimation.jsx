@@ -52,26 +52,46 @@ function ConfiguratorSublimation() {
 
   return (
     <>
-      {/* Product type selector */}
+      {/* Product type selector - visual cards */}
       <div className="mb-5">
         <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2.5">
           {lang === 'fr' ? 'Produit' : 'Product'}
         </label>
-        <div className="flex flex-wrap gap-2">
-          {sublimationProducts.map(p => (
-            <button
-              key={p.id}
-              onClick={() => handleProductChange(p.id)}
-              className={`flex flex-col items-center justify-center min-w-[6rem] py-2.5 px-4 rounded-lg text-xs font-medium transition-all border-2 ${product === p.id
-                ? 'border-accent option-selected'
-                : 'border-transparent hover:border-grey-muted/30 option-default'
-              }`}
-            >
-              <span className="text-heading leading-tight text-center font-semibold text-sm">
-                {lang === 'fr' ? p.labelFr : p.labelEn}
-              </span>
-            </button>
-          ))}
+        <div className="grid grid-cols-2 gap-3">
+          {sublimationProducts.map(p => {
+            const productImages = {
+              tshirt: '/images/textile/Textile1.webp',
+              crewneck: '/images/textile/Textile3.webp',
+              hoodie: '/images/textile/Textile5.webp',
+              bag: '/images/textile/Textile9.webp',
+            };
+            return (
+              <button
+                key={p.id}
+                onClick={() => handleProductChange(p.id)}
+                className={`relative overflow-hidden rounded-xl transition-all border-2 ${product === p.id
+                  ? 'border-accent ring-1 ring-accent/30 option-selected'
+                  : 'border-transparent hover:border-grey-muted/30 option-default'
+                }`}
+              >
+                <img
+                  src={productImages[p.id]}
+                  alt={lang === 'fr' ? p.labelFr : p.labelEn}
+                  className="w-full h-24 object-cover"
+                />
+                <div className="p-2 text-center">
+                  <span className="text-heading font-semibold text-sm">
+                    {lang === 'fr' ? p.labelFr : p.labelEn}
+                  </span>
+                </div>
+                {product === p.id && (
+                  <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-accent flex items-center justify-center">
+                    <Check size={12} className="text-white" />
+                  </div>
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
 

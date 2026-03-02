@@ -73,10 +73,21 @@ export function AuthProvider({ children }) {
     return { data, error };
   }, []);
 
+  const updateProfile = useCallback(async (metadata) => {
+    if (!supabase) return { error: { message: 'Supabase not configured' } };
+    const { data, error } = await supabase.auth.updateUser({
+      data: metadata,
+    });
+    if (!error && data?.user) {
+      setUser(data.user);
+    }
+    return { data, error };
+  }, []);
+
   const value = useMemo(() => ({
     user, session, loading, passwordRecovery,
-    signUp, signIn, signOut, resetPassword, updatePassword,
-  }), [user, session, loading, passwordRecovery, signUp, signIn, signOut, resetPassword, updatePassword]);
+    signUp, signIn, signOut, resetPassword, updatePassword, updateProfile,
+  }), [user, session, loading, passwordRecovery, signUp, signIn, signOut, resetPassword, updatePassword, updateProfile]);
 
   return (
     <AuthContext.Provider value={value}>
