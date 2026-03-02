@@ -1,7 +1,7 @@
 import { useParams, Link, Navigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, ArrowLeft, CheckCircle, Wrench, Users, ChevronLeft, ChevronRight, X, ExternalLink, Globe, Palette, Code as CodeIcon, Smartphone, Search, Gauge, Shield, ChevronDown } from 'lucide-react';
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { ArrowRight, ArrowLeft, CheckCircle, Wrench, Users, ChevronLeft, ChevronRight, X, ExternalLink, Globe, Palette, Code as CodeIcon, Smartphone, Search, Gauge, Shield, ChevronDown, ShoppingCart } from 'lucide-react';
+import { useState, useCallback, useEffect, useMemo, lazy, Suspense } from 'react';
 import { toFull } from '../utils/paths';
 import SEO from '../components/SEO';
 import { getServiceSchema, getFAQSchema } from '../components/seo/schemas';
@@ -11,6 +11,15 @@ import getServicesData from '../data/getServicesData';
 import { useServicePages } from '../hooks/useServicePages';
 import { bl, mediaUrl } from '../utils/cms';
 import { getIcon } from '../utils/iconMap';
+
+// Lazy-load configurators per boutiqueSlug
+const configuratorMap = {
+  stickers: lazy(() => import('../components/configurators/ConfiguratorStickers')),
+  'fine-art': lazy(() => import('../components/configurators/ConfiguratorFineArt')),
+  sublimation: lazy(() => import('../components/configurators/ConfiguratorSublimation')),
+  design: lazy(() => import('../components/configurators/ConfiguratorDesign')),
+  web: lazy(() => import('../components/configurators/ConfiguratorWeb')),
+};
 
 function buildServiceFromCMS(cms, lang) {
   if (!cms) return null;
@@ -59,6 +68,7 @@ function ServiceDetail() {
   const [lightboxImage, setLightboxImage] = useState(null);
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [openFaq, setOpenFaq] = useState(null);
+  const [configuratorOpen, setConfiguratorOpen] = useState(false);
 
   // All images for lightbox navigation
   const allImages = useMemo(() => [
@@ -760,32 +770,66 @@ function ServiceDetail() {
           </motion.div>
         )}
 
-        {/* ============ CTA ============ */}
+        {/* ============ CTA / CONFIGURATEUR ============ */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
-          className="mb-20 p-12 rounded-2xl text-center border border-accent/30 transition-colors duration-300 cta-shadow"
+          className="mb-20 rounded-2xl border border-accent/30 transition-colors duration-300 cta-shadow overflow-hidden"
         >
-          <h2 className="text-3xl md:text-4xl font-heading font-bold text-heading mb-4">
-            {t('serviceDetail.ctaTitle')}
-          </h2>
-          <p className="text-grey-light text-lg mb-8 max-w-2xl mx-auto">
-            {t('serviceDetail.ctaSubtitle')}
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            {service.boutiqueSlug && (
-              <Link to={`/boutique/${service.boutiqueSlug}`} className="btn-primary">
-                {t('serviceDetail.goToShop')}
+          <div className="p-12 text-center">
+            <h2 className="text-3xl md:text-4xl font-heading font-bold text-heading mb-4">
+              {t('serviceDetail.ctaTitle')}
+            </h2>
+            <p className="text-grey-light text-lg mb-8 max-w-2xl mx-auto">
+              {t('serviceDetail.ctaSubtitle')}
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              {service.boutiqueSlug && configuratorMap[service.boutiqueSlug] && (
+                <button
+                  onClick={() => setConfiguratorOpen(!configuratorOpen)}
+                  className="btn-primary cursor-pointer"
+                >
+                  <ShoppingCart className="mr-2" size={20} />
+                  {configuratorOpen
+                    ? (lang === 'fr' ? 'Fermer' : 'Close')
+                    : (lang === 'fr' ? 'Commander' : 'Order')}
+                  <ChevronDown className={`ml-2 transition-transform duration-300 ${configuratorOpen ? 'rotate-180' : ''}`} size={20} />
+                </button>
+              )}
+              <Link to="/contact" className={service.boutiqueSlug && configuratorMap[service.boutiqueSlug] ? 'btn-outline' : 'btn-primary'}>
+                {t('serviceDetail.requestQuote')}
                 <ArrowRight className="ml-2" size={20} />
               </Link>
-            )}
-            <Link to="/contact" className={service.boutiqueSlug ? 'btn-outline' : 'btn-primary'}>
-              {t('serviceDetail.requestQuote')}
-              <ArrowRight className="ml-2" size={20} />
-            </Link>
+            </div>
           </div>
+
+          {/* Accordeon configurateur */}
+          <AnimatePresence>
+            {configuratorOpen && service.boutiqueSlug && configuratorMap[service.boutiqueSlug] && (() => {
+              const Configurator = configuratorMap[service.boutiqueSlug];
+              return (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.4 }}
+                  className="overflow-hidden"
+                >
+                  <div className="border-t border-accent/20 p-6 md:p-10">
+                    <Suspense fallback={
+                      <div className="text-center py-8 text-grey-muted">
+                        {lang === 'fr' ? 'Chargement...' : 'Loading...'}
+                      </div>
+                    }>
+                      <Configurator />
+                    </Suspense>
+                  </div>
+                </motion.div>
+              );
+            })()}
+          </AnimatePresence>
         </motion.div>
 
         {/* ============ NAVIGATION SERVICES ============ */}
