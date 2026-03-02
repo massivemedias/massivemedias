@@ -7,6 +7,7 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [passwordRecovery, setPasswordRecovery] = useState(false);
 
   useEffect(() => {
     if (!supabase) {
@@ -20,9 +21,14 @@ export function AuthProvider({ children }) {
       setLoading(false);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, s) => {
       setSession(s);
       setUser(s?.user ?? null);
+
+      // Detect password recovery flow
+      if (event === 'PASSWORD_RECOVERY') {
+        setPasswordRecovery(true);
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -47,6 +53,7 @@ export function AuthProvider({ children }) {
   const signOut = useCallback(async () => {
     if (!supabase) return;
     await supabase.auth.signOut();
+    setPasswordRecovery(false);
   }, []);
 
   const resetPassword = useCallback(async (email) => {
@@ -57,9 +64,19 @@ export function AuthProvider({ children }) {
     return { data, error };
   }, []);
 
+  const updatePassword = useCallback(async (newPassword) => {
+    if (!supabase) return { error: { message: 'Supabase not configured' } };
+    const { data, error } = await supabase.auth.updateUser({ password: newPassword });
+    if (!error) {
+      setPasswordRecovery(false);
+    }
+    return { data, error };
+  }, []);
+
   const value = useMemo(() => ({
-    user, session, loading, signUp, signIn, signOut, resetPassword,
-  }), [user, session, loading, signUp, signIn, signOut, resetPassword]);
+    user, session, loading, passwordRecovery,
+    signUp, signIn, signOut, resetPassword, updatePassword,
+  }), [user, session, loading, passwordRecovery, signUp, signIn, signOut, resetPassword, updatePassword]);
 
   return (
     <AuthContext.Provider value={value}>
