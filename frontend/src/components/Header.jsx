@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Menu, X, ShoppingCart, UserCircle, Printer, Sticker, Shirt, FileText, Palette, Globe } from 'lucide-react';
+import { Menu, X, ShoppingCart, UserCircle, Printer, Sticker, Shirt, Palette, Globe } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import MassiveLogo from './MassiveLogo';
 import { useLang } from '../i18n/LanguageContext';
@@ -10,12 +10,11 @@ import { useAuth } from '../contexts/AuthContext';
 import { thumb } from '../utils/paths';
 
 const boutiqueItems = [
-  { slug: 'stickers', icon: Sticker, image: thumb('/images/stickers/StickersHero.webp'), fr: 'Stickers', en: 'Stickers', descFr: 'Vinyle matte, glossy, holographique', descEn: 'Matte, glossy, holographic vinyl' },
-  { slug: 'fine-art', icon: Printer, image: thumb('/images/prints/PrintsHero.webp'), fr: 'Fine Art', en: 'Fine Art', descFr: 'Tirages galerie, encres pigmentees', descEn: 'Gallery prints, pigmented inks' },
-  { slug: 'sublimation', icon: Shirt, image: thumb('/images/textile/MerchHero.webp'), fr: 'Sublimation', en: 'Sublimation', descFr: 'T-shirts, hoodies, sacs', descEn: 'T-shirts, hoodies, bags' },
-  { slug: 'flyers', icon: FileText, image: thumb('/images/prints/PrintsPortfolio1.webp'), fr: 'Flyers & Cartes', en: 'Flyers & Cards', descFr: 'Flyers, cartes d\'affaires', descEn: 'Flyers, business cards' },
-  { slug: 'design', icon: Palette, image: thumb('/images/graphism/GraphicDesignHero.webp'), fr: 'Design Graphique', en: 'Graphic Design', descFr: 'Logos, identite visuelle', descEn: 'Logos, visual identity' },
-  { slug: 'web', icon: Globe, image: thumb('/images/web/DevWebHero.webp'), fr: 'Dev Web', en: 'Web Dev', descFr: 'Sites web sur mesure', descEn: 'Custom websites' },
+  { slug: 'stickers', icon: Sticker, image: thumb('/images/stickers/StickersHero.webp'), fr: 'Stickers', en: 'Stickers', descFr: 'Autocollants custom pour createurs', descEn: 'Custom stickers for creators' },
+  { slug: 'fine-art', icon: Printer, image: thumb('/images/prints/PrintsHero.webp'), fr: 'Prints', en: 'Prints', descFr: 'Fine art, flyers, cartes d\'affaires', descEn: 'Fine art, flyers, business cards' },
+  { slug: 'sublimation', icon: Shirt, image: thumb('/images/textile/MerchHero.webp'), fr: 'Merch', en: 'Merch', descFr: 'T-shirts, hoodies, sacs, mugs', descEn: 'T-shirts, hoodies, bags, mugs' },
+  { slug: 'design', icon: Palette, image: thumb('/images/graphism/GraphicDesignHero.webp'), fr: 'Design', en: 'Design', descFr: 'Logos, identite visuelle', descEn: 'Logos, visual identity' },
+  { slug: 'web', icon: Globe, image: thumb('/images/web/DevWebHero.webp'), fr: 'Web', en: 'Web', descFr: 'Sites web sur mesure', descEn: 'Custom websites' },
 ];
 
 function Header() {
