@@ -12,39 +12,27 @@ function isLight(hex) {
 
 function ColorDropdown({ colors, selected, onChange, label }) {
   const [open, setOpen] = useState(false);
-  const [search, setSearch] = useState('');
   const ref = useRef(null);
   const listRef = useRef(null);
-  const searchRef = useRef(null);
 
   const current = colors.find(c => c.id === selected) || colors[0];
-
-  const filtered = search
-    ? colors.filter(c => c.name.toLowerCase().includes(search.toLowerCase()))
-    : colors;
 
   // Close on outside click
   useEffect(() => {
     const handler = (e) => {
-      if (ref.current && !ref.current.contains(e.target)) {
-        setOpen(false);
-        setSearch('');
-      }
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  // Focus search + scroll to selected item when opening (without moving the page)
+  // Scroll to selected item when opening (without moving the page)
   useEffect(() => {
-    if (open) {
-      if (searchRef.current) searchRef.current.focus({ preventScroll: true });
-      if (listRef.current) {
-        const active = listRef.current.querySelector('[data-active="true"]');
-        if (active) {
-          const list = listRef.current;
-          list.scrollTop = active.offsetTop - list.offsetHeight / 2 + active.offsetHeight / 2;
-        }
+    if (open && listRef.current) {
+      const active = listRef.current.querySelector('[data-active="true"]');
+      if (active) {
+        const list = listRef.current;
+        list.scrollTop = active.offsetTop - list.offsetHeight / 2 + active.offsetHeight / 2;
       }
     }
   }, [open]);
@@ -59,7 +47,7 @@ function ColorDropdown({ colors, selected, onChange, label }) {
 
       {/* Trigger button */}
       <button
-        onClick={() => { setOpen(!open); setSearch(''); }}
+        onClick={() => setOpen(!open)}
         className={`w-full flex items-center gap-3 py-2.5 px-3.5 rounded-xl border transition-all text-left ${
           open
             ? 'border-accent/60 bg-white/[0.03]'
@@ -80,21 +68,8 @@ function ColorDropdown({ colors, selected, onChange, label }) {
       {/* Dropdown panel */}
       {open && (
         <div className="absolute z-50 top-full left-0 right-0 mt-1.5 rounded-xl border border-gray-200 bg-white shadow-2xl shadow-black/15 overflow-hidden">
-          {/* Search */}
-          <div className="p-2 border-b border-gray-100">
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search..."
-              className="w-full px-3 py-1.5 rounded-lg bg-gray-50 border border-gray-200 text-xs text-gray-800 placeholder:text-gray-400 focus:border-accent/60 focus:outline-none transition-colors"
-              ref={searchRef}
-            />
-          </div>
-
-          {/* Color list */}
           <div ref={listRef} className="max-h-64 overflow-y-auto overscroll-contain">
-            {filtered.map(c => {
+            {colors.map(c => {
               const isActive = selected === c.id;
               const light = isLight(c.hex);
               const textColor = light ? 'rgba(0,0,0,0.8)' : 'rgba(255,255,255,0.95)';
@@ -102,7 +77,7 @@ function ColorDropdown({ colors, selected, onChange, label }) {
                 <button
                   key={c.id}
                   data-active={isActive}
-                  onClick={() => { onChange(c.id); setOpen(false); setSearch(''); }}
+                  onClick={() => { onChange(c.id); setOpen(false); }}
                   className="w-full flex items-center gap-3 py-2 px-3.5 text-left text-sm transition-all hover:opacity-80"
                   style={{ backgroundColor: c.hex, color: textColor }}
                 >
@@ -120,9 +95,6 @@ function ColorDropdown({ colors, selected, onChange, label }) {
                 </button>
               );
             })}
-            {filtered.length === 0 && (
-              <p className="text-gray-400 text-xs py-4 text-center">-</p>
-            )}
           </div>
         </div>
       )}
