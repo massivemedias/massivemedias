@@ -1,6 +1,6 @@
 import { useParams, Link, Navigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, ArrowLeft, CheckCircle, Wrench, Users, ChevronLeft, ChevronRight, X, ExternalLink, Globe, Palette, Code as CodeIcon, Smartphone, Search, Gauge, Shield, ChevronDown, ShoppingCart } from 'lucide-react';
+import { ArrowRight, ArrowLeft, CheckCircle, Wrench, Users, ChevronLeft, ChevronRight, X, ExternalLink, Globe, Palette, Code as CodeIcon, Smartphone, Search, Gauge, Shield, ChevronDown, ShoppingCart, ArrowUp } from 'lucide-react';
 import { useState, useCallback, useEffect, useMemo, useRef, lazy, Suspense } from 'react';
 import { toFull } from '../utils/paths';
 import SEO from '../components/SEO';
@@ -136,7 +136,16 @@ function ServiceDetail() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [lightboxImage, closeLightbox, goToPrevious, goToNext]);
 
+  // Track scroll position for scroll-to-top button
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setShowScrollTop(window.scrollY > 600);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
   const Icon = service.icon;
+  const hasConfigurator = service.boutiqueSlug && configuratorMap[service.boutiqueSlug];
 
   // Build ordered slug list from CMS (sorted) or fallback data
   const allServices = useMemo(() => {
@@ -956,6 +965,39 @@ function ServiceDetail() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* ============ BOUTONS FIXES ============ */}
+      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
+        {/* Scroll to top */}
+        <AnimatePresence>
+          {showScrollTop && (
+            <motion.button
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+              className="w-11 h-11 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-grey-light hover:text-accent hover:border-accent/40 transition-all shadow-lg flex items-center justify-center"
+              aria-label="Scroll to top"
+            >
+              <ArrowUp size={20} />
+            </motion.button>
+          )}
+        </AnimatePresence>
+
+        {/* Commander en ligne - fixe */}
+        {hasConfigurator && (
+          <button
+            onClick={toggleConfigurator}
+            className="btn-primary shadow-lg shadow-accent/20 flex items-center gap-2 py-2.5 px-5 text-sm"
+          >
+            <ShoppingCart size={18} />
+            {configuratorOpen
+              ? (lang === 'fr' ? 'Fermer' : 'Close')
+              : (lang === 'fr' ? 'Commander en ligne' : 'Order online')}
+          </button>
+        )}
+      </div>
     </>
   );
 }
