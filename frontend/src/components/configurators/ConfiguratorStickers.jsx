@@ -54,6 +54,13 @@ function ConfiguratorStickers({ onFinishChange }) {
 
   return (
     <>
+      {/* File upload */}
+      <FileUpload
+        files={uploadedFiles}
+        onFilesChange={setUploadedFiles}
+        label={lang === 'fr' ? 'Votre design (PNG, SVG, AI, PDF)' : 'Your design (PNG, SVG, AI, PDF)'}
+      />
+
       {/* Finish selector */}
       <div className="mb-5">
         <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2.5">
@@ -171,13 +178,6 @@ function ConfiguratorStickers({ onFinishChange }) {
           })}
         </div>
       </div>
-
-      {/* File upload */}
-      <FileUpload
-        files={uploadedFiles}
-        onFilesChange={setUploadedFiles}
-        label={lang === 'fr' ? 'Votre design (PNG, SVG, AI, PDF)' : 'Your design (PNG, SVG, AI, PDF)'}
-      />
 
       {/* Notes */}
       <div className="mb-5">

@@ -15,6 +15,13 @@ function ConfiguratorDesign() {
 
   return (
     <>
+      {/* File upload */}
+      <FileUpload
+        files={uploadedFiles}
+        onFilesChange={setUploadedFiles}
+        label={lang === 'fr' ? 'Références / brief' : 'References / brief'}
+      />
+
       {/* Service type selector */}
       <div className="mb-6">
         <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2.5">
@@ -65,13 +72,6 @@ function ConfiguratorDesign() {
           ? '\ud83c\udfa8 Le design de stickers est inclus dans le prix de production des stickers.'
           : '\ud83c\udfa8 Sticker design is included in the sticker production price.'}
       </div>
-
-      {/* File upload */}
-      <FileUpload
-        files={uploadedFiles}
-        onFilesChange={setUploadedFiles}
-        label={lang === 'fr' ? 'Références / brief' : 'References / brief'}
-      />
 
       {/* Notes */}
       <div className="mb-5">

@@ -71,11 +71,24 @@ function ServiceDetail() {
   const [configuratorOpen, setConfiguratorOpen] = useState(false);
   const configuratorRef = useRef(null);
 
-  const openConfigurator = useCallback(() => {
-    setConfiguratorOpen(true);
-    setTimeout(() => {
-      configuratorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 100);
+  // Reset configurator when changing service page
+  useEffect(() => {
+    setConfiguratorOpen(false);
+  }, [slug]);
+
+  const toggleConfigurator = useCallback(() => {
+    setConfiguratorOpen(prev => {
+      const opening = !prev;
+      if (opening) {
+        setTimeout(() => {
+          if (configuratorRef.current) {
+            const y = configuratorRef.current.getBoundingClientRect().top + window.scrollY - 80;
+            window.scrollTo({ top: y, behavior: 'smooth' });
+          }
+        }, 300);
+      }
+      return opening;
+    });
   }, []);
 
   // All images for lightbox navigation
@@ -196,10 +209,12 @@ function ServiceDetail() {
 
               <div className="flex flex-col sm:flex-row gap-4">
                 {service.boutiqueSlug && configuratorMap[service.boutiqueSlug] && (
-                  <button onClick={openConfigurator} className="btn-primary cursor-pointer">
+                  <button onClick={toggleConfigurator} className="btn-primary cursor-pointer">
                     <ShoppingCart className="mr-2" size={20} />
-                    {lang === 'fr' ? 'Commander en ligne' : 'Order online'}
-                    <ChevronDown className="ml-2" size={20} />
+                    {configuratorOpen
+                      ? (lang === 'fr' ? 'Fermer' : 'Close')
+                      : (lang === 'fr' ? 'Commander en ligne' : 'Order online')}
+                    <ChevronDown className={`ml-2 transition-transform duration-300 ${configuratorOpen ? 'rotate-180' : ''}`} size={20} />
                   </button>
                 )}
                 <Link to="/contact" className={service.boutiqueSlug && configuratorMap[service.boutiqueSlug] ? 'btn-outline' : 'btn-primary'}>
@@ -229,6 +244,38 @@ function ServiceDetail() {
           </div>
         </div>
       </section>
+
+      {/* ============ ACCORDEON CONFIGURATEUR (sous le hero) ============ */}
+      {service.boutiqueSlug && configuratorMap[service.boutiqueSlug] && (
+        <div ref={configuratorRef} id="configurateur" className="section-container max-w-6xl mx-auto !pt-0 !pb-0">
+          <AnimatePresence>
+            {configuratorOpen && (() => {
+              const Comp = configuratorMap[service.boutiqueSlug];
+              if (!Comp) return null;
+              return (
+                <motion.div
+                  key="configurator-accordion"
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.4 }}
+                  className="overflow-hidden"
+                >
+                  <div className="rounded-2xl border border-accent/30 p-6 md:p-10 mb-8 card-bg">
+                    <Suspense fallback={
+                      <div className="text-center py-8 text-grey-muted">
+                        {lang === 'fr' ? 'Chargement...' : 'Loading...'}
+                      </div>
+                    }>
+                      <Comp />
+                    </Suspense>
+                  </div>
+                </motion.div>
+              );
+            })()}
+          </AnimatePresence>
+        </div>
+      )}
 
       <div className="section-container max-w-6xl mx-auto">
 
@@ -785,76 +832,36 @@ function ServiceDetail() {
           </motion.div>
         )}
 
-        {/* ============ CTA / CONFIGURATEUR ============ */}
+        {/* ============ CTA ============ */}
         <motion.div
-          ref={configuratorRef}
-          id="configurateur"
           initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
-          className="mb-20 rounded-2xl border border-accent/30 transition-colors duration-300 cta-shadow overflow-hidden"
+          className="mb-20 p-12 rounded-2xl text-center border border-accent/30 transition-colors duration-300 cta-shadow"
         >
-          <div className="p-12 text-center">
-            <h2 className="text-3xl md:text-4xl font-heading font-bold text-heading mb-4">
-              {t('serviceDetail.ctaTitle')}
-            </h2>
-            <p className="text-grey-light text-lg mb-8 max-w-2xl mx-auto">
-              {t('serviceDetail.ctaSubtitle')}
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              {service.boutiqueSlug && configuratorMap[service.boutiqueSlug] && (
-                <button
-                  onClick={() => {
-                    if (configuratorOpen) {
-                      setConfiguratorOpen(false);
-                    } else {
-                      openConfigurator();
-                    }
-                  }}
-                  className="btn-primary cursor-pointer"
-                >
-                  <ShoppingCart className="mr-2" size={20} />
-                  {configuratorOpen
-                    ? (lang === 'fr' ? 'Fermer' : 'Close')
-                    : (lang === 'fr' ? 'Commander en ligne' : 'Order online')}
-                  <ChevronDown className={`ml-2 transition-transform duration-300 ${configuratorOpen ? 'rotate-180' : ''}`} size={20} />
-                </button>
-              )}
-              <Link to="/contact" className={service.boutiqueSlug && configuratorMap[service.boutiqueSlug] ? 'btn-outline' : 'btn-primary'}>
-                {t('serviceDetail.requestQuote')}
+          <h2 className="text-3xl md:text-4xl font-heading font-bold text-heading mb-4">
+            {t('serviceDetail.ctaTitle')}
+          </h2>
+          <p className="text-grey-light text-lg mb-8 max-w-2xl mx-auto">
+            {t('serviceDetail.ctaSubtitle')}
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            {service.boutiqueSlug && configuratorMap[service.boutiqueSlug] && (
+              <button
+                onClick={toggleConfigurator}
+                className="btn-primary cursor-pointer"
+              >
+                <ShoppingCart className="mr-2" size={20} />
+                {lang === 'fr' ? 'Commander en ligne' : 'Order online'}
                 <ArrowRight className="ml-2" size={20} />
-              </Link>
-            </div>
+              </button>
+            )}
+            <Link to="/contact" className={service.boutiqueSlug && configuratorMap[service.boutiqueSlug] ? 'btn-outline' : 'btn-primary'}>
+              {t('serviceDetail.requestQuote')}
+              <ArrowRight className="ml-2" size={20} />
+            </Link>
           </div>
-
-          {/* Accordeon configurateur */}
-          <AnimatePresence>
-            {configuratorOpen && service.boutiqueSlug && (() => {
-              const Comp = configuratorMap[service.boutiqueSlug];
-              if (!Comp) return null;
-              return (
-                <motion.div
-                  key="configurator-accordion"
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.4 }}
-                  className="overflow-hidden"
-                >
-                  <div className="border-t border-accent/20 p-6 md:p-10">
-                    <Suspense fallback={
-                      <div className="text-center py-8 text-grey-muted">
-                        {lang === 'fr' ? 'Chargement...' : 'Loading...'}
-                      </div>
-                    }>
-                      <Comp />
-                    </Suspense>
-                  </div>
-                </motion.div>
-              );
-            })()}
-          </AnimatePresence>
         </motion.div>
 
         {/* ============ NAVIGATION SERVICES ============ */}

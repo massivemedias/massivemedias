@@ -50,6 +50,13 @@ function ConfiguratorFineArt() {
 
   return (
     <>
+      {/* File upload */}
+      <FileUpload
+        files={uploadedFiles}
+        onFilesChange={setUploadedFiles}
+        label={lang === 'fr' ? 'Votre fichier haute résolution (TIFF, PNG, JPG, PSD, PDF)' : 'Your high-resolution file (TIFF, PNG, JPG, PSD, PDF)'}
+      />
+
       {/* Printer tier selector */}
       <div className="mb-5">
         <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2.5">
@@ -152,13 +159,6 @@ function ConfiguratorFineArt() {
           </div>
         )}
       </div>
-
-      {/* File upload */}
-      <FileUpload
-        files={uploadedFiles}
-        onFilesChange={setUploadedFiles}
-        label={lang === 'fr' ? 'Votre fichier haute résolution (TIFF, PNG, JPG, PSD, PDF)' : 'Your high-resolution file (TIFF, PNG, JPG, PSD, PDF)'}
-      />
 
       {/* Notes */}
       <div className="mb-5">

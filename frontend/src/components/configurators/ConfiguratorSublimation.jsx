@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { ShoppingCart, Check, Palette } from 'lucide-react';
+import ColorDropdown from '../ColorDropdown';
 import { Link } from 'react-router-dom';
 import { useCart } from '../../contexts/CartContext';
 import { useLang } from '../../i18n/LanguageContext';
@@ -8,6 +9,10 @@ import {
   sublimationProducts, sublimationPriceTiers, sublimationDesignPrice,
   getSublimationPrice, sublimationImages,
 } from '../../data/products';
+import { merchColors, merchSizes, getTshirtImage } from '../../data/merchData';
+
+// Products that support color/size selection
+const productsWithColors = ['tshirt', 'hoodie', 'crewneck'];
 
 function ConfiguratorSublimation() {
   const { lang } = useLang();
@@ -19,10 +24,15 @@ function ConfiguratorSublimation() {
   const [added, setAdded] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [notes, setNotes] = useState('');
+  const [selectedColor, setSelectedColor] = useState('black');
+  const [selectedSize, setSelectedSize] = useState('M');
 
   const tiers = sublimationPriceTiers[product] || [];
   const priceInfo = getSublimationPrice(product, qtyIndex, withDesign);
   const productLabel = sublimationProducts.find(p => p.id === product);
+
+  const hasColors = productsWithColors.includes(product);
+  const colorObj = merchColors.find(c => c.id === selectedColor) || merchColors[0];
 
   const handleProductChange = (p) => {
     setProduct(p);
@@ -36,9 +46,12 @@ function ConfiguratorSublimation() {
       productName: lang === 'fr'
         ? `${productLabel?.labelFr} Sublimation`
         : `Sublimation ${productLabel?.labelEn}`,
-      finish: withDesign ? (lang === 'fr' ? 'Avec cr\u00e9ation design' : 'With design creation') : (lang === 'fr' ? 'Design fourni' : 'Design provided'),
+      finish: [
+        withDesign ? (lang === 'fr' ? 'Avec design' : 'With design') : (lang === 'fr' ? 'Design fourni' : 'Design provided'),
+        hasColors ? colorObj.name : null,
+      ].filter(Boolean).join(' - '),
       shape: null,
-      size: lang === 'fr' ? productLabel?.labelFr : productLabel?.labelEn,
+      size: hasColors ? selectedSize : (lang === 'fr' ? productLabel?.labelFr : productLabel?.labelEn),
       quantity: priceInfo.qty,
       unitPrice: priceInfo.unitPrice,
       totalPrice: priceInfo.price,
@@ -52,58 +65,96 @@ function ConfiguratorSublimation() {
 
   return (
     <>
-      {/* Product type selector - visual cards */}
+      {/* File upload */}
+      <FileUpload
+        files={uploadedFiles}
+        onFilesChange={setUploadedFiles}
+        label={lang === 'fr' ? 'Votre design (PNG, JPG, SVG, PDF)' : 'Your design (PNG, JPG, SVG, PDF)'}
+      />
+
+      {/* Product type selector */}
       <div className="mb-5">
         <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2.5">
           {lang === 'fr' ? 'Produit' : 'Product'}
         </label>
-        <div className="grid grid-cols-2 gap-3">
-          {sublimationProducts.map(p => {
-            const productImages = {
-              tshirt: '/images/textile/Textile1.webp',
-              crewneck: '/images/textile/Textile3.webp',
-              hoodie: '/images/textile/Textile5.webp',
-              bag: '/images/textile/Textile9.webp',
-            };
-            return (
-              <button
-                key={p.id}
-                onClick={() => handleProductChange(p.id)}
-                className={`relative overflow-hidden rounded-xl transition-all border-2 ${product === p.id
-                  ? 'border-accent ring-1 ring-accent/30 option-selected'
-                  : 'border-transparent hover:border-grey-muted/30 option-default'
-                }`}
-              >
-                <img
-                  src={productImages[p.id]}
-                  alt={lang === 'fr' ? p.labelFr : p.labelEn}
-                  className="w-full h-24 object-cover"
-                />
-                <div className="p-2 text-center">
-                  <span className="text-heading font-semibold text-sm block">
-                    {lang === 'fr' ? p.labelFr : p.labelEn}
-                  </span>
-                  {p.descFr && (
-                    <span className="text-grey-muted text-[10px] block mt-0.5">
-                      {lang === 'fr' ? p.descFr : p.descEn}
-                    </span>
-                  )}
-                </div>
-                {product === p.id && (
-                  <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-accent flex items-center justify-center">
-                    <Check size={12} className="text-white" />
-                  </div>
-                )}
-              </button>
-            );
-          })}
+        <div className="flex flex-wrap gap-2">
+          {sublimationProducts.map(p => (
+            <button
+              key={p.id}
+              onClick={() => handleProductChange(p.id)}
+              className={`flex flex-col items-center justify-center min-w-[7rem] py-2.5 px-3 rounded-lg text-xs font-medium transition-all border-2 ${product === p.id
+                ? 'border-accent option-selected'
+                : 'border-transparent hover:border-grey-muted/30 option-default'
+              }`}
+            >
+              <span className="text-heading leading-tight text-center font-semibold">
+                {lang === 'fr' ? p.labelFr : p.labelEn}
+              </span>
+              {p.descFr && (
+                <span className="text-grey-muted mt-0.5 text-[10px]">
+                  {lang === 'fr' ? p.descFr : p.descEn}
+                </span>
+              )}
+            </button>
+          ))}
         </div>
       </div>
+
+      {/* Color + Size + Preview for textile products */}
+      {hasColors && (
+        <div className="mb-5">
+          {/* Side by side: preview + selectors */}
+          <div className={`flex gap-5 ${product === 'tshirt' ? 'flex-row items-start' : 'flex-col'}`}>
+            {/* T-shirt preview */}
+            {product === 'tshirt' && (
+              <div className="flex-shrink-0 w-36 rounded-xl card-bg-bordered p-3">
+                <img
+                  key={selectedColor}
+                  src={getTshirtImage(selectedColor)}
+                  alt={`T-Shirt ${colorObj.name}`}
+                  className="w-full h-auto object-contain"
+                />
+              </div>
+            )}
+
+            {/* Color + Size selectors */}
+            <div className="flex-1 min-w-0 space-y-4">
+              <ColorDropdown
+                colors={merchColors}
+                selected={selectedColor}
+                onChange={setSelectedColor}
+                label={lang === 'fr' ? 'Couleur' : 'Color'}
+              />
+
+              <div>
+                <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2">
+                  {lang === 'fr' ? 'Taille' : 'Size'}
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {merchSizes.map(size => (
+                    <button
+                      key={size}
+                      onClick={() => setSelectedSize(size)}
+                      className={`min-w-[3.5rem] py-2.5 px-3 rounded-lg text-xs font-semibold transition-all border-2 ${
+                        selectedSize === size
+                          ? 'border-accent option-selected'
+                          : 'border-transparent hover:border-grey-muted/30 option-default'
+                      }`}
+                    >
+                      {size}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Quantity selector */}
       <div className="mb-5">
         <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2.5">
-          {lang === 'fr' ? 'Quantit\u00e9' : 'Quantity'}
+          {lang === 'fr' ? 'Quantite' : 'Quantity'}
         </label>
         <div className="flex flex-wrap gap-2">
           {tiers.map((tier, i) => {
@@ -132,8 +183,7 @@ function ConfiguratorSublimation() {
 
       {/* Design option */}
       <div className="mb-6">
-        <label className={`flex items-center gap-3 p-4 rounded-lg cursor-pointer transition-all border-2 ${withDesign ? 'checkbox-active' : 'option-default'}`}
-        >
+        <label className={`flex items-center gap-3 p-4 rounded-lg cursor-pointer transition-all border-2 ${withDesign ? 'checkbox-active' : 'option-default'}`}>
           <input
             type="checkbox"
             checked={withDesign}
@@ -146,22 +196,15 @@ function ConfiguratorSublimation() {
           <div className="flex-1">
             <span className="text-heading font-medium text-sm flex items-center gap-1.5">
               <Palette size={14} className="text-accent" />
-              {lang === 'fr' ? 'Cr\u00e9ation graphique' : 'Graphic design'}
+              {lang === 'fr' ? 'Creation graphique' : 'Graphic design'}
             </span>
             <span className="text-grey-muted text-xs block mt-0.5">
-              {lang === 'fr' ? 'Si vous n\'avez pas de design pr\u00eat' : 'If you don\'t have a ready design'}
+              {lang === 'fr' ? 'Si vous n\'avez pas de design pret' : 'If you don\'t have a ready design'}
             </span>
           </div>
           <span className="text-accent font-semibold text-sm">+{sublimationDesignPrice}$</span>
         </label>
       </div>
-
-      {/* File upload */}
-      <FileUpload
-        files={uploadedFiles}
-        onFilesChange={setUploadedFiles}
-        label={lang === 'fr' ? 'Votre design (PNG, JPG, SVG, PDF)' : 'Your design (PNG, JPG, SVG, PDF)'}
-      />
 
       {/* Notes */}
       <div className="mb-5">
@@ -183,7 +226,7 @@ function ConfiguratorSublimation() {
           <div className="flex items-baseline gap-3">
             <span className="text-3xl font-heading font-bold text-heading">{priceInfo.price}$</span>
             <span className="text-grey-muted text-sm">
-              ({priceInfo.unitPrice.toFixed(2)}$/{lang === 'fr' ? 'unit\u00e9' : 'unit'})
+              ({priceInfo.unitPrice.toFixed(2)}$/{lang === 'fr' ? 'unite' : 'unit'})
             </span>
           </div>
           {withDesign && (
@@ -193,8 +236,13 @@ function ConfiguratorSublimation() {
                 : `${priceInfo.qty}x ${productLabel?.labelEn} ${priceInfo.basePrice}$ + Design ${priceInfo.designPrice}$`}
             </div>
           )}
+          {hasColors && (
+            <div className="text-grey-muted text-xs mt-1">
+              {colorObj.name} / {selectedSize}
+            </div>
+          )}
           <div className="text-grey-muted text-xs mt-2">
-            {lang === 'fr' ? 'Impression permanente \u2014 r\u00e9sistant au lavage' : 'Permanent print \u2014 wash resistant'}
+            {lang === 'fr' ? 'Impression permanente - resistant au lavage' : 'Permanent print - wash resistant'}
           </div>
         </div>
       )}
@@ -202,7 +250,7 @@ function ConfiguratorSublimation() {
       {/* Add to cart */}
       <button onClick={handleAddToCart} className="btn-primary w-full justify-center text-base py-3.5 mb-3">
         {added ? (
-          <><Check size={20} className="mr-2" />{lang === 'fr' ? 'Ajout\u00e9 au panier!' : 'Added to cart!'}</>
+          <><Check size={20} className="mr-2" />{lang === 'fr' ? 'Ajoute au panier!' : 'Added to cart!'}</>
         ) : (
           <><ShoppingCart size={20} className="mr-2" />{lang === 'fr' ? 'Ajouter au panier' : 'Add to cart'}</>
         )}
@@ -214,7 +262,7 @@ function ConfiguratorSublimation() {
 
       <p className="text-grey-muted text-xs mt-3 text-center">
         {lang === 'fr'
-          ? 'Nous vous contacterons pour confirmer les d\u00e9tails (taille, couleur, design).'
+          ? 'Nous vous contacterons pour confirmer les details (taille, couleur, design).'
           : 'We\'ll contact you to confirm details (size, color, design).'}
       </p>
     </>
