@@ -4,10 +4,11 @@ import ColorDropdown from '../ColorDropdown';
 import { Link } from 'react-router-dom';
 import { useCart } from '../../contexts/CartContext';
 import { useLang } from '../../i18n/LanguageContext';
+import { useProduct } from '../../hooks/useProducts';
 import FileUpload from '../FileUpload';
 import {
-  sublimationProducts, sublimationPriceTiers, sublimationDesignPrice,
-  getSublimationPrice, sublimationImages,
+  sublimationProducts as defaultProducts, sublimationPriceTiers as defaultPriceTiers, sublimationDesignPrice as defaultDesignPrice,
+  getSublimationPrice as defaultGetPrice, sublimationImages,
 } from '../../data/products';
 import { merchColors, merchSizes, getTshirtImage, hoodieColors, getHoodieImage, crewneckColors, getCrewneckImage, totebagColors, getTotebagImage } from '../../data/merchData';
 
@@ -19,6 +20,22 @@ const productsWithSizes = ['tshirt', 'hoodie', 'crewneck'];
 function ConfiguratorSublimation() {
   const { lang } = useLang();
   const { addToCart } = useCart();
+  const cmsProduct = useProduct('sublimation');
+  const pd = cmsProduct?.pricingData;
+
+  const sublimationProducts = pd?.products || defaultProducts;
+  const sublimationPriceTiers = pd?.priceTiers || defaultPriceTiers;
+  const sublimationDesignPrice = pd?.designPrice ?? defaultDesignPrice;
+
+  const getSublimationPrice = pd?.priceTiers
+    ? (prod, qi, design) => {
+        const tiers = sublimationPriceTiers[prod];
+        if (!tiers || !tiers[qi]) return null;
+        const tier = tiers[qi];
+        if (tier.surSoumission) return { qty: tier.qty, unitPrice: tier.unitPrice, surSoumission: true };
+        return { qty: tier.qty, price: tier.price + (design ? sublimationDesignPrice : 0), basePrice: tier.price, unitPrice: tier.unitPrice, designPrice: design ? sublimationDesignPrice : 0 };
+      }
+    : defaultGetPrice;
 
   const [product, setProduct] = useState('tshirt');
   const [qtyIndex, setQtyIndex] = useState(0);

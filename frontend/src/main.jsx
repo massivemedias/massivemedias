@@ -7,6 +7,8 @@ import { AuthProvider } from './contexts/AuthContext'
 import { CookieProvider } from './contexts/CookieContext'
 import { SiteContentProvider } from './hooks/useSiteContent'
 import { ServicePagesProvider } from './hooks/useServicePages'
+import { ArtistsProvider } from './hooks/useArtists'
+import { ProductsProvider } from './hooks/useProducts'
 import './index.css'
 import App from './App.jsx'
 
@@ -16,6 +18,8 @@ createRoot(document.getElementById('root')).render(
       <LanguageProvider>
         <SiteContentProvider>
         <ServicePagesProvider>
+        <ArtistsProvider>
+        <ProductsProvider>
         <CookieProvider>
           <AuthProvider>
             <CartProvider>
@@ -23,6 +27,8 @@ createRoot(document.getElementById('root')).render(
             </CartProvider>
           </AuthProvider>
         </CookieProvider>
+        </ProductsProvider>
+        </ArtistsProvider>
         </ServicePagesProvider>
         </SiteContentProvider>
       </LanguageProvider>

@@ -2,7 +2,9 @@ import { useState, useMemo } from 'react';
 import { Scissors, Shield, Sparkles, Truck, Droplets, Tag, Gift, Music, Package } from 'lucide-react';
 import BoutiqueProductLayout from '../components/BoutiqueProductLayout';
 import ConfiguratorStickers from '../components/configurators/ConfiguratorStickers';
-import { stickerImages, stickerFaq } from '../data/products';
+import { useProduct } from '../hooks/useProducts';
+import { useLang } from '../i18n/LanguageContext';
+import { stickerImages, stickerFaq as defaultFaq } from '../data/products';
 import { img } from '../utils/paths';
 
 // Image de finition par type (affichee en premier dans la galerie)
@@ -15,6 +17,10 @@ const finishImages = {
 };
 
 function BoutiqueStickers() {
+  const { lang } = useLang();
+  const cmsProduct = useProduct('stickers');
+  const stickerFaq = cmsProduct ? { fr: cmsProduct.faqFr || defaultFaq.fr, en: cmsProduct.faqEn || defaultFaq.en } : defaultFaq;
+
   const [selectedFinish, setSelectedFinish] = useState('matte');
 
   // Image de finition en premier, puis les images de realisations

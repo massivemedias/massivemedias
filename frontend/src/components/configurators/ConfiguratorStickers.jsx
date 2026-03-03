@@ -3,15 +3,22 @@ import { ShoppingCart, Check, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../../contexts/CartContext';
 import { useLang } from '../../i18n/LanguageContext';
+import { useProduct } from '../../hooks/useProducts';
 import FileUpload from '../FileUpload';
 import {
-  stickerFinishes, stickerShapes, stickerSizes,
-  stickerPriceTiers, getStickerPrice, stickerImages,
+  stickerFinishes as defaultFinishes, stickerShapes as defaultShapes, stickerSizes as defaultSizes,
+  stickerPriceTiers as defaultTiers, getStickerPrice as defaultGetPrice, stickerImages,
 } from '../../data/products';
 
 function ConfiguratorStickers({ onFinishChange }) {
   const { lang } = useLang();
   const { addToCart } = useCart();
+  const cmsProduct = useProduct('stickers');
+  const pd = cmsProduct?.pricingData;
+
+  const stickerFinishes = pd?.finishes || defaultFinishes;
+  const stickerShapes = pd?.shapes || defaultShapes;
+  const stickerSizes = pd?.sizes || defaultSizes;
 
   const [finish, setFinish] = useState('matte');
   const [shape, setShape] = useState('round');
@@ -21,7 +28,16 @@ function ConfiguratorStickers({ onFinishChange }) {
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [notes, setNotes] = useState('');
 
-  const tiers = stickerPriceTiers;
+  const getStickerPrice = pd?.tiers
+    ? (f, s, qty) => {
+        const isSpecial = f === 'holographic' || f === 'broken-glass' || f === 'stars';
+        const tiers = isSpecial ? (pd.tiers.holographic || pd.tiers.standard) : pd.tiers.standard;
+        const tier = tiers?.find(t => t.qty === qty);
+        return tier ? { qty: tier.qty, price: tier.price, unitPrice: tier.unitPrice } : null;
+      }
+    : defaultGetPrice;
+
+  const tiers = pd?.tiers?.standard || defaultTiers;
   const currentTier = tiers[qtyIndex] || tiers[0];
   const priceInfo = getStickerPrice(finish, shape, currentTier.qty);
 

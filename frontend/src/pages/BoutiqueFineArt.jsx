@@ -3,10 +3,15 @@ import { Printer, Shield, Sparkles, Truck, Frame, Gift, Building2, Camera, FileT
 import BoutiqueProductLayout from '../components/BoutiqueProductLayout';
 import ConfiguratorFineArt from '../components/configurators/ConfiguratorFineArt';
 import ConfiguratorFlyers from '../components/configurators/ConfiguratorFlyers';
-import { fineArtImages, fineArtFaq, flyerImages, flyerFaq } from '../data/products';
+import { useProduct } from '../hooks/useProducts';
+import { fineArtImages, fineArtFaq as defaultFineArtFaq, flyerImages, flyerFaq as defaultFlyerFaq } from '../data/products';
 
 function BoutiqueFineArt() {
   const [tab, setTab] = useState('fineart');
+  const cmsFineArt = useProduct('fine-art');
+  const cmsFlyers = useProduct('flyers');
+  const fineArtFaq = cmsFineArt ? { fr: cmsFineArt.faqFr || defaultFineArtFaq.fr, en: cmsFineArt.faqEn || defaultFineArtFaq.en } : defaultFineArtFaq;
+  const flyerFaq = cmsFlyers ? { fr: cmsFlyers.faqFr || defaultFlyerFaq.fr, en: cmsFlyers.faqEn || defaultFlyerFaq.en } : defaultFlyerFaq;
 
   const trustItems = [
     { icon: Printer, fr: 'Qualit\u00e9 galerie', en: 'Gallery quality' },

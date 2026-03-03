@@ -1,9 +1,12 @@
 import { Code, Shield, Sparkles, Truck } from 'lucide-react';
 import BoutiqueProductLayout from '../components/BoutiqueProductLayout';
 import ConfiguratorWeb from '../components/configurators/ConfiguratorWeb';
-import { webImages, webFaq } from '../data/products';
+import { useProduct } from '../hooks/useProducts';
+import { webImages, webFaq as defaultFaq } from '../data/products';
 
 function BoutiqueWeb() {
+  const cmsProduct = useProduct('web');
+  const webFaq = cmsProduct ? { fr: cmsProduct.faqFr || defaultFaq.fr, en: cmsProduct.faqEn || defaultFaq.en } : defaultFaq;
   const trustItems = [
     { icon: Code, fr: '15+ ans d\'exp\u00e9rience', en: '15+ years experience' },
     { icon: Shield, fr: 'SEO inclus', en: 'SEO included' },

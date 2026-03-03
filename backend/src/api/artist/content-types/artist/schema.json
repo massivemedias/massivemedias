@@ -1,0 +1,43 @@
+{
+  "kind": "collectionType",
+  "collectionName": "artists",
+  "info": {
+    "singularName": "artist",
+    "pluralName": "artists",
+    "displayName": "Artist",
+    "description": "Artistes et leurs prints (boutique artistes)"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "slug": { "type": "string", "unique": true, "required": true },
+    "name": { "type": "string", "required": true },
+    "taglineFr": { "type": "string" },
+    "taglineEn": { "type": "string" },
+    "bioFr": { "type": "text" },
+    "bioEn": { "type": "text" },
+    "demarcheFr": { "type": "json" },
+    "demarcheEn": { "type": "json" },
+    "avatar": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["images"]
+    },
+    "heroImage": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["images"]
+    },
+    "socials": { "type": "json" },
+    "pricing": { "type": "json" },
+    "prints": { "type": "json" },
+    "printImages": {
+      "type": "media",
+      "multiple": true,
+      "allowedTypes": ["images"]
+    },
+    "sortOrder": { "type": "integer", "default": 0 },
+    "active": { "type": "boolean", "default": true }
+  }
+}

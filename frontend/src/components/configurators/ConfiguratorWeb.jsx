@@ -2,11 +2,16 @@ import { useState } from 'react';
 import { ArrowRight, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useLang } from '../../i18n/LanguageContext';
+import { useProduct } from '../../hooks/useProducts';
 import FileUpload from '../FileUpload';
-import { webServices, webHourlyRate } from '../../data/products';
+import { webServices as defaultServices, webHourlyRate as defaultRate } from '../../data/products';
 
 function ConfiguratorWeb() {
   const { lang } = useLang();
+  const cmsProduct = useProduct('web');
+  const webServices = cmsProduct?.pricingData?.services || defaultServices;
+  const webHourlyRate = cmsProduct?.pricingData?.hourlyRate || defaultRate;
+
   const [selected, setSelected] = useState('showcase');
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [notes, setNotes] = useState('');

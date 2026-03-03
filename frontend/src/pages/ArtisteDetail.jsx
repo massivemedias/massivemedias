@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, Camera, Award, Shield, Truck, Palette, MessageSquare, ChevronDown, ChevronLeft, ChevronRight, CheckCircle, Image, ExternalLink, X, ZoomIn } from 'lucide-react';
@@ -7,15 +7,43 @@ import ArtistPrintCard from '../components/ArtistPrintCard';
 import ConfiguratorArtistPrint from '../components/configurators/ConfiguratorArtistPrint';
 import { useLang } from '../i18n/LanguageContext';
 import { useTheme } from '../i18n/ThemeContext';
+import { useArtists } from '../hooks/useArtists';
+import { mediaUrl } from '../utils/cms';
 import artistsData, { artistFormats } from '../data/artists';
 import { toFull } from '../utils/paths';
+
+function buildArtistFromCMS(cms) {
+  if (!cms) return null;
+  return {
+    slug: cms.slug,
+    name: cms.name,
+    tagline: { fr: cms.taglineFr || '', en: cms.taglineEn || '' },
+    bio: { fr: cms.bioFr || '', en: cms.bioEn || '' },
+    demarche: (cms.demarcheFr || cms.demarcheEn) ? { fr: cms.demarcheFr || [], en: cms.demarcheEn || [] } : null,
+    avatar: mediaUrl(cms.avatar),
+    heroImage: mediaUrl(cms.heroImage),
+    socials: cms.socials || {},
+    pricing: cms.pricing || { studio: { a4: 35, a3: 50, a3plus: 65, a2: 85 }, museum: { a4: 75, a3: 120, a3plus: 160, a2: 225 }, framePrice: 20 },
+    prints: (cms.prints || []).map((p, i) => ({
+      ...p,
+      image: cms.printImages?.[i] ? mediaUrl(cms.printImages[i]) : p.image || '',
+      fullImage: cms.printImages?.[i] ? mediaUrl(cms.printImages[i]) : p.fullImage || '',
+    })),
+  };
+}
 
 function ArtisteDetail({ subdomainSlug }) {
   const { slug: routeSlug } = useParams();
   const slug = subdomainSlug || routeSlug;
   const { lang } = useLang();
   const { theme } = useTheme();
-  const artist = artistsData[slug];
+  const { artists: cmsArtists } = useArtists();
+
+  const artist = useMemo(() => {
+    const cmsArtist = cmsArtists?.find(a => a.slug === slug);
+    if (cmsArtist) return buildArtistFromCMS(cmsArtist);
+    return artistsData[slug] || null;
+  }, [cmsArtists, slug]);
   const [selectedPrint, setSelectedPrint] = useState(null);
   const [openFaq, setOpenFaq] = useState(null);
   const [lightbox, setLightbox] = useState(null);

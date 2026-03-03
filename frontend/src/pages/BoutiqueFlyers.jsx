@@ -1,9 +1,12 @@
 import { FileText, Shield, Sparkles, Truck, Music, Users, Briefcase, Megaphone } from 'lucide-react';
 import BoutiqueProductLayout from '../components/BoutiqueProductLayout';
 import ConfiguratorFlyers from '../components/configurators/ConfiguratorFlyers';
-import { flyerImages, flyerFaq } from '../data/products';
+import { useProduct } from '../hooks/useProducts';
+import { flyerImages, flyerFaq as defaultFaq } from '../data/products';
 
 function BoutiqueFlyers() {
+  const cmsProduct = useProduct('flyers');
+  const flyerFaq = cmsProduct ? { fr: cmsProduct.faqFr || defaultFaq.fr, en: cmsProduct.faqEn || defaultFaq.en } : defaultFaq;
   const trustItems = [
     { icon: FileText, fr: 'Papier premium 300g+', en: 'Premium 300g+ paper' },
     { icon: Shield, fr: 'Qualit\u00e9 professionnelle', en: 'Professional quality' },

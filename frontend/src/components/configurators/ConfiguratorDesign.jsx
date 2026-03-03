@@ -2,11 +2,15 @@ import { useState } from 'react';
 import { ArrowRight, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useLang } from '../../i18n/LanguageContext';
+import { useProduct } from '../../hooks/useProducts';
 import FileUpload from '../FileUpload';
-import { designServices } from '../../data/products';
+import { designServices as defaultServices } from '../../data/products';
 
 function ConfiguratorDesign() {
   const { lang } = useLang();
+  const cmsProduct = useProduct('design');
+  const designServices = cmsProduct?.pricingData?.services || defaultServices;
+
   const [selected, setSelected] = useState('logo');
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [notes, setNotes] = useState('');

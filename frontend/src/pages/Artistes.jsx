@@ -1,13 +1,31 @@
+import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight, MessageSquare, Image } from 'lucide-react';
 import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
+import { useArtists } from '../hooks/useArtists';
+import { mediaUrl } from '../utils/cms';
 import artistsData from '../data/artists';
 
 function Artistes() {
   const { lang } = useLang();
-  const artists = Object.values(artistsData);
+  const { artists: cmsArtists } = useArtists();
+
+  const artists = useMemo(() => {
+    if (cmsArtists && cmsArtists.length > 0) {
+      return cmsArtists.map(a => ({
+        slug: a.slug,
+        name: a.name,
+        tagline: { fr: a.taglineFr || '', en: a.taglineEn || '' },
+        avatar: mediaUrl(a.avatar),
+        heroImage: mediaUrl(a.heroImage),
+        prints: a.prints || [],
+        pricing: a.pricing || { studio: { a4: 35 }, museum: { a4: 75 }, framePrice: 20 },
+      }));
+    }
+    return Object.values(artistsData);
+  }, [cmsArtists]);
 
   return (
     <>

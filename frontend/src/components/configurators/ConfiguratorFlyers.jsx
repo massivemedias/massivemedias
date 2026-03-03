@@ -3,20 +3,36 @@ import { ShoppingCart, Check } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../../contexts/CartContext';
 import { useLang } from '../../i18n/LanguageContext';
+import { useProduct } from '../../hooks/useProducts';
 import FileUpload from '../FileUpload';
 import {
-  flyerSides, flyerPriceTiers, getFlyerPrice, flyerImages,
+  flyerSides as defaultSides, flyerPriceTiers as defaultTiers, getFlyerPrice as defaultGetPrice, flyerImages,
 } from '../../data/products';
 
 function ConfiguratorFlyers() {
   const { lang } = useLang();
   const { addToCart } = useCart();
+  const cmsProduct = useProduct('flyers');
+  const pd = cmsProduct?.pricingData;
+
+  const flyerSides = pd?.sides || defaultSides;
+  const flyerPriceTiers = pd?.priceTiers || defaultTiers;
 
   const [side, setSide] = useState('recto');
   const [qtyIndex, setQtyIndex] = useState(0);
   const [added, setAdded] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [notes, setNotes] = useState('');
+
+  const getFlyerPrice = pd?.priceTiers
+    ? (s, qi) => {
+        const tier = flyerPriceTiers[qi];
+        if (!tier) return null;
+        const sideOpt = flyerSides.find(x => x.id === s);
+        const multiplier = sideOpt ? sideOpt.multiplier : 1.0;
+        return { qty: tier.qty, price: Math.round(tier.price * multiplier), unitPrice: +(tier.unitPrice * multiplier).toFixed(2) };
+      }
+    : defaultGetPrice;
 
   const priceInfo = getFlyerPrice(side, qtyIndex);
   const sideLabel = flyerSides.find(s => s.id === side);

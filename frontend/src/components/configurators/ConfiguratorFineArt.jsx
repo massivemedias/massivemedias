@@ -3,15 +3,22 @@ import { ShoppingCart, Check, Frame } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../../contexts/CartContext';
 import { useLang } from '../../i18n/LanguageContext';
+import { useProduct } from '../../hooks/useProducts';
 import FileUpload from '../FileUpload';
 import {
-  fineArtPrinterTiers, fineArtFormats, fineArtFramePrice,
-  getFineArtPrice, fineArtImages,
+  fineArtPrinterTiers as defaultTiers, fineArtFormats as defaultFormats, fineArtFramePrice as defaultFramePrice,
+  getFineArtPrice as defaultGetPrice, fineArtImages,
 } from '../../data/products';
 
 function ConfiguratorFineArt() {
   const { lang } = useLang();
   const { addToCart } = useCart();
+  const cmsProduct = useProduct('fine-art');
+  const pd = cmsProduct?.pricingData;
+
+  const fineArtPrinterTiers = pd?.tiers || defaultTiers;
+  const fineArtFormats = pd?.formats || defaultFormats;
+  const fineArtFramePrice = pd?.framePrice ?? defaultFramePrice;
 
   const [tier, setTier] = useState('studio');
   const [format, setFormat] = useState('a4');
@@ -20,6 +27,15 @@ function ConfiguratorFineArt() {
   const [added, setAdded] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [notes, setNotes] = useState('');
+
+  const getFineArtPrice = pd?.formats
+    ? (t, f, frame) => {
+        const fmt = fineArtFormats.find(x => x.id === f);
+        if (!fmt) return null;
+        const base = t === 'museum' ? fmt.museumPrice : fmt.studioPrice;
+        return { price: base + (frame ? fineArtFramePrice : 0), basePrice: base, framePrice: frame ? fineArtFramePrice : 0 };
+      }
+    : defaultGetPrice;
 
   const priceInfo = getFineArtPrice(tier, format, withFrame);
   const tierLabel = fineArtPrinterTiers.find(t => t.id === tier);

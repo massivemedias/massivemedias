@@ -6,11 +6,18 @@ import SEO from '../components/SEO';
 import ColorDropdown from '../components/ColorDropdown';
 import { useLang } from '../i18n/LanguageContext';
 import { useCart } from '../contexts/CartContext';
-import { merchColors, merchSizes, merchTshirtPrice, getTshirtImage } from '../data/merchData';
+import { useProduct } from '../hooks/useProducts';
+import { merchColors as defaultColors, merchSizes as defaultSizes, merchTshirtPrice as defaultPrice, getTshirtImage } from '../data/merchData';
 
 function BoutiqueMerchTshirt() {
   const { lang } = useLang();
   const { addToCart } = useCart();
+  const cmsProduct = useProduct('merch-tshirt');
+  const pd = cmsProduct?.pricingData;
+
+  const merchColors = pd?.colors || defaultColors;
+  const merchSizes = pd?.sizes || defaultSizes;
+  const merchTshirtPrice = pd?.price || defaultPrice;
 
   const [selectedColor, setSelectedColor] = useState('orchid');
   const [selectedSize, setSelectedSize] = useState('M');

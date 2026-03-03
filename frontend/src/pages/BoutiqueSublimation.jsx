@@ -1,9 +1,12 @@
 import { Shirt, Shield, Sparkles, Truck, Music, Users, Gift, Store } from 'lucide-react';
 import BoutiqueProductLayout from '../components/BoutiqueProductLayout';
 import ConfiguratorSublimation from '../components/configurators/ConfiguratorSublimation';
-import { sublimationImages, sublimationFaq } from '../data/products';
+import { useProduct } from '../hooks/useProducts';
+import { sublimationImages, sublimationFaq as defaultFaq } from '../data/products';
 
 function BoutiqueSublimation() {
+  const cmsProduct = useProduct('sublimation');
+  const sublimationFaq = cmsProduct ? { fr: cmsProduct.faqFr || defaultFaq.fr, en: cmsProduct.faqEn || defaultFaq.en } : defaultFaq;
   const trustItems = [
     { icon: Shirt, fr: 'Impression permanente', en: 'Permanent print' },
     { icon: Shield, fr: 'R\u00e9sistant au lavage', en: 'Wash resistant' },
