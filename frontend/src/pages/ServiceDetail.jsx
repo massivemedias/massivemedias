@@ -830,10 +830,12 @@ function ServiceDetail() {
 
           {/* Accordeon configurateur */}
           <AnimatePresence>
-            {configuratorOpen && service.boutiqueSlug && configuratorMap[service.boutiqueSlug] && (() => {
-              const Configurator = configuratorMap[service.boutiqueSlug];
+            {configuratorOpen && service.boutiqueSlug && (() => {
+              const Comp = configuratorMap[service.boutiqueSlug];
+              if (!Comp) return null;
               return (
                 <motion.div
+                  key="configurator-accordion"
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: 'auto', opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
@@ -846,7 +848,7 @@ function ServiceDetail() {
                         {lang === 'fr' ? 'Chargement...' : 'Loading...'}
                       </div>
                     }>
-                      <Configurator />
+                      <Comp />
                     </Suspense>
                   </div>
                 </motion.div>
