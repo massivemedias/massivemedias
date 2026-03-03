@@ -175,39 +175,37 @@ function ServiceDetail() {
       />
 
       {/* ============ HERO ============ */}
-      <section className="relative py-6 md:py-8 overflow-hidden">
+      <section className="relative py-4 overflow-hidden">
         <div className="absolute inset-0 hero-aurora"></div>
 
         <div className="relative z-10 section-container !py-0">
-          <div className="flex flex-col lg:flex-row items-center gap-8">
+          <div className="flex flex-col lg:flex-row items-center gap-6">
             <motion.div
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
+              transition={{ duration: 0.6 }}
               className="max-w-4xl lg:flex-1"
             >
-              <div className="flex items-center gap-2 mb-3 text-sm">
+              <div className="flex items-center gap-2 mb-2 text-sm">
                 <Link to="/" className="text-grey-muted hover:text-accent transition-colors">{lang === 'fr' ? 'Accueil' : 'Home'}</Link>
                 <span className="text-grey-muted">/</span>
                 <span className="text-accent">{service.title}</span>
               </div>
 
-              <div className="flex items-center gap-4 mb-3">
-                <div className="p-3 rounded-xl icon-bg-blur">
-                  <Icon size={30} className="text-accent" />
+              <div className="flex items-center gap-3 mb-2">
+                <div className="p-2.5 rounded-xl icon-bg-blur">
+                  <Icon size={26} className="text-accent" />
                 </div>
-                <div>
-                  <h1 className="text-4xl md:text-6xl font-heading font-bold text-heading">
-                    {service.title}
-                  </h1>
-                </div>
+                <h1 className="text-3xl md:text-5xl font-heading font-bold text-heading">
+                  {service.title}
+                </h1>
               </div>
 
-              <p className="text-lg md:text-xl text-grey-light mb-5">
+              <p className="text-base md:text-lg text-grey-light mb-4">
                 {service.subtitle}
               </p>
 
-              <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex flex-col sm:flex-row gap-3">
                 {service.boutiqueSlug && configuratorMap[service.boutiqueSlug] && (
                   <button onClick={toggleConfigurator} className="btn-primary cursor-pointer">
                     <ShoppingCart className="mr-2" size={20} />
@@ -232,7 +230,7 @@ function ServiceDetail() {
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.8, delay: 0.2 }}
-                className="hidden lg:block lg:flex-1 max-w-md"
+                className="hidden lg:block lg:flex-1 max-w-xs"
               >
                 <img
                   src={service.heroImage}
