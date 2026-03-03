@@ -9,10 +9,12 @@ import {
   sublimationProducts, sublimationPriceTiers, sublimationDesignPrice,
   getSublimationPrice, sublimationImages,
 } from '../../data/products';
-import { merchColors, merchSizes, getTshirtImage, hoodieColors, getHoodieImage, crewneckColors, getCrewneckImage } from '../../data/merchData';
+import { merchColors, merchSizes, getTshirtImage, hoodieColors, getHoodieImage, crewneckColors, getCrewneckImage, totebagColors, getTotebagImage } from '../../data/merchData';
 
-// Products that support color/size selection
-const productsWithColors = ['tshirt', 'hoodie', 'crewneck'];
+// Products that support color selection
+const productsWithColors = ['tshirt', 'hoodie', 'crewneck', 'totebag'];
+// Products that also have size selection
+const productsWithSizes = ['tshirt', 'hoodie', 'crewneck'];
 
 function ConfiguratorSublimation() {
   const { lang } = useLang();
@@ -32,8 +34,9 @@ function ConfiguratorSublimation() {
   const productLabel = sublimationProducts.find(p => p.id === product);
 
   const hasColors = productsWithColors.includes(product);
-  const colorsMap = { tshirt: merchColors, hoodie: hoodieColors, crewneck: crewneckColors };
-  const imageMap = { tshirt: getTshirtImage, hoodie: getHoodieImage, crewneck: getCrewneckImage };
+  const hasSizes = productsWithSizes.includes(product);
+  const colorsMap = { tshirt: merchColors, hoodie: hoodieColors, crewneck: crewneckColors, totebag: totebagColors };
+  const imageMap = { tshirt: getTshirtImage, hoodie: getHoodieImage, crewneck: getCrewneckImage, totebag: getTotebagImage };
   const currentColors = colorsMap[product] || merchColors;
   const currentGetImage = imageMap[product] || getTshirtImage;
   const colorObj = currentColors.find(c => c.id === selectedColor) || currentColors[0];
@@ -60,7 +63,7 @@ function ConfiguratorSublimation() {
         hasColors ? colorObj.name : null,
       ].filter(Boolean).join(' - '),
       shape: null,
-      size: hasColors ? selectedSize : (lang === 'fr' ? productLabel?.labelFr : productLabel?.labelEn),
+      size: hasSizes ? selectedSize : (lang === 'fr' ? productLabel?.labelFr : productLabel?.labelEn),
       quantity: priceInfo.qty,
       unitPrice: priceInfo.unitPrice,
       totalPrice: priceInfo.price,
@@ -128,26 +131,28 @@ function ConfiguratorSublimation() {
                 label={lang === 'fr' ? 'Couleur' : 'Color'}
               />
 
-              <div>
-                <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2">
-                  {lang === 'fr' ? 'Taille' : 'Size'}
-                </label>
-                <div className="flex flex-wrap gap-2">
-                  {merchSizes.map(size => (
-                    <button
-                      key={size}
-                      onClick={() => setSelectedSize(size)}
-                      className={`min-w-[3.5rem] py-2.5 px-3 rounded-lg text-xs font-semibold transition-all border-2 ${
-                        selectedSize === size
-                          ? 'border-accent option-selected'
-                          : 'border-transparent hover:border-grey-muted/30 option-default'
-                      }`}
-                    >
-                      {size}
-                    </button>
-                  ))}
+              {hasSizes && (
+                <div>
+                  <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2">
+                    {lang === 'fr' ? 'Taille' : 'Size'}
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {merchSizes.map(size => (
+                      <button
+                        key={size}
+                        onClick={() => setSelectedSize(size)}
+                        className={`min-w-[3.5rem] py-2.5 px-3 rounded-lg text-xs font-semibold transition-all border-2 ${
+                          selectedSize === size
+                            ? 'border-accent option-selected'
+                            : 'border-transparent hover:border-grey-muted/30 option-default'
+                        }`}
+                      >
+                        {size}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </div>
@@ -248,7 +253,7 @@ function ConfiguratorSublimation() {
           )}
           {hasColors && (
             <div className="text-grey-muted text-xs mt-1">
-              {colorObj.name} / {selectedSize}
+              {colorObj.name}{hasSizes ? ` / ${selectedSize}` : ''}
             </div>
           )}
           <div className="text-grey-muted text-xs mt-2">

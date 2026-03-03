@@ -184,6 +184,7 @@ export const sublimationProducts = [
   { id: 'tshirt', labelFr: 'T-shirt', labelEn: 'T-shirt', descFr: 'Leger et confortable, all-over', descEn: 'Light and comfortable, all-over' },
   { id: 'crewneck', labelFr: 'Crewneck', labelEn: 'Crewneck', descFr: 'Style decontracte, coton epais', descEn: 'Casual style, thick cotton' },
   { id: 'hoodie', labelFr: 'Hoodie', labelEn: 'Hoodie', descFr: 'Chaleureux et streetwear', descEn: 'Warm and streetwear' },
+  { id: 'totebag', labelFr: 'Tote Bag', labelEn: 'Tote Bag', descFr: 'Pratique et ecologique', descEn: 'Practical and eco-friendly' },
   { id: 'bag', labelFr: 'Sac banane', labelEn: 'Fanny Pack', descFr: 'Compact et tendance', descEn: 'Compact and trendy' },
 ];
 
@@ -202,6 +203,12 @@ export const sublimationPriceTiers = {
     { qty: 1, unitPrice: 50, price: 50 },
     { qty: 5, unitPrice: 45, price: 225 },
     { qty: 10, unitPrice: 40, price: 400 },
+  ],
+  totebag: [
+    { qty: 1, unitPrice: 15, price: 15 },
+    { qty: 10, unitPrice: 12, price: 120 },
+    { qty: 25, unitPrice: 10, price: 250 },
+    { qty: 50, unitPrice: 8, price: 400 },
   ],
   bag: [
     { qty: 1, unitPrice: 80, price: 80 },

@@ -188,3 +188,31 @@ export const merchCrewneckPrice = {
 
 /** Get crewneck product image path for a given color ID */
 export const getCrewneckImage = (colorId) => `/images/crewneck/${colorId}.webp`;
+
+/**
+ * Tote Bag colors - Q-Tees QTB
+ * Sorted lightest to darkest (perceived luminance)
+ */
+export const totebagColors = [
+  { id: 'white', name: 'White', hex: '#F5F5F0' },
+  { id: 'natural', name: 'Natural', hex: '#E8DFD0' },
+  { id: 'lavender', name: 'Lavender', hex: '#C8C0E0' },
+  { id: 'light-pink', name: 'Light Pink', hex: '#E8C4D8' },
+  { id: 'gold', name: 'Gold', hex: '#D9922E' },
+  { id: 'hot-pink', name: 'Hot Pink', hex: '#E8408A' },
+  { id: 'carolina-blue', name: 'Carolina Blue', hex: '#7BA4CC' },
+  { id: 'turquoise', name: 'Turquoise', hex: '#30B0B0' },
+  { id: 'orange', name: 'Orange', hex: '#E06A28' },
+  { id: 'kelly', name: 'Kelly', hex: '#2E8B3E' },
+  { id: 'sapphire', name: 'Sapphire', hex: '#1E7EA0' },
+  { id: 'red', name: 'Red', hex: '#B52030' },
+  { id: 'charcoal', name: 'Charcoal', hex: '#5C5C5C' },
+  { id: 'royal', name: 'Royal', hex: '#2456A4' },
+  { id: 'forest', name: 'Forest', hex: '#2D5A4B' },
+  { id: 'purple', name: 'Purple', hex: '#3E2260' },
+  { id: 'navy', name: 'Navy', hex: '#0F1F3E' },
+  { id: 'black', name: 'Black', hex: '#1A1A1A' },
+];
+
+/** Get tote bag product image path for a given color ID */
+export const getTotebagImage = (colorId) => `/images/totebags/${colorId}.webp`;
