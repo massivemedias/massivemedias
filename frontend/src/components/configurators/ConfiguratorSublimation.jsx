@@ -9,7 +9,7 @@ import {
   sublimationProducts, sublimationPriceTiers, sublimationDesignPrice,
   getSublimationPrice, sublimationImages,
 } from '../../data/products';
-import { merchColors, merchSizes, getTshirtImage } from '../../data/merchData';
+import { merchColors, merchSizes, getTshirtImage, hoodieColors, getHoodieImage } from '../../data/merchData';
 
 // Products that support color/size selection
 const productsWithColors = ['tshirt', 'hoodie', 'crewneck'];
@@ -32,11 +32,18 @@ function ConfiguratorSublimation() {
   const productLabel = sublimationProducts.find(p => p.id === product);
 
   const hasColors = productsWithColors.includes(product);
-  const colorObj = merchColors.find(c => c.id === selectedColor) || merchColors[0];
+  const currentColors = product === 'hoodie' ? hoodieColors : merchColors;
+  const currentGetImage = product === 'hoodie' ? getHoodieImage : getTshirtImage;
+  const colorObj = currentColors.find(c => c.id === selectedColor) || currentColors[0];
 
   const handleProductChange = (p) => {
     setProduct(p);
     setQtyIndex(0);
+    // Reset color if not available in new product's palette
+    const newColors = p === 'hoodie' ? hoodieColors : merchColors;
+    if (!newColors.find(c => c.id === selectedColor)) {
+      setSelectedColor('black');
+    }
   };
 
   const handleAddToCart = () => {
@@ -97,14 +104,14 @@ function ConfiguratorSublimation() {
       {hasColors && (
         <div className="mb-5">
           {/* Side by side: preview + selectors */}
-          <div className={`flex gap-5 ${product === 'tshirt' ? 'flex-row items-start' : 'flex-col'}`}>
-            {/* T-shirt preview */}
-            {product === 'tshirt' && (
+          <div className={`flex gap-5 ${(product === 'tshirt' || product === 'hoodie') ? 'flex-row items-start' : 'flex-col'}`}>
+            {/* Product preview */}
+            {(product === 'tshirt' || product === 'hoodie') && (
               <div className="flex-shrink-0 w-36 rounded-xl card-bg-bordered p-3">
                 <img
-                  key={selectedColor}
-                  src={getTshirtImage(selectedColor)}
-                  alt={`T-Shirt ${colorObj.name}`}
+                  key={`${product}-${selectedColor}`}
+                  src={currentGetImage(selectedColor)}
+                  alt={`${product === 'hoodie' ? 'Hoodie' : 'T-Shirt'} ${colorObj.name}`}
                   className="w-full h-auto object-contain"
                 />
               </div>
@@ -113,7 +120,7 @@ function ConfiguratorSublimation() {
             {/* Color + Size selectors */}
             <div className="flex-1 min-w-0 space-y-4">
               <ColorDropdown
-                colors={merchColors}
+                colors={currentColors}
                 selected={selectedColor}
                 onChange={setSelectedColor}
                 label={lang === 'fr' ? 'Couleur' : 'Color'}
