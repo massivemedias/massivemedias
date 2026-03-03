@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ShoppingCart, Check, ArrowLeft } from 'lucide-react';
 import SEO from '../components/SEO';
@@ -95,13 +95,19 @@ function BoutiqueMerchTshirt() {
             transition={{ duration: 0.5 }}
             className="lg:sticky lg:top-24"
           >
-            <div className="rounded-2xl card-bg-bordered p-6 md:p-10">
-              <img
-                key={selectedColor}
-                src={getTshirtImage(selectedColor)}
-                alt={`T-Shirt ${colorObj.name}`}
-                className="w-full h-auto object-contain max-h-[500px] mx-auto"
-              />
+            <div className="rounded-2xl card-bg-bordered p-6 md:p-10 overflow-hidden">
+              <AnimatePresence mode="wait">
+                <motion.img
+                  key={selectedColor}
+                  src={getTshirtImage(selectedColor)}
+                  alt={`T-Shirt ${colorObj.name}`}
+                  className="w-full h-auto object-contain max-h-[500px] mx-auto"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                />
+              </AnimatePresence>
             </div>
             <p className="text-center text-grey-muted text-sm mt-3 font-medium">{colorObj.name}</p>
           </motion.div>

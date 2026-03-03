@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingCart, Check, Palette } from 'lucide-react';
 import ColorDropdown from '../ColorDropdown';
 import { Link } from 'react-router-dom';
@@ -134,13 +135,19 @@ function ConfiguratorSublimation() {
           <div className={`flex gap-5 ${hasColors ? 'flex-row items-start' : 'flex-col'}`}>
             {/* Product preview */}
             {hasColors && (
-              <div className="flex-shrink-0 w-48 rounded-xl card-bg-bordered p-3">
-                <img
-                  key={`${product}-${selectedColor}`}
-                  src={currentGetImage(selectedColor)}
-                  alt={`${productLabel ? (lang === 'fr' ? productLabel.labelFr : productLabel.labelEn) : product} ${colorObj.name}`}
-                  className="w-full h-auto object-contain"
-                />
+              <div className="flex-shrink-0 w-48 rounded-xl card-bg-bordered p-3 overflow-hidden">
+                <AnimatePresence mode="wait">
+                  <motion.img
+                    key={`${product}-${selectedColor}`}
+                    src={currentGetImage(selectedColor)}
+                    alt={`${productLabel ? (lang === 'fr' ? productLabel.labelFr : productLabel.labelEn) : product} ${colorObj.name}`}
+                    className="w-full h-auto object-contain"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                  />
+                </AnimatePresence>
               </div>
             )}
 
