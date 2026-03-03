@@ -10,7 +10,7 @@ import {
 } from '../../data/products';
 
 function ConfiguratorFlyers() {
-  const { lang } = useLang();
+  const { lang, tx } = useLang();
   const { addToCart } = useCart();
   const cmsProduct = useProduct('flyers');
   const pd = cmsProduct?.pricingData;
@@ -41,8 +41,8 @@ function ConfiguratorFlyers() {
     if (!priceInfo) return;
     addToCart({
       productId: 'flyer-a6',
-      productName: lang === 'fr' ? 'Flyers A6' : 'A6 Flyers',
-      finish: lang === 'fr' ? sideLabel?.labelFr : sideLabel?.labelEn,
+      productName: tx({ fr: 'Flyers A6', en: 'A6 Flyers', es: 'Flyers A6' }),
+      finish: tx({ fr: sideLabel?.labelFr, en: sideLabel?.labelEn, es: sideLabel?.labelEn }),
       shape: null,
       size: 'A6 (4"x6")',
       quantity: priceInfo.qty,
@@ -61,7 +61,7 @@ function ConfiguratorFlyers() {
       {/* Side selector */}
       <div className="mb-5">
         <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2.5">
-          {lang === 'fr' ? 'Impression' : 'Printing'}
+          {tx({ fr: 'Impression', en: 'Printing', es: 'Impresion' })}
         </label>
         <div className="flex flex-wrap gap-2">
           {flyerSides.map(s => (
@@ -74,7 +74,7 @@ function ConfiguratorFlyers() {
               }`}
             >
               <span className="text-heading leading-tight text-center font-semibold text-sm">
-                {lang === 'fr' ? s.labelFr : s.labelEn}
+                {tx({ fr: s.labelFr, en: s.labelEn, es: s.labelEn })}
               </span>
               {s.multiplier > 1 && (
                 <span className="text-grey-muted mt-0.5 text-[10px]">+30%</span>
@@ -87,7 +87,7 @@ function ConfiguratorFlyers() {
       {/* Quantity selector */}
       <div className="mb-6">
         <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2.5">
-          {lang === 'fr' ? 'Quantit\u00e9' : 'Quantity'}
+          {tx({ fr: 'Quantit\u00e9', en: 'Quantity', es: 'Cantidad' })}
         </label>
         <div className="flex flex-wrap gap-2">
           {flyerPriceTiers.map((tier, i) => {
@@ -114,18 +114,18 @@ function ConfiguratorFlyers() {
         <FileUpload
           files={uploadedFiles}
           onFilesChange={setUploadedFiles}
-          label={lang === 'fr' ? 'Votre fichier' : 'Your file'}
+          label={tx({ fr: 'Votre fichier', en: 'Your file', es: 'Su archivo' })}
           compact
         />
         <div>
           <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2.5">
-            {lang === 'fr' ? 'Notes / Description' : 'Notes / Description'}
+            {tx({ fr: 'Notes / Description', en: 'Notes / Description', es: 'Notas / Descripci\u00f3n' })}
           </label>
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             rows={4}
-            placeholder={lang === 'fr' ? 'Decrivez le produit souhaite (contenu, style, details...)' : 'Describe the desired product (content, style, details...)'}
+            placeholder={tx({ fr: 'Decrivez le produit souhaite (contenu, style, details...)', en: 'Describe the desired product (content, style, details...)', es: 'Describa el producto deseado (contenido, estilo, detalles...)' })}
             className="w-full min-h-[100px] rounded-lg border-2 border-grey-muted/20 bg-transparent px-4 py-3 text-sm text-heading placeholder:text-grey-muted/50 focus:border-accent focus:outline-none transition-colors resize-none"
           />
         </div>
@@ -137,11 +137,11 @@ function ConfiguratorFlyers() {
           <div className="flex items-baseline gap-3">
             <span className="text-3xl font-heading font-bold text-heading">{priceInfo.price}$</span>
             <span className="text-grey-muted text-sm">
-              ({priceInfo.unitPrice.toFixed(2)}$/{lang === 'fr' ? 'unit\u00e9' : 'unit'})
+              ({priceInfo.unitPrice.toFixed(2)}$/{tx({ fr: 'unit\u00e9', en: 'unit', es: 'unidad' })})
             </span>
           </div>
           <div className="text-grey-muted text-xs mt-2">
-            {lang === 'fr' ? 'Papier premium 300g+ \u2014 Qualit\u00e9 professionnelle' : 'Premium 300g+ paper \u2014 Professional quality'}
+            {tx({ fr: 'Papier premium 300g+ - Qualit\u00e9 professionnelle', en: 'Premium 300g+ paper - Professional quality', es: 'Papel premium 300g+ - Calidad profesional' })}
           </div>
         </div>
       )}
@@ -149,20 +149,18 @@ function ConfiguratorFlyers() {
       {/* Add to cart */}
       <button onClick={handleAddToCart} className="btn-primary w-full justify-center text-base py-3.5 mb-3">
         {added ? (
-          <><Check size={20} className="mr-2" />{lang === 'fr' ? 'Ajout\u00e9 au panier!' : 'Added to cart!'}</>
+          <><Check size={20} className="mr-2" />{tx({ fr: 'Ajout\u00e9 au panier!', en: 'Added to cart!', es: '\u00a1Agregado al carrito!' })}</>
         ) : (
-          <><ShoppingCart size={20} className="mr-2" />{lang === 'fr' ? 'Ajouter au panier' : 'Add to cart'}</>
+          <><ShoppingCart size={20} className="mr-2" />{tx({ fr: 'Ajouter au panier', en: 'Add to cart', es: 'Agregar al carrito' })}</>
         )}
       </button>
 
       <Link to="/panier" className="btn-outline w-full justify-center text-sm py-2.5">
-        {lang === 'fr' ? 'Voir le panier' : 'View cart'}
+        {tx({ fr: 'Voir le panier', en: 'View cart', es: 'Ver el carrito' })}
       </Link>
 
       <p className="text-grey-muted text-xs mt-3 text-center">
-        {lang === 'fr'
-          ? 'Design graphique disponible en option. D\u00e9lai express 24h disponible.'
-          : 'Graphic design available as an option. 24h express turnaround available.'}
+        {tx({ fr: 'Design graphique disponible en option. D\u00e9lai express 24h disponible.', en: 'Graphic design available as an option. 24h express turnaround available.', es: 'Dise\u00f1o gr\u00e1fico disponible como opci\u00f3n. Entrega express 24h disponible.' })}
       </p>
     </>
   );

@@ -12,19 +12,19 @@ import { createPaymentIntent } from '../services/orderService';
 import CheckoutForm from '../components/CheckoutForm';
 
 const provinces = [
-  { code: 'QC', fr: 'Quebec', en: 'Quebec' },
-  { code: 'ON', fr: 'Ontario', en: 'Ontario' },
-  { code: 'BC', fr: 'Colombie-Britannique', en: 'British Columbia' },
-  { code: 'AB', fr: 'Alberta', en: 'Alberta' },
-  { code: 'MB', fr: 'Manitoba', en: 'Manitoba' },
-  { code: 'SK', fr: 'Saskatchewan', en: 'Saskatchewan' },
-  { code: 'NS', fr: 'Nouvelle-Ecosse', en: 'Nova Scotia' },
-  { code: 'NB', fr: 'Nouveau-Brunswick', en: 'New Brunswick' },
-  { code: 'NL', fr: 'Terre-Neuve-et-Labrador', en: 'Newfoundland and Labrador' },
-  { code: 'PE', fr: 'Ile-du-Prince-Edouard', en: 'Prince Edward Island' },
-  { code: 'NT', fr: 'Territoires du Nord-Ouest', en: 'Northwest Territories' },
-  { code: 'YT', fr: 'Yukon', en: 'Yukon' },
-  { code: 'NU', fr: 'Nunavut', en: 'Nunavut' },
+  { code: 'QC', fr: 'Quebec', en: 'Quebec', es: 'Quebec' },
+  { code: 'ON', fr: 'Ontario', en: 'Ontario', es: 'Ontario' },
+  { code: 'BC', fr: 'Colombie-Britannique', en: 'British Columbia', es: 'Columbia Britanica' },
+  { code: 'AB', fr: 'Alberta', en: 'Alberta', es: 'Alberta' },
+  { code: 'MB', fr: 'Manitoba', en: 'Manitoba', es: 'Manitoba' },
+  { code: 'SK', fr: 'Saskatchewan', en: 'Saskatchewan', es: 'Saskatchewan' },
+  { code: 'NS', fr: 'Nouvelle-Ecosse', en: 'Nova Scotia', es: 'Nueva Escocia' },
+  { code: 'NB', fr: 'Nouveau-Brunswick', en: 'New Brunswick', es: 'Nuevo Brunswick' },
+  { code: 'NL', fr: 'Terre-Neuve-et-Labrador', en: 'Newfoundland and Labrador', es: 'Terranova y Labrador' },
+  { code: 'PE', fr: 'Ile-du-Prince-Edouard', en: 'Prince Edward Island', es: 'Isla del Principe Eduardo' },
+  { code: 'NT', fr: 'Territoires du Nord-Ouest', en: 'Northwest Territories', es: 'Territorios del Noroeste' },
+  { code: 'YT', fr: 'Yukon', en: 'Yukon', es: 'Yukon' },
+  { code: 'NU', fr: 'Nunavut', en: 'Nunavut', es: 'Nunavut' },
 ];
 
 // TPS (GST) 5% partout au Canada, TVQ (QST) 9.975% au Quebec seulement
@@ -48,10 +48,9 @@ function calculateTaxes(subtotal, province) {
 }
 
 function Checkout() {
-  const { t, lang } = useLang();
+  const { t, lang, tx } = useLang();
   const { items, cartTotal } = useCart();
   const { user } = useAuth();
-  const isFr = lang === 'fr';
 
   const [step, setStep] = useState('info'); // 'info' | 'payment'
   const [clientSecret, setClientSecret] = useState('');
@@ -122,7 +121,7 @@ function Checkout() {
       setError(
         err?.response?.data?.error?.message ||
         err?.message ||
-        (isFr ? 'Erreur lors de la création du paiement.' : 'Error creating payment.')
+        tx({ fr: 'Erreur lors de la creation du paiement.', en: 'Error creating payment.', es: 'Error al crear el pago.' })
       );
     } finally {
       setIsLoading(false);
@@ -177,23 +176,23 @@ function Checkout() {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div>
                           <label htmlFor="nom" className="block text-heading font-semibold text-sm mb-2">
-                            {isFr ? 'Nom complet' : 'Full name'} *
+                            {tx({ fr: 'Nom complet', en: 'Full name', es: 'Nombre completo' })} *
                           </label>
                           <input
                             type="text" id="nom" name="nom" required
                             value={formData.nom} onChange={handleChange}
-                            placeholder={isFr ? 'Votre nom' : 'Your name'}
+                            placeholder={tx({ fr: 'Votre nom', en: 'Your name', es: 'Su nombre' })}
                             className="input-field"
                           />
                         </div>
                         <div>
                           <label htmlFor="email" className="block text-heading font-semibold text-sm mb-2">
-                            {isFr ? 'Courriel' : 'Email'} *
+                            {tx({ fr: 'Courriel', en: 'Email', es: 'Correo' })} *
                           </label>
                           <input
                             type="email" id="email" name="email" required
                             value={formData.email} onChange={handleChange}
-                            placeholder={isFr ? 'votre@email.com' : 'your@email.com'}
+                            placeholder={tx({ fr: 'votre@email.com', en: 'your@email.com', es: 'su@email.com' })}
                             className="input-field"
                           />
                         </div>
@@ -201,7 +200,7 @@ function Checkout() {
 
                       <div>
                         <label htmlFor="telephone" className="block text-heading font-semibold text-sm mb-2">
-                          {isFr ? 'Telephone' : 'Phone'}
+                          {tx({ fr: 'Telephone', en: 'Phone', es: 'Telefono' })}
                         </label>
                         <input
                           type="tel" id="telephone" name="telephone"
@@ -215,18 +214,18 @@ function Checkout() {
                       <div className="pt-2">
                         <h2 className="text-xl font-heading font-bold text-heading mb-5 flex items-center gap-2">
                           <MapPin size={20} className="text-accent" />
-                          {isFr ? 'Adresse de livraison' : 'Shipping address'}
+                          {tx({ fr: 'Adresse de livraison', en: 'Shipping address', es: 'Direccion de envio' })}
                         </h2>
                       </div>
 
                       <div>
                         <label htmlFor="adresse" className="block text-heading font-semibold text-sm mb-2">
-                          {isFr ? 'Adresse' : 'Address'} *
+                          {tx({ fr: 'Adresse', en: 'Address', es: 'Direccion' })} *
                         </label>
                         <input
                           type="text" id="adresse" name="adresse" required
                           value={formData.adresse} onChange={handleChange}
-                          placeholder={isFr ? '123 rue Exemple' : '123 Example St'}
+                          placeholder={tx({ fr: '123 rue Exemple', en: '123 Example St', es: '123 Calle Ejemplo' })}
                           className="input-field"
                         />
                       </div>
@@ -234,12 +233,12 @@ function Checkout() {
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                         <div>
                           <label htmlFor="ville" className="block text-heading font-semibold text-sm mb-2">
-                            {isFr ? 'Ville' : 'City'} *
+                            {tx({ fr: 'Ville', en: 'City', es: 'Ciudad' })} *
                           </label>
                           <input
                             type="text" id="ville" name="ville" required
                             value={formData.ville} onChange={handleChange}
-                            placeholder={isFr ? 'Montreal' : 'Montreal'}
+                            placeholder={tx({ fr: 'Montreal', en: 'Montreal', es: 'Montreal' })}
                             className="input-field"
                           />
                         </div>
@@ -253,13 +252,13 @@ function Checkout() {
                             className="input-field"
                           >
                             {provinces.map(p => (
-                              <option key={p.code} value={p.code}>{isFr ? p.fr : p.en}</option>
+                              <option key={p.code} value={p.code}>{tx({ fr: p.fr, en: p.en, es: p.es })}</option>
                             ))}
                           </select>
                         </div>
                         <div>
                           <label htmlFor="codePostal" className="block text-heading font-semibold text-sm mb-2">
-                            {isFr ? 'Code postal' : 'Postal code'} *
+                            {tx({ fr: 'Code postal', en: 'Postal code', es: 'Codigo postal' })} *
                           </label>
                           <input
                             type="text" id="codePostal" name="codePostal" required
@@ -273,29 +272,29 @@ function Checkout() {
 
                       <div>
                         <label className="block text-heading font-semibold text-sm mb-2">
-                          {isFr ? 'Avez-vous votre design pret?' : 'Do you have your design ready?'}
+                          {tx({ fr: 'Avez-vous votre design pret?', en: 'Do you have your design ready?', es: 'Tiene su diseno listo?' })}
                         </label>
                         <div className="flex gap-4">
                           <label className={`flex items-center gap-2 px-4 py-2.5 rounded-lg cursor-pointer transition-all ${formData.designReady === 'yes' ? 'bg-accent text-white' : 'text-heading bg-glass'}`}>
                             <input type="radio" name="designReady" value="yes" checked={formData.designReady === 'yes'} onChange={handleChange} className="hidden" />
-                            {isFr ? 'Oui' : 'Yes'}
+                            {tx({ fr: 'Oui', en: 'Yes', es: 'Si' })}
                           </label>
                           <label className={`flex items-center gap-2 px-4 py-2.5 rounded-lg cursor-pointer transition-all ${formData.designReady === 'no' ? 'bg-accent text-white' : 'text-heading bg-glass'}`}>
                             <input type="radio" name="designReady" value="no" checked={formData.designReady === 'no'} onChange={handleChange} className="hidden" />
-                            {isFr ? 'Non, j\'ai besoin du design' : 'No, I need design help'}
+                            {tx({ fr: 'Non, j\'ai besoin du design', en: 'No, I need design help', es: 'No, necesito ayuda con el diseno' })}
                           </label>
                         </div>
                       </div>
 
                       <div>
                         <label htmlFor="message" className="block text-heading font-semibold text-sm mb-2">
-                          {isFr ? 'Instructions ou détails' : 'Instructions or details'}
+                          {tx({ fr: 'Instructions ou details', en: 'Instructions or details', es: 'Instrucciones o detalles' })}
                         </label>
                         <textarea
                           id="message" name="message"
                           value={formData.message} onChange={handleChange}
                           rows={3}
-                          placeholder={isFr ? 'Couleurs, texte, précisions...' : 'Colors, text, details...'}
+                          placeholder={tx({ fr: 'Couleurs, texte, precisions...', en: 'Colors, text, details...', es: 'Colores, texto, detalles...' })}
                           className="input-field resize-none"
                         />
                       </div>
@@ -305,7 +304,7 @@ function Checkout() {
                         <div className="p-4 rounded-lg bg-glass">
                           <p className="text-heading font-semibold text-sm mb-2 flex items-center gap-2">
                             <Paperclip size={14} className="text-accent" />
-                            {isFr ? 'Fichiers joints aux produits' : 'Files attached to products'}
+                            {tx({ fr: 'Fichiers joints aux produits', en: 'Files attached to products', es: 'Archivos adjuntos a los productos' })}
                           </p>
                           {items.filter(item => item.uploadedFiles?.length > 0).map((item, i) => (
                             <div key={i} className="text-grey-muted text-xs mb-1">
@@ -337,7 +336,7 @@ function Checkout() {
                             {t('checkout.processing')}
                           </>
                         ) : (
-                          isFr ? 'Continuer vers le paiement' : 'Continue to payment'
+                          tx({ fr: 'Continuer vers le paiement', en: 'Continue to payment', es: 'Continuar al pago' })
                         )}
                       </button>
                     </form>
@@ -353,7 +352,7 @@ function Checkout() {
                       className="flex items-center gap-2 text-grey-muted hover:text-heading transition-colors mb-6 text-sm"
                     >
                       <ArrowLeft size={16} />
-                      {isFr ? 'Modifier mes informations' : 'Edit my information'}
+                      {tx({ fr: 'Modifier mes informations', en: 'Edit my information', es: 'Editar mi informacion' })}
                     </button>
 
                     {/* Customer info summary */}
@@ -410,7 +409,7 @@ function Checkout() {
                           {item.uploadedFiles?.length > 0 && (
                             <p className="text-accent text-xs flex items-center gap-1">
                               <Paperclip size={10} />
-                              {item.uploadedFiles.length} {isFr ? 'fichier(s)' : 'file(s)'}
+                              {item.uploadedFiles.length} {tx({ fr: 'fichier(s)', en: 'file(s)', es: 'archivo(s)' })}
                             </p>
                           )}
                         </div>
@@ -421,13 +420,13 @@ function Checkout() {
 
                   <div className="border-t pt-4 card-border space-y-2">
                     <div className="flex justify-between items-center text-sm">
-                      <span className="text-grey-muted">{isFr ? 'Sous-total' : 'Subtotal'}</span>
+                      <span className="text-grey-muted">{tx({ fr: 'Sous-total', en: 'Subtotal', es: 'Subtotal' })}</span>
                       <span className="text-heading">{cartTotal.toFixed(2)}$</span>
                     </div>
                     <div className="flex justify-between items-center text-sm">
-                      <span className="text-grey-muted">{isFr ? 'Livraison' : 'Shipping'}</span>
+                      <span className="text-grey-muted">{tx({ fr: 'Livraison', en: 'Shipping', es: 'Envio' })}</span>
                       <span className="text-heading">
-                        {shipping === 0 ? (isFr ? 'Gratuit' : 'Free') : `${shipping.toFixed(2)}$`}
+                        {shipping === 0 ? tx({ fr: 'Gratuit', en: 'Free', es: 'Gratis' }) : `${shipping.toFixed(2)}$`}
                       </span>
                     </div>
                     <div className="flex justify-between items-center text-sm">
@@ -448,7 +447,7 @@ function Checkout() {
                     </div>
                     {shipping === 0 && formData.province === 'QC' && formData.codePostal?.toUpperCase().startsWith('H') && (
                       <p className="text-green-400 text-xs mt-1">
-                        {isFr ? 'Livraison gratuite - region de Montreal' : 'Free shipping - Montreal area'}
+                        {tx({ fr: 'Livraison gratuite - region de Montreal', en: 'Free shipping - Montreal area', es: 'Envio gratis - zona de Montreal' })}
                       </p>
                     )}
                   </div>

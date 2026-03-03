@@ -5,41 +5,43 @@ import { useLang } from '../i18n/LanguageContext';
 
 function CookieBanner() {
   const { showBanner, acceptAll, rejectAll, acceptSelected } = useCookies();
-  const { lang } = useLang();
+  const { tx } = useLang();
   const [showDetails, setShowDetails] = useState(false);
   const [analytics, setAnalytics] = useState(true);
   const [marketing, setMarketing] = useState(false);
 
   if (!showBanner) return null;
 
-  const t = lang === 'fr' ? {
-    title: 'Respect de votre vie privée',
-    desc: 'Nous utilisons des cookies pour analyser le trafic et améliorer votre expérience. Conformément à la Loi 25 du Québec, votre consentement est requis.',
-    acceptAll: 'Tout accepter',
-    rejectAll: 'Refuser',
-    customize: 'Personnaliser',
-    save: 'Enregistrer mes choix',
-    necessary: 'Essentiels',
-    necessaryDesc: 'Fonctionnement du site (panier, thème, langue). Toujours actifs.',
-    analyticsLabel: 'Analytique',
-    analyticsDesc: 'Google Analytics - comprendre comment vous utilisez le site pour l\'améliorer.',
-    marketingLabel: 'Marketing',
-    marketingDesc: 'Permettre le suivi pour des publicités personnalisées (Meta Pixel, etc.).',
-    always: 'Toujours actif',
-  } : {
-    title: 'Your privacy matters',
-    desc: 'We use cookies to analyze traffic and improve your experience. As required by Quebec\'s Law 25, your consent is needed.',
-    acceptAll: 'Accept all',
-    rejectAll: 'Decline',
-    customize: 'Customize',
-    save: 'Save my choices',
-    necessary: 'Essential',
-    necessaryDesc: 'Site functionality (cart, theme, language). Always active.',
-    analyticsLabel: 'Analytics',
-    analyticsDesc: 'Google Analytics - understand how you use the site to improve it.',
-    marketingLabel: 'Marketing',
-    marketingDesc: 'Allow tracking for personalized ads (Meta Pixel, etc.).',
-    always: 'Always active',
+  const labels = {
+    title: tx({ fr: 'Respect de votre vie privee', en: 'Your privacy matters', es: 'Su privacidad importa' }),
+    desc: tx({
+      fr: 'Nous utilisons des cookies pour analyser le trafic et ameliorer votre experience. Conformement a la Loi 25 du Quebec, votre consentement est requis.',
+      en: 'We use cookies to analyze traffic and improve your experience. As required by Quebec\'s Law 25, your consent is needed.',
+      es: 'Usamos cookies para analizar el trafico y mejorar su experiencia. Segun la Ley 25 de Quebec, se requiere su consentimiento.',
+    }),
+    acceptAll: tx({ fr: 'Tout accepter', en: 'Accept all', es: 'Aceptar todo' }),
+    rejectAll: tx({ fr: 'Refuser', en: 'Decline', es: 'Rechazar' }),
+    customize: tx({ fr: 'Personnaliser', en: 'Customize', es: 'Personalizar' }),
+    save: tx({ fr: 'Enregistrer mes choix', en: 'Save my choices', es: 'Guardar mis opciones' }),
+    necessary: tx({ fr: 'Essentiels', en: 'Essential', es: 'Esenciales' }),
+    necessaryDesc: tx({
+      fr: 'Fonctionnement du site (panier, theme, langue). Toujours actifs.',
+      en: 'Site functionality (cart, theme, language). Always active.',
+      es: 'Funcionamiento del sitio (carrito, tema, idioma). Siempre activos.',
+    }),
+    analyticsLabel: tx({ fr: 'Analytique', en: 'Analytics', es: 'Analitica' }),
+    analyticsDesc: tx({
+      fr: 'Google Analytics - comprendre comment vous utilisez le site pour l\'ameliorer.',
+      en: 'Google Analytics - understand how you use the site to improve it.',
+      es: 'Google Analytics - entender como usa el sitio para mejorarlo.',
+    }),
+    marketingLabel: tx({ fr: 'Marketing', en: 'Marketing', es: 'Marketing' }),
+    marketingDesc: tx({
+      fr: 'Permettre le suivi pour des publicites personnalisees (Meta Pixel, etc.).',
+      en: 'Allow tracking for personalized ads (Meta Pixel, etc.).',
+      es: 'Permitir el seguimiento para anuncios personalizados (Meta Pixel, etc.).',
+    }),
+    always: tx({ fr: 'Toujours actif', en: 'Always active', es: 'Siempre activo' }),
   };
 
   return (
@@ -57,10 +59,10 @@ function CookieBanner() {
               style={{ background: 'var(--icon-bg)' }}>
               <Shield size={18} className="text-accent" />
             </div>
-            <h3 className="text-heading font-heading font-bold text-base">{t.title}</h3>
+            <h3 className="text-heading font-heading font-bold text-base">{labels.title}</h3>
           </div>
 
-          <p className="text-grey-muted text-sm leading-relaxed mb-4">{t.desc}</p>
+          <p className="text-grey-muted text-sm leading-relaxed mb-4">{labels.desc}</p>
 
           {/* Details toggle */}
           {showDetails && (
@@ -68,17 +70,17 @@ function CookieBanner() {
               {/* Essential */}
               <div className="flex items-center justify-between p-3 rounded-lg" style={{ background: 'var(--bg-glass)' }}>
                 <div>
-                  <span className="text-heading text-sm font-semibold">{t.necessary}</span>
-                  <p className="text-grey-muted text-xs mt-0.5">{t.necessaryDesc}</p>
+                  <span className="text-heading text-sm font-semibold">{labels.necessary}</span>
+                  <p className="text-grey-muted text-xs mt-0.5">{labels.necessaryDesc}</p>
                 </div>
-                <span className="text-xs text-accent font-medium whitespace-nowrap ml-3">{t.always}</span>
+                <span className="text-xs text-accent font-medium whitespace-nowrap ml-3">{labels.always}</span>
               </div>
 
               {/* Analytics */}
               <label className="flex items-center justify-between p-3 rounded-lg cursor-pointer" style={{ background: 'var(--bg-glass)' }}>
                 <div className="flex-1">
-                  <span className="text-heading text-sm font-semibold">{t.analyticsLabel}</span>
-                  <p className="text-grey-muted text-xs mt-0.5">{t.analyticsDesc}</p>
+                  <span className="text-heading text-sm font-semibold">{labels.analyticsLabel}</span>
+                  <p className="text-grey-muted text-xs mt-0.5">{labels.analyticsDesc}</p>
                 </div>
                 <input
                   type="checkbox"
@@ -91,8 +93,8 @@ function CookieBanner() {
               {/* Marketing */}
               <label className="flex items-center justify-between p-3 rounded-lg cursor-pointer" style={{ background: 'var(--bg-glass)' }}>
                 <div className="flex-1">
-                  <span className="text-heading text-sm font-semibold">{t.marketingLabel}</span>
-                  <p className="text-grey-muted text-xs mt-0.5">{t.marketingDesc}</p>
+                  <span className="text-heading text-sm font-semibold">{labels.marketingLabel}</span>
+                  <p className="text-grey-muted text-xs mt-0.5">{labels.marketingDesc}</p>
                 </div>
                 <input
                   type="checkbox"
@@ -107,7 +109,7 @@ function CookieBanner() {
           {/* Buttons */}
           <div className="flex flex-col sm:flex-row gap-2">
             <button onClick={acceptAll} className="btn-primary flex-1 justify-center text-sm py-2.5">
-              {t.acceptAll}
+              {labels.acceptAll}
             </button>
 
             {showDetails ? (
@@ -115,20 +117,20 @@ function CookieBanner() {
                 onClick={() => acceptSelected({ analytics, marketing })}
                 className="btn-outline flex-1 justify-center text-sm py-2.5"
               >
-                {t.save}
+                {labels.save}
               </button>
             ) : (
               <button
                 onClick={() => setShowDetails(true)}
                 className="btn-outline flex-1 justify-center text-sm py-2.5 gap-1.5"
               >
-                {t.customize}
+                {labels.customize}
                 <ChevronDown size={14} />
               </button>
             )}
 
             <button onClick={rejectAll} className="text-grey-muted hover:text-heading text-sm py-2.5 px-4 transition-colors">
-              {t.rejectAll}
+              {labels.rejectAll}
             </button>
           </div>
         </div>

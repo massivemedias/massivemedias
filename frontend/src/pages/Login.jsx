@@ -7,10 +7,9 @@ import { useLang } from '../i18n/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 
 function Login() {
-  const { t, lang } = useLang();
+  const { t, lang, tx } = useLang();
   const { signIn, signUp, resetPassword, updatePassword, session, passwordRecovery } = useAuth();
   const navigate = useNavigate();
-  const isFr = lang === 'fr';
 
   const [mode, setMode] = useState('login'); // 'login' | 'register' | 'forgot' | 'update-password'
   const [email, setEmail] = useState('');
@@ -42,12 +41,14 @@ function Login() {
     const errorDesc = params.get('error_description');
     if (errorCode || errorDesc) {
       if (errorCode === 'otp_expired') {
-        setError(isFr
-          ? 'Le lien a expire. Demande un nouveau lien de reinitialisation.'
-          : 'The link has expired. Request a new reset link.');
+        setError(tx({
+          fr: 'Le lien a expire. Demande un nouveau lien de reinitialisation.',
+          en: 'The link has expired. Request a new reset link.',
+          es: 'El enlace ha expirado. Solicita un nuevo enlace de restablecimiento.',
+        }));
         setMode('forgot');
       } else {
-        setError(errorDesc?.replace(/\+/g, ' ') || (isFr ? 'Une erreur est survenue.' : 'An error occurred.'));
+        setError(errorDesc?.replace(/\+/g, ' ') || tx({ fr: 'Une erreur est survenue.', en: 'An error occurred.', es: 'Ocurrio un error.' }));
       }
       window.history.replaceState(null, '', window.location.pathname);
       return;
@@ -63,24 +64,24 @@ function Login() {
   function translateSupabaseError(err) {
     const msg = err?.message || '';
     if (msg.includes('Invalid login credentials')) {
-      return isFr ? 'Email ou mot de passe incorrect' : 'Invalid email or password';
+      return tx({ fr: 'Email ou mot de passe incorrect', en: 'Invalid email or password', es: 'Correo o contrasena incorrectos' });
     }
     if (msg.includes('Email not confirmed')) {
-      return isFr ? 'Ton email n\'est pas encore confirme. Verifie ta boite de reception.' : 'Your email is not confirmed. Check your inbox.';
+      return tx({ fr: 'Ton email n\'est pas encore confirme. Verifie ta boite de reception.', en: 'Your email is not confirmed. Check your inbox.', es: 'Tu correo aun no esta confirmado. Revisa tu bandeja de entrada.' });
     }
     if (msg.includes('User already registered')) {
-      return isFr ? 'Un compte existe deja avec cet email.' : 'An account already exists with this email.';
+      return tx({ fr: 'Un compte existe deja avec cet email.', en: 'An account already exists with this email.', es: 'Ya existe una cuenta con este correo.' });
     }
     if (msg.includes('Password should be at least')) {
-      return isFr ? 'Le mot de passe doit contenir au moins 6 caracteres.' : 'Password must be at least 6 characters.';
+      return tx({ fr: 'Le mot de passe doit contenir au moins 6 caracteres.', en: 'Password must be at least 6 characters.', es: 'La contrasena debe tener al menos 6 caracteres.' });
     }
     if (msg.includes('rate limit') || msg.includes('too many requests')) {
-      return isFr ? 'Trop de tentatives. Attends quelques minutes.' : 'Too many attempts. Wait a few minutes.';
+      return tx({ fr: 'Trop de tentatives. Attends quelques minutes.', en: 'Too many attempts. Wait a few minutes.', es: 'Demasiados intentos. Espera unos minutos.' });
     }
     if (msg.includes('network') || msg.includes('fetch')) {
-      return isFr ? 'Erreur de connexion. Verifie ta connexion internet.' : 'Connection error. Check your internet.';
+      return tx({ fr: 'Erreur de connexion. Verifie ta connexion internet.', en: 'Connection error. Check your internet.', es: 'Error de conexion. Verifica tu internet.' });
     }
-    return msg || (isFr ? 'Une erreur est survenue.' : 'An error occurred.');
+    return msg || tx({ fr: 'Une erreur est survenue.', en: 'An error occurred.', es: 'Ocurrio un error.' });
   }
 
   async function handleSubmit(e) {
@@ -137,14 +138,14 @@ function Login() {
   }
 
   function getTitle() {
-    if (mode === 'update-password') return isFr ? 'Nouveau mot de passe' : 'New password';
+    if (mode === 'update-password') return tx({ fr: 'Nouveau mot de passe', en: 'New password', es: 'Nueva contrasena' });
     if (mode === 'forgot') return t('auth.forgotTitle');
     if (mode === 'register') return t('auth.registerTitle');
     return t('auth.loginTitle');
   }
 
   function getSubtitle() {
-    if (mode === 'update-password') return isFr ? 'Entre ton nouveau mot de passe' : 'Enter your new password';
+    if (mode === 'update-password') return tx({ fr: 'Entre ton nouveau mot de passe', en: 'Enter your new password', es: 'Ingresa tu nueva contrasena' });
     if (mode === 'forgot') return t('auth.forgotSubtitle');
     if (mode === 'register') return t('auth.registerSubtitle');
     return t('auth.loginSubtitle');
@@ -153,23 +154,23 @@ function Login() {
   const benefits = [
     {
       icon: ShoppingBag,
-      title: isFr ? 'Suivi de commandes' : 'Order tracking',
-      desc: isFr ? 'Suis tes commandes en temps reel' : 'Track your orders in real time',
+      title: tx({ fr: 'Suivi de commandes', en: 'Order tracking', es: 'Seguimiento de pedidos' }),
+      desc: tx({ fr: 'Suis tes commandes en temps reel', en: 'Track your orders in real time', es: 'Sigue tus pedidos en tiempo real' }),
     },
     {
       icon: Heart,
-      title: isFr ? 'Offres exclusives' : 'Exclusive offers',
-      desc: isFr ? 'Acces aux promos membres' : 'Access member-only promos',
+      title: tx({ fr: 'Offres exclusives', en: 'Exclusive offers', es: 'Ofertas exclusivas' }),
+      desc: tx({ fr: 'Acces aux promos membres', en: 'Access member-only promos', es: 'Acceso a promos para miembros' }),
     },
     {
       icon: Truck,
-      title: isFr ? 'Commande rapide' : 'Fast checkout',
-      desc: isFr ? 'Adresse et infos sauvegardees' : 'Saved address and info',
+      title: tx({ fr: 'Commande rapide', en: 'Fast checkout', es: 'Compra rapida' }),
+      desc: tx({ fr: 'Adresse et infos sauvegardees', en: 'Saved address and info', es: 'Direccion e info guardadas' }),
     },
     {
       icon: Shield,
-      title: isFr ? 'Parrainage 10%' : 'Referral 10%',
-      desc: isFr ? 'Invite un ami, recois 10% de rabais' : 'Invite a friend, get 10% off',
+      title: tx({ fr: 'Parrainage 10%', en: 'Referral 10%', es: 'Referidos 10%' }),
+      desc: tx({ fr: 'Invite un ami, recois 10% de rabais', en: 'Invite a friend, get 10% off', es: 'Invita a un amigo, recibe 10% de descuento' }),
     },
   ];
 
@@ -199,10 +200,10 @@ function Login() {
                 <div className="text-center py-6">
                   <CheckCircle size={48} className="text-green-400 mx-auto mb-4" />
                   <div className="text-green-400 mb-4">
-                    {isFr ? 'Mot de passe mis a jour avec succes!' : 'Password updated successfully!'}
+                    {tx({ fr: 'Mot de passe mis a jour avec succes!', en: 'Password updated successfully!', es: 'Contrasena actualizada con exito!' })}
                   </div>
                   <p className="text-grey-muted text-sm">
-                    {isFr ? 'Redirection en cours...' : 'Redirecting...'}
+                    {tx({ fr: 'Redirection en cours...', en: 'Redirecting...', es: 'Redirigiendo...' })}
                   </p>
                 </div>
               ) : resetSent ? (
@@ -249,7 +250,7 @@ function Login() {
                     <div>
                       <label className="block text-sm text-grey-light mb-1.5">
                         {mode === 'update-password'
-                          ? (isFr ? 'Nouveau mot de passe' : 'New password')
+                          ? tx({ fr: 'Nouveau mot de passe', en: 'New password', es: 'Nueva contrasena' })
                           : t('auth.password')}
                       </label>
                       <div className="relative">
@@ -307,7 +308,7 @@ function Login() {
                     ) : (
                       <>
                         {mode === 'update-password'
-                          ? (isFr ? 'Mettre a jour' : 'Update password')
+                          ? tx({ fr: 'Mettre a jour', en: 'Update password', es: 'Actualizar contrasena' })
                           : mode === 'forgot'
                             ? t('auth.sendReset')
                             : mode === 'register'
@@ -376,13 +377,15 @@ function Login() {
             >
               <h2 className="text-lg font-heading font-bold text-heading mb-2">
                 {mode === 'register'
-                  ? (isFr ? 'Pourquoi creer un compte?' : 'Why create an account?')
-                  : (isFr ? 'Avantages membres' : 'Member benefits')}
+                  ? tx({ fr: 'Pourquoi creer un compte?', en: 'Why create an account?', es: 'Por que crear una cuenta?' })
+                  : tx({ fr: 'Avantages membres', en: 'Member benefits', es: 'Beneficios de miembros' })}
               </h2>
               <p className="text-grey-muted text-sm mb-6">
-                {isFr
-                  ? 'Un compte gratuit pour profiter de tous les avantages.'
-                  : 'A free account to enjoy all the benefits.'}
+                {tx({
+                  fr: 'Un compte gratuit pour profiter de tous les avantages.',
+                  en: 'A free account to enjoy all the benefits.',
+                  es: 'Una cuenta gratuita para disfrutar de todos los beneficios.',
+                })}
               </p>
 
               <div className="space-y-4">
@@ -402,9 +405,11 @@ function Login() {
               {/* Trust signal */}
               <div className="mt-8 pt-6 border-t border-purple-main/10">
                 <p className="text-grey-muted text-xs text-center">
-                  {isFr
-                    ? 'Impression locale a Montreal - Pick-up gratuit Mile-End'
-                    : 'Local printing in Montreal - Free Mile-End pickup'}
+                  {tx({
+                    fr: 'Impression locale a Montreal - Pick-up gratuit Mile-End',
+                    en: 'Local printing in Montreal - Free Mile-End pickup',
+                    es: 'Impresion local en Montreal - Recogida gratis Mile-End',
+                  })}
                 </p>
               </div>
             </motion.div>

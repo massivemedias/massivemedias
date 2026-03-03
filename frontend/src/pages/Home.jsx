@@ -60,7 +60,7 @@ const fallbackFeaturedProjectLinks = [
 ];
 
 function Home() {
-  const { t, lang } = useLang();
+  const { t, lang, tx } = useLang();
   const { content } = useSiteContent();
 
   // ── Service Cards (fallback si vide ou absent) ──
@@ -120,7 +120,7 @@ function Home() {
       <SEO
         title={content?.homeSeo ? bl(content.homeSeo, 'title', lang) || t('home.seo.title') : t('home.seo.title')}
         description={content?.homeSeo ? bl(content.homeSeo, 'description', lang) || t('home.seo.description') : t('home.seo.description')}
-        breadcrumbs={[{ name: lang === 'fr' ? 'Accueil' : 'Home' }]}
+        breadcrumbs={[{ name: tx({ fr: 'Accueil', en: 'Home', es: 'Inicio' }) }]}
         jsonLd={[getOrganizationSchema(), getLocalBusinessSchema(lang)]}
       />
 
@@ -347,10 +347,10 @@ function Home() {
         >
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto">
             {[
-              { icon: Shield, fr: 'La promesse Massive', en: 'The Massive Promise', descFr: 'Satisfaction garantie ou on refait', descEn: 'Satisfaction guaranteed or we redo it' },
-              { icon: MapPin, fr: 'Imprime a Montreal', en: 'Printed in Montreal', descFr: 'Production 100% locale, Mile-End', descEn: '100% local production, Mile-End' },
-              { icon: Clock, fr: 'Delai rapide', en: 'Fast turnaround', descFr: '24-48h sur la plupart des produits', descEn: '24-48h on most products' },
-              { icon: Heart, fr: 'Design inclus', en: 'Design included', descFr: 'Creation graphique incluse', descEn: 'Graphic design included' },
+              { icon: Shield, fr: 'La promesse Massive', en: 'The Massive Promise', es: 'La promesa Massive', descFr: 'Satisfaction garantie ou on refait', descEn: 'Satisfaction guaranteed or we redo it', descEs: 'Satisfaccion garantizada o lo rehacemos' },
+              { icon: MapPin, fr: 'Imprime a Montreal', en: 'Printed in Montreal', es: 'Impreso en Montreal', descFr: 'Production 100% locale, Mile-End', descEn: '100% local production, Mile-End', descEs: 'Produccion 100% local, Mile-End' },
+              { icon: Clock, fr: 'Delai rapide', en: 'Fast turnaround', es: 'Entrega rapida', descFr: '24-48h sur la plupart des produits', descEn: '24-48h on most products', descEs: '24-48h en la mayoria de productos' },
+              { icon: Heart, fr: 'Design inclus', en: 'Design included', es: 'Diseno incluido', descFr: 'Creation graphique incluse', descEn: 'Graphic design included', descEs: 'Creacion grafica incluida' },
             ].map((item, i) => {
               const Icon = item.icon;
               return (
@@ -366,10 +366,10 @@ function Home() {
                     <Icon size={22} className="text-accent" />
                   </div>
                   <h3 className="text-heading font-heading font-bold text-sm mb-1">
-                    {lang === 'fr' ? item.fr : item.en}
+                    {tx({ fr: item.fr, en: item.en, es: item.es })}
                   </h3>
                   <p className="text-grey-muted text-xs">
-                    {lang === 'fr' ? item.descFr : item.descEn}
+                    {tx({ fr: item.descFr, en: item.descEn, es: item.descEs })}
                   </p>
                 </motion.div>
               );

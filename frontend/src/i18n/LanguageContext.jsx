@@ -3,23 +3,42 @@ import translations from './translations';
 
 const LanguageContext = createContext();
 
+const SUPPORTED_LANGS = ['fr', 'en', 'es'];
+const DEFAULT_LANG = 'fr';
+
 function get(obj, path) {
   return path.split('.').reduce((acc, key) => (acc && acc[key] !== undefined ? acc[key] : undefined), obj);
 }
 
 export function LanguageProvider({ children }) {
-  const [lang, setLang] = useState(() => {
+  const [lang, setLangState] = useState(() => {
     try {
       const saved = localStorage.getItem('massive-lang');
-      return saved === 'en' ? 'en' : 'fr';
+      if (saved && SUPPORTED_LANGS.includes(saved)) return saved;
+
+      // Auto-detect browser language on first visit
+      const browserLangs = navigator.languages || [navigator.language || ''];
+      for (const bl of browserLangs) {
+        const code = bl.toLowerCase().split('-')[0];
+        if (SUPPORTED_LANGS.includes(code)) return code;
+      }
+      return DEFAULT_LANG;
     } catch {
-      return 'fr';
+      return DEFAULT_LANG;
     }
   });
 
-  const toggleLang = useCallback(() => {
-    setLang(prev => {
-      const next = prev === 'fr' ? 'en' : 'fr';
+  const setLang = useCallback((newLang) => {
+    if (!SUPPORTED_LANGS.includes(newLang)) return;
+    setLangState(newLang);
+    try { localStorage.setItem('massive-lang', newLang); } catch {}
+    document.documentElement.lang = newLang;
+  }, []);
+
+  const cycleLang = useCallback(() => {
+    setLangState(prev => {
+      const idx = SUPPORTED_LANGS.indexOf(prev);
+      const next = SUPPORTED_LANGS[(idx + 1) % SUPPORTED_LANGS.length];
       try { localStorage.setItem('massive-lang', next); } catch {}
       document.documentElement.lang = next;
       return next;
@@ -29,13 +48,23 @@ export function LanguageProvider({ children }) {
   const t = useCallback((key, fallback) => {
     const result = get(translations[lang], key);
     if (result !== undefined) return result;
-    // Fallback to French if key missing in current lang
+    // Fallback: es -> en -> fr
+    if (lang === 'es') {
+      const enResult = get(translations.en, key);
+      if (enResult !== undefined) return enResult;
+    }
     const frResult = get(translations.fr, key);
     if (frResult !== undefined) return frResult;
     return fallback || key;
   }, [lang]);
 
-  const value = useMemo(() => ({ lang, toggleLang, t }), [lang, toggleLang, t]);
+  // Inline translation helper for migrating ternaries
+  // Usage: tx({ fr: 'Bonjour', en: 'Hello', es: 'Hola' })
+  const tx = useCallback((map) => {
+    return map[lang] || map.en || map.fr || '';
+  }, [lang]);
+
+  const value = useMemo(() => ({ lang, setLang, cycleLang, toggleLang: cycleLang, t, tx }), [lang, setLang, cycleLang, t, tx]);
 
   return (
     <LanguageContext.Provider value={value}>

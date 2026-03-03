@@ -35,7 +35,7 @@ function buildArtistFromCMS(cms) {
 function ArtisteDetail({ subdomainSlug }) {
   const { slug: routeSlug } = useParams();
   const slug = subdomainSlug || routeSlug;
-  const { lang } = useLang();
+  const { lang, tx } = useLang();
   const { theme } = useTheme();
   const { artists: cmsArtists } = useArtists();
 
@@ -86,17 +86,17 @@ function ArtisteDetail({ subdomainSlug }) {
     return (
       <div className="section-container pt-32 text-center">
         <h1 className="text-4xl font-heading font-bold text-heading mb-4">
-          {lang === 'fr' ? 'Artiste introuvable' : 'Artist not found'}
+          {tx({ fr: 'Artiste introuvable', en: 'Artist not found', es: 'Artista no encontrado' })}
         </h1>
         <Link to="/artistes" className="text-accent hover:underline">
-          {lang === 'fr' ? '← Retour aux artistes' : '← Back to artists'}
+          {tx({ fr: '← Retour aux artistes', en: '← Back to artists', es: '← Volver a artistas' })}
         </Link>
       </div>
     );
   }
 
-  const tagline = lang === 'fr' ? artist.tagline.fr : artist.tagline.en;
-  const bio = lang === 'fr' ? artist.bio.fr : artist.bio.en;
+  const tagline = tx({ fr: artist.tagline.fr, en: artist.tagline.en, es: artist.tagline.es || artist.tagline.en });
+  const bio = tx({ fr: artist.bio.fr, en: artist.bio.en, es: artist.bio.es || artist.bio.en });
   const minPrice = Math.min(...Object.values(artist.pricing.studio));
 
   const handleSelectPrint = (print) => {
@@ -106,51 +106,80 @@ function ArtisteDetail({ subdomainSlug }) {
     }, 100);
   };
 
-  const highlights = lang === 'fr' ? [
-    'Tirages fine art professionnels, qualité galerie',
-    'Imprimés par Massive Medias, Montréal',
-    'Papiers d\'archives, encres pigmentées',
-    'Soft proofing et calibration couleurs inclus',
-    'Pick-up gratuit Mile-End ou livraison',
-    'Cadre noir ou blanc disponible',
-  ] : [
-    'Professional fine art prints, gallery quality',
-    'Printed by Massive Medias, Montreal',
-    'Archival papers, pigmented inks',
-    'Soft proofing and color calibration included',
-    'Free Mile-End pick-up or delivery',
-    'Black or white frame available',
-  ];
+  const highlights = tx({
+    fr: [
+      'Tirages fine art professionnels, qualite galerie',
+      'Imprimes par Massive Medias, Montreal',
+      'Papiers d\'archives, encres pigmentees',
+      'Soft proofing et calibration couleurs inclus',
+      'Pick-up gratuit Mile-End ou livraison',
+      'Cadre noir ou blanc disponible',
+    ],
+    en: [
+      'Professional fine art prints, gallery quality',
+      'Printed by Massive Medias, Montreal',
+      'Archival papers, pigmented inks',
+      'Soft proofing and color calibration included',
+      'Free Mile-End pick-up or delivery',
+      'Black or white frame available',
+    ],
+    es: [
+      'Impresiones fine art profesionales, calidad galeria',
+      'Impresas por Massive Medias, Montreal',
+      'Papeles de archivo, tintas pigmentadas',
+      'Soft proofing y calibracion de colores incluidos',
+      'Recogida gratuita en Mile-End o envio',
+      'Marco negro o blanco disponible',
+    ],
+  });
 
-  const processSteps = lang === 'fr' ? [
-    { step: '1', title: 'Choisissez', desc: 'Sélectionnez une oeuvre et configurez votre tirage - série, format et cadre.' },
-    { step: '2', title: 'On imprime', desc: 'Impression professionnelle dans nos studios. Soft proofing et contrôle qualité avant envoi.' },
-    { step: '3', title: 'Livraison', desc: 'Pick-up gratuit au Mile-End ou livraison sécurisée à votre porte.' },
-  ] : [
-    { step: '1', title: 'Choose', desc: 'Select an artwork and configure your print - series, format and frame.' },
-    { step: '2', title: 'We print', desc: 'Professional printing in our studios. Soft proofing and quality control before shipping.' },
-    { step: '3', title: 'Delivery', desc: 'Free Mile-End pick-up or secure delivery to your door.' },
-  ];
+  const processSteps = tx({
+    fr: [
+      { step: '1', title: 'Choisissez', desc: 'Selectionnez une oeuvre et configurez votre tirage - serie, format et cadre.' },
+      { step: '2', title: 'On imprime', desc: 'Impression professionnelle dans nos studios. Soft proofing et controle qualite avant envoi.' },
+      { step: '3', title: 'Livraison', desc: 'Pick-up gratuit au Mile-End ou livraison securisee a votre porte.' },
+    ],
+    en: [
+      { step: '1', title: 'Choose', desc: 'Select an artwork and configure your print - series, format and frame.' },
+      { step: '2', title: 'We print', desc: 'Professional printing in our studios. Soft proofing and quality control before shipping.' },
+      { step: '3', title: 'Delivery', desc: 'Free Mile-End pick-up or secure delivery to your door.' },
+    ],
+    es: [
+      { step: '1', title: 'Elige', desc: 'Selecciona una obra y configura tu impresion - serie, formato y marco.' },
+      { step: '2', title: 'Imprimimos', desc: 'Impresion profesional en nuestros estudios. Soft proofing y control de calidad antes del envio.' },
+      { step: '3', title: 'Entrega', desc: 'Recogida gratuita en Mile-End o envio seguro a tu puerta.' },
+    ],
+  });
 
   const equipmentItems = [
-    { name: lang === 'fr' ? 'Impression pigmentée 4 couleurs' : '4-Color Pigment Printing', desc: lang === 'fr' ? 'Qualite decoration - Serie Studio' : 'Decoration quality - Studio Series' },
-    { name: lang === 'fr' ? 'Impression pigmentée 12 couleurs' : '12-Color Pigment Printing', desc: lang === 'fr' ? 'Qualite galerie - Serie Musee' : 'Gallery quality - Museum Series' },
-    { name: lang === 'fr' ? 'Papiers Fine Art' : 'Fine Art Papers', desc: 'Hahnemuhle, Canson, Ilford' },
+    { name: tx({ fr: 'Impression pigmentee 4 couleurs', en: '4-Color Pigment Printing', es: 'Impresion pigmentada 4 colores' }), desc: tx({ fr: 'Qualite decoration - Serie Studio', en: 'Decoration quality - Studio Series', es: 'Calidad decoracion - Serie Studio' }) },
+    { name: tx({ fr: 'Impression pigmentee 12 couleurs', en: '12-Color Pigment Printing', es: 'Impresion pigmentada 12 colores' }), desc: tx({ fr: 'Qualite galerie - Serie Musee', en: 'Gallery quality - Museum Series', es: 'Calidad galeria - Serie Museo' }) },
+    { name: tx({ fr: 'Papiers Fine Art', en: 'Fine Art Papers', es: 'Papeles Fine Art' }), desc: 'Hahnemuhle, Canson, Ilford' },
   ];
 
-  const faqItems = lang === 'fr' ? [
-    { q: 'Comment se passe la commande?', a: 'Sélectionnez l\'oeuvre, la qualité d\'impression, le format et le cadre. Ajoutez au panier et procédez au paiement. Nous imprimons et préparons votre commande sous 24-48h.' },
-    { q: 'Quelle est la différence entre Studio et Musée?', a: 'La Série Studio utilise une imprimante 4 encres pigmentées, parfaite pour la décoration. La Série Musée utilise une imprimante 12 encres pigmentées pour une qualité galerie, idéale pour les collectionneurs.' },
-    { q: 'Puis-je récupérer sur place?', a: 'Oui! Pick-up gratuit au Mile-End (7049 rue Saint-Urbain, Montréal). Livraison locale aussi disponible.' },
-    { q: 'Les tirages sont-ils signés?', a: 'Les tirages sont imprimés professionnellement par Massive Medias en collaboration avec l\'artiste. Contactez-nous pour les tirages signés ou numérotés.' },
-    { q: 'Offrez-vous l\'encadrement?', a: 'Oui, cadre noir ou blanc disponible. Ajoutez l\'option cadre directement dans le configurateur.' },
-  ] : [
-    { q: 'How does ordering work?', a: 'Select the artwork, print quality, format and frame. Add to cart and proceed to payment. We print and prepare your order within 24-48h.' },
-    { q: 'What\'s the difference between Studio and Museum?', a: 'Studio Series uses a 4-color pigment printer, perfect for decoration. Museum Series uses a 12-color pigment printer for gallery quality, ideal for collectors.' },
-    { q: 'Can I pick up in person?', a: 'Yes! Free pick-up in Mile-End (7049 rue Saint-Urbain, Montreal). Local delivery also available.' },
-    { q: 'Are the prints signed?', a: 'Prints are professionally printed by Massive Medias in collaboration with the artist. Contact us for signed or numbered editions.' },
-    { q: 'Do you offer framing?', a: 'Yes, black or white frame available. Add the frame option directly in the configurator.' },
-  ];
+  const faqItems = tx({
+    fr: [
+      { q: 'Comment se passe la commande?', a: 'Selectionnez l\'oeuvre, la qualite d\'impression, le format et le cadre. Ajoutez au panier et procedez au paiement. Nous imprimons et preparons votre commande sous 24-48h.' },
+      { q: 'Quelle est la difference entre Studio et Musee?', a: 'La Serie Studio utilise une imprimante 4 encres pigmentees, parfaite pour la decoration. La Serie Musee utilise une imprimante 12 encres pigmentees pour une qualite galerie, ideale pour les collectionneurs.' },
+      { q: 'Puis-je recuperer sur place?', a: 'Oui! Pick-up gratuit au Mile-End (7049 rue Saint-Urbain, Montreal). Livraison locale aussi disponible.' },
+      { q: 'Les tirages sont-ils signes?', a: 'Les tirages sont imprimes professionnellement par Massive Medias en collaboration avec l\'artiste. Contactez-nous pour les tirages signes ou numerotes.' },
+      { q: 'Offrez-vous l\'encadrement?', a: 'Oui, cadre noir ou blanc disponible. Ajoutez l\'option cadre directement dans le configurateur.' },
+    ],
+    en: [
+      { q: 'How does ordering work?', a: 'Select the artwork, print quality, format and frame. Add to cart and proceed to payment. We print and prepare your order within 24-48h.' },
+      { q: 'What\'s the difference between Studio and Museum?', a: 'Studio Series uses a 4-color pigment printer, perfect for decoration. Museum Series uses a 12-color pigment printer for gallery quality, ideal for collectors.' },
+      { q: 'Can I pick up in person?', a: 'Yes! Free pick-up in Mile-End (7049 rue Saint-Urbain, Montreal). Local delivery also available.' },
+      { q: 'Are the prints signed?', a: 'Prints are professionally printed by Massive Medias in collaboration with the artist. Contact us for signed or numbered editions.' },
+      { q: 'Do you offer framing?', a: 'Yes, black or white frame available. Add the frame option directly in the configurator.' },
+    ],
+    es: [
+      { q: 'Como funciona el pedido?', a: 'Selecciona la obra, la calidad de impresion, el formato y el marco. Agrega al carrito y procede al pago. Imprimimos y preparamos tu pedido en 24-48h.' },
+      { q: 'Cual es la diferencia entre Studio y Museo?', a: 'La Serie Studio usa una impresora de 4 tintas pigmentadas, perfecta para decoracion. La Serie Museo usa una impresora de 12 tintas pigmentadas para calidad galeria, ideal para coleccionistas.' },
+      { q: 'Puedo recoger en persona?', a: 'Si! Recogida gratuita en Mile-End (7049 rue Saint-Urbain, Montreal). Envio local tambien disponible.' },
+      { q: 'Las impresiones estan firmadas?', a: 'Las impresiones son realizadas profesionalmente por Massive Medias en colaboracion con el artista. Contactanos para ediciones firmadas o numeradas.' },
+      { q: 'Ofrecen enmarcado?', a: 'Si, marco negro o blanco disponible. Agrega la opcion de marco directamente en el configurador.' },
+    ],
+  });
 
   return (
     <>
@@ -158,8 +187,8 @@ function ArtisteDetail({ subdomainSlug }) {
         title={`${artist.name} - ${tagline} | Massive Medias`}
         description={bio.slice(0, 160)}
         breadcrumbs={[
-          { name: lang === 'fr' ? 'Accueil' : 'Home', url: '/' },
-          { name: lang === 'fr' ? 'Artistes' : 'Artists', url: '/artistes' },
+          { name: tx({ fr: 'Accueil', en: 'Home', es: 'Inicio' }), url: '/' },
+          { name: tx({ fr: 'Artistes', en: 'Artists', es: 'Artistas' }), url: '/artistes' },
           { name: artist.name },
         ]}
       />
@@ -177,9 +206,9 @@ function ArtisteDetail({ subdomainSlug }) {
               className="max-w-4xl lg:flex-1"
             >
               <div className="flex items-center gap-2 mb-6 text-sm">
-                <Link to="/" className="text-grey-muted hover:text-accent transition-colors">{lang === 'fr' ? 'Accueil' : 'Home'}</Link>
+                <Link to="/" className="text-grey-muted hover:text-accent transition-colors">{tx({ fr: 'Accueil', en: 'Home', es: 'Inicio' })}</Link>
                 <span className="text-grey-muted">/</span>
-                <Link to="/artistes" className="text-grey-muted hover:text-accent transition-colors">{lang === 'fr' ? 'Artistes' : 'Artists'}</Link>
+                <Link to="/artistes" className="text-grey-muted hover:text-accent transition-colors">{tx({ fr: 'Artistes', en: 'Artists', es: 'Artistas' })}</Link>
                 <span className="text-grey-muted">/</span>
                 <span className="text-accent">{artist.name}</span>
               </div>
@@ -207,18 +236,20 @@ function ArtisteDetail({ subdomainSlug }) {
                 {tagline}
               </p>
               <p className="text-sm text-grey-muted mb-8">
-                {lang === 'fr'
-                  ? `${artist.prints.length} oeuvres disponibles · Tirages à partir de ${minPrice}$`
-                  : `${artist.prints.length} artworks available · Prints starting at $${minPrice}`}
+                {tx({
+                  fr: `${artist.prints.length} oeuvres disponibles · Tirages a partir de ${minPrice}$`,
+                  en: `${artist.prints.length} artworks available · Prints starting at $${minPrice}`,
+                  es: `${artist.prints.length} obras disponibles · Impresiones desde ${minPrice}$`,
+                })}
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4">
                 <a href="#oeuvres" className="btn-primary">
-                  {lang === 'fr' ? 'Voir les oeuvres' : 'View artworks'}
+                  {tx({ fr: 'Voir les oeuvres', en: 'View artworks', es: 'Ver las obras' })}
                   <ArrowRight className="ml-2" size={20} />
                 </a>
                 <a href="#tarifs" className="btn-outline">
-                  {lang === 'fr' ? 'Voir les tarifs' : 'View pricing'}
+                  {tx({ fr: 'Voir les tarifs', en: 'View pricing', es: 'Ver precios' })}
                 </a>
               </div>
             </motion.div>
@@ -253,7 +284,7 @@ function ArtisteDetail({ subdomainSlug }) {
         >
           <div>
             <h2 className="text-3xl font-heading font-bold text-gradient mb-6">
-              {lang === 'fr' ? 'L\'artiste' : 'The Artist'}
+              {tx({ fr: 'L\'artiste', en: 'The Artist', es: 'El artista' })}
             </h2>
             <p className="text-grey-light text-base leading-relaxed mb-4">{bio}</p>
             {artist.socials && (
@@ -290,7 +321,7 @@ function ArtisteDetail({ subdomainSlug }) {
                 )}
                 {artist.socials.website && (
                   <a href={artist.socials.website} target="_blank" rel="noopener noreferrer" className="btn-outline !py-2 !px-4 text-sm">
-                    {lang === 'fr' ? 'Site web' : 'Website'} <ExternalLink size={14} className="ml-1" />
+                    {tx({ fr: 'Site web', en: 'Website', es: 'Sitio web' })} <ExternalLink size={14} className="ml-1" />
                   </a>
                 )}
               </div>
@@ -300,7 +331,7 @@ function ArtisteDetail({ subdomainSlug }) {
           <div className="p-8 rounded-2xl border border-purple-main/30 transition-colors duration-300 highlight-shadow">
             <h3 className="text-xl font-heading font-bold text-heading mb-6 flex items-center gap-2">
               <CheckCircle size={22} className="text-accent" />
-              {lang === 'fr' ? 'Ce qui est inclus' : 'What\'s included'}
+              {tx({ fr: 'Ce qui est inclus', en: 'What\'s included', es: 'Que esta incluido' })}
             </h3>
             <ul className="space-y-4">
               {highlights.map((highlight, index) => (
@@ -330,10 +361,10 @@ function ArtisteDetail({ subdomainSlug }) {
             className="mb-20"
           >
             <h2 className="text-3xl font-heading font-bold text-gradient mb-10 text-center">
-              {lang === 'fr' ? 'Demarche artistique' : 'Artistic Approach'}
+              {tx({ fr: 'Demarche artistique', en: 'Artistic Approach', es: 'Enfoque artistico' })}
             </h2>
             <div className="max-w-3xl mx-auto space-y-8">
-              {(lang === 'fr' ? artist.demarche.fr : artist.demarche.en).map((section, index) => (
+              {(artist.demarche[lang] || artist.demarche.en || artist.demarche.fr).map((section, index) => (
                 <motion.div
                   key={index}
                   initial={{ opacity: 0, y: 15 }}
@@ -361,12 +392,14 @@ function ArtisteDetail({ subdomainSlug }) {
           className="mb-20 scroll-mt-24"
         >
           <h2 className="text-3xl font-heading font-bold text-gradient mb-3 text-center">
-            {lang === 'fr' ? 'Oeuvres disponibles' : 'Available Artworks'}
+            {tx({ fr: 'Oeuvres disponibles', en: 'Available Artworks', es: 'Obras disponibles' })}
           </h2>
           <p className="text-grey-muted text-center mb-10 max-w-2xl mx-auto">
-            {lang === 'fr'
-              ? 'Sélectionnez une oeuvre pour configurer votre tirage.'
-              : 'Select an artwork to configure your print.'}
+            {tx({
+              fr: 'Selectionnez une oeuvre pour configurer votre tirage.',
+              en: 'Select an artwork to configure your print.',
+              es: 'Selecciona una obra para configurar tu impresion.',
+            })}
           </p>
 
           <div className="flex flex-wrap justify-center gap-5 max-w-6xl mx-auto">
@@ -401,7 +434,7 @@ function ArtisteDetail({ subdomainSlug }) {
             className="mb-20 scroll-mt-24"
           >
             <h2 className="text-3xl font-heading font-bold text-gradient mb-8 text-center">
-              {lang === 'fr' ? 'Configurez votre tirage' : 'Configure Your Print'}
+              {tx({ fr: 'Configurez votre tirage', en: 'Configure Your Print', es: 'Configura tu impresion' })}
             </h2>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-8 max-w-5xl mx-auto">
@@ -412,7 +445,7 @@ function ArtisteDetail({ subdomainSlug }) {
               >
                 <img
                   src={selectedPrint.image}
-                  alt={lang === 'fr' ? selectedPrint.titleFr : selectedPrint.titleEn}
+                  alt={tx({ fr: selectedPrint.titleFr, en: selectedPrint.titleEn, es: selectedPrint.titleEs || selectedPrint.titleEn })}
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
@@ -440,7 +473,7 @@ function ArtisteDetail({ subdomainSlug }) {
           className="mb-20"
         >
           <h2 className="text-3xl font-heading font-bold text-gradient mb-10 text-center">
-            {lang === 'fr' ? 'Comment ça marche' : 'How It Works'}
+            {tx({ fr: 'Comment ca marche', en: 'How It Works', es: 'Como funciona' })}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {processSteps.map((item, index) => (
@@ -476,10 +509,10 @@ function ArtisteDetail({ subdomainSlug }) {
           className="mb-20 scroll-mt-24"
         >
           <h2 className="text-3xl font-heading font-bold text-gradient mb-3 text-center">
-            {lang === 'fr' ? 'Tarifs' : 'Pricing'}
+            {tx({ fr: 'Tarifs', en: 'Pricing', es: 'Precios' })}
           </h2>
           <p className="text-grey-muted text-center mb-8">
-            {lang === 'fr' ? 'Tous les prix incluent l\'impression professionnelle et le contrôle qualité.' : 'All prices include professional printing and quality control.'}
+            {tx({ fr: 'Tous les prix incluent l\'impression professionnelle et le controle qualite.', en: 'All prices include professional printing and quality control.', es: 'Todos los precios incluyen impresion profesional y control de calidad.' })}
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
@@ -489,16 +522,16 @@ function ArtisteDetail({ subdomainSlug }) {
                 <div className="flex items-center gap-3">
                   <Camera size={20} className="text-accent" />
                   <h3 className="text-heading font-heading font-bold">
-                    {lang === 'fr' ? 'Série Studio' : 'Studio Series'}
+                    {tx({ fr: 'Serie Studio', en: 'Studio Series', es: 'Serie Studio' })}
                   </h3>
                 </div>
-                <p className="text-grey-muted text-xs mt-1">4 {lang === 'fr' ? 'encres pigmentées' : 'pigmented inks'}</p>
+                <p className="text-grey-muted text-xs mt-1">4 {tx({ fr: 'encres pigmentees', en: 'pigmented inks', es: 'tintas pigmentadas' })}</p>
               </div>
               <table className="price-table">
                 <thead>
                   <tr>
                     <th>Format</th>
-                    <th>{lang === 'fr' ? 'Prix' : 'Price'}</th>
+                    <th>{tx({ fr: 'Prix', en: 'Price', es: 'Precio' })}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -518,16 +551,16 @@ function ArtisteDetail({ subdomainSlug }) {
                 <div className="flex items-center gap-3">
                   <Award size={20} className="text-accent" />
                   <h3 className="text-heading font-heading font-bold">
-                    {lang === 'fr' ? 'Série Musée' : 'Museum Series'}
+                    {tx({ fr: 'Serie Musee', en: 'Museum Series', es: 'Serie Museo' })}
                   </h3>
                 </div>
-                <p className="text-grey-muted text-xs mt-1">12 {lang === 'fr' ? 'encres pigmentées' : 'pigmented inks'}</p>
+                <p className="text-grey-muted text-xs mt-1">12 {tx({ fr: 'encres pigmentees', en: 'pigmented inks', es: 'tintas pigmentadas' })}</p>
               </div>
               <table className="price-table">
                 <thead>
                   <tr>
                     <th>Format</th>
-                    <th>{lang === 'fr' ? 'Prix' : 'Price'}</th>
+                    <th>{tx({ fr: 'Prix', en: 'Price', es: 'Precio' })}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -544,13 +577,15 @@ function ArtisteDetail({ subdomainSlug }) {
 
           {/* Frame note */}
           <p className="text-grey-muted text-center text-sm mt-6">
-            {lang === 'fr'
-              ? `Cadre noir ou blanc : +${artist.pricing.framePrice}$ · Taxes en sus`
-              : `Black or white frame: +$${artist.pricing.framePrice} · Taxes extra`}
+            {tx({
+              fr: `Cadre noir ou blanc : +${artist.pricing.framePrice}$ · Taxes en sus`,
+              en: `Black or white frame: +$${artist.pricing.framePrice} · Taxes extra`,
+              es: `Marco negro o blanco: +${artist.pricing.framePrice}$ · Impuestos adicionales`,
+            })}
           </p>
         </motion.div>
 
-        {/* ============ ÉQUIPEMENT ============ */}
+        {/* ============ EQUIPEMENT ============ */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -559,7 +594,7 @@ function ArtisteDetail({ subdomainSlug }) {
           className="mb-20"
         >
           <h2 className="text-3xl font-heading font-bold text-gradient mb-8 text-center">
-            {lang === 'fr' ? 'Notre équipement' : 'Our Equipment'}
+            {tx({ fr: 'Notre equipement', en: 'Our Equipment', es: 'Nuestro equipo' })}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
             {equipmentItems.map((item, index) => (
@@ -587,7 +622,7 @@ function ArtisteDetail({ subdomainSlug }) {
           className="mb-20"
         >
           <h2 className="text-3xl font-heading font-bold text-gradient mb-8 text-center">
-            {lang === 'fr' ? 'Questions fréquentes' : 'Frequently Asked Questions'}
+            {tx({ fr: 'Questions frequentes', en: 'Frequently Asked Questions', es: 'Preguntas frecuentes' })}
           </h2>
           <div className="max-w-3xl mx-auto space-y-3">
             {faqItems.map((item, index) => (
@@ -638,16 +673,18 @@ function ArtisteDetail({ subdomainSlug }) {
           className="mb-20 p-12 rounded-2xl text-center transition-colors duration-300 cta-shadow"
         >
           <h2 className="text-3xl md:text-4xl font-heading font-bold text-heading mb-4">
-            {lang === 'fr' ? 'Tu es artiste? Rejoins la plateforme.' : 'Are you an artist? Join the platform.'}
+            {tx({ fr: 'Tu es artiste? Rejoins la plateforme.', en: 'Are you an artist? Join the platform.', es: 'Eres artista? Unete a la plataforma.' })}
           </h2>
           <p className="text-grey-light text-lg mb-8 max-w-2xl mx-auto">
-            {lang === 'fr'
-              ? 'On s\'occupe de tout : site web dédié, impression pro, packaging et shipping. Tu fournis tes fichiers, tu fixes ta marge, et tu reçois ton argent.'
-              : 'We handle everything: dedicated website, professional printing, packaging and shipping. You provide your files, set your margin, and get paid.'}
+            {tx({
+              fr: 'On s\'occupe de tout : site web dedie, impression pro, packaging et shipping. Tu fournis tes fichiers, tu fixes ta marge, et tu recois ton argent.',
+              en: 'We handle everything: dedicated website, professional printing, packaging and shipping. You provide your files, set your margin, and get paid.',
+              es: 'Nos encargamos de todo: sitio web dedicado, impresion profesional, empaque y envio. Tu proporcionas tus archivos, fijas tu margen y recibes tu dinero.',
+            })}
           </p>
           <Link to="/contact" className="btn-primary">
             <MessageSquare size={20} className="mr-2" />
-            {lang === 'fr' ? 'Contactez-nous' : 'Contact us'}
+            {tx({ fr: 'Contactez-nous', en: 'Contact us', es: 'Contactanos' })}
             <ArrowRight className="ml-2" size={20} />
           </Link>
         </motion.div>
@@ -677,7 +714,7 @@ function ArtisteDetail({ subdomainSlug }) {
               <button
                 onClick={goToPrev}
                 className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 text-white/70 hover:text-white w-12 h-12 flex items-center justify-center z-10"
-                aria-label={lang === 'fr' ? 'Image precedente' : 'Previous image'}
+                aria-label={tx({ fr: 'Image precedente', en: 'Previous image', es: 'Imagen anterior' })}
               >
                 <ChevronLeft size={32} />
               </button>
@@ -688,7 +725,7 @@ function ArtisteDetail({ subdomainSlug }) {
               <button
                 onClick={goToNext}
                 className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 text-white/70 hover:text-white w-12 h-12 flex items-center justify-center z-10"
-                aria-label={lang === 'fr' ? 'Image suivante' : 'Next image'}
+                aria-label={tx({ fr: 'Image suivante', en: 'Next image', es: 'Siguiente imagen' })}
               >
                 <ChevronRight size={32} />
               </button>
@@ -701,7 +738,7 @@ function ArtisteDetail({ subdomainSlug }) {
               exit={{ scale: 0.9, opacity: 0 }}
               transition={{ duration: 0.3 }}
               src={artist.prints[lightbox].fullImage || toFull(artist.prints[lightbox].image)}
-              alt={lang === 'fr' ? artist.prints[lightbox].titleFr : artist.prints[lightbox].titleEn}
+              alt={tx({ fr: artist.prints[lightbox].titleFr, en: artist.prints[lightbox].titleEn, es: artist.prints[lightbox].titleEs || artist.prints[lightbox].titleEn })}
               className="max-w-full max-h-[85vh] object-contain rounded-lg"
               onClick={(e) => e.stopPropagation()}
             />

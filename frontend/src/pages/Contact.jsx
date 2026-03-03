@@ -14,7 +14,7 @@ const socialIconMap = {
 };
 
 function Contact() {
-  const { t, lang } = useLang();
+  const { t, lang, tx } = useLang();
   const { content } = useSiteContent();
 
   const contactEmail = content?.contactEmail || 'info@massivemedias.com';
@@ -74,7 +74,7 @@ function Contact() {
         title={t('contactPage.seo.title')}
         description={t('contactPage.seo.description')}
         breadcrumbs={[
-          { name: lang === 'fr' ? 'Accueil' : 'Home', url: '/' },
+          { name: tx({ fr: 'Accueil', en: 'Home', es: 'Inicio' }), url: '/' },
           { name: t('nav.contact') },
         ]}
       />

@@ -9,7 +9,7 @@ import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
 
 function Header() {
-  const { lang, toggleLang, t } = useLang();
+  const { lang, cycleLang, t } = useLang();
 
   const { cartCount } = useCart();
   const { user } = useAuth();
@@ -61,11 +61,11 @@ function Header() {
 
               {/* Language Toggle */}
               <button
-                onClick={toggleLang}
+                onClick={cycleLang}
                 className="text-sm font-semibold tracking-wide px-3 py-1.5 rounded-md transition-all duration-200 toggle-button"
-                aria-label={lang === 'fr' ? 'Switch to English' : 'Passer en français'}
+                aria-label={{ fr: 'Changer la langue', en: 'Change language', es: 'Cambiar idioma' }[lang]}
               >
-                {lang === 'fr' ? 'EN' : 'FR'}
+                {lang.toUpperCase()}
               </button>
 
               {/* Account / Login */}
@@ -98,11 +98,11 @@ function Header() {
             <div className="flex items-center gap-2 lg:hidden">
               <BrightnessFader />
               <button
-                onClick={toggleLang}
+                onClick={cycleLang}
                 className="text-sm font-semibold tracking-wide px-2.5 py-1 rounded-md transition-all duration-200 toggle-button"
-                aria-label={lang === 'fr' ? 'Switch to English' : 'Passer en français'}
+                aria-label={{ fr: 'Changer la langue', en: 'Change language', es: 'Cambiar idioma' }[lang]}
               >
-                {lang === 'fr' ? 'EN' : 'FR'}
+                {lang.toUpperCase()}
               </button>
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}

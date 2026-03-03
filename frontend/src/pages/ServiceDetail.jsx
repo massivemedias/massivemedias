@@ -53,7 +53,7 @@ function buildServiceFromCMS(cms, lang) {
 }
 
 function ServiceDetail() {
-  const { lang, t } = useLang();
+  const { lang, t, tx } = useLang();
   const { theme } = useTheme();
   const { slug } = useParams();
   const { servicePages } = useServicePages() || {};
@@ -169,8 +169,8 @@ function ServiceDetail() {
         description={service.seo.description}
         ogImage={service.heroImage}
         breadcrumbs={[
-          { name: lang === 'fr' ? 'Accueil' : 'Home', url: '/' },
-          { name: lang === 'fr' ? 'Accueil' : 'Home', url: '/' },
+          { name: tx({ fr: 'Accueil', en: 'Home', es: 'Inicio' }), url: '/' },
+          { name: tx({ fr: 'Accueil', en: 'Home', es: 'Inicio' }), url: '/' },
           { name: service.title },
         ]}
         jsonLd={[
@@ -196,7 +196,7 @@ function ServiceDetail() {
               className="max-w-4xl lg:flex-1"
             >
               <div className="flex items-center gap-2 mb-2 text-sm">
-                <Link to="/" className="text-grey-muted hover:text-accent transition-colors">{lang === 'fr' ? 'Accueil' : 'Home'}</Link>
+                <Link to="/" className="text-grey-muted hover:text-accent transition-colors">{tx({ fr: 'Accueil', en: 'Home', es: 'Inicio' })}</Link>
                 <span className="text-grey-muted">/</span>
                 <span className="text-accent">{service.title}</span>
               </div>
@@ -219,8 +219,8 @@ function ServiceDetail() {
                   <button onClick={toggleConfigurator} className="btn-primary cursor-pointer">
                     <ShoppingCart className="mr-2" size={20} />
                     {configuratorOpen
-                      ? (lang === 'fr' ? 'Fermer' : 'Close')
-                      : (lang === 'fr' ? 'Commander en ligne' : 'Order online')}
+                      ? tx({ fr: 'Fermer', en: 'Close', es: 'Cerrar' })
+                      : tx({ fr: 'Commander en ligne', en: 'Order online', es: 'Pedir en línea' })}
                     <ChevronDown className={`ml-2 transition-transform duration-300 ${configuratorOpen ? 'rotate-180' : ''}`} size={20} />
                   </button>
                 )}
@@ -271,7 +271,7 @@ function ServiceDetail() {
                   <div className="rounded-2xl border border-accent/30 p-6 md:p-10 mb-8 card-bg">
                     <Suspense fallback={
                       <div className="text-center py-8 text-grey-muted">
-                        {lang === 'fr' ? 'Chargement...' : 'Loading...'}
+                        {tx({ fr: 'Chargement...', en: 'Loading...', es: 'Cargando...' })}
                       </div>
                     }>
                       <Comp />
@@ -750,7 +750,7 @@ function ServiceDetail() {
             className="mb-20"
           >
             <h2 className="text-3xl font-heading font-bold text-gradient mb-8 text-center">
-              {lang === 'fr' ? 'Questions fréquentes' : 'Frequently Asked Questions'}
+              {tx({ fr: 'Questions fréquentes', en: 'Frequently Asked Questions', es: 'Preguntas frecuentes' })}
             </h2>
             <div className="max-w-3xl mx-auto space-y-3">
               {service.faq.map((item, index) => (
@@ -860,7 +860,7 @@ function ServiceDetail() {
                 className="btn-primary cursor-pointer"
               >
                 <ShoppingCart className="mr-2" size={20} />
-                {lang === 'fr' ? 'Commander en ligne' : 'Order online'}
+                {tx({ fr: 'Commander en ligne', en: 'Order online', es: 'Pedir en línea' })}
                 <ArrowRight className="ml-2" size={20} />
               </button>
             )}
@@ -917,7 +917,7 @@ function ServiceDetail() {
               <button
                 onClick={goToPrevious}
                 className="absolute left-2 md:left-6 top-1/2 -translate-y-1/2 z-[110] text-white/70 hover:text-white transition-colors w-12 h-12 flex items-center justify-center rounded-full lightbox-btn"
-                aria-label={lang === 'fr' ? 'Image précédente' : 'Previous image'}
+                aria-label={tx({ fr: 'Image précédente', en: 'Previous image', es: 'Imagen anterior' })}
               >
                 <ChevronLeft size={28} />
               </button>
@@ -928,7 +928,7 @@ function ServiceDetail() {
               <button
                 onClick={goToNext}
                 className="absolute right-2 md:right-6 top-1/2 -translate-y-1/2 z-[110] text-white/70 hover:text-white transition-colors w-12 h-12 flex items-center justify-center rounded-full lightbox-btn"
-                aria-label={lang === 'fr' ? 'Image suivante' : 'Next image'}
+                aria-label={tx({ fr: 'Image suivante', en: 'Next image', es: 'Imagen siguiente' })}
               >
                 <ChevronRight size={28} />
               </button>
@@ -950,7 +950,7 @@ function ServiceDetail() {
               <button
                 onClick={closeLightbox}
                 className="absolute top-4 right-4 text-white/70 hover:text-white transition-colors w-10 h-10 flex items-center justify-center rounded-full lightbox-btn"
-                aria-label={lang === 'fr' ? 'Fermer' : 'Close'}
+                aria-label={tx({ fr: 'Fermer', en: 'Close', es: 'Cerrar' })}
               >
                 <X size={20} />
               </button>
@@ -993,8 +993,8 @@ function ServiceDetail() {
           >
             <ShoppingCart size={18} />
             {configuratorOpen
-              ? (lang === 'fr' ? 'Fermer' : 'Close')
-              : (lang === 'fr' ? 'Commander en ligne' : 'Order online')}
+              ? tx({ fr: 'Fermer', en: 'Close', es: 'Cerrar' })
+              : tx({ fr: 'Commander en ligne', en: 'Order online', es: 'Pedir en línea' })}
           </button>
         )}
       </div>

@@ -4,8 +4,8 @@ import { useLang } from '../i18n/LanguageContext';
 import { toFull } from '../utils/paths';
 
 function ArtistPrintCard({ print, minPrice, selected, onClick, onZoom }) {
-  const { lang } = useLang();
-  const title = lang === 'fr' ? print.titleFr : print.titleEn;
+  const { tx } = useLang();
+  const title = tx({ fr: print.titleFr, en: print.titleEn, es: print.titleEs || print.titleEn });
 
   const handleZoom = (e) => {
     e.stopPropagation();
@@ -32,7 +32,7 @@ function ArtistPrintCard({ print, minPrice, selected, onClick, onZoom }) {
         />
         {print.limited && (
           <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-accent text-white text-[10px] font-bold uppercase tracking-wider">
-            {lang === 'fr' ? 'Édition limitée' : 'Limited Edition'}
+            {tx({ fr: 'Edition limitee', en: 'Limited Edition', es: 'Edicion limitada' })}
           </div>
         )}
         {onZoom && (
@@ -50,7 +50,7 @@ function ArtistPrintCard({ print, minPrice, selected, onClick, onZoom }) {
       <div className="p-4">
         <h3 className="text-heading font-heading font-bold text-sm">{title}</h3>
         <p className="text-grey-muted text-xs mt-1">
-          {lang === 'fr' ? `À partir de ${minPrice}$` : `Starting at $${minPrice}`}
+          {tx({ fr: `A partir de ${minPrice}$`, en: `Starting at $${minPrice}`, es: `Desde $${minPrice}` })}
         </p>
       </div>
     </motion.button>

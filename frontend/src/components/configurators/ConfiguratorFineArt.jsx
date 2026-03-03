@@ -11,7 +11,7 @@ import {
 } from '../../data/products';
 
 function ConfiguratorFineArt() {
-  const { lang } = useLang();
+  const { lang, tx } = useLang();
   const { addToCart } = useCart();
   const cmsProduct = useProduct('fine-art');
   const pd = cmsProduct?.pricingData;
@@ -45,12 +45,14 @@ function ConfiguratorFineArt() {
     if (!priceInfo) return;
     addToCart({
       productId: 'fine-art-print',
-      productName: lang === 'fr' ? 'Impression Fine Art' : 'Fine Art Print',
-      finish: lang === 'fr' ? tierLabel?.labelFr : tierLabel?.labelEn,
+      productName: tx({ fr: 'Impression Fine Art', en: 'Fine Art Print', es: 'Impresión Fine Art' }),
+      finish: tx({ fr: tierLabel?.labelFr, en: tierLabel?.labelEn, es: tierLabel?.labelEn }),
       shape: withFrame
-        ? (lang === 'fr'
-          ? `Cadre ${frameColor === 'black' ? 'noir' : 'blanc'}`
-          : `${frameColor === 'black' ? 'Black' : 'White'} frame`)
+        ? tx({
+            fr: `Cadre ${frameColor === 'black' ? 'noir' : 'blanc'}`,
+            en: `${frameColor === 'black' ? 'Black' : 'White'} frame`,
+            es: `Marco ${frameColor === 'black' ? 'negro' : 'blanco'}`,
+          })
         : null,
       size: formatLabel?.label,
       quantity: 1,
@@ -69,7 +71,7 @@ function ConfiguratorFineArt() {
       {/* Printer tier selector */}
       <div className="mb-5">
         <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2.5">
-          {lang === 'fr' ? 'Imprimante' : 'Printer'}
+          {tx({ fr: 'Imprimante', en: 'Printer', es: 'Impresora' })}
         </label>
         <div className="flex flex-wrap gap-2">
           {fineArtPrinterTiers.map(t => (
@@ -82,10 +84,10 @@ function ConfiguratorFineArt() {
               }`}
             >
               <span className="text-heading leading-tight text-center font-semibold">
-                {lang === 'fr' ? t.labelFr : t.labelEn}
+                {tx({ fr: t.labelFr, en: t.labelEn, es: t.labelEn })}
               </span>
               <span className="text-grey-muted mt-0.5 text-[10px]">
-                {lang === 'fr' ? t.descFr : t.descEn}
+                {tx({ fr: t.descFr, en: t.descEn, es: t.descEn })}
               </span>
             </button>
           ))}
@@ -136,7 +138,7 @@ function ConfiguratorFineArt() {
           </div>
           <div className="flex-1">
             <span className="text-heading font-medium text-sm">
-              {lang === 'fr' ? 'Ajouter un cadre' : 'Add a frame'}
+              {tx({ fr: 'Ajouter un cadre', en: 'Add a frame', es: 'Agregar un marco' })}
             </span>
           </div>
           <span className="text-accent font-semibold text-sm">+{fineArtFramePrice}$</span>
@@ -152,7 +154,7 @@ function ConfiguratorFineArt() {
               }`}
             >
               <span className="w-4 h-4 rounded-full bg-black border border-grey-muted/30" />
-              <span className="text-heading font-semibold">{lang === 'fr' ? 'Noir' : 'Black'}</span>
+              <span className="text-heading font-semibold">{tx({ fr: 'Noir', en: 'Black', es: 'Negro' })}</span>
             </button>
             <button
               onClick={() => setFrameColor('white')}
@@ -162,7 +164,7 @@ function ConfiguratorFineArt() {
               }`}
             >
               <span className="w-4 h-4 rounded-full bg-white border border-grey-muted/30" />
-              <span className="text-heading font-semibold">{lang === 'fr' ? 'Blanc' : 'White'}</span>
+              <span className="text-heading font-semibold">{tx({ fr: 'Blanc', en: 'White', es: 'Blanco' })}</span>
             </button>
           </div>
         )}
@@ -173,18 +175,18 @@ function ConfiguratorFineArt() {
         <FileUpload
           files={uploadedFiles}
           onFilesChange={setUploadedFiles}
-          label={lang === 'fr' ? 'Votre fichier' : 'Your file'}
+          label={tx({ fr: 'Votre fichier', en: 'Your file', es: 'Tu archivo' })}
           compact
         />
         <div>
           <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2.5">
-            {lang === 'fr' ? 'Notes / Description' : 'Notes / Description'}
+            {tx({ fr: 'Notes / Description', en: 'Notes / Description', es: 'Notas / Descripción' })}
           </label>
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             rows={4}
-            placeholder={lang === 'fr' ? 'Decrivez le produit souhaite (format, finition, details...)' : 'Describe the desired product (format, finish, details...)'}
+            placeholder={tx({ fr: 'Decrivez le produit souhaite (format, finition, details...)', en: 'Describe the desired product (format, finish, details...)', es: 'Describe el producto deseado (formato, acabado, detalles...)' })}
             className="w-full min-h-[100px] rounded-lg border-2 border-grey-muted/20 bg-transparent px-4 py-3 text-sm text-heading placeholder:text-grey-muted/50 focus:border-accent focus:outline-none transition-colors resize-none"
           />
         </div>
@@ -198,14 +200,18 @@ function ConfiguratorFineArt() {
           </div>
           {withFrame && (
             <div className="text-grey-muted text-xs mt-1">
-              {lang === 'fr' ? `Tirage ${priceInfo.basePrice}$ + Cadre ${priceInfo.framePrice}$` : `Print ${priceInfo.basePrice}$ + Frame ${priceInfo.framePrice}$`}
+              {tx({
+                fr: `Tirage ${priceInfo.basePrice}$ + Cadre ${priceInfo.framePrice}$`,
+                en: `Print ${priceInfo.basePrice}$ + Frame ${priceInfo.framePrice}$`,
+                es: `Impresión ${priceInfo.basePrice}$ + Marco ${priceInfo.framePrice}$`,
+              })}
             </div>
           )}
           <div className="flex items-center gap-2 mt-2">
             <span className="text-grey-muted text-xs">
               {tier === 'museum'
-                ? (lang === 'fr' ? 'Qualit\u00e9 mus\u00e9e \u2014 12 encres pigment\u00e9es' : 'Museum quality \u2014 12 pigmented inks')
-                : (lang === 'fr' ? 'Qualit\u00e9 studio \u2014 impression professionnelle' : 'Studio quality \u2014 professional printing')}
+                ? tx({ fr: 'Qualité musée - 12 encres pigmentées', en: 'Museum quality - 12 pigmented inks', es: 'Calidad museo - 12 tintas pigmentadas' })
+                : tx({ fr: 'Qualité studio - impression professionnelle', en: 'Studio quality - professional printing', es: 'Calidad estudio - impresión profesional' })}
             </span>
           </div>
         </div>
@@ -214,20 +220,22 @@ function ConfiguratorFineArt() {
       {/* Add to cart */}
       <button onClick={handleAddToCart} className="btn-primary w-full justify-center text-base py-3.5 mb-3">
         {added ? (
-          <><Check size={20} className="mr-2" />{lang === 'fr' ? 'Ajout\u00e9 au panier!' : 'Added to cart!'}</>
+          <><Check size={20} className="mr-2" />{tx({ fr: 'Ajouté au panier!', en: 'Added to cart!', es: 'Agregado al carrito!' })}</>
         ) : (
-          <><ShoppingCart size={20} className="mr-2" />{lang === 'fr' ? 'Ajouter au panier' : 'Add to cart'}</>
+          <><ShoppingCart size={20} className="mr-2" />{tx({ fr: 'Ajouter au panier', en: 'Add to cart', es: 'Agregar al carrito' })}</>
         )}
       </button>
 
       <Link to="/panier" className="btn-outline w-full justify-center text-sm py-2.5">
-        {lang === 'fr' ? 'Voir le panier' : 'View cart'}
+        {tx({ fr: 'Voir le panier', en: 'View cart', es: 'Ver el carrito' })}
       </Link>
 
       <p className="text-grey-muted text-xs mt-3 text-center">
-        {lang === 'fr'
-          ? 'Soft proofing inclus. Nous validerons les couleurs avec vous avant impression.'
-          : 'Soft proofing included. We\'ll validate colors with you before printing.'}
+        {tx({
+          fr: 'Soft proofing inclus. Nous validerons les couleurs avec vous avant impression.',
+          en: 'Soft proofing included. We\'ll validate colors with you before printing.',
+          es: 'Soft proofing incluido. Validaremos los colores contigo antes de imprimir.',
+        })}
       </p>
     </>
   );

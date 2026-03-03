@@ -7,11 +7,10 @@ import { useLang } from '../i18n/LanguageContext';
 import { useCart } from '../contexts/CartContext';
 
 function CheckoutSuccess() {
-  const { t, lang } = useLang();
+  const { t, tx } = useLang();
   const { clearCart } = useCart();
   const [searchParams] = useSearchParams();
   const paymentIntent = searchParams.get('payment_intent');
-  const isFr = lang === 'fr';
 
   // Clear cart on successful payment
   useEffect(() => {
@@ -35,7 +34,7 @@ function CheckoutSuccess() {
 
           {paymentIntent && (
             <p className="text-grey-muted text-sm mb-8">
-              {isFr ? 'Référence' : 'Reference'}: <span className="font-mono text-heading">{paymentIntent.slice(-8)}</span>
+              {tx({ fr: 'Reference', en: 'Reference', es: 'Referencia' })}: <span className="font-mono text-heading">{paymentIntent.slice(-8)}</span>
             </p>
           )}
 

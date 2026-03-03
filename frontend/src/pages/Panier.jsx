@@ -6,25 +6,24 @@ import { useCart } from '../contexts/CartContext';
 import { useLang } from '../i18n/LanguageContext';
 
 function Panier() {
-  const { lang } = useLang();
+  const { tx } = useLang();
   const { items, removeFromCart, updateQuantity, cartTotal } = useCart();
-  const isFr = lang === 'fr';
 
   // Empty cart
   if (items.length === 0) {
     return (
       <>
-        <SEO title={isFr ? 'Panier | Massive Medias' : 'Cart | Massive Medias'} description="" noindex />
+        <SEO title={tx({ fr: 'Panier | Massive Medias', en: 'Cart | Massive Medias', es: 'Carrito | Massive Medias' })} description="" noindex />
         <div className="section-container pt-32 max-w-2xl mx-auto text-center">
           <ShoppingCart size={64} className="text-grey-muted mx-auto mb-6" />
           <h1 className="text-3xl font-heading font-bold text-heading mb-4">
-            {isFr ? 'Votre panier est vide' : 'Your cart is empty'}
+            {tx({ fr: 'Votre panier est vide', en: 'Your cart is empty', es: 'Su carrito esta vacio' })}
           </h1>
           <p className="text-grey-light mb-8">
-            {isFr ? 'Ajoutez des produits pour commencer.' : 'Add products to get started.'}
+            {tx({ fr: 'Ajoutez des produits pour commencer.', en: 'Add products to get started.', es: 'Agregue productos para comenzar.' })}
           </p>
           <Link to="/boutique" className="btn-primary">
-            {isFr ? 'Voir la boutique' : 'Browse shop'}
+            {tx({ fr: 'Voir la boutique', en: 'Browse shop', es: 'Ver la tienda' })}
           </Link>
         </div>
       </>
@@ -33,11 +32,11 @@ function Panier() {
 
   return (
     <>
-      <SEO title={isFr ? 'Panier | Massive Medias' : 'Cart | Massive Medias'} description="" noindex />
+      <SEO title={tx({ fr: 'Panier | Massive Medias', en: 'Cart | Massive Medias', es: 'Carrito | Massive Medias' })} description="" noindex />
 
       <div className="section-container pt-28 max-w-4xl mx-auto">
         <h1 className="text-3xl md:text-4xl font-heading font-bold text-heading mb-8">
-          {isFr ? 'Votre panier' : 'Your cart'}
+          {tx({ fr: 'Votre panier', en: 'Your cart', es: 'Su carrito' })}
         </h1>
 
         {/* Cart items */}
@@ -58,7 +57,7 @@ function Panier() {
                 {item.uploadedFiles?.length > 0 && (
                   <p className="text-accent text-xs flex items-center gap-1 mt-0.5">
                     <Paperclip size={12} />
-                    {item.uploadedFiles.length} {isFr ? 'fichier(s) joint(s)' : 'file(s) attached'}
+                    {item.uploadedFiles.length} {tx({ fr: 'fichier(s) joint(s)', en: 'file(s) attached', es: 'archivo(s) adjunto(s)' })}
                   </p>
                 )}
               </div>
@@ -84,7 +83,7 @@ function Panier() {
               <button
                 onClick={() => removeFromCart(i)}
                 className="p-2 text-grey-muted hover:text-red-500 transition-colors flex-shrink-0"
-                aria-label={isFr ? `Supprimer ${item.productName}` : `Remove ${item.productName}`}
+                aria-label={tx({ fr: `Supprimer ${item.productName}`, en: `Remove ${item.productName}`, es: `Eliminar ${item.productName}` })}
               >
                 <Trash2 size={18} />
               </button>
@@ -95,11 +94,11 @@ function Panier() {
         {/* Summary */}
         <div className="p-6 rounded-xl mb-8 highlight-bordered">
           <div className="flex justify-between items-center mb-2">
-            <span className="text-heading font-semibold">{isFr ? 'Sous-total' : 'Subtotal'}</span>
+            <span className="text-heading font-semibold">{tx({ fr: 'Sous-total', en: 'Subtotal', es: 'Subtotal' })}</span>
             <span className="text-2xl font-heading font-bold text-heading">{cartTotal}$</span>
           </div>
           <p className="text-grey-muted text-sm">
-            {isFr ? 'Taxes en sus si applicable. Livraison locale gratuite à Montréal.' : 'Taxes extra if applicable. Free local delivery in Montreal.'}
+            {tx({ fr: 'Taxes en sus si applicable. Livraison locale gratuite a Montreal.', en: 'Taxes extra if applicable. Free local delivery in Montreal.', es: 'Impuestos adicionales si aplica. Envio local gratis en Montreal.' })}
           </p>
         </div>
 
@@ -107,10 +106,10 @@ function Panier() {
         <div className="flex flex-col sm:flex-row gap-4">
           <Link to="/boutique" className="btn-outline flex-1 justify-center">
             <ArrowLeft size={18} className="mr-2" />
-            {isFr ? 'Continuer mes achats' : 'Continue shopping'}
+            {tx({ fr: 'Continuer mes achats', en: 'Continue shopping', es: 'Seguir comprando' })}
           </Link>
           <Link to="/checkout" className="btn-primary flex-1 justify-center">
-            {isFr ? 'Passer au paiement' : 'Proceed to checkout'}
+            {tx({ fr: 'Passer au paiement', en: 'Proceed to checkout', es: 'Proceder al pago' })}
             <ArrowRight size={18} className="ml-2" />
           </Link>
         </div>

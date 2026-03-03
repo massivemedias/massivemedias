@@ -30,10 +30,12 @@ const artistsData = {
     tagline: {
       fr: 'Art numerique & univers immersifs',
       en: 'Digital Art & Immersive Worlds',
+      es: 'Arte digital y mundos inmersivos',
     },
     bio: {
       fr: "Adrift explore les frontieres entre le reel et le virtuel a travers des compositions numeriques saisissantes. Son univers visuel puise dans la science-fiction, les textures organiques et les paysages oniriques pour creer des oeuvres qui transportent le spectateur dans des dimensions paralleles.",
       en: "Adrift explores the boundaries between real and virtual through striking digital compositions. Their visual universe draws from science fiction, organic textures and dreamlike landscapes to create works that transport the viewer into parallel dimensions.",
+      es: "Adrift explora las fronteras entre lo real y lo virtual a traves de composiciones digitales impactantes. Su universo visual se nutre de la ciencia ficcion, las texturas organicas y los paisajes oniricos para crear obras que transportan al espectador a dimensiones paralelas.",
     },
     socials: {
       instagram: 'https://instagram.com/alx.rouleau',
@@ -59,10 +61,12 @@ const artistsData = {
     tagline: {
       fr: 'Musique electronique & culture visuelle',
       en: 'Electronic Music & Visual Culture',
+      es: 'Musica electronica y cultura visual',
     },
     bio: {
       fr: "Maudite Machine est un collectif audiovisuel montrealais qui fusionne musique electronique et art visuel. Leurs creations graphiques - affiches, pochettes et illustrations - capturent l'energie brute de la scene underground et la transforment en oeuvres visuelles percutantes.",
       en: "Maudite Machine is a Montreal-based audiovisual collective that fuses electronic music and visual art. Their graphic creations - posters, album covers and illustrations - capture the raw energy of the underground scene and transform it into striking visual works.",
+      es: "Maudite Machine es un colectivo audiovisual de Montreal que fusiona musica electronica y arte visual. Sus creaciones graficas - carteles, portadas de album e ilustraciones - capturan la energia cruda de la escena underground y la transforman en obras visuales impactantes.",
     },
     avatar: '/images/stickers/Stickers-Maudite-Machine.webp',
     heroImage: thumb('/images/prints/Printstoutcourt.webp'),
@@ -79,10 +83,12 @@ const artistsData = {
     tagline: {
       fr: 'Photographie urbaine & lumière',
       en: 'Urban Photography & Light',
+      es: 'Fotografia urbana y luz',
     },
     bio: {
       fr: "Photographe montréalais avec un oeil unique pour la composition et la lumière. Ses oeuvres capturent l'essence de la ville à travers des perspectives inattendues - architecture, reflets, textures urbaines. Chaque tirage est une invitation à voir Montréal autrement.",
       en: "Montreal photographer with a unique eye for composition and light. His work captures the essence of the city through unexpected perspectives - architecture, reflections, urban textures. Each print is an invitation to see Montreal differently.",
+      es: "Fotografo montrealense con una mirada unica para la composicion y la luz. Sus obras capturan la esencia de la ciudad a traves de perspectivas inesperadas - arquitectura, reflejos, texturas urbanas. Cada impresion es una invitacion a ver Montreal de otra manera.",
     },
     avatar: '/images/prints/MokAvatar.webp',
     heroImage: thumb('/images/prints/Mok1.webp'),
@@ -101,10 +107,12 @@ const artistsData = {
     tagline: {
       fr: 'Ombre & lumiere - art visionnaire',
       en: 'Shadow & Light - Visionary Art',
+      es: 'Sombra y luz - arte visionario',
     },
     bio: {
       fr: "J'incarne l'ombre et la lumiere, la force et la douceur, le chaos et l'harmonie. Mon art est un espace d'expression libre, un pont entre les mondes, une invitation a l'introspection et a l'elevation. Je suis issue de deux mondes underground que tout oppose - le graffiti, instinctif, rapide, brut, et l'exploration de la psyche, plongeant dans les profondeurs de l'esprit, du sacre, du symbolique. Ensemble, ils composent un langage unique.",
       en: "I embody both shadow and light, strength and softness, chaos and harmony. My art is a space of free expression, a bridge between worlds, an invitation to introspection and elevation. I come from two underground realms that seem to stand in opposition - graffiti, instinctive, fast, raw, and the exploration of the psyche, diving deep into the spirit, into the sacred and the symbolic. Together, they form a unique language.",
+      es: "Encarno la sombra y la luz, la fuerza y la dulzura, el caos y la armonia. Mi arte es un espacio de expresion libre, un puente entre mundos, una invitacion a la introspeccion y a la elevacion. Provengo de dos mundos underground que todo opone - el graffiti, instintivo, rapido, crudo, y la exploracion de la psique, sumergiendose en las profundidades del espiritu, de lo sagrado, de lo simbolico. Juntos, componen un lenguaje unico.",
     },
     demarche: {
       fr: [
@@ -120,6 +128,13 @@ const artistsData = {
         { title: 'A model for everyone', text: "Through my creations, I offer a path toward inner harmony. The balance between polarities - masculine and feminine energy, action and contemplation, shadow and light - is at the heart of my approach. It is not perfection I seek to represent, but completeness." },
         { title: 'The importance of light', text: "Light is at the heart of my work - in both its form and its essence. By day, my works reveal a story. At night, through the use of fluorescent paints, they illuminate differently, unveiling other truths, other dimensions. Shadow and light are not opposed: they dialogue, nourish each other." },
         { title: 'About the name Psyqu33n', text: "Psyqu33n symbolizes a rebirth - a return to my essence, allowing me to fully embody who I am. It represents the archetype of inner sovereignty, the affirmation of all my facets. The number 33 carries a deep spiritual vibration - a master number bearing great potential for transformation, healing, and altruism." },
+      ],
+      es: [
+        { title: 'Enfoque artistico', text: "Mi arte es una exploracion de la luz interior, un viaje a traves de las capas del ser para revelar lo que, a menudo, permanece oculto. Ya no se trata de huir o de defenderse, sino de abrazar plenamente quienes somos. Mis figuras, a menudo femeninas pero universales en su esencia, son guias. Encarnan la dulzura, la fuerza tranquila, la soberania del alma. Sanadoras, diosas, almas iluminadas: muestran un camino de reconexion, alineacion y presencia consigo mismo." },
+        { title: 'Los ojos no mienten', text: "En un mundo saturado de velocidad y apariencias, mis obras invitan a desacelerar, contemplar, sentir. Las miradas que portan no congelan: revelan. Son portales hacia lo intimo, invitaciones al despertar interior. Cada rostro se convierte en espejo, cada expresion en un soplo de verdad." },
+        { title: 'Un modelo para todos', text: "A traves de mis creaciones, propongo un camino hacia la armonia interior. El equilibrio entre las polaridades - energia masculina y femenina, accion y contemplacion, sombra y luz - esta en el corazon de mi enfoque. No es la perfeccion lo que busco representar, sino la plenitud." },
+        { title: 'La importancia de la luz', text: "La luz esta en el corazon de mi trabajo - tanto en su forma como en su esencia. De dia, mis obras revelan una historia. De noche, gracias al uso de pinturas fluorescentes, se iluminan de manera diferente, desvelando otras verdades, otras dimensiones. Sombra y luz no se oponen: dialogan, se nutren mutuamente." },
+        { title: 'Sobre el nombre Psyqu33n', text: "Psyqu33n simboliza un renacimiento que me permite encarnar plenamente quien soy. Es el arquetipo de la soberania interior, la afirmacion de todas mis facetas. El 33, lejos de ser un simple numero, porta una vibracion espiritual profunda - un numero maestro portador de un gran potencial de transformacion, sanacion y altruismo." },
       ],
     },
     socials: {

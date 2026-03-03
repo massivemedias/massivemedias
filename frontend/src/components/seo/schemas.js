@@ -17,19 +17,22 @@ export function getOrganizationSchema() {
 }
 
 export function getLocalBusinessSchema(lang) {
+  const descMap = {
+    fr: 'Studio de production creative a Montreal. Impression fine art, stickers, sublimation, design graphique et developpement web.',
+    en: 'Creative production studio in Montreal. Fine art printing, stickers, sublimation, graphic design and web development.',
+    es: 'Estudio de produccion creativa en Montreal. Impresion fine art, stickers, sublimacion, diseno grafico y desarrollo web.',
+  };
   return {
     '@context': 'https://schema.org',
     '@type': 'LocalBusiness',
     '@id': `${SITE_URL}/#localbusiness`,
     name: 'Massive Medias',
-    description: lang === 'fr'
-      ? 'Studio de production cr\u00e9ative \u00e0 Montr\u00e9al. Impression fine art, stickers, sublimation, design graphique et d\u00e9veloppement web.'
-      : 'Creative production studio in Montreal. Fine art printing, stickers, sublimation, graphic design and web development.',
+    description: descMap[lang] || descMap.fr,
     url: SITE_URL,
     email: 'info@massivemedias.com',
     address: {
       '@type': 'PostalAddress',
-      addressLocality: 'Montr\u00e9al',
+      addressLocality: 'Montreal',
       addressRegion: 'QC',
       addressCountry: 'CA',
     },
@@ -40,7 +43,7 @@ export function getLocalBusinessSchema(lang) {
     },
     areaServed: {
       '@type': 'City',
-      name: 'Montr\u00e9al',
+      name: 'Montreal',
     },
     priceRange: '$$',
     image: `${SITE_URL}/og-image.jpg`,
@@ -104,7 +107,7 @@ export function getServiceSchema({ name, description, url }) {
     },
     areaServed: {
       '@type': 'City',
-      name: 'Montr\u00e9al',
+      name: 'Montreal',
     },
   };
 }

@@ -715,6 +715,366 @@ const translations = {
       noOrders: 'No orders yet.',
     },
   },
+
+  // ═══════════════════════════════════════════════════════════════
+  // SPANISH
+  // ═══════════════════════════════════════════════════════════════
+  es: {
+    // ──────────── NAV ────────────
+    nav: {
+      boutique: 'Tienda',
+      aPropos: 'Nosotros',
+      contact: 'Contacto',
+      panier: 'Carrito',
+      login: 'Iniciar sesion',
+      account: 'Mi cuenta',
+      servicesList: [
+        { name: 'Prints', slug: 'prints' },
+        { name: 'Stickers', slug: 'stickers' },
+        { name: 'Merch', slug: 'merch' },
+        { name: 'Diseno', slug: 'design' },
+        { name: 'Web', slug: 'web' },
+      ],
+    },
+
+    // ──────────── FOOTER ────────────
+    footer: {
+      tagline: 'Create. Print. Repeat.',
+      studioDesc: 'Estudio de produccion creativa',
+      location: 'Montreal, QC',
+      navTitle: 'Navegacion',
+      servicesTitle: 'Servicios',
+      contactTitle: 'Contacto',
+      mileEnd: 'Mile-End, Montreal',
+      byAppointment: 'Con cita previa',
+      copyright: 'Massive Medias. Todos los derechos reservados. NEQ 2269057891',
+    },
+
+    // ──────────── COMMON ────────────
+    common: {
+      learnMore: 'Saber mas',
+      requestQuote: 'Solicitar cotizacion',
+      comingSoon: 'Proximamente',
+      viewPricing: 'Ver precios',
+      requestPackage: 'Solicitar este paquete',
+      projects: 'proyecto',
+      projectsPlural: 'proyectos',
+    },
+
+    // ──────────── HOME ────────────
+    home: {
+      seo: {
+        title: 'Massive Medias - Estudio de produccion creativa, Montreal',
+        description: 'Impresion fine art, stickers personalizados, sublimacion, diseno grafico y desarrollo web en Montreal. Servicio local desde 2013.',
+      },
+      hero: {
+        tagline: 'Create. Print. Repeat.',
+        subtitle: 'Estudio de impresion, diseno y desarrollo web en Montreal',
+        services: 'Fine Art - Stickers - Merch - Diseno Grafico - Desarrollo Web',
+        cta1: 'Ver nuestros servicios',
+        cta2: 'Solicitar cotizacion',
+      },
+      servicesSection: {
+        title: 'Todo bajo un mismo techo.',
+        subtitle: 'De la idea al producto final, nos encargamos de todo.',
+      },
+      serviceCards: [
+        {
+          title: 'Prints',
+          description: 'Impresiones fine art, posters, flyers y tarjetas de presentacion. Impresion profesional de gran formato, rapida y local.',
+        },
+        {
+          title: 'Stickers',
+          description: 'Die-cut a medida con corte de precision profesional. Mate, brillante, transparente, holografico basico o premium.',
+        },
+        {
+          title: 'Merch',
+          description: 'Camisetas, hoodies, tazas, termos, mouse pads, llaveros y mas. Impresion por sublimacion a medida.',
+        },
+        {
+          title: 'Diseno',
+          description: 'Logos, identidades visuales, carteles, packaging. Diseno grafico profesional.',
+        },
+        {
+          title: 'Web',
+          description: 'Sitios web, e-commerce, SEO y posicionamiento. Desarrollo web moderno y eficiente.',
+        },
+      ],
+      projectsSection: {
+        title: 'Nuestros trabajos',
+        subtitle: 'Algunos proyectos que hablan por si mismos.',
+      },
+      featuredProjects: [
+        { title: 'Impresiones Fine Art', category: 'Impresion' },
+        { title: 'Stickers Holograficos', category: 'Stickers' },
+        { title: 'Camisetas Sublimacion', category: 'Merch' },
+        { title: 'Carteles de Eventos', category: 'Impresion' },
+        { title: 'Die-Cut Personalizado', category: 'Stickers' },
+        { title: 'Tazas y Accesorios', category: 'Merch' },
+      ],
+      stats: {
+        since: 'Desde',
+        projects: 'Proyectos entregados',
+        local: 'Local, Montreal',
+        delay: 'Plazo estandar',
+      },
+      why: {
+        title: 'Por que Massive?',
+      },
+      advantages: [
+        {
+          title: 'Entrega local gratuita',
+          description: 'Ubicados en Mile-End, Montreal. Recogida o entrega local, sin gastos de envio, sin demoras postales.',
+        },
+        {
+          title: 'Calidad profesional',
+          description: 'Equipos de impresion de gran formato, papeles fine art, corte de precision. Equipo profesional para resultados profesionales.',
+        },
+        {
+          title: 'Servicio personalizado',
+          description: 'Un solo contacto de principio a fin. Entendemos tu proyecto porque venimos de la misma escena creativa.',
+        },
+        {
+          title: 'Solucion completa',
+          description: 'Impresion + diseno + web + merch. Sin necesidad de ir de un proveedor a otro.',
+        },
+        {
+          title: 'Precios competitivos',
+          description: 'Fine art 20% por debajo de la competencia. Sin costos ocultos, sin minimos excesivos.',
+        },
+        {
+          title: 'Conocemos la escena',
+          description: 'Musicos, fotografos, artistas visuales, promotores de eventos - es nuestro mundo desde el dia 1.',
+        },
+      ],
+      cta: {
+        title: 'Listo para lanzar tu proyecto?',
+        subtitle: 'Cuentanos lo que tienes en mente. Cotizacion rapida, sin compromiso.',
+        button: 'Solicitar cotizacion',
+      },
+      testimonials: {
+        title: 'Lo que dicen nuestros clientes',
+        items: [
+          { name: 'Samuel L.', role: 'Fotografo', text: 'Impresiones fine art impecables. La calidad de color es fiel a mis archivos. Lo recomiendo a todos los fotografos de Montreal.' },
+          { name: 'Marie-Eve D.', role: 'Promotora de eventos', text: 'Stickers y carteles para nuestro festival en 48h. Calidad y rapidez garantizadas. Volvemos cada ano!' },
+          { name: 'Julien P.', role: 'Musico', text: 'Merch para nuestra gira: camisetas, stickers, carteles. Todo perfecto y entregado a tiempo. La tienda ideal todo-en-uno.' },
+        ],
+      },
+    },
+
+    // ──────────── A PROPOS PAGE ────────────
+    aboutPage: {
+      seo: {
+        title: 'Nosotros - Massive Medias',
+        description: 'Estudio de produccion creativa fundado en 2020 en Montreal. El equipo, el espacio y nuestra historia.',
+      },
+      hero: {
+        title: 'Nosotros',
+        subtitle: 'Un estudio creativo arraigado en Mile-End, en el corazon de la escena artistica de Montreal.',
+      },
+      history: {
+        title: 'Nuestra historia',
+        paragraphs: [
+          'Massive Medias es un estudio de produccion creativa activo desde 2013 y ubicado en Mile-End, en el corazon del ecosistema artistico de Montreal.',
+          'La empresa ofrece cuatro servicios integrados para artistas visuales, fotografos, musicos y creadores independientes: impresion fine art, stickers personalizados, diseno grafico y desarrollo web.',
+          'Nuestra filosofia: ofrecer un servicio local, personalizado y de calidad profesional, sin las demoras y complicaciones de los servicios en linea. Sin envios, sin esperas. Recogida en Mile-End o entrega local.',
+        ],
+      },
+      timeline: {
+        title: 'Nuestro recorrido',
+        events: [
+          { year: '2013', event: 'Primeros proyectos graficos y web freelance. Nacimiento de la vision Massive Medias.' },
+          { year: '2018-2019', event: 'Inicio de impresion y material promocional para la escena musical de Montreal.' },
+          { year: '2020', event: 'Massive Medias se convierte en actividad estructurada. Lanzamiento oficial del estudio.' },
+          { year: '2023-2024', event: 'Adquisicion de equipos profesionales de impresion, corte y sublimacion.' },
+          { year: '2025', event: 'Registro oficial en el REQ. Reenfoque: prints, stickers, diseno, web.' },
+          { year: '2026', event: 'Incorporacion provincial prevista. Lanzamiento de Merch-as-a-Service.' },
+        ],
+      },
+      team: {
+        title: 'El equipo',
+        mika: {
+          name: 'Michael "Mika" Sanchez',
+          role: 'Fundador',
+          bio: 'Fundador de Massive Medias, Mika es tambien compositor de musica electronica y productor bajo el nombre Maudite Machine y fundador del sello VRSTL Records. Formado como programador-analista, combina experiencia tecnica con un conocimiento profundo de la escena creativa de Montreal.',
+          bio2: '15+ anos de experiencia en desarrollo web y diseno grafico. Experiencia en gestion del color y calibracion para impresion Fine Art.',
+        },
+        chris: {
+          name: 'Christopher Gagnon',
+          role: 'Socio de diseno',
+          bio: 'Disenador grafico graduado con casi 10 anos de experiencia. Especializado en identidad visual, packaging y diseno web. Christopher aporta experiencia creativa completa a cada proyecto.',
+          bio2: 'Portafolio: Soundwave Festival, Laboratoire Bio Stratege, ChromaPur, Nutramazonie, NextGen Football y mas.',
+        },
+      },
+      equipment: {
+        title: 'Nuestro equipo',
+        items: [
+          { name: 'Impresora fine art', desc: 'Impresion profesional de 12 colores, hasta 17"' },
+          { name: 'Cortadora profesional', desc: 'Corte de precision para stickers y vinilo' },
+          { name: 'Prensa termica gran formato', desc: 'Sublimacion textil de gran formato' },
+          { name: 'Prensa termica compacta', desc: 'Prensa versatil para objetos y accesorios' },
+          { name: 'Laminadora', desc: 'Laminacion y acabado profesional' },
+          { name: 'Impresora estandar', desc: 'Impresion corriente y pruebas' },
+          { name: 'Estacion de trabajo', desc: 'Produccion, diseno y desarrollo' },
+        ],
+      },
+      space: {
+        location: 'Mile-End, Montreal',
+        title: 'El espacio Versatile',
+        description: 'Operamos desde el espacio colaborativo Versatile, en el 7049 rue Saint-Urbain en Mile-End. Un lugar de creacion compartido con unos quince creadores: videastas, fotografos, disenadores, artistas. Recogida disponible con cita previa.',
+      },
+      universe: {
+        title: 'Tambien en el universo Massive',
+        mauditeMachine: {
+          title: 'Maudite Machine',
+          description: 'Compositor de musica electronica y productor. Sets y producciones dark disco / indie dance. Lanzamientos en multiples sellos, presentaciones en eventos importantes de Canada.',
+        },
+        vrstl: {
+          title: 'VRSTL Records',
+          description: 'Sello canadiense dedicado al Indie Dance y Dark Minimal. Direccion artistica, gestion de lanzamientos, distribucion digital y promocion.',
+        },
+      },
+    },
+
+    // ──────────── CONTACT PAGE ────────────
+    contactPage: {
+      seo: {
+        title: 'Contacto - Massive Medias',
+        description: 'Solicitud de cotizacion y contacto. Te respondemos en 24 horas.',
+      },
+      hero: {
+        title: 'Contacto',
+        subtitle: 'Tienes un proyecto en mente? Una pregunta sobre nuestros servicios? Envianos un mensaje y te respondemos rapidamente.',
+      },
+      info: {
+        title: 'Datos de contacto',
+        location: 'Mile-End, Montreal, QC',
+        byAppointment: 'Con cita previa',
+        social: 'Redes sociales',
+      },
+      form: {
+        fullName: 'Nombre completo',
+        email: 'Email',
+        phone: 'Telefono',
+        company: 'Empresa / Proyecto',
+        service: 'Servicio',
+        budget: 'Presupuesto estimado',
+        urgency: 'Urgencia',
+        message: 'Describe tu proyecto',
+        namePlaceholder: 'Tu nombre',
+        emailPlaceholder: 'tu@email.com',
+        phonePlaceholder: '514-xxx-xxxx',
+        companyPlaceholder: 'Nombre de tu empresa o proyecto',
+        messagePlaceholder: 'Cuentanos lo que tienes en mente...',
+        selectPlaceholder: 'Seleccionar...',
+        serviceOptions: [
+          'Prints (Fine Art, Flyers, Tarjetas)',
+          'Stickers',
+          'Merch (Sublimacion)',
+          'Diseno (Grafico + Web)',
+          'Otro',
+        ],
+        budgetOptions: [
+          'Menos de $500',
+          '$500 - $1,000',
+          '$1,000 - $3,000',
+          '$3,000+',
+          'Aun no lo se',
+        ],
+        urgencyOptions: [
+          'Estandar (5-7 dias)',
+          'Urgente (24-48h)',
+          'Flexible',
+        ],
+        submit: 'Enviar mi solicitud',
+        sending: 'Enviando...',
+        successTitle: 'Mensaje enviado!',
+        successMessage: 'Gracias por tu solicitud. Te respondemos en 24 horas.',
+        sendAnother: 'Enviar otro mensaje',
+        errorMessage: 'Ocurrio un error. Intenta de nuevo o escribenos directamente a',
+      },
+    },
+
+    // ──────────── SERVICE DETAIL PAGE ────────────
+    serviceDetail: {
+      breadcrumbServices: 'Servicios',
+      requestQuote: 'Solicitar cotizacion',
+      goToShop: 'Ordenar en linea',
+      viewPricing: 'Ver precios',
+      theService: 'El servicio',
+      highlights: 'Puntos destacados',
+      gallery: 'Ejemplos de nuestro trabajo',
+      process: 'Nuestro proceso',
+      equipment: 'Equipo utilizado',
+      technologies: 'Tecnologias que dominamos',
+      team: 'El equipo de diseno',
+      portfolioLabel: 'Portafolio',
+      ctaTitle: 'Listo para ordenar?',
+      ctaSubtitle: 'Configura tu proyecto en linea y ordena directamente, o contactanos para una cotizacion gratuita.',
+      prev: 'Anterior',
+      next: 'Siguiente',
+      whatWeDeliver: 'Lo que incluye tu sitio web',
+      whatWeDeliverSub: 'Cada proyecto incluye un conjunto completo de servicios profesionales',
+      webProjectsTitle: 'Sitios y aplicaciones realizados',
+      webProjectsSub: 'Una seleccion de proyectos web entregados para nuestros clientes',
+    },
+
+    // ──────────── AUTH ────────────
+    auth: {
+      loginTitle: 'Iniciar sesion',
+      loginSubtitle: 'Inicia sesion para seguir tus pedidos',
+      registerTitle: 'Crear cuenta',
+      registerSubtitle: 'Registrate para ordenar y seguir tus proyectos',
+      forgotTitle: 'Contrasena olvidada',
+      forgotSubtitle: 'Ingresa tu email y te enviaremos un enlace de restablecimiento',
+      fullName: 'Nombre completo',
+      fullNamePlaceholder: 'Tu nombre',
+      email: 'Email',
+      emailPlaceholder: 'tu@email.com',
+      password: 'Contrasena',
+      confirmPassword: 'Confirmar contrasena',
+      forgotPassword: 'Olvidaste tu contrasena?',
+      loginButton: 'Iniciar sesion',
+      createAccount: 'Crear mi cuenta',
+      sendReset: 'Enviar enlace',
+      noAccount: 'No tienes cuenta?',
+      hasAccount: 'Ya tienes cuenta?',
+      registerLink: 'Crear cuenta',
+      loginLink: 'Iniciar sesion',
+      backToLogin: 'Volver al inicio de sesion',
+      logout: 'Cerrar sesion',
+      resetSent: 'Se ha enviado un email de restablecimiento. Revisa tu bandeja de entrada.',
+      invalidCredentials: 'Email o contrasena incorrectos',
+      passwordMismatch: 'Las contrasenas no coinciden',
+      passwordTooShort: 'La contrasena debe tener al menos 6 caracteres',
+    },
+
+    // ──────────── CHECKOUT ────────────
+    checkout: {
+      title: 'Pago',
+      backToCart: 'Volver al carrito',
+      emptyCart: 'Tu carrito esta vacio.',
+      continueShopping: 'Seguir comprando',
+      customerInfo: 'Tu informacion',
+      paymentInfo: 'Pago',
+      orderSummary: 'Resumen del pedido',
+      processing: 'Procesando...',
+      payAmount: 'Pagar ${amount}',
+      stripeError: 'Error de pago. Por favor intenta de nuevo.',
+      successTitle: 'Pedido confirmado!',
+      successMessage: 'Gracias por tu pedido! Recibiras un email de confirmacion pronto. Te contactaremos para los proximos pasos.',
+      cancelTitle: 'Pago cancelado',
+      cancelMessage: 'El pago fue cancelado. Tu carrito sigue guardado.',
+    },
+
+    // ──────────── ACCOUNT ────────────
+    account: {
+      title: 'Mi cuenta',
+      profile: 'Perfil',
+      orders: 'Mis pedidos',
+      noOrders: 'Ningun pedido por el momento.',
+    },
+  },
 };
 
 export default translations;

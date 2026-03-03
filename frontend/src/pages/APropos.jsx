@@ -10,7 +10,7 @@ import { getIcon } from '../utils/iconMap';
 const fallbackEquipmentIcons = ['Printer', 'Scissors', 'Shirt', 'Shirt', 'Monitor', 'Printer', 'Monitor'];
 
 function APropos() {
-  const { t, lang } = useLang();
+  const { t, lang, tx } = useLang();
   const { content } = useSiteContent();
 
   // ── Equipment (fallback si vide) ──
@@ -57,7 +57,7 @@ function APropos() {
         title={content?.aboutSeo ? bl(content.aboutSeo, 'title', lang) || t('aboutPage.seo.title') : t('aboutPage.seo.title')}
         description={content?.aboutSeo ? bl(content.aboutSeo, 'description', lang) || t('aboutPage.seo.description') : t('aboutPage.seo.description')}
         breadcrumbs={[
-          { name: lang === 'fr' ? 'Accueil' : 'Home', url: '/' },
+          { name: tx({ fr: 'Accueil', en: 'Home', es: 'Inicio' }), url: '/' },
           { name: t('nav.aPropos') },
         ]}
       />

@@ -6,6 +6,8 @@ const SITE_NAME = 'Massive Medias';
 const SITE_URL = 'https://massivemedias.com';
 const DEFAULT_OG_IMAGE = '/og-image.jpg';
 
+const LOCALE_MAP = { fr: 'fr_CA', en: 'en_CA', es: 'es_MX' };
+
 export default function SEO({
   title,
   description,
@@ -22,8 +24,8 @@ export default function SEO({
   const ogImageUrl = ogImage
     ? (ogImage.startsWith('http') ? ogImage : `${SITE_URL}${ogImage}`)
     : `${SITE_URL}${DEFAULT_OG_IMAGE}`;
-  const locale = lang === 'fr' ? 'fr_CA' : 'en_CA';
-  const alternateLocale = lang === 'fr' ? 'en_CA' : 'fr_CA';
+  const locale = LOCALE_MAP[lang] || 'fr_CA';
+  const alternateLocales = Object.values(LOCALE_MAP).filter(l => l !== locale);
 
   const jsonLdScripts = [];
 
@@ -57,6 +59,7 @@ export default function SEO({
       <link rel="canonical" href={canonicalUrl} />
       <link rel="alternate" hreflang="fr" href={canonicalUrl} />
       <link rel="alternate" hreflang="en" href={canonicalUrl} />
+      <link rel="alternate" hreflang="es" href={canonicalUrl} />
       <link rel="alternate" hreflang="x-default" href={canonicalUrl} />
 
       <meta property="og:type" content={ogType} />
@@ -68,7 +71,9 @@ export default function SEO({
       <meta property="og:image:width" content="1200" />
       <meta property="og:image:height" content="630" />
       <meta property="og:locale" content={locale} />
-      <meta property="og:locale:alternate" content={alternateLocale} />
+      {alternateLocales.map(alt => (
+        <meta key={alt} property="og:locale:alternate" content={alt} />
+      ))}
 
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:title" content={title} />

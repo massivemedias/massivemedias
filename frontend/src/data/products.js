@@ -95,6 +95,15 @@ export const stickerHighlights = {
     'Local delivery available',
     'Fast turnaround: 24-72h',
   ],
+  es: [
+    'Corte de precision profesional',
+    'Vinilo mate, brillante, transparente, holografico',
+    'Corte de contorno a la forma exacta del diseno',
+    'Laminacion incluida - resistente al agua, UV, rayaduras',
+    'Diseno grafico incluido en el precio',
+    'Entrega local disponible',
+    'Plazo rapido: 24-72h',
+  ],
 };
 
 export const stickerFaq = {
@@ -117,6 +126,16 @@ export const stickerFaq = {
     { q: 'Is design really included?', a: 'Yes, graphic creation or adaptation of your sticker is included in all our prices. We make sure your design is optimized for printing.' },
     { q: 'What if I\'m not satisfied?', a: 'The Massive Promise: if the result doesn\'t match what was validated, we redo your order. We always validate a digital proof with you before production.' },
     { q: 'Can I see a proof before printing?', a: 'Yes, we always send a digital proof by email before starting production. You validate colors, shape and details.' },
+  ],
+  es: [
+    { q: 'Que archivos debo proporcionar?', a: 'Idealmente un archivo vectorial (AI, SVG, PDF) o un PNG de alta resolucion (300 DPI minimo) con fondo transparente. Si no tienes un archivo listo, nuestro servicio de diseno grafico esta incluido en el precio.' },
+    { q: 'Cual es el plazo de produccion?', a: 'Produccion en 24 a 72 horas segun la complejidad y cantidad. Confirmaremos el plazo exacto al validar tu pedido.' },
+    { q: 'Puedo pedir una forma totalmente personalizada?', a: 'Si! La opcion die-cut permite cortar tus stickers en cualquier forma. El contorno sigue exactamente tu diseno.' },
+    { q: 'Cual es la calidad del vinilo?', a: 'Utilizamos vinilo profesional con laminacion integrada. Resistente al agua, a los rayos UV y a las rayaduras. Vida util exterior de 3 a 5 anos.' },
+    { q: 'Hay entrega disponible?', a: 'Entrega local gratuita en Montreal (Mile-End y alrededores). Envio postal disponible en todo Canada.' },
+    { q: 'El diseno esta realmente incluido?', a: 'Si, la creacion o adaptacion grafica de tu sticker esta incluida en todos nuestros precios. Nos aseguramos de que tu diseno este optimizado para la impresion.' },
+    { q: 'Que pasa si no estoy satisfecho?', a: 'La promesa Massive: si el resultado no corresponde a lo que fue validado, rehacemos tu pedido. Siempre validamos una prueba digital contigo antes de la produccion.' },
+    { q: 'Puedo ver una prueba antes de imprimir?', a: 'Si, siempre enviamos una prueba digital por correo electronico antes de iniciar la produccion. Validas los colores, la forma y los detalles.' },
   ],
 };
 
@@ -173,6 +192,14 @@ export const fineArtFaq = {
     { q: 'Can I get my print framed?', a: 'Yes! We offer a black or white frame option for an additional $30. You can add it directly in the configurator.' },
     { q: 'What file should I provide?', a: 'Ideally a high-resolution file (300 DPI minimum). We perform soft proofing (digital preview) before printing to validate colors with you.' },
     { q: 'Is delivery available?', a: 'Free pick-up in Mile-End. Local delivery available in Montreal. Postal shipping with protective packaging for the rest of Canada.' },
+  ],
+  es: [
+    { q: 'Cual es la diferencia entre Serie Studio y Serie Museo?', a: 'La Serie Studio utiliza una impresora de 4 tintas pigmentadas, excelente para todos los usos. La Serie Museo utiliza una impresora de 12 tintas pigmentadas para una calidad superior, perfecta para fotografia e impresiones de galeria.' },
+    { q: 'Que papeles utilizan?', a: 'Utilizamos papeles fine art profesionales premium: algodon, alfa-celulosa, papeles de archivo. Cada papel esta calibrado con un perfil ICC personalizado para colores fieles.' },
+    { q: 'Cual es la duracion de conservacion?', a: 'Nuestras impresiones fine art tienen una duracion de conservacion de mas de 100 anos gracias a las tintas pigmentadas y papeles de archivo. Es el estandar de galerias y museos.' },
+    { q: 'Puedo enmarcar mi impresion?', a: 'Si! Ofrecemos la opcion de marco negro o blanco por $30 adicionales. Puedes agregarlo directamente en el configurador.' },
+    { q: 'Que archivo debo proporcionar?', a: 'Idealmente un archivo de alta resolucion (300 DPI minimo). Realizamos un soft proofing (previsualizacion digital) antes de imprimir para validar los colores contigo.' },
+    { q: 'Hay entrega disponible?', a: 'Recogida gratuita en Mile-End. Entrega local disponible en Montreal. Envio postal con embalaje protector para el resto de Canada.' },
   ],
 };
 
@@ -270,6 +297,14 @@ export const sublimationFaq = {
     { q: 'Is the print really permanent?', a: 'Yes, sublimation produces a permanent print integrated into the fiber. No raised texture, no cracking after washing. Colors stay vibrant.' },
     { q: 'What is the production time?', a: 'Generally 3 to 5 business days depending on quantity. Express turnaround available on request.' },
   ],
+  es: [
+    { q: 'Que es la sublimacion?', a: 'La sublimacion es un proceso de impresion que transfiere la tinta directamente en la fibra del tejido a alta temperatura. El resultado es una impresion permanente que no se agrieta, no se desvanece y resiste el lavado.' },
+    { q: 'En que productos imprimen?', a: 'Camisetas, crewnecks, hoodies, rinoneras, tazas, termos, alfombrillas de raton, llaveros y mucho mas. Las rinoneras son perfectas para poner tu logo!' },
+    { q: 'Puedo proporcionar mi propio diseno?', a: 'Si! Si tienes un diseno listo, el precio mostrado aplica. Si necesitas diseno grafico, se aplica un suplemento de $100-150 segun la complejidad.' },
+    { q: 'Cual es la cantidad minima?', a: 'Aceptamos pedidos desde una sola unidad. Los precios son decrecientes a partir de 5 y 10 unidades.' },
+    { q: 'La impresion es realmente permanente?', a: 'Si, la sublimacion produce una impresion permanente integrada en la fibra. Sin textura en relieve, sin agrietamiento despues del lavado. Los colores se mantienen vibrantes.' },
+    { q: 'Cual es el plazo de produccion?', a: 'Generalmente de 3 a 5 dias habiles segun la cantidad. Plazo express disponible bajo pedido.' },
+  ],
 };
 
 // =============================================
@@ -326,6 +361,14 @@ export const flyerFaq = {
     { q: 'Can you design my flyers too?', a: 'Yes, our graphic design service is available as an option. Contact us for a quote including graphic creation.' },
     { q: 'Is delivery available?', a: 'Free pick-up in Mile-End. Local delivery available in Montreal. Ideal for Plateau and Mile-End events.' },
   ],
+  es: [
+    { q: 'Que formatos ofrecen?', a: 'Flyers A6 (4"x6"), A5, carta (8,5x11"). Postales y tarjetas de presentacion. Formatos personalizados disponibles bajo pedido.' },
+    { q: 'Que papel utilizan?', a: 'Papel premium de 300g+ en acabado mate o brillante. Calidad profesional superior a la impresion en linea estandar.' },
+    { q: 'Ofrecen impresion a doble cara?', a: 'Si! La opcion a doble cara esta disponible con un suplemento del 30%. Perfecto para tarjetas de presentacion y flyers con mas informacion.' },
+    { q: 'Cual es el plazo de produccion?', a: 'Plazo estandar de 24 a 48 horas. Servicio express disponible el mismo dia para urgencias.' },
+    { q: 'Pueden hacer el diseno tambien?', a: 'Si, nuestro servicio de diseno grafico esta disponible como opcion. Contactanos para un presupuesto que incluya la creacion grafica.' },
+    { q: 'Hay entrega disponible?', a: 'Recogida gratuita en Mile-End. Entrega local disponible en Montreal. Ideal para eventos del Plateau y Mile-End.' },
+  ],
 };
 
 // =============================================
@@ -370,6 +413,14 @@ export const designFaq = {
     { q: 'What formats do you deliver in?', a: 'Complete package: vector files (AI, EPS, SVG), high-resolution raster (PNG, JPEG), print-ready PDF, web-optimized versions and social media formats.' },
     { q: 'Do you work with music artists?', a: 'Yes! We create album covers, concert posters, artist logos and visual identities for labels and promoters.' },
   ],
+  es: [
+    { q: 'Que incluye la creacion de un logo?', a: 'Investigacion de referencias, exploracion visual, creacion vectorial en Illustrator, 2 rondas de revisiones y entrega de archivos finales en AI, EPS, SVG, PNG y PDF.' },
+    { q: 'Que herramientas utilizan?', a: 'Adobe Illustrator para logos y creaciones vectoriales, Figma para diseno de interfaces y prototipado, Photoshop para retoque y composicion, InDesign para maquetacion.' },
+    { q: 'Cuantas revisiones estan incluidas?', a: '2 rondas de revisiones estan incluidas en todos nuestros paquetes. Se pueden agregar revisiones adicionales a la tarifa por hora.' },
+    { q: 'El diseno de stickers esta incluido?', a: 'Si! El diseno grafico de stickers esta incluido en el precio de produccion de los stickers. Sin cargos adicionales.' },
+    { q: 'En que formatos entregan?', a: 'Paquete completo: archivos vectoriales (AI, EPS, SVG), raster de alta resolucion (PNG, JPEG), PDF listo para imprimir, versiones optimizadas para web y formatos para redes sociales.' },
+    { q: 'Trabajan con artistas musicales?', a: 'Si! Creamos portadas de album, carteles de conciertos, logos de artistas e identidades visuales para sellos y promotores.' },
+  ],
 };
 
 // =============================================
@@ -380,7 +431,7 @@ export const webServices = [
   { id: 'landing', labelFr: 'Landing page événement', labelEn: 'Event landing page', price: '900$' },
   { id: 'showcase', labelFr: 'Site vitrine (5-10 pages)', labelEn: 'Showcase site (5-10 pages)', price: '2 000$ - 3 500$' },
   { id: 'ecommerce', labelFr: 'Site e-commerce', labelEn: 'E-commerce site', price: '4 000$ - 6 000$' },
-  { id: 'redesign', labelFr: 'Refonte site existant', labelEn: 'Existing site redesign', price: { fr: 'Sur soumission', en: 'On quote' } },
+  { id: 'redesign', labelFr: 'Refonte site existant', labelEn: 'Existing site redesign', price: { fr: 'Sur soumission', en: 'On quote', es: 'Bajo presupuesto' } },
   { id: 'maintenance', labelFr: 'Maintenance mensuelle', labelEn: 'Monthly maintenance', price: '100$ - 200$/mois' },
 ];
 
@@ -413,5 +464,13 @@ export const webFaq = {
     { q: 'How long does a project take?', a: 'A landing page takes about 2 weeks. A showcase site 4-6 weeks. An e-commerce 6-10 weeks. Each project is unique.' },
     { q: 'Do you offer maintenance?', a: 'Yes, we offer monthly maintenance packages ($100-200/mo) including updates, backups, monitoring and support.' },
     { q: 'Can I see examples of your work?', a: 'Yes! Our portfolio includes projects like SPVM, La Presse, Maudite Machine, and several sites for artists and local businesses.' },
+  ],
+  es: [
+    { q: 'Que tecnologias utilizan?', a: 'React/Next.js, Angular, Node.js, WordPress, Shopify, Strapi. Elegimos la tecnologia mejor adaptada a tu proyecto y tus necesidades.' },
+    { q: 'El sitio sera responsive?', a: 'Si, todos nuestros sitios son mobile-first y se adaptan perfectamente a todas las pantallas: movil, tableta y escritorio.' },
+    { q: 'El SEO esta incluido?', a: 'Si, la optimizacion SEO tecnica esta incluida: meta tags, sitemap, schema markup, rendimiento, Google Analytics y Search Console.' },
+    { q: 'Cuanto tiempo toma un proyecto?', a: 'Una landing page toma aproximadamente 2 semanas. Un sitio vitrina 4-6 semanas. Un e-commerce 6-10 semanas. Cada proyecto es unico.' },
+    { q: 'Ofrecen mantenimiento?', a: 'Si, ofrecemos paquetes de mantenimiento mensual ($100-200/mes) que incluyen actualizaciones, respaldos, monitoreo y soporte.' },
+    { q: 'Puedo ver ejemplos de sus trabajos?', a: 'Si! Nuestro portafolio incluye proyectos como SPVM, La Presse, Maudite Machine, y varios sitios para artistas y comercios locales.' },
   ],
 };

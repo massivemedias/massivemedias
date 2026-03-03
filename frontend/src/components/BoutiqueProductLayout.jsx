@@ -30,7 +30,7 @@ function BoutiqueProductLayout({
   containMainCount,
   children,
 }) {
-  const { lang } = useLang();
+  const { lang, tx } = useLang();
   const servicesData = getServicesData(lang);
   const service = servicesData[serviceSlug];
 
@@ -54,20 +54,20 @@ function BoutiqueProductLayout({
     setMainImage(i => (i + 1) % images.length);
   }, [images.length]);
 
-  const faqData = faq[lang] || faq.fr;
-  const t = (obj) => (lang === 'fr' ? obj.fr : obj.en);
+  const faqData = faq[lang] || faq.en || faq.fr;
+  const lt = (obj) => obj[lang] || obj.en || obj.fr;
 
   return (
     <>
       <SEO
-        title={t(pageTitle)}
-        description={t(metaDescription)}
+        title={lt(pageTitle)}
+        description={lt(metaDescription)}
         ogType="product"
         ogImage={images[0]}
         breadcrumbs={[
-          { name: lang === 'fr' ? 'Accueil' : 'Home', url: '/' },
-          { name: lang === 'fr' ? 'Boutique' : 'Shop', url: '/boutique' },
-          { name: t(productTitle) },
+          { name: tx({ fr: 'Accueil', en: 'Home', es: 'Inicio' }), url: '/' },
+          { name: tx({ fr: 'Boutique', en: 'Shop', es: 'Tienda' }), url: '/boutique' },
+          { name: lt(productTitle) },
         ]}
         jsonLd={faqData.length > 0 ? getFAQSchema(faqData) : undefined}
       />
@@ -77,14 +77,14 @@ function BoutiqueProductLayout({
         {/* ============ BREADCRUMB ============ */}
         <div className="flex items-center gap-2 mb-8 text-sm">
           <Link to="/" className="text-grey-muted hover:text-accent transition-colors">
-            {lang === 'fr' ? 'Accueil' : 'Home'}
+            {tx({ fr: 'Accueil', en: 'Home', es: 'Inicio' })}
           </Link>
           <span className="text-grey-muted">/</span>
           <Link to="/boutique" className="text-grey-muted hover:text-accent transition-colors">
-            {lang === 'fr' ? 'Boutique' : 'Shop'}
+            {tx({ fr: 'Boutique', en: 'Shop', es: 'Tienda' })}
           </Link>
           <span className="text-grey-muted">/</span>
-          <span className="text-heading font-medium">{t(productTitle)}</span>
+          <span className="text-heading font-medium">{lt(productTitle)}</span>
         </div>
 
         {/* ============ HERO PRODUCT (2 cols) ============ */}
@@ -98,26 +98,26 @@ function BoutiqueProductLayout({
             >
               <img
                 src={images[mainImage]}
-                alt={t(productTitle)}
+                alt={lt(productTitle)}
                 className={`w-full h-full transition-transform duration-500 group-hover:scale-105 ${containMainCount && mainImage < containMainCount ? 'object-contain p-4' : 'object-cover'}`}
               />
               {badge && (
                 <div className="absolute top-4 left-4 px-3 py-1.5 rounded-full bg-accent text-white text-xs font-semibold flex items-center gap-1.5">
                   {badge.icon && <badge.icon size={14} />}
-                  {t(badge)}
+                  {lt(badge)}
                 </div>
               )}
               <button
                 onClick={(e) => { e.stopPropagation(); prevImage(); }}
                 className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full flex items-center justify-center text-heading transition-colors card-bg card-border"
-                aria-label={lang === 'fr' ? 'Image précédente' : 'Previous image'}
+                aria-label={tx({ fr: 'Image precedente', en: 'Previous image', es: 'Imagen anterior' })}
               >
                 <ChevronLeft size={20} />
               </button>
               <button
                 onClick={(e) => { e.stopPropagation(); nextImage(); }}
                 className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full flex items-center justify-center text-heading transition-colors card-bg card-border"
-                aria-label={lang === 'fr' ? 'Image suivante' : 'Next image'}
+                aria-label={tx({ fr: 'Image suivante', en: 'Next image', es: 'Siguiente imagen' })}
               >
                 <ChevronRight size={20} />
               </button>
@@ -138,10 +138,10 @@ function BoutiqueProductLayout({
           {/* RIGHT - Configurator (sticky on desktop) */}
           <div className="lg:col-span-5 sticky-config">
             <h1 className="text-3xl md:text-4xl font-heading font-bold text-heading mb-2">
-              {t(productTitle)}
+              {lt(productTitle)}
             </h1>
             <p className="text-grey-muted mb-4">
-              {t(productSubtitle)}
+              {lt(productSubtitle)}
             </p>
             <div className="w-10 h-0.5 bg-accent mb-6" />
 
@@ -164,7 +164,7 @@ function BoutiqueProductLayout({
                   {i > 0 && <div className="trust-divider hidden sm:block" />}
                   <Icon size={18} className="text-accent flex-shrink-0" />
                   <span className="text-sm text-grey-muted font-medium">
-                    {t(item)}
+                    {lt(item)}
                   </span>
                 </div>
               );
@@ -185,11 +185,11 @@ function BoutiqueProductLayout({
             className="mb-20"
           >
             <h2 className="text-3xl md:text-4xl font-heading font-bold text-heading mb-3 text-center">
-              {featuresTitle ? t(featuresTitle) : ''}
+              {featuresTitle ? lt(featuresTitle) : ''}
             </h2>
             {featuresSubtitle && (
               <p className="text-grey-muted text-center mb-10 max-w-xl mx-auto">
-                {t(featuresSubtitle)}
+                {lt(featuresSubtitle)}
               </p>
             )}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -208,10 +208,10 @@ function BoutiqueProductLayout({
                       <Icon size={28} className="text-accent" />
                     </div>
                     <h3 className="font-heading font-bold text-heading text-lg mb-2">
-                      {t(feature)}
+                      {lt(feature)}
                     </h3>
                     <p className="text-grey-muted text-sm leading-relaxed">
-                      {lang === 'fr' ? feature.descFr : feature.descEn}
+                      {tx({ fr: feature.descFr, en: feature.descEn, es: feature.descEs || feature.descEn })}
                     </p>
                   </motion.div>
                 );
@@ -230,12 +230,14 @@ function BoutiqueProductLayout({
             className="mb-20"
           >
             <h2 className="text-3xl md:text-4xl font-heading font-bold text-heading mb-3 text-center">
-              {lang === 'fr' ? 'Idees d\'utilisation' : 'Use Cases'}
+              {tx({ fr: 'Idees d\'utilisation', en: 'Use Cases', es: 'Ideas de uso' })}
             </h2>
             <p className="text-grey-muted text-center mb-10 max-w-xl mx-auto">
-              {lang === 'fr'
-                ? 'Comment nos clients utilisent ce produit.'
-                : 'How our clients use this product.'}
+              {tx({
+                fr: 'Comment nos clients utilisent ce produit.',
+                en: 'How our clients use this product.',
+                es: 'Como nuestros clientes usan este producto.',
+              })}
             </p>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {useCases.map((uc, i) => {
@@ -253,10 +255,10 @@ function BoutiqueProductLayout({
                       <Icon size={20} className="text-accent" />
                     </div>
                     <h3 className="font-heading font-bold text-heading text-sm mb-1">
-                      {t(uc)}
+                      {lt(uc)}
                     </h3>
                     <p className="text-grey-muted text-xs">
-                      {lang === 'fr' ? uc.descFr : uc.descEn}
+                      {tx({ fr: uc.descFr, en: uc.descEn, es: uc.descEs || uc.descEn })}
                     </p>
                   </motion.div>
                 );
@@ -275,12 +277,14 @@ function BoutiqueProductLayout({
             className="mb-20"
           >
             <h2 className="text-3xl md:text-4xl font-heading font-bold text-heading mb-3 text-center">
-              {lang === 'fr' ? 'Comment \u00e7a marche' : 'How it works'}
+              {tx({ fr: 'Comment \u00e7a marche', en: 'How it works', es: 'Como funciona' })}
             </h2>
             <p className="text-grey-muted text-center mb-10 max-w-xl mx-auto">
-              {lang === 'fr'
-                ? `De votre id\u00e9e \u00e0 votre projet en ${service.process.length} \u00e9tapes simples.`
-                : `From your idea to your project in ${service.process.length} simple steps.`}
+              {tx({
+                fr: `De votre id\u00e9e \u00e0 votre projet en ${service.process.length} \u00e9tapes simples.`,
+                en: `From your idea to your project in ${service.process.length} simple steps.`,
+                es: `De tu idea a tu proyecto en ${service.process.length} pasos simples.`,
+              })}
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {service.process.map((item, index) => (
@@ -318,7 +322,7 @@ function BoutiqueProductLayout({
           >
             <h2 className="text-3xl md:text-4xl font-heading font-bold text-heading mb-10 text-center flex items-center justify-center gap-3">
               <Wrench size={28} className="text-accent" />
-              {lang === 'fr' ? 'Notre \u00e9quipement' : 'Our equipment'}
+              {tx({ fr: 'Notre \u00e9quipement', en: 'Our equipment', es: 'Nuestro equipo' })}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
               {service.equipment.map((item, index) => (
@@ -348,7 +352,7 @@ function BoutiqueProductLayout({
             className="mb-20"
           >
             <h2 className="text-3xl md:text-4xl font-heading font-bold text-heading mb-10 text-center">
-              {lang === 'fr' ? 'Exemples de r\u00e9alisations' : 'Examples of our work'}
+              {tx({ fr: 'Exemples de r\u00e9alisations', en: 'Examples of our work', es: 'Ejemplos de nuestro trabajo' })}
             </h2>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {images.map((imgSrc, i) => (
@@ -381,7 +385,7 @@ function BoutiqueProductLayout({
             className="mb-20 max-w-3xl mx-auto"
           >
             <h2 className="text-3xl md:text-4xl font-heading font-bold text-heading mb-10 text-center">
-              {lang === 'fr' ? 'Questions fr\u00e9quentes' : 'Frequently asked questions'}
+              {tx({ fr: 'Questions fr\u00e9quentes', en: 'Frequently asked questions', es: 'Preguntas frecuentes' })}
             </h2>
             <div className="space-y-3">
               {faqData.map((item, i) => (
@@ -429,19 +433,21 @@ function BoutiqueProductLayout({
           className="text-center p-12 rounded-2xl mb-8 cta-text-bordered"
         >
           <h2 className="text-3xl font-heading font-bold text-heading mb-4">
-            {lang === 'fr' ? 'Besoin d\'un projet custom?' : 'Need a custom project?'}
+            {tx({ fr: 'Besoin d\'un projet custom?', en: 'Need a custom project?', es: 'Necesitas un proyecto personalizado?' })}
           </h2>
           <p className="text-grey-light text-lg mb-8 max-w-2xl mx-auto">
-            {lang === 'fr'
-              ? 'Quantit\u00e9s sp\u00e9ciales, mat\u00e9riaux particuliers ou design complexe? Contactez-nous pour un devis sur mesure.'
-              : 'Special quantities, unique materials, or complex design? Contact us for a custom quote.'}
+            {tx({
+              fr: 'Quantit\u00e9s sp\u00e9ciales, mat\u00e9riaux particuliers ou design complexe? Contactez-nous pour un devis sur mesure.',
+              en: 'Special quantities, unique materials, or complex design? Contact us for a custom quote.',
+              es: 'Cantidades especiales, materiales unicos o diseno complejo? Contactanos para una cotizacion personalizada.',
+            })}
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4 mb-8">
             <Link to="/contact" className="btn-primary">
-              {lang === 'fr' ? 'Demander un devis' : 'Request a quote'}
+              {tx({ fr: 'Demander un devis', en: 'Request a quote', es: 'Solicitar cotizacion' })}
             </Link>
             <Link to="/boutique" className="btn-outline">
-              {lang === 'fr' ? 'Voir nos services' : 'View our services'}
+              {tx({ fr: 'Voir nos services', en: 'View our services', es: 'Ver nuestros servicios' })}
             </Link>
           </div>
           {ctaLinks && ctaLinks.length > 0 && (
@@ -450,7 +456,7 @@ function BoutiqueProductLayout({
                 <span key={i} className="flex items-center gap-4">
                   {i > 0 && <span className="text-grey-muted/30">&middot;</span>}
                   <Link to={link.to} className="text-grey-muted hover:text-accent transition-colors">
-                    {t(link)}
+                    {lt(link)}
                   </Link>
                 </span>
               ))}
@@ -472,27 +478,27 @@ function BoutiqueProductLayout({
             <button
               onClick={(e) => { e.stopPropagation(); setLightbox((lightbox - 1 + images.length) % images.length); }}
               className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 text-white/70 hover:text-white w-12 h-12 flex items-center justify-center"
-              aria-label={lang === 'fr' ? 'Image précédente' : 'Previous image'}
+              aria-label={tx({ fr: 'Image precedente', en: 'Previous image', es: 'Imagen anterior' })}
             >
               <ChevronLeft size={32} />
             </button>
             <button
               onClick={(e) => { e.stopPropagation(); setLightbox((lightbox + 1) % images.length); }}
               className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 text-white/70 hover:text-white w-12 h-12 flex items-center justify-center"
-              aria-label={lang === 'fr' ? 'Image suivante' : 'Next image'}
+              aria-label={tx({ fr: 'Image suivante', en: 'Next image', es: 'Siguiente imagen' })}
             >
               <ChevronRight size={32} />
             </button>
             <button
               onClick={() => setLightbox(null)}
               className="absolute top-4 right-4 text-white/70 hover:text-white w-10 h-10 flex items-center justify-center"
-              aria-label={lang === 'fr' ? 'Fermer' : 'Close'}
+              aria-label={tx({ fr: 'Fermer', en: 'Close', es: 'Cerrar' })}
             >
               <X size={28} />
             </button>
             <img
               src={toFull(images[lightbox])}
-              alt={t(productTitle)}
+              alt={lt(productTitle)}
               className="max-w-full max-h-[85vh] object-contain rounded-lg"
               onClick={(e) => e.stopPropagation()}
             />

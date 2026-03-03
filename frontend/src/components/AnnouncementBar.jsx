@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useLang } from '../i18n/LanguageContext';
 
 function AnnouncementBar() {
-  const { lang } = useLang();
+  const { tx } = useLang();
   const [dismissed, setDismissed] = useState(false);
 
   return (
@@ -20,12 +20,14 @@ function AnnouncementBar() {
         >
           <div className="flex items-center justify-center gap-3 py-2 px-4 text-center">
             <span className="text-xs font-medium">
-              {lang === 'fr'
-                ? 'Livraison gratuite Mile-End - Impression fine art a partir de 16$'
-                : 'Free Mile-End delivery - Fine art prints starting at $16'}
+              {tx({
+                fr: 'Livraison gratuite Mile-End - Impression fine art a partir de 16$',
+                en: 'Free Mile-End delivery - Fine art prints starting at $16',
+                es: 'Envio gratis Mile-End - Impresiones fine art desde $16',
+              })}
             </span>
             <Link to="/boutique" className="text-xs font-bold underline underline-offset-2 hover:opacity-80 transition-opacity">
-              {lang === 'fr' ? 'Voir la boutique' : 'Shop now'}
+              {tx({ fr: 'Voir la boutique', en: 'Shop now', es: 'Ver la tienda' })}
             </Link>
             <button
               onClick={() => setDismissed(true)}

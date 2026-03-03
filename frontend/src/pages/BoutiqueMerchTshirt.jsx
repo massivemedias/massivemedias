@@ -10,7 +10,7 @@ import { useProduct } from '../hooks/useProducts';
 import { merchColors as defaultColors, merchSizes as defaultSizes, merchTshirtPrice as defaultPrice, getTshirtImage } from '../data/merchData';
 
 function BoutiqueMerchTshirt() {
-  const { lang } = useLang();
+  const { lang, tx } = useLang();
   const { addToCart } = useCart();
   const cmsProduct = useProduct('merch-tshirt');
   const pd = cmsProduct?.pricingData;
@@ -32,7 +32,7 @@ function BoutiqueMerchTshirt() {
   const handleAddToCart = () => {
     addToCart({
       productId: `merch-tshirt-${selectedColor}-${selectedSize}`,
-      productName: lang === 'fr' ? 'T-Shirt Massive' : 'Massive T-Shirt',
+      productName: tx({ fr: 'T-Shirt Massive', en: 'Massive T-Shirt', es: 'Camiseta Massive' }),
       finish: colorObj.name,
       shape: null,
       size: selectedSize,
@@ -49,13 +49,15 @@ function BoutiqueMerchTshirt() {
   return (
     <>
       <SEO
-        title={lang === 'fr' ? 'T-Shirt Massive | Boutique' : 'Massive T-Shirt | Shop'}
-        description={lang === 'fr'
-          ? 'T-Shirt Massive Medias. 60+ couleurs, tailles S a 3XL.'
-          : 'Massive Medias T-Shirt. 60+ colors, sizes S to 3XL.'}
+        title={tx({ fr: 'T-Shirt Massive | Boutique', en: 'Massive T-Shirt | Shop', es: 'Camiseta Massive | Tienda' })}
+        description={tx({
+          fr: 'T-Shirt Massive Medias. 60+ couleurs, tailles S a 3XL.',
+          en: 'Massive Medias T-Shirt. 60+ colors, sizes S to 3XL.',
+          es: 'Camiseta Massive Medias. 60+ colores, tallas S a 3XL.',
+        })}
         breadcrumbs={[
-          { name: lang === 'fr' ? 'Accueil' : 'Home', url: '/' },
-          { name: lang === 'fr' ? 'Boutique' : 'Shop', url: '/boutique' },
+          { name: tx({ fr: 'Accueil', en: 'Home', es: 'Inicio' }), url: '/' },
+          { name: tx({ fr: 'Boutique', en: 'Shop', es: 'Tienda' }), url: '/boutique' },
           { name: 'T-Shirt' },
         ]}
       />
@@ -66,7 +68,7 @@ function BoutiqueMerchTshirt() {
         <div className="relative z-10 section-container !py-0">
           <Link to="/boutique" className="inline-flex items-center gap-2 text-sm text-grey-muted hover:text-accent transition-colors mb-6">
             <ArrowLeft size={16} />
-            {lang === 'fr' ? 'Retour a la boutique' : 'Back to shop'}
+            {tx({ fr: 'Retour a la boutique', en: 'Back to shop', es: 'Volver a la tienda' })}
           </Link>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -77,9 +79,11 @@ function BoutiqueMerchTshirt() {
               T-Shirt Massive
             </h1>
             <p className="text-lg text-grey-light max-w-2xl">
-              {lang === 'fr'
-                ? '60+ couleurs disponibles. Coton preshrunk, impression durable.'
-                : '60+ colors available. Preshrunk cotton, durable print.'}
+              {tx({
+                fr: '60+ couleurs disponibles. Coton preshrunk, impression durable.',
+                en: '60+ colors available. Preshrunk cotton, durable print.',
+                es: '60+ colores disponibles. Algodón preencogido, impresión duradera.',
+              })}
             </p>
           </motion.div>
         </div>
@@ -124,13 +128,13 @@ function BoutiqueMerchTshirt() {
               colors={merchColors}
               selected={selectedColor}
               onChange={setSelectedColor}
-              label={lang === 'fr' ? 'Couleur' : 'Color'}
+              label={tx({ fr: 'Couleur', en: 'Color', es: 'Color' })}
             />
 
             {/* Size */}
             <div>
               <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2">
-                {lang === 'fr' ? 'Taille' : 'Size'}
+                {tx({ fr: 'Taille', en: 'Size', es: 'Talla' })}
               </label>
               <div className="flex flex-wrap gap-2">
                 {merchSizes.map(size => (
@@ -152,7 +156,7 @@ function BoutiqueMerchTshirt() {
             {/* Quantity */}
             <div>
               <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2">
-                {lang === 'fr' ? 'Quantite' : 'Quantity'}
+                {tx({ fr: 'Quantite', en: 'Quantity', es: 'Cantidad' })}
               </label>
               <div className="flex items-center gap-3">
                 <button
@@ -174,13 +178,13 @@ function BoutiqueMerchTshirt() {
             {/* Notes */}
             <div>
               <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2">
-                {lang === 'fr' ? 'Notes / Instructions' : 'Notes / Instructions'}
+                {tx({ fr: 'Notes / Instructions', en: 'Notes / Instructions', es: 'Notas / Instrucciones' })}
               </label>
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 rows={2}
-                placeholder={lang === 'fr' ? 'Taille exacte, coupe, details...' : 'Exact fit, cut, details...'}
+                placeholder={tx({ fr: 'Taille exacte, coupe, details...', en: 'Exact fit, cut, details...', es: 'Talla exacta, corte, detalles...' })}
                 className="w-full rounded-xl border border-white/10 bg-white/[0.02] px-4 py-3 text-sm text-heading placeholder:text-grey-muted/40 focus:border-accent/40 focus:outline-none transition-colors resize-none"
               />
             </div>
@@ -203,20 +207,22 @@ function BoutiqueMerchTshirt() {
             {/* Add to cart */}
             <button onClick={handleAddToCart} className="btn-primary w-full justify-center text-base py-3.5">
               {added ? (
-                <><Check size={20} className="mr-2" />{lang === 'fr' ? 'Ajoute au panier!' : 'Added to cart!'}</>
+                <><Check size={20} className="mr-2" />{tx({ fr: 'Ajouté au panier!', en: 'Added to cart!', es: 'Agregado al carrito!' })}</>
               ) : (
-                <><ShoppingCart size={20} className="mr-2" />{lang === 'fr' ? 'Ajouter au panier' : 'Add to cart'}</>
+                <><ShoppingCart size={20} className="mr-2" />{tx({ fr: 'Ajouter au panier', en: 'Add to cart', es: 'Agregar al carrito' })}</>
               )}
             </button>
 
             <Link to="/panier" className="btn-outline w-full justify-center text-sm py-2.5">
-              {lang === 'fr' ? 'Voir le panier' : 'View cart'}
+              {tx({ fr: 'Voir le panier', en: 'View cart', es: 'Ver el carrito' })}
             </Link>
 
             <p className="text-grey-muted text-xs text-center">
-              {lang === 'fr'
-                ? 'Nous vous contacterons pour confirmer les details avant production.'
-                : 'We\'ll contact you to confirm details before production.'}
+              {tx({
+                fr: 'Nous vous contacterons pour confirmer les details avant production.',
+                en: 'We\'ll contact you to confirm details before production.',
+                es: 'Nos comunicaremos contigo para confirmar los detalles antes de la producción.',
+              })}
             </p>
           </motion.div>
         </div>

@@ -1,12 +1,19 @@
+const LANG_SUFFIX = { fr: 'Fr', en: 'En', es: 'Es' };
+
 /**
- * Bilingual field helper - picks Fr or En value based on current language.
+ * Multilingual field helper - picks Fr, En or Es value based on current language.
  * Usage: bl(content, 'heroSubtitle', lang)
- * → returns content.heroSubtitleFr or content.heroSubtitleEn
+ * Fallback chain: es -> en -> fr
  */
 export function bl(content, fieldBase, lang) {
   if (!content) return '';
-  const key = `${fieldBase}${lang === 'en' ? 'En' : 'Fr'}`;
-  return content[key] || content[`${fieldBase}Fr`] || '';
+  const primary = content[`${fieldBase}${LANG_SUFFIX[lang] || 'Fr'}`];
+  if (primary) return primary;
+  if (lang === 'es') {
+    const en = content[`${fieldBase}En`];
+    if (en) return en;
+  }
+  return content[`${fieldBase}Fr`] || '';
 }
 
 /**

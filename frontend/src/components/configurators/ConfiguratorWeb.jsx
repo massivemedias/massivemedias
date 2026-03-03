@@ -7,7 +7,7 @@ import FileUpload from '../FileUpload';
 import { webServices as defaultServices, webHourlyRate as defaultRate } from '../../data/products';
 
 function ConfiguratorWeb() {
-  const { lang } = useLang();
+  const { lang, tx } = useLang();
   const cmsProduct = useProduct('web');
   const webServices = cmsProduct?.pricingData?.services || defaultServices;
   const webHourlyRate = cmsProduct?.pricingData?.hourlyRate || defaultRate;
@@ -20,7 +20,7 @@ function ConfiguratorWeb() {
 
   const getPrice = (s) => {
     if (typeof s.price === 'object') {
-      return lang === 'fr' ? s.price.fr : s.price.en;
+      return tx({ fr: s.price.fr, en: s.price.en, es: s.price.es || s.price.en });
     }
     return s.price;
   };
@@ -30,7 +30,7 @@ function ConfiguratorWeb() {
       {/* Project type selector */}
       <div className="mb-6">
         <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2.5">
-          {lang === 'fr' ? 'Type de projet' : 'Project type'}
+          {tx({ fr: 'Type de projet', en: 'Project type', es: 'Tipo de proyecto' })}
         </label>
         <div className="space-y-2">
           {webServices.map(s => (
@@ -43,7 +43,7 @@ function ConfiguratorWeb() {
               }`}
             >
               <span className="text-heading">
-                {lang === 'fr' ? s.labelFr : s.labelEn}
+                {tx({ fr: s.labelFr, en: s.labelEn, es: s.labelEn })}
               </span>
               <span className="text-accent font-semibold text-xs whitespace-nowrap ml-2">
                 {getPrice(s)}
@@ -60,16 +60,18 @@ function ConfiguratorWeb() {
             <span className="text-2xl font-heading font-bold text-heading">{getPrice(service)}</span>
           </div>
           <div className="text-grey-muted text-xs">
-            {lang === 'fr' ? `${service.labelFr}` : `${service.labelEn}`}
+            {tx({ fr: service.labelFr, en: service.labelEn, es: service.labelEn })}
           </div>
         </div>
       )}
 
       {/* Hourly rate note */}
       <div className="p-3 rounded-lg mb-5 text-xs text-grey-muted bg-glass">
-        {lang === 'fr'
-          ? `\u23f1\ufe0f Taux horaire : ${webHourlyRate} (Web, Design, Restauration)`
-          : `\u23f1\ufe0f Hourly rate: ${webHourlyRate} (Web, Design, Restoration)`}
+        {tx({
+          fr: `\u23f1\ufe0f Taux horaire : ${webHourlyRate} (Web, Design, Restauration)`,
+          en: `\u23f1\ufe0f Hourly rate: ${webHourlyRate} (Web, Design, Restoration)`,
+          es: `\u23f1\ufe0f Tarifa por hora: ${webHourlyRate} (Web, Dise\u00f1o, Restauraci\u00f3n)`,
+        })}
       </div>
 
       {/* File upload + Notes side by side */}
@@ -77,18 +79,18 @@ function ConfiguratorWeb() {
         <FileUpload
           files={uploadedFiles}
           onFilesChange={setUploadedFiles}
-          label={lang === 'fr' ? 'Documents' : 'Documents'}
+          label={tx({ fr: 'Documents', en: 'Documents', es: 'Documentos' })}
           compact
         />
         <div>
           <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2.5">
-            {lang === 'fr' ? 'Notes / Description' : 'Notes / Description'}
+            {tx({ fr: 'Notes / Description', en: 'Notes / Description', es: 'Notas / Descripci\u00f3n' })}
           </label>
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             rows={4}
-            placeholder={lang === 'fr' ? 'Decrivez votre projet (fonctionnalites, design, references...)' : 'Describe your project (features, design, references...)'}
+            placeholder={tx({ fr: 'Decrivez votre projet (fonctionnalites, design, references...)', en: 'Describe your project (features, design, references...)', es: 'Describa su proyecto (funcionalidades, dise\u00f1o, referencias...)' })}
             className="w-full min-h-[100px] rounded-lg border-2 border-grey-muted/20 bg-transparent px-4 py-3 text-sm text-heading placeholder:text-grey-muted/50 focus:border-accent focus:outline-none transition-colors resize-none"
           />
         </div>
@@ -99,18 +101,16 @@ function ConfiguratorWeb() {
         to={`/contact?service=developpement-web&type=${selected}${uploadedFiles.length > 0 ? `&fileIds=${uploadedFiles.map(f => f.id).join(',')}` : ''}${notes ? `&notes=${encodeURIComponent(notes)}` : ''}`}
         className="btn-primary w-full justify-center text-base py-3.5 mb-3"
       >
-        {lang === 'fr' ? 'Demander un devis' : 'Request a quote'}
+        {tx({ fr: 'Demander un devis', en: 'Request a quote', es: 'Solicitar un presupuesto' })}
         <ArrowRight size={20} className="ml-2" />
       </Link>
 
       <Link to="/boutique" className="btn-outline w-full justify-center text-sm py-2.5">
-        {lang === 'fr' ? 'Voir tous les services' : 'View all services'}
+        {tx({ fr: 'Voir tous les services', en: 'View all services', es: 'Ver todos los servicios' })}
       </Link>
 
       <p className="text-grey-muted text-xs mt-3 text-center">
-        {lang === 'fr'
-          ? '15+ ans d\'exp\u00e9rience. Chaque projet est unique.'
-          : '15+ years of experience. Every project is unique.'}
+        {tx({ fr: '15+ ans d\'exp\u00e9rience. Chaque projet est unique.', en: '15+ years of experience. Every project is unique.', es: '15+ a\u00f1os de experiencia. Cada proyecto es \u00fanico.' })}
       </p>
     </>
   );

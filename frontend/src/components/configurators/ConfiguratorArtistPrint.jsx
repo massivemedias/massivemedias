@@ -8,7 +8,7 @@ import {
 } from '../../data/artists';
 
 function ConfiguratorArtistPrint({ artist, selectedPrint }) {
-  const { lang } = useLang();
+  const { lang, tx } = useLang();
   const { addToCart } = useCart();
 
   const [tier, setTier] = useState('studio');
@@ -27,18 +27,20 @@ function ConfiguratorArtistPrint({ artist, selectedPrint }) {
   const priceInfo = getArtistPrintPrice(artist.pricing, tier, format, withFrame);
   const tierLabel = artistPrinterTiers.find(t => t.id === tier);
   const formatLabel = artistFormats.find(f => f.id === format);
-  const printTitle = lang === 'fr' ? selectedPrint.titleFr : selectedPrint.titleEn;
+  const printTitle = tx({ fr: selectedPrint.titleFr, en: selectedPrint.titleEn, es: selectedPrint.titleEn });
 
   const handleAddToCart = () => {
     if (!priceInfo) return;
     addToCart({
       productId: `artist-print-${artist.slug}-${selectedPrint.id}`,
       productName: `${artist.name} - ${printTitle}`,
-      finish: lang === 'fr' ? tierLabel?.labelFr : tierLabel?.labelEn,
+      finish: tx({ fr: tierLabel?.labelFr, en: tierLabel?.labelEn, es: tierLabel?.labelEn }),
       shape: withFrame
-        ? (lang === 'fr'
-          ? `Cadre ${frameColor === 'black' ? 'noir' : 'blanc'}`
-          : `${frameColor === 'black' ? 'Black' : 'White'} frame`)
+        ? tx({
+            fr: `Cadre ${frameColor === 'black' ? 'noir' : 'blanc'}`,
+            en: `${frameColor === 'black' ? 'Black' : 'White'} frame`,
+            es: `Marco ${frameColor === 'black' ? 'negro' : 'blanco'}`,
+          })
         : null,
       size: formatLabel?.label,
       quantity,
@@ -76,7 +78,7 @@ function ConfiguratorArtistPrint({ artist, selectedPrint }) {
       {/* Printer tier selector */}
       <div>
         <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2.5">
-          {lang === 'fr' ? 'Qualit\u00e9 d\'impression' : 'Print Quality'}
+          {tx({ fr: 'Qualité d\'impression', en: 'Print Quality', es: 'Calidad de impresión' })}
         </label>
         <div className="space-y-2">
           {artistPrinterTiers.map(t => (
@@ -89,7 +91,7 @@ function ConfiguratorArtistPrint({ artist, selectedPrint }) {
               }`}
             >
               <span className="text-heading font-semibold text-sm">
-                {lang === 'fr' ? t.labelFr : t.labelEn}
+                {tx({ fr: t.labelFr, en: t.labelEn, es: t.labelEn })}
               </span>
               <span className="text-grey-muted ml-2 text-[11px]">{t.desc}</span>
             </button>
@@ -136,7 +138,7 @@ function ConfiguratorArtistPrint({ artist, selectedPrint }) {
           </div>
           <div className="flex-1">
             <span className="text-heading font-medium text-sm">
-              {lang === 'fr' ? 'Ajouter un cadre' : 'Add a frame'}
+              {tx({ fr: 'Ajouter un cadre', en: 'Add a frame', es: 'Agregar un marco' })}
             </span>
           </div>
           <span className="text-accent font-semibold text-sm">+{artist.pricing.framePrice}$</span>
@@ -152,7 +154,7 @@ function ConfiguratorArtistPrint({ artist, selectedPrint }) {
               }`}
             >
               <span className="w-4 h-4 rounded-full bg-black border border-grey-muted/30" />
-              <span className="text-heading font-semibold">{lang === 'fr' ? 'Noir' : 'Black'}</span>
+              <span className="text-heading font-semibold">{tx({ fr: 'Noir', en: 'Black', es: 'Negro' })}</span>
             </button>
             <button
               onClick={() => setFrameColor('white')}
@@ -162,7 +164,7 @@ function ConfiguratorArtistPrint({ artist, selectedPrint }) {
               }`}
             >
               <span className="w-4 h-4 rounded-full bg-white border border-grey-muted/30" />
-              <span className="text-heading font-semibold">{lang === 'fr' ? 'Blanc' : 'White'}</span>
+              <span className="text-heading font-semibold">{tx({ fr: 'Blanc', en: 'White', es: 'Blanco' })}</span>
             </button>
           </div>
         )}
@@ -171,13 +173,13 @@ function ConfiguratorArtistPrint({ artist, selectedPrint }) {
       {/* Notes */}
       <div>
         <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2.5">
-          {lang === 'fr' ? 'Notes / Description' : 'Notes / Description'}
+          {tx({ fr: 'Notes / Description', en: 'Notes / Description', es: 'Notas / Descripción' })}
         </label>
         <textarea
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           rows={3}
-          placeholder={lang === 'fr' ? 'Decrivez vos preferences (dedicace, message, details...)' : 'Describe your preferences (dedication, message, details...)'}
+          placeholder={tx({ fr: 'Decrivez vos preferences (dedicace, message, details...)', en: 'Describe your preferences (dedication, message, details...)', es: 'Describe tus preferencias (dedicatoria, mensaje, detalles...)' })}
           className="w-full rounded-lg border-2 border-grey-muted/20 bg-transparent px-4 py-3 text-sm text-heading placeholder:text-grey-muted/50 focus:border-accent focus:outline-none transition-colors resize-none"
         />
       </div>
@@ -185,7 +187,7 @@ function ConfiguratorArtistPrint({ artist, selectedPrint }) {
       {/* Quantity */}
       <div>
         <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2.5">
-          {lang === 'fr' ? 'Quantite' : 'Quantity'}
+          {tx({ fr: 'Quantite', en: 'Quantity', es: 'Cantidad' })}
         </label>
         <div className="flex items-center gap-3">
           <button
@@ -213,14 +215,18 @@ function ConfiguratorArtistPrint({ artist, selectedPrint }) {
           </div>
           {withFrame && (
             <div className="text-grey-muted text-xs mt-1">
-              {lang === 'fr' ? `Tirage ${priceInfo.basePrice}$ + Cadre ${priceInfo.framePrice}$` : `Print ${priceInfo.basePrice}$ + Frame ${priceInfo.framePrice}$`}
+              {tx({
+                fr: `Tirage ${priceInfo.basePrice}$ + Cadre ${priceInfo.framePrice}$`,
+                en: `Print ${priceInfo.basePrice}$ + Frame ${priceInfo.framePrice}$`,
+                es: `Impresión ${priceInfo.basePrice}$ + Marco ${priceInfo.framePrice}$`,
+              })}
             </div>
           )}
           <div className="flex items-center gap-2 mt-2">
             <span className="text-grey-muted text-xs">
               {tier === 'museum'
-                ? (lang === 'fr' ? 'Qualit\u00e9 mus\u00e9e - 12 encres pigment\u00e9es, conservation 100+ ans' : 'Museum quality - 12 pigmented inks, 100+ year archival')
-                : (lang === 'fr' ? 'Qualit\u00e9 studio - impression professionnelle pigment\u00e9e' : 'Studio quality - professional pigmented printing')}
+                ? tx({ fr: 'Qualité musée - 12 encres pigmentées, conservation 100+ ans', en: 'Museum quality - 12 pigmented inks, 100+ year archival', es: 'Calidad museo - 12 tintas pigmentadas, conservación 100+ años' })
+                : tx({ fr: 'Qualité studio - impression professionnelle pigmentée', en: 'Studio quality - professional pigmented printing', es: 'Calidad estudio - impresión profesional pigmentada' })}
             </span>
           </div>
         </div>
@@ -229,20 +235,22 @@ function ConfiguratorArtistPrint({ artist, selectedPrint }) {
       {/* Add to cart */}
       <button onClick={handleAddToCart} className="btn-primary w-full justify-center text-base py-4">
         {added ? (
-          <><Check size={20} className="mr-2" />{lang === 'fr' ? 'Ajout\u00e9 au panier!' : 'Added to cart!'}</>
+          <><Check size={20} className="mr-2" />{tx({ fr: 'Ajouté au panier!', en: 'Added to cart!', es: 'Agregado al carrito!' })}</>
         ) : (
-          <><ShoppingCart size={20} className="mr-2" />{lang === 'fr' ? 'Ajouter au panier' : 'Add to cart'}</>
+          <><ShoppingCart size={20} className="mr-2" />{tx({ fr: 'Ajouter au panier', en: 'Add to cart', es: 'Agregar al carrito' })}</>
         )}
       </button>
 
       <Link to="/panier" className="btn-outline w-full justify-center text-sm py-3">
-        {lang === 'fr' ? 'Voir le panier' : 'View cart'}
+        {tx({ fr: 'Voir le panier', en: 'View cart', es: 'Ver el carrito' })}
       </Link>
 
       <p className="text-grey-muted text-xs text-center">
-        {lang === 'fr'
-          ? 'Impression professionnelle par Massive Medias. Soft proofing inclus.'
-          : 'Professional printing by Massive Medias. Soft proofing included.'}
+        {tx({
+          fr: 'Impression professionnelle par Massive Medias. Soft proofing inclus.',
+          en: 'Professional printing by Massive Medias. Soft proofing included.',
+          es: 'Impresión profesional por Massive Medias. Soft proofing incluido.',
+        })}
       </p>
     </div>
   );

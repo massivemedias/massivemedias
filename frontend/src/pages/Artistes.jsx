@@ -9,7 +9,7 @@ import { mediaUrl } from '../utils/cms';
 import artistsData from '../data/artists';
 
 function Artistes() {
-  const { lang } = useLang();
+  const { lang, tx } = useLang();
   const { artists: cmsArtists } = useArtists();
 
   const artists = useMemo(() => {
@@ -30,13 +30,15 @@ function Artistes() {
   return (
     <>
       <SEO
-        title={lang === 'fr' ? 'Artistes - Tirages Fine Art | Massive Medias' : 'Artists - Fine Art Prints | Massive Medias'}
-        description={lang === 'fr'
-          ? 'Découvrez les artistes de Massive Medias. Tirages fine art professionnels, qualité galerie. Montréal.'
-          : 'Discover Massive Medias artists. Professional fine art prints, gallery quality. Montreal.'}
+        title={tx({ fr: 'Artistes - Tirages Fine Art | Massive Medias', en: 'Artists - Fine Art Prints | Massive Medias', es: 'Artistas - Impresiones Fine Art | Massive Medias' })}
+        description={tx({
+          fr: 'Découvrez les artistes de Massive Medias. Tirages fine art professionnels, qualité galerie. Montréal.',
+          en: 'Discover Massive Medias artists. Professional fine art prints, gallery quality. Montreal.',
+          es: 'Descubre los artistas de Massive Medias. Impresiones fine art profesionales, calidad galería. Montreal.',
+        })}
         breadcrumbs={[
-          { name: lang === 'fr' ? 'Accueil' : 'Home', url: '/' },
-          { name: lang === 'fr' ? 'Artistes' : 'Artists' },
+          { name: tx({ fr: 'Accueil', en: 'Home', es: 'Inicio' }), url: '/' },
+          { name: tx({ fr: 'Artistes', en: 'Artists', es: 'Artistas' }) },
         ]}
       />
 
@@ -51,9 +53,9 @@ function Artistes() {
             className="max-w-4xl"
           >
             <div className="flex items-center gap-2 mb-6 text-sm">
-              <Link to="/" className="text-grey-muted hover:text-accent transition-colors">{lang === 'fr' ? 'Accueil' : 'Home'}</Link>
+              <Link to="/" className="text-grey-muted hover:text-accent transition-colors">{tx({ fr: 'Accueil', en: 'Home', es: 'Inicio' })}</Link>
               <span className="text-grey-muted">/</span>
-              <span className="text-accent">{lang === 'fr' ? 'Artistes' : 'Artists'}</span>
+              <span className="text-accent">{tx({ fr: 'Artistes', en: 'Artists', es: 'Artistas' })}</span>
             </div>
 
             <div className="flex items-center gap-4 mb-6">
@@ -62,15 +64,17 @@ function Artistes() {
               </div>
               <div>
                 <h1 className="text-4xl md:text-6xl font-heading font-bold text-heading">
-                  {lang === 'fr' ? 'Artistes' : 'Artists'}
+                  {tx({ fr: 'Artistes', en: 'Artists', es: 'Artistas' })}
                 </h1>
               </div>
             </div>
 
             <p className="text-xl md:text-2xl text-grey-light mb-8">
-              {lang === 'fr'
-                ? 'Tirages fine art d\'artistes sélectionnés. Imprimés professionnellement, qualité galerie.'
-                : 'Fine art prints from selected artists. Professionally printed, gallery quality.'}
+              {tx({
+                fr: 'Tirages fine art d\'artistes sélectionnés. Imprimés professionnellement, qualité galerie.',
+                en: 'Fine art prints from selected artists. Professionally printed, gallery quality.',
+                es: 'Impresiones fine art de artistas seleccionados. Impresas profesionalmente, calidad galería.',
+              })}
             </p>
           </motion.div>
         </div>
@@ -81,7 +85,7 @@ function Artistes() {
         {/* Artists grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 mb-20">
           {artists.map((artist, index) => {
-            const tagline = lang === 'fr' ? artist.tagline.fr : artist.tagline.en;
+            const tagline = tx({ fr: artist.tagline.fr, en: artist.tagline.en, es: artist.tagline.es || artist.tagline.en });
             const minPrice = Math.min(...Object.values(artist.pricing.studio));
 
             return (
@@ -109,10 +113,10 @@ function Artistes() {
                   </h2>
                   <p className="text-grey-muted text-xs mb-2">{tagline}</p>
                   <p className="text-grey-muted text-xs mb-3">
-                    {artist.prints.length} {lang === 'fr' ? 'oeuvres' : 'artworks'} · {lang === 'fr' ? `${minPrice}$+` : `$${minPrice}+`}
+                    {artist.prints.length} {tx({ fr: 'oeuvres', en: 'artworks', es: 'obras' })} · {tx({ fr: `${minPrice}$+`, en: `$${minPrice}+`, es: `$${minPrice}+` })}
                   </p>
                   <span className="inline-flex items-center gap-1.5 text-accent text-sm font-semibold group-hover:gap-2.5 transition-all">
-                    {lang === 'fr' ? 'Voir' : 'View'}
+                    {tx({ fr: 'Voir', en: 'View', es: 'Ver' })}
                     <ArrowRight size={16} />
                   </span>
                 </Link>
@@ -130,16 +134,18 @@ function Artistes() {
           className="mb-20 p-12 rounded-2xl text-center border border-accent/30 transition-colors duration-300 cta-shadow"
         >
           <h2 className="text-3xl md:text-4xl font-heading font-bold text-heading mb-4">
-            {lang === 'fr' ? 'Tu es artiste?' : 'Are you an artist?'}
+            {tx({ fr: 'Tu es artiste?', en: 'Are you an artist?', es: '\u00bfEres artista?' })}
           </h2>
           <p className="text-grey-light text-lg mb-8 max-w-2xl mx-auto">
-            {lang === 'fr'
-              ? 'Rejoins notre plateforme. On s\'occupe de tout : site web dédié, impression pro, packaging et shipping. Tu fournis tes fichiers, tu fixes ta marge, et tu reçois ton argent. Zéro mal de tête.'
-              : 'Join our platform. We handle everything: dedicated website, professional printing, packaging and shipping. You provide your files, set your margin, and get paid. Zero headaches.'}
+            {tx({
+              fr: 'Rejoins notre plateforme. On s\'occupe de tout : site web dédié, impression pro, packaging et shipping. Tu fournis tes fichiers, tu fixes ta marge, et tu reçois ton argent. Zéro mal de tête.',
+              en: 'Join our platform. We handle everything: dedicated website, professional printing, packaging and shipping. You provide your files, set your margin, and get paid. Zero headaches.',
+              es: 'Únete a nuestra plataforma. Nos encargamos de todo: sitio web dedicado, impresión profesional, empaque y envío. Tú provees tus archivos, fijas tu margen y recibes tu dinero. Cero dolores de cabeza.',
+            })}
           </p>
           <Link to="/contact" className="btn-primary">
             <MessageSquare size={20} className="mr-2" />
-            {lang === 'fr' ? 'Nous contacter' : 'Contact us'}
+            {tx({ fr: 'Nous contacter', en: 'Contact us', es: 'Contáctanos' })}
             <ArrowRight className="ml-2" size={20} />
           </Link>
         </motion.div>

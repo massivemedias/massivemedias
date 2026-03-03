@@ -11,7 +11,7 @@ import {
 } from '../../data/products';
 
 function ConfiguratorStickers({ onFinishChange }) {
-  const { lang } = useLang();
+  const { lang, tx } = useLang();
   const { addToCart } = useCart();
   const cmsProduct = useProduct('stickers');
   const pd = cmsProduct?.pricingData;
@@ -48,9 +48,9 @@ function ConfiguratorStickers({ onFinishChange }) {
   const handleAddToCart = () => {
     addToCart({
       productId: 'sticker-custom',
-      productName: lang === 'fr' ? 'Sticker Custom' : 'Custom Sticker',
-      finish: lang === 'fr' ? finishLabel?.labelFr : finishLabel?.labelEn,
-      shape: lang === 'fr' ? shapeLabel?.labelFr : shapeLabel?.labelEn,
+      productName: tx({ fr: 'Sticker Custom', en: 'Custom Sticker', es: 'Sticker Personalizado' }),
+      finish: tx({ fr: finishLabel?.labelFr, en: finishLabel?.labelEn, es: finishLabel?.labelEn }),
+      shape: tx({ fr: shapeLabel?.labelFr, en: shapeLabel?.labelEn, es: shapeLabel?.labelEn }),
       size: sizeLabel,
       quantity: priceInfo.qty,
       unitPrice: priceInfo.unitPrice,
@@ -73,7 +73,7 @@ function ConfiguratorStickers({ onFinishChange }) {
       {/* Finish selector */}
       <div className="mb-5">
         <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2.5">
-          {lang === 'fr' ? 'Finition' : 'Finish'}
+          {tx({ fr: 'Finition', en: 'Finish', es: 'Acabado' })}
         </label>
         <div className="flex flex-wrap gap-2">
           {stickerFinishes.map(f => (
@@ -93,10 +93,10 @@ function ConfiguratorStickers({ onFinishChange }) {
                 'bg-gradient-to-br from-pink-300 via-purple-300 to-cyan-300 border-transparent'
               }`} />
               <span className="text-heading leading-tight text-center font-semibold">
-                {lang === 'fr' ? f.labelFr.replace('Vinyle ', '') : f.labelEn.replace(' Vinyl', '')}
+                {tx({ fr: f.labelFr.replace('Vinyle ', ''), en: f.labelEn.replace(' Vinyl', ''), es: f.labelEn.replace(' Vinyl', '') })}
               </span>
               <span className="text-grey-muted mt-0.5 text-[10px]">
-                {lang === 'fr' ? f.descFr : f.descEn}
+                {tx({ fr: f.descFr, en: f.descEn, es: f.descEn })}
               </span>
             </button>
           ))}
@@ -106,7 +106,7 @@ function ConfiguratorStickers({ onFinishChange }) {
       {/* Shape selector */}
       <div className="mb-5">
         <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2.5">
-          {lang === 'fr' ? 'Forme' : 'Shape'}
+          {tx({ fr: 'Forme', en: 'Shape', es: 'Forma' })}
         </label>
         <div className="flex flex-wrap gap-2">
           {stickerShapes.map(s => (
@@ -125,10 +125,10 @@ function ConfiguratorStickers({ onFinishChange }) {
                 'w-5 h-4 border-2 border-current border-dashed rounded-lg'
               } text-grey-muted`} />
               <span className="text-heading leading-tight text-center font-semibold">
-                {lang === 'fr' ? s.labelFr : s.labelEn}
+                {tx({ fr: s.labelFr, en: s.labelEn, es: s.labelEn })}
               </span>
               <span className="text-grey-muted mt-0.5 text-[10px]">
-                {lang === 'fr' ? s.descFr : s.descEn}
+                {tx({ fr: s.descFr, en: s.descEn, es: s.descEn })}
               </span>
             </button>
           ))}
@@ -138,7 +138,7 @@ function ConfiguratorStickers({ onFinishChange }) {
       {/* Size selector */}
       <div className="mb-5">
         <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2.5">
-          {lang === 'fr' ? 'Taille' : 'Size'}
+          {tx({ fr: 'Taille', en: 'Size', es: 'Tamaño' })}
         </label>
         <div className="flex flex-wrap gap-2">
           {stickerSizes.map(s => (
@@ -159,7 +159,7 @@ function ConfiguratorStickers({ onFinishChange }) {
       {/* Quantity selector */}
       <div className="mb-6">
         <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2.5">
-          {lang === 'fr' ? 'Quantit\u00e9' : 'Quantity'}
+          {tx({ fr: 'Quantité', en: 'Quantity', es: 'Cantidad' })}
         </label>
         <div className="flex flex-wrap gap-2">
           {tiers.map((tier, i) => {
@@ -193,18 +193,18 @@ function ConfiguratorStickers({ onFinishChange }) {
         <FileUpload
           files={uploadedFiles}
           onFilesChange={setUploadedFiles}
-          label={lang === 'fr' ? 'Votre design' : 'Your design'}
+          label={tx({ fr: 'Votre design', en: 'Your design', es: 'Tu diseño' })}
           compact
         />
         <div>
           <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2.5">
-            {lang === 'fr' ? 'Notes / Description' : 'Notes / Description'}
+            {tx({ fr: 'Notes / Description', en: 'Notes / Description', es: 'Notas / Descripción' })}
           </label>
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             rows={4}
-            placeholder={lang === 'fr' ? 'Decrivez le produit souhaite (couleurs, style, details...)' : 'Describe the desired product (colors, style, details...)'}
+            placeholder={tx({ fr: 'Decrivez le produit souhaite (couleurs, style, details...)', en: 'Describe the desired product (colors, style, details...)', es: 'Describe el producto deseado (colores, estilo, detalles...)' })}
             className="w-full min-h-[100px] rounded-lg border-2 border-grey-muted/20 bg-transparent px-4 py-3 text-sm text-heading placeholder:text-grey-muted/50 focus:border-accent focus:outline-none transition-colors resize-none"
           />
         </div>
@@ -222,12 +222,12 @@ function ConfiguratorStickers({ onFinishChange }) {
           <div className="flex items-center gap-2 mt-2">
             {(finish === 'holographic' || finish === 'broken-glass' || finish === 'stars') && (
               <span className="text-accent text-xs font-medium">
-                {lang === 'fr' ? 'Effets Speciaux' : 'Special Effects'}
+                {tx({ fr: 'Effets Speciaux', en: 'Special Effects', es: 'Efectos Especiales' })}
               </span>
             )}
             <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-accent/10 text-accent">
               <Sparkles size={12} />
-              {lang === 'fr' ? 'Design inclus' : 'Design included'}
+              {tx({ fr: 'Design inclus', en: 'Design included', es: 'Diseño incluido' })}
             </span>
           </div>
         </div>
@@ -236,20 +236,22 @@ function ConfiguratorStickers({ onFinishChange }) {
       {/* Add to cart */}
       <button onClick={handleAddToCart} className="btn-primary w-full justify-center text-base py-3.5 mb-3">
         {added ? (
-          <><Check size={20} className="mr-2" />{lang === 'fr' ? 'Ajout\u00e9 au panier!' : 'Added to cart!'}</>
+          <><Check size={20} className="mr-2" />{tx({ fr: 'Ajouté au panier!', en: 'Added to cart!', es: 'Agregado al carrito!' })}</>
         ) : (
-          <><ShoppingCart size={20} className="mr-2" />{lang === 'fr' ? 'Ajouter au panier' : 'Add to cart'}</>
+          <><ShoppingCart size={20} className="mr-2" />{tx({ fr: 'Ajouter au panier', en: 'Add to cart', es: 'Agregar al carrito' })}</>
         )}
       </button>
 
       <Link to="/panier" className="btn-outline w-full justify-center text-sm py-2.5">
-        {lang === 'fr' ? 'Voir le panier' : 'View cart'}
+        {tx({ fr: 'Voir le panier', en: 'View cart', es: 'Ver el carrito' })}
       </Link>
 
       <p className="text-grey-muted text-xs mt-3 text-center">
-        {lang === 'fr'
-          ? 'Nous vous contacterons pour confirmer les d\u00e9tails et organiser le paiement.'
-          : 'We\'ll contact you to confirm details and arrange payment.'}
+        {tx({
+          fr: 'Nous vous contacterons pour confirmer les détails et organiser le paiement.',
+          en: 'We\'ll contact you to confirm details and arrange payment.',
+          es: 'Nos comunicaremos contigo para confirmar los detalles y coordinar el pago.',
+        })}
       </p>
     </>
   );

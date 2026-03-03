@@ -19,7 +19,7 @@ const productsWithColors = ['tshirt', 'hoodie', 'crewneck', 'totebag'];
 const productsWithSizes = ['tshirt', 'hoodie', 'crewneck'];
 
 function ConfiguratorSublimation() {
-  const { lang } = useLang();
+  const { lang, tx } = useLang();
   const { addToCart } = useCart();
   const cmsProduct = useProduct('sublimation');
   const pd = cmsProduct?.pricingData;
@@ -78,15 +78,17 @@ function ConfiguratorSublimation() {
     if (!priceInfo) return;
     addToCart({
       productId: `sublimation-${product}`,
-      productName: lang === 'fr'
-        ? `${productLabel?.labelFr} Sublimation`
-        : `Sublimation ${productLabel?.labelEn}`,
+      productName: tx({
+        fr: `${productLabel?.labelFr} Sublimation`,
+        en: `Sublimation ${productLabel?.labelEn}`,
+        es: `Sublimacion ${productLabel?.labelEs || productLabel?.labelEn}`,
+      }),
       finish: [
-        withDesign ? (lang === 'fr' ? 'Avec design' : 'With design') : (lang === 'fr' ? 'Design fourni' : 'Design provided'),
+        withDesign ? tx({ fr: 'Avec design', en: 'With design', es: 'Con diseno' }) : tx({ fr: 'Design fourni', en: 'Design provided', es: 'Diseno proporcionado' }),
         hasColors ? colorObj.name : null,
       ].filter(Boolean).join(' - '),
       shape: null,
-      size: hasSizes ? selectedSize : (lang === 'fr' ? productLabel?.labelFr : productLabel?.labelEn),
+      size: hasSizes ? selectedSize : tx({ fr: productLabel?.labelFr, en: productLabel?.labelEn, es: productLabel?.labelEs || productLabel?.labelEn }),
       quantity: priceInfo.qty,
       unitPrice: priceInfo.unitPrice,
       totalPrice: priceInfo.price,
@@ -103,7 +105,7 @@ function ConfiguratorSublimation() {
       {/* Product type selector */}
       <div className="mb-5">
         <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2.5">
-          {lang === 'fr' ? 'Produit' : 'Product'}
+          {tx({ fr: 'Produit', en: 'Product', es: 'Producto' })}
         </label>
         <div className="flex flex-wrap gap-2">
           {sublimationProducts.map(p => (
@@ -116,11 +118,11 @@ function ConfiguratorSublimation() {
               }`}
             >
               <span className="text-heading leading-tight text-center font-semibold">
-                {lang === 'fr' ? p.labelFr : p.labelEn}
+                {tx({ fr: p.labelFr, en: p.labelEn, es: p.labelEs || p.labelEn })}
               </span>
               {p.descFr && (
                 <span className="text-grey-muted mt-0.5 text-[10px]">
-                  {lang === 'fr' ? p.descFr : p.descEn}
+                  {tx({ fr: p.descFr, en: p.descEn, es: p.descEs || p.descEn })}
                 </span>
               )}
             </button>
@@ -140,7 +142,7 @@ function ConfiguratorSublimation() {
                   <motion.img
                     key={`${product}-${selectedColor}`}
                     src={currentGetImage(selectedColor)}
-                    alt={`${productLabel ? (lang === 'fr' ? productLabel.labelFr : productLabel.labelEn) : product} ${colorObj.name}`}
+                    alt={`${productLabel ? tx({ fr: productLabel.labelFr, en: productLabel.labelEn, es: productLabel.labelEs || productLabel.labelEn }) : product} ${colorObj.name}`}
                     className="w-full h-auto object-contain"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -157,13 +159,13 @@ function ConfiguratorSublimation() {
                 colors={currentColors}
                 selected={selectedColor}
                 onChange={setSelectedColor}
-                label={lang === 'fr' ? 'Couleur' : 'Color'}
+                label={tx({ fr: 'Couleur', en: 'Color', es: 'Color' })}
               />
 
               {hasSizes && (
                 <div>
                   <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2">
-                    {lang === 'fr' ? 'Taille' : 'Size'}
+                    {tx({ fr: 'Taille', en: 'Size', es: 'Talla' })}
                   </label>
                   <div className="flex flex-wrap gap-2">
                     {merchSizes.map(size => (
@@ -190,7 +192,7 @@ function ConfiguratorSublimation() {
       {/* Quantity selector */}
       <div className="mb-5">
         <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2.5">
-          {lang === 'fr' ? 'Quantite' : 'Quantity'}
+          {tx({ fr: 'Quantite', en: 'Quantity', es: 'Cantidad' })}
         </label>
         <div className="flex flex-wrap gap-2">
           {tiers.map((tier, i) => {
@@ -211,7 +213,7 @@ function ConfiguratorSublimation() {
                 )}
                 <span className="text-heading font-bold text-sm">{tier.qty}</span>
                 <span className="text-grey-muted mt-0.5">
-                  {tier.surSoumission ? (lang === 'fr' ? 'Sur soumission' : 'On quote') : `${tier.unitPrice}$/u`}
+                  {tier.surSoumission ? tx({ fr: 'Sur soumission', en: 'On quote', es: 'Bajo cotizacion' }) : `${tier.unitPrice}$/u`}
                 </span>
               </button>
             );
@@ -234,10 +236,10 @@ function ConfiguratorSublimation() {
           <div className="flex-1">
             <span className="text-heading font-medium text-sm flex items-center gap-1.5">
               <Palette size={14} className="text-accent" />
-              {lang === 'fr' ? 'Creation graphique' : 'Graphic design'}
+              {tx({ fr: 'Creation graphique', en: 'Graphic design', es: 'Creacion grafica' })}
             </span>
             <span className="text-grey-muted text-xs block mt-0.5">
-              {lang === 'fr' ? 'Si vous n\'avez pas de design pret' : 'If you don\'t have a ready design'}
+              {tx({ fr: 'Si vous n\'avez pas de design pret', en: 'If you don\'t have a ready design', es: 'Si no tienes un diseno listo' })}
             </span>
           </div>
           <span className="text-accent font-semibold text-sm">+{sublimationDesignPrice}$</span>
@@ -249,18 +251,18 @@ function ConfiguratorSublimation() {
         <FileUpload
           files={uploadedFiles}
           onFilesChange={setUploadedFiles}
-          label={lang === 'fr' ? 'Votre design' : 'Your design'}
+          label={tx({ fr: 'Votre design', en: 'Your design', es: 'Tu diseno' })}
           compact
         />
         <div>
           <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2.5">
-            {lang === 'fr' ? 'Notes / Description' : 'Notes / Description'}
+            {tx({ fr: 'Notes / Description', en: 'Notes / Description', es: 'Notas / Descripcion' })}
           </label>
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             rows={4}
-            placeholder={lang === 'fr' ? 'Decrivez le produit souhaite (taille, couleur, placement...)' : 'Describe the desired product (size, color, placement...)'}
+            placeholder={tx({ fr: 'Decrivez le produit souhaite (taille, couleur, placement...)', en: 'Describe the desired product (size, color, placement...)', es: 'Describe el producto deseado (talla, color, ubicacion...)' })}
             className="w-full min-h-[100px] rounded-lg border-2 border-grey-muted/20 bg-transparent px-4 py-3 text-sm text-heading placeholder:text-grey-muted/50 focus:border-accent focus:outline-none transition-colors resize-none"
           />
         </div>
@@ -272,14 +274,16 @@ function ConfiguratorSublimation() {
           <div className="flex items-baseline gap-3">
             <span className="text-3xl font-heading font-bold text-heading">{priceInfo.price}$</span>
             <span className="text-grey-muted text-sm">
-              ({priceInfo.unitPrice.toFixed(2)}$/{lang === 'fr' ? 'unite' : 'unit'})
+              ({priceInfo.unitPrice.toFixed(2)}$/{tx({ fr: 'unite', en: 'unit', es: 'unidad' })})
             </span>
           </div>
           {withDesign && (
             <div className="text-grey-muted text-xs mt-1">
-              {lang === 'fr'
-                ? `${priceInfo.qty}x ${productLabel?.labelFr} ${priceInfo.basePrice}$ + Design ${priceInfo.designPrice}$`
-                : `${priceInfo.qty}x ${productLabel?.labelEn} ${priceInfo.basePrice}$ + Design ${priceInfo.designPrice}$`}
+              {tx({
+                fr: `${priceInfo.qty}x ${productLabel?.labelFr} ${priceInfo.basePrice}$ + Design ${priceInfo.designPrice}$`,
+                en: `${priceInfo.qty}x ${productLabel?.labelEn} ${priceInfo.basePrice}$ + Design ${priceInfo.designPrice}$`,
+                es: `${priceInfo.qty}x ${productLabel?.labelEs || productLabel?.labelEn} ${priceInfo.basePrice}$ + Diseno ${priceInfo.designPrice}$`,
+              })}
             </div>
           )}
           {hasColors && (
@@ -288,7 +292,7 @@ function ConfiguratorSublimation() {
             </div>
           )}
           <div className="text-grey-muted text-xs mt-2">
-            {lang === 'fr' ? 'Impression permanente - resistant au lavage' : 'Permanent print - wash resistant'}
+            {tx({ fr: 'Impression permanente - resistant au lavage', en: 'Permanent print - wash resistant', es: 'Impresion permanente - resistente al lavado' })}
           </div>
         </div>
       )}
@@ -298,13 +302,15 @@ function ConfiguratorSublimation() {
         <div className="p-5 rounded-xl mb-5 highlight-bordered">
           <div className="flex items-baseline gap-3">
             <span className="text-2xl font-heading font-bold text-heading">
-              {lang === 'fr' ? 'Sur soumission' : 'On quote'}
+              {tx({ fr: 'Sur soumission', en: 'On quote', es: 'Bajo cotizacion' })}
             </span>
           </div>
           <div className="text-grey-muted text-xs mt-1">
-            {lang === 'fr'
-              ? `${priceInfo.qty}+ unites - a partir de ${priceInfo.unitPrice}$/unite`
-              : `${priceInfo.qty}+ units - from ${priceInfo.unitPrice}$/unit`}
+            {tx({
+              fr: `${priceInfo.qty}+ unites - a partir de ${priceInfo.unitPrice}$/unite`,
+              en: `${priceInfo.qty}+ units - from ${priceInfo.unitPrice}$/unit`,
+              es: `${priceInfo.qty}+ unidades - desde ${priceInfo.unitPrice}$/unidad`,
+            })}
           </div>
         </div>
       )}
@@ -314,26 +320,28 @@ function ConfiguratorSublimation() {
         <>
           <button onClick={handleAddToCart} className="btn-primary w-full justify-center text-base py-3.5 mb-3">
             {added ? (
-              <><Check size={20} className="mr-2" />{lang === 'fr' ? 'Ajoute au panier!' : 'Added to cart!'}</>
+              <><Check size={20} className="mr-2" />{tx({ fr: 'Ajoute au panier!', en: 'Added to cart!', es: 'Agregado al carrito!' })}</>
             ) : (
-              <><ShoppingCart size={20} className="mr-2" />{lang === 'fr' ? 'Ajouter au panier' : 'Add to cart'}</>
+              <><ShoppingCart size={20} className="mr-2" />{tx({ fr: 'Ajouter au panier', en: 'Add to cart', es: 'Agregar al carrito' })}</>
             )}
           </button>
 
           <Link to="/panier" className="btn-outline w-full justify-center text-sm py-2.5">
-            {lang === 'fr' ? 'Voir le panier' : 'View cart'}
+            {tx({ fr: 'Voir le panier', en: 'View cart', es: 'Ver carrito' })}
           </Link>
         </>
       ) : (
         <Link to="/contact" className="btn-primary w-full justify-center text-base py-3.5 mb-3">
-          {lang === 'fr' ? 'Demander une soumission' : 'Request a quote'}
+          {tx({ fr: 'Demander une soumission', en: 'Request a quote', es: 'Solicitar cotizacion' })}
         </Link>
       )}
 
       <p className="text-grey-muted text-xs mt-3 text-center">
-        {lang === 'fr'
-          ? 'Nous vous contacterons pour confirmer les details (taille, couleur, design).'
-          : 'We\'ll contact you to confirm details (size, color, design).'}
+        {tx({
+          fr: 'Nous vous contacterons pour confirmer les details (taille, couleur, design).',
+          en: 'We\'ll contact you to confirm details (size, color, design).',
+          es: 'Te contactaremos para confirmar los detalles (talla, color, diseno).',
+        })}
       </p>
     </>
   );

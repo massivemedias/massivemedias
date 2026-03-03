@@ -7,8 +7,10 @@ import api from '../services/api';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:1337/api';
 
+const LOCALE_DATE = { fr: 'fr-CA', en: 'en-CA', es: 'es-419' };
+
 function News() {
-  const { t, lang } = useLang();
+  const { t, lang, tx } = useLang();
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedArticle, setSelectedArticle] = useState(null);
@@ -33,15 +35,15 @@ function News() {
   }, []);
 
   const categoryLabels = {
-    announcement: lang === 'fr' ? 'Annonce' : 'Announcement',
+    announcement: tx({ fr: 'Annonce', en: 'Announcement', es: 'Anuncio' }),
     blog: 'Blog',
     promo: 'Promo',
-    update: lang === 'fr' ? 'Mise à jour' : 'Update',
+    update: tx({ fr: 'Mise à jour', en: 'Update', es: 'Actualización' }),
   };
 
   const formatDate = (dateStr) => {
     const date = new Date(dateStr);
-    return date.toLocaleDateString(lang === 'fr' ? 'fr-CA' : 'en-CA', {
+    return date.toLocaleDateString(LOCALE_DATE[lang] || LOCALE_DATE.en, {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -61,21 +63,21 @@ function News() {
     return (
       <>
         <SEO
-          title={lang === 'fr' ? selectedArticle.titleFr : selectedArticle.titleEn}
-          description={lang === 'fr' ? (selectedArticle.excerptFr || '') : (selectedArticle.excerptEn || '')}
+          title={tx({ fr: selectedArticle.titleFr, en: selectedArticle.titleEn, es: selectedArticle.titleEn })}
+          description={tx({ fr: selectedArticle.excerptFr || '', en: selectedArticle.excerptEn || '', es: selectedArticle.excerptEn || '' })}
         />
         <section className="section-container pt-32 max-w-4xl mx-auto">
           <button
             onClick={() => setSelectedArticle(null)}
             className="text-accent hover:underline mb-8 inline-block"
           >
-            &larr; {lang === 'fr' ? 'Retour aux nouvelles' : 'Back to news'}
+            &larr; {tx({ fr: 'Retour aux nouvelles', en: 'Back to news', es: 'Volver a las noticias' })}
           </button>
 
           {getImageUrl(selectedArticle) && (
             <img
               src={getImageUrl(selectedArticle)}
-              alt={lang === 'fr' ? selectedArticle.titleFr : selectedArticle.titleEn}
+              alt={tx({ fr: selectedArticle.titleFr, en: selectedArticle.titleEn, es: selectedArticle.titleEn })}
               className="w-full h-64 md:h-96 object-cover rounded-2xl mb-8"
               loading="lazy"
             />
@@ -95,13 +97,13 @@ function News() {
           </div>
 
           <h1 className="text-4xl md:text-5xl font-heading font-bold text-heading mb-8">
-            {lang === 'fr' ? selectedArticle.titleFr : selectedArticle.titleEn}
+            {tx({ fr: selectedArticle.titleFr, en: selectedArticle.titleEn, es: selectedArticle.titleEn })}
           </h1>
 
           <div
             className="prose prose-lg text-body max-w-none"
             dangerouslySetInnerHTML={{
-              __html: lang === 'fr' ? selectedArticle.contentFr : selectedArticle.contentEn,
+              __html: tx({ fr: selectedArticle.contentFr, en: selectedArticle.contentEn, es: selectedArticle.contentEn }),
             }}
           />
         </section>
@@ -112,11 +114,11 @@ function News() {
   return (
     <>
       <SEO
-        title={lang === 'fr' ? 'Nouvelles - Massive Medias' : 'News - Massive Medias'}
-        description={lang === 'fr' ? 'Dernières nouvelles, annonces et promotions de Massive Medias.' : 'Latest news, announcements and promotions from Massive Medias.'}
+        title={tx({ fr: 'Nouvelles - Massive Medias', en: 'News - Massive Medias', es: 'Noticias - Massive Medias' })}
+        description={tx({ fr: 'Dernières nouvelles, annonces et promotions de Massive Medias.', en: 'Latest news, announcements and promotions from Massive Medias.', es: 'Últimas noticias, anuncios y promociones de Massive Medias.' })}
         breadcrumbs={[
-          { name: lang === 'fr' ? 'Accueil' : 'Home', url: '/' },
-          { name: lang === 'fr' ? 'Nouvelles' : 'News' },
+          { name: tx({ fr: 'Accueil', en: 'Home', es: 'Inicio' }), url: '/' },
+          { name: tx({ fr: 'Nouvelles', en: 'News', es: 'Noticias' }) },
         ]}
       />
 
@@ -128,12 +130,10 @@ function News() {
           className="text-center max-w-4xl mx-auto mb-16"
         >
           <h1 className="text-5xl md:text-7xl font-heading font-bold text-heading mb-6">
-            {lang === 'fr' ? 'Nouvelles' : 'News'}
+            {tx({ fr: 'Nouvelles', en: 'News', es: 'Noticias' })}
           </h1>
           <p className="text-xl text-grey-light">
-            {lang === 'fr'
-              ? 'Annonces, promotions et mises à jour du studio.'
-              : 'Announcements, promotions and studio updates.'}
+            {tx({ fr: 'Annonces, promotions et mises à jour du studio.', en: 'Announcements, promotions and studio updates.', es: 'Anuncios, promociones y novedades del estudio.' })}
           </p>
         </motion.div>
 
@@ -148,7 +148,7 @@ function News() {
             className="text-center py-20"
           >
             <p className="text-grey-muted text-lg">
-              {lang === 'fr' ? 'Aucune nouvelle pour le moment. Revenez bientôt!' : 'No news yet. Check back soon!'}
+              {tx({ fr: 'Aucune nouvelle pour le moment. Revenez bientôt!', en: 'No news yet. Check back soon!', es: 'No hay noticias por el momento. Vuelve pronto!' })}
             </p>
           </motion.div>
         ) : (
@@ -165,7 +165,7 @@ function News() {
                 {getImageUrl(article) ? (
                   <img
                     src={getImageUrl(article)}
-                    alt={lang === 'fr' ? article.titleFr : article.titleEn}
+                    alt={tx({ fr: article.titleFr, en: article.titleEn, es: article.titleEn })}
                     className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
                     loading="lazy"
                   />
@@ -188,18 +188,18 @@ function News() {
                     )}
                     {article.pinned && (
                       <span className="px-2 py-0.5 rounded-full bg-yellow-500/10 text-yellow-500 font-semibold">
-                        {lang === 'fr' ? 'Épinglé' : 'Pinned'}
+                        {tx({ fr: 'Épinglé', en: 'Pinned', es: 'Fijado' })}
                       </span>
                     )}
                   </div>
 
                   <h2 className="font-heading font-bold text-heading text-lg mb-2 group-hover:text-accent transition-colors">
-                    {lang === 'fr' ? article.titleFr : article.titleEn}
+                    {tx({ fr: article.titleFr, en: article.titleEn, es: article.titleEn })}
                   </h2>
 
-                  {(lang === 'fr' ? article.excerptFr : article.excerptEn) && (
+                  {tx({ fr: article.excerptFr, en: article.excerptEn, es: article.excerptEn }) && (
                     <p className="text-grey-muted text-sm line-clamp-3">
-                      {lang === 'fr' ? article.excerptFr : article.excerptEn}
+                      {tx({ fr: article.excerptFr, en: article.excerptEn, es: article.excerptEn })}
                     </p>
                   )}
                 </div>

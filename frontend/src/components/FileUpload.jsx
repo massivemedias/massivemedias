@@ -24,8 +24,7 @@ function formatSize(bytes) {
 }
 
 function FileUpload({ files = [], onFilesChange, label, maxFiles = 5, compact = false }) {
-  const { lang } = useLang();
-  const isFr = lang === 'fr';
+  const { tx } = useLang();
   const inputRef = useRef(null);
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
@@ -36,13 +35,13 @@ function FileUpload({ files = [], onFilesChange, label, maxFiles = 5, compact = 
     const toUpload = Array.from(fileList);
 
     if (files.length + toUpload.length > maxFiles) {
-      setError(isFr ? `Maximum ${maxFiles} fichiers` : `Maximum ${maxFiles} files`);
+      setError(tx({ fr: `Maximum ${maxFiles} fichiers`, en: `Maximum ${maxFiles} files`, es: `Maximo ${maxFiles} archivos` }));
       return;
     }
 
     for (const file of toUpload) {
       if (file.size > MAX_SIZE) {
-        setError(isFr ? `${file.name} depasse 50 MB` : `${file.name} exceeds 50 MB`);
+        setError(tx({ fr: `${file.name} depasse 50 MB`, en: `${file.name} exceeds 50 MB`, es: `${file.name} excede 50 MB` }));
         return;
       }
     }
@@ -62,7 +61,7 @@ function FileUpload({ files = [], onFilesChange, label, maxFiles = 5, compact = 
       }
       onFilesChange([...files, ...uploaded]);
     } catch (err) {
-      setError(isFr ? 'Erreur lors de l\'upload. Reessayez.' : 'Upload failed. Please try again.');
+      setError(tx({ fr: 'Erreur lors de l\'upload. Reessayez.', en: 'Upload failed. Please try again.', es: 'Error al subir. Intentalo de nuevo.' }));
     } finally {
       setUploading(false);
     }
@@ -83,7 +82,7 @@ function FileUpload({ files = [], onFilesChange, label, maxFiles = 5, compact = 
   const isImage = (mime) => mime && mime.startsWith('image/');
   const canAddMore = files.length < maxFiles;
 
-  // ── Compact mode: preview replaces drop zone ──
+  // -- Compact mode: preview replaces drop zone --
   if (compact) {
     return (
       <div>
@@ -118,7 +117,7 @@ function FileUpload({ files = [], onFilesChange, label, maxFiles = 5, compact = 
               <>
                 <Upload size={18} className="text-grey-muted mb-1" />
                 <span className="text-grey-muted text-[11px] leading-tight">
-                  {isFr ? 'Glissez ou cliquez' : 'Drop or click'}
+                  {tx({ fr: 'Glissez ou cliquez', en: 'Drop or click', es: 'Arrastra o haz clic' })}
                 </span>
                 <span className="text-grey-muted/50 text-[9px] mt-0.5">PNG, JPG, PDF, AI</span>
               </>
@@ -172,7 +171,7 @@ function FileUpload({ files = [], onFilesChange, label, maxFiles = 5, compact = 
                 className="w-full flex items-center justify-center gap-1 py-1.5 rounded-lg border border-dashed border-grey-muted/30 text-grey-muted text-[10px] hover:border-accent hover:text-accent transition-colors"
               >
                 <Plus size={12} />
-                {isFr ? 'Ajouter' : 'Add more'}
+                {tx({ fr: 'Ajouter', en: 'Add more', es: 'Agregar' })}
               </button>
             )}
             <input
@@ -189,7 +188,7 @@ function FileUpload({ files = [], onFilesChange, label, maxFiles = 5, compact = 
         {uploading && files.length > 0 && (
           <div className="flex items-center gap-2 mt-2">
             <Loader2 size={14} className="text-accent animate-spin" />
-            <span className="text-grey-muted text-[10px]">{isFr ? 'Upload...' : 'Uploading...'}</span>
+            <span className="text-grey-muted text-[10px]">{tx({ fr: 'Upload...', en: 'Uploading...', es: 'Subiendo...' })}</span>
           </div>
         )}
 
@@ -198,7 +197,7 @@ function FileUpload({ files = [], onFilesChange, label, maxFiles = 5, compact = 
     );
   }
 
-  // ── Normal mode (full size) ──
+  // -- Normal mode (full size) --
   return (
     <div className="mb-5">
       {label && (
@@ -228,13 +227,13 @@ function FileUpload({ files = [], onFilesChange, label, maxFiles = 5, compact = 
         {uploading ? (
           <div className="flex flex-col items-center gap-2 py-2">
             <Loader2 size={24} className="text-accent animate-spin" />
-            <span className="text-grey-muted text-xs">{isFr ? 'Upload...' : 'Uploading...'}</span>
+            <span className="text-grey-muted text-xs">{tx({ fr: 'Upload...', en: 'Uploading...', es: 'Subiendo...' })}</span>
           </div>
         ) : (
           <div className="flex flex-col items-center gap-2 py-2">
             <Upload size={24} className="text-grey-muted" />
             <span className="text-grey-muted text-sm">
-              {isFr ? 'Glissez vos fichiers ici ou cliquez pour parcourir' : 'Drag files here or click to browse'}
+              {tx({ fr: 'Glissez vos fichiers ici ou cliquez pour parcourir', en: 'Drag files here or click to browse', es: 'Arrastra archivos aqui o haz clic para explorar' })}
             </span>
             <span className="text-grey-muted/60 text-[10px]">PNG, JPG, TIFF, SVG, PDF, AI</span>
           </div>
