@@ -190,19 +190,22 @@ export const sublimationProducts = [
 
 export const sublimationPriceTiers = {
   tshirt: [
-    { qty: 1, unitPrice: 30, price: 30 },
-    { qty: 5, unitPrice: 25, price: 125 },
-    { qty: 10, unitPrice: 22, price: 220 },
+    { qty: 1, unitPrice: 35, price: 35 },
+    { qty: 5, unitPrice: 30, price: 150 },
+    { qty: 10, unitPrice: 27, price: 270 },
+    { qty: 25, unitPrice: 22, price: null, surSoumission: true },
   ],
   crewneck: [
-    { qty: 1, unitPrice: 45, price: 45 },
-    { qty: 5, unitPrice: 40, price: 200 },
-    { qty: 10, unitPrice: 35, price: 350 },
-  ],
-  hoodie: [
     { qty: 1, unitPrice: 50, price: 50 },
     { qty: 5, unitPrice: 45, price: 225 },
     { qty: 10, unitPrice: 40, price: 400 },
+    { qty: 25, unitPrice: 35, price: null, surSoumission: true },
+  ],
+  hoodie: [
+    { qty: 1, unitPrice: 65, price: 65 },
+    { qty: 5, unitPrice: 60, price: 300 },
+    { qty: 10, unitPrice: 50, price: 500 },
+    { qty: 25, unitPrice: 45, price: null, surSoumission: true },
   ],
   totebag: [
     { qty: 1, unitPrice: 15, price: 15 },
@@ -223,6 +226,13 @@ export function getSublimationPrice(product, qtyIndex, withDesign) {
   const tiers = sublimationPriceTiers[product];
   if (!tiers || !tiers[qtyIndex]) return null;
   const tier = tiers[qtyIndex];
+  if (tier.surSoumission) {
+    return {
+      qty: tier.qty,
+      unitPrice: tier.unitPrice,
+      surSoumission: true,
+    };
+  }
   return {
     qty: tier.qty,
     price: tier.price + (withDesign ? sublimationDesignPrice : 0),

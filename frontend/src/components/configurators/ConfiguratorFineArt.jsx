@@ -84,23 +84,22 @@ function ConfiguratorFineArt() {
         <div className="grid grid-cols-4 gap-2">
           {fineArtFormats.map(f => {
             const price = tier === 'museum' ? f.museumPrice : f.studioPrice;
-            // Proportional height to visually represent size differences
-            const heights = { a4: 'h-14', a3: 'h-18', a3plus: 'h-20', a2: 'h-24' };
-            const widths = { a4: 'w-10', a3: 'w-12', a3plus: 'w-14', a2: 'w-16' };
+            const heights = { a4: 'h-8', a3: 'h-10', a3plus: 'h-11', a2: 'h-12' };
+            const widths = { a4: 'w-6', a3: 'w-7', a3plus: 'w-8', a2: 'w-9' };
             return (
               <button
                 key={f.id}
                 onClick={() => setFormat(f.id)}
-                className={`flex flex-col items-center py-3 px-2 rounded-xl text-xs font-medium transition-all border-2 ${format === f.id
+                className={`flex flex-col items-center py-2 px-1.5 rounded-lg text-xs font-medium transition-all border-2 ${format === f.id
                   ? 'border-accent ring-1 ring-accent/30 option-selected'
                   : 'border-transparent hover:border-grey-muted/30 option-default'
                 }`}
               >
-                <div className={`${heights[f.id] || 'h-14'} ${widths[f.id] || 'w-10'} rounded border-2 border-current text-grey-muted/40 mb-2 flex items-center justify-center`}>
-                  <span className="text-[8px] text-grey-muted">{f.id.toUpperCase()}</span>
+                <div className={`${heights[f.id] || 'h-8'} ${widths[f.id] || 'w-6'} rounded border border-current text-grey-muted/40 mb-1.5 flex items-center justify-center`}>
+                  <span className="text-[7px] text-grey-muted">{f.id.toUpperCase()}</span>
                 </div>
-                <span className="text-heading font-bold text-xs">{f.label}</span>
-                <span className="text-accent font-semibold mt-0.5">{price}$</span>
+                <span className="text-heading font-bold text-[11px]">{f.label}</span>
+                <span className="text-accent font-semibold text-[11px] mt-0.5">{price}$</span>
               </button>
             );
           })}

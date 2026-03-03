@@ -26,7 +26,7 @@ function ConfiguratorSublimation() {
   const [added, setAdded] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [notes, setNotes] = useState('');
-  const [selectedColor, setSelectedColor] = useState('black');
+  const [selectedColor, setSelectedColor] = useState('orchid');
   const [selectedSize, setSelectedSize] = useState('M');
 
   const tiers = sublimationPriceTiers[product] || [];
@@ -41,13 +41,18 @@ function ConfiguratorSublimation() {
   const currentGetImage = imageMap[product] || getTshirtImage;
   const colorObj = currentColors.find(c => c.id === selectedColor) || currentColors[0];
 
+  // Preferred default color per product type
+  const defaultColorMap = { tshirt: 'orchid', hoodie: 'orchid', crewneck: 'orchid', totebag: 'lavender' };
+
   const handleProductChange = (p) => {
     setProduct(p);
     setQtyIndex(0);
     // Reset color if not available in new product's palette
     const newColors = colorsMap[p] || merchColors;
     if (!newColors.find(c => c.id === selectedColor)) {
-      setSelectedColor('black');
+      const preferred = defaultColorMap[p];
+      const hasPreferred = newColors.find(c => c.id === preferred);
+      setSelectedColor(hasPreferred ? preferred : newColors[0]?.id || 'black');
     }
   };
 
@@ -181,7 +186,9 @@ function ConfiguratorSublimation() {
                   </span>
                 )}
                 <span className="text-heading font-bold text-sm">{tier.qty}</span>
-                <span className="text-grey-muted mt-0.5">{tier.unitPrice}$/u</span>
+                <span className="text-grey-muted mt-0.5">
+                  {tier.surSoumission ? (lang === 'fr' ? 'Sur soumission' : 'On quote') : `${tier.unitPrice}$/u`}
+                </span>
               </button>
             );
           })}
@@ -236,7 +243,7 @@ function ConfiguratorSublimation() {
       </div>
 
       {/* Price display */}
-      {priceInfo && (
+      {priceInfo && !priceInfo.surSoumission && (
         <div className="p-5 rounded-xl mb-5 highlight-bordered">
           <div className="flex items-baseline gap-3">
             <span className="text-3xl font-heading font-bold text-heading">{priceInfo.price}$</span>
@@ -262,18 +269,42 @@ function ConfiguratorSublimation() {
         </div>
       )}
 
-      {/* Add to cart */}
-      <button onClick={handleAddToCart} className="btn-primary w-full justify-center text-base py-3.5 mb-3">
-        {added ? (
-          <><Check size={20} className="mr-2" />{lang === 'fr' ? 'Ajoute au panier!' : 'Added to cart!'}</>
-        ) : (
-          <><ShoppingCart size={20} className="mr-2" />{lang === 'fr' ? 'Ajouter au panier' : 'Add to cart'}</>
-        )}
-      </button>
+      {/* Sur soumission display */}
+      {priceInfo && priceInfo.surSoumission && (
+        <div className="p-5 rounded-xl mb-5 highlight-bordered">
+          <div className="flex items-baseline gap-3">
+            <span className="text-2xl font-heading font-bold text-heading">
+              {lang === 'fr' ? 'Sur soumission' : 'On quote'}
+            </span>
+          </div>
+          <div className="text-grey-muted text-xs mt-1">
+            {lang === 'fr'
+              ? `${priceInfo.qty}+ unites - a partir de ${priceInfo.unitPrice}$/unite`
+              : `${priceInfo.qty}+ units - from ${priceInfo.unitPrice}$/unit`}
+          </div>
+        </div>
+      )}
 
-      <Link to="/panier" className="btn-outline w-full justify-center text-sm py-2.5">
-        {lang === 'fr' ? 'Voir le panier' : 'View cart'}
-      </Link>
+      {/* Add to cart or contact */}
+      {priceInfo && !priceInfo.surSoumission ? (
+        <>
+          <button onClick={handleAddToCart} className="btn-primary w-full justify-center text-base py-3.5 mb-3">
+            {added ? (
+              <><Check size={20} className="mr-2" />{lang === 'fr' ? 'Ajoute au panier!' : 'Added to cart!'}</>
+            ) : (
+              <><ShoppingCart size={20} className="mr-2" />{lang === 'fr' ? 'Ajouter au panier' : 'Add to cart'}</>
+            )}
+          </button>
+
+          <Link to="/panier" className="btn-outline w-full justify-center text-sm py-2.5">
+            {lang === 'fr' ? 'Voir le panier' : 'View cart'}
+          </Link>
+        </>
+      ) : (
+        <a href="/contact" className="btn-primary w-full justify-center text-base py-3.5 mb-3">
+          {lang === 'fr' ? 'Demander une soumission' : 'Request a quote'}
+        </a>
+      )}
 
       <p className="text-grey-muted text-xs mt-3 text-center">
         {lang === 'fr'

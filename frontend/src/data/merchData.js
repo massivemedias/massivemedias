@@ -70,9 +70,9 @@ export const merchColors = [
 export const merchSizes = ['S', 'M', 'L', 'XL', '2XL', '3XL'];
 
 export const merchTshirtPrice = {
-  base: 25,
+  base: 22,
   sizes: {
-    'S': 25, 'M': 25, 'L': 25, 'XL': 25, '2XL': 28, '3XL': 30,
+    'S': 22, 'M': 22, 'L': 22, 'XL': 22, '2XL': 22, '3XL': 22,
   },
 };
 
@@ -129,9 +129,9 @@ export const hoodieColors = [
 ];
 
 export const merchHoodiePrice = {
-  base: 35,
+  base: 39,
   sizes: {
-    'S': 35, 'M': 35, 'L': 35, 'XL': 35, '2XL': 38, '3XL': 40,
+    'S': 39, 'M': 39, 'L': 39, 'XL': 39, '2XL': 39, '3XL': 39,
   },
 };
 
@@ -182,7 +182,7 @@ export const crewneckColors = [
 export const merchCrewneckPrice = {
   base: 30,
   sizes: {
-    'S': 30, 'M': 30, 'L': 30, 'XL': 30, '2XL': 33, '3XL': 35,
+    'S': 30, 'M': 30, 'L': 30, 'XL': 30, '2XL': 30, '3XL': 30,
   },
 };
 

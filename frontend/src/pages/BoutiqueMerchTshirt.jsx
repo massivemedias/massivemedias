@@ -12,7 +12,7 @@ function BoutiqueMerchTshirt() {
   const { lang } = useLang();
   const { addToCart } = useCart();
 
-  const [selectedColor, setSelectedColor] = useState('black');
+  const [selectedColor, setSelectedColor] = useState('orchid');
   const [selectedSize, setSelectedSize] = useState('M');
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
