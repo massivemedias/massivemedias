@@ -23,7 +23,7 @@ function formatSize(bytes) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-function FileUpload({ files = [], onFilesChange, label, maxFiles = 5 }) {
+function FileUpload({ files = [], onFilesChange, label, maxFiles = 5, compact = false }) {
   const { lang } = useLang();
   const isFr = lang === 'fr';
   const inputRef = useRef(null);
@@ -83,7 +83,7 @@ function FileUpload({ files = [], onFilesChange, label, maxFiles = 5 }) {
   const isImage = (mime) => mime && mime.startsWith('image/');
 
   return (
-    <div className="mb-5">
+    <div className={compact ? '' : 'mb-5'}>
       {label && (
         <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2.5">
           {label}
@@ -92,9 +92,9 @@ function FileUpload({ files = [], onFilesChange, label, maxFiles = 5 }) {
 
       {/* Drop zone */}
       <div
-        className={`relative border-2 border-dashed rounded-xl p-5 text-center cursor-pointer transition-all ${
-          dragOver ? 'border-accent bg-accent/5' : 'border-grey-muted/30 hover:border-grey-muted/50'
-        }`}
+        className={`relative border-2 border-dashed rounded-xl text-center cursor-pointer transition-all ${
+          compact ? 'p-3 h-[calc(100%-2rem)] min-h-[120px] flex flex-col justify-center' : 'p-5'
+        } ${dragOver ? 'border-accent bg-accent/5' : 'border-grey-muted/30 hover:border-grey-muted/50'}`}
         onClick={() => inputRef.current?.click()}
         onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
         onDragLeave={() => setDragOver(false)}
@@ -110,21 +110,21 @@ function FileUpload({ files = [], onFilesChange, label, maxFiles = 5 }) {
         />
         {uploading ? (
           <div className="flex flex-col items-center gap-2 py-2">
-            <Loader2 size={24} className="text-accent animate-spin" />
-            <span className="text-grey-muted text-sm">
-              {isFr ? 'Upload en cours...' : 'Uploading...'}
+            <Loader2 size={compact ? 20 : 24} className="text-accent animate-spin" />
+            <span className="text-grey-muted text-xs">
+              {isFr ? 'Upload...' : 'Uploading...'}
             </span>
           </div>
         ) : (
-          <div className="flex flex-col items-center gap-2 py-2">
-            <Upload size={24} className="text-grey-muted" />
-            <span className="text-grey-muted text-sm">
-              {isFr
-                ? 'Glissez vos fichiers ici ou cliquez pour parcourir'
-                : 'Drag files here or click to browse'}
+          <div className={`flex flex-col items-center gap-1.5 ${compact ? 'py-1' : 'py-2 gap-2'}`}>
+            <Upload size={compact ? 20 : 24} className="text-grey-muted" />
+            <span className={`text-grey-muted ${compact ? 'text-xs leading-tight' : 'text-sm'}`}>
+              {compact
+                ? (isFr ? 'Glissez ou cliquez' : 'Drop or click')
+                : (isFr ? 'Glissez vos fichiers ici ou cliquez pour parcourir' : 'Drag files here or click to browse')}
             </span>
-            <span className="text-grey-muted/60 text-xs">
-              PNG, JPG, TIFF, SVG, PDF, AI, EPS, PSD - max 50 MB
+            <span className="text-grey-muted/60 text-[10px]">
+              PNG, JPG, TIFF, SVG, PDF, AI
             </span>
           </div>
         )}
