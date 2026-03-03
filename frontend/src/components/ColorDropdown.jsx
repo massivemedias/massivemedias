@@ -74,15 +74,15 @@ function ColorDropdown({ colors, selected, onChange, label }) {
 
       {/* Dropdown panel */}
       {open && (
-        <div className="absolute z-50 top-full left-0 right-0 mt-1.5 rounded-xl border border-white/10 bg-[var(--color-bg-card,#1a1a2e)] backdrop-blur-2xl shadow-2xl shadow-black/40 overflow-hidden">
+        <div className="absolute z-50 top-full left-0 right-0 mt-1.5 rounded-xl border border-gray-200 bg-white shadow-2xl shadow-black/15 overflow-hidden">
           {/* Search */}
-          <div className="p-2.5 border-b border-white/5">
+          <div className="p-2.5 border-b border-gray-100">
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search..."
-              className="w-full px-3 py-2 rounded-lg bg-white/[0.04] border border-white/8 text-xs text-heading placeholder:text-grey-muted/40 focus:border-accent/40 focus:outline-none transition-colors"
+              className="w-full px-3 py-2 rounded-lg bg-gray-50 border border-gray-200 text-xs text-gray-800 placeholder:text-gray-400 focus:border-accent/60 focus:outline-none transition-colors"
               ref={searchRef}
             />
           </div>
@@ -98,20 +98,20 @@ function ColorDropdown({ colors, selected, onChange, label }) {
                   onClick={() => { onChange(c.id); setOpen(false); setSearch(''); }}
                   className={`w-full flex items-center gap-3 py-2 px-3.5 text-left text-sm transition-colors ${
                     isActive
-                      ? 'bg-accent/10 text-heading'
-                      : 'text-grey-light hover:bg-white/[0.04]'
+                      ? 'bg-accent/10 text-gray-900 font-medium'
+                      : 'text-gray-700 hover:bg-gray-50'
                   }`}
                 >
                   <span
                     className="w-4 h-4 rounded-full flex-shrink-0"
-                    style={{ backgroundColor: c.hex, boxShadow: `0 0 0 1px rgba(255,255,255,0.08)` }}
+                    style={{ backgroundColor: c.hex, boxShadow: `0 0 0 1px rgba(0,0,0,0.1)` }}
                   />
                   <span className={isActive ? 'font-medium' : ''}>{c.name}</span>
                 </button>
               );
             })}
             {filtered.length === 0 && (
-              <p className="text-grey-muted/50 text-xs py-4 text-center">-</p>
+              <p className="text-gray-400 text-xs py-4 text-center">-</p>
             )}
           </div>
         </div>

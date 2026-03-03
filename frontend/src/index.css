@@ -202,7 +202,7 @@
 }
 
 [data-theme="vibrant"] .section-container {
-  padding: 5rem 1rem;
+  padding: 3.5rem 1rem;
 }
 
 [data-theme="vibrant"] h1,
@@ -379,7 +379,7 @@ h1, h2, h3, h4, h5, h6 {
 .section-container {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 6rem 1.5rem;
+  padding: 3.5rem 1.5rem;
 }
 
 /* Champs de formulaire */

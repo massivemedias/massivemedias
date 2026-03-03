@@ -15,28 +15,6 @@ function ConfiguratorDesign() {
 
   return (
     <>
-      {/* File upload + Notes side by side */}
-      <div className="grid grid-cols-1 md:grid-cols-[1fr_3fr] gap-4 mb-5">
-        <FileUpload
-          files={uploadedFiles}
-          onFilesChange={setUploadedFiles}
-          label={lang === 'fr' ? 'References' : 'References'}
-          compact
-        />
-        <div>
-          <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2.5">
-            {lang === 'fr' ? 'Notes / Description' : 'Notes / Description'}
-          </label>
-          <textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            rows={4}
-            placeholder={lang === 'fr' ? 'Decrivez votre projet (objectif, style, references...)' : 'Describe your project (goal, style, references...)'}
-            className="w-full h-[calc(100%-2rem)] min-h-[120px] rounded-lg border-2 border-grey-muted/20 bg-transparent px-4 py-3 text-sm text-heading placeholder:text-grey-muted/50 focus:border-accent focus:outline-none transition-colors resize-none"
-          />
-        </div>
-      </div>
-
       {/* Service type selector */}
       <div className="mb-6">
         <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2.5">
@@ -86,6 +64,28 @@ function ConfiguratorDesign() {
         {lang === 'fr'
           ? '\ud83c\udfa8 Le design de stickers est inclus dans le prix de production des stickers.'
           : '\ud83c\udfa8 Sticker design is included in the sticker production price.'}
+      </div>
+
+      {/* File upload + Notes side by side */}
+      <div className="grid grid-cols-1 md:grid-cols-[1fr_3fr] gap-4 mb-5">
+        <FileUpload
+          files={uploadedFiles}
+          onFilesChange={setUploadedFiles}
+          label={lang === 'fr' ? 'References' : 'References'}
+          compact
+        />
+        <div>
+          <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2.5">
+            {lang === 'fr' ? 'Notes / Description' : 'Notes / Description'}
+          </label>
+          <textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            rows={4}
+            placeholder={lang === 'fr' ? 'Decrivez votre projet (objectif, style, references...)' : 'Describe your project (goal, style, references...)'}
+            className="w-full h-[calc(100%-2rem)] min-h-[120px] rounded-lg border-2 border-grey-muted/20 bg-transparent px-4 py-3 text-sm text-heading placeholder:text-grey-muted/50 focus:border-accent focus:outline-none transition-colors resize-none"
+          />
+        </div>
       </div>
 
       {/* Request quote */}

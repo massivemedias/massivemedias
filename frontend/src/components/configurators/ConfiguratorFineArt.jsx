@@ -50,28 +50,6 @@ function ConfiguratorFineArt() {
 
   return (
     <>
-      {/* File upload + Notes side by side */}
-      <div className="grid grid-cols-1 md:grid-cols-[1fr_3fr] gap-4 mb-5">
-        <FileUpload
-          files={uploadedFiles}
-          onFilesChange={setUploadedFiles}
-          label={lang === 'fr' ? 'Votre fichier' : 'Your file'}
-          compact
-        />
-        <div>
-          <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2.5">
-            {lang === 'fr' ? 'Notes / Description' : 'Notes / Description'}
-          </label>
-          <textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            rows={4}
-            placeholder={lang === 'fr' ? 'Decrivez le produit souhaite (format, finition, details...)' : 'Describe the desired product (format, finish, details...)'}
-            className="w-full h-[calc(100%-2rem)] min-h-[120px] rounded-lg border-2 border-grey-muted/20 bg-transparent px-4 py-3 text-sm text-heading placeholder:text-grey-muted/50 focus:border-accent focus:outline-none transition-colors resize-none"
-          />
-        </div>
-      </div>
-
       {/* Printer tier selector */}
       <div className="mb-5">
         <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2.5">
@@ -173,6 +151,28 @@ function ConfiguratorFineArt() {
             </button>
           </div>
         )}
+      </div>
+
+      {/* File upload + Notes side by side */}
+      <div className="grid grid-cols-1 md:grid-cols-[1fr_3fr] gap-4 mb-5">
+        <FileUpload
+          files={uploadedFiles}
+          onFilesChange={setUploadedFiles}
+          label={lang === 'fr' ? 'Votre fichier' : 'Your file'}
+          compact
+        />
+        <div>
+          <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2.5">
+            {lang === 'fr' ? 'Notes / Description' : 'Notes / Description'}
+          </label>
+          <textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            rows={4}
+            placeholder={lang === 'fr' ? 'Decrivez le produit souhaite (format, finition, details...)' : 'Describe the desired product (format, finish, details...)'}
+            className="w-full h-[calc(100%-2rem)] min-h-[120px] rounded-lg border-2 border-grey-muted/20 bg-transparent px-4 py-3 text-sm text-heading placeholder:text-grey-muted/50 focus:border-accent focus:outline-none transition-colors resize-none"
+          />
+        </div>
       </div>
 
       {/* Price display */}
