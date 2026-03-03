@@ -258,6 +258,487 @@ const servicePagesSeedData = [
   },
 ];
 
+const artistsSeedData = [
+  {
+    slug: 'adrift',
+    name: 'Adrift',
+    taglineFr: 'Art numerique & univers immersifs',
+    taglineEn: 'Digital Art & Immersive Worlds',
+    bioFr: "Adrift explore les frontieres entre le reel et le virtuel a travers des compositions numeriques saisissantes. Son univers visuel puise dans la science-fiction, les textures organiques et les paysages oniriques pour creer des oeuvres qui transportent le spectateur dans des dimensions paralleles.",
+    bioEn: "Adrift explores the boundaries between real and virtual through striking digital compositions. Their visual universe draws from science fiction, organic textures and dreamlike landscapes to create works that transport the viewer into parallel dimensions.",
+    socials: {
+      instagram: 'https://instagram.com/alx.rouleau',
+      youtube: 'https://www.youtube.com/@adrift.vision',
+      tiktok: 'https://tiktok.com/@adriftvision',
+      website: 'https://www.adrift.vision',
+    },
+    pricing: {
+      studio: { a4: 35, a3: 50, a3plus: 65, a2: 85 },
+      museum: { a4: 75, a3: 120, a3plus: 160, a2: 225 },
+      framePrice: 20,
+    },
+    prints: [
+      { id: 'adrift-001', titleFr: 'Print I', titleEn: 'Print I', image: '/images/prints/Adrift1.webp', limited: false },
+      { id: 'adrift-002', titleFr: 'Print II', titleEn: 'Print II', image: '/images/prints/Adrift2.webp', limited: false },
+    ],
+    sortOrder: 1,
+    active: true,
+  },
+  {
+    slug: 'maudite-machine',
+    name: 'Maudite Machine',
+    taglineFr: 'Musique electronique & culture visuelle',
+    taglineEn: 'Electronic Music & Visual Culture',
+    bioFr: "Maudite Machine est un collectif audiovisuel montrealais qui fusionne musique electronique et art visuel. Leurs creations graphiques - affiches, pochettes et illustrations - capturent l'energie brute de la scene underground et la transforment en oeuvres visuelles percutantes.",
+    bioEn: "Maudite Machine is a Montreal-based audiovisual collective that fuses electronic music and visual art. Their graphic creations - posters, album covers and illustrations - capture the raw energy of the underground scene and transform it into striking visual works.",
+    socials: {},
+    pricing: {
+      studio: { a4: 35, a3: 50, a3plus: 65, a2: 85 },
+      museum: { a4: 75, a3: 120, a3plus: 160, a2: 225 },
+      framePrice: 20,
+    },
+    prints: [],
+    sortOrder: 2,
+    active: true,
+  },
+  {
+    slug: 'mok',
+    name: 'Mok',
+    taglineFr: 'Photographie urbaine & lumiere',
+    taglineEn: 'Urban Photography & Light',
+    bioFr: "Photographe montrealais avec un oeil unique pour la composition et la lumiere. Ses oeuvres capturent l'essence de la ville a travers des perspectives inattendues - architecture, reflets, textures urbaines. Chaque tirage est une invitation a voir Montreal autrement.",
+    bioEn: "Montreal photographer with a unique eye for composition and light. His work captures the essence of the city through unexpected perspectives - architecture, reflections, urban textures. Each print is an invitation to see Montreal differently.",
+    socials: {},
+    pricing: {
+      studio: { a4: 35, a3: 50, a3plus: 65, a2: 85 },
+      museum: { a4: 75, a3: 120, a3plus: 160, a2: 225 },
+      framePrice: 20,
+    },
+    prints: [
+      { id: 'mok-001', titleFr: 'Metro Montreal', titleEn: 'Montreal Metro', image: '/images/prints/Mok1.webp', limited: false },
+    ],
+    sortOrder: 3,
+    active: true,
+  },
+  {
+    slug: 'psyqu33n',
+    name: 'Psyqu33n',
+    taglineFr: 'Ombre & lumiere - art visionnaire',
+    taglineEn: 'Shadow & Light - Visionary Art',
+    bioFr: "J'incarne l'ombre et la lumiere, la force et la douceur, le chaos et l'harmonie. Mon art est un espace d'expression libre, un pont entre les mondes, une invitation a l'introspection et a l'elevation. Je suis issue de deux mondes underground que tout oppose - le graffiti, instinctif, rapide, brut, et l'exploration de la psyche, plongeant dans les profondeurs de l'esprit, du sacre, du symbolique. Ensemble, ils composent un langage unique.",
+    bioEn: "I embody both shadow and light, strength and softness, chaos and harmony. My art is a space of free expression, a bridge between worlds, an invitation to introspection and elevation. I come from two underground realms that seem to stand in opposition - graffiti, instinctive, fast, raw, and the exploration of the psyche, diving deep into the spirit, into the sacred and the symbolic. Together, they form a unique language.",
+    demarcheFr: [
+      { title: 'Demarche artistique', text: "Mon art est une exploration de la lumiere interieure, un voyage a travers les couches de l'etre pour reveler ce qui, souvent, reste cache. Il ne s'agit plus de fuir ou de se defendre, mais d'embrasser pleinement qui nous sommes. Mes figures, souvent feminines mais universelles dans leur essence, sont des guides. Elles incarnent la douceur, la force tranquille, la souverainete de l'ame." },
+      { title: 'Les yeux ne mentent pas', text: "Dans un monde sature de vitesse et d'apparences, mes oeuvres invitent a ralentir, a contempler, a ressentir. Les regards qu'elles portent ne figent pas : ils revelent. Ils sont des portails vers l'intime, des invitations a l'eveil interieur." },
+      { title: 'Un modele pour chacun-e', text: "A travers mes creations, je propose un chemin vers l'harmonie interieure. L'equilibre entre les polarites - energie masculine et feminine, action et contemplation, ombre et lumiere - est au coeur de ma demarche." },
+      { title: "L'importance de la lumiere", text: "La lumiere est au coeur de mon travail - autant dans sa forme que dans son essence. Le jour, mes oeuvres revelent une histoire. La nuit, grace a l'usage de peintures fluorescentes, elles s'illuminent differemment, devoilant d'autres verites, d'autres dimensions." },
+      { title: 'A propos du nom Psyqu33n', text: "Psyqu33n symbolise une renaissance me permettant d'incarner pleinement qui je suis. C'est l'archetype de la souverainete interieure, l'affirmation de toutes mes facettes. Le 33, loin d'etre un simple chiffre, porte une vibration spirituelle profonde." },
+    ],
+    demarcheEn: [
+      { title: 'Artistic approach', text: "My art is an exploration of inner light, a journey through layers of being to reveal what often remains hidden. It is no longer about fleeing or defending, but about fully embracing who we are. My figures, often feminine but universal in their essence, are guides. They embody gentleness, quiet strength, the sovereignty of the soul." },
+      { title: 'Eyes never lie', text: "In a world saturated with speed and appearances, my works invite you to slow down, contemplate, and feel. The gazes they carry do not freeze: they reveal. They are portals to the intimate, invitations to inner awakening." },
+      { title: 'A model for everyone', text: "Through my creations, I offer a path toward inner harmony. The balance between polarities - masculine and feminine energy, action and contemplation, shadow and light - is at the heart of my approach." },
+      { title: 'The importance of light', text: "Light is at the heart of my work - in both its form and its essence. By day, my works reveal a story. At night, through the use of fluorescent paints, they illuminate differently, unveiling other truths, other dimensions." },
+      { title: 'About the name Psyqu33n', text: "Psyqu33n symbolizes a rebirth - a return to my essence, allowing me to fully embody who I am. It represents the archetype of inner sovereignty, the affirmation of all my facets. The number 33 carries a deep spiritual vibration." },
+    ],
+    socials: {
+      facebook: 'https://www.facebook.com/HlyArtMtl',
+      instagram: 'https://www.instagram.com/Psyqueenmedusa/',
+      gallea: 'https://www.gallea.ca/fr/artistes/psyqu33n',
+      website: 'https://psyqu33n.com',
+      email: 'medusart@protonmail.com',
+    },
+    pricing: {
+      studio: { a4: 35, a3: 50, a3plus: 65, a2: 85 },
+      museum: { a4: 75, a3: 120, a3plus: 160, a2: 225 },
+      framePrice: 20,
+    },
+    prints: [
+      { id: 'psyqu33n-001', titleFr: 'Accepter ses parts d\'ombres et de lumiere', titleEn: 'Embracing Shadow and Light', image: '/images/prints/Psyqu33n1.webp', limited: false },
+      { id: 'psyqu33n-002', titleFr: 'Trusting the Process', titleEn: 'Trusting the Process', image: '/images/prints/Psyqu33n2.webp', limited: false },
+      { id: 'psyqu33n-003', titleFr: 'Bat', titleEn: 'Bat', image: '/images/prints/Psyqu33n3.webp', limited: false },
+      { id: 'psyqu33n-004', titleFr: 'Monkey', titleEn: 'Monkey', image: '/images/prints/Psyqu33n4.webp', limited: false },
+      { id: 'psyqu33n-005', titleFr: 'Rabbit', titleEn: 'Rabbit', image: '/images/prints/Psyqu33n5.webp', limited: false },
+      { id: 'psyqu33n-006', titleFr: 'Renard', titleEn: 'Fox', image: '/images/prints/Psyqu33n6.webp', limited: false },
+      { id: 'psyqu33n-007', titleFr: 'Croire en quelque chose de plus grand', titleEn: 'Believing in Something Greater', image: '/images/prints/Psyqu33n7.webp', limited: false },
+      { id: 'psyqu33n-008', titleFr: 'Incarner son pouvoir', titleEn: 'Embodying Your Power', image: '/images/prints/Psyqu33n8.webp', limited: false },
+      { id: 'psyqu33n-009', titleFr: 'L\'archetype de la reine - la force d\'avancer', titleEn: 'The Queen Archetype - Strength to Move Forward', image: '/images/prints/Psyqu33n9.webp', limited: false },
+      { id: 'psyqu33n-010', titleFr: 'La douleur derriere le masque', titleEn: 'The Pain Behind the Mask', image: '/images/prints/Psyqu33n10.webp', limited: false },
+      { id: 'psyqu33n-011', titleFr: 'La purge - liberer les emotions stockees', titleEn: 'The Purge - Releasing Stored Emotions', image: '/images/prints/Psyqu33n11.webp', limited: false },
+      { id: 'psyqu33n-012', titleFr: 'Le masque de la femme forte', titleEn: 'The Mask of the Strong Woman', image: '/images/prints/Psyqu33n12.webp', limited: false },
+    ],
+    sortOrder: 4,
+    active: true,
+  },
+];
+
+const productsSeedData = [
+  {
+    name: 'Stickers',
+    slug: 'stickers',
+    category: 'stickers',
+    nameFr: 'Stickers Custom',
+    nameEn: 'Custom Stickers',
+    descriptionFr: 'Autocollants decoupes sur mesure pour artistes, labels, evenements et marques.',
+    descriptionEn: 'Custom die-cut stickers for artists, labels, events and brands.',
+    pricingData: {
+      finishes: [
+        { id: 'matte', labelFr: 'Vinyle Matte', labelEn: 'Matte Vinyl', descFr: 'Toucher veloute, sans reflet', descEn: 'Smooth feel, glare-free' },
+        { id: 'glossy', labelFr: 'Vinyle Glossy', labelEn: 'Glossy Vinyl', descFr: 'Brillant, couleurs eclatantes', descEn: 'Shiny, vibrant colors' },
+        { id: 'holographic', labelFr: 'Holographique', labelEn: 'Holographic', descFr: 'Reflets arc-en-ciel, effet wow', descEn: 'Rainbow reflections, wow effect' },
+        { id: 'broken-glass', labelFr: 'Verre Brise', labelEn: 'Broken Glass', descFr: 'Eclats cristallins, reflets prismatiques', descEn: 'Crystal shards, prismatic reflections' },
+        { id: 'stars', labelFr: 'Etoiles', labelEn: 'Stars', descFr: 'Motif etoiles scintillantes', descEn: 'Sparkling star pattern' },
+      ],
+      shapes: [
+        { id: 'round', labelFr: 'Rond', labelEn: 'Round', descFr: 'Classique et polyvalent', descEn: 'Classic and versatile' },
+        { id: 'square', labelFr: 'Carre', labelEn: 'Square', descFr: 'Moderne et structure', descEn: 'Modern and structured' },
+        { id: 'rectangle', labelFr: 'Rectangle', labelEn: 'Rectangle', descFr: 'Ideal pour etiquettes', descEn: 'Ideal for labels' },
+        { id: 'diecut', labelFr: 'Die-cut (custom)', labelEn: 'Die-cut (custom)', descFr: 'Decoupe a ta forme', descEn: 'Cut to your shape' },
+      ],
+      sizes: [
+        { id: '2in', label: '2"' },
+        { id: '2.5in', label: '2.5"' },
+        { id: '3in', label: '3"' },
+        { id: '4in', label: '4"' },
+      ],
+      tiers: {
+        standard: [
+          { qty: 25, price: 30, unitPrice: 1.20 },
+          { qty: 50, price: 45, unitPrice: 0.90 },
+          { qty: 100, price: 75, unitPrice: 0.75 },
+          { qty: 250, price: 150, unitPrice: 0.60 },
+          { qty: 500, price: 250, unitPrice: 0.50 },
+        ],
+        holographic: [
+          { qty: 25, price: 42, unitPrice: 1.68 },
+          { qty: 50, price: 65, unitPrice: 1.30 },
+          { qty: 100, price: 110, unitPrice: 1.10 },
+          { qty: 250, price: 220, unitPrice: 0.88 },
+          { qty: 500, price: 380, unitPrice: 0.76 },
+        ],
+      },
+      designPrice: 0,
+    },
+    highlightsFr: ['Decoupe de precision professionnelle','Vinyle matte, glossy, transparent, holographique','Decoupe contour a la forme exacte du design','Lamination incluse - resistant eau, UV, rayures','Design graphique inclus dans le prix','Livraison locale disponible','Delai rapide : 24-72h'],
+    highlightsEn: ['Professional precision cutting','Matte, glossy, clear, holographic vinyl','Contour cut to exact design shape','Lamination included - water, UV, scratch resistant','Graphic design included in price','Local delivery available','Fast turnaround: 24-72h'],
+    faqFr: [
+      { q: 'Quels fichiers dois-je fournir?', a: 'Idealement un fichier vectoriel (AI, SVG, PDF) ou un PNG haute resolution (300 DPI minimum) avec fond transparent. Si vous n\'avez pas de fichier pret, notre service de design graphique est inclus dans le prix.' },
+      { q: 'Quel est le delai de production?', a: 'Production en 24 a 72 heures selon la complexite et la quantite.' },
+      { q: 'Peut-on commander une forme totalement custom?', a: 'Oui! L\'option die-cut permet de decouper vos stickers selon n\'importe quelle forme.' },
+      { q: 'Quelle est la qualite du vinyle?', a: 'Vinyle professionnel avec lamination integree. Resistant a l\'eau, aux UV et aux rayures. Duree de vie exterieure de 3-5 ans.' },
+      { q: 'La livraison est-elle disponible?', a: 'Livraison locale gratuite a Montreal (Mile-End et environs). Envoi postal disponible partout au Canada.' },
+      { q: 'Le design est vraiment inclus?', a: 'Oui, la creation ou l\'adaptation graphique de votre sticker est incluse dans tous nos prix.' },
+      { q: 'Que se passe-t-il si je ne suis pas satisfait?', a: 'La promesse Massive : si le resultat ne correspond pas a ce qui a ete valide, on refait votre commande.' },
+      { q: 'Puis-je voir un proof avant impression?', a: 'Oui, nous envoyons toujours un proof numerique par courriel avant de lancer la production.' },
+    ],
+    faqEn: [
+      { q: 'What files should I provide?', a: 'Ideally a vector file (AI, SVG, PDF) or high-resolution PNG (300 DPI minimum) with transparent background. If you don\'t have a ready file, our graphic design service is included in the price.' },
+      { q: 'What is the production time?', a: 'Production in 24 to 72 hours depending on complexity and quantity.' },
+      { q: 'Can I order a completely custom shape?', a: 'Yes! The die-cut option lets us cut your stickers in any shape.' },
+      { q: 'What is the vinyl quality?', a: 'Professional-grade vinyl with integrated lamination. Water, UV, and scratch resistant. Outdoor lifespan of 3-5 years.' },
+      { q: 'Is delivery available?', a: 'Free local delivery in Montreal (Mile-End area). Postal shipping available across Canada.' },
+      { q: 'Is design really included?', a: 'Yes, graphic creation or adaptation of your sticker is included in all our prices.' },
+      { q: 'What if I\'m not satisfied?', a: 'The Massive Promise: if the result doesn\'t match what was validated, we redo your order.' },
+      { q: 'Can I see a proof before printing?', a: 'Yes, we always send a digital proof by email before starting production.' },
+    ],
+    sortOrder: 1,
+    active: true,
+  },
+  {
+    name: 'Fine Art',
+    slug: 'fine-art',
+    category: 'fine-art',
+    nameFr: 'Impression Fine Art',
+    nameEn: 'Fine Art Printing',
+    descriptionFr: 'Tirages fine art sur papiers d\'archives avec encres pigmentees. Qualite galerie.',
+    descriptionEn: 'Fine art prints on archival papers with pigmented inks. Gallery quality.',
+    pricingData: {
+      tiers: [
+        { id: 'studio', labelFr: 'Serie Studio', labelEn: 'Studio Series', desc: '4 encres pigmentees / 4 pigmented inks', descFr: 'Couleurs vibrantes, qualite pro', descEn: 'Vibrant colors, pro quality' },
+        { id: 'museum', labelFr: 'Serie Musee', labelEn: 'Museum Series', desc: '12 encres pigmentees / 12 pigmented inks', descFr: 'Fidelite museale, gamut etendu', descEn: 'Museum accuracy, extended gamut' },
+      ],
+      formats: [
+        { id: 'a4', label: 'A4 (8.5x11")', studioPrice: 16, museumPrice: 35 },
+        { id: 'a3', label: 'A3 (11x17")', studioPrice: 22, museumPrice: 65 },
+        { id: 'a3plus', label: 'A3+ (13x19")', studioPrice: 30, museumPrice: 95 },
+        { id: 'a2', label: 'A2 (18x24")', studioPrice: 42, museumPrice: 125 },
+      ],
+      framePrice: 30,
+    },
+    highlightsFr: ['Imprimante professionnelle fine art - 12 encres pigmentees','Papiers fine art professionnels premium','Calibration professionnelle, profils ICC sur mesure','Duree de conservation 100+ ans','Pick-up gratuit Mile-End, livraison locale'],
+    highlightsEn: ['Professional fine art printer - 12 pigmented inks','Premium professional fine art papers','Professional calibration, custom ICC profiles','100+ year conservation life','Free pick-up Mile-End, local delivery'],
+    faqFr: [
+      { q: 'Quelle est la difference entre Serie Studio et Serie Musee?', a: 'La Serie Studio utilise une imprimante 4 encres pigmentees, excellente pour tous les usages. La Serie Musee utilise une imprimante 12 encres pigmentees pour une qualite superieure.' },
+      { q: 'Quels papiers utilisez-vous?', a: 'Papiers fine art professionnels premium : coton, alpha-cellulose, papiers d\'archives. Chaque papier est calibre avec un profil ICC sur mesure.' },
+      { q: 'Quelle est la duree de conservation?', a: 'Nos tirages fine art ont une duree de conservation de 100+ ans grace aux encres pigmentees et papiers d\'archives.' },
+      { q: 'Puis-je faire encadrer mon tirage?', a: 'Oui! Nous offrons l\'option cadre noir ou blanc pour 30$ supplementaires.' },
+      { q: 'Quel fichier dois-je fournir?', a: 'Idealement un fichier haute resolution (300 DPI minimum). Nous effectuons un soft proofing avant impression.' },
+      { q: 'La livraison est-elle disponible?', a: 'Pick-up gratuit au Mile-End. Livraison locale disponible a Montreal.' },
+    ],
+    faqEn: [
+      { q: 'What is the difference between Studio and Museum Series?', a: 'The Studio Series uses a 4-color pigment printer, excellent for all uses. The Museum Series uses a 12-color pigment printer for superior quality.' },
+      { q: 'What papers do you use?', a: 'Premium professional fine art papers: cotton, alpha-cellulose, archival papers. Each paper is calibrated with a custom ICC profile.' },
+      { q: 'What is the conservation lifespan?', a: 'Our fine art prints have a 100+ year conservation life thanks to pigmented inks and archival papers.' },
+      { q: 'Can I get my print framed?', a: 'Yes! We offer a black or white frame option for an additional $30.' },
+      { q: 'What file should I provide?', a: 'Ideally a high-resolution file (300 DPI minimum). We perform soft proofing before printing.' },
+      { q: 'Is delivery available?', a: 'Free pick-up in Mile-End. Local delivery available in Montreal.' },
+    ],
+    sortOrder: 2,
+    active: true,
+  },
+  {
+    name: 'Sublimation',
+    slug: 'sublimation',
+    category: 'sublimation',
+    nameFr: 'Sublimation & Merch',
+    nameEn: 'Sublimation & Merch',
+    descriptionFr: 'Impression sublimation sur textile et objets. Couleurs permanentes.',
+    descriptionEn: 'Sublimation printing on textiles and objects. Permanent colors.',
+    pricingData: {
+      products: [
+        { id: 'tshirt', labelFr: 'T-shirt', labelEn: 'T-shirt', descFr: 'Leger et confortable, all-over', descEn: 'Light and comfortable, all-over' },
+        { id: 'crewneck', labelFr: 'Crewneck', labelEn: 'Crewneck', descFr: 'Style decontracte, coton epais', descEn: 'Casual style, thick cotton' },
+        { id: 'hoodie', labelFr: 'Hoodie', labelEn: 'Hoodie', descFr: 'Chaleureux et streetwear', descEn: 'Warm and streetwear' },
+        { id: 'totebag', labelFr: 'Tote Bag', labelEn: 'Tote Bag', descFr: 'Pratique et ecologique', descEn: 'Practical and eco-friendly' },
+        { id: 'bag', labelFr: 'Sac banane', labelEn: 'Fanny Pack', descFr: 'Compact et tendance', descEn: 'Compact and trendy' },
+      ],
+      priceTiers: {
+        tshirt: [
+          { qty: 1, unitPrice: 35, price: 35 },
+          { qty: 5, unitPrice: 30, price: 150 },
+          { qty: 10, unitPrice: 27, price: 270 },
+          { qty: 25, unitPrice: 22, price: null, surSoumission: true },
+        ],
+        crewneck: [
+          { qty: 1, unitPrice: 50, price: 50 },
+          { qty: 5, unitPrice: 45, price: 225 },
+          { qty: 10, unitPrice: 40, price: 400 },
+          { qty: 25, unitPrice: 35, price: null, surSoumission: true },
+        ],
+        hoodie: [
+          { qty: 1, unitPrice: 65, price: 65 },
+          { qty: 5, unitPrice: 60, price: 300 },
+          { qty: 10, unitPrice: 50, price: 500 },
+          { qty: 25, unitPrice: 45, price: null, surSoumission: true },
+        ],
+        totebag: [
+          { qty: 1, unitPrice: 15, price: 15 },
+          { qty: 10, unitPrice: 12, price: 120 },
+          { qty: 25, unitPrice: 10, price: 250 },
+          { qty: 50, unitPrice: 8, price: 400 },
+        ],
+        bag: [
+          { qty: 1, unitPrice: 80, price: 80 },
+          { qty: 5, unitPrice: 70, price: 350 },
+          { qty: 10, unitPrice: 60, price: 600 },
+        ],
+      },
+      designPrice: 125,
+    },
+    highlightsFr: ['Impression permanente dans la fibre','Couleurs vibrantes, resistant au lavage','T-shirts, hoodies, mugs et plus','Petites et moyennes series'],
+    highlightsEn: ['Permanent print into the fiber','Vibrant colors, wash resistant','T-shirts, hoodies, mugs and more','Small and medium runs'],
+    faqFr: [
+      { q: 'Qu\'est-ce que la sublimation?', a: 'La sublimation transfere l\'encre directement dans la fibre du tissu a haute temperature. Impression permanente.' },
+      { q: 'Sur quels produits imprimez-vous?', a: 'T-shirts, crewnecks, hoodies, sacs bananes, mugs, thermos, tapis de souris et plus.' },
+      { q: 'Puis-je fournir mon propre design?', a: 'Oui! Si vous avez un design pret, le prix est celui affiche. Creation graphique en supplement.' },
+      { q: 'Quelle est la quantite minimale?', a: 'A partir d\'une seule unite. Prix degressifs a partir de 5 et 10 unites.' },
+      { q: 'L\'impression est-elle vraiment permanente?', a: 'Oui, la sublimation produit une impression permanente integree dans la fibre.' },
+      { q: 'Quel est le delai de production?', a: 'Generalement 3 a 5 jours ouvrables selon la quantite.' },
+    ],
+    faqEn: [
+      { q: 'What is sublimation?', a: 'Sublimation transfers ink directly into the fabric fiber at high temperature. Permanent print.' },
+      { q: 'What products do you print on?', a: 'T-shirts, crewnecks, hoodies, fanny packs, mugs, tumblers, mousepads and more.' },
+      { q: 'Can I provide my own design?', a: 'Yes! If you have a ready design, the price shown applies. Graphic design at extra cost.' },
+      { q: 'What is the minimum quantity?', a: 'Starting from a single unit. Prices decrease at 5 and 10 units.' },
+      { q: 'Is the print really permanent?', a: 'Yes, sublimation produces a permanent print integrated into the fiber.' },
+      { q: 'What is the production time?', a: 'Generally 3 to 5 business days depending on quantity.' },
+    ],
+    sortOrder: 3,
+    active: true,
+  },
+  {
+    name: 'Flyers',
+    slug: 'flyers',
+    category: 'flyers',
+    nameFr: 'Flyers & Cartes',
+    nameEn: 'Flyers & Cards',
+    descriptionFr: 'Flyers, cartes postales, cartes d\'affaires. Impression rapide et locale.',
+    descriptionEn: 'Flyers, postcards, business cards. Fast local printing.',
+    pricingData: {
+      sides: [
+        { id: 'recto', labelFr: 'Recto', labelEn: 'Single-sided', multiplier: 1.0 },
+        { id: 'recto-verso', labelFr: 'Recto-verso', labelEn: 'Double-sided', multiplier: 1.3 },
+      ],
+      priceTiers: [
+        { qty: 50, price: 40, unitPrice: 0.80 },
+        { qty: 100, price: 65, unitPrice: 0.65 },
+        { qty: 150, price: 90, unitPrice: 0.60 },
+        { qty: 250, price: 130, unitPrice: 0.52 },
+        { qty: 500, price: 225, unitPrice: 0.45 },
+      ],
+    },
+    highlightsFr: ['Papier premium 300g+','Impression professionnelle','Delai express 24h','Pick-up gratuit Mile-End'],
+    highlightsEn: ['Premium 300g+ paper','Professional printing','24h express turnaround','Free pick-up Mile-End'],
+    faqFr: [
+      { q: 'Quels formats proposez-vous?', a: 'Flyers A6 (4"x6"), A5, lettre (8,5x11"). Cartes postales et cartes d\'affaires.' },
+      { q: 'Quel papier utilisez-vous?', a: 'Papier premium 300g+ en finition matte ou brillante.' },
+      { q: 'Offrez-vous l\'impression recto-verso?', a: 'Oui! L\'option recto-verso est disponible avec un supplement de 30%.' },
+      { q: 'Quel est le delai de production?', a: 'Delai standard de 24 a 48 heures. Service express disponible le jour meme.' },
+      { q: 'Puis-je faire faire le design aussi?', a: 'Oui, notre service de design graphique est disponible en option.' },
+      { q: 'La livraison est-elle disponible?', a: 'Pick-up gratuit au Mile-End. Livraison locale disponible a Montreal.' },
+    ],
+    faqEn: [
+      { q: 'What formats do you offer?', a: 'A6 (4"x6"), A5, letter (8.5x11") flyers. Postcards and business cards.' },
+      { q: 'What paper do you use?', a: 'Premium 300g+ paper in matte or glossy finish.' },
+      { q: 'Do you offer double-sided printing?', a: 'Yes! Double-sided option is available with a 30% surcharge.' },
+      { q: 'What is the production time?', a: 'Standard turnaround of 24 to 48 hours. Same-day express service available.' },
+      { q: 'Can you design my flyers too?', a: 'Yes, our graphic design service is available as an option.' },
+      { q: 'Is delivery available?', a: 'Free pick-up in Mile-End. Local delivery available in Montreal.' },
+    ],
+    sortOrder: 4,
+    active: true,
+  },
+  {
+    name: 'Design',
+    slug: 'design',
+    category: 'design',
+    nameFr: 'Design Graphique',
+    nameEn: 'Graphic Design',
+    descriptionFr: 'Logos, identites visuelles, affiches et creations digitales.',
+    descriptionEn: 'Logos, visual identities, posters and digital creations.',
+    pricingData: {
+      services: [
+        { id: 'logo', labelFr: 'Creation logo', labelEn: 'Logo design', priceRange: '300$ - 600$', timelineFr: '5-10 jours', timelineEn: '5-10 days' },
+        { id: 'identity', labelFr: 'Identite visuelle complete', labelEn: 'Complete visual identity', priceRange: '800$ - 1 500$', timelineFr: '2-3 semaines', timelineEn: '2-3 weeks' },
+        { id: 'poster', labelFr: 'Affiche / flyer evenement', labelEn: 'Event poster / flyer', priceRange: '150$ - 300$', timelineFr: '3-5 jours', timelineEn: '3-5 days' },
+        { id: 'album', labelFr: 'Pochette album / single', labelEn: 'Album / single cover', priceRange: '200$ - 400$', timelineFr: '5-7 jours', timelineEn: '5-7 days' },
+        { id: 'icons', labelFr: 'Design d\'icones (set)', labelEn: 'Icon set design', priceRange: '200$ - 500$', timelineFr: '3-7 jours', timelineEn: '3-7 days' },
+        { id: 'retouching', labelFr: 'Retouche photo (par image)', labelEn: 'Photo retouching (per image)', priceRange: '15$ - 50$', timelineFr: '24-48h', timelineEn: '24-48h' },
+      ],
+      hourlyRate: '85$/h',
+    },
+    highlightsFr: ['Adobe Illustrator & Figma','2 revisions incluses','Fichiers print + web','Livraison numerique'],
+    highlightsEn: ['Adobe Illustrator & Figma','2 revisions included','Print + web files','Digital delivery'],
+    faqFr: [
+      { q: 'Qu\'est-ce qui est inclus dans une creation de logo?', a: 'Recherche de references, exploration visuelle, creation vectorielle sur Illustrator, 2 rondes de revisions, et livraison des fichiers finaux.' },
+      { q: 'Quels outils utilisez-vous?', a: 'Adobe Illustrator, Figma, Photoshop, InDesign.' },
+      { q: 'Combien de revisions sont incluses?', a: '2 rondes de revisions sont incluses dans tous nos forfaits.' },
+      { q: 'Le design de stickers est-il inclus?', a: 'Oui! La creation graphique de stickers est incluse dans le prix de production.' },
+      { q: 'Dans quels formats livrez-vous?', a: 'Package complet : AI, EPS, SVG, PNG, PDF. Versions print-ready et web.' },
+      { q: 'Travaillez-vous avec des artistes musicaux?', a: 'Oui! Pochettes d\'album, affiches de concerts, logos d\'artistes et identites visuelles.' },
+    ],
+    faqEn: [
+      { q: 'What is included in a logo creation?', a: 'Reference research, visual exploration, vector creation on Illustrator, 2 rounds of revisions, and delivery of final files.' },
+      { q: 'What tools do you use?', a: 'Adobe Illustrator, Figma, Photoshop, InDesign.' },
+      { q: 'How many revisions are included?', a: '2 rounds of revisions are included in all packages.' },
+      { q: 'Is sticker design included?', a: 'Yes! Sticker graphic design is included in the production price.' },
+      { q: 'What formats do you deliver in?', a: 'Complete package: AI, EPS, SVG, PNG, PDF. Print-ready and web versions.' },
+      { q: 'Do you work with music artists?', a: 'Yes! Album covers, concert posters, artist logos and visual identities.' },
+    ],
+    sortOrder: 5,
+    active: true,
+  },
+  {
+    name: 'Web',
+    slug: 'web',
+    category: 'web',
+    nameFr: 'Developpement Web',
+    nameEn: 'Web Development',
+    descriptionFr: 'Sites vitrines, e-commerce et landing pages pour createurs.',
+    descriptionEn: 'Showcase sites, e-commerce and landing pages for creators.',
+    pricingData: {
+      services: [
+        { id: 'landing', labelFr: 'Landing page evenement', labelEn: 'Event landing page', price: '900$' },
+        { id: 'showcase', labelFr: 'Site vitrine (5-10 pages)', labelEn: 'Showcase site (5-10 pages)', price: '2 000$ - 3 500$' },
+        { id: 'ecommerce', labelFr: 'Site e-commerce', labelEn: 'E-commerce site', price: '4 000$ - 6 000$' },
+        { id: 'redesign', labelFr: 'Refonte site existant', labelEn: 'Existing site redesign', price: { fr: 'Sur soumission', en: 'On quote' } },
+        { id: 'maintenance', labelFr: 'Maintenance mensuelle', labelEn: 'Monthly maintenance', price: '100$ - 200$/mois' },
+      ],
+      hourlyRate: '85$/h',
+    },
+    highlightsFr: ['15+ ans d\'experience','SEO inclus','Mobile-first','Maintenance disponible'],
+    highlightsEn: ['15+ years experience','SEO included','Mobile-first','Maintenance available'],
+    faqFr: [
+      { q: 'Quelles technologies utilisez-vous?', a: 'React/Next.js, Angular, Node.js, WordPress, Shopify, Strapi.' },
+      { q: 'Le site sera-t-il responsive?', a: 'Oui, tous nos sites sont mobile-first.' },
+      { q: 'Le SEO est-il inclus?', a: 'Oui, l\'optimisation SEO technique est incluse.' },
+      { q: 'Combien de temps prend un projet?', a: 'Landing page ~2 semaines. Site vitrine 4-6 semaines. E-commerce 6-10 semaines.' },
+      { q: 'Offrez-vous la maintenance?', a: 'Oui, forfaits de maintenance mensuelle (100-200$/mois).' },
+      { q: 'Puis-je voir des exemples?', a: 'Oui! Portfolio : SPVM, La Presse, Maudite Machine, et plusieurs sites locaux.' },
+    ],
+    faqEn: [
+      { q: 'What technologies do you use?', a: 'React/Next.js, Angular, Node.js, WordPress, Shopify, Strapi.' },
+      { q: 'Will the site be responsive?', a: 'Yes, all our sites are mobile-first.' },
+      { q: 'Is SEO included?', a: 'Yes, technical SEO optimization is included.' },
+      { q: 'How long does a project take?', a: 'Landing page ~2 weeks. Showcase site 4-6 weeks. E-commerce 6-10 weeks.' },
+      { q: 'Do you offer maintenance?', a: 'Yes, monthly maintenance packages ($100-200/mo).' },
+      { q: 'Can I see examples of your work?', a: 'Yes! Portfolio: SPVM, La Presse, Maudite Machine, and several local sites.' },
+    ],
+    sortOrder: 6,
+    active: true,
+  },
+  {
+    name: 'Merch T-shirt',
+    slug: 'merch-tshirt',
+    category: 'merch-tshirt',
+    nameFr: 'T-shirt Custom',
+    nameEn: 'Custom T-shirt',
+    descriptionFr: 'T-shirts personnalises en sublimation.',
+    descriptionEn: 'Custom sublimation t-shirts.',
+    pricingData: {
+      base: 22,
+      sizes: { 'S': 22, 'M': 22, 'L': 22, 'XL': 22, '2XL': 22, '3XL': 22 },
+    },
+    sortOrder: 7,
+    active: true,
+  },
+  {
+    name: 'Merch Hoodie',
+    slug: 'merch-hoodie',
+    category: 'merch-hoodie',
+    nameFr: 'Hoodie Custom',
+    nameEn: 'Custom Hoodie',
+    descriptionFr: 'Hoodies personnalises en sublimation.',
+    descriptionEn: 'Custom sublimation hoodies.',
+    pricingData: {
+      base: 39,
+      sizes: { 'S': 39, 'M': 39, 'L': 39, 'XL': 39, '2XL': 39, '3XL': 39 },
+    },
+    sortOrder: 8,
+    active: true,
+  },
+  {
+    name: 'Merch Crewneck',
+    slug: 'merch-crewneck',
+    category: 'merch-crewneck',
+    nameFr: 'Crewneck Custom',
+    nameEn: 'Custom Crewneck',
+    descriptionFr: 'Crewnecks personnalises en sublimation.',
+    descriptionEn: 'Custom sublimation crewnecks.',
+    pricingData: {
+      base: 30,
+      sizes: { 'S': 30, 'M': 30, 'L': 30, 'XL': 30, '2XL': 30, '3XL': 30 },
+    },
+    sortOrder: 9,
+    active: true,
+  },
+  {
+    name: 'Merch Tote Bag',
+    slug: 'merch-totebag',
+    category: 'merch-totebag',
+    nameFr: 'Tote Bag Custom',
+    nameEn: 'Custom Tote Bag',
+    descriptionFr: 'Tote bags personnalises en sublimation.',
+    descriptionEn: 'Custom sublimation tote bags.',
+    pricingData: {
+      base: 15,
+      sizes: { 'OS': 15 },
+    },
+    sortOrder: 10,
+    active: true,
+  },
+];
+
 export default {
   register(/* { strapi }: { strapi: Core.Strapi } */) {},
 
@@ -311,6 +792,54 @@ export default {
       }
       console.log('[seed] All 4 Service Pages seeded!');
 
+      // Seed Artists
+      console.log('[seed] Checking Artists...');
+      for (const artistData of artistsSeedData) {
+        const existing = await strapi.documents('api::artist.artist').findMany({
+          filters: { slug: artistData.slug },
+        });
+
+        if (existing.length > 0) {
+          console.log(`[seed] Artist "${artistData.slug}" exists. Updating...`);
+          await strapi.documents('api::artist.artist').update({
+            documentId: existing[0].documentId,
+            data: artistData as any,
+            status: 'published',
+          });
+        } else {
+          console.log(`[seed] Creating Artist "${artistData.slug}"...`);
+          await strapi.documents('api::artist.artist').create({
+            data: artistData as any,
+            status: 'published',
+          });
+        }
+      }
+      console.log(`[seed] All ${artistsSeedData.length} Artists seeded!`);
+
+      // Seed Products
+      console.log('[seed] Checking Products...');
+      for (const productData of productsSeedData) {
+        const existing = await strapi.documents('api::product.product').findMany({
+          filters: { slug: productData.slug },
+        });
+
+        if (existing.length > 0) {
+          console.log(`[seed] Product "${productData.slug}" exists. Updating...`);
+          await strapi.documents('api::product.product').update({
+            documentId: existing[0].documentId,
+            data: productData as any,
+            status: 'published',
+          });
+        } else {
+          console.log(`[seed] Creating Product "${productData.slug}"...`);
+          await strapi.documents('api::product.product').create({
+            data: productData as any,
+            status: 'published',
+          });
+        }
+      }
+      console.log(`[seed] All ${productsSeedData.length} Products seeded!`);
+
       // Set public permissions
       const publicRole = await strapi.db.query('plugin::users-permissions.role').findOne({
         where: { type: 'public' },
@@ -321,6 +850,12 @@ export default {
           'api::site-content.site-content.find',
           'api::service-page.service-page.find',
           'api::service-page.service-page.findOne',
+          'api::artist.artist.find',
+          'api::artist.artist.findOne',
+          'api::product.product.find',
+          'api::product.product.findOne',
+          'api::boutique-item.boutique-item.find',
+          'api::boutique-item.boutique-item.findOne',
           'plugin::upload.content-api.upload',
         ];
 
