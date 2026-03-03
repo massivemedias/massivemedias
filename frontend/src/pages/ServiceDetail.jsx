@@ -175,26 +175,26 @@ function ServiceDetail() {
       />
 
       {/* ============ HERO ============ */}
-      <section className="relative py-[2.08rem] md:py-[2.6rem] overflow-hidden">
+      <section className="relative py-6 md:py-8 overflow-hidden">
         <div className="absolute inset-0 hero-aurora"></div>
 
         <div className="relative z-10 section-container !py-0">
-          <div className="flex flex-col lg:flex-row items-center gap-12">
+          <div className="flex flex-col lg:flex-row items-center gap-8">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
               className="max-w-4xl lg:flex-1"
             >
-              <div className="flex items-center gap-2 mb-6 text-sm">
+              <div className="flex items-center gap-2 mb-3 text-sm">
                 <Link to="/" className="text-grey-muted hover:text-accent transition-colors">{lang === 'fr' ? 'Accueil' : 'Home'}</Link>
                 <span className="text-grey-muted">/</span>
                 <span className="text-accent">{service.title}</span>
               </div>
 
-              <div className="flex items-center gap-4 mb-6">
-                <div className="p-4 rounded-xl icon-bg-blur">
-                  <Icon size={36} className="text-accent" />
+              <div className="flex items-center gap-4 mb-3">
+                <div className="p-3 rounded-xl icon-bg-blur">
+                  <Icon size={30} className="text-accent" />
                 </div>
                 <div>
                   <h1 className="text-4xl md:text-6xl font-heading font-bold text-heading">
@@ -203,7 +203,7 @@ function ServiceDetail() {
                 </div>
               </div>
 
-              <p className="text-xl md:text-2xl text-grey-light mb-8">
+              <p className="text-lg md:text-xl text-grey-light mb-5">
                 {service.subtitle}
               </p>
 
