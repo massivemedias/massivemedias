@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+/* Global: all buttons and clickable elements get pointer cursor */
+button, [role="button"], a, label[class*="cursor"], select, input[type="checkbox"], input[type="radio"] {
+  cursor: pointer;
+}
+
 /* =============================================
    MASSIVE MEDIAS - Design Tokens (Tailwind v4)
    Palette : #FF52A0 (magenta), #FFCC00 (gold),

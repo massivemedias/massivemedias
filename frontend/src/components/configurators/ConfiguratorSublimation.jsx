@@ -112,7 +112,7 @@ function ConfiguratorSublimation() {
           <div className={`flex gap-5 ${hasColors ? 'flex-row items-start' : 'flex-col'}`}>
             {/* Product preview */}
             {hasColors && (
-              <div className="flex-shrink-0 w-36 rounded-xl card-bg-bordered p-3">
+              <div className="flex-shrink-0 w-48 rounded-xl card-bg-bordered p-3">
                 <img
                   key={`${product}-${selectedColor}`}
                   src={currentGetImage(selectedColor)}
