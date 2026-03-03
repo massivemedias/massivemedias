@@ -221,7 +221,7 @@ function ConfiguratorSublimation() {
       </div>
 
       {/* File upload + Notes side by side */}
-      <div className="grid grid-cols-1 md:grid-cols-[1fr_3fr] gap-4 mb-5">
+      <div className="grid grid-cols-1 md:grid-cols-[2fr_3fr] gap-4 mb-5">
         <FileUpload
           files={uploadedFiles}
           onFilesChange={setUploadedFiles}
@@ -237,7 +237,7 @@ function ConfiguratorSublimation() {
             onChange={(e) => setNotes(e.target.value)}
             rows={4}
             placeholder={lang === 'fr' ? 'Decrivez le produit souhaite (taille, couleur, placement...)' : 'Describe the desired product (size, color, placement...)'}
-            className="w-full h-[calc(100%-2rem)] min-h-[120px] rounded-lg border-2 border-grey-muted/20 bg-transparent px-4 py-3 text-sm text-heading placeholder:text-grey-muted/50 focus:border-accent focus:outline-none transition-colors resize-none"
+            className="w-full min-h-[100px] rounded-lg border-2 border-grey-muted/20 bg-transparent px-4 py-3 text-sm text-heading placeholder:text-grey-muted/50 focus:border-accent focus:outline-none transition-colors resize-none"
           />
         </div>
       </div>

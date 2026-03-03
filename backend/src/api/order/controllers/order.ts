@@ -28,7 +28,7 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
   },
 
   async createPaymentIntent(ctx) {
-    const { items, customerEmail, customerName, customerPhone, designReady, notes, supabaseUserId, fileUrls } = ctx.request.body as any;
+    const { items, customerEmail, customerName, customerPhone, shippingAddress, shipping: clientShipping, taxes: clientTaxes, orderTotal: clientOrderTotal, designReady, notes, supabaseUserId } = ctx.request.body as any;
 
     // Validate
     if (!items || !Array.isArray(items) || items.length === 0) {
@@ -40,7 +40,24 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
 
     // Recalculate total server-side (never trust client-side totals)
     const subtotal = items.reduce((sum: number, item: any) => sum + (item.totalPrice || 0), 0);
-    const amountInCents = Math.round(subtotal * 100);
+
+    // Recalculate shipping server-side
+    const province = shippingAddress?.province || 'QC';
+    const postalCode = shippingAddress?.postalCode || '';
+    let shippingCost = 25; // default: rest of Canada
+    if (province === 'QC' && postalCode.toUpperCase().startsWith('H')) {
+      shippingCost = 0; // Montreal: free
+    } else if (province === 'QC') {
+      shippingCost = 15; // Rest of Quebec
+    }
+
+    // Recalculate taxes server-side (TPS 5% + TVQ 9.975% for QC)
+    const tps = Math.round(subtotal * 0.05 * 100) / 100;
+    const tvq = province === 'QC' ? Math.round(subtotal * 0.09975 * 100) / 100 : 0;
+    const taxesTotal = Math.round((tps + tvq) * 100) / 100;
+
+    const totalAmount = subtotal + shippingCost + taxesTotal;
+    const amountInCents = Math.round(totalAmount * 100);
 
     if (amountInCents < 50) {
       return ctx.badRequest('Minimum order is $0.50 CAD');
@@ -49,15 +66,19 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
     try {
       const stripe = getStripe();
 
-      // Create Stripe PaymentIntent
+      // Create Stripe PaymentIntent with automatic payment methods
+      // (enables Apple Pay, Google Pay, PayPal, cards, etc.)
       const paymentIntent = await stripe.paymentIntents.create({
         amount: amountInCents,
         currency: 'cad',
+        automatic_payment_methods: { enabled: true },
         metadata: {
           customerEmail,
           customerName,
           supabaseUserId: supabaseUserId || '',
           itemCount: items.length.toString(),
+          shippingProvince: province,
+          shippingCity: shippingAddress?.city || '',
         },
       });
 
@@ -100,12 +121,16 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
         customerPhone: customerPhone || '',
         supabaseUserId: supabaseUserId || '',
         items: itemsWithFiles,
-        subtotal: amountInCents,
+        subtotal: Math.round(subtotal * 100),
+        shipping: Math.round(shippingCost * 100),
+        tps: Math.round(tps * 100),
+        tvq: Math.round(tvq * 100),
         total: amountInCents,
         currency: 'cad',
         status: 'pending',
         designReady: designReady !== false,
         notes: notes || '',
+        shippingAddress: shippingAddress || null,
       };
 
       // Link client relation using Strapi v5 connect syntax

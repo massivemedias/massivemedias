@@ -1,6 +1,7 @@
-import { motion } from 'framer-motion';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Lock, Shirt, Coffee, ShoppingBag } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Lock, Shirt, Coffee, ShoppingBag, Image } from 'lucide-react';
 import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
 import artistsData from '../data/artists';
@@ -23,10 +24,94 @@ const featuredArtistSlugs = ['psyqu33n', 'adrift', 'mok', 'maudite-machine'];
 
 function Boutique() {
   const { lang } = useLang();
+  const [view, setView] = useState('main'); // 'main' | 'prints'
 
   const artists = featuredArtistSlugs
     .map(slug => artistsData[slug])
     .filter(Boolean);
+
+  const allPrints = artists.filter(a => a.prints.length > 0).flatMap(artist =>
+    artist.prints.map(print => ({ ...print, artist }))
+  );
+  const totalPrintCount = allPrints.length;
+
+  // ── Vue Prints (sous-page) ──
+  if (view === 'prints') {
+    return (
+      <>
+        <SEO
+          title={lang === 'fr' ? 'Prints - Boutique | Massive Medias' : 'Prints - Shop | Massive Medias'}
+          description=""
+          noindex
+        />
+
+        <section className="relative py-16 overflow-hidden">
+          <div className="absolute inset-0 hero-aurora"></div>
+          <div className="relative z-10 section-container !py-0 text-center">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+            >
+              <h1 className="text-5xl md:text-7xl font-heading font-bold text-heading mb-4">
+                Prints
+              </h1>
+              <p className="text-xl text-grey-light max-w-3xl mx-auto">
+                {lang === 'fr'
+                  ? 'Tous les tirages fine art disponibles. Cliquez pour configurer.'
+                  : 'All available fine art prints. Click to configure.'}
+              </p>
+            </motion.div>
+          </div>
+        </section>
+
+        <div className="section-container max-w-7xl mx-auto">
+          <button
+            onClick={() => setView('main')}
+            className="inline-flex items-center gap-2 text-grey-muted hover:text-accent transition-colors mb-8 text-sm"
+          >
+            <ArrowLeft size={16} />
+            {lang === 'fr' ? 'Retour a la boutique' : 'Back to shop'}
+          </button>
+
+          <div className="flex flex-wrap justify-center gap-4 mb-16">
+            {allPrints.map((print, pi) => (
+              <motion.div
+                key={print.id}
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: pi * 0.03 }}
+                className="w-[calc(50%-0.5rem)] sm:w-[calc(33.333%-0.667rem)] lg:w-[calc(20%-0.8rem)]"
+              >
+                <Link
+                  to={`/artistes/${print.artist.slug}`}
+                  className="group block rounded-2xl overflow-hidden card-bg-bordered hover:border-accent/50 transition-all duration-300"
+                >
+                  <div className="aspect-[2/3] overflow-hidden">
+                    <img
+                      src={print.image}
+                      alt={lang === 'fr' ? print.titleFr : print.titleEn}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      loading="lazy"
+                    />
+                  </div>
+                  <div className="p-3">
+                    <h3 className="text-sm font-heading font-bold text-heading truncate">
+                      {lang === 'fr' ? print.titleFr : print.titleEn}
+                    </h3>
+                    <p className="text-grey-muted text-xs">{print.artist.name}</p>
+                    <p className="text-accent text-xs font-semibold mt-1">
+                      {lang === 'fr' ? `A partir de ${Math.min(...Object.values(print.artist.pricing.studio))}$` : `From $${Math.min(...Object.values(print.artist.pricing.studio))}`}
+                    </p>
+                  </div>
+                </Link>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
@@ -126,7 +211,7 @@ function Boutique() {
         {/* ── Separateur ── */}
         <div className="border-t border-grey-muted/20 mb-16" />
 
-        {/* ── Tous les Prints ── */}
+        {/* ── Prints (carte cliquable) ── */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -134,53 +219,45 @@ function Boutique() {
           viewport={{ once: true }}
           className="mb-16"
         >
-          <div className="text-center mb-10">
-            <h2 className="text-3xl md:text-4xl font-heading font-bold text-gradient mb-3">
-              Prints
-            </h2>
-            <p className="text-grey-muted max-w-2xl mx-auto">
-              {lang === 'fr'
-                ? 'Tous les tirages fine art disponibles. Cliquez pour configurer.'
-                : 'All available fine art prints. Click to configure.'}
-            </p>
-          </div>
-          <div className="flex flex-wrap justify-center gap-4">
-            {artists.filter(a => a.prints.length > 0).flatMap(artist =>
-              artist.prints.map((print, pi) => (
-                <motion.div
-                  key={print.id}
-                  initial={{ opacity: 0, y: 15 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: pi * 0.04 }}
-                  viewport={{ once: true }}
-                  className="w-[calc(50%-0.5rem)] sm:w-[calc(33.333%-0.667rem)] lg:w-[calc(20%-0.8rem)]"
-                >
-                  <Link
-                    to={`/artistes/${artist.slug}`}
-                    className="group block rounded-2xl overflow-hidden card-bg-bordered hover:border-accent/50 transition-all duration-300"
-                  >
-                    <div className="aspect-[2/3] overflow-hidden">
-                      <img
-                        src={print.image}
-                        alt={lang === 'fr' ? print.titleFr : print.titleEn}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                        loading="lazy"
-                      />
-                    </div>
-                    <div className="p-3">
-                      <h3 className="text-sm font-heading font-bold text-heading truncate">
-                        {lang === 'fr' ? print.titleFr : print.titleEn}
-                      </h3>
-                      <p className="text-grey-muted text-xs">{artist.name}</p>
-                      <p className="text-accent text-xs font-semibold mt-1">
-                        {lang === 'fr' ? `A partir de ${Math.min(...Object.values(artist.pricing.studio))}$` : `From $${Math.min(...Object.values(artist.pricing.studio))}`}
-                      </p>
-                    </div>
-                  </Link>
-                </motion.div>
-              ))
-            )}
-          </div>
+          <button
+            onClick={() => { setView('prints'); window.scrollTo(0, 0); }}
+            className="group w-full rounded-2xl overflow-hidden card-bg-bordered hover:border-accent/50 transition-all duration-300 text-left"
+          >
+            <div className="flex items-center gap-6 p-8">
+              <div className="w-16 h-16 rounded-xl bg-glass flex items-center justify-center flex-shrink-0 group-hover:bg-accent/10 transition-colors">
+                <Image size={32} className="text-accent/60 group-hover:text-accent transition-colors" />
+              </div>
+              <div className="flex-grow">
+                <h2 className="text-2xl md:text-3xl font-heading font-bold text-heading group-hover:text-accent transition-colors">
+                  Prints
+                </h2>
+                <p className="text-grey-muted text-sm mt-1">
+                  {lang === 'fr'
+                    ? `${totalPrintCount} tirages fine art disponibles`
+                    : `${totalPrintCount} fine art prints available`}
+                </p>
+              </div>
+              <ArrowRight size={24} className="text-grey-muted group-hover:text-accent group-hover:translate-x-1 transition-all flex-shrink-0" />
+            </div>
+            {/* Preview thumbnails */}
+            <div className="flex gap-1 px-8 pb-6 overflow-hidden">
+              {allPrints.slice(0, 6).map(print => (
+                <div key={print.id} className="w-16 h-20 rounded-lg overflow-hidden flex-shrink-0">
+                  <img
+                    src={print.image}
+                    alt=""
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    loading="lazy"
+                  />
+                </div>
+              ))}
+              {totalPrintCount > 6 && (
+                <div className="w-16 h-20 rounded-lg bg-glass flex items-center justify-center flex-shrink-0">
+                  <span className="text-grey-muted text-xs font-semibold">+{totalPrintCount - 6}</span>
+                </div>
+              )}
+            </div>
+          </button>
         </motion.div>
 
         {/* ── Separateur ── */}

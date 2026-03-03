@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, User, AlertCircle, Paperclip } from 'lucide-react';
+import { ArrowLeft, User, MapPin, AlertCircle, Paperclip } from 'lucide-react';
 import { Elements } from '@stripe/react-stripe-js';
 import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
@@ -10,6 +10,42 @@ import { useAuth } from '../contexts/AuthContext';
 import { getStripePromise } from '../lib/stripe';
 import { createPaymentIntent } from '../services/orderService';
 import CheckoutForm from '../components/CheckoutForm';
+
+const provinces = [
+  { code: 'QC', fr: 'Quebec', en: 'Quebec' },
+  { code: 'ON', fr: 'Ontario', en: 'Ontario' },
+  { code: 'BC', fr: 'Colombie-Britannique', en: 'British Columbia' },
+  { code: 'AB', fr: 'Alberta', en: 'Alberta' },
+  { code: 'MB', fr: 'Manitoba', en: 'Manitoba' },
+  { code: 'SK', fr: 'Saskatchewan', en: 'Saskatchewan' },
+  { code: 'NS', fr: 'Nouvelle-Ecosse', en: 'Nova Scotia' },
+  { code: 'NB', fr: 'Nouveau-Brunswick', en: 'New Brunswick' },
+  { code: 'NL', fr: 'Terre-Neuve-et-Labrador', en: 'Newfoundland and Labrador' },
+  { code: 'PE', fr: 'Ile-du-Prince-Edouard', en: 'Prince Edward Island' },
+  { code: 'NT', fr: 'Territoires du Nord-Ouest', en: 'Northwest Territories' },
+  { code: 'YT', fr: 'Yukon', en: 'Yukon' },
+  { code: 'NU', fr: 'Nunavut', en: 'Nunavut' },
+];
+
+// TPS (GST) 5% partout au Canada, TVQ (QST) 9.975% au Quebec seulement
+const TPS_RATE = 0.05;
+const TVQ_RATE = 0.09975;
+
+function calculateShipping(province, postalCode) {
+  if (!province) return 0;
+  // Montreal (codes postaux H): gratuit
+  if (province === 'QC' && postalCode?.toUpperCase().startsWith('H')) return 0;
+  // Reste du Quebec
+  if (province === 'QC') return 15;
+  // Reste du Canada
+  return 25;
+}
+
+function calculateTaxes(subtotal, province) {
+  const tps = +(subtotal * TPS_RATE).toFixed(2);
+  const tvq = province === 'QC' ? +(subtotal * TVQ_RATE).toFixed(2) : 0;
+  return { tps, tvq, total: +(tps + tvq).toFixed(2) };
+}
 
 function Checkout() {
   const { t, lang } = useLang();
@@ -31,6 +67,10 @@ function Checkout() {
     nom: user?.user_metadata?.full_name || '',
     email: user?.email || '',
     telephone: '',
+    adresse: '',
+    ville: '',
+    province: 'QC',
+    codePostal: '',
     designReady: 'yes',
     message: '',
   });
@@ -39,6 +79,10 @@ function Checkout() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     if (error) setError('');
   };
+
+  const shipping = useMemo(() => calculateShipping(formData.province, formData.codePostal), [formData.province, formData.codePostal]);
+  const taxes = useMemo(() => calculateTaxes(cartTotal, formData.province), [cartTotal, formData.province]);
+  const orderTotal = +(cartTotal + shipping + taxes.total).toFixed(2);
 
   const handleInfoSubmit = async (e) => {
     e.preventDefault();
@@ -57,6 +101,16 @@ function Checkout() {
         customerEmail: formData.email,
         customerName: formData.nom,
         customerPhone: formData.telephone,
+        shippingAddress: {
+          address: formData.adresse,
+          city: formData.ville,
+          province: formData.province,
+          postalCode: formData.codePostal,
+        },
+        subtotal: cartTotal,
+        shipping,
+        taxes,
+        orderTotal,
         designReady: formData.designReady === 'yes',
         notes: formData.message,
         supabaseUserId: user?.id || '',
@@ -147,7 +201,7 @@ function Checkout() {
 
                       <div>
                         <label htmlFor="telephone" className="block text-heading font-semibold text-sm mb-2">
-                          {isFr ? 'Téléphone' : 'Phone'}
+                          {isFr ? 'Telephone' : 'Phone'}
                         </label>
                         <input
                           type="tel" id="telephone" name="telephone"
@@ -157,9 +211,69 @@ function Checkout() {
                         />
                       </div>
 
+                      {/* Adresse de livraison */}
+                      <div className="pt-2">
+                        <h2 className="text-xl font-heading font-bold text-heading mb-5 flex items-center gap-2">
+                          <MapPin size={20} className="text-accent" />
+                          {isFr ? 'Adresse de livraison' : 'Shipping address'}
+                        </h2>
+                      </div>
+
+                      <div>
+                        <label htmlFor="adresse" className="block text-heading font-semibold text-sm mb-2">
+                          {isFr ? 'Adresse' : 'Address'} *
+                        </label>
+                        <input
+                          type="text" id="adresse" name="adresse" required
+                          value={formData.adresse} onChange={handleChange}
+                          placeholder={isFr ? '123 rue Exemple' : '123 Example St'}
+                          className="input-field"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                        <div>
+                          <label htmlFor="ville" className="block text-heading font-semibold text-sm mb-2">
+                            {isFr ? 'Ville' : 'City'} *
+                          </label>
+                          <input
+                            type="text" id="ville" name="ville" required
+                            value={formData.ville} onChange={handleChange}
+                            placeholder={isFr ? 'Montreal' : 'Montreal'}
+                            className="input-field"
+                          />
+                        </div>
+                        <div>
+                          <label htmlFor="province" className="block text-heading font-semibold text-sm mb-2">
+                            Province *
+                          </label>
+                          <select
+                            id="province" name="province" required
+                            value={formData.province} onChange={handleChange}
+                            className="input-field"
+                          >
+                            {provinces.map(p => (
+                              <option key={p.code} value={p.code}>{isFr ? p.fr : p.en}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <label htmlFor="codePostal" className="block text-heading font-semibold text-sm mb-2">
+                            {isFr ? 'Code postal' : 'Postal code'} *
+                          </label>
+                          <input
+                            type="text" id="codePostal" name="codePostal" required
+                            value={formData.codePostal} onChange={handleChange}
+                            placeholder="H2X 1Y4"
+                            className="input-field uppercase"
+                            maxLength={7}
+                          />
+                        </div>
+                      </div>
+
                       <div>
                         <label className="block text-heading font-semibold text-sm mb-2">
-                          {isFr ? 'Avez-vous votre design prêt?' : 'Do you have your design ready?'}
+                          {isFr ? 'Avez-vous votre design pret?' : 'Do you have your design ready?'}
                         </label>
                         <div className="flex gap-4">
                           <label className={`flex items-center gap-2 px-4 py-2.5 rounded-lg cursor-pointer transition-all ${formData.designReady === 'yes' ? 'bg-accent text-white' : 'text-heading bg-glass'}`}>
@@ -247,6 +361,9 @@ function Checkout() {
                       <p className="text-heading font-semibold">{formData.nom}</p>
                       <p className="text-grey-muted text-sm">{formData.email}</p>
                       {formData.telephone && <p className="text-grey-muted text-sm">{formData.telephone}</p>}
+                      <p className="text-grey-muted text-sm mt-2">
+                        {formData.adresse}, {formData.ville}, {formData.province} {formData.codePostal}
+                      </p>
                     </div>
 
                     {clientSecret && stripePromise && (
@@ -267,7 +384,7 @@ function Checkout() {
                           },
                         }}
                       >
-                        <CheckoutForm cartTotal={cartTotal} />
+                        <CheckoutForm cartTotal={orderTotal} />
                       </Elements>
                     )}
                   </motion.div>
@@ -302,14 +419,38 @@ function Checkout() {
                     ))}
                   </div>
 
-                  <div className="border-t pt-4 card-border">
-                    <div className="flex justify-between items-center">
-                      <span className="text-heading font-semibold">{isFr ? 'Total' : 'Total'}</span>
-                      <span className="text-2xl font-heading font-bold text-gradient">{cartTotal}$</span>
+                  <div className="border-t pt-4 card-border space-y-2">
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-grey-muted">{isFr ? 'Sous-total' : 'Subtotal'}</span>
+                      <span className="text-heading">{cartTotal.toFixed(2)}$</span>
                     </div>
-                    <p className="text-grey-muted text-xs mt-2">
-                      {isFr ? 'Taxes en sus si applicable. Livraison locale gratuite.' : 'Taxes extra if applicable. Free local delivery.'}
-                    </p>
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-grey-muted">{isFr ? 'Livraison' : 'Shipping'}</span>
+                      <span className="text-heading">
+                        {shipping === 0 ? (isFr ? 'Gratuit' : 'Free') : `${shipping.toFixed(2)}$`}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-grey-muted">TPS (5%)</span>
+                      <span className="text-heading">{taxes.tps.toFixed(2)}$</span>
+                    </div>
+                    {taxes.tvq > 0 && (
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-grey-muted">TVQ (9.975%)</span>
+                        <span className="text-heading">{taxes.tvq.toFixed(2)}$</span>
+                      </div>
+                    )}
+                    <div className="border-t pt-3 mt-3 card-border">
+                      <div className="flex justify-between items-center">
+                        <span className="text-heading font-semibold">Total</span>
+                        <span className="text-2xl font-heading font-bold text-gradient">{orderTotal.toFixed(2)}$</span>
+                      </div>
+                    </div>
+                    {shipping === 0 && formData.province === 'QC' && formData.codePostal?.toUpperCase().startsWith('H') && (
+                      <p className="text-green-400 text-xs mt-1">
+                        {isFr ? 'Livraison gratuite - region de Montreal' : 'Free shipping - Montreal area'}
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
