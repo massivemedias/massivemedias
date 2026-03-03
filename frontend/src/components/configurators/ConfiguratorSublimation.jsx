@@ -325,9 +325,9 @@ function ConfiguratorSublimation() {
           </Link>
         </>
       ) : (
-        <a href="/contact" className="btn-primary w-full justify-center text-base py-3.5 mb-3">
+        <Link to="/contact" className="btn-primary w-full justify-center text-base py-3.5 mb-3">
           {lang === 'fr' ? 'Demander une soumission' : 'Request a quote'}
-        </a>
+        </Link>
       )}
 
       <p className="text-grey-muted text-xs mt-3 text-center">

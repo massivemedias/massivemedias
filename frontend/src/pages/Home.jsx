@@ -351,11 +351,11 @@ function Home() {
           </p>
           <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-6 opacity-50 grayscale hover:opacity-70 hover:grayscale-0 transition-all duration-500">
             {[
-              { name: 'Maudite Machine', src: '/images/logos/mauditemachine-logo.png' },
-              { name: 'VRSTL', src: '/images/logos/vrstl-logo.png' },
-              { name: 'Cosmovision', src: '/images/logos/cosmovision-logo.png' },
-              { name: 'Fusion State Rec.', src: '/images/logos/fusionstate-logo.png' },
-              { name: 'Sony Delite', src: '/images/logos/sonydelite-logo.png' },
+              { name: 'Maudite Machine', src: '/images/logos/mauditemachine.png' },
+              { name: 'VRSTL', src: '/images/stickers/Stickers-Vrstl.webp' },
+              { name: 'Cosmovision', src: '/images/stickers/Stickers-Cosmovision.webp' },
+              { name: 'Fusion State Rec.', src: '/images/stickers/Stickers-Fusion-State-Rec.webp' },
+              { name: 'Sony Delite', src: '/images/graphism/sony_delite_logo.webp' },
             ].map((logo) => (
               <img
                 key={logo.name}

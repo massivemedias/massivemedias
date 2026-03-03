@@ -709,7 +709,7 @@ function Boutique() {
                 Services
               </h2>
               <Link
-                to="/services"
+                to="/boutique"
                 className="inline-flex items-center gap-1.5 text-accent text-sm font-semibold hover:gap-2.5 transition-all"
               >
                 {lang === 'fr' ? 'Tous les services' : 'All services'}
@@ -782,7 +782,7 @@ function Boutique() {
               {lang === 'fr' ? 'Nous contacter' : 'Contact us'}
               <ArrowRight className="ml-2" size={20} />
             </Link>
-            <Link to="/services" className="btn-outline">
+            <Link to="/boutique" className="btn-outline">
               {lang === 'fr' ? 'Voir les services' : 'See services'}
             </Link>
           </div>

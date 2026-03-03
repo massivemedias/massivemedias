@@ -440,7 +440,7 @@ function BoutiqueProductLayout({
             <Link to="/contact" className="btn-primary">
               {lang === 'fr' ? 'Demander un devis' : 'Request a quote'}
             </Link>
-            <Link to="/services" className="btn-outline">
+            <Link to="/boutique" className="btn-outline">
               {lang === 'fr' ? 'Voir nos services' : 'View our services'}
             </Link>
           </div>
