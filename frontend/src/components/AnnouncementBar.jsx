@@ -32,7 +32,7 @@ function AnnouncementBar() {
             <button
               onClick={() => setDismissed(true)}
               className="absolute right-3 top-1/2 -translate-y-1/2 opacity-60 hover:opacity-100 transition-opacity"
-              aria-label="Fermer"
+              aria-label={tx({ fr: 'Fermer', en: 'Close', es: 'Cerrar' })}
             >
               <X size={14} />
             </button>

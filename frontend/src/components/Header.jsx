@@ -9,7 +9,7 @@ import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
 
 function Header() {
-  const { lang, cycleLang, t } = useLang();
+  const { lang, cycleLang, t, tx } = useLang();
 
   const { cartCount } = useCart();
   const { user } = useAuth();
@@ -107,7 +107,7 @@ function Header() {
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 className="p-2 transition-colors nav-link"
-                aria-label={mobileMenuOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
+                aria-label={mobileMenuOpen ? tx({ fr: 'Fermer le menu', en: 'Close menu', es: 'Cerrar men\u00fa' }) : tx({ fr: 'Ouvrir le menu', en: 'Open menu', es: 'Abrir men\u00fa' })}
               >
                 {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
               </button>

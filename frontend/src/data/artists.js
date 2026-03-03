@@ -12,8 +12,8 @@ export function getArtistPrintPrice(pricing, tier, format, withFrame) {
 }
 
 export const artistPrinterTiers = [
-  { id: 'studio', labelFr: 'Série Studio', labelEn: 'Studio Series', desc: '4 encres pigmentées / 4 pigmented inks' },
-  { id: 'museum', labelFr: 'Série Musée', labelEn: 'Museum Series', desc: '12 encres pigmentées / 12 pigmented inks' },
+  { id: 'studio', labelFr: 'Série Studio', labelEn: 'Studio Series', labelEs: 'Serie Studio', desc: '4 encres pigmentées / 4 pigmented inks' },
+  { id: 'museum', labelFr: 'Série Musée', labelEn: 'Museum Series', labelEs: 'Serie Museo', desc: '12 encres pigmentées / 12 pigmented inks' },
 ];
 
 export const artistFormats = [
@@ -35,7 +35,7 @@ const artistsData = {
     bio: {
       fr: "Adrift explore les frontieres entre le reel et le virtuel a travers des compositions numeriques saisissantes. Son univers visuel puise dans la science-fiction, les textures organiques et les paysages oniriques pour creer des oeuvres qui transportent le spectateur dans des dimensions paralleles.",
       en: "Adrift explores the boundaries between real and virtual through striking digital compositions. Their visual universe draws from science fiction, organic textures and dreamlike landscapes to create works that transport the viewer into parallel dimensions.",
-      es: "Adrift explora las fronteras entre lo real y lo virtual a traves de composiciones digitales impactantes. Su universo visual se nutre de la ciencia ficcion, las texturas organicas y los paisajes oniricos para crear obras que transportan al espectador a dimensiones paralelas.",
+      es: "Adrift explora las fronteras entre lo real y lo virtual a través de composiciones digitales impactantes. Su universo visual se nutre de la ciencia ficción, las texturas orgánicas y los paisajes oníricos para crear obras que transportan al espectador a dimensiones paralelas.",
     },
     socials: {
       instagram: 'https://instagram.com/alx.rouleau',
@@ -46,8 +46,8 @@ const artistsData = {
     avatar: '/images/prints/AdriftAvatar.webp',
     heroImage: thumb('/images/prints/Adrift1.webp'),
     prints: [
-      { id: 'adrift-001', titleFr: 'Print I', titleEn: 'Print I', image: thumb('/images/prints/Adrift1.webp'), fullImage: img('/images/prints/Adrift1.webp'), limited: false },
-      { id: 'adrift-002', titleFr: 'Print II', titleEn: 'Print II', image: thumb('/images/prints/Adrift2.webp'), fullImage: img('/images/prints/Adrift2.webp'), limited: false },
+      { id: 'adrift-001', titleFr: 'Print I', titleEn: 'Print I', titleEs: 'Print I', image: thumb('/images/prints/Adrift1.webp'), fullImage: img('/images/prints/Adrift1.webp'), limited: false },
+      { id: 'adrift-002', titleFr: 'Print II', titleEn: 'Print II', titleEs: 'Print II', image: thumb('/images/prints/Adrift2.webp'), fullImage: img('/images/prints/Adrift2.webp'), limited: false },
     ],
     pricing: {
       studio: { a4: 35, a3: 50, a3plus: 65, a2: 85 },
@@ -61,12 +61,12 @@ const artistsData = {
     tagline: {
       fr: 'Musique electronique & culture visuelle',
       en: 'Electronic Music & Visual Culture',
-      es: 'Musica electronica y cultura visual',
+      es: 'Música electrónica y cultura visual',
     },
     bio: {
       fr: "Maudite Machine est un collectif audiovisuel montrealais qui fusionne musique electronique et art visuel. Leurs creations graphiques - affiches, pochettes et illustrations - capturent l'energie brute de la scene underground et la transforment en oeuvres visuelles percutantes.",
       en: "Maudite Machine is a Montreal-based audiovisual collective that fuses electronic music and visual art. Their graphic creations - posters, album covers and illustrations - capture the raw energy of the underground scene and transform it into striking visual works.",
-      es: "Maudite Machine es un colectivo audiovisual de Montreal que fusiona musica electronica y arte visual. Sus creaciones graficas - carteles, portadas de album e ilustraciones - capturan la energia cruda de la escena underground y la transforman en obras visuales impactantes.",
+      es: "Maudite Machine es un colectivo audiovisual de Montreal que fusiona música electrónica y arte visual. Sus creaciones gráficas - carteles, portadas de álbum e ilustraciones - capturan la energía cruda de la escena underground y la transforman en obras visuales impactantes.",
     },
     avatar: '/images/stickers/Stickers-Maudite-Machine.webp',
     heroImage: thumb('/images/prints/Printstoutcourt.webp'),
@@ -83,17 +83,17 @@ const artistsData = {
     tagline: {
       fr: 'Photographie urbaine & lumière',
       en: 'Urban Photography & Light',
-      es: 'Fotografia urbana y luz',
+      es: 'Fotografía urbana y luz',
     },
     bio: {
       fr: "Photographe montréalais avec un oeil unique pour la composition et la lumière. Ses oeuvres capturent l'essence de la ville à travers des perspectives inattendues - architecture, reflets, textures urbaines. Chaque tirage est une invitation à voir Montréal autrement.",
       en: "Montreal photographer with a unique eye for composition and light. His work captures the essence of the city through unexpected perspectives - architecture, reflections, urban textures. Each print is an invitation to see Montreal differently.",
-      es: "Fotografo montrealense con una mirada unica para la composicion y la luz. Sus obras capturan la esencia de la ciudad a traves de perspectivas inesperadas - arquitectura, reflejos, texturas urbanas. Cada impresion es una invitacion a ver Montreal de otra manera.",
+      es: "Fotógrafo montrealense con una mirada única para la composición y la luz. Sus obras capturan la esencia de la ciudad a través de perspectivas inesperadas - arquitectura, reflejos, texturas urbanas. Cada impresión es una invitación a ver Montreal de otra manera.",
     },
     avatar: '/images/prints/MokAvatar.webp',
     heroImage: thumb('/images/prints/Mok1.webp'),
     prints: [
-      { id: 'mok-001', titleFr: 'Metro Montreal', titleEn: 'Montreal Metro', image: thumb('/images/prints/Mok1.webp'), fullImage: img('/images/prints/Mok1.webp'), limited: false },
+      { id: 'mok-001', titleFr: 'Metro Montreal', titleEn: 'Montreal Metro', titleEs: 'Metro Montreal', image: thumb('/images/prints/Mok1.webp'), fullImage: img('/images/prints/Mok1.webp'), limited: false },
     ],
     pricing: {
       studio: { a4: 35, a3: 50, a3plus: 65, a2: 85 },
@@ -112,7 +112,7 @@ const artistsData = {
     bio: {
       fr: "J'incarne l'ombre et la lumiere, la force et la douceur, le chaos et l'harmonie. Mon art est un espace d'expression libre, un pont entre les mondes, une invitation a l'introspection et a l'elevation. Je suis issue de deux mondes underground que tout oppose - le graffiti, instinctif, rapide, brut, et l'exploration de la psyche, plongeant dans les profondeurs de l'esprit, du sacre, du symbolique. Ensemble, ils composent un langage unique.",
       en: "I embody both shadow and light, strength and softness, chaos and harmony. My art is a space of free expression, a bridge between worlds, an invitation to introspection and elevation. I come from two underground realms that seem to stand in opposition - graffiti, instinctive, fast, raw, and the exploration of the psyche, diving deep into the spirit, into the sacred and the symbolic. Together, they form a unique language.",
-      es: "Encarno la sombra y la luz, la fuerza y la dulzura, el caos y la armonia. Mi arte es un espacio de expresion libre, un puente entre mundos, una invitacion a la introspeccion y a la elevacion. Provengo de dos mundos underground que todo opone - el graffiti, instintivo, rapido, crudo, y la exploracion de la psique, sumergiendose en las profundidades del espiritu, de lo sagrado, de lo simbolico. Juntos, componen un lenguaje unico.",
+      es: "Encarno la sombra y la luz, la fuerza y la dulzura, el caos y la armonía. Mi arte es un espacio de expresión libre, un puente entre mundos, una invitación a la introspección y a la elevación. Provengo de dos mundos underground que todo opone - el graffiti, instintivo, rápido, crudo, y la exploración de la psique, sumergiéndose en las profundidades del espíritu, de lo sagrado, de lo simbólico. Juntos, componen un lenguaje único.",
     },
     demarche: {
       fr: [
@@ -130,11 +130,11 @@ const artistsData = {
         { title: 'About the name Psyqu33n', text: "Psyqu33n symbolizes a rebirth - a return to my essence, allowing me to fully embody who I am. It represents the archetype of inner sovereignty, the affirmation of all my facets. The number 33 carries a deep spiritual vibration - a master number bearing great potential for transformation, healing, and altruism." },
       ],
       es: [
-        { title: 'Enfoque artistico', text: "Mi arte es una exploracion de la luz interior, un viaje a traves de las capas del ser para revelar lo que, a menudo, permanece oculto. Ya no se trata de huir o de defenderse, sino de abrazar plenamente quienes somos. Mis figuras, a menudo femeninas pero universales en su esencia, son guias. Encarnan la dulzura, la fuerza tranquila, la soberania del alma. Sanadoras, diosas, almas iluminadas: muestran un camino de reconexion, alineacion y presencia consigo mismo." },
-        { title: 'Los ojos no mienten', text: "En un mundo saturado de velocidad y apariencias, mis obras invitan a desacelerar, contemplar, sentir. Las miradas que portan no congelan: revelan. Son portales hacia lo intimo, invitaciones al despertar interior. Cada rostro se convierte en espejo, cada expresion en un soplo de verdad." },
-        { title: 'Un modelo para todos', text: "A traves de mis creaciones, propongo un camino hacia la armonia interior. El equilibrio entre las polaridades - energia masculina y femenina, accion y contemplacion, sombra y luz - esta en el corazon de mi enfoque. No es la perfeccion lo que busco representar, sino la plenitud." },
-        { title: 'La importancia de la luz', text: "La luz esta en el corazon de mi trabajo - tanto en su forma como en su esencia. De dia, mis obras revelan una historia. De noche, gracias al uso de pinturas fluorescentes, se iluminan de manera diferente, desvelando otras verdades, otras dimensiones. Sombra y luz no se oponen: dialogan, se nutren mutuamente." },
-        { title: 'Sobre el nombre Psyqu33n', text: "Psyqu33n simboliza un renacimiento que me permite encarnar plenamente quien soy. Es el arquetipo de la soberania interior, la afirmacion de todas mis facetas. El 33, lejos de ser un simple numero, porta una vibracion espiritual profunda - un numero maestro portador de un gran potencial de transformacion, sanacion y altruismo." },
+        { title: 'Enfoque artístico', text: "Mi arte es una exploración de la luz interior, un viaje a través de las capas del ser para revelar lo que, a menudo, permanece oculto. Ya no se trata de huir o de defenderse, sino de abrazar plenamente quienes somos. Mis figuras, a menudo femeninas pero universales en su esencia, son guías. Encarnan la dulzura, la fuerza tranquila, la soberanía del alma. Sanadoras, diosas, almas iluminadas: muestran un camino de reconexión, alineación y presencia consigo mismo." },
+        { title: 'Los ojos no mienten', text: "En un mundo saturado de velocidad y apariencias, mis obras invitan a desacelerar, contemplar, sentir. Las miradas que portan no congelan: revelan. Son portales hacia lo íntimo, invitaciones al despertar interior. Cada rostro se convierte en espejo, cada expresión en un soplo de verdad." },
+        { title: 'Un modelo para todos', text: "A través de mis creaciones, propongo un camino hacia la armonía interior. El equilibrio entre las polaridades - energía masculina y femenina, acción y contemplación, sombra y luz - está en el corazón de mi enfoque. No es la perfección lo que busco representar, sino la plenitud." },
+        { title: 'La importancia de la luz', text: "La luz está en el corazón de mi trabajo - tanto en su forma como en su esencia. De día, mis obras revelan una historia. De noche, gracias al uso de pinturas fluorescentes, se iluminan de manera diferente, desvelando otras verdades, otras dimensiones. Sombra y luz no se oponen: dialogan, se nutren mutuamente." },
+        { title: 'Sobre el nombre Psyqu33n', text: "Psyqu33n simboliza un renacimiento que me permite encarnar plenamente quien soy. Es el arquetipo de la soberanía interior, la afirmación de todas mis facetas. El 33, lejos de ser un simple número, porta una vibración espiritual profunda - un número maestro portador de un gran potencial de transformación, sanación y altruismo." },
       ],
     },
     socials: {
@@ -147,18 +147,18 @@ const artistsData = {
     avatar: '/images/prints/Psyqu33nAvatar.webp',
     heroImage: thumb('/images/prints/Psyqu33n1.webp'),
     prints: [
-      { id: 'psyqu33n-001', titleFr: 'Accepter ses parts d\'ombres et de lumiere', titleEn: 'Embracing Shadow and Light', image: thumb('/images/prints/Psyqu33n1.webp'), fullImage: img('/images/prints/Psyqu33n1.webp'), limited: false },
-      { id: 'psyqu33n-002', titleFr: 'Trusting the Process', titleEn: 'Trusting the Process', image: thumb('/images/prints/Psyqu33n2.webp'), fullImage: img('/images/prints/Psyqu33n2.webp'), limited: false },
-      { id: 'psyqu33n-003', titleFr: 'Bat', titleEn: 'Bat', image: thumb('/images/prints/Psyqu33n3.webp'), fullImage: img('/images/prints/Psyqu33n3.webp'), limited: false },
-      { id: 'psyqu33n-004', titleFr: 'Monkey', titleEn: 'Monkey', image: thumb('/images/prints/Psyqu33n4.webp'), fullImage: img('/images/prints/Psyqu33n4.webp'), limited: false },
-      { id: 'psyqu33n-005', titleFr: 'Rabbit', titleEn: 'Rabbit', image: thumb('/images/prints/Psyqu33n5.webp'), fullImage: img('/images/prints/Psyqu33n5.webp'), limited: false },
-      { id: 'psyqu33n-006', titleFr: 'Renard', titleEn: 'Fox', image: thumb('/images/prints/Psyqu33n6.webp'), fullImage: img('/images/prints/Psyqu33n6.webp'), limited: false },
-      { id: 'psyqu33n-007', titleFr: 'Croire en quelque chose de plus grand', titleEn: 'Believing in Something Greater', image: thumb('/images/prints/Psyqu33n7.webp'), fullImage: img('/images/prints/Psyqu33n7.webp'), limited: false },
-      { id: 'psyqu33n-008', titleFr: 'Incarner son pouvoir', titleEn: 'Embodying Your Power', image: thumb('/images/prints/Psyqu33n8.webp'), fullImage: img('/images/prints/Psyqu33n8.webp'), limited: false },
-      { id: 'psyqu33n-009', titleFr: 'L\'archetype de la reine - la force d\'avancer', titleEn: 'The Queen Archetype - Strength to Move Forward', image: thumb('/images/prints/Psyqu33n9.webp'), fullImage: img('/images/prints/Psyqu33n9.webp'), limited: false },
-      { id: 'psyqu33n-010', titleFr: 'La douleur derriere le masque', titleEn: 'The Pain Behind the Mask', image: thumb('/images/prints/Psyqu33n10.webp'), fullImage: img('/images/prints/Psyqu33n10.webp'), limited: false },
-      { id: 'psyqu33n-011', titleFr: 'La purge - liberer les emotions stockees', titleEn: 'The Purge - Releasing Stored Emotions', image: thumb('/images/prints/Psyqu33n11.webp'), fullImage: img('/images/prints/Psyqu33n11.webp'), limited: false },
-      { id: 'psyqu33n-012', titleFr: 'Le masque de la femme forte', titleEn: 'The Mask of the Strong Woman', image: thumb('/images/prints/Psyqu33n12.webp'), fullImage: img('/images/prints/Psyqu33n12.webp'), limited: false },
+      { id: 'psyqu33n-001', titleFr: 'Accepter ses parts d\'ombres et de lumiere', titleEn: 'Embracing Shadow and Light', titleEs: 'Aceptar sus partes de sombra y luz', image: thumb('/images/prints/Psyqu33n1.webp'), fullImage: img('/images/prints/Psyqu33n1.webp'), limited: false },
+      { id: 'psyqu33n-002', titleFr: 'Trusting the Process', titleEn: 'Trusting the Process', titleEs: 'Trusting the Process', image: thumb('/images/prints/Psyqu33n2.webp'), fullImage: img('/images/prints/Psyqu33n2.webp'), limited: false },
+      { id: 'psyqu33n-003', titleFr: 'Bat', titleEn: 'Bat', titleEs: 'Murciélago', image: thumb('/images/prints/Psyqu33n3.webp'), fullImage: img('/images/prints/Psyqu33n3.webp'), limited: false },
+      { id: 'psyqu33n-004', titleFr: 'Monkey', titleEn: 'Monkey', titleEs: 'Mono', image: thumb('/images/prints/Psyqu33n4.webp'), fullImage: img('/images/prints/Psyqu33n4.webp'), limited: false },
+      { id: 'psyqu33n-005', titleFr: 'Rabbit', titleEn: 'Rabbit', titleEs: 'Conejo', image: thumb('/images/prints/Psyqu33n5.webp'), fullImage: img('/images/prints/Psyqu33n5.webp'), limited: false },
+      { id: 'psyqu33n-006', titleFr: 'Renard', titleEn: 'Fox', titleEs: 'Zorro', image: thumb('/images/prints/Psyqu33n6.webp'), fullImage: img('/images/prints/Psyqu33n6.webp'), limited: false },
+      { id: 'psyqu33n-007', titleFr: 'Croire en quelque chose de plus grand', titleEn: 'Believing in Something Greater', titleEs: 'Creer en algo más grande', image: thumb('/images/prints/Psyqu33n7.webp'), fullImage: img('/images/prints/Psyqu33n7.webp'), limited: false },
+      { id: 'psyqu33n-008', titleFr: 'Incarner son pouvoir', titleEn: 'Embodying Your Power', titleEs: 'Encarnar tu poder', image: thumb('/images/prints/Psyqu33n8.webp'), fullImage: img('/images/prints/Psyqu33n8.webp'), limited: false },
+      { id: 'psyqu33n-009', titleFr: 'L\'archetype de la reine - la force d\'avancer', titleEn: 'The Queen Archetype - Strength to Move Forward', titleEs: 'El arquetipo de la reina - la fuerza de avanzar', image: thumb('/images/prints/Psyqu33n9.webp'), fullImage: img('/images/prints/Psyqu33n9.webp'), limited: false },
+      { id: 'psyqu33n-010', titleFr: 'La douleur derriere le masque', titleEn: 'The Pain Behind the Mask', titleEs: 'El dolor detrás de la máscara', image: thumb('/images/prints/Psyqu33n10.webp'), fullImage: img('/images/prints/Psyqu33n10.webp'), limited: false },
+      { id: 'psyqu33n-011', titleFr: 'La purge - liberer les emotions stockees', titleEn: 'The Purge - Releasing Stored Emotions', titleEs: 'La purga - liberar las emociones almacenadas', image: thumb('/images/prints/Psyqu33n11.webp'), fullImage: img('/images/prints/Psyqu33n11.webp'), limited: false },
+      { id: 'psyqu33n-012', titleFr: 'Le masque de la femme forte', titleEn: 'The Mask of the Strong Woman', titleEs: 'La máscara de la mujer fuerte', image: thumb('/images/prints/Psyqu33n12.webp'), fullImage: img('/images/prints/Psyqu33n12.webp'), limited: false },
     ],
     pricing: {
       studio: { a4: 35, a3: 50, a3plus: 65, a2: 85 },
