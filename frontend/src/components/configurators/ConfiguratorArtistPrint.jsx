@@ -15,6 +15,7 @@ function ConfiguratorArtistPrint({ artist, selectedPrint }) {
   const [format, setFormat] = useState('a4');
   const [withFrame, setWithFrame] = useState(false);
   const [frameColor, setFrameColor] = useState('black');
+  const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
   const [notes, setNotes] = useState('');
 
@@ -40,9 +41,9 @@ function ConfiguratorArtistPrint({ artist, selectedPrint }) {
           : `${frameColor === 'black' ? 'Black' : 'White'} frame`)
         : null,
       size: formatLabel?.label,
-      quantity: 1,
+      quantity,
       unitPrice: priceInfo.price,
-      totalPrice: priceInfo.price,
+      totalPrice: priceInfo.price * quantity,
       image: selectedPrint.image,
       uploadedFiles: [],
       notes,
@@ -181,11 +182,34 @@ function ConfiguratorArtistPrint({ artist, selectedPrint }) {
         />
       </div>
 
+      {/* Quantity */}
+      <div>
+        <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2.5">
+          {lang === 'fr' ? 'Quantite' : 'Quantity'}
+        </label>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setQuantity(q => Math.max(1, q - 1))}
+            className="w-10 h-10 rounded-lg border border-white/10 text-heading font-bold text-lg flex items-center justify-center hover:border-accent/50 transition-colors"
+          >
+            -
+          </button>
+          <span className="text-heading font-bold text-lg w-10 text-center">{quantity}</span>
+          <button
+            onClick={() => setQuantity(q => q + 1)}
+            className="w-10 h-10 rounded-lg border border-white/10 text-heading font-bold text-lg flex items-center justify-center hover:border-accent/50 transition-colors"
+          >
+            +
+          </button>
+        </div>
+      </div>
+
       {/* Price display */}
       {priceInfo && (
         <div className="p-5 rounded-xl highlight-bordered">
           <div className="flex items-baseline gap-3">
-            <span className="text-3xl font-heading font-bold text-heading">{priceInfo.price}$</span>
+            <span className="text-3xl font-heading font-bold text-heading">{priceInfo.price * quantity}$</span>
+            {quantity > 1 && <span className="text-grey-muted text-sm">{quantity} x {priceInfo.price}$</span>}
           </div>
           {withFrame && (
             <div className="text-grey-muted text-xs mt-1">

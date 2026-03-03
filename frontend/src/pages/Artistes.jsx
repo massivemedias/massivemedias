@@ -61,7 +61,7 @@ function Artistes() {
       <div className="section-container max-w-6xl mx-auto">
 
         {/* Artists grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 mb-20">
           {artists.map((artist, index) => {
             const tagline = lang === 'fr' ? artist.tagline.fr : artist.tagline.en;
             const minPrice = Math.min(...Object.values(artist.pricing.studio));
@@ -76,35 +76,27 @@ function Artistes() {
               >
                 <Link
                   to={`/artistes/${artist.slug}`}
-                  className="group block rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1 border border-purple-main/30 card-shadow"
+                  className="group flex flex-col items-center text-center"
                 >
-                  <div className="relative overflow-hidden aspect-[4/3]">
+                  <div className="relative w-36 h-36 md:w-44 md:h-44 rounded-full overflow-hidden border-2 border-purple-main/30 group-hover:border-accent/60 transition-all duration-300 group-hover:scale-105 card-shadow">
                     <img
-                      src={artist.heroImage}
+                      src={artist.avatar || artist.heroImage}
                       alt={artist.name}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      className="w-full h-full object-cover"
                       loading="lazy"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                    <div className="absolute bottom-4 left-4 right-4">
-                      <div className="text-white/70 text-xs">
-                        {artist.prints.length} {lang === 'fr' ? 'oeuvres' : 'artworks'}
-                      </div>
-                      <div className="text-white text-xs mt-0.5">
-                        {lang === 'fr' ? `À partir de ${minPrice}$` : `Starting at $${minPrice}`}
-                      </div>
-                    </div>
                   </div>
-                  <div className="p-6">
-                    <h2 className="text-2xl font-heading font-bold text-heading mb-1">
-                      {artist.name}
-                    </h2>
-                    <p className="text-grey-muted text-sm mb-4">{tagline}</p>
-                    <span className="inline-flex items-center gap-1.5 text-accent text-sm font-semibold group-hover:gap-2.5 transition-all">
-                      {lang === 'fr' ? 'Voir la boutique' : 'View shop'}
-                      <ArrowRight size={16} />
-                    </span>
-                  </div>
+                  <h2 className="text-lg md:text-xl font-heading font-bold text-heading mt-4 mb-1">
+                    {artist.name}
+                  </h2>
+                  <p className="text-grey-muted text-xs mb-2">{tagline}</p>
+                  <p className="text-grey-muted text-xs mb-3">
+                    {artist.prints.length} {lang === 'fr' ? 'oeuvres' : 'artworks'} · {lang === 'fr' ? `${minPrice}$+` : `$${minPrice}+`}
+                  </p>
+                  <span className="inline-flex items-center gap-1.5 text-accent text-sm font-semibold group-hover:gap-2.5 transition-all">
+                    {lang === 'fr' ? 'Voir' : 'View'}
+                    <ArrowRight size={16} />
+                  </span>
                 </Link>
               </motion.div>
             );

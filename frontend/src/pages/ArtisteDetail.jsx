@@ -1,13 +1,14 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, Camera, Award, Shield, Truck, Palette, MessageSquare, ChevronDown, CheckCircle, Image, ExternalLink } from 'lucide-react';
+import { ArrowRight, Camera, Award, Shield, Truck, Palette, MessageSquare, ChevronDown, ChevronLeft, ChevronRight, CheckCircle, Image, ExternalLink, X, ZoomIn } from 'lucide-react';
 import SEO from '../components/SEO';
 import ArtistPrintCard from '../components/ArtistPrintCard';
 import ConfiguratorArtistPrint from '../components/configurators/ConfiguratorArtistPrint';
 import { useLang } from '../i18n/LanguageContext';
 import { useTheme } from '../i18n/ThemeContext';
 import artistsData, { artistFormats } from '../data/artists';
+import { toFull } from '../utils/paths';
 
 function ArtisteDetail({ subdomainSlug }) {
   const { slug: routeSlug } = useParams();
@@ -17,7 +18,41 @@ function ArtisteDetail({ subdomainSlug }) {
   const artist = artistsData[slug];
   const [selectedPrint, setSelectedPrint] = useState(null);
   const [openFaq, setOpenFaq] = useState(null);
+  const [lightbox, setLightbox] = useState(null);
   const configuratorRef = useRef(null);
+
+  const goToPrev = useCallback((e) => {
+    e.stopPropagation();
+    if (!artist) return;
+    setLightbox(i => (i - 1 + artist.prints.length) % artist.prints.length);
+    setSelectedPrint(prev => {
+      const idx = artist.prints.findIndex(p => p.id === prev?.id);
+      const newIdx = (idx - 1 + artist.prints.length) % artist.prints.length;
+      return artist.prints[newIdx];
+    });
+  }, [artist]);
+
+  const goToNext = useCallback((e) => {
+    e.stopPropagation();
+    if (!artist) return;
+    setLightbox(i => (i + 1) % artist.prints.length);
+    setSelectedPrint(prev => {
+      const idx = artist.prints.findIndex(p => p.id === prev?.id);
+      const newIdx = (idx + 1) % artist.prints.length;
+      return artist.prints[newIdx];
+    });
+  }, [artist]);
+
+  useEffect(() => {
+    if (lightbox === null) return;
+    const handleKey = (e) => {
+      if (e.key === 'Escape') setLightbox(null);
+      if (e.key === 'ArrowLeft') goToPrev(e);
+      if (e.key === 'ArrowRight') goToNext(e);
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [lightbox, goToPrev, goToNext]);
 
   if (!artist) {
     return (
@@ -122,9 +157,17 @@ function ArtisteDetail({ subdomainSlug }) {
               </div>
 
               <div className="flex items-center gap-4 mb-6">
-                <div className="p-4 rounded-xl icon-bg-blur">
-                  <Image size={36} className="text-accent" />
-                </div>
+                {artist.avatar ? (
+                  <img
+                    src={artist.avatar}
+                    alt={artist.name}
+                    className="w-16 h-16 rounded-full object-cover border-2 border-accent/40"
+                  />
+                ) : (
+                  <div className="p-4 rounded-xl icon-bg-blur">
+                    <Image size={36} className="text-accent" />
+                  </div>
+                )}
                 <div>
                   <h1 className="text-4xl md:text-6xl font-heading font-bold text-heading">
                     {artist.name}
@@ -162,7 +205,7 @@ function ArtisteDetail({ subdomainSlug }) {
                 <img
                   src={artist.heroImage}
                   alt={artist.name}
-                  className="w-full h-auto object-contain drop-shadow-2xl rounded-2xl"
+                  className="w-full h-auto max-h-[400px] object-contain drop-shadow-2xl rounded-2xl"
                 />
               </motion.div>
             )}
@@ -186,10 +229,20 @@ function ArtisteDetail({ subdomainSlug }) {
             </h2>
             <p className="text-grey-light text-base leading-relaxed mb-4">{bio}</p>
             {artist.socials && (
-              <div className="flex gap-3 mt-6">
+              <div className="flex flex-wrap gap-3 mt-6">
                 {artist.socials.instagram && (
                   <a href={artist.socials.instagram} target="_blank" rel="noopener noreferrer" className="btn-outline !py-2 !px-4 text-sm">
                     Instagram <ExternalLink size={14} className="ml-1" />
+                  </a>
+                )}
+                {artist.socials.youtube && (
+                  <a href={artist.socials.youtube} target="_blank" rel="noopener noreferrer" className="btn-outline !py-2 !px-4 text-sm">
+                    YouTube <ExternalLink size={14} className="ml-1" />
+                  </a>
+                )}
+                {artist.socials.tiktok && (
+                  <a href={artist.socials.tiktok} target="_blank" rel="noopener noreferrer" className="btn-outline !py-2 !px-4 text-sm">
+                    TikTok <ExternalLink size={14} className="ml-1" />
                   </a>
                 )}
                 {artist.socials.facebook && (
@@ -202,9 +255,14 @@ function ArtisteDetail({ subdomainSlug }) {
                     Gallea <ExternalLink size={14} className="ml-1" />
                   </a>
                 )}
+                {artist.socials.etsy && (
+                  <a href={artist.socials.etsy} target="_blank" rel="noopener noreferrer" className="btn-outline !py-2 !px-4 text-sm">
+                    Etsy <ExternalLink size={14} className="ml-1" />
+                  </a>
+                )}
                 {artist.socials.website && (
                   <a href={artist.socials.website} target="_blank" rel="noopener noreferrer" className="btn-outline !py-2 !px-4 text-sm">
-                    Site web <ExternalLink size={14} className="ml-1" />
+                    {lang === 'fr' ? 'Site web' : 'Website'} <ExternalLink size={14} className="ml-1" />
                   </a>
                 )}
               </div>
@@ -283,7 +341,7 @@ function ArtisteDetail({ subdomainSlug }) {
               : 'Select an artwork to configure your print.'}
           </p>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-5 max-w-4xl mx-auto">
+          <div className="flex flex-wrap justify-center gap-5 max-w-6xl mx-auto">
             {artist.prints.map((print, index) => (
               <motion.div
                 key={print.id}
@@ -291,12 +349,14 @@ function ArtisteDetail({ subdomainSlug }) {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: index * 0.08 }}
                 viewport={{ once: true }}
+                className="w-[calc(50%-0.625rem)] md:w-[calc(33.333%-0.834rem)] lg:w-[calc(20%-1rem)]"
               >
                 <ArtistPrintCard
                   print={print}
                   minPrice={minPrice}
                   selected={selectedPrint?.id === print.id}
                   onClick={() => handleSelectPrint(print)}
+                  onZoom={() => setLightbox(index)}
                 />
               </motion.div>
             ))}
@@ -318,12 +378,18 @@ function ArtisteDetail({ subdomainSlug }) {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-8 max-w-5xl mx-auto">
               {/* Preview */}
-              <div className="relative rounded-2xl overflow-hidden aspect-square border border-purple-main/30 card-shadow">
+              <div
+                className="relative rounded-2xl overflow-hidden aspect-[2/3] border border-purple-main/30 card-shadow cursor-pointer group"
+                onClick={() => setLightbox(artist.prints.findIndex(p => p.id === selectedPrint.id))}
+              >
                 <img
                   src={selectedPrint.image}
                   alt={lang === 'fr' ? selectedPrint.titleFr : selectedPrint.titleEn}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
+                  <ZoomIn size={32} className="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 drop-shadow-lg" />
+                </div>
               </div>
 
               {/* Options */}
@@ -558,6 +624,69 @@ function ArtisteDetail({ subdomainSlug }) {
           </Link>
         </motion.div>
       </div>
+
+      {/* ============ LIGHTBOX ============ */}
+      <AnimatePresence>
+        {lightbox !== null && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4"
+            onClick={() => setLightbox(null)}
+          >
+            {/* Close */}
+            <button
+              onClick={() => setLightbox(null)}
+              className="absolute top-4 right-4 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white transition-colors z-10"
+            >
+              <X size={24} />
+            </button>
+
+            {/* Fleche gauche */}
+            {artist.prints.length > 1 && (
+              <button
+                onClick={goToPrev}
+                className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 text-white/70 hover:text-white w-12 h-12 flex items-center justify-center z-10"
+                aria-label={lang === 'fr' ? 'Image precedente' : 'Previous image'}
+              >
+                <ChevronLeft size={32} />
+              </button>
+            )}
+
+            {/* Fleche droite */}
+            {artist.prints.length > 1 && (
+              <button
+                onClick={goToNext}
+                className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 text-white/70 hover:text-white w-12 h-12 flex items-center justify-center z-10"
+                aria-label={lang === 'fr' ? 'Image suivante' : 'Next image'}
+              >
+                <ChevronRight size={32} />
+              </button>
+            )}
+
+            <motion.img
+              key={lightbox}
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              src={artist.prints[lightbox].fullImage || toFull(artist.prints[lightbox].image)}
+              alt={lang === 'fr' ? artist.prints[lightbox].titleFr : artist.prints[lightbox].titleEn}
+              className="max-w-full max-h-[85vh] object-contain rounded-lg"
+              onClick={(e) => e.stopPropagation()}
+            />
+
+            {/* Compteur */}
+            {artist.prints.length > 1 && (
+              <span className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white/60 text-sm">
+                {lightbox + 1} / {artist.prints.length}
+              </span>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }

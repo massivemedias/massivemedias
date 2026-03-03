@@ -1,4 +1,4 @@
-import { thumb } from '../utils/paths';
+import { thumb, img } from '../utils/paths';
 
 /**
  * Artist print pricing - returns final client price (production + artist margin included)
@@ -35,12 +35,17 @@ const artistsData = {
       fr: "Adrift explore les frontieres entre le reel et le virtuel a travers des compositions numeriques saisissantes. Son univers visuel puise dans la science-fiction, les textures organiques et les paysages oniriques pour creer des oeuvres qui transportent le spectateur dans des dimensions paralleles.",
       en: "Adrift explores the boundaries between real and virtual through striking digital compositions. Their visual universe draws from science fiction, organic textures and dreamlike landscapes to create works that transport the viewer into parallel dimensions.",
     },
-    avatar: null,
-    heroImage: thumb('/images/prints/Printstoutcourt.webp'),
+    socials: {
+      instagram: 'https://instagram.com/alx.rouleau',
+      youtube: 'https://www.youtube.com/@adrift.vision',
+      tiktok: 'https://tiktok.com/@adriftvision',
+      website: 'https://www.adrift.vision',
+    },
+    avatar: '/images/prints/AdriftAvatar.webp',
+    heroImage: thumb('/images/prints/Adrift1.webp'),
     prints: [
-      { id: 'adrift-001', titleFr: 'Oeuvre I', titleEn: 'Artwork I', image: thumb('/images/prints/Printstoutcourt.webp'), limited: false },
-      { id: 'adrift-002', titleFr: 'Oeuvre II', titleEn: 'Artwork II', image: thumb('/images/prints/Printstoutcourt.webp'), limited: false },
-      { id: 'adrift-003', titleFr: 'Oeuvre III', titleEn: 'Artwork III', image: thumb('/images/prints/Printstoutcourt.webp'), limited: false },
+      { id: 'adrift-001', titleFr: 'Print I', titleEn: 'Print I', image: thumb('/images/prints/Adrift1.webp'), fullImage: img('/images/prints/Adrift1.webp'), limited: false },
+      { id: 'adrift-002', titleFr: 'Print II', titleEn: 'Print II', image: thumb('/images/prints/Adrift2.webp'), fullImage: img('/images/prints/Adrift2.webp'), limited: false },
     ],
     pricing: {
       studio: { a4: 35, a3: 50, a3plus: 65, a2: 85 },
@@ -59,13 +64,9 @@ const artistsData = {
       fr: "Maudite Machine est un collectif audiovisuel montrealais qui fusionne musique electronique et art visuel. Leurs creations graphiques - affiches, pochettes et illustrations - capturent l'energie brute de la scene underground et la transforment en oeuvres visuelles percutantes.",
       en: "Maudite Machine is a Montreal-based audiovisual collective that fuses electronic music and visual art. Their graphic creations - posters, album covers and illustrations - capture the raw energy of the underground scene and transform it into striking visual works.",
     },
-    avatar: null,
+    avatar: '/images/stickers/Stickers-Maudite-Machine.webp',
     heroImage: thumb('/images/prints/Printstoutcourt.webp'),
-    prints: [
-      { id: 'mm-001', titleFr: 'Oeuvre I', titleEn: 'Artwork I', image: thumb('/images/prints/Printstoutcourt.webp'), limited: false },
-      { id: 'mm-002', titleFr: 'Oeuvre II', titleEn: 'Artwork II', image: thumb('/images/prints/Printstoutcourt.webp'), limited: false },
-      { id: 'mm-003', titleFr: 'Oeuvre III', titleEn: 'Artwork III', image: thumb('/images/prints/Printstoutcourt.webp'), limited: false },
-    ],
+    prints: [],
     pricing: {
       studio: { a4: 35, a3: 50, a3plus: 65, a2: 85 },
       museum: { a4: 75, a3: 120, a3plus: 160, a2: 225 },
@@ -83,15 +84,10 @@ const artistsData = {
       fr: "Photographe montréalais avec un oeil unique pour la composition et la lumière. Ses oeuvres capturent l'essence de la ville à travers des perspectives inattendues - architecture, reflets, textures urbaines. Chaque tirage est une invitation à voir Montréal autrement.",
       en: "Montreal photographer with a unique eye for composition and light. His work captures the essence of the city through unexpected perspectives - architecture, reflections, urban textures. Each print is an invitation to see Montreal differently.",
     },
-    avatar: null,
-    heroImage: thumb('/images/prints/Printstoutcourt.webp'),
+    avatar: '/images/prints/MokAvatar.webp',
+    heroImage: thumb('/images/prints/Mok1.webp'),
     prints: [
-      { id: 'mok-001', titleFr: 'Oeuvre I', titleEn: 'Artwork I', image: thumb('/images/prints/Printstoutcourt.webp'), limited: false },
-      { id: 'mok-002', titleFr: 'Oeuvre II', titleEn: 'Artwork II', image: thumb('/images/prints/Printstoutcourt.webp'), limited: false },
-      { id: 'mok-003', titleFr: 'Oeuvre III', titleEn: 'Artwork III', image: thumb('/images/prints/Printstoutcourt.webp'), limited: false },
-      { id: 'mok-004', titleFr: 'Oeuvre IV', titleEn: 'Artwork IV', image: thumb('/images/prints/Printstoutcourt.webp'), limited: false },
-      { id: 'mok-005', titleFr: 'Oeuvre V', titleEn: 'Artwork V', image: thumb('/images/prints/Printstoutcourt.webp'), limited: false },
-      { id: 'mok-006', titleFr: 'Oeuvre VI', titleEn: 'Artwork VI', image: thumb('/images/prints/Printstoutcourt.webp'), limited: false },
+      { id: 'mok-001', titleFr: 'Metro Montreal', titleEn: 'Montreal Metro', image: thumb('/images/prints/Mok1.webp'), fullImage: img('/images/prints/Mok1.webp'), limited: false },
     ],
     pricing: {
       studio: { a4: 35, a3: 50, a3plus: 65, a2: 85 },
@@ -133,12 +129,21 @@ const artistsData = {
       website: 'https://psyqu33n.com',
       email: 'medusart@protonmail.com',
     },
-    avatar: null,
-    heroImage: thumb('/images/prints/Printstoutcourt.webp'),
+    avatar: '/images/prints/Psyqu33nAvatar.webp',
+    heroImage: thumb('/images/prints/Psyqu33n1.webp'),
     prints: [
-      { id: 'psyqu33n-001', titleFr: 'Bastet', titleEn: 'Bastet', image: thumb('/images/prints/Printstoutcourt.webp'), limited: false },
-      { id: 'psyqu33n-002', titleFr: 'La douleur derriere le masque', titleEn: 'The Pain Behind the Mask', image: thumb('/images/prints/Printstoutcourt.webp'), limited: false },
-      { id: 'psyqu33n-003', titleFr: 'Goddess', titleEn: 'Goddess', image: thumb('/images/prints/Printstoutcourt.webp'), limited: false },
+      { id: 'psyqu33n-001', titleFr: 'Accepter ses parts d\'ombres et de lumiere', titleEn: 'Embracing Shadow and Light', image: thumb('/images/prints/Psyqu33n1.webp'), fullImage: img('/images/prints/Psyqu33n1.webp'), limited: false },
+      { id: 'psyqu33n-002', titleFr: 'Trusting the Process', titleEn: 'Trusting the Process', image: thumb('/images/prints/Psyqu33n2.webp'), fullImage: img('/images/prints/Psyqu33n2.webp'), limited: false },
+      { id: 'psyqu33n-003', titleFr: 'Bat', titleEn: 'Bat', image: thumb('/images/prints/Psyqu33n3.webp'), fullImage: img('/images/prints/Psyqu33n3.webp'), limited: false },
+      { id: 'psyqu33n-004', titleFr: 'Monkey', titleEn: 'Monkey', image: thumb('/images/prints/Psyqu33n4.webp'), fullImage: img('/images/prints/Psyqu33n4.webp'), limited: false },
+      { id: 'psyqu33n-005', titleFr: 'Rabbit', titleEn: 'Rabbit', image: thumb('/images/prints/Psyqu33n5.webp'), fullImage: img('/images/prints/Psyqu33n5.webp'), limited: false },
+      { id: 'psyqu33n-006', titleFr: 'Renard', titleEn: 'Fox', image: thumb('/images/prints/Psyqu33n6.webp'), fullImage: img('/images/prints/Psyqu33n6.webp'), limited: false },
+      { id: 'psyqu33n-007', titleFr: 'Croire en quelque chose de plus grand', titleEn: 'Believing in Something Greater', image: thumb('/images/prints/Psyqu33n7.webp'), fullImage: img('/images/prints/Psyqu33n7.webp'), limited: false },
+      { id: 'psyqu33n-008', titleFr: 'Incarner son pouvoir', titleEn: 'Embodying Your Power', image: thumb('/images/prints/Psyqu33n8.webp'), fullImage: img('/images/prints/Psyqu33n8.webp'), limited: false },
+      { id: 'psyqu33n-009', titleFr: 'L\'archetype de la reine - la force d\'avancer', titleEn: 'The Queen Archetype - Strength to Move Forward', image: thumb('/images/prints/Psyqu33n9.webp'), fullImage: img('/images/prints/Psyqu33n9.webp'), limited: false },
+      { id: 'psyqu33n-010', titleFr: 'La douleur derriere le masque', titleEn: 'The Pain Behind the Mask', image: thumb('/images/prints/Psyqu33n10.webp'), fullImage: img('/images/prints/Psyqu33n10.webp'), limited: false },
+      { id: 'psyqu33n-011', titleFr: 'La purge - liberer les emotions stockees', titleEn: 'The Purge - Releasing Stored Emotions', image: thumb('/images/prints/Psyqu33n11.webp'), fullImage: img('/images/prints/Psyqu33n11.webp'), limited: false },
+      { id: 'psyqu33n-012', titleFr: 'Le masque de la femme forte', titleEn: 'The Mask of the Strong Woman', image: thumb('/images/prints/Psyqu33n12.webp'), fullImage: img('/images/prints/Psyqu33n12.webp'), limited: false },
     ],
     pricing: {
       studio: { a4: 35, a3: 50, a3plus: 65, a2: 85 },

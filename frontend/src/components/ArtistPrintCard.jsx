@@ -1,9 +1,16 @@
 import { motion } from 'framer-motion';
+import { ZoomIn } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
+import { toFull } from '../utils/paths';
 
-function ArtistPrintCard({ print, minPrice, selected, onClick }) {
+function ArtistPrintCard({ print, minPrice, selected, onClick, onZoom }) {
   const { lang } = useLang();
   const title = lang === 'fr' ? print.titleFr : print.titleEn;
+
+  const handleZoom = (e) => {
+    e.stopPropagation();
+    if (onZoom) onZoom(print.fullImage || toFull(print.image));
+  };
 
   return (
     <motion.button
@@ -16,7 +23,7 @@ function ArtistPrintCard({ print, minPrice, selected, onClick }) {
           : 'border-transparent hover:border-accent/30 card-bg-bordered'
       }`}
     >
-      <div className="relative aspect-square overflow-hidden">
+      <div className="relative aspect-[2/3] overflow-hidden">
         <img
           src={print.image}
           alt={title}
@@ -26,6 +33,14 @@ function ArtistPrintCard({ print, minPrice, selected, onClick }) {
         {print.limited && (
           <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-accent text-white text-[10px] font-bold uppercase tracking-wider">
             {lang === 'fr' ? 'Édition limitée' : 'Limited Edition'}
+          </div>
+        )}
+        {onZoom && (
+          <div
+            onClick={handleZoom}
+            className="absolute top-3 left-3 p-1.5 rounded-full bg-black/50 hover:bg-black/70 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer"
+          >
+            <ZoomIn size={16} />
           </div>
         )}
         {selected && (

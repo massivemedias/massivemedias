@@ -1,17 +1,22 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Lock, Scissors, Frame, Shirt, Coffee, ShoppingBag, Image } from 'lucide-react';
+import { ArrowRight, Lock, Shirt, Coffee, ShoppingBag } from 'lucide-react';
 import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
 import artistsData from '../data/artists';
+import { thumb } from '../utils/paths';
 
 const merchMassiveItems = [
-  { fr: 'Stickers Massive', en: 'Massive Stickers', icon: Scissors },
-  { fr: 'Prints Massive', en: 'Massive Prints', icon: Frame },
   { fr: 'T-Shirts', en: 'T-Shirts', icon: Shirt, link: '/boutique/merch-tshirt' },
   { fr: 'Hoodies', en: 'Hoodies', icon: Shirt },
   { fr: 'Mugs', en: 'Mugs', icon: Coffee },
   { fr: 'Tote Bags', en: 'Tote Bags', icon: ShoppingBag },
+];
+
+const stickerItems = [
+  { name: 'Maudite Machine', image: thumb('/images/stickers/Stickers-Maudite-Machine.webp') },
+  { name: 'Massive Medias', image: thumb('/images/stickers/Stickers-massive.webp') },
+  { name: 'Vrstl Records', image: thumb('/images/stickers/Stickers-Vrstl.webp') },
 ];
 
 const featuredArtistSlugs = ['psyqu33n', 'adrift', 'mok', 'maudite-machine'];
@@ -78,60 +83,155 @@ function Boutique() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="flex flex-wrap justify-center gap-10 md:gap-14">
             {artists.map((artist, i) => {
               const minPrice = Math.min(...Object.values(artist.pricing.studio));
-              const tagline = lang === 'fr' ? artist.tagline.fr : artist.tagline.en;
               return (
                 <motion.div
                   key={artist.slug}
-                  initial={{ opacity: 0, y: 15 }}
+                  initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: i * 0.08 }}
+                  transition={{ duration: 0.5, delay: i * 0.1 }}
                   viewport={{ once: true }}
                 >
                   <Link
                     to={`/artistes/${artist.slug}`}
-                    className="block group rounded-2xl overflow-hidden card-bg-bordered hover:border-accent/50 transition-all duration-300"
+                    className="group flex flex-col items-center text-center w-40 md:w-48"
                   >
-                    {/* Image / hero */}
-                    <div className="relative aspect-[16/9] bg-glass overflow-hidden">
-                      {artist.heroImage ? (
-                        <img
-                          src={artist.heroImage}
-                          alt={artist.name}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <Image size={48} className="text-grey-muted/30" />
-                        </div>
-                      )}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                      <div className="absolute bottom-4 left-4 right-4">
-                        <h3 className="text-2xl font-heading font-bold text-white drop-shadow-lg">
-                          {artist.name}
-                        </h3>
-                      </div>
+                    <div className="relative w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden ring-2 ring-purple-main/20 group-hover:ring-accent/60 transition-all duration-500 group-hover:scale-105 group-hover:shadow-[0_0_30px_rgba(var(--accent-rgb,255,82,160),0.25)]">
+                      <img
+                        src={artist.avatar || artist.heroImage}
+                        alt={artist.name}
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                        loading="lazy"
+                      />
                     </div>
-
-                    {/* Info */}
-                    <div className="p-5">
-                      <p className="text-grey-light text-sm mb-3">{tagline}</p>
-                      <div className="flex items-center justify-between">
-                        <span className="text-grey-muted text-xs">
-                          {artist.prints.length} {lang === 'fr' ? 'oeuvres' : 'artworks'} - {lang === 'fr' ? 'a partir de' : 'from'} {minPrice}$
-                        </span>
-                        <span className="text-accent text-sm font-semibold flex items-center gap-1 group-hover:gap-2 transition-all">
-                          {lang === 'fr' ? 'Voir' : 'View'}
-                          <ArrowRight size={16} />
-                        </span>
-                      </div>
-                    </div>
+                    <h3 className="text-base md:text-lg font-heading font-bold text-heading mt-4 mb-0.5 group-hover:text-accent transition-colors duration-300">
+                      {artist.name}
+                    </h3>
+                    <p className="text-grey-muted text-[11px] leading-tight mb-2">
+                      {artist.prints.length} {lang === 'fr' ? 'oeuvres' : 'artworks'} · {lang === 'fr' ? `${minPrice}$+` : `$${minPrice}+`}
+                    </p>
+                    <span className="inline-flex items-center gap-1 text-accent text-xs font-semibold opacity-0 group-hover:opacity-100 translate-y-1 group-hover:translate-y-0 transition-all duration-300">
+                      {lang === 'fr' ? 'Explorer' : 'Explore'}
+                      <ArrowRight size={14} />
+                    </span>
                   </Link>
                 </motion.div>
               );
             })}
+          </div>
+        </motion.div>
+
+        {/* ── Separateur ── */}
+        <div className="border-t border-grey-muted/20 mb-16" />
+
+        {/* ── Tous les Prints ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true }}
+          className="mb-16"
+        >
+          <div className="text-center mb-10">
+            <h2 className="text-3xl md:text-4xl font-heading font-bold text-gradient mb-3">
+              Prints
+            </h2>
+            <p className="text-grey-muted max-w-2xl mx-auto">
+              {lang === 'fr'
+                ? 'Tous les tirages fine art disponibles. Cliquez pour configurer.'
+                : 'All available fine art prints. Click to configure.'}
+            </p>
+          </div>
+          <div className="flex flex-wrap justify-center gap-4">
+            {artists.filter(a => a.prints.length > 0).flatMap(artist =>
+              artist.prints.map((print, pi) => (
+                <motion.div
+                  key={print.id}
+                  initial={{ opacity: 0, y: 15 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: pi * 0.04 }}
+                  viewport={{ once: true }}
+                  className="w-[calc(50%-0.5rem)] sm:w-[calc(33.333%-0.667rem)] lg:w-[calc(20%-0.8rem)]"
+                >
+                  <Link
+                    to={`/artistes/${artist.slug}`}
+                    className="group block rounded-2xl overflow-hidden card-bg-bordered hover:border-accent/50 transition-all duration-300"
+                  >
+                    <div className="aspect-[2/3] overflow-hidden">
+                      <img
+                        src={print.image}
+                        alt={lang === 'fr' ? print.titleFr : print.titleEn}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        loading="lazy"
+                      />
+                    </div>
+                    <div className="p-3">
+                      <h3 className="text-sm font-heading font-bold text-heading truncate">
+                        {lang === 'fr' ? print.titleFr : print.titleEn}
+                      </h3>
+                      <p className="text-grey-muted text-xs">{artist.name}</p>
+                      <p className="text-accent text-xs font-semibold mt-1">
+                        {lang === 'fr' ? `A partir de ${Math.min(...Object.values(artist.pricing.studio))}$` : `From $${Math.min(...Object.values(artist.pricing.studio))}`}
+                      </p>
+                    </div>
+                  </Link>
+                </motion.div>
+              ))
+            )}
+          </div>
+        </motion.div>
+
+        {/* ── Separateur ── */}
+        <div className="border-t border-grey-muted/20 mb-16" />
+
+        {/* ── Stickers ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true }}
+          className="mb-16"
+        >
+          <div className="text-center mb-10">
+            <h2 className="text-3xl md:text-4xl font-heading font-bold text-gradient mb-3">
+              Stickers
+            </h2>
+            <p className="text-grey-muted max-w-2xl mx-auto">
+              {lang === 'fr'
+                ? 'Stickers vinyle die-cut, qualite pro. Contactez-nous pour commander.'
+                : 'Die-cut vinyl stickers, pro quality. Contact us to order.'}
+            </p>
+          </div>
+          <div className="flex flex-wrap justify-center gap-6">
+            {stickerItems.map((sticker, i) => (
+              <motion.div
+                key={sticker.name}
+                initial={{ opacity: 0, y: 15 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: i * 0.08 }}
+                viewport={{ once: true }}
+                className="w-48 md:w-56"
+              >
+                <Link
+                  to="/services/stickers"
+                  className="group block rounded-2xl overflow-hidden card-bg-bordered hover:border-accent/50 transition-all duration-300"
+                >
+                  <div className="aspect-square overflow-hidden bg-glass flex items-center justify-center p-4">
+                    <img
+                      src={sticker.image}
+                      alt={sticker.name}
+                      className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-110"
+                      loading="lazy"
+                    />
+                  </div>
+                  <div className="p-3 text-center">
+                    <h3 className="text-sm font-heading font-bold text-heading">{sticker.name}</h3>
+                  </div>
+                </Link>
+              </motion.div>
+            ))}
           </div>
         </motion.div>
 

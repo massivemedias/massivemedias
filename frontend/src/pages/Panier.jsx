@@ -7,7 +7,7 @@ import { useLang } from '../i18n/LanguageContext';
 
 function Panier() {
   const { lang } = useLang();
-  const { items, removeFromCart, cartTotal } = useCart();
+  const { items, removeFromCart, updateQuantity, cartTotal } = useCart();
   const isFr = lang === 'fr';
 
   // Empty cart
@@ -53,7 +53,7 @@ function Panier() {
               <div className="flex-grow min-w-0">
                 <h3 className="font-semibold text-heading">{item.productName}</h3>
                 <p className="text-grey-muted text-sm truncate">
-                  {[item.finish, item.shape, item.size, `${item.quantity}x`].filter(Boolean).join(' · ')}
+                  {[item.finish, item.shape, item.size].filter(Boolean).join(' · ')}
                 </p>
                 {item.uploadedFiles?.length > 0 && (
                   <p className="text-accent text-xs flex items-center gap-1 mt-0.5">
@@ -62,9 +62,24 @@ function Panier() {
                   </p>
                 )}
               </div>
-              <div className="text-right flex-shrink-0">
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <button
+                  onClick={() => updateQuantity(i, Math.max(1, item.quantity - 1), item.unitPrice)}
+                  className="w-8 h-8 rounded-lg border border-white/10 text-heading font-bold text-sm flex items-center justify-center hover:border-accent/50 transition-colors"
+                >
+                  -
+                </button>
+                <span className="text-heading font-bold text-sm w-6 text-center">{item.quantity}</span>
+                <button
+                  onClick={() => updateQuantity(i, item.quantity + 1, item.unitPrice)}
+                  className="w-8 h-8 rounded-lg border border-white/10 text-heading font-bold text-sm flex items-center justify-center hover:border-accent/50 transition-colors"
+                >
+                  +
+                </button>
+              </div>
+              <div className="text-right flex-shrink-0 min-w-[60px]">
                 <p className="font-bold text-heading">{item.totalPrice}$</p>
-                <p className="text-grey-muted text-xs">{item.unitPrice}$/u</p>
+                {item.quantity > 1 && <p className="text-grey-muted text-xs">{item.unitPrice}$/u</p>}
               </div>
               <button
                 onClick={() => removeFromCart(i)}

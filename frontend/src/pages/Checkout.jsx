@@ -10,7 +10,6 @@ import { useAuth } from '../contexts/AuthContext';
 import { getStripePromise } from '../lib/stripe';
 import { createPaymentIntent } from '../services/orderService';
 import CheckoutForm from '../components/CheckoutForm';
-import FileUpload from '../components/FileUpload';
 
 function Checkout() {
   const { t, lang } = useLang();
@@ -27,8 +26,6 @@ function Checkout() {
   useEffect(() => {
     getStripePromise()?.then(setStripePromise);
   }, []);
-
-  const [extraFiles, setExtraFiles] = useState([]);
 
   const [formData, setFormData] = useState({
     nom: user?.user_metadata?.full_name || '',
@@ -55,21 +52,13 @@ function Checkout() {
         uploadedFiles: item.uploadedFiles || [],
       }));
 
-      // Add extra files info to notes if any
-      const extraFileNames = extraFiles.map(f => f.name).join(', ');
-      const fullNotes = [
-        formData.message,
-        extraFiles.length > 0 ? `Fichiers supplementaires: ${extraFileNames}` : '',
-        ...extraFiles.map(f => f.url).filter(Boolean),
-      ].filter(Boolean).join('\n');
-
       const { clientSecret: secret } = await createPaymentIntent({
         items: itemsToSend,
         customerEmail: formData.email,
         customerName: formData.nom,
         customerPhone: formData.telephone,
         designReady: formData.designReady === 'yes',
-        notes: fullNotes,
+        notes: formData.message,
         supabaseUserId: user?.id || '',
       });
 
@@ -212,13 +201,6 @@ function Checkout() {
                           ))}
                         </div>
                       )}
-
-                      {/* Extra file upload */}
-                      <FileUpload
-                        files={extraFiles}
-                        onFilesChange={setExtraFiles}
-                        label={isFr ? 'Fichiers supplémentaires (optionnel)' : 'Additional files (optional)'}
-                      />
 
                       {error && (
                         <div className="flex items-center gap-3 p-4 rounded-lg border border-red-500/30 error-bg">
