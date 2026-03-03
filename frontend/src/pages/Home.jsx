@@ -337,44 +337,6 @@ function Home() {
         </div>
       </section>
 
-      {/* ============ ILS NOUS FONT CONFIANCE ============ */}
-      <section className="section-container !py-12">
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          transition={{ duration: 0.8 }}
-          viewport={{ once: true }}
-          className="text-center"
-        >
-          <p className="text-sm uppercase tracking-widest text-grey-muted mb-8 font-medium">
-            {lang === 'fr' ? 'Ils nous font confiance' : 'Trusted by'}
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-6 opacity-50 grayscale hover:opacity-70 hover:grayscale-0 transition-all duration-500">
-            {[
-              { name: 'Maudite Machine', src: '/images/logos/mauditemachine.png' },
-              { name: 'VRSTL', src: '/images/stickers/Stickers-Vrstl.webp' },
-              { name: 'Cosmovision', src: '/images/stickers/Stickers-Cosmovision.webp' },
-              { name: 'Fusion State Rec.', src: '/images/stickers/Stickers-Fusion-State-Rec.webp' },
-              { name: 'Sony Delite', src: '/images/graphism/sony_delite_logo.webp' },
-            ].map((logo) => (
-              <img
-                key={logo.name}
-                src={logo.src}
-                alt={logo.name}
-                className="h-8 md:h-10 w-auto object-contain"
-                onError={(e) => {
-                  // Fallback: show text if logo image not found
-                  e.target.style.display = 'none';
-                  e.target.parentElement.insertAdjacentHTML('beforeend',
-                    `<span class="text-heading font-heading font-bold text-lg md:text-xl opacity-40">${logo.name}</span>`
-                  );
-                }}
-              />
-            ))}
-          </div>
-        </motion.div>
-      </section>
-
       {/* ============ LA PROMESSE MASSIVE ============ */}
       <section className="section-container !py-12">
         <motion.div
