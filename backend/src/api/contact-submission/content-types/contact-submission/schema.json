@@ -4,8 +4,8 @@
   "info": {
     "singularName": "contact-submission",
     "pluralName": "contact-submissions",
-    "displayName": "Contact Submission",
-    "description": "Contact form submissions"
+    "displayName": "Message Contact",
+    "description": "Messages recus via le formulaire de contact"
   },
   "options": {
     "draftAndPublish": false

@@ -430,12 +430,143 @@ export interface AdminUser extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiArtistArtist extends Struct.CollectionTypeSchema {
+  collectionName: 'artists';
+  info: {
+    description: 'Artistes et leurs prints (boutique artistes)';
+    displayName: 'Artiste';
+    pluralName: 'artists';
+    singularName: 'artist';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    active: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    avatar: Schema.Attribute.Media<'images'>;
+    bioEn: Schema.Attribute.Text;
+    bioFr: Schema.Attribute.Text;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    demarcheEn: Schema.Attribute.JSON;
+    demarcheFr: Schema.Attribute.JSON;
+    heroImage: Schema.Attribute.Media<'images'>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::artist.artist'
+    > &
+      Schema.Attribute.Private;
+    name: Schema.Attribute.String & Schema.Attribute.Required;
+    pricing: Schema.Attribute.JSON;
+    printImages: Schema.Attribute.Media<'images', true>;
+    prints: Schema.Attribute.JSON;
+    publishedAt: Schema.Attribute.DateTime;
+    slug: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    socials: Schema.Attribute.JSON;
+    sortOrder: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    taglineEn: Schema.Attribute.String;
+    taglineFr: Schema.Attribute.String;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiBoutiqueItemBoutiqueItem
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'boutique_items';
+  info: {
+    description: 'Cartes affichees sur la page Boutique';
+    displayName: 'Carte Boutique';
+    pluralName: 'boutique-items';
+    singularName: 'boutique-item';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    active: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    hasCart: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    image: Schema.Attribute.Media<'images'>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::boutique-item.boutique-item'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    serviceKey: Schema.Attribute.String;
+    slug: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    sortOrder: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    startingPrice: Schema.Attribute.Decimal;
+    subtitleEn: Schema.Attribute.String;
+    subtitleFr: Schema.Attribute.String;
+    titleEn: Schema.Attribute.String & Schema.Attribute.Required;
+    titleFr: Schema.Attribute.String & Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiClientClient extends Struct.CollectionTypeSchema {
+  collectionName: 'clients';
+  info: {
+    description: 'CRM \u2014 Fiches clients avec historique et notes';
+    displayName: 'Client';
+    pluralName: 'clients';
+    singularName: 'client';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    company: Schema.Attribute.String;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    email: Schema.Attribute.Email &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    files: Schema.Attribute.Media<'images' | 'files', true>;
+    lastOrderDate: Schema.Attribute.Date;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::client.client'
+    > &
+      Schema.Attribute.Private;
+    name: Schema.Attribute.String & Schema.Attribute.Required;
+    notesEn: Schema.Attribute.Text;
+    notesFr: Schema.Attribute.Text;
+    orderCount: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    orders: Schema.Attribute.Relation<'oneToMany', 'api::order.order'>;
+    phone: Schema.Attribute.String;
+    publishedAt: Schema.Attribute.DateTime;
+    supabaseUserId: Schema.Attribute.String;
+    tags: Schema.Attribute.JSON;
+    totalSpent: Schema.Attribute.Decimal & Schema.Attribute.DefaultTo<0>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiContactSubmissionContactSubmission
   extends Struct.CollectionTypeSchema {
   collectionName: 'contact_submissions';
   info: {
-    description: 'Contact form submissions';
-    displayName: 'Contact Submission';
+    description: 'Messages recus via le formulaire de contact';
+    displayName: 'Message Contact';
     pluralName: 'contact-submissions';
     singularName: 'contact-submission';
   };
@@ -476,8 +607,8 @@ export interface ApiContactSubmissionContactSubmission
 export interface ApiExpenseExpense extends Struct.CollectionTypeSchema {
   collectionName: 'expenses';
   info: {
-    description: 'Business expenses for accounting';
-    displayName: 'Expense';
+    description: 'Depenses et comptabilite';
+    displayName: 'Depense';
     pluralName: 'expenses';
     singularName: 'expense';
   };
@@ -524,11 +655,56 @@ export interface ApiExpenseExpense extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiInventoryItemInventoryItem
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'inventory_items';
+  info: {
+    description: "Gestion d'inventaire \u2014 textiles, cadres, accessoires (hors consommables)";
+    displayName: 'Inventaire';
+    pluralName: 'inventory-items';
+    singularName: 'inventory-item';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    active: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    category: Schema.Attribute.Enumeration<
+      ['textile', 'frame', 'accessory', 'other']
+    > &
+      Schema.Attribute.Required;
+    costPrice: Schema.Attribute.Decimal;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    image: Schema.Attribute.Media<'images'>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::inventory-item.inventory-item'
+    > &
+      Schema.Attribute.Private;
+    lowStockThreshold: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<5>;
+    nameEn: Schema.Attribute.String & Schema.Attribute.Required;
+    nameFr: Schema.Attribute.String & Schema.Attribute.Required;
+    notes: Schema.Attribute.Text;
+    publishedAt: Schema.Attribute.DateTime;
+    quantity: Schema.Attribute.Integer &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<0>;
+    sku: Schema.Attribute.String & Schema.Attribute.Unique;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    variant: Schema.Attribute.String;
+  };
+}
+
 export interface ApiNewsArticleNewsArticle extends Struct.CollectionTypeSchema {
   collectionName: 'news_articles';
   info: {
-    description: 'News and announcements';
-    displayName: 'News Article';
+    description: 'Articles de nouvelles et annonces';
+    displayName: 'Actualite';
     pluralName: 'news-articles';
     singularName: 'news-article';
   };
@@ -568,8 +744,8 @@ export interface ApiNewsArticleNewsArticle extends Struct.CollectionTypeSchema {
 export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
   collectionName: 'orders';
   info: {
-    description: 'Customer orders';
-    displayName: 'Order';
+    description: 'Commandes clients avec paiement Stripe';
+    displayName: 'Commande';
     pluralName: 'orders';
     singularName: 'order';
   };
@@ -577,6 +753,7 @@ export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
     draftAndPublish: false;
   };
   attributes: {
+    client: Schema.Attribute.Relation<'manyToOne', 'api::client.client'>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -620,8 +797,8 @@ export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
 export interface ApiProductProduct extends Struct.CollectionTypeSchema {
   collectionName: 'products';
   info: {
-    description: 'Products and pricing';
-    displayName: 'Product';
+    description: 'Produits, tarifs et configurateurs';
+    displayName: 'Produit';
     pluralName: 'products';
     singularName: 'product';
   };
@@ -631,9 +808,23 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
   attributes: {
     active: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
     category: Schema.Attribute.Enumeration<
-      ['stickers', 'fine-art', 'sublimation', 'flyers', 'design', 'web']
+      [
+        'stickers',
+        'fine-art',
+        'sublimation',
+        'flyers',
+        'design',
+        'web',
+        'pret-a-porter',
+        'sticker-pack',
+        'merch-tshirt',
+        'merch-hoodie',
+        'merch-crewneck',
+        'merch-totebag',
+      ]
     > &
       Schema.Attribute.Required;
+    comingSoon: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -644,6 +835,7 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
     highlightsEn: Schema.Attribute.JSON;
     highlightsFr: Schema.Attribute.JSON;
     images: Schema.Attribute.Media<'images', true>;
+    imageUrl: Schema.Attribute.String;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
@@ -665,11 +857,52 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiServicePackageServicePackage
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'service_packages';
+  info: {
+    description: 'Forfaits de services (Pack Artiste, Pack \u00C9v\u00E9nement, etc.)';
+    displayName: 'Forfait';
+    pluralName: 'service-packages';
+    singularName: 'service-package';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    active: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    ctaType: Schema.Attribute.Enumeration<['price', 'quote']> &
+      Schema.Attribute.DefaultTo<'price'>;
+    descriptionEn: Schema.Attribute.Text;
+    descriptionFr: Schema.Attribute.Text;
+    items: Schema.Attribute.JSON & Schema.Attribute.Required;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::service-package.service-package'
+    > &
+      Schema.Attribute.Private;
+    nameEn: Schema.Attribute.String & Schema.Attribute.Required;
+    nameFr: Schema.Attribute.String & Schema.Attribute.Required;
+    popular: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    priceEn: Schema.Attribute.String & Schema.Attribute.Required;
+    priceFr: Schema.Attribute.String & Schema.Attribute.Required;
+    publishedAt: Schema.Attribute.DateTime;
+    sortOrder: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiServicePageServicePage extends Struct.CollectionTypeSchema {
   collectionName: 'service_pages';
   info: {
-    description: 'Pages de services \u00E9ditables (Prints, Stickers, Merch, Design)';
-    displayName: 'Service Page';
+    description: 'Pages de services editables (Prints, Stickers, Merch, Design)';
+    displayName: 'Page Service';
     pluralName: 'service-pages';
     singularName: 'service-page';
   };
@@ -733,8 +966,8 @@ export interface ApiServicePageServicePage extends Struct.CollectionTypeSchema {
 export interface ApiSiteContentSiteContent extends Struct.SingleTypeSchema {
   collectionName: 'site_contents';
   info: {
-    description: 'All editable site content organized by section';
-    displayName: 'Site Content';
+    description: 'Tout le contenu editable du site par section';
+    displayName: 'Contenu du Site';
     pluralName: 'site-contents';
     singularName: 'site-content';
   };
@@ -780,6 +1013,10 @@ export interface ApiSiteContentSiteContent extends Struct.SingleTypeSchema {
     announcementEn: Schema.Attribute.String;
     announcementFr: Schema.Attribute.String;
     contactEmail: Schema.Attribute.Email;
+    contactPageSubtitleEn: Schema.Attribute.Text;
+    contactPageSubtitleFr: Schema.Attribute.Text;
+    contactPageTitleEn: Schema.Attribute.String;
+    contactPageTitleFr: Schema.Attribute.String;
     contactPhone: Schema.Attribute.String;
     contactSeo: Schema.Attribute.Component<'shared.seo-meta', false>;
     createdAt: Schema.Attribute.DateTime;
@@ -1350,11 +1587,16 @@ declare module '@strapi/strapi' {
       'admin::transfer-token': AdminTransferToken;
       'admin::transfer-token-permission': AdminTransferTokenPermission;
       'admin::user': AdminUser;
+      'api::artist.artist': ApiArtistArtist;
+      'api::boutique-item.boutique-item': ApiBoutiqueItemBoutiqueItem;
+      'api::client.client': ApiClientClient;
       'api::contact-submission.contact-submission': ApiContactSubmissionContactSubmission;
       'api::expense.expense': ApiExpenseExpense;
+      'api::inventory-item.inventory-item': ApiInventoryItemInventoryItem;
       'api::news-article.news-article': ApiNewsArticleNewsArticle;
       'api::order.order': ApiOrderOrder;
       'api::product.product': ApiProductProduct;
+      'api::service-package.service-package': ApiServicePackageServicePackage;
       'api::service-page.service-page': ApiServicePageServicePage;
       'api::site-content.site-content': ApiSiteContentSiteContent;
       'plugin::content-releases.release': PluginContentReleasesRelease;

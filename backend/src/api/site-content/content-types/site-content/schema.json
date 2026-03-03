@@ -4,8 +4,8 @@
   "info": {
     "singularName": "site-content",
     "pluralName": "site-contents",
-    "displayName": "Site Content",
-    "description": "All editable site content organized by section"
+    "displayName": "Contenu du Site",
+    "description": "Tout le contenu editable du site par section"
   },
   "options": {
     "draftAndPublish": true

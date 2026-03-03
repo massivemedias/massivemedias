@@ -4,8 +4,8 @@
   "info": {
     "singularName": "product",
     "pluralName": "products",
-    "displayName": "Product",
-    "description": "Products and pricing"
+    "displayName": "Produit",
+    "description": "Produits, tarifs et configurateurs"
   },
   "options": {
     "draftAndPublish": true
@@ -22,7 +22,7 @@
     },
     "category": {
       "type": "enumeration",
-      "enum": ["stickers", "fine-art", "sublimation", "flyers", "design", "web"],
+      "enum": ["stickers", "fine-art", "sublimation", "flyers", "design", "web", "pret-a-porter", "sticker-pack", "merch-tshirt", "merch-hoodie", "merch-crewneck", "merch-totebag"],
       "required": true
     },
     "nameFr": {
@@ -59,6 +59,13 @@
     },
     "faqEn": {
       "type": "json"
+    },
+    "comingSoon": {
+      "type": "boolean",
+      "default": false
+    },
+    "imageUrl": {
+      "type": "string"
     },
     "sortOrder": {
       "type": "integer",

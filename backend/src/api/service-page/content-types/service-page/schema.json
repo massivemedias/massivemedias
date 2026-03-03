@@ -4,8 +4,8 @@
   "info": {
     "singularName": "service-page",
     "pluralName": "service-pages",
-    "displayName": "Service Page",
-    "description": "Pages de services éditables (Prints, Stickers, Merch, Design)"
+    "displayName": "Page Service",
+    "description": "Pages de services editables (Prints, Stickers, Merch, Design)"
   },
   "options": {
     "draftAndPublish": true

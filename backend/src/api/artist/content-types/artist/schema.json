@@ -4,7 +4,7 @@
   "info": {
     "singularName": "artist",
     "pluralName": "artists",
-    "displayName": "Artist",
+    "displayName": "Artiste",
     "description": "Artistes et leurs prints (boutique artistes)"
   },
   "options": {

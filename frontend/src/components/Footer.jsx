@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Instagram, Facebook, Mail, Send } from 'lucide-react';
-import { useState } from 'react';
+import { Instagram, Facebook, Mail } from 'lucide-react';
 import MassiveLogo from './MassiveLogo';
 import { useLang } from '../i18n/LanguageContext';
 import { useSiteContent } from '../hooks/useSiteContent';
@@ -9,8 +8,6 @@ import { bl } from '../utils/cms';
 function Footer() {
   const { t, lang } = useLang();
   const { content } = useSiteContent();
-  const [nlEmail, setNlEmail] = useState('');
-  const [nlStatus, setNlStatus] = useState(null);
   const currentYear = new Date().getFullYear();
   const services = t('nav.servicesList');
 
@@ -149,66 +146,6 @@ function Footer() {
                   </>
               }
             </div>
-          </div>
-        </div>
-
-        {/* Newsletter */}
-        <div className="py-8 footer-border">
-          <div className="max-w-xl mx-auto text-center">
-            <h4 className="font-heading font-bold mb-2 footer-heading">
-              {lang === 'fr' ? 'Reste dans la loop' : 'Stay in the Loop'}
-            </h4>
-            <p className="text-sm footer-muted mb-1">
-              {lang === 'fr'
-                ? 'Promos, nouveaux services et projets. Pas de spam, promis.'
-                : 'Promos, new services and projects. No spam, promise.'}
-            </p>
-            <p className="text-xs font-semibold mb-4" style={{ color: 'var(--accent-color, #FF52A0)' }}>
-              {lang === 'fr'
-                ? '10% de rabais sur ta premiere commande!'
-                : '10% off your first order!'}
-            </p>
-            <form
-              onSubmit={async (e) => {
-                e.preventDefault();
-                if (!nlEmail) return;
-                setNlStatus('sending');
-                try {
-                  const endpoint = content?.newsletterFormEndpoint || 'https://formspree.io/f/xzdardoe';
-                  const res = await fetch(endpoint, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: nlEmail, _subject: 'Newsletter signup' }),
-                  });
-                  setNlStatus(res.ok ? 'ok' : 'error');
-                  if (res.ok) setNlEmail('');
-                } catch { setNlStatus('error'); }
-              }}
-              className="flex gap-2 max-w-md mx-auto"
-            >
-              <input
-                type="email"
-                required
-                value={nlEmail}
-                onChange={(e) => setNlEmail(e.target.value)}
-                placeholder={lang === 'fr' ? 'ton@email.com' : 'your@email.com'}
-                className="flex-1 px-4 py-2.5 rounded-lg text-sm border border-purple-main/30 bg-transparent text-heading placeholder:text-grey-muted focus:outline-none focus:border-accent transition-colors"
-              />
-              <button
-                type="submit"
-                disabled={nlStatus === 'sending'}
-                className="px-4 py-2.5 rounded-lg bg-accent text-white text-sm font-semibold hover:bg-accent/80 transition-colors flex items-center gap-2 disabled:opacity-50"
-                aria-label={lang === 'fr' ? "S'inscrire" : 'Subscribe'}
-              >
-                <Send size={16} />
-              </button>
-            </form>
-            {nlStatus === 'ok' && (
-              <p className="text-green-500 text-sm mt-2">{lang === 'fr' ? 'Inscrit! Merci.' : 'Subscribed! Thanks.'}</p>
-            )}
-            {nlStatus === 'error' && (
-              <p className="text-red-500 text-sm mt-2">{lang === 'fr' ? 'Erreur. Réessaie.' : 'Error. Try again.'}</p>
-            )}
           </div>
         </div>
 

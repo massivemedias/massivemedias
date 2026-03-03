@@ -4,8 +4,8 @@
   "info": {
     "singularName": "order",
     "pluralName": "orders",
-    "displayName": "Order",
-    "description": "Customer orders"
+    "displayName": "Commande",
+    "description": "Commandes clients avec paiement Stripe"
   },
   "options": {
     "draftAndPublish": false

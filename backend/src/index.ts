@@ -737,12 +737,191 @@ const productsSeedData = [
     sortOrder: 10,
     active: true,
   },
+  // ── Pret-a-porter (produits finis avec design) ──
+  {
+    name: 'T-Shirt Massive',
+    slug: 'pret-a-porter-tshirt',
+    category: 'pret-a-porter',
+    nameFr: 'T-Shirt',
+    nameEn: 'T-Shirt',
+    descriptionFr: 'Coton preshrunk, design exclusif. Tailles S a 3XL.',
+    descriptionEn: 'Preshrunk cotton, exclusive design. Sizes S to 3XL.',
+    pricingData: {
+      price: 35,
+      sizes: ['S', 'M', 'L', 'XL', '2XL', '3XL'],
+    },
+    comingSoon: true,
+    imageUrl: '/images/tshirts/orchid.webp',
+    sortOrder: 20,
+    active: true,
+  },
+  {
+    name: 'Hoodie Massive',
+    slug: 'pret-a-porter-hoodie',
+    category: 'pret-a-porter',
+    nameFr: 'Hoodie',
+    nameEn: 'Hoodie',
+    descriptionFr: 'Molleton epais, design exclusif. Tailles S a 3XL.',
+    descriptionEn: 'Heavy fleece, exclusive design. Sizes S to 3XL.',
+    pricingData: {
+      price: 65,
+      sizes: ['S', 'M', 'L', 'XL', '2XL', '3XL'],
+    },
+    comingSoon: true,
+    imageUrl: '/images/hoodies/mint-green.webp',
+    sortOrder: 21,
+    active: true,
+  },
+  {
+    name: 'Crewneck Massive',
+    slug: 'pret-a-porter-crewneck',
+    category: 'pret-a-porter',
+    nameFr: 'Crewneck',
+    nameEn: 'Crewneck',
+    descriptionFr: 'Molleton mi-poids, design exclusif. Tailles S a 3XL.',
+    descriptionEn: 'Midweight fleece, exclusive design. Sizes S to 3XL.',
+    pricingData: {
+      price: 55,
+      sizes: ['S', 'M', 'L', 'XL', '2XL', '3XL'],
+    },
+    comingSoon: true,
+    imageUrl: '/images/crewneck/light-pink.webp',
+    sortOrder: 22,
+    active: true,
+  },
+  // ── Packs de stickers (produits finis) ──
+  {
+    name: 'Pack Stickers Massive Medias',
+    slug: 'sticker-pack-massive',
+    category: 'sticker-pack',
+    nameFr: 'Massive Medias',
+    nameEn: 'Massive Medias',
+    descriptionFr: 'Pack de stickers vinyle die-cut',
+    descriptionEn: 'Die-cut vinyl sticker pack',
+    pricingData: {
+      tiers: [
+        { qty: 1, label: '1 pack', price: 35 },
+        { qty: 5, label: '5 packs', price: 25 },
+        { qty: 10, label: '10 packs', price: 20 },
+        { qty: 25, label: '25+ packs', price: 15 },
+      ],
+    },
+    imageUrl: '/images/stickers/Stickers-massive.webp',
+    sortOrder: 30,
+    active: true,
+  },
+  {
+    name: 'Pack Stickers Maudite Machine',
+    slug: 'sticker-pack-maudite',
+    category: 'sticker-pack',
+    nameFr: 'Maudite Machine',
+    nameEn: 'Maudite Machine',
+    descriptionFr: 'Pack de stickers vinyle die-cut',
+    descriptionEn: 'Die-cut vinyl sticker pack',
+    pricingData: {
+      tiers: [
+        { qty: 1, label: '1 pack', price: 35 },
+        { qty: 5, label: '5 packs', price: 25 },
+        { qty: 10, label: '10 packs', price: 20 },
+        { qty: 25, label: '25+ packs', price: 15 },
+      ],
+    },
+    imageUrl: '/images/stickers/Stickers-Maudite-Machine.webp',
+    sortOrder: 31,
+    active: true,
+  },
+  {
+    name: 'Pack Stickers Cosmovision',
+    slug: 'sticker-pack-cosmo',
+    category: 'sticker-pack',
+    nameFr: 'Cosmovision',
+    nameEn: 'Cosmovision',
+    descriptionFr: 'Pack de stickers vinyle die-cut',
+    descriptionEn: 'Die-cut vinyl sticker pack',
+    pricingData: {
+      tiers: [
+        { qty: 1, label: '1 pack', price: 35 },
+        { qty: 5, label: '5 packs', price: 25 },
+        { qty: 10, label: '10 packs', price: 20 },
+        { qty: 25, label: '25+ packs', price: 15 },
+      ],
+    },
+    imageUrl: '/images/stickers/Stickers-Cosmovision.webp',
+    sortOrder: 32,
+    active: true,
+  },
+  {
+    name: 'Pack Stickers Vrstl',
+    slug: 'sticker-pack-vrstl',
+    category: 'sticker-pack',
+    nameFr: 'Vrstl',
+    nameEn: 'Vrstl',
+    descriptionFr: 'Pack de stickers vinyle die-cut',
+    descriptionEn: 'Die-cut vinyl sticker pack',
+    pricingData: {
+      tiers: [
+        { qty: 1, label: '1 pack', price: 35 },
+        { qty: 5, label: '5 packs', price: 25 },
+        { qty: 10, label: '10 packs', price: 20 },
+        { qty: 25, label: '25+ packs', price: 15 },
+      ],
+    },
+    imageUrl: '/images/stickers/Stickers-Vrstl.webp',
+    sortOrder: 33,
+    active: true,
+  },
+  {
+    name: 'Pack Stickers Fusion State Rec',
+    slug: 'sticker-pack-fusion',
+    category: 'sticker-pack',
+    nameFr: 'Fusion State Rec',
+    nameEn: 'Fusion State Rec',
+    descriptionFr: 'Pack de stickers vinyle die-cut',
+    descriptionEn: 'Die-cut vinyl sticker pack',
+    pricingData: {
+      tiers: [
+        { qty: 1, label: '1 pack', price: 35 },
+        { qty: 5, label: '5 packs', price: 25 },
+        { qty: 10, label: '10 packs', price: 20 },
+        { qty: 25, label: '25+ packs', price: 15 },
+      ],
+    },
+    imageUrl: '/images/stickers/Stickers-Fusion-State-Rec.webp',
+    sortOrder: 34,
+    active: true,
+  },
 ];
 
 export default {
   register(/* { strapi }: { strapi: Core.Strapi } */) {},
 
   async bootstrap({ strapi }: { strapi: Core.Strapi }) {
+    // ── Auto-create admin super user ──
+    try {
+      const existingAdmins = await strapi.db.query('admin::user').findMany({ limit: 1 });
+      if (existingAdmins.length === 0) {
+        const superAdminRole = await strapi.db.query('admin::role').findOne({
+          where: { code: 'strapi-super-admin' },
+        });
+        if (superAdminRole) {
+          const adminEmail = process.env.ADMIN_EMAIL || 'massivemedias@gmail.com';
+          const adminPassword = process.env.ADMIN_PASSWORD || 'Massive1423!!';
+          await (strapi as any).admin.services.user.create({
+            email: adminEmail,
+            firstname: 'Massive',
+            lastname: 'Medias',
+            password: adminPassword,
+            registrationToken: null,
+            isActive: true,
+            roles: [superAdminRole.id],
+          });
+          console.log(`[bootstrap] Admin super user created (${adminEmail})`);
+        }
+      }
+    } catch (err: any) {
+      console.error('[bootstrap] Admin user creation error:', err.message);
+    }
+
     // Only seed if SEED_CONTENT env var is set
     if (process.env.SEED_CONTENT !== 'true') return;
 

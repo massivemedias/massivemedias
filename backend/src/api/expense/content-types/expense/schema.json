@@ -4,8 +4,8 @@
   "info": {
     "singularName": "expense",
     "pluralName": "expenses",
-    "displayName": "Expense",
-    "description": "Business expenses for accounting"
+    "displayName": "Depense",
+    "description": "Depenses et comptabilite"
   },
   "options": {
     "draftAndPublish": false

@@ -4,8 +4,8 @@
   "info": {
     "singularName": "boutique-item",
     "pluralName": "boutique-items",
-    "displayName": "Boutique Item",
-    "description": "Items affichés sur la page Boutique"
+    "displayName": "Carte Boutique",
+    "description": "Cartes affichees sur la page Boutique"
   },
   "options": {
     "draftAndPublish": true
