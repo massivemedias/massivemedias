@@ -507,52 +507,6 @@ function ServiceDetail() {
           </motion.div>
         )}
 
-        {/* ============ GALERIE (si elle contient des images) ============ */}
-        {service.gallery && service.gallery.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-            className="mb-20"
-          >
-            <h2 className="text-3xl font-heading font-bold text-gradient mb-8 text-center">
-              {t('serviceDetail.gallery')}
-            </h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {service.gallery.map((image, index) => {
-                const globalIndex = index;
-                return (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.4, delay: index * 0.05 }}
-                  viewport={{ once: true }}
-                  className="group relative rounded-xl overflow-hidden cursor-pointer aspect-square"
-                  onClick={() => openLightbox(image, globalIndex)}
-                >
-                  <img
-                    src={image}
-                    alt={`${service.title} - ${index + 1}`}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                    loading="lazy"
-                  />
-                  <div className="absolute inset-0 transition-colors duration-300 flex items-center justify-center">
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/30 backdrop-blur-sm rounded-full p-3">
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-                        <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
-                        <line x1="11" y1="8" x2="11" y2="14" /><line x1="8" y1="11" x2="14" y2="11" />
-                      </svg>
-                    </div>
-                  </div>
-                </motion.div>
-                );
-              })}
-            </div>
-          </motion.div>
-        )}
-
         {/* ============ PROCESSUS ============ */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -835,6 +789,52 @@ function ServiceDetail() {
                   </AnimatePresence>
                 </motion.div>
               ))}
+            </div>
+          </motion.div>
+        )}
+
+        {/* ============ GALERIE (si elle contient des images) ============ */}
+        {service.gallery && service.gallery.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+            className="mb-20"
+          >
+            <h2 className="text-3xl font-heading font-bold text-gradient mb-8 text-center">
+              {t('serviceDetail.gallery')}
+            </h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {service.gallery.map((image, index) => {
+                const globalIndex = index;
+                return (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.4, delay: index * 0.05 }}
+                  viewport={{ once: true }}
+                  className="group relative rounded-xl overflow-hidden cursor-pointer aspect-square"
+                  onClick={() => openLightbox(image, globalIndex)}
+                >
+                  <img
+                    src={image}
+                    alt={`${service.title} - ${index + 1}`}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    loading="lazy"
+                  />
+                  <div className="absolute inset-0 transition-colors duration-300 flex items-center justify-center">
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/30 backdrop-blur-sm rounded-full p-3">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+                        <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+                        <line x1="11" y1="8" x2="11" y2="14" /><line x1="8" y1="11" x2="14" y2="11" />
+                      </svg>
+                    </div>
+                  </div>
+                </motion.div>
+                );
+              })}
             </div>
           </motion.div>
         )}
