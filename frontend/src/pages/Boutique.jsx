@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { ArrowRight, ArrowLeft, Lock, Shirt, Coffee, ShoppingBag, Image, Scissors, Sparkles } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Lock, Shirt, Coffee, ShoppingBag, Image, Scissors } from 'lucide-react';
 import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
 import artistsData from '../data/artists';
@@ -201,7 +201,7 @@ function Boutique() {
       <div className="section-container max-w-5xl mx-auto">
 
         {/* ── Categories ── */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16">
 
           {/* Prints */}
           <motion.div
@@ -259,37 +259,6 @@ function Boutique() {
                 </p>
                 <span className="inline-flex items-center gap-1.5 text-accent text-xs font-semibold group-hover:gap-2.5 transition-all">
                   {lang === 'fr' ? 'Commander' : 'Order'}
-                  <ArrowRight size={14} />
-                </span>
-              </div>
-            </Link>
-          </motion.div>
-
-          {/* Impression */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            viewport={{ once: true }}
-          >
-            <Link
-              to="/boutique/fine-art"
-              className="group block w-full rounded-2xl overflow-hidden card-bg-bordered hover:border-accent/50 transition-all duration-300"
-            >
-              <div className="aspect-[4/3] bg-glass flex items-center justify-center relative">
-                <Sparkles size={48} className="text-accent/40 group-hover:text-accent/70 transition-colors" />
-              </div>
-              <div className="p-5">
-                <h2 className="text-xl font-heading font-bold text-heading group-hover:text-accent transition-colors mb-1">
-                  {lang === 'fr' ? 'Impression' : 'Printing'}
-                </h2>
-                <p className="text-grey-muted text-xs mb-3">
-                  {lang === 'fr'
-                    ? 'Fine art, flyers, cartes'
-                    : 'Fine art, flyers, cards'}
-                </p>
-                <span className="inline-flex items-center gap-1.5 text-accent text-xs font-semibold group-hover:gap-2.5 transition-all">
-                  {lang === 'fr' ? 'Configurer' : 'Configure'}
                   <ArrowRight size={14} />
                 </span>
               </div>
