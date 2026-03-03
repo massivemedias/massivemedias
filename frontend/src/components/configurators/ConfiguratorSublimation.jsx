@@ -9,7 +9,7 @@ import {
   sublimationProducts, sublimationPriceTiers, sublimationDesignPrice,
   getSublimationPrice, sublimationImages,
 } from '../../data/products';
-import { merchColors, merchSizes, getTshirtImage, hoodieColors, getHoodieImage } from '../../data/merchData';
+import { merchColors, merchSizes, getTshirtImage, hoodieColors, getHoodieImage, crewneckColors, getCrewneckImage } from '../../data/merchData';
 
 // Products that support color/size selection
 const productsWithColors = ['tshirt', 'hoodie', 'crewneck'];
@@ -32,15 +32,17 @@ function ConfiguratorSublimation() {
   const productLabel = sublimationProducts.find(p => p.id === product);
 
   const hasColors = productsWithColors.includes(product);
-  const currentColors = product === 'hoodie' ? hoodieColors : merchColors;
-  const currentGetImage = product === 'hoodie' ? getHoodieImage : getTshirtImage;
+  const colorsMap = { tshirt: merchColors, hoodie: hoodieColors, crewneck: crewneckColors };
+  const imageMap = { tshirt: getTshirtImage, hoodie: getHoodieImage, crewneck: getCrewneckImage };
+  const currentColors = colorsMap[product] || merchColors;
+  const currentGetImage = imageMap[product] || getTshirtImage;
   const colorObj = currentColors.find(c => c.id === selectedColor) || currentColors[0];
 
   const handleProductChange = (p) => {
     setProduct(p);
     setQtyIndex(0);
     // Reset color if not available in new product's palette
-    const newColors = p === 'hoodie' ? hoodieColors : merchColors;
+    const newColors = colorsMap[p] || merchColors;
     if (!newColors.find(c => c.id === selectedColor)) {
       setSelectedColor('black');
     }
@@ -104,14 +106,14 @@ function ConfiguratorSublimation() {
       {hasColors && (
         <div className="mb-5">
           {/* Side by side: preview + selectors */}
-          <div className={`flex gap-5 ${(product === 'tshirt' || product === 'hoodie') ? 'flex-row items-start' : 'flex-col'}`}>
+          <div className={`flex gap-5 ${hasColors ? 'flex-row items-start' : 'flex-col'}`}>
             {/* Product preview */}
-            {(product === 'tshirt' || product === 'hoodie') && (
+            {hasColors && (
               <div className="flex-shrink-0 w-36 rounded-xl card-bg-bordered p-3">
                 <img
                   key={`${product}-${selectedColor}`}
                   src={currentGetImage(selectedColor)}
-                  alt={`${product === 'hoodie' ? 'Hoodie' : 'T-Shirt'} ${colorObj.name}`}
+                  alt={`${productLabel ? (lang === 'fr' ? productLabel.labelFr : productLabel.labelEn) : product} ${colorObj.name}`}
                   className="w-full h-auto object-contain"
                 />
               </div>
