@@ -75,8 +75,8 @@ const defaultStickerPricingTiers = [
 // Categories pour filtrer
 const categories = [
   { id: 'all', fr: 'Tout', en: 'All', es: 'Todo' },
-  { id: 'pret-a-porter', fr: 'Prêt-à-porter', en: 'Clothing', es: 'Ropa' },
   { id: 'artistes', fr: 'Artistes', en: 'Artists', es: 'Artistas' },
+  { id: 'pret-a-porter', fr: 'Prêt-à-porter Massive', en: 'Massive Clothing', es: 'Ropa Massive' },
   { id: 'prints', fr: 'Prints', en: 'Prints', es: 'Impresiones' },
   { id: 'stickers', fr: 'Packs de stickers', en: 'Sticker packs', es: 'Packs de stickers' },
   { id: 'services', fr: 'Services', en: 'Services', es: 'Servicios' },
@@ -292,7 +292,74 @@ function Boutique() {
 
       <div className="section-container max-w-6xl mx-auto">
 
-        {/* ═══════════════════ PRET-A-PORTER ═══════════════════ */}
+        {/* ═══════════════════ ARTISTES ═══════════════════ */}
+        {show('artistes') && (
+          <motion.section
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="mb-16"
+          >
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="text-2xl md:text-3xl font-heading font-bold text-heading">
+                {tx({ fr: 'Nos artistes', en: 'Our artists', es: 'Nuestros artistas' })}
+              </h2>
+            </div>
+
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              {orderedArtists.map((artist, i) => {
+                const printCount = artist.prints?.length || 0;
+                return (
+                  <motion.div
+                    key={artist.slug}
+                    initial={{ opacity: 0, y: 15 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: i * 0.06 }}
+                    viewport={{ once: true }}
+                  >
+                    <Link
+                      to={`/artistes/${artist.slug}`}
+                      className="group block rounded-2xl overflow-hidden card-bg-bordered hover:border-accent/50 transition-all duration-300"
+                    >
+                      <div className="aspect-[3/4] overflow-hidden relative">
+                        <img
+                          src={artist.heroImage || artist.avatar}
+                          alt={artist.name}
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          loading="lazy"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                        <div className="absolute bottom-0 left-0 right-0 p-4">
+                          <img
+                            src={artist.avatar}
+                            alt={`${artist.name} - Artiste Massive Medias`}
+                            className="w-9 h-9 rounded-full ring-2 ring-white/20 object-cover mb-2"
+                          />
+                          <h3 className="text-base font-heading font-bold text-white group-hover:text-accent transition-colors leading-tight">
+                            {artist.name}
+                          </h3>
+                          <p className="text-white/60 text-[11px] mt-0.5 leading-snug">
+                            {tx({ fr: artist.tagline.fr, en: artist.tagline.en, es: artist.tagline.es || artist.tagline.en })}
+                          </p>
+                          <div className="flex items-center justify-between mt-3 pt-2 border-t border-white/10">
+                            <span className="text-white/50 text-[10px]">
+                              {printCount > 0
+                                ? `${printCount} ${tx({ fr: 'oeuvres', en: 'artworks', es: 'obras' })}`
+                                : tx({ fr: 'Bientot', en: 'Soon', es: 'Pronto' })}
+                            </span>
+                            <ArrowRight size={12} className="text-accent opacity-0 group-hover:opacity-100 transition-opacity" />
+                          </div>
+                        </div>
+                      </div>
+                    </Link>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </motion.section>
+        )}
+
+        {/* ═══════════════════ PRET-A-PORTER MASSIVE ═══════════════════ */}
         {show('pret-a-porter') && (
           <motion.section
             initial={{ opacity: 0, y: 20 }}
@@ -302,7 +369,7 @@ function Boutique() {
           >
             <div className="flex items-center justify-between mb-8">
               <h2 className="text-2xl md:text-3xl font-heading font-bold text-heading">
-                {tx({ fr: 'Prêt-à-porter', en: 'Clothing', es: 'Ropa' })}
+                {tx({ fr: 'Prêt-à-porter Massive', en: 'Massive Clothing', es: 'Ropa Massive' })}
               </h2>
             </div>
 
@@ -419,73 +486,6 @@ function Boutique() {
                   })}
                 </p>
               </motion.div>
-            </div>
-          </motion.section>
-        )}
-
-        {/* ═══════════════════ ARTISTES ═══════════════════ */}
-        {show('artistes') && (
-          <motion.section
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="mb-16"
-          >
-            <div className="flex items-center justify-between mb-8">
-              <h2 className="text-2xl md:text-3xl font-heading font-bold text-heading">
-                {tx({ fr: 'Nos artistes', en: 'Our artists', es: 'Nuestros artistas' })}
-              </h2>
-            </div>
-
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              {orderedArtists.map((artist, i) => {
-                const printCount = artist.prints?.length || 0;
-                return (
-                  <motion.div
-                    key={artist.slug}
-                    initial={{ opacity: 0, y: 15 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4, delay: i * 0.06 }}
-                    viewport={{ once: true }}
-                  >
-                    <Link
-                      to={`/artistes/${artist.slug}`}
-                      className="group block rounded-2xl overflow-hidden card-bg-bordered hover:border-accent/50 transition-all duration-300"
-                    >
-                      <div className="aspect-[3/4] overflow-hidden relative">
-                        <img
-                          src={artist.heroImage || artist.avatar}
-                          alt={artist.name}
-                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                          loading="lazy"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                        <div className="absolute bottom-0 left-0 right-0 p-4">
-                          <img
-                            src={artist.avatar}
-                            alt={`${artist.name} - Artiste Massive Medias`}
-                            className="w-9 h-9 rounded-full ring-2 ring-white/20 object-cover mb-2"
-                          />
-                          <h3 className="text-base font-heading font-bold text-white group-hover:text-accent transition-colors leading-tight">
-                            {artist.name}
-                          </h3>
-                          <p className="text-white/60 text-[11px] mt-0.5 leading-snug">
-                            {tx({ fr: artist.tagline.fr, en: artist.tagline.en, es: artist.tagline.es || artist.tagline.en })}
-                          </p>
-                          <div className="flex items-center justify-between mt-3 pt-2 border-t border-white/10">
-                            <span className="text-white/50 text-[10px]">
-                              {printCount > 0
-                                ? `${printCount} ${tx({ fr: 'oeuvres', en: 'artworks', es: 'obras' })}`
-                                : tx({ fr: 'Bientot', en: 'Soon', es: 'Pronto' })}
-                            </span>
-                            <ArrowRight size={12} className="text-accent opacity-0 group-hover:opacity-100 transition-opacity" />
-                          </div>
-                        </div>
-                      </div>
-                    </Link>
-                  </motion.div>
-                );
-              })}
             </div>
           </motion.section>
         )}
