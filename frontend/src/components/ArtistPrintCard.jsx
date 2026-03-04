@@ -32,7 +32,7 @@ function ArtistPrintCard({ print, minPrice, selected, onClick, onZoom }) {
         />
         {print.limited && (
           <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-accent text-white text-[10px] font-bold uppercase tracking-wider">
-            {tx({ fr: 'Edition limitee', en: 'Limited Edition', es: 'Edicion limitada' })}
+            {tx({ fr: 'Édition limitée', en: 'Limited Edition', es: 'Edición limitada' })}
           </div>
         )}
         {onZoom && (

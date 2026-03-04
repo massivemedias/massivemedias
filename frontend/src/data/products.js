@@ -144,8 +144,8 @@ export const stickerFaq = {
 // =============================================
 
 export const fineArtPrinterTiers = [
-  { id: 'studio', labelFr: 'Serie Studio', labelEn: 'Studio Series', labelEs: 'Serie Studio', desc: '4 encres pigmentees / 4 pigmented inks', descFr: 'Couleurs vibrantes, qualite pro', descEn: 'Vibrant colors, pro quality', descEs: 'Colores vibrantes, calidad profesional' },
-  { id: 'museum', labelFr: 'Serie Musee', labelEn: 'Museum Series', labelEs: 'Serie Museo', desc: '12 encres pigmentees / 12 pigmented inks', descFr: 'Fidelite museale, gamut etendu', descEn: 'Museum accuracy, extended gamut', descEs: 'Fidelidad de museo, gama extendida' },
+  { id: 'studio', labelFr: 'Série Studio', labelEn: 'Studio Series', labelEs: 'Serie Studio', desc: '4 encres pigmentées / 4 pigmented inks', descFr: 'Couleurs vibrantes, qualité pro', descEn: 'Vibrant colors, pro quality', descEs: 'Colores vibrantes, calidad profesional' },
+  { id: 'museum', labelFr: 'Série Musée', labelEn: 'Museum Series', labelEs: 'Serie Museo', desc: '12 encres pigmentées / 12 pigmented inks', descFr: 'Fidélité muséale, gamut étendu', descEn: 'Museum accuracy, extended gamut', descEs: 'Fidelidad de museo, gama extendida' },
 ];
 
 export const fineArtFormats = [

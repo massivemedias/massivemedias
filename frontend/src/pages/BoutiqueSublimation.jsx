@@ -22,8 +22,8 @@ function BoutiqueSublimation() {
 
   const useCases = [
     { icon: Music, fr: 'Merch artiste', en: 'Artist merch', es: 'Merch de artista', descFr: 'T-shirts et hoodies de concert', descEn: 'Concert t-shirts and hoodies', descEs: 'Camisetas y hoodies de concierto' },
-    { icon: Users, fr: 'Equipe', en: 'Team', es: 'Equipo', descFr: 'Uniformes et vetements de marque', descEn: 'Uniforms and branded apparel', descEs: 'Uniformes y ropa de marca' },
-    { icon: Gift, fr: 'Cadeau promo', en: 'Promo gifts', es: 'Regalos promo', descFr: 'Goodies pour evenements', descEn: 'Goodies for events', descEs: 'Goodies para eventos' },
+    { icon: Users, fr: 'Équipe', en: 'Team', es: 'Equipo', descFr: 'Uniformes et vêtements de marque', descEn: 'Uniforms and branded apparel', descEs: 'Uniformes y ropa de marca' },
+    { icon: Gift, fr: 'Cadeau promo', en: 'Promo gifts', es: 'Regalos promo', descFr: 'Goodies pour événements', descEn: 'Goodies for events', descEs: 'Goodies para eventos' },
     { icon: Store, fr: 'Boutique en ligne', en: 'Online store', es: 'Tienda en l\u00ednea', descFr: 'Vente de merch personnalise', descEn: 'Selling custom merch', descEs: 'Venta de merch personalizado' },
   ];
 

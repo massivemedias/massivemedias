@@ -44,8 +44,8 @@ const translations = {
     // ──────────── HOME ────────────
     home: {
       seo: {
-        title: 'Massive Medias | Impression Fine Art, Stickers, Merch & Design - Montreal',
-        description: 'Studio de production creative a Montreal specialise en impression fine art, stickers die-cut, sublimation textile, design graphique et developpement web. Production locale au Mile-End, livraison 24-48h. Depuis 2013.',
+        title: 'Massive Medias | Impression Fine Art, Stickers, Merch & Design - Montréal',
+        description: 'Studio de production créative à Montréal spécialisé en impression fine art, stickers die-cut, sublimation textile, design graphique et développement web. Production locale au Mile-End, livraison 24-48h. Depuis 2013.',
       },
       hero: {
         tagline: 'Create. Print. Repeat.',
@@ -145,8 +145,8 @@ const translations = {
     // ──────────── A PROPOS PAGE ────────────
     aboutPage: {
       seo: {
-        title: 'A propos | Massive Medias - Studio creatif Montreal',
-        description: 'Decouvrez Massive Medias, studio de production creative fonde a Montreal. Notre equipe, notre espace au Mile-End et notre histoire depuis 2013. Impression, design et web.',
+        title: 'À propos | Massive Medias - Studio créatif Montréal',
+        description: 'Découvrez Massive Medias, studio de production créative fondé à Montréal. Notre équipe, notre espace au Mile-End et notre histoire depuis 2013. Impression, design et web.',
       },
       hero: {
         title: 'À propos',
@@ -219,8 +219,8 @@ const translations = {
     // ──────────── CONTACT PAGE ────────────
     contactPage: {
       seo: {
-        title: 'Contact | Massive Medias - Soumission gratuite Montreal',
-        description: 'Contactez Massive Medias pour une soumission gratuite. Impression fine art, stickers, merch, design graphique et developpement web a Montreal. Reponse en 24h.',
+        title: 'Contact | Massive Medias - Soumission gratuite Montréal',
+        description: 'Contactez Massive Medias pour une soumission gratuite. Impression fine art, stickers, merch, design graphique et développement web à Montréal. Réponse en 24h.',
       },
       hero: {
         title: 'Contact',

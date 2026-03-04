@@ -17,7 +17,7 @@ const BoutiqueFineArt = lazy(() => import('./pages/BoutiqueFineArt'));
 const BoutiqueSublimation = lazy(() => import('./pages/BoutiqueSublimation'));
 const BoutiqueDesign = lazy(() => import('./pages/BoutiqueDesign'));
 const BoutiqueWeb = lazy(() => import('./pages/BoutiqueWeb'));
-const BoutiqueMerchTshirt = lazy(() => import('./pages/BoutiqueMerchTshirt'));
+const BoutiqueMerch = lazy(() => import('./pages/BoutiqueMerch'));
 const Panier = lazy(() => import('./pages/Panier'));
 const Login = lazy(() => import('./pages/Login'));
 const Account = lazy(() => import('./pages/Account'));
@@ -84,7 +84,8 @@ function App() {
             <Route path="/boutique/flyers" element={<Navigate to="/boutique/fine-art" replace />} />
             <Route path="/boutique/design" element={<BoutiqueDesign />} />
             <Route path="/boutique/web" element={<BoutiqueWeb />} />
-            <Route path="/boutique/merch-tshirt" element={<BoutiqueMerchTshirt />} />
+            <Route path="/boutique/merch/:type" element={<BoutiqueMerch />} />
+            <Route path="/boutique/merch-tshirt" element={<Navigate to="/boutique/merch/tshirt" replace />} />
             <Route path="/panier" element={<Panier />} />
 
             {/* Auth & Account */}

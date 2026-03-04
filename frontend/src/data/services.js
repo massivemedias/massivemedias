@@ -101,8 +101,8 @@ Nous imprimons aussi des flyers, cartes postales et cartes d'affaires - tout ce 
       { q: 'Peut-on récupérer sur place?', a: 'Oui! Pick-up gratuit au Mile-End. On offre aussi la livraison locale à Montréal.' },
     ],
     seo: {
-      title: 'Impression Fine Art Montreal | Tirages Galerie, Posters & Affiches - Massive Medias',
-      description: 'Tirages fine art qualite galerie a Montreal. Impression pigmentaire 12 couleurs sur papier Hahnemuhle. Posters, affiches, flyers et cartes. Production locale Mile-End, livraison 24-48h.',
+      title: 'Impression Fine Art Montréal | Tirages Galerie, Posters & Affiches - Massive Medias',
+      description: 'Tirages fine art qualité galerie à Montréal. Impression pigmentaire 12 couleurs sur papier Hahnemühle. Posters, affiches, flyers et cartes. Production locale Mile-End, livraison 24-48h.',
     },
   },
 
@@ -170,8 +170,8 @@ Découpés à la forme exacte de ton design avec notre équipement de découpe p
       { q: 'Peut-on avoir une forme totalement custom?', a: 'Absolument! Nos stickers sont découpés sur mesure (die-cut) selon la forme exacte de ton design.' },
     ],
     seo: {
-      title: 'Stickers Die-Cut Montreal | Personnalises, Holographiques & Vinyle - Massive Medias',
-      description: 'Stickers die-cut personnalises a Montreal. Holographique, matte, glossy, transparent, vinyle. Design graphique inclus. Decoupe pro sur mesure. A partir de 10 unites. Production locale Mile-End.',
+      title: 'Stickers Die-Cut Montréal | Personnalisés, Holographiques & Vinyle - Massive Medias',
+      description: 'Stickers die-cut personnalisés à Montréal. Holographique, matte, glossy, transparent, vinyle. Design graphique inclus. Découpe pro sur mesure. À partir de 10 unités. Production locale Mile-End.',
     },
   },
 
@@ -248,8 +248,8 @@ Idéal pour le merch d'artiste, les événements, les cadeaux corporatifs ou tou
       { q: 'Quels produits peut-on sublimer?', a: 'T-shirts, crewnecks, hoodies, sacs bananes, mugs, thermos, tapis de souris, porte-clés, et plus. Les sacs bananes sont parfaits pour mettre ton logo dessus!' },
     ],
     seo: {
-      title: 'Sublimation & Merch Montreal | T-Shirts, Hoodies, Mugs - Massive Medias',
-      description: 'Sublimation textile sur mesure a Montreal. T-shirts, hoodies, crewnecks, sacs bananes, mugs, thermos. Merch d\'artiste et corporatif. A partir d\'1 unite. Production locale Mile-End.',
+      title: 'Sublimation & Merch Montréal | T-Shirts, Hoodies, Mugs - Massive Medias',
+      description: 'Sublimation textile sur mesure à Montréal. T-shirts, hoodies, crewnecks, sacs bananes, mugs, thermos. Merch d\'artiste et corporatif. À partir d\'1 unité. Production locale Mile-End.',
     },
   },
 
@@ -316,8 +316,8 @@ Nous travaillons avec Adobe Illustrator, Figma et Photoshop pour créer des visu
       { q: 'Quels formats de fichiers sont livrés?', a: 'Tu reçois les fichiers vectoriels (AI, SVG, PDF) ainsi que les exports PNG/JPEG en haute résolution. Tout ce qu\'il faut pour le web et l\'impression.' },
     ],
     seo: {
-      title: 'Design Graphique Montreal | Logos, Identite Visuelle & Affiches - Massive Medias',
-      description: 'Design graphique professionnel a Montreal. Logos, identites visuelles, affiches, pochettes d\'album, packaging. Creation sur mesure. Studio creatif Mile-End depuis 2013.',
+      title: 'Design Graphique Montréal | Logos, Identité Visuelle & Affiches - Massive Medias',
+      description: 'Design graphique professionnel à Montréal. Logos, identités visuelles, affiches, pochettes d\'album, packaging. Création sur mesure. Studio créatif Mile-End depuis 2013.',
     },
   },
 
@@ -463,8 +463,8 @@ Nous travaillons avec Adobe Illustrator, Figma et Photoshop pour créer des visu
       { q: 'Quelles technologies utilisez-vous?', a: 'React, Angular, WordPress, Shopify, Node.js, Strapi - on choisit la techno la mieux adaptée à ton projet et tes besoins.' },
     ],
     seo: {
-      title: 'Developpement Web Montreal | Sites Web, E-Commerce & SEO - Massive Medias',
-      description: 'Developpement web professionnel a Montreal. Sites vitrines, e-commerce, applications web, SEO et referencement. React, WordPress, Shopify. 10+ ans d\'experience. Studio Mile-End.',
+      title: 'Développement Web Montréal | Sites Web, E-Commerce & SEO - Massive Medias',
+      description: 'Développement web professionnel à Montréal. Sites vitrines, e-commerce, applications web, SEO et référencement. React, WordPress, Shopify. 10+ ans d\'expérience. Studio Mile-End.',
     },
   },
 };

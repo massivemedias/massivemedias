@@ -17,7 +17,7 @@ export function getOrganizationSchema() {
     email: 'info@massivemedias.com',
     foundingDate: '2013',
     foundingLocation: 'Montreal, QC, Canada',
-    description: 'Studio de production creative a Montreal specialise en impression fine art, stickers die-cut, sublimation textile, design graphique et developpement web.',
+    description: 'Studio de production créative à Montréal spécialisé en impression fine art, stickers die-cut, sublimation textile, design graphique et développement web.',
     knowsLanguage: ['fr', 'en', 'es'],
     sameAs: [
       'https://instagram.com/massivemedias',
@@ -42,9 +42,9 @@ export function getOrganizationSchema() {
 
 export function getLocalBusinessSchema(lang) {
   const descMap = {
-    fr: 'Studio de production creative a Montreal specialise en impression fine art, stickers die-cut, sublimation textile, design graphique et developpement web. Production locale au Mile-End depuis 2013.',
+    fr: 'Studio de production créative à Montréal spécialisé en impression fine art, stickers die-cut, sublimation textile, design graphique et développement web. Production locale au Mile-End depuis 2013.',
     en: 'Creative production studio in Montreal specializing in fine art printing, die-cut stickers, textile sublimation, graphic design and web development. Local production in Mile-End since 2013.',
-    es: 'Estudio de produccion creativa en Montreal especializado en impresion fine art, stickers troquelados, sublimacion textil, diseno grafico y desarrollo web. Produccion local en Mile-End desde 2013.',
+    es: 'Estudio de producción creativa en Montreal especializado en impresión fine art, stickers troquelados, sublimación textil, diseño gráfico y desarrollo web. Producción local en Mile-End desde 2013.',
   };
   return {
     '@context': 'https://schema.org',
@@ -102,7 +102,7 @@ export function getWebSiteSchema() {
     '@id': `${SITE_URL}/#website`,
     url: SITE_URL,
     name: 'Massive Medias',
-    description: 'Studio de production creative a Montreal',
+    description: 'Studio de production créative à Montréal',
     publisher: { '@id': `${SITE_URL}/#organization` },
     inLanguage: ['fr-CA', 'en-CA', 'es-MX'],
   };

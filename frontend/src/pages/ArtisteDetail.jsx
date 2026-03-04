@@ -108,9 +108,9 @@ function ArtisteDetail({ subdomainSlug }) {
 
   const highlights = tx({
     fr: [
-      'Tirages fine art professionnels, qualite galerie',
-      'Imprimes par Massive Medias, Montreal',
-      'Papiers d\'archives, encres pigmentees',
+      'Tirages fine art professionnels, qualité galerie',
+      'Imprimés par Massive Medias, Montréal',
+      'Papiers d\'archives, encres pigmentées',
       'Soft proofing et calibration couleurs inclus',
       'Pick-up gratuit Mile-End ou livraison',
       'Cadre noir ou blanc disponible',
@@ -135,9 +135,9 @@ function ArtisteDetail({ subdomainSlug }) {
 
   const processSteps = tx({
     fr: [
-      { step: '1', title: 'Choisissez', desc: 'Selectionnez une oeuvre et configurez votre tirage - serie, format et cadre.' },
-      { step: '2', title: 'On imprime', desc: 'Impression professionnelle dans nos studios. Soft proofing et controle qualite avant envoi.' },
-      { step: '3', title: 'Livraison', desc: 'Pick-up gratuit au Mile-End ou livraison securisee a votre porte.' },
+      { step: '1', title: 'Choisissez', desc: 'Sélectionnez une oeuvre et configurez votre tirage - série, format et cadre.' },
+      { step: '2', title: 'On imprime', desc: 'Impression professionnelle dans nos studios. Soft proofing et contrôle qualité avant envoi.' },
+      { step: '3', title: 'Livraison', desc: 'Pick-up gratuit au Mile-End ou livraison sécurisée à votre porte.' },
     ],
     en: [
       { step: '1', title: 'Choose', desc: 'Select an artwork and configure your print - series, format and frame.' },
@@ -159,10 +159,10 @@ function ArtisteDetail({ subdomainSlug }) {
 
   const faqItems = tx({
     fr: [
-      { q: 'Comment se passe la commande?', a: 'Selectionnez l\'oeuvre, la qualite d\'impression, le format et le cadre. Ajoutez au panier et procedez au paiement. Nous imprimons et preparons votre commande sous 24-48h.' },
-      { q: 'Quelle est la difference entre Studio et Musee?', a: 'La Serie Studio utilise une imprimante 4 encres pigmentees, parfaite pour la decoration. La Serie Musee utilise une imprimante 12 encres pigmentees pour une qualite galerie, ideale pour les collectionneurs.' },
-      { q: 'Puis-je recuperer sur place?', a: 'Oui! Pick-up gratuit au Mile-End (7049 rue Saint-Urbain, Montreal). Livraison locale aussi disponible.' },
-      { q: 'Les tirages sont-ils signes?', a: 'Les tirages sont imprimes professionnellement par Massive Medias en collaboration avec l\'artiste. Contactez-nous pour les tirages signes ou numerotes.' },
+      { q: 'Comment se passe la commande?', a: 'Sélectionnez l\'oeuvre, la qualité d\'impression, le format et le cadre. Ajoutez au panier et procédez au paiement. Nous imprimons et préparons votre commande sous 24-48h.' },
+      { q: 'Quelle est la différence entre Studio et Musée?', a: 'La Série Studio utilise une imprimante 4 encres pigmentées, parfaite pour la décoration. La Série Musée utilise une imprimante 12 encres pigmentées pour une qualité galerie, idéale pour les collectionneurs.' },
+      { q: 'Puis-je récupérer sur place?', a: 'Oui! Pick-up gratuit au Mile-End (7049 rue Saint-Urbain, Montréal). Livraison locale aussi disponible.' },
+      { q: 'Les tirages sont-ils signés?', a: 'Les tirages sont imprimés professionnellement par Massive Medias en collaboration avec l\'artiste. Contactez-nous pour les tirages signés ou numérotés.' },
       { q: 'Offrez-vous l\'encadrement?', a: 'Oui, cadre noir ou blanc disponible. Ajoutez l\'option cadre directement dans le configurateur.' },
     ],
     en: [

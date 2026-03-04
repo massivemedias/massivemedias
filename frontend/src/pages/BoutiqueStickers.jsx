@@ -44,8 +44,8 @@ function BoutiqueStickers() {
 
   const useCases = [
     { icon: Tag, fr: 'Branding', en: 'Branding', es: 'Branding', descFr: 'Logo sur produits, emballages', descEn: 'Logo on products, packaging', descEs: 'Logo en productos, empaques' },
-    { icon: Music, fr: 'Evenements', en: 'Events', es: 'Eventos', descFr: 'Merch de concert, festivals', descEn: 'Concert merch, festivals', descEs: 'Merch de conciertos, festivales' },
-    { icon: Gift, fr: 'Emballage', en: 'Packaging', es: 'Empaque', descFr: 'Etiquettes pour vos produits', descEn: 'Labels for your products', descEs: 'Etiquetas para tus productos' },
+    { icon: Music, fr: 'Événements', en: 'Events', es: 'Eventos', descFr: 'Merch de concert, festivals', descEn: 'Concert merch, festivals', descEs: 'Merch de conciertos, festivales' },
+    { icon: Gift, fr: 'Emballage', en: 'Packaging', es: 'Empaque', descFr: 'Étiquettes pour vos produits', descEn: 'Labels for your products', descEs: 'Etiquetas para tus productos' },
     { icon: Package, fr: 'Promotions', en: 'Promotions', es: 'Promociones', descFr: 'Giveaways, lancement', descEn: 'Giveaways, launches', descEs: 'Giveaways, lanzamientos' },
   ];
 

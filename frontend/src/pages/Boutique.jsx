@@ -8,6 +8,7 @@ import { useCart } from '../contexts/CartContext';
 import { useProducts } from '../hooks/useProducts';
 import artistsData from '../data/artists';
 import { getTshirtImage, getHoodieImage, getCrewneckImage } from '../data/merchData';
+import { img } from '../utils/paths';
 
 // Maudite Machine (Massive) en premier
 const artistOrder = ['maudite-machine', 'psyqu33n', 'adrift', 'mok'];
@@ -19,46 +20,49 @@ const defaultClothingProducts = [
     fr: 'T-Shirt',
     en: 'T-Shirt',
     es: 'Camiseta',
-    price: 35,
+    price: 22,
     image: getTshirtImage('orchid'),
-    desc_fr: 'Coton preshrunk, design exclusif. Tailles S a 3XL.',
+    desc_fr: 'Coton preshrunk, design exclusif. Tailles S à 3XL.',
     desc_en: 'Preshrunk cotton, exclusive design. Sizes S to 3XL.',
-    desc_es: 'Algodon preencogido, diseno exclusivo. Tallas S a 3XL.',
-    comingSoon: true,
+    desc_es: 'Algodón preencogido, diseño exclusivo. Tallas S a 3XL.',
+    comingSoon: false,
+    link: '/boutique/merch/tshirt',
   },
   {
     id: 'hoodie',
     fr: 'Hoodie',
     en: 'Hoodie',
     es: 'Sudadera con capucha',
-    price: 65,
+    price: 39,
     image: getHoodieImage('mint-green'),
-    desc_fr: 'Molleton epais, design exclusif. Tailles S a 3XL.',
+    desc_fr: 'Molleton épais, design exclusif. Tailles S à 3XL.',
     desc_en: 'Heavy fleece, exclusive design. Sizes S to 3XL.',
-    desc_es: 'Forro polar grueso, diseno exclusivo. Tallas S a 3XL.',
-    comingSoon: true,
+    desc_es: 'Forro polar grueso, diseño exclusivo. Tallas S a 3XL.',
+    comingSoon: false,
+    link: '/boutique/merch/hoodie',
   },
   {
     id: 'crewneck',
     fr: 'Crewneck',
     en: 'Crewneck',
     es: 'Sudadera cuello redondo',
-    price: 55,
+    price: 30,
     image: getCrewneckImage('light-pink'),
-    desc_fr: 'Molleton mi-poids, design exclusif. Tailles S a 3XL.',
+    desc_fr: 'Molleton mi-poids, design exclusif. Tailles S à 3XL.',
     desc_en: 'Midweight fleece, exclusive design. Sizes S to 3XL.',
-    desc_es: 'Forro polar de peso medio, diseno exclusivo. Tallas S a 3XL.',
-    comingSoon: true,
+    desc_es: 'Forro polar de peso medio, diseño exclusivo. Tallas S a 3XL.',
+    comingSoon: false,
+    link: '/boutique/merch/crewneck',
   },
 ];
 
 // Fallback - Stickers produits finis
 const defaultStickerProducts = [
-  { id: 'stk-massive', fr: 'Massive Medias', en: 'Massive Medias', es: 'Massive Medias', image: '/images/stickers/Stickers-massive.webp' },
-  { id: 'stk-maudite', fr: 'Maudite Machine', en: 'Maudite Machine', es: 'Maudite Machine', image: '/images/stickers/Stickers-Maudite-Machine.webp' },
-  { id: 'stk-cosmo', fr: 'Cosmovision', en: 'Cosmovision', es: 'Cosmovision', image: '/images/stickers/Stickers-Cosmovision.webp' },
-  { id: 'stk-vrstl', fr: 'Vrstl', en: 'Vrstl', es: 'Vrstl', image: '/images/stickers/Stickers-Vrstl.webp' },
-  { id: 'stk-fusion', fr: 'Fusion State Rec', en: 'Fusion State Rec', es: 'Fusion State Rec', image: '/images/stickers/Stickers-Fusion-State-Rec.webp' },
+  { id: 'stk-massive', fr: 'Massive Medias', en: 'Massive Medias', es: 'Massive Medias', image: img('/images/stickers/Stickers-massive.webp') },
+  { id: 'stk-maudite', fr: 'Maudite Machine', en: 'Maudite Machine', es: 'Maudite Machine', image: img('/images/stickers/Stickers-Maudite-Machine.webp') },
+  { id: 'stk-cosmo', fr: 'Cosmovision', en: 'Cosmovision', es: 'Cosmovision', image: img('/images/stickers/Stickers-Cosmovision.webp') },
+  { id: 'stk-vrstl', fr: 'Vrstl', en: 'Vrstl', es: 'Vrstl', image: img('/images/stickers/Stickers-Vrstl.webp') },
+  { id: 'stk-fusion', fr: 'Fusion State Rec', en: 'Fusion State Rec', es: 'Fusion State Rec', image: img('/images/stickers/Stickers-Fusion-State-Rec.webp') },
 ];
 
 const defaultStickerPricingTiers = [
@@ -71,7 +75,7 @@ const defaultStickerPricingTiers = [
 // Categories pour filtrer
 const categories = [
   { id: 'all', fr: 'Tout', en: 'All', es: 'Todo' },
-  { id: 'pret-a-porter', fr: 'Pret-a-porter', en: 'Clothing', es: 'Ropa' },
+  { id: 'pret-a-porter', fr: 'Prêt-à-porter', en: 'Clothing', es: 'Ropa' },
   { id: 'artistes', fr: 'Artistes', en: 'Artists', es: 'Artistas' },
   { id: 'prints', fr: 'Prints', en: 'Prints', es: 'Impresiones' },
   { id: 'stickers', fr: 'Packs de stickers', en: 'Sticker packs', es: 'Packs de stickers' },
@@ -101,6 +105,7 @@ function Boutique() {
         desc_fr: p.descriptionFr || '',
         desc_en: p.descriptionEn || '',
         comingSoon: p.comingSoon ?? false,
+        link: p.link || `/boutique/merch/${p.slug?.replace('merch-', '') || p.slug}`,
       }));
     }
     return defaultClothingProducts;
@@ -237,7 +242,7 @@ function Boutique() {
       <SEO
         title={tx({ fr: 'Boutique | Massive Medias', en: 'Shop | Massive Medias', es: 'Tienda | Massive Medias' })}
         description={tx({
-          fr: 'Boutique Massive Medias - Vetements, prints, stickers et plus.',
+          fr: 'Boutique Massive Medias - Vêtements, prints, stickers et plus.',
           en: 'Massive Medias Shop - Clothing, prints, stickers and more.',
           es: 'Tienda Massive Medias - Ropa, impresiones, stickers y mas.',
         })}
@@ -257,7 +262,7 @@ function Boutique() {
             </h1>
             <p className="text-xl md:text-2xl text-grey-light max-w-3xl mx-auto">
               {tx({
-                fr: 'Vetements, prints d\'artistes et produits exclusifs. Fabrique a Montreal.',
+                fr: 'Vêtements, prints d\'artistes et produits exclusifs. Fabriqué à Montréal.',
                 en: 'Clothing, artist prints and exclusive products. Made in Montreal.',
                 es: 'Ropa, impresiones de artistas y productos exclusivos. Hecho en Montreal.',
               })}
@@ -297,7 +302,7 @@ function Boutique() {
           >
             <div className="flex items-center justify-between mb-8">
               <h2 className="text-2xl md:text-3xl font-heading font-bold text-heading">
-                {tx({ fr: 'Pret-a-porter', en: 'Clothing', es: 'Ropa' })}
+                {tx({ fr: 'Prêt-à-porter', en: 'Clothing', es: 'Ropa' })}
               </h2>
             </div>
 
@@ -385,9 +390,9 @@ function Boutique() {
                 </div>
                 <p className="text-grey-muted text-sm leading-relaxed">
                   {tx({
-                    fr: 'Chaque piece est pensee pour durer. Materiaux premium, impression locale, coutures renforcees. Des vetements qui gardent leur eclat lavage apres lavage.',
+                    fr: 'Chaque pièce est pensée pour durer. Matériaux premium, impression locale, coutures renforcées. Des vêtements qui gardent leur éclat lavage après lavage.',
                     en: 'Each piece is designed to last. Premium materials, local printing, reinforced stitching. Clothes that keep their look wash after wash.',
-                    es: 'Cada pieza esta disenada para durar. Materiales premium, impresion local, costuras reforzadas. Ropa que mantiene su aspecto lavado tras lavado.',
+                    es: 'Cada pieza está diseñada para durar. Materiales premium, impresión local, costuras reforzadas. Ropa que mantiene su aspecto lavado tras lavado.',
                   })}
                 </p>
               </motion.div>
@@ -408,7 +413,7 @@ function Boutique() {
                 </div>
                 <p className="text-grey-muted text-sm leading-relaxed">
                   {tx({
-                    fr: 'Des artistes locaux laissent leur empreinte sur nos collections. Street art, tatouage, graphisme - des creations authentiques faites a Montreal.',
+                    fr: 'Des artistes locaux laissent leur empreinte sur nos collections. Street art, tatouage, graphisme - des créations authentiques faites à Montréal.',
                     en: 'Local artists leave their mark on our collections. Street art, tattoo, graphic design - authentic creations made in Montreal.',
                     es: 'Artistas locales dejan su huella en nuestras colecciones. Street art, tatuaje, diseno grafico - creaciones autenticas hechas en Montreal.',
                   })}
@@ -763,7 +768,7 @@ function Boutique() {
                 className="group flex items-center gap-5 p-6 rounded-2xl card-bg-bordered hover:border-accent/50 transition-all duration-300"
               >
                 <div className="w-12 h-12 rounded-xl bg-glass flex items-center justify-center flex-shrink-0 group-hover:bg-accent/10 transition-colors">
-                  <img src="/images/prints/PrintsFlatlay.webp" alt="" className="w-full h-full object-cover rounded-xl" />
+                  <img src={img('/images/prints/PrintsFlatlay.webp')} alt="" className="w-full h-full object-cover rounded-xl" />
                 </div>
                 <div className="flex-grow min-w-0">
                   <h3 className="text-base font-heading font-bold text-heading group-hover:text-accent transition-colors">

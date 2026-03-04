@@ -29,12 +29,12 @@ function BoutiqueFineArt() {
   ];
 
   const useCases = [
-    { icon: Frame, fr: 'Galerie & expo', en: 'Gallery & expo', es: 'Galer\u00eda y expo', descFr: 'Tirages qualite musee', descEn: 'Museum-quality prints', descEs: 'Impresiones calidad museo' },
+    { icon: Frame, fr: 'Galerie & expo', en: 'Gallery & expo', es: 'Galería y expo', descFr: 'Tirages qualité musée', descEn: 'Museum-quality prints', descEs: 'Impresiones calidad museo' },
     { icon: Building2, fr: 'Deco bureau', en: 'Office decor', es: 'Decoraci\u00f3n oficina', descFr: 'Art pour espaces de travail', descEn: 'Art for workspaces', descEs: 'Arte para espacios de trabajo' },
-    { icon: Music, fr: 'Evenements', en: 'Events', es: 'Eventos', descFr: 'Flyers de soiree, concert', descEn: 'Party flyers, concerts', descEs: 'Flyers de fiesta, conciertos' },
-    { icon: Gift, fr: 'Cadeau', en: 'Gift', es: 'Regalo', descFr: 'Tirage personnalise unique', descEn: 'Unique custom print', descEs: 'Impresi\u00f3n personalizada \u00fanica' },
+    { icon: Music, fr: 'Événements', en: 'Events', es: 'Eventos', descFr: 'Flyers de soirée, concert', descEn: 'Party flyers, concerts', descEs: 'Flyers de fiesta, conciertos' },
+    { icon: Gift, fr: 'Cadeau', en: 'Gift', es: 'Regalo', descFr: 'Tirage personnalisé unique', descEn: 'Unique custom print', descEs: 'Impresión personalizada única' },
     { icon: Camera, fr: 'Photo d\'art', en: 'Art photo', es: 'Foto art\u00edstica', descFr: 'Tirages photo professionnels', descEn: 'Professional photo prints', descEs: 'Impresiones fotogr\u00e1ficas profesionales' },
-    { icon: Briefcase, fr: 'Cartes d\'affaires', en: 'Business cards', es: 'Tarjetas de presentaci\u00f3n', descFr: 'Cartes pros sur papier epais', descEn: 'Pro cards on thick paper', descEs: 'Tarjetas profesionales en papel grueso' },
+    { icon: Briefcase, fr: 'Cartes d\'affaires', en: 'Business cards', es: 'Tarjetas de presentación', descFr: 'Cartes pros sur papier épais', descEn: 'Pro cards on thick paper', descEs: 'Tarjetas profesionales en papel grueso' },
   ];
 
   const ctaLinks = [

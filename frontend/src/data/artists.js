@@ -43,7 +43,7 @@ const artistsData = {
       tiktok: 'https://tiktok.com/@adriftvision',
       website: 'https://www.adrift.vision',
     },
-    avatar: '/images/prints/AdriftAvatar.webp',
+    avatar: img('/images/prints/AdriftAvatar.webp'),
     heroImage: thumb('/images/prints/Adrift1.webp'),
     prints: [
       { id: 'adrift-001', titleFr: 'Print I', titleEn: 'Print I', titleEs: 'Print I', image: thumb('/images/prints/Adrift1.webp'), fullImage: img('/images/prints/Adrift1.webp'), limited: false },
@@ -68,7 +68,7 @@ const artistsData = {
       en: "Maudite Machine is a Montreal-based audiovisual collective that fuses electronic music and visual art. Their graphic creations - posters, album covers and illustrations - capture the raw energy of the underground scene and transform it into striking visual works.",
       es: "Maudite Machine es un colectivo audiovisual de Montreal que fusiona música electrónica y arte visual. Sus creaciones gráficas - carteles, portadas de álbum e ilustraciones - capturan la energía cruda de la escena underground y la transforman en obras visuales impactantes.",
     },
-    avatar: '/images/stickers/Stickers-Maudite-Machine.webp',
+    avatar: img('/images/stickers/Stickers-Maudite-Machine.webp'),
     heroImage: thumb('/images/prints/Printstoutcourt.webp'),
     prints: [],
     pricing: {
@@ -90,7 +90,7 @@ const artistsData = {
       en: "Montreal photographer with a unique eye for composition and light. His work captures the essence of the city through unexpected perspectives - architecture, reflections, urban textures. Each print is an invitation to see Montreal differently.",
       es: "Fotógrafo montrealense con una mirada única para la composición y la luz. Sus obras capturan la esencia de la ciudad a través de perspectivas inesperadas - arquitectura, reflejos, texturas urbanas. Cada impresión es una invitación a ver Montreal de otra manera.",
     },
-    avatar: '/images/prints/MokAvatar.webp',
+    avatar: img('/images/prints/MokAvatar.webp'),
     heroImage: thumb('/images/prints/Mok1.webp'),
     prints: [
       { id: 'mok-001', titleFr: 'Metro Montreal', titleEn: 'Montreal Metro', titleEs: 'Metro Montreal', image: thumb('/images/prints/Mok1.webp'), fullImage: img('/images/prints/Mok1.webp'), limited: false },
@@ -144,7 +144,7 @@ const artistsData = {
       website: 'https://psyqu33n.com',
       email: 'medusart@protonmail.com',
     },
-    avatar: '/images/prints/Psyqu33nAvatar.webp',
+    avatar: img('/images/prints/Psyqu33nAvatar.webp'),
     heroImage: thumb('/images/prints/Psyqu33n1.webp'),
     prints: [
       { id: 'psyqu33n-001', titleFr: 'Accepter ses parts d\'ombres et de lumiere', titleEn: 'Embracing Shadow and Light', titleEs: 'Aceptar sus partes de sombra y luz', image: thumb('/images/prints/Psyqu33n1.webp'), fullImage: img('/images/prints/Psyqu33n1.webp'), limited: false },

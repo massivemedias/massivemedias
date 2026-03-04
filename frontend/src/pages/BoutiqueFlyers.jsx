@@ -21,8 +21,8 @@ function BoutiqueFlyers() {
   ];
 
   const useCases = [
-    { icon: Music, fr: 'Evenements', en: 'Events', es: 'Eventos', descFr: 'Flyers de soiree, concert', descEn: 'Party flyers, concerts', descEs: 'Flyers de fiesta, conciertos' },
-    { icon: Briefcase, fr: 'Cartes d\'affaires', en: 'Business cards', es: 'Tarjetas de presentaci\u00f3n', descFr: 'Cartes pros sur papier epais', descEn: 'Pro cards on thick paper', descEs: 'Tarjetas profesionales en papel grueso' },
+    { icon: Music, fr: 'Événements', en: 'Events', es: 'Eventos', descFr: 'Flyers de soirée, concert', descEn: 'Party flyers, concerts', descEs: 'Flyers de fiesta, conciertos' },
+    { icon: Briefcase, fr: 'Cartes d\'affaires', en: 'Business cards', es: 'Tarjetas de presentación', descFr: 'Cartes pros sur papier épais', descEn: 'Pro cards on thick paper', descEs: 'Tarjetas profesionales en papel grueso' },
     { icon: Megaphone, fr: 'Marketing', en: 'Marketing', es: 'Marketing', descFr: 'Prospectus et promos', descEn: 'Leaflets and promos', descEs: 'Folletos y promos' },
     { icon: Users, fr: 'Networking', en: 'Networking', es: 'Networking', descFr: 'Distribution en main propre', descEn: 'Hand-to-hand distribution', descEs: 'Distribuci\u00f3n en mano' },
   ];

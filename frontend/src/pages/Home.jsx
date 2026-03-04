@@ -78,11 +78,11 @@ function Home() {
   // ── Featured Projects ──
   const cmsFeaturedProjects = content?.featuredProjects?.length ? content.featuredProjects : null;
   const featuredProjects = cmsFeaturedProjects
-    ? cmsFeaturedProjects.map((p) => ({
+    ? cmsFeaturedProjects.map((p, i) => ({
         title: bl(p, 'title', lang),
         category: bl(p, 'category', lang),
         link: p.link,
-        image: mediaUrl(p.image, null),
+        image: mediaUrl(p.image, fallbackFeaturedProjectImages[i] || null),
       }))
     : null;
 
@@ -135,7 +135,7 @@ function Home() {
             transition={{ duration: 0.8 }}
           >
             <motion.img
-              src="/images/cpr-tagline.png"
+              src={img('/images/cpr-tagline.png')}
               alt="Create. Print. Repeat."
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -348,9 +348,9 @@ function Home() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto">
             {[
               { icon: Shield, fr: 'La promesse Massive', en: 'The Massive Promise', es: 'La promesa Massive', descFr: 'Satisfaction garantie ou on refait', descEn: 'Satisfaction guaranteed or we redo it', descEs: 'Satisfaccion garantizada o lo rehacemos' },
-              { icon: MapPin, fr: 'Imprime a Montreal', en: 'Printed in Montreal', es: 'Impreso en Montreal', descFr: 'Production 100% locale, Mile-End', descEn: '100% local production, Mile-End', descEs: 'Produccion 100% local, Mile-End' },
-              { icon: Clock, fr: 'Delai rapide', en: 'Fast turnaround', es: 'Entrega rapida', descFr: '24-48h sur la plupart des produits', descEn: '24-48h on most products', descEs: '24-48h en la mayoria de productos' },
-              { icon: Heart, fr: 'Design inclus', en: 'Design included', es: 'Diseno incluido', descFr: 'Creation graphique incluse', descEn: 'Graphic design included', descEs: 'Creacion grafica incluida' },
+              { icon: MapPin, fr: 'Imprimé à Montréal', en: 'Printed in Montreal', es: 'Impreso en Montreal', descFr: 'Production 100% locale, Mile-End', descEn: '100% local production, Mile-End', descEs: 'Producción 100% local, Mile-End' },
+              { icon: Clock, fr: 'Délai rapide', en: 'Fast turnaround', es: 'Entrega rápida', descFr: '24-48h sur la plupart des produits', descEn: '24-48h on most products', descEs: '24-48h en la mayoría de productos' },
+              { icon: Heart, fr: 'Design inclus', en: 'Design included', es: 'Diseño incluido', descFr: 'Création graphique incluse', descEn: 'Graphic design included', descEs: 'Creación gráfica incluida' },
             ].map((item, i) => {
               const Icon = item.icon;
               return (

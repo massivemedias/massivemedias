@@ -1,3 +1,5 @@
+import { img } from '../utils/paths';
+
 /**
  * Merch product data - colors, sizes, pricing
  * Colors based on Gildan 5000 / standard blank t-shirt catalog
@@ -77,7 +79,7 @@ export const merchTshirtPrice = {
 };
 
 /** Get t-shirt product image path for a given color ID */
-export const getTshirtImage = (colorId) => `/images/tshirts/${colorId}.webp`;
+export const getTshirtImage = (colorId) => img(`/images/tshirts/${colorId}.webp`);
 
 /**
  * Hoodie colors - Gildan 18500
@@ -136,7 +138,7 @@ export const merchHoodiePrice = {
 };
 
 /** Get hoodie product image path for a given color ID */
-export const getHoodieImage = (colorId) => `/images/hoodies/${colorId}.webp`;
+export const getHoodieImage = (colorId) => img(`/images/hoodies/${colorId}.webp`);
 
 /**
  * Crewneck colors - Gildan 18000
@@ -187,7 +189,7 @@ export const merchCrewneckPrice = {
 };
 
 /** Get crewneck product image path for a given color ID */
-export const getCrewneckImage = (colorId) => `/images/crewneck/${colorId}.webp`;
+export const getCrewneckImage = (colorId) => img(`/images/crewneck/${colorId}.webp`);
 
 /**
  * Tote Bag colors - Q-Tees QTB
@@ -215,4 +217,4 @@ export const totebagColors = [
 ];
 
 /** Get tote bag product image path for a given color ID */
-export const getTotebagImage = (colorId) => `/images/totebags/${colorId}.webp`;
+export const getTotebagImage = (colorId) => img(`/images/totebags/${colorId}.webp`);
