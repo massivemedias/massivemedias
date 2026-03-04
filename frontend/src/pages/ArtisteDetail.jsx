@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, Camera, Award, MessageSquare, ChevronDown, ChevronLeft, ChevronRight, CheckCircle, Image, ExternalLink, X } from 'lucide-react';
+import { ArrowRight, Camera, Award, MessageSquare, ChevronDown, ChevronLeft, ChevronRight, CheckCircle, Image, ExternalLink, X, ZoomIn } from 'lucide-react';
 import SEO from '../components/SEO';
 import ArtistPrintCard from '../components/ArtistPrintCard';
 import ConfiguratorArtistPrint from '../components/configurators/ConfiguratorArtistPrint';
@@ -40,12 +40,15 @@ function ArtisteDetail({ subdomainSlug }) {
   const { artists: cmsArtists } = useArtists();
 
   const artist = useMemo(() => {
-    const local = artistsData[slug] || null;
     const cmsArtist = cmsArtists?.find(a => a.slug === slug);
+    const local = artistsData[slug] || null;
     if (cmsArtist) {
       const cms = buildArtistFromCMS(cmsArtist);
-      // Local data (bio, socials, pricing, demarche) a priorite sur le CMS
-      return { ...cms, ...(local ? { bio: local.bio, socials: local.socials, pricing: local.pricing, demarche: local.demarche } : {}) };
+      // Psyqu33n : bio locale a priorite (mise a jour manuellement)
+      if (slug === 'psyqu33n' && local) {
+        return { ...cms, bio: local.bio };
+      }
+      return cms;
     }
     return local;
   }, [cmsArtists, slug]);
@@ -405,12 +408,42 @@ function ArtisteDetail({ subdomainSlug }) {
 
         {/* ============ CONFIGURATEUR ============ */}
         {selectedPrint && (
-          <div ref={configuratorRef} className="mb-20 scroll-mt-24">
-            <ConfiguratorArtistPrint
-              artist={artist}
-              selectedPrint={selectedPrint}
-            />
-          </div>
+          <motion.div
+            ref={configuratorRef}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="mb-20 scroll-mt-24"
+          >
+            <h2 className="text-3xl font-heading font-bold text-gradient mb-8 text-center">
+              {tx({ fr: 'Configurez votre tirage', en: 'Configure Your Print', es: 'Configura tu impresion' })}
+            </h2>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-8 max-w-5xl mx-auto">
+              {/* Preview */}
+              <div
+                className="relative rounded-2xl overflow-hidden aspect-[2/3] border border-purple-main/30 card-shadow cursor-pointer group watermark"
+                onClick={() => setLightbox(artist.prints.findIndex(p => p.id === selectedPrint.id))}
+              >
+                <img
+                  src={selectedPrint.image}
+                  alt={tx({ fr: selectedPrint.titleFr, en: selectedPrint.titleEn, es: selectedPrint.titleEs || selectedPrint.titleEn })}
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
+                  <ZoomIn size={32} className="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 drop-shadow-lg" />
+                </div>
+              </div>
+
+              {/* Options */}
+              <div className="p-4 sm:p-6 rounded-2xl border border-purple-main/30 transition-colors duration-300 highlight-shadow lg:sticky lg:top-24 self-start">
+                <ConfiguratorArtistPrint
+                  artist={artist}
+                  selectedPrint={selectedPrint}
+                />
+              </div>
+            </div>
+          </motion.div>
         )}
 
         {/* ============ DEMARCHE ARTISTIQUE ============ */}
