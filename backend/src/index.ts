@@ -1035,7 +1035,14 @@ export default {
           'api::product.product.findOne',
           'api::boutique-item.boutique-item.find',
           'api::boutique-item.boutique-item.findOne',
+          'api::news-article.news-article.find',
+          'api::news-article.news-article.findOne',
+          'api::inventory-item.inventory-item.find',
+          'api::inventory-item.inventory-item.findOne',
+          'api::service-package.service-package.find',
+          'api::service-package.service-package.findOne',
           'plugin::upload.content-api.upload',
+          'plugin::upload.content-api.find',
         ];
 
         for (const action of permActions) {

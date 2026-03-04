@@ -659,7 +659,7 @@ export interface ApiInventoryItemInventoryItem
   extends Struct.CollectionTypeSchema {
   collectionName: 'inventory_items';
   info: {
-    description: "Gestion d'inventaire \u2014 textiles, cadres, accessoires (hors consommables)";
+    description: "Gestion d'inventaire \u2014 textiles, cadres, accessoires, produits";
     displayName: 'Inventaire';
     pluralName: 'inventory-items';
     singularName: 'inventory-item';
@@ -670,7 +670,7 @@ export interface ApiInventoryItemInventoryItem
   attributes: {
     active: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
     category: Schema.Attribute.Enumeration<
-      ['textile', 'frame', 'accessory', 'other']
+      ['textile', 'frame', 'accessory', 'sticker', 'print', 'merch', 'other']
     > &
       Schema.Attribute.Required;
     costPrice: Schema.Attribute.Decimal;
@@ -684,14 +684,17 @@ export interface ApiInventoryItemInventoryItem
       'api::inventory-item.inventory-item'
     > &
       Schema.Attribute.Private;
+    location: Schema.Attribute.String;
     lowStockThreshold: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<5>;
     nameEn: Schema.Attribute.String & Schema.Attribute.Required;
     nameFr: Schema.Attribute.String & Schema.Attribute.Required;
     notes: Schema.Attribute.Text;
+    product: Schema.Attribute.Relation<'manyToOne', 'api::product.product'>;
     publishedAt: Schema.Attribute.DateTime;
     quantity: Schema.Attribute.Integer &
       Schema.Attribute.Required &
       Schema.Attribute.DefaultTo<0>;
+    reserved: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
     sku: Schema.Attribute.String & Schema.Attribute.Unique;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &

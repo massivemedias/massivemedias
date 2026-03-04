@@ -5,7 +5,7 @@
     "singularName": "inventory-item",
     "pluralName": "inventory-items",
     "displayName": "Inventaire",
-    "description": "Gestion d'inventaire — textiles, cadres, accessoires (hors consommables)"
+    "description": "Gestion d'inventaire — textiles, cadres, accessoires, produits"
   },
   "options": {
     "draftAndPublish": false
@@ -26,7 +26,7 @@
     },
     "category": {
       "type": "enumeration",
-      "enum": ["textile", "frame", "accessory", "other"],
+      "enum": ["textile", "frame", "accessory", "sticker", "print", "merch", "other"],
       "required": true
     },
     "variant": {
@@ -37,12 +37,24 @@
       "required": true,
       "default": 0
     },
+    "reserved": {
+      "type": "integer",
+      "default": 0
+    },
     "lowStockThreshold": {
       "type": "integer",
       "default": 5
     },
     "costPrice": {
       "type": "decimal"
+    },
+    "location": {
+      "type": "string"
+    },
+    "product": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::product.product"
     },
     "image": {
       "type": "media",

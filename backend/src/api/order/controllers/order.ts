@@ -221,6 +221,32 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
         } catch (err) {
           strapi.log.warn('Could not update client stats:', err);
         }
+
+        // Decrement inventory stock for each item in the order
+        try {
+          const orderItems: any[] = Array.isArray(order.items) ? order.items : [];
+          for (const item of orderItems) {
+            const qty = item.quantity || 1;
+            const sku = item.sku || item.slug;
+            if (!sku) continue;
+
+            const inventoryItems = await strapi.documents('api::inventory-item.inventory-item').findMany({
+              filters: { sku, active: true },
+            });
+
+            if (inventoryItems.length > 0) {
+              const inv = inventoryItems[0];
+              const newQty = Math.max(0, (inv.quantity || 0) - qty);
+              await strapi.documents('api::inventory-item.inventory-item').update({
+                documentId: inv.documentId,
+                data: { quantity: newQty },
+              });
+              strapi.log.info(`Inventory ${sku}: ${inv.quantity} -> ${newQty} (-${qty})`);
+            }
+          }
+        } catch (err) {
+          strapi.log.warn('Could not update inventory:', err);
+        }
       }
     }
 

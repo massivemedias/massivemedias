@@ -28,6 +28,7 @@ const Artistes = lazy(() => import('./pages/Artistes'));
 const ArtisteDetail = lazy(() => import('./pages/ArtisteDetail'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 const MmAdmin = lazy(() => import('./pages/MmAdmin'));
+const AdminInventaire = lazy(() => import('./pages/AdminInventaire'));
 const ProtectedRoute = lazy(() => import('./components/ProtectedRoute'));
 
 // Base path pour GitHub Pages
@@ -94,8 +95,9 @@ function App() {
             <Route path="/artistes" element={<Artistes />} />
             <Route path="/artistes/:slug" element={<ArtisteDetail />} />
 
-            {/* Admin redirect */}
+            {/* Admin */}
             <Route path="/mm-admin" element={<MmAdmin />} />
+            <Route path="/admin/inventaire" element={<ProtectedRoute><AdminInventaire /></ProtectedRoute>} />
 
             {/* Checkout */}
             <Route path="/checkout" element={<Checkout />} />

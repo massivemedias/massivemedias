@@ -8,5 +8,21 @@ export default {
         auth: false,
       },
     },
+    {
+      method: 'GET',
+      path: '/inventory-items/dashboard',
+      handler: 'inventory-item.dashboard',
+      config: {
+        auth: false,
+      },
+    },
+    {
+      method: 'PUT',
+      path: '/inventory-items/:documentId/adjust',
+      handler: 'inventory-item.adjustStock',
+      config: {
+        auth: false,
+      },
+    },
   ],
 };
