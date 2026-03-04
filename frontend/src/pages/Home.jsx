@@ -135,7 +135,7 @@ function Home() {
             transition={{ duration: 0.8 }}
           >
             <motion.img
-              src={img('/images/cpr-tagline.png')}
+              src={`${import.meta.env.BASE_URL}images/cpr-tagline.png`}
               alt="Create. Print. Repeat."
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
