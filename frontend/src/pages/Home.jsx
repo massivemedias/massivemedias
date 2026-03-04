@@ -128,7 +128,7 @@ function Home() {
       <section className="relative min-h-[80vh] md:min-h-screen flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 hero-aurora"></div>
 
-        <div className="relative z-10 text-center max-w-5xl mx-auto px-4 py-20">
+        <div className="relative z-10 text-center mx-auto px-4 py-20">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -147,7 +147,7 @@ function Home() {
               initial={{ opacity: 0, scale: 0.7 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.1, duration: 2, ease: [0.25, 0.1, 0.25, 1] }}
-              className="mx-auto mb-10 logo-home"
+              className="mx-auto mb-10 logo-home max-w-[90vw]"
             >
               <MassiveLogo className="w-full h-full transition-colors duration-300" />
             </motion.div>

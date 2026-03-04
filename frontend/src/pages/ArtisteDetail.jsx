@@ -261,11 +261,13 @@ function ArtisteDetail({ subdomainSlug }) {
                 transition={{ duration: 0.8, delay: 0.2 }}
                 className="hidden lg:block lg:flex-1 max-w-md"
               >
+                <div className="relative overflow-hidden rounded-2xl watermark">
                 <img
                   src={artist.heroImage}
                   alt={artist.name}
-                  className="w-full h-auto max-h-[400px] object-contain drop-shadow-2xl rounded-2xl"
+                  className="w-full h-auto max-h-[400px] object-contain drop-shadow-2xl"
                 />
+                </div>
               </motion.div>
             )}
           </div>
@@ -731,17 +733,21 @@ function ArtisteDetail({ subdomainSlug }) {
               </button>
             )}
 
-            <motion.img
+            <motion.div
               key={lightbox}
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
               transition={{ duration: 0.3 }}
-              src={artist.prints[lightbox].fullImage || toFull(artist.prints[lightbox].image)}
-              alt={tx({ fr: artist.prints[lightbox].titleFr, en: artist.prints[lightbox].titleEn, es: artist.prints[lightbox].titleEs || artist.prints[lightbox].titleEn })}
-              className="max-w-full max-h-[85vh] object-contain rounded-lg"
+              className="relative watermark rounded-lg overflow-hidden"
               onClick={(e) => e.stopPropagation()}
-            />
+            >
+              <img
+                src={artist.prints[lightbox].fullImage || toFull(artist.prints[lightbox].image)}
+                alt={tx({ fr: artist.prints[lightbox].titleFr, en: artist.prints[lightbox].titleEn, es: artist.prints[lightbox].titleEs || artist.prints[lightbox].titleEn })}
+                className="max-w-full max-h-[85vh] object-contain"
+              />
+            </motion.div>
 
             {/* Compteur */}
             {artist.prints.length > 1 && (

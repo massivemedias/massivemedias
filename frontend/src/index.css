@@ -742,6 +742,23 @@ select.input-field option {
   background: rgba(239, 68, 68, 0.1);
 }
 
+/* Watermark overlay - filigrane ultra-leger sur images artistes */
+.watermark {
+  position: relative;
+}
+
+.watermark::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='120'%3E%3Ctext transform='rotate(-30 110 60)' x='110' y='60' text-anchor='middle' dominant-baseline='middle' font-family='Arial,Helvetica,sans-serif' font-size='12' font-weight='700' fill='white' letter-spacing='4' opacity='0.5'%3EMASSIVE MEDIAS%3C/text%3E%3C/svg%3E");
+  background-repeat: repeat;
+  opacity: 0.06;
+  pointer-events: none;
+  z-index: 2;
+  mix-blend-mode: difference;
+}
+
 /* Lightbox overlay */
 .lightbox-overlay {
   background: rgba(0, 0, 0, 0.95);
