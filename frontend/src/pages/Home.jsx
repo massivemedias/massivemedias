@@ -140,7 +140,7 @@ function Home() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3, duration: 0.6 }}
-              className="mx-auto mb-8 h-[24px] w-auto cpr-invert"
+              className="mx-auto mb-8 h-[32px] md:h-[42px] w-auto cpr-invert"
             />
 
             <motion.div
