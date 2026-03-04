@@ -101,8 +101,8 @@ We also print flyers, postcards and business cards - everything you need to prom
       { q: 'Can I pick up in person?', a: 'Yes! Free pick-up in Mile-End. We also offer local delivery in Montreal.' },
     ],
     seo: {
-      title: 'Prints - Fine Art, Flyers & Cards | Montreal - Massive Medias',
-      description: 'Gallery-quality fine art prints, flyers, postcards and business cards. Professional local printing in Montreal.',
+      title: 'Fine Art Printing Montreal | Gallery Prints, Posters & Flyers - Massive Medias',
+      description: 'Gallery-quality fine art prints in Montreal. 12-color pigment printing on Hahnemuhle paper. Posters, flyers and business cards. Local production in Mile-End, 24-48h delivery.',
     },
   },
 
@@ -170,8 +170,8 @@ Cut to the exact shape of your design with our professional cutting equipment, e
       { q: 'Can I get a fully custom shape?', a: 'Absolutely! Our stickers are die-cut to match the exact shape of your design.' },
     ],
     seo: {
-      title: 'Custom Stickers Montreal - Massive Medias',
-      description: 'Custom die-cut stickers. Holographic, matte, glossy, clear. Design included. Pro cutting. Montreal.',
+      title: 'Die-Cut Stickers Montreal | Custom, Holographic & Vinyl - Massive Medias',
+      description: 'Custom die-cut stickers in Montreal. Holographic, matte, glossy, clear, vinyl. Graphic design included. Pro precision cutting. From 10 units. Local production in Mile-End.',
     },
   },
 
@@ -248,8 +248,8 @@ Ideal for artist merch, events, corporate gifts or any custom project. T-shirts,
       { q: 'What products can be sublimated?', a: 'T-shirts, crewnecks, hoodies, fanny packs, mugs, tumblers, mousepads, keychains, and more. Fanny packs are perfect for putting your logo on!' },
     ],
     seo: {
-      title: 'Merch & Sublimation Montreal - Massive Medias',
-      description: "T-shirts, crewnecks, hoodies, fanny packs, mugs in sublimation. Custom artist merch. Local production in Montreal.",
+      title: 'Sublimation & Merch Montreal | T-Shirts, Hoodies, Mugs - Massive Medias',
+      description: 'Custom textile sublimation in Montreal. T-shirts, hoodies, crewnecks, fanny packs, mugs, tumblers. Artist and corporate merch. From 1 unit. Local production in Mile-End.',
     },
   },
 
@@ -316,8 +316,8 @@ We work with Adobe Illustrator, Figma and Photoshop to create impactful visuals 
       { q: 'What file formats are delivered?', a: 'You receive vector files (AI, SVG, PDF) as well as high-resolution PNG/JPEG exports. Everything you need for web and print.' },
     ],
     seo: {
-      title: 'Graphic Design Montreal - Massive Medias',
-      description: 'Logos, visual identities, posters, album covers. Professional graphic design in Montreal.',
+      title: 'Graphic Design Montreal | Logos, Branding & Posters - Massive Medias',
+      description: 'Professional graphic design in Montreal. Logos, visual identities, posters, album covers, packaging. Custom creation. Mile-End creative studio since 2013.',
     },
   },
 
@@ -463,8 +463,8 @@ We work with Adobe Illustrator, Figma and Photoshop to create impactful visuals 
       { q: 'What technologies do you use?', a: 'React, Angular, WordPress, Shopify, Node.js, Strapi - we choose the best tech for your project and needs.' },
     ],
     seo: {
-      title: 'Web Development Montreal - Massive Medias',
-      description: 'Websites, e-commerce, SEO and search ranking. Modern and high-performance web development in Montreal. 15+ years of experience.',
+      title: 'Web Development Montreal | Websites, E-Commerce & SEO - Massive Medias',
+      description: 'Professional web development in Montreal. Showcase sites, e-commerce, web apps, SEO and search ranking. React, WordPress, Shopify. 10+ years experience. Mile-End studio.',
     },
   },
 };

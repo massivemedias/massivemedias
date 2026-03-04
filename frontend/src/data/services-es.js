@@ -101,8 +101,8 @@ También imprimimos flyers, postales y tarjetas de presentación - todo lo que n
       { q: '¿Se puede recoger en persona?', a: '¡Sí! Recogida gratuita en Mile-End. También ofrecemos entrega local en Montreal.' },
     ],
     seo: {
-      title: 'Prints - Fine Art, Flyers y Tarjetas | Montreal - Massive Medias',
-      description: 'Impresiones fine art de calidad galería, flyers, postales y tarjetas de presentación. Impresión profesional local en Montreal.',
+      title: 'Impresion Fine Art Montreal | Tirajes Galeria, Posters & Flyers - Massive Medias',
+      description: 'Tirajes fine art calidad galeria en Montreal. Impresion pigmentaria 12 colores en papel Hahnemuhle. Posters, flyers y tarjetas. Produccion local Mile-End, entrega 24-48h.',
     },
   },
 
@@ -170,8 +170,8 @@ Cortados a la forma exacta de tu diseño con nuestro equipo de corte profesional
       { q: '¿Se puede obtener una forma totalmente personalizada?', a: '¡Absolutamente! Nuestros stickers son troquelados (die-cut) según la forma exacta de tu diseño.' },
     ],
     seo: {
-      title: 'Stickers Personalizados Montreal - Massive Medias',
-      description: 'Stickers die-cut personalizados. Holográfico, mate, brillante, transparente. Diseño incluido. Corte profesional. Montreal.',
+      title: 'Stickers Troquelados Montreal | Personalizados, Holograficos & Vinilo - Massive Medias',
+      description: 'Stickers troquelados personalizados en Montreal. Holografico, mate, brillante, transparente, vinilo. Diseno grafico incluido. Corte pro a medida. Desde 10 unidades. Produccion local Mile-End.',
     },
   },
 
@@ -248,8 +248,8 @@ Ideal para merch de artistas, eventos, regalos corporativos o cualquier proyecto
       { q: '¿Qué productos se pueden sublimar?', a: 'Camisetas, crewnecks, hoodies, riñoneras, tazas, termos, mousepads, llaveros y más. ¡Las riñoneras son perfectas para poner tu logo!' },
     ],
     seo: {
-      title: 'Merch y Sublimación Montreal - Massive Medias',
-      description: 'Camisetas, crewnecks, hoodies, riñoneras, tazas en sublimación. Merch de artista personalizado. Producción local en Montreal.',
+      title: 'Sublimacion & Merch Montreal | Camisetas, Hoodies, Tazas - Massive Medias',
+      description: 'Sublimacion textil personalizada en Montreal. Camisetas, hoodies, crewnecks, rinoneras, tazas, termos. Merch de artista y corporativo. Desde 1 unidad. Produccion local Mile-End.',
     },
   },
 
@@ -316,8 +316,8 @@ Trabajamos con Adobe Illustrator, Figma y Photoshop para crear visuales impactan
       { q: '¿Qué formatos de archivo se entregan?', a: 'Recibes archivos vectoriales (AI, SVG, PDF) así como exportaciones PNG/JPEG en alta resolución. Todo lo que necesitas para web e impresión.' },
     ],
     seo: {
-      title: 'Diseño Gráfico Montreal - Massive Medias',
-      description: 'Logos, identidades visuales, afiches, portadas de álbum. Diseño gráfico profesional en Montreal.',
+      title: 'Diseno Grafico Montreal | Logos, Identidad Visual & Afiches - Massive Medias',
+      description: 'Diseno grafico profesional en Montreal. Logos, identidades visuales, afiches, portadas de album, packaging. Creacion a medida. Estudio creativo Mile-End desde 2013.',
     },
   },
 
@@ -463,8 +463,8 @@ Más de 15 años de experiencia en desarrollo web. El fundador de Massive Medias
       { q: '¿Qué tecnologías utilizan?', a: 'React, Angular, WordPress, Shopify, Node.js, Strapi - elegimos la tecnología más adecuada para tu proyecto y tus necesidades.' },
     ],
     seo: {
-      title: 'Desarrollo Web Montreal - Massive Medias',
-      description: 'Sitios web, e-commerce, SEO y posicionamiento. Desarrollo web moderno y de alto rendimiento en Montreal. Más de 15 años de experiencia.',
+      title: 'Desarrollo Web Montreal | Sitios Web, E-Commerce & SEO - Massive Medias',
+      description: 'Desarrollo web profesional en Montreal. Sitios vitrina, e-commerce, aplicaciones web, SEO y posicionamiento. React, WordPress, Shopify. 10+ anos de experiencia. Estudio Mile-End.',
     },
   },
 };

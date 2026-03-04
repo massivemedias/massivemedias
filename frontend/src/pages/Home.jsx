@@ -17,7 +17,7 @@ import {
 import ServiceCard from '../components/ServiceCard';
 import Counter from '../components/Counter';
 import SEO from '../components/SEO';
-import { getOrganizationSchema, getLocalBusinessSchema } from '../components/seo/schemas';
+import { getOrganizationSchema, getLocalBusinessSchema, getWebSiteSchema } from '../components/seo/schemas';
 import MassiveLogo from '../components/MassiveLogo';
 import { img, thumb } from '../utils/paths';
 import { useLang } from '../i18n/LanguageContext';
@@ -121,7 +121,7 @@ function Home() {
         title={content?.homeSeo ? bl(content.homeSeo, 'title', lang) || t('home.seo.title') : t('home.seo.title')}
         description={content?.homeSeo ? bl(content.homeSeo, 'description', lang) || t('home.seo.description') : t('home.seo.description')}
         breadcrumbs={[{ name: tx({ fr: 'Accueil', en: 'Home', es: 'Inicio' }) }]}
-        jsonLd={[getOrganizationSchema(), getLocalBusinessSchema(lang)]}
+        jsonLd={[getOrganizationSchema(), getLocalBusinessSchema(lang), getWebSiteSchema()]}
       />
 
       {/* ============ HERO ============ */}

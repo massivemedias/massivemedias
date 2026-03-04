@@ -5,7 +5,7 @@
     <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#FFFFFF" />
+    <meta name="theme-color" content="#1a1a2e" />
 
     <!-- Preconnect pour fonts Google (réduit latence DNS+TLS) -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -13,21 +13,143 @@
     <!-- Préchargement de la font Space Grotesk -->
     <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" />
-    <meta name="description" content="Massive Medias — Studio de production créative à Montréal. Impression fine art, stickers, merch, design graphique et développement web." />
-    <title>Massive Medias — Studio de production créative, Montréal</title>
 
-    <!-- OpenGraph fallback (pour bots qui n'exécutent pas le JS) -->
+    <!-- SEO principal -->
+    <title>Massive Medias | Impression Fine Art, Stickers, Merch & Design - Montreal</title>
+    <meta name="description" content="Massive Medias est un studio de production creative a Montreal specialise en impression fine art, stickers die-cut, sublimation textile, design graphique et developpement web. Production locale au Mile-End, livraison rapide 24-48h. Depuis 2013." />
+
+    <!-- Geo-targeting Montreal / Quebec -->
+    <meta name="geo.region" content="CA-QC" />
+    <meta name="geo.placename" content="Montreal" />
+    <meta name="geo.position" content="45.525;-73.6" />
+    <meta name="ICBM" content="45.525, -73.6" />
+    <meta name="author" content="Massive Medias" />
+
+    <!-- Langue par defaut + alternatives -->
+    <link rel="alternate" hreflang="fr" href="https://massivemedias.com/" />
+    <link rel="alternate" hreflang="en" href="https://massivemedias.com/" />
+    <link rel="alternate" hreflang="es" href="https://massivemedias.com/" />
+    <link rel="alternate" hreflang="x-default" href="https://massivemedias.com/" />
+
+    <!-- OpenGraph (pour bots qui n'executent pas le JS) -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Massive Medias" />
-    <meta property="og:title" content="Massive Medias — Studio de production créative, Montréal" />
-    <meta property="og:description" content="Impression fine art, stickers custom, sublimation, design graphique et développement web à Montréal." />
+    <meta property="og:title" content="Massive Medias | Impression Fine Art, Stickers, Merch & Design - Montreal" />
+    <meta property="og:description" content="Studio de production creative a Montreal. Impression fine art, stickers die-cut, sublimation textile, design graphique et developpement web. Depuis 2013." />
     <meta property="og:image" content="https://massivemedias.com/og-image.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Massive Medias - Studio de production creative a Montreal" />
     <meta property="og:url" content="https://massivemedias.com" />
     <meta property="og:locale" content="fr_CA" />
+    <meta property="og:locale:alternate" content="en_CA" />
+    <meta property="og:locale:alternate" content="es_MX" />
+
+    <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Massive Medias — Studio de production créative, Montréal" />
-    <meta name="twitter:description" content="Impression fine art, stickers custom, sublimation, design graphique et développement web à Montréal." />
+    <meta name="twitter:title" content="Massive Medias | Impression Fine Art, Stickers, Merch & Design - Montreal" />
+    <meta name="twitter:description" content="Studio de production creative a Montreal. Impression fine art, stickers die-cut, sublimation textile, design graphique et developpement web. Depuis 2013." />
     <meta name="twitter:image" content="https://massivemedias.com/og-image.jpg" />
+    <meta name="twitter:image:alt" content="Massive Medias - Studio de production creative a Montreal" />
+
+    <!-- JSON-LD inline (visible sans JS - critique pour SEO) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://massivemedias.com/#organization",
+          "name": "Massive Medias",
+          "alternateName": "Massive Medias Inc.",
+          "url": "https://massivemedias.com",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://massivemedias.com/og-image.jpg",
+            "width": 1200,
+            "height": 630
+          },
+          "email": "info@massivemedias.com",
+          "foundingDate": "2013",
+          "foundingLocation": "Montreal, QC, Canada",
+          "description": "Studio de production creative a Montreal specialise en impression fine art, stickers die-cut, sublimation textile, design graphique et developpement web.",
+          "knowsLanguage": ["fr", "en", "es"],
+          "sameAs": [
+            "https://instagram.com/massivemedias",
+            "https://facebook.com/massivemedias"
+          ],
+          "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "Montreal",
+            "addressRegion": "QC",
+            "postalCode": "H2T",
+            "addressCountry": "CA"
+          },
+          "contactPoint": {
+            "@type": "ContactPoint",
+            "contactType": "customer service",
+            "email": "info@massivemedias.com",
+            "availableLanguage": ["French", "English", "Spanish"]
+          }
+        },
+        {
+          "@type": "LocalBusiness",
+          "@id": "https://massivemedias.com/#localbusiness",
+          "name": "Massive Medias",
+          "image": "https://massivemedias.com/og-image.jpg",
+          "url": "https://massivemedias.com",
+          "email": "info@massivemedias.com",
+          "description": "Studio de production creative a Montreal specialise en impression fine art, stickers die-cut, sublimation textile, design graphique et developpement web.",
+          "priceRange": "$$",
+          "currenciesAccepted": "CAD",
+          "paymentAccepted": "Credit Card, Debit Card, Apple Pay, Google Pay",
+          "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "Mile-End",
+            "addressLocality": "Montreal",
+            "addressRegion": "QC",
+            "postalCode": "H2T",
+            "addressCountry": "CA"
+          },
+          "geo": {
+            "@type": "GeoCoordinates",
+            "latitude": 45.525,
+            "longitude": -73.6
+          },
+          "areaServed": [
+            { "@type": "City", "name": "Montreal" },
+            { "@type": "AdministrativeArea", "name": "Quebec" },
+            { "@type": "Country", "name": "Canada" }
+          ],
+          "knowsLanguage": ["fr", "en", "es"],
+          "sameAs": [
+            "https://instagram.com/massivemedias",
+            "https://facebook.com/massivemedias"
+          ],
+          "hasOfferCatalog": {
+            "@type": "OfferCatalog",
+            "name": "Services Massive Medias",
+            "itemListElement": [
+              { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Impression Fine Art" } },
+              { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Stickers Die-Cut" } },
+              { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Sublimation Textile" } },
+              { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Design Graphique" } },
+              { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Developpement Web" } }
+            ]
+          }
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://massivemedias.com/#website",
+          "url": "https://massivemedias.com",
+          "name": "Massive Medias",
+          "description": "Studio de production creative a Montreal",
+          "publisher": { "@id": "https://massivemedias.com/#organization" },
+          "inLanguage": ["fr-CA", "en-CA", "es-MX"]
+        }
+      ]
+    }
+    </script>
 
     <!-- SPA redirect: decode path from 404.html -->
     <script>

@@ -4,23 +4,47 @@ export function getOrganizationSchema() {
   return {
     '@context': 'https://schema.org',
     '@type': 'Organization',
+    '@id': `${SITE_URL}/#organization`,
     name: 'Massive Medias',
+    alternateName: 'Massive Medias Inc.',
     url: SITE_URL,
-    logo: `${SITE_URL}/og-image.jpg`,
+    logo: {
+      '@type': 'ImageObject',
+      url: `${SITE_URL}/og-image.jpg`,
+      width: 1200,
+      height: 630,
+    },
     email: 'info@massivemedias.com',
     foundingDate: '2013',
+    foundingLocation: 'Montreal, QC, Canada',
+    description: 'Studio de production creative a Montreal specialise en impression fine art, stickers die-cut, sublimation textile, design graphique et developpement web.',
+    knowsLanguage: ['fr', 'en', 'es'],
     sameAs: [
       'https://instagram.com/massivemedias',
       'https://facebook.com/massivemedias',
     ],
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: 'Mile-End',
+      addressLocality: 'Montreal',
+      addressRegion: 'QC',
+      postalCode: 'H2T',
+      addressCountry: 'CA',
+    },
+    contactPoint: {
+      '@type': 'ContactPoint',
+      contactType: 'customer service',
+      email: 'info@massivemedias.com',
+      availableLanguage: ['French', 'English', 'Spanish'],
+    },
   };
 }
 
 export function getLocalBusinessSchema(lang) {
   const descMap = {
-    fr: 'Studio de production creative a Montreal. Impression fine art, stickers, sublimation, design graphique et developpement web.',
-    en: 'Creative production studio in Montreal. Fine art printing, stickers, sublimation, graphic design and web development.',
-    es: 'Estudio de produccion creativa en Montreal. Impresion fine art, stickers, sublimacion, diseno grafico y desarrollo web.',
+    fr: 'Studio de production creative a Montreal specialise en impression fine art, stickers die-cut, sublimation textile, design graphique et developpement web. Production locale au Mile-End depuis 2013.',
+    en: 'Creative production studio in Montreal specializing in fine art printing, die-cut stickers, textile sublimation, graphic design and web development. Local production in Mile-End since 2013.',
+    es: 'Estudio de produccion creativa en Montreal especializado en impresion fine art, stickers troquelados, sublimacion textil, diseno grafico y desarrollo web. Produccion local en Mile-End desde 2013.',
   };
   return {
     '@context': 'https://schema.org',
@@ -30,10 +54,16 @@ export function getLocalBusinessSchema(lang) {
     description: descMap[lang] || descMap.fr,
     url: SITE_URL,
     email: 'info@massivemedias.com',
+    image: `${SITE_URL}/og-image.jpg`,
+    priceRange: '$$',
+    currenciesAccepted: 'CAD',
+    paymentAccepted: 'Credit Card, Debit Card, Apple Pay, Google Pay',
     address: {
       '@type': 'PostalAddress',
+      streetAddress: 'Mile-End',
       addressLocality: 'Montreal',
       addressRegion: 'QC',
+      postalCode: 'H2T',
       addressCountry: 'CA',
     },
     geo: {
@@ -41,20 +71,45 @@ export function getLocalBusinessSchema(lang) {
       latitude: 45.525,
       longitude: -73.6,
     },
-    areaServed: {
-      '@type': 'City',
-      name: 'Montreal',
-    },
-    priceRange: '$$',
-    image: `${SITE_URL}/og-image.jpg`,
+    areaServed: [
+      { '@type': 'City', name: 'Montreal' },
+      { '@type': 'AdministrativeArea', name: 'Quebec' },
+      { '@type': 'Country', name: 'Canada' },
+    ],
+    knowsLanguage: ['fr', 'en', 'es'],
     sameAs: [
       'https://instagram.com/massivemedias',
       'https://facebook.com/massivemedias',
     ],
+    hasOfferCatalog: {
+      '@type': 'OfferCatalog',
+      name: 'Services',
+      itemListElement: [
+        { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Impression Fine Art' } },
+        { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Stickers Die-Cut' } },
+        { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Sublimation Textile' } },
+        { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Design Graphique' } },
+        { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Developpement Web' } },
+      ],
+    },
+  };
+}
+
+export function getWebSiteSchema() {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    '@id': `${SITE_URL}/#website`,
+    url: SITE_URL,
+    name: 'Massive Medias',
+    description: 'Studio de production creative a Montreal',
+    publisher: { '@id': `${SITE_URL}/#organization` },
+    inLanguage: ['fr-CA', 'en-CA', 'es-MX'],
   };
 }
 
 export function getFAQSchema(items) {
+  if (!items || items.length === 0) return null;
   return {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
@@ -75,7 +130,7 @@ export function getProductSchema({ name, description, price, currency = 'CAD', i
     '@type': 'Product',
     name,
     description,
-    image: image ? `${SITE_URL}${image}` : undefined,
+    image: image ? (image.startsWith('http') ? image : `${SITE_URL}${image}`) : undefined,
     url: `${SITE_URL}${url}`,
     brand: {
       '@type': 'Brand',
@@ -94,7 +149,7 @@ export function getProductSchema({ name, description, price, currency = 'CAD', i
   };
 }
 
-export function getServiceSchema({ name, description, url }) {
+export function getServiceSchema({ name, description, url, priceRange }) {
   return {
     '@context': 'https://schema.org',
     '@type': 'Service',
@@ -103,11 +158,14 @@ export function getServiceSchema({ name, description, url }) {
     url: `${SITE_URL}${url}`,
     provider: {
       '@type': 'Organization',
+      '@id': `${SITE_URL}/#organization`,
       name: 'Massive Medias',
     },
-    areaServed: {
-      '@type': 'City',
-      name: 'Montreal',
-    },
+    areaServed: [
+      { '@type': 'City', name: 'Montreal' },
+      { '@type': 'AdministrativeArea', name: 'Quebec' },
+      { '@type': 'Country', name: 'Canada' },
+    ],
+    ...(priceRange ? { priceRange } : {}),
   };
 }

@@ -44,8 +44,8 @@ const translations = {
     // ──────────── HOME ────────────
     home: {
       seo: {
-        title: 'Massive Medias - Studio de production créative, Montréal',
-        description: 'Impression fine art, stickers custom, sublimation, design graphique et développement web à Montréal. Service local depuis 2013.',
+        title: 'Massive Medias | Impression Fine Art, Stickers, Merch & Design - Montreal',
+        description: 'Studio de production creative a Montreal specialise en impression fine art, stickers die-cut, sublimation textile, design graphique et developpement web. Production locale au Mile-End, livraison 24-48h. Depuis 2013.',
       },
       hero: {
         tagline: 'Create. Print. Repeat.',
@@ -145,8 +145,8 @@ const translations = {
     // ──────────── A PROPOS PAGE ────────────
     aboutPage: {
       seo: {
-        title: 'À propos - Massive Medias',
-        description: "Studio de production créative fondé en 2020 à Montréal. L'équipe, l'espace et notre histoire.",
+        title: 'A propos | Massive Medias - Studio creatif Montreal',
+        description: 'Decouvrez Massive Medias, studio de production creative fonde a Montreal. Notre equipe, notre espace au Mile-End et notre histoire depuis 2013. Impression, design et web.',
       },
       hero: {
         title: 'À propos',
@@ -219,8 +219,8 @@ const translations = {
     // ──────────── CONTACT PAGE ────────────
     contactPage: {
       seo: {
-        title: 'Contact - Massive Medias',
-        description: 'Demande de soumission et contact. On te revient dans les 24h.',
+        title: 'Contact | Massive Medias - Soumission gratuite Montreal',
+        description: 'Contactez Massive Medias pour une soumission gratuite. Impression fine art, stickers, merch, design graphique et developpement web a Montreal. Reponse en 24h.',
       },
       hero: {
         title: 'Contact',
@@ -404,8 +404,8 @@ const translations = {
     // ──────────── HOME ────────────
     home: {
       seo: {
-        title: 'Massive Medias - Creative Production Studio, Montreal',
-        description: 'Fine art printing, custom stickers, sublimation, graphic design and web development in Montreal. Local service since 2013.',
+        title: 'Massive Medias | Fine Art Printing, Stickers, Merch & Design - Montreal',
+        description: 'Creative production studio in Montreal specializing in fine art printing, die-cut stickers, textile sublimation, graphic design and web development. Local production in Mile-End, 24-48h delivery. Since 2013.',
       },
       hero: {
         tagline: 'Create. Print. Repeat.',
@@ -505,8 +505,8 @@ const translations = {
     // ──────────── A PROPOS PAGE ────────────
     aboutPage: {
       seo: {
-        title: 'About - Massive Medias',
-        description: 'Creative production studio founded in 2020 in Montreal. The team, the space and our story.',
+        title: 'About | Massive Medias - Creative Studio Montreal',
+        description: 'Discover Massive Medias, creative production studio in Montreal. Our team, our Mile-End space and our story since 2013. Printing, design and web.',
       },
       hero: {
         title: 'About',
@@ -579,8 +579,8 @@ const translations = {
     // ──────────── CONTACT PAGE ────────────
     contactPage: {
       seo: {
-        title: 'Contact - Massive Medias',
-        description: "Quote request and contact. We'll get back to you within 24 hours.",
+        title: 'Contact | Massive Medias - Free Quote Montreal',
+        description: 'Contact Massive Medias for a free quote. Fine art printing, stickers, merch, graphic design and web development in Montreal. Response within 24h.',
       },
       hero: {
         title: 'Contact',
@@ -764,8 +764,8 @@ const translations = {
     // ──────────── HOME ────────────
     home: {
       seo: {
-        title: 'Massive Medias - Estudio de producción creativa, Montreal',
-        description: 'Impresión fine art, stickers personalizados, sublimación, diseño gráfico y desarrollo web en Montreal. Servicio local desde 2013.',
+        title: 'Massive Medias | Impresion Fine Art, Stickers, Merch & Diseno - Montreal',
+        description: 'Estudio de produccion creativa en Montreal especializado en impresion fine art, stickers troquelados, sublimacion textil, diseno grafico y desarrollo web. Produccion local en Mile-End, entrega 24-48h. Desde 2013.',
       },
       hero: {
         tagline: 'Create. Print. Repeat.',
@@ -865,8 +865,8 @@ const translations = {
     // ──────────── A PROPOS PAGE ────────────
     aboutPage: {
       seo: {
-        title: 'Nosotros - Massive Medias',
-        description: 'Estudio de producción creativa fundado en 2020 en Montreal. El equipo, el espacio y nuestra historia.',
+        title: 'Nosotros | Massive Medias - Estudio creativo Montreal',
+        description: 'Descubre Massive Medias, estudio de produccion creativa en Montreal. Nuestro equipo, nuestro espacio en Mile-End y nuestra historia desde 2013. Impresion, diseno y web.',
       },
       hero: {
         title: 'Nosotros',
@@ -939,8 +939,8 @@ const translations = {
     // ──────────── CONTACT PAGE ────────────
     contactPage: {
       seo: {
-        title: 'Contacto - Massive Medias',
-        description: 'Solicitud de cotización y contacto. Te respondemos en 24 horas.',
+        title: 'Contacto | Massive Medias - Cotizacion gratuita Montreal',
+        description: 'Contacta Massive Medias para una cotizacion gratuita. Impresion fine art, stickers, merch, diseno grafico y desarrollo web en Montreal. Respuesta en 24h.',
       },
       hero: {
         title: 'Contacto',
