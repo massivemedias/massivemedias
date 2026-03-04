@@ -297,35 +297,8 @@ function ArtisteDetail({ subdomainSlug }) {
           </p>
 
           <div className="flex flex-col lg:flex-row gap-10">
-            {/* Oeuvres - prend 2/3 en desktop */}
-            <div className="lg:w-2/3">
-              <div className="flex flex-wrap justify-center gap-4">
-                {artist.prints.map((print, index) => (
-                  <motion.div
-                    key={print.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4, delay: index * 0.08 }}
-                    viewport={{ once: true }}
-                    className="w-[calc(50%-0.5rem)] md:w-[calc(33.333%-0.667rem)]"
-                  >
-                    <ArtistPrintCard
-                      print={print}
-                      minPrice={minPrice}
-                      selected={selectedPrint?.id === print.id}
-                      onClick={() => handleSelectPrint(print)}
-                      onZoom={() => {
-                        setLightbox(index);
-                        setSelectedPrint(print);
-                      }}
-                    />
-                  </motion.div>
-                ))}
-              </div>
-            </div>
-
             {/* Bio artiste - prend 1/3 en desktop, sticky */}
-            <div className="lg:w-1/3 lg:sticky lg:top-24 self-start">
+            <div className="lg:w-1/3 lg:sticky lg:top-24 self-start order-2 lg:order-1">
               <div className="p-6 rounded-2xl border border-purple-main/30 transition-colors duration-300 highlight-shadow">
                 <h3 className="text-xl font-heading font-bold text-gradient mb-4">
                   {tx({ fr: 'L\'artiste', en: 'The Artist', es: 'El artista' })}
@@ -393,6 +366,33 @@ function ArtisteDetail({ subdomainSlug }) {
                     </motion.li>
                   ))}
                 </ul>
+              </div>
+            </div>
+
+            {/* Oeuvres - prend 2/3 en desktop, a droite */}
+            <div className="lg:w-2/3 order-1 lg:order-2">
+              <div className="flex flex-wrap justify-center gap-4">
+                {artist.prints.map((print, index) => (
+                  <motion.div
+                    key={print.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: index * 0.08 }}
+                    viewport={{ once: true }}
+                    className="w-[calc(50%-0.5rem)] md:w-[calc(33.333%-0.667rem)]"
+                  >
+                    <ArtistPrintCard
+                      print={print}
+                      minPrice={minPrice}
+                      selected={selectedPrint?.id === print.id}
+                      onClick={() => handleSelectPrint(print)}
+                      onZoom={() => {
+                        setLightbox(index);
+                        setSelectedPrint(print);
+                      }}
+                    />
+                  </motion.div>
+                ))}
               </div>
             </div>
           </div>
