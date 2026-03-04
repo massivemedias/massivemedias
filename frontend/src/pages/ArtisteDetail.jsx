@@ -276,7 +276,7 @@ function ArtisteDetail({ subdomainSlug }) {
 
       <div className="section-container max-w-6xl mx-auto">
 
-        {/* ============ OEUVRES (en premier!) ============ */}
+        {/* ============ OEUVRES + BIO cote a cote en desktop ============ */}
         <motion.div
           id="oeuvres"
           initial={{ opacity: 0, y: 20 }}
@@ -290,34 +290,111 @@ function ArtisteDetail({ subdomainSlug }) {
           </h2>
           <p className="text-grey-muted text-center mb-10 max-w-2xl mx-auto">
             {tx({
-              fr: 'Sélectionnez une oeuvre pour configurer votre tirage.',
-              en: 'Select an artwork to configure your print.',
-              es: 'Selecciona una obra para configurar tu impresión.',
+              fr: 'Cliquez sur une oeuvre pour configurer votre tirage.',
+              en: 'Click an artwork to configure your print.',
+              es: 'Haz clic en una obra para configurar tu impresion.',
             })}
           </p>
 
-          <div className="flex flex-wrap justify-center gap-5 max-w-6xl mx-auto">
-            {artist.prints.map((print, index) => (
-              <motion.div
-                key={print.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: index * 0.08 }}
-                viewport={{ once: true }}
-                className="w-[calc(50%-0.625rem)] md:w-[calc(33.333%-0.834rem)] lg:w-[calc(20%-1rem)]"
-              >
-                <ArtistPrintCard
-                  print={print}
-                  minPrice={minPrice}
-                  selected={selectedPrint?.id === print.id}
-                  onClick={() => handleSelectPrint(print)}
-                  onZoom={() => {
-                    setLightbox(index);
-                    setSelectedPrint(print);
-                  }}
-                />
-              </motion.div>
-            ))}
+          <div className="flex flex-col lg:flex-row gap-10">
+            {/* Oeuvres - prend 2/3 en desktop */}
+            <div className="lg:w-2/3">
+              <div className="flex flex-wrap justify-center gap-4">
+                {artist.prints.map((print, index) => (
+                  <motion.div
+                    key={print.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: index * 0.08 }}
+                    viewport={{ once: true }}
+                    className="w-[calc(50%-0.5rem)] md:w-[calc(33.333%-0.667rem)]"
+                  >
+                    <ArtistPrintCard
+                      print={print}
+                      minPrice={minPrice}
+                      selected={selectedPrint?.id === print.id}
+                      onClick={() => handleSelectPrint(print)}
+                      onZoom={() => {
+                        setLightbox(index);
+                        setSelectedPrint(print);
+                      }}
+                    />
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+
+            {/* Bio artiste - prend 1/3 en desktop, sticky */}
+            <div className="lg:w-1/3 lg:sticky lg:top-24 self-start">
+              <div className="p-6 rounded-2xl border border-purple-main/30 transition-colors duration-300 highlight-shadow">
+                <h3 className="text-xl font-heading font-bold text-gradient mb-4">
+                  {tx({ fr: 'L\'artiste', en: 'The Artist', es: 'El artista' })}
+                </h3>
+                <p className="text-grey-light text-sm leading-relaxed whitespace-pre-line mb-4">{bio}</p>
+                {artist.socials && (
+                  <div className="flex flex-wrap gap-2 mt-4">
+                    {artist.socials.instagram && (
+                      <a href={artist.socials.instagram} target="_blank" rel="noopener noreferrer" className="btn-outline !py-1.5 !px-3 text-xs">
+                        Instagram <ExternalLink size={12} className="ml-1" />
+                      </a>
+                    )}
+                    {artist.socials.youtube && (
+                      <a href={artist.socials.youtube} target="_blank" rel="noopener noreferrer" className="btn-outline !py-1.5 !px-3 text-xs">
+                        YouTube <ExternalLink size={12} className="ml-1" />
+                      </a>
+                    )}
+                    {artist.socials.tiktok && (
+                      <a href={artist.socials.tiktok} target="_blank" rel="noopener noreferrer" className="btn-outline !py-1.5 !px-3 text-xs">
+                        TikTok <ExternalLink size={12} className="ml-1" />
+                      </a>
+                    )}
+                    {artist.socials.facebook && (
+                      <a href={artist.socials.facebook} target="_blank" rel="noopener noreferrer" className="btn-outline !py-1.5 !px-3 text-xs">
+                        Facebook <ExternalLink size={12} className="ml-1" />
+                      </a>
+                    )}
+                    {artist.socials.gallea && (
+                      <a href={artist.socials.gallea} target="_blank" rel="noopener noreferrer" className="btn-outline !py-1.5 !px-3 text-xs">
+                        Gallea <ExternalLink size={12} className="ml-1" />
+                      </a>
+                    )}
+                    {artist.socials.etsy && (
+                      <a href={artist.socials.etsy} target="_blank" rel="noopener noreferrer" className="btn-outline !py-1.5 !px-3 text-xs">
+                        Etsy <ExternalLink size={12} className="ml-1" />
+                      </a>
+                    )}
+                    {artist.socials.website && (
+                      <a href={artist.socials.website} target="_blank" rel="noopener noreferrer" className="btn-outline !py-1.5 !px-3 text-xs">
+                        {tx({ fr: 'Site web', en: 'Website', es: 'Sitio web' })} <ExternalLink size={12} className="ml-1" />
+                      </a>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Ce qui est inclus */}
+              <div className="mt-6 p-6 rounded-2xl border border-purple-main/30 transition-colors duration-300 highlight-shadow">
+                <h3 className="text-lg font-heading font-bold text-heading mb-4 flex items-center gap-2">
+                  <CheckCircle size={18} className="text-accent" />
+                  {tx({ fr: 'Ce qui est inclus', en: 'What\'s included', es: 'Que esta incluido' })}
+                </h3>
+                <ul className="space-y-3">
+                  {highlights.map((highlight, index) => (
+                    <motion.li
+                      key={index}
+                      initial={{ opacity: 0, x: -10 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.3, delay: index * 0.08 }}
+                      viewport={{ once: true }}
+                      className="flex items-start gap-2"
+                    >
+                      <div className="w-1.5 h-1.5 rounded-full bg-accent mt-1.5 flex-shrink-0"></div>
+                      <span className="text-grey-light text-sm">{highlight}</span>
+                    </motion.li>
+                  ))}
+                </ul>
+              </div>
+            </div>
           </div>
         </motion.div>
 
@@ -331,83 +408,6 @@ function ArtisteDetail({ subdomainSlug }) {
             />
           </div>
         )}
-
-        {/* ============ DESCRIPTION + HIGHLIGHTS ============ */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-          className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-20"
-        >
-          <div>
-            <h2 className="text-3xl font-heading font-bold text-gradient mb-6">
-              {tx({ fr: 'L\'artiste', en: 'The Artist', es: 'El artista' })}
-            </h2>
-            <p className="text-grey-light text-base leading-relaxed mb-4 whitespace-pre-line">{bio}</p>
-            {artist.socials && (
-              <div className="flex flex-wrap gap-3 mt-6">
-                {artist.socials.instagram && (
-                  <a href={artist.socials.instagram} target="_blank" rel="noopener noreferrer" className="btn-outline !py-2 !px-4 text-sm">
-                    Instagram <ExternalLink size={14} className="ml-1" />
-                  </a>
-                )}
-                {artist.socials.youtube && (
-                  <a href={artist.socials.youtube} target="_blank" rel="noopener noreferrer" className="btn-outline !py-2 !px-4 text-sm">
-                    YouTube <ExternalLink size={14} className="ml-1" />
-                  </a>
-                )}
-                {artist.socials.tiktok && (
-                  <a href={artist.socials.tiktok} target="_blank" rel="noopener noreferrer" className="btn-outline !py-2 !px-4 text-sm">
-                    TikTok <ExternalLink size={14} className="ml-1" />
-                  </a>
-                )}
-                {artist.socials.facebook && (
-                  <a href={artist.socials.facebook} target="_blank" rel="noopener noreferrer" className="btn-outline !py-2 !px-4 text-sm">
-                    Facebook <ExternalLink size={14} className="ml-1" />
-                  </a>
-                )}
-                {artist.socials.gallea && (
-                  <a href={artist.socials.gallea} target="_blank" rel="noopener noreferrer" className="btn-outline !py-2 !px-4 text-sm">
-                    Gallea <ExternalLink size={14} className="ml-1" />
-                  </a>
-                )}
-                {artist.socials.etsy && (
-                  <a href={artist.socials.etsy} target="_blank" rel="noopener noreferrer" className="btn-outline !py-2 !px-4 text-sm">
-                    Etsy <ExternalLink size={14} className="ml-1" />
-                  </a>
-                )}
-                {artist.socials.website && (
-                  <a href={artist.socials.website} target="_blank" rel="noopener noreferrer" className="btn-outline !py-2 !px-4 text-sm">
-                    {tx({ fr: 'Site web', en: 'Website', es: 'Sitio web' })} <ExternalLink size={14} className="ml-1" />
-                  </a>
-                )}
-              </div>
-            )}
-          </div>
-
-          <div className="p-8 rounded-2xl border border-purple-main/30 transition-colors duration-300 highlight-shadow">
-            <h3 className="text-xl font-heading font-bold text-heading mb-6 flex items-center gap-2">
-              <CheckCircle size={22} className="text-accent" />
-              {tx({ fr: 'Ce qui est inclus', en: 'What\'s included', es: 'Que esta incluido' })}
-            </h3>
-            <ul className="space-y-4">
-              {highlights.map((highlight, index) => (
-                <motion.li
-                  key={index}
-                  initial={{ opacity: 0, x: -10 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.3, delay: index * 0.08 }}
-                  viewport={{ once: true }}
-                  className="flex items-start gap-3"
-                >
-                  <div className="w-2 h-2 rounded-full bg-accent mt-2 flex-shrink-0"></div>
-                  <span className="text-grey-light">{highlight}</span>
-                </motion.li>
-              ))}
-            </ul>
-          </div>
-        </motion.div>
 
         {/* ============ DEMARCHE ARTISTIQUE ============ */}
         {artist.demarche && (
