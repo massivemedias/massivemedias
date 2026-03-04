@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, Camera, Award, Shield, Truck, Palette, MessageSquare, ChevronDown, ChevronLeft, ChevronRight, CheckCircle, Image, ExternalLink, X, ZoomIn } from 'lucide-react';
+import { ArrowRight, Camera, Award, Shield, Truck, Palette, MessageSquare, ChevronDown, ChevronLeft, ChevronRight, CheckCircle, Image, ExternalLink, X } from 'lucide-react';
 import SEO from '../components/SEO';
 import ArtistPrintCard from '../components/ArtistPrintCard';
 import ConfiguratorArtistPrint from '../components/configurators/ConfiguratorArtistPrint';
@@ -276,6 +276,62 @@ function ArtisteDetail({ subdomainSlug }) {
 
       <div className="section-container max-w-6xl mx-auto">
 
+        {/* ============ OEUVRES (en premier!) ============ */}
+        <motion.div
+          id="oeuvres"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true }}
+          className="mb-20 scroll-mt-24"
+        >
+          <h2 className="text-3xl font-heading font-bold text-gradient mb-3 text-center">
+            {tx({ fr: 'Oeuvres disponibles', en: 'Available Artworks', es: 'Obras disponibles' })}
+          </h2>
+          <p className="text-grey-muted text-center mb-10 max-w-2xl mx-auto">
+            {tx({
+              fr: 'Sélectionnez une oeuvre pour configurer votre tirage.',
+              en: 'Select an artwork to configure your print.',
+              es: 'Selecciona una obra para configurar tu impresión.',
+            })}
+          </p>
+
+          <div className="flex flex-wrap justify-center gap-5 max-w-6xl mx-auto">
+            {artist.prints.map((print, index) => (
+              <motion.div
+                key={print.id}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: index * 0.08 }}
+                viewport={{ once: true }}
+                className="w-[calc(50%-0.625rem)] md:w-[calc(33.333%-0.834rem)] lg:w-[calc(20%-1rem)]"
+              >
+                <ArtistPrintCard
+                  print={print}
+                  minPrice={minPrice}
+                  selected={selectedPrint?.id === print.id}
+                  onClick={() => handleSelectPrint(print)}
+                  onZoom={() => {
+                    setLightbox(index);
+                    setSelectedPrint(print);
+                  }}
+                />
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* ============ CONFIGURATEUR ============ */}
+        {selectedPrint && (
+          <div ref={configuratorRef} className="mb-20 scroll-mt-24">
+            <ConfiguratorArtistPrint
+              artist={artist}
+              print={selectedPrint}
+              formats={artistFormats}
+            />
+          </div>
+        )}
+
         {/* ============ DESCRIPTION + HIGHLIGHTS ============ */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -288,7 +344,7 @@ function ArtisteDetail({ subdomainSlug }) {
             <h2 className="text-3xl font-heading font-bold text-gradient mb-6">
               {tx({ fr: 'L\'artiste', en: 'The Artist', es: 'El artista' })}
             </h2>
-            <p className="text-grey-light text-base leading-relaxed mb-4">{bio}</p>
+            <p className="text-grey-light text-base leading-relaxed mb-4 whitespace-pre-line">{bio}</p>
             {artist.socials && (
               <div className="flex flex-wrap gap-3 mt-6">
                 {artist.socials.instagram && (
@@ -380,88 +436,6 @@ function ArtisteDetail({ subdomainSlug }) {
                   <p className="text-grey-light leading-relaxed">{section.text}</p>
                 </motion.div>
               ))}
-            </div>
-          </motion.div>
-        )}
-
-        {/* ============ OEUVRES ============ */}
-        <motion.div
-          id="oeuvres"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-          className="mb-20 scroll-mt-24"
-        >
-          <h2 className="text-3xl font-heading font-bold text-gradient mb-3 text-center">
-            {tx({ fr: 'Oeuvres disponibles', en: 'Available Artworks', es: 'Obras disponibles' })}
-          </h2>
-          <p className="text-grey-muted text-center mb-10 max-w-2xl mx-auto">
-            {tx({
-              fr: 'Selectionnez une oeuvre pour configurer votre tirage.',
-              en: 'Select an artwork to configure your print.',
-              es: 'Selecciona una obra para configurar tu impresion.',
-            })}
-          </p>
-
-          <div className="flex flex-wrap justify-center gap-5 max-w-6xl mx-auto">
-            {artist.prints.map((print, index) => (
-              <motion.div
-                key={print.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: index * 0.08 }}
-                viewport={{ once: true }}
-                className="w-[calc(50%-0.625rem)] md:w-[calc(33.333%-0.834rem)] lg:w-[calc(20%-1rem)]"
-              >
-                <ArtistPrintCard
-                  print={print}
-                  minPrice={minPrice}
-                  selected={selectedPrint?.id === print.id}
-                  onClick={() => handleSelectPrint(print)}
-                  onZoom={() => setLightbox(index)}
-                />
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
-
-        {/* ============ CONFIGURATEUR ============ */}
-        {selectedPrint && (
-          <motion.div
-            ref={configuratorRef}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="mb-20 scroll-mt-24"
-          >
-            <h2 className="text-3xl font-heading font-bold text-gradient mb-8 text-center">
-              {tx({ fr: 'Configurez votre tirage', en: 'Configure Your Print', es: 'Configura tu impresion' })}
-            </h2>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-8 max-w-5xl mx-auto">
-              {/* Preview */}
-              <div
-                className="relative rounded-2xl overflow-hidden aspect-[2/3] border border-purple-main/30 card-shadow cursor-pointer group"
-                onClick={() => setLightbox(artist.prints.findIndex(p => p.id === selectedPrint.id))}
-              >
-                <img
-                  src={selectedPrint.image}
-                  alt={tx({ fr: selectedPrint.titleFr, en: selectedPrint.titleEn, es: selectedPrint.titleEs || selectedPrint.titleEn })}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
-                  <ZoomIn size={32} className="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 drop-shadow-lg" />
-                </div>
-              </div>
-
-              {/* Options */}
-              <div className={`p-4 sm:p-6 rounded-2xl border border-purple-main/30 transition-colors duration-300 highlight-shadow lg:sticky lg:top-24 self-start`}>
-                <ConfiguratorArtistPrint
-                  artist={artist}
-                  selectedPrint={selectedPrint}
-                />
-              </div>
             </div>
           </motion.div>
         )}
