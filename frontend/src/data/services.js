@@ -317,7 +317,7 @@ Nous travaillons avec Adobe Illustrator, Figma et Photoshop pour créer des visu
     ],
     seo: {
       title: 'Design Graphique Montréal | Logos, Identité Visuelle & Affiches - Massive Medias',
-      description: 'Design graphique professionnel à Montréal. Logos, identités visuelles, affiches, pochettes d\'album, packaging. Création sur mesure. Studio créatif Mile-End depuis 2013.',
+      description: 'Design graphique professionnel à Montréal. Logos, identités visuelles, affiches, pochettes d\'album, packaging. Création sur mesure. Studio créatif Mile-End.',
     },
   },
 

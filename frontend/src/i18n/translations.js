@@ -45,7 +45,7 @@ const translations = {
     home: {
       seo: {
         title: 'Massive Medias | Impression Fine Art, Stickers, Merch & Design - Montréal',
-        description: 'Studio de production créative à Montréal spécialisé en impression fine art, stickers die-cut, sublimation textile, design graphique et développement web. Production locale au Mile-End, livraison 24-48h. Depuis 2013.',
+        description: 'Studio de production créative à Montréal spécialisé en impression fine art, stickers die-cut, sublimation textile, design graphique et développement web. Production locale au Mile-End, livraison 24-48h.',
       },
       hero: {
         tagline: 'Create. Print. Repeat.',
@@ -146,7 +146,7 @@ const translations = {
     aboutPage: {
       seo: {
         title: 'À propos | Massive Medias - Studio créatif Montréal',
-        description: 'Découvrez Massive Medias, studio de production créative fondé à Montréal. Notre équipe, notre espace au Mile-End et notre histoire depuis 2013. Impression, design et web.',
+        description: 'Découvrez Massive Medias, studio de production créative fondé à Montréal. Notre équipe, notre espace au Mile-End et notre histoire. Impression, design et web.',
       },
       hero: {
         title: 'À propos',
@@ -155,7 +155,7 @@ const translations = {
       history: {
         title: "L'histoire",
         paragraphs: [
-          "Massive Medias est un studio de production créative actif depuis 2013 et établi dans le Mile-End, au cœur de l'écosystème artistique montréalais.",
+          "Massive Medias est un studio de production créative établi dans le Mile-End, au cœur de l'écosystème artistique montréalais. D'abord axé sur le développement web et le design graphique dès 2022, le studio s'est élargi en 2024 avec l'impression fine art, les stickers et la sublimation textile.",
           "L'entreprise offre quatre services intégrés destinés aux artistes visuels, photographes, musiciens et créateurs indépendants : impressions fine art, stickers personnalisés, design graphique et développement web.",
           "Notre philosophie : offrir un service local, personnalisé et de qualité professionnelle, sans les délais et les complications des services en ligne. Pas de shipping, pas d'attente. Pick-up au Mile-End ou livraison locale.",
         ],
@@ -163,10 +163,9 @@ const translations = {
       timeline: {
         title: 'Notre parcours',
         events: [
-          { year: '2013', event: 'Premiers projets graphiques et web en freelance. Naissance de la vision Massive Medias.' },
-          { year: '2018-2019', event: 'Début impression et matériel promotionnel pour la scène musicale montréalaise.' },
-          { year: '2020', event: 'Massive Medias devient activité structurée. Lancement officiel du studio.' },
-          { year: '2023-2024', event: "Acquisition d'équipements professionnels d'impression, découpe et sublimation." },
+          { year: '2022', event: 'Lancement de Massive Medias - développement web et design graphique pour artistes et créateurs montréalais.' },
+          { year: '2023', event: "Premiers projets d'envergure. Croissance de la clientèle dans la scène créative du Mile-End." },
+          { year: '2024', event: "Acquisition d'équipements professionnels d'impression, découpe et sublimation. Le studio devient un one-stop shop créatif." },
           { year: '2025', event: 'Enregistrement officiel au REQ. Recentrage: prints, stickers, graphisme, web.' },
           { year: '2026', event: 'Incorporation provinciale prévue. Lancement Merch-as-a-Service.' },
         ],
@@ -405,7 +404,7 @@ const translations = {
     home: {
       seo: {
         title: 'Massive Medias | Fine Art Printing, Stickers, Merch & Design - Montreal',
-        description: 'Creative production studio in Montreal specializing in fine art printing, die-cut stickers, textile sublimation, graphic design and web development. Local production in Mile-End, 24-48h delivery. Since 2013.',
+        description: 'Creative production studio in Montreal specializing in fine art printing, die-cut stickers, textile sublimation, graphic design and web development. Local production in Mile-End, 24-48h delivery.',
       },
       hero: {
         tagline: 'Create. Print. Repeat.',
@@ -506,7 +505,7 @@ const translations = {
     aboutPage: {
       seo: {
         title: 'About | Massive Medias - Creative Studio Montreal',
-        description: 'Discover Massive Medias, creative production studio in Montreal. Our team, our Mile-End space and our story since 2013. Printing, design and web.',
+        description: 'Discover Massive Medias, creative production studio in Montreal. Our team, our Mile-End space and our story. Printing, design and web.',
       },
       hero: {
         title: 'About',
@@ -515,7 +514,7 @@ const translations = {
       history: {
         title: 'Our Story',
         paragraphs: [
-          "Massive Medias is a creative production studio active since 2013 and based in Mile-End, at the heart of Montreal's artistic ecosystem.",
+          "Massive Medias is a creative production studio based in Mile-End, at the heart of Montreal's artistic ecosystem. Starting with web development and graphic design in 2022, the studio expanded in 2024 with fine art printing, stickers and textile sublimation.",
           'The company offers four integrated services for visual artists, photographers, musicians and independent creators: fine art printing, custom stickers, graphic design and web development.',
           "Our philosophy: offer local, personalized, professional-quality service without the delays and complications of online services. No shipping, no waiting. Pick-up in Mile-End or local delivery.",
         ],
@@ -523,10 +522,9 @@ const translations = {
       timeline: {
         title: 'Our Journey',
         events: [
-          { year: '2013', event: 'First freelance graphic and web projects. Birth of the Massive Medias vision.' },
-          { year: '2018-2019', event: 'Started printing and promotional materials for the Montreal music scene.' },
-          { year: '2020', event: 'Massive Medias becomes a structured business. Official studio launch.' },
-          { year: '2023-2024', event: 'Acquisition of professional printing, cutting and sublimation equipment.' },
+          { year: '2022', event: 'Launch of Massive Medias - web development and graphic design for Montreal artists and creators.' },
+          { year: '2023', event: 'First major projects. Growing clientele in the Mile-End creative scene.' },
+          { year: '2024', event: 'Acquisition of professional printing, cutting and sublimation equipment. The studio becomes a creative one-stop shop.' },
           { year: '2025', event: 'Official registration with the REQ. Refocus: prints, stickers, design, web.' },
           { year: '2026', event: 'Provincial incorporation planned. Launch of Merch-as-a-Service.' },
         ],
@@ -765,7 +763,7 @@ const translations = {
     home: {
       seo: {
         title: 'Massive Medias | Impresion Fine Art, Stickers, Merch & Diseno - Montreal',
-        description: 'Estudio de produccion creativa en Montreal especializado en impresion fine art, stickers troquelados, sublimacion textil, diseno grafico y desarrollo web. Produccion local en Mile-End, entrega 24-48h. Desde 2013.',
+        description: 'Estudio de produccion creativa en Montreal especializado en impresion fine art, stickers troquelados, sublimacion textil, diseno grafico y desarrollo web. Produccion local en Mile-End, entrega 24-48h.',
       },
       hero: {
         tagline: 'Create. Print. Repeat.',
@@ -866,7 +864,7 @@ const translations = {
     aboutPage: {
       seo: {
         title: 'Nosotros | Massive Medias - Estudio creativo Montreal',
-        description: 'Descubre Massive Medias, estudio de produccion creativa en Montreal. Nuestro equipo, nuestro espacio en Mile-End y nuestra historia desde 2013. Impresion, diseno y web.',
+        description: 'Descubre Massive Medias, estudio de produccion creativa en Montreal. Nuestro equipo, nuestro espacio en Mile-End y nuestra historia. Impresion, diseno y web.',
       },
       hero: {
         title: 'Nosotros',
@@ -875,7 +873,7 @@ const translations = {
       history: {
         title: 'Nuestra historia',
         paragraphs: [
-          'Massive Medias es un estudio de producción creativa activo desde 2013 y ubicado en Mile-End, en el corazón del ecosistema artístico de Montreal.',
+          'Massive Medias es un estudio de producción creativa ubicado en Mile-End, en el corazón del ecosistema artístico de Montreal. Inicialmente enfocado en desarrollo web y diseño gráfico desde 2022, el estudio se expandió en 2024 con impresión fine art, stickers y sublimación textil.',
           'La empresa ofrece cuatro servicios integrados para artistas visuales, fotógrafos, músicos y creadores independientes: impresión fine art, stickers personalizados, diseño gráfico y desarrollo web.',
           'Nuestra filosofía: ofrecer un servicio local, personalizado y de calidad profesional, sin las demoras y complicaciones de los servicios en línea. Sin envíos, sin esperas. Recogida en Mile-End o entrega local.',
         ],
@@ -883,10 +881,9 @@ const translations = {
       timeline: {
         title: 'Nuestro recorrido',
         events: [
-          { year: '2013', event: 'Primeros proyectos gráficos y web freelance. Nacimiento de la visión Massive Medias.' },
-          { year: '2018-2019', event: 'Inicio de impresión y material promocional para la escena musical de Montreal.' },
-          { year: '2020', event: 'Massive Medias se convierte en actividad estructurada. Lanzamiento oficial del estudio.' },
-          { year: '2023-2024', event: 'Adquisición de equipos profesionales de impresión, corte y sublimación.' },
+          { year: '2022', event: 'Lanzamiento de Massive Medias - desarrollo web y diseño gráfico para artistas y creadores de Montreal.' },
+          { year: '2023', event: 'Primeros proyectos importantes. Crecimiento de la clientela en la escena creativa del Mile-End.' },
+          { year: '2024', event: 'Adquisición de equipos profesionales de impresión, corte y sublimación. El estudio se convierte en un one-stop shop creativo.' },
           { year: '2025', event: 'Registro oficial en el REQ. Reenfoque: prints, stickers, diseño, web.' },
           { year: '2026', event: 'Incorporación provincial prevista. Lanzamiento de Merch-as-a-Service.' },
         ],

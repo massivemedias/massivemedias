@@ -317,7 +317,7 @@ Trabajamos con Adobe Illustrator, Figma y Photoshop para crear visuales impactan
     ],
     seo: {
       title: 'Diseno Grafico Montreal | Logos, Identidad Visual & Afiches - Massive Medias',
-      description: 'Diseno grafico profesional en Montreal. Logos, identidades visuales, afiches, portadas de album, packaging. Creacion a medida. Estudio creativo Mile-End desde 2013.',
+      description: 'Diseno grafico profesional en Montreal. Logos, identidades visuales, afiches, portadas de album, packaging. Creacion a medida. Estudio creativo Mile-End.',
     },
   },
 

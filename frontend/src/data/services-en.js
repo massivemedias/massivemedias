@@ -317,7 +317,7 @@ We work with Adobe Illustrator, Figma and Photoshop to create impactful visuals 
     ],
     seo: {
       title: 'Graphic Design Montreal | Logos, Branding & Posters - Massive Medias',
-      description: 'Professional graphic design in Montreal. Logos, visual identities, posters, album covers, packaging. Custom creation. Mile-End creative studio since 2013.',
+      description: 'Professional graphic design in Montreal. Logos, visual identities, posters, album covers, packaging. Custom creation. Mile-End creative studio.',
     },
   },
 

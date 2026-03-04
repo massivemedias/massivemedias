@@ -152,7 +152,7 @@ function Footer() {
         {/* Bas de footer */}
         <div className="pt-8 text-center text-sm footer-border footer-muted">
           <p>
-            © 2013-{currentYear} {t('footer.copyright')}
+            © 2022-{currentYear} {t('footer.copyright')}
           </p>
         </div>
       </div>
