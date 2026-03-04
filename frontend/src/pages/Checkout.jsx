@@ -5,6 +5,7 @@ import { ArrowLeft, User, MapPin, AlertCircle, Paperclip } from 'lucide-react';
 import { Elements } from '@stripe/react-stripe-js';
 import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
+import { useTheme } from '../i18n/ThemeContext';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
 import { getStripePromise } from '../lib/stripe';
@@ -51,6 +52,7 @@ function Checkout() {
   const { t, lang, tx } = useLang();
   const { items, cartTotal } = useCart();
   const { user } = useAuth();
+  const { step: themeStep } = useTheme();
 
   const [step, setStep] = useState('info'); // 'info' | 'payment'
   const [clientSecret, setClientSecret] = useState('');
@@ -61,6 +63,25 @@ function Checkout() {
   useEffect(() => {
     getStripePromise()?.then(setStripePromise);
   }, []);
+
+  // Read theme CSS variables for Stripe appearance
+  const stripeAppearance = useMemo(() => {
+    const s = getComputedStyle(document.documentElement);
+    const accent = s.getPropertyValue('--accent-color').trim() || '#FF52A0';
+    const bg = s.getPropertyValue('--bg-main').trim() || '#1a1a2e';
+    const text = s.getPropertyValue('--text-heading').trim() || '#e4e4f0';
+    return {
+      theme: 'night',
+      variables: {
+        colorPrimary: accent,
+        colorBackground: bg,
+        colorText: text,
+        colorDanger: '#ef4444',
+        fontFamily: 'system-ui, sans-serif',
+        borderRadius: '8px',
+      },
+    };
+  }, [themeStep]);
 
   const [formData, setFormData] = useState({
     nom: user?.user_metadata?.full_name || '',
@@ -370,17 +391,7 @@ function Checkout() {
                         stripe={stripePromise}
                         options={{
                           clientSecret,
-                          appearance: {
-                            theme: 'night',
-                            variables: {
-                              colorPrimary: '#e91e8c',
-                              colorBackground: '#1a1a2e',
-                              colorText: '#e4e4f0',
-                              colorDanger: '#ef4444',
-                              fontFamily: 'system-ui, sans-serif',
-                              borderRadius: '8px',
-                            },
-                          },
+                          appearance: stripeAppearance,
                         }}
                       >
                         <CheckoutForm cartTotal={orderTotal} />

@@ -68,27 +68,13 @@ function ServiceDetail() {
   const [lightboxImage, setLightboxImage] = useState(null);
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [openFaq, setOpenFaq] = useState(null);
-  const [configuratorOpen, setConfiguratorOpen] = useState(false);
   const configuratorRef = useRef(null);
 
-  // Reset configurator when changing service page
-  useEffect(() => {
-    setConfiguratorOpen(false);
-  }, [slug]);
-
-  const toggleConfigurator = useCallback(() => {
-    setConfiguratorOpen(prev => {
-      const opening = !prev;
-      if (opening) {
-        setTimeout(() => {
-          if (configuratorRef.current) {
-            const y = configuratorRef.current.getBoundingClientRect().top + window.scrollY - 80;
-            window.scrollTo({ top: y, behavior: 'smooth' });
-          }
-        }, 300);
-      }
-      return opening;
-    });
+  const openConfigurator = useCallback(() => {
+    if (configuratorRef.current) {
+      const y = configuratorRef.current.getBoundingClientRect().top + window.scrollY - 80;
+      window.scrollTo({ top: y, behavior: 'smooth' });
+    }
   }, []);
 
   // All images for lightbox navigation
@@ -216,12 +202,10 @@ function ServiceDetail() {
 
               <div className="flex flex-col sm:flex-row gap-3">
                 {service.boutiqueSlug && configuratorMap[service.boutiqueSlug] && (
-                  <button onClick={toggleConfigurator} className="btn-primary cursor-pointer">
+                  <button onClick={openConfigurator} className="btn-primary cursor-pointer">
                     <ShoppingCart className="mr-2" size={20} />
-                    {configuratorOpen
-                      ? tx({ fr: 'Fermer', en: 'Close', es: 'Cerrar' })
-                      : tx({ fr: 'Commander en ligne', en: 'Order online', es: 'Pedir en línea' })}
-                    <ChevronDown className={`ml-2 transition-transform duration-300 ${configuratorOpen ? 'rotate-180' : ''}`} size={20} />
+                    {tx({ fr: 'Commander en ligne', en: 'Order online', es: 'Pedir en línea' })}
+                    <ChevronDown className="ml-2" size={20} />
                   </button>
                 )}
                 <Link to="/contact" className={service.boutiqueSlug && configuratorMap[service.boutiqueSlug] ? 'btn-outline' : 'btn-primary'}>
@@ -252,37 +236,6 @@ function ServiceDetail() {
         </div>
       </section>
 
-      {/* ============ ACCORDEON CONFIGURATEUR (sous le hero) ============ */}
-      {service.boutiqueSlug && configuratorMap[service.boutiqueSlug] && (
-        <div ref={configuratorRef} id="configurateur" className="section-container max-w-6xl mx-auto !pt-0 !pb-0">
-          <AnimatePresence>
-            {configuratorOpen && (() => {
-              const Comp = configuratorMap[service.boutiqueSlug];
-              if (!Comp) return null;
-              return (
-                <motion.div
-                  key="configurator-accordion"
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.4 }}
-                  className="overflow-hidden"
-                >
-                  <div className="rounded-2xl border border-accent/30 p-6 md:p-10 mb-8 card-bg">
-                    <Suspense fallback={
-                      <div className="text-center py-8 text-grey-muted">
-                        {tx({ fr: 'Chargement...', en: 'Loading...', es: 'Cargando...' })}
-                      </div>
-                    }>
-                      <Comp />
-                    </Suspense>
-                  </div>
-                </motion.div>
-              );
-            })()}
-          </AnimatePresence>
-        </div>
-      )}
 
       <div className="section-container max-w-6xl mx-auto">
 
@@ -856,7 +809,7 @@ function ServiceDetail() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             {service.boutiqueSlug && configuratorMap[service.boutiqueSlug] && (
               <button
-                onClick={toggleConfigurator}
+                onClick={openConfigurator}
                 className="btn-primary cursor-pointer"
               >
                 <ShoppingCart className="mr-2" size={20} />
@@ -870,6 +823,29 @@ function ServiceDetail() {
             </Link>
           </div>
         </motion.div>
+
+        {/* ============ CONFIGURATEUR (bas de page) ============ */}
+        {hasConfigurator && (() => {
+          const Comp = configuratorMap[service.boutiqueSlug];
+          if (!Comp) return null;
+          return (
+            <div ref={configuratorRef} id="configurateur" className="mb-20 scroll-mt-24">
+              <h2 className="text-3xl font-heading font-bold text-gradient mb-8 text-center flex items-center justify-center gap-3">
+                <ShoppingCart size={28} className="text-accent" />
+                {tx({ fr: 'Commander en ligne', en: 'Order online', es: 'Pedir en línea' })}
+              </h2>
+              <div className="rounded-2xl p-6 md:p-10 card-bg">
+                <Suspense fallback={
+                  <div className="text-center py-8 text-grey-muted">
+                    {tx({ fr: 'Chargement...', en: 'Loading...', es: 'Cargando...' })}
+                  </div>
+                }>
+                  <Comp />
+                </Suspense>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* ============ NAVIGATION SERVICES ============ */}
         <div className="flex justify-between items-center py-8 footer-border">
@@ -988,13 +964,11 @@ function ServiceDetail() {
         {/* Commander en ligne - fixe */}
         {hasConfigurator && (
           <button
-            onClick={toggleConfigurator}
+            onClick={openConfigurator}
             className="btn-primary shadow-lg shadow-accent/20 flex items-center gap-2 py-2.5 px-5 text-sm"
           >
             <ShoppingCart size={18} />
-            {configuratorOpen
-              ? tx({ fr: 'Fermer', en: 'Close', es: 'Cerrar' })
-              : tx({ fr: 'Commander en ligne', en: 'Order online', es: 'Pedir en línea' })}
+            {tx({ fr: 'Commander en ligne', en: 'Order online', es: 'Pedir en línea' })}
           </button>
         )}
       </div>
