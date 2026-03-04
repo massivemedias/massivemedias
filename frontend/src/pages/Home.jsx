@@ -140,13 +140,13 @@ function Home() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3, duration: 0.6 }}
-              className="mx-auto mb-8 h-[32px] md:h-[42px] w-auto cpr-invert"
+              className="mx-auto mb-6 h-[18px] md:h-[22px] w-auto cpr-invert"
             />
 
             <motion.div
-              initial={{ opacity: 0, scale: 0.7 }}
+              initial={{ opacity: 0, scale: 0.92 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.1, duration: 2, ease: [0.25, 0.1, 0.25, 1] }}
+              transition={{ delay: 0.1, duration: 1.8, ease: [0.25, 0.1, 0.25, 1] }}
               className="mx-auto mb-10 logo-home max-w-[90vw]"
             >
               <MassiveLogo className="w-full h-full transition-colors duration-300" />

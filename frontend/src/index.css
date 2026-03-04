@@ -576,8 +576,9 @@ select.input-field option {
 }
 
 .logo-home {
-  width: 100%;
-  max-width: 3000px;
+  width: 70vw;
+  max-width: 900px;
+  min-width: 300px;
   height: auto;
 }
 
