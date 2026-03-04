@@ -40,9 +40,14 @@ function ArtisteDetail({ subdomainSlug }) {
   const { artists: cmsArtists } = useArtists();
 
   const artist = useMemo(() => {
+    const local = artistsData[slug] || null;
     const cmsArtist = cmsArtists?.find(a => a.slug === slug);
-    if (cmsArtist) return buildArtistFromCMS(cmsArtist);
-    return artistsData[slug] || null;
+    if (cmsArtist) {
+      const cms = buildArtistFromCMS(cmsArtist);
+      // Local data (bio, socials, pricing, demarche) a priorite sur le CMS
+      return { ...cms, ...(local ? { bio: local.bio, socials: local.socials, pricing: local.pricing, demarche: local.demarche } : {}) };
+    }
+    return local;
   }, [cmsArtists, slug]);
   const [selectedPrint, setSelectedPrint] = useState(null);
   const [openFaq, setOpenFaq] = useState(null);
