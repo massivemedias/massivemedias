@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, Camera, Award, Shield, Truck, Palette, MessageSquare, ChevronDown, ChevronLeft, ChevronRight, CheckCircle, Image, ExternalLink, X } from 'lucide-react';
+import { ArrowRight, Camera, Award, MessageSquare, ChevronDown, ChevronLeft, ChevronRight, CheckCircle, Image, ExternalLink, X } from 'lucide-react';
 import SEO from '../components/SEO';
 import ArtistPrintCard from '../components/ArtistPrintCard';
 import ConfiguratorArtistPrint from '../components/configurators/ConfiguratorArtistPrint';
@@ -403,8 +403,7 @@ function ArtisteDetail({ subdomainSlug }) {
           <div ref={configuratorRef} className="mb-20 scroll-mt-24">
             <ConfiguratorArtistPrint
               artist={artist}
-              print={selectedPrint}
-              formats={artistFormats}
+              selectedPrint={selectedPrint}
             />
           </div>
         )}
