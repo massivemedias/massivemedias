@@ -44,8 +44,8 @@ const translations = {
     // ──────────── HOME ────────────
     home: {
       seo: {
-        title: 'Massive Medias | Impression Fine Art, Stickers, Merch & Design - Montréal',
-        description: 'Studio de production créative à Montréal spécialisé en impression fine art, stickers die-cut, sublimation textile, design graphique et développement web. Production locale au Mile-End, livraison 24-48h.',
+        title: 'Massive Medias | Impression Fine Art, Stickers Personnalisés, Merch, Design Graphique & Web - Montréal',
+        description: 'Massive Medias - Studio d\'impression fine art et stickers personnalisés à Montréal. T-shirts, hoodies, sublimation textile, design graphique et webdesign. Production locale Mile-End, livraison gratuite 24-48h.',
       },
       hero: {
         tagline: 'Create. Print. Repeat.',
@@ -403,8 +403,8 @@ const translations = {
     // ──────────── HOME ────────────
     home: {
       seo: {
-        title: 'Massive Medias | Fine Art Printing, Stickers, Merch & Design - Montreal',
-        description: 'Creative production studio in Montreal specializing in fine art printing, die-cut stickers, textile sublimation, graphic design and web development. Local production in Mile-End, 24-48h delivery.',
+        title: 'Massive Medias | Fine Art Printing, Custom Stickers, Merch, Graphic Design & Web - Montreal',
+        description: 'Massive Medias - Fine art printing and custom stickers studio in Montreal. T-shirts, hoodies, textile sublimation, graphic design and web development. Local production Mile-End, free 24-48h delivery.',
       },
       hero: {
         tagline: 'Create. Print. Repeat.',
@@ -762,8 +762,8 @@ const translations = {
     // ──────────── HOME ────────────
     home: {
       seo: {
-        title: 'Massive Medias | Impresion Fine Art, Stickers, Merch & Diseno - Montreal',
-        description: 'Estudio de produccion creativa en Montreal especializado en impresion fine art, stickers troquelados, sublimacion textil, diseno grafico y desarrollo web. Produccion local en Mile-End, entrega 24-48h.',
+        title: 'Massive Medias | Impresion Fine Art, Stickers Personalizados, Merch, Diseno Grafico & Web - Montreal',
+        description: 'Massive Medias - Estudio de impresion fine art y stickers personalizados en Montreal. Camisetas, sudaderas, sublimacion textil, diseno grafico y desarrollo web. Produccion local Mile-End, entrega gratis 24-48h.',
       },
       hero: {
         tagline: 'Create. Print. Repeat.',

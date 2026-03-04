@@ -107,7 +107,7 @@ function APropos() {
             <div className="grid grid-cols-2 gap-4">
               {historyImages && historyImages.length > 0
                 ? historyImages.slice(0, 4).map((img, i) => (
-                    <img key={i} src={mediaUrl(img)} alt="" className="rounded-xl w-full h-48 object-cover" loading="lazy" />
+                    <img key={i} src={mediaUrl(img)} alt={`Studio Massive Medias Mile-End - Photo ${i + 1}`} className="rounded-xl w-full h-48 object-cover" loading="lazy" />
                   ))
                 : <>
                     <img src={thumb('/images/locale/locale2.webp')} alt="Studio Massive Medias" className="rounded-xl w-full h-48 object-cover" loading="lazy" />
@@ -170,7 +170,7 @@ function APropos() {
             <div className="grid grid-cols-2 gap-4">
               {content?.aboutEquipmentImages && content.aboutEquipmentImages.length > 0
                 ? content.aboutEquipmentImages.slice(0, 2).map((eqImg, i) => (
-                    <img key={i} src={mediaUrl(eqImg)} alt="" className="rounded-xl w-full h-40 object-cover" loading="lazy" />
+                    <img key={i} src={mediaUrl(eqImg)} alt={`Équipement professionnel Massive Medias - ${i === 0 ? 'Impression' : 'Production'}`} className="rounded-xl w-full h-40 object-cover" loading="lazy" />
                   ))
                 : <>
                     <img src={thumb('/images/locale/locale3.webp')} alt="Studio" className="rounded-xl w-full h-40 object-cover" loading="lazy" />

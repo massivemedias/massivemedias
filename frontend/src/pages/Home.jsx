@@ -149,6 +149,7 @@ function Home() {
               transition={{ delay: 0.1, duration: 1.8, ease: [0.25, 0.1, 0.25, 1] }}
               className="mx-auto mb-10 logo-home max-w-[90vw]"
             >
+              <h1 className="sr-only">Massive Medias - Impression fine art, stickers personnalisés, design graphique et développement web à Montréal</h1>
               <MassiveLogo className="w-full h-full transition-colors duration-300" />
             </motion.div>
 
