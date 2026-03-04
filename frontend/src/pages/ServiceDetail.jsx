@@ -943,7 +943,7 @@ function ServiceDetail() {
       </AnimatePresence>
 
       {/* ============ BOUTONS FIXES ============ */}
-      <div className="fixed bottom-6 right-20 z-50 flex flex-col items-end gap-3">
+      <div className="fixed bottom-6 right-20 z-50 flex items-center gap-3">
         {/* Scroll to top */}
         <AnimatePresence>
           {showScrollTop && (
