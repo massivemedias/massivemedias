@@ -1,5 +1,5 @@
 import { Printer, Sticker, Shirt, Palette, Globe } from 'lucide-react';
-import { thumb } from '../utils/paths';
+import { thumb, img } from '../utils/paths';
 
 const servicesDataEn = {
   'prints': {
@@ -300,6 +300,11 @@ We work with Adobe Illustrator, Figma and Photoshop to create impactful visuals 
       thumb('/images/graphism/onomiko.webp'),
       thumb('/images/graphism/lumiere_noire.webp'),
       thumb('/images/graphism/sony_delite_logo.webp'),
+      img('/images/graphism/creation_icone_logo.webp'),
+      img('/images/graphism/creation_pdf.webp'),
+      thumb('/images/realisations/flyers/discodyssee.webp'),
+      thumb('/images/realisations/flyers/from_vision.webp'),
+      thumb('/images/realisations/flyers/rituals.webp'),
       thumb('/images/graphism/massive_sticker.webp'),
       thumb('/images/graphism/maudite_machine_sticker.webp'),
       thumb('/images/graphism/vrstl_sticker.webp'),

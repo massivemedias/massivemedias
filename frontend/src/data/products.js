@@ -47,7 +47,7 @@ export const holographicPriceTiers = [
   { qty: 500, price: 380, unitPrice: 0.76 },
 ];
 
-// Die-cut utilise les mêmes prix (Cameo 5 = coût minimal)
+// Die-cut utilise les mêmes prix
 export const diecutPriceTiers = stickerPriceTiers;
 
 export function getStickerPrice(finish, shape, qty) {

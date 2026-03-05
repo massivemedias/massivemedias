@@ -86,9 +86,6 @@ function Home() {
       }))
     : null;
 
-  // ── Stats ──
-  const cmsStats = content?.stats?.length ? content.stats : null;
-
   // ── Advantages ──
   const cmsAdvantages = content?.advantages?.length ? content.advantages : null;
   const advantages = cmsAdvantages
@@ -312,29 +309,13 @@ function Home() {
       {/* ============ CHIFFRES ============ */}
       <section className="section-container">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-          {cmsStats
-            ? cmsStats.map((stat, index) => (
-                stat.isCounter
-                  ? <Counter key={index} end={Number(stat.value)} suffix={stat.suffix || ''} label={bl(stat, 'label', lang)} />
-                  : (
-                    <div key={index} className="text-center p-6">
-                      <div className="text-5xl md:text-6xl font-heading font-bold text-gradient mb-2 hero-title">
-                        {stat.value}{stat.suffix || ''}
-                      </div>
-                      <div className="text-grey-light text-lg">{bl(stat, 'label', lang)}</div>
-                    </div>
-                  )
-              ))
-            : <>
-                <Counter end={2022} suffix="" label={t('home.stats.since')} />
-                <Counter end={150} suffix="+" label={t('home.stats.projects')} />
-                <Counter end={100} suffix="%" label={t('home.stats.local')} />
-                <div className="text-center p-6">
-                  <div className="text-5xl md:text-6xl font-heading font-bold text-gradient mb-2 hero-title">24-48h</div>
-                  <div className="text-grey-light text-lg">{t('home.stats.delay')}</div>
-                </div>
-              </>
-          }
+          <Counter end={2022} suffix="" label={t('home.stats.since')} />
+          <Counter end={150} suffix="+" label={t('home.stats.projects')} />
+          <Counter end={100} suffix="%" label={t('home.stats.local')} />
+          <div className="text-center p-6">
+            <div className="text-5xl md:text-6xl font-heading font-bold text-gradient mb-2 hero-title">24-48h</div>
+            <div className="text-grey-light text-lg">{t('home.stats.delay')}</div>
+          </div>
         </div>
       </section>
 
