@@ -210,7 +210,7 @@ function ConfiguratorSublimation() {
                 key={product}
                 src={staticProductImages[product]}
                 alt={productLabel ? tx({ fr: productLabel.labelFr, en: productLabel.labelEn, es: productLabel.labelEs || productLabel.labelEn }) : product}
-                className="w-[116px] h-[116px] md:w-full md:h-auto object-contain rounded-lg flex-shrink-0"
+                className="w-[96px] h-[96px] md:w-full md:h-auto object-contain rounded-lg flex-shrink-0"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}

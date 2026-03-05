@@ -435,7 +435,7 @@ function ServiceDetail() {
                   <div className="relative aspect-[4/3] overflow-hidden">
                     {/* Logo - visible par defaut, disparait au hover */}
                     <div className="absolute inset-0 z-10 flex flex-col items-center justify-center p-4 transition-opacity duration-400 group-hover:opacity-0">
-                      <div className="w-24 h-24 flex items-center justify-center mb-3">
+                      <div className="w-36 h-36 flex items-center justify-center mb-3">
                         <img
                           src={project.logo}
                           alt={project.name}
@@ -581,7 +581,7 @@ function ServiceDetail() {
                       {row.map((cell, j) => (
                         <td
                           key={j}
-                          className={j === 0 ? 'text-heading font-semibold' : j === 1 ? 'text-gradient font-bold' : 'text-grey-muted'}
+                          className={j === 0 ? 'text-heading font-semibold' : j === 1 ? 'text-gradient font-bold whitespace-nowrap' : 'text-grey-muted whitespace-nowrap'}
                         >
                           {service.pricing.headers[j]?.includes('Réf') || service.pricing.headers[j]?.includes('Ref') ? (
                             cell !== '-' ? <span className="line-through">{cell}</span> : cell
@@ -615,7 +615,7 @@ function ServiceDetail() {
                         {table.rows.map((row, i) => (
                           <tr key={i}>
                             {row.map((cell, j) => (
-                              <td key={j} className={j === 0 ? 'text-heading font-semibold' : j === 1 ? 'text-gradient font-bold' : 'text-grey-muted'}>
+                              <td key={j} className={j === 0 ? 'text-heading font-semibold' : j === 1 ? 'text-gradient font-bold whitespace-nowrap' : 'text-grey-muted whitespace-nowrap'}>
                                 {cell}
                               </td>
                             ))}

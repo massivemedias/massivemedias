@@ -246,15 +246,9 @@ Ideal para merch de artistas, eventos, regalos corporativos o cualquier proyecto
     gallery: [
       thumb('/images/realisations/textile/Textile2.webp'),
       thumb('/images/realisations/textile/Textile3.webp'),
-      thumb('/images/realisations/textile/Textile4.webp'),
-      thumb('/images/realisations/textile/Textile5.webp'),
-      thumb('/images/realisations/textile/Textile6.webp'),
-      thumb('/images/realisations/textile/Textile7.webp'),
       thumb('/images/realisations/textile/Textile9.webp'),
       thumb('/images/realisations/textile/Textile10.webp'),
       thumb('/images/realisations/textile/Textile11.webp'),
-      thumb('/images/realisations/textile/Textile12.webp'),
-      thumb('/images/realisations/textile/Textile13.webp'),
     ],
     equipment: [
       { name: 'Prensa de calor gran formato', desc: 'Prensa de calor gran formato para camisetas, hoodies y textiles.' },
@@ -389,8 +383,8 @@ Más de 15 años de experiencia en desarrollo web. El fundador de Massive es pro
           headers: ['Servicio', 'Precio'],
           rows: [
             ['Landing page de evento', '$900'],
-            ['Sitio vitrina artista/sello (5-10 páginas)', '$2,000 - $3,500'],
-            ['Sitio e-commerce simple', '$4,000 - $6,000'],
+            ['Sitio vitrina artista/sello (5-10 páginas)', '$1,000 - $1,500'],
+            ['Sitio e-commerce simple', '$1,500 - $2,500'],
             ['Rediseño de sitio existente', 'Bajo cotización'],
             ['Mantenimiento mensual', '$100 - $200/mes'],
             ['Tarifa por hora (Web, Diseño, Restauración)', '$85/h'],

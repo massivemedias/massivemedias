@@ -246,15 +246,9 @@ Idéal pour le merch d'artiste, les événements, les cadeaux corporatifs ou tou
     gallery: [
       thumb('/images/realisations/textile/Textile2.webp'),
       thumb('/images/realisations/textile/Textile3.webp'),
-      thumb('/images/realisations/textile/Textile4.webp'),
-      thumb('/images/realisations/textile/Textile5.webp'),
-      thumb('/images/realisations/textile/Textile6.webp'),
-      thumb('/images/realisations/textile/Textile7.webp'),
       thumb('/images/realisations/textile/Textile9.webp'),
       thumb('/images/realisations/textile/Textile10.webp'),
       thumb('/images/realisations/textile/Textile11.webp'),
-      thumb('/images/realisations/textile/Textile12.webp'),
-      thumb('/images/realisations/textile/Textile13.webp'),
     ],
     equipment: [
       { name: 'Presse à chaud grand format', desc: 'Presse à chaud grand format pour t-shirts, hoodies et textiles.' },
@@ -389,8 +383,8 @@ Nous travaillons avec Adobe Illustrator, Figma et Photoshop pour créer des visu
           headers: ['Service', 'Prix'],
           rows: [
             ['Landing page événement', '900$'],
-            ['Site vitrine artiste/label (5-10 pages)', '2 000$ - 3 500$'],
-            ['Site e-commerce simple', '4 000$ - 6 000$'],
+            ['Site vitrine artiste/label (5-10 pages)', '1 000$ - 1 500$'],
+            ['Site e-commerce simple', '1 500$ - 2 500$'],
             ['Refonte site existant', 'Sur soumission'],
             ['Maintenance mensuelle', '100$ - 200$/mois'],
             ['Taux horaire (Web, Design, Restauration)', '85$/h'],
