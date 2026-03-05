@@ -103,7 +103,7 @@ function Boutique() {
     const el = printsRef.current;
     if (!el) return;
     let raf;
-    const speed = 0.3; // px per frame
+    const speed = 0.15; // px per frame
     const scroll = () => {
       if (!printsScrollPaused.current && el.scrollWidth > el.clientWidth) {
         el.scrollLeft += speed;
@@ -128,7 +128,7 @@ function Boutique() {
     const el = stickersRef.current;
     if (!el) return;
     let raf;
-    const speed = 0.3;
+    const speed = 0.15;
     const scroll = () => {
       if (!stickersScrollPaused.current && el.scrollWidth > el.clientWidth) {
         el.scrollLeft += speed;
