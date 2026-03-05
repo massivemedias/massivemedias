@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useLocation } from 'react-router-dom';
 import { ArrowRight, ArrowLeft, Sparkles, Palette, Shirt, ShoppingCart, Check, X, Code, PenTool, User } from 'lucide-react';
@@ -96,54 +96,6 @@ function Boutique() {
     setActiveCategory('all');
   }, [location.key]);
 
-  // Auto-scroll prints carousel
-  const printsRef = useRef(null);
-  const printsScrollPaused = useRef(false);
-  useEffect(() => {
-    const el = printsRef.current;
-    if (!el) return;
-    let raf;
-    const speed = 0.25; // px per frame
-    const scroll = () => {
-      if (!printsScrollPaused.current && el.scrollWidth > el.clientWidth) {
-        el.scrollLeft += speed;
-        // Loop back when reaching the end
-        if (el.scrollLeft >= el.scrollWidth - el.clientWidth - 1) {
-          el.scrollLeft = 0;
-        }
-      }
-      raf = requestAnimationFrame(scroll);
-    };
-    raf = requestAnimationFrame(scroll);
-    return () => cancelAnimationFrame(raf);
-  }, [activeCategory, view]);
-  const handlePrintsInteraction = useCallback((paused) => {
-    printsScrollPaused.current = paused;
-  }, []);
-
-  // Auto-scroll stickers carousel
-  const stickersRef = useRef(null);
-  const stickersScrollPaused = useRef(false);
-  useEffect(() => {
-    const el = stickersRef.current;
-    if (!el) return;
-    let raf;
-    const speed = 0.25;
-    const scroll = () => {
-      if (!stickersScrollPaused.current && el.scrollWidth > el.clientWidth) {
-        el.scrollLeft += speed;
-        if (el.scrollLeft >= el.scrollWidth - el.clientWidth - 1) {
-          el.scrollLeft = 0;
-        }
-      }
-      raf = requestAnimationFrame(scroll);
-    };
-    raf = requestAnimationFrame(scroll);
-    return () => cancelAnimationFrame(raf);
-  }, [activeCategory, view]);
-  const handleStickersInteraction = useCallback((paused) => {
-    stickersScrollPaused.current = paused;
-  }, []);
 
   const [selectedSticker, setSelectedSticker] = useState(null);
   const [stickerTier, setStickerTier] = useState(0);
@@ -566,11 +518,6 @@ function Boutique() {
             </div>
 
             <div
-              ref={printsRef}
-              onMouseEnter={() => handlePrintsInteraction(true)}
-              onMouseLeave={() => handlePrintsInteraction(false)}
-              onTouchStart={() => handlePrintsInteraction(true)}
-              onTouchEnd={() => handlePrintsInteraction(false)}
               className="flex gap-4 overflow-x-auto scrollbar-hide pb-2 -mx-4 px-4"
               style={{ scrollBehavior: 'auto' }}
             >
@@ -636,11 +583,6 @@ function Boutique() {
             </div>
 
             <div
-              ref={stickersRef}
-              onMouseEnter={() => handleStickersInteraction(true)}
-              onMouseLeave={() => handleStickersInteraction(false)}
-              onTouchStart={() => handleStickersInteraction(true)}
-              onTouchEnd={() => handleStickersInteraction(false)}
               className="flex gap-4 overflow-x-auto scrollbar-hide pb-2 -mx-4 px-4"
               style={{ scrollBehavior: 'auto' }}
             >
