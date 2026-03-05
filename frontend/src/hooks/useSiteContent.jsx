@@ -1,11 +1,53 @@
-import { createContext, useContext } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
+import api from '../services/api';
 
 const SiteContentContext = createContext(null);
 
-// Strapi desactive - donnees locales uniquement
 export function SiteContentProvider({ children }) {
+  const [content, setContent] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchSiteContent() {
+      try {
+        const { data } = await api.get('/site-content', {
+          params: {
+            'populate[0]': 'heroImages',
+            'populate[1]': 'serviceCards',
+            'populate[2]': 'serviceCards.image',
+            'populate[3]': 'featuredProjects',
+            'populate[4]': 'featuredProjects.image',
+            'populate[5]': 'stats',
+            'populate[6]': 'advantages',
+            'populate[7]': 'testimonials',
+            'populate[8]': 'ctaBackgroundImage',
+            'populate[9]': 'homeSeo',
+            'populate[10]': 'aboutSeo',
+            'populate[11]': 'aboutHistoryImages',
+            'populate[12]': 'aboutTimeline',
+            'populate[13]': 'aboutTeam',
+            'populate[14]': 'aboutTeam.avatar',
+            'populate[15]': 'aboutEquipment',
+            'populate[16]': 'aboutEquipmentImages',
+            'populate[17]': 'aboutSpaceImage',
+            'populate[18]': 'aboutUniverse',
+            'populate[19]': 'aboutUniverse.image',
+            'populate[20]': 'contactSeo',
+            'populate[21]': 'socialLinks',
+          },
+        });
+        setContent(data.data || null);
+      } catch (err) {
+        console.error('CMS site content unavailable:', err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchSiteContent();
+  }, []);
+
   return (
-    <SiteContentContext.Provider value={{ content: null, loading: false }}>
+    <SiteContentContext.Provider value={{ content, loading }}>
       {children}
     </SiteContentContext.Provider>
   );
