@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useLocation } from 'react-router-dom';
 import { ArrowRight, ArrowLeft, Sparkles, Palette, Shirt, ShoppingCart, Check, X, Code, PenTool, User } from 'lucide-react';
