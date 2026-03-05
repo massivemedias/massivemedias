@@ -55,8 +55,8 @@ function BrightnessFader() {
               y: { duration: 1.5, repeat: 2, ease: 'easeInOut' },
               scale: { type: 'spring', stiffness: 400, damping: 15 },
             }}
-            className="fixed left-1/2 -translate-x-1/2 mt-2 px-3 py-1.5 rounded-lg bg-accent text-white text-[11px] font-medium whitespace-nowrap pointer-events-none"
-            style={{ top: '4.5rem', zIndex: 9999 }}
+            className="absolute left-1/2 -translate-x-1/2 mt-2 px-3 py-1.5 rounded-lg bg-accent text-white text-[11px] font-medium whitespace-nowrap pointer-events-none"
+            style={{ top: '100%', zIndex: 9999 }}
           >
             <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-accent rotate-45" />
             {tx({ fr: 'Change le thème!', en: 'Try a theme!', es: 'Cambia el tema!' })}

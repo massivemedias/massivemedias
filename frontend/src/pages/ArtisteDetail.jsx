@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, Camera, Award, MessageSquare, ChevronDown, ChevronLeft, ChevronRight, CheckCircle, Image, ExternalLink, X, ZoomIn } from 'lucide-react';
@@ -57,38 +57,23 @@ function ArtisteDetail({ subdomainSlug }) {
   const [lightbox, setLightbox] = useState(null);
   const configuratorRef = useRef(null);
 
-  const goToPrev = useCallback((e) => {
-    e.stopPropagation();
-    if (!artist) return;
-    setLightbox(i => (i - 1 + artist.prints.length) % artist.prints.length);
-    setSelectedPrint(prev => {
-      const idx = artist.prints.findIndex(p => p.id === prev?.id);
-      const newIdx = (idx - 1 + artist.prints.length) % artist.prints.length;
-      return artist.prints[newIdx];
-    });
-  }, [artist]);
-
-  const goToNext = useCallback((e) => {
-    e.stopPropagation();
-    if (!artist) return;
-    setLightbox(i => (i + 1) % artist.prints.length);
-    setSelectedPrint(prev => {
-      const idx = artist.prints.findIndex(p => p.id === prev?.id);
-      const newIdx = (idx + 1) % artist.prints.length;
-      return artist.prints[newIdx];
-    });
-  }, [artist]);
-
   useEffect(() => {
     if (lightbox === null) return;
     const handleKey = (e) => {
-      if (e.key === 'Escape') setLightbox(null);
-      if (e.key === 'ArrowLeft') goToPrev(e);
-      if (e.key === 'ArrowRight') goToNext(e);
+      if (e.key === 'Escape') { setLightbox(null); return; }
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+      const dir = e.key === 'ArrowLeft' ? -1 : 1;
+      const isSticker = typeof lightbox === 'object' && lightbox.type === 'sticker';
+      const items = isSticker ? (artist?.stickers || []) : (artist?.prints || []);
+      if (items.length <= 1) return;
+      const idx = isSticker ? lightbox.index : lightbox;
+      const next = (idx + dir + items.length) % items.length;
+      setLightbox(isSticker ? { type: 'sticker', index: next } : next);
+      if (!isSticker) setSelectedPrint(items[next]);
     };
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
-  }, [lightbox, goToPrev, goToNext]);
+  }, [lightbox, artist]);
 
   if (!artist) {
     return (
@@ -406,6 +391,61 @@ function ArtisteDetail({ subdomainSlug }) {
           </div>
         </motion.div>
 
+        {/* ============ STICKERS ============ */}
+        {artist.stickers && artist.stickers.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+            className="mb-20 scroll-mt-24"
+          >
+            <h2 className="text-3xl font-heading font-bold text-gradient mb-3 text-center">
+              {tx({ fr: 'Stickers', en: 'Stickers', es: 'Stickers' })}
+            </h2>
+            <p className="text-grey-muted text-center mb-10 max-w-2xl mx-auto">
+              {tx({
+                fr: 'Designs originaux disponibles en stickers vinyl.',
+                en: 'Original designs available as vinyl stickers.',
+                es: 'Disenos originales disponibles en stickers vinyl.',
+              })}
+            </p>
+            <div className="flex flex-wrap justify-center gap-4 max-w-4xl mx-auto">
+              {artist.stickers.map((sticker, index) => (
+                <motion.div
+                  key={sticker.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: index * 0.08 }}
+                  viewport={{ once: true }}
+                  className="w-[calc(50%-0.5rem)] md:w-[calc(33.333%-0.667rem)] lg:w-[calc(25%-0.75rem)]"
+                >
+                  <div
+                    className="group relative rounded-2xl overflow-hidden border border-purple-main/30 card-shadow cursor-pointer transition-all duration-300 hover:border-accent/60 hover:shadow-lg"
+                    onClick={() => setLightbox({ type: 'sticker', index })}
+                  >
+                    <div className="aspect-square bg-glass-alt p-3">
+                      <img
+                        src={sticker.image}
+                        alt={tx({ fr: sticker.titleFr, en: sticker.titleEn, es: sticker.titleEs || sticker.titleEn })}
+                        className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-110"
+                      />
+                    </div>
+                    <div className="p-3 text-center">
+                      <h3 className="text-sm font-heading font-bold text-heading truncate">
+                        {tx({ fr: sticker.titleFr, en: sticker.titleEn, es: sticker.titleEs || sticker.titleEn })}
+                      </h3>
+                    </div>
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300 flex items-center justify-center pointer-events-none">
+                      <ZoomIn size={24} className="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 drop-shadow-lg" />
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
         {/* ============ CONFIGURATEUR ============ */}
         {selectedPrint && (
           <motion.div
@@ -705,69 +745,84 @@ function ArtisteDetail({ subdomainSlug }) {
 
       {/* ============ LIGHTBOX ============ */}
       <AnimatePresence>
-        {lightbox !== null && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4"
-            onClick={() => setLightbox(null)}
-          >
-            {/* Close */}
-            <button
-              onClick={() => setLightbox(null)}
-              className="absolute top-4 right-4 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white transition-colors z-10"
-            >
-              <X size={24} />
-            </button>
-
-            {/* Fleche gauche */}
-            {artist.prints.length > 1 && (
-              <button
-                onClick={goToPrev}
-                className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 text-white/70 hover:text-white w-12 h-12 flex items-center justify-center z-10"
-                aria-label={tx({ fr: 'Image precedente', en: 'Previous image', es: 'Imagen anterior' })}
-              >
-                <ChevronLeft size={32} />
-              </button>
-            )}
-
-            {/* Fleche droite */}
-            {artist.prints.length > 1 && (
-              <button
-                onClick={goToNext}
-                className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 text-white/70 hover:text-white w-12 h-12 flex items-center justify-center z-10"
-                aria-label={tx({ fr: 'Image suivante', en: 'Next image', es: 'Siguiente imagen' })}
-              >
-                <ChevronRight size={32} />
-              </button>
-            )}
-
+        {lightbox !== null && (() => {
+          const isSticker = typeof lightbox === 'object' && lightbox.type === 'sticker';
+          const items = isSticker ? (artist.stickers || []) : artist.prints;
+          const idx = isSticker ? lightbox.index : lightbox;
+          const item = items[idx];
+          if (!item) return null;
+          const goLB = (dir) => (e) => {
+            e.stopPropagation();
+            const next = (idx + dir + items.length) % items.length;
+            setLightbox(isSticker ? { type: 'sticker', index: next } : next);
+            if (!isSticker) {
+              setSelectedPrint(items[next]);
+            }
+          };
+          return (
             <motion.div
-              key={lightbox}
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
-              className="relative watermark rounded-lg overflow-hidden"
-              onClick={(e) => e.stopPropagation()}
+              className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4"
+              onClick={() => setLightbox(null)}
             >
-              <img
-                src={artist.prints[lightbox].fullImage || toFull(artist.prints[lightbox].image)}
-                alt={tx({ fr: artist.prints[lightbox].titleFr, en: artist.prints[lightbox].titleEn, es: artist.prints[lightbox].titleEs || artist.prints[lightbox].titleEn })}
-                className="max-w-full max-h-[85vh] object-contain"
-              />
-            </motion.div>
+              {/* Close */}
+              <button
+                onClick={() => setLightbox(null)}
+                className="absolute top-4 right-4 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white transition-colors z-10"
+              >
+                <X size={24} />
+              </button>
 
-            {/* Compteur */}
-            {artist.prints.length > 1 && (
-              <span className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white/60 text-sm">
-                {lightbox + 1} / {artist.prints.length}
-              </span>
-            )}
-          </motion.div>
-        )}
+              {/* Fleche gauche */}
+              {items.length > 1 && (
+                <button
+                  onClick={goLB(-1)}
+                  className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 text-white/70 hover:text-white w-12 h-12 flex items-center justify-center z-10"
+                  aria-label={tx({ fr: 'Image precedente', en: 'Previous image', es: 'Imagen anterior' })}
+                >
+                  <ChevronLeft size={32} />
+                </button>
+              )}
+
+              {/* Fleche droite */}
+              {items.length > 1 && (
+                <button
+                  onClick={goLB(1)}
+                  className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 text-white/70 hover:text-white w-12 h-12 flex items-center justify-center z-10"
+                  aria-label={tx({ fr: 'Image suivante', en: 'Next image', es: 'Siguiente imagen' })}
+                >
+                  <ChevronRight size={32} />
+                </button>
+              )}
+
+              <motion.div
+                key={isSticker ? `stk-${idx}` : idx}
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                className="relative watermark rounded-lg overflow-hidden"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <img
+                  src={item.fullImage || toFull(item.image)}
+                  alt={tx({ fr: item.titleFr, en: item.titleEn, es: item.titleEs || item.titleEn })}
+                  className="max-w-full max-h-[85vh] object-contain"
+                />
+              </motion.div>
+
+              {/* Compteur */}
+              {items.length > 1 && (
+                <span className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white/60 text-sm">
+                  {idx + 1} / {items.length}
+                </span>
+              )}
+            </motion.div>
+          );
+        })()}
       </AnimatePresence>
     </>
   );
