@@ -15,7 +15,7 @@ export function getOrganizationSchema() {
       height: 630,
     },
     email: 'info@massivemedias.com',
-    foundingDate: '2022',
+    foundingDate: '2013',
     foundingLocation: 'Montreal, QC, Canada',
     description: 'Studio de production créative à Montréal spécialisé en impression fine art, stickers die-cut, sublimation textile, design graphique et développement web.',
     knowsLanguage: ['fr', 'en', 'es'],
