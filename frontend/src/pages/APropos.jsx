@@ -1,27 +1,14 @@
 import { motion } from 'framer-motion';
-import { MapPin, Monitor } from 'lucide-react';
-import { img, thumb } from '../utils/paths';
+import { MapPin } from 'lucide-react';
+import { thumb } from '../utils/paths';
 import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
 import { useSiteContent } from '../hooks/useSiteContent';
 import { bl, mediaUrl } from '../utils/cms';
-import { getIcon } from '../utils/iconMap';
-
-const fallbackEquipmentIcons = ['Printer', 'Scissors', 'Shirt', 'Shirt', 'Monitor', 'Printer', 'Monitor'];
 
 function APropos() {
   const { t, lang, tx } = useLang();
   const { content } = useSiteContent();
-
-  // ── Equipment (fallback si vide) ──
-  const cmsEquipment = content?.aboutEquipment?.length ? content.aboutEquipment : null;
-  const equipmentItems = cmsEquipment
-    ? cmsEquipment.map((item) => ({
-        name: bl(item, 'name', lang),
-        desc: bl(item, 'desc', lang),
-        icon: getIcon(item.iconName),
-      }))
-    : null;
 
   // ── Timeline ──
   const cmsTimeline = content?.aboutTimeline?.length ? content.aboutTimeline : null;
@@ -39,7 +26,6 @@ function APropos() {
   const cmsUniverse = content?.aboutUniverse?.length ? content.aboutUniverse : null;
 
   // Fallback data
-  const fbEquipmentItems = t('aboutPage.equipment.items');
   const fbTimelineEvents = t('aboutPage.timeline.events');
   const fbHistoryParagraphs = t('aboutPage.history.paragraphs');
 
@@ -132,9 +118,7 @@ function APropos() {
             {(content && bl(content, 'aboutTimelineTitle', lang)) || t('aboutPage.timeline.title')}
           </h2>
           <div className="relative max-w-3xl mx-auto">
-            <div className="absolute left-8 top-0 bottom-0 w-px bg-gradient-to-b from-accent to-electric-purple"></div>
-
-            {(timelineEvents || fbTimelineEvents).map((item, index) => (
+            {(timelineEvents || fbTimelineEvents).map((item, index, arr) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, x: -20 }}
@@ -143,65 +127,18 @@ function APropos() {
                 viewport={{ once: true }}
                 className="flex items-start gap-6 mb-8 relative"
               >
-                <div className="w-16 h-16 rounded-full flex items-center justify-center flex-shrink-0 z-10 border-2 border-accent card-bg">
-                  <span className="text-accent font-heading font-bold text-xs text-center leading-tight">{item.year}</span>
+                {/* Ligne entre les ronds (pas dans le premier) */}
+                {index > 0 && (
+                  <div className="absolute left-8 bottom-full w-px h-8 bg-gradient-to-b from-accent/40 to-accent" style={{ transform: 'translateX(-0.5px)' }}></div>
+                )}
+                <div className="w-16 h-16 rounded-full flex items-center justify-center flex-shrink-0 z-10 bg-gradient-to-br from-accent to-electric-purple">
+                  <span className="text-white font-heading font-bold text-xs text-center leading-tight">{item.year}</span>
                 </div>
                 <div className="pt-3">
                   <p className="text-grey-light text-lg">{item.event}</p>
                 </div>
               </motion.div>
             ))}
-          </div>
-        </motion.div>
-
-        {/* Équipement */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-          className="mb-20"
-        >
-          <h2 className="text-4xl font-heading font-bold text-gradient mb-10 text-center">
-            {(content && bl(content, 'aboutEquipmentTitle', lang)) || t('aboutPage.equipment.title')}
-          </h2>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
-            <div className="grid grid-cols-2 gap-4">
-              {content?.aboutEquipmentImages && content.aboutEquipmentImages.length > 0
-                ? content.aboutEquipmentImages.slice(0, 2).map((eqImg, i) => (
-                    <img key={i} src={mediaUrl(eqImg)} alt={`Équipement professionnel Massive Medias - ${i === 0 ? 'Impression' : 'Production'}`} className="rounded-xl w-full h-40 object-cover" loading="lazy" />
-                  ))
-                : <>
-                    <img src={thumb('/images/locale/locale3.webp')} alt="Studio" className="rounded-xl w-full h-40 object-cover" loading="lazy" />
-                    <img src={thumb('/images/locale/locale10.webp')} alt="Équipement" className="rounded-xl w-full h-40 object-cover" loading="lazy" />
-                  </>
-              }
-            </div>
-
-            <div className="space-y-4">
-              {(equipmentItems || fbEquipmentItems).map((item, index) => {
-                const Icon = equipmentItems ? item.icon : getIcon(fallbackEquipmentIcons[index]);
-                return (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, x: 20 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.3, delay: index * 0.08 }}
-                    viewport={{ once: true }}
-                    className="flex items-start gap-4 p-4 rounded-xl border border-purple-main/30 transition-colors duration-300 glass-shadow"
-                  >
-                    <div className="p-2 rounded-lg flex-shrink-0 icon-bg">
-                      <Icon size={20} className="text-accent" />
-                    </div>
-                    <div>
-                      <h4 className="text-heading font-semibold">{equipmentItems ? item.name : item.name}</h4>
-                      <p className="text-grey-muted text-sm">{equipmentItems ? item.desc : item.desc}</p>
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </div>
           </div>
         </motion.div>
 
