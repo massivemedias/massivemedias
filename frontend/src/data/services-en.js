@@ -304,16 +304,13 @@ We work with Adobe Illustrator, Figma and Photoshop to create impactful visuals 
       thumb('/images/graphism/maudite_machine_sticker.webp'),
       thumb('/images/graphism/vrstl_sticker.webp'),
     ],
-    team: {
-      name: 'Christopher Gagnon',
-      role: 'Partner Graphic Designer',
-      bio: 'Graduate graphic designer with nearly 10 years of experience. Specialized in visual identity, packaging and web design.',
-      portfolio: 'Soundwave Festival, Laboratoire Bio Stratège, ChromaPur, Nutramazonie, NextGen Football, Belette Trois-Mille.',
-    },
     faq: [
       { q: 'How much does a logo cost?', a: 'Logos start at $300 for a simple concept. A complete visual identity (logo + colors + typography + variations) starts at $800.' },
-      { q: 'What is the timeline?', a: 'Expect 5 to 10 days for a logo, 2 to 3 weeks for a full identity. It depends on complexity and feedback speed.' },
-      { q: 'What file formats are delivered?', a: 'You receive vector files (AI, SVG, PDF) as well as high-resolution PNG/JPEG exports. Everything you need for web and print.' },
+      { q: 'What is the timeline for a graphic creation?', a: 'Expect 5 to 10 days for a logo, 3 to 5 days for a poster or flyer, and 5 to 7 days for an album cover. Full visual identities take 2 to 3 weeks.' },
+      { q: 'What file formats are delivered?', a: 'You receive vector files (AI, SVG, PDF) as well as high-resolution PNG/JPEG exports. Print-ready files and versions optimized for social media.' },
+      { q: 'Can you design my merch?', a: 'Yes! We create visuals for your t-shirts, hoodies, stickers, posters and everything related to your brand image. Sticker design is even included in the production price.' },
+      { q: 'Do you make event posters and flyers?', a: 'Absolutely. Concert posters, promotional flyers, postcards, album covers - we cover all print materials to promote your events and music.' },
+      { q: 'Can I see a proof before final production?', a: 'Always. We send a digital proof for approval before finalizing. Two rounds of revisions are included with every project.' },
     ],
     seo: {
       title: 'Graphic Design Montreal | Logos, Branding & Posters - Massive Medias',

@@ -124,11 +124,11 @@ const artistsData = {
     avatar: img('/images/prints/Psyqu33nAvatar.webp'),
     heroImage: thumb('/images/prints/Psyqu33n1.webp'),
     stickers: [
-      { id: 'psyqu33n-stk-001', titleFr: 'Octopus Medusa', titleEn: 'Octopus Medusa', titleEs: 'Octopus Medusa', image: thumb('/images/stickers/Stickers-Psyqu33n1.webp'), fullImage: img('/images/stickers/Stickers-Psyqu33n1.webp') },
-      { id: 'psyqu33n-stk-002', titleFr: 'Psyqu33n Crown', titleEn: 'Psyqu33n Crown', titleEs: 'Psyqu33n Crown', image: thumb('/images/stickers/Stickers-Psyqu33n2.webp'), fullImage: img('/images/stickers/Stickers-Psyqu33n2.webp') },
-      { id: 'psyqu33n-stk-003', titleFr: 'Medusa Bandana', titleEn: 'Medusa Bandana', titleEs: 'Medusa Bandana', image: thumb('/images/stickers/Stickers-Psyqu33n3.webp'), fullImage: img('/images/stickers/Stickers-Psyqu33n3.webp') },
-      { id: 'psyqu33n-stk-004', titleFr: 'The Sun - Tarot', titleEn: 'The Sun - Tarot', titleEs: 'The Sun - Tarot', image: thumb('/images/stickers/Stickers-Psyqu33n4.webp'), fullImage: img('/images/stickers/Stickers-Psyqu33n4.webp') },
-      { id: 'psyqu33n-stk-005', titleFr: 'Nefertiti', titleEn: 'Nefertiti', titleEs: 'Nefertiti', image: thumb('/images/stickers/Stickers-Psyqu33n5.webp'), fullImage: img('/images/stickers/Stickers-Psyqu33n5.webp') },
+      { id: 'psyqu33n-stk-001', titleFr: 'Octopus Medusa', titleEn: 'Octopus Medusa', titleEs: 'Octopus Medusa', image: img('/images/stickers/Stickers-Psyqu33n1.webp'), fullImage: img('/images/stickers/Stickers-Psyqu33n1.webp') },
+      { id: 'psyqu33n-stk-002', titleFr: 'Psyqu33n Crown', titleEn: 'Psyqu33n Crown', titleEs: 'Psyqu33n Crown', image: img('/images/stickers/Stickers-Psyqu33n2.webp'), fullImage: img('/images/stickers/Stickers-Psyqu33n2.webp') },
+      { id: 'psyqu33n-stk-003', titleFr: 'Medusa Bandana', titleEn: 'Medusa Bandana', titleEs: 'Medusa Bandana', image: img('/images/stickers/Stickers-Psyqu33n3.webp'), fullImage: img('/images/stickers/Stickers-Psyqu33n3.webp') },
+      { id: 'psyqu33n-stk-004', titleFr: 'The Sun - Tarot', titleEn: 'The Sun - Tarot', titleEs: 'The Sun - Tarot', image: img('/images/stickers/Stickers-Psyqu33n4.webp'), fullImage: img('/images/stickers/Stickers-Psyqu33n4.webp') },
+      { id: 'psyqu33n-stk-005', titleFr: 'Nefertiti', titleEn: 'Nefertiti', titleEs: 'Nefertiti', image: img('/images/stickers/Stickers-Psyqu33n5.webp'), fullImage: img('/images/stickers/Stickers-Psyqu33n5.webp') },
     ],
     prints: [
       { id: 'psyqu33n-001', titleFr: 'Accepter ses parts d\'ombres et de lumiere', titleEn: 'Embracing Shadow and Light', titleEs: 'Aceptar sus partes de sombra y luz', image: thumb('/images/prints/Psyqu33n1.webp'), fullImage: img('/images/prints/Psyqu33n1.webp'), limited: false },

@@ -304,16 +304,13 @@ Nous travaillons avec Adobe Illustrator, Figma et Photoshop pour créer des visu
       thumb('/images/graphism/maudite_machine_sticker.webp'),
       thumb('/images/graphism/vrstl_sticker.webp'),
     ],
-    team: {
-      name: 'Christopher Gagnon',
-      role: 'Infographiste partenaire',
-      bio: 'Diplômé en design graphique avec près de 10 ans d\'expérience. Spécialisé en identité visuelle, packaging et design web.',
-      portfolio: 'Soundwave Festival, Laboratoire Bio Stratège, ChromaPur, Nutramazonie, NextGen Football, Belette Trois-Mille.',
-    },
     faq: [
       { q: 'Combien coûte un logo?', a: 'Les logos débutent à 300$ pour un concept simple. Une identité visuelle complète (logo + couleurs + typographie + déclinaisons) commence à 800$.' },
-      { q: 'Quel est le délai?', a: 'Comptez 5 à 10 jours pour un logo, 2 à 3 semaines pour une identité complète. Tout dépend de la complexité et de la rapidité des retours.' },
-      { q: 'Quels formats de fichiers sont livrés?', a: 'Tu reçois les fichiers vectoriels (AI, SVG, PDF) ainsi que les exports PNG/JPEG en haute résolution. Tout ce qu\'il faut pour le web et l\'impression.' },
+      { q: 'Quel est le délai pour une création graphique?', a: 'Comptez 5 à 10 jours pour un logo, 3 à 5 jours pour une affiche ou un flyer, et 5 à 7 jours pour une pochette d\'album. Les identités visuelles complètes prennent 2 à 3 semaines.' },
+      { q: 'Quels formats de fichiers sont livrés?', a: 'Tu reçois les fichiers vectoriels (AI, SVG, PDF) ainsi que les exports PNG/JPEG en haute résolution. Fichiers print-ready et versions optimisées pour les réseaux sociaux.' },
+      { q: 'Pouvez-vous créer le design de mon merch?', a: 'Oui! On crée les visuels pour tes t-shirts, hoodies, stickers, affiches et tout ce qui touche à ton image de marque. Le design de stickers est même inclus dans le prix de production.' },
+      { q: 'Faites-vous des affiches et flyers d\'événement?', a: 'Absolument. Affiches de concerts, flyers promotionnels, cartes postales, pochettes d\'album - on couvre tous les supports imprimés pour promouvoir tes événements et ta musique.' },
+      { q: 'Puis-je voir un proof avant la production finale?', a: 'Toujours. On envoie un proof numérique pour validation avant de finaliser. Deux rondes de révisions sont incluses dans chaque projet.' },
     ],
     seo: {
       title: 'Design Graphique Montréal | Logos, Identité Visuelle & Affiches - Massive Medias',

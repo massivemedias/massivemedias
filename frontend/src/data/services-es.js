@@ -304,16 +304,13 @@ Trabajamos con Adobe Illustrator, Figma y Photoshop para crear visuales impactan
       thumb('/images/graphism/maudite_machine_sticker.webp'),
       thumb('/images/graphism/vrstl_sticker.webp'),
     ],
-    team: {
-      name: 'Christopher Gagnon',
-      role: 'Diseñador gráfico asociado',
-      bio: 'Graduado en diseño gráfico con cerca de 10 años de experiencia. Especializado en identidad visual, packaging y diseño web.',
-      portfolio: 'Soundwave Festival, Laboratoire Bio Stratege, ChromaPur, Nutramazonie, NextGen Football, Belette Trois-Mille.',
-    },
     faq: [
       { q: '¿Cuánto cuesta un logo?', a: 'Los logos comienzan en $300 para un concepto simple. Una identidad visual completa (logo + colores + tipografía + variaciones) comienza en $800.' },
-      { q: '¿Cuál es el plazo?', a: 'Espera de 5 a 10 días para un logo, de 2 a 3 semanas para una identidad completa. Depende de la complejidad y la rapidez de los comentarios.' },
-      { q: '¿Qué formatos de archivo se entregan?', a: 'Recibes archivos vectoriales (AI, SVG, PDF) así como exportaciones PNG/JPEG en alta resolución. Todo lo que necesitas para web e impresión.' },
+      { q: '¿Cuál es el plazo para una creación gráfica?', a: 'Espera de 5 a 10 días para un logo, de 3 a 5 días para un afiche o flyer, y de 5 a 7 días para una portada de álbum. Las identidades visuales completas toman de 2 a 3 semanas.' },
+      { q: '¿Qué formatos de archivo se entregan?', a: 'Recibes archivos vectoriales (AI, SVG, PDF) así como exportaciones PNG/JPEG en alta resolución. Archivos listos para imprimir y versiones optimizadas para redes sociales.' },
+      { q: '¿Pueden diseñar mi merch?', a: '¡Sí! Creamos los visuales para tus camisetas, hoodies, stickers, afiches y todo lo relacionado con tu imagen de marca. El diseño de stickers está incluso incluido en el precio de producción.' },
+      { q: '¿Hacen afiches y flyers de eventos?', a: 'Absolutamente. Afiches de conciertos, flyers promocionales, postales, portadas de álbum - cubrimos todos los materiales impresos para promover tus eventos y tu música.' },
+      { q: '¿Puedo ver una prueba antes de la producción final?', a: 'Siempre. Enviamos una prueba digital para aprobación antes de finalizar. Dos rondas de revisiones están incluidas en cada proyecto.' },
     ],
     seo: {
       title: 'Diseno Grafico Montreal | Logos, Identidad Visual & Afiches - Massive Medias',

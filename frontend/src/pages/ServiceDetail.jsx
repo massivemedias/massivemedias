@@ -59,10 +59,26 @@ function ServiceDetail() {
   const { servicePages } = useServicePages() || {};
   const fallbackData = getServicesData(lang);
 
+  // Local data always the base - CMS only overrides translatable text fields
   const service = useMemo(() => {
+    const local = fallbackData[slug] || null;
     const cmsPage = servicePages?.find(s => s.slug === slug);
-    if (cmsPage) return buildServiceFromCMS(cmsPage, lang);
-    return fallbackData[slug] || null;
+    if (!local) {
+      return cmsPage ? buildServiceFromCMS(cmsPage, lang) : null;
+    }
+    if (!cmsPage) return local;
+    const cms = buildServiceFromCMS(cmsPage, lang);
+    return {
+      ...local,
+      title: cms.title || local.title,
+      subtitle: cms.subtitle || local.subtitle,
+      description: cms.description || local.description,
+      seo: {
+        title: cms.seo?.title || local.seo.title,
+        description: cms.seo?.description || local.seo.description,
+      },
+      faq: cms.faq?.length ? cms.faq : local.faq,
+    };
   }, [servicePages, slug, lang, fallbackData]);
 
   const [lightboxImage, setLightboxImage] = useState(null);
@@ -416,34 +432,37 @@ function ServiceDetail() {
                   viewport={{ once: true }}
                   className="group relative rounded-xl overflow-hidden border border-purple-main/30 hover:border-accent/40 transition-all duration-300 card-bg card-shadow cursor-pointer"
                 >
-                  {/* Screenshot background */}
                   <div className="relative aspect-[4/3] overflow-hidden">
+                    {/* Logo - visible par defaut, disparait au hover */}
+                    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center p-4 transition-opacity duration-400 group-hover:opacity-0">
+                      <div className="w-24 h-24 flex items-center justify-center mb-3">
+                        <img
+                          src={project.logo}
+                          alt={project.name}
+                          className="max-w-full max-h-full object-contain drop-shadow-lg"
+                          loading="lazy"
+                        />
+                      </div>
+                      <h3 className="text-heading font-heading font-bold text-sm text-center">{project.name}</h3>
+                      <p className="text-grey-muted text-[11px] text-center leading-snug mt-1 line-clamp-2">{project.desc}</p>
+                    </div>
+                    {/* Screenshot - visible au hover */}
                     <img
                       src={project.screenshot}
                       alt={project.name}
-                      className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
+                      className="w-full h-full object-cover object-top opacity-0 group-hover:opacity-100 transition-opacity duration-400"
                       loading="lazy"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-                    {/* Logo overlay */}
-                    <div className="absolute top-3 left-3 w-11 h-11 rounded-xl bg-black/70 backdrop-blur-sm flex items-center justify-center p-1.5 shadow-md border border-white/10">
-                      <img
-                        src={project.logo}
-                        alt=""
-                        className="w-full h-full object-contain"
-                        loading="lazy"
-                      />
-                    </div>
-                    {/* External link on hover */}
-                    <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-400" />
+                    {/* External link au hover */}
+                    <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
                       <div className="w-7 h-7 rounded-full bg-accent/90 backdrop-blur-sm flex items-center justify-center">
                         <ExternalLink size={12} className="text-white" />
                       </div>
                     </div>
-                    {/* Info overlay at bottom */}
-                    <div className="absolute bottom-0 left-0 right-0 p-3">
-                      <h3 className="text-white font-heading font-bold text-sm mb-0.5">{project.name}</h3>
-                      <p className="text-white/70 text-[11px] leading-snug line-clamp-2">{project.desc}</p>
+                    {/* Nom au hover en bas */}
+                    <div className="absolute bottom-0 left-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-400 z-20">
+                      <h3 className="text-white font-heading font-bold text-sm">{project.name}</h3>
                     </div>
                   </div>
                   {/* Tags */}
