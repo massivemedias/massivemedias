@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, Camera, Award, MessageSquare, ChevronDown, ChevronLeft, ChevronRight, CheckCircle, Image, ExternalLink, X, ZoomIn } from 'lucide-react';
+import { ArrowRight, MessageSquare, ChevronDown, ChevronLeft, ChevronRight, CheckCircle, Image, ExternalLink, X, ZoomIn } from 'lucide-react';
 import SEO from '../components/SEO';
 import ArtistPrintCard from '../components/ArtistPrintCard';
 import ConfiguratorArtistPrint from '../components/configurators/ConfiguratorArtistPrint';
@@ -9,7 +9,7 @@ import { useLang } from '../i18n/LanguageContext';
 import { useTheme } from '../i18n/ThemeContext';
 import { useArtists } from '../hooks/useArtists';
 import { mediaUrl } from '../utils/cms';
-import artistsData, { artistFormats } from '../data/artists';
+import artistsData from '../data/artists';
 import { toFull } from '../utils/paths';
 
 function buildArtistFromCMS(cms) {
@@ -133,17 +133,17 @@ function ArtisteDetail({ subdomainSlug }) {
     fr: [
       { step: '1', title: 'Choisissez', desc: 'Sélectionnez une oeuvre et configurez votre tirage - série, format et cadre.' },
       { step: '2', title: 'On imprime', desc: 'Impression professionnelle dans nos studios. Soft proofing et contrôle qualité avant envoi.' },
-      { step: '3', title: 'Livraison', desc: 'Pick-up gratuit au Mile-End ou livraison sécurisée à votre porte.' },
+      { step: '3', title: 'Livraison', desc: 'Pick-up gratuit au Mile-End ou livraison partout dans le monde. Frais de port configurables lors du paiement.' },
     ],
     en: [
       { step: '1', title: 'Choose', desc: 'Select an artwork and configure your print - series, format and frame.' },
       { step: '2', title: 'We print', desc: 'Professional printing in our studios. Soft proofing and quality control before shipping.' },
-      { step: '3', title: 'Delivery', desc: 'Free Mile-End pick-up or secure delivery to your door.' },
+      { step: '3', title: 'Delivery', desc: 'Free Mile-End pick-up or worldwide shipping. Shipping fees configurable at checkout.' },
     ],
     es: [
       { step: '1', title: 'Elige', desc: 'Selecciona una obra y configura tu impresion - serie, formato y marco.' },
       { step: '2', title: 'Imprimimos', desc: 'Impresion profesional en nuestros estudios. Soft proofing y control de calidad antes del envio.' },
-      { step: '3', title: 'Entrega', desc: 'Recogida gratuita en Mile-End o envio seguro a tu puerta.' },
+      { step: '3', title: 'Entrega', desc: 'Recogida gratuita en Mile-End o envio a todo el mundo. Gastos de envio configurables en el pago.' },
     ],
   });
 
@@ -244,9 +244,6 @@ function ArtisteDetail({ subdomainSlug }) {
                   {tx({ fr: 'Voir les oeuvres', en: 'View artworks', es: 'Ver las obras' })}
                   <ArrowRight className="ml-2" size={20} />
                 </a>
-                <a href="#tarifs" className="btn-outline">
-                  {tx({ fr: 'Voir les tarifs', en: 'View pricing', es: 'Ver precios' })}
-                </a>
               </div>
             </motion.div>
 
@@ -257,7 +254,7 @@ function ArtisteDetail({ subdomainSlug }) {
                 transition={{ duration: 0.8, delay: 0.2 }}
                 className="hidden lg:block lg:flex-1 max-w-md"
               >
-                <div className="relative overflow-hidden rounded-2xl watermark">
+                <div className="relative overflow-hidden rounded-2xl">
                 <img
                   src={artist.heroImage}
                   alt={artist.name}
@@ -375,7 +372,7 @@ function ArtisteDetail({ subdomainSlug }) {
                     whileInView={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4, delay: index * 0.08 }}
                     viewport={{ once: true }}
-                    className="w-[calc(50%-0.5rem)] md:w-[calc(33.333%-0.667rem)]"
+                    className="w-[calc(50%-0.5rem)] md:w-[calc(25%-0.75rem)]"
                   >
                     <ArtistPrintCard
                       print={print}
@@ -438,6 +435,9 @@ function ArtisteDetail({ subdomainSlug }) {
                       <h3 className="text-sm font-heading font-bold text-heading truncate">
                         {tx({ fr: sticker.titleFr, en: sticker.titleEn, es: sticker.titleEs || sticker.titleEn })}
                       </h3>
+                      <p className="text-accent text-xs font-semibold mt-1">
+                        {tx({ fr: 'Des 35$ / pack', en: 'From $35 / pack', es: 'Desde 35$ / pack' })}
+                      </p>
                     </div>
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300 flex items-center justify-center pointer-events-none">
                       <ZoomIn size={24} className="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 drop-shadow-lg" />
@@ -465,7 +465,7 @@ function ArtisteDetail({ subdomainSlug }) {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-8 max-w-5xl mx-auto">
               {/* Preview */}
               <div
-                className="relative rounded-2xl overflow-hidden aspect-[2/3] border border-purple-main/30 card-shadow cursor-pointer group watermark"
+                className="relative rounded-2xl overflow-hidden aspect-[2/3] border border-purple-main/30 card-shadow cursor-pointer group"
                 onClick={() => setLightbox(artist.prints.findIndex(p => p.id === selectedPrint.id))}
               >
                 <img
@@ -555,91 +555,6 @@ function ArtisteDetail({ subdomainSlug }) {
           </div>
         </motion.div>
 
-        {/* ============ TARIFS ============ */}
-        <motion.div
-          id="tarifs"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-          className="mb-20 scroll-mt-24"
-        >
-          <h2 className="text-3xl font-heading font-bold text-gradient mb-3 text-center">
-            {tx({ fr: 'Tarifs', en: 'Pricing', es: 'Precios' })}
-          </h2>
-          <p className="text-grey-muted text-center mb-8">
-            {tx({ fr: 'Tous les prix incluent l\'impression professionnelle et le controle qualite.', en: 'All prices include professional printing and quality control.', es: 'Todos los precios incluyen impresion profesional y control de calidad.' })}
-          </p>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-            {/* Studio */}
-            <div className="rounded-xl overflow-hidden border border-purple-main/30 card-shadow">
-              <div className="p-4 border-b border-purple-main/30 bg-glass-alt">
-                <div className="flex items-center gap-3">
-                  <Camera size={20} className="text-accent" />
-                  <h3 className="text-heading font-heading font-bold">
-                    {tx({ fr: 'Serie Studio', en: 'Studio Series', es: 'Serie Studio' })}
-                  </h3>
-                </div>
-                <p className="text-grey-muted text-xs mt-1">4 {tx({ fr: 'encres pigmentees', en: 'pigmented inks', es: 'tintas pigmentadas' })}</p>
-              </div>
-              <table className="price-table">
-                <thead>
-                  <tr>
-                    <th>Format</th>
-                    <th>{tx({ fr: 'Prix', en: 'Price', es: 'Precio' })}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {artistFormats.map(f => (
-                    <tr key={f.id}>
-                      <td className="text-heading font-semibold">{f.label}</td>
-                      <td className="text-gradient font-bold">{artist.pricing.studio[f.id]}$</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Museum */}
-            <div className="rounded-xl overflow-hidden border border-purple-main/30 card-shadow">
-              <div className="p-4 border-b border-purple-main/30 bg-glass-alt">
-                <div className="flex items-center gap-3">
-                  <Award size={20} className="text-accent" />
-                  <h3 className="text-heading font-heading font-bold">
-                    {tx({ fr: 'Serie Musee', en: 'Museum Series', es: 'Serie Museo' })}
-                  </h3>
-                </div>
-                <p className="text-grey-muted text-xs mt-1">12 {tx({ fr: 'encres pigmentees', en: 'pigmented inks', es: 'tintas pigmentadas' })}</p>
-              </div>
-              <table className="price-table">
-                <thead>
-                  <tr>
-                    <th>Format</th>
-                    <th>{tx({ fr: 'Prix', en: 'Price', es: 'Precio' })}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {artistFormats.map(f => (
-                    <tr key={f.id}>
-                      <td className="text-heading font-semibold">{f.label}</td>
-                      <td className="text-gradient font-bold">{artist.pricing.museum[f.id]}$</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          {/* Frame note */}
-          <p className="text-grey-muted text-center text-sm mt-6">
-            {tx({
-              fr: `Cadre noir ou blanc : +${artist.pricing.framePrice}$ · Taxes en sus`,
-              en: `Black or white frame: +$${artist.pricing.framePrice} · Taxes extra`,
-              es: `Marco negro o blanco: +${artist.pricing.framePrice}$ · Impuestos adicionales`,
-            })}
-          </p>
-        </motion.div>
 
         {/* ============ EQUIPEMENT ============ */}
         <motion.div

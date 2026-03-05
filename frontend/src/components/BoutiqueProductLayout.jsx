@@ -88,10 +88,10 @@ function BoutiqueProductLayout({
         </div>
 
         {/* ============ HERO PRODUCT (2 cols) ============ */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 mb-16">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-10 mb-16">
 
           {/* LEFT - Gallery */}
-          <div className="lg:col-span-7">
+          <div>
             <div
               className="relative rounded-xl overflow-hidden mb-4 cursor-pointer group aspect-[4/3]"
               onClick={() => setLightbox(mainImage)}
@@ -136,7 +136,7 @@ function BoutiqueProductLayout({
           </div>
 
           {/* RIGHT - Configurator (sticky on desktop) */}
-          <div className="lg:col-span-5 sticky-config">
+          <div className="sticky-config">
             <h1 className="text-3xl md:text-4xl font-heading font-bold text-heading mb-2">
               {lt(productTitle)}
             </h1>

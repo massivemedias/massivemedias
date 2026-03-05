@@ -595,6 +595,27 @@ function ServiceDetail() {
             </div>
           )}
 
+          {service.pricing.cards && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-5xl mx-auto">
+              {service.pricing.cards.map((card, ci) => (
+                <div key={ci} className="rounded-xl border border-purple-main/30 card-shadow overflow-hidden">
+                  <div className="p-4 border-b border-purple-main/30 bg-glass-alt">
+                    <h3 className="text-heading font-heading font-bold text-base">{card.product}</h3>
+                    {card.desc && <p className="text-grey-muted text-xs mt-0.5">{card.desc}</p>}
+                  </div>
+                  <div className="p-4 space-y-2">
+                    {card.tiers.map((tier, ti) => (
+                      <div key={ti} className="flex items-center justify-between">
+                        <span className="text-grey-muted text-sm">{tier.qty} {tier.qty === '1' ? 'unité' : 'unités'}</span>
+                        <span className="text-heading font-bold text-sm">{tier.price}<span className="text-grey-muted font-normal text-xs">/u</span></span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
           {service.pricing.tables && (
             <div className={`gap-8 mx-auto ${service.pricing.tables.length === 1 ? 'max-w-5xl' : 'grid grid-cols-1 md:grid-cols-2 max-w-5xl'}`}>
               {service.pricing.tables.map((table, tableIndex) => (

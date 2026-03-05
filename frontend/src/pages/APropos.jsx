@@ -198,18 +198,18 @@ function APropos() {
                   </a>
                 ))
               : <>
-                  <div className="p-8 rounded-2xl border border-purple-main/30 transition-colors duration-300 card-bg card-shadow">
-                    <h3 className="text-2xl font-heading font-bold text-heading mb-3">{t('aboutPage.universe.mauditeMachine.title')}</h3>
+                  <a href="https://mauditemachine.com" target="_blank" rel="noopener noreferrer" className="block p-8 rounded-2xl border border-purple-main/30 hover:border-accent/50 transition-colors duration-300 card-bg card-shadow group">
+                    <h3 className="text-2xl font-heading font-bold text-heading mb-3 group-hover:text-accent transition-colors">{t('aboutPage.universe.mauditeMachine.title')}</h3>
                     <p className="text-grey-light leading-relaxed">
                       {t('aboutPage.universe.mauditeMachine.description')}
                     </p>
-                  </div>
-                  <div className="p-8 rounded-2xl border border-purple-main/30 transition-colors duration-300 card-bg card-shadow">
-                    <h3 className="text-2xl font-heading font-bold text-heading mb-3">{t('aboutPage.universe.vrstl.title')}</h3>
+                  </a>
+                  <a href="https://vrstlrecords.com" target="_blank" rel="noopener noreferrer" className="block p-8 rounded-2xl border border-purple-main/30 hover:border-accent/50 transition-colors duration-300 card-bg card-shadow group">
+                    <h3 className="text-2xl font-heading font-bold text-heading mb-3 group-hover:text-accent transition-colors">{t('aboutPage.universe.vrstl.title')}</h3>
                     <p className="text-grey-light leading-relaxed">
                       {t('aboutPage.universe.vrstl.description')}
                     </p>
-                  </div>
+                  </a>
                 </>
             }
           </div>

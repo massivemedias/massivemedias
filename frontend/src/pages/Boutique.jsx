@@ -1,7 +1,7 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link } from 'react-router-dom';
-import { ArrowRight, ArrowLeft, Sparkles, Palette, Shirt, ShoppingCart, Check, X } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
+import { ArrowRight, ArrowLeft, Sparkles, Palette, Shirt, ShoppingCart, Check, X, Code, PenTool, User } from 'lucide-react';
 import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
 import { useCart } from '../contexts/CartContext';
@@ -59,8 +59,8 @@ const defaultClothingProducts = [
 // Fallback - Stickers produits finis
 const defaultStickerProducts = [
   { id: 'stk-massive', fr: 'Massive', en: 'Massive', es: 'Massive', image: img('/images/stickers/Stickers-massive.webp') },
-  { id: 'stk-maudite', fr: 'Maudite Machine', en: 'Maudite Machine', es: 'Maudite Machine', image: img('/images/stickers/Stickers-Maudite-Machine.webp') },
-  { id: 'stk-cosmo', fr: 'Cosmovision', en: 'Cosmovision', es: 'Cosmovision', image: img('/images/stickers/Stickers-Cosmovision.webp') },
+  { id: 'stk-maudite', fr: 'Maudite Machine', en: 'Maudite Machine', es: 'Maudite Machine', image: img('/images/stickers/Stickers-Maudite-Machine.webp'), artistSlug: 'maudite-machine' },
+  { id: 'stk-psyqu33n', fr: 'Psyqu33n', en: 'Psyqu33n', es: 'Psyqu33n', image: img('/images/stickers/Stickers-Psyqu33n1.webp'), artistSlug: 'psyqu33n' },
   { id: 'stk-vrstl', fr: 'Vrstl', en: 'Vrstl', es: 'Vrstl', image: img('/images/stickers/Stickers-Vrstl.webp') },
   { id: 'stk-fusion', fr: 'Fusion State Rec', en: 'Fusion State Rec', es: 'Fusion State Rec', image: img('/images/stickers/Stickers-Fusion-State-Rec.webp') },
 ];
@@ -86,8 +86,65 @@ function Boutique() {
   const { tx } = useLang();
   const { addToCart } = useCart();
   const { products: cmsProducts } = useProducts();
+  const location = useLocation();
   const [activeCategory, setActiveCategory] = useState('all');
   const [view, setView] = useState('main'); // 'main' | 'prints'
+
+  // Reset view when navigating to /boutique (e.g. clicking Boutique link in header)
+  useEffect(() => {
+    setView('main');
+    setActiveCategory('all');
+  }, [location.key]);
+
+  // Auto-scroll prints carousel
+  const printsRef = useRef(null);
+  const printsScrollPaused = useRef(false);
+  useEffect(() => {
+    const el = printsRef.current;
+    if (!el) return;
+    let raf;
+    const speed = 0.3; // px per frame
+    const scroll = () => {
+      if (!printsScrollPaused.current && el.scrollWidth > el.clientWidth) {
+        el.scrollLeft += speed;
+        // Loop back when reaching the end
+        if (el.scrollLeft >= el.scrollWidth - el.clientWidth - 1) {
+          el.scrollLeft = 0;
+        }
+      }
+      raf = requestAnimationFrame(scroll);
+    };
+    raf = requestAnimationFrame(scroll);
+    return () => cancelAnimationFrame(raf);
+  }, [activeCategory, view]);
+  const handlePrintsInteraction = useCallback((paused) => {
+    printsScrollPaused.current = paused;
+  }, []);
+
+  // Auto-scroll stickers carousel
+  const stickersRef = useRef(null);
+  const stickersScrollPaused = useRef(false);
+  useEffect(() => {
+    const el = stickersRef.current;
+    if (!el) return;
+    let raf;
+    const speed = 0.3;
+    const scroll = () => {
+      if (!stickersScrollPaused.current && el.scrollWidth > el.clientWidth) {
+        el.scrollLeft += speed;
+        if (el.scrollLeft >= el.scrollWidth - el.clientWidth - 1) {
+          el.scrollLeft = 0;
+        }
+      }
+      raf = requestAnimationFrame(scroll);
+    };
+    raf = requestAnimationFrame(scroll);
+    return () => cancelAnimationFrame(raf);
+  }, [activeCategory, view]);
+  const handleStickersInteraction = useCallback((paused) => {
+    stickersScrollPaused.current = paused;
+  }, []);
+
   const [selectedSticker, setSelectedSticker] = useState(null);
   const [stickerTier, setStickerTier] = useState(0);
   const [stickerAdded, setStickerAdded] = useState(false);
@@ -130,10 +187,28 @@ function Boutique() {
     .map(slug => ({ ...artistsData[slug], slug }))
     .filter(a => a.name);
 
+  // Stickers individuels des artistes pour le carousel
+  const allStickers = useMemo(() => {
+    const artistStickers = orderedArtists.flatMap(a =>
+      (a.stickers || []).map(s => ({
+        id: s.id,
+        fr: s.titleFr,
+        en: s.titleEn,
+        es: s.titleEs || s.titleEn,
+        image: s.image,
+        artistSlug: a.slug,
+        tiers: defaultStickerPricingTiers,
+      }))
+    );
+    // Packs + stickers artistes sans doublons
+    const packIds = new Set(stickerProducts.map(s => s.id));
+    return [...stickerProducts, ...artistStickers.filter(s => !packIds.has(s.id))];
+  }, [stickerProducts, orderedArtists]);
+
   // Quelques prints featured pour la vue principale
   const featuredPrints = orderedArtists
-    .flatMap(a => (a.prints || []).slice(0, 3).map(p => ({ ...p, artist: a })))
-    .slice(0, 6);
+    .flatMap(a => (a.prints || []).slice(0, 5).map(p => ({ ...p, artist: a })))
+    .slice(0, 12);
 
   const show = (cat) => activeCategory === 'all' || activeCategory === cat;
 
@@ -328,14 +403,14 @@ function Boutique() {
                           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                           loading="lazy"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
                         <div className="absolute bottom-0 left-0 right-0 p-4">
                           <img
                             src={artist.avatar}
                             alt={`${artist.name} - Artiste Massive`}
-                            className="w-9 h-9 rounded-full ring-2 ring-white/20 object-cover mb-2"
+                            className="w-12 h-12 rounded-full ring-2 ring-white/20 object-cover mb-2"
                           />
-                          <h3 className="text-base font-heading font-bold text-white group-hover:text-accent transition-colors leading-tight">
+                          <h3 className="text-lg font-heading font-bold text-white group-hover:text-accent transition-colors leading-tight">
                             {artist.name}
                           </h3>
                           <p className="text-white/60 text-[11px] mt-0.5 leading-snug">
@@ -365,21 +440,20 @@ function Boutique() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="mb-16"
+            className="mb-16 opacity-50 pointer-events-none select-none"
           >
-            <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center gap-4 mb-8">
               <h2 className="text-2xl md:text-3xl font-heading font-bold text-heading">
                 {tx({ fr: 'Prêt-à-porter Massive', en: 'Massive Clothing', es: 'Ropa Massive' })}
               </h2>
+              <span className="px-3 py-1 rounded-full bg-glass backdrop-blur-sm text-grey-muted text-[11px] font-bold uppercase tracking-wider border border-white/10">
+                {tx({ fr: 'Bientôt disponible', en: 'Coming soon', es: 'Disponible pronto' })}
+              </span>
             </div>
 
             {/* Product cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
-              {clothingProducts.map((product, i) => {
-                const isAvailable = !product.comingSoon;
-                const Wrapper = isAvailable && product.link ? Link : 'div';
-                const wrapperProps = isAvailable && product.link ? { to: product.link } : {};
-                return (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10 grayscale">
+              {clothingProducts.map((product, i) => (
                   <motion.div
                     key={product.id}
                     initial={{ opacity: 0, y: 20 }}
@@ -387,29 +461,16 @@ function Boutique() {
                     transition={{ duration: 0.4, delay: i * 0.08 }}
                     viewport={{ once: true }}
                   >
-                    <Wrapper
-                      {...wrapperProps}
-                      className={`group block rounded-2xl overflow-hidden card-bg-bordered transition-all duration-300 ${
-                        isAvailable ? 'hover:border-accent/50 cursor-pointer' : 'opacity-70'
-                      }`}
+                    <div
+                      className="group block rounded-2xl overflow-hidden card-bg-bordered transition-all duration-300"
                     >
                       <div className="aspect-square bg-glass overflow-hidden relative flex items-center justify-center p-6">
                         <img
                           src={product.image}
                           alt={tx(product)}
-                          className={`w-full h-full object-contain transition-transform duration-500 ${isAvailable ? 'group-hover:scale-105' : ''}`}
+                          className="w-full h-full object-contain"
                           loading="lazy"
                         />
-                        {product.badge_fr && (
-                          <span className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-accent text-white text-[10px] font-bold uppercase tracking-wider">
-                            {tx({ fr: product.badge_fr, en: product.badge_en, es: product.badge_es || product.badge_en })}
-                          </span>
-                        )}
-                        {product.comingSoon && (
-                          <span className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-glass backdrop-blur-sm text-grey-muted text-[10px] font-bold uppercase tracking-wider border border-white/10">
-                            {tx({ fr: 'Bientot', en: 'Soon', es: 'Pronto' })}
-                          </span>
-                        )}
                       </div>
                       <div className="p-5">
                         <div className="flex items-start justify-between gap-3">
@@ -421,21 +482,14 @@ function Boutique() {
                               {tx({ fr: product.desc_fr, en: product.desc_en, es: product.desc_es || product.desc_en })}
                             </p>
                           </div>
-                          <span className="text-xl font-heading font-bold text-accent whitespace-nowrap">
+                          <span className="text-xl font-heading font-bold text-grey-muted whitespace-nowrap">
                             {product.price}$
                           </span>
                         </div>
-                        {isAvailable && (
-                          <span className="inline-flex items-center gap-1.5 text-accent text-xs font-semibold mt-4 group-hover:gap-2.5 transition-all">
-                            {tx({ fr: 'Configurer', en: 'Configure', es: 'Configurar' })}
-                            <ArrowRight size={14} />
-                          </span>
-                        )}
                       </div>
-                    </Wrapper>
+                    </div>
                   </motion.div>
-                );
-              })}
+              ))}
             </div>
 
             {/* Feature blocks - Qualite + Collabs */}
@@ -511,7 +565,15 @@ function Boutique() {
               </button>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+            <div
+              ref={printsRef}
+              onMouseEnter={() => handlePrintsInteraction(true)}
+              onMouseLeave={() => handlePrintsInteraction(false)}
+              onTouchStart={() => handlePrintsInteraction(true)}
+              onTouchEnd={() => handlePrintsInteraction(false)}
+              className="flex gap-4 overflow-x-auto scrollbar-hide pb-2 -mx-4 px-4"
+              style={{ scrollBehavior: 'auto' }}
+            >
               {featuredPrints.map((print, i) => {
                 const minPrice = Math.min(...Object.values(print.artist.pricing.studio));
                 return (
@@ -521,6 +583,7 @@ function Boutique() {
                     whileInView={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4, delay: i * 0.05 }}
                     viewport={{ once: true }}
+                    className="flex-shrink-0 w-[35vw] sm:w-[22vw] lg:w-[12vw]"
                   >
                     <Link
                       to={`/artistes/${print.artist.slug}`}
@@ -572,8 +635,16 @@ function Boutique() {
               </span>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-              {stickerProducts.map((sticker, i) => {
+            <div
+              ref={stickersRef}
+              onMouseEnter={() => handleStickersInteraction(true)}
+              onMouseLeave={() => handleStickersInteraction(false)}
+              onTouchStart={() => handleStickersInteraction(true)}
+              onTouchEnd={() => handleStickersInteraction(false)}
+              className="flex gap-4 overflow-x-auto scrollbar-hide pb-2 -mx-4 px-4"
+              style={{ scrollBehavior: 'auto' }}
+            >
+              {allStickers.map((sticker, i) => {
                 const isSelected = selectedSticker === sticker.id;
                 return (
                   <motion.div
@@ -582,6 +653,7 @@ function Boutique() {
                     whileInView={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4, delay: i * 0.05 }}
                     viewport={{ once: true }}
+                    className="flex-shrink-0 w-[40vw] sm:w-[25vw] lg:w-[14vw]"
                   >
                     <button
                       onClick={() => {
@@ -711,6 +783,21 @@ function Boutique() {
                           )}
                         </button>
                       </div>
+
+                      {sticker.artistSlug && (
+                        <Link
+                          to={`/artistes/${sticker.artistSlug}`}
+                          className="mt-3 flex items-center justify-center gap-2 text-sm text-accent hover:text-accent/80 transition-colors font-medium"
+                        >
+                          <User size={14} />
+                          {tx({
+                            fr: `Voir les prints et oeuvres de ${tx(sticker)}`,
+                            en: `See prints and artworks by ${tx(sticker)}`,
+                            es: `Ver prints y obras de ${tx(sticker)}`,
+                          })}
+                          <ArrowRight size={14} />
+                        </Link>
+                      )}
                     </div>
                   </motion.div>
                 );
@@ -732,7 +819,7 @@ function Boutique() {
                 Services
               </h2>
               <Link
-                to="/boutique"
+                to="/#services"
                 className="inline-flex items-center gap-1.5 text-accent text-sm font-semibold hover:gap-2.5 transition-all"
               >
                 {tx({ fr: 'Tous les services', en: 'All services', es: 'Todos los servicios' })}
@@ -742,21 +829,21 @@ function Boutique() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <Link
-                to="/boutique/sublimation"
+                to="/services/design"
                 className="group flex items-center gap-5 p-6 rounded-2xl card-bg-bordered hover:border-accent/50 transition-all duration-300"
               >
                 <div className="w-12 h-12 rounded-xl bg-glass flex items-center justify-center flex-shrink-0 group-hover:bg-accent/10 transition-colors">
-                  <Shirt size={24} className="text-accent/60 group-hover:text-accent transition-colors" />
+                  <PenTool size={24} className="text-accent/60 group-hover:text-accent transition-colors" />
                 </div>
                 <div className="flex-grow min-w-0">
                   <h3 className="text-base font-heading font-bold text-heading group-hover:text-accent transition-colors">
-                    Sublimation & Merch Custom
+                    Design graphique
                   </h3>
                   <p className="text-grey-muted text-xs mt-0.5">
                     {tx({
-                      fr: 'Impression permanente sur textile. T-shirts, hoodies, mugs.',
-                      en: 'Permanent textile printing. T-shirts, hoodies, mugs.',
-                      es: 'Impresion permanente en textil. Camisetas, sudaderas, tazas.',
+                      fr: 'Logos, identites visuelles, affiches et pochettes.',
+                      en: 'Logos, visual identities, posters and covers.',
+                      es: 'Logos, identidades visuales, carteles y portadas.',
                     })}
                   </p>
                 </div>
@@ -764,21 +851,21 @@ function Boutique() {
               </Link>
 
               <Link
-                to="/boutique/fine-art"
+                to="/services/web"
                 className="group flex items-center gap-5 p-6 rounded-2xl card-bg-bordered hover:border-accent/50 transition-all duration-300"
               >
                 <div className="w-12 h-12 rounded-xl bg-glass flex items-center justify-center flex-shrink-0 group-hover:bg-accent/10 transition-colors">
-                  <img src={img('/images/prints/PrintsFlatlay.webp')} alt="" className="w-full h-full object-cover rounded-xl" />
+                  <Code size={24} className="text-accent/60 group-hover:text-accent transition-colors" />
                 </div>
                 <div className="flex-grow min-w-0">
                   <h3 className="text-base font-heading font-bold text-heading group-hover:text-accent transition-colors">
-                    Fine Art & Flyers
+                    {tx({ fr: 'Developpement web', en: 'Web development', es: 'Desarrollo web' })}
                   </h3>
                   <p className="text-grey-muted text-xs mt-0.5">
                     {tx({
-                      fr: 'Tirages giclees, flyers, cartes d\'affaires.',
-                      en: 'Giclee prints, flyers, business cards.',
-                      es: 'Impresiones giclee, flyers, tarjetas de presentacion.',
+                      fr: 'Sites web, applications et solutions sur mesure.',
+                      en: 'Websites, applications and custom solutions.',
+                      es: 'Sitios web, aplicaciones y soluciones a medida.',
                     })}
                   </p>
                 </div>

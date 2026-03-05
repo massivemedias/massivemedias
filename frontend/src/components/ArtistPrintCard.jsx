@@ -23,14 +23,19 @@ function ArtistPrintCard({ print, minPrice, selected, onClick, onZoom }) {
           : 'border-transparent hover:border-accent/30 card-bg-bordered'
       }`}
     >
-      <div className="relative aspect-[2/3] overflow-hidden watermark">
+      <div className="relative aspect-[2/3] overflow-hidden">
         <img
           src={print.image}
           alt={title}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           loading="lazy"
         />
-        {print.limited && (
+        {print.unique && (
+          <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-accent text-white text-[10px] font-bold uppercase tracking-wider">
+            {tx({ fr: 'Pièce unique', en: 'One of a kind', es: 'Pieza única' })}
+          </div>
+        )}
+        {print.limited && !print.unique && (
           <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-accent text-white text-[10px] font-bold uppercase tracking-wider">
             {tx({ fr: 'Édition limitée', en: 'Limited Edition', es: 'Edición limitada' })}
           </div>
