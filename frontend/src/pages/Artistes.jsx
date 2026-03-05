@@ -28,8 +28,7 @@ function Artistes() {
           en: cms.taglineEn || local.tagline.en,
           es: local.tagline.es || local.tagline.en,
         },
-        avatar: mediaUrl(cms.avatar) || local.avatar,
-        heroImage: mediaUrl(cms.heroImage) || local.heroImage,
+        // images locales toujours prioritaires
       };
     });
   }, [cmsArtists]);

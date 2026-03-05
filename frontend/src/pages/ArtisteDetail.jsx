@@ -40,17 +40,20 @@ function ArtisteDetail({ subdomainSlug }) {
   const { artists: cmsArtists } = useArtists();
 
   const artist = useMemo(() => {
-    const cmsArtist = cmsArtists?.find(a => a.slug === slug);
     const local = artistsData[slug] || null;
-    if (cmsArtist) {
-      const cms = buildArtistFromCMS(cmsArtist);
-      // Psyqu33n : bio locale a priorite (mise a jour manuellement)
-      if (slug === 'psyqu33n' && local) {
-        return { ...cms, bio: local.bio };
-      }
-      return cms;
+    const cmsArtist = cmsArtists?.find(a => a.slug === slug);
+    // Donnees locales toujours prioritaires, CMS enrichit seulement les textes
+    if (!local) {
+      return cmsArtist ? buildArtistFromCMS(cmsArtist) : null;
     }
-    return local;
+    if (!cmsArtist) return local;
+    const cms = buildArtistFromCMS(cmsArtist);
+    return {
+      ...local,
+      name: cms.name || local.name,
+      tagline: { fr: cms.tagline.fr || local.tagline.fr, en: cms.tagline.en || local.tagline.en, es: local.tagline.es || local.tagline.en },
+      bio: local.bio,
+    };
   }, [cmsArtists, slug]);
   const [selectedPrint, setSelectedPrint] = useState(null);
   const [openFaq, setOpenFaq] = useState(null);
