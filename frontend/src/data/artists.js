@@ -48,6 +48,8 @@ const artistsData = {
     prints: [
       { id: 'adrift-001', titleFr: 'Print I', titleEn: 'Print I', titleEs: 'Print I', image: thumb('/images/prints/Adrift1.webp'), fullImage: img('/images/prints/Adrift1.webp'), limited: false },
       { id: 'adrift-002', titleFr: 'Print II', titleEn: 'Print II', titleEs: 'Print II', image: thumb('/images/prints/Adrift2.webp'), fullImage: img('/images/prints/Adrift2.webp'), limited: false },
+      { id: 'adrift-003', titleFr: 'Print III', titleEn: 'Print III', titleEs: 'Print III', image: thumb('/images/prints/Adrift3.webp'), fullImage: img('/images/prints/Adrift3.webp'), limited: false },
+      { id: 'adrift-004', titleFr: 'Print IV', titleEn: 'Print IV', titleEs: 'Print IV', image: thumb('/images/prints/Adrift4.webp'), fullImage: img('/images/prints/Adrift4.webp'), limited: false },
     ],
     pricing: {
       studio: { a4: 35, a3: 50, a3plus: 65, a2: 85 },
