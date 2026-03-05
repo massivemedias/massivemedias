@@ -152,9 +152,9 @@ function Boutique() {
         tiers: defaultStickerPricingTiers,
       }))
     );
-    // Packs + stickers artistes sans doublons
-    const packIds = new Set(stickerProducts.map(s => s.id));
-    return [...stickerProducts, ...artistStickers.filter(s => !packIds.has(s.id))];
+    // Packs + stickers artistes sans doublons (par image)
+    const packImages = new Set(stickerProducts.map(s => s.image));
+    return [...stickerProducts, ...artistStickers.filter(s => !packImages.has(s.image))];
   }, [stickerProducts, orderedArtists]);
 
   // Quelques prints featured pour la vue principale
