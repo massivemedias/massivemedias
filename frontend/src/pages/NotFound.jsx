@@ -10,7 +10,7 @@ function NotFound() {
   return (
     <>
       <SEO
-        title={tx({ fr: 'Page non trouvée - Massive Medias', en: 'Page Not Found - Massive Medias', es: 'Página no encontrada - Massive Medias' })}
+        title={tx({ fr: 'Page non trouvée - Massive', en: 'Page Not Found - Massive', es: 'Página no encontrada - Massive' })}
         description={tx({ fr: 'La page demandée n\'existe pas.', en: 'The requested page does not exist.', es: 'La página solicitada no existe.' })}
         noindex
       />

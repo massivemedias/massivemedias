@@ -36,7 +36,7 @@ function BoutiqueSublimation() {
   return (
     <BoutiqueProductLayout
       serviceSlug="sublimation-merch"
-      pageTitle={{ fr: 'Sublimation & Merch - Boutique | Massive Medias', en: 'Sublimation & Merch - Shop | Massive Medias', es: 'Sublimaci\u00f3n y Merch - Tienda | Massive Medias' }}
+      pageTitle={{ fr: 'Sublimation & Merch - Boutique | Massive', en: 'Sublimation & Merch - Shop | Massive', es: 'Sublimaci\u00f3n y Merch - Tienda | Massive' }}
       metaDescription={{
         fr: 'T-shirts, hoodies, mugs en sublimation. Impression permanente. Merch d\'artiste sur mesure. Montr\u00e9al.',
         en: 'T-shirts, hoodies, mugs sublimation printing. Permanent print. Custom artist merch. Montreal.',

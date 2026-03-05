@@ -51,9 +51,9 @@ function BoutiqueMerchTshirt() {
       <SEO
         title={tx({ fr: 'T-Shirt Massive | Boutique', en: 'Massive T-Shirt | Shop', es: 'Camiseta Massive | Tienda' })}
         description={tx({
-          fr: 'T-Shirt Massive Medias. 60+ couleurs, tailles S a 3XL.',
-          en: 'Massive Medias T-Shirt. 60+ colors, sizes S to 3XL.',
-          es: 'Camiseta Massive Medias. 60+ colores, tallas S a 3XL.',
+          fr: 'T-Shirt Massive. 60+ couleurs, tailles S a 3XL.',
+          en: 'Massive T-Shirt. 60+ colors, sizes S to 3XL.',
+          es: 'Camiseta Massive. 60+ colores, tallas S a 3XL.',
         })}
         breadcrumbs={[
           { name: tx({ fr: 'Accueil', en: 'Home', es: 'Inicio' }), url: '/' },

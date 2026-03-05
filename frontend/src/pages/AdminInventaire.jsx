@@ -89,7 +89,7 @@ function AdminInventaire() {
   return (
     <>
       <SEO
-        title={tx({ fr: 'Inventaire | Massive Medias', en: 'Inventory | Massive Medias', es: 'Inventario | Massive Medias' })}
+        title={tx({ fr: 'Inventaire | Massive', en: 'Inventory | Massive', es: 'Inventario | Massive' })}
         description=""
         noindex
       />

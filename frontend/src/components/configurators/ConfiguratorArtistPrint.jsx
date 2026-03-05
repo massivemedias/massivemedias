@@ -247,9 +247,9 @@ function ConfiguratorArtistPrint({ artist, selectedPrint }) {
 
       <p className="text-grey-muted text-xs text-center">
         {tx({
-          fr: 'Impression professionnelle par Massive Medias. Soft proofing inclus.',
-          en: 'Professional printing by Massive Medias. Soft proofing included.',
-          es: 'Impresión profesional por Massive Medias. Soft proofing incluido.',
+          fr: 'Impression professionnelle par Massive. Soft proofing inclus.',
+          en: 'Professional printing by Massive. Soft proofing included.',
+          es: 'Impresión profesional por Massive. Soft proofing incluido.',
         })}
       </p>
     </div>

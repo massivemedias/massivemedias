@@ -58,7 +58,7 @@ const defaultClothingProducts = [
 
 // Fallback - Stickers produits finis
 const defaultStickerProducts = [
-  { id: 'stk-massive', fr: 'Massive Medias', en: 'Massive Medias', es: 'Massive Medias', image: img('/images/stickers/Stickers-massive.webp') },
+  { id: 'stk-massive', fr: 'Massive', en: 'Massive', es: 'Massive', image: img('/images/stickers/Stickers-massive.webp') },
   { id: 'stk-maudite', fr: 'Maudite Machine', en: 'Maudite Machine', es: 'Maudite Machine', image: img('/images/stickers/Stickers-Maudite-Machine.webp') },
   { id: 'stk-cosmo', fr: 'Cosmovision', en: 'Cosmovision', es: 'Cosmovision', image: img('/images/stickers/Stickers-Cosmovision.webp') },
   { id: 'stk-vrstl', fr: 'Vrstl', en: 'Vrstl', es: 'Vrstl', image: img('/images/stickers/Stickers-Vrstl.webp') },
@@ -142,7 +142,7 @@ function Boutique() {
     return (
       <>
         <SEO
-          title={tx({ fr: 'Prints - Boutique | Massive Medias', en: 'Prints - Shop | Massive Medias', es: 'Impresiones - Tienda | Massive Medias' })}
+          title={tx({ fr: 'Prints - Boutique | Massive', en: 'Prints - Shop | Massive', es: 'Impresiones - Tienda | Massive' })}
           description=""
           noindex
         />
@@ -240,11 +240,11 @@ function Boutique() {
   return (
     <>
       <SEO
-        title={tx({ fr: 'Boutique | Massive Medias', en: 'Shop | Massive Medias', es: 'Tienda | Massive Medias' })}
+        title={tx({ fr: 'Boutique | Massive', en: 'Shop | Massive', es: 'Tienda | Massive' })}
         description={tx({
-          fr: 'Boutique Massive Medias - Vêtements, prints, stickers et plus.',
-          en: 'Massive Medias Shop - Clothing, prints, stickers and more.',
-          es: 'Tienda Massive Medias - Ropa, impresiones, stickers y mas.',
+          fr: 'Boutique Massive - Vêtements, prints, stickers et plus.',
+          en: 'Massive Shop - Clothing, prints, stickers and more.',
+          es: 'Tienda Massive - Ropa, impresiones, stickers y mas.',
         })}
         breadcrumbs={[
           { name: tx({ fr: 'Accueil', en: 'Home', es: 'Inicio' }), url: '/' },
@@ -332,7 +332,7 @@ function Boutique() {
                         <div className="absolute bottom-0 left-0 right-0 p-4">
                           <img
                             src={artist.avatar}
-                            alt={`${artist.name} - Artiste Massive Medias`}
+                            alt={`${artist.name} - Artiste Massive`}
                             className="w-9 h-9 rounded-full ring-2 ring-white/20 object-cover mb-2"
                           />
                           <h3 className="text-base font-heading font-bold text-white group-hover:text-accent transition-colors leading-tight">

@@ -28,9 +28,9 @@ const merchConfig = {
       es: '60+ colores disponibles. Algodón preencogido, impresión duradera.',
     },
     seoDesc: {
-      fr: 'T-Shirt Massive Medias. 60+ couleurs, tailles S à 3XL.',
-      en: 'Massive Medias T-Shirt. 60+ colors, sizes S to 3XL.',
-      es: 'Camiseta Massive Medias. 60+ colores, tallas S a 3XL.',
+      fr: 'T-Shirt Massive. 60+ couleurs, tailles S à 3XL.',
+      en: 'Massive T-Shirt. 60+ colors, sizes S to 3XL.',
+      es: 'Camiseta Massive. 60+ colores, tallas S a 3XL.',
     },
   },
   hoodie: {
@@ -47,9 +47,9 @@ const merchConfig = {
       es: '40+ colores disponibles. Forro polar grueso, impresión duradera.',
     },
     seoDesc: {
-      fr: 'Hoodie Massive Medias. 40+ couleurs, tailles S à 3XL.',
-      en: 'Massive Medias Hoodie. 40+ colors, sizes S to 3XL.',
-      es: 'Sudadera Massive Medias. 40+ colores, tallas S a 3XL.',
+      fr: 'Hoodie Massive. 40+ couleurs, tailles S à 3XL.',
+      en: 'Massive Hoodie. 40+ colors, sizes S to 3XL.',
+      es: 'Sudadera Massive. 40+ colores, tallas S a 3XL.',
     },
   },
   crewneck: {
@@ -66,9 +66,9 @@ const merchConfig = {
       es: '30+ colores disponibles. Forro polar de peso medio, impresión duradera.',
     },
     seoDesc: {
-      fr: 'Crewneck Massive Medias. 30+ couleurs, tailles S à 3XL.',
-      en: 'Massive Medias Crewneck. 30+ colors, sizes S to 3XL.',
-      es: 'Sudadera cuello redondo Massive Medias. 30+ colores, tallas S a 3XL.',
+      fr: 'Crewneck Massive. 30+ couleurs, tailles S à 3XL.',
+      en: 'Massive Crewneck. 30+ colors, sizes S to 3XL.',
+      es: 'Sudadera cuello redondo Massive. 30+ colores, tallas S a 3XL.',
     },
   },
 };

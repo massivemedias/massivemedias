@@ -101,7 +101,7 @@ button, [role="button"], a, label[class*="cursor"], select, input[type="checkbox
 
 /* =============================================
    VIBRANT MODE - Violet profond saturé + Rose + Orange
-   Inspiré de la cover Massive Medias
+   Inspiré de la cover Massive
    ============================================= */
 
 [data-theme="vibrant"] {
@@ -424,6 +424,12 @@ select.input-field option {
   color: var(--color-heading);
 }
 
+/* Responsive headings - clamp pour que ca tienne sur une ligne mobile */
+@media (max-width: 767px) {
+  h1.font-heading { font-size: clamp(1.5rem, 8vw, 3rem); }
+  h2.font-heading { font-size: clamp(1.2rem, 5.5vw, 1.875rem); }
+}
+
 /* Tableaux de prix */
 .price-table {
   width: 100%;
@@ -431,18 +437,26 @@ select.input-field option {
 }
 
 .price-table th {
-  padding: 0.75rem 1rem;
+  padding: 0.5rem 0.5rem;
   text-align: left;
   font-weight: 600;
+  font-size: 0.8rem;
   border-bottom: 2px solid #D9CCE8;
   background: var(--bg-table-head);
   color: var(--color-heading);
+  white-space: nowrap;
 }
 
 .price-table td {
-  padding: 0.75rem 1rem;
+  padding: 0.5rem 0.5rem;
+  font-size: 0.85rem;
   border-bottom: 1px solid var(--table-border);
   color: var(--color-grey-light);
+}
+
+@media (min-width: 768px) {
+  .price-table th { padding: 0.75rem 1rem; font-size: inherit; }
+  .price-table td { padding: 0.75rem 1rem; font-size: inherit; }
 }
 
 .price-table tr:hover td {

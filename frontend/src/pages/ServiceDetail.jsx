@@ -566,7 +566,7 @@ function ServiceDetail() {
           <p className="text-grey-muted text-center mb-8">{service.pricing.note}</p>
 
           {service.pricing.headers && (
-            <div className="rounded-xl overflow-hidden border border-purple-main/30 max-w-5xl mx-auto card-shadow">
+            <div className="rounded-xl overflow-hidden border border-purple-main/30 max-w-5xl mx-auto card-shadow overflow-x-auto">
               <table className="price-table">
                 <thead>
                   <tr>
@@ -599,29 +599,31 @@ function ServiceDetail() {
             <div className={`gap-8 mx-auto ${service.pricing.tables.length === 1 ? 'max-w-5xl' : 'grid grid-cols-1 md:grid-cols-2 max-w-5xl'}`}>
               {service.pricing.tables.map((table, tableIndex) => (
                 <div key={tableIndex} className="rounded-xl overflow-hidden border border-purple-main/30 card-shadow">
-                  <div className="p-4 border-b border-purple-main/30 bg-glass-alt">
-                    <h3 className="text-heading font-heading font-bold">{table.subtitle}</h3>
+                  <div className="p-3 md:p-4 border-b border-purple-main/30 bg-glass-alt">
+                    <h3 className="text-heading font-heading font-bold text-sm md:text-base">{table.subtitle}</h3>
                   </div>
-                  <table className="price-table">
-                    <thead>
-                      <tr>
-                        {table.headers.map((header, i) => (
-                          <th key={i}>{header}</th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {table.rows.map((row, i) => (
-                        <tr key={i}>
-                          {row.map((cell, j) => (
-                            <td key={j} className={j === 0 ? 'text-heading font-semibold' : j === 1 ? 'text-gradient font-bold' : 'text-grey-muted'}>
-                              {cell}
-                            </td>
+                  <div className="overflow-x-auto">
+                    <table className="price-table">
+                      <thead>
+                        <tr>
+                          {table.headers.map((header, i) => (
+                            <th key={i}>{header}</th>
                           ))}
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody>
+                        {table.rows.map((row, i) => (
+                          <tr key={i}>
+                            {row.map((cell, j) => (
+                              <td key={j} className={j === 0 ? 'text-heading font-semibold' : j === 1 ? 'text-gradient font-bold' : 'text-grey-muted'}>
+                                {cell}
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               ))}
             </div>

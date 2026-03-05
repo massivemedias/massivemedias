@@ -19,7 +19,7 @@ function CheckoutSuccess() {
 
   return (
     <>
-      <SEO title={`${t('checkout.successTitle')} - Massive Medias`} description="" noindex />
+      <SEO title={`${t('checkout.successTitle')} - Massive`} description="" noindex />
 
       <section className="section-container pt-32 pb-20">
         <motion.div

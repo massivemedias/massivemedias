@@ -9,7 +9,7 @@ function CheckoutCancel() {
 
   return (
     <>
-      <SEO title={`${t('checkout.cancelTitle')} - Massive Medias`} description="" noindex />
+      <SEO title={`${t('checkout.cancelTitle')} - Massive`} description="" noindex />
 
       <section className="section-container pt-32 pb-20">
         <motion.div

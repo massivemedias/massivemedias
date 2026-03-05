@@ -5,8 +5,8 @@ export function getOrganizationSchema() {
     '@context': 'https://schema.org',
     '@type': 'Organization',
     '@id': `${SITE_URL}/#organization`,
-    name: 'Massive Medias',
-    alternateName: 'Massive Medias Inc.',
+    name: 'Massive',
+    alternateName: 'Massive Inc.',
     url: SITE_URL,
     logo: {
       '@type': 'ImageObject',
@@ -50,7 +50,7 @@ export function getLocalBusinessSchema(lang) {
     '@context': 'https://schema.org',
     '@type': 'LocalBusiness',
     '@id': `${SITE_URL}/#localbusiness`,
-    name: 'Massive Medias',
+    name: 'Massive',
     description: descMap[lang] || descMap.fr,
     url: SITE_URL,
     email: 'info@massivemedias.com',
@@ -101,7 +101,7 @@ export function getWebSiteSchema() {
     '@type': 'WebSite',
     '@id': `${SITE_URL}/#website`,
     url: SITE_URL,
-    name: 'Massive Medias',
+    name: 'Massive',
     description: 'Studio de production créative à Montréal',
     publisher: { '@id': `${SITE_URL}/#organization` },
     inLanguage: ['fr-CA', 'en-CA', 'es-MX'],
@@ -134,7 +134,7 @@ export function getProductSchema({ name, description, price, currency = 'CAD', i
     url: `${SITE_URL}${url}`,
     brand: {
       '@type': 'Brand',
-      name: 'Massive Medias',
+      name: 'Massive',
     },
     offers: {
       '@type': 'Offer',
@@ -143,7 +143,7 @@ export function getProductSchema({ name, description, price, currency = 'CAD', i
       availability: 'https://schema.org/InStock',
       seller: {
         '@type': 'Organization',
-        name: 'Massive Medias',
+        name: 'Massive',
       },
     },
   };
@@ -159,7 +159,7 @@ export function getServiceSchema({ name, description, url, priceRange }) {
     provider: {
       '@type': 'Organization',
       '@id': `${SITE_URL}/#organization`,
-      name: 'Massive Medias',
+      name: 'Massive',
     },
     areaServed: [
       { '@type': 'City', name: 'Montreal' },

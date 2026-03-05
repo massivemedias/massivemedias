@@ -29,7 +29,7 @@ function BoutiqueDesign() {
   return (
     <BoutiqueProductLayout
       serviceSlug="design-graphique"
-      pageTitle={{ fr: 'Design Graphique - Boutique | Massive Medias', en: 'Graphic Design - Shop | Massive Medias', es: 'Dise\u00f1o Gr\u00e1fico - Tienda | Massive Medias' }}
+      pageTitle={{ fr: 'Design Graphique - Boutique | Massive', en: 'Graphic Design - Shop | Massive', es: 'Dise\u00f1o Gr\u00e1fico - Tienda | Massive' }}
       metaDescription={{
         fr: 'Logos, identit\u00e9s visuelles, affiches, pochettes album. Design graphique professionnel. Montr\u00e9al.',
         en: 'Logos, visual identities, posters, album covers. Professional graphic design. Montreal.',

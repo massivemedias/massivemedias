@@ -58,7 +58,7 @@ function BoutiqueStickers() {
   return (
     <BoutiqueProductLayout
       serviceSlug="stickers-custom"
-      pageTitle={{ fr: 'Stickers Custom - Boutique | Massive Medias', en: 'Custom Stickers - Shop | Massive Medias', es: 'Stickers Personalizados - Tienda | Massive Medias' }}
+      pageTitle={{ fr: 'Stickers Custom - Boutique | Massive', en: 'Custom Stickers - Shop | Massive', es: 'Stickers Personalizados - Tienda | Massive' }}
       metaDescription={{
         fr: 'Commandez vos stickers custom. Vinyle matte, glossy, holographique, verre brise, etoiles. Decoupe de precision. Design inclus.',
         en: 'Order your custom stickers. Matte, glossy, holographic, broken glass, stars vinyl. Precision cutting. Design included.',

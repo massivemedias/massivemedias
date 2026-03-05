@@ -54,7 +54,7 @@ function BoutiqueFineArt() {
   return (
     <BoutiqueProductLayout
       serviceSlug="impression-fine-art"
-      pageTitle={{ fr: 'Prints - Boutique | Massive Medias', en: 'Prints - Shop | Massive Medias', es: 'Prints - Tienda | Massive Medias' }}
+      pageTitle={{ fr: 'Prints - Boutique | Massive', en: 'Prints - Shop | Massive', es: 'Prints - Tienda | Massive' }}
       metaDescription={{
         fr: 'Tirages fine art, flyers, cartes d\'affaires. Impression professionnelle 12 couleurs. Qualit\u00e9 galerie.',
         en: 'Fine art prints, flyers, business cards. Professional 12-color printing. Gallery quality.',

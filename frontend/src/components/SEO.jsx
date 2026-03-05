@@ -2,7 +2,7 @@ import { Helmet } from 'react-helmet-async';
 import { useLocation } from 'react-router-dom';
 import { useLang } from '../i18n/LanguageContext';
 
-const SITE_NAME = 'Massive Medias';
+const SITE_NAME = 'Massive';
 const SITE_URL = 'https://massivemedias.com';
 const DEFAULT_OG_IMAGE = '/og-image.jpg';
 

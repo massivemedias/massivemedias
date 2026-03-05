@@ -93,10 +93,10 @@ function APropos() {
             <div className="grid grid-cols-2 gap-4">
               {historyImages && historyImages.length > 0
                 ? historyImages.slice(0, 4).map((img, i) => (
-                    <img key={i} src={mediaUrl(img)} alt={`Studio Massive Medias Mile-End - Photo ${i + 1}`} className="rounded-xl w-full h-48 object-cover" loading="lazy" />
+                    <img key={i} src={mediaUrl(img)} alt={`Studio Massive Mile-End - Photo ${i + 1}`} className="rounded-xl w-full h-48 object-cover" loading="lazy" />
                   ))
                 : <>
-                    <img src={thumb('/images/locale/locale2.webp')} alt="Studio Massive Medias" className="rounded-xl w-full h-48 object-cover" loading="lazy" />
+                    <img src={thumb('/images/locale/locale2.webp')} alt="Studio Massive" className="rounded-xl w-full h-48 object-cover" loading="lazy" />
                     <img src={thumb('/images/locale/locale9.webp')} alt="Espace de travail" className="rounded-xl w-full h-48 object-cover" loading="lazy" />
                     <img src={thumb('/images/locale/locale10.webp')} alt="Équipement" className="rounded-xl w-full h-48 object-cover" loading="lazy" />
                     <img src={thumb('/images/locale/locale11.webp')} alt="Productions" className="rounded-xl w-full h-48 object-cover" loading="lazy" />

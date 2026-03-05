@@ -36,11 +36,11 @@ function Artistes() {
   return (
     <>
       <SEO
-        title={tx({ fr: 'Artistes - Tirages Fine Art | Massive Medias', en: 'Artists - Fine Art Prints | Massive Medias', es: 'Artistas - Impresiones Fine Art | Massive Medias' })}
+        title={tx({ fr: 'Artistes - Tirages Fine Art | Massive', en: 'Artists - Fine Art Prints | Massive', es: 'Artistas - Impresiones Fine Art | Massive' })}
         description={tx({
-          fr: 'Découvrez les artistes de Massive Medias. Tirages fine art professionnels, qualité galerie. Montréal.',
-          en: 'Discover Massive Medias artists. Professional fine art prints, gallery quality. Montreal.',
-          es: 'Descubre los artistas de Massive Medias. Impresiones fine art profesionales, calidad galería. Montreal.',
+          fr: 'Découvrez les artistes de Massive. Tirages fine art professionnels, qualité galerie. Montréal.',
+          en: 'Discover Massive artists. Professional fine art prints, gallery quality. Montreal.',
+          es: 'Descubre los artistas de Massive. Impresiones fine art profesionales, calidad galería. Montreal.',
         })}
         breadcrumbs={[
           { name: tx({ fr: 'Accueil', en: 'Home', es: 'Inicio' }), url: '/' },

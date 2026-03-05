@@ -1,0 +1,40 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mdfind:*)",
+      "Bash(xargs:*)",
+      "Bash(gh run list:*)",
+      "Bash(python3:*)",
+      "Read(//Users/mauditemachine/Library/Mobile Documents/com~apple~CloudDocs/Dev/massivemedias/frontend/src/pages/**)",
+      "Bash(done)",
+      "Bash(grep:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(wc -l:*)",
+      "Bash(npx vite-bundle-visualizer:*)",
+      "Bash(npx rollup-plugin-visualizer)",
+      "Bash(node -e:*)",
+      "Read(//Users/mauditemachine/Library/Mobile Documents/com~apple~CloudDocs/Dev/massivemedias/frontend/**)",
+      "Read(//Users/mauditemachine/Desktop/**)",
+      "Read(//Users/mauditemachine/Library/Mobile Documents/com~apple~CloudDocs/Dev/**)",
+      "Bash(sqlite3:*)",
+      "Bash(pkill:*)",
+      "Bash(node scripts/seed-site-content.js:*)",
+      "Bash(SEED_CONTENT=true npm run develop:*)",
+      "WebFetch(domain:massivemedias.ca)",
+      "Bash(dig:*)",
+      "Bash(nslookup:*)",
+      "Bash(git ls-tree:*)",
+      "Bash(gh api:*)",
+      "WebFetch(domain:localhost)",
+      "Bash(echo \"EXIT: $?\")",
+      "Bash(npx tsc --noEmit)",
+      "Bash(git stash)",
+      "Bash(git stash pop)",
+      "Read(//Users/mauditemachine/Library/Mobile Documents/com~apple~CloudDocs/Dev/massivemedias/**)",
+      "Bash(awk 'BEGIN {FS=\"\"/\"\"} {if \\(NF <= 2\\) print}')"
+    ],
+    "additionalDirectories": [
+      "/Users/mauditemachine/Downloads"
+    ]
+  }
+}

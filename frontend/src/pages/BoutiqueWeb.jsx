@@ -29,7 +29,7 @@ function BoutiqueWeb() {
   return (
     <BoutiqueProductLayout
       serviceSlug="developpement-web"
-      pageTitle={{ fr: 'D\u00e9veloppement Web - Boutique | Massive Medias', en: 'Web Development - Shop | Massive Medias', es: 'Desarrollo Web - Tienda | Massive Medias' }}
+      pageTitle={{ fr: 'D\u00e9veloppement Web - Boutique | Massive', en: 'Web Development - Shop | Massive', es: 'Desarrollo Web - Tienda | Massive' }}
       metaDescription={{
         fr: 'Sites vitrines, e-commerce, landing pages. React, WordPress, Shopify. 15+ ans d\'exp\u00e9rience. Montr\u00e9al.',
         en: 'Showcase sites, e-commerce, landing pages. React, WordPress, Shopify. 15+ years experience. Montreal.',

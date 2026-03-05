@@ -27,7 +27,7 @@ const translations = {
       contactTitle: 'Contact',
       mileEnd: 'Mile-End, Montréal',
       byAppointment: 'Sur rendez-vous',
-      copyright: 'Massive Medias. Tous droits réservés. NEQ 2269057891',
+      copyright: 'Massive. Tous droits réservés. NEQ 2269057891',
     },
 
     // ──────────── COMMON ────────────
@@ -44,8 +44,8 @@ const translations = {
     // ──────────── HOME ────────────
     home: {
       seo: {
-        title: 'Massive Medias | Impression Fine Art, Stickers Personnalisés, Merch, Design Graphique & Web - Montréal',
-        description: 'Massive Medias - Studio d\'impression fine art et stickers personnalisés à Montréal. T-shirts, hoodies, sublimation textile, design graphique et webdesign. Production locale Mile-End, livraison gratuite 24-48h.',
+        title: 'Massive | Impression Fine Art, Stickers Personnalisés, Merch, Design Graphique & Web - Montréal',
+        description: 'Massive - Studio d\'impression fine art et stickers personnalisés à Montréal. T-shirts, hoodies, sublimation textile, design graphique et webdesign. Production locale Mile-End, livraison gratuite 24-48h.',
       },
       hero: {
         tagline: 'Create. Print. Repeat.',
@@ -87,10 +87,8 @@ const translations = {
       featuredProjects: [
         { title: 'Tirages Fine Art', category: 'Impression' },
         { title: 'Stickers Holographiques', category: 'Stickers' },
-        { title: 'T-shirts Sublimation', category: 'Merch' },
-        { title: 'Affiches Événement', category: 'Impression' },
-        { title: 'Die-Cut Custom', category: 'Stickers' },
-        { title: 'Mugs & Accessoires', category: 'Merch' },
+        { title: 'Hoodie Merch', category: 'Merch' },
+        { title: 'Création graphique', category: 'Design' },
       ],
       stats: {
         since: 'Depuis',
@@ -145,8 +143,8 @@ const translations = {
     // ──────────── A PROPOS PAGE ────────────
     aboutPage: {
       seo: {
-        title: 'À propos | Massive Medias - Studio créatif Montréal',
-        description: 'Découvrez Massive Medias, studio de production créative fondé à Montréal. Notre équipe, notre espace au Mile-End et notre histoire. Impression, design et web.',
+        title: 'À propos | Massive - Studio créatif Montréal',
+        description: 'Découvrez Massive, studio de production créative fondé à Montréal. Notre équipe, notre espace au Mile-End et notre histoire. Impression, design et web.',
       },
       hero: {
         title: 'À propos',
@@ -155,7 +153,7 @@ const translations = {
       history: {
         title: "L'histoire",
         paragraphs: [
-          "Massive Medias est un studio de production créative établi dans le Mile-End, au cœur de l'écosystème artistique montréalais. D'abord axé sur le développement web et le design graphique dès 2022, le studio s'est élargi en 2024 avec l'impression fine art, les stickers et la sublimation textile.",
+          "Massive est un studio de production créative établi dans le Mile-End, au cœur de l'écosystème artistique montréalais. D'abord axé sur le développement web et le design graphique dès 2022, le studio s'est élargi en 2024 avec l'impression fine art, les stickers et la sublimation textile.",
           "L'entreprise offre quatre services intégrés destinés aux artistes visuels, photographes, musiciens et créateurs indépendants : impressions fine art, stickers personnalisés, design graphique et développement web.",
           "Notre philosophie : offrir un service local, personnalisé et de qualité professionnelle, sans les délais et les complications des services en ligne. Pas de shipping, pas d'attente. Pick-up au Mile-End ou livraison locale.",
         ],
@@ -163,7 +161,7 @@ const translations = {
       timeline: {
         title: 'Notre parcours',
         events: [
-          { year: '2022', event: 'Lancement de Massive Medias - développement web et design graphique pour artistes et créateurs montréalais.' },
+          { year: '2022', event: 'Lancement de Massive - développement web et design graphique pour artistes et créateurs montréalais.' },
           { year: '2023', event: "Premiers projets d'envergure. Croissance de la clientèle dans la scène créative du Mile-End." },
           { year: '2024', event: "Acquisition d'équipements professionnels d'impression, découpe et sublimation. Le studio devient un one-stop shop créatif." },
           { year: '2025', event: 'Enregistrement officiel au REQ. Recentrage: prints, stickers, graphisme, web.' },
@@ -175,7 +173,7 @@ const translations = {
         mika: {
           name: 'Michael "Mika" Sanchez',
           role: 'Fondateur',
-          bio: "Fondateur de Massive Medias, Mika est aussi compositeur de musique électronique et producteur sous le nom Maudite Machine et fondateur du label VRSTL Records. Programmeur-analyste de formation, il combine expertise technique et connaissance intime de la scène créative montréalaise.",
+          bio: "Fondateur de Massive, Mika est aussi compositeur de musique électronique et producteur sous le nom Maudite Machine et fondateur du label VRSTL Records. Programmeur-analyste de formation, il combine expertise technique et connaissance intime de la scène créative montréalaise.",
           bio2: "15+ années d'expérience en développement web et design graphique. Expertise en gestion de la couleur et calibration pour l'impression Fine Art.",
         },
         chris: {
@@ -218,8 +216,8 @@ const translations = {
     // ──────────── CONTACT PAGE ────────────
     contactPage: {
       seo: {
-        title: 'Contact | Massive Medias - Soumission gratuite Montréal',
-        description: 'Contactez Massive Medias pour une soumission gratuite. Impression fine art, stickers, merch, design graphique et développement web à Montréal. Réponse en 24h.',
+        title: 'Contact | Massive - Soumission gratuite Montréal',
+        description: 'Contactez Massive pour une soumission gratuite. Impression fine art, stickers, merch, design graphique et développement web à Montréal. Réponse en 24h.',
       },
       hero: {
         title: 'Contact',
@@ -386,7 +384,7 @@ const translations = {
       contactTitle: 'Contact',
       mileEnd: 'Mile-End, Montreal',
       byAppointment: 'By appointment',
-      copyright: 'Massive Medias. All rights reserved. NEQ 2269057891',
+      copyright: 'Massive. All rights reserved. NEQ 2269057891',
     },
 
     // ──────────── COMMON ────────────
@@ -403,8 +401,8 @@ const translations = {
     // ──────────── HOME ────────────
     home: {
       seo: {
-        title: 'Massive Medias | Fine Art Printing, Custom Stickers, Merch, Graphic Design & Web - Montreal',
-        description: 'Massive Medias - Fine art printing and custom stickers studio in Montreal. T-shirts, hoodies, textile sublimation, graphic design and web development. Local production Mile-End, free 24-48h delivery.',
+        title: 'Massive | Fine Art Printing, Custom Stickers, Merch, Graphic Design & Web - Montreal',
+        description: 'Massive - Fine art printing and custom stickers studio in Montreal. T-shirts, hoodies, textile sublimation, graphic design and web development. Local production Mile-End, free 24-48h delivery.',
       },
       hero: {
         tagline: 'Create. Print. Repeat.',
@@ -446,10 +444,8 @@ const translations = {
       featuredProjects: [
         { title: 'Fine Art Prints', category: 'Printing' },
         { title: 'Holographic Stickers', category: 'Stickers' },
-        { title: 'Sublimation T-Shirts', category: 'Merch' },
-        { title: 'Event Posters', category: 'Printing' },
-        { title: 'Custom Die-Cut', category: 'Stickers' },
-        { title: 'Mugs & Accessories', category: 'Merch' },
+        { title: 'Hoodie Merch', category: 'Merch' },
+        { title: 'Graphic Design', category: 'Design' },
       ],
       stats: {
         since: 'Since',
@@ -504,8 +500,8 @@ const translations = {
     // ──────────── A PROPOS PAGE ────────────
     aboutPage: {
       seo: {
-        title: 'About | Massive Medias - Creative Studio Montreal',
-        description: 'Discover Massive Medias, creative production studio in Montreal. Our team, our Mile-End space and our story. Printing, design and web.',
+        title: 'About | Massive - Creative Studio Montreal',
+        description: 'Discover Massive, creative production studio in Montreal. Our team, our Mile-End space and our story. Printing, design and web.',
       },
       hero: {
         title: 'About',
@@ -514,7 +510,7 @@ const translations = {
       history: {
         title: 'Our Story',
         paragraphs: [
-          "Massive Medias is a creative production studio based in Mile-End, at the heart of Montreal's artistic ecosystem. Starting with web development and graphic design in 2022, the studio expanded in 2024 with fine art printing, stickers and textile sublimation.",
+          "Massive is a creative production studio based in Mile-End, at the heart of Montreal's artistic ecosystem. Starting with web development and graphic design in 2022, the studio expanded in 2024 with fine art printing, stickers and textile sublimation.",
           'The company offers four integrated services for visual artists, photographers, musicians and independent creators: fine art printing, custom stickers, graphic design and web development.',
           "Our philosophy: offer local, personalized, professional-quality service without the delays and complications of online services. No shipping, no waiting. Pick-up in Mile-End or local delivery.",
         ],
@@ -522,7 +518,7 @@ const translations = {
       timeline: {
         title: 'Our Journey',
         events: [
-          { year: '2022', event: 'Launch of Massive Medias - web development and graphic design for Montreal artists and creators.' },
+          { year: '2022', event: 'Launch of Massive - web development and graphic design for Montreal artists and creators.' },
           { year: '2023', event: 'First major projects. Growing clientele in the Mile-End creative scene.' },
           { year: '2024', event: 'Acquisition of professional printing, cutting and sublimation equipment. The studio becomes a creative one-stop shop.' },
           { year: '2025', event: 'Official registration with the REQ. Refocus: prints, stickers, design, web.' },
@@ -534,7 +530,7 @@ const translations = {
         mika: {
           name: 'Michael "Mika" Sanchez',
           role: 'Founder',
-          bio: 'Founder of Massive Medias, Mika is also an electronic music composer and producer under the name Maudite Machine and founder of the label VRSTL Records. Trained as a programmer-analyst, he combines technical expertise with an intimate knowledge of the Montreal creative scene.',
+          bio: 'Founder of Massive, Mika is also an electronic music composer and producer under the name Maudite Machine and founder of the label VRSTL Records. Trained as a programmer-analyst, he combines technical expertise with an intimate knowledge of the Montreal creative scene.',
           bio2: '15+ years of experience in web development and graphic design. Expertise in color management and calibration for Fine Art printing.',
         },
         chris: {
@@ -577,8 +573,8 @@ const translations = {
     // ──────────── CONTACT PAGE ────────────
     contactPage: {
       seo: {
-        title: 'Contact | Massive Medias - Free Quote Montreal',
-        description: 'Contact Massive Medias for a free quote. Fine art printing, stickers, merch, graphic design and web development in Montreal. Response within 24h.',
+        title: 'Contact | Massive - Free Quote Montreal',
+        description: 'Contact Massive for a free quote. Fine art printing, stickers, merch, graphic design and web development in Montreal. Response within 24h.',
       },
       hero: {
         title: 'Contact',
@@ -745,7 +741,7 @@ const translations = {
       contactTitle: 'Contacto',
       mileEnd: 'Mile-End, Montreal',
       byAppointment: 'Con cita previa',
-      copyright: 'Massive Medias. Todos los derechos reservados. NEQ 2269057891',
+      copyright: 'Massive. Todos los derechos reservados. NEQ 2269057891',
     },
 
     // ──────────── COMMON ────────────
@@ -762,8 +758,8 @@ const translations = {
     // ──────────── HOME ────────────
     home: {
       seo: {
-        title: 'Massive Medias | Impresion Fine Art, Stickers Personalizados, Merch, Diseno Grafico & Web - Montreal',
-        description: 'Massive Medias - Estudio de impresion fine art y stickers personalizados en Montreal. Camisetas, sudaderas, sublimacion textil, diseno grafico y desarrollo web. Produccion local Mile-End, entrega gratis 24-48h.',
+        title: 'Massive | Impresion Fine Art, Stickers Personalizados, Merch, Diseno Grafico & Web - Montreal',
+        description: 'Massive - Estudio de impresion fine art y stickers personalizados en Montreal. Camisetas, sudaderas, sublimacion textil, diseno grafico y desarrollo web. Produccion local Mile-End, entrega gratis 24-48h.',
       },
       hero: {
         tagline: 'Create. Print. Repeat.',
@@ -805,10 +801,8 @@ const translations = {
       featuredProjects: [
         { title: 'Impresiones Fine Art', category: 'Impresión' },
         { title: 'Stickers Holográficos', category: 'Stickers' },
-        { title: 'Camisetas Sublimación', category: 'Merch' },
-        { title: 'Carteles de Eventos', category: 'Impresión' },
-        { title: 'Die-Cut Personalizado', category: 'Stickers' },
-        { title: 'Tazas y Accesorios', category: 'Merch' },
+        { title: 'Hoodie Merch', category: 'Merch' },
+        { title: 'Creación gráfica', category: 'Diseño' },
       ],
       stats: {
         since: 'Desde',
@@ -863,8 +857,8 @@ const translations = {
     // ──────────── A PROPOS PAGE ────────────
     aboutPage: {
       seo: {
-        title: 'Nosotros | Massive Medias - Estudio creativo Montreal',
-        description: 'Descubre Massive Medias, estudio de produccion creativa en Montreal. Nuestro equipo, nuestro espacio en Mile-End y nuestra historia. Impresion, diseno y web.',
+        title: 'Nosotros | Massive - Estudio creativo Montreal',
+        description: 'Descubre Massive, estudio de produccion creativa en Montreal. Nuestro equipo, nuestro espacio en Mile-End y nuestra historia. Impresion, diseno y web.',
       },
       hero: {
         title: 'Nosotros',
@@ -873,7 +867,7 @@ const translations = {
       history: {
         title: 'Nuestra historia',
         paragraphs: [
-          'Massive Medias es un estudio de producción creativa ubicado en Mile-End, en el corazón del ecosistema artístico de Montreal. Inicialmente enfocado en desarrollo web y diseño gráfico desde 2022, el estudio se expandió en 2024 con impresión fine art, stickers y sublimación textil.',
+          'Massive es un estudio de producción creativa ubicado en Mile-End, en el corazón del ecosistema artístico de Montreal. Inicialmente enfocado en desarrollo web y diseño gráfico desde 2022, el estudio se expandió en 2024 con impresión fine art, stickers y sublimación textil.',
           'La empresa ofrece cuatro servicios integrados para artistas visuales, fotógrafos, músicos y creadores independientes: impresión fine art, stickers personalizados, diseño gráfico y desarrollo web.',
           'Nuestra filosofía: ofrecer un servicio local, personalizado y de calidad profesional, sin las demoras y complicaciones de los servicios en línea. Sin envíos, sin esperas. Recogida en Mile-End o entrega local.',
         ],
@@ -881,7 +875,7 @@ const translations = {
       timeline: {
         title: 'Nuestro recorrido',
         events: [
-          { year: '2022', event: 'Lanzamiento de Massive Medias - desarrollo web y diseño gráfico para artistas y creadores de Montreal.' },
+          { year: '2022', event: 'Lanzamiento de Massive - desarrollo web y diseño gráfico para artistas y creadores de Montreal.' },
           { year: '2023', event: 'Primeros proyectos importantes. Crecimiento de la clientela en la escena creativa del Mile-End.' },
           { year: '2024', event: 'Adquisición de equipos profesionales de impresión, corte y sublimación. El estudio se convierte en un one-stop shop creativo.' },
           { year: '2025', event: 'Registro oficial en el REQ. Reenfoque: prints, stickers, diseño, web.' },
@@ -893,7 +887,7 @@ const translations = {
         mika: {
           name: 'Michael "Mika" Sanchez',
           role: 'Fundador',
-          bio: 'Fundador de Massive Medias, Mika es también compositor de música electrónica y productor bajo el nombre Maudite Machine y fundador del sello VRSTL Records. Formado como programador-analista, combina experiencia técnica con un conocimiento profundo de la escena creativa de Montreal.',
+          bio: 'Fundador de Massive, Mika es también compositor de música electrónica y productor bajo el nombre Maudite Machine y fundador del sello VRSTL Records. Formado como programador-analista, combina experiencia técnica con un conocimiento profundo de la escena creativa de Montreal.',
           bio2: '15+ años de experiencia en desarrollo web y diseño gráfico. Experiencia en gestión del color y calibración para impresión Fine Art.',
         },
         chris: {
@@ -936,8 +930,8 @@ const translations = {
     // ──────────── CONTACT PAGE ────────────
     contactPage: {
       seo: {
-        title: 'Contacto | Massive Medias - Cotizacion gratuita Montreal',
-        description: 'Contacta Massive Medias para una cotizacion gratuita. Impresion fine art, stickers, merch, diseno grafico y desarrollo web en Montreal. Respuesta en 24h.',
+        title: 'Contacto | Massive - Cotizacion gratuita Montreal',
+        description: 'Contacta Massive para una cotizacion gratuita. Impresion fine art, stickers, merch, diseno grafico y desarrollo web en Montreal. Respuesta en 24h.',
       },
       hero: {
         title: 'Contacto',

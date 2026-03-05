@@ -13,7 +13,7 @@ function Panier() {
   if (items.length === 0) {
     return (
       <>
-        <SEO title={tx({ fr: 'Panier | Massive Medias', en: 'Cart | Massive Medias', es: 'Carrito | Massive Medias' })} description="" noindex />
+        <SEO title={tx({ fr: 'Panier | Massive', en: 'Cart | Massive', es: 'Carrito | Massive' })} description="" noindex />
         <div className="section-container pt-32 max-w-2xl mx-auto text-center">
           <ShoppingCart size={64} className="text-grey-muted mx-auto mb-6" />
           <h1 className="text-3xl font-heading font-bold text-heading mb-4">
@@ -32,7 +32,7 @@ function Panier() {
 
   return (
     <>
-      <SEO title={tx({ fr: 'Panier | Massive Medias', en: 'Cart | Massive Medias', es: 'Carrito | Massive Medias' })} description="" noindex />
+      <SEO title={tx({ fr: 'Panier | Massive', en: 'Cart | Massive', es: 'Carrito | Massive' })} description="" noindex />
 
       <div className="section-container pt-28 max-w-4xl mx-auto">
         <h1 className="text-3xl md:text-4xl font-heading font-bold text-heading mb-8">

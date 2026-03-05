@@ -105,7 +105,7 @@ function ArtisteDetail({ subdomainSlug }) {
   const highlights = tx({
     fr: [
       'Tirages fine art professionnels, qualité galerie',
-      'Imprimés par Massive Medias, Montréal',
+      'Imprimés par Massive, Montréal',
       'Papiers d\'archives, encres pigmentées',
       'Soft proofing et calibration couleurs inclus',
       'Pick-up gratuit Mile-End ou livraison',
@@ -113,7 +113,7 @@ function ArtisteDetail({ subdomainSlug }) {
     ],
     en: [
       'Professional fine art prints, gallery quality',
-      'Printed by Massive Medias, Montreal',
+      'Printed by Massive, Montreal',
       'Archival papers, pigmented inks',
       'Soft proofing and color calibration included',
       'Free Mile-End pick-up or delivery',
@@ -121,7 +121,7 @@ function ArtisteDetail({ subdomainSlug }) {
     ],
     es: [
       'Impresiones fine art profesionales, calidad galeria',
-      'Impresas por Massive Medias, Montreal',
+      'Impresas por Massive, Montreal',
       'Papeles de archivo, tintas pigmentadas',
       'Soft proofing y calibracion de colores incluidos',
       'Recogida gratuita en Mile-End o envio',
@@ -158,21 +158,21 @@ function ArtisteDetail({ subdomainSlug }) {
       { q: 'Comment se passe la commande?', a: 'Sélectionnez l\'oeuvre, la qualité d\'impression, le format et le cadre. Ajoutez au panier et procédez au paiement. Nous imprimons et préparons votre commande sous 24-48h.' },
       { q: 'Quelle est la différence entre Studio et Musée?', a: 'La Série Studio utilise une imprimante 4 encres pigmentées, parfaite pour la décoration. La Série Musée utilise une imprimante 12 encres pigmentées pour une qualité galerie, idéale pour les collectionneurs.' },
       { q: 'Puis-je récupérer sur place?', a: 'Oui! Pick-up gratuit au Mile-End (7049 rue Saint-Urbain, Montréal). Livraison locale aussi disponible.' },
-      { q: 'Les tirages sont-ils signés?', a: 'Les tirages sont imprimés professionnellement par Massive Medias en collaboration avec l\'artiste. Contactez-nous pour les tirages signés ou numérotés.' },
+      { q: 'Les tirages sont-ils signés?', a: 'Les tirages sont imprimés professionnellement par Massive en collaboration avec l\'artiste. Contactez-nous pour les tirages signés ou numérotés.' },
       { q: 'Offrez-vous l\'encadrement?', a: 'Oui, cadre noir ou blanc disponible. Ajoutez l\'option cadre directement dans le configurateur.' },
     ],
     en: [
       { q: 'How does ordering work?', a: 'Select the artwork, print quality, format and frame. Add to cart and proceed to payment. We print and prepare your order within 24-48h.' },
       { q: 'What\'s the difference between Studio and Museum?', a: 'Studio Series uses a 4-color pigment printer, perfect for decoration. Museum Series uses a 12-color pigment printer for gallery quality, ideal for collectors.' },
       { q: 'Can I pick up in person?', a: 'Yes! Free pick-up in Mile-End (7049 rue Saint-Urbain, Montreal). Local delivery also available.' },
-      { q: 'Are the prints signed?', a: 'Prints are professionally printed by Massive Medias in collaboration with the artist. Contact us for signed or numbered editions.' },
+      { q: 'Are the prints signed?', a: 'Prints are professionally printed by Massive in collaboration with the artist. Contact us for signed or numbered editions.' },
       { q: 'Do you offer framing?', a: 'Yes, black or white frame available. Add the frame option directly in the configurator.' },
     ],
     es: [
       { q: 'Como funciona el pedido?', a: 'Selecciona la obra, la calidad de impresion, el formato y el marco. Agrega al carrito y procede al pago. Imprimimos y preparamos tu pedido en 24-48h.' },
       { q: 'Cual es la diferencia entre Studio y Museo?', a: 'La Serie Studio usa una impresora de 4 tintas pigmentadas, perfecta para decoracion. La Serie Museo usa una impresora de 12 tintas pigmentadas para calidad galeria, ideal para coleccionistas.' },
       { q: 'Puedo recoger en persona?', a: 'Si! Recogida gratuita en Mile-End (7049 rue Saint-Urbain, Montreal). Envio local tambien disponible.' },
-      { q: 'Las impresiones estan firmadas?', a: 'Las impresiones son realizadas profesionalmente por Massive Medias en colaboracion con el artista. Contactanos para ediciones firmadas o numeradas.' },
+      { q: 'Las impresiones estan firmadas?', a: 'Las impresiones son realizadas profesionalmente por Massive en colaboracion con el artista. Contactanos para ediciones firmadas o numeradas.' },
       { q: 'Ofrecen enmarcado?', a: 'Si, marco negro o blanco disponible. Agrega la opcion de marco directamente en el configurador.' },
     ],
   });
@@ -180,7 +180,7 @@ function ArtisteDetail({ subdomainSlug }) {
   return (
     <>
       <SEO
-        title={`${artist.name} - ${tagline} | Massive Medias`}
+        title={`${artist.name} - ${tagline} | Massive`}
         description={bio.slice(0, 160)}
         breadcrumbs={[
           { name: tx({ fr: 'Accueil', en: 'Home', es: 'Inicio' }), url: '/' },

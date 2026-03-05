@@ -45,18 +45,14 @@ const fallbackAdvantageIcons = [Truck, Award, Users, Zap, DollarSign, Music];
 const fallbackFeaturedProjectImages = [
   thumb('/images/realisations/prints/FineArt1.webp'),
   thumb('/images/realisations/stickers/Stickers-Cosmovision.webp'),
-  thumb('/images/realisations/textile/Textile2.webp'),
-  thumb('/images/realisations/flyers/discodyssee.webp'),
-  thumb('/images/realisations/stickers/Stickers-Vrstl.webp'),
-  thumb('/images/realisations/textile/Textile9.webp'),
+  thumb('/images/realisations/textile/Textile1.webp'),
+  thumb('/images/graphism/onomiko.webp'),
 ];
 const fallbackFeaturedProjectLinks = [
   '/boutique/fine-art',
   '/boutique/stickers',
   '/boutique/sublimation',
-  '/boutique/flyers',
-  '/boutique/stickers',
-  '/boutique/sublimation',
+  '/services/design',
 ];
 
 function Home() {
@@ -146,7 +142,7 @@ function Home() {
               transition={{ delay: 0.1, duration: 1.8, ease: [0.25, 0.1, 0.25, 1] }}
               className="mx-auto mb-10 logo-home max-w-[90vw]"
             >
-              <h1 className="sr-only">Massive Medias - Impression fine art, stickers personnalisés, design graphique et développement web à Montréal</h1>
+              <h1 className="sr-only">Massive - Impression fine art, stickers personnalisés, design graphique et développement web à Montréal</h1>
               <MassiveLogo className="w-full h-full transition-colors duration-300" />
             </motion.div>
 
@@ -174,10 +170,10 @@ function Home() {
               transition={{ delay: 0.9, duration: 0.5 }}
               className="flex flex-col sm:flex-row gap-4 justify-center items-center"
             >
-              <Link to="/contact" className="btn-primary">
+              <a href="#services" className="btn-primary" onClick={(e) => { e.preventDefault(); document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' }); }}>
                 {(content && bl(content, 'heroCta1', lang)) || t('home.hero.cta1')}
                 <ArrowRight className="ml-2" size={20} />
-              </Link>
+              </a>
               <Link to="/contact" className="btn-outline btn-outline-hero">
                 {(content && bl(content, 'heroCta2', lang)) || t('home.hero.cta2')}
               </Link>
@@ -190,7 +186,7 @@ function Home() {
       </section>
 
       {/* ============ SERVICES ============ */}
-      <section className="section-container">
+      <section id="services" className="section-container">
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
@@ -206,7 +202,7 @@ function Home() {
           </p>
         </motion.div>
 
-        <div className="flex flex-wrap justify-center gap-5 max-w-6xl mx-auto">
+        <div className="flex flex-wrap justify-center gap-4 max-w-4xl mx-auto">
           {(serviceCards
             ? serviceCards
             : fbServiceCards.map((card, index) => ({
@@ -222,7 +218,7 @@ function Home() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
               viewport={{ once: true }}
-              className="w-full sm:w-[calc(50%-0.625rem)] lg:w-[calc(33.333%-0.875rem)]"
+              className="w-full sm:w-[calc(50%-0.5rem)] lg:w-[calc(33.333%-0.7rem)]"
             >
               <ServiceCard
                 icon={card.icon}

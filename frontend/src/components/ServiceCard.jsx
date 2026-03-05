@@ -16,15 +16,15 @@ function ServiceCard({ icon: Icon, title, description, link, image, mirror }) {
       <Link to={link} className={`block overflow-hidden h-full group transition-colors duration-300 card-bg-bordered ${theme === 'light' ? 'rounded-xl' : 'rounded-2xl'}`}>
         {/* Image */}
         {image && (
-          <div className="relative aspect-square overflow-hidden flex items-center justify-center">
+          <div className="relative aspect-[3/2] overflow-hidden flex items-center justify-center">
             <img
               src={image}
               alt={title}
-              className={`w-[85%] h-[85%] object-contain transition-transform duration-500 drop-shadow-xl${mirror ? ' -scale-x-100 group-hover:-scale-x-110 group-hover:scale-y-110' : ' group-hover:scale-110'}`}
+              className={`w-full h-full object-contain transition-transform duration-500 drop-shadow-xl${mirror ? ' -scale-x-100 group-hover:-scale-x-110 group-hover:scale-y-110' : ' group-hover:scale-110'}`}
               loading="lazy"
             />
             <div className="absolute bottom-3 left-4 p-2 rounded-lg icon-glass">
-              <Icon size={24} className="text-white" />
+              <Icon size={18} className="text-white" />
             </div>
           </div>
         )}

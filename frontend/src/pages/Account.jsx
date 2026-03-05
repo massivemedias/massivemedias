@@ -227,7 +227,7 @@ function Account() {
 
   return (
     <>
-      <SEO title={`${t('account.title')} - Massive Medias`} description="" noindex />
+      <SEO title={`${t('account.title')} - Massive`} description="" noindex />
 
       <section className="section-container pt-32 pb-20">
         <div className="max-w-4xl mx-auto">

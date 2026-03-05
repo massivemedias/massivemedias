@@ -23,6 +23,7 @@ export const stickerSizes = [
 ];
 
 // Prix Standard (Mat/Brillant). Laminé Pro et Holographique ont leurs propres prix.
+// Standard (Matte / Glossy)
 export const stickerPriceTiers = [
   { qty: 25, price: 30, unitPrice: 1.20 },
   { qty: 50, price: 45, unitPrice: 0.90 },
@@ -31,20 +32,13 @@ export const stickerPriceTiers = [
   { qty: 500, price: 250, unitPrice: 0.50 },
 ];
 
-export const laminatedPriceTiers = [
+// Fx (Holographique, Verre Brise, Etoiles)
+export const holographicPriceTiers = [
   { qty: 25, price: 35, unitPrice: 1.40 },
   { qty: 50, price: 55, unitPrice: 1.10 },
-  { qty: 100, price: 95, unitPrice: 0.95 },
-  { qty: 250, price: 190, unitPrice: 0.76 },
-  { qty: 500, price: 325, unitPrice: 0.65 },
-];
-
-export const holographicPriceTiers = [
-  { qty: 25, price: 42, unitPrice: 1.68 },
-  { qty: 50, price: 65, unitPrice: 1.30 },
-  { qty: 100, price: 110, unitPrice: 1.10 },
-  { qty: 250, price: 220, unitPrice: 0.88 },
-  { qty: 500, price: 380, unitPrice: 0.76 },
+  { qty: 100, price: 90, unitPrice: 0.90 },
+  { qty: 250, price: 175, unitPrice: 0.70 },
+  { qty: 500, price: 300, unitPrice: 0.60 },
 ];
 
 // Die-cut utilise les mêmes prix
@@ -218,37 +212,51 @@ export const sublimationProducts = [
   { id: 'hoodie', labelFr: 'Hoodie', labelEn: 'Hoodie', labelEs: 'Hoodie', descFr: 'Chaleureux et streetwear', descEn: 'Warm and streetwear', descEs: 'Cálido y streetwear' },
   { id: 'totebag', labelFr: 'Tote Bag', labelEn: 'Tote Bag', labelEs: 'Tote Bag', descFr: 'Pratique et ecologique', descEn: 'Practical and eco-friendly', descEs: 'Práctico y ecológico' },
   { id: 'bag', labelFr: 'Sac banane', labelEn: 'Fanny Pack', labelEs: 'Riñonera', descFr: 'Compact et tendance', descEn: 'Compact and trendy', descEs: 'Compacta y de moda' },
+  { id: 'mug', labelFr: 'Mug', labelEn: 'Mug', labelEs: 'Taza', descFr: 'Classique 11oz ou 15oz', descEn: 'Classic 11oz or 15oz', descEs: 'Clásica 11oz o 15oz' },
+  { id: 'tumbler', labelFr: 'Tumbler', labelEn: 'Tumbler', labelEs: 'Tumbler', descFr: 'Bouteille isotherme', descEn: 'Insulated bottle', descEs: 'Botella térmica' },
 ];
 
 export const sublimationPriceTiers = {
   tshirt: [
-    { qty: 1, unitPrice: 35, price: 35 },
-    { qty: 5, unitPrice: 30, price: 150 },
-    { qty: 10, unitPrice: 27, price: 270 },
-    { qty: 25, unitPrice: 22, price: null, surSoumission: true },
+    { qty: 1, unitPrice: 30, price: 30 },
+    { qty: 5, unitPrice: 27, price: 135 },
+    { qty: 10, unitPrice: 25, price: 250 },
+    { qty: 25, unitPrice: 23, price: null, surSoumission: true },
   ],
   crewneck: [
-    { qty: 1, unitPrice: 50, price: 50 },
-    { qty: 5, unitPrice: 45, price: 225 },
-    { qty: 10, unitPrice: 40, price: 400 },
-    { qty: 25, unitPrice: 35, price: null, surSoumission: true },
+    { qty: 1, unitPrice: 40, price: 40 },
+    { qty: 5, unitPrice: 37, price: 185 },
+    { qty: 10, unitPrice: 35, price: 350 },
+    { qty: 25, unitPrice: 33, price: null, surSoumission: true },
   ],
   hoodie: [
-    { qty: 1, unitPrice: 65, price: 65 },
-    { qty: 5, unitPrice: 60, price: 300 },
-    { qty: 10, unitPrice: 50, price: 500 },
-    { qty: 25, unitPrice: 45, price: null, surSoumission: true },
+    { qty: 1, unitPrice: 50, price: 50 },
+    { qty: 5, unitPrice: 45, price: 225 },
+    { qty: 10, unitPrice: 42, price: 420 },
+    { qty: 25, unitPrice: 40, price: null, surSoumission: true },
   ],
   totebag: [
     { qty: 1, unitPrice: 15, price: 15 },
-    { qty: 10, unitPrice: 12, price: 120 },
-    { qty: 25, unitPrice: 10, price: 250 },
-    { qty: 50, unitPrice: 8, price: 400 },
+    { qty: 10, unitPrice: 13, price: 130 },
+    { qty: 25, unitPrice: 12, price: 300 },
+    { qty: 50, unitPrice: 10, price: 500 },
   ],
   bag: [
     { qty: 1, unitPrice: 80, price: 80 },
-    { qty: 5, unitPrice: 70, price: 350 },
-    { qty: 10, unitPrice: 60, price: 600 },
+    { qty: 5, unitPrice: 75, price: 375 },
+    { qty: 10, unitPrice: 70, price: 700 },
+  ],
+  mug: [
+    { qty: 1, unitPrice: 15, price: 15 },
+    { qty: 5, unitPrice: 13, price: 65 },
+    { qty: 10, unitPrice: 12, price: 120 },
+    { qty: 25, unitPrice: 10, price: 250 },
+  ],
+  tumbler: [
+    { qty: 1, unitPrice: 25, price: 25 },
+    { qty: 5, unitPrice: 22, price: 110 },
+    { qty: 10, unitPrice: 20, price: 200 },
+    { qty: 25, unitPrice: 18, price: 450 },
   ],
 };
 

@@ -162,7 +162,7 @@ function Checkout() {
 
   return (
     <>
-      <SEO title={`${t('checkout.title')} - Massive Medias`} description="" noindex />
+      <SEO title={`${t('checkout.title')} - Massive`} description="" noindex />
 
       <section className="section-container pt-32 pb-20">
         <div className="max-w-4xl mx-auto">

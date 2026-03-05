@@ -36,7 +36,7 @@ function BoutiqueFlyers() {
   return (
     <BoutiqueProductLayout
       serviceSlug="flyers-cartes"
-      pageTitle={{ fr: 'Flyers & Cartes - Boutique | Massive Medias', en: 'Flyers & Cards - Shop | Massive Medias', es: 'Flyers y Tarjetas - Tienda | Massive Medias' }}
+      pageTitle={{ fr: 'Flyers & Cartes - Boutique | Massive', en: 'Flyers & Cards - Shop | Massive', es: 'Flyers y Tarjetas - Tienda | Massive' }}
       metaDescription={{
         fr: 'Flyers, cartes postales, cartes d\'affaires. Impression rapide et locale \u00e0 Montr\u00e9al. Qualit\u00e9 pro.',
         en: 'Flyers, postcards, business cards. Fast local printing in Montreal. Pro quality.',

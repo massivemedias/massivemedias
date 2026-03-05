@@ -114,8 +114,8 @@ function News() {
   return (
     <>
       <SEO
-        title={tx({ fr: 'Nouvelles - Massive Medias', en: 'News - Massive Medias', es: 'Noticias - Massive Medias' })}
-        description={tx({ fr: 'Dernières nouvelles, annonces et promotions de Massive Medias.', en: 'Latest news, announcements and promotions from Massive Medias.', es: 'Últimas noticias, anuncios y promociones de Massive Medias.' })}
+        title={tx({ fr: 'Nouvelles - Massive', en: 'News - Massive', es: 'Noticias - Massive' })}
+        description={tx({ fr: 'Dernières nouvelles, annonces et promotions de Massive.', en: 'Latest news, announcements and promotions from Massive.', es: 'Últimas noticias, anuncios y promociones de Massive.' })}
         breadcrumbs={[
           { name: tx({ fr: 'Accueil', en: 'Home', es: 'Inicio' }), url: '/' },
           { name: tx({ fr: 'Nouvelles', en: 'News', es: 'Noticias' }) },
