@@ -1,7 +1,7 @@
 import { Component } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
-class ErrorBoundary extends Component {
+class ErrorBoundaryInner extends Component {
   constructor(props) {
     super(props);
     this.state = { hasError: false };
@@ -9,6 +9,12 @@ class ErrorBoundary extends Component {
 
   static getDerivedStateFromError() {
     return { hasError: true };
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.state.hasError && prevProps.pathname !== this.props.pathname) {
+      this.setState({ hasError: false });
+    }
   }
 
   componentDidCatch(error, info) {
@@ -48,6 +54,11 @@ class ErrorBoundary extends Component {
 
     return this.props.children;
   }
+}
+
+function ErrorBoundary({ children }) {
+  const { pathname } = useLocation();
+  return <ErrorBoundaryInner pathname={pathname}>{children}</ErrorBoundaryInner>;
 }
 
 export default ErrorBoundary;

@@ -13,18 +13,25 @@ function Artistes() {
   const { artists: cmsArtists } = useArtists();
 
   const artists = useMemo(() => {
-    if (cmsArtists && cmsArtists.length > 0) {
-      return cmsArtists.map(a => ({
-        slug: a.slug,
-        name: a.name,
-        tagline: { fr: a.taglineFr || '', en: a.taglineEn || '' },
-        avatar: mediaUrl(a.avatar),
-        heroImage: mediaUrl(a.heroImage),
-        prints: a.prints || [],
-        pricing: a.pricing || { studio: { a4: 35 }, museum: { a4: 75 }, framePrice: 20 },
-      }));
-    }
-    return Object.values(artistsData);
+    // Toujours partir des donnees locales, enrichir avec CMS si dispo
+    const localList = Object.values(artistsData);
+    if (!cmsArtists || cmsArtists.length === 0) return localList;
+
+    return localList.map(local => {
+      const cms = cmsArtists.find(a => a.slug === local.slug);
+      if (!cms) return local;
+      return {
+        ...local,
+        name: cms.name || local.name,
+        tagline: {
+          fr: cms.taglineFr || local.tagline.fr,
+          en: cms.taglineEn || local.tagline.en,
+          es: local.tagline.es || local.tagline.en,
+        },
+        avatar: mediaUrl(cms.avatar) || local.avatar,
+        heroImage: mediaUrl(cms.heroImage) || local.heroImage,
+      };
+    });
   }, [cmsArtists]);
 
   return (
