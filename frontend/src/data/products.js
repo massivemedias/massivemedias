@@ -445,6 +445,9 @@ export const webServices = [
   { id: 'showcase', labelFr: 'Site vitrine (5-10 pages)', labelEn: 'Showcase site (5-10 pages)', labelEs: 'Sitio vitrina (5-10 páginas)', price: '1 000$ - 1 500$' },
   { id: 'ecommerce', labelFr: 'Site e-commerce', labelEn: 'E-commerce site', labelEs: 'Sitio e-commerce', price: '1 500$ - 2 500$' },
   { id: 'redesign', labelFr: 'Refonte site existant', labelEn: 'Existing site redesign', labelEs: 'Rediseño de sitio existente', price: { fr: 'Sur soumission', en: 'On quote', es: 'Bajo presupuesto' } },
+  { id: 'webdesign-landing', labelFr: 'Webdesign landing page (Figma)', labelEn: 'Web design landing page (Figma)', labelEs: 'Webdesign landing page (Figma)', price: '450$' },
+  { id: 'webdesign-showcase', labelFr: 'Webdesign site vitrine (5-10 pages)', labelEn: 'Web design showcase site (5-10 pages)', labelEs: 'Webdesign sitio vitrina (5-10 páginas)', price: '900$' },
+  { id: 'webdesign-ecommerce', labelFr: 'Webdesign e-commerce / multi-pages (10+)', labelEn: 'Web design e-commerce / multi-page (10+)', labelEs: 'Webdesign e-commerce / multi-páginas (10+)', price: '1 500$ - 2 000$' },
   { id: 'maintenance', labelFr: 'Maintenance mensuelle', labelEn: 'Monthly maintenance', labelEs: 'Mantenimiento mensual', price: '100$ - 200$/mois' },
 ];
 
