@@ -35,7 +35,10 @@ function BoutiqueProductLayout({
   const servicesData = getServicesData(lang);
   const localService = servicesData[serviceSlug];
   const { servicePages } = useServicePages() || {};
-  const cmsPage = servicePages?.find(s => s.slug === serviceSlug || s.boutiqueSlug === serviceSlug);
+  // Map legacy serviceSlug to CMS slug/boutiqueSlug
+  const slugMap = { 'impression-fine-art': 'prints', 'stickers-custom': 'stickers', 'sublimation-merch': 'merch', 'design-graphique': 'design', 'developpement-web': 'web', 'flyers-cartes': 'prints' };
+  const mappedSlug = slugMap[serviceSlug] || serviceSlug;
+  const cmsPage = servicePages?.find(s => s.slug === mappedSlug || s.boutiqueSlug === mappedSlug || s.slug === serviceSlug || s.boutiqueSlug === serviceSlug);
   const cmsProcess = cmsPage?.[`process${lang === 'en' ? 'En' : 'Fr'}`] || cmsPage?.processFr || null;
   const cmsEquipment = cmsPage?.[`equipment${lang === 'en' ? 'En' : 'Fr'}`] || cmsPage?.equipmentFr || null;
   const service = {
