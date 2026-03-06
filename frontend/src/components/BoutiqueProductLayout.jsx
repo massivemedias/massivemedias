@@ -10,6 +10,7 @@ import { getFAQSchema } from './seo/schemas';
 import { useLang } from '../i18n/LanguageContext';
 import { toFull } from '../utils/paths';
 import getServicesData from '../data/getServicesData';
+import { useServicePages } from '../hooks/useServicePages';
 
 function BoutiqueProductLayout({
   serviceSlug,
@@ -32,7 +33,16 @@ function BoutiqueProductLayout({
 }) {
   const { lang, tx } = useLang();
   const servicesData = getServicesData(lang);
-  const service = servicesData[serviceSlug];
+  const localService = servicesData[serviceSlug];
+  const { servicePages } = useServicePages() || {};
+  const cmsPage = servicePages?.find(s => s.slug === serviceSlug || s.boutiqueSlug === serviceSlug);
+  const cmsProcess = cmsPage?.[`process${lang === 'en' ? 'En' : 'Fr'}`] || cmsPage?.processFr || null;
+  const cmsEquipment = cmsPage?.[`equipment${lang === 'en' ? 'En' : 'Fr'}`] || cmsPage?.equipmentFr || null;
+  const service = {
+    ...localService,
+    process: cmsProcess?.length ? cmsProcess : localService?.process,
+    equipment: cmsEquipment?.length ? cmsEquipment : localService?.equipment,
+  };
 
   // Gallery state
   const [mainImage, setMainImage] = useState(0);

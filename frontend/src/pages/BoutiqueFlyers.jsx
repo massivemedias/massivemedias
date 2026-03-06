@@ -2,11 +2,13 @@ import { FileText, Shield, Sparkles, Truck, Music, Users, Briefcase, Megaphone }
 import BoutiqueProductLayout from '../components/BoutiqueProductLayout';
 import ConfiguratorFlyers from '../components/configurators/ConfiguratorFlyers';
 import { useProduct } from '../hooks/useProducts';
+import { mediaUrl } from '../utils/cms';
 import { flyerImages, flyerFaq as defaultFaq } from '../data/products';
 
 function BoutiqueFlyers() {
   const cmsProduct = useProduct('flyers');
   const flyerFaq = cmsProduct ? { fr: cmsProduct.faqFr || defaultFaq.fr, en: cmsProduct.faqEn || defaultFaq.en, es: cmsProduct?.faqEs || defaultFaq.es } : defaultFaq;
+  const cmsImages = cmsProduct?.images?.length ? cmsProduct.images.map(img => mediaUrl(img)) : null;
   const trustItems = [
     { icon: FileText, fr: 'Papier premium 300g+', en: 'Premium 300g+ paper', es: 'Papel premium 300g+' },
     { icon: Shield, fr: 'Qualit\u00e9 professionnelle', en: 'Professional quality', es: 'Calidad profesional' },
@@ -58,7 +60,7 @@ function BoutiqueFlyers() {
         es: 'Impresi\u00f3n local r\u00e1pida, calidad profesional.',
       }}
       useCases={useCases}
-      images={flyerImages}
+      images={cmsImages || flyerImages}
       faq={flyerFaq}
       ctaLinks={ctaLinks}
     >

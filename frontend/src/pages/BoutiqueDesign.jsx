@@ -2,11 +2,13 @@ import { Palette, Shield, Sparkles, Truck } from 'lucide-react';
 import BoutiqueProductLayout from '../components/BoutiqueProductLayout';
 import ConfiguratorDesign from '../components/configurators/ConfiguratorDesign';
 import { useProduct } from '../hooks/useProducts';
+import { mediaUrl } from '../utils/cms';
 import { designImages, designFaq as defaultFaq } from '../data/products';
 
 function BoutiqueDesign() {
   const cmsProduct = useProduct('design');
   const designFaq = cmsProduct ? { fr: cmsProduct.faqFr || defaultFaq.fr, en: cmsProduct.faqEn || defaultFaq.en, es: cmsProduct?.faqEs || defaultFaq.es } : defaultFaq;
+  const cmsImages = cmsProduct?.images?.length ? cmsProduct.images.map(img => mediaUrl(img)) : null;
   const trustItems = [
     { icon: Palette, fr: 'Adobe Illustrator & Figma', en: 'Adobe Illustrator & Figma', es: 'Adobe Illustrator y Figma' },
     { icon: Shield, fr: '2 r\u00e9visions incluses', en: '2 revisions included', es: '2 revisiones incluidas' },
@@ -50,7 +52,7 @@ function BoutiqueDesign() {
         en: 'Professional creations with industry-standard tools.',
         es: 'Creaciones profesionales con herramientas de la industria.',
       }}
-      images={designImages}
+      images={cmsImages || designImages}
       faq={designFaq}
       ctaLinks={ctaLinks}
     >

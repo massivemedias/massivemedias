@@ -2,11 +2,13 @@ import { Shirt, Shield, Sparkles, Truck, Music, Users, Gift, Store } from 'lucid
 import BoutiqueProductLayout from '../components/BoutiqueProductLayout';
 import ConfiguratorSublimation from '../components/configurators/ConfiguratorSublimation';
 import { useProduct } from '../hooks/useProducts';
+import { mediaUrl } from '../utils/cms';
 import { sublimationImages, sublimationFaq as defaultFaq } from '../data/products';
 
 function BoutiqueSublimation() {
   const cmsProduct = useProduct('sublimation');
   const sublimationFaq = cmsProduct ? { fr: cmsProduct.faqFr || defaultFaq.fr, en: cmsProduct.faqEn || defaultFaq.en, es: cmsProduct?.faqEs || defaultFaq.es } : defaultFaq;
+  const cmsImages = cmsProduct?.images?.length ? cmsProduct.images.map(img => mediaUrl(img)) : null;
   const trustItems = [
     { icon: Shirt, fr: 'Impression permanente', en: 'Permanent print', es: 'Impresi\u00f3n permanente' },
     { icon: Shield, fr: 'R\u00e9sistant au lavage', en: 'Wash resistant', es: 'Resistente al lavado' },
@@ -58,7 +60,7 @@ function BoutiqueSublimation() {
         es: 'La mejor t\u00e9cnica para merch duradero y vibrante.',
       }}
       useCases={useCases}
-      images={sublimationImages}
+      images={cmsImages || sublimationImages}
       faq={sublimationFaq}
       ctaLinks={ctaLinks}
     >

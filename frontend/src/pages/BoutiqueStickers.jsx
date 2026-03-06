@@ -3,6 +3,7 @@ import { Scissors, Shield, Sparkles, Truck, Droplets, Tag, Gift, Music, Package 
 import BoutiqueProductLayout from '../components/BoutiqueProductLayout';
 import ConfiguratorStickers from '../components/configurators/ConfiguratorStickers';
 import { useProduct } from '../hooks/useProducts';
+import { mediaUrl } from '../utils/cms';
 import { useLang } from '../i18n/LanguageContext';
 import { stickerImages, stickerFaq as defaultFaq } from '../data/products';
 import { img } from '../utils/paths';
@@ -20,15 +21,16 @@ function BoutiqueStickers() {
   const { lang } = useLang();
   const cmsProduct = useProduct('stickers');
   const stickerFaq = cmsProduct ? { fr: cmsProduct.faqFr || defaultFaq.fr, en: cmsProduct.faqEn || defaultFaq.en, es: cmsProduct?.faqEs || defaultFaq.es } : defaultFaq;
+  const cmsImages = cmsProduct?.images?.length ? cmsProduct.images.map(i => mediaUrl(i)) : null;
 
   const [selectedFinish, setSelectedFinish] = useState('matte');
 
   // Image de finition en premier, puis les images de realisations
   const allImages = useMemo(() => {
+    if (cmsImages) return cmsImages;
     const finishImg = finishImages[selectedFinish];
     return finishImg ? [finishImg, ...stickerImages] : stickerImages;
-  }, [selectedFinish]);
-
+  }, [selectedFinish, cmsImages]);
   const trustItems = [
     { icon: Scissors, fr: 'D\u00e9coupe pr\u00e9cision', en: 'Precision cutting', es: 'Corte de precisi\u00f3n' },
     { icon: Shield, fr: 'Durabilit\u00e9 3-5 ans', en: '3-5 year durability', es: 'Durabilidad 3-5 a\u00f1os' },

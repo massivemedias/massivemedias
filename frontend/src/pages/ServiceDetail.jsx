@@ -59,25 +59,37 @@ function ServiceDetail() {
   const { servicePages } = useServicePages() || {};
   const fallbackData = getServicesData(lang);
 
-  // Local data always the base - CMS only overrides translatable text fields
+  // CMS prioritaire, local en fallback
   const service = useMemo(() => {
     const local = fallbackData[slug] || null;
     const cmsPage = servicePages?.find(s => s.slug === slug);
-    if (!local) {
-      return cmsPage ? buildServiceFromCMS(cmsPage, lang) : null;
-    }
+    if (!cmsPage && !local) return null;
     if (!cmsPage) return local;
     const cms = buildServiceFromCMS(cmsPage, lang);
+    if (!local) return cms;
     return {
       ...local,
       title: cms.title || local.title,
       subtitle: cms.subtitle || local.subtitle,
+      heroImage: cms.heroImage || local.heroImage,
       description: cms.description || local.description,
-      seo: {
-        title: cms.seo?.title || local.seo.title,
-        description: cms.seo?.description || local.seo.description,
-      },
+      highlights: cms.highlights?.length ? cms.highlights : local.highlights,
+      process: cms.process?.length ? cms.process : local.process,
+      pricing: (cms.pricing && Object.keys(cms.pricing).length) ? cms.pricing : local.pricing,
+      equipment: cms.equipment?.length ? cms.equipment : local.equipment,
       faq: cms.faq?.length ? cms.faq : local.faq,
+      gallery: cms.gallery?.length ? cms.gallery : local.gallery,
+      comparison: cms.comparison || local.comparison,
+      whatWeDeliver: cms.whatWeDeliver || local.whatWeDeliver,
+      webProjects: cms.webProjects || local.webProjects,
+      technologies: cms.technologies || local.technologies,
+      team: cms.team || local.team,
+      icon: cms.icon || local.icon,
+      boutiqueSlug: cms.boutiqueSlug || local.boutiqueSlug,
+      seo: {
+        title: cms.seo?.title || local.seo?.title,
+        description: cms.seo?.description || local.seo?.description,
+      },
     };
   }, [servicePages, slug, lang, fallbackData]);
 

@@ -2,11 +2,13 @@ import { Code, Shield, Sparkles, Truck } from 'lucide-react';
 import BoutiqueProductLayout from '../components/BoutiqueProductLayout';
 import ConfiguratorWeb from '../components/configurators/ConfiguratorWeb';
 import { useProduct } from '../hooks/useProducts';
+import { mediaUrl } from '../utils/cms';
 import { webImages, webFaq as defaultFaq } from '../data/products';
 
 function BoutiqueWeb() {
   const cmsProduct = useProduct('web');
   const webFaq = cmsProduct ? { fr: cmsProduct.faqFr || defaultFaq.fr, en: cmsProduct.faqEn || defaultFaq.en, es: cmsProduct?.faqEs || defaultFaq.es } : defaultFaq;
+  const cmsImages = cmsProduct?.images?.length ? cmsProduct.images.map(img => mediaUrl(img)) : null;
   const trustItems = [
     { icon: Code, fr: '15+ ans d\'exp\u00e9rience', en: '15+ years experience', es: '15+ a\u00f1os de experiencia' },
     { icon: Shield, fr: 'SEO inclus', en: 'SEO included', es: 'SEO incluido' },
@@ -50,7 +52,7 @@ function BoutiqueWeb() {
         en: 'Performant, optimized and custom websites.',
         es: 'Sitios web eficientes, optimizados y a medida.',
       }}
-      images={webImages}
+      images={cmsImages || webImages}
       faq={webFaq}
       ctaLinks={ctaLinks}
     >

@@ -4,6 +4,7 @@ import BoutiqueProductLayout from '../components/BoutiqueProductLayout';
 import ConfiguratorFineArt from '../components/configurators/ConfiguratorFineArt';
 import ConfiguratorFlyers from '../components/configurators/ConfiguratorFlyers';
 import { useProduct } from '../hooks/useProducts';
+import { mediaUrl } from '../utils/cms';
 import { useLang } from '../i18n/LanguageContext';
 import { fineArtImages, fineArtFaq as defaultFineArtFaq, flyerImages, flyerFaq as defaultFlyerFaq } from '../data/products';
 
@@ -15,6 +16,7 @@ function BoutiqueFineArt() {
   const fineArtFaq = cmsFineArt ? { fr: cmsFineArt.faqFr || defaultFineArtFaq.fr, en: cmsFineArt.faqEn || defaultFineArtFaq.en, es: cmsFineArt?.faqEs || defaultFineArtFaq.es } : defaultFineArtFaq;
   const flyerFaq = cmsFlyers ? { fr: cmsFlyers.faqFr || defaultFlyerFaq.fr, en: cmsFlyers.faqEn || defaultFlyerFaq.en, es: cmsFlyers?.faqEs || defaultFlyerFaq.es } : defaultFlyerFaq;
 
+  const cmsImages = cmsFineArt?.images?.length ? cmsFineArt.images.map(img => mediaUrl(img)) : null;
   const trustItems = [
     { icon: Printer, fr: 'Qualit\u00e9 galerie', en: 'Gallery quality', es: 'Calidad galer\u00eda' },
     { icon: Shield, fr: 'Conservation 100+ ans', en: '100+ year conservation', es: 'Conservaci\u00f3n 100+ a\u00f1os' },
@@ -43,7 +45,7 @@ function BoutiqueFineArt() {
     { to: '/boutique/sublimation', fr: 'Sublimation & Merch', en: 'Sublimation & Merch', es: 'Sublimaci\u00f3n y Merch' },
   ];
 
-  const allImages = [...fineArtImages, ...flyerImages];
+  const allImages = cmsImages || [...fineArtImages, ...flyerImages];
 
   const mergedFaq = {
     fr: [...fineArtFaq.fr, ...flyerFaq.fr],
