@@ -361,18 +361,24 @@ Nous travaillons avec Adobe Illustrator, Figma et Photoshop pour créer des visu
       note: 'Chaque projet inclut le SEO de base, le responsive et l\'optimisation performance.',
       tables: [
         {
-          subtitle: 'Développement Web & Référencement',
+          subtitle: 'Creation de site (Webdesign + Code + SEO inclus)',
           headers: ['Service', 'Prix'],
           rows: [
-            ['Landing page événement', '900$'],
+            ['Landing page evenement', '900$'],
             ['Site vitrine artiste/label (5-10 pages)', '1 000$ - 1 500$'],
             ['Site e-commerce simple', '1 500$ - 2 500$'],
             ['Refonte site existant', 'Sur soumission'],
-            ['Webdesign landing page (Figma)', '450$'],
-            ['Webdesign site vitrine (5-10 pages)', '900$'],
-            ['Webdesign e-commerce / multi-pages (10+)', '1 500$ - 2 000$'],
             ['Maintenance mensuelle', '100$ - 200$/mois'],
             ['Taux horaire (Web, Design, Restauration)', '85$/h'],
+          ],
+        },
+        {
+          subtitle: 'Webdesign seul (Livrable Figma)',
+          headers: ['Service', 'Prix'],
+          rows: [
+            ['Landing page', '450$'],
+            ['Site vitrine (5-10 pages)', '900$'],
+            ['E-commerce / multi-pages (10+)', '1 500$ - 2 000$'],
           ],
         },
       ],

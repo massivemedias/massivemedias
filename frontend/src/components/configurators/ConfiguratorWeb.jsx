@@ -33,7 +33,10 @@ function ConfiguratorWeb() {
           {tx({ fr: 'Type de projet', en: 'Project type', es: 'Tipo de proyecto' })}
         </label>
         <div className="space-y-2">
-          {webServices.map(s => (
+          <p className="text-xs font-semibold text-accent uppercase tracking-wider pt-1 pb-0.5">
+            {tx({ fr: 'Creation de site (Design + Code + SEO inclus)', en: 'Site Creation (Design + Code + SEO included)', es: 'Creacion de sitio (Diseno + Codigo + SEO incluido)' })}
+          </p>
+          {webServices.filter(s => s.category === 'site').map(s => (
             <button
               key={s.id}
               onClick={() => setSelected(s.id)}
@@ -43,7 +46,28 @@ function ConfiguratorWeb() {
               }`}
             >
               <span className="text-heading">
-                {tx({ fr: s.labelFr, en: s.labelEn, es: s.labelEn })}
+                {tx({ fr: s.labelFr, en: s.labelEn, es: s.labelEs || s.labelEn })}
+              </span>
+              <span className="text-accent font-semibold text-xs whitespace-nowrap ml-2">
+                {getPrice(s)}
+              </span>
+            </button>
+          ))}
+          <div className="border-t border-grey-muted/20 my-3" />
+          <p className="text-xs font-semibold text-accent uppercase tracking-wider pt-1 pb-0.5">
+            {tx({ fr: 'Webdesign seul (Livrable Figma)', en: 'Webdesign Only (Figma Deliverable)', es: 'Webdesign solo (Entregable Figma)' })}
+          </p>
+          {webServices.filter(s => s.category === 'webdesign').map(s => (
+            <button
+              key={s.id}
+              onClick={() => setSelected(s.id)}
+              className={`w-full flex items-center justify-between p-3.5 rounded-lg text-sm font-medium transition-all border-2 text-left ${selected === s.id
+                ? 'border-accent option-selected'
+                : 'border-transparent hover:border-grey-muted/30 option-default'
+              }`}
+            >
+              <span className="text-heading">
+                {tx({ fr: s.labelFr, en: s.labelEn, es: s.labelEs || s.labelEn })}
               </span>
               <span className="text-accent font-semibold text-xs whitespace-nowrap ml-2">
                 {getPrice(s)}

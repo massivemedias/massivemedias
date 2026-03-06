@@ -379,18 +379,24 @@ We work with Adobe Illustrator, Figma and Photoshop to create impactful visuals 
       note: 'Every project includes basic SEO, responsive design and performance optimization.',
       tables: [
         {
-          subtitle: 'Web Development & SEO',
+          subtitle: 'Site Creation (Webdesign + Code + SEO included)',
           headers: ['Service', 'Price'],
           rows: [
             ['Event landing page', '$900'],
             ['Artist/label showcase site (5-10 pages)', '$1,000 - $1,500'],
             ['Simple e-commerce site', '$1,500 - $2,500'],
             ['Existing site redesign', 'On quote'],
-            ['Web design landing page (Figma)', '$450'],
-            ['Web design showcase site (5-10 pages)', '$900'],
-            ['Web design e-commerce / multi-page (10+)', '$1,500 - $2,000'],
             ['Monthly maintenance', '$100 - $200/mo'],
             ['Hourly rate (Web, Design, Restoration)', '$85/h'],
+          ],
+        },
+        {
+          subtitle: 'Webdesign Only (Figma Deliverable)',
+          headers: ['Service', 'Price'],
+          rows: [
+            ['Landing page', '$450'],
+            ['Showcase site (5-10 pages)', '$900'],
+            ['E-commerce / multi-page (10+)', '$1,500 - $2,000'],
           ],
         },
       ],

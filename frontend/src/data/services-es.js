@@ -379,18 +379,24 @@ Más de 15 años de experiencia en desarrollo web. El fundador de Massive es pro
       note: 'Cada proyecto incluye SEO básico, responsive y optimización de rendimiento.',
       tables: [
         {
-          subtitle: 'Desarrollo Web y Posicionamiento',
+          subtitle: 'Creacion de sitio (Webdesign + Codigo + SEO incluido)',
           headers: ['Servicio', 'Precio'],
           rows: [
             ['Landing page de evento', '$900'],
-            ['Sitio vitrina artista/sello (5-10 páginas)', '$1,000 - $1,500'],
+            ['Sitio vitrina artista/sello (5-10 paginas)', '$1,000 - $1,500'],
             ['Sitio e-commerce simple', '$1,500 - $2,500'],
-            ['Rediseño de sitio existente', 'Bajo cotización'],
-            ['Webdesign landing page (Figma)', '$450'],
-            ['Webdesign sitio vitrina (5-10 páginas)', '$900'],
-            ['Webdesign e-commerce / multi-páginas (10+)', '$1,500 - $2,000'],
+            ['Rediseno de sitio existente', 'Bajo cotizacion'],
             ['Mantenimiento mensual', '$100 - $200/mes'],
-            ['Tarifa por hora (Web, Diseño, Restauración)', '$85/h'],
+            ['Tarifa por hora (Web, Diseno, Restauracion)', '$85/h'],
+          ],
+        },
+        {
+          subtitle: 'Webdesign solo (Entregable Figma)',
+          headers: ['Servicio', 'Precio'],
+          rows: [
+            ['Landing page', '$450'],
+            ['Sitio vitrina (5-10 paginas)', '$900'],
+            ['E-commerce / multi-paginas (10+)', '$1,500 - $2,000'],
           ],
         },
       ],
