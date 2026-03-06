@@ -42,17 +42,23 @@ function ArtisteDetail({ subdomainSlug }) {
   const artist = useMemo(() => {
     const local = artistsData[slug] || null;
     const cmsArtist = cmsArtists?.find(a => a.slug === slug);
-    // Donnees locales toujours prioritaires, CMS enrichit seulement les textes
-    if (!local) {
-      return cmsArtist ? buildArtistFromCMS(cmsArtist) : null;
-    }
+    if (!cmsArtist && !local) return null;
     if (!cmsArtist) return local;
     const cms = buildArtistFromCMS(cmsArtist);
+    if (!local) return cms;
+    // CMS prioritaire, local en fallback
     return {
       ...local,
-      name: cms.name || local.name,
+      ...cms,
       tagline: { fr: cms.tagline.fr || local.tagline.fr, en: cms.tagline.en || local.tagline.en, es: local.tagline.es || local.tagline.en },
-      bio: local.bio,
+      bio: { fr: cms.bio.fr || local.bio.fr, en: cms.bio.en || local.bio.en, es: local.bio.es || local.bio.en },
+      demarche: cms.demarche || local.demarche || null,
+      socials: Object.keys(cms.socials || {}).length > 0 ? cms.socials : local.socials,
+      prints: cms.prints && cms.prints.length > 0 ? cms.prints : local.prints,
+      stickers: local.stickers || [],
+      pricing: cms.pricing || local.pricing,
+      avatar: cms.avatar && !cms.avatar.includes('undefined') ? cms.avatar : local.avatar,
+      heroImage: cms.heroImage && !cms.heroImage.includes('undefined') ? cms.heroImage : local.heroImage,
     };
   }, [cmsArtists, slug]);
   const [selectedPrint, setSelectedPrint] = useState(null);

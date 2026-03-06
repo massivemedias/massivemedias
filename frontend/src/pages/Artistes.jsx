@@ -13,11 +13,11 @@ function Artistes() {
   const { artists: cmsArtists } = useArtists();
 
   const artists = useMemo(() => {
-    // Toujours partir des donnees locales, enrichir avec CMS si dispo
     const localList = Object.values(artistsData);
     if (!cmsArtists || cmsArtists.length === 0) return localList;
 
-    return localList.map(local => {
+    // Merge: CMS prioritaire, local en fallback
+    const merged = localList.map(local => {
       const cms = cmsArtists.find(a => a.slug === local.slug);
       if (!cms) return local;
       return {
@@ -28,9 +28,36 @@ function Artistes() {
           en: cms.taglineEn || local.tagline.en,
           es: local.tagline.es || local.tagline.en,
         },
-        // images locales toujours prioritaires
+        bio: {
+          fr: cms.bioFr || local.bio.fr,
+          en: cms.bioEn || local.bio.en,
+          es: local.bio.es || local.bio.en,
+        },
+        avatar: cms.avatar ? mediaUrl(cms.avatar) : local.avatar,
+        heroImage: cms.heroImage ? mediaUrl(cms.heroImage) : local.heroImage,
       };
     });
+
+    // Ajouter les artistes CMS-only (pas dans les donnees locales)
+    const localSlugs = new Set(localList.map(a => a.slug));
+    const cmsOnly = cmsArtists
+      .filter(a => !localSlugs.has(a.slug))
+      .map(cms => ({
+        slug: cms.slug,
+        name: cms.name,
+        tagline: { fr: cms.taglineFr || '', en: cms.taglineEn || '' },
+        bio: { fr: cms.bioFr || '', en: cms.bioEn || '' },
+        avatar: mediaUrl(cms.avatar),
+        heroImage: mediaUrl(cms.heroImage),
+        prints: (cms.prints || []).map((p, i) => ({
+          ...p,
+          image: cms.printImages?.[i] ? mediaUrl(cms.printImages[i]) : '',
+        })),
+        pricing: cms.pricing || { studio: { a4: 35, a3: 50, a3plus: 65, a2: 85 }, museum: { a4: 75, a3: 120, a3plus: 160, a2: 225 }, framePrice: 20 },
+        socials: cms.socials || {},
+      }));
+
+    return [...merged, ...cmsOnly];
   }, [cmsArtists]);
 
   return (
