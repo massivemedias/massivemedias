@@ -95,8 +95,8 @@ const products = [
     active: true,
     pricingData: {
       printerTiers: [
-        { id: 'studio', labelFr: 'Série Studio', labelEn: 'Studio Series', desc: 'Epson ET-15000' },
-        { id: 'museum', labelFr: 'Série Musée', labelEn: 'Museum Series', desc: 'Canon PRO-1000 / PRO-2600' },
+        { id: 'studio', labelFr: 'Série Studio', labelEn: 'Studio Series', desc: 'Imprimante 4 encres pigmentées' },
+        { id: 'museum', labelFr: 'Série Musée', labelEn: 'Museum Series', desc: 'Imprimante 12 encres pigmentées' },
       ],
       formats: [
         { id: 'a4', label: 'A4 (8.5×11")', studioPrice: 16, museumPrice: 35 },
@@ -107,25 +107,25 @@ const products = [
       framePrice: 30,
     },
     highlightsFr: [
-      'Imprimantes professionnelles Canon & Epson',
+      'Imprimantes professionnelles fine art',
       'Papiers fine art certifiés musée',
       'Durée de conservation 100+ ans',
       'Profils ICC sur mesure',
       'Option cadre noir ou blanc',
     ],
     highlightsEn: [
-      'Professional Canon & Epson printers',
+      'Professional fine art printers',
       'Museum-certified fine art papers',
       '100+ year conservation life',
       'Custom ICC profiles',
       'Black or white frame option',
     ],
     faqFr: [
-      { q: 'Quelle est la différence entre Série Studio et Série Musée?', a: 'La Série Studio (Epson ET-15000) offre une excellente qualité pour tous les usages. La Série Musée (Canon PRO-1000/PRO-2600) utilise 12 encres pigmentées pour une qualité supérieure.' },
+      { q: 'Quelle est la différence entre Série Studio et Série Musée?', a: 'La Série Studio offre une excellente qualité pour tous les usages avec 4 encres pigmentées. La Série Musée utilise 12 encres pigmentées pour une qualité supérieure galerie.' },
       { q: 'Quelle est la durée de conservation?', a: 'Nos tirages fine art ont une durée de conservation de 100+ ans grâce aux encres pigmentées et papiers d\'archives.' },
     ],
     faqEn: [
-      { q: 'What is the difference between Studio and Museum Series?', a: 'The Studio Series (Epson ET-15000) offers excellent quality for all uses. The Museum Series (Canon PRO-1000/PRO-2600) uses 12 pigmented inks for superior quality.' },
+      { q: 'What is the difference between Studio and Museum Series?', a: 'The Studio Series offers excellent quality for all uses with 4 pigmented inks. The Museum Series uses 12 pigmented inks for superior gallery-grade quality.' },
       { q: 'What is the conservation lifespan?', a: 'Our fine art prints have a 100+ year conservation life thanks to pigmented inks and archival papers.' },
     ],
   },

@@ -214,8 +214,8 @@ const productPricingData = {
   },
   'fine-art': {
     printerTiers: [
-      { id: 'studio', labelFr: 'Studio (Epson ET-15000)', labelEn: 'Studio (Epson ET-15000)' },
-      { id: 'museum', labelFr: 'Museum (Canon PRO-1000/2600)', labelEn: 'Museum (Canon PRO-1000/2600)' },
+      { id: 'studio', labelFr: 'Série Studio (4 encres pigmentées)', labelEn: 'Studio Series (4 pigmented inks)' },
+      { id: 'museum', labelFr: 'Série Musée (12 encres pigmentées)', labelEn: 'Museum Series (12 pigmented inks)' },
     ],
     formats: [
       { id: 'a4', label: 'A4 (8.5×11")', studioPrice: 16, museumPrice: 35 },
