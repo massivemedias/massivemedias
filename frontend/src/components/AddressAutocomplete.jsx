@@ -110,15 +110,22 @@ export default function AddressAutocomplete({
       containerRef.current.appendChild(pac);
       pacRef.current = pac;
 
-      // Pre-fill initial value + cleanup du shadow DOM (retirer icones Google)
+      // Pre-fill + injecter du CSS dans le shadow DOM pour nettoyer le look
       requestAnimationFrame(() => {
         try {
           if (initialValue.current) pac.value = initialValue.current;
-          // Retirer l'icone de recherche et le bouton clear du shadow DOM
+        } catch {}
+        try {
           const shadow = pac.shadowRoot;
           if (shadow) {
-            shadow.querySelectorAll('svg, .search-icon, [class*="icon"], [class*="clear"]')
-              .forEach(el => { el.style.display = 'none'; });
+            const style = document.createElement('style');
+            style.textContent = [
+              ':host { border: none !important; background: transparent !important; padding: 0 !important; }',
+              '* { border: none !important; box-shadow: none !important; }',
+              'input { background: transparent !important; outline: none !important; padding: 0 !important; color: inherit !important; font-family: inherit !important; font-size: inherit !important; width: 100% !important; }',
+              'svg, button, [class*="icon"], [class*="clear"], [class*="search"] { display: none !important; width: 0 !important; height: 0 !important; overflow: hidden !important; }',
+            ].join('\n');
+            shadow.prepend(style);
           }
         } catch {}
       });

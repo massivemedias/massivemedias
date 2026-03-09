@@ -27,14 +27,15 @@ api.interceptors.request.use(
 );
 
 // Retry automatique sur 503 (Render cold start) et erreurs reseau
-const MAX_RETRIES = 2;
-const RETRY_DELAY = 3000; // 3 secondes entre chaque retry
+// Render free tier: hiberne apres 15min, reveil prend ~60s
+const MAX_RETRIES = 3;
+const RETRY_DELAYS = [4000, 8000, 15000]; // 4s, 8s, 15s - total ~27s de patience
 
 function shouldRetry(error) {
   if (error.config?._retryCount >= MAX_RETRIES) return false;
   // 503 = Render en train de demarrer
   if (error.response?.status === 503) return true;
-  // Erreur reseau (pas de reponse du serveur)
+  // Erreur reseau / CORS bloque (pas de reponse = serveur dort, preflight CORS echoue)
   if (!error.response && error.code !== 'ERR_CANCELED') return true;
   return false;
 }
@@ -43,15 +44,28 @@ function wait(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+// Ping de warmup: reveille le serveur Render des le chargement du site
+// Utilise fetch() direct (pas Axios) pour eviter les intercepteurs
+let warmupDone = false;
+function warmupServer() {
+  if (warmupDone) return;
+  warmupDone = true;
+  const url = API_URL.replace(/\/api\/?$/, '');
+  fetch(url, { method: 'HEAD', mode: 'no-cors' }).catch(() => {});
+}
+if (typeof window !== 'undefined') {
+  warmupServer();
+}
+
 // Intercepteur pour gerer les erreurs + retry
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    // Retry sur erreurs transitoires (503, network)
+    // Retry sur erreurs transitoires (503, network/CORS)
     if (shouldRetry(error)) {
       error.config._retryCount += 1;
       const attempt = error.config._retryCount;
-      const delay = RETRY_DELAY * attempt; // 3s, 6s
+      const delay = RETRY_DELAYS[attempt - 1] || 15000;
       console.warn(
         `API retry ${attempt}/${MAX_RETRIES} dans ${delay / 1000}s:`,
         error.config.url
