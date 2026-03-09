@@ -411,6 +411,61 @@ h1, h2, h3, h4, h5, h6 {
   opacity: 0.5;
 }
 
+/* Google Places Autocomplete (PlaceAutocompleteElement) */
+.address-autocomplete-wrapper {
+  width: 100%;
+}
+
+.address-autocomplete-wrapper gmp-place-autocomplete {
+  width: 100%;
+  display: block;
+}
+
+/* Style the inner input via ::part() to match .input-field */
+gmp-place-autocomplete::part(input) {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  color: var(--color-heading);
+  border: 1px solid var(--bg-input-border);
+  background: var(--bg-input);
+  transition: border-color 0.2s, background 0.2s, color 0.2s;
+  font-family: -apple-system, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+  font-size: 1rem;
+  box-sizing: border-box;
+  outline: none;
+}
+
+gmp-place-autocomplete::part(input):focus {
+  border-color: var(--accent-color, #FF52A0);
+}
+
+gmp-place-autocomplete::part(prediction-list) {
+  background: var(--bg-select-option);
+  border: 1px solid var(--bg-input-border);
+  border-radius: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+gmp-place-autocomplete::part(prediction-item) {
+  color: var(--color-heading);
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+}
+
+gmp-place-autocomplete::part(prediction-item-selected) {
+  background: var(--bg-input);
+}
+
+gmp-place-autocomplete::part(prediction-item-main-text) {
+  color: var(--color-heading);
+  font-weight: 500;
+}
+
+gmp-place-autocomplete::part(prediction-item-match) {
+  font-weight: 700;
+}
+
 /* Sélecteurs */
 select.input-field {
   appearance: none;
