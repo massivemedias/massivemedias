@@ -10,6 +10,7 @@ import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 import { getMyOrders } from '../services/orderService';
+import AddressAutocomplete from '../components/AddressAutocomplete';
 
 const PROVINCES_CA = [
   { code: 'QC', fr: 'Quebec', en: 'Quebec' },
@@ -747,14 +748,26 @@ function Account() {
                       {tx({ fr: 'Adresse de livraison', en: 'Shipping address', es: 'Direccion de envio' })}
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6">
-                      <div className="md:col-span-2">
-                        <FormInput
-                          icon={MapPin}
-                          label={tx({ fr: 'Adresse', en: 'Street address', es: 'Direccion' })}
+                      <div className="md:col-span-2 mb-4">
+                        <label className="flex items-center gap-2 text-[11px] text-grey-muted uppercase tracking-wider font-medium mb-1.5">
+                          <MapPin size={14} />
+                          {tx({ fr: 'Adresse', en: 'Street address', es: 'Direccion' })}
+                        </label>
+                        <AddressAutocomplete
                           value={addressForm.address}
-                          placeholder={tx({ fr: '123 rue Exemple', en: '123 Example St', es: '123 Calle Ejemplo' })}
                           onChange={v => setAddressForm(a => ({ ...a, address: v }))}
-                          autoComplete="street-address"
+                          onPlaceSelect={({ address, city, province, postalCode, country }) => {
+                            setAddressForm(a => ({
+                              ...a,
+                              address,
+                              city: city || a.city,
+                              province: province || a.province,
+                              postal_code: postalCode || a.postal_code,
+                              country: country === 'United States' ? 'US' : country || a.country,
+                            }));
+                          }}
+                          className="input-field text-sm"
+                          placeholder={tx({ fr: '123 rue Exemple', en: '123 Example St', es: '123 Calle Ejemplo' })}
                         />
                       </div>
                       <FormInput

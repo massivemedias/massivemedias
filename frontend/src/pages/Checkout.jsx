@@ -11,6 +11,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { getStripePromise } from '../lib/stripe';
 import { createPaymentIntent } from '../services/orderService';
 import CheckoutForm from '../components/CheckoutForm';
+import AddressAutocomplete from '../components/AddressAutocomplete';
 
 const provinces = [
   { code: 'QC', fr: 'Quebec', en: 'Quebec', es: 'Quebec' },
@@ -250,9 +251,20 @@ function Checkout() {
                         <label htmlFor="adresse" className="block text-heading font-semibold text-sm mb-2">
                           {tx({ fr: 'Adresse', en: 'Address', es: 'Direccion' })} *
                         </label>
-                        <input
-                          type="text" id="adresse" name="adresse" required autoComplete="street-address"
-                          value={formData.adresse} onChange={handleChange}
+                        <AddressAutocomplete
+                          id="adresse"
+                          required
+                          value={formData.adresse}
+                          onChange={v => { setFormData(f => ({ ...f, adresse: v })); if (error) setError(''); }}
+                          onPlaceSelect={({ address, city, province, postalCode }) => {
+                            setFormData(f => ({
+                              ...f,
+                              adresse: address,
+                              ville: city || f.ville,
+                              province: province || f.province,
+                              codePostal: postalCode || f.codePostal,
+                            }));
+                          }}
                           placeholder={tx({ fr: '123 rue Exemple', en: '123 Example St', es: '123 Calle Ejemplo' })}
                           className="input-field"
                         />
