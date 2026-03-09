@@ -414,13 +414,17 @@ h1, h2, h3, h4, h5, h6 {
 /* Google Places Autocomplete (PlaceAutocompleteElement) */
 .address-autocomplete-wrapper {
   width: 100%;
-  padding: 0.75rem 1rem;
+  height: calc(1rem * 1.5 + 0.75rem * 2 + 2px); /* meme hauteur que .input-field */
+  padding: 0;
   border-radius: 0.5rem;
   color: var(--color-heading);
   border: 1px solid var(--bg-input-border);
   background: var(--bg-input);
   transition: border-color 0.2s, background 0.2s, color 0.2s;
   box-sizing: border-box;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
 }
 
 .address-autocomplete-wrapper:focus-within {
@@ -430,6 +434,7 @@ h1, h2, h3, h4, h5, h6 {
 /* Reset all Google default styling on the web component */
 .address-autocomplete-wrapper gmp-place-autocomplete {
   width: 100%;
+  flex: 1;
   display: block;
   border: none !important;
   outline: none !important;
@@ -437,6 +442,7 @@ h1, h2, h3, h4, h5, h6 {
   padding: 0 !important;
   margin: 0 !important;
   box-shadow: none !important;
+  height: 100%;
 }
 
 /* Make the inner input invisible (wrapper handles the look) */
