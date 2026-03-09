@@ -5,6 +5,12 @@ const config: Core.Config.Middlewares = [
   'strapi::errors',
   'strapi::security',
   {
+    name: 'strapi::compression',
+    config: {
+      br: false,
+    },
+  },
+  {
     name: 'strapi::cors',
     config: {
       origin(ctx) {

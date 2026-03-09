@@ -1,0 +1,13 @@
+name: Keep Alive Render
+
+on:
+  schedule:
+    - cron: '*/14 * * * *'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Strapi
+        run: curl -fsS -o /dev/null -w "%{http_code}" https://massivemedias-api.onrender.com/api/site-contents || true
