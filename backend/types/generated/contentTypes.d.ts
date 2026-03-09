@@ -445,11 +445,13 @@ export interface ApiArtistArtist extends Struct.CollectionTypeSchema {
     active: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
     avatar: Schema.Attribute.Media<'images'>;
     bioEn: Schema.Attribute.Text;
+    bioEs: Schema.Attribute.Text;
     bioFr: Schema.Attribute.Text;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     demarcheEn: Schema.Attribute.JSON;
+    demarcheEs: Schema.Attribute.JSON;
     demarcheFr: Schema.Attribute.JSON;
     heroImage: Schema.Attribute.Media<'images'>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
@@ -469,6 +471,7 @@ export interface ApiArtistArtist extends Struct.CollectionTypeSchema {
     socials: Schema.Attribute.JSON;
     sortOrder: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
     taglineEn: Schema.Attribute.String;
+    taglineEs: Schema.Attribute.String;
     taglineFr: Schema.Attribute.String;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -509,8 +512,10 @@ export interface ApiBoutiqueItemBoutiqueItem
     sortOrder: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
     startingPrice: Schema.Attribute.Decimal;
     subtitleEn: Schema.Attribute.String;
+    subtitleEs: Schema.Attribute.String;
     subtitleFr: Schema.Attribute.String;
     titleEn: Schema.Attribute.String & Schema.Attribute.Required;
+    titleEs: Schema.Attribute.String;
     titleFr: Schema.Attribute.String & Schema.Attribute.Required;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -720,12 +725,14 @@ export interface ApiNewsArticleNewsArticle extends Struct.CollectionTypeSchema {
     > &
       Schema.Attribute.DefaultTo<'announcement'>;
     contentEn: Schema.Attribute.RichText & Schema.Attribute.Required;
+    contentEs: Schema.Attribute.RichText;
     contentFr: Schema.Attribute.RichText & Schema.Attribute.Required;
     coverImage: Schema.Attribute.Media<'images'>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     excerptEn: Schema.Attribute.Text;
+    excerptEs: Schema.Attribute.Text;
     excerptFr: Schema.Attribute.Text;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
@@ -737,6 +744,7 @@ export interface ApiNewsArticleNewsArticle extends Struct.CollectionTypeSchema {
     publishedAt: Schema.Attribute.DateTime;
     slug: Schema.Attribute.UID<'titleEn'>;
     titleEn: Schema.Attribute.String & Schema.Attribute.Required;
+    titleEs: Schema.Attribute.String;
     titleFr: Schema.Attribute.String & Schema.Attribute.Required;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -832,10 +840,13 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     descriptionEn: Schema.Attribute.RichText;
+    descriptionEs: Schema.Attribute.RichText;
     descriptionFr: Schema.Attribute.RichText;
     faqEn: Schema.Attribute.JSON;
+    faqEs: Schema.Attribute.JSON;
     faqFr: Schema.Attribute.JSON;
     highlightsEn: Schema.Attribute.JSON;
+    highlightsEs: Schema.Attribute.JSON;
     highlightsFr: Schema.Attribute.JSON;
     images: Schema.Attribute.Media<'images', true>;
     imageUrl: Schema.Attribute.String;
@@ -847,6 +858,7 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
       Schema.Attribute.Private;
     name: Schema.Attribute.String & Schema.Attribute.Required;
     nameEn: Schema.Attribute.String & Schema.Attribute.Required;
+    nameEs: Schema.Attribute.String;
     nameFr: Schema.Attribute.String & Schema.Attribute.Required;
     pricingData: Schema.Attribute.JSON & Schema.Attribute.Required;
     publishedAt: Schema.Attribute.DateTime;
@@ -880,6 +892,7 @@ export interface ApiServicePackageServicePackage
     ctaType: Schema.Attribute.Enumeration<['price', 'quote']> &
       Schema.Attribute.DefaultTo<'price'>;
     descriptionEn: Schema.Attribute.Text;
+    descriptionEs: Schema.Attribute.Text;
     descriptionFr: Schema.Attribute.Text;
     items: Schema.Attribute.JSON & Schema.Attribute.Required;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
@@ -889,9 +902,11 @@ export interface ApiServicePackageServicePackage
     > &
       Schema.Attribute.Private;
     nameEn: Schema.Attribute.String & Schema.Attribute.Required;
+    nameEs: Schema.Attribute.String;
     nameFr: Schema.Attribute.String & Schema.Attribute.Required;
     popular: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     priceEn: Schema.Attribute.String & Schema.Attribute.Required;
+    priceEs: Schema.Attribute.String;
     priceFr: Schema.Attribute.String & Schema.Attribute.Required;
     publishedAt: Schema.Attribute.DateTime;
     sortOrder: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
@@ -916,19 +931,24 @@ export interface ApiServicePageServicePage extends Struct.CollectionTypeSchema {
     active: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
     boutiqueSlug: Schema.Attribute.String;
     comparisonEn: Schema.Attribute.JSON;
+    comparisonEs: Schema.Attribute.JSON;
     comparisonFr: Schema.Attribute.JSON;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     descriptionEn: Schema.Attribute.RichText;
+    descriptionEs: Schema.Attribute.RichText;
     descriptionFr: Schema.Attribute.RichText;
     equipmentEn: Schema.Attribute.JSON;
+    equipmentEs: Schema.Attribute.JSON;
     equipmentFr: Schema.Attribute.JSON;
     faqEn: Schema.Attribute.JSON;
+    faqEs: Schema.Attribute.JSON;
     faqFr: Schema.Attribute.JSON;
     gallery: Schema.Attribute.Media<'images', true>;
     heroImage: Schema.Attribute.Media<'images'>;
     highlightsEn: Schema.Attribute.JSON;
+    highlightsEs: Schema.Attribute.JSON;
     highlightsFr: Schema.Attribute.JSON;
     iconName: Schema.Attribute.String;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
@@ -938,8 +958,10 @@ export interface ApiServicePageServicePage extends Struct.CollectionTypeSchema {
     > &
       Schema.Attribute.Private;
     pricingEn: Schema.Attribute.JSON;
+    pricingEs: Schema.Attribute.JSON;
     pricingFr: Schema.Attribute.JSON;
     processEn: Schema.Attribute.JSON;
+    processEs: Schema.Attribute.JSON;
     processFr: Schema.Attribute.JSON;
     publishedAt: Schema.Attribute.DateTime;
     seo: Schema.Attribute.Component<'shared.seo-meta', false>;
@@ -948,20 +970,26 @@ export interface ApiServicePageServicePage extends Struct.CollectionTypeSchema {
       Schema.Attribute.Unique;
     sortOrder: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
     subtitleEn: Schema.Attribute.Text;
+    subtitleEs: Schema.Attribute.Text;
     subtitleFr: Schema.Attribute.Text;
     teamEn: Schema.Attribute.JSON;
+    teamEs: Schema.Attribute.JSON;
     teamFr: Schema.Attribute.JSON;
     technologiesEn: Schema.Attribute.JSON;
+    technologiesEs: Schema.Attribute.JSON;
     technologiesFr: Schema.Attribute.JSON;
     titleEn: Schema.Attribute.String & Schema.Attribute.Required;
+    titleEs: Schema.Attribute.String;
     titleFr: Schema.Attribute.String & Schema.Attribute.Required;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     webProjectImages: Schema.Attribute.Media<'images', true>;
     webProjectsEn: Schema.Attribute.JSON;
+    webProjectsEs: Schema.Attribute.JSON;
     webProjectsFr: Schema.Attribute.JSON;
     whatWeDeliverEn: Schema.Attribute.JSON;
+    whatWeDeliverEs: Schema.Attribute.JSON;
     whatWeDeliverFr: Schema.Attribute.JSON;
   };
 }
@@ -981,44 +1009,59 @@ export interface ApiSiteContentSiteContent extends Struct.SingleTypeSchema {
     aboutEquipment: Schema.Attribute.Component<'about.equipment-item', true>;
     aboutEquipmentImages: Schema.Attribute.Media<'images', true>;
     aboutEquipmentTitleEn: Schema.Attribute.String;
+    aboutEquipmentTitleEs: Schema.Attribute.String;
     aboutEquipmentTitleFr: Schema.Attribute.String;
     aboutHeroSubtitleEn: Schema.Attribute.Text;
+    aboutHeroSubtitleEs: Schema.Attribute.Text;
     aboutHeroSubtitleFr: Schema.Attribute.Text;
     aboutHeroTitleEn: Schema.Attribute.String;
+    aboutHeroTitleEs: Schema.Attribute.String;
     aboutHeroTitleFr: Schema.Attribute.String;
     aboutHistoryImages: Schema.Attribute.Media<'images', true>;
     aboutHistoryTitleEn: Schema.Attribute.String;
+    aboutHistoryTitleEs: Schema.Attribute.String;
     aboutHistoryTitleFr: Schema.Attribute.String;
     aboutSeo: Schema.Attribute.Component<'shared.seo-meta', false>;
     aboutSpaceDescriptionEn: Schema.Attribute.Text;
+    aboutSpaceDescriptionEs: Schema.Attribute.Text;
     aboutSpaceDescriptionFr: Schema.Attribute.Text;
     aboutSpaceImage: Schema.Attribute.Media<'images'>;
     aboutSpaceLocationEn: Schema.Attribute.String;
+    aboutSpaceLocationEs: Schema.Attribute.String;
     aboutSpaceLocationFr: Schema.Attribute.String;
     aboutSpaceTitleEn: Schema.Attribute.String;
+    aboutSpaceTitleEs: Schema.Attribute.String;
     aboutSpaceTitleFr: Schema.Attribute.String;
     aboutTeam: Schema.Attribute.Component<'about.team-member', true>;
     aboutTeamTitleEn: Schema.Attribute.String;
+    aboutTeamTitleEs: Schema.Attribute.String;
     aboutTeamTitleFr: Schema.Attribute.String;
     aboutTextEn: Schema.Attribute.RichText;
+    aboutTextEs: Schema.Attribute.RichText;
     aboutTextFr: Schema.Attribute.RichText;
     aboutTimeline: Schema.Attribute.Component<'about.timeline-event', true>;
     aboutTimelineTitleEn: Schema.Attribute.String;
+    aboutTimelineTitleEs: Schema.Attribute.String;
     aboutTimelineTitleFr: Schema.Attribute.String;
     aboutUniverse: Schema.Attribute.Component<'about.universe-project', true>;
     aboutUniverseTitleEn: Schema.Attribute.String;
+    aboutUniverseTitleEs: Schema.Attribute.String;
     aboutUniverseTitleFr: Schema.Attribute.String;
     advantages: Schema.Attribute.Component<'home.advantage', true>;
     advantagesTitleEn: Schema.Attribute.String;
+    advantagesTitleEs: Schema.Attribute.String;
     advantagesTitleFr: Schema.Attribute.String;
     announcementActive: Schema.Attribute.Boolean &
       Schema.Attribute.DefaultTo<false>;
     announcementEn: Schema.Attribute.String;
+    announcementEs: Schema.Attribute.String;
     announcementFr: Schema.Attribute.String;
     contactEmail: Schema.Attribute.Email;
     contactPageSubtitleEn: Schema.Attribute.Text;
+    contactPageSubtitleEs: Schema.Attribute.Text;
     contactPageSubtitleFr: Schema.Attribute.Text;
     contactPageTitleEn: Schema.Attribute.String;
+    contactPageTitleEs: Schema.Attribute.String;
     contactPageTitleFr: Schema.Attribute.String;
     contactPhone: Schema.Attribute.String;
     contactSeo: Schema.Attribute.Component<'shared.seo-meta', false>;
@@ -1027,28 +1070,39 @@ export interface ApiSiteContentSiteContent extends Struct.SingleTypeSchema {
       Schema.Attribute.Private;
     ctaBackgroundImage: Schema.Attribute.Media<'images'>;
     ctaButtonEn: Schema.Attribute.String;
+    ctaButtonEs: Schema.Attribute.String;
     ctaButtonFr: Schema.Attribute.String;
     ctaSubtitleEn: Schema.Attribute.Text;
+    ctaSubtitleEs: Schema.Attribute.Text;
     ctaSubtitleFr: Schema.Attribute.Text;
     ctaTitleEn: Schema.Attribute.String;
+    ctaTitleEs: Schema.Attribute.String;
     ctaTitleFr: Schema.Attribute.String;
     featuredProjects: Schema.Attribute.Component<'home.featured-project', true>;
     footerLocationEn: Schema.Attribute.String;
+    footerLocationEs: Schema.Attribute.String;
     footerLocationFr: Schema.Attribute.String;
     footerStudioDescEn: Schema.Attribute.Text;
+    footerStudioDescEs: Schema.Attribute.Text;
     footerStudioDescFr: Schema.Attribute.Text;
     footerTaglineEn: Schema.Attribute.String;
+    footerTaglineEs: Schema.Attribute.String;
     footerTaglineFr: Schema.Attribute.String;
     heroCta1En: Schema.Attribute.String;
+    heroCta1Es: Schema.Attribute.String;
     heroCta1Fr: Schema.Attribute.String;
     heroCta2En: Schema.Attribute.String;
+    heroCta2Es: Schema.Attribute.String;
     heroCta2Fr: Schema.Attribute.String;
     heroImages: Schema.Attribute.Media<'images', true>;
     heroServicesEn: Schema.Attribute.String;
+    heroServicesEs: Schema.Attribute.String;
     heroServicesFr: Schema.Attribute.String;
     heroSubtitleEn: Schema.Attribute.Text;
+    heroSubtitleEs: Schema.Attribute.Text;
     heroSubtitleFr: Schema.Attribute.Text;
     heroTaglineEn: Schema.Attribute.String;
+    heroTaglineEs: Schema.Attribute.String;
     heroTaglineFr: Schema.Attribute.String;
     homeSeo: Schema.Attribute.Component<'shared.seo-meta', false>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
@@ -1059,19 +1113,24 @@ export interface ApiSiteContentSiteContent extends Struct.SingleTypeSchema {
       Schema.Attribute.Private;
     newsletterFormEndpoint: Schema.Attribute.String;
     projectsSectionSubtitleEn: Schema.Attribute.Text;
+    projectsSectionSubtitleEs: Schema.Attribute.Text;
     projectsSectionSubtitleFr: Schema.Attribute.Text;
     projectsSectionTitleEn: Schema.Attribute.String;
+    projectsSectionTitleEs: Schema.Attribute.String;
     projectsSectionTitleFr: Schema.Attribute.String;
     publishedAt: Schema.Attribute.DateTime;
     serviceCards: Schema.Attribute.Component<'home.service-card', true>;
     servicesSectionSubtitleEn: Schema.Attribute.Text;
+    servicesSectionSubtitleEs: Schema.Attribute.Text;
     servicesSectionSubtitleFr: Schema.Attribute.Text;
     servicesSectionTitleEn: Schema.Attribute.String;
+    servicesSectionTitleEs: Schema.Attribute.String;
     servicesSectionTitleFr: Schema.Attribute.String;
     socialLinks: Schema.Attribute.Component<'footer.social-link', true>;
     stats: Schema.Attribute.Component<'home.stat-item', true>;
     testimonials: Schema.Attribute.Component<'home.testimonial', true>;
     testimonialsTitleEn: Schema.Attribute.String;
+    testimonialsTitleEs: Schema.Attribute.String;
     testimonialsTitleFr: Schema.Attribute.String;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
