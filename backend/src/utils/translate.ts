@@ -3,12 +3,15 @@ import * as deepl from 'deepl-node';
 type TargetLang = 'en-US' | 'es';
 
 let translator: deepl.Translator | null = null;
+let circuitBroken = false; // Stop trying after quota/auth errors
 
 function getTranslator(): deepl.Translator | null {
+  if (circuitBroken) return null;
   if (translator) return translator;
   const key = process.env.DEEPL_AUTH_KEY;
   if (!key) {
     console.warn('DEEPL_AUTH_KEY not set - auto-translation disabled');
+    circuitBroken = true;
     return null;
   }
   translator = new deepl.Translator(key);
@@ -23,7 +26,13 @@ export async function translateText(text: string, targetLang: TargetLang = 'en-U
     const result = await t.translateText(text, 'fr', targetLang);
     return result.text;
   } catch (err) {
-    console.error(`DeepL translation error (${targetLang}):`, (err as Error).message);
+    const msg = (err as Error).message || '';
+    console.error(`DeepL translation error (${targetLang}):`, msg);
+    // Circuit breaker: stop retrying on quota/auth errors
+    if (msg.includes('Quota') || msg.includes('quota') || msg.includes('403') || msg.includes('456')) {
+      console.warn('DeepL circuit breaker activated - disabling translations for this session');
+      circuitBroken = true;
+    }
     return null;
   }
 }
