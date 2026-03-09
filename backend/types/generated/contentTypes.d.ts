@@ -780,6 +780,8 @@ export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
       Schema.Attribute.Private;
     notes: Schema.Attribute.Text;
     publishedAt: Schema.Attribute.DateTime;
+    shipping: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    shippingAddress: Schema.Attribute.JSON;
     status: Schema.Attribute.Enumeration<
       [
         'pending',
@@ -799,6 +801,9 @@ export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
     subtotal: Schema.Attribute.Integer & Schema.Attribute.Required;
     supabaseUserId: Schema.Attribute.String;
     total: Schema.Attribute.Integer & Schema.Attribute.Required;
+    totalWeight: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    tps: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    tvq: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;

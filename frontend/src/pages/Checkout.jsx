@@ -12,6 +12,7 @@ import { getStripePromise } from '../lib/stripe';
 import { createPaymentIntent } from '../services/orderService';
 import CheckoutForm from '../components/CheckoutForm';
 import AddressAutocomplete from '../components/AddressAutocomplete';
+import { calculateShipping as calcShipping } from '../utils/shipping';
 
 const provinces = [
   { code: 'QC', fr: 'Quebec', en: 'Quebec', es: 'Quebec' },
@@ -32,16 +33,6 @@ const provinces = [
 // TPS (GST) 5% partout au Canada, TVQ (QST) 9.975% au Quebec seulement
 const TPS_RATE = 0.05;
 const TVQ_RATE = 0.09975;
-
-function calculateShipping(province, postalCode) {
-  if (!province) return 0;
-  // Montreal (codes postaux H): gratuit
-  if (province === 'QC' && postalCode?.toUpperCase().startsWith('H')) return 0;
-  // Reste du Quebec
-  if (province === 'QC') return 15;
-  // Reste du Canada
-  return 25;
-}
 
 function calculateTaxes(subtotal, province) {
   const tps = +(subtotal * TPS_RATE).toFixed(2);
@@ -102,7 +93,7 @@ function Checkout() {
     if (error) setError('');
   };
 
-  const shipping = useMemo(() => calculateShipping(formData.province, formData.codePostal), [formData.province, formData.codePostal]);
+  const { shippingCost: shipping } = useMemo(() => calcShipping(formData.province, formData.codePostal, items), [formData.province, formData.codePostal, items]);
   const taxes = useMemo(() => calculateTaxes(cartTotal, formData.province), [cartTotal, formData.province]);
   const orderTotal = +(cartTotal + shipping + taxes.total).toFixed(2);
 

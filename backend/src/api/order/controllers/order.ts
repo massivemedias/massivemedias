@@ -1,5 +1,7 @@
 import { factories } from '@strapi/strapi';
 import Stripe from 'stripe';
+import { calculateShipping } from '../../../utils/shipping';
+import { sendOrderConfirmationEmail } from '../../../utils/email';
 
 const getStripe = () => {
   const key = process.env.STRIPE_SECRET_KEY;
@@ -41,15 +43,10 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
     // Recalculate total server-side (never trust client-side totals)
     const subtotal = items.reduce((sum: number, item: any) => sum + (item.totalPrice || 0), 0);
 
-    // Recalculate shipping server-side
+    // Recalculate shipping server-side (par poids)
     const province = shippingAddress?.province || 'QC';
     const postalCode = shippingAddress?.postalCode || '';
-    let shippingCost = 25; // default: rest of Canada
-    if (province === 'QC' && postalCode.toUpperCase().startsWith('H')) {
-      shippingCost = 0; // Montreal: free
-    } else if (province === 'QC') {
-      shippingCost = 15; // Rest of Quebec
-    }
+    const { shippingCost, totalWeight } = calculateShipping(province, postalCode, items);
 
     // Recalculate taxes server-side (TPS 5% + TVQ 9.975% for QC)
     const tps = Math.round(subtotal * 0.05 * 100) / 100;
@@ -125,6 +122,7 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
         shipping: Math.round(shippingCost * 100),
         tps: Math.round(tps * 100),
         tvq: Math.round(tvq * 100),
+        totalWeight,
         total: amountInCents,
         currency: 'cad',
         status: 'pending',
@@ -195,12 +193,39 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
       });
 
       if (orders.length > 0) {
-        const order = orders[0];
+        const order = orders[0] as any;
         await strapi.documents('api::order.order').update({
           documentId: order.documentId,
           data: { status: 'paid' },
         });
         strapi.log.info(`Order ${order.documentId} marked as paid`);
+
+        // Envoyer email de confirmation
+        try {
+          const orderItems: any[] = Array.isArray(order.items) ? order.items : [];
+          const orderRef = paymentIntent.id.slice(-8).toUpperCase();
+          await sendOrderConfirmationEmail({
+            customerName: order.customerName,
+            customerEmail: order.customerEmail,
+            orderRef,
+            items: orderItems.map((item: any) => ({
+              productName: item.productName || 'Produit',
+              quantity: item.quantity || 1,
+              totalPrice: item.totalPrice || 0,
+              size: item.size || '',
+              finish: item.finish || '',
+            })),
+            subtotal: order.subtotal || 0,
+            shipping: order.shipping || 0,
+            tps: order.tps || 0,
+            tvq: order.tvq || 0,
+            total: order.total || 0,
+            shippingAddress: order.shippingAddress || null,
+          });
+          strapi.log.info(`Email de confirmation envoye a ${order.customerEmail}`);
+        } catch (emailErr) {
+          strapi.log.warn('Erreur envoi email confirmation (non bloquant):', emailErr);
+        }
 
         // Update client stats
         try {

@@ -64,6 +64,25 @@
       "multiple": true,
       "allowedTypes": ["images", "files"]
     },
+    "shipping": {
+      "type": "integer",
+      "default": 0
+    },
+    "tps": {
+      "type": "integer",
+      "default": 0
+    },
+    "tvq": {
+      "type": "integer",
+      "default": 0
+    },
+    "shippingAddress": {
+      "type": "json"
+    },
+    "totalWeight": {
+      "type": "integer",
+      "default": 0
+    },
     "client": {
       "type": "relation",
       "relation": "manyToOne",
