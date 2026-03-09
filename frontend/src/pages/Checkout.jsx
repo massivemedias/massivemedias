@@ -449,7 +449,7 @@ function Checkout() {
                       <span className="text-heading">{cartTotal.toFixed(2)}$</span>
                     </div>
                     <div className="flex justify-between items-center text-sm">
-                      <span className="text-grey-muted">{tx({ fr: 'Livraison', en: 'Shipping', es: 'Envio' })}</span>
+                      <span className="text-grey-muted">{tx({ fr: 'Frais de livraison', en: 'Shipping', es: 'Envio' })}</span>
                       <span className="text-heading">
                         {shipping === 0 ? tx({ fr: 'Gratuit', en: 'Free', es: 'Gratis' }) : `${shipping.toFixed(2)}$`}
                       </span>
