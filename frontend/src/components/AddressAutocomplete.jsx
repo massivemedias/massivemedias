@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 
 // Read API key at runtime (not build time) to avoid Vite tree-shaking
 function getApiKey() {
@@ -8,7 +8,7 @@ function getApiKey() {
 // Load Google Maps + Places library once
 let loadPromise = null;
 function loadGoogleMaps() {
-  if (window.google?.maps?.places?.PlaceAutocompleteElement) return Promise.resolve();
+  if (window.google?.maps?.places) return Promise.resolve();
   if (loadPromise) return loadPromise;
 
   const key = getApiKey();
@@ -49,13 +49,8 @@ function parsePlace(place) {
 
 /**
  * AddressAutocomplete - Champ adresse avec Google Places suggestions
- * Utilise PlaceAutocompleteElement (nouvelle API, remplace Autocomplete deprecated)
- *
- * Props:
- * - value: string (valeur initiale / pre-remplissage)
- * - onChange: (address: string) => void
- * - onPlaceSelect: ({ address, city, province, postalCode, country }) => void
- * - className, placeholder, id, required
+ * Utilise AutocompleteSuggestion (data-only API) + notre propre input/dropdown
+ * Zero shadow DOM, zero icone Google, controle total du style
  */
 export default function AddressAutocomplete({
   value,
@@ -66,98 +61,125 @@ export default function AddressAutocomplete({
   id,
   required,
 }) {
-  const containerRef = useRef(null);
-  const pacRef = useRef(null);
-  const initialValue = useRef(value);
   const [ready, setReady] = useState(false);
-  const [apiError, setApiError] = useState(false);
+  const [suggestions, setSuggestions] = useState([]);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(-1);
+  const debounceRef = useRef(null);
+  const wrapperRef = useRef(null);
 
   // Load Google Maps
   useEffect(() => {
     let mounted = true;
     loadGoogleMaps()
       .then(() => { if (mounted) setReady(true); })
-      .catch((err) => {
-        console.warn('Google Maps:', err.message);
-        if (mounted) setApiError(true);
-      });
+      .catch((err) => console.warn('Google Maps:', err.message));
     return () => { mounted = false; };
   }, []);
 
-  // Create PlaceAutocompleteElement
+  // Close dropdown on outside click
   useEffect(() => {
-    if (!ready || !containerRef.current || pacRef.current) return;
-
-    try {
-      const pac = new window.google.maps.places.PlaceAutocompleteElement({
-        includedRegionCodes: ['ca', 'us'],
-        requestedLanguage: 'fr',
-      });
-
-      // Place selection event (replaces deprecated 'place_changed')
-      pac.addEventListener('gmp-select', async ({ placePrediction }) => {
-        try {
-          const place = placePrediction.toPlace();
-          await place.fetchFields({ fields: ['addressComponents', 'formattedAddress'] });
-          const parsed = parsePlace(place);
-          onChange(parsed.address);
-          if (onPlaceSelect) onPlaceSelect(parsed);
-        } catch (err) {
-          console.warn('Place fetch error:', err);
-        }
-      });
-
-      containerRef.current.appendChild(pac);
-      pacRef.current = pac;
-
-      // Pre-fill + injecter du CSS dans le shadow DOM pour nettoyer le look
-      requestAnimationFrame(() => {
-        try {
-          if (initialValue.current) pac.value = initialValue.current;
-        } catch {}
-        try {
-          const shadow = pac.shadowRoot;
-          if (shadow) {
-            const style = document.createElement('style');
-            style.textContent = [
-              ':host { border: none !important; background: transparent !important; padding: 0 !important; }',
-              '* { border: none !important; box-shadow: none !important; }',
-              'input { background: transparent !important; outline: none !important; padding: 0 !important; color: inherit !important; font-family: inherit !important; font-size: inherit !important; width: 100% !important; }',
-              'svg, button, [class*="icon"], [class*="clear"], [class*="search"] { display: none !important; width: 0 !important; height: 0 !important; overflow: hidden !important; }',
-            ].join('\n');
-            shadow.prepend(style);
-          }
-        } catch {}
-      });
-    } catch (err) {
-      console.warn('PlaceAutocompleteElement error:', err);
-      setApiError(true);
-    }
-
-    return () => {
-      if (pacRef.current && containerRef.current?.contains(pacRef.current)) {
-        containerRef.current.removeChild(pacRef.current);
-        pacRef.current = null;
+    function handleClick(e) {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
+        setShowDropdown(false);
       }
-    };
+    }
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
+  // Fetch autocomplete suggestions (data-only, no widget)
+  const fetchSuggestions = useCallback(async (input) => {
+    if (!ready || !input || input.length < 3) {
+      setSuggestions([]);
+      setShowDropdown(false);
+      return;
+    }
+    try {
+      const { suggestions: results } = await google.maps.places.AutocompleteSuggestion.fetchAutocompleteSuggestions({
+        input,
+        includedRegionCodes: ['ca', 'us'],
+        language: 'fr',
+      });
+      setSuggestions(results || []);
+      setShowDropdown((results || []).length > 0);
+      setSelectedIndex(-1);
+    } catch {
+      setSuggestions([]);
+      setShowDropdown(false);
+    }
   }, [ready]);
 
-  // Fallback: regular input when Google Maps unavailable or loading
-  if (apiError || !ready) {
-    return (
+  function handleInputChange(e) {
+    const val = e.target.value;
+    onChange(val);
+    clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => fetchSuggestions(val), 300);
+  }
+
+  async function handleSelect(suggestion) {
+    setShowDropdown(false);
+    setSuggestions([]);
+    try {
+      const place = suggestion.placePrediction.toPlace();
+      await place.fetchFields({ fields: ['addressComponents', 'formattedAddress'] });
+      const parsed = parsePlace(place);
+      onChange(parsed.address);
+      if (onPlaceSelect) onPlaceSelect(parsed);
+    } catch (err) {
+      console.warn('Place fetch error:', err);
+    }
+  }
+
+  function handleKeyDown(e) {
+    if (!showDropdown || suggestions.length === 0) return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setSelectedIndex(i => Math.min(i + 1, suggestions.length - 1));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setSelectedIndex(i => Math.max(i - 1, 0));
+    } else if (e.key === 'Enter' && selectedIndex >= 0) {
+      e.preventDefault();
+      handleSelect(suggestions[selectedIndex]);
+    } else if (e.key === 'Escape') {
+      setShowDropdown(false);
+    }
+  }
+
+  return (
+    <div ref={wrapperRef} style={{ position: 'relative', width: '100%' }}>
       <input
         type="text"
         id={id}
         value={value}
-        onChange={e => onChange(e.target.value)}
+        onChange={handleInputChange}
+        onKeyDown={handleKeyDown}
+        onFocus={() => suggestions.length > 0 && setShowDropdown(true)}
         className={className}
         placeholder={placeholder}
-        autoComplete="address-line1"
+        autoComplete="off"
         required={required}
       />
-    );
-  }
-
-  // Google Places autocomplete container
-  return <div ref={containerRef} id={id} className="address-autocomplete-wrapper" />;
+      {showDropdown && suggestions.length > 0 && (
+        <ul className="address-suggestions">
+          {suggestions.map((s, i) => (
+            <li
+              key={i}
+              className={'address-suggestion-item' + (i === selectedIndex ? ' selected' : '')}
+              onMouseDown={() => handleSelect(s)}
+              onMouseEnter={() => setSelectedIndex(i)}
+            >
+              <span className="suggestion-main">
+                {s.placePrediction?.mainText?.text || ''}
+              </span>
+              <span className="suggestion-secondary">
+                {s.placePrediction?.secondaryText?.text || ''}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
 }
