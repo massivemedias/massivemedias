@@ -28,8 +28,8 @@ async function login() {
 
 // ---- Helpers ----
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
-const DELAY = STRAPI_URL.includes('localhost') ? 0 : 2000; // 2s between uploads for remote
-const MAX_RETRIES = 3;
+const DELAY = STRAPI_URL.includes('localhost') ? 0 : 45000; // 45s between uploads for free tier
+const MAX_RETRIES = 5;
 
 async function uploadFile(filePath) {
   const fullPath = path.resolve(IMAGES_DIR, filePath);
@@ -64,9 +64,17 @@ async function uploadFile(filePath) {
         return uploaded.id;
       }
 
+      if (res.status === 401 || res.status === 403) {
+        console.warn(`  Re-login (${res.status})...`);
+        await sleep(30000);
+        await login();
+        continue;
+      }
       if (res.status >= 500 && attempt < MAX_RETRIES) {
-        console.warn(`  RETRY ${attempt}/${MAX_RETRIES} (${res.status}): ${filePath}`);
-        await sleep(5000 * attempt); // backoff
+        console.warn(`  RETRY ${attempt}/${MAX_RETRIES} (${res.status}): ${filePath} - waiting ${30*attempt}s`);
+        await sleep(30000 * attempt); // heavy backoff - wait for Render restart
+        // Re-login in case server restarted
+        try { await login(); } catch {}
         continue;
       }
 
