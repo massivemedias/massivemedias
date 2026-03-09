@@ -110,12 +110,18 @@ export default function AddressAutocomplete({
       containerRef.current.appendChild(pac);
       pacRef.current = pac;
 
-      // Pre-fill initial value
-      if (initialValue.current) {
-        requestAnimationFrame(() => {
-          try { pac.value = initialValue.current; } catch {}
-        });
-      }
+      // Pre-fill initial value + cleanup du shadow DOM (retirer icones Google)
+      requestAnimationFrame(() => {
+        try {
+          if (initialValue.current) pac.value = initialValue.current;
+          // Retirer l'icone de recherche et le bouton clear du shadow DOM
+          const shadow = pac.shadowRoot;
+          if (shadow) {
+            shadow.querySelectorAll('svg, .search-icon, [class*="icon"], [class*="clear"]')
+              .forEach(el => { el.style.display = 'none'; });
+          }
+        } catch {}
+      });
     } catch (err) {
       console.warn('PlaceAutocompleteElement error:', err);
       setApiError(true);

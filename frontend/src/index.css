@@ -414,51 +414,49 @@ h1, h2, h3, h4, h5, h6 {
 /* Google Places Autocomplete (PlaceAutocompleteElement) */
 .address-autocomplete-wrapper {
   width: 100%;
-}
-
-.address-autocomplete-wrapper gmp-place-autocomplete {
-  width: 100%;
-  display: block;
-  background: transparent;
-  border: none;
-  color-scheme: dark;
-}
-
-/* Style the outer container of the web component */
-gmp-place-autocomplete {
-  --gmp-mat-color-surface: transparent !important;
-  --gmp-mat-color-on-surface: var(--color-heading) !important;
-  background: transparent !important;
-  border: none !important;
-  border-radius: 0.5rem;
-}
-
-/* Style the inner input via ::part() to match .input-field */
-gmp-place-autocomplete::part(input) {
-  width: 100%;
   padding: 0.75rem 1rem;
   border-radius: 0.5rem;
   color: var(--color-heading);
   border: 1px solid var(--bg-input-border);
   background: var(--bg-input);
   transition: border-color 0.2s, background 0.2s, color 0.2s;
-  font-family: -apple-system, 'SF Pro Display', 'Helvetica Neue', sans-serif;
-  font-size: 1rem;
   box-sizing: border-box;
-  outline: none;
 }
 
-gmp-place-autocomplete::part(input):focus {
+.address-autocomplete-wrapper:focus-within {
   border-color: var(--accent-color, #FF52A0);
 }
 
-/* Hide the search icon and clear button to match native input look */
-gmp-place-autocomplete::part(search-icon) {
-  display: none;
+/* Reset all Google default styling on the web component */
+.address-autocomplete-wrapper gmp-place-autocomplete {
+  width: 100%;
+  display: block;
+  border: none !important;
+  outline: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  box-shadow: none !important;
 }
 
+/* Make the inner input invisible (wrapper handles the look) */
+gmp-place-autocomplete::part(input) {
+  border: none !important;
+  outline: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  box-shadow: none !important;
+  color: var(--color-heading);
+  font-family: -apple-system, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+  font-size: 1rem;
+  width: 100%;
+}
+
+/* Hide the search icon and clear button */
+gmp-place-autocomplete::part(search-icon),
 gmp-place-autocomplete::part(clear-button) {
-  display: none;
+  display: none !important;
 }
 
 /* Prediction dropdown */
@@ -466,7 +464,7 @@ gmp-place-autocomplete::part(prediction-list) {
   background: var(--bg-select-option);
   border: 1px solid var(--bg-input-border);
   border-radius: 0.5rem;
-  margin-top: 0.25rem;
+  margin-top: 0.5rem;
   box-shadow: var(--shadow-elevated);
 }
 
