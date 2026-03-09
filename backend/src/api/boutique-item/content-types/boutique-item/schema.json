@@ -25,10 +25,16 @@
       "type": "string",
       "required": true
     },
+    "titleEs": {
+      "type": "string"
+    },
     "subtitleFr": {
       "type": "string"
     },
     "subtitleEn": {
+      "type": "string"
+    },
+    "subtitleEs": {
       "type": "string"
     },
     "serviceKey": {

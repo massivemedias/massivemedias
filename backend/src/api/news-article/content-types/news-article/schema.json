@@ -19,6 +19,9 @@
       "type": "string",
       "required": true
     },
+    "titleEs": {
+      "type": "string"
+    },
     "slug": {
       "type": "uid",
       "targetField": "titleEn"
@@ -31,10 +34,16 @@
       "type": "richtext",
       "required": true
     },
+    "contentEs": {
+      "type": "richtext"
+    },
     "excerptFr": {
       "type": "text"
     },
     "excerptEn": {
+      "type": "text"
+    },
+    "excerptEs": {
       "type": "text"
     },
     "coverImage": {

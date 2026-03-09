@@ -1,54 +1,61 @@
 import { translateText, translateJson } from './translate';
 
 /**
- * Detect Fr/En field pairs from data keys.
- * Returns array of base names (e.g. ['bio', 'tagline'] for bioFr/bioEn).
+ * Detect Fr fields from data keys.
+ * Returns array of base names (e.g. ['bio', 'tagline'] for bioFr/bioEn/bioEs).
  */
-function detectBilingualFields(data: Record<string, unknown>): string[] {
+function detectTranslatableFields(data: Record<string, unknown>): string[] {
   const bases: string[] = [];
   for (const key of Object.keys(data)) {
     if (key.endsWith('Fr')) {
-      const base = key.slice(0, -2);
-      if (`${base}En` in data || data[key] !== undefined) {
-        bases.push(base);
-      }
+      bases.push(key.slice(0, -2));
     }
   }
   return bases;
 }
 
+type TargetConfig = { suffix: string; lang: 'en-US' | 'es' };
+
+const TARGETS: TargetConfig[] = [
+  { suffix: 'En', lang: 'en-US' },
+  { suffix: 'Es', lang: 'es' },
+];
+
 /**
- * Creates lifecycle hooks that auto-translate Fr fields to En.
+ * Creates lifecycle hooks that auto-translate Fr fields to En and Es.
  * Only translates if:
  * - The Fr field has a value
- * - The En field is empty/null OR was not explicitly modified
+ * - The target field is empty/null (not explicitly provided)
  */
 export function createBilingualLifecycle() {
   async function autoTranslate(event: { params: { data: Record<string, unknown> } }) {
     const { data } = event.params;
     if (!data) return;
 
-    const bases = detectBilingualFields(data);
+    const bases = detectTranslatableFields(data);
 
     for (const base of bases) {
       const frKey = `${base}Fr`;
-      const enKey = `${base}En`;
       const frVal = data[frKey];
 
       // Skip if no French value
       if (frVal == null || (typeof frVal === 'string' && !frVal.trim())) continue;
 
-      // Skip if English was explicitly provided (manual edit)
-      const enVal = data[enKey];
-      if (enVal != null && enVal !== '' && enVal !== null) continue;
+      for (const target of TARGETS) {
+        const targetKey = `${base}${target.suffix}`;
+        const targetVal = data[targetKey];
 
-      // Translate based on type
-      if (typeof frVal === 'string') {
-        const translated = await translateText(frVal);
-        if (translated) data[enKey] = translated;
-      } else if (typeof frVal === 'object') {
-        const translated = await translateJson(frVal);
-        if (translated) data[enKey] = translated;
+        // Skip if target was explicitly provided (manual edit)
+        if (targetVal != null && targetVal !== '') continue;
+
+        // Translate based on type
+        if (typeof frVal === 'string') {
+          const translated = await translateText(frVal, target.lang);
+          if (translated) data[targetKey] = translated;
+        } else if (typeof frVal === 'object') {
+          const translated = await translateJson(frVal, target.lang);
+          if (translated) data[targetKey] = translated;
+        }
       }
     }
   }

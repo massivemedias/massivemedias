@@ -20,10 +20,16 @@
       "type": "string",
       "required": true
     },
+    "nameEs": {
+      "type": "string"
+    },
     "descriptionFr": {
       "type": "text"
     },
     "descriptionEn": {
+      "type": "text"
+    },
+    "descriptionEs": {
       "type": "text"
     },
     "items": {
@@ -37,6 +43,9 @@
     "priceEn": {
       "type": "string",
       "required": true
+    },
+    "priceEs": {
+      "type": "string"
     },
     "popular": {
       "type": "boolean",

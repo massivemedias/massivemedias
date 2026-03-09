@@ -15,10 +15,13 @@
     "name": { "type": "string", "required": true },
     "taglineFr": { "type": "string" },
     "taglineEn": { "type": "string" },
+    "taglineEs": { "type": "string" },
     "bioFr": { "type": "text" },
     "bioEn": { "type": "text" },
+    "bioEs": { "type": "text" },
     "demarcheFr": { "type": "json" },
     "demarcheEn": { "type": "json" },
+    "demarcheEs": { "type": "json" },
     "avatar": {
       "type": "media",
       "multiple": false,
