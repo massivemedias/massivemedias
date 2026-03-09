@@ -200,7 +200,7 @@ function Checkout() {
                             {tx({ fr: 'Nom complet', en: 'Full name', es: 'Nombre completo' })} *
                           </label>
                           <input
-                            type="text" id="nom" name="nom" required
+                            type="text" id="nom" name="nom" required autoComplete="name"
                             value={formData.nom} onChange={handleChange}
                             placeholder={tx({ fr: 'Votre nom', en: 'Your name', es: 'Su nombre' })}
                             className="input-field"
@@ -211,7 +211,7 @@ function Checkout() {
                             {tx({ fr: 'Courriel', en: 'Email', es: 'Correo' })} *
                           </label>
                           <input
-                            type="email" id="email" name="email" required
+                            type="email" id="email" name="email" required autoComplete="email"
                             value={formData.email} onChange={handleChange}
                             placeholder={tx({ fr: 'votre@email.com', en: 'your@email.com', es: 'su@email.com' })}
                             className="input-field"
@@ -224,7 +224,7 @@ function Checkout() {
                           {tx({ fr: 'Telephone', en: 'Phone', es: 'Telefono' })}
                         </label>
                         <input
-                          type="tel" id="telephone" name="telephone"
+                          type="tel" id="telephone" name="telephone" autoComplete="tel"
                           value={formData.telephone} onChange={handleChange}
                           placeholder="514-xxx-xxxx"
                           className="input-field"
@@ -244,7 +244,7 @@ function Checkout() {
                           {tx({ fr: 'Adresse', en: 'Address', es: 'Direccion' })} *
                         </label>
                         <input
-                          type="text" id="adresse" name="adresse" required
+                          type="text" id="adresse" name="adresse" required autoComplete="street-address"
                           value={formData.adresse} onChange={handleChange}
                           placeholder={tx({ fr: '123 rue Exemple', en: '123 Example St', es: '123 Calle Ejemplo' })}
                           className="input-field"
@@ -257,7 +257,7 @@ function Checkout() {
                             {tx({ fr: 'Ville', en: 'City', es: 'Ciudad' })} *
                           </label>
                           <input
-                            type="text" id="ville" name="ville" required
+                            type="text" id="ville" name="ville" required autoComplete="address-level2"
                             value={formData.ville} onChange={handleChange}
                             placeholder={tx({ fr: 'Montreal', en: 'Montreal', es: 'Montreal' })}
                             className="input-field"
@@ -268,7 +268,7 @@ function Checkout() {
                             Province *
                           </label>
                           <select
-                            id="province" name="province" required
+                            id="province" name="province" required autoComplete="address-level1"
                             value={formData.province} onChange={handleChange}
                             className="input-field"
                           >
@@ -282,7 +282,7 @@ function Checkout() {
                             {tx({ fr: 'Code postal', en: 'Postal code', es: 'Codigo postal' })} *
                           </label>
                           <input
-                            type="text" id="codePostal" name="codePostal" required
+                            type="text" id="codePostal" name="codePostal" required autoComplete="postal-code"
                             value={formData.codePostal} onChange={handleChange}
                             placeholder="H2X 1Y4"
                             className="input-field uppercase"
