@@ -995,3 +995,49 @@ select.input-field option {
 [data-theme="vibrant"] .trust-divider {
   background: rgba(255, 255, 255, 0.15);
 }
+
+/* Contract content (artist partnership) */
+.contract-content h3 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 1.125rem;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+  color: var(--color-heading);
+}
+
+.contract-content h4 {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 1rem;
+  margin-top: 1rem;
+  margin-bottom: 0.375rem;
+  color: var(--color-heading);
+}
+
+.contract-content p {
+  margin-bottom: 0.5rem;
+}
+
+.contract-content ul,
+.contract-content ol {
+  padding-left: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.contract-content ul {
+  list-style-type: disc;
+}
+
+.contract-content ol {
+  list-style-type: decimal;
+}
+
+.contract-content li {
+  margin-bottom: 0.25rem;
+}
+
+.contract-content strong {
+  color: var(--color-heading);
+  font-weight: 600;
+}

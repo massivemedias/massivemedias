@@ -1,11 +1,12 @@
-import { motion } from 'framer-motion';
-import { Mail, MapPin, Instagram, Facebook, Send, CheckCircle, AlertCircle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Mail, MapPin, Instagram, Facebook, Send, CheckCircle, AlertCircle, Briefcase, Palette } from 'lucide-react';
 import { useState, useRef } from 'react';
 import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
 import { useSiteContent } from '../hooks/useSiteContent';
 import { bl } from '../utils/cms';
 import api from '../services/api';
+import ArtistPartnershipForm from '../components/ArtistPartnershipForm';
 
 const socialIconMap = {
   instagram: Instagram,
@@ -19,6 +20,7 @@ function Contact() {
 
   const contactEmail = content?.contactEmail || 'info@massivemedias.com';
   const cmsSocialLinks = content?.socialLinks;
+  const [activeTab, setActiveTab] = useState('service');
   const formRef = useRef();
   const [formData, setFormData] = useState({
     nom: '',
@@ -94,6 +96,41 @@ function Contact() {
           </p>
         </motion.div>
 
+        {/* Onglets */}
+        <div className="flex justify-center gap-3 mb-12">
+          <button
+            onClick={() => setActiveTab('service')}
+            className={`flex items-center gap-2 px-6 py-3 rounded-full font-semibold text-sm transition-all duration-300 ${
+              activeTab === 'service'
+                ? 'bg-accent text-white shadow-lg shadow-accent/25'
+                : 'bg-glass text-grey-muted hover:text-heading hover:bg-glass-hover'
+            }`}
+          >
+            <Briefcase size={16} />
+            {tx({ fr: 'Demande de service', en: 'Service request', es: 'Solicitud de servicio' })}
+          </button>
+          <button
+            onClick={() => setActiveTab('artist')}
+            className={`flex items-center gap-2 px-6 py-3 rounded-full font-semibold text-sm transition-all duration-300 ${
+              activeTab === 'artist'
+                ? 'bg-accent text-white shadow-lg shadow-accent/25'
+                : 'bg-glass text-grey-muted hover:text-heading hover:bg-glass-hover'
+            }`}
+          >
+            <Palette size={16} />
+            {tx({ fr: 'Partenariat artiste', en: 'Artist partnership', es: 'Asociacion artistica' })}
+          </button>
+        </div>
+
+        <AnimatePresence mode="wait">
+        {activeTab === 'service' && (
+        <motion.div
+          key="service"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ duration: 0.3 }}
+        >
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 max-w-6xl mx-auto">
           {/* Coordonnées */}
           <motion.div
@@ -368,6 +405,21 @@ function Contact() {
             )}
           </motion.div>
         </div>
+        </motion.div>
+        )}
+
+        {activeTab === 'artist' && (
+          <motion.div
+            key="artist"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3 }}
+          >
+            <ArtistPartnershipForm />
+          </motion.div>
+        )}
+        </AnimatePresence>
       </section>
     </>
   );

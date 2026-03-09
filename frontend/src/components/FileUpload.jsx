@@ -23,7 +23,7 @@ function formatSize(bytes) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-function FileUpload({ files = [], onFilesChange, label, maxFiles = 5, compact = false }) {
+function FileUpload({ files = [], onFilesChange, label, maxFiles = 5, compact = false, uploadFn }) {
   const { tx } = useLang();
   const inputRef = useRef(null);
   const [uploading, setUploading] = useState(false);
@@ -50,7 +50,8 @@ function FileUpload({ files = [], onFilesChange, label, maxFiles = 5, compact = 
     try {
       const uploaded = [];
       for (const file of toUpload) {
-        const result = await uploadFile(file);
+        const doUpload = uploadFn || uploadFile;
+        const result = await doUpload(file);
         uploaded.push({
           id: result.id,
           name: result.name,
