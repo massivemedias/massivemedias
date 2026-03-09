@@ -1,0 +1,7 @@
+{
+  "name": "strapi-provider-upload-supabase",
+  "version": "1.0.0",
+  "description": "Custom Supabase Storage upload provider for Strapi v5",
+  "main": "index.js",
+  "license": "MIT"
+}

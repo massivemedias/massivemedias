@@ -3,7 +3,20 @@ import type { Core } from '@strapi/strapi';
 const config: Core.Config.Middlewares = [
   'strapi::logger',
   'strapi::errors',
-  'strapi::security',
+  {
+    name: 'strapi::security',
+    config: {
+      contentSecurityPolicy: {
+        useDefaults: true,
+        directives: {
+          'connect-src': ["'self'", 'https:'],
+          'img-src': ["'self'", 'data:', 'blob:', '*.supabase.co'],
+          'media-src': ["'self'", 'data:', 'blob:', '*.supabase.co'],
+          upgradeInsecureRequests: null,
+        },
+      },
+    },
+  },
   {
     name: 'strapi::compression',
     config: {
@@ -13,20 +26,13 @@ const config: Core.Config.Middlewares = [
   {
     name: 'strapi::cors',
     config: {
-      origin(ctx) {
-        const allowedFixed = [
-          'http://localhost:3000',
-          'http://localhost:5173',
-          'https://massivemedias.com',
-          'https://www.massivemedias.com',
-          process.env.RENDER_EXTERNAL_URL || '',
-        ].filter(Boolean);
-
-        const requestOrigin = ctx.request?.header?.origin || '';
-        if (allowedFixed.includes(requestOrigin)) return requestOrigin;
-        if (/^https:\/\/[a-z0-9-]+\.massivemedias\.com$/.test(requestOrigin)) return requestOrigin;
-        return false;
-      },
+      origin: [
+        'http://localhost:3000',
+        'http://localhost:5173',
+        'https://massivemedias.com',
+        'https://www.massivemedias.com',
+        process.env.RENDER_EXTERNAL_URL || 'https://massivemedias-api.onrender.com',
+      ],
       methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
       headers: ['Content-Type', 'Authorization', 'Origin', 'Accept'],
     },
