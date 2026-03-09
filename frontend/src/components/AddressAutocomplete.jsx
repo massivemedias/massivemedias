@@ -15,19 +15,11 @@ function loadGoogleMaps() {
   if (!key) return Promise.reject(new Error('No Google Places API key configured'));
 
   loadPromise = new Promise((resolve, reject) => {
-    // If the Maps core is already loaded, just import the places library
-    if (window.google?.maps?.importLibrary) {
-      window.google.maps.importLibrary('places').then(resolve).catch(reject);
-      return;
-    }
-
     const script = document.createElement('script');
-    script.src = 'https://maps.googleapis.com/maps/api/js?key=' + key + '&loading=async';
+    script.src = 'https://maps.googleapis.com/maps/api/js?key=' + key + '&libraries=places&language=fr';
     script.async = true;
     script.defer = true;
-    script.onload = () => {
-      window.google.maps.importLibrary('places').then(resolve).catch(reject);
-    };
+    script.onload = resolve;
     script.onerror = () => reject(new Error('Failed to load Google Maps script'));
     document.head.appendChild(script);
   });
