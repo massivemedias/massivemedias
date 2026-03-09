@@ -104,6 +104,12 @@ function Checkout() {
   const taxes = useMemo(() => calculateTaxes(cartTotal, formData.province), [cartTotal, formData.province]);
   const orderTotal = +(cartTotal + shipping + taxes.total).toFixed(2);
 
+  // Custom items need design question - ready-made boutique items don't
+  const CUSTOM_PREFIXES = ['sticker-custom', 'sublimation-', 'fine-art-print', 'flyer-'];
+  const hasCustomItems = items.some(item =>
+    CUSTOM_PREFIXES.some(prefix => item.productId?.startsWith(prefix))
+  );
+
   const handleInfoSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
@@ -291,34 +297,38 @@ function Checkout() {
                         </div>
                       </div>
 
-                      <div>
-                        <label className="block text-heading font-semibold text-sm mb-2">
-                          {tx({ fr: 'Avez-vous votre design pret?', en: 'Do you have your design ready?', es: 'Tiene su diseno listo?' })}
-                        </label>
-                        <div className="flex gap-4">
-                          <label className={`flex items-center gap-2 px-4 py-2.5 rounded-lg cursor-pointer transition-all ${formData.designReady === 'yes' ? 'bg-accent text-white' : 'text-heading bg-glass'}`}>
-                            <input type="radio" name="designReady" value="yes" checked={formData.designReady === 'yes'} onChange={handleChange} className="hidden" />
-                            {tx({ fr: 'Oui', en: 'Yes', es: 'Si' })}
-                          </label>
-                          <label className={`flex items-center gap-2 px-4 py-2.5 rounded-lg cursor-pointer transition-all ${formData.designReady === 'no' ? 'bg-accent text-white' : 'text-heading bg-glass'}`}>
-                            <input type="radio" name="designReady" value="no" checked={formData.designReady === 'no'} onChange={handleChange} className="hidden" />
-                            {tx({ fr: 'Non, j\'ai besoin du design', en: 'No, I need design help', es: 'No, necesito ayuda con el diseno' })}
-                          </label>
-                        </div>
-                      </div>
+                      {hasCustomItems && (
+                        <>
+                          <div>
+                            <label className="block text-heading font-semibold text-sm mb-2">
+                              {tx({ fr: 'Avez-vous votre design pret?', en: 'Do you have your design ready?', es: 'Tiene su diseno listo?' })}
+                            </label>
+                            <div className="flex gap-4">
+                              <label className={`flex items-center gap-2 px-4 py-2.5 rounded-lg cursor-pointer transition-all ${formData.designReady === 'yes' ? 'bg-accent text-white' : 'text-heading bg-glass'}`}>
+                                <input type="radio" name="designReady" value="yes" checked={formData.designReady === 'yes'} onChange={handleChange} className="hidden" />
+                                {tx({ fr: 'Oui', en: 'Yes', es: 'Si' })}
+                              </label>
+                              <label className={`flex items-center gap-2 px-4 py-2.5 rounded-lg cursor-pointer transition-all ${formData.designReady === 'no' ? 'bg-accent text-white' : 'text-heading bg-glass'}`}>
+                                <input type="radio" name="designReady" value="no" checked={formData.designReady === 'no'} onChange={handleChange} className="hidden" />
+                                {tx({ fr: 'Non, j\'ai besoin du design', en: 'No, I need design help', es: 'No, necesito ayuda con el diseno' })}
+                              </label>
+                            </div>
+                          </div>
 
-                      <div>
-                        <label htmlFor="message" className="block text-heading font-semibold text-sm mb-2">
-                          {tx({ fr: 'Instructions ou details', en: 'Instructions or details', es: 'Instrucciones o detalles' })}
-                        </label>
-                        <textarea
-                          id="message" name="message"
-                          value={formData.message} onChange={handleChange}
-                          rows={3}
-                          placeholder={tx({ fr: 'Couleurs, texte, precisions...', en: 'Colors, text, details...', es: 'Colores, texto, detalles...' })}
-                          className="input-field resize-none"
-                        />
-                      </div>
+                          <div>
+                            <label htmlFor="message" className="block text-heading font-semibold text-sm mb-2">
+                              {tx({ fr: 'Instructions ou details', en: 'Instructions or details', es: 'Instrucciones o detalles' })}
+                            </label>
+                            <textarea
+                              id="message" name="message"
+                              value={formData.message} onChange={handleChange}
+                              rows={3}
+                              placeholder={tx({ fr: 'Couleurs, texte, precisions...', en: 'Colors, text, details...', es: 'Colores, texto, detalles...' })}
+                              className="input-field resize-none"
+                            />
+                          </div>
+                        </>
+                      )}
 
                       {/* Files from cart items summary */}
                       {items.some(item => item.uploadedFiles?.length > 0) && (
