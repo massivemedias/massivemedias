@@ -4,6 +4,9 @@ const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Admin => 
   url: '/mm-admin',
   auth: {
     secret: env('ADMIN_JWT_SECRET'),
+    options: {
+      expiresIn: '7d',
+    },
   },
   apiToken: {
     salt: env('API_TOKEN_SALT'),
