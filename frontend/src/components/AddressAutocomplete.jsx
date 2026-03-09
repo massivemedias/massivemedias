@@ -1,17 +1,22 @@
 import { useEffect, useRef, useState } from 'react';
 
-const GOOGLE_PLACES_API_KEY = import.meta.env.VITE_GOOGLE_PLACES_API_KEY;
+// Read API key at runtime (not build time) to avoid Vite tree-shaking
+function getApiKey() {
+  return import.meta.env.VITE_GOOGLE_PLACES_API_KEY || '';
+}
 
 // Load Google Maps script once
 let loadPromise = null;
 function loadGoogleMaps() {
   if (window.google?.maps?.places) return Promise.resolve();
   if (loadPromise) return loadPromise;
-  if (!GOOGLE_PLACES_API_KEY) return Promise.reject(new Error('No API key'));
+
+  const key = getApiKey();
+  if (!key) return Promise.reject(new Error('No Google Places API key configured'));
 
   loadPromise = new Promise((resolve, reject) => {
     const script = document.createElement('script');
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_PLACES_API_KEY}&libraries=places&language=fr`;
+    script.src = 'https://maps.googleapis.com/maps/api/js?key=' + key + '&libraries=places&language=fr';
     script.async = true;
     script.defer = true;
     script.onload = resolve;
@@ -66,10 +71,9 @@ export default function AddressAutocomplete({
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    if (!GOOGLE_PLACES_API_KEY) return;
     loadGoogleMaps()
       .then(() => setLoaded(true))
-      .catch(() => console.warn('Google Maps failed to load'));
+      .catch((err) => console.warn('Google Maps:', err.message));
   }, []);
 
   useEffect(() => {
