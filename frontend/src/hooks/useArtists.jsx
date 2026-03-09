@@ -12,7 +12,9 @@ export function ArtistsProvider({ children }) {
       try {
         const { data } = await api.get('/artists', {
           params: {
-            'populate': 'avatar,heroImage,printImages',
+            'populate[0]': 'avatar',
+            'populate[1]': 'heroImage',
+            'populate[2]': 'printImages',
             'filters[active][$eq]': true,
             'sort': 'sortOrder:asc',
             'pagination[pageSize]': 50,
