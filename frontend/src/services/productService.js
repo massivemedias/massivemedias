@@ -22,7 +22,7 @@ export async function getProducts(category = null) {
     cache.set(cacheKey, products);
     return products;
   } catch (err) {
-    console.error('Failed to fetch products:', err);
+    console.warn('Failed to fetch products:', err.message);
     return [];
   }
 }
@@ -42,7 +42,7 @@ export async function getProduct(slug) {
     if (product) cache.set(cacheKey, product);
     return product;
   } catch (err) {
-    console.error('Failed to fetch product:', err);
+    console.warn('Failed to fetch product:', err.message);
     return null;
   }
 }

@@ -27,7 +27,7 @@ export function useBoutiqueItems() {
         setBoutiqueItems(itemsRes.data.data || []);
         setPackages(pkgRes.data.data || []);
       } catch (err) {
-        console.error('CMS boutique items unavailable:', err.message);
+        console.warn('CMS boutique items unavailable:', err.message);
       } finally {
         setLoading(false);
       }

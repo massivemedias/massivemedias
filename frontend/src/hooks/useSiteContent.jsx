@@ -38,7 +38,7 @@ export function SiteContentProvider({ children }) {
         });
         setContent(data.data || null);
       } catch (err) {
-        console.error('CMS site content unavailable:', err.message);
+        console.warn('CMS site content unavailable:', err.message);
       } finally {
         setLoading(false);
       }

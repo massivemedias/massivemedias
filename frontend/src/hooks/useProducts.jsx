@@ -20,7 +20,7 @@ export function ProductsProvider({ children }) {
         });
         setProducts(data.data || []);
       } catch (err) {
-        console.error('CMS products unavailable:', err.message);
+        console.warn('CMS products unavailable:', err.message);
       } finally {
         setLoading(false);
       }

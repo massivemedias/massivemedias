@@ -22,7 +22,7 @@ export function ArtistsProvider({ children }) {
         });
         setArtists(data.data || []);
       } catch (err) {
-        console.error('CMS artists unavailable:', err.message);
+        console.warn('CMS artists unavailable:', err.message);
       } finally {
         setLoading(false);
       }

@@ -23,7 +23,7 @@ export function ServicePagesProvider({ children }) {
         });
         setServicePages(data.data || []);
       } catch (err) {
-        console.error('CMS service pages unavailable:', err.message);
+        console.warn('CMS service pages unavailable:', err.message);
       } finally {
         setLoading(false);
       }

@@ -23,7 +23,7 @@ export function useProductPricing(slug) {
         const product = data.data?.[0];
         setPricingData(product?.pricingData || null);
       } catch (err) {
-        console.error(`CMS pricing for ${slug} unavailable:`, err.message);
+        console.warn(`CMS pricing for ${slug} unavailable:`, err.message);
       } finally {
         setLoading(false);
       }
