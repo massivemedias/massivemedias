@@ -419,6 +419,18 @@ h1, h2, h3, h4, h5, h6 {
 .address-autocomplete-wrapper gmp-place-autocomplete {
   width: 100%;
   display: block;
+  background: transparent;
+  border: none;
+  color-scheme: dark;
+}
+
+/* Style the outer container of the web component */
+gmp-place-autocomplete {
+  --gmp-mat-color-surface: transparent !important;
+  --gmp-mat-color-on-surface: var(--color-heading) !important;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0.5rem;
 }
 
 /* Style the inner input via ::part() to match .input-field */
@@ -440,11 +452,22 @@ gmp-place-autocomplete::part(input):focus {
   border-color: var(--accent-color, #FF52A0);
 }
 
+/* Hide the search icon and clear button to match native input look */
+gmp-place-autocomplete::part(search-icon) {
+  display: none;
+}
+
+gmp-place-autocomplete::part(clear-button) {
+  display: none;
+}
+
+/* Prediction dropdown */
 gmp-place-autocomplete::part(prediction-list) {
   background: var(--bg-select-option);
   border: 1px solid var(--bg-input-border);
   border-radius: 0.5rem;
   margin-top: 0.25rem;
+  box-shadow: var(--shadow-elevated);
 }
 
 gmp-place-autocomplete::part(prediction-item) {
