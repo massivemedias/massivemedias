@@ -83,14 +83,15 @@ function Checkout() {
     };
   }, [themeStep]);
 
+  const meta = user?.user_metadata || {};
   const [formData, setFormData] = useState({
-    nom: user?.user_metadata?.full_name || '',
+    nom: meta.full_name || '',
     email: user?.email || '',
-    telephone: '',
-    adresse: '',
-    ville: '',
-    province: 'QC',
-    codePostal: '',
+    telephone: meta.phone || '',
+    adresse: meta.address || '',
+    ville: meta.city || '',
+    province: meta.province || 'QC',
+    codePostal: meta.postal_code || '',
     designReady: 'yes',
     message: '',
   });

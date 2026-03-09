@@ -11,6 +11,27 @@ import { useLang } from '../i18n/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 import { getMyOrders } from '../services/orderService';
 
+const PROVINCES_CA = [
+  { code: 'QC', fr: 'Quebec', en: 'Quebec' },
+  { code: 'ON', fr: 'Ontario', en: 'Ontario' },
+  { code: 'BC', fr: 'Colombie-Britannique', en: 'British Columbia' },
+  { code: 'AB', fr: 'Alberta', en: 'Alberta' },
+  { code: 'MB', fr: 'Manitoba', en: 'Manitoba' },
+  { code: 'SK', fr: 'Saskatchewan', en: 'Saskatchewan' },
+  { code: 'NS', fr: 'Nouvelle-Ecosse', en: 'Nova Scotia' },
+  { code: 'NB', fr: 'Nouveau-Brunswick', en: 'New Brunswick' },
+  { code: 'NL', fr: 'Terre-Neuve-et-Labrador', en: 'Newfoundland and Labrador' },
+  { code: 'PE', fr: 'Ile-du-Prince-Edouard', en: 'Prince Edward Island' },
+  { code: 'NT', fr: 'Territoires du Nord-Ouest', en: 'Northwest Territories' },
+  { code: 'YT', fr: 'Yukon', en: 'Yukon' },
+  { code: 'NU', fr: 'Nunavut', en: 'Nunavut' },
+];
+
+const COUNTRIES = [
+  { code: 'Canada', fr: 'Canada', en: 'Canada' },
+  { code: 'US', fr: 'Etats-Unis', en: 'United States' },
+];
+
 const STATUS_COLORS = {
   pending: 'bg-yellow-500/20 text-yellow-400',
   paid: 'bg-green-500/20 text-green-400',
@@ -21,7 +42,7 @@ const STATUS_COLORS = {
   refunded: 'bg-grey-500/20 text-grey-400',
 };
 
-function FormInput({ icon: Icon, label, value, onChange, type = 'text', placeholder }) {
+function FormInput({ icon: Icon, label, value, onChange, type = 'text', placeholder, autoComplete }) {
   return (
     <div className="mb-4">
       <label className="flex items-center gap-2 text-[11px] text-grey-muted uppercase tracking-wider font-medium mb-1.5">
@@ -34,7 +55,29 @@ function FormInput({ icon: Icon, label, value, onChange, type = 'text', placehol
         onChange={e => onChange(e.target.value)}
         className="input-field text-sm"
         placeholder={placeholder}
+        autoComplete={autoComplete}
       />
+    </div>
+  );
+}
+
+function FormSelect({ icon: Icon, label, value, onChange, options, autoComplete }) {
+  return (
+    <div className="mb-4">
+      <label className="flex items-center gap-2 text-[11px] text-grey-muted uppercase tracking-wider font-medium mb-1.5">
+        <Icon size={14} />
+        {label}
+      </label>
+      <select
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        className="input-field text-sm"
+        autoComplete={autoComplete}
+      >
+        {options.map(o => (
+          <option key={o.value} value={o.value}>{o.label}</option>
+        ))}
+      </select>
     </div>
   );
 }
@@ -543,6 +586,7 @@ function Account() {
                         value={profileForm.full_name}
                         placeholder={tx({ fr: 'Ton nom', en: 'Your name', es: 'Tu nombre' })}
                         onChange={v => setProfileForm(p => ({ ...p, full_name: v }))}
+                        autoComplete="name"
                       />
                       <FormInput
                         icon={Phone}
@@ -551,6 +595,7 @@ function Account() {
                         type="tel"
                         placeholder="514-xxx-xxxx"
                         onChange={v => setProfileForm(p => ({ ...p, phone: v }))}
+                        autoComplete="tel"
                       />
                       <FormInput
                         icon={Building2}
@@ -558,6 +603,7 @@ function Account() {
                         value={profileForm.company}
                         placeholder={tx({ fr: 'Nom de l\'entreprise', en: 'Company name', es: 'Nombre de la empresa' })}
                         onChange={v => setProfileForm(p => ({ ...p, company: v }))}
+                        autoComplete="organization"
                       />
                       <div className="mb-4">
                         <label className="flex items-center gap-2 text-[11px] text-grey-muted uppercase tracking-wider font-medium mb-1.5">
@@ -708,6 +754,7 @@ function Account() {
                           value={addressForm.address}
                           placeholder={tx({ fr: '123 rue Exemple', en: '123 Example St', es: '123 Calle Ejemplo' })}
                           onChange={v => setAddressForm(a => ({ ...a, address: v }))}
+                          autoComplete="street-address"
                         />
                       </div>
                       <FormInput
@@ -716,13 +763,19 @@ function Account() {
                         value={addressForm.city}
                         placeholder="Montreal"
                         onChange={v => setAddressForm(a => ({ ...a, city: v }))}
+                        autoComplete="address-level2"
                       />
-                      <FormInput
+                      <FormSelect
                         icon={MapPin}
                         label={tx({ fr: 'Province / Etat', en: 'Province / State', es: 'Provincia / Estado' })}
                         value={addressForm.province}
-                        placeholder="QC"
                         onChange={v => setAddressForm(a => ({ ...a, province: v }))}
+                        autoComplete="address-level1"
+                        options={
+                          addressForm.country === 'Canada'
+                            ? [{ value: '', label: tx({ fr: 'Selectionner...', en: 'Select...', es: 'Seleccionar...' }) }, ...PROVINCES_CA.map(p => ({ value: p.code, label: lang === 'en' ? p.en : p.fr }))]
+                            : [{ value: '', label: tx({ fr: 'Selectionner...', en: 'Select...', es: 'Seleccionar...' }) }, { value: addressForm.province, label: addressForm.province || '...' }]
+                        }
                       />
                       <FormInput
                         icon={MapPin}
@@ -730,13 +783,18 @@ function Account() {
                         value={addressForm.postal_code}
                         placeholder="H2X 1Y4"
                         onChange={v => setAddressForm(a => ({ ...a, postal_code: v }))}
+                        autoComplete="postal-code"
                       />
-                      <FormInput
+                      <FormSelect
                         icon={MapPin}
                         label={tx({ fr: 'Pays', en: 'Country', es: 'Pais' })}
                         value={addressForm.country}
-                        placeholder="Canada"
-                        onChange={v => setAddressForm(a => ({ ...a, country: v }))}
+                        onChange={v => setAddressForm(a => ({ ...a, country: v, province: '' }))}
+                        autoComplete="country-name"
+                        options={[
+                          ...COUNTRIES.map(c => ({ value: c.code, label: lang === 'en' ? c.en : c.fr })),
+                          { value: 'other', label: tx({ fr: 'Autre', en: 'Other', es: 'Otro' }) },
+                        ]}
                       />
                     </div>
                     <button
