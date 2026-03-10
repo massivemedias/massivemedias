@@ -22,6 +22,9 @@ export const getClients = (params) => api.get('/clients/admin', { params });
 // --- Depenses ---
 export const getExpenses = (params) => api.get('/expenses/admin', { params });
 export const createExpense = (data) => api.post('/expenses/create', data);
+export const updateExpense = (documentId, data) => api.put(`/expenses/${documentId}`, data);
+export const deleteExpense = (documentId) => api.delete(`/expenses/${documentId}`);
+export const getExpenseSummary = (year) => api.get(`/expenses/summary/${year}`);
 
 // --- Commissions artistes ---
 export const getCommissions = () => api.get('/orders/commissions');

@@ -21,7 +21,7 @@
     },
     "category": {
       "type": "enumeration",
-      "enum": ["materials", "shipping", "software", "marketing", "rent", "equipment", "taxes", "other"],
+      "enum": ["consommables", "materiel", "shipping", "software", "marketing", "equipment", "taxes", "other"],
       "required": true
     },
     "date": {
@@ -53,6 +53,9 @@
     },
     "notes": {
       "type": "text"
+    },
+    "receiptUrl": {
+      "type": "string"
     }
   }
 }
