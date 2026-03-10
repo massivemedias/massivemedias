@@ -32,5 +32,13 @@ export default {
         auth: false,
       },
     },
+    {
+      method: 'DELETE',
+      path: '/contact-submissions/:documentId',
+      handler: 'contact-submission.deleteSubmission',
+      config: {
+        auth: false,
+      },
+    },
   ],
 };

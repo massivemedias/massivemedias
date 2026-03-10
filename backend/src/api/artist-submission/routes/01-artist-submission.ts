@@ -24,5 +24,13 @@ export default {
         auth: false,
       },
     },
+    {
+      method: 'DELETE',
+      path: '/artist-submissions/:documentId',
+      handler: 'artist-submission.deleteSubmission',
+      config: {
+        auth: false,
+      },
+    },
   ],
 };

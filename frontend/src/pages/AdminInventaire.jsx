@@ -33,7 +33,7 @@ function AdminInventaire() {
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [editingId, setEditingId] = useState(null);
-  const [editData, setEditData] = useState({ quantity: 0, reserved: 0 });
+  const [editData, setEditData] = useState({ quantity: 0 });
   const [saving, setSaving] = useState(false);
 
   const fetchData = useCallback(async () => {
@@ -67,12 +67,24 @@ function AdminInventaire() {
 
   const startEdit = (item) => {
     setEditingId(item.documentId);
-    setEditData({ quantity: item.quantity || 0, reserved: item.reserved || 0 });
+    setEditData({ quantity: item.quantity || 0 });
   };
 
   const getName = (item) => lang === 'en' ? (item.nameEn || item.nameFr) : item.nameFr;
 
+  // Filter out small paper (consommable) - keep only large format paper
+  const isSmallPaper = (item) => {
+    const name = (getName(item) || '').toLowerCase();
+    const sku = (item.sku || '').toLowerCase();
+    const isPaper = name.includes('papier') || name.includes('paper') || sku.includes('paper') || sku.includes('papier');
+    if (!isPaper) return false;
+    // Keep large format (bigger than A4)
+    const isLargeFormat = name.includes('grand format') || name.includes('large') || name.includes('13x19') || name.includes('17x') || name.includes('24x') || name.includes('a3') || name.includes('tabloid');
+    return !isLargeFormat;
+  };
+
   const filtered = items.filter((item) => {
+    if (isSmallPaper(item)) return false;
     const matchSearch = !search || getName(item).toLowerCase().includes(search.toLowerCase()) || (item.sku || '').toLowerCase().includes(search.toLowerCase());
     const matchStatus = filterStatus === 'all' || item.status === filterStatus;
     return matchSearch && matchStatus;
@@ -197,7 +209,7 @@ function AdminInventaire() {
                   key={s}
                   onClick={() => setFilterStatus(s)}
                   className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
-                    filterStatus === s ? 'bg-accent text-white' : 'text-grey-muted hover:text-accent'
+                    filterStatus === s ? 'text-accent' : 'text-grey-muted hover:text-accent'
                   }`}
                 >
                   {s === 'all' ? tx({ fr: 'Tous', en: 'All', es: 'Todos' }) : STATUS_CONFIG[s].label}
@@ -212,15 +224,14 @@ function AdminInventaire() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="text-grey-muted text-xs uppercase tracking-wider">
-                    <th className="text-left p-4">SKU</th>
-                    <th className="text-left p-4">{tx({ fr: 'Produit', en: 'Product', es: 'Producto' })}</th>
-                    <th className="text-left p-4">{tx({ fr: 'Categorie', en: 'Category', es: 'Categoria' })}</th>
-                    <th className="text-center p-4">Stock</th>
-                    <th className="text-center p-4">{tx({ fr: 'Reserve', en: 'Reserved', es: 'Reservado' })}</th>
-                    <th className="text-center p-4">{tx({ fr: 'Dispo', en: 'Avail.', es: 'Disp.' })}</th>
-                    <th className="text-center p-4">{tx({ fr: 'Seuil', en: 'Threshold', es: 'Umbral' })}</th>
-                    <th className="text-center p-4">Status</th>
-                    <th className="text-center p-4">Actions</th>
+                    <th className="text-left px-4 py-2">{tx({ fr: 'Produit', en: 'Product', es: 'Producto' })}</th>
+                    <th className="text-left px-4 py-2">SKU</th>
+                    <th className="text-left px-4 py-2">{tx({ fr: 'Categorie', en: 'Category', es: 'Categoria' })}</th>
+                    <th className="text-center px-4 py-2">Stock</th>
+                    <th className="text-center px-4 py-2">{tx({ fr: 'Dispo', en: 'Avail.', es: 'Disp.' })}</th>
+                    <th className="text-center px-4 py-2">{tx({ fr: 'Seuil', en: 'Threshold', es: 'Umbral' })}</th>
+                    <th className="text-center px-4 py-2">Status</th>
+                    <th className="text-center px-4 py-2">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -238,10 +249,10 @@ function AdminInventaire() {
                           exit={{ opacity: 0 }}
                           className="border-t border-white/5 hover:bg-white/[0.02] transition-colors"
                         >
-                          <td className="p-4 font-mono text-grey-muted text-xs">{item.sku || '-'}</td>
-                          <td className="p-4 text-heading font-medium">{getName(item)}</td>
-                          <td className="p-4 text-grey-muted">{CATEGORY_LABELS[item.category] || item.category}</td>
-                          <td className="p-4 text-center">
+                          <td className="px-4 py-2 text-heading font-medium">{getName(item)}</td>
+                          <td className="px-4 py-2 font-mono text-grey-muted text-xs">{item.sku || '-'}</td>
+                          <td className="px-4 py-2 text-grey-muted">{CATEGORY_LABELS[item.category] || item.category}</td>
+                          <td className="px-4 py-2 text-center">
                             {isEditing ? (
                               <input
                                 type="number"
@@ -254,28 +265,15 @@ function AdminInventaire() {
                               <span className="text-heading font-medium">{item.quantity}</span>
                             )}
                           </td>
-                          <td className="p-4 text-center">
-                            {isEditing ? (
-                              <input
-                                type="number"
-                                value={editData.reserved}
-                                onChange={(e) => setEditData(d => ({ ...d, reserved: Number(e.target.value) }))}
-                                className="w-16 text-center rounded bg-glass text-heading p-1 text-sm"
-                                min="0"
-                              />
-                            ) : (
-                              <span className="text-grey-muted">{item.reserved || 0}</span>
-                            )}
-                          </td>
-                          <td className="p-4 text-center font-medium text-heading">{item.available}</td>
-                          <td className="p-4 text-center text-grey-muted">{item.lowStockThreshold}</td>
-                          <td className="p-4 text-center">
+                          <td className="px-4 py-2 text-center font-medium text-heading">{item.available}</td>
+                          <td className="px-4 py-2 text-center text-grey-muted">{item.lowStockThreshold}</td>
+                          <td className="px-4 py-2 text-center">
                             <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${statusCfg.color}`}>
                               <StatusIcon size={12} />
                               {statusCfg.label}
                             </span>
                           </td>
-                          <td className="p-4 text-center">
+                          <td className="px-4 py-2 text-center">
                             {isEditing ? (
                               <div className="flex items-center justify-center gap-1">
                                 <button

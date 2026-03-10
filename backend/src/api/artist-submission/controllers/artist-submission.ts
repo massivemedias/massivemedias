@@ -61,6 +61,21 @@ export default factories.createCoreController('api::artist-submission.artist-sub
     ctx.body = { data: updated };
   },
 
+  async deleteSubmission(ctx) {
+    const { documentId } = ctx.params;
+    const item = await strapi.documents('api::artist-submission.artist-submission').findFirst({
+      filters: { documentId },
+    });
+    if (!item) return ctx.notFound('Soumission introuvable');
+
+    await strapi.documents('api::artist-submission.artist-submission').delete({
+      documentId: item.documentId,
+    });
+
+    strapi.log.info(`Soumission artiste supprimee: ${documentId}`);
+    ctx.body = { success: true };
+  },
+
   async submit(ctx) {
     const {
       nomLegal, nomArtiste, adresse, email, telephone,

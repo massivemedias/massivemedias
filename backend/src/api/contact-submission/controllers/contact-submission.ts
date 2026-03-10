@@ -102,6 +102,21 @@ export default factories.createCoreController('api::contact-submission.contact-s
     ctx.body = { success: true, notes: updatedNotes };
   },
 
+  async deleteSubmission(ctx) {
+    const { documentId } = ctx.params;
+    const item = await strapi.documents('api::contact-submission.contact-submission').findFirst({
+      filters: { documentId },
+    });
+    if (!item) return ctx.notFound('Message introuvable');
+
+    await strapi.documents('api::contact-submission.contact-submission').delete({
+      documentId: item.documentId,
+    });
+
+    strapi.log.info(`Message contact supprime: ${documentId}`);
+    ctx.body = { success: true };
+  },
+
   async submit(ctx) {
     const { nom, email, telephone, entreprise, service, budget, urgence, message } = ctx.request.body as any;
 

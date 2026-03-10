@@ -119,7 +119,7 @@ function AdminArtistes() {
         <div className="flex flex-wrap gap-1.5">
           {['all', ...Object.keys(ARTIST_STATUS)].map((s) => (
             <button key={s} onClick={() => { setFilterStatus(s); setMeta(prev => ({ ...prev, page: 1 })); setExpandedId(null); }}
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${filterStatus === s ? 'bg-accent text-white' : 'text-grey-muted hover:text-accent'}`}>
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${filterStatus === s ? 'text-accent' : 'text-grey-muted hover:text-accent'}`}>
               {s === 'all' ? tx({ fr: 'Tout', en: 'All', es: 'Todo' }) : tx({ fr: ARTIST_STATUS[s].fr, en: ARTIST_STATUS[s].en, es: ARTIST_STATUS[s].es })}
             </button>
           ))}

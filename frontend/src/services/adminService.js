@@ -11,10 +11,12 @@ export const deleteOrder = (documentId) => api.delete(`/orders/${documentId}`);
 export const getContactSubmissions = (params) => api.get('/contact-submissions/admin', { params });
 export const updateContactStatus = (documentId, status, notes) => api.put(`/contact-submissions/${documentId}/status`, { status, notes });
 export const replyToContact = (documentId, replyMessage, subject) => api.post(`/contact-submissions/${documentId}/reply`, { replyMessage, subject });
+export const deleteContact = (documentId) => api.delete(`/contact-submissions/${documentId}`);
 
 // --- Soumissions artistes ---
 export const getArtistSubmissions = (params) => api.get('/artist-submissions/admin', { params });
 export const updateArtistStatus = (documentId, status, notes) => api.put(`/artist-submissions/${documentId}/status`, { status, notes });
+export const deleteArtistSubmission = (documentId) => api.delete(`/artist-submissions/${documentId}`);
 
 // --- Clients ---
 export const getClients = (params) => api.get('/clients/admin', { params });

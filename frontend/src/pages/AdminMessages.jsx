@@ -5,12 +5,12 @@ import {
   Eye, Reply, Archive, Loader2, Phone, Building2, Save,
   ChevronLeft, ChevronRight, Clock, Send, X, Palette,
   CheckCircle, XCircle, MapPin, Image, FileText, ExternalLink,
-  UserCheck,
+  UserCheck, Trash2,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import {
-  getContactSubmissions, updateContactStatus, replyToContact,
-  getArtistSubmissions, updateArtistStatus,
+  getContactSubmissions, updateContactStatus, replyToContact, deleteContact,
+  getArtistSubmissions, updateArtistStatus, deleteArtistSubmission,
 } from '../services/adminService';
 
 // Unified status map - includes both contact and artist statuses
@@ -68,6 +68,8 @@ function AdminMessages() {
   const [replyText, setReplyText] = useState('');
   const [sendingReply, setSendingReply] = useState(false);
   const [replySuccess, setReplySuccess] = useState(null);
+  const [confirmDelete, setConfirmDelete] = useState(null);
+  const [deleting, setDeleting] = useState(null);
 
   useEffect(() => {
     const t = setTimeout(() => setSearchDebounce(search), 400);
@@ -142,6 +144,21 @@ function AdminMessages() {
     } catch { /* silent */ } finally { setSavingNotes(null); }
   };
 
+  const handleDelete = async (item) => {
+    if (confirmDelete !== item._uid) { setConfirmDelete(item._uid); return; }
+    setDeleting(item._uid);
+    try {
+      if (item._type === 'contact') {
+        await deleteContact(item.documentId);
+      } else {
+        await deleteArtistSubmission(item.documentId);
+      }
+      setItems(prev => prev.filter(i => i._uid !== item._uid));
+      setExpandedId(null);
+      setConfirmDelete(null);
+    } catch { /* silent */ } finally { setDeleting(null); }
+  };
+
   const handleReply = async (item) => {
     if (!replyText.trim()) return;
     setSendingReply(true);
@@ -207,7 +224,7 @@ function AdminMessages() {
           {/* Type filter */}
           {['all', 'contact', 'candidature'].map((t) => (
             <button key={t} onClick={() => { setFilterType(t); setExpandedId(null); }}
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${filterType === t ? 'bg-accent text-white' : 'text-grey-muted hover:text-accent'}`}>
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${filterType === t ? 'text-accent' : 'text-grey-muted hover:text-accent'}`}>
               {t === 'all' ? tx({ fr: 'Tout', en: 'All', es: 'Todo' }) : t === 'contact' ? tx({ fr: 'Messages', en: 'Messages', es: 'Mensajes' }) : tx({ fr: 'Candidatures', en: 'Applications', es: 'Candidaturas' })}
             </button>
           ))}
@@ -215,7 +232,7 @@ function AdminMessages() {
           {/* Status filter */}
           {FILTER_STATUSES.map((s) => (
             <button key={s} onClick={() => { setFilterStatus(s); setExpandedId(null); }}
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${filterStatus === s ? 'bg-accent text-white' : 'text-grey-muted hover:text-accent'}`}>
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${filterStatus === s ? 'text-accent' : 'text-grey-muted hover:text-accent'}`}>
               {s === 'all' ? tx({ fr: 'Tous', en: 'All', es: 'Todos' }) : tx({ fr: ALL_STATUS[s].fr, en: ALL_STATUS[s].en, es: ALL_STATUS[s].es })}
             </button>
           ))}
@@ -470,6 +487,24 @@ function AdminMessages() {
                                 {tx({ fr: 'Sauver', en: 'Save', es: 'Guardar' })}
                               </button>
                             </div>
+                          </div>
+
+                          {/* Delete */}
+                          <div className="flex justify-end pt-2">
+                            <button onClick={(e) => { e.stopPropagation(); handleDelete(item); }}
+                              disabled={deleting === item._uid}
+                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all bg-red-500/10 text-red-400 hover:bg-red-500/20 disabled:opacity-50">
+                              {deleting === item._uid ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
+                              {confirmDelete === item._uid
+                                ? tx({ fr: 'Confirmer la suppression', en: 'Confirm delete', es: 'Confirmar eliminacion' })
+                                : tx({ fr: 'Supprimer', en: 'Delete', es: 'Eliminar' })}
+                            </button>
+                            {confirmDelete === item._uid && (
+                              <button onClick={(e) => { e.stopPropagation(); setConfirmDelete(null); }}
+                                className="ml-2 px-3 py-1.5 rounded-lg text-xs font-semibold text-grey-muted hover:text-heading transition-colors">
+                                {tx({ fr: 'Annuler', en: 'Cancel', es: 'Cancelar' })}
+                              </button>
+                            )}
                           </div>
                         </div>
                       </motion.div>

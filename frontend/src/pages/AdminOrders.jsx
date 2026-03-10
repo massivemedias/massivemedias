@@ -233,7 +233,7 @@ function AdminOrders() {
                 key={s}
                 onClick={() => handleFilterChange(s)}
                 className={`px-2.5 py-1 md:px-3 md:py-1.5 rounded-full text-[11px] md:text-xs font-semibold transition-all ${
-                  isActive ? 'bg-accent text-white' : 'text-grey-muted hover:text-accent'
+                  isActive ? 'text-accent' : 'text-grey-muted hover:text-accent'
                 }`}
               >
                 {label}
