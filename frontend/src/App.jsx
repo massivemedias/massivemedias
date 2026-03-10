@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import MainLayout from './layouts/MainLayout';
 import Home from './pages/Home';
@@ -62,6 +62,20 @@ function getSubdomainSlug() {
 
 function App() {
   const subdomainSlug = getSubdomainSlug();
+
+  // Capture referral code from URL (?ref=XXXXXXXX)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const refCode = params.get('ref');
+    if (refCode) {
+      localStorage.setItem('referralCode', refCode);
+      params.delete('ref');
+      const newUrl = params.toString()
+        ? `${window.location.pathname}?${params.toString()}`
+        : window.location.pathname;
+      window.history.replaceState(null, '', newUrl);
+    }
+  }, []);
 
   return (
     <BrowserRouter basename={basename}>

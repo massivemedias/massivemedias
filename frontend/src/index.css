@@ -667,6 +667,16 @@ select.input-field option {
   background: var(--bg-glass-alt);
 }
 
+/* Sticker die-cut white outline effect - ~5px border */
+.sticker-diecut {
+  filter:
+    drop-shadow(0 0 1px white) drop-shadow(0 0 1px white)
+    drop-shadow(4px 0 0 white) drop-shadow(-4px 0 0 white)
+    drop-shadow(0 4px 0 white) drop-shadow(0 -4px 0 white)
+    drop-shadow(3px 3px 0 white) drop-shadow(-3px -3px 0 white)
+    drop-shadow(3px -3px 0 white) drop-shadow(-3px 3px 0 white);
+}
+
 .icon-bg {
   background: var(--icon-bg);
 }

@@ -34,12 +34,14 @@ export function AuthProvider({ children }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signUp = useCallback(async (email, password, fullName) => {
+  const signUp = useCallback(async (email, password, fullName, referredBy) => {
     if (!supabase) return { error: { message: 'Supabase not configured' } };
+    const meta = { full_name: fullName };
+    if (referredBy) meta.referred_by = referredBy;
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { full_name: fullName } },
+      options: { data: meta },
     });
     return { data, error };
   }, []);

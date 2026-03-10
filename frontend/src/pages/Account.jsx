@@ -492,6 +492,11 @@ function Account() {
                             </>
                           )}
                         </button>
+                        {meta.referred_by && (
+                          <p className="text-grey-muted/60 text-[10px] mt-2 text-center">
+                            {tx({ fr: 'Parraine via', en: 'Referred via', es: 'Referido via' })} #{meta.referred_by}
+                          </p>
+                        )}
                       </div>
 
                       {/* Recent orders mini */}

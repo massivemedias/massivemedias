@@ -129,8 +129,10 @@ function Login() {
           setError(t('auth.passwordTooShort'));
           return;
         }
-        const { error: err } = await signUp(email, password, fullName);
+        const referralCode = localStorage.getItem('referralCode') || undefined;
+        const { error: err } = await signUp(email, password, fullName, referralCode);
         if (err) { setError(translateSupabaseError(err)); return; }
+        if (referralCode) localStorage.removeItem('referralCode');
         navigate('/');
         return;
       }

@@ -261,7 +261,7 @@ function ArtistPartnershipForm() {
           {/* Portfolio */}
           <div>
             <FileUpload
-              label={tx({ fr: 'Portfolio / Oeuvres (max 20 fichiers, 50 MB chacun) *', en: 'Portfolio / Artworks (max 20 files, 50 MB each) *', es: 'Portafolio / Obras (max 20 archivos, 50 MB c/u) *' })}
+              label={tx({ fr: 'Portfolio / Oeuvres (max 20 fichiers, 130 MB chacun) *', en: 'Portfolio / Artworks (max 20 files, 130 MB each) *', es: 'Portafolio / Obras (max 20 archivos, 130 MB c/u) *' })}
               files={portfolioFiles}
               onFilesChange={setPortfolioFiles}
               maxFiles={20}

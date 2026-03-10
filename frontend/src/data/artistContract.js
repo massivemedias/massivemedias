@@ -9,10 +9,8 @@ export const ARTIST_CONTRACT_TEXT = `
 
 <p><strong>Partie A - Producteur / Distributeur</strong></p>
 <ul>
-  <li>Entreprise : Massive Medias</li>
-  <li>Proprietaire : Michael Sanchez (NEQ : 2269057891)</li>
-  <li>Adresse : 5338 rue Marquette, Montreal (QC) H2J 3Z3</li>
-  <li>Courriel : hello@massivemedias.com</li>
+  <li>Entreprise : Massive Medias (NEQ : 2269057891)</li>
+  <li>Courriel : massivemedias@gmail.com</li>
   <li>Site web : massivemedias.com</li>
 </ul>
 

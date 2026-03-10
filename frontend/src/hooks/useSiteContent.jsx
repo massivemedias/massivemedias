@@ -26,7 +26,7 @@ export function SiteContentProvider({ children }) {
             'populate[11]': 'aboutHistoryImages',
             'populate[12]': 'aboutTimeline',
             'populate[13]': 'aboutTeam',
-            'populate[14]': 'aboutTeam.avatar',
+            'populate[14]': 'aboutTeam.photo',
             'populate[15]': 'aboutEquipment',
             'populate[16]': 'aboutEquipmentImages',
             'populate[17]': 'aboutSpaceImage',

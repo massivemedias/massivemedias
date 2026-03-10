@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, MapPin, Instagram, Facebook, Send, CheckCircle, AlertCircle, Briefcase, Palette } from 'lucide-react';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
 import { useSiteContent } from '../hooks/useSiteContent';
@@ -20,7 +21,8 @@ function Contact() {
 
   const contactEmail = content?.contactEmail || 'info@massivemedias.com';
   const cmsSocialLinks = content?.socialLinks;
-  const [activeTab, setActiveTab] = useState('service');
+  const [searchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState(searchParams.get('tab') === 'artiste' ? 'artist' : 'service');
   const formRef = useRef();
   const [formData, setFormData] = useState({
     nom: '',

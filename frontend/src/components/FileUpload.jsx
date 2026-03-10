@@ -3,7 +3,7 @@ import { Upload, X, FileText, Loader2, Plus } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import { uploadFile } from '../services/api';
 
-const MAX_SIZE = 50 * 1024 * 1024; // 50 MB
+const MAX_SIZE = 130 * 1024 * 1024; // 130 MB
 
 const ACCEPTED_TYPES = [
   'image/png', 'image/jpeg', 'image/tiff', 'image/svg+xml', 'image/webp',
@@ -41,7 +41,7 @@ function FileUpload({ files = [], onFilesChange, label, maxFiles = 5, compact = 
 
     for (const file of toUpload) {
       if (file.size > MAX_SIZE) {
-        setError(tx({ fr: `${file.name} depasse 50 MB`, en: `${file.name} exceeds 50 MB`, es: `${file.name} excede 50 MB` }));
+        setError(tx({ fr: `${file.name} depasse 130 MB`, en: `${file.name} exceeds 130 MB`, es: `${file.name} excede 130 MB` }));
         return;
       }
     }
@@ -244,33 +244,58 @@ function FileUpload({ files = [], onFilesChange, label, maxFiles = 5, compact = 
       {error && <p className="text-red-400 text-xs mt-2">{error}</p>}
 
       {/* File list with image previews */}
-      {files.length > 0 && (
-        <div className="mt-3 space-y-2">
-          {files.map((file, i) => (
-            <div
-              key={file.id || i}
-              className="flex items-center gap-3 p-2 rounded-lg text-sm bg-glass"
-            >
-              {isImage(file.mime) && file.url ? (
-                <img src={file.url} alt="" className="w-10 h-10 rounded object-cover flex-shrink-0" />
-              ) : (
-                <FileText size={16} className="text-accent flex-shrink-0" />
-              )}
-              <span className="text-heading truncate flex-1 text-xs">{file.name}</span>
-              {file.size && (
-                <span className="text-grey-muted text-xs flex-shrink-0">{formatSize(file.size * 1000)}</span>
-              )}
-              <button
-                type="button"
-                onClick={(e) => { e.stopPropagation(); handleRemove(i); }}
-                className="p-1 text-grey-muted hover:text-red-400 transition-colors flex-shrink-0"
-              >
-                <X size={14} />
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
+      {files.length > 0 && (() => {
+        const imageFiles = files.map((f, i) => ({ ...f, _idx: i })).filter(f => isImage(f.mime) && f.url);
+        const otherFiles = files.map((f, i) => ({ ...f, _idx: i })).filter(f => !isImage(f.mime) || !f.url);
+        return (
+          <div className="mt-3 space-y-3">
+            {/* Image grid */}
+            {imageFiles.length > 0 && (
+              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
+                {imageFiles.map((file) => (
+                  <div key={file.id || file._idx} className="relative group aspect-square rounded-lg overflow-hidden bg-glass">
+                    <img src={file.url} alt={file.name} className="w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); handleRemove(file._idx); }}
+                        className="p-1.5 rounded-full bg-red-500/80 text-white hover:bg-red-500 transition-colors"
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+                    <span className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-[9px] px-1 py-0.5 truncate">{file.name}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+            {/* Non-image files list */}
+            {otherFiles.length > 0 && (
+              <div className="space-y-2">
+                {otherFiles.map((file) => (
+                  <div
+                    key={file.id || file._idx}
+                    className="flex items-center gap-3 p-2 rounded-lg text-sm bg-glass"
+                  >
+                    <FileText size={16} className="text-accent flex-shrink-0" />
+                    <span className="text-heading truncate flex-1 text-xs">{file.name}</span>
+                    {file.size && (
+                      <span className="text-grey-muted text-xs flex-shrink-0">{formatSize(file.size * 1000)}</span>
+                    )}
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); handleRemove(file._idx); }}
+                      className="p-1 text-grey-muted hover:text-red-400 transition-colors flex-shrink-0"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      })()}
     </div>
   );
 }

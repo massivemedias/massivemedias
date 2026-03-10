@@ -24,18 +24,18 @@ function Header() {
         <nav className="container mx-auto px-4 py-2">
           <div className="flex items-center justify-between">
             {/* Logo */}
-            <Link to="/" className="flex items-center gap-3">
+            <Link to="/" className="flex items-center gap-3 flex-shrink-0">
               <MassiveLogo className="transition-colors duration-300 logo-header" />
             </Link>
 
             {/* Navigation Desktop */}
-            <div className="hidden lg:flex items-center gap-8">
+            <div className="hidden lg:flex items-center gap-4 xl:gap-7">
               {/* 4 service links */}
               {services.map((service) => (
                 <Link
                   key={service.slug}
                   to={`/services/${service.slug}`}
-                  className="transition-colors duration-200 font-medium text-sm nav-link"
+                  className="transition-colors duration-200 font-medium text-sm nav-link whitespace-nowrap"
                 >
                   {service.name}
                 </Link>
@@ -44,15 +44,15 @@ function Header() {
               {/* Boutique */}
               <Link
                 to="/boutique"
-                className="transition-colors duration-200 font-medium text-sm nav-link"
+                className="transition-colors duration-200 font-medium text-sm nav-link whitespace-nowrap"
               >
                 {t('nav.boutique')}
               </Link>
 
-              <Link to="/a-propos" className="transition-colors duration-200 font-medium text-sm nav-link">
+              <Link to="/a-propos" className="transition-colors duration-200 font-medium text-sm nav-link whitespace-nowrap">
                 {t('nav.aPropos')}
               </Link>
-              <Link to="/contact" className="btn-primary text-sm py-2 px-5">
+              <Link to="/contact" className="btn-primary text-sm py-2 px-5 whitespace-nowrap">
                 {t('nav.contact')}
               </Link>
 

@@ -6,7 +6,7 @@ import { useSiteContent } from '../hooks/useSiteContent';
 import { bl } from '../utils/cms';
 
 function Footer() {
-  const { t, lang } = useLang();
+  const { t, tx, lang } = useLang();
   const { content } = useSiteContent();
   const currentYear = new Date().getFullYear();
   const services = t('nav.servicesList');
@@ -60,6 +60,11 @@ function Footer() {
               <li>
                 <Link to="/contact" className="hover:text-accent transition-colors duration-300">
                   {t('nav.contact')}
+                </Link>
+              </li>
+              <li>
+                <Link to="/contact?tab=artiste" className="hover:text-accent transition-colors duration-300">
+                  {tx({ fr: 'Partenariat artiste', en: 'Artist partnership', es: 'Asociacion artistica' })}
                 </Link>
               </li>
             </ul>

@@ -5,6 +5,7 @@ import { ArrowRight, MessageSquare, ChevronDown, ChevronLeft, ChevronRight, Chec
 import SEO from '../components/SEO';
 import ArtistPrintCard from '../components/ArtistPrintCard';
 import ConfiguratorArtistPrint from '../components/configurators/ConfiguratorArtistPrint';
+import ConfiguratorArtistSticker from '../components/configurators/ConfiguratorArtistSticker';
 import { useLang } from '../i18n/LanguageContext';
 import { useTheme } from '../i18n/ThemeContext';
 import { useArtists } from '../hooks/useArtists';
@@ -62,9 +63,11 @@ function ArtisteDetail({ subdomainSlug }) {
     };
   }, [cmsArtists, slug]);
   const [selectedPrint, setSelectedPrint] = useState(null);
+  const [selectedSticker, setSelectedSticker] = useState(null);
   const [openFaq, setOpenFaq] = useState(null);
   const [lightbox, setLightbox] = useState(null);
   const configuratorRef = useRef(null);
+  const stickerConfiguratorRef = useRef(null);
 
   useEffect(() => {
     if (lightbox === null) return;
@@ -105,6 +108,13 @@ function ArtisteDetail({ subdomainSlug }) {
     setSelectedPrint(print);
     setTimeout(() => {
       configuratorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+  };
+
+  const handleSelectSticker = (sticker) => {
+    setSelectedSticker(sticker);
+    setTimeout(() => {
+      stickerConfiguratorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 100);
   };
 
@@ -416,6 +426,13 @@ function ArtisteDetail({ subdomainSlug }) {
                 es: 'Disenos originales disponibles en stickers vinyl.',
               })}
             </p>
+            <p className="text-grey-muted text-center mb-10 text-sm">
+              {tx({
+                fr: 'Cliquez sur un sticker pour configurer votre commande.',
+                en: 'Click a sticker to configure your order.',
+                es: 'Haz clic en un sticker para configurar tu pedido.',
+              })}
+            </p>
             <div className="flex flex-wrap justify-center gap-4 max-w-4xl mx-auto">
               {artist.stickers.map((sticker, index) => (
                 <motion.div
@@ -427,14 +444,18 @@ function ArtisteDetail({ subdomainSlug }) {
                   className="w-[calc(50%-0.5rem)] md:w-[calc(33.333%-0.667rem)] lg:w-[calc(25%-0.75rem)]"
                 >
                   <div
-                    className="group relative rounded-2xl overflow-hidden border border-purple-main/30 card-shadow cursor-pointer transition-all duration-300 hover:border-accent/60 hover:shadow-lg"
-                    onClick={() => setLightbox({ type: 'sticker', index })}
+                    className={`group relative rounded-2xl overflow-hidden border card-shadow cursor-pointer transition-all duration-300 ${
+                      selectedSticker?.id === sticker.id
+                        ? 'border-accent shadow-lg shadow-accent/20'
+                        : 'border-purple-main/30 hover:border-accent/60 hover:shadow-lg'
+                    }`}
+                    onClick={() => handleSelectSticker(sticker)}
                   >
-                    <div className="aspect-square bg-glass-alt p-3">
+                    <div className="aspect-square p-4">
                       <img
                         src={sticker.image}
                         alt={tx({ fr: sticker.titleFr, en: sticker.titleEn, es: sticker.titleEs || sticker.titleEn })}
-                        className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-110"
+                        className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-110 sticker-diecut"
                       />
                     </div>
                     <div className="p-3 text-center">
@@ -442,15 +463,60 @@ function ArtisteDetail({ subdomainSlug }) {
                         {tx({ fr: sticker.titleFr, en: sticker.titleEn, es: sticker.titleEs || sticker.titleEn })}
                       </h3>
                       <p className="text-accent text-xs font-semibold mt-1">
-                        {tx({ fr: 'Des 35$ / pack', en: 'From $35 / pack', es: 'Desde 35$ / pack' })}
+                        {tx({ fr: 'Des 30$ / 25x', en: 'From $30 / 25x', es: 'Desde 30$ / 25x' })}
                       </p>
                     </div>
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300 flex items-center justify-center pointer-events-none">
-                      <ZoomIn size={24} className="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 drop-shadow-lg" />
-                    </div>
+                    {/* Zoom button */}
+                    <button
+                      className="absolute top-2 right-2 p-1.5 rounded-full bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-black/70 z-10"
+                      onClick={(e) => { e.stopPropagation(); setLightbox({ type: 'sticker', index }); }}
+                      aria-label="Zoom"
+                    >
+                      <ZoomIn size={14} />
+                    </button>
                   </div>
                 </motion.div>
               ))}
+            </div>
+          </motion.div>
+        )}
+
+        {/* ============ CONFIGURATEUR STICKERS ============ */}
+        {selectedSticker && (
+          <motion.div
+            ref={stickerConfiguratorRef}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="mb-20 scroll-mt-24"
+          >
+            <h2 className="text-3xl font-heading font-bold text-gradient mb-8 text-center">
+              {tx({ fr: 'Configurez votre sticker', en: 'Configure Your Sticker', es: 'Configura tu sticker' })}
+            </h2>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-8 max-w-5xl mx-auto">
+              {/* Preview */}
+              <div
+                className="relative rounded-2xl overflow-hidden aspect-square border border-purple-main/30 card-shadow cursor-pointer group flex items-center justify-center p-6"
+                onClick={() => setLightbox({ type: 'sticker', index: artist.stickers.findIndex(s => s.id === selectedSticker.id) })}
+              >
+                <img
+                  src={selectedSticker.image}
+                  alt={tx({ fr: selectedSticker.titleFr, en: selectedSticker.titleEn, es: selectedSticker.titleEs || selectedSticker.titleEn })}
+                  className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105 sticker-diecut"
+                />
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
+                  <ZoomIn size={32} className="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 drop-shadow-lg" />
+                </div>
+              </div>
+
+              {/* Options */}
+              <div className="p-4 sm:p-6 rounded-2xl border border-purple-main/30 transition-colors duration-300 highlight-shadow lg:sticky lg:top-24 self-start">
+                <ConfiguratorArtistSticker
+                  artist={artist}
+                  selectedSticker={selectedSticker}
+                />
+              </div>
             </div>
           </motion.div>
         )}
@@ -734,7 +800,7 @@ function ArtisteDetail({ subdomainSlug }) {
                 <img
                   src={item.fullImage || toFull(item.image)}
                   alt={tx({ fr: item.titleFr, en: item.titleEn, es: item.titleEs || item.titleEn })}
-                  className="max-w-full max-h-[85vh] object-contain"
+                  className={`max-w-full max-h-[85vh] object-contain${isSticker ? ' sticker-diecut' : ''}`}
                 />
               </motion.div>
 
