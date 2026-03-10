@@ -24,21 +24,23 @@ export const stickerSizes = [
 
 // Prix Standard (Mat/Brillant). Laminé Pro et Holographique ont leurs propres prix.
 // Standard (Matte / Glossy)
+// Prix alignes sur StickerMule (legèrement en dessous)
+// SM ref: 50=$75, 100=$90, 200=$118, 300=$142, 500=$187
 export const stickerPriceTiers = [
-  { qty: 25, price: 30, unitPrice: 1.20 },
-  { qty: 50, price: 45, unitPrice: 0.90 },
-  { qty: 100, price: 75, unitPrice: 0.75 },
-  { qty: 250, price: 150, unitPrice: 0.60 },
-  { qty: 500, price: 250, unitPrice: 0.50 },
+  { qty: 25, price: 45, unitPrice: 1.80 },
+  { qty: 50, price: 69, unitPrice: 1.38 },
+  { qty: 100, price: 85, unitPrice: 0.85 },
+  { qty: 250, price: 125, unitPrice: 0.50 },
+  { qty: 500, price: 179, unitPrice: 0.358 },
 ];
 
-// Fx (Holographique, Verre Brise, Etoiles)
+// Fx (Holographique, Verre Brise, Etoiles) - premium ~20%
 export const holographicPriceTiers = [
-  { qty: 25, price: 35, unitPrice: 1.40 },
-  { qty: 50, price: 55, unitPrice: 1.10 },
-  { qty: 100, price: 90, unitPrice: 0.90 },
-  { qty: 250, price: 175, unitPrice: 0.70 },
-  { qty: 500, price: 300, unitPrice: 0.60 },
+  { qty: 25, price: 55, unitPrice: 2.20 },
+  { qty: 50, price: 85, unitPrice: 1.70 },
+  { qty: 100, price: 105, unitPrice: 1.05 },
+  { qty: 250, price: 155, unitPrice: 0.62 },
+  { qty: 500, price: 219, unitPrice: 0.438 },
 ];
 
 // Die-cut utilise les mêmes prix
@@ -154,10 +156,10 @@ export const fineArtPrinterTiers = [
 ];
 
 export const fineArtFormats = [
-  { id: 'a4', label: 'A4 (8.5×11")', studioPrice: 16, museumPrice: 35 },
-  { id: 'a3', label: 'A3 (11×17")', studioPrice: 22, museumPrice: 65 },
-  { id: 'a3plus', label: 'A3+ (13×19")', studioPrice: 30, museumPrice: 95 },
-  { id: 'a2', label: 'A2 (18×24")', studioPrice: 42, museumPrice: 125 },
+  { id: 'a4', label: 'A4 (8.5×11")', studioPrice: 20, museumPrice: 35 },
+  { id: 'a3', label: 'A3 (11×17")', studioPrice: 25, museumPrice: 65 },
+  { id: 'a3plus', label: 'A3+ (13×19")', studioPrice: 35, museumPrice: 95 },
+  { id: 'a2', label: 'A2 (18×24")', studioPrice: 55, museumPrice: 125 },
 ];
 
 export const fineArtFramePrice = 30;

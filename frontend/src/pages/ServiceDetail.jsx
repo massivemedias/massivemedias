@@ -635,28 +635,26 @@ function ServiceDetail() {
                   <div className="p-3 md:p-4 border-b border-purple-main/30 bg-glass-alt">
                     <h3 className="text-heading font-heading font-bold text-sm md:text-base">{table.subtitle}</h3>
                   </div>
-                  <div className="overflow-x-auto">
-                    <table className="price-table">
-                      <thead>
-                        <tr>
-                          {table.headers.map((header, i) => (
-                            <th key={i}>{header}</th>
+                  <table className="price-table w-full">
+                    <thead>
+                      <tr>
+                        {table.headers.map((header, i) => (
+                          <th key={i} className="text-xs md:text-sm">{header}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {table.rows.map((row, i) => (
+                        <tr key={i}>
+                          {row.map((cell, j) => (
+                            <td key={j} className={`whitespace-nowrap ${j === 0 ? 'text-heading font-semibold' : j === 1 ? 'text-gradient font-bold' : 'text-grey-muted'}`}>
+                              {cell}
+                            </td>
                           ))}
                         </tr>
-                      </thead>
-                      <tbody>
-                        {table.rows.map((row, i) => (
-                          <tr key={i}>
-                            {row.map((cell, j) => (
-                              <td key={j} className={j === 0 ? 'text-heading font-semibold' : j === 1 ? 'text-gradient font-bold whitespace-nowrap' : 'text-grey-muted whitespace-nowrap'}>
-                                {cell}
-                              </td>
-                            ))}
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               ))}
             </div>

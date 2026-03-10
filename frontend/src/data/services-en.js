@@ -52,12 +52,12 @@ We also print flyers, postcards and business cards - everything you need to prom
       tables: [
         {
           subtitle: 'Fine Art Printing',
-          headers: ['Format', 'Studio Series (4 pigments)', 'Museum Series (12 pigments)'],
+          headers: ['Format', 'Studio (4 pigments)', 'Museum (12 pigments)'],
           rows: [
-            ['A4 (8.5×11")', '$16', '$35'],
-            ['A3 (11×17")', '$22', '$65'],
-            ['A3+ (13×19")', '$30', '$95'],
-            ['A2 (18×24")', '$42', '$125'],
+            ['A4 (8.5x11")', '$20', '$35'],
+            ['A3 (11x17")', '$25', '$65'],
+            ['A3+ (13x19")', '$35', '$95'],
+            ['A2 (18x24")', '$55', '$125'],
           ],
         },
         {

@@ -52,12 +52,12 @@ También imprimimos flyers, postales y tarjetas de presentación - todo lo que n
       tables: [
         {
           subtitle: 'Impresión Fine Art',
-          headers: ['Formato', 'Serie Studio (4 pigmentos)', 'Serie Museo (12 pigmentos)'],
+          headers: ['Formato', 'Studio (4 pigmentos)', 'Museo (12 pigmentos)'],
           rows: [
-            ['A4 (8.5x11")', '$16', '$35'],
-            ['A3 (11x17")', '$22', '$65'],
-            ['A3+ (13x19")', '$30', '$95'],
-            ['A2 (18x24")', '$42', '$125'],
+            ['A4 (8.5x11")', '$20', '$35'],
+            ['A3 (11x17")', '$25', '$65'],
+            ['A3+ (13x19")', '$35', '$95'],
+            ['A2 (18x24")', '$55', '$125'],
           ],
         },
         {

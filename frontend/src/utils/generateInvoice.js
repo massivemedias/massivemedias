@@ -9,6 +9,8 @@ const COMPANY = {
   name: 'Massive Medias',
   owner: 'Michael Sanchez',
   neq: '2269057891',
+  tps: '732457635RT0001',
+  tvq: '4012577678TQ0001',
   address: '5338 rue Marquette',
   city: 'Montreal (QC) H2J 3Z3',
   email: 'hello@massivemedias.com',
@@ -145,6 +147,8 @@ export function generateInvoicePDF(order, type = 'invoice') {
     ['Paiement', isReceipt ? 'Confirme' : 'Stripe'],
     ['Devise', (order.currency || 'cad').toUpperCase()],
     ['NEQ', COMPANY.neq],
+    ['TPS', COMPANY.tps],
+    ['TVQ', COMPANY.tvq],
   ];
   if (order.stripePaymentIntentId) {
     const ref = order.stripePaymentIntentId;
@@ -244,11 +248,11 @@ export function generateInvoicePDF(order, type = 'invoice') {
   }
 
   if (order.tps > 0) {
-    drawTotalLine('TPS (5%)', dollars(order.tps));
+    drawTotalLine(`TPS (5%) - ${COMPANY.tps}`, dollars(order.tps));
   }
 
   if (order.tvq > 0) {
-    drawTotalLine('TVQ (9.975%)', dollars(order.tvq));
+    drawTotalLine(`TVQ (9.975%) - ${COMPANY.tvq}`, dollars(order.tvq));
   }
 
   // Separator
@@ -287,8 +291,13 @@ export function generateInvoicePDF(order, type = 'invoice') {
   doc.setFontSize(7);
   doc.setTextColor(...greyText);
   doc.text(
-    `${COMPANY.name}  |  ${COMPANY.address}, ${COMPANY.city}  |  ${COMPANY.email}  |  ${COMPANY.website}  |  NEQ: ${COMPANY.neq}`,
-    pageWidth / 2, footerY,
+    `${COMPANY.name}  |  ${COMPANY.address}, ${COMPANY.city}  |  ${COMPANY.email}  |  ${COMPANY.website}`,
+    pageWidth / 2, footerY - 3,
+    { align: 'center' }
+  );
+  doc.text(
+    `NEQ: ${COMPANY.neq}  |  TPS: ${COMPANY.tps}  |  TVQ: ${COMPANY.tvq}`,
+    pageWidth / 2, footerY + 1,
     { align: 'center' }
   );
 

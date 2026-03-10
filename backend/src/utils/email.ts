@@ -104,11 +104,11 @@ function buildOrderConfirmationHtml(data: OrderEmailData): string {
               <td style="padding:4px 12px;text-align:right;color:#e4e4f0;font-size:14px;">${data.shipping === 0 ? 'Gratuit' : formatPrice(data.shipping) + '$'}</td>
             </tr>
             <tr>
-              <td style="padding:4px 12px;color:#a0a0b8;font-size:14px;">TPS (5%)</td>
+              <td style="padding:4px 12px;color:#a0a0b8;font-size:14px;">TPS (5%) <span style="font-size:11px;color:#777;">- 732457635RT0001</span></td>
               <td style="padding:4px 12px;text-align:right;color:#e4e4f0;font-size:14px;">${formatPrice(data.tps)}$</td>
             </tr>
             ${data.tvq > 0 ? `<tr>
-              <td style="padding:4px 12px;color:#a0a0b8;font-size:14px;">TVQ (9.975%)</td>
+              <td style="padding:4px 12px;color:#a0a0b8;font-size:14px;">TVQ (9.975%) <span style="font-size:11px;color:#777;">- 4012577678TQ0001</span></td>
               <td style="padding:4px 12px;text-align:right;color:#e4e4f0;font-size:14px;">${formatPrice(data.tvq)}$</td>
             </tr>` : ''}
             <tr>
@@ -146,6 +146,9 @@ function buildOrderConfirmationHtml(data: OrderEmailData): string {
         <tr><td align="center" style="padding:32px 0 0;">
           <p style="color:#555;font-size:12px;margin:0;">
             Massive Medias - <a href="https://massivemedias.com" style="color:#FF52A0;text-decoration:none;">massivemedias.com</a>
+          </p>
+          <p style="color:#444;font-size:10px;margin:6px 0 0;">
+            NEQ: 2269057891 | TPS: 732457635RT0001 | TVQ: 4012577678TQ0001
           </p>
         </td></tr>
 

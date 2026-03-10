@@ -52,16 +52,16 @@ Nous imprimons aussi des flyers, cartes postales et cartes d'affaires - tout ce 
       tables: [
         {
           subtitle: 'Impression Fine Art',
-          headers: ['Format', 'Série Studio (4 pigments)', 'Série Musée (12 pigments)'],
+          headers: ['Format', 'Studio (4 pigments)', 'Musee (12 pigments)'],
           rows: [
-            ['A4 (8.5×11")', '16$', '35$'],
-            ['A3 (11×17")', '22$', '65$'],
-            ['A3+ (13×19")', '30$', '95$'],
-            ['A2 (18×24")', '42$', '125$'],
+            ['A4 (8.5x11")', '20$', '35$'],
+            ['A3 (11x17")', '25$', '65$'],
+            ['A3+ (13x19")', '35$', '95$'],
+            ['A2 (18x24")', '55$', '125$'],
           ],
         },
         {
-          subtitle: 'Flyers & Cartes Postales (A6 / 4"×6")',
+          subtitle: 'Flyers & Cartes postales (A6 / 4"x6")',
           headers: ['Quantité', 'Prix total', 'Prix/unité'],
           rows: [
             ['50', '40$', '0,80$'],
