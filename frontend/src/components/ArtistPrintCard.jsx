@@ -23,7 +23,7 @@ function ArtistPrintCard({ print, minPrice, selected, onClick, onZoom }) {
           : 'border-transparent hover:border-accent/30 card-bg-bordered'
       }`}
     >
-      <div className="relative aspect-[2/3] overflow-hidden watermark">
+      <div className="relative aspect-[2/3] overflow-hidden">
         <img
           src={print.image}
           alt={title}
