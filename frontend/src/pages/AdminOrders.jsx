@@ -4,7 +4,7 @@ import {
   Search, ChevronDown, ChevronUp, ShoppingBag, DollarSign,
   Clock, Truck, Package, CreditCard, CheckCircle, XCircle,
   RotateCcw, Loader2, ExternalLink, MapPin, Save, Image,
-  FileText, ChevronLeft, ChevronRight,
+  FileText, ChevronLeft, ChevronRight, Phone, Mail, Hash,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import { getOrders, getOrderStats, updateOrderStatus, updateOrderNotes } from '../services/adminService';
@@ -29,7 +29,8 @@ const STATUS_FLOW = {
   refunded: [],
 };
 
-const cents = (v) => ((v || 0) / 100).toFixed(2) + '$';
+// Montants stockes en cents dans Strapi - afficher en dollars
+const dollars = (v) => `${((v || 0) / 100).toFixed(2)}$`;
 
 function AdminOrders() {
   const { tx } = useLang();
@@ -132,7 +133,10 @@ function AdminOrders() {
     return new Date(d).toLocaleDateString('fr-CA', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
   };
 
-  const orderRef = (o) => (o.stripePaymentIntentId || '').slice(-8).toUpperCase();
+  const formatDateShort = (d) => {
+    if (!d) return '-';
+    return new Date(d).toLocaleDateString('fr-CA', { day: 'numeric', month: 'short' });
+  };
 
   // Summary cards
   const summaryCards = [
@@ -196,7 +200,7 @@ function AdminOrders() {
             type="text"
             value={search}
             onChange={(e) => { setSearch(e.target.value); setMeta(prev => ({ ...prev, page: 1 })); }}
-            placeholder={tx({ fr: 'Rechercher par nom, email, reference...', en: 'Search by name, email, ref...', es: 'Buscar por nombre, email, ref...' })}
+            placeholder={tx({ fr: 'Rechercher par nom, email...', en: 'Search by name, email...', es: 'Buscar por nombre, email...' })}
             className="input-field pl-9 text-sm"
           />
         </div>
@@ -233,10 +237,9 @@ function AdminOrders() {
       ) : (
         <div className="rounded-xl bg-glass overflow-hidden card-border">
           {/* Header */}
-          <div className="hidden md:grid grid-cols-[80px_1fr_1fr_80px_100px_120px_40px] gap-3 px-4 py-3 text-xs font-semibold text-grey-muted uppercase tracking-wider border-b card-border">
-            <span>Ref</span>
-            <span>Date</span>
+          <div className="hidden md:grid grid-cols-[1fr_100px_80px_120px_120px_40px] gap-3 px-4 py-3 text-xs font-semibold text-grey-muted uppercase tracking-wider border-b card-border">
             <span>Client</span>
+            <span>Date</span>
             <span>{tx({ fr: 'Articles', en: 'Items', es: 'Articulos' })}</span>
             <span>Total</span>
             <span>Status</span>
@@ -259,23 +262,33 @@ function AdminOrders() {
                   animate={{ opacity: 1 }}
                   className="border-b last:border-b-0 card-border"
                 >
-                  {/* Row */}
+                  {/* Row - Client en premier, prix clair */}
                   <div
                     onClick={() => toggleExpand(order.documentId)}
-                    className="grid grid-cols-1 md:grid-cols-[80px_1fr_1fr_80px_100px_120px_40px] gap-2 md:gap-3 px-4 py-3 items-center cursor-pointer hover:bg-accent/5 transition-colors"
+                    className="grid grid-cols-1 md:grid-cols-[1fr_100px_80px_120px_120px_40px] gap-2 md:gap-3 px-4 py-3 items-center cursor-pointer hover:bg-accent/5 transition-colors"
                   >
-                    <span className="font-mono text-xs text-accent font-semibold">{orderRef(order)}</span>
-                    <span className="text-xs text-grey-muted">{formatDate(order.createdAt)}</span>
+                    {/* Client - nom + email */}
                     <div className="min-w-0">
-                      <p className="text-sm text-heading font-medium truncate">{order.customerName}</p>
+                      <p className="text-sm text-heading font-semibold truncate">{order.customerName}</p>
                       <p className="text-xs text-grey-muted truncate">{order.customerEmail}</p>
                     </div>
-                    <span className="text-sm text-heading">{items.length}</span>
-                    <span className="text-sm text-heading font-semibold">{cents(order.total)}</span>
+
+                    {/* Date courte */}
+                    <span className="text-xs text-grey-muted">{formatDateShort(order.createdAt)}</span>
+
+                    {/* Nb articles */}
+                    <span className="text-sm text-heading">{items.length} {items.length > 1 ? 'items' : 'item'}</span>
+
+                    {/* Total - gros et clair */}
+                    <span className="text-lg text-heading font-bold">{dollars(order.total)}</span>
+
+                    {/* Status badge */}
                     <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold w-fit ${st.color}`}>
                       <StIcon size={12} />
                       {tx({ fr: st.fr, en: st.en, es: st.es })}
                     </span>
+
+                    {/* Expand */}
                     <span className="text-grey-muted justify-self-end">
                       {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                     </span>
@@ -292,6 +305,26 @@ function AdminOrders() {
                         className="overflow-hidden"
                       >
                         <div className="px-4 pb-5 pt-1 space-y-5 border-t card-border bg-glass/50">
+
+                          {/* Infos client + reference */}
+                          <div className="flex flex-wrap gap-4 items-start">
+                            <div className="space-y-1">
+                              <h4 className="text-xs font-semibold text-grey-muted uppercase tracking-wider">Client</h4>
+                              <p className="text-sm text-heading font-medium">{order.customerName}</p>
+                              <p className="text-xs text-grey-muted flex items-center gap-1.5"><Mail size={11} /> {order.customerEmail}</p>
+                              {order.customerPhone && (
+                                <p className="text-xs text-grey-muted flex items-center gap-1.5"><Phone size={11} /> {order.customerPhone}</p>
+                              )}
+                            </div>
+                            <div className="space-y-1">
+                              <h4 className="text-xs font-semibold text-grey-muted uppercase tracking-wider">{tx({ fr: 'Reference', en: 'Reference', es: 'Referencia' })}</h4>
+                              <p className="text-xs text-grey-muted flex items-center gap-1.5 font-mono">
+                                <Hash size={11} />
+                                {order.stripePaymentIntentId || '-'}
+                              </p>
+                              <p className="text-xs text-grey-muted">{formatDate(order.createdAt)}</p>
+                            </div>
+                          </div>
 
                           {/* Status actions */}
                           {nextStatuses.length > 0 && (
@@ -317,48 +350,50 @@ function AdminOrders() {
                             </div>
                           )}
 
-                          {/* Items */}
+                          {/* Items - avec images bien visibles */}
                           <div>
                             <h4 className="text-xs font-semibold text-grey-muted uppercase tracking-wider mb-3">
-                              {tx({ fr: 'Articles', en: 'Items', es: 'Articulos' })} ({items.length})
+                              {tx({ fr: 'Articles commandes', en: 'Ordered items', es: 'Articulos pedidos' })} ({items.length})
                             </h4>
                             <div className="space-y-3">
                               {items.map((item, idx) => {
                                 const files = Array.isArray(item.uploadedFiles) ? item.uploadedFiles : [];
                                 return (
-                                  <div key={idx} className="rounded-lg bg-glass p-3">
-                                    <div className="flex items-start gap-3">
-                                      {/* Thumbnail */}
+                                  <div key={idx} className="rounded-lg bg-glass p-4">
+                                    <div className="flex items-start gap-4">
+                                      {/* Image produit - plus grande */}
                                       {item.image && (
-                                        <img src={item.image} alt="" className="w-12 h-12 rounded object-cover flex-shrink-0" />
+                                        <img src={item.image} alt="" className="w-16 h-16 rounded-lg object-cover flex-shrink-0 border card-border" />
                                       )}
                                       <div className="flex-1 min-w-0">
                                         <div className="flex justify-between items-start gap-2">
-                                          <p className="text-sm font-semibold text-heading">{item.productName || 'Produit'}</p>
-                                          <span className="text-sm font-semibold text-heading flex-shrink-0">{item.totalPrice ? `${item.totalPrice}$` : ''}</span>
-                                        </div>
-                                        <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-0.5">
-                                          {item.size && <span className="text-xs text-grey-muted">{item.size}</span>}
-                                          {item.finish && <span className="text-xs text-grey-muted">{item.finish}</span>}
-                                          {item.shape && <span className="text-xs text-grey-muted">{item.shape}</span>}
-                                          {item.quantity && <span className="text-xs text-grey-muted">x{item.quantity}</span>}
+                                          <div>
+                                            <p className="text-base font-semibold text-heading">{item.productName || 'Produit'}</p>
+                                            <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1">
+                                              {item.size && <span className="text-xs text-grey-muted bg-glass px-2 py-0.5 rounded">{item.size}</span>}
+                                              {item.finish && <span className="text-xs text-grey-muted bg-glass px-2 py-0.5 rounded">{item.finish}</span>}
+                                              {item.shape && <span className="text-xs text-grey-muted bg-glass px-2 py-0.5 rounded">{item.shape}</span>}
+                                              {item.quantity && <span className="text-xs text-accent font-semibold bg-accent/10 px-2 py-0.5 rounded">x{item.quantity}</span>}
+                                            </div>
+                                          </div>
+                                          <span className="text-lg font-bold text-heading flex-shrink-0">{item.totalPrice ? `${item.totalPrice}$` : ''}</span>
                                         </div>
                                         {item.notes && (
-                                          <p className="text-xs text-grey-muted mt-1 italic">"{item.notes}"</p>
+                                          <p className="text-sm text-grey-muted mt-2 italic bg-glass rounded px-2 py-1">"{item.notes}"</p>
                                         )}
                                       </div>
                                     </div>
 
-                                    {/* Uploaded files */}
+                                    {/* Fichiers uploades - images grandes et claires */}
                                     {files.length > 0 && (
-                                      <div className="mt-3">
+                                      <div className="mt-4">
                                         <div className="flex items-center gap-1.5 mb-2">
-                                          <Image size={12} className="text-accent" />
+                                          <Image size={14} className="text-accent" />
                                           <span className="text-xs text-accent font-semibold">
-                                            {files.length} {tx({ fr: 'fichier(s)', en: 'file(s)', es: 'archivo(s)' })}
+                                            {tx({ fr: 'Fichiers du client', en: 'Client files', es: 'Archivos del cliente' })} ({files.length})
                                           </span>
                                         </div>
-                                        <div className="flex flex-wrap gap-2">
+                                        <div className="flex flex-wrap gap-3">
                                           {files.map((file, fi) => {
                                             const isImg = file.mime && file.mime.startsWith('image/');
                                             return (
@@ -375,16 +410,16 @@ function AdminOrders() {
                                                   <img
                                                     src={file.url}
                                                     alt={file.name}
-                                                    className="w-20 h-20 rounded-lg object-cover border-2 border-transparent group-hover:border-accent transition-colors"
+                                                    className="w-28 h-28 rounded-lg object-cover border-2 border-transparent group-hover:border-accent transition-colors"
                                                   />
                                                 ) : (
-                                                  <div className="w-20 h-20 rounded-lg bg-glass flex flex-col items-center justify-center gap-1 border-2 border-transparent group-hover:border-accent transition-colors">
-                                                    <FileText size={20} className="text-accent" />
-                                                    <span className="text-[8px] text-grey-muted truncate max-w-[70px]">{file.name}</span>
+                                                  <div className="w-28 h-28 rounded-lg bg-glass flex flex-col items-center justify-center gap-1 border-2 border-transparent group-hover:border-accent transition-colors">
+                                                    <FileText size={24} className="text-accent" />
+                                                    <span className="text-[10px] text-grey-muted truncate max-w-[100px] px-1">{file.name}</span>
                                                   </div>
                                                 )}
                                                 <div className="absolute inset-0 rounded-lg bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-                                                  <ExternalLink size={14} className="text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                  <ExternalLink size={16} className="text-white opacity-0 group-hover:opacity-100 transition-opacity" />
                                                 </div>
                                               </a>
                                             );
@@ -400,45 +435,63 @@ function AdminOrders() {
 
                           {/* Financial + Shipping grid */}
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {/* Financial */}
-                            <div className="rounded-lg bg-glass p-3">
-                              <h4 className="text-xs font-semibold text-grey-muted uppercase tracking-wider mb-2">
+                            {/* Financial - clair et lisible */}
+                            <div className="rounded-lg bg-glass p-4">
+                              <h4 className="text-xs font-semibold text-grey-muted uppercase tracking-wider mb-3">
                                 {tx({ fr: 'Detail financier', en: 'Financial detail', es: 'Detalle financiero' })}
                               </h4>
-                              <div className="space-y-1 text-sm">
-                                <div className="flex justify-between"><span className="text-grey-muted">Sous-total</span><span className="text-heading">{cents(order.subtotal)}</span></div>
-                                <div className="flex justify-between"><span className="text-grey-muted">{tx({ fr: 'Frais de livraison', en: 'Shipping', es: 'Envio' })}</span><span className="text-heading">{order.shipping === 0 ? tx({ fr: 'Gratuit', en: 'Free', es: 'Gratis' }) : cents(order.shipping)}</span></div>
-                                <div className="flex justify-between"><span className="text-grey-muted">TPS (5%)</span><span className="text-heading">{cents(order.tps)}</span></div>
-                                {order.tvq > 0 && <div className="flex justify-between"><span className="text-grey-muted">TVQ (9.975%)</span><span className="text-heading">{cents(order.tvq)}</span></div>}
-                                <div className="flex justify-between border-t pt-1 mt-1 card-border">
-                                  <span className="text-heading font-semibold">Total</span>
-                                  <span className="text-heading font-bold">{cents(order.total)}</span>
+                              <div className="space-y-2 text-sm">
+                                <div className="flex justify-between">
+                                  <span className="text-grey-muted">Sous-total</span>
+                                  <span className="text-heading">{dollars(order.subtotal)}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-grey-muted">{tx({ fr: 'Frais de livraison', en: 'Shipping', es: 'Envio' })}</span>
+                                  <span className="text-heading">{order.shipping === 0 ? tx({ fr: 'Gratuit', en: 'Free', es: 'Gratis' }) : dollars(order.shipping)}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-grey-muted">TPS (5%)</span>
+                                  <span className="text-heading">{dollars(order.tps)}</span>
+                                </div>
+                                {order.tvq > 0 && (
+                                  <div className="flex justify-between">
+                                    <span className="text-grey-muted">TVQ (9.975%)</span>
+                                    <span className="text-heading">{dollars(order.tvq)}</span>
+                                  </div>
+                                )}
+                                <div className="flex justify-between border-t pt-2 mt-2 card-border">
+                                  <span className="text-heading font-bold text-base">Total</span>
+                                  <span className="text-heading font-bold text-lg">{dollars(order.total)}</span>
                                 </div>
                               </div>
                               {order.totalWeight > 0 && (
-                                <p className="text-xs text-grey-muted mt-2">{tx({ fr: 'Poids', en: 'Weight', es: 'Peso' })}: {order.totalWeight}g</p>
+                                <p className="text-xs text-grey-muted mt-3">{tx({ fr: 'Poids total', en: 'Total weight', es: 'Peso total' })}: {order.totalWeight}g</p>
                               )}
                             </div>
 
                             {/* Shipping address */}
-                            <div className="rounded-lg bg-glass p-3">
-                              <h4 className="text-xs font-semibold text-grey-muted uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                            <div className="rounded-lg bg-glass p-4">
+                              <h4 className="text-xs font-semibold text-grey-muted uppercase tracking-wider mb-3 flex items-center gap-1.5">
                                 <MapPin size={12} />
                                 {tx({ fr: 'Adresse de livraison', en: 'Shipping address', es: 'Direccion de envio' })}
                               </h4>
                               {order.shippingAddress ? (
-                                <div className="text-sm text-heading space-y-0.5">
-                                  <p>{order.customerName}</p>
+                                <div className="text-sm text-heading space-y-1">
+                                  <p className="font-medium">{order.customerName}</p>
                                   <p>{order.shippingAddress.address}</p>
                                   <p>{order.shippingAddress.city}, {order.shippingAddress.province} {order.shippingAddress.postalCode}</p>
-                                  {order.customerPhone && <p className="text-grey-muted text-xs mt-1">{order.customerPhone}</p>}
+                                  {order.customerPhone && (
+                                    <p className="text-grey-muted text-xs mt-2 flex items-center gap-1.5">
+                                      <Phone size={11} /> {order.customerPhone}
+                                    </p>
+                                  )}
                                 </div>
                               ) : (
-                                <p className="text-sm text-grey-muted">-</p>
+                                <p className="text-sm text-grey-muted">{tx({ fr: 'Aucune adresse', en: 'No address', es: 'Sin direccion' })}</p>
                               )}
-                              <div className="mt-2 flex items-center gap-2">
-                                <span className="text-xs text-grey-muted">Design ready:</span>
-                                <span className={`text-xs font-semibold ${order.designReady ? 'text-green-400' : 'text-yellow-400'}`}>
+                              <div className="mt-3 flex items-center gap-2">
+                                <span className="text-xs text-grey-muted">{tx({ fr: 'Design pret', en: 'Design ready', es: 'Diseno listo' })}:</span>
+                                <span className={`text-xs font-semibold px-2 py-0.5 rounded ${order.designReady ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'}`}>
                                   {order.designReady ? tx({ fr: 'Oui', en: 'Yes', es: 'Si' }) : tx({ fr: 'Non', en: 'No', es: 'No' })}
                                 </span>
                               </div>

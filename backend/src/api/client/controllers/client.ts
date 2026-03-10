@@ -23,13 +23,25 @@ export default factories.createCoreController('api::client.client', ({ strapi })
         sort,
         limit: pageSize,
         start: (page - 1) * pageSize,
+        populate: { orders: { sort: 'createdAt:desc', limit: 1 } },
       }),
       strapi.documents('api::client.client').findMany({ filters }),
     ]);
 
+    // Enrichir chaque client avec l'adresse du dernier order
+    const enriched = items.map((c: any) => {
+      const lastOrder = c.orders?.[0];
+      return {
+        ...c,
+        lastShippingAddress: lastOrder?.shippingAddress || null,
+        lastCustomerPhone: lastOrder?.customerPhone || c.phone || null,
+        orders: undefined, // ne pas envoyer le raw orders au frontend
+      };
+    });
+
     const total = allFiltered.length;
     ctx.body = {
-      data: items,
+      data: enriched,
       meta: { page, pageSize, total, pageCount: Math.ceil(total / pageSize) },
     };
   },

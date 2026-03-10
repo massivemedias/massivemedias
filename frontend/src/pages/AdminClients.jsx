@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search, Users, DollarSign, ShoppingBag, Calendar,
-  Loader2, ChevronLeft, ChevronRight, Mail, Phone, Building2,
+  Loader2, ChevronLeft, ChevronRight, ChevronDown, ChevronUp,
+  Mail, Phone, Building2, MapPin,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import { getClients } from '../services/adminService';
@@ -16,6 +17,7 @@ function AdminClients() {
   const [search, setSearch] = useState('');
   const [searchDebounce, setSearchDebounce] = useState('');
   const [sort, setSort] = useState('lastOrderDate:desc');
+  const [expandedId, setExpandedId] = useState(null);
 
   useEffect(() => {
     const t = setTimeout(() => setSearchDebounce(search), 400);
@@ -55,6 +57,8 @@ function AdminClients() {
     { value: 'createdAt:desc', fr: 'Plus recent', en: 'Newest', es: 'Mas reciente' },
   ];
 
+  const toggleExpand = (id) => setExpandedId(expandedId === id ? null : id);
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -89,33 +93,159 @@ function AdminClients() {
         <div className="text-center py-20 text-grey-muted">{tx({ fr: 'Aucun client', en: 'No clients', es: 'Sin clientes' })}</div>
       ) : (
         <div className="rounded-xl bg-glass overflow-hidden card-border">
-          <div className="hidden md:grid grid-cols-[1fr_1fr_100px_80px_100px_100px] gap-3 px-4 py-3 text-xs font-semibold text-grey-muted uppercase tracking-wider border-b card-border">
-            <span>Nom</span>
-            <span>Email</span>
-            <span>{tx({ fr: 'Entreprise', en: 'Company', es: 'Empresa' })}</span>
+          <div className="hidden md:grid grid-cols-[1fr_1fr_120px_80px_100px_40px] gap-3 px-4 py-3 text-xs font-semibold text-grey-muted uppercase tracking-wider border-b card-border">
+            <span>{tx({ fr: 'Client', en: 'Client', es: 'Cliente' })}</span>
+            <span>{tx({ fr: 'Contact', en: 'Contact', es: 'Contacto' })}</span>
+            <span>{tx({ fr: 'Depense', en: 'Spent', es: 'Gastado' })}</span>
             <span>{tx({ fr: 'Cmd', en: 'Orders', es: 'Ped' })}</span>
-            <span>{tx({ fr: 'Total', en: 'Total', es: 'Total' })}</span>
             <span>{tx({ fr: 'Derniere cmd', en: 'Last order', es: 'Ultimo ped' })}</span>
+            <span></span>
           </div>
 
-          {items.map((client) => (
-            <div key={client.documentId} className="grid grid-cols-1 md:grid-cols-[1fr_1fr_100px_80px_100px_100px] gap-2 md:gap-3 px-4 py-3 items-center border-b last:border-b-0 card-border hover:bg-accent/5 transition-colors">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center text-accent font-bold text-xs">
-                  {(client.name || '?')[0].toUpperCase()}
-                </div>
-                <span className="text-sm text-heading font-medium truncate">{client.name}</span>
-              </div>
-              <div className="flex items-center gap-1.5 min-w-0">
-                <Mail size={12} className="text-grey-muted flex-shrink-0" />
-                <span className="text-xs text-grey-muted truncate">{client.email}</span>
-              </div>
-              <span className="text-xs text-grey-muted truncate">{client.company || '-'}</span>
-              <span className="text-sm text-heading font-semibold">{client.orderCount || 0}</span>
-              <span className="text-sm text-heading font-semibold">{formatMoney(client.totalSpent)}</span>
-              <span className="text-xs text-grey-muted">{formatDate(client.lastOrderDate)}</span>
-            </div>
-          ))}
+          <AnimatePresence>
+            {items.map((client) => {
+              const isExpanded = expandedId === client.documentId;
+              const addr = client.lastShippingAddress;
+              const phone = client.lastCustomerPhone || client.phone;
+
+              return (
+                <motion.div
+                  key={client.documentId}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="border-b last:border-b-0 card-border"
+                >
+                  <div
+                    onClick={() => toggleExpand(client.documentId)}
+                    className="grid grid-cols-1 md:grid-cols-[1fr_1fr_120px_80px_100px_40px] gap-2 md:gap-3 px-4 py-3 items-center cursor-pointer hover:bg-accent/5 transition-colors"
+                  >
+                    {/* Nom + entreprise */}
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-full bg-accent/20 flex items-center justify-center text-accent font-bold text-sm flex-shrink-0">
+                        {(client.name || '?')[0].toUpperCase()}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm text-heading font-semibold truncate">{client.name}</p>
+                        {client.company && (
+                          <p className="text-xs text-grey-muted truncate flex items-center gap-1">
+                            <Building2 size={10} className="flex-shrink-0" />
+                            {client.company}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Contact */}
+                    <div className="min-w-0 space-y-0.5">
+                      <p className="text-xs text-grey-muted truncate flex items-center gap-1.5">
+                        <Mail size={11} className="flex-shrink-0" />
+                        {client.email}
+                      </p>
+                      {phone && (
+                        <p className="text-xs text-grey-muted truncate flex items-center gap-1.5">
+                          <Phone size={11} className="flex-shrink-0" />
+                          {phone}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Depense totale */}
+                    <span className="text-sm text-heading font-bold">{formatMoney(client.totalSpent)}</span>
+
+                    {/* Nb commandes */}
+                    <span className="text-sm text-heading font-semibold">{client.orderCount || 0}</span>
+
+                    {/* Derniere commande */}
+                    <span className="text-xs text-grey-muted">{formatDate(client.lastOrderDate)}</span>
+
+                    {/* Expand arrow */}
+                    <span className="text-grey-muted justify-self-end">
+                      {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                    </span>
+                  </div>
+
+                  {/* Expanded detail */}
+                  <AnimatePresence>
+                    {isExpanded && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="px-4 pb-4 pt-1 border-t card-border bg-glass/50">
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-3">
+                            {/* Coordonnees */}
+                            <div className="rounded-lg bg-glass p-3">
+                              <h4 className="text-xs font-semibold text-grey-muted uppercase tracking-wider mb-2">
+                                {tx({ fr: 'Coordonnees', en: 'Contact info', es: 'Datos de contacto' })}
+                              </h4>
+                              <div className="space-y-2 text-sm">
+                                <p className="text-heading font-medium">{client.name}</p>
+                                <p className="text-grey-muted flex items-center gap-2"><Mail size={13} /> {client.email}</p>
+                                {phone && <p className="text-grey-muted flex items-center gap-2"><Phone size={13} /> {phone}</p>}
+                                {client.company && <p className="text-grey-muted flex items-center gap-2"><Building2 size={13} /> {client.company}</p>}
+                              </div>
+                            </div>
+
+                            {/* Adresse */}
+                            <div className="rounded-lg bg-glass p-3">
+                              <h4 className="text-xs font-semibold text-grey-muted uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                                <MapPin size={12} />
+                                {tx({ fr: 'Derniere adresse', en: 'Last address', es: 'Ultima direccion' })}
+                              </h4>
+                              {addr ? (
+                                <div className="text-sm text-heading space-y-0.5">
+                                  <p>{addr.address}</p>
+                                  <p>{addr.city}, {addr.province} {addr.postalCode}</p>
+                                </div>
+                              ) : (
+                                <p className="text-sm text-grey-muted">{tx({ fr: 'Aucune adresse enregistree', en: 'No address on file', es: 'Sin direccion registrada' })}</p>
+                              )}
+                            </div>
+
+                            {/* Resume financier */}
+                            <div className="rounded-lg bg-glass p-3">
+                              <h4 className="text-xs font-semibold text-grey-muted uppercase tracking-wider mb-2">
+                                {tx({ fr: 'Resume', en: 'Summary', es: 'Resumen' })}
+                              </h4>
+                              <div className="space-y-1.5 text-sm">
+                                <div className="flex justify-between">
+                                  <span className="text-grey-muted">{tx({ fr: 'Commandes', en: 'Orders', es: 'Pedidos' })}</span>
+                                  <span className="text-heading font-semibold">{client.orderCount || 0}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-grey-muted">{tx({ fr: 'Total depense', en: 'Total spent', es: 'Total gastado' })}</span>
+                                  <span className="text-heading font-bold">{formatMoney(client.totalSpent)}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-grey-muted">{tx({ fr: 'Derniere commande', en: 'Last order', es: 'Ultimo pedido' })}</span>
+                                  <span className="text-heading">{formatDate(client.lastOrderDate)}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-grey-muted">{tx({ fr: 'Membre depuis', en: 'Member since', es: 'Miembro desde' })}</span>
+                                  <span className="text-heading">{formatDate(client.createdAt)}</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Notes */}
+                          {(client.notesFr || client.notesEn) && (
+                            <div className="mt-3 rounded-lg bg-glass p-3">
+                              <h4 className="text-xs font-semibold text-grey-muted uppercase tracking-wider mb-1">Notes</h4>
+                              <p className="text-sm text-heading">{client.notesFr || client.notesEn}</p>
+                            </div>
+                          )}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+              );
+            })}
+          </AnimatePresence>
         </div>
       )}
 
