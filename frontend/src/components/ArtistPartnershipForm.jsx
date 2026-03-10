@@ -114,9 +114,28 @@ function ArtistPartnershipForm() {
         </p>
 
         <div
-          className="rounded-xl bg-glass border border-purple-main/20 p-6 max-h-[500px] overflow-y-auto mb-10 text-sm text-grey-light leading-relaxed contract-content"
+          className="rounded-xl bg-glass border border-purple-main/20 p-6 max-h-[500px] overflow-y-auto mb-6 text-sm text-grey-light leading-relaxed contract-content"
           dangerouslySetInnerHTML={{ __html: ARTIST_CONTRACT_TEXT }}
         />
+
+        {/* Checkbox contrat - juste apres le contrat */}
+        <div className="mb-10">
+          <label className="flex items-start gap-3 cursor-pointer group p-4 rounded-xl border border-purple-main/20 bg-glass/50 hover:border-accent/40 transition-colors">
+            <input
+              type="checkbox"
+              checked={contractAccepted}
+              onChange={(e) => setContractAccepted(e.target.checked)}
+              className="mt-0.5 w-5 h-5 rounded border-2 border-grey-muted/50 accent-accent cursor-pointer flex-shrink-0"
+            />
+            <span className="text-heading text-sm leading-relaxed group-hover:text-accent transition-colors">
+              {tx({
+                fr: "J'ai lu et j'accepte les conditions du contrat de partenariat artiste ci-dessus.",
+                en: 'I have read and accept the terms of the artist partnership contract above.',
+                es: 'He leido y acepto los terminos del contrato de asociacion artistica anterior.',
+              })}
+            </span>
+          </label>
+        </div>
       </motion.div>
 
       {/* Formulaire */}
@@ -248,25 +267,6 @@ function ArtistPartnershipForm() {
               maxFiles={20}
               uploadFn={uploadArtistFile}
             />
-          </div>
-
-          {/* Checkbox contrat */}
-          <div className="pt-2">
-            <label className="flex items-start gap-3 cursor-pointer group">
-              <input
-                type="checkbox"
-                checked={contractAccepted}
-                onChange={(e) => setContractAccepted(e.target.checked)}
-                className="mt-1 w-5 h-5 rounded border-2 border-grey-muted/50 accent-accent cursor-pointer"
-              />
-              <span className="text-heading text-sm leading-relaxed group-hover:text-accent transition-colors">
-                {tx({
-                  fr: "J'ai lu et j'accepte les conditions du contrat de partenariat artiste ci-dessus.",
-                  en: 'I have read and accept the terms of the artist partnership contract above.',
-                  es: 'He leido y acepto los terminos del contrato de asociacion artistica anterior.',
-                })}
-              </span>
-            </label>
           </div>
 
           {/* Erreur */}
