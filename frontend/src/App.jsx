@@ -37,6 +37,7 @@ const AdminClients = lazy(() => import('./pages/AdminClients'));
 const AdminDepenses = lazy(() => import('./pages/AdminDepenses'));
 const AdminStats = lazy(() => import('./pages/AdminStats'));
 const ProtectedRoute = lazy(() => import('./components/ProtectedRoute'));
+const AdminRoute = lazy(() => import('./components/AdminRoute'));
 
 // Base path pour GitHub Pages
 const basename = import.meta.env.BASE_URL;
@@ -103,13 +104,13 @@ function App() {
             <Route path="/artistes" element={<Artistes />} />
             <Route path="/artistes/:slug" element={<ArtisteDetail />} />
 
-            {/* Admin */}
-            <Route path="/mm-admin" element={<MmAdmin />} />
+            {/* Admin - redirige vers le dashboard */}
+            <Route path="/mm-admin" element={<AdminRoute><MmAdmin /></AdminRoute>} />
           </Route>
 
           {/* Admin dashboard */}
           <Route element={<MainLayout />}>
-            <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
+            <Route path="/admin" element={<AdminRoute><AdminLayout /></AdminRoute>}>
               <Route index element={<Navigate to="/admin/commandes" replace />} />
               <Route path="commandes" element={<AdminOrders />} />
               <Route path="inventaire" element={<AdminInventaire />} />
