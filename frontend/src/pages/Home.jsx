@@ -47,12 +47,16 @@ const fallbackFeaturedProjectImages = [
   thumb('/images/realisations/stickers/Stickers-Cosmovision.webp'),
   thumb('/images/realisations/textile/Textile1.webp'),
   thumb('/images/graphism/onomiko.webp'),
+  thumb('/images/realisations/stickers/Stickers-massive.webp'),
+  thumb('/images/mugs/mug-white.webp'),
 ];
 const fallbackFeaturedProjectLinks = [
   '/boutique/fine-art',
   '/boutique/stickers',
   '/boutique/sublimation',
   '/services/design',
+  '/boutique/stickers',
+  '/boutique/sublimation',
 ];
 
 function Home() {

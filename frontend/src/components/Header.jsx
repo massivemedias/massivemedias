@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Menu, X, ShoppingCart, UserCircle } from 'lucide-react';
+import { Menu, X, ShoppingCart, UserCircle, LogIn } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import MassiveLogo from './MassiveLogo';
 import { useLang } from '../i18n/LanguageContext';
@@ -69,14 +69,19 @@ function Header() {
               </button>
 
               {/* Account / Login */}
-              <Link to={user ? '/account' : '/login'} className="flex items-center gap-1.5 p-2 transition-colors duration-200 nav-link" title={user ? t('nav.account') : t('nav.login')}>
-                <UserCircle size={20} />
-                {user && (
+              {user ? (
+                <Link to="/account" className="flex items-center gap-1.5 p-2 transition-colors duration-200 nav-link" title={t('nav.account')}>
+                  <UserCircle size={20} />
                   <span className="text-sm font-medium max-w-[100px] truncate">
                     {user.user_metadata?.full_name?.split(' ')[0] || user.email?.split('@')[0]}
                   </span>
-                )}
-              </Link>
+                </Link>
+              ) : (
+                <Link to="/login" className="flex items-center gap-2 px-4 py-1.5 rounded-full border border-accent/60 text-accent text-sm font-semibold transition-all duration-200 hover:bg-accent hover:text-white whitespace-nowrap">
+                  <LogIn size={16} />
+                  {t('nav.login')}
+                </Link>
+              )}
 
               {/* Panier */}
               <Link to="/panier" className="relative p-2 transition-colors duration-200 nav-link" aria-label={t('nav.panier')}>
@@ -149,7 +154,6 @@ function Header() {
                   {[
                     { to: '/a-propos', label: t('nav.aPropos') },
                     { to: '/panier', label: `${t('nav.panier')}${cartCount > 0 ? ` (${cartCount})` : ''}` },
-                    { to: user ? '/account' : '/login', label: user ? `${user.user_metadata?.full_name?.split(' ')[0] || t('nav.account')}` : t('nav.login') },
                   ].map(item => (
                     <Link
                       key={item.to}
@@ -160,6 +164,25 @@ function Header() {
                       {item.label}
                     </Link>
                   ))}
+
+                  {user ? (
+                    <Link
+                      to="/account"
+                      className="transition-colors duration-200 font-medium py-2.5 text-sm nav-link"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      {user.user_metadata?.full_name?.split(' ')[0] || t('nav.account')}
+                    </Link>
+                  ) : (
+                    <Link
+                      to="/login"
+                      className="flex items-center justify-center gap-2 mt-3 px-4 py-2.5 rounded-full border border-accent/60 text-accent text-sm font-semibold transition-all duration-200 hover:bg-accent hover:text-white"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <LogIn size={16} />
+                      {t('nav.login')}
+                    </Link>
+                  )}
 
                   <Link to="/contact" className="btn-primary text-center mt-3 text-sm py-2.5" onClick={() => setMobileMenuOpen(false)}>
                     {t('nav.contact')}

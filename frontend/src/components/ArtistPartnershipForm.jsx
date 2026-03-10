@@ -4,10 +4,11 @@ import { Send, CheckCircle, AlertCircle, FileText, Palette } from 'lucide-react'
 import { useLang } from '../i18n/LanguageContext';
 import api, { uploadArtistFile } from '../services/api';
 import FileUpload from './FileUpload';
-import { ARTIST_CONTRACT_TEXT, ARTIST_CONTRACT_VERSION } from '../data/artistContract';
+import { ARTIST_CONTRACT_TEXT, ARTIST_CONTRACT_TEXT_EN, ARTIST_CONTRACT_TEXT_ES, ARTIST_CONTRACT_VERSION } from '../data/artistContract';
 
 function ArtistPartnershipForm() {
-  const { tx } = useLang();
+  const { tx, lang } = useLang();
+  const contractText = lang === 'en' ? ARTIST_CONTRACT_TEXT_EN : lang === 'es' ? ARTIST_CONTRACT_TEXT_ES : ARTIST_CONTRACT_TEXT;
 
   const [formData, setFormData] = useState({
     nomLegal: '',
@@ -115,7 +116,7 @@ function ArtistPartnershipForm() {
 
         <div
           className="rounded-xl bg-glass border border-purple-main/20 p-6 max-h-[500px] overflow-y-auto mb-6 text-sm text-grey-light leading-relaxed contract-content"
-          dangerouslySetInnerHTML={{ __html: ARTIST_CONTRACT_TEXT }}
+          dangerouslySetInnerHTML={{ __html: contractText }}
         />
 
         {/* Checkbox contrat - juste apres le contrat */}
