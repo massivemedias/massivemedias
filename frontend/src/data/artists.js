@@ -150,6 +150,12 @@ const artistsData = {
       { id: 'psyqu33n-stk-006', titleFr: 'Bat', titleEn: 'Bat', titleEs: 'Murcielago', image: img('/images/stickers/Stickers-Psyqu33n6.webp'), fullImage: img('/images/stickers/Stickers-Psyqu33n6.webp') },
       { id: 'psyqu33n-stk-007', titleFr: 'Monkey', titleEn: 'Monkey', titleEs: 'Mono', image: img('/images/stickers/Stickers-Psyqu33n7.webp'), fullImage: img('/images/stickers/Stickers-Psyqu33n7.webp') },
       { id: 'psyqu33n-stk-008', titleFr: 'Ailes', titleEn: 'Wings', titleEs: 'Alas', image: img('/images/stickers/Stickers-Psyqu33n8.webp'), fullImage: img('/images/stickers/Stickers-Psyqu33n8.webp') },
+      { id: 'psyqu33n-stk-009', titleFr: 'Illustration', titleEn: 'Illustration', titleEs: 'Ilustracion', image: img('/images/stickers/Stickers-Psyqu33n9.webp'), fullImage: img('/images/stickers/Stickers-Psyqu33n9.webp') },
+      { id: 'psyqu33n-stk-010', titleFr: 'Medusa See', titleEn: 'Medusa See', titleEs: 'Medusa See', image: img('/images/stickers/Stickers-Psyqu33n10.webp'), fullImage: img('/images/stickers/Stickers-Psyqu33n10.webp') },
+      { id: 'psyqu33n-stk-011', titleFr: 'Psyqu33n', titleEn: 'Psyqu33n', titleEs: 'Psyqu33n', image: img('/images/stickers/Stickers-Psyqu33n11.webp'), fullImage: img('/images/stickers/Stickers-Psyqu33n11.webp') },
+      { id: 'psyqu33n-stk-012', titleFr: 'Sticker Psyqu33n', titleEn: 'Psyqu33n Sticker', titleEs: 'Sticker Psyqu33n', image: img('/images/stickers/Stickers-Psyqu33n12.webp'), fullImage: img('/images/stickers/Stickers-Psyqu33n12.webp') },
+      { id: 'psyqu33n-stk-013', titleFr: 'Sticker Queen', titleEn: 'Sticker Queen', titleEs: 'Sticker Queen', image: img('/images/stickers/Stickers-Psyqu33n13.webp'), fullImage: img('/images/stickers/Stickers-Psyqu33n13.webp') },
+      { id: 'psyqu33n-stk-014', titleFr: 'Trouver le divin en soi', titleEn: 'Finding the Divine Within', titleEs: 'Encontrar lo divino en uno mismo', image: img('/images/stickers/Stickers-Psyqu33n14.webp'), fullImage: img('/images/stickers/Stickers-Psyqu33n14.webp') },
     ],
     prints: [
       { id: 'psyqu33n-001', titleFr: "Accepter ses parts d'ombres et de lumiere", titleEn: 'Embracing Shadow and Light', titleEs: 'Aceptar sus partes de sombra y luz', image: thumb('/images/prints/Psyqu33n1.webp'), fullImage: img('/images/prints/Psyqu33n1.webp'), limited: false },
