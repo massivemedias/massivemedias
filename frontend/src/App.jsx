@@ -33,6 +33,7 @@ const AdminOrders = lazy(() => import('./pages/AdminOrders'));
 const AdminInventaire = lazy(() => import('./pages/AdminInventaire'));
 const AdminMessages = lazy(() => import('./pages/AdminMessages'));
 const AdminArtistes = lazy(() => import('./pages/AdminArtistes'));
+const AdminCommissions = lazy(() => import('./pages/AdminCommissions'));
 const AdminClients = lazy(() => import('./pages/AdminClients'));
 const AdminDepenses = lazy(() => import('./pages/AdminDepenses'));
 const AdminStats = lazy(() => import('./pages/AdminStats'));
@@ -114,9 +115,11 @@ function App() {
             <Route path="/admin" element={<AdminRoute><AdminLayout /></AdminRoute>}>
               <Route index element={<Navigate to="/admin/commandes" replace />} />
               <Route path="commandes" element={<AdminOrders />} />
+              <Route path="commissions" element={<AdminCommissions />} />
               <Route path="inventaire" element={<AdminInventaire />} />
               <Route path="messages" element={<AdminMessages />} />
-              <Route path="artistes" element={<AdminArtistes />} />
+              <Route path="candidatures" element={<AdminArtistes />} />
+              <Route path="artistes" element={<Navigate to="/admin/candidatures" replace />} />
               <Route path="clients" element={<AdminClients />} />
               <Route path="utilisateurs" element={<AdminUtilisateurs />} />
               <Route path="depenses" element={<AdminDepenses />} />

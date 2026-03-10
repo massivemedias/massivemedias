@@ -41,6 +41,8 @@
       "allowedTypes": ["images"]
     },
     "sortOrder": { "type": "integer", "default": 0 },
-    "active": { "type": "boolean", "default": true }
+    "active": { "type": "boolean", "default": true },
+    "commissionRate": { "type": "decimal", "default": 0.5 },
+    "productionCosts": { "type": "json" }
   }
 }

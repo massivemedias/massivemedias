@@ -50,6 +50,14 @@ export default {
     },
     {
       method: 'GET',
+      path: '/orders/commissions',
+      handler: 'order.commissions',
+      config: {
+        auth: false,
+      },
+    },
+    {
+      method: 'GET',
       path: '/orders/admin',
       handler: 'order.adminList',
       config: {

@@ -1,7 +1,7 @@
 import { Outlet, NavLink, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
-  ShoppingBag, Package, MessageSquare, Palette,
+  ShoppingBag, Package, MessageSquare, Palette, Banknote,
   Users, UserCircle, Receipt, BarChart3, Menu, X,
 } from 'lucide-react';
 import { useState } from 'react';
@@ -9,9 +9,10 @@ import { useLang } from '../i18n/LanguageContext';
 
 const NAV_ITEMS = [
   { to: '/admin/commandes', icon: ShoppingBag, fr: 'Commandes', en: 'Orders', es: 'Pedidos' },
+  { to: '/admin/commissions', icon: Banknote, fr: 'Commissions', en: 'Commissions', es: 'Comisiones' },
   { to: '/admin/inventaire', icon: Package, fr: 'Inventaire', en: 'Inventory', es: 'Inventario' },
   { to: '/admin/messages', icon: MessageSquare, fr: 'Messages', en: 'Messages', es: 'Mensajes' },
-  { to: '/admin/artistes', icon: Palette, fr: 'Artistes', en: 'Artists', es: 'Artistas' },
+  { to: '/admin/candidatures', icon: Palette, fr: 'Candidatures', en: 'Applications', es: 'Candidaturas' },
   { to: '/admin/clients', icon: Users, fr: 'Clients', en: 'Clients', es: 'Clientes' },
   { to: '/admin/utilisateurs', icon: UserCircle, fr: 'Utilisateurs', en: 'Users', es: 'Usuarios' },
   { to: '/admin/depenses', icon: Receipt, fr: 'Depenses', en: 'Expenses', es: 'Gastos' },

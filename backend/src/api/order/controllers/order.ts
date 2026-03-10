@@ -394,6 +394,146 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
     ctx.body = { data: updated };
   },
 
+  async commissions(ctx) {
+    // 1. Fetch all active artists
+    const artists = await strapi.documents('api::artist.artist').findMany({
+      filters: { active: true },
+    });
+    const artistMap: Record<string, any> = {};
+    for (const a of artists) {
+      artistMap[a.slug] = a;
+    }
+    const slugs = Object.keys(artistMap);
+
+    // 2. Fetch completed orders
+    const validStatuses = ['paid', 'processing', 'shipped', 'delivered'];
+    const orders = await strapi.documents('api::order.order').findMany({
+      filters: { status: { $in: validStatuses } },
+      sort: 'createdAt:desc',
+    });
+
+    // Default production costs (fallback)
+    const DEFAULT_COSTS: Record<string, any> = {
+      studio: { a4: 12, a3: 16, a3plus: 20, a2: 28 },
+      museum: { a4: 25, a3: 38, a3plus: 48, a2: 65 },
+      frame: 8,
+    };
+
+    function getProductionCost(artist: any, item: any): number {
+      const costs = artist.productionCosts || DEFAULT_COSTS;
+      const tier = (item.finish || 'studio').toLowerCase().includes('museum') ? 'museum' : 'studio';
+      const format = (item.size || 'a4').toLowerCase().replace(/[^a-z0-9]/g, '');
+      const tierCosts = costs[tier] || DEFAULT_COSTS[tier];
+      let cost = (tierCosts && tierCosts[format]) || 15;
+      if (item.withFrame || (item.productName || '').toLowerCase().includes('cadre')) {
+        cost += (costs.frame ?? DEFAULT_COSTS.frame);
+      }
+      return cost;
+    }
+
+    // 3. Parse items, match artist slugs, calculate commissions
+    const commissionsByArtist: Record<string, any> = {};
+
+    for (const order of orders) {
+      const items: any[] = Array.isArray(order.items) ? order.items : [];
+      for (const item of items) {
+        const pid = item.productId || '';
+        if (!pid.startsWith('artist-print-')) continue;
+
+        let matchedSlug: string | null = null;
+        for (const slug of slugs) {
+          if (pid.startsWith(`artist-print-${slug}-`)) {
+            if (!matchedSlug || slug.length > matchedSlug.length) {
+              matchedSlug = slug;
+            }
+          }
+        }
+        if (!matchedSlug) continue;
+
+        const artist = artistMap[matchedSlug];
+        const rate = parseFloat(artist.commissionRate) || 0.5;
+        const salePrice = item.totalPrice || item.unitPrice || 0;
+        const prodCost = getProductionCost(artist, item);
+        const qty = item.quantity || 1;
+        const totalSale = salePrice * qty;
+        const totalProd = prodCost * qty;
+        const netProfit = Math.max(0, totalSale - totalProd);
+        const commission = Math.round(netProfit * rate * 100) / 100;
+
+        if (!commissionsByArtist[matchedSlug]) {
+          commissionsByArtist[matchedSlug] = {
+            slug: matchedSlug,
+            name: artist.name,
+            rate,
+            totalSales: 0,
+            totalProduction: 0,
+            totalNetProfit: 0,
+            totalCommission: 0,
+            totalPaid: 0,
+            balance: 0,
+            orders: [],
+          };
+        }
+
+        const c = commissionsByArtist[matchedSlug];
+        c.totalSales += totalSale;
+        c.totalProduction += totalProd;
+        c.totalNetProfit += netProfit;
+        c.totalCommission += commission;
+        c.orders.push({
+          orderId: order.documentId,
+          orderDate: order.createdAt,
+          customerName: order.customerName,
+          productId: pid,
+          productName: item.productName || '',
+          size: item.size || '',
+          finish: item.finish || '',
+          quantity: qty,
+          salePrice: totalSale,
+          productionCost: totalProd,
+          netProfit,
+          commission,
+        });
+      }
+    }
+
+    // 4. Fetch artist payments
+    let payments: any[] = [];
+    try {
+      payments = await strapi.documents('api::artist-payment.artist-payment').findMany({
+        sort: 'date:desc',
+      });
+    } catch {
+      // content type might not exist yet
+    }
+
+    const paymentsByArtist: Record<string, any[]> = {};
+    for (const p of payments) {
+      const slug = p.artistSlug;
+      if (!paymentsByArtist[slug]) paymentsByArtist[slug] = [];
+      paymentsByArtist[slug].push(p);
+      if (commissionsByArtist[slug]) {
+        commissionsByArtist[slug].totalPaid += parseFloat(p.amount) || 0;
+      }
+    }
+
+    // Round and calculate balance
+    for (const slug of Object.keys(commissionsByArtist)) {
+      const c = commissionsByArtist[slug];
+      c.totalSales = Math.round(c.totalSales * 100) / 100;
+      c.totalProduction = Math.round(c.totalProduction * 100) / 100;
+      c.totalNetProfit = Math.round(c.totalNetProfit * 100) / 100;
+      c.totalCommission = Math.round(c.totalCommission * 100) / 100;
+      c.totalPaid = Math.round(c.totalPaid * 100) / 100;
+      c.balance = Math.round((c.totalCommission - c.totalPaid) * 100) / 100;
+      c.payments = paymentsByArtist[slug] || [];
+    }
+
+    ctx.body = {
+      artists: Object.values(commissionsByArtist),
+    };
+  },
+
   async stats(ctx) {
     // Fetch all non-cancelled orders
     const orders = await strapi.documents('api::order.order').findMany({

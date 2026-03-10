@@ -20,3 +20,7 @@ export const getClients = (params) => api.get('/clients/admin', { params });
 // --- Depenses ---
 export const getExpenses = (params) => api.get('/expenses/admin', { params });
 export const createExpense = (data) => api.post('/expenses/create', data);
+
+// --- Commissions artistes ---
+export const getCommissions = () => api.get('/orders/commissions');
+export const createArtistPayment = (data) => api.post('/artist-payments/create', data);

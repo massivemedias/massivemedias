@@ -1,0 +1,47 @@
+{
+  "kind": "collectionType",
+  "collectionName": "artist_payments",
+  "info": {
+    "singularName": "artist-payment",
+    "pluralName": "artist-payments",
+    "displayName": "Paiement artiste",
+    "description": "Paiements verses aux artistes"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "artistSlug": {
+      "type": "string",
+      "required": true
+    },
+    "artistName": {
+      "type": "string",
+      "required": true
+    },
+    "amount": {
+      "type": "decimal",
+      "required": true
+    },
+    "method": {
+      "type": "enumeration",
+      "enum": ["interac", "cash", "cheque", "other"],
+      "default": "interac"
+    },
+    "date": {
+      "type": "date",
+      "required": true
+    },
+    "period": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "text"
+    },
+    "artist": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::artist.artist"
+    }
+  }
+}

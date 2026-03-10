@@ -4,7 +4,7 @@ import {
   Search, ChevronDown, ChevronUp, ShoppingBag, DollarSign,
   Clock, Truck, Package, CreditCard, CheckCircle, XCircle,
   RotateCcw, Loader2, ExternalLink, MapPin, Save, Image,
-  FileText, ChevronLeft, ChevronRight, Phone, Mail, Hash,
+  FileText, ChevronLeft, ChevronRight, Phone, Mail, Hash, Palette,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import { getOrders, getOrderStats, updateOrderStatus, updateOrderNotes } from '../services/adminService';
@@ -254,6 +254,8 @@ function AdminOrders() {
               const isExpanded = expandedId === order.documentId;
               const items = Array.isArray(order.items) ? order.items : [];
               const nextStatuses = STATUS_FLOW[order.status] || [];
+              const artistItems = items.filter(i => (i.productId || '').startsWith('artist-print-'));
+              const artistNames = [...new Set(artistItems.map(i => (i.productName || '').split(' - ')[0]).filter(Boolean))];
 
               return (
                 <motion.div
@@ -282,11 +284,19 @@ function AdminOrders() {
                     {/* Total - gros et clair */}
                     <span className="text-lg text-heading font-bold">{dollars(order.total)}</span>
 
-                    {/* Status badge */}
-                    <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold w-fit ${st.color}`}>
-                      <StIcon size={12} />
-                      {tx({ fr: st.fr, en: st.en, es: st.es })}
-                    </span>
+                    {/* Status badge + artist badge */}
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold ${st.color}`}>
+                        <StIcon size={12} />
+                        {tx({ fr: st.fr, en: st.en, es: st.es })}
+                      </span>
+                      {artistNames.length > 0 && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-purple-500/20 text-purple-400">
+                          <Palette size={10} />
+                          {artistNames.join(', ')}
+                        </span>
+                      )}
+                    </div>
 
                     {/* Expand */}
                     <span className="text-grey-muted justify-self-end">
