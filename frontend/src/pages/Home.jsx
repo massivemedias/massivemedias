@@ -66,23 +66,23 @@ function Home() {
   // ── Service Cards (fallback si vide ou absent) ──
   const cmsServiceCards = content?.serviceCards?.length ? content.serviceCards : null;
   const serviceCards = cmsServiceCards
-    ? cmsServiceCards.map((c) => ({
+    ? cmsServiceCards.map((c, i) => ({
         title: bl(c, 'title', lang),
         description: bl(c, 'description', lang),
         icon: getIcon(c.iconName),
         link: c.link,
-        image: mediaUrl(c.image, null),
+        image: mediaUrl(c.image, null) || fallbackServiceImages[i] || null,
       }))
     : null;
 
-  // ── Featured Projects ──
+  // ── Featured Projects (images locales forcees - CMS images non fiables) ──
   const cmsFeaturedProjects = content?.featuredProjects?.length ? content.featuredProjects : null;
   const featuredProjects = cmsFeaturedProjects
     ? cmsFeaturedProjects.map((p, i) => ({
         title: bl(p, 'title', lang),
         category: bl(p, 'category', lang),
         link: p.link,
-        image: mediaUrl(p.image, fallbackFeaturedProjectImages[i] || null),
+        image: fallbackFeaturedProjectImages[i] || mediaUrl(p.image, null),
       }))
     : null;
 
