@@ -148,7 +148,6 @@ const artistsData = {
       { id: 'psyqu33n-stk-004', titleFr: 'Medusa Bandana', titleEn: 'Medusa Bandana', titleEs: 'Medusa Bandana', image: img('/images/stickers/Stickers-Psyqu33n4.webp'), fullImage: img('/images/stickers/Stickers-Psyqu33n4.webp') },
       { id: 'psyqu33n-stk-005', titleFr: 'Incarner son pouvoir', titleEn: 'Embodying Your Power', titleEs: 'Encarnar tu poder', image: img('/images/stickers/Stickers-Psyqu33n5.webp'), fullImage: img('/images/stickers/Stickers-Psyqu33n5.webp') },
       { id: 'psyqu33n-stk-006', titleFr: 'Bat', titleEn: 'Bat', titleEs: 'Murcielago', image: img('/images/stickers/Stickers-Psyqu33n6.webp'), fullImage: img('/images/stickers/Stickers-Psyqu33n6.webp') },
-      { id: 'psyqu33n-stk-007', titleFr: 'Monkey', titleEn: 'Monkey', titleEs: 'Mono', image: img('/images/stickers/Stickers-Psyqu33n7.webp'), fullImage: img('/images/stickers/Stickers-Psyqu33n7.webp') },
       { id: 'psyqu33n-stk-008', titleFr: 'Ailes', titleEn: 'Wings', titleEs: 'Alas', image: img('/images/stickers/Stickers-Psyqu33n8.webp'), fullImage: img('/images/stickers/Stickers-Psyqu33n8.webp') },
       { id: 'psyqu33n-stk-009', titleFr: 'Illustration', titleEn: 'Illustration', titleEs: 'Ilustracion', image: img('/images/stickers/Stickers-Psyqu33n9.webp'), fullImage: img('/images/stickers/Stickers-Psyqu33n9.webp') },
       { id: 'psyqu33n-stk-010', titleFr: 'Medusa See', titleEn: 'Medusa See', titleEs: 'Medusa See', image: img('/images/stickers/Stickers-Psyqu33n10.webp'), fullImage: img('/images/stickers/Stickers-Psyqu33n10.webp') },

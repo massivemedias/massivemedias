@@ -74,7 +74,6 @@ export const stickerImages = [
   img('/images/stickers/Stickers-Psyqu33n4.webp'),
   img('/images/stickers/Stickers-Psyqu33n5.webp'),
   img('/images/stickers/Stickers-Psyqu33n6.webp'),
-  img('/images/stickers/Stickers-Psyqu33n7.webp'),
   img('/images/stickers/Stickers-Psyqu33n8.webp'),
   img('/images/stickers/Stickers-Psyqu33n9.webp'),
   img('/images/stickers/Stickers-Psyqu33n10.webp'),
