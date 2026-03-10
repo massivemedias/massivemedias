@@ -77,7 +77,7 @@ api.interceptors.response.use(
     // 401 = token expire
     if (error.response?.status === 401 && error.config?.headers?.Authorization) {
       localStorage.removeItem('token');
-      const protectedPaths = ['/account', '/checkout', '/mm-admin'];
+      const protectedPaths = ['/account', '/checkout', '/mm-admin', '/admin'];
       if (protectedPaths.some(p => window.location.pathname.startsWith(p))) {
         window.location.href = '/login';
       }
