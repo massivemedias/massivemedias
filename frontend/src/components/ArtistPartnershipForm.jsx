@@ -96,11 +96,38 @@ function ArtistPartnershipForm() {
 
   return (
     <div className="max-w-4xl mx-auto">
-      {/* Contrat */}
+      {/* Intro */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
+        className="mb-10 text-center"
+      >
+        <h2 className="text-3xl font-heading font-bold text-gradient mb-4 flex items-center justify-center gap-3">
+          <Palette size={28} className="text-accent" />
+          {tx({ fr: 'Devenir artiste partenaire', en: 'Become a partner artist', es: 'Conviertete en artista asociado' })}
+        </h2>
+        <p className="text-grey-light text-base leading-relaxed max-w-2xl mx-auto mb-3">
+          {tx({
+            fr: 'Massive Medias offre aux artistes visuels une vitrine professionnelle pour vendre leurs oeuvres en tirages fine art et stickers de qualite. On s\'occupe de l\'impression, de la boutique en ligne et de la logistique - tu te concentres sur ta creation.',
+            en: 'Massive Medias offers visual artists a professional showcase to sell their work as fine art prints and quality stickers. We handle printing, the online store, and logistics - you focus on your art.',
+            es: 'Massive Medias ofrece a los artistas visuales un escaparate profesional para vender sus obras como impresiones fine art y stickers de calidad. Nosotros nos encargamos de la impresion, la tienda en linea y la logistica - tu te concentras en tu arte.',
+          })}
+        </p>
+        <p className="text-grey-muted text-sm">
+          {tx({
+            fr: 'Soumets ton portfolio ci-dessous. On examine chaque candidature et on te contacte rapidement.',
+            en: 'Submit your portfolio below. We review every application and will get back to you quickly.',
+            es: 'Envia tu portafolio a continuacion. Revisamos cada solicitud y te contactamos rapidamente.',
+          })}
+        </p>
+      </motion.div>
+
+      {/* Contrat */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.1 }}
       >
         <h2 className="text-2xl font-heading font-bold text-heading mb-4 flex items-center gap-3">
           <FileText size={24} className="text-accent" />
