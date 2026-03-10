@@ -68,13 +68,6 @@ export const stickerImages = [
   img('/images/realisations/stickers/Stickers-Maudite-Machine.webp'),
   img('/images/realisations/stickers/Stickers-Vrstl.webp'),
   img('/images/realisations/stickers/Stickers-massive.webp'),
-  img('/images/stickers/Stickers-Psyqu33n1.webp'),
-  img('/images/stickers/Stickers-Psyqu33n2.webp'),
-  img('/images/stickers/Stickers-Psyqu33n3.webp'),
-  img('/images/stickers/Stickers-Psyqu33n4.webp'),
-  img('/images/stickers/Stickers-Psyqu33n5.webp'),
-  img('/images/stickers/Stickers-Psyqu33n6.webp'),
-  img('/images/stickers/Stickers-Psyqu33n7.webp'),
 ];
 
 export const stickerHighlights = {

@@ -60,7 +60,7 @@ const defaultClothingProducts = [
 const defaultStickerProducts = [
   { id: 'stk-massive', fr: 'Massive', en: 'Massive', es: 'Massive', image: img('/images/stickers/Stickers-massive.webp') },
   { id: 'stk-maudite', fr: 'Maudite Machine', en: 'Maudite Machine', es: 'Maudite Machine', image: img('/images/stickers/Stickers-Maudite-Machine.webp'), artistSlug: 'maudite-machine' },
-  { id: 'stk-psyqu33n', fr: 'Psyqu33n', en: 'Psyqu33n', es: 'Psyqu33n', image: img('/images/stickers/Stickers-Psyqu33n1.webp'), artistSlug: 'psyqu33n' },
+  { id: 'stk-psyqu33n', fr: 'Psyqu33n', en: 'Psyqu33n', es: 'Psyqu33n', image: null, artistSlug: 'psyqu33n' },
   { id: 'stk-vrstl', fr: 'Vrstl', en: 'Vrstl', es: 'Vrstl', image: img('/images/stickers/Stickers-Vrstl.webp') },
   { id: 'stk-fusion', fr: 'Fusion State Rec', en: 'Fusion State Rec', es: 'Fusion State Rec', image: img('/images/stickers/Stickers-Fusion-State-Rec.webp') },
 ];
