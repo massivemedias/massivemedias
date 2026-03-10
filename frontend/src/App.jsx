@@ -132,8 +132,8 @@ function App() {
               <Route path="commissions" element={<AdminCommissions />} />
               <Route path="inventaire" element={<AdminInventaire />} />
               <Route path="messages" element={<AdminMessages />} />
-              <Route path="candidatures" element={<AdminArtistes />} />
-              <Route path="artistes" element={<Navigate to="/admin/candidatures" replace />} />
+              <Route path="candidatures" element={<Navigate to="/admin/messages" replace />} />
+              <Route path="artistes" element={<Navigate to="/admin/messages" replace />} />
               <Route path="clients" element={<AdminClients />} />
               <Route path="utilisateurs" element={<AdminUtilisateurs />} />
               <Route path="depenses" element={<AdminDepenses />} />
