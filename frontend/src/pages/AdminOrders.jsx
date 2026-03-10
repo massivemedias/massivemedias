@@ -5,9 +5,11 @@ import {
   Clock, Truck, Package, CreditCard, CheckCircle, XCircle,
   RotateCcw, Loader2, ExternalLink, MapPin, Save, Image,
   FileText, ChevronLeft, ChevronRight, Phone, Mail, Hash, Palette,
+  Download, Receipt,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import { getOrders, getOrderStats, updateOrderStatus, updateOrderNotes } from '../services/adminService';
+import { generateInvoicePDF } from '../utils/generateInvoice';
 
 const ORDER_STATUS = {
   pending:    { fr: 'En attente',    en: 'Pending',    es: 'Pendiente',    color: 'bg-yellow-500/20 text-yellow-400', icon: Clock },
@@ -333,6 +335,27 @@ function AdminOrders() {
                                 {order.stripePaymentIntentId || '-'}
                               </p>
                               <p className="text-xs text-grey-muted">{formatDate(order.createdAt)}</p>
+                            </div>
+
+                            {/* Boutons facture / recu */}
+                            <div className="space-y-1">
+                              <h4 className="text-xs font-semibold text-grey-muted uppercase tracking-wider">Documents</h4>
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); generateInvoicePDF(order, 'invoice'); }}
+                                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-accent/20 text-accent hover:bg-accent/30 transition-colors"
+                                >
+                                  <Download size={12} />
+                                  {tx({ fr: 'Facture', en: 'Invoice', es: 'Factura' })}
+                                </button>
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); generateInvoicePDF(order, 'receipt'); }}
+                                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-green-500/20 text-green-400 hover:bg-green-500/30 transition-colors"
+                                >
+                                  <Receipt size={12} />
+                                  {tx({ fr: 'Recu', en: 'Receipt', es: 'Recibo' })}
+                                </button>
+                              </div>
                             </div>
                           </div>
 

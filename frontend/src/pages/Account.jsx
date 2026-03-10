@@ -4,12 +4,13 @@ import { Link } from 'react-router-dom';
 import {
   User, Mail, Phone, MapPin, Building2, Package, LogOut, Loader2, Check, Lock,
   Eye, EyeOff, ChevronDown, ChevronUp, Shield, Pencil, Save, ShoppingBag,
-  ArrowRight, Gift, Copy, Heart, Clock, RotateCcw, MessageCircle,
+  ArrowRight, Gift, Copy, Heart, Clock, RotateCcw, MessageCircle, Download,
 } from 'lucide-react';
 import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 import { getMyOrders } from '../services/orderService';
+import { generateInvoicePDF } from '../utils/generateInvoice';
 import AddressAutocomplete from '../components/AddressAutocomplete';
 
 const PROVINCES_CA = [
@@ -722,6 +723,13 @@ function Account() {
                                       <span>{tx({ fr: 'Design pret', en: 'Design ready', es: 'Diseno listo' })}: {order.designReady ? tx({ fr: 'Oui', en: 'Yes', es: 'Si' }) : tx({ fr: 'Non', en: 'No', es: 'No' })}</span>
                                     )}
                                     <span>{tx({ fr: 'Devise', en: 'Currency', es: 'Moneda' })}: {(order.currency || 'cad').toUpperCase()}</span>
+                                    <button
+                                      onClick={() => generateInvoicePDF(order, 'receipt')}
+                                      className="flex items-center gap-1.5 text-accent font-medium hover:underline"
+                                    >
+                                      <Download size={12} />
+                                      {tx({ fr: 'Telecharger le recu', en: 'Download receipt', es: 'Descargar recibo' })}
+                                    </button>
                                     <Link
                                       to="/boutique"
                                       className="ml-auto flex items-center gap-1.5 text-accent font-medium hover:underline"
