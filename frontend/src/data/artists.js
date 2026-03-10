@@ -141,7 +141,16 @@ const artistsData = {
     },
     avatar: img('/images/prints/Psyqu33nAvatar.webp'),
     heroImage: thumb('/images/prints/Psyqu33n1.webp'),
-    stickers: [],
+    stickers: [
+      { id: 'psyqu33n-stk-001', titleFr: 'Psyqueen', titleEn: 'Psyqueen', titleEs: 'Psyqueen', image: img('/images/stickers/Stickers-Psyqu33n1.webp'), fullImage: img('/images/stickers/Stickers-Psyqu33n1.webp') },
+      { id: 'psyqu33n-stk-002', titleFr: 'See Medusa', titleEn: 'See Medusa', titleEs: 'See Medusa', image: img('/images/stickers/Stickers-Psyqu33n2.webp'), fullImage: img('/images/stickers/Stickers-Psyqu33n2.webp') },
+      { id: 'psyqu33n-stk-003', titleFr: 'The Queen', titleEn: 'The Queen', titleEs: 'The Queen', image: img('/images/stickers/Stickers-Psyqu33n3.webp'), fullImage: img('/images/stickers/Stickers-Psyqu33n3.webp') },
+      { id: 'psyqu33n-stk-004', titleFr: 'Medusa Bandana', titleEn: 'Medusa Bandana', titleEs: 'Medusa Bandana', image: img('/images/stickers/Stickers-Psyqu33n4.webp'), fullImage: img('/images/stickers/Stickers-Psyqu33n4.webp') },
+      { id: 'psyqu33n-stk-005', titleFr: 'Incarner son pouvoir', titleEn: 'Embodying Your Power', titleEs: 'Encarnar tu poder', image: img('/images/stickers/Stickers-Psyqu33n5.webp'), fullImage: img('/images/stickers/Stickers-Psyqu33n5.webp') },
+      { id: 'psyqu33n-stk-006', titleFr: 'Bat', titleEn: 'Bat', titleEs: 'Murcielago', image: img('/images/stickers/Stickers-Psyqu33n6.webp'), fullImage: img('/images/stickers/Stickers-Psyqu33n6.webp') },
+      { id: 'psyqu33n-stk-007', titleFr: 'Monkey', titleEn: 'Monkey', titleEs: 'Mono', image: img('/images/stickers/Stickers-Psyqu33n7.webp'), fullImage: img('/images/stickers/Stickers-Psyqu33n7.webp') },
+      { id: 'psyqu33n-stk-008', titleFr: 'Ailes', titleEn: 'Wings', titleEs: 'Alas', image: img('/images/stickers/Stickers-Psyqu33n8.webp'), fullImage: img('/images/stickers/Stickers-Psyqu33n8.webp') },
+    ],
     prints: [
       { id: 'psyqu33n-001', titleFr: "Accepter ses parts d'ombres et de lumiere", titleEn: 'Embracing Shadow and Light', titleEs: 'Aceptar sus partes de sombra y luz', image: thumb('/images/prints/Psyqu33n1.webp'), fullImage: img('/images/prints/Psyqu33n1.webp'), limited: false },
       { id: 'psyqu33n-002', titleFr: 'Croire en quelque chose de plus grand', titleEn: 'Believing in Something Greater', titleEs: 'Creer en algo mas grande', image: thumb('/images/prints/Psyqu33n2.webp'), fullImage: img('/images/prints/Psyqu33n2.webp'), limited: false },
