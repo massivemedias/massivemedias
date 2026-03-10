@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
   DollarSign, TrendingUp, Receipt, Loader2,
-  BarChart3, Users, ShoppingBag, Percent,
+  BarChart3, Users, ShoppingBag, Percent, ExternalLink,
+  Activity, ArrowUpRight, ArrowDownRight,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import { getOrderStats } from '../services/adminService';
@@ -171,6 +172,91 @@ function AdminStats() {
               <span className={`text-center font-bold ${(stats.taxes?.tpsNet || 0) >= 0 ? 'text-red-400' : 'text-green-400'}`}>{(stats.taxes?.tpsNet || 0).toFixed(2)}$</span>
               <span className={`text-center font-bold ${(stats.taxes?.tvqNet || 0) >= 0 ? 'text-red-400' : 'text-green-400'}`}>{(stats.taxes?.tvqNet || 0).toFixed(2)}$</span>
             </div>
+          </div>
+        </div>
+
+        {/* Google Analytics link */}
+        <div className="rounded-xl bg-glass p-5 card-border">
+          <h3 className="text-sm font-heading font-bold text-heading mb-4 flex items-center gap-2">
+            <Activity size={16} className="text-blue-400" />
+            Google Analytics
+          </h3>
+          <p className="text-grey-muted text-sm mb-4">
+            {tx({
+              fr: 'Consulte les stats detaillees de trafic, visiteurs, pages vues et conversions directement sur Google Analytics.',
+              en: 'View detailed traffic, visitor, pageview and conversion stats directly on Google Analytics.',
+              es: 'Consulta las estadisticas detalladas de trafico, visitantes, paginas vistas y conversiones en Google Analytics.',
+            })}
+          </p>
+          <a
+            href="https://analytics.google.com/analytics/web/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-500/20 text-blue-400 text-sm font-semibold hover:bg-blue-500/30 transition-colors"
+          >
+            <BarChart3 size={16} />
+            {tx({ fr: 'Ouvrir Google Analytics', en: 'Open Google Analytics', es: 'Abrir Google Analytics' })}
+            <ExternalLink size={14} />
+          </a>
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            <a
+              href="https://search.google.com/search-console"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg bg-glass text-grey-muted text-xs hover:text-heading transition-colors"
+            >
+              Search Console <ExternalLink size={10} />
+            </a>
+            <a
+              href="https://dashboard.stripe.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg bg-glass text-grey-muted text-xs hover:text-heading transition-colors"
+            >
+              Stripe Dashboard <ExternalLink size={10} />
+            </a>
+          </div>
+        </div>
+
+        {/* KPIs calcules */}
+        <div className="rounded-xl bg-glass p-5 card-border">
+          <h3 className="text-sm font-heading font-bold text-heading mb-4 flex items-center gap-2">
+            <TrendingUp size={16} className="text-accent" />
+            KPIs
+          </h3>
+          <div className="space-y-4">
+            {(() => {
+              const totalRev = stats.revenue?.totalDollars || 0;
+              const totalOrders2 = stats.orderStats?.total || 0;
+              const avgOrder = totalOrders2 > 0 ? (totalRev / totalOrders2) : 0;
+              const totalExp = stats.expenses?.total || 0;
+              const margin = totalRev > 0 ? ((totalRev - totalExp) / totalRev * 100) : 0;
+              return [
+                { label: tx({ fr: 'Panier moyen', en: 'Avg order value', es: 'Valor medio pedido' }), value: `${avgOrder.toFixed(2)}$`, good: true },
+                { label: tx({ fr: 'Marge nette', en: 'Net margin', es: 'Margen neto' }), value: `${margin.toFixed(1)}%`, good: margin > 0 },
+                { label: tx({ fr: 'Taux annulation', en: 'Cancel rate', es: 'Tasa cancelacion' }),
+                  value: `${totalOrders2 > 0 ? (((byStatus.cancelled || 0) / totalOrders2) * 100).toFixed(1) : 0}%`,
+                  good: false, reverse: true },
+                { label: tx({ fr: 'Taux remboursement', en: 'Refund rate', es: 'Tasa reembolso' }),
+                  value: `${totalOrders2 > 0 ? (((byStatus.refunded || 0) / totalOrders2) * 100).toFixed(1) : 0}%`,
+                  good: false, reverse: true },
+              ].map((kpi, i) => (
+                <div key={i} className="flex items-center justify-between">
+                  <span className="text-sm text-grey-muted">{kpi.label}</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className={`text-lg font-bold ${
+                      kpi.reverse
+                        ? (parseFloat(kpi.value) > 5 ? 'text-red-400' : 'text-green-400')
+                        : (kpi.good ? 'text-green-400' : 'text-red-400')
+                    }`}>{kpi.value}</span>
+                    {kpi.reverse
+                      ? (parseFloat(kpi.value) > 5 ? <ArrowUpRight size={14} className="text-red-400" /> : <ArrowDownRight size={14} className="text-green-400" />)
+                      : (kpi.good ? <ArrowUpRight size={14} className="text-green-400" /> : <ArrowDownRight size={14} className="text-red-400" />)
+                    }
+                  </div>
+                </div>
+              ));
+            })()}
           </div>
         </div>
 

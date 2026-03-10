@@ -45,4 +45,51 @@ export default factories.createCoreController('api::client.client', ({ strapi })
       meta: { page, pageSize, total, pageCount: Math.ceil(total / pageSize) },
     };
   },
+
+  // Liste les utilisateurs inscrits via Supabase Auth
+  async listSupabaseUsers(ctx) {
+    const supabaseUrl = process.env.SUPABASE_API_URL;
+    const supabaseKey = process.env.SUPABASE_API_KEY; // service_role key
+    if (!supabaseUrl || !supabaseKey) {
+      ctx.status = 500;
+      ctx.body = { error: 'Supabase non configure' };
+      return;
+    }
+
+    const page = parseInt(ctx.query.page as string) || 1;
+    const perPage = parseInt(ctx.query.perPage as string) || 50;
+
+    try {
+      const res = await fetch(`${supabaseUrl}/auth/v1/admin/users?page=${page}&per_page=${perPage}`, {
+        headers: {
+          'Authorization': `Bearer ${supabaseKey}`,
+          'apikey': supabaseKey,
+        },
+      });
+      if (!res.ok) {
+        ctx.status = res.status;
+        ctx.body = { error: 'Erreur Supabase Auth' };
+        return;
+      }
+      const data = await res.json();
+      const users = (data.users || data || []).map((u: any) => ({
+        id: u.id,
+        email: u.email,
+        fullName: u.user_metadata?.full_name || u.user_metadata?.name || null,
+        phone: u.phone || null,
+        createdAt: u.created_at,
+        lastSignIn: u.last_sign_in_at,
+        emailConfirmed: !!u.email_confirmed_at,
+        provider: u.app_metadata?.provider || 'email',
+      }));
+      ctx.body = {
+        data: users,
+        meta: { page, perPage, total: data.total || users.length },
+      };
+    } catch (err) {
+      strapi.log.error('Supabase users fetch error:', err);
+      ctx.status = 500;
+      ctx.body = { error: 'Impossible de recuperer les utilisateurs' };
+    }
+  },
 }));

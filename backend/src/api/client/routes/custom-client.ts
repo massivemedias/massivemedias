@@ -8,5 +8,13 @@ export default {
         auth: false,
       },
     },
+    {
+      method: 'GET',
+      path: '/clients/users',
+      handler: 'client.listSupabaseUsers',
+      config: {
+        auth: false,
+      },
+    },
   ],
 };

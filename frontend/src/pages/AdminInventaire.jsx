@@ -86,11 +86,61 @@ function AdminInventaire() {
     );
   }
 
+  const outOfStockItems = items.filter(item => item.status === 'out');
+  const lowStockItems = items.filter(item => item.status === 'low');
+
   return (
     <div>
       <p className="text-grey-muted mb-6">
         {tx({ fr: 'Gestion du stock en temps reel', en: 'Real-time stock management', es: 'Gestion de stock en tiempo real' })}
           </p>
+
+          {/* Alerte rupture de stock */}
+          {outOfStockItems.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="p-4 rounded-xl border-2 border-red-500/40 bg-red-500/10 mb-6"
+            >
+              <div className="flex items-center gap-2 mb-2">
+                <XCircle size={18} className="text-red-400" />
+                <span className="text-red-400 font-bold text-sm">
+                  {tx({ fr: 'RUPTURE DE STOCK', en: 'OUT OF STOCK', es: 'AGOTADO' })} ({outOfStockItems.length})
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {outOfStockItems.map((item) => (
+                  <span key={item.documentId} className="px-2 py-1 rounded bg-red-500/20 text-red-300 text-xs font-medium">
+                    {getName(item)} {item.sku ? `(${item.sku})` : ''}
+                  </span>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
+          {/* Alerte stock bas */}
+          {lowStockItems.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.05 }}
+              className="p-4 rounded-xl border-2 border-orange-500/40 bg-orange-500/10 mb-6"
+            >
+              <div className="flex items-center gap-2 mb-2">
+                <AlertTriangle size={18} className="text-orange-400" />
+                <span className="text-orange-400 font-bold text-sm">
+                  {tx({ fr: 'STOCK BAS', en: 'LOW STOCK', es: 'STOCK BAJO' })} ({lowStockItems.length})
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {lowStockItems.map((item) => (
+                  <span key={item.documentId} className="px-2 py-1 rounded bg-orange-500/20 text-orange-300 text-xs font-medium">
+                    {getName(item)} - {item.available} {tx({ fr: 'restant(s)', en: 'remaining', es: 'restante(s)' })} {item.sku ? `(${item.sku})` : ''}
+                  </span>
+                ))}
+              </div>
+            </motion.div>
+          )}
 
           {error && (
             <div className="p-4 rounded-lg border border-red-500/30 error-bg mb-6">
