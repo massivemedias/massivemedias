@@ -607,7 +607,7 @@ function Boutique() {
                         isSelected ? 'ring-2 ring-accent border-accent/50' : 'hover:border-accent/50'
                       }`}
                     >
-                      <div className="aspect-square overflow-hidden bg-glass p-4">
+                      <div className="aspect-square overflow-hidden bg-glass p-4 watermark">
                         <img
                           src={sticker.image}
                           alt={tx(sticker)}

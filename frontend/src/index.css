@@ -667,14 +667,13 @@ select.input-field option {
   background: var(--bg-glass-alt);
 }
 
-/* Sticker die-cut white outline effect - ~5px border */
+/* Sticker die-cut white outline effect - 2px border */
 .sticker-diecut {
   filter:
-    drop-shadow(0 0 1px white) drop-shadow(0 0 1px white)
-    drop-shadow(4px 0 0 white) drop-shadow(-4px 0 0 white)
-    drop-shadow(0 4px 0 white) drop-shadow(0 -4px 0 white)
-    drop-shadow(3px 3px 0 white) drop-shadow(-3px -3px 0 white)
-    drop-shadow(3px -3px 0 white) drop-shadow(-3px 3px 0 white);
+    drop-shadow(2px 0 0 white) drop-shadow(-2px 0 0 white)
+    drop-shadow(0 2px 0 white) drop-shadow(0 -2px 0 white)
+    drop-shadow(1px 1px 0 white) drop-shadow(-1px -1px 0 white)
+    drop-shadow(1px -1px 0 white) drop-shadow(-1px 1px 0 white);
 }
 
 .icon-bg {
@@ -831,7 +830,7 @@ select.input-field option {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-300 -250 1800 800' width='120' height='53'%3E%3Cg transform='rotate(-25 590 137)'%3E%3Cpath d='M356.9 25.2L533.4 25.6V83.5L430.5 83.1V97.5H533.4V227.8H356.9V169.9H459.9V155.5H356.9V25.2Z' fill='white'/%3E%3Cpath d='M549.1 25.1L814.9 25.2V83.1L622.7 83V97.5H725.8V227.8H549.1V169.9H652.2V155.4H549.1V25.1Z' fill='white'/%3E%3Cpath d='M814.9 97.8V228H741.3V97.8H814.9Z' fill='white'/%3E%3Cpath d='M960.7 25.1H1034.2L917.6 228L828.2 226.9V25.1H901.8L902.6 112.3L960.7 25.1Z' fill='white'/%3E%3Cpath d='M1134 155.4L974.6 155.6L1008 97.5L1134 97.3V155.4Z' fill='white'/%3E%3Cpath d='M1134 227.8H933.1L966.5 169.8H1134V227.8Z' fill='white'/%3E%3Cpath d='M1134 83.3L1015.8 83.1L1049.2 25L1134 25.2V83.3Z' fill='white'/%3E%3Cpath d='M25 25.2C25 25.2 25 225 25 227.8H95V82.7H122.8L122.8 227.7L192.2 227.8V92.3C192.2 92.3 304.2 28.9 307.8 25.2' fill='white'/%3E%3Cpath d='M207.4 102.6V178.9L270.7 143.6L270.8 227.8L340.6 227.7V25.3L207.4 102.6Z' fill='white'/%3E%3C/g%3E%3C/svg%3E");
   background-repeat: repeat;
   background-size: 120px auto;
-  opacity: 0.02;
+  opacity: 0.04;
   pointer-events: none;
   z-index: 2;
 }

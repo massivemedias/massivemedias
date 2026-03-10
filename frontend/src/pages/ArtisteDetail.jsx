@@ -451,7 +451,7 @@ function ArtisteDetail({ subdomainSlug }) {
                     }`}
                     onClick={() => handleSelectSticker(sticker)}
                   >
-                    <div className="aspect-square p-4">
+                    <div className="aspect-square p-4 watermark">
                       <img
                         src={sticker.image}
                         alt={tx({ fr: sticker.titleFr, en: sticker.titleEn, es: sticker.titleEs || sticker.titleEn })}
@@ -500,11 +500,13 @@ function ArtisteDetail({ subdomainSlug }) {
                 className="relative rounded-2xl overflow-hidden aspect-square border border-purple-main/30 card-shadow cursor-pointer group flex items-center justify-center p-6"
                 onClick={() => setLightbox({ type: 'sticker', index: artist.stickers.findIndex(s => s.id === selectedSticker.id) })}
               >
-                <img
-                  src={selectedSticker.image}
-                  alt={tx({ fr: selectedSticker.titleFr, en: selectedSticker.titleEn, es: selectedSticker.titleEs || selectedSticker.titleEn })}
-                  className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105 sticker-diecut"
-                />
+                <div className="w-full h-full watermark">
+                  <img
+                    src={selectedSticker.image}
+                    alt={tx({ fr: selectedSticker.titleFr, en: selectedSticker.titleEn, es: selectedSticker.titleEs || selectedSticker.titleEn })}
+                    className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105 sticker-diecut"
+                  />
+                </div>
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
                   <ZoomIn size={32} className="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 drop-shadow-lg" />
                 </div>
