@@ -8,5 +8,21 @@ export default {
         auth: false,
       },
     },
+    {
+      method: 'GET',
+      path: '/artist-submissions/admin',
+      handler: 'artist-submission.adminList',
+      config: {
+        auth: false,
+      },
+    },
+    {
+      method: 'PUT',
+      path: '/artist-submissions/:documentId/status',
+      handler: 'artist-submission.updateStatus',
+      config: {
+        auth: false,
+      },
+    },
   ],
 };

@@ -87,21 +87,9 @@ function AdminInventaire() {
   }
 
   return (
-    <>
-      <SEO
-        title={tx({ fr: 'Inventaire | Massive', en: 'Inventory | Massive', es: 'Inventario | Massive' })}
-        description=""
-        noindex
-      />
-
-      <section className="section-container pt-32 pb-20">
-        <div className="max-w-6xl mx-auto">
-          <h1 className="text-3xl md:text-4xl font-heading font-bold text-heading mb-2">
-            <Package size={28} className="inline text-accent mr-3" />
-            {tx({ fr: 'Inventaire', en: 'Inventory', es: 'Inventario' })}
-          </h1>
-          <p className="text-grey-muted mb-8">
-            {tx({ fr: 'Gestion du stock en temps reel', en: 'Real-time stock management', es: 'Gestion de stock en tiempo real' })}
+    <div>
+      <p className="text-grey-muted mb-6">
+        {tx({ fr: 'Gestion du stock en temps reel', en: 'Real-time stock management', es: 'Gestion de stock en tiempo real' })}
           </p>
 
           {error && (
@@ -278,9 +266,7 @@ function AdminInventaire() {
               </div>
             )}
           </div>
-        </div>
-      </section>
-    </>
+    </div>
   );
 }
 

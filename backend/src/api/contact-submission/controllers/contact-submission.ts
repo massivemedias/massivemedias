@@ -2,6 +2,65 @@ import { factories } from '@strapi/strapi';
 
 export default factories.createCoreController('api::contact-submission.contact-submission', ({ strapi }) => ({
 
+  async adminList(ctx) {
+    const page = parseInt(ctx.query.page as string) || 1;
+    const pageSize = parseInt(ctx.query.pageSize as string) || 25;
+    const status = ctx.query.status as string;
+    const search = ctx.query.search as string;
+
+    const filters: any = {};
+    if (status && status !== 'all') filters.status = status;
+    if (search) {
+      filters.$or = [
+        { nom: { $containsi: search } },
+        { email: { $containsi: search } },
+        { entreprise: { $containsi: search } },
+      ];
+    }
+
+    const [items, allFiltered] = await Promise.all([
+      strapi.documents('api::contact-submission.contact-submission').findMany({
+        filters,
+        sort: 'createdAt:desc',
+        limit: pageSize,
+        start: (page - 1) * pageSize,
+      }),
+      strapi.documents('api::contact-submission.contact-submission').findMany({ filters }),
+    ]);
+
+    const total = allFiltered.length;
+    ctx.body = {
+      data: items,
+      meta: { page, pageSize, total, pageCount: Math.ceil(total / pageSize) },
+    };
+  },
+
+  async updateStatus(ctx) {
+    const { documentId } = ctx.params;
+    const { status: newStatus, notes } = ctx.request.body as any;
+
+    const validStatuses = ['new', 'read', 'replied', 'archived'];
+    if (newStatus && !validStatuses.includes(newStatus)) {
+      return ctx.badRequest('Status invalide');
+    }
+
+    const item = await strapi.documents('api::contact-submission.contact-submission').findFirst({
+      filters: { documentId },
+    });
+    if (!item) return ctx.notFound('Message introuvable');
+
+    const updateData: any = {};
+    if (newStatus) updateData.status = newStatus;
+    if (notes !== undefined) updateData.notes = notes;
+
+    const updated = await strapi.documents('api::contact-submission.contact-submission').update({
+      documentId: item.documentId,
+      data: updateData,
+    });
+
+    ctx.body = { data: updated };
+  },
+
   async submit(ctx) {
     const { nom, email, telephone, entreprise, service, budget, urgence, message } = ctx.request.body as any;
 

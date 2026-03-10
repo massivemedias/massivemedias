@@ -28,7 +28,14 @@ const Artistes = lazy(() => import('./pages/Artistes'));
 const ArtisteDetail = lazy(() => import('./pages/ArtisteDetail'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 const MmAdmin = lazy(() => import('./pages/MmAdmin'));
+const AdminLayout = lazy(() => import('./layouts/AdminLayout'));
+const AdminOrders = lazy(() => import('./pages/AdminOrders'));
 const AdminInventaire = lazy(() => import('./pages/AdminInventaire'));
+const AdminMessages = lazy(() => import('./pages/AdminMessages'));
+const AdminArtistes = lazy(() => import('./pages/AdminArtistes'));
+const AdminClients = lazy(() => import('./pages/AdminClients'));
+const AdminDepenses = lazy(() => import('./pages/AdminDepenses'));
+const AdminStats = lazy(() => import('./pages/AdminStats'));
 const ProtectedRoute = lazy(() => import('./components/ProtectedRoute'));
 
 // Base path pour GitHub Pages
@@ -98,14 +105,23 @@ function App() {
 
             {/* Admin */}
             <Route path="/mm-admin" element={<MmAdmin />} />
-            <Route path="/admin/inventaire" element={<ProtectedRoute><AdminInventaire /></ProtectedRoute>} />
+          </Route>
 
-            {/* Checkout */}
+          {/* Admin dashboard */}
+          <Route element={<MainLayout />}>
+            <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
+              <Route index element={<Navigate to="/admin/commandes" replace />} />
+              <Route path="commandes" element={<AdminOrders />} />
+              <Route path="inventaire" element={<AdminInventaire />} />
+              <Route path="messages" element={<AdminMessages />} />
+              <Route path="artistes" element={<AdminArtistes />} />
+              <Route path="clients" element={<AdminClients />} />
+              <Route path="depenses" element={<AdminDepenses />} />
+              <Route path="stats" element={<AdminStats />} />
+            </Route>
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/checkout/success" element={<CheckoutSuccess />} />
             <Route path="/checkout/cancel" element={<CheckoutCancel />} />
-
-            {/* 404 */}
             <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>

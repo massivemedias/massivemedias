@@ -48,5 +48,29 @@ export default {
         auth: false,
       },
     },
+    {
+      method: 'GET',
+      path: '/orders/admin',
+      handler: 'order.adminList',
+      config: {
+        auth: false,
+      },
+    },
+    {
+      method: 'PUT',
+      path: '/orders/:documentId/status',
+      handler: 'order.updateStatus',
+      config: {
+        auth: false,
+      },
+    },
+    {
+      method: 'PUT',
+      path: '/orders/:documentId/notes',
+      handler: 'order.updateNotes',
+      config: {
+        auth: false,
+      },
+    },
   ],
 };

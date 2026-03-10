@@ -304,6 +304,96 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
     ctx.body = { clients, total: clients.length };
   },
 
+  async adminList(ctx) {
+    const page = parseInt(ctx.query.page as string) || 1;
+    const pageSize = parseInt(ctx.query.pageSize as string) || 25;
+    const status = ctx.query.status as string;
+    const search = ctx.query.search as string;
+
+    const filters: any = {};
+    if (status && status !== 'all') {
+      filters.status = status;
+    }
+    if (search) {
+      filters.$or = [
+        { customerName: { $containsi: search } },
+        { customerEmail: { $containsi: search } },
+        { stripePaymentIntentId: { $containsi: search } },
+      ];
+    }
+
+    const [orders, allFiltered] = await Promise.all([
+      strapi.documents('api::order.order').findMany({
+        filters,
+        sort: 'createdAt:desc',
+        limit: pageSize,
+        start: (page - 1) * pageSize,
+        populate: ['client'],
+      }),
+      strapi.documents('api::order.order').findMany({
+        filters,
+      }),
+    ]);
+
+    const total = allFiltered.length;
+
+    ctx.body = {
+      data: orders,
+      meta: {
+        page,
+        pageSize,
+        total,
+        pageCount: Math.ceil(total / pageSize),
+      },
+    };
+  },
+
+  async updateStatus(ctx) {
+    const { documentId } = ctx.params;
+    const { status: newStatus } = ctx.request.body as any;
+
+    const validStatuses = ['pending', 'paid', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded'];
+    if (!newStatus || !validStatuses.includes(newStatus)) {
+      return ctx.badRequest(`Status invalide. Valeurs acceptees: ${validStatuses.join(', ')}`);
+    }
+
+    const order = await strapi.documents('api::order.order').findFirst({
+      filters: { documentId },
+    });
+
+    if (!order) {
+      return ctx.notFound('Commande introuvable');
+    }
+
+    const updated = await strapi.documents('api::order.order').update({
+      documentId: order.documentId,
+      data: { status: newStatus },
+    });
+
+    strapi.log.info(`Commande ${documentId} status: ${order.status} -> ${newStatus}`);
+    ctx.body = { data: updated };
+  },
+
+  async updateNotes(ctx) {
+    const { documentId } = ctx.params;
+    const { notes } = ctx.request.body as any;
+
+    const order = await strapi.documents('api::order.order').findFirst({
+      filters: { documentId },
+    });
+
+    if (!order) {
+      return ctx.notFound('Commande introuvable');
+    }
+
+    const updated = await strapi.documents('api::order.order').update({
+      documentId: order.documentId,
+      data: { notes: notes || '' },
+    });
+
+    ctx.body = { data: updated };
+  },
+
   async stats(ctx) {
     // Fetch all non-cancelled orders
     const orders = await strapi.documents('api::order.order').findMany({
