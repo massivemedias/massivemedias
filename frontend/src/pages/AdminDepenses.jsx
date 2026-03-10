@@ -349,7 +349,7 @@ function AdminDepenses() {
         <div className="flex flex-wrap gap-1.5">
           {['all', ...Object.keys(CATEGORY_LABELS)].map((c) => (
             <button key={c} onClick={() => { setFilterCat(c); setMeta(prev => ({ ...prev, page: 1 })); setExpandedId(null); }}
-              className={`px-2.5 py-1 md:px-3 md:py-1.5 rounded-full text-[11px] md:text-xs font-semibold transition-all ${filterCat === c ? 'bg-accent text-white' : 'bg-glass text-grey-muted hover:text-heading'}`}>
+              className={`px-2.5 py-1 md:px-3 md:py-1.5 rounded-full text-[11px] md:text-xs font-semibold transition-all ${filterCat === c ? 'bg-accent text-white' : 'text-grey-muted hover:text-accent'}`}>
               {c === 'all' ? tx({ fr: 'Tout', en: 'All', es: 'Todo' }) : tx(CATEGORY_LABELS[c])}
             </button>
           ))}

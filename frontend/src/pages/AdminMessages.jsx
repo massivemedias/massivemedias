@@ -142,7 +142,7 @@ function AdminMessages() {
         <div className="flex flex-wrap gap-1.5">
           {['all', ...Object.keys(MSG_STATUS)].map((s) => (
             <button key={s} onClick={() => { setFilterStatus(s); setMeta(prev => ({ ...prev, page: 1 })); setExpandedId(null); }}
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${filterStatus === s ? 'bg-accent text-white' : 'bg-glass text-grey-muted hover:text-heading'}`}>
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${filterStatus === s ? 'bg-accent text-white' : 'text-grey-muted hover:text-accent'}`}>
               {s === 'all' ? tx({ fr: 'Tout', en: 'All', es: 'Todo' }) : tx({ fr: MSG_STATUS[s].fr, en: MSG_STATUS[s].en, es: MSG_STATUS[s].es })}
             </button>
           ))}

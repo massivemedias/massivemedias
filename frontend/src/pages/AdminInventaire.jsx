@@ -197,7 +197,7 @@ function AdminInventaire() {
                   key={s}
                   onClick={() => setFilterStatus(s)}
                   className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
-                    filterStatus === s ? 'bg-accent text-white' : 'bg-glass text-grey-muted hover:text-heading'
+                    filterStatus === s ? 'bg-accent text-white' : 'text-grey-muted hover:text-accent'
                   }`}
                 >
                   {s === 'all' ? tx({ fr: 'Tous', en: 'All', es: 'Todos' }) : STATUS_CONFIG[s].label}
