@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search, ChevronDown, ChevronUp, MessageSquare, Mail,
-  Eye, Reply, Archive, Loader2, Phone, Building2, Save,
+  Eye, Reply, Archive, Loader2, Phone, Building2,
   ChevronLeft, ChevronRight, Clock, Send, X, Palette,
   CheckCircle, XCircle, MapPin, Image, FileText, ExternalLink,
   UserCheck, Trash2,
@@ -62,8 +62,6 @@ function AdminMessages() {
   const [filterType, setFilterType] = useState('all'); // all, contact, candidature
   const [expandedId, setExpandedId] = useState(null);
   const [updatingId, setUpdatingId] = useState(null);
-  const [editNotes, setEditNotes] = useState({});
-  const [savingNotes, setSavingNotes] = useState(null);
   const [replyingTo, setReplyingTo] = useState(null);
   const [replyText, setReplyText] = useState('');
   const [sendingReply, setSendingReply] = useState(false);
@@ -132,18 +130,6 @@ function AdminMessages() {
     } catch { /* silent */ } finally { setUpdatingId(null); }
   };
 
-  const handleSaveNotes = async (item) => {
-    setSavingNotes(item._uid);
-    try {
-      if (item._type === 'contact') {
-        await updateContactStatus(item.documentId, null, editNotes[item._uid] || '');
-      } else {
-        await updateArtistStatus(item.documentId, null, editNotes[item._uid] || '');
-      }
-      setItems(prev => prev.map(i => i._uid === item._uid ? { ...i, notes: editNotes[item._uid] || '' } : i));
-    } catch { /* silent */ } finally { setSavingNotes(null); }
-  };
-
   const handleDelete = async (item) => {
     if (confirmDelete !== item._uid) { setConfirmDelete(item._uid); return; }
     setDeleting(item._uid);
@@ -180,7 +166,6 @@ function AdminMessages() {
   const toggleExpand = (item) => {
     if (expandedId === item._uid) { setExpandedId(null); return; }
     setExpandedId(item._uid);
-    if (editNotes[item._uid] === undefined) setEditNotes(prev => ({ ...prev, [item._uid]: item.notes || '' }));
     // Auto-mark contact as read
     if (item._type === 'contact' && item.status === 'new') handleStatusChange(item, 'read');
   };
@@ -363,13 +348,29 @@ function AdminMessages() {
                                   )}
                                 </div>
                               ) : (
-                                <button
-                                  onClick={(e) => { e.stopPropagation(); setReplyingTo(item._uid); setReplyText(''); setReplySuccess(null); }}
-                                  className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-accent/20 text-accent text-sm font-semibold hover:bg-accent/30 transition-colors w-fit"
-                                >
-                                  <Reply size={14} />
-                                  {tx({ fr: 'Repondre par email', en: 'Reply by email', es: 'Responder por email' })}
-                                </button>
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    onClick={(e) => { e.stopPropagation(); setReplyingTo(item._uid); setReplyText(''); setReplySuccess(null); }}
+                                    className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-accent/20 text-accent text-sm font-semibold hover:bg-accent/30 transition-colors"
+                                  >
+                                    <Reply size={14} />
+                                    {tx({ fr: 'Repondre par email', en: 'Reply by email', es: 'Responder por email' })}
+                                  </button>
+                                  <button onClick={(e) => { e.stopPropagation(); handleDelete(item); }}
+                                    disabled={deleting === item._uid}
+                                    className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all bg-red-500/10 text-red-400 hover:bg-red-500/20 disabled:opacity-50">
+                                    {deleting === item._uid ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
+                                    {confirmDelete === item._uid
+                                      ? tx({ fr: 'Confirmer', en: 'Confirm', es: 'Confirmar' })
+                                      : tx({ fr: 'Supprimer', en: 'Delete', es: 'Eliminar' })}
+                                  </button>
+                                  {confirmDelete === item._uid && (
+                                    <button onClick={(e) => { e.stopPropagation(); setConfirmDelete(null); }}
+                                      className="px-3 py-2 rounded-lg text-xs font-semibold text-grey-muted hover:text-heading transition-colors">
+                                      {tx({ fr: 'Annuler', en: 'Cancel', es: 'Cancelar' })}
+                                    </button>
+                                  )}
+                                </div>
                               )}
 
                               {/* Details grid */}
@@ -464,48 +465,28 @@ function AdminMessages() {
                                 );
                               })()}
 
-                              {/* Contract info */}
+                              {/* Contract info + delete */}
                               <div className="flex items-center gap-3 text-xs text-grey-muted">
                                 <CheckCircle size={14} className="text-green-400" />
                                 <span>{tx({ fr: 'Contrat accepte', en: 'Contract accepted', es: 'Contrato aceptado' })} (v{item.contractVersion || '1'})</span>
+                                <span className="flex-1" />
+                                <button onClick={(e) => { e.stopPropagation(); handleDelete(item); }}
+                                  disabled={deleting === item._uid}
+                                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all bg-red-500/10 text-red-400 hover:bg-red-500/20 disabled:opacity-50">
+                                  {deleting === item._uid ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
+                                  {confirmDelete === item._uid
+                                    ? tx({ fr: 'Confirmer', en: 'Confirm', es: 'Confirmar' })
+                                    : tx({ fr: 'Supprimer', en: 'Delete', es: 'Eliminar' })}
+                                </button>
+                                {confirmDelete === item._uid && (
+                                  <button onClick={(e) => { e.stopPropagation(); setConfirmDelete(null); }}
+                                    className="px-3 py-1.5 rounded-lg text-xs font-semibold text-grey-muted hover:text-heading transition-colors">
+                                    {tx({ fr: 'Annuler', en: 'Cancel', es: 'Cancelar' })}
+                                  </button>
+                                )}
                               </div>
                             </>
                           )}
-
-                          {/* Notes - shared for both types */}
-                          <div>
-                            <h4 className="text-xs font-semibold text-grey-muted uppercase tracking-wider mb-2">{tx({ fr: 'Notes internes', en: 'Internal notes', es: 'Notas internas' })}</h4>
-                            <div className="flex gap-2">
-                              <textarea value={editNotes[item._uid] ?? item.notes ?? ''} onChange={(e) => setEditNotes(prev => ({ ...prev, [item._uid]: e.target.value }))}
-                                onClick={(e) => e.stopPropagation()} rows={2}
-                                placeholder={tx({ fr: 'Ajouter une note...', en: 'Add a note...', es: 'Agregar una nota...' })}
-                                className="input-field text-sm flex-1 resize-none" />
-                              <button onClick={(e) => { e.stopPropagation(); handleSaveNotes(item); }}
-                                disabled={savingNotes === item._uid}
-                                className="self-end px-3 py-2 rounded-lg bg-accent text-white text-xs font-semibold hover:bg-accent/80 transition-colors disabled:opacity-50 flex items-center gap-1">
-                                {savingNotes === item._uid ? <Loader2 size={12} className="animate-spin" /> : <Save size={12} />}
-                                {tx({ fr: 'Sauver', en: 'Save', es: 'Guardar' })}
-                              </button>
-                            </div>
-                          </div>
-
-                          {/* Delete */}
-                          <div className="flex justify-end pt-2">
-                            <button onClick={(e) => { e.stopPropagation(); handleDelete(item); }}
-                              disabled={deleting === item._uid}
-                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all bg-red-500/10 text-red-400 hover:bg-red-500/20 disabled:opacity-50">
-                              {deleting === item._uid ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
-                              {confirmDelete === item._uid
-                                ? tx({ fr: 'Confirmer la suppression', en: 'Confirm delete', es: 'Confirmar eliminacion' })
-                                : tx({ fr: 'Supprimer', en: 'Delete', es: 'Eliminar' })}
-                            </button>
-                            {confirmDelete === item._uid && (
-                              <button onClick={(e) => { e.stopPropagation(); setConfirmDelete(null); }}
-                                className="ml-2 px-3 py-1.5 rounded-lg text-xs font-semibold text-grey-muted hover:text-heading transition-colors">
-                                {tx({ fr: 'Annuler', en: 'Cancel', es: 'Cancelar' })}
-                              </button>
-                            )}
-                          </div>
                         </div>
                       </motion.div>
                     )}

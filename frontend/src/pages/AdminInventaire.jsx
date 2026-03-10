@@ -72,10 +72,13 @@ function AdminInventaire() {
 
   const getName = (item) => lang === 'en' ? (item.nameEn || item.nameFr) : item.nameFr;
 
-  // Filter out small paper (consommable) - keep only large format paper
-  const isSmallPaper = (item) => {
+  // Filter out consumables (small paper, vinyl sticker rolls)
+  const isConsommable = (item) => {
     const name = (getName(item) || '').toLowerCase();
     const sku = (item.sku || '').toLowerCase();
+    // Vinyl sticker rolls
+    if (name.includes('vinyle') || name.includes('vinyl') || sku.includes('stk-')) return true;
+    // Paper
     const isPaper = name.includes('papier') || name.includes('paper') || sku.includes('paper') || sku.includes('papier');
     if (!isPaper) return false;
     // Keep large format (bigger than A4)
@@ -84,7 +87,7 @@ function AdminInventaire() {
   };
 
   const filtered = items.filter((item) => {
-    if (isSmallPaper(item)) return false;
+    if (isConsommable(item)) return false;
     const matchSearch = !search || getName(item).toLowerCase().includes(search.toLowerCase()) || (item.sku || '').toLowerCase().includes(search.toLowerCase());
     const matchStatus = filterStatus === 'all' || item.status === filterStatus;
     return matchSearch && matchStatus;
