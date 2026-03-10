@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ArrowRight, ArrowLeft, Sparkles, Palette, Shirt, ShoppingCart, Check, X, Code, PenTool, User } from 'lucide-react';
 import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
@@ -87,6 +87,7 @@ function Boutique() {
   const { addToCart } = useCart();
   const { products: cmsProducts } = useProducts();
   const location = useLocation();
+  const navigate = useNavigate();
   const [activeCategory, setActiveCategory] = useState('all');
   const [view, setView] = useState('main'); // 'main' | 'prints'
 
@@ -599,6 +600,10 @@ function Boutique() {
                   >
                     <button
                       onClick={() => {
+                        if (sticker.artistSlug) {
+                          navigate(`/artistes/${sticker.artistSlug}?sticker=${sticker.id}`);
+                          return;
+                        }
                         setSelectedSticker(isSelected ? null : sticker.id);
                         setStickerTier(0);
                         setStickerAdded(false);
@@ -611,7 +616,7 @@ function Boutique() {
                         <img
                           src={sticker.image}
                           alt={tx(sticker)}
-                          className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105"
+                          className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105 sticker-diecut"
                           loading="lazy"
                         />
                       </div>

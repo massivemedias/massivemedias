@@ -48,7 +48,7 @@ const fallbackFeaturedProjectImages = [
   thumb('/images/realisations/textile/Textile1.webp'),
   thumb('/images/graphism/onomiko.webp'),
   thumb('/images/realisations/stickers/Stickers-massive.webp'),
-  thumb('/images/mugs/mug-white.webp'),
+  img('/images/mugs/mug-white.webp'),
 ];
 const fallbackFeaturedProjectLinks = [
   '/boutique/fine-art',

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, MessageSquare, ChevronDown, ChevronLeft, ChevronRight, CheckCircle, Image, ExternalLink, X, ZoomIn } from 'lucide-react';
 import SEO from '../components/SEO';
@@ -58,7 +58,7 @@ function ArtisteDetail({ subdomainSlug }) {
       prints: cms.prints && cms.prints.length > 0 ? cms.prints : local.prints,
       stickers: local.stickers || [],
       pricing: cms.pricing || local.pricing,
-      avatar: cms.avatar && !cms.avatar.includes('undefined') ? cms.avatar : local.avatar,
+      avatar: local.avatar || (cms.avatar && !cms.avatar.includes('undefined') ? cms.avatar : null),
       heroImage: cms.heroImage && !cms.heroImage.includes('undefined') ? cms.heroImage : local.heroImage,
     };
   }, [cmsArtists, slug]);
@@ -68,6 +68,21 @@ function ArtisteDetail({ subdomainSlug }) {
   const [lightbox, setLightbox] = useState(null);
   const configuratorRef = useRef(null);
   const stickerConfiguratorRef = useRef(null);
+  const [searchParams] = useSearchParams();
+
+  // Auto-select sticker from URL param (e.g. ?sticker=psyqu33n-stk-002)
+  useEffect(() => {
+    const stickerId = searchParams.get('sticker');
+    if (stickerId && artist?.stickers?.length) {
+      const sticker = artist.stickers.find(s => s.id === stickerId);
+      if (sticker) {
+        setSelectedSticker(sticker);
+        setTimeout(() => {
+          stickerConfiguratorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 300);
+      }
+    }
+  }, [artist, searchParams]);
 
   useEffect(() => {
     if (lightbox === null) return;
