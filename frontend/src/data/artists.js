@@ -139,7 +139,7 @@ const artistsData = {
       website: 'https://psyqu33n.com',
       email: 'medusart@protonmail.com',
     },
-    avatar: thumb('/images/prints/Psyqu33n1.webp'),
+    avatar: img('/images/stickers/Stickers-Psyqu33n12.webp'),
     heroImage: thumb('/images/prints/Psyqu33n1.webp'),
     stickers: [
       { id: 'psyqu33n-stk-002', titleFr: 'See Medusa', titleEn: 'See Medusa', titleEs: 'See Medusa', image: img('/images/stickers/Stickers-Psyqu33n2.webp'), fullImage: img('/images/stickers/Stickers-Psyqu33n2.webp') },
