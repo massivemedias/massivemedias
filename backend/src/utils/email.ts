@@ -159,6 +159,85 @@ function buildOrderConfirmationHtml(data: OrderEmailData): string {
 </html>`;
 }
 
+// Reponse a un message contact
+interface ContactReplyData {
+  customerName: string;
+  customerEmail: string;
+  originalMessage: string;
+  replyMessage: string;
+  subject?: string;
+}
+
+function buildContactReplyHtml(data: ContactReplyData): string {
+  return `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#0f0f23;color:#e4e4f0;font-family:-apple-system,system-ui,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0f0f23;">
+    <tr><td align="center" style="padding:40px 16px;">
+      <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+
+        <!-- Header -->
+        <tr><td align="center" style="padding:0 0 32px;">
+          <h1 style="color:#FF52A0;margin:0;font-size:28px;font-weight:800;letter-spacing:-0.5px;">MASSIVE MEDIAS</h1>
+        </td></tr>
+
+        <!-- Main card -->
+        <tr><td style="background:#16162a;border-radius:12px;padding:32px;border:1px solid rgba(139,92,246,0.25);">
+
+          <h2 style="color:#e4e4f0;margin:0 0 8px;font-size:22px;">Bonjour ${data.customerName},</h2>
+
+          <div style="color:#e4e4f0;font-size:15px;line-height:1.7;margin:16px 0 24px;white-space:pre-wrap;">${data.replyMessage}</div>
+
+          <!-- Original message -->
+          <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:8px;">
+            <tr><td style="padding:16px;background:rgba(139,92,246,0.08);border-radius:8px;border:1px solid rgba(139,92,246,0.15);border-left:3px solid #FF52A0;">
+              <p style="margin:0 0 6px;color:#a0a0b8;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">Votre message original</p>
+              <p style="margin:0;color:#a0a0b8;font-size:13px;line-height:1.5;white-space:pre-wrap;">${data.originalMessage}</p>
+            </td></tr>
+          </table>
+
+        </td></tr>
+
+        <!-- Footer -->
+        <tr><td align="center" style="padding:32px 0 0;">
+          <p style="color:#555;font-size:12px;margin:0;">
+            Massive Medias - <a href="https://massivemedias.com" style="color:#FF52A0;text-decoration:none;">massivemedias.com</a>
+          </p>
+        </td></tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+}
+
+export async function sendContactReplyEmail(data: ContactReplyData): Promise<boolean> {
+  const resend = getResend();
+  if (!resend) {
+    console.warn('[email] RESEND_API_KEY non configure, email non envoye');
+    return false;
+  }
+
+  const fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
+
+  try {
+    const result = await resend.emails.send({
+      from: `Massive Medias <${fromEmail}>`,
+      to: data.customerEmail,
+      replyTo: 'info@massivemedias.com',
+      subject: data.subject || `Re: Votre demande - Massive Medias`,
+      html: buildContactReplyHtml(data),
+    });
+    console.log('[email] Reponse contact envoyee a', data.customerEmail, result);
+    return true;
+  } catch (err) {
+    console.error('[email] Erreur envoi reponse contact:', err);
+    return false;
+  }
+}
+
 export async function sendOrderConfirmationEmail(data: OrderEmailData): Promise<boolean> {
   const resend = getResend();
   if (!resend) {

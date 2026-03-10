@@ -1,4 +1,5 @@
 import { factories } from '@strapi/strapi';
+import { sendContactReplyEmail } from '../../../utils/email';
 
 export default factories.createCoreController('api::contact-submission.contact-submission', ({ strapi }) => ({
 
@@ -59,6 +60,46 @@ export default factories.createCoreController('api::contact-submission.contact-s
     });
 
     ctx.body = { data: updated };
+  },
+
+  async reply(ctx) {
+    const { documentId } = ctx.params;
+    const { replyMessage, subject } = ctx.request.body as any;
+
+    if (!replyMessage) {
+      return ctx.badRequest('Le message de reponse est requis');
+    }
+
+    const item = await strapi.documents('api::contact-submission.contact-submission').findFirst({
+      filters: { documentId },
+    }) as any;
+    if (!item) return ctx.notFound('Message introuvable');
+
+    // Envoyer l'email
+    const sent = await sendContactReplyEmail({
+      customerName: item.nom,
+      customerEmail: item.email,
+      originalMessage: item.message,
+      replyMessage,
+      subject,
+    });
+
+    if (!sent) {
+      return ctx.badRequest('Erreur lors de l\'envoi de l\'email');
+    }
+
+    // Marquer comme repondu et sauvegarder la reponse dans les notes
+    const existingNotes = item.notes || '';
+    const timestamp = new Date().toLocaleString('fr-CA');
+    const updatedNotes = `${existingNotes}${existingNotes ? '\n---\n' : ''}[Reponse ${timestamp}]\n${replyMessage}`;
+
+    await strapi.documents('api::contact-submission.contact-submission').update({
+      documentId: item.documentId,
+      data: { status: 'replied', notes: updatedNotes },
+    });
+
+    strapi.log.info(`Reponse contact envoyee a ${item.email}`);
+    ctx.body = { success: true, notes: updatedNotes };
   },
 
   async submit(ctx) {

@@ -394,6 +394,25 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
     ctx.body = { data: updated };
   },
 
+  async deleteOrder(ctx) {
+    const { documentId } = ctx.params;
+
+    const order = await strapi.documents('api::order.order').findFirst({
+      filters: { documentId },
+    });
+
+    if (!order) {
+      return ctx.notFound('Commande introuvable');
+    }
+
+    await strapi.documents('api::order.order').delete({
+      documentId: order.documentId,
+    });
+
+    strapi.log.info(`Commande ${documentId} supprimee`);
+    ctx.body = { success: true };
+  },
+
   async commissions(ctx) {
     // 1. Fetch all active artists
     const artists = await strapi.documents('api::artist.artist').findMany({

@@ -5,10 +5,12 @@ export const getOrders = (params) => api.get('/orders/admin', { params });
 export const getOrderStats = () => api.get('/orders/stats');
 export const updateOrderStatus = (documentId, status) => api.put(`/orders/${documentId}/status`, { status });
 export const updateOrderNotes = (documentId, notes) => api.put(`/orders/${documentId}/notes`, { notes });
+export const deleteOrder = (documentId) => api.delete(`/orders/${documentId}`);
 
 // --- Messages contact ---
 export const getContactSubmissions = (params) => api.get('/contact-submissions/admin', { params });
 export const updateContactStatus = (documentId, status, notes) => api.put(`/contact-submissions/${documentId}/status`, { status, notes });
+export const replyToContact = (documentId, replyMessage, subject) => api.post(`/contact-submissions/${documentId}/reply`, { replyMessage, subject });
 
 // --- Soumissions artistes ---
 export const getArtistSubmissions = (params) => api.get('/artist-submissions/admin', { params });

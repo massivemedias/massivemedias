@@ -5,10 +5,10 @@ import {
   Clock, Truck, Package, CreditCard, CheckCircle, XCircle,
   RotateCcw, Loader2, ExternalLink, MapPin, Save, Image,
   FileText, ChevronLeft, ChevronRight, Phone, Mail, Hash, Palette,
-  Download, Receipt,
+  Download, Receipt, Trash2,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
-import { getOrders, getOrderStats, updateOrderStatus, updateOrderNotes } from '../services/adminService';
+import { getOrders, getOrderStats, updateOrderStatus, updateOrderNotes, deleteOrder } from '../services/adminService';
 import { generateInvoicePDF } from '../utils/generateInvoice';
 
 const ORDER_STATUS = {
@@ -48,6 +48,8 @@ function AdminOrders() {
   const [updatingId, setUpdatingId] = useState(null);
   const [editNotes, setEditNotes] = useState({});
   const [savingNotes, setSavingNotes] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
 
   // Debounce search
   useEffect(() => {
@@ -104,6 +106,20 @@ function AdminOrders() {
       // silent
     } finally {
       setSavingNotes(null);
+    }
+  };
+
+  const handleDelete = async (documentId) => {
+    setDeletingId(documentId);
+    try {
+      await deleteOrder(documentId);
+      setOrders(prev => prev.filter(o => o.documentId !== documentId));
+      setExpandedId(null);
+      setConfirmDeleteId(null);
+    } catch {
+      // silent
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -182,13 +198,13 @@ function AdminOrders() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05 }}
-              className="rounded-xl p-4 bg-glass card-border"
+              className="rounded-xl p-3 md:p-4 bg-glass card-border"
             >
-              <div className="flex items-center gap-2 mb-2">
-                <Icon size={16} className={card.accent} />
-                <span className="text-grey-muted text-xs">{card.label}</span>
+              <div className="flex items-center gap-1.5 mb-1 md:mb-2">
+                <Icon size={14} className={card.accent} />
+                <span className="text-grey-muted text-[10px] md:text-xs">{card.label}</span>
               </div>
-              <span className="text-2xl font-heading font-bold text-heading">{card.value}</span>
+              <span className="text-xl md:text-2xl font-heading font-bold text-heading">{card.value}</span>
             </motion.div>
           );
         })}
@@ -206,7 +222,7 @@ function AdminOrders() {
             className="input-field pl-9 text-sm"
           />
         </div>
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap gap-1">
           {statusKeys.map((s) => {
             const isActive = filterStatus === s;
             const label = s === 'all'
@@ -216,7 +232,7 @@ function AdminOrders() {
               <button
                 key={s}
                 onClick={() => handleFilterChange(s)}
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                className={`px-2.5 py-1 md:px-3 md:py-1.5 rounded-full text-[11px] md:text-xs font-semibold transition-all ${
                   isActive ? 'bg-accent text-white' : 'bg-glass text-grey-muted hover:text-heading'
                 }`}
               >
@@ -266,44 +282,61 @@ function AdminOrders() {
                   animate={{ opacity: 1 }}
                   className="border-b last:border-b-0 card-border"
                 >
-                  {/* Row - Client en premier, prix clair */}
+                  {/* Row - Compact mobile, full desktop */}
                   <div
                     onClick={() => toggleExpand(order.documentId)}
-                    className="grid grid-cols-1 md:grid-cols-[1fr_100px_80px_120px_120px_40px] gap-2 md:gap-3 px-4 py-3 items-center cursor-pointer hover:bg-accent/5 transition-colors"
+                    className="cursor-pointer hover:bg-accent/5 transition-colors"
                   >
-                    {/* Client - nom + email */}
-                    <div className="min-w-0">
-                      <p className="text-sm text-heading font-semibold truncate">{order.customerName}</p>
-                      <p className="text-xs text-grey-muted truncate">{order.customerEmail}</p>
-                    </div>
-
-                    {/* Date courte */}
-                    <span className="text-xs text-grey-muted">{formatDateShort(order.createdAt)}</span>
-
-                    {/* Nb articles */}
-                    <span className="text-sm text-heading">{items.length} {items.length > 1 ? 'items' : 'item'}</span>
-
-                    {/* Total - gros et clair */}
-                    <span className="text-lg text-heading font-bold">{dollars(order.total)}</span>
-
-                    {/* Status badge + artist badge */}
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold ${st.color}`}>
-                        <StIcon size={12} />
-                        {tx({ fr: st.fr, en: st.en, es: st.es })}
-                      </span>
-                      {artistNames.length > 0 && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-purple-500/20 text-purple-400">
-                          <Palette size={10} />
-                          {artistNames.join(', ')}
+                    {/* Desktop row */}
+                    <div className="hidden md:grid grid-cols-[1fr_100px_80px_120px_120px_40px] gap-3 px-4 py-3 items-center">
+                      <div className="min-w-0">
+                        <p className="text-sm text-heading font-semibold truncate">{order.customerName}</p>
+                        <p className="text-xs text-grey-muted truncate">{order.customerEmail}</p>
+                      </div>
+                      <span className="text-xs text-grey-muted">{formatDateShort(order.createdAt)}</span>
+                      <span className="text-sm text-heading">{items.length} {items.length > 1 ? 'items' : 'item'}</span>
+                      <span className="text-lg text-heading font-bold">{dollars(order.total)}</span>
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold ${st.color}`}>
+                          <StIcon size={12} />
+                          {tx({ fr: st.fr, en: st.en, es: st.es })}
                         </span>
-                      )}
+                        {artistNames.length > 0 && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-purple-500/20 text-purple-400">
+                            <Palette size={10} />
+                            {artistNames.join(', ')}
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-grey-muted justify-self-end">
+                        {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                      </span>
                     </div>
 
-                    {/* Expand */}
-                    <span className="text-grey-muted justify-self-end">
-                      {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                    </span>
+                    {/* Mobile row - compact */}
+                    <div className="md:hidden px-3 py-2.5">
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="text-sm text-heading font-semibold truncate flex-1">{order.customerName}</p>
+                        <span className="text-base text-heading font-bold flex-shrink-0">{dollars(order.total)}</span>
+                        <span className="text-grey-muted flex-shrink-0">
+                          {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-[11px] text-grey-muted">{formatDateShort(order.createdAt)}</span>
+                        <span className="text-[11px] text-grey-muted">{items.length} item{items.length > 1 ? 's' : ''}</span>
+                        <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-semibold ${st.color}`}>
+                          <StIcon size={10} />
+                          {tx({ fr: st.fr, en: st.en, es: st.es })}
+                        </span>
+                        {artistNames.length > 0 && (
+                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-purple-500/20 text-purple-400">
+                            <Palette size={9} />
+                            {artistNames[0]}
+                          </span>
+                        )}
+                      </div>
+                    </div>
                   </div>
 
                   {/* Expanded detail */}
@@ -531,28 +564,61 @@ function AdminOrders() {
                             </div>
                           </div>
 
-                          {/* Admin notes */}
-                          <div>
-                            <h4 className="text-xs font-semibold text-grey-muted uppercase tracking-wider mb-2">
-                              {tx({ fr: 'Notes internes', en: 'Internal notes', es: 'Notas internas' })}
-                            </h4>
-                            <div className="flex gap-2">
-                              <textarea
-                                value={editNotes[order.documentId] ?? order.notes ?? ''}
-                                onChange={(e) => setEditNotes(prev => ({ ...prev, [order.documentId]: e.target.value }))}
-                                onClick={(e) => e.stopPropagation()}
-                                rows={2}
-                                placeholder={tx({ fr: 'Ajouter une note...', en: 'Add a note...', es: 'Agregar una nota...' })}
-                                className="input-field text-sm flex-1 resize-none"
-                              />
-                              <button
-                                onClick={(e) => { e.stopPropagation(); handleSaveNotes(order.documentId); }}
-                                disabled={savingNotes === order.documentId}
-                                className="self-end px-3 py-2 rounded-lg bg-accent text-white text-xs font-semibold hover:bg-accent/80 transition-colors disabled:opacity-50 flex items-center gap-1"
-                              >
-                                {savingNotes === order.documentId ? <Loader2 size={12} className="animate-spin" /> : <Save size={12} />}
-                                {tx({ fr: 'Sauver', en: 'Save', es: 'Guardar' })}
-                              </button>
+                          {/* Admin notes + delete */}
+                          <div className="flex flex-col md:flex-row gap-4">
+                            <div className="flex-1">
+                              <h4 className="text-xs font-semibold text-grey-muted uppercase tracking-wider mb-2">
+                                {tx({ fr: 'Notes internes', en: 'Internal notes', es: 'Notas internas' })}
+                              </h4>
+                              <div className="flex gap-2">
+                                <textarea
+                                  value={editNotes[order.documentId] ?? order.notes ?? ''}
+                                  onChange={(e) => setEditNotes(prev => ({ ...prev, [order.documentId]: e.target.value }))}
+                                  onClick={(e) => e.stopPropagation()}
+                                  rows={2}
+                                  placeholder={tx({ fr: 'Ajouter une note...', en: 'Add a note...', es: 'Agregar una nota...' })}
+                                  className="input-field text-sm flex-1 resize-none"
+                                />
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); handleSaveNotes(order.documentId); }}
+                                  disabled={savingNotes === order.documentId}
+                                  className="self-end px-3 py-2 rounded-lg bg-accent text-white text-xs font-semibold hover:bg-accent/80 transition-colors disabled:opacity-50 flex items-center gap-1"
+                                >
+                                  {savingNotes === order.documentId ? <Loader2 size={12} className="animate-spin" /> : <Save size={12} />}
+                                  {tx({ fr: 'Sauver', en: 'Save', es: 'Guardar' })}
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* Delete button */}
+                            <div className="flex-shrink-0 self-end">
+                              {confirmDeleteId === order.documentId ? (
+                                <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                                  <span className="text-xs text-red-400">{tx({ fr: 'Confirmer?', en: 'Confirm?', es: 'Confirmar?' })}</span>
+                                  <button
+                                    onClick={() => handleDelete(order.documentId)}
+                                    disabled={deletingId === order.documentId}
+                                    className="px-3 py-2 rounded-lg bg-red-500/20 text-red-400 text-xs font-semibold hover:bg-red-500/30 transition-colors disabled:opacity-50 flex items-center gap-1"
+                                  >
+                                    {deletingId === order.documentId ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
+                                    {tx({ fr: 'Supprimer', en: 'Delete', es: 'Eliminar' })}
+                                  </button>
+                                  <button
+                                    onClick={() => setConfirmDeleteId(null)}
+                                    className="px-3 py-2 rounded-lg bg-glass text-grey-muted text-xs font-semibold hover:text-heading transition-colors"
+                                  >
+                                    {tx({ fr: 'Annuler', en: 'Cancel', es: 'Cancelar' })}
+                                  </button>
+                                </div>
+                              ) : (
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(order.documentId); }}
+                                  className="px-3 py-2 rounded-lg bg-red-500/10 text-red-400/60 text-xs font-semibold hover:bg-red-500/20 hover:text-red-400 transition-colors flex items-center gap-1"
+                                >
+                                  <Trash2 size={12} />
+                                  {tx({ fr: 'Supprimer', en: 'Delete', es: 'Eliminar' })}
+                                </button>
+                              )}
                             </div>
                           </div>
 

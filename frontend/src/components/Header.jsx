@@ -176,7 +176,7 @@ function Header() {
                   ) : (
                     <Link
                       to="/login"
-                      className="flex items-center justify-center gap-2 mt-3 px-4 py-2.5 rounded-full border border-accent/60 text-accent text-sm font-semibold transition-all duration-200 hover:bg-accent hover:text-white"
+                      className="flex items-center gap-2 transition-colors duration-200 font-medium py-2.5 text-sm nav-link text-accent"
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       <LogIn size={16} />

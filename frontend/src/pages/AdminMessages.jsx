@@ -3,10 +3,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search, ChevronDown, ChevronUp, MessageSquare, Mail,
   Eye, Reply, Archive, Loader2, Phone, Building2, Save,
-  ChevronLeft, ChevronRight, Clock,
+  ChevronLeft, ChevronRight, Clock, Send, X,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
-import { getContactSubmissions, updateContactStatus } from '../services/adminService';
+import { getContactSubmissions, updateContactStatus, replyToContact } from '../services/adminService';
 
 const MSG_STATUS = {
   new:      { fr: 'Nouveau',   en: 'New',      es: 'Nuevo',     color: 'bg-blue-500/20 text-blue-400', icon: Mail },
@@ -35,6 +35,10 @@ function AdminMessages() {
   const [updatingId, setUpdatingId] = useState(null);
   const [editNotes, setEditNotes] = useState({});
   const [savingNotes, setSavingNotes] = useState(null);
+  const [replyingTo, setReplyingTo] = useState(null);
+  const [replyText, setReplyText] = useState('');
+  const [sendingReply, setSendingReply] = useState(false);
+  const [replySuccess, setReplySuccess] = useState(null);
 
   useEffect(() => {
     const t = setTimeout(() => setSearchDebounce(search), 400);
@@ -69,6 +73,24 @@ function AdminMessages() {
       await updateContactStatus(documentId, null, editNotes[documentId] || '');
       setItems(prev => prev.map(i => i.documentId === documentId ? { ...i, notes: editNotes[documentId] || '' } : i));
     } catch { /* silent */ } finally { setSavingNotes(null); }
+  };
+
+  const handleReply = async (documentId) => {
+    if (!replyText.trim()) return;
+    setSendingReply(true);
+    setReplySuccess(null);
+    try {
+      const { data } = await replyToContact(documentId, replyText.trim());
+      setItems(prev => prev.map(i => i.documentId === documentId ? { ...i, status: 'replied', notes: data.notes } : i));
+      setEditNotes(prev => ({ ...prev, [documentId]: data.notes }));
+      setReplySuccess(documentId);
+      setReplyText('');
+      setTimeout(() => { setReplySuccess(null); setReplyingTo(null); }, 2000);
+    } catch {
+      setReplySuccess(false);
+    } finally {
+      setSendingReply(false);
+    }
   };
 
   const toggleExpand = (id) => {
@@ -192,6 +214,56 @@ function AdminMessages() {
                           <div className="rounded-lg bg-glass p-4">
                             <p className="text-sm text-heading whitespace-pre-wrap">{item.message}</p>
                           </div>
+
+                          {/* Reply section */}
+                          {replyingTo === item.documentId ? (
+                            <div className="rounded-lg bg-accent/5 border card-border p-4 space-y-3" onClick={(e) => e.stopPropagation()}>
+                              <div className="flex items-center justify-between">
+                                <h4 className="text-xs font-semibold text-accent uppercase tracking-wider flex items-center gap-1.5">
+                                  <Reply size={12} />
+                                  {tx({ fr: `Repondre a ${item.nom}`, en: `Reply to ${item.nom}`, es: `Responder a ${item.nom}` })}
+                                </h4>
+                                <button onClick={() => { setReplyingTo(null); setReplyText(''); }} className="text-grey-muted hover:text-heading">
+                                  <X size={14} />
+                                </button>
+                              </div>
+                              <textarea
+                                value={replyText}
+                                onChange={(e) => setReplyText(e.target.value)}
+                                rows={4}
+                                autoFocus
+                                placeholder={tx({ fr: 'Ecrire votre reponse...', en: 'Write your reply...', es: 'Escribir su respuesta...' })}
+                                className="input-field text-sm w-full resize-none"
+                              />
+                              <div className="flex items-center justify-between">
+                                <span className="text-[11px] text-grey-muted">
+                                  {tx({ fr: `L'email sera envoye a ${item.email}`, en: `Email will be sent to ${item.email}`, es: `El email sera enviado a ${item.email}` })}
+                                </span>
+                                <button
+                                  onClick={() => handleReply(item.documentId)}
+                                  disabled={sendingReply || !replyText.trim()}
+                                  className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-accent text-white text-xs font-semibold hover:bg-accent/80 transition-colors disabled:opacity-50"
+                                >
+                                  {sendingReply ? <Loader2 size={12} className="animate-spin" /> : <Send size={12} />}
+                                  {tx({ fr: 'Envoyer', en: 'Send', es: 'Enviar' })}
+                                </button>
+                              </div>
+                              {replySuccess === item.documentId && (
+                                <p className="text-xs text-green-400 font-semibold">{tx({ fr: 'Reponse envoyee!', en: 'Reply sent!', es: 'Respuesta enviada!' })}</p>
+                              )}
+                              {replySuccess === false && (
+                                <p className="text-xs text-red-400 font-semibold">{tx({ fr: 'Erreur lors de l\'envoi', en: 'Error sending reply', es: 'Error al enviar' })}</p>
+                              )}
+                            </div>
+                          ) : (
+                            <button
+                              onClick={(e) => { e.stopPropagation(); setReplyingTo(item.documentId); setReplyText(''); setReplySuccess(null); }}
+                              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-accent/20 text-accent text-sm font-semibold hover:bg-accent/30 transition-colors w-fit"
+                            >
+                              <Reply size={14} />
+                              {tx({ fr: 'Repondre par email', en: 'Reply by email', es: 'Responder por email' })}
+                            </button>
+                          )}
 
                           {/* Details grid */}
                           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">

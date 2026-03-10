@@ -24,5 +24,13 @@ export default {
         auth: false,
       },
     },
+    {
+      method: 'POST',
+      path: '/contact-submissions/:documentId/reply',
+      handler: 'contact-submission.reply',
+      config: {
+        auth: false,
+      },
+    },
   ],
 };

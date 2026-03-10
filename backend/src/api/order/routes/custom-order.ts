@@ -80,5 +80,13 @@ export default {
         auth: false,
       },
     },
+    {
+      method: 'DELETE',
+      path: '/orders/:documentId',
+      handler: 'order.deleteOrder',
+      config: {
+        auth: false,
+      },
+    },
   ],
 };
