@@ -616,7 +616,7 @@ function Boutique() {
                         <img
                           src={sticker.image}
                           alt={tx(sticker)}
-                          className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105 sticker-diecut"
+                          className={`w-full h-full object-contain transition-transform duration-500 group-hover:scale-105${sticker.artistSlug ? ' sticker-diecut' : ''}`}
                           loading="lazy"
                         />
                       </div>
