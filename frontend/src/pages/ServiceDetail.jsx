@@ -1,5 +1,5 @@
 import { useParams, Link, Navigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import { ArrowRight, ArrowLeft, CheckCircle, Wrench, Users, ChevronLeft, ChevronRight, X, ExternalLink, Globe, Palette, Code as CodeIcon, Smartphone, Search, Gauge, Shield, ChevronDown, ShoppingCart, ArrowUp } from 'lucide-react';
 import { useState, useCallback, useEffect, useMemo, useRef, lazy, Suspense } from 'react';
 import { toFull } from '../utils/paths';
@@ -50,6 +50,78 @@ function buildServiceFromCMS(cms, lang) {
       description: bl(cms.seo, 'description', lang) || l('subtitle'),
     },
   };
+}
+
+function WebProjectCard({ project, index }) {
+  const ref = useRef(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] });
+  const desktopY = useTransform(scrollYProgress, [0, 1], [15, -15]);
+  const phoneY = useTransform(scrollYProgress, [0, 1], [30, -30]);
+  const isEven = index % 2 === 0;
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, x: isEven ? -50 : 50 }}
+      whileInView={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.7, ease: 'easeOut' }}
+      viewport={{ once: true, margin: '-80px' }}
+      className={`flex flex-col ${isEven ? 'md:flex-row' : 'md:flex-row-reverse'} items-center gap-8 md:gap-12`}
+    >
+      {/* Colonne info */}
+      <div className="flex-none w-full md:w-56 flex flex-col items-center md:items-start text-center md:text-left">
+        <div className="w-14 h-14 flex items-center justify-center mb-4 rounded-xl border border-purple-main/25 bg-white/5 p-2.5">
+          <img src={project.logo} alt={project.name} className="max-w-full max-h-full object-contain" loading="lazy" />
+        </div>
+        <h3 className="text-lg font-heading font-bold text-heading mb-1.5">{project.name}</h3>
+        <p className="text-grey-muted leading-relaxed mb-4 text-xs">{project.desc}</p>
+        <div className="flex flex-wrap gap-1.5 mb-4 justify-center md:justify-start">
+          {project.tags.map((tag, i) => (
+            <span key={i} className="px-2 py-0.5 rounded-full text-[10px] font-semibold border border-purple-main/30 glass-alt-text">
+              {tag}
+            </span>
+          ))}
+        </div>
+        <a
+          href={project.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-accent/50 text-accent text-xs font-semibold hover:bg-accent/10 transition-colors"
+        >
+          Voir le site <ExternalLink size={11} />
+        </a>
+      </div>
+      {/* Colonne devices */}
+      <div className="relative pb-8 pr-8 md:w-[420px] flex-none">
+        {/* Cadre browser desktop */}
+        <motion.div style={{ y: desktopY }} className="rounded-lg overflow-hidden border border-white/10 shadow-xl">
+          <div className="h-5 bg-[#0e0e20] flex items-center px-2.5 gap-1">
+            <span className="w-2 h-2 rounded-full bg-[#ff5f57] block" />
+            <span className="w-2 h-2 rounded-full bg-[#febc2e] block" />
+            <span className="w-2 h-2 rounded-full bg-[#28c840] block" />
+            <div className="flex-1 mx-2 h-3 rounded-sm bg-white/8 text-[7px] text-white/20 flex items-center px-1.5 overflow-hidden truncate">
+              {project.url}
+            </div>
+          </div>
+          <div className="aspect-video overflow-hidden">
+            <img src={project.screenshot} alt={project.name} className="w-full h-full object-cover object-top" loading="lazy" />
+          </div>
+        </motion.div>
+        {/* Cadre phone */}
+        <motion.div
+          style={{ y: phoneY, aspectRatio: '9 / 19' }}
+          className="absolute bottom-0 right-0 w-[17%] rounded-[10px] border-[2px] border-[#0e0e20] shadow-2xl overflow-hidden bg-black"
+        >
+          <img
+            src={project.screenshot}
+            alt={`${project.name} mobile`}
+            className="w-full h-full object-cover object-top"
+            style={{ transform: 'scale(2.2)', transformOrigin: 'top center' }}
+            loading="lazy"
+          />
+        </motion.div>
+      </div>
+    </motion.div>
+  );
 }
 
 function ServiceDetail() {
@@ -433,88 +505,10 @@ function ServiceDetail() {
                 {t('serviceDetail.webProjectsSub') || 'Une selection de projets web livres pour nos clients'}
               </p>
             </motion.div>
-            <div className="space-y-24 md:space-y-32">
-              {service.webProjects.map((project, index) => {
-                const isEven = index % 2 === 0;
-                return (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, x: isEven ? -60 : 60 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.7, ease: 'easeOut' }}
-                    viewport={{ once: true, margin: '-80px' }}
-                    className={`flex flex-col ${isEven ? 'md:flex-row' : 'md:flex-row-reverse'} items-center gap-10 md:gap-16`}
-                  >
-                    {/* Colonne info */}
-                    <div className="flex-none w-full md:w-72 flex flex-col items-center md:items-start text-center md:text-left">
-                      {/* Logo */}
-                      <div className="w-20 h-20 flex items-center justify-center mb-5 rounded-2xl border border-purple-main/25 bg-white/5 p-3">
-                        <img
-                          src={project.logo}
-                          alt={project.name}
-                          className="max-w-full max-h-full object-contain"
-                          loading="lazy"
-                        />
-                      </div>
-                      <h3 className="text-2xl font-heading font-bold text-heading mb-2">{project.name}</h3>
-                      <p className="text-grey-muted leading-relaxed mb-5 text-sm">{project.desc}</p>
-                      <div className="flex flex-wrap gap-2 mb-6 justify-center md:justify-start">
-                        {project.tags.map((tag, i) => (
-                          <span key={i} className="px-3 py-1 rounded-full text-xs font-semibold border border-purple-main/30 glass-alt-text">
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                      <a
-                        href={project.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-accent/50 text-accent text-sm font-semibold hover:bg-accent/10 transition-colors"
-                      >
-                        Voir le site <ExternalLink size={13} />
-                      </a>
-                    </div>
-                    {/* Colonne devices */}
-                    <div className="flex-1 relative pb-10 pr-8 md:pr-12">
-                      {/* Cadre browser desktop */}
-                      <div className="rounded-xl overflow-hidden border border-white/10 shadow-2xl">
-                        {/* Chrome bar */}
-                        <div className="h-7 bg-[#0e0e20] flex items-center px-3 gap-1.5">
-                          <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f57] block" />
-                          <span className="w-2.5 h-2.5 rounded-full bg-[#febc2e] block" />
-                          <span className="w-2.5 h-2.5 rounded-full bg-[#28c840] block" />
-                          <div className="flex-1 mx-3 h-3.5 rounded-sm bg-white/8 text-[8px] text-white/20 flex items-center px-2 overflow-hidden truncate">
-                            {project.url}
-                          </div>
-                        </div>
-                        <div className="aspect-video overflow-hidden">
-                          <img
-                            src={project.screenshot}
-                            alt={project.name}
-                            className="w-full h-full object-cover object-top"
-                            loading="lazy"
-                          />
-                        </div>
-                      </div>
-                      {/* Cadre phone - superpose en bas a droite */}
-                      <div
-                        className="absolute bottom-0 right-0 w-[18%] rounded-[14px] border-[3px] border-[#0e0e20] shadow-2xl overflow-hidden bg-black"
-                        style={{ aspectRatio: '9 / 19' }}
-                      >
-                        <div className="w-full h-full overflow-hidden">
-                          <img
-                            src={project.screenshot}
-                            alt={`${project.name} mobile`}
-                            className="w-full h-full object-cover object-top"
-                            style={{ transform: 'scale(2.2)', transformOrigin: 'top center' }}
-                            loading="lazy"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-                );
-              })}
+            <div className="space-y-16 md:space-y-20">
+              {service.webProjects.map((project, index) => (
+                <WebProjectCard key={index} project={project} index={index} />
+              ))}
             </div>
           </div>
         )}
