@@ -342,6 +342,10 @@ export function applyTheme(step) {
   } else {
     root.removeAttribute('data-theme');
   }
+
+  // Mettre a jour le meta theme-color pour la barre du navigateur mobile
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.setAttribute('content', palette['--bg-body']);
 }
 
 export function brightnessToStep(brightness) {
