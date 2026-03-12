@@ -383,7 +383,7 @@ We work with Adobe Illustrator, Figma and Photoshop to create impactful visuals 
           headers: ['Service', 'Price'],
           rows: [
             ['Landing page', '$900'],
-            ['Showcase site/label (5-10 pages)', '$1,000 - $1,500'],
+            ['Showcase site (5-10 pages)', '$1,000 - $1,500'],
             ['Simple e-commerce site', '$1,500 - $2,500'],
             ['Existing site redesign', 'On quote'],
             ['Monthly maintenance', '$100 - $200/mo'],

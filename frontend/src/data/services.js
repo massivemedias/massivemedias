@@ -365,7 +365,7 @@ Nous travaillons avec Adobe Illustrator, Figma et Photoshop pour créer des visu
           headers: ['Service', 'Prix'],
           rows: [
             ['Landing page', '900$'],
-            ['Site vitrine/label (5-10 pages)', '1 000$ - 1 500$'],
+            ['Site vitrine (5-10 pages)', '1 000$ - 1 500$'],
             ['Site e-commerce simple', '1 500$ - 2 500$'],
             ['Refonte site existant', 'Sur soumission'],
             ['Maintenance mensuelle', '100$ - 200$/mois'],
