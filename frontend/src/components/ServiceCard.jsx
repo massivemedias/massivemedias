@@ -12,6 +12,7 @@ function ServiceCard({ icon: Icon, title, description, link, image, mirror }) {
     <motion.div
       whileHover={{ y: theme === 'light' ? -3 : -8 }}
       transition={{ duration: 0.3 }}
+      className="h-full flex flex-col"
     >
       <Link to={link} className={`block overflow-hidden h-full group transition-colors duration-300 card-bg-bordered ${theme === 'light' ? 'rounded-xl' : 'rounded-2xl'}`}>
         {/* Image */}

@@ -239,7 +239,7 @@ function Home() {
           </p>
         </motion.div>
 
-        <div className="flex flex-wrap justify-center gap-4 max-w-4xl mx-auto">
+        <div className="flex flex-wrap justify-center items-stretch gap-4 max-w-4xl mx-auto">
           {allServiceCards.map((card, index) => (
             <motion.div
               key={index}
@@ -247,7 +247,7 @@ function Home() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
               viewport={{ once: true }}
-              className="w-full sm:w-[calc(50%-0.5rem)] lg:w-[calc(33.333%-0.7rem)]"
+              className="w-full sm:w-[calc(50%-0.5rem)] lg:w-[calc(33.333%-0.7rem)] flex flex-col"
             >
               <ServiceCard
                 icon={card.icon}
