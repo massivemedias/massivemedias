@@ -382,8 +382,8 @@ We work with Adobe Illustrator, Figma and Photoshop to create impactful visuals 
           subtitle: 'Site Creation (Webdesign + Code + SEO included)',
           headers: ['Service', 'Price'],
           rows: [
-            ['Event landing page', '$900'],
-            ['Artist/label showcase site (5-10 pages)', '$1,000 - $1,500'],
+            ['Landing page', '$900'],
+            ['Showcase site/label (5-10 pages)', '$1,000 - $1,500'],
             ['Simple e-commerce site', '$1,500 - $2,500'],
             ['Existing site redesign', 'On quote'],
             ['Monthly maintenance', '$100 - $200/mo'],

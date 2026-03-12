@@ -382,8 +382,8 @@ Más de 15 años de experiencia en desarrollo web. El fundador de Massive es pro
           subtitle: 'Creacion de sitio (Webdesign + Codigo + SEO incluido)',
           headers: ['Servicio', 'Precio'],
           rows: [
-            ['Landing page de evento', '$900'],
-            ['Sitio vitrina artista/sello (5-10 paginas)', '$1,000 - $1,500'],
+            ['Landing page', '$900'],
+            ['Sitio vitrina/sello (5-10 paginas)', '$1,000 - $1,500'],
             ['Sitio e-commerce simple', '$1,500 - $2,500'],
             ['Rediseno de sitio existente', 'Bajo cotizacion'],
             ['Mantenimiento mensual', '$100 - $200/mes'],
