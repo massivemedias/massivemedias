@@ -12,8 +12,10 @@ import {
   Shield,
   Heart,
   Clock,
-  MapPin
+  MapPin,
+  ShoppingBag,
 } from 'lucide-react';
+import artistsData from '../data/artists';
 import ServiceCard from '../components/ServiceCard';
 import Counter from '../components/Counter';
 import SEO from '../components/SEO';
@@ -112,6 +114,37 @@ function Home() {
   const fbFeaturedProjects = t('home.featuredProjects');
   const fbTestimonials = t('home.testimonials.items');
 
+  // Carte Boutique injectee en position 2
+  const boutiqueCard = {
+    title: tx({ fr: 'Boutique', en: 'Shop', es: 'Tienda' }),
+    description: tx({ fr: 'Prints, stickers, merch - commandez en ligne', en: 'Prints, stickers, merch - order online', es: 'Prints, stickers, merch - pedidos en línea' }),
+    icon: ShoppingBag,
+    link: '/boutique',
+    image: thumb('/images/prints/PrintsTailleHero.webp'),
+  };
+  const resolvedServiceCards = serviceCards
+    ? serviceCards
+    : fbServiceCards.map((card, i) => ({
+        ...card,
+        icon: getIcon(fallbackServiceIcons[i]),
+        link: fallbackServiceLinks[i],
+        image: fallbackServiceImages[i],
+      }));
+  const allServiceCards = resolvedServiceCards.length > 0
+    ? [resolvedServiceCards[0], boutiqueCard, ...resolvedServiceCards.slice(1)]
+    : [boutiqueCard];
+
+  // Oeuvres artistes pour le showcase homepage (interleaved)
+  const artistsList = Object.values(artistsData);
+  const artworksShowcase = [];
+  for (let i = 0; i < 4; i++) {
+    artistsList.forEach(artist => {
+      const works = [...(artist.prints || []), ...(artist.stickers || [])];
+      if (works[i]) artworksShowcase.push({ ...works[i], artistSlug: artist.slug, artistName: artist.name });
+    });
+  }
+  const displayArtworks = artworksShowcase.slice(0, 8);
+
   return (
     <>
       <SEO
@@ -207,15 +240,7 @@ function Home() {
         </motion.div>
 
         <div className="flex flex-wrap justify-center gap-4 max-w-4xl mx-auto">
-          {(serviceCards
-            ? serviceCards
-            : fbServiceCards.map((card, index) => ({
-                ...card,
-                icon: getIcon(fallbackServiceIcons[index]),
-                link: fallbackServiceLinks[index],
-                image: fallbackServiceImages[index],
-              }))
-          ).map((card, index) => (
+          {allServiceCards.map((card, index) => (
             <motion.div
               key={index}
               initial={{ opacity: 0, y: 20 }}
@@ -237,72 +262,85 @@ function Home() {
         </div>
       </section>
 
-      {/* ============ PROJETS RÉCENTS ============ */}
+      {/* ============ ARTISTES & OEUVRES ============ */}
       <section className="section-container">
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
-          className="text-center mb-16"
+          className="text-center mb-12"
         >
           <h2 className="text-5xl md:text-6xl font-heading font-bold text-heading mb-4 hero-title">
-            {(content && bl(content, 'projectsSectionTitle', lang)) || t('home.projectsSection.title')}
+            {tx({ fr: 'Nos artistes', en: 'Our artists', es: 'Nuestros artistas' })}
           </h2>
           <p className="text-xl text-grey-light max-w-2xl mx-auto">
-            {(content && bl(content, 'projectsSectionSubtitle', lang)) || t('home.projectsSection.subtitle')}
+            {tx({ fr: 'Prints fine art disponibles en boutique - oeuvres originales imprimees sur commande', en: 'Fine art prints available in our shop - original works printed on demand', es: 'Prints fine art disponibles en tienda - obras originales impresas a pedido' })}
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {featuredProjects
-            ? featuredProjects.map((project, index) => (
-                <Link key={index} to={project.link || '#'}>
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: index * 0.08 }}
-                    viewport={{ once: true }}
-                    className="group relative rounded-lg overflow-hidden cursor-pointer aspect-square"
-                  >
-                    <img
-                      src={project.image}
-                      alt={project.title}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                      loading="lazy"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent opacity-70 group-hover:opacity-90 transition-opacity duration-300"></div>
-                    <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
-                      <span className="text-accent text-xs font-semibold uppercase tracking-wider">{project.category}</span>
-                      <h3 className="text-white text-base font-heading font-bold mt-0.5">{project.title}</h3>
-                    </div>
-                  </motion.div>
-                </Link>
-              ))
-            : fbFeaturedProjects.map((project, index) => (
-                <Link key={index} to={fallbackFeaturedProjectLinks[index]}>
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: index * 0.08 }}
-                    viewport={{ once: true }}
-                    className="group relative rounded-lg overflow-hidden cursor-pointer aspect-square"
-                  >
-                    <img
-                      src={fallbackFeaturedProjectImages[index]}
-                      alt={project.title}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                      loading="lazy"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent opacity-70 group-hover:opacity-90 transition-opacity duration-300"></div>
-                    <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
-                      <span className="text-accent text-xs font-semibold uppercase tracking-wider">{project.category}</span>
-                      <h3 className="text-white text-base font-heading font-bold mt-0.5">{project.title}</h3>
-                    </div>
-                  </motion.div>
-                </Link>
-              ))
-          }
+        {/* Avatars artistes */}
+        <div className="flex flex-wrap justify-center gap-8 md:gap-12 mb-12">
+          {artistsList.map((artist, i) => (
+            <motion.div
+              key={artist.slug}
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: i * 0.1 }}
+              viewport={{ once: true }}
+            >
+              <Link to={`/artistes/${artist.slug}`} className="flex flex-col items-center gap-2 group">
+                <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-purple-main/30 group-hover:border-accent/70 transition-colors duration-300">
+                  <img src={artist.avatar} alt={artist.name} className="w-full h-full object-cover" loading="lazy" />
+                </div>
+                <span className="text-sm font-heading font-bold text-heading">{artist.name}</span>
+                <span className="text-xs text-grey-muted text-center max-w-[110px] leading-tight">
+                  {artist.tagline?.[lang] || artist.tagline?.fr}
+                </span>
+              </Link>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Grille oeuvres */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-10">
+          {displayArtworks.map((work, i) => (
+            <motion.div
+              key={work.id}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: i * 0.06 }}
+              viewport={{ once: true }}
+            >
+              <Link to={`/artistes/${work.artistSlug}`} className="group relative block rounded-lg overflow-hidden aspect-square">
+                <img
+                  src={work.image}
+                  alt={work.titleFr || work.titleEn}
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <div className="absolute bottom-0 left-0 right-0 p-3 translate-y-2 group-hover:translate-y-0 transition-transform duration-300 opacity-0 group-hover:opacity-100">
+                  <span className="text-accent text-[10px] font-semibold uppercase tracking-wider">{work.artistName}</span>
+                  <p className="text-white text-xs font-heading font-bold mt-0.5 line-clamp-1">
+                    {lang === 'en' ? (work.titleEn || work.titleFr) : lang === 'es' ? (work.titleEs || work.titleFr) : work.titleFr}
+                  </p>
+                </div>
+              </Link>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* CTAs */}
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <Link to="/artistes" className="btn-outline">
+            {tx({ fr: 'Voir tous les artistes', en: 'View all artists', es: 'Ver todos los artistas' })}
+            <ArrowRight className="ml-2" size={16} />
+          </Link>
+          <Link to="/boutique" className="btn-primary">
+            {tx({ fr: 'Voir la boutique', en: 'Visit the shop', es: 'Ver la tienda' })}
+            <ArrowRight className="ml-2" size={16} />
+          </Link>
         </div>
       </section>
 
