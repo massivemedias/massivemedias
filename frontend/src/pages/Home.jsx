@@ -131,7 +131,7 @@ function Home() {
         image: fallbackServiceImages[i],
       }));
   const allServiceCards = resolvedServiceCards.length > 0
-    ? [resolvedServiceCards[0], boutiqueCard, ...resolvedServiceCards.slice(1)]
+    ? [...resolvedServiceCards, boutiqueCard]
     : [boutiqueCard];
 
   // Oeuvres artistes pour le showcase homepage (interleaved)
