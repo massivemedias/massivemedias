@@ -418,77 +418,105 @@ function ServiceDetail() {
 
         {/* ============ PROJETS WEB REALISES (webProjects) ============ */}
         {service.webProjects && service.webProjects.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-            className="mb-20"
-          >
-            <h2 className="text-3xl font-heading font-bold text-gradient mb-3 text-center">
-              {t('serviceDetail.webProjectsTitle') || 'Sites realises'}
-            </h2>
-            <p className="text-grey-muted text-center mb-10 max-w-2xl mx-auto">
-              {t('serviceDetail.webProjectsSub') || 'Une selection de projets web livres pour nos clients'}
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {service.webProjects.map((project, index) => (
-                <motion.a
-                  key={index}
-                  href={project.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  initial={{ opacity: 0, y: 15 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: index * 0.05 }}
-                  viewport={{ once: true }}
-                  className="group relative rounded-xl overflow-hidden border border-purple-main/30 hover:border-accent/40 transition-all duration-300 card-bg card-shadow cursor-pointer"
-                >
-                  <div className="relative aspect-[4/3] overflow-hidden">
-                    {/* Logo - visible par defaut, disparait au hover */}
-                    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center p-4 transition-opacity duration-400 group-hover:opacity-0">
-                      <div className="w-36 h-36 flex items-center justify-center mb-3">
+          <div className="mb-24">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              viewport={{ once: true }}
+              className="text-center mb-16"
+            >
+              <h2 className="text-3xl font-heading font-bold text-gradient mb-3">
+                {t('serviceDetail.webProjectsTitle') || 'Sites realises'}
+              </h2>
+              <p className="text-grey-muted max-w-2xl mx-auto">
+                {t('serviceDetail.webProjectsSub') || 'Une selection de projets web livres pour nos clients'}
+              </p>
+            </motion.div>
+            <div className="space-y-24 md:space-y-32">
+              {service.webProjects.map((project, index) => {
+                const isEven = index % 2 === 0;
+                return (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, x: isEven ? -60 : 60 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.7, ease: 'easeOut' }}
+                    viewport={{ once: true, margin: '-80px' }}
+                    className={`flex flex-col ${isEven ? 'md:flex-row' : 'md:flex-row-reverse'} items-center gap-10 md:gap-16`}
+                  >
+                    {/* Colonne info */}
+                    <div className="flex-none w-full md:w-72 flex flex-col items-center md:items-start text-center md:text-left">
+                      {/* Logo */}
+                      <div className="w-20 h-20 flex items-center justify-center mb-5 rounded-2xl border border-purple-main/25 bg-white/5 p-3">
                         <img
                           src={project.logo}
                           alt={project.name}
-                          className="max-w-full max-h-full object-contain drop-shadow-lg"
+                          className="max-w-full max-h-full object-contain"
                           loading="lazy"
                         />
                       </div>
-                      <h3 className="text-heading font-heading font-bold text-sm text-center">{project.name}</h3>
-                      <p className="text-grey-muted text-[11px] text-center leading-snug mt-1 line-clamp-2">{project.desc}</p>
+                      <h3 className="text-2xl font-heading font-bold text-heading mb-2">{project.name}</h3>
+                      <p className="text-grey-muted leading-relaxed mb-5 text-sm">{project.desc}</p>
+                      <div className="flex flex-wrap gap-2 mb-6 justify-center md:justify-start">
+                        {project.tags.map((tag, i) => (
+                          <span key={i} className="px-3 py-1 rounded-full text-xs font-semibold border border-purple-main/30 glass-alt-text">
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                      <a
+                        href={project.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-accent/50 text-accent text-sm font-semibold hover:bg-accent/10 transition-colors"
+                      >
+                        Voir le site <ExternalLink size={13} />
+                      </a>
                     </div>
-                    {/* Screenshot - visible au hover */}
-                    <img
-                      src={project.screenshot}
-                      alt={project.name}
-                      className="w-full h-full object-cover object-top opacity-0 group-hover:opacity-100 transition-opacity duration-400"
-                      loading="lazy"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-400" />
-                    {/* External link au hover */}
-                    <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
-                      <div className="w-7 h-7 rounded-full bg-accent/90 backdrop-blur-sm flex items-center justify-center">
-                        <ExternalLink size={12} className="text-white" />
+                    {/* Colonne devices */}
+                    <div className="flex-1 relative pb-10 pr-8 md:pr-12">
+                      {/* Cadre browser desktop */}
+                      <div className="rounded-xl overflow-hidden border border-white/10 shadow-2xl">
+                        {/* Chrome bar */}
+                        <div className="h-7 bg-[#0e0e20] flex items-center px-3 gap-1.5">
+                          <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f57] block" />
+                          <span className="w-2.5 h-2.5 rounded-full bg-[#febc2e] block" />
+                          <span className="w-2.5 h-2.5 rounded-full bg-[#28c840] block" />
+                          <div className="flex-1 mx-3 h-3.5 rounded-sm bg-white/8 text-[8px] text-white/20 flex items-center px-2 overflow-hidden truncate">
+                            {project.url}
+                          </div>
+                        </div>
+                        <div className="aspect-video overflow-hidden">
+                          <img
+                            src={project.screenshot}
+                            alt={project.name}
+                            className="w-full h-full object-cover object-top"
+                            loading="lazy"
+                          />
+                        </div>
+                      </div>
+                      {/* Cadre phone - superpose en bas a droite */}
+                      <div
+                        className="absolute bottom-0 right-0 w-[18%] rounded-[14px] border-[3px] border-[#0e0e20] shadow-2xl overflow-hidden bg-black"
+                        style={{ aspectRatio: '9 / 19' }}
+                      >
+                        <div className="w-full h-full overflow-hidden">
+                          <img
+                            src={project.screenshot}
+                            alt={`${project.name} mobile`}
+                            className="w-full h-full object-cover object-top"
+                            style={{ transform: 'scale(2.2)', transformOrigin: 'top center' }}
+                            loading="lazy"
+                          />
+                        </div>
                       </div>
                     </div>
-                    {/* Nom au hover en bas */}
-                    <div className="absolute bottom-0 left-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-400 z-20">
-                      <h3 className="text-white font-heading font-bold text-sm">{project.name}</h3>
-                    </div>
-                  </div>
-                  {/* Tags */}
-                  <div className="flex flex-wrap gap-1.5 p-3 pt-2.5">
-                    {project.tags.map((tag, i) => (
-                      <span key={i} className="px-2 py-0.5 rounded-full text-[10px] font-semibold border border-purple-main/30 glass-alt-text">
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                </motion.a>
-              ))}
+                  </motion.div>
+                );
+              })}
             </div>
-          </motion.div>
+          </div>
         )}
 
         {/* ============ PROCESSUS ============ */}

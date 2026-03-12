@@ -415,7 +415,7 @@ Más de 15 años de experiencia en desarrollo web. El fundador de Massive es pro
         desc: 'Sitio de reclutamiento para el Servicio de Policía de la Ciudad de Montreal',
         url: 'https://recrutementspvm.ca',
         screenshot: thumb('/images/web/recrutementspvm.webp'),
-        logo: '/images/logos/spvm.svg',
+        logo: '/images/logos/villedemontreal.svg',
         tags: ['WordPress', 'UX', 'Responsive'],
       },
       {
@@ -431,7 +431,7 @@ Más de 15 años de experiencia en desarrollo web. El fundador de Massive es pro
         desc: 'Sitio oficial del Servicio de Policía de la Ciudad de Montreal',
         url: 'https://spvm.qc.ca',
         screenshot: thumb('/images/web/spvm.webp'),
-        logo: '/images/logos/spvm-main.png',
+        logo: '/images/logos/villedemontreal.svg',
         tags: ['Angular', 'CMS', 'Accesibilidad'],
       },
       {

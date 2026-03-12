@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <circle cx="100" cy="100" r="100" fill="#002060"/>
+  <!-- Fleur-de-lis stylisee -->
+  <g fill="white">
+    <!-- Tige centrale -->
+    <rect x="96" y="90" width="8" height="38" rx="2"/>
+    <!-- Base -->
+    <path d="M82 128 Q100 122 118 128 L116 134 Q100 130 84 134 Z"/>
+    <!-- Petale central -->
+    <path d="M100 42 C100 42 88 58 88 70 C88 80 94 86 100 86 C106 86 112 80 112 70 C112 58 100 42 100 42Z"/>
+    <!-- Petale gauche -->
+    <path d="M68 72 C72 66 80 66 86 70 C88 76 86 82 82 84 C76 86 68 82 68 72Z"/>
+    <!-- Petale droit -->
+    <path d="M132 72 C128 66 120 66 114 70 C112 76 114 82 118 84 C124 86 132 82 132 72Z"/>
+  </g>
+  <!-- Texte -->
+  <text x="100" y="156" text-anchor="middle" fill="white" font-family="Georgia, serif" font-size="11" font-weight="bold" letter-spacing="1">VILLE DE</text>
+  <text x="100" y="171" text-anchor="middle" fill="white" font-family="Georgia, serif" font-size="11" font-weight="bold" letter-spacing="1">MONTRÉAL</text>
+</svg>

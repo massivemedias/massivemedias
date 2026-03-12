@@ -397,7 +397,7 @@ Nous travaillons avec Adobe Illustrator, Figma et Photoshop pour créer des visu
         desc: 'Site de recrutement pour le Service de police de la Ville de Montréal',
         url: 'https://recrutementspvm.ca',
         screenshot: thumb('/images/web/recrutementspvm.webp'),
-        logo: '/images/logos/spvm.svg',
+        logo: '/images/logos/villedemontreal.svg',
         tags: ['WordPress', 'UX', 'Responsive'],
       },
       {
@@ -413,7 +413,7 @@ Nous travaillons avec Adobe Illustrator, Figma et Photoshop pour créer des visu
         desc: 'Site officiel du Service de police de la Ville de Montréal',
         url: 'https://spvm.qc.ca',
         screenshot: thumb('/images/web/spvm.webp'),
-        logo: '/images/logos/spvm-main.png',
+        logo: '/images/logos/villedemontreal.svg',
         tags: ['Angular', 'CMS', 'Accessibilité'],
       },
       {
