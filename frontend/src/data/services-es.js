@@ -411,7 +411,7 @@ Más de 15 años de experiencia en desarrollo web. El fundador de Massive es pro
         tags: ['React', 'API', 'SEO'],
       },
       {
-        name: 'Reclutamiento SPVM',
+        name: 'Ville de Montréal',
         desc: 'Sitio de reclutamiento para el Servicio de Policía de la Ciudad de Montreal',
         url: 'https://recrutementspvm.ca',
         screenshot: thumb('/images/web/recrutementspvm.webp'),
@@ -427,7 +427,7 @@ Más de 15 años de experiencia en desarrollo web. El fundador de Massive es pro
         tags: ['React', 'Animación', 'Audio'],
       },
       {
-        name: 'SPVM',
+        name: 'Ville de Montréal',
         desc: 'Sitio oficial del Servicio de Policía de la Ciudad de Montreal',
         url: 'https://spvm.qc.ca',
         screenshot: thumb('/images/web/spvm.webp'),

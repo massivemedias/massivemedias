@@ -411,7 +411,7 @@ We work with Adobe Illustrator, Figma and Photoshop to create impactful visuals 
         tags: ['React', 'API', 'SEO'],
       },
       {
-        name: 'SPVM Recruitment',
+        name: 'Ville de Montréal',
         desc: 'Recruitment website for the Montreal Police Department',
         url: 'https://recrutementspvm.ca',
         screenshot: thumb('/images/web/recrutementspvm.webp'),
@@ -427,7 +427,7 @@ We work with Adobe Illustrator, Figma and Photoshop to create impactful visuals 
         tags: ['React', 'Animation', 'Audio'],
       },
       {
-        name: 'SPVM',
+        name: 'Ville de Montréal',
         desc: 'Official website of the Montreal Police Department',
         url: 'https://spvm.qc.ca',
         screenshot: thumb('/images/web/spvm.webp'),
