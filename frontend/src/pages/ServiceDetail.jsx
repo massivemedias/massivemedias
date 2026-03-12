@@ -112,7 +112,7 @@ function WebProjectCard({ project, index }) {
           className="absolute bottom-0 right-0 w-[17%] rounded-[10px] border-[2px] border-[#0e0e20] shadow-2xl overflow-hidden bg-black"
         >
           <img
-            src={project.screenshot}
+            src={project.phoneScreenshot || project.screenshot}
             alt={`${project.name} mobile`}
             className="w-full h-full object-cover"
             style={{ objectPosition: '20% top' }}
