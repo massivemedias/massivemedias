@@ -162,6 +162,7 @@ Cortados a la forma exacta de tu diseño con nuestro equipo de corte profesional
       ],
     },
     gallery: [
+      thumb('/images/realisations/stickers/Stickers-Coagule.webp'),
       thumb('/images/realisations/stickers/Stickers-Cosmovision.webp'),
       thumb('/images/realisations/stickers/Stickers-Fusion-State-Rec.webp'),
       thumb('/images/realisations/stickers/Stickers-Maudite-Machine.webp'),

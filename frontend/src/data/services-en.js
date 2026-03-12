@@ -162,6 +162,7 @@ Cut to the exact shape of your design with our professional cutting equipment, e
       ],
     },
     gallery: [
+      thumb('/images/realisations/stickers/Stickers-Coagule.webp'),
       thumb('/images/realisations/stickers/Stickers-Cosmovision.webp'),
       thumb('/images/realisations/stickers/Stickers-Fusion-State-Rec.webp'),
       thumb('/images/realisations/stickers/Stickers-Maudite-Machine.webp'),

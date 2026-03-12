@@ -162,6 +162,7 @@ Découpés à la forme exacte de ton design avec notre équipement de découpe p
       ],
     },
     gallery: [
+      thumb('/images/realisations/stickers/Stickers-Coagule.webp'),
       thumb('/images/realisations/stickers/Stickers-Cosmovision.webp'),
       thumb('/images/realisations/stickers/Stickers-Fusion-State-Rec.webp'),
       thumb('/images/realisations/stickers/Stickers-Maudite-Machine.webp'),
