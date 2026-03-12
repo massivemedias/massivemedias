@@ -17,7 +17,7 @@ function ServiceCard({ icon: Icon, title, description, link, image, mirror }) {
       <Link to={link} className={`block overflow-hidden h-full group transition-colors duration-300 card-bg-bordered ${theme === 'light' ? 'rounded-xl' : 'rounded-2xl'}`}>
         {/* Image */}
         {image && (
-          <div className="relative aspect-[3/2] overflow-hidden flex items-center justify-center">
+          <div className="relative aspect-[2/1] overflow-hidden flex items-center justify-center">
             <img
               src={image}
               alt={title}
@@ -30,18 +30,18 @@ function ServiceCard({ icon: Icon, title, description, link, image, mirror }) {
           </div>
         )}
 
-        <div className="p-6 flex flex-col" style={{ minHeight: image ? 'auto' : '100%' }}>
+        <div className="p-4 flex flex-col" style={{ minHeight: image ? 'auto' : '100%' }}>
           {!image && (
             <div className="mb-4 p-3 rounded-lg w-fit icon-bg">
               <Icon size={32} className="text-white" />
             </div>
           )}
 
-          <h3 className="font-heading text-xl font-bold text-heading mb-3">
+          <h3 className="font-heading text-xl font-bold text-heading mb-2">
             {title}
           </h3>
 
-          <p className="text-grey-light mb-6 flex-grow text-sm leading-relaxed">
+          <p className="text-grey-light mb-3 flex-grow text-sm leading-relaxed">
             {description}
           </p>
 
