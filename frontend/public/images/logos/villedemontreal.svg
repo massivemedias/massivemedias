@@ -1,17 +1,16 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 260">
-  <g fill="#B03A2E">
-    <!-- 8 lobes forment la croix a 4 bras doubles -->
-    <circle cx="80" cy="38" r="26"/>
-    <circle cx="120" cy="38" r="26"/>
-    <circle cx="162" cy="80" r="26"/>
-    <circle cx="162" cy="120" r="26"/>
-    <circle cx="120" cy="162" r="26"/>
-    <circle cx="80" cy="162" r="26"/>
-    <circle cx="38" cy="120" r="26"/>
-    <circle cx="38" cy="80" r="26"/>
-    <!-- Centre de liaison -->
-    <circle cx="100" cy="100" r="46"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 100">
+  <!-- Texte Montreal -->
+  <text x="0" y="72" font-family="Georgia, 'Times New Roman', serif" font-size="68" font-weight="400" fill="white" letter-spacing="-1">Montréal</text>
+  <!-- Embleme fleur 8 lobes -->
+  <g fill="#B03A2E" transform="translate(248, 12)">
+    <circle cx="28" cy="12" r="10"/>
+    <circle cx="44" cy="12" r="10"/>
+    <circle cx="60" cy="28" r="10"/>
+    <circle cx="60" cy="44" r="10"/>
+    <circle cx="44" cy="60" r="10"/>
+    <circle cx="28" cy="60" r="10"/>
+    <circle cx="12" cy="44" r="10"/>
+    <circle cx="12" cy="28" r="10"/>
+    <circle cx="36" cy="36" r="18"/>
   </g>
-  <text x="100" y="218" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="white">Ville de</text>
-  <text x="100" y="240" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="white">Montréal</text>
 </svg>

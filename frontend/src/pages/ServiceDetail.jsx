@@ -69,7 +69,7 @@ function WebProjectCard({ project, index }) {
     >
       {/* Colonne info */}
       <div className="flex-none w-full md:w-56 flex flex-col items-center md:items-start text-center md:text-left">
-        <div className="w-20 h-20 flex items-center justify-center mb-4 rounded-xl border border-purple-main/25 bg-white/5 p-2">
+        <div className="w-28 h-20 flex items-center justify-center mb-4 rounded-xl border border-purple-main/25 bg-white/5 p-2">
           <img src={project.logo} alt={project.name} className="max-w-full max-h-full object-contain" loading="lazy" />
         </div>
         <h3 className="text-lg font-heading font-bold text-heading mb-1.5">{project.name}</h3>
