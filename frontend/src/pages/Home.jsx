@@ -120,7 +120,7 @@ function Home() {
     description: tx({ fr: 'Prints, stickers, merch - commandez en ligne', en: 'Prints, stickers, merch - order online', es: 'Prints, stickers, merch - pedidos en línea' }),
     icon: ShoppingBag,
     link: '/boutique',
-    image: thumb('/images/prints/PrintsHero.webp'),
+    image: fallbackServiceImages[0],
   };
   const resolvedServiceCards = serviceCards
     ? serviceCards
