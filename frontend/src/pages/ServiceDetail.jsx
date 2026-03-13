@@ -150,7 +150,7 @@ function ServiceDetail() {
       pricing: (cms.pricing && Object.keys(cms.pricing).length) ? cms.pricing : local.pricing,
       equipment: cms.equipment?.length ? cms.equipment : local.equipment,
       faq: cms.faq?.length ? cms.faq : local.faq,
-      gallery: cms.gallery?.length ? cms.gallery : local.gallery,
+      gallery: [...(cms.gallery || []), ...(local.gallery || [])].filter((v, i, a) => a.indexOf(v) === i),
       comparison: cms.comparison || local.comparison,
       whatWeDeliver: cms.whatWeDeliver || local.whatWeDeliver,
       webProjects: cms.webProjects || local.webProjects,
