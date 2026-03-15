@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useCallback, useMemo } from 'react';
+import { trackAddToCart, trackRemoveFromCart } from '../utils/analytics';
 
 const CartContext = createContext();
 
@@ -24,10 +25,13 @@ export function CartProvider({ children }) {
       saveCart(updated);
       return updated;
     });
+    trackAddToCart(item);
   }, []);
 
   const removeFromCart = useCallback((index) => {
     setItems(prev => {
+      const removed = prev[index];
+      if (removed) trackRemoveFromCart(removed);
       const updated = prev.filter((_, i) => i !== index);
       saveCart(updated);
       return updated;

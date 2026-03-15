@@ -34,7 +34,7 @@ const AdminInventaire = lazy(() => import('./pages/AdminInventaire'));
 const AdminMessages = lazy(() => import('./pages/AdminMessages'));
 const AdminArtistes = lazy(() => import('./pages/AdminArtistes'));
 const AdminCommissions = lazy(() => import('./pages/AdminCommissions'));
-const AdminClients = lazy(() => import('./pages/AdminClients'));
+// AdminClients merged into AdminUtilisateurs - redirect in routes
 const AdminDepenses = lazy(() => import('./pages/AdminDepenses'));
 const AdminStats = lazy(() => import('./pages/AdminStats'));
 const AdminTarifs = lazy(() => import('./pages/AdminTarifs'));
@@ -152,7 +152,7 @@ function App() {
               <Route path="messages" element={<AdminMessages />} />
               <Route path="candidatures" element={<Navigate to="/admin/messages" replace />} />
               <Route path="artistes" element={<Navigate to="/admin/messages" replace />} />
-              <Route path="clients" element={<AdminClients />} />
+              <Route path="clients" element={<Navigate to="/admin/utilisateurs" replace />} />
               <Route path="utilisateurs" element={<AdminUtilisateurs />} />
               <Route path="depenses" element={<AdminDepenses />} />
               <Route path="stats" element={<AdminStats />} />

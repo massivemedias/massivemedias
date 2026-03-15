@@ -2,7 +2,7 @@ import { Outlet, NavLink, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   ShoppingBag, Package, MessageSquare, Banknote,
-  Users, UserCircle, Receipt, BarChart3, Menu, X, DollarSign,
+  Users, Receipt, BarChart3, Menu, X, DollarSign,
 } from 'lucide-react';
 import { useState } from 'react';
 import { useLang } from '../i18n/LanguageContext';
@@ -12,8 +12,7 @@ const NAV_ITEMS = [
   { to: '/admin/commissions', icon: Banknote, fr: 'Commissions', en: 'Commissions', es: 'Comisiones' },
   { to: '/admin/inventaire', icon: Package, fr: 'Inventaire', en: 'Inventory', es: 'Inventario' },
   { to: '/admin/messages', icon: MessageSquare, fr: 'Messages', en: 'Messages', es: 'Mensajes' },
-  { to: '/admin/clients', icon: Users, fr: 'Clients', en: 'Clients', es: 'Clientes' },
-  { to: '/admin/utilisateurs', icon: UserCircle, fr: 'Utilisateurs', en: 'Users', es: 'Usuarios' },
+  { to: '/admin/utilisateurs', icon: Users, fr: 'Utilisateurs', en: 'Users', es: 'Usuarios' },
   { to: '/admin/depenses', icon: Receipt, fr: 'Depenses', en: 'Expenses', es: 'Gastos' },
   { to: '/admin/stats', icon: BarChart3, fr: 'Stats', en: 'Stats', es: 'Stats' },
   { to: '/admin/tarifs', icon: DollarSign, fr: 'Tarifs', en: 'Pricing', es: 'Precios' },

@@ -175,7 +175,7 @@ function AdminStats() {
           </div>
         </div>
 
-        {/* Google Analytics link */}
+        {/* Google Analytics */}
         <div className="rounded-xl bg-glass p-5 card-border">
           <h3 className="text-sm font-heading font-bold text-heading mb-4 flex items-center gap-2">
             <Activity size={16} className="text-blue-400" />
@@ -183,22 +183,54 @@ function AdminStats() {
           </h3>
           <p className="text-grey-muted text-sm mb-4">
             {tx({
-              fr: 'Consulte les stats detaillees de trafic, visiteurs, pages vues et conversions directement sur Google Analytics.',
-              en: 'View detailed traffic, visitor, pageview and conversion stats directly on Google Analytics.',
-              es: 'Consulta las estadisticas detalladas de trafico, visitantes, paginas vistas y conversiones en Google Analytics.',
+              fr: 'Trafic, visiteurs, conversions et e-commerce.',
+              en: 'Traffic, visitors, conversions and e-commerce.',
+              es: 'Trafico, visitantes, conversiones y e-commerce.',
             })}
           </p>
-          <a
-            href="https://analytics.google.com/analytics/web/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-500/20 text-blue-400 text-sm font-semibold hover:bg-blue-500/30 transition-colors"
-          >
-            <BarChart3 size={16} />
-            {tx({ fr: 'Ouvrir Google Analytics', en: 'Open Google Analytics', es: 'Abrir Google Analytics' })}
-            <ExternalLink size={14} />
-          </a>
-          <div className="mt-4 grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+            <a
+              href="https://analytics.google.com/analytics/web/#/p525792501/reports/dashboard?r=firebase-overview"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-blue-500/20 text-blue-400 text-sm font-semibold hover:bg-blue-500/30 transition-colors"
+            >
+              <BarChart3 size={16} />
+              {tx({ fr: 'Dashboard GA4', en: 'GA4 Dashboard', es: 'Dashboard GA4' })}
+              <ExternalLink size={12} className="ml-auto" />
+            </a>
+            <a
+              href="https://analytics.google.com/analytics/web/#/p525792501/reports/explorer?params=_u..nav%3Dmaui&r=lifecycle-monetization-ecommerce-purchases"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-green-500/20 text-green-400 text-sm font-semibold hover:bg-green-500/30 transition-colors"
+            >
+              <DollarSign size={16} />
+              {tx({ fr: 'E-commerce', en: 'E-commerce', es: 'E-commerce' })}
+              <ExternalLink size={12} className="ml-auto" />
+            </a>
+            <a
+              href="https://analytics.google.com/analytics/web/#/p525792501/reports/explorer?params=_u..nav%3Dmaui&r=lifecycle-engagement-overview"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-purple-500/20 text-purple-400 text-sm font-semibold hover:bg-purple-500/30 transition-colors"
+            >
+              <Activity size={16} />
+              {tx({ fr: 'Engagement', en: 'Engagement', es: 'Engagement' })}
+              <ExternalLink size={12} className="ml-auto" />
+            </a>
+            <a
+              href="https://analytics.google.com/analytics/web/#/p525792501/reports/explorer?params=_u..nav%3Dmaui&r=all-pages-and-screens"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-yellow-500/20 text-yellow-400 text-sm font-semibold hover:bg-yellow-500/30 transition-colors"
+            >
+              <Users size={16} />
+              {tx({ fr: 'Pages vues', en: 'Page views', es: 'Paginas vistas' })}
+              <ExternalLink size={12} className="ml-auto" />
+            </a>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
             <a
               href="https://search.google.com/search-console"
               target="_blank"

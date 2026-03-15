@@ -10,6 +10,7 @@ import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
 import { getStripePromise } from '../lib/stripe';
 import { createPaymentIntent } from '../services/orderService';
+import { trackBeginCheckout } from '../utils/analytics';
 import CheckoutForm from '../components/CheckoutForm';
 import AddressAutocomplete from '../components/AddressAutocomplete';
 import { calculateShipping as calcShipping } from '../utils/shipping';
@@ -137,6 +138,7 @@ function Checkout() {
 
       setClientSecret(secret);
       setStep('payment');
+      trackBeginCheckout(items, orderTotal);
     } catch (err) {
       setError(
         err?.response?.data?.error?.message ||

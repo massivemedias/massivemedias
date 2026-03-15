@@ -1,19 +1,25 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useSearchParams } from 'react-router-dom';
 import { CheckCircle } from 'lucide-react';
 import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
 import { useCart } from '../contexts/CartContext';
+import { trackPurchase } from '../utils/analytics';
 
 function CheckoutSuccess() {
   const { t, tx } = useLang();
-  const { clearCart } = useCart();
+  const { items, cartTotal, clearCart } = useCart();
   const [searchParams] = useSearchParams();
   const paymentIntent = searchParams.get('payment_intent');
+  const tracked = useRef(false);
 
-  // Clear cart on successful payment
+  // Track purchase + clear cart on successful payment
   useEffect(() => {
+    if (!tracked.current && paymentIntent && items.length > 0) {
+      trackPurchase(paymentIntent, items, cartTotal, 0, 0);
+      tracked.current = true;
+    }
     clearCart();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
