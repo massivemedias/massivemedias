@@ -99,8 +99,8 @@ const COMPETITORS = [
   { name: 'Redbubble', commission: '~10% net', artistProfit: '~2-3$', quality: 'POD generique', notes: 'Frais plateforme 50% sur le markup depuis sept. 2025. Net ~2-3$ par vente.', highlight: false },
   { name: 'Printify', commission: 'Markup libre', artistProfit: '~20-25$', quality: 'Variable (dropship)', notes: 'Cout base ~10-12$ USD. MAIS: tu geres ta boutique, marketing, service client, livraison.', highlight: 'printify' },
   { name: 'Printful', commission: 'Markup libre', artistProfit: '~20$', quality: 'POD (giclee 8 encres)', notes: 'Cout base ~16$+ USD. Meme modele que Printify, tu geres tout.', highlight: false },
-  { name: 'INPRNT', commission: '50%', artistProfit: '~18$', quality: 'Giclee d'archives (8 encres)', notes: 'Meilleur POD en qualite. Sur invitation. Print ~36$, artiste garde 18$.', highlight: false },
-  { name: 'Fine Art America', commission: 'Markup libre', artistProfit: '~10-25$', quality: 'Giclee d'archives', notes: 'Prix de base fixe + ton markup. Qualite correcte.', highlight: false },
+  { name: 'INPRNT', commission: '50%', artistProfit: '~18$', quality: 'Giclee d\'archives (8 encres)', notes: 'Meilleur POD en qualite. Sur invitation. Print ~36$, artiste garde 18$.', highlight: false },
+  { name: 'Fine Art America', commission: 'Markup libre', artistProfit: '~10-25$', quality: 'Giclee d\'archives', notes: 'Prix de base fixe + ton markup. Qualite correcte.', highlight: false },
   { name: 'Massive Medias', commission: '~30-40%', artistProfit: '40-50$', quality: '12 encres pigmentees, musee', notes: 'Impression locale fine art. Zero gestion pour l\'artiste. Qualite superieure a tout POD.', highlight: 'massive' },
 ];
 
@@ -631,7 +631,6 @@ window.onload = function() {
 
               <div className="text-center text-sm text-grey-muted">
                 35$ + 30$ + 40$ = <span className="text-heading font-bold">105$</span> &mdash; Sans frame: client paie 75$, Massive 35$, artiste 40$
-              </div>
               </div>
 
               {/* Why it's fair */}

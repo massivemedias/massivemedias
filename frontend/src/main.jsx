@@ -4,6 +4,7 @@ import { LanguageProvider } from './i18n/LanguageContext'
 import { ThemeProvider } from './i18n/ThemeContext'
 import { CartProvider } from './contexts/CartContext'
 import { AuthProvider } from './contexts/AuthContext'
+import { UserRoleProvider } from './contexts/UserRoleContext'
 import { CookieProvider } from './contexts/CookieContext'
 import { SiteContentProvider } from './hooks/useSiteContent'
 import { ServicePagesProvider } from './hooks/useServicePages'
@@ -22,9 +23,11 @@ createRoot(document.getElementById('root')).render(
         <ProductsProvider>
         <CookieProvider>
           <AuthProvider>
-            <CartProvider>
-              <App />
-            </CartProvider>
+            <UserRoleProvider>
+              <CartProvider>
+                <App />
+              </CartProvider>
+            </UserRoleProvider>
           </AuthProvider>
         </CookieProvider>
         </ProductsProvider>

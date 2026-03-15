@@ -1,17 +1,21 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import {
   User, Mail, Phone, MapPin, Building2, Package, LogOut, Loader2, Check, Lock,
   Eye, EyeOff, ChevronDown, ChevronUp, Shield, Pencil, Save, ShoppingBag,
   ArrowRight, Gift, Copy, Heart, Clock, RotateCcw, MessageCircle, Download,
+  Palette, Settings,
 } from 'lucide-react';
 import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useUserRole } from '../contexts/UserRoleContext';
 import { getMyOrders } from '../services/orderService';
 import { generateInvoicePDF } from '../utils/generateInvoice';
 import AddressAutocomplete from '../components/AddressAutocomplete';
+
+const AccountArtistDashboard = lazy(() => import('../components/AccountArtistDashboard'));
 
 const PROVINCES_CA = [
   { code: 'QC', fr: 'Quebec', en: 'Quebec' },
@@ -103,6 +107,7 @@ function getMemberSince(createdAt, lang) {
 function Account() {
   const { t, lang, tx } = useLang();
   const { user, signOut, updateProfile, updatePassword } = useAuth();
+  const { role: userRole, isAdmin, isArtist, artistSlug } = useUserRole();
   const meta = user?.user_metadata || {};
 
   const [activeTab, setActiveTab] = useState('overview');
@@ -162,12 +167,19 @@ function Account() {
     });
   }, [user]);
 
-  const tabs = [
+  const baseTabs = [
     { id: 'overview', label: tx({ fr: 'Tableau de bord', en: 'Dashboard', es: 'Panel' }), icon: User },
     { id: 'orders', label: tx({ fr: 'Commandes', en: 'Orders', es: 'Pedidos' }), icon: Package },
     { id: 'profile', label: tx({ fr: 'Profil', en: 'Profile', es: 'Perfil' }), icon: Pencil },
     { id: 'address', label: tx({ fr: 'Adresse', en: 'Address', es: 'Direccion' }), icon: MapPin },
     { id: 'security', label: tx({ fr: 'Securite', en: 'Security', es: 'Seguridad' }), icon: Shield },
+  ];
+
+  // Ajouter l'onglet artiste si l'utilisateur est artiste
+  const tabs = [
+    ...baseTabs,
+    ...(isArtist ? [{ id: 'artist', label: tx({ fr: 'Artiste', en: 'Artist', es: 'Artista' }), icon: Palette }] : []),
+    ...(isAdmin ? [{ id: 'admin', label: 'Admin', icon: Settings }] : []),
   ];
 
   useEffect(() => {
@@ -836,6 +848,55 @@ function Account() {
                       {tx({ fr: 'Sauvegarder', en: 'Save', es: 'Guardar' })}
                     </button>
                   </form>
+                )}
+
+                {/* -- ARTIST TAB -- */}
+                {activeTab === 'artist' && isArtist && (
+                  <div className="rounded-2xl border border-purple-main/30 p-6 md:p-8 card-bg card-shadow">
+                    <Suspense fallback={<div className="flex items-center gap-2 text-grey-muted py-8 justify-center"><Loader2 size={16} className="animate-spin" /></div>}>
+                      <AccountArtistDashboard />
+                    </Suspense>
+                  </div>
+                )}
+
+                {/* -- ADMIN TAB -- */}
+                {activeTab === 'admin' && isAdmin && (
+                  <div className="rounded-2xl border border-purple-main/30 p-6 md:p-8 card-bg card-shadow">
+                    <h3 className="text-heading font-semibold mb-6 flex items-center gap-2">
+                      <Settings size={18} className="text-accent" />
+                      {tx({ fr: 'Administration', en: 'Administration', es: 'Administracion' })}
+                    </h3>
+                    <p className="text-grey-muted text-sm mb-6">
+                      {tx({
+                        fr: 'Acces rapide au panneau d\'administration Massive.',
+                        en: 'Quick access to the Massive admin panel.',
+                        es: 'Acceso rapido al panel de administracion Massive.',
+                      })}
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                      {[
+                        { to: '/admin/commandes', label: tx({ fr: 'Commandes', en: 'Orders', es: 'Pedidos' }), icon: Package, color: 'text-blue-400', bg: 'bg-blue-500/5 border-blue-500/20' },
+                        { to: '/admin/commissions', label: tx({ fr: 'Commissions', en: 'Commissions', es: 'Comisiones' }), icon: Heart, color: 'text-pink-400', bg: 'bg-pink-500/5 border-pink-500/20' },
+                        { to: '/admin/clients', label: tx({ fr: 'Clients', en: 'Clients', es: 'Clientes' }), icon: User, color: 'text-green-400', bg: 'bg-green-500/5 border-green-500/20' },
+                        { to: '/admin/utilisateurs', label: tx({ fr: 'Utilisateurs', en: 'Users', es: 'Usuarios' }), icon: Shield, color: 'text-purple-400', bg: 'bg-purple-500/5 border-purple-500/20' },
+                        { to: '/admin/messages', label: tx({ fr: 'Messages', en: 'Messages', es: 'Mensajes' }), icon: MessageCircle, color: 'text-yellow-400', bg: 'bg-yellow-500/5 border-yellow-500/20' },
+                        { to: '/admin/tarifs', label: tx({ fr: 'Tarifs', en: 'Pricing', es: 'Precios' }), icon: ArrowRight, color: 'text-accent', bg: 'bg-accent/5 border-accent/20' },
+                        { to: '/admin/stats', label: tx({ fr: 'Statistiques', en: 'Stats', es: 'Estadisticas' }), icon: Clock, color: 'text-cyan-400', bg: 'bg-cyan-500/5 border-cyan-500/20' },
+                        { to: '/admin/depenses', label: tx({ fr: 'Depenses', en: 'Expenses', es: 'Gastos' }), icon: ArrowRight, color: 'text-red-400', bg: 'bg-red-500/5 border-red-500/20' },
+                        { to: '/admin/inventaire', label: tx({ fr: 'Inventaire', en: 'Inventory', es: 'Inventario' }), icon: Package, color: 'text-orange-400', bg: 'bg-orange-500/5 border-orange-500/20' },
+                      ].map((item) => (
+                        <Link
+                          key={item.to}
+                          to={item.to}
+                          className={`flex items-center gap-3 p-4 rounded-xl border ${item.bg} hover:scale-[1.02] transition-all group`}
+                        >
+                          <item.icon size={18} className={item.color} />
+                          <span className="text-heading text-sm font-medium">{item.label}</span>
+                          <ArrowRight size={14} className={`${item.color} ml-auto opacity-0 group-hover:opacity-100 transition-opacity`} />
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
                 )}
 
                 {/* -- SECURITY TAB -- */}

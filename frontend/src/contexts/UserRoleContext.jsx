@@ -1,0 +1,86 @@
+import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
+import { useAuth } from './AuthContext';
+import api from '../services/api';
+
+const ADMIN_EMAILS = (import.meta.env.VITE_ADMIN_EMAILS || 'massivemedias@gmail.com')
+  .split(',')
+  .map((e) => e.trim().toLowerCase());
+
+const UserRoleContext = createContext(null);
+
+export function UserRoleProvider({ children }) {
+  const { user } = useAuth();
+  const [roleData, setRoleData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  const email = (user?.email || '').toLowerCase();
+  const isAdmin = ADMIN_EMAILS.includes(email);
+
+  useEffect(() => {
+    if (!user?.email) {
+      setRoleData(null);
+      setLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+
+    async function fetchRole() {
+      try {
+        const { data } = await api.get('/user-roles/by-email', {
+          params: { email: user.email },
+        });
+        if (!cancelled) {
+          setRoleData(data.data || { role: 'user', artistSlug: null });
+        }
+      } catch {
+        // API pas dispo -> fallback user normal
+        if (!cancelled) {
+          setRoleData({ role: 'user', artistSlug: null });
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    fetchRole();
+    return () => { cancelled = true; };
+  }, [user?.email]);
+
+  const role = isAdmin ? 'admin' : (roleData?.role || 'user');
+  const artistSlug = roleData?.artistSlug || null;
+  const isArtist = role === 'artist' || isAdmin; // admin peut aussi voir le dashboard artiste
+
+  const refreshRole = useCallback(async () => {
+    if (!user?.email) return;
+    try {
+      const { data } = await api.get('/user-roles/by-email', {
+        params: { email: user.email },
+      });
+      setRoleData(data.data || { role: 'user', artistSlug: null });
+    } catch {
+      // ignore
+    }
+  }, [user?.email]);
+
+  const value = useMemo(() => ({
+    role,
+    artistSlug,
+    isAdmin,
+    isArtist: role === 'artist',
+    loading,
+    refreshRole,
+  }), [role, artistSlug, isAdmin, loading, refreshRole]);
+
+  return (
+    <UserRoleContext.Provider value={value}>
+      {children}
+    </UserRoleContext.Provider>
+  );
+}
+
+export function useUserRole() {
+  const ctx = useContext(UserRoleContext);
+  if (!ctx) return { role: 'user', artistSlug: null, isAdmin: false, isArtist: false, loading: false, refreshRole: () => {} };
+  return ctx;
+}
