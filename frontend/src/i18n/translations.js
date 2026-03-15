@@ -161,11 +161,11 @@ const translations = {
       timeline: {
         title: 'Notre parcours',
         events: [
-          { year: '2022', event: 'Lancement de Massive - développement web et design graphique pour artistes et créateurs montréalais.' },
-          { year: '2023', event: "Premiers projets d'envergure. Croissance de la clientèle dans la scène créative du Mile-End." },
-          { year: '2024', event: "Acquisition d'équipements professionnels d'impression, découpe et sublimation. Le studio devient un one-stop shop créatif." },
-          { year: '2025', event: 'Enregistrement officiel au REQ. Recentrage: prints, stickers, graphisme, web.' },
-          { year: '2026', event: 'Incorporation provinciale prévue. Lancement Merch-as-a-Service.' },
+          { year: '2022', event: 'Lancement de Massive Medias - creation de sites web, design graphique et direction artistique pour entreprises et createurs montrealais.' },
+          { year: '2023', event: 'Projets d\'envergure avec des clients majeurs dont La Presse. Demarrage d\'un service de creation pour particuliers.' },
+          { year: '2024', event: 'Acquisition d\'equipements professionnels d\'impression fine art, decoupe et sublimation textile. Le studio devient un one-stop shop creatif.' },
+          { year: '2025', event: 'Enregistrement officiel au REQ. Recentrage sur quatre piliers: prints fine art, stickers custom, design graphique et developpement web.' },
+          { year: '2026', event: 'Lancement du Merch-as-a-Service, de la boutique en ligne pour prints, stickers et produits sublimes, et mise en ligne du site massivemedias.com.' },
         ],
       },
       team: {
@@ -518,11 +518,11 @@ const translations = {
       timeline: {
         title: 'Our Journey',
         events: [
-          { year: '2022', event: 'Launch of Massive - web development and graphic design for Montreal artists and creators.' },
-          { year: '2023', event: 'First major projects. Growing clientele in the Mile-End creative scene.' },
-          { year: '2024', event: 'Acquisition of professional printing, cutting and sublimation equipment. The studio becomes a creative one-stop shop.' },
-          { year: '2025', event: 'Official registration with the REQ. Refocus: prints, stickers, design, web.' },
-          { year: '2026', event: 'Provincial incorporation planned. Launch of Merch-as-a-Service.' },
+          { year: '2022', event: 'Launch of Massive Medias - website creation, graphic design and art direction for Montreal businesses and creators.' },
+          { year: '2023', event: 'Major projects with key clients including La Presse. Launch of a creative service for individual clients.' },
+          { year: '2024', event: 'Acquisition of professional fine art printing, cutting and textile sublimation equipment. The studio becomes a creative one-stop shop.' },
+          { year: '2025', event: 'Official registration with the REQ. Refocus on four pillars: fine art prints, custom stickers, graphic design and web development.' },
+          { year: '2026', event: 'Launch of Merch-as-a-Service, the online store for prints, stickers and sublimated products, and the massivemedias.com website.' },
         ],
       },
       team: {
@@ -875,11 +875,11 @@ const translations = {
       timeline: {
         title: 'Nuestro recorrido',
         events: [
-          { year: '2022', event: 'Lanzamiento de Massive - desarrollo web y diseño gráfico para artistas y creadores de Montreal.' },
-          { year: '2023', event: 'Primeros proyectos importantes. Crecimiento de la clientela en la escena creativa del Mile-End.' },
-          { year: '2024', event: 'Adquisición de equipos profesionales de impresión, corte y sublimación. El estudio se convierte en un one-stop shop creativo.' },
-          { year: '2025', event: 'Registro oficial en el REQ. Reenfoque: prints, stickers, diseño, web.' },
-          { year: '2026', event: 'Incorporación provincial prevista. Lanzamiento de Merch-as-a-Service.' },
+          { year: '2022', event: 'Lanzamiento de Massive Medias - creacion de sitios web, diseno grafico y direccion artistica para empresas y creadores de Montreal.' },
+          { year: '2023', event: 'Proyectos importantes con clientes clave como La Presse. Inicio de un servicio creativo para clientes particulares.' },
+          { year: '2024', event: 'Adquisicion de equipos profesionales de impresion fine art, corte y sublimacion textil. El estudio se convierte en un one-stop shop creativo.' },
+          { year: '2025', event: 'Registro oficial en el REQ. Reenfoque en cuatro pilares: prints fine art, stickers personalizados, diseno grafico y desarrollo web.' },
+          { year: '2026', event: 'Lanzamiento del Merch-as-a-Service, de la tienda en linea para prints, stickers y productos sublimados, y del sitio web massivemedias.com.' },
         ],
       },
       team: {

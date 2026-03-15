@@ -114,31 +114,49 @@ function APropos() {
           viewport={{ once: true }}
           className="mb-20"
         >
-          <h2 className="text-4xl font-heading font-bold text-gradient mb-10 text-center">
+          <h2 className="text-4xl font-heading font-bold text-gradient mb-12 text-center">
             {(content && bl(content, 'aboutTimelineTitle', lang)) || t('aboutPage.timeline.title')}
           </h2>
-          <div className="relative max-w-3xl mx-auto">
-            {(timelineEvents || fbTimelineEvents).map((item, index, arr) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.4, delay: index * 0.1 }}
-                viewport={{ once: true }}
-                className="flex items-start gap-6 mb-8 relative"
-              >
-                {/* Ligne entre les ronds (pas dans le premier) */}
-                {index > 0 && (
-                  <div className="absolute left-8 bottom-full w-px h-8 bg-gradient-to-b from-accent/40 to-accent" style={{ transform: 'translateX(-0.5px)' }}></div>
-                )}
-                <div className="w-16 h-16 rounded-full flex items-center justify-center flex-shrink-0 z-10 bg-gradient-to-br from-accent to-electric-purple">
-                  <span className="text-white font-heading font-bold text-xs text-center leading-tight">{item.year}</span>
-                </div>
-                <div className="pt-3">
-                  <p className="text-grey-light text-lg">{item.event}</p>
-                </div>
-              </motion.div>
-            ))}
+          <div className="relative max-w-4xl mx-auto">
+            {/* Ligne verticale continue */}
+            <div className="absolute left-6 md:left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-accent/60 via-electric-purple/40 to-accent/20 md:-translate-x-px" />
+
+            {(timelineEvents || fbTimelineEvents).map((item, index, arr) => {
+              const isLeft = index % 2 === 0;
+              return (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.08 }}
+                  viewport={{ once: true }}
+                  className={`relative flex items-start gap-0 md:gap-0 mb-6 last:mb-0 ${isLeft ? 'md:flex-row' : 'md:flex-row-reverse'}`}
+                >
+                  {/* Mobile: dot + card a droite */}
+                  {/* Desktop: alternating sides */}
+
+                  {/* Card */}
+                  <div className={`flex-1 ml-14 md:ml-0 ${isLeft ? 'md:pr-10 md:text-right' : 'md:pl-10 md:text-left'}`}>
+                    <div className="rounded-xl border border-purple-main/20 p-5 card-bg backdrop-blur-sm hover:border-accent/30 transition-all duration-300 group">
+                      <div className={`flex items-center gap-3 mb-2 ${isLeft ? 'md:justify-end' : 'md:justify-start'}`}>
+                        <span className="text-2xl font-heading font-bold text-transparent bg-clip-text bg-gradient-to-r from-accent to-electric-purple">
+                          {item.year}
+                        </span>
+                      </div>
+                      <p className="text-grey-light text-sm md:text-base leading-relaxed">{item.event}</p>
+                    </div>
+                  </div>
+
+                  {/* Center dot - mobile: absolute left, desktop: center */}
+                  <div className="absolute left-6 md:left-1/2 top-6 -translate-x-1/2 z-10">
+                    <div className="w-3 h-3 rounded-full bg-gradient-to-br from-accent to-electric-purple ring-4 ring-[var(--bg-primary)] group-hover:scale-125 transition-transform" />
+                  </div>
+
+                  {/* Spacer for the other side (desktop only) */}
+                  <div className="hidden md:block flex-1" />
+                </motion.div>
+              );
+            })}
           </div>
         </motion.div>
 
