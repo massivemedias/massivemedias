@@ -3,15 +3,6 @@ import { motion } from 'framer-motion';
 import { DollarSign, Copy, Check, Download, Printer, Users, BarChart3 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 
-const TPS_RATE = 0.05;
-const TVQ_RATE = 0.09975;
-
-function withTax(price) {
-  const tps = price * TPS_RATE;
-  const tvq = price * TVQ_RATE;
-  return (price + tps + tvq).toFixed(2);
-}
-
 // --- Prix service impression (client externe apporte son fichier) ---
 const SERVICE_PRICES = [
   { format: 'A4 (8.5x11")', studio: 20, museum: 35, frame: 30, notes: '' },
@@ -46,32 +37,32 @@ function AdminTarifs() {
   const handleCopy = () => {
     const el = artistSheetRef.current;
     if (!el) return;
-    // Build plain text version
     const lines = [];
     lines.push('GRILLE TARIFAIRE ARTISTES - MASSIVE MEDIAS');
     lines.push('='.repeat(50));
     lines.push('');
-    lines.push('IMPRESSION FINE ART - PRIX DE VENTE (ce que ton client paie)');
+    lines.push('IMPRESSION FINE ART - PRIX DE VENTE (ce que ton client paie, avant taxes)');
     lines.push('-'.repeat(50));
     lines.push('');
     lines.push('SERIE STUDIO (4 encres pigmentees)');
-    lines.push('Format          | Prix    | + Taxes  | + Frame  | + Frame & Taxes');
+    lines.push('Format          | Sans frame | Avec frame');
     ARTIST_PRICES.forEach(p => {
       if (p.studio) {
         const f = p.format.padEnd(16);
-        lines.push(`${f}| ${p.studio}$`.padEnd(26) + `| ${withTax(p.studio)}$`.padEnd(11) + (p.frame ? `| ${p.studio + p.frame}$`.padEnd(11) + `| ${withTax(p.studio + p.frame)}$` : '| N/A         | N/A'));
+        lines.push(`${f}| ${p.studio}$`.padEnd(30) + (p.frame ? `| ${p.studio + p.frame}$` : '| N/A'));
       }
     });
     lines.push('');
     lines.push('SERIE MUSEE (12 encres pigmentees - Canon Pro 2600)');
-    lines.push('Format          | Prix    | + Taxes  | + Frame  | + Frame & Taxes');
+    lines.push('Format          | Sans frame | Avec frame');
     ARTIST_PRICES.forEach(p => {
       const f = p.format.padEnd(16);
-      lines.push(`${f}| ${p.museum}$`.padEnd(26) + `| ${withTax(p.museum)}$`.padEnd(11) + (p.frame ? `| ${p.museum + p.frame}$`.padEnd(11) + `| ${withTax(p.museum + p.frame)}$` : '| N/A         | N/A'));
+      lines.push(`${f}| ${p.museum}$`.padEnd(30) + (p.frame ? `| ${p.museum + p.frame}$` : '| N/A'));
     });
     lines.push('');
     lines.push('* A2 (18x24") = Canon Pro 2600 uniquement (12 encres), pas de frame disponible');
     lines.push('* Frame = cadre noir ou blanc');
+    lines.push('* Tous les prix sont avant taxes (TPS + TVQ en sus)');
     lines.push('');
     lines.push('-'.repeat(50));
     lines.push('CE QUE TU GARDES (ta commission par vente)');
@@ -86,6 +77,7 @@ function AdminTarifs() {
       lines.push(`${f}| ${studioProfit !== null ? studioProfit + '$' : 'N/A'}`.padEnd(30) + `| ${museumProfit}$`);
     });
     lines.push('');
+    lines.push('La commission est la meme avec ou sans frame (le frame va a Massive).');
     lines.push('Ta commission = profit net. Tu fournis ton fichier, on fait le reste.');
     lines.push('Massive gere: impression, calibration, papier, encres, expedition.');
     lines.push('');
@@ -121,30 +113,30 @@ function AdminTarifs() {
 </style></head><body>
   <h1>Grille Tarifaire Artistes</h1>
   <p style="color:#6b21a8;font-weight:600;">Massive Medias - Impression Fine Art - Montreal</p>
+  <p style="font-size:10px;color:#999;">Tous les prix sont avant taxes (TPS + TVQ en sus)</p>
 
   <h2>Prix de vente (ce que ton client paie)</h2>
 
   <h3><span class="badge">STUDIO</span> Serie Studio - 4 encres pigmentees</h3>
   <table>
-    <tr><th>Format</th><th>Prix</th><th>+ Taxes</th><th>+ Frame</th><th>+ Frame & Taxes</th></tr>
+    <tr><th>Format</th><th>Sans frame</th><th>Avec frame</th></tr>
     ${ARTIST_PRICES.filter(p => p.studio).map(p => `<tr>
-      <td>${p.format}</td><td>${p.studio}$</td><td>${withTax(p.studio)}$</td>
-      <td>${p.frame ? (p.studio + p.frame) + '$' : 'N/A'}</td><td>${p.frame ? withTax(p.studio + p.frame) + '$' : 'N/A'}</td>
+      <td>${p.format}</td><td>${p.studio}$</td>
+      <td>${p.frame ? (p.studio + p.frame) + '$' : 'N/A'}</td>
     </tr>`).join('')}
   </table>
 
   <h3><span class="badge">MUSEE</span> Serie Musee - 12 encres pigmentees (Canon Pro 2600)</h3>
   <table>
-    <tr><th>Format</th><th>Prix</th><th>+ Taxes</th><th>+ Frame</th><th>+ Frame & Taxes</th></tr>
+    <tr><th>Format</th><th>Sans frame</th><th>Avec frame</th></tr>
     ${ARTIST_PRICES.map(p => `<tr>
-      <td>${p.format}</td><td>${p.museum}$</td><td>${withTax(p.museum)}$</td>
-      <td>${p.frame ? (p.museum + p.frame) + '$' : 'N/A'}</td><td>${p.frame ? withTax(p.museum + p.frame) + '$' : 'N/A'}</td>
+      <td>${p.format}</td><td>${p.museum}$</td>
+      <td>${p.frame ? (p.museum + p.frame) + '$' : 'N/A'}</td>
     </tr>`).join('')}
   </table>
 
   <p class="note">* A2 (18x24") = Canon Pro 2600 uniquement (12 encres), pas de frame disponible</p>
   <p class="note">* Frame = cadre noir ou blanc</p>
-  <p class="note">* Taxes = TPS 5% + TVQ 9.975%</p>
 
   <h2>Ta commission par vente</h2>
   <table>
@@ -160,6 +152,7 @@ function AdminTarifs() {
       </tr>`;
     }).join('')}
   </table>
+  <p>La commission est la meme avec ou sans frame (le frame va a Massive).</p>
   <p>Ta commission = profit net. Tu fournis ton fichier, Massive fait le reste.</p>
   <p>Massive gere: impression fine art, calibration couleurs, soft proofing, papier archive, encres pigmentees, expedition.</p>
 
@@ -189,7 +182,7 @@ function AdminTarifs() {
             <DollarSign size={20} className="text-accent" />
             {tx({ fr: 'Grille tarifaire', en: 'Pricing Grid', es: 'Tabla de precios' })}
           </h2>
-          <p className="text-sm text-grey-muted mt-1">{tx({ fr: 'Prix service impression + boutique artiste + comparaison concurrence', en: 'Printing service + artist store + competitor comparison', es: 'Servicio de impresion + tienda artista + comparacion competencia' })}</p>
+          <p className="text-sm text-grey-muted mt-1">{tx({ fr: 'Prix service impression + boutique artiste + comparaison concurrence (avant taxes)', en: 'Printing service + artist store + competitor comparison (before tax)', es: 'Servicio de impresion + tienda artista + comparacion competencia (antes de impuestos)' })}</p>
         </div>
         <div className="flex gap-2">
           <button onClick={handleCopy} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-accent/20 text-accent text-sm font-semibold hover:bg-accent/30 transition-colors">
@@ -210,7 +203,7 @@ function AdminTarifs() {
             <Printer size={16} className="text-blue-400" />
             {tx({ fr: 'Service impression (client externe)', en: 'Printing service (external client)', es: 'Servicio de impresion (cliente externo)' })}
           </h3>
-          <p className="text-xs text-grey-muted mb-4">{tx({ fr: 'Prix quand quelqu\'un apporte son propre fichier', en: 'Price when someone brings their own file', es: 'Precio cuando alguien trae su propio archivo' })}</p>
+          <p className="text-xs text-grey-muted mb-4">{tx({ fr: 'Prix quand quelqu\'un apporte son propre fichier (avant taxes)', en: 'Price when someone brings their own file (before tax)', es: 'Precio cuando alguien trae su propio archivo (antes de impuestos)' })}</p>
 
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -220,7 +213,6 @@ function AdminTarifs() {
                   <th className="text-center py-2 px-3 text-grey-muted font-medium">Studio (4 pig.)</th>
                   <th className="text-center py-2 px-3 text-grey-muted font-medium">Musee (12 pig.)</th>
                   <th className="text-center py-2 px-3 text-grey-muted font-medium">Frame</th>
-                  <th className="text-center py-2 px-3 text-grey-muted font-medium">Musee + Frame + Taxes</th>
                   <th className="text-left py-2 px-3 text-grey-muted font-medium">Notes</th>
                 </tr>
               </thead>
@@ -231,7 +223,6 @@ function AdminTarifs() {
                     <td className="py-2.5 px-3 text-center text-heading">{p.studio !== null ? `${p.studio}$` : <span className="text-grey-muted">N/A</span>}</td>
                     <td className="py-2.5 px-3 text-center text-heading">{p.museum}$</td>
                     <td className="py-2.5 px-3 text-center text-heading">{p.frame !== null ? `+${p.frame}$` : <span className="text-grey-muted">N/A</span>}</td>
-                    <td className="py-2.5 px-3 text-center font-semibold text-accent">{p.frame !== null ? `${withTax(p.museum + p.frame)}$` : `${withTax(p.museum)}$`}</td>
                     <td className="py-2.5 px-3 text-xs text-grey-muted">{p.notes}</td>
                   </tr>
                 ))}
@@ -246,7 +237,7 @@ function AdminTarifs() {
             <Users size={16} className="text-green-400" />
             {tx({ fr: 'Boutique artiste (prix client final)', en: 'Artist store (end client price)', es: 'Tienda artista (precio cliente final)' })}
           </h3>
-          <p className="text-xs text-grey-muted mb-4">{tx({ fr: 'Ce que le client de l\'artiste paie + split des revenus', en: 'What the artist\'s client pays + revenue split', es: 'Lo que paga el cliente del artista + reparto de ingresos' })}</p>
+          <p className="text-xs text-grey-muted mb-4">{tx({ fr: 'Ce que le client de l\'artiste paie + split des revenus (avant taxes)', en: 'What the artist\'s client pays + revenue split (before tax)', es: 'Lo que paga el cliente del artista + reparto de ingresos (antes de impuestos)' })}</p>
 
           {/* Studio */}
           <h4 className="text-xs font-semibold text-heading mb-2 mt-2 uppercase tracking-wider">Serie Studio - 4 encres pigmentees</h4>
@@ -255,11 +246,9 @@ function AdminTarifs() {
               <thead>
                 <tr className="border-b card-border">
                   <th className="text-left py-2 px-3 text-grey-muted font-medium">Format</th>
-                  <th className="text-center py-2 px-3 text-grey-muted font-medium">Prix</th>
-                  <th className="text-center py-2 px-3 text-grey-muted font-medium">+ Taxes</th>
-                  <th className="text-center py-2 px-3 text-grey-muted font-medium">+ Frame</th>
-                  <th className="text-center py-2 px-3 text-grey-muted font-medium">+ Frame & Taxes</th>
-                  <th className="text-center py-2 px-3 text-green-400 font-semibold">Massive</th>
+                  <th className="text-center py-2 px-3 text-grey-muted font-medium">Sans frame</th>
+                  <th className="text-center py-2 px-3 text-grey-muted font-medium">Avec frame</th>
+                  <th className="text-center py-2 px-3 text-green-400 font-semibold">Massive<br/><span className="text-[10px]">sans / avec frame</span></th>
                   <th className="text-center py-2 px-3 text-purple-400 font-semibold">Artiste</th>
                 </tr>
               </thead>
@@ -270,12 +259,10 @@ function AdminTarifs() {
                   return (
                     <tr key={idx} className="border-b card-border hover:bg-accent/5 transition-colors">
                       <td className="py-2.5 px-3 text-heading font-medium">{p.format}</td>
-                      <td className="py-2.5 px-3 text-center text-heading">{p.studio}$</td>
-                      <td className="py-2.5 px-3 text-center text-heading">{withTax(p.studio)}$</td>
-                      <td className="py-2.5 px-3 text-center text-heading">{p.frame ? `${p.studio + p.frame}$` : 'N/A'}</td>
-                      <td className="py-2.5 px-3 text-center font-semibold text-accent">{p.frame ? `${withTax(p.studio + p.frame)}$` : 'N/A'}</td>
-                      <td className="py-2.5 px-3 text-center text-green-400 font-semibold">{sp?.studio || 0}$</td>
-                      <td className="py-2.5 px-3 text-center text-purple-400 font-bold">{artistCut}$</td>
+                      <td className="py-2.5 px-3 text-center text-heading font-semibold">{p.studio}$</td>
+                      <td className="py-2.5 px-3 text-center text-heading font-semibold">{p.frame ? `${p.studio + p.frame}$` : 'N/A'}</td>
+                      <td className="py-2.5 px-3 text-center text-green-400 font-semibold">{sp?.studio || 0}${p.frame ? ` / ${(sp?.studio || 0) + p.frame}$` : ''}</td>
+                      <td className="py-2.5 px-3 text-center text-purple-400 font-bold text-base">{artistCut}$</td>
                     </tr>
                   );
                 })}
@@ -290,11 +277,9 @@ function AdminTarifs() {
               <thead>
                 <tr className="border-b card-border">
                   <th className="text-left py-2 px-3 text-grey-muted font-medium">Format</th>
-                  <th className="text-center py-2 px-3 text-grey-muted font-medium">Prix</th>
-                  <th className="text-center py-2 px-3 text-grey-muted font-medium">+ Taxes</th>
-                  <th className="text-center py-2 px-3 text-grey-muted font-medium">+ Frame</th>
-                  <th className="text-center py-2 px-3 text-grey-muted font-medium">+ Frame & Taxes</th>
-                  <th className="text-center py-2 px-3 text-green-400 font-semibold">Massive</th>
+                  <th className="text-center py-2 px-3 text-grey-muted font-medium">Sans frame</th>
+                  <th className="text-center py-2 px-3 text-grey-muted font-medium">Avec frame</th>
+                  <th className="text-center py-2 px-3 text-green-400 font-semibold">Massive<br/><span className="text-[10px]">sans / avec frame</span></th>
                   <th className="text-center py-2 px-3 text-purple-400 font-semibold">Artiste</th>
                 </tr>
               </thead>
@@ -305,12 +290,10 @@ function AdminTarifs() {
                   return (
                     <tr key={idx} className="border-b card-border hover:bg-accent/5 transition-colors">
                       <td className="py-2.5 px-3 text-heading font-medium">{p.format}</td>
-                      <td className="py-2.5 px-3 text-center text-heading">{p.museum}$</td>
-                      <td className="py-2.5 px-3 text-center text-heading">{withTax(p.museum)}$</td>
-                      <td className="py-2.5 px-3 text-center text-heading">{p.frame ? `${p.museum + p.frame}$` : 'N/A'}</td>
-                      <td className="py-2.5 px-3 text-center font-semibold text-accent">{p.frame ? `${withTax(p.museum + p.frame)}$` : 'N/A'}</td>
-                      <td className="py-2.5 px-3 text-center text-green-400 font-semibold">{sp.museum}$</td>
-                      <td className="py-2.5 px-3 text-center text-purple-400 font-bold">{artistCut}$</td>
+                      <td className="py-2.5 px-3 text-center text-heading font-semibold">{p.museum}$</td>
+                      <td className="py-2.5 px-3 text-center text-heading font-semibold">{p.frame ? `${p.museum + p.frame}$` : 'N/A'}</td>
+                      <td className="py-2.5 px-3 text-center text-green-400 font-semibold">{sp.museum}${p.frame ? ` / ${sp.museum + p.frame}$` : ''}</td>
+                      <td className="py-2.5 px-3 text-center text-purple-400 font-bold text-base">{artistCut}$</td>
                     </tr>
                   );
                 })}
@@ -319,10 +302,10 @@ function AdminTarifs() {
           </div>
 
           <div className="bg-accent/10 rounded-lg p-3 text-xs text-grey-muted space-y-1">
+            <p>* Tous les prix sont avant taxes (TPS + TVQ en sus)</p>
             <p>* A2 (18x24") = Canon Pro 2600 uniquement (12 encres), pas de frame disponible</p>
             <p>* Frame = cadre noir ou blanc (+20$ artiste / +30$ service)</p>
-            <p>* Taxes = TPS 5% + TVQ 9.975%</p>
-            <p>* Commission artiste = profit net (l'artiste fournit son fichier, Massive fait le reste)</p>
+            <p>* Commission artiste = profit net, identique avec ou sans frame (le frame va a Massive)</p>
           </div>
         </motion.div>
 
