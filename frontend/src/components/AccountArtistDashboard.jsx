@@ -174,6 +174,62 @@ function AccountArtistDashboard() {
         </div>
       )}
 
+      {/* Exemple concret */}
+      <div className="rounded-2xl border border-purple-main/30 p-5 card-bg card-shadow">
+        <div className="bg-purple-500/5 rounded-lg p-4 border border-purple-main/20 mb-4">
+          <p className="text-sm text-heading font-medium leading-relaxed">
+            <span className="text-accent font-bold">{tx({ fr: 'Exemple :', en: 'Example:', es: 'Ejemplo:' })}</span>{' '}
+            {tx({
+              fr: 'Le client achete un print qualite musee avec frame. Il paie',
+              en: 'The client buys a museum quality print with frame. They pay',
+              es: 'El cliente compra un print calidad museo con marco. Paga',
+            })}{' '}
+            <span className="text-heading font-bold text-lg">105$</span>{' '}
+            <span className="text-grey-muted">{tx({ fr: '(+ taxes)', en: '(+ taxes)', es: '(+ impuestos)' })}</span>.{' '}
+            {tx({ fr: 'Ou va l\'argent?', en: 'Where does the money go?', es: 'A donde va el dinero?' })}
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+          {/* Massive impression */}
+          <div className="bg-green-500/10 rounded-xl p-4 text-center border border-green-500/20">
+            <div className="text-3xl font-bold text-green-400">35$</div>
+            <div className="text-xs text-green-400 font-bold mt-1 uppercase tracking-wider">Massive - Impression</div>
+            <div className="text-[11px] text-grey-muted mt-3 text-left space-y-1">
+              <p>{tx({ fr: '- Papier d\'archives', en: '- Archival paper', es: '- Papel de archivo' })}</p>
+              <p>{tx({ fr: '- 12 encres pigmentees', en: '- 12 pigment inks', es: '- 12 tintas pigmentadas' })}</p>
+              <p>{tx({ fr: '- Calibration couleurs', en: '- Color calibration', es: '- Calibracion de colores' })}</p>
+              <p>{tx({ fr: '- Soft proofing', en: '- Soft proofing', es: '- Soft proofing' })}</p>
+            </div>
+          </div>
+
+          {/* Massive frame */}
+          <div className="bg-green-500/10 rounded-xl p-4 text-center border border-green-500/20">
+            <div className="text-3xl font-bold text-green-400">30$</div>
+            <div className="text-xs text-green-400 font-bold mt-1 uppercase tracking-wider">Massive - Frame</div>
+            <div className="text-[11px] text-grey-muted mt-3 text-left space-y-1">
+              <p>{tx({ fr: '- Cadre noir ou blanc', en: '- Black or white frame', es: '- Marco negro o blanco' })}</p>
+              <p>{tx({ fr: '- Materiaux + assemblage', en: '- Materials + assembly', es: '- Materiales + ensamblaje' })}</p>
+            </div>
+          </div>
+
+          {/* Artiste */}
+          <div className="bg-purple-500/15 rounded-xl p-4 text-center border border-purple-500/30">
+            <div className="text-3xl font-bold text-purple-400">40$</div>
+            <div className="text-xs text-purple-400 font-bold mt-1 uppercase tracking-wider">{tx({ fr: 'Toi - Profit net', en: 'You - Net profit', es: 'Tu - Beneficio neto' })}</div>
+            <div className="text-[11px] text-grey-muted mt-3 text-left space-y-1">
+              <p>{tx({ fr: '- Tu fournis ton fichier', en: '- You provide your file', es: '- Proporcionas tu archivo' })}</p>
+              <p>{tx({ fr: '- Zero gestion', en: '- Zero management', es: '- Cero gestion' })}</p>
+              <p>{tx({ fr: '- Zero frais', en: '- Zero fees', es: '- Cero costos' })}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="text-center text-sm text-grey-muted">
+          35$ + 30$ + 40$ = <span className="text-heading font-bold">105$</span> &mdash; {tx({ fr: 'Sans frame: client paie 75$, Massive 35$, toi 40$', en: 'Without frame: client pays $75, Massive $35, you $40', es: 'Sin marco: cliente paga 75$, Massive 35$, tu 40$' })}
+        </div>
+      </div>
+
       {/* Grille tarifaire */}
       <div className="rounded-2xl border border-purple-main/30 p-5 card-bg card-shadow">
         <h4 className="text-heading font-semibold text-sm mb-4 flex items-center gap-2">

@@ -478,6 +478,61 @@ window.onload = function() {
       {/* ========================================= */}
       {activeTab === 'artistes' && (
         <div ref={artistSheetRef}>
+          {/* Exemple concret - en premier */}
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="rounded-xl bg-glass p-5 card-border mb-6">
+            <div className="space-y-4">
+              <div className="bg-purple-500/5 rounded-lg p-4 card-border">
+                <p className="text-sm text-heading font-medium leading-relaxed">
+                  <span className="text-accent font-bold">Exemple :</span> Le client achete un print qualite musee avec frame. Il paie <span className="text-heading font-bold text-lg">105$</span> <span className="text-grey-muted">(+ taxes)</span>. Ou va l'argent?
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="bg-green-500/10 rounded-xl p-4 text-center border border-green-500/20">
+                  <div className="text-3xl font-bold text-green-400">35$</div>
+                  <div className="text-xs text-green-400 font-bold mt-1 uppercase tracking-wider">Massive - Impression</div>
+                  <div className="text-[11px] text-grey-muted mt-3 text-left space-y-1">
+                    <p>- Papier d'archives</p>
+                    <p>- 12 encres pigmentees</p>
+                    <p>- Calibration couleurs</p>
+                    <p>- Soft proofing</p>
+                    <p>- Main d'oeuvre</p>
+                  </div>
+                </div>
+                <div className="bg-green-500/10 rounded-xl p-4 text-center border border-green-500/20">
+                  <div className="text-3xl font-bold text-green-400">30$</div>
+                  <div className="text-xs text-green-400 font-bold mt-1 uppercase tracking-wider">Massive - Frame</div>
+                  <div className="text-[11px] text-grey-muted mt-3 text-left space-y-1">
+                    <p>- Cadre noir ou blanc</p>
+                    <p>- Materiaux + assemblage</p>
+                  </div>
+                </div>
+                <div className="bg-purple-500/15 rounded-xl p-4 text-center border border-purple-500/30">
+                  <div className="text-3xl font-bold text-purple-400">40$</div>
+                  <div className="text-xs text-purple-400 font-bold mt-1 uppercase tracking-wider">Artiste - Profit net</div>
+                  <div className="text-[11px] text-grey-muted mt-3 text-left space-y-1">
+                    <p>- Fournit son fichier image</p>
+                    <p>- Zero gestion</p>
+                    <p>- Zero frais</p>
+                    <p>- Pas de boutique a gerer</p>
+                    <p>- Pas de livraison</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="text-center text-sm text-grey-muted">
+                35$ + 30$ + 40$ = <span className="text-heading font-bold">105$</span> &mdash; Sans frame: client paie 75$, Massive 35$, artiste 40$
+              </div>
+
+              <div className="bg-accent/10 rounded-lg p-4 text-sm text-grey-muted space-y-2">
+                <p className="font-semibold text-heading text-base">Pourquoi c'est juste?</p>
+                <p>L'artiste recoit <span className="text-purple-400 font-semibold">40$ de profit net</span> pour un upload de fichier. Aucune gestion, aucun frais, aucune boutique a maintenir.</p>
+                <p>Massive recoit 65$ mais doit couvrir: papier d'archives, 12 encres pigmentees, calibration, cadre, main d'oeuvre, local. Le vrai profit Massive apres couts materiaux est d'environ 30-40$.</p>
+                <p className="font-bold text-accent text-base mt-2">L'artiste et Massive font a peu pres le meme profit reel, mais l'artiste n'a rien a faire.</p>
+              </div>
+            </div>
+          </motion.div>
+
           {/* Prints service */}
           <SectionCard icon={Printer} iconColor="text-blue-400" title="Service impression (client externe)" subtitle="Prix quand quelqu'un apporte son propre fichier">
             <DataTable headers={[
@@ -579,69 +634,6 @@ window.onload = function() {
               </div>
             </div>
           </SectionCard>
-
-          {/* Exemple concret */}
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="rounded-xl bg-glass p-5 card-border mb-6">
-            <div className="space-y-4">
-              {/* Scenario */}
-              <div className="bg-purple-500/5 rounded-lg p-4 card-border">
-                <p className="text-sm text-heading font-medium leading-relaxed">
-                  <span className="text-accent font-bold">Exemple :</span> Le client achete un print qualite musee avec frame. Il paie <span className="text-heading font-bold text-lg">105$</span> <span className="text-grey-muted">(+ taxes)</span>. Ou va l'argent?
-                </p>
-              </div>
-
-              {/* Visual breakdown */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                {/* Massive impression */}
-                <div className="bg-green-500/10 rounded-xl p-4 text-center border border-green-500/20">
-                  <div className="text-3xl font-bold text-green-400">35$</div>
-                  <div className="text-xs text-green-400 font-bold mt-1 uppercase tracking-wider">Massive - Impression</div>
-                  <div className="text-[11px] text-grey-muted mt-3 text-left space-y-1">
-                    <p>- Papier d'archives</p>
-                    <p>- 12 encres pigmentees</p>
-                    <p>- Calibration couleurs</p>
-                    <p>- Soft proofing</p>
-                    <p>- Main d'oeuvre</p>
-                  </div>
-                </div>
-
-                {/* Massive frame */}
-                <div className="bg-green-500/10 rounded-xl p-4 text-center border border-green-500/20">
-                  <div className="text-3xl font-bold text-green-400">30$</div>
-                  <div className="text-xs text-green-400 font-bold mt-1 uppercase tracking-wider">Massive - Frame</div>
-                  <div className="text-[11px] text-grey-muted mt-3 text-left space-y-1">
-                    <p>- Cadre noir ou blanc</p>
-                    <p>- Materiaux + assemblage</p>
-                  </div>
-                </div>
-
-                {/* Artiste */}
-                <div className="bg-purple-500/15 rounded-xl p-4 text-center border border-purple-500/30">
-                  <div className="text-3xl font-bold text-purple-400">40$</div>
-                  <div className="text-xs text-purple-400 font-bold mt-1 uppercase tracking-wider">Artiste - Profit net</div>
-                  <div className="text-[11px] text-grey-muted mt-3 text-left space-y-1">
-                    <p>- Fournit son fichier image</p>
-                    <p>- Zero gestion</p>
-                    <p>- Zero frais</p>
-                    <p>- Pas de boutique a gerer</p>
-                    <p>- Pas de livraison</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="text-center text-sm text-grey-muted">
-                35$ + 30$ + 40$ = <span className="text-heading font-bold">105$</span> &mdash; Sans frame: client paie 75$, Massive 35$, artiste 40$
-              </div>
-
-              {/* Why it's fair */}
-              <div className="bg-accent/10 rounded-lg p-4 text-sm text-grey-muted space-y-2">
-                <p className="font-semibold text-heading text-base">Pourquoi c'est juste?</p>
-                <p>L'artiste recoit <span className="text-purple-400 font-semibold">40$ de profit net</span> pour un upload de fichier. Aucune gestion, aucun frais, aucune boutique a maintenir.</p>
-                <p>Massive recoit 65$ mais doit couvrir: papier d'archives, 12 encres pigmentees, calibration, cadre, main d'oeuvre, local. Le vrai profit Massive apres couts materiaux est d'environ 30-40$.</p>
-                <p className="font-bold text-accent text-base mt-2">L'artiste et Massive font a peu pres le meme profit reel, mais l'artiste n'a rien a faire.</p>
-              </div>
-            </div>
-          </motion.div>
 
           {/* Concurrence */}
           <SectionCard icon={BarChart3} iconColor="text-yellow-400" title="Comparaison concurrence (donnees 2025-2026)" subtitle="Combien l'artiste garde reellement sur chaque plateforme">
