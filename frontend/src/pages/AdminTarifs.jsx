@@ -99,8 +99,8 @@ const COMPETITORS = [
   { name: 'Redbubble', commission: '~10% net', artistProfit: '~2-3$', quality: 'POD generique', notes: 'Frais plateforme 50% sur le markup depuis sept. 2025. Net ~2-3$ par vente.', highlight: false },
   { name: 'Printify', commission: 'Markup libre', artistProfit: '~20-25$', quality: 'Variable (dropship)', notes: 'Cout base ~10-12$ USD. MAIS: tu geres ta boutique, marketing, service client, livraison.', highlight: 'printify' },
   { name: 'Printful', commission: 'Markup libre', artistProfit: '~20$', quality: 'POD (giclee 8 encres)', notes: 'Cout base ~16$+ USD. Meme modele que Printify, tu geres tout.', highlight: false },
-  { name: 'INPRNT', commission: '50%', artistProfit: '~18$', quality: 'Giclee archival (8 encres)', notes: 'Meilleur POD en qualite. Sur invitation. Print ~36$, artiste garde 18$.', highlight: false },
-  { name: 'Fine Art America', commission: 'Markup libre', artistProfit: '~10-25$', quality: 'Giclee archival', notes: 'Prix de base fixe + ton markup. Qualite correcte.', highlight: false },
+  { name: 'INPRNT', commission: '50%', artistProfit: '~18$', quality: 'Giclee d'archives (8 encres)', notes: 'Meilleur POD en qualite. Sur invitation. Print ~36$, artiste garde 18$.', highlight: false },
+  { name: 'Fine Art America', commission: 'Markup libre', artistProfit: '~10-25$', quality: 'Giclee d'archives', notes: 'Prix de base fixe + ton markup. Qualite correcte.', highlight: false },
   { name: 'Massive Medias', commission: '~30-40%', artistProfit: '40-50$', quality: '12 encres pigmentees, musee', notes: 'Impression locale fine art. Zero gestion pour l\'artiste. Qualite superieure a tout POD.', highlight: 'massive' },
 ];
 
@@ -347,7 +347,7 @@ function AdminTarifs() {
       <div class="example-card massive">
         <div class="amount">35$</div>
         <div class="label">Massive - Impression</div>
-        <div class="details">Papier archival, 12 encres pigmentees, calibration, soft proofing, main d'oeuvre</div>
+        <div class="details">Papier d'archives, 12 encres pigmentees, calibration, soft proofing, main d'oeuvre</div>
       </div>
       <div class="example-card massive">
         <div class="amount">30$</div>
@@ -597,7 +597,7 @@ window.onload = function() {
                   <div className="text-3xl font-bold text-green-400">35$</div>
                   <div className="text-xs text-green-400 font-bold mt-1 uppercase tracking-wider">Massive - Impression</div>
                   <div className="text-[11px] text-grey-muted mt-3 text-left space-y-1">
-                    <p>- Papier archival</p>
+                    <p>- Papier d'archives</p>
                     <p>- 12 encres pigmentees</p>
                     <p>- Calibration couleurs</p>
                     <p>- Soft proofing</p>
@@ -638,7 +638,7 @@ window.onload = function() {
               <div className="bg-accent/10 rounded-lg p-4 text-sm text-grey-muted space-y-2">
                 <p className="font-semibold text-heading text-base">Pourquoi c'est juste?</p>
                 <p>L'artiste recoit <span className="text-purple-400 font-semibold">40$ de profit net</span> pour un upload de fichier. Aucune gestion, aucun frais, aucune boutique a maintenir.</p>
-                <p>Massive recoit 65$ mais doit couvrir: papier archival, 12 encres pigmentees, calibration, cadre, main d'oeuvre, local. Le vrai profit Massive apres couts materiaux est d'environ 30-40$.</p>
+                <p>Massive recoit 65$ mais doit couvrir: papier d'archives, 12 encres pigmentees, calibration, cadre, main d'oeuvre, local. Le vrai profit Massive apres couts materiaux est d'environ 30-40$.</p>
                 <p className="font-bold text-accent text-base mt-2">L'artiste et Massive font a peu pres le meme profit reel, mais l'artiste n'a rien a faire.</p>
               </div>
             </div>
@@ -680,7 +680,7 @@ window.onload = function() {
                   <p className="text-grey-muted">- Fournir son fichier. C'est tout.</p>
                   <p className="text-grey-muted">- Zero frais de boutique (page artiste gratuite sur massivemedias.com)</p>
                   <p className="text-grey-muted">- Zero gestion, zero service client</p>
-                  <p className="text-grey-muted">- Qualite musee garantie (12 encres pigmentees, papier archival)</p>
+                  <p className="text-grey-muted">- Qualite musee garantie (12 encres pigmentees, papier d'archives)</p>
                   <p className="text-grey-muted">- Impression locale a Montreal, pick-up Mile-End</p>
                 </div>
               </div>
