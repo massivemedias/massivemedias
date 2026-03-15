@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { DollarSign, Copy, Check, Download, Printer, Users, BarChart3, Sticker, Shirt, Palette, Globe, FileText } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import { jsPDF } from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import html2canvas from 'html2canvas';
 
 // =============================================
 // DONNEES TARIFS
@@ -218,438 +218,41 @@ function AdminTarifs() {
     });
   };
 
-  // --- PDF artiste (reproduit exactement le desktop) ---
-  const handleDownloadPDF = () => {
+  // --- PDF artiste (capture screenshot de la page) ---
+  const handleDownloadPDF = async () => {
+    const el = artistSheetRef.current;
+    if (!el) return;
+
+    // Capture le contenu HTML en canvas haute resolution
+    const canvas = await html2canvas(el, {
+      scale: 2,
+      backgroundColor: null,
+      useCORS: true,
+      logging: false,
+    });
+
+    const imgData = canvas.toDataURL('image/png');
+    const imgW = canvas.width;
+    const imgH = canvas.height;
+
+    // PDF letter size en mm
+    const pdfW = 215.9;
+    const pdfH = 279.4;
+
+    // Calculer combien de pages on a besoin (pleine largeur, pas de marge)
+    const ratio = pdfW / imgW;
+    const scaledH = imgH * ratio;
+    const totalPages = Math.ceil(scaledH / pdfH);
+
     const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'letter' });
-    const W = doc.internal.pageSize.getWidth();
-    const H = doc.internal.pageSize.getHeight();
-    const margin = 12;
-    const contentW = W - margin * 2;
-    let y = 0;
 
-    // Couleurs identiques au theme desktop
-    const bg = [10, 18, 30];         // fond page (dark navy)
-    const cardBg = [16, 28, 44];     // fond cartes/sections
-    const cardBorder = [30, 50, 75]; // bordures cartes
-    const accent = [0, 188, 212];    // cyan accent
-    const purple = [168, 85, 247];
-    const green = [34, 197, 94];
-    const orange = [249, 115, 22];
-    const white = [255, 255, 255];
-    const textMain = [220, 215, 230];
-    const textMuted = [160, 150, 175];
+    for (let page = 0; page < totalPages; page++) {
+      if (page > 0) doc.addPage();
 
-    // Background page
-    const fillPage = () => {
-      doc.setFillColor(...bg);
-      doc.rect(0, 0, W, H, 'F');
-    };
-    fillPage();
-
-    // Check page break
-    const checkPage = (needed = 20) => {
-      if (y + needed > H - 10) {
-        doc.addPage();
-        fillPage();
-        y = margin;
-      }
-    };
-
-    // --- HEADER (simple, comme la page) ---
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(18);
-    doc.setTextColor(...white);
-    doc.text('Grille Tarifaire Artistes', margin, 16);
-    doc.setFontSize(8);
-    doc.setTextColor(...textMuted);
-    doc.text(`Tous les prix avant taxes (TPS + TVQ en sus) - ${new Date().toLocaleDateString('fr-CA')}`, margin, 22);
-    y = 28;
-
-    // --- Section card helper (reproduit SectionCard) ---
-    const startCard = () => {
-      doc.setFillColor(...cardBg);
-      doc.setDrawColor(...cardBorder);
-      doc.setLineWidth(0.3);
-    };
-
-    // --- Table helper (memes couleurs que desktop) ---
-    const makeTable = (headers, rows, options = {}) => {
-      checkPage(10 + rows.length * 6);
-      autoTable(doc, {
-        startY: y,
-        margin: { left: margin + 4, right: margin + 4 },
-        head: [headers],
-        body: rows,
-        theme: 'plain',
-        styles: {
-          font: 'helvetica',
-          fontSize: 7.5,
-          textColor: textMain,
-          cellPadding: { top: 2, bottom: 2, left: 3, right: 3 },
-          lineWidth: 0,
-        },
-        headStyles: {
-          fillColor: false,
-          textColor: textMuted,
-          fontStyle: 'normal',
-          fontSize: 7,
-        },
-        bodyStyles: {
-          lineColor: cardBorder,
-          lineWidth: { bottom: 0.2 },
-        },
-        alternateRowStyles: {},
-        columnStyles: options.columnStyles || {},
-        didParseCell: options.didParseCell || undefined,
-      });
-      y = doc.lastAutoTable.finalY + 3;
-    };
-
-    // ================================================================
-    // 1. EXEMPLE CONCRET (comme la page - en premier)
-    // ================================================================
-    checkPage(62);
-    startCard();
-    doc.roundedRect(margin, y, contentW, 58, 2, 2, 'FD');
-    const exY = y + 5;
-
-    // Exemple texte
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(8);
-    doc.setTextColor(...accent);
-    doc.text('Exemple : ', margin + 5, exY);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(...white);
-    doc.text('Le client achete un print qualite musee avec frame. Il paie ', margin + 5 + doc.getTextWidth('Exemple : '), exY);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(11);
-    doc.text('105$', margin + 5 + doc.getTextWidth('Exemple : Le client achete un print qualite musee avec frame. Il paie '), exY);
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7);
-    doc.setTextColor(...textMuted);
-    doc.text(' (+ taxes). Ou va l\'argent?', margin + 5 + doc.getTextWidth('Exemple : Le client achete un print qualite musee avec frame. Il paie 105$'), exY + 0.5);
-
-    // 3 cards
-    const cardW = (contentW - 20) / 3;
-    const cardY = exY + 6;
-    const cardH = 30;
-
-    // Card 1: Massive Impression (green)
-    doc.setFillColor(15, 35, 25);
-    doc.setDrawColor(34, 120, 70);
-    doc.setLineWidth(0.3);
-    doc.roundedRect(margin + 5, cardY, cardW, cardH, 1.5, 1.5, 'FD');
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(18);
-    doc.setTextColor(...green);
-    doc.text('35$', margin + 5 + cardW / 2, cardY + 10, { align: 'center' });
-    doc.setFontSize(5.5);
-    doc.text('MASSIVE - IMPRESSION', margin + 5 + cardW / 2, cardY + 14.5, { align: 'center' });
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(5);
-    doc.setTextColor(...textMuted);
-    const imp = ['- Papier d\'archives', '- 12 encres pigmentees', '- Calibration couleurs', '- Soft proofing', '- Main d\'oeuvre'];
-    imp.forEach((t, i) => doc.text(t, margin + 8, cardY + 18 + i * 2.5));
-
-    // Card 2: Massive Frame (green)
-    const c2x = margin + 5 + cardW + 2.5;
-    doc.setFillColor(15, 35, 25);
-    doc.setDrawColor(34, 120, 70);
-    doc.roundedRect(c2x, cardY, cardW, cardH, 1.5, 1.5, 'FD');
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(18);
-    doc.setTextColor(...green);
-    doc.text('30$', c2x + cardW / 2, cardY + 10, { align: 'center' });
-    doc.setFontSize(5.5);
-    doc.text('MASSIVE - FRAME', c2x + cardW / 2, cardY + 14.5, { align: 'center' });
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(5);
-    doc.setTextColor(...textMuted);
-    doc.text('- Cadre noir ou blanc', c2x + 3, cardY + 18);
-    doc.text('- Materiaux + assemblage', c2x + 3, cardY + 20.5);
-
-    // Card 3: Artiste (purple)
-    const c3x = margin + 5 + (cardW + 2.5) * 2;
-    doc.setFillColor(30, 15, 45);
-    doc.setDrawColor(120, 60, 180);
-    doc.roundedRect(c3x, cardY, cardW, cardH, 1.5, 1.5, 'FD');
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(18);
-    doc.setTextColor(...purple);
-    doc.text('40$', c3x + cardW / 2, cardY + 10, { align: 'center' });
-    doc.setFontSize(5.5);
-    doc.text('ARTISTE - PROFIT NET', c3x + cardW / 2, cardY + 14.5, { align: 'center' });
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(5);
-    doc.setTextColor(...textMuted);
-    const art = ['- Fournit son fichier image', '- Zero gestion', '- Zero frais', '- Pas de boutique a gerer', '- Pas de livraison'];
-    art.forEach((t, i) => doc.text(t, c3x + 3, cardY + 18 + i * 2.5));
-
-    // Total line
-    const totY = cardY + cardH + 4;
-    doc.setFontSize(7);
-    doc.setTextColor(...textMuted);
-    doc.setFont('helvetica', 'normal');
-    const totLine = '35$ + 30$ + 40$ = ';
-    doc.text(totLine, margin + contentW / 2 - 25, totY);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...white);
-    doc.text('105$', margin + contentW / 2 - 25 + doc.getTextWidth(totLine), totY);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(...textMuted);
-    doc.setFontSize(6.5);
-    doc.text(' - Sans frame: client paie 75$, Massive 35$, artiste 40$', margin + contentW / 2 - 25 + doc.getTextWidth(totLine + '105$'), totY);
-
-    y += 62;
-
-    // Pourquoi c'est juste
-    checkPage(22);
-    doc.setFillColor(12, 25, 38);
-    doc.setDrawColor(...cardBorder);
-    doc.roundedRect(margin, y, contentW, 18, 1.5, 1.5, 'FD');
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(8);
-    doc.setTextColor(...white);
-    doc.text('Pourquoi c\'est juste?', margin + 4, y + 4.5);
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(6.5);
-    doc.setTextColor(...textMuted);
-    doc.text('L\'artiste recoit ', margin + 4, y + 8.5);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...purple);
-    doc.text('40$ de profit net', margin + 4 + doc.getTextWidth('L\'artiste recoit '), y + 8.5);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(...textMuted);
-    doc.text(' pour un upload de fichier. Aucune gestion, aucun frais, aucune boutique a maintenir.', margin + 4 + doc.getTextWidth('L\'artiste recoit 40$ de profit net'), y + 8.5);
-    doc.text('Massive recoit 65$ mais doit couvrir: papier d\'archives, 12 encres pigmentees, calibration, cadre, main d\'oeuvre, local.', margin + 4, y + 12);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(7);
-    doc.setTextColor(...accent);
-    doc.text('L\'artiste et Massive font a peu pres le meme profit reel, mais l\'artiste n\'a rien a faire.', margin + 4, y + 15.5);
-    y += 22;
-
-    // ================================================================
-    // 2. BOUTIQUE ARTISTE (prix client final + split) - comme la page
-    // ================================================================
-    checkPage(50);
-    startCard();
-    const sec2Start = y;
-    // On va dessiner le fond apres pour connaitre la hauteur
-
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(8.5);
-    doc.setTextColor(...white);
-    doc.text('Boutique artiste (prix client final)', margin + 4, y + 5);
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(6.5);
-    doc.setTextColor(...textMuted);
-    doc.text('Ce que le client de l\'artiste paie + split des revenus', margin + 4, y + 9);
-    y += 13;
-
-    // Serie Studio
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(7);
-    doc.setTextColor(...white);
-    doc.text('SERIE STUDIO - 4 ENCRES PIGMENTEES', margin + 4, y);
-    y += 2;
-
-    makeTable(
-      ['Format', 'Sans frame', 'Avec frame', 'Massive', 'Artiste'],
-      ARTIST_PRICES.filter(p => p.studio).map(p => {
-        const sp = SERVICE_PRICES.find(s => s.format === p.format);
-        const artistCut = p.studio - (sp?.studio || 0);
-        return [
-          p.format,
-          p.studio + '$',
-          p.frame ? (p.studio + p.frame) + '$' : 'N/A',
-          (sp?.studio || 0) + '$' + (p.frame ? ' / ' + ((sp?.studio || 0) + p.frame) + '$' : ''),
-          artistCut + '$',
-        ];
-      }),
-      {
-        columnStyles: {
-          1: { fontStyle: 'bold' },
-          2: { fontStyle: 'bold' },
-          3: { textColor: green, fontStyle: 'bold' },
-          4: { textColor: purple, fontStyle: 'bold', fontSize: 9 },
-        },
-      }
-    );
-
-    // Serie Musee
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(7);
-    doc.setTextColor(...white);
-    doc.text('SERIE MUSEE - 12 ENCRES PIGMENTEES (CANON PRO 2600)', margin + 4, y);
-    y += 2;
-
-    makeTable(
-      ['Format', 'Sans frame', 'Avec frame', 'Massive', 'Artiste'],
-      ARTIST_PRICES.map((p, idx) => {
-        const sp = SERVICE_PRICES[idx];
-        const artistCut = p.museum - sp.museum;
-        return [
-          p.format,
-          p.museum + '$',
-          p.frame ? (p.museum + p.frame) + '$' : 'N/A',
-          sp.museum + '$' + (p.frame ? ' / ' + (sp.museum + p.frame) + '$' : ''),
-          artistCut + '$',
-        ];
-      }),
-      {
-        columnStyles: {
-          1: { fontStyle: 'bold' },
-          2: { fontStyle: 'bold' },
-          3: { textColor: green, fontStyle: 'bold' },
-          4: { textColor: purple, fontStyle: 'bold', fontSize: 9 },
-        },
-      }
-    );
-
-    // Notes
-    doc.setFontSize(6);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(...textMuted);
-    doc.text('* A2 (18x24") = Canon Pro 2600 uniquement (12 encres), pas de frame disponible', margin + 4, y);
-    doc.text('* Frame = cadre noir ou blanc (+30$)  |  * Commission artiste = profit net, identique avec ou sans frame', margin + 4, y + 3);
-    y += 7;
-
-    // Draw card background behind section 2
-    const sec2H = y - sec2Start;
-    // We need to draw it behind, so we insert it - but since PDF draws in order, we skip the bg card here
-    // Instead we just add a subtle line
-    doc.setDrawColor(...cardBorder);
-    doc.setLineWidth(0.2);
-    doc.line(margin, y, margin + contentW, y);
-    y += 4;
-
-    // ================================================================
-    // 3. STICKERS (comme la page)
-    // ================================================================
-    checkPage(35);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(8.5);
-    doc.setTextColor(...white);
-    doc.text('Packs stickers artiste', margin + 4, y);
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(6.5);
-    doc.setTextColor(...textMuted);
-    doc.text('Prix pour les artistes qui veulent vendre des stickers (design inclus)', margin + 4, y + 4);
-    y += 8;
-
-    // Standard + Holo combined
-    makeTable(
-      ['Quantite', 'Standard', '$/unite', 'FX (Holo)', '$/unite'],
-      STICKER_STANDARD.map((s, i) => {
-        const h = STICKER_HOLO[i];
-        return [s.qty.toString(), s.price + '$', s.unit.toFixed(2) + '$', h.price + '$', h.unit.toFixed(2) + '$'];
-      }),
-      {
-        columnStyles: {
-          1: { fontStyle: 'bold' },
-          2: { textColor: accent, fontStyle: 'bold' },
-          3: { fontStyle: 'bold' },
-          4: { textColor: accent, fontStyle: 'bold' },
-        },
-      }
-    );
-
-    doc.setDrawColor(...cardBorder);
-    doc.setLineWidth(0.2);
-    doc.line(margin, y, margin + contentW, y);
-    y += 4;
-
-    // ================================================================
-    // 4. CONCURRENCE (comme la page)
-    // ================================================================
-    checkPage(45);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(8.5);
-    doc.setTextColor(...white);
-    doc.text('Comparaison concurrence (donnees 2025-2026)', margin + 4, y);
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(6.5);
-    doc.setTextColor(...textMuted);
-    doc.text('Combien l\'artiste garde reellement sur chaque plateforme', margin + 4, y + 4);
-    y += 8;
-
-    makeTable(
-      ['Plateforme', 'Artiste garde', 'Qualite', 'Notes'],
-      COMPETITORS.map(c => [c.name, c.artistProfit, c.quality, c.notes]),
-      {
-        columnStyles: {
-          0: { cellWidth: 25 },
-          1: { cellWidth: 20, fontStyle: 'bold' },
-          2: { cellWidth: 25, fontSize: 6 },
-          3: { fontSize: 6 },
-        },
-        didParseCell: (data) => {
-          if (data.section === 'body') {
-            const c = COMPETITORS[data.row.index];
-            if (c?.highlight === 'massive') {
-              data.cell.styles.textColor = accent;
-              data.cell.styles.fontStyle = 'bold';
-              data.cell.styles.fillColor = [15, 30, 40];
-            } else if (c?.highlight === 'printify') {
-              data.cell.styles.fillColor = [25, 18, 10];
-            }
-          }
-        },
-      }
-    );
-
-    // Printify vs Massive box
-    checkPage(22);
-    doc.setFillColor(30, 20, 10);
-    doc.setDrawColor(...orange);
-    doc.setLineWidth(0.3);
-    doc.roundedRect(margin, y, contentW, 18, 1.5, 1.5, 'FD');
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(7);
-    doc.setTextColor(...orange);
-    doc.text('Printify vs Massive - la vraie comparaison', margin + 4, y + 4);
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(5.5);
-    doc.setTextColor(...textMuted);
-    // Printify side
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...orange);
-    doc.text('Printify - l\'artiste doit:', margin + 4, y + 7.5);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(...textMuted);
-    doc.text('Creer sa boutique (Etsy ~6.5%, Shopify ~39$/mois), gerer service client, retours, marketing, qualite variable', margin + 4, y + 10.5);
-    // Massive side
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...accent);
-    doc.text('Massive - l\'artiste doit:', margin + 4, y + 13.5);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(...textMuted);
-    doc.text('Fournir son fichier. C\'est tout. Zero frais, zero gestion, qualite musee 12 encres, impression locale Montreal.', margin + 4, y + 16);
-    y += 22;
-
-    // Resume box
-    checkPage(14);
-    doc.setFillColor(10, 22, 15);
-    doc.setDrawColor(...green);
-    doc.setLineWidth(0.3);
-    doc.roundedRect(margin, y, contentW, 12, 1.5, 1.5, 'FD');
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(7);
-    doc.setTextColor(...green);
-    doc.text('En resume:', margin + 4, y + 4);
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(6);
-    doc.setTextColor(134, 239, 172);
-    doc.text('Society6/Redbubble: 2-4$/vente. Printify/Printful: ~20-25$ mais tu geres tout. INPRNT: ~18$, sur invitation.', margin + 4, y + 7.5);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Massive: 40-50$ profit net, zero gestion, qualite musee superieure a tout POD.', margin + 4, y + 10.5);
-    y += 16;
-
-    // Petit footer discret
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(6);
-    doc.setTextColor(...textMuted);
-    doc.text('Massive Medias - massivemedias.com - Impression fine art locale a Montreal', W / 2, H - 6, { align: 'center' });
+      // On place l'image entiere decalee vers le haut pour chaque page
+      const yOffset = -(page * pdfH);
+      doc.addImage(imgData, 'PNG', 0, yOffset, pdfW, scaledH);
+    }
 
     doc.save('Massive-Medias-Grille-Tarifaire-Artistes.pdf');
   };
