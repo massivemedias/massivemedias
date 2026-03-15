@@ -341,7 +341,7 @@ function AdminTarifs() {
   <p>Commission identique avec ou sans frame (le frame va a Massive).</p>
 
   <div class="example-box">
-    <div class="example-title">Exemple: un client achete un A4 Musee avec cadre</div>
+    <div class="example-title">Exemple : Le client achete un print qualite musee avec frame</div>
     <div class="example-scenario">Le client paie 105$ (print 75$ + frame 30$). Ou va l'argent?</div>
     <div class="example-grid">
       <div class="example-card massive">
@@ -586,7 +586,7 @@ window.onload = function() {
               {/* Scenario */}
               <div className="bg-purple-500/5 rounded-lg p-4 card-border">
                 <p className="text-sm text-heading font-medium leading-relaxed">
-                  <span className="text-accent font-bold">Scenario:</span> Un client veut acheter un print d'artiste <span className="text-purple-400 font-semibold">A4 Musee (12 encres)</span> avec un <span className="text-green-400 font-semibold">cadre</span>. Il paie <span className="text-heading font-bold text-lg">105$</span> <span className="text-grey-muted">(+ taxes)</span>. Ou va l'argent?
+                  <span className="text-accent font-bold">Exemple :</span> Le client achete un print qualite musee avec frame. Il paie <span className="text-heading font-bold text-lg">105$</span> <span className="text-grey-muted">(+ taxes)</span>. Ou va l'argent?
                 </p>
               </div>
 
