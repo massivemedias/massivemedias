@@ -24,7 +24,7 @@ function buildArtistFromCMS(cms) {
     avatar: mediaUrl(cms.avatar),
     heroImage: mediaUrl(cms.heroImage),
     socials: cms.socials || {},
-    pricing: cms.pricing || { studio: { a4: 35, a3: 50, a3plus: 65, a2: 85 }, museum: { a4: 75, a3: 120, a3plus: 160, a2: 225 }, framePrice: 20 },
+    pricing: cms.pricing || { studio: { a4: 35, a3: 50, a3plus: 65, a2: 85 }, museum: { a4: 75, a3: 120, a3plus: 160, a2: 225 }, framePrice: 30 },
     prints: (cms.prints || []).map((p, i) => ({
       ...p,
       image: cms.printImages?.[i] ? mediaUrl(cms.printImages[i]) : p.image || '',

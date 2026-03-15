@@ -7,7 +7,7 @@ export function getArtistPrintPrice(pricing, tier, format, withFrame) {
   const prices = tier === 'museum' ? pricing.museum : pricing.studio;
   const base = prices[format];
   if (base == null) return null;
-  const framePrice = withFrame ? (pricing.framePrice || 20) : 0;
+  const framePrice = withFrame ? (pricing.framePrice || 30) : 0;
   return { price: base + framePrice, basePrice: base, framePrice };
 }
 
@@ -66,7 +66,7 @@ const artistsData = {
     pricing: {
       studio: { a4: 35, a3: 50, a3plus: 65, a2: 85 },
       museum: { a4: 75, a3: 120, a3plus: 160, a2: 225 },
-      framePrice: 20,
+      framePrice: 30,
     },
   },
   'maudite-machine': {
@@ -94,7 +94,7 @@ const artistsData = {
     pricing: {
       studio: { a4: 35, a3: 50, a3plus: 65, a2: 85 },
       museum: { a4: 75, a3: 120, a3plus: 160, a2: 225 },
-      framePrice: 20,
+      framePrice: 30,
     },
   },
   'mok': {
@@ -118,7 +118,7 @@ const artistsData = {
     pricing: {
       studio: { a4: 35, a3: 50, a3plus: 65, a2: 85 },
       museum: { a4: 75, a3: 120, a3plus: 160, a2: 225 },
-      framePrice: 20,
+      framePrice: 30,
     },
   },
   'psyqu33n': {
@@ -173,7 +173,7 @@ const artistsData = {
     pricing: {
       studio: { a4: 35, a3: 50, a3plus: 65, a2: 85 },
       museum: { a4: 75, a3: 120, a3plus: 160, a2: 225 },
-      framePrice: 20,
+      framePrice: 30,
     },
   },
 };

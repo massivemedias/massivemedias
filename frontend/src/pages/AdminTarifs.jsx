@@ -13,9 +13,9 @@ const SERVICE_PRICES = [
 
 // --- Prix boutique artiste (ce que le client final paie) ---
 const ARTIST_PRICES = [
-  { format: 'A4 (8.5x11")', studio: 35, museum: 75, frame: 20 },
-  { format: 'A3 (11x17")', studio: 50, museum: 120, frame: 20 },
-  { format: 'A3+ (13x19")', studio: 65, museum: 160, frame: 20 },
+  { format: 'A4 (8.5x11")', studio: 35, museum: 75, frame: 30 },
+  { format: 'A3 (11x17")', studio: 50, museum: 120, frame: 30 },
+  { format: 'A3+ (13x19")', studio: 65, museum: 160, frame: 30 },
   { format: 'A2 (18x24")', studio: null, museum: 125, frame: null },
 ];
 
@@ -304,7 +304,7 @@ function AdminTarifs() {
           <div className="bg-accent/10 rounded-lg p-3 text-xs text-grey-muted space-y-1">
             <p>* Tous les prix sont avant taxes (TPS + TVQ en sus)</p>
             <p>* A2 (18x24") = Canon Pro 2600 uniquement (12 encres), pas de frame disponible</p>
-            <p>* Frame = cadre noir ou blanc (+20$ artiste / +30$ service)</p>
+            <p>* Frame = cadre noir ou blanc (+30$)</p>
             <p>* Commission artiste = profit net, identique avec ou sans frame (le frame va a Massive)</p>
           </div>
         </motion.div>
