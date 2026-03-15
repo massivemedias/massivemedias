@@ -1,11 +1,11 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 import {
   User, Mail, Phone, MapPin, Building2, Package, LogOut, Loader2, Check, Lock,
   Eye, EyeOff, ChevronDown, ChevronUp, Shield, Pencil, Save, ShoppingBag,
   ArrowRight, Gift, Copy, Heart, Clock, RotateCcw, MessageCircle, Download,
-  Palette, Settings,
+  Palette, Settings, Menu, X, Banknote, Receipt, BarChart3, DollarSign, UserCircle, Users,
 } from 'lucide-react';
 import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
@@ -110,7 +110,7 @@ function Account() {
   const { role: userRole, isAdmin, isArtist, artistSlug } = useUserRole();
   const meta = user?.user_metadata || {};
 
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState(isAdmin ? 'profile' : 'overview');
 
   // Orders
   const [orders, setOrders] = useState([]);
@@ -167,6 +167,25 @@ function Account() {
     });
   }, [user]);
 
+  // Menu items pour le sidebar admin
+  const ADMIN_NAV_ITEMS = [
+    { to: '/admin/commandes', icon: ShoppingBag, fr: 'Commandes', en: 'Orders', es: 'Pedidos' },
+    { to: '/admin/commissions', icon: Banknote, fr: 'Commissions', en: 'Commissions', es: 'Comisiones' },
+    { to: '/admin/inventaire', icon: Package, fr: 'Inventaire', en: 'Inventory', es: 'Inventario' },
+    { to: '/admin/messages', icon: MessageCircle, fr: 'Messages', en: 'Messages', es: 'Mensajes' },
+    { to: '/admin/clients', icon: Users, fr: 'Clients', en: 'Clients', es: 'Clientes' },
+    { to: '/admin/utilisateurs', icon: UserCircle, fr: 'Utilisateurs', en: 'Users', es: 'Usuarios' },
+    { to: '/admin/depenses', icon: Receipt, fr: 'Depenses', en: 'Expenses', es: 'Gastos' },
+    { to: '/admin/stats', icon: BarChart3, fr: 'Stats', en: 'Stats', es: 'Stats' },
+    { to: '/admin/tarifs', icon: DollarSign, fr: 'Tarifs', en: 'Pricing', es: 'Precios' },
+  ];
+
+  const ACCOUNT_SIDEBAR_ITEMS = [
+    { id: 'profile', label: tx({ fr: 'Profil', en: 'Profile', es: 'Perfil' }), icon: Pencil },
+    { id: 'address', label: tx({ fr: 'Adresse', en: 'Address', es: 'Direccion' }), icon: MapPin },
+    { id: 'security', label: tx({ fr: 'Securite', en: 'Security', es: 'Seguridad' }), icon: Shield },
+  ];
+
   const baseTabs = [
     { id: 'overview', label: tx({ fr: 'Tableau de bord', en: 'Dashboard', es: 'Panel' }), icon: User },
     { id: 'orders', label: tx({ fr: 'Commandes', en: 'Orders', es: 'Pedidos' }), icon: Package },
@@ -175,12 +194,13 @@ function Account() {
     { id: 'security', label: tx({ fr: 'Securite', en: 'Security', es: 'Seguridad' }), icon: Shield },
   ];
 
-  // Ajouter l'onglet artiste si l'utilisateur est artiste
+  // Tabs pour users non-admin
   const tabs = [
     ...baseTabs,
     ...(isArtist ? [{ id: 'artist', label: tx({ fr: 'Artiste', en: 'Artist', es: 'Artista' }), icon: Palette }] : []),
-    ...(isAdmin ? [{ id: 'admin', label: 'Admin', icon: Settings }] : []),
   ];
+
+  const [adminMobileOpen, setAdminMobileOpen] = useState(false);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -282,6 +302,433 @@ function Account() {
   const initials = getInitials(meta.full_name, user?.email);
   const memberSince = getMemberSince(user?.created_at, lang);
 
+  // --- Contenu partage: Profile, Address, Security ---
+  const renderProfileContent = () => (
+    <form onSubmit={handleProfileSave} className="rounded-2xl border border-purple-main/30 p-6 md:p-8 card-bg card-shadow">
+      <h3 className="text-heading font-semibold mb-6 flex items-center gap-2">
+        <User size={18} className="text-accent" />
+        {tx({ fr: 'Informations personnelles', en: 'Personal information', es: 'Informacion personal' })}
+      </h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6">
+        <FormInput
+          icon={User}
+          label={tx({ fr: 'Nom complet', en: 'Full name', es: 'Nombre completo' })}
+          value={profileForm.full_name}
+          placeholder={tx({ fr: 'Ton nom', en: 'Your name', es: 'Tu nombre' })}
+          onChange={v => setProfileForm(p => ({ ...p, full_name: v }))}
+          autoComplete="name"
+        />
+        <FormInput
+          icon={Phone}
+          label={tx({ fr: 'Telephone', en: 'Phone', es: 'Telefono' })}
+          value={profileForm.phone}
+          type="tel"
+          placeholder="514-xxx-xxxx"
+          onChange={v => setProfileForm(p => ({ ...p, phone: v }))}
+          autoComplete="tel"
+        />
+        <FormInput
+          icon={Building2}
+          label={tx({ fr: 'Entreprise', en: 'Company', es: 'Empresa' })}
+          value={profileForm.company}
+          placeholder={tx({ fr: 'Nom de l\'entreprise', en: 'Company name', es: 'Nombre de la empresa' })}
+          onChange={v => setProfileForm(p => ({ ...p, company: v }))}
+          autoComplete="organization"
+        />
+        <div className="mb-4">
+          <label className="flex items-center gap-2 text-[11px] text-grey-muted uppercase tracking-wider font-medium mb-1.5">
+            <Mail size={14} />
+            {tx({ fr: 'Courriel', en: 'Email', es: 'Correo' })}
+          </label>
+          <input
+            type="email"
+            value={user?.email || ''}
+            disabled
+            className="input-field text-sm opacity-60 cursor-not-allowed"
+          />
+          <p className="text-grey-muted/50 text-[10px] mt-1">
+            {tx({ fr: 'Le courriel ne peut pas etre modifie ici.', en: 'Email cannot be changed here.', es: 'El correo no se puede cambiar aqui.' })}
+          </p>
+        </div>
+      </div>
+      <button type="submit" disabled={profileSaving} className="btn-primary text-sm py-2.5 px-8 mt-2">
+        {profileSaving ? <Loader2 size={16} className="animate-spin mr-2" /> : <Save size={16} className="mr-2" />}
+        {tx({ fr: 'Sauvegarder', en: 'Save', es: 'Guardar' })}
+      </button>
+    </form>
+  );
+
+  const renderAddressContent = () => (
+    <form onSubmit={handleAddressSave} className="rounded-2xl border border-purple-main/30 p-6 md:p-8 card-bg card-shadow">
+      <h3 className="text-heading font-semibold mb-6 flex items-center gap-2">
+        <MapPin size={18} className="text-accent" />
+        {tx({ fr: 'Adresse de livraison', en: 'Shipping address', es: 'Direccion de envio' })}
+      </h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6">
+        <div className="md:col-span-2 mb-4">
+          <label className="flex items-center gap-2 text-[11px] text-grey-muted uppercase tracking-wider font-medium mb-1.5">
+            <MapPin size={14} />
+            {tx({ fr: 'Adresse', en: 'Street address', es: 'Direccion' })}
+          </label>
+          <AddressAutocomplete
+            value={addressForm.address}
+            onChange={v => setAddressForm(a => ({ ...a, address: v }))}
+            onPlaceSelect={({ address, city, province, postalCode, country }) => {
+              setAddressForm(a => ({
+                ...a,
+                address,
+                city: city || a.city,
+                province: province || a.province,
+                postal_code: postalCode || a.postal_code,
+                country: country === 'United States' ? 'US' : country || a.country,
+              }));
+            }}
+            className="input-field text-sm"
+            placeholder={tx({ fr: '123 rue Exemple', en: '123 Example St', es: '123 Calle Ejemplo' })}
+          />
+        </div>
+        <FormInput
+          icon={MapPin}
+          label={tx({ fr: 'Ville', en: 'City', es: 'Ciudad' })}
+          value={addressForm.city}
+          placeholder="Montreal"
+          onChange={v => setAddressForm(a => ({ ...a, city: v }))}
+          autoComplete="address-level2"
+        />
+        <FormSelect
+          icon={MapPin}
+          label={tx({ fr: 'Province / Etat', en: 'Province / State', es: 'Provincia / Estado' })}
+          value={addressForm.province}
+          onChange={v => setAddressForm(a => ({ ...a, province: v }))}
+          autoComplete="address-level1"
+          options={
+            addressForm.country === 'Canada'
+              ? [{ value: '', label: tx({ fr: 'Selectionner...', en: 'Select...', es: 'Seleccionar...' }) }, ...PROVINCES_CA.map(p => ({ value: p.code, label: lang === 'en' ? p.en : p.fr }))]
+              : [{ value: '', label: tx({ fr: 'Selectionner...', en: 'Select...', es: 'Seleccionar...' }) }, { value: addressForm.province, label: addressForm.province || '...' }]
+          }
+        />
+        <FormInput
+          icon={MapPin}
+          label={tx({ fr: 'Code postal', en: 'Postal code', es: 'Codigo postal' })}
+          value={addressForm.postal_code}
+          placeholder="H2X 1Y4"
+          onChange={v => setAddressForm(a => ({ ...a, postal_code: v }))}
+          autoComplete="postal-code"
+        />
+        <FormSelect
+          icon={MapPin}
+          label={tx({ fr: 'Pays', en: 'Country', es: 'Pais' })}
+          value={addressForm.country}
+          onChange={v => setAddressForm(a => ({ ...a, country: v, province: '' }))}
+          autoComplete="country-name"
+          options={[
+            ...COUNTRIES.map(c => ({ value: c.code, label: lang === 'en' ? c.en : c.fr })),
+            { value: 'other', label: tx({ fr: 'Autre', en: 'Other', es: 'Otro' }) },
+          ]}
+        />
+      </div>
+      <button type="submit" disabled={addressSaving} className="btn-primary text-sm py-2.5 px-8 mt-2">
+        {addressSaving ? <Loader2 size={16} className="animate-spin mr-2" /> : <Save size={16} className="mr-2" />}
+        {tx({ fr: 'Sauvegarder', en: 'Save', es: 'Guardar' })}
+      </button>
+    </form>
+  );
+
+  const renderSecurityContent = () => (
+    <div className="rounded-2xl border border-purple-main/30 p-6 md:p-8 card-bg card-shadow">
+      <div className="mb-6">
+        <h3 className="text-heading font-semibold text-sm mb-4 flex items-center gap-2">
+          <Lock size={16} className="text-accent" />
+          {tx({ fr: 'Mot de passe', en: 'Password', es: 'Contrasena' })}
+        </h3>
+        {changingPassword ? (
+          <form onSubmit={handlePasswordChange} className="max-w-sm space-y-4">
+            <div>
+              <label className="text-[11px] text-grey-muted uppercase tracking-wider font-medium mb-1.5 block">
+                {tx({ fr: 'Nouveau mot de passe', en: 'New password', es: 'Nueva contrasena' })}
+              </label>
+              <div className="relative">
+                <input
+                  type={showPwd ? 'text' : 'password'}
+                  value={newPassword}
+                  onChange={e => setNewPassword(e.target.value)}
+                  className="input-field text-sm"
+                  placeholder="--------"
+                  required
+                  minLength={6}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPwd(!showPwd)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-grey-muted hover:text-heading transition-colors"
+                >
+                  {showPwd ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
+            </div>
+            <div>
+              <label className="text-[11px] text-grey-muted uppercase tracking-wider font-medium mb-1.5 block">
+                {tx({ fr: 'Confirmer', en: 'Confirm', es: 'Confirmar' })}
+              </label>
+              <input
+                type={showPwd ? 'text' : 'password'}
+                value={confirmPwd}
+                onChange={e => setConfirmPwd(e.target.value)}
+                className="input-field text-sm"
+                placeholder="--------"
+                required
+                minLength={6}
+              />
+            </div>
+            {pwdError && <p className="text-red-400 text-xs">{pwdError}</p>}
+            {pwdSuccess && (
+              <p className="text-green-400 text-xs flex items-center gap-1">
+                <Check size={14} /> {tx({ fr: 'Mot de passe mis a jour!', en: 'Password updated!', es: 'Contrasena actualizada!' })}
+              </p>
+            )}
+            <div className="flex gap-3 pt-1">
+              <button type="submit" disabled={pwdLoading} className="btn-primary text-sm py-2 px-6">
+                {pwdLoading ? '...' : tx({ fr: 'Sauvegarder', en: 'Save', es: 'Guardar' })}
+              </button>
+              <button
+                type="button"
+                onClick={() => { setChangingPassword(false); setPwdError(''); setNewPassword(''); setConfirmPwd(''); }}
+                className="text-grey-muted hover:text-heading text-sm transition-colors"
+              >
+                {tx({ fr: 'Annuler', en: 'Cancel', es: 'Cancelar' })}
+              </button>
+            </div>
+          </form>
+        ) : (
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-heading text-sm">--------</p>
+              <p className="text-grey-muted text-xs mt-1">
+                {tx({ fr: 'Change ton mot de passe regulierement pour securiser ton compte.', en: 'Change your password regularly to secure your account.', es: 'Cambia tu contrasena regularmente para proteger tu cuenta.' })}
+              </p>
+            </div>
+            <button
+              onClick={() => setChangingPassword(true)}
+              className="text-accent hover:text-accent/80 transition-colors text-sm font-medium flex items-center gap-1.5"
+            >
+              <Pencil size={14} />
+              {tx({ fr: 'Modifier', en: 'Edit', es: 'Editar' })}
+            </button>
+          </div>
+        )}
+      </div>
+      <div className="pt-6 border-t border-purple-main/10">
+        <h3 className="text-heading font-semibold text-sm mb-2 flex items-center gap-2">
+          <Mail size={16} className="text-accent" />
+          {tx({ fr: 'Email du compte', en: 'Account email', es: 'Correo de la cuenta' })}
+        </h3>
+        <p className="text-heading text-sm">{user?.email}</p>
+        <p className="text-grey-muted text-xs mt-1">
+          {tx({ fr: 'L\'email est utilise pour la connexion et les notifications de commande.', en: 'Email is used for login and order notifications.', es: 'El correo se usa para iniciar sesion y notificaciones de pedidos.' })}
+        </p>
+      </div>
+      <div className="pt-6 mt-6 border-t border-red-500/10">
+        <h3 className="text-red-400/70 font-semibold text-sm mb-2 flex items-center gap-2">
+          <Shield size={16} />
+          {tx({ fr: 'Zone danger', en: 'Danger zone', es: 'Zona de peligro' })}
+        </h3>
+        <p className="text-grey-muted text-xs mb-3">
+          {tx({ fr: 'Deconnexion de tous les appareils.', en: 'Sign out from all devices.', es: 'Cerrar sesion en todos los dispositivos.' })}
+        </p>
+        <button
+          onClick={signOut}
+          className="text-sm text-red-400 hover:text-red-300 font-medium flex items-center gap-2 transition-colors"
+        >
+          <LogOut size={14} />
+          {tx({ fr: 'Se deconnecter', en: 'Sign out', es: 'Cerrar sesion' })}
+        </button>
+      </div>
+    </div>
+  );
+
+  // Titre de la section active (admin sidebar)
+  const getAdminSectionTitle = () => {
+    const item = ACCOUNT_SIDEBAR_ITEMS.find(i => i.id === activeTab);
+    return item ? item.label : tx({ fr: 'Mon compte', en: 'My account', es: 'Mi cuenta' });
+  };
+
+  // ============================================================
+  // ADMIN LAYOUT - sidebar style like /admin pages
+  // ============================================================
+  if (isAdmin) {
+    return (
+      <>
+        <SEO title={`${t('account.title')} - Massive`} description="" noindex />
+        <section className="section-container pt-28 pb-20 min-h-screen">
+          {/* Header */}
+          <div className="max-w-7xl mx-auto mb-6">
+            <div className="flex items-center gap-5">
+              <div className="w-14 h-14 rounded-full bg-accent/20 border-2 border-accent/40 flex items-center justify-center flex-shrink-0">
+                <span className="text-lg font-bold text-accent">{initials}</span>
+              </div>
+              <div className="flex-grow min-w-0">
+                <h1 className="text-2xl md:text-3xl font-heading font-bold text-heading">
+                  {tx({ fr: 'Bonjour', en: 'Hello', es: 'Hola' })}, {firstName}
+                </h1>
+                <p className="text-grey-muted text-sm mt-0.5">
+                  {user?.email}
+                  {memberSince && (
+                    <span className="ml-3 text-grey-muted/60">
+                      {tx({ fr: 'Membre depuis', en: 'Member since', es: 'Miembro desde' })} {memberSince}
+                    </span>
+                  )}
+                </p>
+              </div>
+              <button onClick={signOut} className="flex items-center gap-2 text-grey-muted hover:text-red-400 transition-colors text-sm flex-shrink-0">
+                <LogOut size={16} />
+                <span className="hidden sm:inline">{t('auth.logout')}</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Mobile header */}
+          <div className="lg:hidden flex items-center justify-between mb-4 max-w-7xl mx-auto">
+            <h2 className="text-xl font-heading font-bold text-heading">{getAdminSectionTitle()}</h2>
+            <button
+              onClick={() => setAdminMobileOpen(!adminMobileOpen)}
+              className="p-2 rounded-lg bg-glass text-heading"
+            >
+              {adminMobileOpen ? <X size={20} /> : <Menu size={20} />}
+            </button>
+          </div>
+
+          {/* Mobile nav */}
+          {adminMobileOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="lg:hidden flex flex-wrap gap-2 mb-6 max-w-7xl mx-auto"
+            >
+              {ACCOUNT_SIDEBAR_ITEMS.map((item) => {
+                const Icon = item.icon;
+                const isActive = activeTab === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => { setActiveTab(item.id); setAdminMobileOpen(false); }}
+                    className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
+                      isActive ? 'bg-accent text-white' : 'bg-glass text-grey-muted hover:text-heading'
+                    }`}
+                  >
+                    <Icon size={14} />
+                    {item.label}
+                  </button>
+                );
+              })}
+              <div className="w-full border-t border-purple-main/20 mt-1 pt-2" />
+              {ADMIN_NAV_ITEMS.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    onClick={() => setAdminMobileOpen(false)}
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all bg-glass text-grey-muted hover:text-heading"
+                  >
+                    <Icon size={14} />
+                    {tx({ fr: item.fr, en: item.en, es: item.es })}
+                  </NavLink>
+                );
+              })}
+            </motion.div>
+          )}
+
+          <div className="flex gap-6 max-w-7xl mx-auto">
+            {/* Sidebar desktop */}
+            <aside className="hidden lg:block w-52 flex-shrink-0">
+              <div className="sticky top-28 rounded-xl bg-glass p-3 space-y-1">
+                <h2 className="text-xs font-semibold text-grey-muted uppercase tracking-wider px-3 py-2">
+                  {tx({ fr: 'Mon compte', en: 'My account', es: 'Mi cuenta' })}
+                </h2>
+                {ACCOUNT_SIDEBAR_ITEMS.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = activeTab === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => setActiveTab(item.id)}
+                      className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                        isActive
+                          ? 'bg-accent/20 text-accent'
+                          : 'text-grey-muted hover:text-heading hover:bg-glass'
+                      }`}
+                    >
+                      <Icon size={16} />
+                      {item.label}
+                    </button>
+                  );
+                })}
+
+                <div className="border-t border-purple-main/20 my-2" />
+
+                <h2 className="text-xs font-semibold text-grey-muted uppercase tracking-wider px-3 py-2">
+                  Admin
+                </h2>
+                {ADMIN_NAV_ITEMS.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <NavLink
+                      key={item.to}
+                      to={item.to}
+                      className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 text-grey-muted hover:text-heading hover:bg-glass"
+                    >
+                      <Icon size={16} />
+                      {tx({ fr: item.fr, en: item.en, es: item.es })}
+                    </NavLink>
+                  );
+                })}
+              </div>
+            </aside>
+
+            {/* Main content */}
+            <main className="flex-1 min-w-0">
+              <h2 className="hidden lg:block text-2xl font-heading font-bold text-heading mb-6">
+                {getAdminSectionTitle()}
+              </h2>
+
+              {/* Save feedback */}
+              <AnimatePresence>
+                {saveMsg && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="mb-4 p-3 rounded-lg bg-green-500/10 border border-green-500/20 text-green-400 text-sm flex items-center gap-2"
+                  >
+                    <Check size={16} />
+                    {saveMsg}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={activeTab}
+                  initial={{ opacity: 0, x: 10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -10 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  {activeTab === 'profile' && renderProfileContent()}
+                  {activeTab === 'address' && renderAddressContent()}
+                  {activeTab === 'security' && renderSecurityContent()}
+                </motion.div>
+              </AnimatePresence>
+            </main>
+          </div>
+        </section>
+      </>
+    );
+  }
+
+  // ============================================================
+  // USER / ARTIST LAYOUT - tabs style (original)
+  // ============================================================
   return (
     <>
       <SEO title={`${t('account.title')} - Massive`} description="" noindex />
@@ -592,68 +1039,7 @@ function Account() {
                 )}
 
                 {/* -- PROFILE TAB -- */}
-                {activeTab === 'profile' && (
-                  <form onSubmit={handleProfileSave} className="rounded-2xl border border-purple-main/30 p-6 md:p-8 card-bg card-shadow">
-                    <h3 className="text-heading font-semibold mb-6 flex items-center gap-2">
-                      <User size={18} className="text-accent" />
-                      {tx({ fr: 'Informations personnelles', en: 'Personal information', es: 'Informacion personal' })}
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6">
-                      <FormInput
-                        icon={User}
-                        label={tx({ fr: 'Nom complet', en: 'Full name', es: 'Nombre completo' })}
-                        value={profileForm.full_name}
-                        placeholder={tx({ fr: 'Ton nom', en: 'Your name', es: 'Tu nombre' })}
-                        onChange={v => setProfileForm(p => ({ ...p, full_name: v }))}
-                        autoComplete="name"
-                      />
-                      <FormInput
-                        icon={Phone}
-                        label={tx({ fr: 'Telephone', en: 'Phone', es: 'Telefono' })}
-                        value={profileForm.phone}
-                        type="tel"
-                        placeholder="514-xxx-xxxx"
-                        onChange={v => setProfileForm(p => ({ ...p, phone: v }))}
-                        autoComplete="tel"
-                      />
-                      <FormInput
-                        icon={Building2}
-                        label={tx({ fr: 'Entreprise', en: 'Company', es: 'Empresa' })}
-                        value={profileForm.company}
-                        placeholder={tx({ fr: 'Nom de l\'entreprise', en: 'Company name', es: 'Nombre de la empresa' })}
-                        onChange={v => setProfileForm(p => ({ ...p, company: v }))}
-                        autoComplete="organization"
-                      />
-                      <div className="mb-4">
-                        <label className="flex items-center gap-2 text-[11px] text-grey-muted uppercase tracking-wider font-medium mb-1.5">
-                          <Mail size={14} />
-                          {tx({ fr: 'Courriel', en: 'Email', es: 'Correo' })}
-                        </label>
-                        <input
-                          type="email"
-                          value={user?.email || ''}
-                          disabled
-                          className="input-field text-sm opacity-60 cursor-not-allowed"
-                        />
-                        <p className="text-grey-muted/50 text-[10px] mt-1">
-                          {tx({ fr: 'Le courriel ne peut pas etre modifie ici.', en: 'Email cannot be changed here.', es: 'El correo no se puede cambiar aqui.' })}
-                        </p>
-                      </div>
-                    </div>
-                    <button
-                      type="submit"
-                      disabled={profileSaving}
-                      className="btn-primary text-sm py-2.5 px-8 mt-2"
-                    >
-                      {profileSaving ? (
-                        <Loader2 size={16} className="animate-spin mr-2" />
-                      ) : (
-                        <Save size={16} className="mr-2" />
-                      )}
-                      {tx({ fr: 'Sauvegarder', en: 'Save', es: 'Guardar' })}
-                    </button>
-                  </form>
-                )}
+                {activeTab === 'profile' && renderProfileContent()}
 
                 {/* -- ORDERS TAB -- */}
                 {activeTab === 'orders' && (
@@ -766,89 +1152,7 @@ function Account() {
                 )}
 
                 {/* -- ADDRESS TAB -- */}
-                {activeTab === 'address' && (
-                  <form onSubmit={handleAddressSave} className="rounded-2xl border border-purple-main/30 p-6 md:p-8 card-bg card-shadow">
-                    <h3 className="text-heading font-semibold mb-6 flex items-center gap-2">
-                      <MapPin size={18} className="text-accent" />
-                      {tx({ fr: 'Adresse de livraison', en: 'Shipping address', es: 'Direccion de envio' })}
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6">
-                      <div className="md:col-span-2 mb-4">
-                        <label className="flex items-center gap-2 text-[11px] text-grey-muted uppercase tracking-wider font-medium mb-1.5">
-                          <MapPin size={14} />
-                          {tx({ fr: 'Adresse', en: 'Street address', es: 'Direccion' })}
-                        </label>
-                        <AddressAutocomplete
-                          value={addressForm.address}
-                          onChange={v => setAddressForm(a => ({ ...a, address: v }))}
-                          onPlaceSelect={({ address, city, province, postalCode, country }) => {
-                            setAddressForm(a => ({
-                              ...a,
-                              address,
-                              city: city || a.city,
-                              province: province || a.province,
-                              postal_code: postalCode || a.postal_code,
-                              country: country === 'United States' ? 'US' : country || a.country,
-                            }));
-                          }}
-                          className="input-field text-sm"
-                          placeholder={tx({ fr: '123 rue Exemple', en: '123 Example St', es: '123 Calle Ejemplo' })}
-                        />
-                      </div>
-                      <FormInput
-                        icon={MapPin}
-                        label={tx({ fr: 'Ville', en: 'City', es: 'Ciudad' })}
-                        value={addressForm.city}
-                        placeholder="Montreal"
-                        onChange={v => setAddressForm(a => ({ ...a, city: v }))}
-                        autoComplete="address-level2"
-                      />
-                      <FormSelect
-                        icon={MapPin}
-                        label={tx({ fr: 'Province / Etat', en: 'Province / State', es: 'Provincia / Estado' })}
-                        value={addressForm.province}
-                        onChange={v => setAddressForm(a => ({ ...a, province: v }))}
-                        autoComplete="address-level1"
-                        options={
-                          addressForm.country === 'Canada'
-                            ? [{ value: '', label: tx({ fr: 'Selectionner...', en: 'Select...', es: 'Seleccionar...' }) }, ...PROVINCES_CA.map(p => ({ value: p.code, label: lang === 'en' ? p.en : p.fr }))]
-                            : [{ value: '', label: tx({ fr: 'Selectionner...', en: 'Select...', es: 'Seleccionar...' }) }, { value: addressForm.province, label: addressForm.province || '...' }]
-                        }
-                      />
-                      <FormInput
-                        icon={MapPin}
-                        label={tx({ fr: 'Code postal', en: 'Postal code', es: 'Codigo postal' })}
-                        value={addressForm.postal_code}
-                        placeholder="H2X 1Y4"
-                        onChange={v => setAddressForm(a => ({ ...a, postal_code: v }))}
-                        autoComplete="postal-code"
-                      />
-                      <FormSelect
-                        icon={MapPin}
-                        label={tx({ fr: 'Pays', en: 'Country', es: 'Pais' })}
-                        value={addressForm.country}
-                        onChange={v => setAddressForm(a => ({ ...a, country: v, province: '' }))}
-                        autoComplete="country-name"
-                        options={[
-                          ...COUNTRIES.map(c => ({ value: c.code, label: lang === 'en' ? c.en : c.fr })),
-                          { value: 'other', label: tx({ fr: 'Autre', en: 'Other', es: 'Otro' }) },
-                        ]}
-                      />
-                    </div>
-                    <button
-                      type="submit"
-                      disabled={addressSaving}
-                      className="btn-primary text-sm py-2.5 px-8 mt-2"
-                    >
-                      {addressSaving ? (
-                        <Loader2 size={16} className="animate-spin mr-2" />
-                      ) : (
-                        <Save size={16} className="mr-2" />
-                      )}
-                      {tx({ fr: 'Sauvegarder', en: 'Save', es: 'Guardar' })}
-                    </button>
-                  </form>
-                )}
+                {activeTab === 'address' && renderAddressContent()}
 
                 {/* -- ARTIST TAB -- */}
                 {activeTab === 'artist' && isArtist && (
@@ -859,168 +1163,8 @@ function Account() {
                   </div>
                 )}
 
-                {/* -- ADMIN TAB -- */}
-                {activeTab === 'admin' && isAdmin && (
-                  <div className="rounded-2xl border border-purple-main/30 p-6 md:p-8 card-bg card-shadow">
-                    <h3 className="text-heading font-semibold mb-6 flex items-center gap-2">
-                      <Settings size={18} className="text-accent" />
-                      {tx({ fr: 'Administration', en: 'Administration', es: 'Administracion' })}
-                    </h3>
-                    <p className="text-grey-muted text-sm mb-6">
-                      {tx({
-                        fr: 'Acces rapide au panneau d\'administration Massive.',
-                        en: 'Quick access to the Massive admin panel.',
-                        es: 'Acceso rapido al panel de administracion Massive.',
-                      })}
-                    </p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                      {[
-                        { to: '/admin/commandes', label: tx({ fr: 'Commandes', en: 'Orders', es: 'Pedidos' }), icon: Package, color: 'text-blue-400', bg: 'bg-blue-500/5 border-blue-500/20' },
-                        { to: '/admin/commissions', label: tx({ fr: 'Commissions', en: 'Commissions', es: 'Comisiones' }), icon: Heart, color: 'text-pink-400', bg: 'bg-pink-500/5 border-pink-500/20' },
-                        { to: '/admin/clients', label: tx({ fr: 'Clients', en: 'Clients', es: 'Clientes' }), icon: User, color: 'text-green-400', bg: 'bg-green-500/5 border-green-500/20' },
-                        { to: '/admin/utilisateurs', label: tx({ fr: 'Utilisateurs', en: 'Users', es: 'Usuarios' }), icon: Shield, color: 'text-purple-400', bg: 'bg-purple-500/5 border-purple-500/20' },
-                        { to: '/admin/messages', label: tx({ fr: 'Messages', en: 'Messages', es: 'Mensajes' }), icon: MessageCircle, color: 'text-yellow-400', bg: 'bg-yellow-500/5 border-yellow-500/20' },
-                        { to: '/admin/tarifs', label: tx({ fr: 'Tarifs', en: 'Pricing', es: 'Precios' }), icon: ArrowRight, color: 'text-accent', bg: 'bg-accent/5 border-accent/20' },
-                        { to: '/admin/stats', label: tx({ fr: 'Statistiques', en: 'Stats', es: 'Estadisticas' }), icon: Clock, color: 'text-cyan-400', bg: 'bg-cyan-500/5 border-cyan-500/20' },
-                        { to: '/admin/depenses', label: tx({ fr: 'Depenses', en: 'Expenses', es: 'Gastos' }), icon: ArrowRight, color: 'text-red-400', bg: 'bg-red-500/5 border-red-500/20' },
-                        { to: '/admin/inventaire', label: tx({ fr: 'Inventaire', en: 'Inventory', es: 'Inventario' }), icon: Package, color: 'text-orange-400', bg: 'bg-orange-500/5 border-orange-500/20' },
-                      ].map((item) => (
-                        <Link
-                          key={item.to}
-                          to={item.to}
-                          className={`flex items-center gap-3 p-4 rounded-xl border ${item.bg} hover:scale-[1.02] transition-all group`}
-                        >
-                          <item.icon size={18} className={item.color} />
-                          <span className="text-heading text-sm font-medium">{item.label}</span>
-                          <ArrowRight size={14} className={`${item.color} ml-auto opacity-0 group-hover:opacity-100 transition-opacity`} />
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
                 {/* -- SECURITY TAB -- */}
-                {activeTab === 'security' && (
-                  <div className="rounded-2xl border border-purple-main/30 p-6 md:p-8 card-bg card-shadow">
-                    {/* Password section */}
-                    <div className="mb-6">
-                      <h3 className="text-heading font-semibold text-sm mb-4 flex items-center gap-2">
-                        <Lock size={16} className="text-accent" />
-                        {tx({ fr: 'Mot de passe', en: 'Password', es: 'Contrasena' })}
-                      </h3>
-
-                      {changingPassword ? (
-                        <form onSubmit={handlePasswordChange} className="max-w-sm space-y-4">
-                          <div>
-                            <label className="text-[11px] text-grey-muted uppercase tracking-wider font-medium mb-1.5 block">
-                              {tx({ fr: 'Nouveau mot de passe', en: 'New password', es: 'Nueva contrasena' })}
-                            </label>
-                            <div className="relative">
-                              <input
-                                type={showPwd ? 'text' : 'password'}
-                                value={newPassword}
-                                onChange={e => setNewPassword(e.target.value)}
-                                className="input-field text-sm"
-                                placeholder="--------"
-                                required
-                                minLength={6}
-                              />
-                              <button
-                                type="button"
-                                onClick={() => setShowPwd(!showPwd)}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-grey-muted hover:text-heading transition-colors"
-                              >
-                                {showPwd ? <EyeOff size={16} /> : <Eye size={16} />}
-                              </button>
-                            </div>
-                          </div>
-                          <div>
-                            <label className="text-[11px] text-grey-muted uppercase tracking-wider font-medium mb-1.5 block">
-                              {tx({ fr: 'Confirmer', en: 'Confirm', es: 'Confirmar' })}
-                            </label>
-                            <input
-                              type={showPwd ? 'text' : 'password'}
-                              value={confirmPwd}
-                              onChange={e => setConfirmPwd(e.target.value)}
-                              className="input-field text-sm"
-                              placeholder="--------"
-                              required
-                              minLength={6}
-                            />
-                          </div>
-                          {pwdError && <p className="text-red-400 text-xs">{pwdError}</p>}
-                          {pwdSuccess && (
-                            <p className="text-green-400 text-xs flex items-center gap-1">
-                              <Check size={14} /> {tx({ fr: 'Mot de passe mis a jour!', en: 'Password updated!', es: 'Contrasena actualizada!' })}
-                            </p>
-                          )}
-                          <div className="flex gap-3 pt-1">
-                            <button type="submit" disabled={pwdLoading} className="btn-primary text-sm py-2 px-6">
-                              {pwdLoading ? '...' : tx({ fr: 'Sauvegarder', en: 'Save', es: 'Guardar' })}
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => { setChangingPassword(false); setPwdError(''); setNewPassword(''); setConfirmPwd(''); }}
-                              className="text-grey-muted hover:text-heading text-sm transition-colors"
-                            >
-                              {tx({ fr: 'Annuler', en: 'Cancel', es: 'Cancelar' })}
-                            </button>
-                          </div>
-                        </form>
-                      ) : (
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-heading text-sm">--------</p>
-                            <p className="text-grey-muted text-xs mt-1">
-                              {tx({ fr: 'Change ton mot de passe regulierement pour securiser ton compte.', en: 'Change your password regularly to secure your account.', es: 'Cambia tu contrasena regularmente para proteger tu cuenta.' })}
-                            </p>
-                          </div>
-                          <button
-                            onClick={() => setChangingPassword(true)}
-                            className="text-accent hover:text-accent/80 transition-colors text-sm font-medium flex items-center gap-1.5"
-                          >
-                            <Pencil size={14} />
-                            {tx({ fr: 'Modifier', en: 'Edit', es: 'Editar' })}
-                          </button>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Email section */}
-                    <div className="pt-6 border-t border-purple-main/10">
-                      <h3 className="text-heading font-semibold text-sm mb-2 flex items-center gap-2">
-                        <Mail size={16} className="text-accent" />
-                        {tx({ fr: 'Email du compte', en: 'Account email', es: 'Correo de la cuenta' })}
-                      </h3>
-                      <p className="text-heading text-sm">{user?.email}</p>
-                      <p className="text-grey-muted text-xs mt-1">
-                        {tx({ fr: 'L\'email est utilise pour la connexion et les notifications de commande.', en: 'Email is used for login and order notifications.', es: 'El correo se usa para iniciar sesion y notificaciones de pedidos.' })}
-                      </p>
-                    </div>
-
-                    {/* Danger zone */}
-                    <div className="pt-6 mt-6 border-t border-red-500/10">
-                      <h3 className="text-red-400/70 font-semibold text-sm mb-2 flex items-center gap-2">
-                        <Shield size={16} />
-                        {tx({ fr: 'Zone danger', en: 'Danger zone', es: 'Zona de peligro' })}
-                      </h3>
-                      <p className="text-grey-muted text-xs mb-3">
-                        {tx({
-                          fr: 'Deconnexion de tous les appareils.',
-                          en: 'Sign out from all devices.',
-                          es: 'Cerrar sesion en todos los dispositivos.',
-                        })}
-                      </p>
-                      <button
-                        onClick={signOut}
-                        className="text-sm text-red-400 hover:text-red-300 font-medium flex items-center gap-2 transition-colors"
-                      >
-                        <LogOut size={14} />
-                        {tx({ fr: 'Se deconnecter', en: 'Sign out', es: 'Cerrar sesion' })}
-                      </button>
-                    </div>
-                  </div>
-                )}
+                {activeTab === 'security' && renderSecurityContent()}
 
               </motion.div>
             </AnimatePresence>
