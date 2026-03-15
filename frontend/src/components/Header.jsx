@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Menu, X, ShoppingCart, UserCircle, LogIn } from 'lucide-react';
+import { Menu, X, ShoppingCart, UserCircle, LogIn, Printer, Sticker, Shirt, Globe, Store, Info, Phone, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import MassiveLogo from './MassiveLogo';
 import { useLang } from '../i18n/LanguageContext';
@@ -119,75 +119,172 @@ function Header() {
             </div>
           </div>
 
-          {/* Mobile Menu */}
+          {/* Mobile Menu - Fullscreen overlay */}
           <AnimatePresence>
             {mobileMenuOpen && (
               <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.2 }}
-                className="lg:hidden mt-3 overflow-hidden pt-4 header-border"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.25 }}
+                className="lg:hidden fixed inset-0 top-0 z-40 mobile-menu-bg"
               >
-                <div className="flex flex-col gap-1">
-                  {/* 4 service links */}
-                  {services.map((service) => (
-                    <Link
-                      key={service.slug}
-                      to={`/services/${service.slug}`}
-                      className="transition-colors duration-200 font-medium py-2.5 text-sm nav-link"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      {service.name}
-                    </Link>
-                  ))}
+                {/* Close zone top - matches header height */}
+                <div className="h-14" />
 
-                  {/* Boutique */}
-                  <Link
-                    to="/boutique"
-                    className="transition-colors duration-200 font-medium py-2.5 text-sm nav-link"
-                    onClick={() => setMobileMenuOpen(false)}
+                <nav className="flex flex-col justify-between px-6 pt-6 pb-10" style={{ height: 'calc(100dvh - 3.5rem)' }}>
+                  {/* Links */}
+                  <div className="flex flex-col gap-0.5">
+                    {/* Services */}
+                    {(() => {
+                      const serviceIcons = [Printer, Sticker, Shirt, Globe];
+                      return services.map((service, i) => (
+                        <motion.div
+                          key={service.slug}
+                          initial={{ opacity: 0, x: 60 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: 40 }}
+                          transition={{ duration: 0.3, delay: i * 0.04 }}
+                        >
+                          <Link
+                            to={`/services/${service.slug}`}
+                            className="flex items-center gap-4 py-3.5 px-3 rounded-xl transition-colors duration-200 nav-link group hover:bg-white/5 active:bg-white/10"
+                            onClick={() => setMobileMenuOpen(false)}
+                          >
+                            {serviceIcons[i] && (() => { const Icon = serviceIcons[i]; return <Icon size={20} className="text-accent opacity-70 flex-shrink-0" />; })()}
+                            <span className="text-lg font-heading font-semibold tracking-tight">{service.name}</span>
+                            <ChevronRight size={16} className="ml-auto opacity-30 group-hover:opacity-60 transition-opacity" />
+                          </Link>
+                        </motion.div>
+                      ));
+                    })()}
+
+                    {/* Separator */}
+                    <motion.div
+                      initial={{ opacity: 0, scaleX: 0 }}
+                      animate={{ opacity: 1, scaleX: 1 }}
+                      transition={{ duration: 0.3, delay: 0.16 }}
+                      className="h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent my-2"
+                      style={{ transformOrigin: 'left' }}
+                    />
+
+                    {/* Boutique */}
+                    <motion.div
+                      initial={{ opacity: 0, x: 60 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: 40 }}
+                      transition={{ duration: 0.3, delay: 0.18 }}
+                    >
+                      <Link
+                        to="/boutique"
+                        className="flex items-center gap-4 py-3.5 px-3 rounded-xl transition-colors duration-200 nav-link group hover:bg-white/5 active:bg-white/10"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        <Store size={20} className="text-accent opacity-70 flex-shrink-0" />
+                        <span className="text-lg font-heading font-semibold tracking-tight">{t('nav.boutique')}</span>
+                        <ChevronRight size={16} className="ml-auto opacity-30 group-hover:opacity-60 transition-opacity" />
+                      </Link>
+                    </motion.div>
+
+                    {/* A propos */}
+                    <motion.div
+                      initial={{ opacity: 0, x: 60 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: 40 }}
+                      transition={{ duration: 0.3, delay: 0.22 }}
+                    >
+                      <Link
+                        to="/a-propos"
+                        className="flex items-center gap-4 py-3.5 px-3 rounded-xl transition-colors duration-200 nav-link group hover:bg-white/5 active:bg-white/10"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        <Info size={20} className="text-accent opacity-70 flex-shrink-0" />
+                        <span className="text-lg font-heading font-semibold tracking-tight">{t('nav.aPropos')}</span>
+                        <ChevronRight size={16} className="ml-auto opacity-30 group-hover:opacity-60 transition-opacity" />
+                      </Link>
+                    </motion.div>
+
+                    {/* Panier */}
+                    <motion.div
+                      initial={{ opacity: 0, x: 60 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: 40 }}
+                      transition={{ duration: 0.3, delay: 0.26 }}
+                    >
+                      <Link
+                        to="/panier"
+                        className="flex items-center gap-4 py-3.5 px-3 rounded-xl transition-colors duration-200 nav-link group hover:bg-white/5 active:bg-white/10"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        <ShoppingCart size={20} className="text-accent opacity-70 flex-shrink-0" />
+                        <span className="text-lg font-heading font-semibold tracking-tight">{t('nav.panier')}</span>
+                        {cartCount > 0 && (
+                          <span className="bg-accent text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                            {cartCount}
+                          </span>
+                        )}
+                        <ChevronRight size={16} className="ml-auto opacity-30 group-hover:opacity-60 transition-opacity" />
+                      </Link>
+                    </motion.div>
+
+                    {/* Separator */}
+                    <motion.div
+                      initial={{ opacity: 0, scaleX: 0 }}
+                      animate={{ opacity: 1, scaleX: 1 }}
+                      transition={{ duration: 0.3, delay: 0.28 }}
+                      className="h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent my-2"
+                      style={{ transformOrigin: 'left' }}
+                    />
+
+                    {/* Account / Login */}
+                    <motion.div
+                      initial={{ opacity: 0, x: 60 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: 40 }}
+                      transition={{ duration: 0.3, delay: 0.30 }}
+                    >
+                      {user ? (
+                        <Link
+                          to="/account"
+                          className="flex items-center gap-4 py-3.5 px-3 rounded-xl transition-colors duration-200 nav-link group hover:bg-white/5 active:bg-white/10"
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          <UserCircle size={20} className="text-accent opacity-70 flex-shrink-0" />
+                          <span className="text-lg font-heading font-semibold tracking-tight">
+                            {user.user_metadata?.full_name?.split(' ')[0] || t('nav.account')}
+                          </span>
+                          <ChevronRight size={16} className="ml-auto opacity-30 group-hover:opacity-60 transition-opacity" />
+                        </Link>
+                      ) : (
+                        <Link
+                          to="/login"
+                          className="flex items-center gap-4 py-3.5 px-3 rounded-xl transition-colors duration-200 nav-link group hover:bg-white/5 active:bg-white/10"
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          <LogIn size={20} className="text-accent opacity-70 flex-shrink-0" />
+                          <span className="text-lg font-heading font-semibold tracking-tight text-accent">{t('nav.login')}</span>
+                          <ChevronRight size={16} className="ml-auto opacity-30 group-hover:opacity-60 transition-opacity" />
+                        </Link>
+                      )}
+                    </motion.div>
+                  </div>
+
+                  {/* Contact button - bottom */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: 0.35 }}
                   >
-                    {t('nav.boutique')}
-                  </Link>
-
-                  {[
-                    { to: '/a-propos', label: t('nav.aPropos') },
-                    { to: '/panier', label: `${t('nav.panier')}${cartCount > 0 ? ` (${cartCount})` : ''}` },
-                  ].map(item => (
                     <Link
-                      key={item.to}
-                      to={item.to}
-                      className="transition-colors duration-200 font-medium py-2.5 text-sm nav-link"
+                      to="/contact"
+                      className="btn-primary w-full text-center text-base py-3.5 font-heading font-bold tracking-tight flex items-center justify-center gap-2"
                       onClick={() => setMobileMenuOpen(false)}
                     >
-                      {item.label}
+                      <Phone size={18} />
+                      {t('nav.contact')}
                     </Link>
-                  ))}
-
-                  {user ? (
-                    <Link
-                      to="/account"
-                      className="transition-colors duration-200 font-medium py-2.5 text-sm nav-link"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      {user.user_metadata?.full_name?.split(' ')[0] || t('nav.account')}
-                    </Link>
-                  ) : (
-                    <Link
-                      to="/login"
-                      className="flex items-center gap-2 transition-colors duration-200 font-medium py-2.5 text-sm nav-link text-accent"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      <LogIn size={16} />
-                      {t('nav.login')}
-                    </Link>
-                  )}
-
-                  <Link to="/contact" className="btn-primary text-center mt-3 text-sm py-2.5" onClick={() => setMobileMenuOpen(false)}>
-                    {t('nav.contact')}
-                  </Link>
-                </div>
+                  </motion.div>
+                </nav>
               </motion.div>
             )}
           </AnimatePresence>
