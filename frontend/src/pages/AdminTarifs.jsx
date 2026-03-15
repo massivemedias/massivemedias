@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { DollarSign, Copy, Check, Download, Printer, Users, BarChart3, Sticker, Shirt, Palette, Globe, FileText } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 
 // =============================================
 // DONNEES TARIFS
@@ -299,7 +299,7 @@ function AdminTarifs() {
     // --- Table helper ---
     const makeTable = (headers, rows, options = {}) => {
       checkPage(10 + rows.length * 7);
-      doc.autoTable({
+      autoTable(doc, {
         startY: y,
         margin: { left: margin, right: margin },
         head: [headers],
