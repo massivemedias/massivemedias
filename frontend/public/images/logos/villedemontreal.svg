@@ -1,16 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 100">
-  <!-- Texte Montreal -->
-  <text x="0" y="72" font-family="Georgia, 'Times New Roman', serif" font-size="68" font-weight="400" fill="white" letter-spacing="-1">Montréal</text>
-  <!-- Embleme fleur 8 lobes -->
-  <g fill="#B03A2E" transform="translate(248, 12)">
-    <circle cx="28" cy="12" r="10"/>
-    <circle cx="44" cy="12" r="10"/>
-    <circle cx="60" cy="28" r="10"/>
-    <circle cx="60" cy="44" r="10"/>
-    <circle cx="44" cy="60" r="10"/>
-    <circle cx="28" cy="60" r="10"/>
-    <circle cx="12" cy="44" r="10"/>
-    <circle cx="12" cy="28" r="10"/>
-    <circle cx="36" cy="36" r="18"/>
-  </g>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 120">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@900&amp;display=swap');
+    </style>
+  </defs>
+  <!-- MONTRÉAL text - bold geometric sans-serif, uppercase -->
+  <text x="10" y="78" font-family="Inter, 'Arial Black', 'Helvetica Neue', Arial, sans-serif" font-size="72" font-weight="900" fill="white" letter-spacing="3" textLength="320" lengthAdjust="spacing">MONTRÉAL</text>
+  <!-- Signature red dot -->
+  <circle cx="348" cy="72" r="10" fill="#E21B1B"/>
 </svg>

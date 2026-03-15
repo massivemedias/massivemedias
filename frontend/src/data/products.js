@@ -479,7 +479,7 @@ export const webFaq = {
     { q: 'Le SEO est-il inclus?', a: 'Oui, l\'optimisation SEO technique est incluse : méta-tags, sitemap, schema markup, performance, Google Analytics et Search Console.' },
     { q: 'Combien de temps prend un projet?', a: 'Une landing page prend environ 2 semaines. Un site vitrine 4-6 semaines. Un e-commerce 6-10 semaines. Chaque projet est unique.' },
     { q: 'Offrez-vous la maintenance?', a: 'Oui, nous offrons des forfaits de maintenance mensuelle (100-200$/mois) incluant mises à jour, sauvegardes, monitoring et support.' },
-    { q: 'Puis-je voir des exemples de vos réalisations?', a: 'Oui! Notre portfolio inclut des projets comme le SPVM, La Presse, Maudite Machine, et plusieurs sites pour artistes et commerces locaux.' },
+    { q: 'Puis-je voir des exemples de vos réalisations?', a: 'Oui! Notre portfolio inclut des projets comme la Ville de Montréal, La Presse, Maudite Machine, et plusieurs sites pour artistes et commerces locaux.' },
   ],
   en: [
     { q: 'What technologies do you use?', a: 'React/Next.js, Angular, Node.js, WordPress, Shopify, Strapi. We choose the technology best suited to your project and needs.' },
@@ -487,7 +487,7 @@ export const webFaq = {
     { q: 'Is SEO included?', a: 'Yes, technical SEO optimization is included: meta tags, sitemap, schema markup, performance, Google Analytics and Search Console.' },
     { q: 'How long does a project take?', a: 'A landing page takes about 2 weeks. A showcase site 4-6 weeks. An e-commerce 6-10 weeks. Each project is unique.' },
     { q: 'Do you offer maintenance?', a: 'Yes, we offer monthly maintenance packages ($100-200/mo) including updates, backups, monitoring and support.' },
-    { q: 'Can I see examples of your work?', a: 'Yes! Our portfolio includes projects like SPVM, La Presse, Maudite Machine, and several sites for artists and local businesses.' },
+    { q: 'Can I see examples of your work?', a: 'Yes! Our portfolio includes projects like the City of Montreal, La Presse, Maudite Machine, and several sites for artists and local businesses.' },
   ],
   es: [
     { q: '¿Qué tecnologías utilizan?', a: 'React/Next.js, Angular, Node.js, WordPress, Shopify, Strapi. Elegimos la tecnología mejor adaptada a tu proyecto y tus necesidades.' },
@@ -495,6 +495,6 @@ export const webFaq = {
     { q: '¿El SEO está incluido?', a: 'Sí, la optimización SEO técnica está incluida: meta tags, sitemap, schema markup, rendimiento, Google Analytics y Search Console.' },
     { q: '¿Cuánto tiempo toma un proyecto?', a: 'Una landing page toma aproximadamente 2 semanas. Un sitio vitrina 4-6 semanas. Un e-commerce 6-10 semanas. Cada proyecto es único.' },
     { q: '¿Ofrecen mantenimiento?', a: 'Sí, ofrecemos paquetes de mantenimiento mensual ($100-200/mes) que incluyen actualizaciones, respaldos, monitoreo y soporte.' },
-    { q: '¿Puedo ver ejemplos de sus trabajos?', a: '¡Sí! Nuestro portafolio incluye proyectos como SPVM, La Presse, Maudite Machine, y varios sitios para artistas y comercios locales.' },
+    { q: '¿Puedo ver ejemplos de sus trabajos?', a: '¡Sí! Nuestro portafolio incluye proyectos como la Ciudad de Montreal, La Presse, Maudite Machine, y varios sitios para artistas y comercios locales.' },
   ],
 };
