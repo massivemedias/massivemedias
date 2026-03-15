@@ -93,14 +93,15 @@ const WEB_DESIGN_ONLY = [
 ];
 const WEB_HOURLY = '85$/h';
 
-// --- Concurrence ---
+// --- Concurrence (donnees mises a jour 2025-2026) ---
 const COMPETITORS = [
-  { name: 'Society6', commission: '10-20%', example18x24: '~11-22$', notes: '10% standard, 20% si abonnement payant' },
-  { name: 'Redbubble', commission: '10-30%', example18x24: '~11-33$', notes: 'Variable selon le produit' },
-  { name: 'Fine Art America', commission: 'Markup libre', example18x24: 'Variable', notes: 'Prix de base fixe + ton markup' },
-  { name: 'INPRNT', commission: '50%', example18x24: '~55$', notes: 'Meilleur taux, mais prix client plus eleves' },
-  { name: 'Printify', commission: 'Markup libre', example18x24: 'Variable', notes: 'Cout production ~11-16$, tu fixes ton prix' },
-  { name: 'Massive Medias', commission: '~30-40%', example18x24: '30-50$', notes: 'Impression locale fine art, qualite superieure' },
+  { name: 'Society6', commission: '5-10%', artistProfit: '~4$', quality: 'POD generique', notes: '5-10% depuis mars 2025. L\'artiste ne controle meme plus ses prix.', highlight: false },
+  { name: 'Redbubble', commission: '~10% net', artistProfit: '~2-3$', quality: 'POD generique', notes: 'Frais plateforme 50% sur le markup depuis sept. 2025. Net ~2-3$ par vente.', highlight: false },
+  { name: 'Printify', commission: 'Markup libre', artistProfit: '~20-25$', quality: 'Variable (dropship)', notes: 'Cout base ~10-12$ USD. MAIS: tu geres ta boutique, marketing, service client, livraison.', highlight: 'printify' },
+  { name: 'Printful', commission: 'Markup libre', artistProfit: '~20$', quality: 'POD (giclee 8 encres)', notes: 'Cout base ~16$+ USD. Meme modele que Printify, tu geres tout.', highlight: false },
+  { name: 'INPRNT', commission: '50%', artistProfit: '~18$', quality: 'Giclee archival (8 encres)', notes: 'Meilleur POD en qualite. Sur invitation. Print ~36$, artiste garde 18$.', highlight: false },
+  { name: 'Fine Art America', commission: 'Markup libre', artistProfit: '~10-25$', quality: 'Giclee archival', notes: 'Prix de base fixe + ton markup. Qualite correcte.', highlight: false },
+  { name: 'Massive Medias', commission: '~30-40%', artistProfit: '40-50$', quality: '12 encres pigmentees, musee', notes: 'Impression locale fine art. Zero gestion pour l\'artiste. Qualite superieure a tout POD.', highlight: 'massive' },
 ];
 
 // =============================================
@@ -287,21 +288,34 @@ function AdminTarifs() {
   <p>Commission identique avec ou sans frame (le frame va a Massive).</p>
   <p>Ta commission = profit net. Tu fournis ton fichier, Massive fait le reste.</p>
 
-  <h2>Comparaison avec la concurrence</h2>
+  <h2>Exemple concret: A4 Musee avec cadre (105$)</h2>
   <table>
-    <tr><th>Plateforme</th><th>Commission artiste</th><th>Sur un print ~110$</th><th>Notes</th></tr>
-    ${COMPETITORS.map(c => `<tr${c.name === 'Massive Medias' ? ' style="background:#f0e6ff;font-weight:600;"' : ''}>
-      <td>${c.name}</td><td>${c.commission}</td><td>${c.example18x24}</td><td style="font-size:10px">${c.notes}</td>
+    <tr><th>Qui</th><th>Montant</th><th>Pourquoi</th></tr>
+    <tr><td><strong>Massive - Impression</strong></td><td>35$</td><td>Papier archival, 12 encres pigmentees, calibration, soft proofing, main d'oeuvre</td></tr>
+    <tr><td><strong>Massive - Frame</strong></td><td>30$</td><td>Cadre noir ou blanc, materiaux + assemblage</td></tr>
+    <tr class="highlight"><td><strong>Artiste - Profit net</strong></td><td><strong>40$</strong></td><td>Fournit son fichier. Zero gestion, zero frais, zero boutique a maintenir.</td></tr>
+    <tr><td><em>Total</em></td><td><em>105$</em></td><td><em>Sans frame: client paie 75$, Massive 35$, artiste 40$</em></td></tr>
+  </table>
+  <p><strong>L'artiste et Massive font a peu pres le meme profit reel</strong>, mais l'artiste n'a rien a faire.</p>
+
+  <h2>Comparaison concurrence (2025-2026)</h2>
+  <table>
+    <tr><th>Plateforme</th><th>Artiste garde</th><th>Qualite</th><th>Notes</th></tr>
+    ${COMPETITORS.map(c => `<tr${c.highlight === 'massive' ? ' style="background:#f0e6ff;font-weight:600;"' : c.highlight === 'printify' ? ' style="background:#fff7ed;"' : ''}>
+      <td>${c.name}</td><td style="font-weight:700">${c.artistProfit}</td><td style="font-size:10px">${c.quality}</td><td style="font-size:10px">${c.notes}</td>
     </tr>`).join('')}
   </table>
 
-  <div style="background:#f0fdf4;padding:12px;border-radius:6px;margin-top:16px;font-size:11px;color:#166534;">
-    <strong>Avantages Massive vs plateformes POD:</strong><br/>
-    - Impression locale fine art (pas de dropshipping generique)<br/>
-    - Papier archival + encres pigmentees<br/>
-    - Calibration couleurs + soft proofing inclus<br/>
-    - Commission artiste superieure a Society6, Redbubble<br/>
-    - Pick-up gratuit Mile-End ou livraison locale
+  <div style="background:#fff7ed;padding:12px;border-radius:6px;margin-top:12px;font-size:11px;color:#9a3412;">
+    <strong>Printify vs Massive:</strong> Printify semble comparable (~20-25$) mais l'artiste doit gerer sa boutique (Etsy/Shopify), le marketing, le service client et les retours. Qualite variable (dropshipping, 4-8 encres). Avec Massive, l'artiste fournit son fichier et c'est tout.
+  </div>
+
+  <div style="background:#f0fdf4;padding:12px;border-radius:6px;margin-top:8px;font-size:11px;color:#166534;">
+    <strong>En resume:</strong><br/>
+    - Society6 / Redbubble: 2-4$ par vente (presque rien)<br/>
+    - Printify / Printful: ~20-25$ mais tu geres tout<br/>
+    - INPRNT: ~18$ bonne qualite, sur invitation seulement<br/>
+    - <strong>Massive: 40-50$ profit net, zero gestion, qualite musee superieure a tout POD</strong>
   </div>
 
   <div class="footer">
@@ -460,26 +474,117 @@ function AdminTarifs() {
             </div>
           </SectionCard>
 
+          {/* Exemple concret */}
+          <SectionCard icon={DollarSign} iconColor="text-yellow-400" title="Exemple concret: comment se repartit l'argent?" subtitle="Prenons un print A4 Musee (12 encres) avec cadre">
+            <div className="space-y-4">
+              {/* Visual breakdown */}
+              <div className="bg-glass rounded-lg p-4 card-border">
+                <div className="text-center mb-4">
+                  <span className="text-2xl font-bold text-heading">Le client paie: 105$</span>
+                  <span className="text-xs text-grey-muted block mt-1">Print 75$ + Frame 30$ (+ taxes en sus)</span>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  {/* Massive impression */}
+                  <div className="bg-green-500/10 rounded-lg p-3 text-center">
+                    <div className="text-2xl font-bold text-green-400">35$</div>
+                    <div className="text-xs text-green-400 font-semibold mt-1">Massive - Impression</div>
+                    <div className="text-[10px] text-grey-muted mt-2 text-left space-y-0.5">
+                      <p>- Papier archival</p>
+                      <p>- 12 encres pigmentees</p>
+                      <p>- Calibration couleurs</p>
+                      <p>- Soft proofing</p>
+                      <p>- Main d'oeuvre</p>
+                    </div>
+                  </div>
+
+                  {/* Massive frame */}
+                  <div className="bg-green-500/10 rounded-lg p-3 text-center">
+                    <div className="text-2xl font-bold text-green-400">30$</div>
+                    <div className="text-xs text-green-400 font-semibold mt-1">Massive - Frame</div>
+                    <div className="text-[10px] text-grey-muted mt-2 text-left space-y-0.5">
+                      <p>- Cadre noir ou blanc</p>
+                      <p>- Materiaux + assemblage</p>
+                    </div>
+                  </div>
+
+                  {/* Artiste */}
+                  <div className="bg-purple-500/10 rounded-lg p-3 text-center">
+                    <div className="text-2xl font-bold text-purple-400">40$</div>
+                    <div className="text-xs text-purple-400 font-semibold mt-1">Artiste - Profit net</div>
+                    <div className="text-[10px] text-grey-muted mt-2 text-left space-y-0.5">
+                      <p>- Fournit son fichier image</p>
+                      <p>- Zero gestion</p>
+                      <p>- Zero frais</p>
+                      <p>- Pas de boutique a gerer</p>
+                      <p>- Pas de livraison</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="text-center mt-3 text-xs text-grey-muted">
+                  35$ + 30$ + 40$ = 105$ - Le calcul est le meme sans frame: client paie 75$, Massive 35$, artiste 40$
+                </div>
+              </div>
+
+              {/* Why it's fair */}
+              <div className="bg-accent/10 rounded-lg p-3 text-xs text-grey-muted space-y-2">
+                <p className="font-semibold text-heading">Pourquoi c'est juste?</p>
+                <p>L'artiste recoit 40$ de profit net pour un upload de fichier. Aucune gestion, aucun frais, aucune boutique a maintenir.</p>
+                <p>Massive recoit 65$ mais doit couvrir: papier archival, 12 encres pigmentees, calibration, cadre, main d'oeuvre, local. Le vrai profit Massive apres couts materiaux est d'environ 30-40$.</p>
+                <p className="font-semibold text-accent">En resume: l'artiste et Massive font a peu pres le meme profit reel, mais l'artiste n'a rien a faire.</p>
+              </div>
+            </div>
+          </SectionCard>
+
           {/* Concurrence */}
-          <SectionCard icon={BarChart3} iconColor="text-yellow-400" title="Comparaison concurrence" subtitle="Commission artiste sur les plateformes print-on-demand vs Massive">
-            <DataTable headers={[{ label: 'Plateforme' }, { label: 'Commission artiste' }, { label: 'Sur un print ~110$' }, { label: 'Notes' }]}>
+          <SectionCard icon={BarChart3} iconColor="text-yellow-400" title="Comparaison concurrence (donnees 2025-2026)" subtitle="Combien l'artiste garde reellement sur chaque plateforme">
+            <DataTable headers={[
+              { label: 'Plateforme' },
+              { label: 'Artiste garde' },
+              { label: 'Qualite' },
+              { label: 'Ce que l\'artiste doit gerer' },
+            ]}>
               {COMPETITORS.map((c, i) => (
-                <tr key={i} className={`border-b card-border transition-colors ${c.name === 'Massive Medias' ? 'bg-accent/10' : 'hover:bg-accent/5'}`}>
-                  <Td center={false} className={c.name === 'Massive Medias' ? 'text-accent font-bold' : 'text-heading font-medium'}>{c.name}</Td>
-                  <Td className={c.name === 'Massive Medias' ? 'text-accent font-bold' : 'text-heading'}>{c.commission}</Td>
-                  <Td className={c.name === 'Massive Medias' ? 'text-accent font-bold' : 'text-heading'}>{c.example18x24}</Td>
+                <tr key={i} className={`border-b card-border transition-colors ${c.highlight === 'massive' ? 'bg-accent/10' : c.highlight === 'printify' ? 'bg-orange-500/5' : 'hover:bg-accent/5'}`}>
+                  <Td center={false} className={c.highlight === 'massive' ? 'text-accent font-bold' : 'text-heading font-medium'}>{c.name}</Td>
+                  <Td className={`font-bold text-base ${c.highlight === 'massive' ? 'text-accent' : c.highlight === 'printify' ? 'text-orange-400' : 'text-heading'}`}>{c.artistProfit}</Td>
+                  <Td className="text-xs text-grey-muted">{c.quality}</Td>
                   <Td center={false} className="text-xs text-grey-muted">{c.notes}</Td>
                 </tr>
               ))}
             </DataTable>
 
+            {/* Printify deep comparison */}
+            <div className="mt-4 bg-orange-500/10 rounded-lg p-4 text-xs space-y-2">
+              <p className="font-semibold text-orange-400 text-sm">Printify vs Massive - la vraie comparaison</p>
+              <p className="text-grey-muted">Printify semble comparable (~20-25$ artiste) mais il y a des differences majeures:</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">
+                <div className="space-y-1">
+                  <p className="font-semibold text-orange-400">Printify - l'artiste doit:</p>
+                  <p className="text-grey-muted">- Creer et payer sa boutique (Etsy ~6.5% frais, Shopify ~39$/mois)</p>
+                  <p className="text-grey-muted">- Gerer le service client et les retours</p>
+                  <p className="text-grey-muted">- Payer pour la publicite / marketing</p>
+                  <p className="text-grey-muted">- Accepter une qualite variable (dropshipping, 4-8 encres, papier 170-200 gsm)</p>
+                  <p className="text-grey-muted">- Cout base en USD (~10-12$ USD = ~14-16$ CAD)</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="font-semibold text-accent">Massive - l'artiste doit:</p>
+                  <p className="text-grey-muted">- Fournir son fichier. C'est tout.</p>
+                  <p className="text-grey-muted">- Zero frais de boutique (page artiste gratuite sur massivemedias.com)</p>
+                  <p className="text-grey-muted">- Zero gestion, zero service client</p>
+                  <p className="text-grey-muted">- Qualite musee garantie (12 encres pigmentees, papier archival)</p>
+                  <p className="text-grey-muted">- Impression locale a Montreal, pick-up Mile-End</p>
+                </div>
+              </div>
+            </div>
+
             <div className="mt-4 bg-green-500/10 rounded-lg p-3 text-xs text-green-400 space-y-1">
-              <p className="font-semibold">Avantages Massive vs plateformes POD:</p>
-              <p>- Impression locale fine art (pas de dropshipping generique)</p>
-              <p>- Papier archival + encres pigmentees (pas du jet d'encre standard)</p>
-              <p>- Calibration couleurs + soft proofing inclus</p>
-              <p>- Commission artiste superieure a Society6, Redbubble</p>
-              <p>- Pick-up gratuit Mile-End ou livraison locale</p>
+              <p className="font-semibold">En resume:</p>
+              <p>- Society6 / Redbubble: l'artiste fait 2-4$ par vente. C'est presque rien.</p>
+              <p>- Printify / Printful: ~20-25$ mais l'artiste gere tout (boutique, marketing, service client, livraison)</p>
+              <p>- INPRNT: ~18$ et bonne qualite, mais sur invitation seulement</p>
+              <p>- <strong>Massive: 40-50$ de profit net, zero gestion, qualite musee superieure a tout POD</strong></p>
             </div>
           </SectionCard>
         </div>
