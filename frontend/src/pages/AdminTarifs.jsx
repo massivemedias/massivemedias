@@ -216,58 +216,111 @@ function AdminTarifs() {
     });
   };
 
-  // --- PDF artiste ---
+  // --- PDF artiste (theme Ocean, vrai .pdf) ---
   const handleDownloadPDF = () => {
-    const printWindow = window.open('', '_blank');
-    printWindow.document.write(`<!DOCTYPE html><html><head><title>Grille Tarifaire Artistes - Massive Medias</title>
+    const pdfHTML = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Grille Tarifaire Artistes - Massive Medias</title>
 <style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: 'Helvetica Neue', Arial, sans-serif; padding: 40px; color: #1a1a2e; background: #fff; }
-  h1 { font-size: 22px; margin-bottom: 6px; color: #6b21a8; }
-  h2 { font-size: 16px; margin: 24px 0 10px; color: #6b21a8; border-bottom: 2px solid #6b21a8; padding-bottom: 4px; }
-  h3 { font-size: 13px; margin: 14px 0 6px; color: #333; }
-  p { font-size: 11px; color: #555; margin-bottom: 8px; }
-  table { width: 100%; border-collapse: collapse; margin-bottom: 16px; font-size: 12px; }
-  th { background: #6b21a8; color: #fff; padding: 8px 10px; text-align: left; font-weight: 600; }
-  td { padding: 7px 10px; border-bottom: 1px solid #e5e5e5; }
-  tr:nth-child(even) td { background: #f8f6ff; }
-  .highlight { background: #fef3c7 !important; font-weight: 700; color: #92400e; }
-  .note { font-size: 10px; color: #888; font-style: italic; margin-top: 4px; }
-  .footer { margin-top: 30px; padding-top: 12px; border-top: 1px solid #ccc; font-size: 10px; color: #999; text-align: center; }
-  .badge { display: inline-block; background: #6b21a8; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; }
-  @media print { body { padding: 20px; } @page { margin: 15mm; } }
+  body { font-family: 'Inter', sans-serif; padding: 0; color: #B8ACCC; background: #041418; }
+
+  /* Header */
+  .header { background: linear-gradient(135deg, #0D3040 0%, #082028 100%); padding: 40px; border-bottom: 3px solid #00BCD4; }
+  .header h1 { font-size: 28px; font-weight: 800; color: #fff; letter-spacing: -0.5px; }
+  .header .subtitle { font-size: 14px; color: #00BCD4; font-weight: 600; margin-top: 4px; }
+  .header .meta { font-size: 10px; color: #4DD0E1; margin-top: 8px; opacity: 0.7; }
+
+  .content { padding: 30px 40px; }
+
+  /* Section titles */
+  h2 { font-size: 15px; font-weight: 700; color: #00BCD4; margin: 28px 0 12px; padding-bottom: 6px; border-bottom: 2px solid #0D3040; text-transform: uppercase; letter-spacing: 1px; }
+  h2:first-child { margin-top: 0; }
+  h3 { font-size: 12px; margin: 16px 0 8px; color: #4DD0E1; font-weight: 600; }
+
+  p { font-size: 11px; color: #B8ACCC; margin-bottom: 6px; line-height: 1.5; }
+
+  /* Tables */
+  table { width: 100%; border-collapse: collapse; margin-bottom: 16px; font-size: 11px; }
+  th { background: #0D3040; color: #00BCD4; padding: 10px 12px; text-align: left; font-weight: 700; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #00BCD4; }
+  td { padding: 9px 12px; border-bottom: 1px solid #0D3040; color: #E8E0F0; }
+  tr:nth-child(even) td { background: rgba(13, 48, 64, 0.3); }
+  tr:hover td { background: rgba(0, 188, 212, 0.08); }
+
+  .highlight td { background: rgba(0, 188, 212, 0.15) !important; }
+  .highlight td { font-weight: 700; color: #00BCD4; }
+
+  .badge { display: inline-block; background: #00BCD4; color: #041418; padding: 3px 10px; border-radius: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  /* Boxes */
+  .example-box { background: linear-gradient(135deg, #0D3040, #082028); border: 1px solid #00BCD4; border-radius: 8px; padding: 20px; margin: 16px 0; }
+  .example-title { font-size: 13px; color: #fff; font-weight: 700; margin-bottom: 4px; }
+  .example-scenario { font-size: 11px; color: #4DD0E1; margin-bottom: 16px; }
+  .example-grid { display: flex; gap: 12px; margin-bottom: 12px; }
+  .example-card { flex: 1; border-radius: 8px; padding: 14px; text-align: center; }
+  .example-card.massive { background: rgba(0, 188, 212, 0.12); border: 1px solid rgba(0, 188, 212, 0.3); }
+  .example-card.artiste { background: rgba(168, 85, 247, 0.12); border: 1px solid rgba(168, 85, 247, 0.3); }
+  .example-card .amount { font-size: 24px; font-weight: 800; }
+  .example-card.massive .amount { color: #00BCD4; }
+  .example-card.artiste .amount { color: #A855F7; }
+  .example-card .label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
+  .example-card.massive .label { color: #00BCD4; }
+  .example-card.artiste .label { color: #A855F7; }
+  .example-card .details { font-size: 9px; color: #B8ACCC; margin-top: 8px; text-align: left; line-height: 1.6; }
+  .example-total { text-align: center; font-size: 10px; color: #B8ACCC; }
+
+  .info-box { border-radius: 6px; padding: 12px 14px; margin: 10px 0; font-size: 10px; line-height: 1.6; }
+  .info-box.accent { background: rgba(0, 188, 212, 0.1); border-left: 3px solid #00BCD4; color: #4DD0E1; }
+  .info-box.orange { background: rgba(249, 115, 22, 0.08); border-left: 3px solid #F97316; color: #FDBA74; }
+  .info-box.green { background: rgba(34, 197, 94, 0.08); border-left: 3px solid #22C55E; color: #86EFAC; }
+  .info-box strong { color: #fff; }
+  .info-box.accent strong { color: #00BCD4; }
+
+  .note { font-size: 9px; color: #B8ACCC; opacity: 0.7; font-style: italic; }
+
+  /* Footer */
+  .footer { margin-top: 30px; padding: 20px 40px; background: #0D3040; text-align: center; font-size: 10px; color: #4DD0E1; border-top: 2px solid #00BCD4; }
+  .footer strong { color: #00BCD4; }
+
+  /* Concurrence massive row */
+  .row-massive td { background: rgba(0, 188, 212, 0.15) !important; font-weight: 700; color: #00BCD4; }
+  .row-printify td { background: rgba(249, 115, 22, 0.08) !important; }
 </style></head><body>
-  <h1>Grille Tarifaire Artistes</h1>
-  <p style="color:#6b21a8;font-weight:600;">Massive Medias - Impression Fine Art & Stickers - Montreal</p>
-  <p style="font-size:10px;color:#999;">Tous les prix sont avant taxes (TPS + TVQ en sus)</p>
+
+  <div class="header">
+    <h1>Grille Tarifaire Artistes</h1>
+    <div class="subtitle">Massive Medias - Impression Fine Art & Stickers - Montreal</div>
+    <div class="meta">Tous les prix sont avant taxes (TPS + TVQ en sus) - ${new Date().toLocaleDateString('fr-CA')}</div>
+  </div>
+
+  <div class="content">
 
   <h2>Prints Fine Art - Prix de vente</h2>
 
-  <h3><span class="badge">STUDIO</span> 4 encres pigmentees</h3>
+  <h3><span class="badge">Studio</span> 4 encres pigmentees</h3>
   <table>
     <tr><th>Format</th><th>Sans frame</th><th>Avec frame (+30$)</th></tr>
     ${ARTIST_PRICES.filter(p => p.studio).map(p => `<tr>
-      <td>${p.format}</td><td>${p.studio}$</td>
-      <td>${p.frame ? (p.studio + p.frame) + '$' : 'N/A'}</td>
+      <td>${p.format}</td><td><strong>${p.studio}$</strong></td>
+      <td><strong>${p.frame ? (p.studio + p.frame) + '$' : 'N/A'}</strong></td>
     </tr>`).join('')}
   </table>
 
-  <h3><span class="badge">MUSEE</span> 12 encres pigmentees (Canon Pro 2600)</h3>
+  <h3><span class="badge">Musee</span> 12 encres pigmentees (Canon Pro 2600)</h3>
   <table>
     <tr><th>Format</th><th>Sans frame</th><th>Avec frame (+30$)</th></tr>
     ${ARTIST_PRICES.map(p => `<tr>
-      <td>${p.format}</td><td>${p.museum}$</td>
-      <td>${p.frame ? (p.museum + p.frame) + '$' : 'N/A'}</td>
+      <td>${p.format}</td><td><strong>${p.museum}$</strong></td>
+      <td><strong>${p.frame ? (p.museum + p.frame) + '$' : 'N/A'}</strong></td>
     </tr>`).join('')}
   </table>
-  <p class="note">* A2 (18x24") = Canon Pro 2600 uniquement (12 encres), pas de frame disponible</p>
+  <p class="note">* A2 (18x24") = Canon Pro 2600 uniquement, pas de frame disponible. Frame = cadre noir ou blanc.</p>
 
   <h2>Packs Stickers (design inclus)</h2>
   <table>
     <tr><th>Quantite</th><th>Standard (Matte/Glossy)</th><th>$/unite</th><th>FX (Holo/Broken Glass)</th><th>$/unite</th></tr>
     ${STICKER_STANDARD.map((s, i) => {
       const h = STICKER_HOLO[i];
-      return `<tr><td>${s.qty}</td><td>${s.price}$</td><td>${s.unit.toFixed(2)}$</td><td>${h.price}$</td><td>${h.unit.toFixed(2)}$</td></tr>`;
+      return `<tr><td>${s.qty}</td><td><strong>${s.price}$</strong></td><td>${s.unit.toFixed(2)}$</td><td><strong>${h.price}$</strong></td><td>${h.unit.toFixed(2)}$</td></tr>`;
     }).join('')}
   </table>
 
@@ -278,53 +331,106 @@ function AdminTarifs() {
       const sp = SERVICE_PRICES[i];
       const studioProfit = p.studio && sp.studio ? p.studio - sp.studio : null;
       const museumProfit = p.museum - sp.museum;
-      return `<tr>
-        <td>${p.format}</td>
-        <td class="highlight">${studioProfit !== null ? studioProfit + '$' : 'N/A'}</td>
-        <td class="highlight">${museumProfit}$</td>
+      return `<tr class="highlight">
+        <td style="color:#E8E0F0;font-weight:500">${p.format}</td>
+        <td><strong>${studioProfit !== null ? studioProfit + '$' : 'N/A'}</strong></td>
+        <td><strong>${museumProfit}$</strong></td>
       </tr>`;
     }).join('')}
   </table>
   <p>Commission identique avec ou sans frame (le frame va a Massive).</p>
-  <p>Ta commission = profit net. Tu fournis ton fichier, Massive fait le reste.</p>
 
-  <h2>Exemple concret: A4 Musee avec cadre (105$)</h2>
-  <table>
-    <tr><th>Qui</th><th>Montant</th><th>Pourquoi</th></tr>
-    <tr><td><strong>Massive - Impression</strong></td><td>35$</td><td>Papier archival, 12 encres pigmentees, calibration, soft proofing, main d'oeuvre</td></tr>
-    <tr><td><strong>Massive - Frame</strong></td><td>30$</td><td>Cadre noir ou blanc, materiaux + assemblage</td></tr>
-    <tr class="highlight"><td><strong>Artiste - Profit net</strong></td><td><strong>40$</strong></td><td>Fournit son fichier. Zero gestion, zero frais, zero boutique a maintenir.</td></tr>
-    <tr><td><em>Total</em></td><td><em>105$</em></td><td><em>Sans frame: client paie 75$, Massive 35$, artiste 40$</em></td></tr>
-  </table>
-  <p><strong>L'artiste et Massive font a peu pres le meme profit reel</strong>, mais l'artiste n'a rien a faire.</p>
+  <div class="example-box">
+    <div class="example-title">Exemple: un client achete un A4 Musee avec cadre</div>
+    <div class="example-scenario">Le client paie 105$ (print 75$ + frame 30$). Ou va l'argent?</div>
+    <div class="example-grid">
+      <div class="example-card massive">
+        <div class="amount">35$</div>
+        <div class="label">Massive - Impression</div>
+        <div class="details">Papier archival, 12 encres pigmentees, calibration, soft proofing, main d'oeuvre</div>
+      </div>
+      <div class="example-card massive">
+        <div class="amount">30$</div>
+        <div class="label">Massive - Frame</div>
+        <div class="details">Cadre noir ou blanc, materiaux + assemblage</div>
+      </div>
+      <div class="example-card artiste">
+        <div class="amount">40$</div>
+        <div class="label">Artiste - Profit net</div>
+        <div class="details">Fournit son fichier, zero gestion, zero frais, pas de boutique a gerer</div>
+      </div>
+    </div>
+    <div class="example-total">35$ + 30$ + 40$ = <strong style="color:#fff">105$</strong> - Sans frame: client paie 75$, Massive 35$, artiste 40$</div>
+  </div>
+
+  <div class="info-box accent">
+    <strong>L'artiste et Massive font a peu pres le meme profit reel</strong>, mais l'artiste n'a rien a faire. Tu fournis ton fichier, Massive gere: impression fine art, calibration couleurs, soft proofing, papier archive, encres pigmentees, expedition.
+  </div>
 
   <h2>Comparaison concurrence (2025-2026)</h2>
   <table>
     <tr><th>Plateforme</th><th>Artiste garde</th><th>Qualite</th><th>Notes</th></tr>
-    ${COMPETITORS.map(c => `<tr${c.highlight === 'massive' ? ' style="background:#f0e6ff;font-weight:600;"' : c.highlight === 'printify' ? ' style="background:#fff7ed;"' : ''}>
+    ${COMPETITORS.map(c => `<tr class="${c.highlight === 'massive' ? 'row-massive' : c.highlight === 'printify' ? 'row-printify' : ''}">
       <td>${c.name}</td><td style="font-weight:700">${c.artistProfit}</td><td style="font-size:10px">${c.quality}</td><td style="font-size:10px">${c.notes}</td>
     </tr>`).join('')}
   </table>
 
-  <div style="background:#fff7ed;padding:12px;border-radius:6px;margin-top:12px;font-size:11px;color:#9a3412;">
-    <strong>Printify vs Massive:</strong> Printify semble comparable (~20-25$) mais l'artiste doit gerer sa boutique (Etsy/Shopify), le marketing, le service client et les retours. Qualite variable (dropshipping, 4-8 encres). Avec Massive, l'artiste fournit son fichier et c'est tout.
+  <div class="info-box orange">
+    <strong>Printify vs Massive:</strong> Printify semble comparable (~20-25$) mais l'artiste doit gerer sa propre boutique (Etsy ~6.5% frais, Shopify ~39$/mois), le marketing, le service client et les retours. Qualite variable (dropshipping, 4-8 encres, papier 170-200 gsm). Avec Massive, tu fournis ton fichier et c'est tout.
   </div>
 
-  <div style="background:#f0fdf4;padding:12px;border-radius:6px;margin-top:8px;font-size:11px;color:#166534;">
-    <strong>En resume:</strong><br/>
-    - Society6 / Redbubble: 2-4$ par vente (presque rien)<br/>
-    - Printify / Printful: ~20-25$ mais tu geres tout<br/>
-    - INPRNT: ~18$ bonne qualite, sur invitation seulement<br/>
-    - <strong>Massive: 40-50$ profit net, zero gestion, qualite musee superieure a tout POD</strong>
+  <div class="info-box green">
+    <strong>En resume:</strong>
+    Society6 / Redbubble: 2-4$ par vente (presque rien).
+    Printify / Printful: ~20-25$ mais tu geres tout.
+    INPRNT: ~18$ bonne qualite, sur invitation.
+    <strong>Massive: 40-50$ profit net, zero gestion, qualite musee superieure a tout POD.</strong>
+  </div>
+
   </div>
 
   <div class="footer">
-    Massive Medias - massivemedias.com - Montreal<br/>
-    Grille tarifaire generee le ${new Date().toLocaleDateString('fr-CA')}
+    <strong>Massive Medias</strong> - massivemedias.com - Impression fine art locale a Montreal
   </div>
-</body></html>`);
-    printWindow.document.close();
-    setTimeout(() => { printWindow.print(); }, 400);
+
+</body></html>`;
+
+    // Generer un vrai fichier .pdf via html2pdf.js (CDN)
+    const pdfWindow = window.open('', '_blank');
+    pdfWindow.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Generation PDF...</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.2/html2pdf.bundle.min.js"><\/script>
+<style>body{background:#041418;color:#4DD0E1;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;}
+.loader{text-align:center}.spinner{width:40px;height:40px;border:3px solid #0D3040;border-top:3px solid #00BCD4;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 16px;}
+@keyframes spin{to{transform:rotate(360deg)}}</style></head><body>
+<div class="loader"><div class="spinner"></div><div>Generation du PDF en cours...</div></div>
+<div id="pdf-content" style="position:absolute;left:-9999px;top:0;width:800px;">${pdfHTML.replace(/<\/script>/g, '<\\/script>')}</div>
+<script>
+window.onload = function() {
+  var el = document.getElementById('pdf-content').querySelector('body') || document.getElementById('pdf-content');
+  // Clone content into a container
+  var container = document.createElement('div');
+  container.innerHTML = document.getElementById('pdf-content').innerHTML;
+  container.style.width = '800px';
+  container.style.background = '#041418';
+  document.body.appendChild(container);
+  container.style.position = 'absolute';
+  container.style.left = '-9999px';
+
+  var opt = {
+    margin: 0,
+    filename: 'Massive-Medias-Grille-Tarifaire-Artistes.pdf',
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, backgroundColor: '#041418', useCORS: true, width: 800 },
+    jsPDF: { unit: 'px', format: [800, 1200], orientation: 'portrait', hotfixes: ['px_scaling'] },
+    pagebreak: { mode: ['avoid-all'] }
+  };
+
+  html2pdf().set(opt).from(container).save().then(function() {
+    setTimeout(function() { window.close(); }, 1500);
+  });
+};
+<\/script></body></html>`);
+    pdfWindow.document.close();
   };
 
   // --- Tabs ---
