@@ -245,6 +245,13 @@ function Login() {
                   <div className="text-green-400 font-medium mb-2">{t('auth.resetSent')}</div>
                   <p className="text-grey-muted text-sm mb-1">
                     {tx({
+                      fr: 'Tu vas recevoir un courriel de Supabase (notre service d\'authentification) avec un lien pour reinitialiser ton mot de passe.',
+                      en: 'You will receive an email from Supabase (our authentication service) with a link to reset your password.',
+                      es: 'Recibiras un correo de Supabase (nuestro servicio de autenticacion) con un enlace para restablecer tu contrasena.',
+                    })}
+                  </p>
+                  <p className="text-grey-muted text-xs mb-1">
+                    {tx({
                       fr: 'Verifie ta boite de reception et tes spams.',
                       en: 'Check your inbox and spam folder.',
                       es: 'Revisa tu bandeja de entrada y la carpeta de spam.',
