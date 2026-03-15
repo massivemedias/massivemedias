@@ -22,18 +22,24 @@ function Login() {
   const [resetSent, setResetSent] = useState(false);
   const [passwordUpdated, setPasswordUpdated] = useState(false);
 
-  // Redirect if already logged in
+  // Detect if we arrived with a recovery hash - must be checked BEFORE session redirect
+  const [isRecoveryFlow, setIsRecoveryFlow] = useState(() => {
+    return window.location.hash.includes('type=recovery');
+  });
+
+  // Redirect if already logged in (but NOT during password recovery flow)
   useEffect(() => {
-    if (session && !passwordRecovery && !passwordUpdated) {
+    if (session && !passwordRecovery && !passwordUpdated && !isRecoveryFlow) {
       navigate('/');
     }
-  }, [session, passwordRecovery]);
+  }, [session, passwordRecovery, isRecoveryFlow]);
 
   // Detect password recovery event from Supabase
   useEffect(() => {
     if (passwordRecovery) {
       setMode('update-password');
       setError('');
+      setIsRecoveryFlow(false); // Supabase confirmed recovery, safe to clear flag
     }
   }, [passwordRecovery]);
 
@@ -47,6 +53,7 @@ function Login() {
     const errorCode = params.get('error_code');
     const errorDesc = params.get('error_description');
     if (errorCode || errorDesc) {
+      setIsRecoveryFlow(false);
       if (errorCode === 'otp_expired') {
         setError(tx({
           fr: 'Le lien a expire. Demande un nouveau lien de reinitialisation.',
@@ -64,7 +71,7 @@ function Login() {
     if (hash.includes('type=recovery')) {
       setMode('update-password');
       setError('');
-      window.history.replaceState(null, '', window.location.pathname);
+      // Don't clear hash yet - let Supabase client process the token first
     }
   }, []);
 

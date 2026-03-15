@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import MainLayout from './layouts/MainLayout';
 import Home from './pages/Home';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -61,6 +61,22 @@ function getSubdomainSlug() {
   return null;
 }
 
+// Redirect to /login if recovery hash is detected on any page
+function RecoveryRedirect() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash && hash.includes('type=recovery') && location.pathname !== '/login') {
+      // Keep the hash fragment so Login.jsx can detect it
+      navigate('/login' + hash, { replace: true });
+    }
+  }, []);
+
+  return null;
+}
+
 function App() {
   const subdomainSlug = getSubdomainSlug();
 
@@ -80,6 +96,7 @@ function App() {
 
   return (
     <BrowserRouter basename={basename}>
+      <RecoveryRedirect />
       <ScrollToTop />
       <ErrorBoundary>
       <Suspense fallback={null}>
