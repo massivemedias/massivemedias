@@ -584,28 +584,6 @@ function AdminTarifs() {
     doc.text('Massive: 40-50$ profit net, zero gestion, qualite musee superieure a tout POD.', margin + 4, y + 10.5);
     y += 17;
 
-    // --- Service impression (client externe) ---
-    sectionTitle('Service impression (client externe)');
-    doc.setFontSize(7);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(...textMuted);
-    doc.text('Prix quand quelqu\'un apporte son propre fichier', margin, y);
-    y += 4;
-
-    makeTable(
-      ['Format', 'Studio (4 encres)', 'Musee (12 encres)', 'Frame (+)', 'Notes'],
-      SERVICE_PRICES.map(p => [
-        p.format,
-        p.studio ? p.studio + '$' : '-',
-        p.museum + '$',
-        p.frame ? p.frame + '$' : 'N/A',
-        p.notes || '',
-      ]),
-      {
-        columnStyles: { 1: { fontStyle: 'bold' }, 2: { fontStyle: 'bold' }, 4: { fontSize: 6 } },
-      }
-    );
-
     // --- FOOTER ---
     const footerH = 10;
     const footerY = H - footerH;
@@ -747,23 +725,6 @@ function AdminTarifs() {
               </div>
             </div>
           </motion.div>
-
-          {/* Prints service */}
-          <SectionCard icon={Printer} iconColor="text-blue-400" title="Service impression (client externe)" subtitle="Prix quand quelqu'un apporte son propre fichier">
-            <DataTable headers={[
-              { label: 'Format' }, { label: 'Studio (4 pig.)' }, { label: 'Musee (12 pig.)' }, { label: 'Frame' }, { label: 'Notes' }
-            ]}>
-              {SERVICE_PRICES.map((p, i) => (
-                <tr key={i} className="border-b card-border hover:bg-accent/5 transition-colors">
-                  <Td center={false} className="text-heading font-medium">{p.format}</Td>
-                  <Td>{p.studio !== null ? `${p.studio}$` : <span className="text-grey-muted">N/A</span>}</Td>
-                  <Td>{p.museum}$</Td>
-                  <Td>{p.frame !== null ? `+${p.frame}$` : <span className="text-grey-muted">N/A</span>}</Td>
-                  <Td center={false} className="text-xs text-grey-muted">{p.notes}</Td>
-                </tr>
-              ))}
-            </DataTable>
-          </SectionCard>
 
           {/* Artist prints */}
           <SectionCard icon={Users} iconColor="text-green-400" title="Boutique artiste (prix client final)" subtitle="Ce que le client de l'artiste paie + split des revenus">
