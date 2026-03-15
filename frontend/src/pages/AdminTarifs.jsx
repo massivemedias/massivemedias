@@ -475,67 +475,68 @@ function AdminTarifs() {
           </SectionCard>
 
           {/* Exemple concret */}
-          <SectionCard icon={DollarSign} iconColor="text-yellow-400" title="Exemple concret: comment se repartit l'argent?" subtitle="Prenons un print A4 Musee (12 encres) avec cadre">
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="rounded-xl bg-glass p-5 card-border mb-6">
             <div className="space-y-4">
+              {/* Scenario */}
+              <div className="bg-purple-500/5 rounded-lg p-4 card-border">
+                <p className="text-sm text-heading font-medium leading-relaxed">
+                  <span className="text-accent font-bold">Scenario:</span> Un client veut acheter un print d'artiste <span className="text-purple-400 font-semibold">A4 Musee (12 encres)</span> avec un <span className="text-green-400 font-semibold">cadre</span>. Il paie <span className="text-heading font-bold text-lg">105$</span> <span className="text-grey-muted">(+ taxes)</span>. Ou va l'argent?
+                </p>
+              </div>
+
               {/* Visual breakdown */}
-              <div className="bg-glass rounded-lg p-4 card-border">
-                <div className="text-center mb-4">
-                  <span className="text-2xl font-bold text-heading">Le client paie: 105$</span>
-                  <span className="text-xs text-grey-muted block mt-1">Print 75$ + Frame 30$ (+ taxes en sus)</span>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  {/* Massive impression */}
-                  <div className="bg-green-500/10 rounded-lg p-3 text-center">
-                    <div className="text-2xl font-bold text-green-400">35$</div>
-                    <div className="text-xs text-green-400 font-semibold mt-1">Massive - Impression</div>
-                    <div className="text-[10px] text-grey-muted mt-2 text-left space-y-0.5">
-                      <p>- Papier archival</p>
-                      <p>- 12 encres pigmentees</p>
-                      <p>- Calibration couleurs</p>
-                      <p>- Soft proofing</p>
-                      <p>- Main d'oeuvre</p>
-                    </div>
-                  </div>
-
-                  {/* Massive frame */}
-                  <div className="bg-green-500/10 rounded-lg p-3 text-center">
-                    <div className="text-2xl font-bold text-green-400">30$</div>
-                    <div className="text-xs text-green-400 font-semibold mt-1">Massive - Frame</div>
-                    <div className="text-[10px] text-grey-muted mt-2 text-left space-y-0.5">
-                      <p>- Cadre noir ou blanc</p>
-                      <p>- Materiaux + assemblage</p>
-                    </div>
-                  </div>
-
-                  {/* Artiste */}
-                  <div className="bg-purple-500/10 rounded-lg p-3 text-center">
-                    <div className="text-2xl font-bold text-purple-400">40$</div>
-                    <div className="text-xs text-purple-400 font-semibold mt-1">Artiste - Profit net</div>
-                    <div className="text-[10px] text-grey-muted mt-2 text-left space-y-0.5">
-                      <p>- Fournit son fichier image</p>
-                      <p>- Zero gestion</p>
-                      <p>- Zero frais</p>
-                      <p>- Pas de boutique a gerer</p>
-                      <p>- Pas de livraison</p>
-                    </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                {/* Massive impression */}
+                <div className="bg-green-500/10 rounded-xl p-4 text-center border border-green-500/20">
+                  <div className="text-3xl font-bold text-green-400">35$</div>
+                  <div className="text-xs text-green-400 font-bold mt-1 uppercase tracking-wider">Massive - Impression</div>
+                  <div className="text-[11px] text-grey-muted mt-3 text-left space-y-1">
+                    <p>- Papier archival</p>
+                    <p>- 12 encres pigmentees</p>
+                    <p>- Calibration couleurs</p>
+                    <p>- Soft proofing</p>
+                    <p>- Main d'oeuvre</p>
                   </div>
                 </div>
 
-                <div className="text-center mt-3 text-xs text-grey-muted">
-                  35$ + 30$ + 40$ = 105$ - Le calcul est le meme sans frame: client paie 75$, Massive 35$, artiste 40$
+                {/* Massive frame */}
+                <div className="bg-green-500/10 rounded-xl p-4 text-center border border-green-500/20">
+                  <div className="text-3xl font-bold text-green-400">30$</div>
+                  <div className="text-xs text-green-400 font-bold mt-1 uppercase tracking-wider">Massive - Frame</div>
+                  <div className="text-[11px] text-grey-muted mt-3 text-left space-y-1">
+                    <p>- Cadre noir ou blanc</p>
+                    <p>- Materiaux + assemblage</p>
+                  </div>
                 </div>
+
+                {/* Artiste */}
+                <div className="bg-purple-500/15 rounded-xl p-4 text-center border border-purple-500/30">
+                  <div className="text-3xl font-bold text-purple-400">40$</div>
+                  <div className="text-xs text-purple-400 font-bold mt-1 uppercase tracking-wider">Artiste - Profit net</div>
+                  <div className="text-[11px] text-grey-muted mt-3 text-left space-y-1">
+                    <p>- Fournit son fichier image</p>
+                    <p>- Zero gestion</p>
+                    <p>- Zero frais</p>
+                    <p>- Pas de boutique a gerer</p>
+                    <p>- Pas de livraison</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="text-center text-sm text-grey-muted">
+                35$ + 30$ + 40$ = <span className="text-heading font-bold">105$</span> &mdash; Sans frame: client paie 75$, Massive 35$, artiste 40$
+              </div>
               </div>
 
               {/* Why it's fair */}
-              <div className="bg-accent/10 rounded-lg p-3 text-xs text-grey-muted space-y-2">
-                <p className="font-semibold text-heading">Pourquoi c'est juste?</p>
-                <p>L'artiste recoit 40$ de profit net pour un upload de fichier. Aucune gestion, aucun frais, aucune boutique a maintenir.</p>
+              <div className="bg-accent/10 rounded-lg p-4 text-sm text-grey-muted space-y-2">
+                <p className="font-semibold text-heading text-base">Pourquoi c'est juste?</p>
+                <p>L'artiste recoit <span className="text-purple-400 font-semibold">40$ de profit net</span> pour un upload de fichier. Aucune gestion, aucun frais, aucune boutique a maintenir.</p>
                 <p>Massive recoit 65$ mais doit couvrir: papier archival, 12 encres pigmentees, calibration, cadre, main d'oeuvre, local. Le vrai profit Massive apres couts materiaux est d'environ 30-40$.</p>
-                <p className="font-semibold text-accent">En resume: l'artiste et Massive font a peu pres le meme profit reel, mais l'artiste n'a rien a faire.</p>
+                <p className="font-bold text-accent text-base mt-2">L'artiste et Massive font a peu pres le meme profit reel, mais l'artiste n'a rien a faire.</p>
               </div>
             </div>
-          </SectionCard>
+          </motion.div>
 
           {/* Concurrence */}
           <SectionCard icon={BarChart3} iconColor="text-yellow-400" title="Comparaison concurrence (donnees 2025-2026)" subtitle="Combien l'artiste garde reellement sur chaque plateforme">
