@@ -114,6 +114,10 @@ function Login() {
       }
 
       if (mode === 'forgot') {
+        if (!email || !email.includes('@')) {
+          setError(tx({ fr: 'Entre une adresse email valide.', en: 'Enter a valid email address.', es: 'Ingresa un correo electronico valido.' }));
+          return;
+        }
         const { error: err } = await resetPassword(email);
         if (err) { setError(translateSupabaseError(err)); return; }
         setResetSent(true);
@@ -230,8 +234,23 @@ function Login() {
                 </div>
               ) : resetSent ? (
                 <div className="text-center py-6">
-                  <div className="text-green-400 mb-4">{t('auth.resetSent')}</div>
-                  <button onClick={() => { setMode('login'); setResetSent(false); }} className="text-accent hover:underline">
+                  <CheckCircle size={48} className="text-green-400 mx-auto mb-4" />
+                  <div className="text-green-400 font-medium mb-2">{t('auth.resetSent')}</div>
+                  <p className="text-grey-muted text-sm mb-1">
+                    {tx({
+                      fr: 'Verifie ta boite de reception et tes spams.',
+                      en: 'Check your inbox and spam folder.',
+                      es: 'Revisa tu bandeja de entrada y la carpeta de spam.',
+                    })}
+                  </p>
+                  <p className="text-grey-muted text-xs mb-6">
+                    {tx({
+                      fr: 'Si tu ne recois rien, assure-toi que l\'email est bien celui utilise pour creer ton compte.',
+                      en: 'If you don\'t receive anything, make sure the email matches the one used to create your account.',
+                      es: 'Si no recibes nada, asegurate de que el correo es el que usaste para crear tu cuenta.',
+                    })}
+                  </p>
+                  <button onClick={() => { setMode('login'); setResetSent(false); setError(''); }} className="text-accent hover:underline font-medium">
                     {t('auth.backToLogin')}
                   </button>
                 </div>
@@ -386,7 +405,7 @@ function Login() {
                   {mode === 'login' && (
                     <button
                       type="button"
-                      onClick={() => setMode('forgot')}
+                      onClick={() => { setMode('forgot'); setError(''); }}
                       className="block w-full text-center text-sm text-grey-muted hover:text-accent transition-colors"
                     >
                       {t('auth.forgotPassword')}
