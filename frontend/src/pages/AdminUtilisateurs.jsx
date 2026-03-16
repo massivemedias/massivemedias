@@ -147,16 +147,16 @@ function AdminUtilisateurs() {
   const totalRevenue = allUsers.reduce((s, u) => s + (parseFloat(u.totalSpent) || 0), 0);
 
   const summaryCards = [
-    { label: tx({ fr: 'Total utilisateurs', en: 'Total users', es: 'Total usuarios' }), value: totalUsers, icon: Users, accent: 'text-accent' },
+    { label: tx({ fr: 'Inscrits', en: 'Registered', es: 'Registrados' }), value: totalUsers, icon: Users, accent: 'text-accent' },
     { label: tx({ fr: 'Acheteurs', en: 'Buyers', es: 'Compradores' }), value: totalBuyers, icon: ShoppingBag, accent: 'text-green-400' },
-    { label: tx({ fr: 'Visiteurs inscrits', en: 'Registered visitors', es: 'Visitantes registrados' }), value: totalVisitors, icon: Eye, accent: 'text-blue-400' },
+    { label: tx({ fr: 'Sans achat', en: 'No purchase', es: 'Sin compra' }), value: totalVisitors, icon: Eye, accent: 'text-blue-400' },
     { label: tx({ fr: 'Artistes', en: 'Artists', es: 'Artistas' }), value: artistCount, icon: Palette, accent: 'text-purple-400' },
   ];
 
   const tabs = [
     { key: 'all', label: tx({ fr: 'Tous', en: 'All', es: 'Todos' }), count: totalUsers },
     { key: 'buyers', label: tx({ fr: 'Acheteurs', en: 'Buyers', es: 'Compradores' }), count: totalBuyers },
-    { key: 'visitors', label: tx({ fr: 'Visiteurs', en: 'Visitors', es: 'Visitantes' }), count: totalVisitors },
+    { key: 'visitors', label: tx({ fr: 'Sans achat', en: 'No purchase', es: 'Sin compra' }), count: totalVisitors },
     { key: 'artists', label: tx({ fr: 'Artistes', en: 'Artists', es: 'Artistas' }), count: artistCount },
   ];
 
