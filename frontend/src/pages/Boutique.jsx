@@ -538,10 +538,6 @@ function Boutique() {
                       >
                         <button
                           onClick={() => {
-                            if (sticker.artistSlug) {
-                              navigate(`/artistes/${sticker.artistSlug}?sticker=${sticker.id}`);
-                              return;
-                            }
                             setSelectedSticker(isSelected ? null : sticker.id);
                             setStickerTier(0);
                             setStickerAdded(false);
@@ -566,7 +562,7 @@ function Boutique() {
                               {tx({ fr: 'Pack de stickers vinyle', en: 'Vinyl sticker pack', es: 'Pack de stickers de vinilo' })}
                             </p>
                             <p className="text-accent text-xs font-semibold mt-1">
-                              {tx({ fr: `Des ${sticker.tiers[0]?.price || 35}$ / pack`, en: `From $${sticker.tiers[0]?.price || 35} / pack`, es: `Desde ${sticker.tiers[0]?.price || 35}$ / pack` })}
+                              {tx({ fr: `Des ${sticker.tiers?.[0]?.price || 35}$ / pack`, en: `From $${sticker.tiers?.[0]?.price || 35} / pack`, es: `Desde ${sticker.tiers?.[0]?.price || 35}$ / pack` })}
                             </p>
                           </div>
                         </button>
@@ -575,10 +571,10 @@ function Boutique() {
                   })}
                 </div>
 
-                {/* Panneau d'achat */}
+                {/* Fiche produit sticker */}
                 <AnimatePresence>
                   {selectedSticker && (() => {
-                    const sticker = stickerProducts.find(s => s.id === selectedSticker);
+                    const sticker = allStickers.find(s => s.id === selectedSticker);
                     if (!sticker) return null;
                     const tiers = sticker.tiers || defaultStickerPricingTiers;
                     const tier = tiers[stickerTier] || tiers[0];
@@ -601,6 +597,13 @@ function Boutique() {
                       setTimeout(() => setStickerAdded(false), 2000);
                     };
 
+                    const specs = [
+                      { fr: 'Vinyle premium', en: 'Premium vinyl', es: 'Vinilo premium' },
+                      { fr: 'Decoupe die-cut', en: 'Die-cut', es: 'Troquelado' },
+                      { fr: 'Resistant UV et eau', en: 'UV & waterproof', es: 'Resistente UV y agua' },
+                      { fr: 'Finition brillante', en: 'Glossy finish', es: 'Acabado brillante' },
+                    ];
+
                     return (
                       <motion.div
                         initial={{ opacity: 0, height: 0 }}
@@ -609,77 +612,120 @@ function Boutique() {
                         transition={{ duration: 0.3 }}
                         className="overflow-hidden"
                       >
-                        <div className="mt-6 rounded-2xl card-bg-bordered p-5">
-                          <div className="flex items-center justify-between mb-4">
-                            <div className="flex items-center gap-3">
-                              <img src={sticker.image} alt="" className="w-10 h-10 object-contain" />
-                              <div>
-                                <h4 className="text-sm font-heading font-bold text-heading">
-                                  {tx(sticker)}
-                                </h4>
-                                <p className="text-grey-muted text-[11px]">
-                                  {tx({ fr: 'Pack de stickers vinyle die-cut', en: 'Die-cut vinyl sticker pack', es: 'Pack de stickers de vinilo troquelados' })}
-                                </p>
-                              </div>
-                            </div>
+                        <div className="mt-6 rounded-2xl card-bg-bordered p-6 md:p-8">
+                          {/* Header avec fermer */}
+                          <div className="flex items-start justify-between mb-6">
+                            <h3 className="text-xl md:text-2xl font-heading font-bold text-heading">
+                              {tx(sticker)}
+                            </h3>
                             <button
                               onClick={() => setSelectedSticker(null)}
-                              className="text-grey-muted hover:text-heading transition-colors p-1"
+                              className="text-grey-muted hover:text-heading transition-colors p-1 -mt-1"
                             >
-                              <X size={16} />
+                              <X size={20} />
                             </button>
                           </div>
 
-                          {/* Paliers de prix */}
-                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
-                            {tiers.map((t, ti) => (
-                              <button
-                                key={ti}
-                                onClick={() => { setStickerTier(ti); setStickerAdded(false); }}
-                                className={`p-3 rounded-xl text-center transition-all border-2 ${
-                                  stickerTier === ti
-                                    ? 'border-accent bg-accent/10'
-                                    : 'border-transparent hover:border-grey-muted/20 bg-glass'
-                                }`}
-                              >
-                                <span className="block text-xs text-grey-muted mb-1">{t.label}</span>
-                                <span className="block text-lg font-heading font-bold text-heading">{t.price}$</span>
-                                <span className="block text-[10px] text-grey-muted">/ pack</span>
-                              </button>
-                            ))}
-                          </div>
-
-                          {/* Total + Add to cart */}
-                          <div className="flex items-center justify-between gap-4">
-                            <div>
-                              <span className="text-grey-muted text-xs">Total</span>
-                              <span className="block text-xl font-heading font-bold text-heading">{total}$</span>
+                          {/* Layout: image + details */}
+                          <div className="flex flex-col md:flex-row gap-6 md:gap-8">
+                            {/* Image grande */}
+                            <div className="md:w-2/5 flex-shrink-0">
+                              <div className="aspect-square rounded-xl bg-glass p-6 flex items-center justify-center">
+                                <img
+                                  src={sticker.image}
+                                  alt={tx(sticker)}
+                                  className={`max-w-full max-h-full object-contain${sticker.artistSlug ? ' sticker-diecut' : ''}`}
+                                />
+                              </div>
                             </div>
-                            <button
-                              onClick={handleAddToCart}
-                              className="btn-primary py-2.5 px-6"
-                            >
-                              {stickerAdded ? (
-                                <><Check size={16} className="mr-1.5" />{tx({ fr: 'Ajoute!', en: 'Added!', es: 'Agregado!' })}</>
-                              ) : (
-                                <><ShoppingCart size={16} className="mr-1.5" />{tx({ fr: 'Ajouter au panier', en: 'Add to cart', es: 'Agregar al carrito' })}</>
+
+                            {/* Details */}
+                            <div className="flex-1 min-w-0">
+                              <p className="text-grey-light text-sm mb-4">
+                                {tx({
+                                  fr: 'Pack de stickers vinyle die-cut imprimes en haute qualite a Montreal. Chaque pack contient plusieurs stickers du design selectionne.',
+                                  en: 'Die-cut vinyl sticker pack printed in high quality in Montreal. Each pack contains multiple stickers of the selected design.',
+                                  es: 'Pack de stickers de vinilo troquelados impresos en alta calidad en Montreal. Cada pack contiene varios stickers del diseno seleccionado.',
+                                })}
+                              </p>
+
+                              {/* Specs */}
+                              <div className="grid grid-cols-2 gap-2 mb-6">
+                                {specs.map((spec, si) => (
+                                  <div key={si} className="flex items-center gap-2 text-xs text-grey-light">
+                                    <Check size={12} className="text-accent flex-shrink-0" />
+                                    {tx(spec)}
+                                  </div>
+                                ))}
+                              </div>
+
+                              {/* Paliers de prix */}
+                              <p className="text-xs text-grey-muted uppercase tracking-wider font-semibold mb-2">
+                                {tx({ fr: 'Quantite', en: 'Quantity', es: 'Cantidad' })}
+                              </p>
+                              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-5">
+                                {tiers.map((t, ti) => (
+                                  <button
+                                    key={ti}
+                                    onClick={() => { setStickerTier(ti); setStickerAdded(false); }}
+                                    className={`p-3 rounded-xl text-center transition-all border-2 ${
+                                      stickerTier === ti
+                                        ? 'border-accent bg-accent/10'
+                                        : 'border-transparent hover:border-grey-muted/20 bg-glass'
+                                    }`}
+                                  >
+                                    <span className="block text-xs text-grey-muted mb-0.5">{t.label}</span>
+                                    <span className="block text-lg font-heading font-bold text-heading">{t.price}$</span>
+                                    <span className="block text-[10px] text-grey-muted">/ pack</span>
+                                  </button>
+                                ))}
+                              </div>
+
+                              {/* Total + Add to cart */}
+                              <div className="flex items-center justify-between gap-4 pt-4 border-t card-border">
+                                <div>
+                                  <span className="text-grey-muted text-xs">Total</span>
+                                  <span className="block text-2xl font-heading font-bold text-heading">{total}$</span>
+                                </div>
+                                <button
+                                  onClick={handleAddToCart}
+                                  className={`btn-primary py-3 px-6 ${stickerAdded ? '!bg-green-500 !border-green-500' : ''}`}
+                                >
+                                  {stickerAdded ? (
+                                    <><Check size={16} className="mr-1.5" />{tx({ fr: 'Ajoute au panier!', en: 'Added to cart!', es: 'Agregado!' })}</>
+                                  ) : (
+                                    <><ShoppingCart size={16} className="mr-1.5" />{tx({ fr: 'Ajouter au panier', en: 'Add to cart', es: 'Agregar al carrito' })}</>
+                                  )}
+                                </button>
+                              </div>
+
+                              {/* Lien artiste si applicable */}
+                              {sticker.artistSlug && (
+                                <Link
+                                  to={`/artistes/${sticker.artistSlug}`}
+                                  className="mt-4 inline-flex items-center gap-2 text-sm text-accent hover:text-accent/80 transition-colors font-medium"
+                                >
+                                  <User size={14} />
+                                  {tx({
+                                    fr: `Voir la boutique de ${tx(sticker)}`,
+                                    en: `Visit ${tx(sticker)}'s shop`,
+                                    es: `Visitar la tienda de ${tx(sticker)}`,
+                                  })}
+                                  <ArrowRight size={14} />
+                                </Link>
                               )}
-                            </button>
+                            </div>
                           </div>
 
-                          {sticker.artistSlug && (
-                            <Link
-                              to={`/artistes/${sticker.artistSlug}`}
-                              className="mt-3 flex items-center justify-center gap-2 text-sm text-accent hover:text-accent/80 transition-colors font-medium"
-                            >
-                              <User size={14} />
+                          {/* Note revenus partages */}
+                          {!sticker.artistSlug && (
+                            <p className="text-grey-muted text-[11px] mt-5 pt-4 border-t card-border text-center">
                               {tx({
-                                fr: `Voir les prints et oeuvres de ${tx(sticker)}`,
-                                en: `See prints and artworks by ${tx(sticker)}`,
-                                es: `Ver prints y obras de ${tx(sticker)}`,
+                                fr: 'Une partie des revenus de chaque vente est reversee aux artistes et labels partenaires.',
+                                en: 'A portion of the revenue from each sale goes to the partner artists and labels.',
+                                es: 'Una parte de los ingresos de cada venta se destina a los artistas y sellos asociados.',
                               })}
-                              <ArrowRight size={14} />
-                            </Link>
+                            </p>
                           )}
                         </div>
                       </motion.div>
