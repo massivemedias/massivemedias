@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { DollarSign, Copy, Check, Download, Printer, Users, BarChart3, Sticker, Shirt, Palette, Globe, FileText } from 'lucide-react';
+import { DollarSign, Copy, Check, Download, Printer, Users, BarChart3, Sticker, Shirt, Palette, Globe, FileText, Loader2 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -173,22 +173,41 @@ function AdminTarifs() {
   };
 
   // --- PDF artiste ---
+  const [pdfLoading, setPdfLoading] = useState(false);
   const handleDownloadPDF = async () => {
     const el = artistSheetRef.current;
     if (!el) return;
-    const canvas = await html2canvas(el, { scale: 2, backgroundColor: null, useCORS: true, logging: false });
-    const imgData = canvas.toDataURL('image/png');
-    const pdfW = 215.9;
-    const pdfH = 279.4;
-    const ratio = pdfW / canvas.width;
-    const scaledH = canvas.height * ratio;
-    const totalPages = Math.ceil(scaledH / pdfH);
-    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'letter' });
-    for (let page = 0; page < totalPages; page++) {
-      if (page > 0) doc.addPage();
-      doc.addImage(imgData, 'PNG', 0, -(page * pdfH), pdfW, scaledH);
+    setPdfLoading(true);
+    try {
+      // Recuperer la couleur de fond reelle du body
+      const bgColor = getComputedStyle(document.body).backgroundColor || '#1a1a2e';
+      const canvas = await html2canvas(el, {
+        scale: 2,
+        backgroundColor: bgColor,
+        useCORS: true,
+        logging: false,
+        allowTaint: true,
+        windowWidth: el.scrollWidth,
+        windowHeight: el.scrollHeight,
+      });
+      const imgData = canvas.toDataURL('image/png');
+      const pdfW = 215.9;
+      const pdfH = 279.4;
+      const ratio = pdfW / canvas.width;
+      const scaledH = canvas.height * ratio;
+      const totalPages = Math.ceil(scaledH / pdfH);
+      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'letter' });
+      for (let page = 0; page < totalPages; page++) {
+        if (page > 0) doc.addPage();
+        doc.addImage(imgData, 'PNG', 0, -(page * pdfH), pdfW, scaledH);
+      }
+      doc.save('Massive-Medias-Grille-Tarifaire-Artistes.pdf');
+    } catch (err) {
+      console.error('PDF generation error:', err);
+      alert(tx({ fr: 'Erreur lors de la generation du PDF. Veuillez reessayer.', en: 'Error generating PDF. Please try again.', es: 'Error al generar el PDF. Intente de nuevo.' }));
+    } finally {
+      setPdfLoading(false);
     }
-    doc.save('Massive-Medias-Grille-Tarifaire-Artistes.pdf');
   };
 
   // Labels traduits
@@ -277,9 +296,9 @@ function AdminTarifs() {
             {copied ? <Check size={16} /> : <Copy size={16} />}
             {copied ? L.copied : L.copyBtn}
           </button>
-          <button onClick={handleDownloadPDF} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-purple-500/20 text-purple-400 text-sm font-semibold hover:bg-purple-500/30 transition-colors">
-            <Download size={16} />
-            {L.pdfBtn}
+          <button onClick={handleDownloadPDF} disabled={pdfLoading} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-purple-500/20 text-purple-400 text-sm font-semibold hover:bg-purple-500/30 transition-colors disabled:opacity-50">
+            {pdfLoading ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
+            {pdfLoading ? tx({ fr: 'Generation...', en: 'Generating...', es: 'Generando...' }) : L.pdfBtn}
           </button>
         </div>
       </div>
