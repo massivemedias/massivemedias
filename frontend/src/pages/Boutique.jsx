@@ -377,104 +377,6 @@ function Boutique() {
           {/* Main content */}
           <div className="flex-1 min-w-0">
 
-            {/* ═══════════════════ SOLDES ═══════════════════ */}
-            <section ref={sectionRefs.soldes} data-section="soldes" className="mb-16 scroll-mt-20">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-              >
-                <div className="flex items-center justify-between mb-8">
-                  <h2 className="text-2xl md:text-3xl font-heading font-bold text-heading flex items-center gap-3">
-                    <Percent size={24} className="text-red-400" />
-                    {tx({ fr: 'Soldes', en: 'Sales', es: 'Ofertas' })}
-                  </h2>
-                  <span className="text-red-400 text-xs font-semibold uppercase tracking-wider">
-                    {tx({ fr: 'Quantites limitees', en: 'Limited quantities', es: 'Cantidades limitadas' })}
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {defaultSaleItems.map((item, i) => {
-                    const discount = Math.round((1 - item.salePrice / item.originalPrice) * 100);
-                    const justAdded = saleAdded === item.id;
-                    return (
-                      <motion.div
-                        key={item.id}
-                        initial={{ opacity: 0, y: 15 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.4, delay: i * 0.06 }}
-                        viewport={{ once: true }}
-                      >
-                        <button
-                          onClick={() => {
-                            addToCart({
-                              productId: item.id,
-                              productName: tx({ fr: item.nameFr, en: item.nameEn, es: item.nameEs }),
-                              finish: 'Solde',
-                              shape: null,
-                              size: null,
-                              quantity: 1,
-                              unitPrice: item.salePrice,
-                              totalPrice: item.salePrice,
-                              image: item.image,
-                              notes: '',
-                            });
-                            setSaleAdded(item.id);
-                            setTimeout(() => setSaleAdded(null), 2000);
-                          }}
-                          className={`group block w-full text-left rounded-2xl overflow-hidden card-bg-bordered transition-all duration-300 relative ${
-                            justAdded ? 'ring-2 ring-green-400 border-green-400/50' : 'hover:border-accent/50'
-                          }`}
-                        >
-                          {/* Badge solde */}
-                          <div className="absolute top-3 left-3 z-10 bg-red-500 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-lg">
-                            -{discount}%
-                          </div>
-                          <div className="aspect-square overflow-hidden bg-glass p-4">
-                            <img
-                              src={item.image}
-                              alt={tx({ fr: item.nameFr, en: item.nameEn, es: item.nameEs })}
-                              className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105"
-                              loading="lazy"
-                            />
-                          </div>
-                          <div className="p-3">
-                            <h3 className="text-sm font-heading font-bold text-heading truncate">
-                              {tx({ fr: item.nameFr, en: item.nameEn, es: item.nameEs })}
-                            </h3>
-                            <p className="text-grey-muted text-[11px] mt-0.5">
-                              {tx({ fr: item.descFr, en: item.descEn, es: item.descEs })}
-                            </p>
-                            <div className="flex items-center gap-2 mt-2">
-                              <span className="text-accent text-base font-heading font-bold">{item.salePrice}$</span>
-                              <span className="text-grey-muted text-xs line-through">{item.originalPrice}$</span>
-                            </div>
-                            <div className="mt-2 flex items-center gap-1.5 text-xs font-semibold">
-                              {justAdded ? (
-                                <span className="text-green-400 flex items-center gap-1"><Check size={14} />{tx({ fr: 'Ajoute!', en: 'Added!', es: 'Agregado!' })}</span>
-                              ) : (
-                                <span className="text-accent flex items-center gap-1"><ShoppingCart size={14} />{tx({ fr: 'Ajouter au panier', en: 'Add to cart', es: 'Agregar' })}</span>
-                              )}
-                            </div>
-                          </div>
-                        </button>
-                      </motion.div>
-                    );
-                  })}
-                </div>
-
-                {/* Note sur les revenus partages */}
-                <p className="text-grey-muted text-[11px] mt-4 text-center">
-                  {tx({
-                    fr: 'Une partie des revenus de chaque vente est reversee aux artistes et labels partenaires.',
-                    en: 'A portion of the revenue from each sale goes to the partner artists and labels.',
-                    es: 'Una parte de los ingresos de cada venta se destina a los artistas y sellos asociados.',
-                  })}
-                </p>
-              </motion.div>
-            </section>
-
             {/* ═══════════════════ ARTISTES ═══════════════════ */}
             <section ref={sectionRefs.artistes} data-section="artistes" className="mb-16 scroll-mt-20">
               <motion.div
@@ -784,6 +686,105 @@ function Boutique() {
                     );
                   })()}
                 </AnimatePresence>
+              </motion.div>
+            </section>
+
+            {/* ═══════════════════ SOLDES ═══════════════════ */}
+            <section ref={sectionRefs.soldes} data-section="soldes" className="mb-16 scroll-mt-20">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                viewport={{ once: true }}
+              >
+                <div className="flex items-center justify-between mb-8">
+                  <h2 className="text-2xl md:text-3xl font-heading font-bold text-heading flex items-center gap-3">
+                    <Percent size={24} className="text-red-400" />
+                    {tx({ fr: 'Soldes', en: 'Sales', es: 'Ofertas' })}
+                  </h2>
+                  <span className="text-red-400 text-xs font-semibold uppercase tracking-wider">
+                    {tx({ fr: 'Quantites limitees', en: 'Limited quantities', es: 'Cantidades limitadas' })}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {defaultSaleItems.map((item, i) => {
+                    const discount = Math.round((1 - item.salePrice / item.originalPrice) * 100);
+                    const justAdded = saleAdded === item.id;
+                    return (
+                      <motion.div
+                        key={item.id}
+                        initial={{ opacity: 0, y: 15 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.4, delay: i * 0.06 }}
+                        viewport={{ once: true }}
+                      >
+                        <button
+                          onClick={() => {
+                            addToCart({
+                              productId: item.id,
+                              productName: tx({ fr: item.nameFr, en: item.nameEn, es: item.nameEs }),
+                              finish: 'Solde',
+                              shape: null,
+                              size: null,
+                              quantity: 1,
+                              unitPrice: item.salePrice,
+                              totalPrice: item.salePrice,
+                              image: item.image,
+                              notes: '',
+                            });
+                            setSaleAdded(item.id);
+                            setTimeout(() => setSaleAdded(null), 2000);
+                          }}
+                          className={`group block w-full text-left rounded-2xl overflow-hidden card-bg-bordered transition-all duration-300 relative ${
+                            justAdded ? 'ring-2 ring-green-400 border-green-400/50' : 'hover:border-accent/50'
+                          }`}
+                        >
+                          {/* Badge solde */}
+                          <div className="absolute top-3 left-3 z-10 bg-red-500 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-lg">
+                            -{discount}%
+                          </div>
+                          <div className="aspect-square overflow-hidden bg-glass p-4">
+                            <img
+                              src={item.image}
+                              alt={tx({ fr: item.nameFr, en: item.nameEn, es: item.nameEs })}
+                              className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105"
+                              loading="lazy"
+                            />
+                          </div>
+                          <div className="p-3">
+                            <h3 className="text-sm font-heading font-bold text-heading truncate">
+                              {tx({ fr: item.nameFr, en: item.nameEn, es: item.nameEs })}
+                            </h3>
+                            <p className="text-grey-muted text-[11px] mt-0.5">
+                              {tx({ fr: item.descFr, en: item.descEn, es: item.descEs })}
+                            </p>
+                            <div className="flex items-center gap-2 mt-2">
+                              <span className="text-accent text-base font-heading font-bold">{item.salePrice}$</span>
+                              <span className="text-grey-muted text-xs line-through">{item.originalPrice}$</span>
+                            </div>
+                            <div className="mt-2 flex items-center gap-1.5 text-xs font-semibold">
+                              {justAdded ? (
+                                <span className="text-green-400 flex items-center gap-1"><Check size={14} />{tx({ fr: 'Ajoute!', en: 'Added!', es: 'Agregado!' })}</span>
+                              ) : (
+                                <span className="text-accent flex items-center gap-1"><ShoppingCart size={14} />{tx({ fr: 'Ajouter au panier', en: 'Add to cart', es: 'Agregar' })}</span>
+                              )}
+                            </div>
+                          </div>
+                        </button>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+
+                {/* Note sur les revenus partages */}
+                <p className="text-grey-muted text-[11px] mt-4 text-center">
+                  {tx({
+                    fr: 'Une partie des revenus de chaque vente est reversee aux artistes et labels partenaires.',
+                    en: 'A portion of the revenue from each sale goes to the partner artists and labels.',
+                    es: 'Una parte de los ingresos de cada venta se destina a los artistas y sellos asociados.',
+                  })}
+                </p>
               </motion.div>
             </section>
 
