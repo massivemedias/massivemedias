@@ -388,27 +388,29 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* Champs de formulaire */
-.input-field {
-  width: 100%;
-  padding: 0.75rem 1rem;
-  border-radius: 0.5rem;
-  color: var(--color-heading);
-  border: 1px solid var(--bg-input-border);
-  background: var(--bg-input);
-  transition: border-color 0.2s, background 0.2s, color 0.2s;
-  font-family: -apple-system, 'SF Pro Display', 'Helvetica Neue', sans-serif;
-  font-size: 1rem;
-  box-sizing: border-box;
-}
+@layer base {
+  .input-field {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    color: var(--color-heading);
+    border: 1px solid var(--bg-input-border);
+    background: var(--bg-input);
+    transition: border-color 0.2s, background 0.2s, color 0.2s;
+    font-family: -apple-system, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+    font-size: 1rem;
+    box-sizing: border-box;
+  }
 
-.input-field:focus {
-  outline: none;
-  border-color: var(--accent-color, #FF52A0);
-}
+  .input-field:focus {
+    outline: none;
+    border-color: var(--accent-color, #FF52A0);
+  }
 
-.input-field::placeholder {
-  color: var(--color-grey-muted);
-  opacity: 0.5;
+  .input-field::placeholder {
+    color: var(--color-grey-muted);
+    opacity: 0.5;
+  }
 }
 
 /* Google Places Autocomplete - dropdown custom */
@@ -540,10 +542,36 @@ select.input-field option {
   box-shadow: var(--header-dropdown-shadow);
 }
 
-/* Mobile menu fullscreen - opaque pour lisibilite */
+/* Mobile menu fullscreen - opaque pour lisibilite (legacy) */
 .mobile-menu-bg {
   background: var(--bg-body);
   backdrop-filter: blur(24px);
+}
+
+/* Mobile Drawer (drawer depuis la droite) */
+.mobile-drawer {
+  background: var(--bg-body);
+  box-shadow: -8px 0 40px rgba(0, 0, 0, 0.18);
+}
+
+.mobile-drawer-border {
+  border-color: var(--header-border);
+}
+
+.mobile-drawer-label {
+  color: var(--color-grey-muted);
+}
+
+.mobile-drawer-item:hover {
+  background: var(--header-item-hover);
+}
+
+.mobile-icon-bg {
+  background: var(--icon-bg);
+}
+
+.mobile-drawer-sep {
+  background: linear-gradient(to right, transparent, var(--header-border) 40%, var(--header-border) 60%, transparent);
 }
 
 /* Announcement bar */
