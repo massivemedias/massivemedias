@@ -401,10 +401,10 @@ function AdminUtilisateurs() {
                         <button
                           onClick={() => handleRemoveArtist(user)}
                           disabled={isSaving}
-                          className="text-[12.5px] text-red-400 hover:text-red-300 transition-colors flex items-center gap-1 disabled:opacity-50"
+                          title={tx({ fr: 'Retirer artiste', en: 'Remove artist', es: 'Quitar artista' })}
+                          className="p-1.5 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors disabled:opacity-50"
                         >
-                          {isSaving ? <Loader2 size={12} className="animate-spin" /> : <X size={12} />}
-                          {tx({ fr: 'Retirer', en: 'Remove', es: 'Quitar' })}
+                          {isSaving ? <Loader2 size={12} className="animate-spin" /> : <X size={14} />}
                         </button>
                       </>
                     ) : (
