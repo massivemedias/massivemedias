@@ -72,16 +72,27 @@ export default factories.createCoreController('api::client.client', ({ strapi })
         return;
       }
       const data = await res.json();
-      const users = (data.users || data || []).map((u: any) => ({
-        id: u.id,
-        email: u.email,
-        fullName: u.user_metadata?.full_name || u.user_metadata?.name || null,
-        phone: u.phone || null,
-        createdAt: u.created_at,
-        lastSignIn: u.last_sign_in_at,
-        emailConfirmed: !!u.email_confirmed_at,
-        provider: u.app_metadata?.provider || 'email',
-      }));
+      const users = (data.users || data || []).map((u: any) => {
+        const meta = u.user_metadata || {};
+        const profileAddress = meta.address ? {
+          address: meta.address,
+          city: meta.city || '',
+          province: meta.province || '',
+          postalCode: meta.postal_code || '',
+          country: meta.country || '',
+        } : null;
+        return {
+          id: u.id,
+          email: u.email,
+          fullName: meta.full_name || meta.name || null,
+          phone: u.phone || meta.phone || null,
+          createdAt: u.created_at,
+          lastSignIn: u.last_sign_in_at,
+          emailConfirmed: !!u.email_confirmed_at,
+          provider: u.app_metadata?.provider || 'email',
+          profileAddress,
+        };
+      });
       ctx.body = {
         data: users,
         meta: { page, perPage, total: data.total || users.length },
@@ -90,6 +101,44 @@ export default factories.createCoreController('api::client.client', ({ strapi })
       strapi.log.error('Supabase users fetch error:', err);
       ctx.status = 500;
       ctx.body = { error: 'Impossible de recuperer les utilisateurs' };
+    }
+  },
+
+  // Supprimer un utilisateur Supabase
+  async deleteSupabaseUser(ctx) {
+    const supabaseUrl = process.env.SUPABASE_API_URL;
+    const supabaseKey = process.env.SUPABASE_API_KEY;
+    if (!supabaseUrl || !supabaseKey) {
+      ctx.status = 500;
+      ctx.body = { error: 'Supabase non configure' };
+      return;
+    }
+
+    const { id } = ctx.params;
+    if (!id) {
+      ctx.status = 400;
+      ctx.body = { error: 'User ID requis' };
+      return;
+    }
+
+    try {
+      const res = await fetch(`${supabaseUrl}/auth/v1/admin/users/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${supabaseKey}`,
+          'apikey': supabaseKey,
+        },
+      });
+      if (!res.ok) {
+        ctx.status = res.status;
+        ctx.body = { error: 'Erreur suppression utilisateur' };
+        return;
+      }
+      ctx.body = { success: true };
+    } catch (err) {
+      strapi.log.error('Supabase user delete error:', err);
+      ctx.status = 500;
+      ctx.body = { error: 'Impossible de supprimer l\'utilisateur' };
     }
   },
 }));

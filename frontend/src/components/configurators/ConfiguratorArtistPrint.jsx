@@ -116,7 +116,12 @@ function ConfiguratorArtistPrint({ artist, selectedPrint }) {
             {artistPrinterTiers.map(t => (
               <button
                 key={t.id}
-                onClick={() => setTier(t.id)}
+                onClick={() => {
+                  setTier(t.id);
+                  // Reset format if current format is unavailable in new tier
+                  const newPrices = t.id === 'museum' ? artist.pricing.museum : artist.pricing.studio;
+                  if (newPrices[format] == null) setFormat('a4');
+                }}
                 className={`block w-full text-center py-3.5 px-4 rounded-lg text-xs font-medium transition-all border-2 ${tier === t.id
                   ? 'border-accent option-selected'
                   : 'border-transparent hover:border-grey-muted/30 option-default'
@@ -141,17 +146,21 @@ function ConfiguratorArtistPrint({ artist, selectedPrint }) {
           <div className="grid grid-cols-2 gap-2">
             {artistFormats.map(f => {
               const price = getFormatPrice(f.id);
+              const isAvailable = price != null;
               return (
                 <button
                   key={f.id}
-                  onClick={() => setFormat(f.id)}
-                  className={`block w-full text-center py-3.5 px-3 rounded-lg text-xs font-medium transition-all border-2 ${format === f.id
-                    ? 'border-accent option-selected'
-                    : 'border-transparent hover:border-grey-muted/30 option-default'
+                  onClick={() => { if (isAvailable) { setFormat(f.id); if (f.id === 'a2') setWithFrame(false); } }}
+                  disabled={!isAvailable}
+                  className={`block w-full text-center py-3.5 px-3 rounded-lg text-xs font-medium transition-all border-2 ${!isAvailable
+                    ? 'opacity-30 cursor-not-allowed border-transparent option-default'
+                    : format === f.id
+                      ? 'border-accent option-selected'
+                      : 'border-transparent hover:border-grey-muted/30 option-default'
                   }`}
                 >
                   <div className="text-heading font-bold text-sm">{f.label}</div>
-                  {price != null && <div className="text-grey-muted mt-0.5">{price}$</div>}
+                  <div className="text-grey-muted mt-0.5">{isAvailable ? `${price}$` : 'N/A'}</div>
                 </button>
               );
             })}
@@ -159,8 +168,8 @@ function ConfiguratorArtistPrint({ artist, selectedPrint }) {
         </div>
       )}
 
-      {/* Frame option */}
-      {!noFrame && (
+      {/* Frame option - disabled for A2 (no frame available) */}
+      {!noFrame && format !== 'a2' && (
         <div>
           <label className={`flex items-center gap-3 w-full p-4 rounded-lg cursor-pointer transition-all border-2 ${withFrame ? 'checkbox-active' : 'option-default'}`}>
             <input
@@ -246,6 +255,17 @@ function ConfiguratorArtistPrint({ artist, selectedPrint }) {
       )}
 
       {/* Price display */}
+      {!priceInfo && (
+        <div className="p-5 rounded-xl highlight-bordered text-center">
+          <span className="text-grey-muted text-sm">
+            {tx({
+              fr: 'Ce format n\'est pas disponible dans cette serie.',
+              en: 'This format is not available in this series.',
+              es: 'Este formato no esta disponible en esta serie.',
+            })}
+          </span>
+        </div>
+      )}
       {priceInfo && (
         <div className="p-5 rounded-xl highlight-bordered">
           <div className="flex items-baseline gap-3">
@@ -272,7 +292,7 @@ function ConfiguratorArtistPrint({ artist, selectedPrint }) {
       )}
 
       {/* Add to cart */}
-      <button onClick={handleAddToCart} className="btn-primary w-full justify-center text-base py-4">
+      <button onClick={handleAddToCart} disabled={!priceInfo} className={`btn-primary w-full justify-center text-base py-4 ${!priceInfo ? 'opacity-40 cursor-not-allowed' : ''}`}>
         {added ? (
           <><Check size={20} className="mr-2" />{tx({ fr: 'Ajouté au panier!', en: 'Added to cart!', es: 'Agregado al carrito!' })}</>
         ) : (

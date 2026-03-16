@@ -16,5 +16,13 @@ export default {
         auth: false,
       },
     },
+    {
+      method: 'DELETE',
+      path: '/clients/users/:id',
+      handler: 'client.deleteSupabaseUser',
+      config: {
+        auth: false,
+      },
+    },
   ],
 };

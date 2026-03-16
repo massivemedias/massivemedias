@@ -64,7 +64,7 @@ const artistsData = {
       { id: 'adrift-016', titleFr: 'Print XVI', titleEn: 'Print XVI', titleEs: 'Print XVI', image: thumb('/images/prints/Adrift16.webp'), fullImage: img('/images/prints/Adrift16.webp'), limited: false },
     ],
     pricing: {
-      studio: { a4: 35, a3: 50, a3plus: 65, a2: 85 },
+      studio: { a4: 35, a3: 50, a3plus: 65, a2: null },
       museum: { a4: 75, a3: 120, a3plus: 160, a2: 190 },
       framePrice: 30,
     },
@@ -92,7 +92,7 @@ const artistsData = {
       { id: 'gemini-004', titleFr: 'Affiche 2', titleEn: 'Poster 2', titleEs: 'Afiche 2', image: thumb('/images/prints/Gemini4.webp'), fullImage: img('/images/prints/Gemini4.webp'), limited: false, unique: true, fixedFormat: 'a2', fixedTier: 'studio', noFrame: true },
     ],
     pricing: {
-      studio: { a4: 35, a3: 50, a3plus: 65, a2: 85 },
+      studio: { a4: 35, a3: 50, a3plus: 65, a2: null },
       museum: { a4: 75, a3: 120, a3plus: 160, a2: 190 },
       framePrice: 30,
     },
@@ -116,7 +116,7 @@ const artistsData = {
       { id: 'mok-001', titleFr: 'Metro Montreal', titleEn: 'Montreal Metro', titleEs: 'Metro Montreal', image: thumb('/images/prints/Mok1.webp'), fullImage: img('/images/prints/Mok1.webp'), limited: false },
     ],
     pricing: {
-      studio: { a4: 35, a3: 50, a3plus: 65, a2: 85 },
+      studio: { a4: 35, a3: 50, a3plus: 65, a2: null },
       museum: { a4: 75, a3: 120, a3plus: 160, a2: 190 },
       framePrice: 30,
     },
@@ -171,7 +171,7 @@ const artistsData = {
       { id: 'psyqu33n-013', titleFr: 'Trusting the Process', titleEn: 'Trusting the Process', titleEs: 'Confiar en el proceso', image: thumb('/images/prints/Psyqu33n13.webp'), fullImage: img('/images/prints/Psyqu33n13.webp'), limited: false },
     ],
     pricing: {
-      studio: { a4: 35, a3: 50, a3plus: 65, a2: 85 },
+      studio: { a4: 35, a3: 50, a3plus: 65, a2: null },
       museum: { a4: 75, a3: 120, a3plus: 160, a2: 190 },
       framePrice: 30,
     },

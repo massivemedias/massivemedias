@@ -556,6 +556,10 @@ function AccountArtistDashboard() {
 
       {/* ====== EXEMPLE CONCRET ====== */}
       <div className="rounded-2xl border border-purple-main/30 p-5 card-bg card-shadow">
+        <h4 className="text-heading font-heading font-bold text-base mb-4 flex items-center gap-2">
+          <DollarSign size={18} className="text-accent" />
+          {tx({ fr: 'Comment ca marche', en: 'How it works', es: 'Como funciona' })}
+        </h4>
         <div className="bg-purple-500/5 rounded-lg p-4 border border-purple-main/20 mb-4">
           <p className="text-sm text-heading font-medium leading-relaxed">
             <span className="text-accent font-bold">{tx({ fr: 'Exemple :', en: 'Example:', es: 'Ejemplo:' })}</span>{' '}
@@ -607,9 +611,9 @@ function AccountArtistDashboard() {
 
       {/* ====== GRILLE TARIFAIRE ====== */}
       <div className="rounded-2xl border border-purple-main/30 p-5 card-bg card-shadow">
-        <h4 className="text-heading font-semibold text-sm mb-4 flex items-center gap-2">
-          <FileText size={16} className="text-accent" />
-          {tx({ fr: 'Tes tarifs de vente', en: 'Your selling prices', es: 'Tus precios de venta' })}
+        <h4 className="text-heading font-heading font-bold text-base mb-4 flex items-center gap-2">
+          <FileText size={18} className="text-accent" />
+          {tx({ fr: 'Grille tarifaire', en: 'Pricing grid', es: 'Grilla de precios' })}
         </h4>
         <p className="text-grey-muted text-xs mb-4">
           {tx({
