@@ -6,7 +6,7 @@ import {
   Sparkles, Wrench, ZoomIn
 } from 'lucide-react';
 import SEO from './SEO';
-import { getFAQSchema } from './seo/schemas';
+import { getFAQSchema, getServiceSchema } from './seo/schemas';
 import { useLang } from '../i18n/LanguageContext';
 import { toFull } from '../utils/paths';
 import getServicesData from '../data/getServicesData';
@@ -82,7 +82,15 @@ function BoutiqueProductLayout({
           { name: tx({ fr: 'Boutique', en: 'Shop', es: 'Tienda' }), url: '/boutique' },
           { name: lt(productTitle) },
         ]}
-        jsonLd={faqData.length > 0 ? getFAQSchema(faqData) : undefined}
+        jsonLd={[
+          ...(faqData.length > 0 ? [getFAQSchema(faqData)] : []),
+          getServiceSchema({
+            name: lt(productTitle),
+            description: lt(metaDescription),
+            url: `/boutique/${slugMap[serviceSlug] || serviceSlug}`,
+            priceRange: '$$',
+          }),
+        ]}
       />
 
       <div className="section-container pt-28 max-w-7xl mx-auto">

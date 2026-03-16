@@ -170,9 +170,21 @@ function Boutique() {
     return (
       <>
         <SEO
-          title={tx({ fr: 'Prints - Boutique | Massive', en: 'Prints - Shop | Massive', es: 'Impresiones - Tienda | Massive' })}
-          description=""
-          noindex
+          title={tx({
+            fr: 'Fine Art Prints Montreal - Tirages Qualite Galerie | Massive',
+            en: 'Fine Art Prints Montreal - Gallery Quality Prints | Massive',
+            es: 'Fine Art Prints Montreal - Impresiones Calidad Galeria | Massive',
+          })}
+          description={tx({
+            fr: 'Achetez des tirages fine art par des artistes de Montreal. Impression 12 encres pigmentees sur papier Hahnemuhle. Qualite musee, livraison locale.',
+            en: 'Buy fine art prints from Montreal artists. 12 pigmented ink printing on Hahnemuhle paper. Museum quality, local delivery.',
+            es: 'Compra impresiones fine art de artistas de Montreal. Impresion 12 tintas pigmentadas en papel Hahnemuhle. Calidad museo, entrega local.',
+          })}
+          breadcrumbs={[
+            { name: tx({ fr: 'Accueil', en: 'Home', es: 'Inicio' }), url: '/' },
+            { name: tx({ fr: 'Boutique', en: 'Shop', es: 'Tienda' }), url: '/boutique' },
+            { name: 'Prints' },
+          ]}
         />
         <section className="relative py-16 overflow-hidden">
           <div className="absolute inset-0 hero-aurora"></div>
@@ -268,11 +280,15 @@ function Boutique() {
   return (
     <>
       <SEO
-        title={tx({ fr: 'Boutique | Massive', en: 'Shop | Massive', es: 'Tienda | Massive' })}
+        title={tx({
+          fr: 'Boutique Massive Montreal - Prints, Stickers, Merch & Design | Massive',
+          en: 'Massive Shop Montreal - Prints, Stickers, Merch & Design | Massive',
+          es: 'Tienda Massive Montreal - Prints, Stickers, Merch & Diseno | Massive',
+        })}
         description={tx({
-          fr: 'Boutique Massive - Vêtements, prints, stickers et plus.',
-          en: 'Massive Shop - Clothing, prints, stickers and more.',
-          es: 'Tienda Massive - Ropa, impresiones, stickers y mas.',
+          fr: 'Boutique en ligne Massive a Montreal. Tirages fine art, stickers die-cut, t-shirts, hoodies, design graphique et developpement web. Production locale Mile-End, livraison rapide.',
+          en: 'Massive online shop in Montreal. Fine art prints, die-cut stickers, t-shirts, hoodies, graphic design and web development. Local production Mile-End, fast delivery.',
+          es: 'Tienda en linea Massive en Montreal. Impresiones fine art, stickers die-cut, camisetas, sudaderas, diseno grafico y desarrollo web. Produccion local Mile-End, entrega rapida.',
         })}
         breadcrumbs={[
           { name: tx({ fr: 'Accueil', en: 'Home', es: 'Inicio' }), url: '/' },

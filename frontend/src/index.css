@@ -540,9 +540,9 @@ select.input-field option {
   box-shadow: var(--header-dropdown-shadow);
 }
 
-/* Mobile menu fullscreen */
+/* Mobile menu fullscreen - opaque pour lisibilite */
 .mobile-menu-bg {
-  background: var(--bg-header);
+  background: var(--bg-body);
   backdrop-filter: blur(24px);
 }
 

@@ -123,7 +123,7 @@ function MerchPage({ config, type }) {
   return (
     <>
       <SEO
-        title={`${productLabel} | ${tx({ fr: 'Boutique', en: 'Shop', es: 'Tienda' })}`}
+        title={`${productLabel} Montreal | ${tx({ fr: 'Boutique Massive', en: 'Massive Shop', es: 'Tienda Massive' })}`}
         description={tx(config.seoDesc)}
         breadcrumbs={[
           { name: tx({ fr: 'Accueil', en: 'Home', es: 'Inicio' }), url: '/' },

@@ -5,7 +5,7 @@
   <!-- Accueil -->
   <url>
     <loc>https://massivemedias.com/</loc>
-    <lastmod>2026-03-05</lastmod>
+    <lastmod>2026-03-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
@@ -13,19 +13,19 @@
   <!-- Pages principales -->
   <url>
     <loc>https://massivemedias.com/a-propos</loc>
-    <lastmod>2026-03-05</lastmod>
+    <lastmod>2026-03-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://massivemedias.com/contact</loc>
-    <lastmod>2026-03-05</lastmod>
+    <lastmod>2026-03-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://massivemedias.com/news</loc>
-    <lastmod>2026-03-05</lastmod>
+    <lastmod>2026-03-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -33,31 +33,31 @@
   <!-- Services -->
   <url>
     <loc>https://massivemedias.com/services/prints</loc>
-    <lastmod>2026-03-05</lastmod>
+    <lastmod>2026-03-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://massivemedias.com/services/stickers</loc>
-    <lastmod>2026-03-05</lastmod>
+    <lastmod>2026-03-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://massivemedias.com/services/merch</loc>
-    <lastmod>2026-03-05</lastmod>
+    <lastmod>2026-03-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://massivemedias.com/services/design</loc>
-    <lastmod>2026-03-05</lastmod>
+    <lastmod>2026-03-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://massivemedias.com/services/web</loc>
-    <lastmod>2026-03-05</lastmod>
+    <lastmod>2026-03-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
@@ -65,99 +65,107 @@
   <!-- Boutique -->
   <url>
     <loc>https://massivemedias.com/boutique</loc>
-    <lastmod>2026-03-05</lastmod>
+    <lastmod>2026-03-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://massivemedias.com/boutique/fine-art</loc>
-    <lastmod>2026-03-05</lastmod>
+    <lastmod>2026-03-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://massivemedias.com/boutique/stickers</loc>
-    <lastmod>2026-03-05</lastmod>
+    <lastmod>2026-03-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://massivemedias.com/boutique/sublimation</loc>
-    <lastmod>2026-03-05</lastmod>
+    <lastmod>2026-03-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://massivemedias.com/boutique/flyers</loc>
-    <lastmod>2026-03-05</lastmod>
+    <lastmod>2026-03-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://massivemedias.com/boutique/design</loc>
-    <lastmod>2026-03-05</lastmod>
+    <lastmod>2026-03-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://massivemedias.com/boutique/web</loc>
-    <lastmod>2026-03-05</lastmod>
+    <lastmod>2026-03-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://massivemedias.com/boutique/merch</loc>
-    <lastmod>2026-03-05</lastmod>
+    <lastmod>2026-03-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://massivemedias.com/boutique/merch/tshirt</loc>
-    <lastmod>2026-03-05</lastmod>
+    <lastmod>2026-03-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://massivemedias.com/boutique/merch/hoodie</loc>
-    <lastmod>2026-03-05</lastmod>
+    <lastmod>2026-03-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://massivemedias.com/boutique/merch/crewneck</loc>
-    <lastmod>2026-03-05</lastmod>
+    <lastmod>2026-03-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
+  </url>
+
+  <!-- Tarifs -->
+  <url>
+    <loc>https://massivemedias.com/tarifs</loc>
+    <lastmod>2026-03-16</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
   </url>
 
   <!-- Artistes -->
   <url>
     <loc>https://massivemedias.com/artistes</loc>
-    <lastmod>2026-03-05</lastmod>
+    <lastmod>2026-03-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://massivemedias.com/artistes/maudite-machine</loc>
-    <lastmod>2026-03-05</lastmod>
+    <lastmod>2026-03-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://massivemedias.com/artistes/psyqu33n</loc>
-    <lastmod>2026-03-05</lastmod>
+    <lastmod>2026-03-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://massivemedias.com/artistes/adrift</loc>
-    <lastmod>2026-03-05</lastmod>
+    <lastmod>2026-03-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://massivemedias.com/artistes/mok</loc>
-    <lastmod>2026-03-05</lastmod>
+    <lastmod>2026-03-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>

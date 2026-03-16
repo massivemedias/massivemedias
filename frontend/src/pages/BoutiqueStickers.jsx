@@ -60,10 +60,10 @@ function BoutiqueStickers() {
   return (
     <BoutiqueProductLayout
       serviceSlug="stickers-custom"
-      pageTitle={{ fr: 'Stickers Custom - Boutique | Massive', en: 'Custom Stickers - Shop | Massive', es: 'Stickers Personalizados - Tienda | Massive' }}
+      pageTitle={{ fr: 'Stickers Die-Cut Montreal - Autocollants Personnalises | Massive', en: 'Die-Cut Stickers Montreal - Custom Stickers | Massive', es: 'Stickers Die-Cut Montreal - Pegatinas Personalizadas | Massive' }}
       metaDescription={{
-        fr: 'Commandez vos stickers custom. Vinyle matte, glossy, holographique, verre brise, etoiles. Decoupe de precision. Design inclus.',
-        en: 'Order your custom stickers. Matte, glossy, holographic, broken glass, stars vinyl. Precision cutting. Design included.',
+        fr: 'Stickers die-cut personnalises a Montreal. Vinyle matte, glossy, holographique, verre brise. Decoupe de precision, design inclus. A partir de 25 unites. Production locale Mile-End.',
+        en: 'Custom die-cut stickers in Montreal. Matte, glossy, holographic, broken glass vinyl. Precision cutting, design included. From 25 units. Local production Mile-End.',
         es: 'Pide tus stickers personalizados. Vinilo mate, brillante, hologr\u00e1fico, vidrio roto, estrellas. Corte de precisi\u00f3n. Dise\u00f1o incluido.',
       }}
       productTitle={{ fr: 'Stickers Custom', en: 'Custom Stickers', es: 'Stickers Personalizados' }}

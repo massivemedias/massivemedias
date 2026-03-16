@@ -31,10 +31,10 @@ function BoutiqueDesign() {
   return (
     <BoutiqueProductLayout
       serviceSlug="design-graphique"
-      pageTitle={{ fr: 'Design Graphique - Boutique | Massive', en: 'Graphic Design - Shop | Massive', es: 'Dise\u00f1o Gr\u00e1fico - Tienda | Massive' }}
+      pageTitle={{ fr: 'Design Graphique Montreal - Logos, Affiches, Identite | Massive', en: 'Graphic Design Montreal - Logos, Posters, Identity | Massive', es: 'Diseno Grafico Montreal - Logos, Afiches, Identidad | Massive' }}
       metaDescription={{
-        fr: 'Logos, identit\u00e9s visuelles, affiches, pochettes album. Design graphique professionnel. Montr\u00e9al.',
-        en: 'Logos, visual identities, posters, album covers. Professional graphic design. Montreal.',
+        fr: 'Design graphique professionnel a Montreal. Logos, identites visuelles, affiches, pochettes album, packaging. Creation sur mesure. Studio creatif Mile-End. Depuis 2013.',
+        en: 'Professional graphic design in Montreal. Logos, visual identities, posters, album covers, packaging. Custom creation. Mile-End creative studio. Since 2013.',
         es: 'Logos, identidades visuales, afiches, portadas de \u00e1lbum. Dise\u00f1o gr\u00e1fico profesional. Montreal.',
       }}
       productTitle={{ fr: 'Design Graphique', en: 'Graphic Design', es: 'Dise\u00f1o Gr\u00e1fico' }}

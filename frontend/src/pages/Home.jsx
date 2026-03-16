@@ -179,7 +179,13 @@ function Home() {
               transition={{ delay: 0.1, duration: 1.8, ease: [0.25, 0.1, 0.25, 1] }}
               className="mx-auto mb-10 logo-home max-w-[90vw]"
             >
-              <h1 className="sr-only">Massive - Impression fine art, stickers personnalisés, design graphique et développement web à Montréal</h1>
+              <h1 className="text-sm md:text-base text-grey-muted/60 tracking-widest uppercase font-heading mt-4">
+                {tx({
+                  fr: 'Impression Fine Art, Stickers & Merch - Montreal',
+                  en: 'Fine Art Printing, Stickers & Merch - Montreal',
+                  es: 'Impresion Fine Art, Stickers & Merch - Montreal',
+                })}
+              </h1>
               <MassiveLogo className="w-full h-full transition-colors duration-300" />
             </motion.div>
 
