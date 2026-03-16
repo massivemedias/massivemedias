@@ -255,7 +255,7 @@ function Boutique() {
                         viewport={{ once: true }}
                         className="w-[calc(50%-0.5rem)] sm:w-[calc(33.333%-0.667rem)] lg:w-[calc(20%-0.8rem)]"
                       >
-                        <Link to={`/artistes/${artist.slug}`} className="group block rounded-2xl overflow-hidden card-bg-bordered hover:border-accent/50 transition-all duration-300">
+                        <Link to={`/artistes/${artist.slug}?print=${print.id}`} className="group block rounded-2xl overflow-hidden card-bg-bordered hover:border-accent/50 transition-all duration-300">
                           <div className="aspect-[2/3] overflow-hidden">
                             <img src={print.image} alt={tx({ fr: print.titleFr, en: print.titleEn, es: print.titleEs || print.titleEn })} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
                           </div>
@@ -495,7 +495,7 @@ function Boutique() {
                         viewport={{ once: true }}
                       >
                         <Link
-                          to={`/artistes/${print.artist.slug}`}
+                          to={`/artistes/${print.artist.slug}?print=${print.id}`}
                           className="group block rounded-2xl overflow-hidden card-bg-bordered hover:border-accent/50 transition-all duration-300"
                         >
                           <div className="aspect-[2/3] overflow-hidden">

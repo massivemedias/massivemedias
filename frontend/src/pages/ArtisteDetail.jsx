@@ -84,6 +84,20 @@ function ArtisteDetail({ subdomainSlug }) {
     }
   }, [artist, searchParams]);
 
+  // Auto-select print from URL param (e.g. ?print=psyqu33n-001)
+  useEffect(() => {
+    const printId = searchParams.get('print');
+    if (printId && artist?.prints?.length) {
+      const print = artist.prints.find(p => p.id === printId);
+      if (print) {
+        setSelectedPrint(print);
+        setTimeout(() => {
+          configuratorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 300);
+      }
+    }
+  }, [artist, searchParams]);
+
   useEffect(() => {
     if (lightbox === null) return;
     const handleKey = (e) => {
