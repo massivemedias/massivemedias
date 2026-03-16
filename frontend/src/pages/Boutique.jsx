@@ -382,7 +382,7 @@ function Boutique() {
               })}
 
               {/* Mini CTA dans la sidebar */}
-              <div className="mt-6 pt-6 border-t card-border">
+              <div className="mt-6 pt-6 border-t border-[var(--bg-card-border)]">
                 <div className="rounded-xl bg-glass p-4">
                   <p className="text-xs text-grey-muted mb-2">
                     {tx({ fr: 'Projet sur mesure?', en: 'Custom project?', es: 'Proyecto a medida?' })}

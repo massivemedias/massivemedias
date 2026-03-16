@@ -1,4 +1,4 @@
-export const ARTIST_CONTRACT_VERSION = 'v2';
+export const ARTIST_CONTRACT_VERSION = 'v3';
 
 export const ARTIST_CONTRACT_TEXT_EN = `
 <h3 style="text-align:center;margin-bottom:4px;">ARTIST PARTNERSHIP AGREEMENT</h3>
@@ -70,11 +70,18 @@ export const ARTIST_CONTRACT_TEXT_EN = `
 
 <p><strong>4.4 Artist Personal Copies</strong></p>
 <p>The Artist may order personal copies of their <strong>prints</strong> at production cost (materials, consumables, no markup). These copies are strictly reserved for personal use, portfolio or exhibition purposes. Any resale or distribution of these copies - whether at reduced or full price - must go through the Massive Medias platform according to the revenue split agreed upon in section 4.1.</p>
-<p><strong>Stickers</strong> are distribution products by nature. Whether the Artist orders them personally or a customer purchases them, regular retail pricing applies. There is no discounted rate for personal sticker orders.</p>
+<p><strong>Stickers</strong> are distribution products by nature. Whether the Artist orders them personally or a customer purchases them, whether for personal use, events, or retail, regular retail pricing applies. There is no discounted rate for personal sticker orders.</p>
 <p>Violation of this clause constitutes a breach of contract and may result in immediate termination of the partnership.</p>
 
 <p><strong>4.5 Good Faith Production</strong></p>
 <p>Massive Medias commits to never producing or selling prints or derivative products of the Artist's works without a confirmed and paid client order. No speculative production or unauthorized sales will be made. This mutual trust is the foundation of this partnership.</p>
+
+<p><strong>4.6 Bulk Orders (Events and Points of Sale)</strong></p>
+<p>Artists who wish to sell their works in person (festivals, art fairs, galleries, retail stores, etc.) may order <strong>prints in bulk</strong> at regular retail price (client price). Massive Medias retains its usual share (production cost), and the Artist purchases the prints at the price listed in the pricing grid.</p>
+<p>The Artist is then free to set their own resale price on site. Any additional profit between the purchase price and the resale price belongs entirely to the Artist.</p>
+<p><em>Example: The Artist orders 50 A3+ museum prints at $160 each. Massive produces all 50 prints. The Artist sells them for $250 at the festival. The $90 difference per print is entirely the Artist's.</em></p>
+<p><strong>Stickers</strong> intended for resale at events or points of sale follow the same logic: regular pricing from the pricing grid, free resale by the Artist.</p>
+<p>All bulk orders must be paid in full before production. No returns are accepted on bulk orders, except in cases of confirmed production defects (see section 5).</p>
 
 <h4>5. QUALITY COMMITMENT</h4>
 <p>Massive Medias commits to producing all items to gallery or premium standard, in keeping with the Artist's work. This commitment includes:</p>
@@ -216,11 +223,18 @@ export const ARTIST_CONTRACT_TEXT_ES = `
 
 <p><strong>4.4 Copias personales del Artista</strong></p>
 <p>El Artista puede solicitar copias personales de sus <strong>impresiones</strong> al costo de produccion (materiales, consumibles, sin margen). Estas copias estan estrictamente reservadas para uso personal, portafolio o exposiciones. Cualquier reventa o distribucion de estas copias - ya sea a precio reducido o completo - debe realizarse a traves de la plataforma Massive Medias segun el reparto acordado en el articulo 4.1.</p>
-<p>Los <strong>stickers</strong> son productos de distribucion por naturaleza. Ya sea que el Artista los solicite personalmente o que un cliente los compre, se aplican los precios regulares de venta. No existe tarifa preferencial para pedidos personales de stickers.</p>
+<p>Los <strong>stickers</strong> son productos de distribucion por naturaleza. Ya sea que el Artista los solicite personalmente o que un cliente los compre, ya sea para uso personal, eventos o tiendas, se aplican los precios regulares de venta. No existe tarifa preferencial para pedidos personales de stickers.</p>
 <p>La violacion de esta clausula constituye un incumplimiento del contrato y puede resultar en la terminacion inmediata de la asociacion.</p>
 
 <p><strong>4.5 Produccion de buena fe</strong></p>
 <p>Massive Medias se compromete a nunca producir ni vender impresiones o productos derivados de las obras del Artista sin una orden confirmada y pagada por un cliente. No se realizara ninguna produccion especulativa ni venta no autorizada. Esta confianza mutua es el fundamento de esta asociacion.</p>
+
+<p><strong>4.6 Pedidos en volumen (eventos y puntos de venta)</strong></p>
+<p>Los Artistas que deseen vender sus obras en persona (festivales, ferias de arte, galerias, tiendas, etc.) pueden solicitar <strong>impresiones en volumen</strong> al precio regular de venta (precio cliente). Massive Medias conserva su parte habitual (costo de produccion), y el Artista adquiere las impresiones al precio indicado en la grilla de precios.</p>
+<p>El Artista es libre de fijar su propio precio de reventa en el lugar. Cualquier ganancia adicional entre el precio de compra y el precio de reventa pertenece enteramente al Artista.</p>
+<p><em>Ejemplo: El Artista solicita 50 impresiones A3+ museo a $160 cada una. Massive produce las 50 impresiones. El Artista las vende a $250 en el festival. Los $90 de diferencia por impresion son completamente para el Artista.</em></p>
+<p>Los <strong>stickers</strong> destinados a la reventa en eventos o puntos de venta siguen la misma logica: precios regulares de la grilla, reventa libre por el Artista.</p>
+<p>Todos los pedidos en volumen deben pagarse integralmente antes de la produccion. No se aceptan devoluciones en pedidos en volumen, salvo en caso de defecto de produccion confirmado (ver articulo 5).</p>
 
 <h4>5. COMPROMISO DE CALIDAD</h4>
 <p>Massive Medias se compromete a producir todos los articulos con estandar de galeria o premium, en adecuacion con la obra del Artista. Este compromiso incluye:</p>
@@ -362,11 +376,18 @@ export const ARTIST_CONTRACT_TEXT = `
 
 <p><strong>4.4 Copies personnelles de l'Artiste</strong></p>
 <p>L'Artiste peut commander des copies personnelles de ses <strong>impressions (prints)</strong> au prix de production (materiaux, consommables, sans marge). Ces copies sont strictement reservees a un usage personnel, portfolio ou exposition. Toute revente ou distribution de ces copies - que ce soit a prix reduit ou au prix fort - doit passer par la plateforme Massive Medias selon le split convenu a l'article 4.1.</p>
-<p>Les <strong>stickers</strong> sont des produits de distribution par nature. Que l'Artiste les commande pour lui-meme ou qu'un client les achete, les prix reguliers de vente s'appliquent. Il n'existe pas de tarif preferentiel pour les commandes personnelles de stickers.</p>
+<p>Les <strong>stickers</strong> sont des produits de distribution par nature. Que l'Artiste les commande pour lui-meme ou qu'un client les achete, que ce soit pour usage personnel, pour un evenement ou pour un point de vente, les prix reguliers de vente s'appliquent. Il n'existe pas de tarif preferentiel pour les commandes personnelles de stickers.</p>
 <p>La violation de cette clause constitue un manquement au contrat et peut entrainer la resiliation immediate du partenariat.</p>
 
 <p><strong>4.5 Production de bonne foi</strong></p>
 <p>Massive Medias s'engage a ne jamais produire ni vendre d'impressions ou de produits derives des oeuvres de l'Artiste sans commande confirmee et payee par un client. Aucune production speculative ni vente non autorisee ne sera effectuee. Cette confiance mutuelle est le fondement de ce partenariat.</p>
+
+<p><strong>4.6 Commandes en volume (evenements et points de vente)</strong></p>
+<p>L'Artiste qui souhaite vendre ses oeuvres en personne (festivals, foires d'art, galeries, boutiques, etc.) peut commander des <strong>prints en volume</strong> au prix de vente regulier (prix client). Massive Medias conserve sa part habituelle (cout de production), et l'Artiste achete les prints au prix affiche dans la grille tarifaire.</p>
+<p>L'Artiste est ensuite libre de fixer son propre prix de revente sur place. Le profit supplementaire entre le prix d'achat et le prix de revente appartient entierement a l'Artiste.</p>
+<p><em>Exemple : L'Artiste commande 50 prints A3+ musee a 160$ chacun. Massive produit les 50 prints. L'Artiste les vend 250$ au festival. Les 90$ de difference par print sont entierement pour l'Artiste.</em></p>
+<p>Les <strong>stickers</strong> destines a la revente en evenement ou en point de vente suivent la meme logique : prix regulier de la grille tarifaire, revente libre par l'Artiste.</p>
+<p>Toute commande en volume doit etre payee integralement avant la production. Aucun retour n'est accepte sur les commandes en volume, sauf en cas de defaut de production avere (voir article 5).</p>
 
 <h4>5. ENGAGEMENT QUALITE</h4>
 <p>Massive Medias s'engage a produire tous les articles au standard galerie ou premium, en adequation avec l'oeuvre de l'Artiste. Cet engagement comprend :</p>

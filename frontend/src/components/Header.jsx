@@ -145,7 +145,7 @@ function Header() {
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 30, stiffness: 300 }}
               className="lg:hidden fixed top-0 right-0 bottom-0 z-[60] w-[min(300px,85vw)] mobile-drawer flex flex-col"
-              style={{ backgroundColor: 'var(--bg-body, #410081)' }}
+              style={{ backgroundColor: 'var(--bg-body, #3D0079)' }}
             >
               {/* Drawer header row */}
               <div className="flex items-center justify-between px-4 py-3 border-b mobile-drawer-border flex-shrink-0">

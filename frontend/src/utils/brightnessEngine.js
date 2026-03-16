@@ -106,7 +106,7 @@ function darkPalette(base, darker, darkest, accent, hoverBg, hoverText, logoMain
 
 // 0 - Violet Profond (INCHANGÉ)
 const PALETTE_0 = darkPalette(
-  '#410081', '#2A0054', '#150030',
+  '#3D0079', '#2A0054', '#150030',
   '#FF52A0', '#FFCC02', '#1E0E30',
   '#FF52A0', '#FFCC00'
 );
@@ -316,7 +316,7 @@ export const THEME_NAMES = [
 ];
 
 export const THEME_COLORS = [
-  '#410081', '#0C1E3A', '#0D3040', '#0B2818', '#2E0A1A',
+  '#3D0079', '#0C1E3A', '#0D3040', '#0B2818', '#2E0A1A',
   '#2A1A10', '#1A1A28', '#2D3748', '#E8E0D8', '#FFFFFF'
 ];
 

@@ -686,17 +686,31 @@ function AccountArtistDashboard() {
             es: 'Nota: El formato A2 (18x24") se imprime en calidad museo unicamente (12 tintas pigmentadas). Sin marco disponible para este formato.',
           })}
         </p>
-        <div className="mt-4 p-3 rounded-lg bg-yellow-500/5 border border-yellow-500/20">
-          <p className="text-yellow-400 text-[11px] font-semibold mb-1">
-            {tx({ fr: 'Copies personnelles', en: 'Personal copies', es: 'Copias personales' })}
-          </p>
-          <p className="text-grey-muted text-[11px]">
-            {tx({
-              fr: 'Prints : tu peux commander tes propres copies au prix coutant (colonne "Cout Massive"), pour usage personnel, portfolio ou expos uniquement. Stickers : prix regulier, meme pour toi - c\'est un produit de distribution.',
-              en: 'Prints: you can order your own copies at cost price ("Massive cost" column), for personal use, portfolio or exhibitions only. Stickers: regular price, even for you - it\'s a distribution product.',
-              es: 'Prints: puedes pedir tus propias copias al precio de costo (columna "Costo Massive"), solo para uso personal, portafolio o exposiciones. Stickers: precio regular, incluso para ti - es un producto de distribucion.',
-            })}
-          </p>
+        <div className="mt-4 space-y-3">
+          <div className="p-3 rounded-lg bg-yellow-500/5 border border-yellow-500/20">
+            <p className="text-yellow-400 text-[11px] font-semibold mb-1">
+              {tx({ fr: 'Copies personnelles', en: 'Personal copies', es: 'Copias personales' })}
+            </p>
+            <p className="text-grey-muted text-[11px]">
+              {tx({
+                fr: 'Prints : tu peux commander tes propres copies au prix coutant (colonne "Cout Massive"), pour usage personnel, portfolio ou expos uniquement. Stickers : prix regulier, meme pour toi - c\'est un produit de distribution.',
+                en: 'Prints: you can order your own copies at cost price ("Massive cost" column), for personal use, portfolio or exhibitions only. Stickers: regular price, even for you - it\'s a distribution product.',
+                es: 'Prints: puedes pedir tus propias copias al precio de costo (columna "Costo Massive"), solo para uso personal, portafolio o exposiciones. Stickers: precio regular, incluso para ti - es un producto de distribucion.',
+              })}
+            </p>
+          </div>
+          <div className="p-3 rounded-lg bg-purple-500/5 border border-purple-500/20">
+            <p className="text-purple-400 text-[11px] font-semibold mb-1">
+              {tx({ fr: 'Festivals, galeries et boutiques', en: 'Festivals, galleries and shops', es: 'Festivales, galerias y tiendas' })}
+            </p>
+            <p className="text-grey-muted text-[11px]">
+              {tx({
+                fr: 'Tu veux vendre tes prints en personne? Commande en volume au prix regulier (colonne "Prix client"), et revends au prix que tu veux. Le profit supplementaire est 100% pour toi. Meme chose pour les stickers.',
+                en: 'Want to sell your prints in person? Order in bulk at regular price ("Client price" column), and resell at whatever price you want. The extra profit is 100% yours. Same for stickers.',
+                es: 'Quieres vender tus prints en persona? Pide en volumen al precio regular (columna "Precio cliente"), y revende al precio que quieras. La ganancia adicional es 100% tuya. Igual para stickers.',
+              })}
+            </p>
+          </div>
         </div>
       </div>
 

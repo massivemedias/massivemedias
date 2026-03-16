@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { DollarSign, Copy, Check, Download, Printer, Users, BarChart3, Sticker, Shirt, Palette, Globe, FileText, Loader2 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 
 // =============================================
 // DONNEES TARIFS
@@ -239,7 +239,7 @@ function AdminTarifs() {
 
       // Helper: autoTable wrapper
       const addTable = (head, body, opts = {}) => {
-        doc.autoTable({
+        autoTable(doc, {
           startY: y,
           margin: { left: margin, right: margin },
           head: [head],
@@ -322,7 +322,7 @@ function AdminTarifs() {
         ['Massive Medias', '40-50$', tx({ fr: '12 encres musee', en: '12 inks museum', es: '12 tintas museo' }), tx({ fr: 'Zero gestion. Qualite superieure.', en: 'Zero management. Superior quality.', es: 'Cero gestion. Calidad superior.' })],
       ];
 
-      doc.autoTable({
+      autoTable(doc, {
         startY: y,
         margin: { left: margin, right: margin },
         head: [[tx({ fr: 'Plateforme', en: 'Platform', es: 'Plataforma' }), tx({ fr: 'Artiste garde', en: 'Artist keeps', es: 'Artista conserva' }), tx({ fr: 'Qualite', en: 'Quality', es: 'Calidad' }), 'Notes']],

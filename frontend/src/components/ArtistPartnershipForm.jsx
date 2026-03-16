@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Send, CheckCircle, AlertCircle, FileText, Palette } from 'lucide-react';
+import { Send, CheckCircle, AlertCircle, FileText, Palette, Download } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import api, { uploadArtistFile } from '../services/api';
 import FileUpload from './FileUpload';
 import { ARTIST_CONTRACT_TEXT, ARTIST_CONTRACT_TEXT_EN, ARTIST_CONTRACT_TEXT_ES, ARTIST_CONTRACT_VERSION } from '../data/artistContract';
+import { generateContractPDF } from '../utils/generateContractPDF';
 
 function ArtistPartnershipForm() {
   const { tx, lang } = useLang();
@@ -133,13 +134,24 @@ function ArtistPartnershipForm() {
           <FileText size={24} className="text-accent" />
           {tx({ fr: 'Contrat de partenariat', en: 'Partnership contract', es: 'Contrato de asociacion' })}
         </h2>
-        <p className="text-grey-muted text-sm mb-4">
-          {tx({
-            fr: 'Lis attentivement le contrat ci-dessous avant de soumettre ta candidature.',
-            en: 'Please read the contract below carefully before submitting your application.',
-            es: 'Lee atentamente el contrato a continuacion antes de enviar tu solicitud.',
-          })}
-        </p>
+        <div className="flex items-center justify-between mb-4">
+          <p className="text-grey-muted text-sm">
+            {tx({
+              fr: 'Lis attentivement le contrat ci-dessous avant de soumettre ta candidature.',
+              en: 'Please read the contract below carefully before submitting your application.',
+              es: 'Lee atentamente el contrato a continuacion antes de enviar tu solicitud.',
+            })}
+          </p>
+          <button
+            type="button"
+            onClick={() => generateContractPDF(lang, contractText)}
+            className="btn-outline text-xs px-3 py-1.5 flex items-center gap-1.5 flex-shrink-0 ml-4"
+            title={tx({ fr: 'Telecharger en PDF', en: 'Download as PDF', es: 'Descargar en PDF' })}
+          >
+            <Download size={14} />
+            PDF
+          </button>
+        </div>
 
         <div
           className="rounded-xl bg-glass border border-purple-main/20 p-6 max-h-[500px] overflow-y-auto mb-6 text-sm text-grey-light leading-relaxed contract-content"
