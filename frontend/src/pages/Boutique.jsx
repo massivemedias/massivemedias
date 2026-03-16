@@ -132,6 +132,7 @@ function Boutique() {
   const [selectedSticker, setSelectedSticker] = useState(null);
   const [stickerTier, setStickerTier] = useState(0);
   const [stickerAdded, setStickerAdded] = useState(false);
+  const stickerDetailRef = useRef(null);
 
   // CMS-first : packs de stickers
   const stickerProducts = useMemo(() => {
@@ -558,9 +559,13 @@ function Boutique() {
                       >
                         <button
                           onClick={() => {
-                            setSelectedSticker(isSelected ? null : sticker.id);
+                            const newId = isSelected ? null : sticker.id;
+                            setSelectedSticker(newId);
                             setStickerTier(0);
                             setStickerAdded(false);
+                            if (newId) {
+                              setTimeout(() => stickerDetailRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 350);
+                            }
                           }}
                           className={`group block w-full text-left rounded-2xl overflow-hidden card-bg-bordered transition-all duration-300 cursor-pointer ${
                             isSelected ? 'ring-2 ring-accent border-accent/50' : 'hover:border-accent/50'
@@ -632,7 +637,7 @@ function Boutique() {
                         transition={{ duration: 0.3 }}
                         className="overflow-hidden"
                       >
-                        <div className="mt-6 rounded-2xl card-bg-bordered p-6 md:p-8">
+                        <div ref={stickerDetailRef} className="mt-6 rounded-2xl card-bg-bordered p-6 md:p-8">
                           {/* Header avec fermer */}
                           <div className="flex items-start justify-between mb-6">
                             <h3 className="text-xl md:text-2xl font-heading font-bold text-heading">
