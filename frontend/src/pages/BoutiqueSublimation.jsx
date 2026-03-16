@@ -38,6 +38,7 @@ function BoutiqueSublimation() {
   return (
     <BoutiqueProductLayout
       serviceSlug="sublimation-merch"
+      startingPrice={15}
       pageTitle={{ fr: 'Sublimation Textile Montreal - T-Shirts, Hoodies, Mugs | Massive', en: 'Textile Sublimation Montreal - T-Shirts, Hoodies, Mugs | Massive', es: 'Sublimacion Textil Montreal - Camisetas, Hoodies, Tazas | Massive' }}
       metaDescription={{
         fr: 'Sublimation textile a Montreal. T-shirts, hoodies, crewnecks, mugs, tote bags. Impression all-over permanente. Merch d\'artiste et corporatif. A partir d\'1 unite. Production locale Mile-End.',

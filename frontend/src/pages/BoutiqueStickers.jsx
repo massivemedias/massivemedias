@@ -60,6 +60,7 @@ function BoutiqueStickers() {
   return (
     <BoutiqueProductLayout
       serviceSlug="stickers-custom"
+      startingPrice={45}
       pageTitle={{ fr: 'Stickers Die-Cut Montreal - Autocollants Personnalises | Massive', en: 'Die-Cut Stickers Montreal - Custom Stickers | Massive', es: 'Stickers Die-Cut Montreal - Pegatinas Personalizadas | Massive' }}
       metaDescription={{
         fr: 'Stickers die-cut personnalises a Montreal. Vinyle matte, glossy, holographique, verre brise. Decoupe de precision, design inclus. A partir de 25 unites. Production locale Mile-End.',

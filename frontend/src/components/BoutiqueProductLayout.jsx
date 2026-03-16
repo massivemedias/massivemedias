@@ -6,7 +6,7 @@ import {
   Sparkles, Wrench, ZoomIn
 } from 'lucide-react';
 import SEO from './SEO';
-import { getFAQSchema, getServiceSchema } from './seo/schemas';
+import { getFAQSchema, getServiceSchema, getProductSchema } from './seo/schemas';
 import { useLang } from '../i18n/LanguageContext';
 import { toFull } from '../utils/paths';
 import getServicesData from '../data/getServicesData';
@@ -29,6 +29,7 @@ function BoutiqueProductLayout({
   ctaLinks,
   galleryResetKey,
   containMainCount,
+  startingPrice,
   children,
 }) {
   const { lang, tx } = useLang();
@@ -90,6 +91,13 @@ function BoutiqueProductLayout({
             url: `/boutique/${slugMap[serviceSlug] || serviceSlug}`,
             priceRange: '$$',
           }),
+          ...(startingPrice ? [getProductSchema({
+            name: lt(productTitle),
+            description: lt(metaDescription),
+            price: startingPrice,
+            image: images[0],
+            url: `/boutique/${slugMap[serviceSlug] || serviceSlug}`,
+          })] : []),
         ]}
       />
 

@@ -38,6 +38,7 @@ function BoutiqueFlyers() {
   return (
     <BoutiqueProductLayout
       serviceSlug="flyers-cartes"
+      startingPrice={40}
       pageTitle={{ fr: 'Impression Flyers & Cartes Montreal - Rapide et Pro | Massive', en: 'Flyers & Cards Printing Montreal - Fast & Pro | Massive', es: 'Impresion Flyers y Tarjetas Montreal - Rapido y Pro | Massive' }}
       metaDescription={{
         fr: 'Flyers, cartes postales, cartes d\'affaires. Impression rapide et locale \u00e0 Montr\u00e9al. Qualit\u00e9 pro.',
