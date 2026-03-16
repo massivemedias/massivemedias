@@ -85,4 +85,93 @@ export default factories.createCoreController('api::inventory-item.inventory-ite
 
     ctx.body = { data: updated };
   },
+
+  /**
+   * Import depuis facture PDF: cree ou met a jour les items d'inventaire
+   * + cree une depense automatiquement
+   */
+  async importInvoice(ctx) {
+    const { items, expense } = ctx.request.body as any;
+
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return ctx.badRequest('Au moins un item est requis');
+    }
+
+    const VALID_CATEGORIES = ['textile', 'frame', 'accessory', 'sticker', 'print', 'merch', 'other'];
+    const results: any[] = [];
+
+    for (const item of items) {
+      if (!item.nameFr || !item.category) continue;
+      if (!VALID_CATEGORIES.includes(item.category)) item.category = 'other';
+
+      // Chercher un item existant par SKU ou nom
+      let existing = null;
+      if (item.sku) {
+        existing = await strapi.documents('api::inventory-item.inventory-item').findFirst({
+          filters: { sku: item.sku },
+        });
+      }
+      if (!existing && item.nameFr) {
+        existing = await strapi.documents('api::inventory-item.inventory-item').findFirst({
+          filters: { nameFr: { $containsi: item.nameFr } },
+        });
+      }
+
+      if (existing) {
+        // Ajouter au stock existant
+        const updated = await strapi.documents('api::inventory-item.inventory-item').update({
+          documentId: existing.documentId,
+          data: {
+            quantity: (existing.quantity || 0) + (item.quantity || 0),
+            costPrice: item.costPrice || existing.costPrice,
+            notes: item.notes ? `${existing.notes || ''}\n${item.notes}`.trim() : existing.notes,
+          },
+        });
+        results.push({ action: 'updated', item: updated });
+      } else {
+        // Creer un nouvel item
+        const created = await strapi.documents('api::inventory-item.inventory-item').create({
+          data: {
+            nameFr: item.nameFr,
+            nameEn: item.nameEn || item.nameFr,
+            sku: item.sku || '',
+            category: item.category,
+            variant: item.variant || '',
+            quantity: item.quantity || 0,
+            reserved: 0,
+            lowStockThreshold: item.lowStockThreshold || 5,
+            costPrice: item.costPrice || 0,
+            location: item.location || '',
+            notes: item.notes || '',
+            active: true,
+          },
+        });
+        results.push({ action: 'created', item: created });
+      }
+    }
+
+    // Creer la depense associee
+    let expenseResult = null;
+    if (expense && expense.amount) {
+      const EXPENSE_CATS = ['consommables', 'materiel', 'shipping', 'software', 'marketing', 'equipment', 'taxes', 'other'];
+      expenseResult = await strapi.documents('api::expense.expense').create({
+        data: {
+          description: expense.description || 'Import facture',
+          amount: parseFloat(expense.amount) || 0,
+          category: EXPENSE_CATS.includes(expense.category) ? expense.category : 'materiel',
+          date: expense.date || new Date().toISOString().split('T')[0],
+          vendor: expense.vendor || '',
+          receiptNumber: expense.receiptNumber || '',
+          receiptUrl: expense.receiptUrl || '',
+          taxDeductible: expense.taxDeductible !== false,
+          tpsAmount: parseFloat(expense.tpsAmount) || 0,
+          tvqAmount: parseFloat(expense.tvqAmount) || 0,
+          notes: expense.notes || '',
+        },
+      });
+    }
+
+    strapi.log.info(`Import facture: ${results.length} items, depense: ${expense?.amount || 0}$`);
+    ctx.body = { data: { items: results, expense: expenseResult } };
+  },
 }));

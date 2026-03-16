@@ -24,5 +24,13 @@ export default {
         auth: false,
       },
     },
+    {
+      method: 'POST',
+      path: '/inventory-items/import-invoice',
+      handler: 'inventory-item.importInvoice',
+      config: {
+        auth: false,
+      },
+    },
   ],
 };
