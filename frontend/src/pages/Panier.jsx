@@ -46,47 +46,53 @@ function Panier() {
               key={i}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="flex items-center gap-4 p-4 rounded-xl bg-glass"
+              className="p-4 rounded-xl bg-glass"
             >
-              <img src={item.image} alt="" className="w-16 h-16 rounded-lg object-cover flex-shrink-0" />
-              <div className="flex-grow min-w-0">
-                <h3 className="font-semibold text-heading">{item.productName}</h3>
-                <p className="text-grey-muted text-sm truncate">
-                  {[item.finish, item.shape, item.size].filter(Boolean).join(' · ')}
-                </p>
-                {item.uploadedFiles?.length > 0 && (
-                  <p className="text-accent text-xs flex items-center gap-1 mt-0.5">
-                    <Paperclip size={12} />
-                    {item.uploadedFiles.length} {tx({ fr: 'fichier(s) joint(s)', en: 'file(s) attached', es: 'archivo(s) adjunto(s)' })}
+              {/* Ligne 1: image + nom */}
+              <div className="flex items-center gap-3 mb-3">
+                <img src={item.image} alt="" className="w-14 h-14 sm:w-16 sm:h-16 rounded-lg object-cover flex-shrink-0" />
+                <div className="flex-grow min-w-0">
+                  <h3 className="font-semibold text-heading text-sm sm:text-base leading-tight">{item.productName}</h3>
+                  <p className="text-grey-muted text-xs sm:text-sm truncate">
+                    {[item.finish, item.shape, item.size].filter(Boolean).join(' · ')}
                   </p>
-                )}
+                  {item.uploadedFiles?.length > 0 && (
+                    <p className="text-accent text-xs flex items-center gap-1 mt-0.5">
+                      <Paperclip size={12} />
+                      {item.uploadedFiles.length} {tx({ fr: 'fichier(s) joint(s)', en: 'file(s) attached', es: 'archivo(s) adjunto(s)' })}
+                    </p>
+                  )}
+                </div>
               </div>
-              <div className="flex items-center gap-2 flex-shrink-0">
+              {/* Ligne 2: quantite + prix + supprimer */}
+              <div className="flex items-center justify-between pl-0 sm:pl-[68px]">
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => updateQuantity(i, Math.max(1, item.quantity - 1), item.unitPrice)}
+                    className="w-8 h-8 rounded-lg border border-white/10 text-heading font-bold text-sm flex items-center justify-center hover:border-accent/50 transition-colors"
+                  >
+                    -
+                  </button>
+                  <span className="text-heading font-bold text-sm w-6 text-center">{item.quantity}</span>
+                  <button
+                    onClick={() => updateQuantity(i, item.quantity + 1, item.unitPrice)}
+                    className="w-8 h-8 rounded-lg border border-white/10 text-heading font-bold text-sm flex items-center justify-center hover:border-accent/50 transition-colors"
+                  >
+                    +
+                  </button>
+                </div>
+                <div className="text-right">
+                  <p className="font-bold text-heading">{item.totalPrice}$</p>
+                  {item.quantity > 1 && <p className="text-grey-muted text-xs">{item.unitPrice}$/u</p>}
+                </div>
                 <button
-                  onClick={() => updateQuantity(i, Math.max(1, item.quantity - 1), item.unitPrice)}
-                  className="w-8 h-8 rounded-lg border border-white/10 text-heading font-bold text-sm flex items-center justify-center hover:border-accent/50 transition-colors"
+                  onClick={() => removeFromCart(i)}
+                  className="p-2 text-grey-muted hover:text-red-500 transition-colors flex-shrink-0"
+                  aria-label={tx({ fr: `Supprimer ${item.productName}`, en: `Remove ${item.productName}`, es: `Eliminar ${item.productName}` })}
                 >
-                  -
-                </button>
-                <span className="text-heading font-bold text-sm w-6 text-center">{item.quantity}</span>
-                <button
-                  onClick={() => updateQuantity(i, item.quantity + 1, item.unitPrice)}
-                  className="w-8 h-8 rounded-lg border border-white/10 text-heading font-bold text-sm flex items-center justify-center hover:border-accent/50 transition-colors"
-                >
-                  +
+                  <Trash2 size={18} />
                 </button>
               </div>
-              <div className="text-right flex-shrink-0 min-w-[60px]">
-                <p className="font-bold text-heading">{item.totalPrice}$</p>
-                {item.quantity > 1 && <p className="text-grey-muted text-xs">{item.unitPrice}$/u</p>}
-              </div>
-              <button
-                onClick={() => removeFromCart(i)}
-                className="p-2 text-grey-muted hover:text-red-500 transition-colors flex-shrink-0"
-                aria-label={tx({ fr: `Supprimer ${item.productName}`, en: `Remove ${item.productName}`, es: `Eliminar ${item.productName}` })}
-              >
-                <Trash2 size={18} />
-              </button>
             </motion.div>
           ))}
         </div>
