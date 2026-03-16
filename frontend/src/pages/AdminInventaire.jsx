@@ -246,8 +246,6 @@ function AdminInventaire() {
     );
   }
 
-  const outOfStockItems = items.filter(item => item.status === 'out');
-  const lowStockItems = items.filter(item => item.status === 'low');
 
   return (
     <div>
@@ -561,53 +559,6 @@ function AdminInventaire() {
         )}
       </AnimatePresence>
 
-      {/* Alerte rupture de stock */}
-      {outOfStockItems.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="p-4 rounded-xl border-2 border-red-500/40 bg-red-500/10 mb-6"
-        >
-          <div className="flex items-center gap-2 mb-2">
-            <XCircle size={18} className="text-red-400" />
-            <span className="text-red-400 font-bold text-sm">
-              {tx({ fr: 'RUPTURE DE STOCK', en: 'OUT OF STOCK', es: 'AGOTADO' })} ({outOfStockItems.length})
-            </span>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {outOfStockItems.map((item) => (
-              <span key={item.documentId} className="px-2 py-1 rounded bg-red-500/20 text-red-300 text-xs font-medium">
-                {getName(item)} {item.sku ? `(${item.sku})` : ''}
-              </span>
-            ))}
-          </div>
-        </motion.div>
-      )}
-
-      {/* Alerte stock bas */}
-      {lowStockItems.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.05 }}
-          className="p-4 rounded-xl border-2 border-orange-500/40 bg-orange-500/10 mb-6"
-        >
-          <div className="flex items-center gap-2 mb-2">
-            <AlertTriangle size={18} className="text-orange-400" />
-            <span className="text-orange-400 font-bold text-sm">
-              {tx({ fr: 'STOCK BAS', en: 'LOW STOCK', es: 'STOCK BAJO' })} ({lowStockItems.length})
-            </span>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {lowStockItems.map((item) => (
-              <span key={item.documentId} className="px-2 py-1 rounded bg-orange-500/20 text-orange-300 text-xs font-medium">
-                {getName(item)} - {item.available} {tx({ fr: 'restant(s)', en: 'remaining', es: 'restante(s)' })} {item.sku ? `(${item.sku})` : ''}
-              </span>
-            ))}
-          </div>
-        </motion.div>
-      )}
-
       {error && (
         <div className="p-4 rounded-lg border border-red-500/30 error-bg mb-6">
           <p className="text-red-400">{error}</p>
@@ -616,12 +567,10 @@ function AdminInventaire() {
 
       {/* Summary cards */}
       {summary && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 gap-4 mb-8">
           {[
-            { label: tx({ fr: 'Total items', en: 'Total items', es: 'Total items' }), value: summary.total, icon: Archive, accent: false },
-            { label: tx({ fr: 'Stock bas', en: 'Low stock', es: 'Stock bajo' }), value: summary.lowStock, icon: AlertTriangle, accent: summary.lowStock > 0 },
-            { label: tx({ fr: 'Rupture', en: 'Out of stock', es: 'Agotado' }), value: summary.outOfStock, icon: XCircle, accent: summary.outOfStock > 0 },
-            { label: tx({ fr: 'Valeur stock', en: 'Stock value', es: 'Valor stock' }), value: `$${summary.totalValue}`, icon: DollarSign, accent: false },
+            { label: tx({ fr: 'Total items', en: 'Total items', es: 'Total items' }), value: summary.total, icon: Archive },
+            { label: tx({ fr: 'Valeur stock', en: 'Stock value', es: 'Valor stock' }), value: `$${summary.totalValue}`, icon: DollarSign },
           ].map((card, i) => {
             const Icon = card.icon;
             return (
@@ -633,10 +582,10 @@ function AdminInventaire() {
                 className="p-4 rounded-xl bg-glass"
               >
                 <div className="flex items-center gap-2 mb-2">
-                  <Icon size={18} className={card.accent ? 'text-red-400' : 'text-accent'} />
+                  <Icon size={18} className="text-accent" />
                   <span className="text-grey-muted text-xs uppercase">{card.label}</span>
                 </div>
-                <div className={`text-2xl font-heading font-bold ${card.accent ? 'text-red-400' : 'text-heading'}`}>
+                <div className="text-2xl font-heading font-bold text-heading">
                   {card.value}
                 </div>
               </motion.div>
