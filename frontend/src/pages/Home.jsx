@@ -179,21 +179,21 @@ function Home() {
               transition={{ delay: 0.1, duration: 1.8, ease: [0.25, 0.1, 0.25, 1] }}
               className="mx-auto mb-10 logo-home max-w-[90vw]"
             >
-              <h1 className="text-sm md:text-base text-grey-muted/60 tracking-widest uppercase font-heading mt-4">
-                {tx({
-                  fr: 'Impression Fine Art, Stickers & Merch - Montreal',
-                  en: 'Fine Art Printing, Stickers & Merch - Montreal',
-                  es: 'Impresion Fine Art, Stickers & Merch - Montreal',
-                })}
-              </h1>
               <MassiveLogo className="w-full h-full transition-colors duration-300" />
             </motion.div>
+            <h1 className="sr-only">
+              {tx({
+                fr: 'Massive Medias - Impression Fine Art, Stickers personnalises, Merch, Design graphique et Developpement web a Montreal',
+                en: 'Massive Medias - Fine Art Printing, Custom Stickers, Merch, Graphic Design and Web Development in Montreal',
+                es: 'Massive Medias - Impresion Fine Art, Stickers personalizados, Merch, Diseno grafico y Desarrollo web en Montreal',
+              })}
+            </h1>
 
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5, duration: 0.6 }}
-              className="text-2xl md:text-3xl mb-4 font-light hero-subtitle"
+              className="text-xl sm:text-2xl md:text-3xl mb-3 font-light hero-subtitle"
             >
               {(content && bl(content, 'heroSubtitle', lang)) || t('home.hero.subtitle')}
             </motion.p>
@@ -202,7 +202,7 @@ function Home() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.7, duration: 0.6 }}
-              className="text-lg mb-12 max-w-3xl mx-auto hero-services"
+              className="text-sm sm:text-base md:text-lg mb-10 max-w-3xl mx-auto hero-services tracking-wide"
             >
               {(content && bl(content, 'heroServices', lang)) || t('home.hero.services')}
             </motion.p>
