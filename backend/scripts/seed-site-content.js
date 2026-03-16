@@ -167,7 +167,7 @@ const siteContentData = {
   footerStudioDescEn: 'Creative production studio',
   footerLocationFr: 'Montréal, QC',
   footerLocationEn: 'Montreal, QC',
-  contactEmail: 'info@massivemedias.com',
+  contactEmail: 'massivemedias@gmail.com',
   contactPhone: '',
   socialLinks: [
     { platform: 'Instagram', url: 'https://instagram.com/massivemedias', label: 'Instagram' },

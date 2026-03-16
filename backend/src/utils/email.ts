@@ -226,7 +226,7 @@ export async function sendContactReplyEmail(data: ContactReplyData): Promise<boo
     const result = await resend.emails.send({
       from: `Massive Medias <${fromEmail}>`,
       to: data.customerEmail,
-      replyTo: 'info@massivemedias.com',
+      replyTo: 'massivemedias@gmail.com',
       subject: data.subject || `Re: Votre demande - Massive Medias`,
       html: buildContactReplyHtml(data),
     });

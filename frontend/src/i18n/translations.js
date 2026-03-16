@@ -210,6 +210,10 @@ const translations = {
           title: 'VRSTL Records',
           description: "Label canadien dédié à l'Indie Dance et la Dark Minimal. Direction artistique, gestion des sorties, distribution digitale et promotion.",
         },
+        belette3000: {
+          title: 'Belette 3000',
+          description: "Sacoches faites a la main a Montreal.",
+        },
       },
     },
 
@@ -567,6 +571,10 @@ const translations = {
           title: 'VRSTL Records',
           description: 'Canadian label dedicated to Indie Dance and Dark Minimal. Art direction, release management, digital distribution and promotion.',
         },
+        belette3000: {
+          title: 'Belette 3000',
+          description: 'Handmade bags crafted in Montreal.',
+        },
       },
     },
 
@@ -923,6 +931,10 @@ const translations = {
         vrstl: {
           title: 'VRSTL Records',
           description: 'Sello canadiense dedicado al Indie Dance y Dark Minimal. Dirección artística, gestión de lanzamientos, distribución digital y promoción.',
+        },
+        belette3000: {
+          title: 'Belette 3000',
+          description: 'Bolsos hechos a mano en Montreal.',
         },
       },
     },

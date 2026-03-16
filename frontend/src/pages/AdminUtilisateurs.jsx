@@ -213,8 +213,8 @@ function AdminUtilisateurs() {
   };
 
   const getRoleBadge = (role, artistSlug) => {
-    if (role === 'admin') return { label: 'Admin', className: 'bg-red-500/20 text-red-400' };
-    if (role === 'artist') return { label: `Artiste (${artistSlug || '?'})`, className: 'bg-purple-500/20 text-purple-400' };
+    if (role === 'admin') return { label: 'Admin', slug: null, className: 'bg-red-500/20 text-red-400' };
+    if (role === 'artist') return { label: 'Artiste', slug: artistSlug || '?', className: 'bg-purple-500/20 text-purple-400' };
     return null;
   };
 
@@ -359,11 +359,16 @@ function AdminUtilisateurs() {
 
                   {/* Role badge */}
                   {roleBadge ? (
-                    <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-semibold w-fit ${roleBadge.className}`}>
-                      {role === 'artist' && <Palette size={10} />}
-                      {role === 'admin' && <Shield size={10} />}
-                      {roleBadge.label}
-                    </span>
+                    <div className="flex flex-col gap-0.5">
+                      <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-semibold w-fit ${roleBadge.className}`}>
+                        {role === 'artist' && <Palette size={9} />}
+                        {role === 'admin' && <Shield size={9} />}
+                        {roleBadge.label}
+                      </span>
+                      {roleBadge.slug && (
+                        <span className="text-[9.5px] text-purple-400/70 truncate max-w-[90px] pl-0.5">{roleBadge.slug}</span>
+                      )}
+                    </div>
                   ) : (
                     <span className="text-[11px] text-grey-muted">-</span>
                   )}

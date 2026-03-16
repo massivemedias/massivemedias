@@ -203,7 +203,7 @@ function APropos() {
           <h2 className="text-4xl font-heading font-bold text-gradient mb-8 text-center">
             {(content && bl(content, 'aboutUniverseTitle', lang)) || t('aboutPage.universe.title')}
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
             {cmsUniverse
               ? cmsUniverse.map((project, index) => (
                   <a key={index} href={project.url || '#'} target="_blank" rel="noopener noreferrer" className="block">
@@ -226,6 +226,12 @@ function APropos() {
                     <h3 className="text-2xl font-heading font-bold text-heading mb-3 group-hover:text-accent transition-colors">{t('aboutPage.universe.vrstl.title')}</h3>
                     <p className="text-grey-light leading-relaxed">
                       {t('aboutPage.universe.vrstl.description')}
+                    </p>
+                  </a>
+                  <a href="https://belette3000.com" target="_blank" rel="noopener noreferrer" className="block p-8 rounded-2xl border border-purple-main/30 hover:border-accent/50 transition-colors duration-300 card-bg card-shadow group">
+                    <h3 className="text-2xl font-heading font-bold text-heading mb-3 group-hover:text-accent transition-colors">{t('aboutPage.universe.belette3000.title')}</h3>
+                    <p className="text-grey-light leading-relaxed">
+                      {t('aboutPage.universe.belette3000.description')}
                     </p>
                   </a>
                 </>

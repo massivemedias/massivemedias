@@ -14,7 +14,7 @@ export function getOrganizationSchema() {
       width: 1200,
       height: 630,
     },
-    email: 'info@massivemedias.com',
+    email: 'massivemedias@gmail.com',
     foundingDate: '2013',
     foundingLocation: 'Montreal, QC, Canada',
     description: 'Studio de production créative à Montréal spécialisé en impression fine art, stickers die-cut, sublimation textile, design graphique et développement web.',
@@ -34,7 +34,7 @@ export function getOrganizationSchema() {
     contactPoint: {
       '@type': 'ContactPoint',
       contactType: 'customer service',
-      email: 'info@massivemedias.com',
+      email: 'massivemedias@gmail.com',
       availableLanguage: ['French', 'English', 'Spanish'],
     },
   };
@@ -53,7 +53,7 @@ export function getLocalBusinessSchema(lang) {
     name: 'Massive',
     description: descMap[lang] || descMap.fr,
     url: SITE_URL,
-    email: 'info@massivemedias.com',
+    email: 'massivemedias@gmail.com',
     image: `${SITE_URL}/og-image.jpg`,
     priceRange: '$$',
     currenciesAccepted: 'CAD',
