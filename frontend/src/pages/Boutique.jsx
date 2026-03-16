@@ -75,6 +75,8 @@ function Boutique() {
     'cartes-cadeaux': useRef(null),
     services: useRef(null),
   };
+  const mobileTabsRef = useRef(null);
+  const tabRefs = useRef({});
 
   // Gift card state
   const [selectedGiftAmount, setSelectedGiftAmount] = useState(50);
@@ -108,6 +110,20 @@ function Boutique() {
 
     return () => observer.disconnect();
   }, [view]);
+
+  // Auto-scroll la barre de tabs mobile vers l'onglet actif
+  useEffect(() => {
+    if (!activeCategory || !mobileTabsRef.current || !tabRefs.current[activeCategory]) return;
+    const container = mobileTabsRef.current;
+    const tab = tabRefs.current[activeCategory];
+    const tabLeft = tab.offsetLeft;
+    const tabWidth = tab.offsetWidth;
+    const containerWidth = container.offsetWidth;
+    container.scrollTo({
+      left: tabLeft - containerWidth / 2 + tabWidth / 2,
+      behavior: 'smooth',
+    });
+  }, [activeCategory]);
 
   const scrollToSection = (id) => {
     sectionRefs[id]?.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -309,17 +325,21 @@ function Boutique() {
       </section>
 
       {/* Mobile category tabs - sticky */}
-      <div className="md:hidden sticky top-0 z-30 bg-bg-primary/80 backdrop-blur-xl border-b card-border">
-        <div className="flex overflow-x-auto scrollbar-hide px-4 py-2 gap-1">
+      <div className="md:hidden sticky top-0 z-30 bg-bg-primary/90 backdrop-blur-xl border-b card-border shadow-lg shadow-black/20">
+        <div ref={mobileTabsRef} className="flex overflow-x-auto scrollbar-hide px-3 py-2.5 gap-1.5">
           {sidebarCategories.map(cat => {
             const Icon = cat.icon;
+            const isActive = activeCategory === cat.id;
             return (
               <button
                 key={cat.id}
+                ref={el => tabRefs.current[cat.id] = el}
                 onClick={() => scrollToSection(cat.id)}
-                className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
-                  activeCategory === cat.id
-                    ? 'bg-accent text-white'
+                className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all duration-300 ${
+                  isActive
+                    ? cat.id === 'soldes'
+                      ? 'bg-red-500 text-white shadow-md shadow-red-500/30 scale-105'
+                      : 'bg-accent text-white shadow-md shadow-accent/30 scale-105'
                     : 'bg-glass text-grey-light hover:text-heading'
                 }`}
               >
