@@ -22,7 +22,7 @@ const ARTIST_PRICES = [
   { format: 'A4 (8.5x11")', studio: 35, museum: 75, frame: 30 },
   { format: 'A3 (11x17")', studio: 50, museum: 120, frame: 30 },
   { format: 'A3+ (13x19")', studio: 65, museum: 160, frame: 30 },
-  { format: 'A2 (18x24")', studio: null, museum: 125, frame: null },
+  { format: 'A2 (18x24")', studio: null, museum: 225, frame: null },
 ];
 
 // --- Stickers ---
