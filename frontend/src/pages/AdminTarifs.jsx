@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { DollarSign, Copy, Check, Download, Printer, Users, BarChart3, Sticker, Shirt, Palette, Globe, FileText, Loader2 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import { jsPDF } from 'jspdf';
-import html2canvas from 'html2canvas';
+import 'jspdf-autotable';
 
 // =============================================
 // DONNEES TARIFS
@@ -172,85 +172,197 @@ function AdminTarifs() {
     });
   };
 
-  // --- PDF artiste ---
+  // --- PDF artiste (generation directe jsPDF + autotable, sans html2canvas) ---
   const [pdfLoading, setPdfLoading] = useState(false);
-  const handleDownloadPDF = async () => {
-    const el = artistSheetRef.current;
-    if (!el) return;
+  const handleDownloadPDF = () => {
     setPdfLoading(true);
     try {
-      // html2canvas ne supporte pas oklab() de Tailwind v4
-      // On convertit la couleur du body en hex via un canvas temporaire
-      let bgHex = '#1a1a2e';
-      try {
-        const tmp = document.createElement('canvas');
-        tmp.width = tmp.height = 1;
-        const ctx2 = tmp.getContext('2d');
-        ctx2.fillStyle = getComputedStyle(document.body).backgroundColor;
-        ctx2.fillRect(0, 0, 1, 1);
-        const [r, g, b] = ctx2.getImageData(0, 0, 1, 1).data;
-        bgHex = `#${((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1)}`;
-      } catch (_) { /* fallback to default */ }
-
-      // Temporairement forcer les couleurs problematiques en rgb pour html2canvas
-      const allEls = el.querySelectorAll('*');
-      const origStyles = [];
-      allEls.forEach((child) => {
-        const cs = getComputedStyle(child);
-        const bg = cs.backgroundColor;
-        const fg = cs.color;
-        if (bg.includes('oklab') || bg.includes('oklch') || fg.includes('oklab') || fg.includes('oklch')) {
-          origStyles.push({ el: child, bg: child.style.backgroundColor, fg: child.style.color });
-          // Convertir via canvas 2d
-          const c = document.createElement('canvas');
-          c.width = c.height = 1;
-          const cx = c.getContext('2d');
-          if (bg.includes('oklab') || bg.includes('oklch')) {
-            cx.fillStyle = bg;
-            cx.fillRect(0, 0, 1, 1);
-            const [r, g, b, a] = cx.getImageData(0, 0, 1, 1).data;
-            child.style.backgroundColor = a < 255 ? `rgba(${r},${g},${b},${(a/255).toFixed(3)})` : `rgb(${r},${g},${b})`;
-          }
-          if (fg.includes('oklab') || fg.includes('oklch')) {
-            cx.clearRect(0, 0, 1, 1);
-            cx.fillStyle = fg;
-            cx.fillRect(0, 0, 1, 1);
-            const [r, g, b] = cx.getImageData(0, 0, 1, 1).data;
-            child.style.color = `rgb(${r},${g},${b})`;
-          }
-        }
-      });
-
-      const canvas = await html2canvas(el, {
-        scale: 2,
-        backgroundColor: bgHex,
-        useCORS: true,
-        logging: false,
-        allowTaint: true,
-        windowWidth: el.scrollWidth,
-        windowHeight: el.scrollHeight,
-      });
-
-      // Restaurer les styles originaux
-      origStyles.forEach(({ el: child, bg, fg }) => {
-        child.style.backgroundColor = bg;
-        child.style.color = fg;
-      });
-      const imgData = canvas.toDataURL('image/png');
-      const pdfW = 215.9;
-      const pdfH = 279.4;
-      const ratio = pdfW / canvas.width;
-      const scaledH = canvas.height * ratio;
-      const totalPages = Math.ceil(scaledH / pdfH);
       const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'letter' });
-      for (let page = 0; page < totalPages; page++) {
-        if (page > 0) doc.addPage();
-        doc.addImage(imgData, 'PNG', 0, -(page * pdfH), pdfW, scaledH);
-      }
+      const pageW = 215.9;
+      const margin = 15;
+      const contentW = pageW - margin * 2;
+      let y = 20;
+
+      // Couleurs
+      const purple = [130, 0, 210];
+      const accent = [255, 82, 160];
+      const dark = [26, 26, 46];
+      const green = [74, 222, 128];
+      const grey = [156, 163, 175];
+      const white = [255, 255, 255];
+
+      // --- Header ---
+      doc.setFillColor(...dark);
+      doc.rect(0, 0, pageW, 40, 'F');
+      doc.setTextColor(...white);
+      doc.setFontSize(22);
+      doc.setFont('helvetica', 'bold');
+      doc.text('MASSIVE MEDIAS', margin, 18);
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(...accent);
+      doc.text(tx({ fr: 'Grille tarifaire artistes', en: 'Artist pricing grid', es: 'Tabla de precios artistas' }), margin, 26);
+      doc.setTextColor(...grey);
+      doc.setFontSize(8);
+      doc.text(tx({ fr: 'Tous les prix avant taxes (TPS + TVQ en sus)', en: 'All prices before taxes (GST + QST extra)', es: 'Precios antes de impuestos' }), margin, 32);
+      doc.text('massivemedias.com', pageW - margin, 32, { align: 'right' });
+      y = 48;
+
+      // --- Exemple concret ---
+      doc.setFillColor(245, 240, 255);
+      doc.roundedRect(margin, y, contentW, 22, 3, 3, 'F');
+      doc.setTextColor(...purple);
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'bold');
+      doc.text(tx({ fr: 'Exemple:', en: 'Example:', es: 'Ejemplo:' }), margin + 4, y + 6);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(60, 60, 60);
+      doc.text(tx({
+        fr: 'Client achete print musee + frame = 105$. Massive 35$ (impression) + 30$ (frame) = 65$. Artiste = 40$ profit net.',
+        en: 'Client buys museum print + frame = 105$. Massive 35$ (print) + 30$ (frame) = 65$. Artist = 40$ net profit.',
+        es: 'Cliente compra print museo + marco = 105$. Massive 35$ (impresion) + 30$ (marco) = 65$. Artista = 40$ ganancia neta.',
+      }), margin + 4, y + 13, { maxWidth: contentW - 8 });
+      y += 28;
+
+      // Helper: section title
+      const sectionTitle = (text) => {
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(...purple);
+        doc.text(text, margin, y);
+        y += 2;
+        doc.setDrawColor(...accent);
+        doc.setLineWidth(0.5);
+        doc.line(margin, y, margin + contentW, y);
+        y += 6;
+      };
+
+      // Helper: autoTable wrapper
+      const addTable = (head, body, opts = {}) => {
+        doc.autoTable({
+          startY: y,
+          margin: { left: margin, right: margin },
+          head: [head],
+          body,
+          theme: 'grid',
+          headStyles: { fillColor: purple, textColor: white, fontSize: 8, fontStyle: 'bold', halign: 'center' },
+          bodyStyles: { fontSize: 8, textColor: [40, 40, 40] },
+          alternateRowStyles: { fillColor: [248, 245, 255] },
+          styles: { cellPadding: 2.5, lineColor: [200, 200, 220], lineWidth: 0.2 },
+          ...opts,
+        });
+        y = doc.lastAutoTable.finalY + 8;
+      };
+
+      // --- Serie Studio (4 encres) ---
+      sectionTitle(tx({ fr: 'Serie Studio - 4 encres pigmentees', en: 'Studio Series - 4 pigmented inks', es: 'Serie Estudio - 4 tintas pigmentadas' }));
+      addTable(
+        ['Format', tx({ fr: 'Sans frame', en: 'No frame', es: 'Sin marco' }), tx({ fr: 'Avec frame', en: 'With frame', es: 'Con marco' }), 'Massive', tx({ fr: 'Artiste', en: 'Artist', es: 'Artista' })],
+        ARTIST_PRICES.filter(p => p.studio).map(p => {
+          const sp = SERVICE_PRICES.find(s => s.format === p.format);
+          return [p.format, `${p.studio}$`, p.frame ? `${p.studio + p.frame}$` : 'N/A', `${sp?.studio || 0}$`, `${p.studio - (sp?.studio || 0)}$`];
+        }),
+        { columnStyles: { 4: { textColor: purple, fontStyle: 'bold' } } }
+      );
+
+      // --- Serie Musee (12 encres) ---
+      sectionTitle(tx({ fr: 'Serie Musee - 12 encres pigmentees', en: 'Museum Series - 12 pigmented inks', es: 'Serie Museo - 12 tintas pigmentadas' }));
+      addTable(
+        ['Format', tx({ fr: 'Sans frame', en: 'No frame', es: 'Sin marco' }), tx({ fr: 'Avec frame', en: 'With frame', es: 'Con marco' }), 'Massive', tx({ fr: 'Artiste', en: 'Artist', es: 'Artista' })],
+        ARTIST_PRICES.map((p, i) => {
+          const sp = SERVICE_PRICES[i];
+          return [p.format, `${p.museum}$`, p.frame ? `${p.museum + p.frame}$` : 'N/A', `${sp.museum}$`, `${p.museum - sp.museum}$`];
+        }),
+        { columnStyles: { 4: { textColor: purple, fontStyle: 'bold' } } }
+      );
+
+      // Notes
+      doc.setFontSize(7);
+      doc.setTextColor(...grey);
+      doc.text([
+        tx({ fr: '* A2 (18x24") = 12 encres pigmentees uniquement, pas de frame disponible', en: '* A2 (18x24") = 12 pigmented inks only, no frame available', es: '* A2 = solo 12 tintas, sin marco' }),
+        tx({ fr: '* Frame = cadre noir ou blanc (+30$)', en: '* Frame = black or white (+30$)', es: '* Marco = negro o blanco (+30$)' }),
+        tx({ fr: '* Commission artiste = profit net, identique avec ou sans frame', en: '* Artist commission = net profit, same with or without frame', es: '* Comision = ganancia neta, igual con o sin marco' }),
+      ], margin, y);
+      y += 14;
+
+      // --- Stickers ---
+      if (y > 220) { doc.addPage(); y = 20; }
+      sectionTitle(tx({ fr: 'Packs stickers artiste (design inclus)', en: 'Artist sticker packs (design included)', es: 'Packs stickers artista (diseno incluido)' }));
+      addTable(
+        [tx({ fr: 'Quantite', en: 'Quantity', es: 'Cantidad' }), 'Standard', '$/unit', 'FX (Holo)', '$/unit'],
+        STICKER_STANDARD.map((s, i) => {
+          const h = STICKER_HOLO[i];
+          return [`${s.qty}`, `${s.price}$`, `${s.unit.toFixed(2)}$`, `${h.price}$`, `${h.unit.toFixed(2)}$`];
+        })
+      );
+
+      // --- Commission recap ---
+      if (y > 220) { doc.addPage(); y = 20; }
+      sectionTitle(tx({ fr: 'Ta commission par vente (prints)', en: 'Your commission per sale (prints)', es: 'Tu comision por venta (prints)' }));
+      addTable(
+        ['Format', 'Studio', tx({ fr: 'Musee', en: 'Museum', es: 'Museo' })],
+        ARTIST_PRICES.map((p, i) => {
+          const sp = SERVICE_PRICES[i];
+          const studioProfit = p.studio && sp.studio ? p.studio - sp.studio : null;
+          return [p.format, studioProfit !== null ? `${studioProfit}$` : 'N/A', `${p.museum - sp.museum}$`];
+        }),
+        { columnStyles: { 1: { textColor: purple, fontStyle: 'bold' }, 2: { textColor: purple, fontStyle: 'bold' } } }
+      );
+
+      // --- Concurrence ---
+      if (y > 180) { doc.addPage(); y = 20; }
+      sectionTitle(tx({ fr: 'Comparaison concurrence (2025-2026)', en: 'Competition comparison (2025-2026)', es: 'Comparacion competencia (2025-2026)' }));
+
+      const competitorRows = [
+        ['Society6', '~4$', tx({ fr: 'POD generique', en: 'Generic POD', es: 'POD generico' }), tx({ fr: '5-10% marge. Pas de controle des prix.', en: '5-10% margin. No price control.', es: '5-10% margen. Sin control de precios.' })],
+        ['Redbubble', '~2-3$', tx({ fr: 'POD generique', en: 'Generic POD', es: 'POD generico' }), tx({ fr: 'Frais 50% sur markup.', en: '50% markup fee.', es: 'Tarifa 50% sobre margen.' })],
+        ['Printify', '~20-25$', tx({ fr: 'Variable (dropship)', en: 'Variable (dropship)', es: 'Variable (dropship)' }), tx({ fr: 'Tu geres tout (boutique, marketing, livraison)', en: 'You manage everything (store, marketing, shipping)', es: 'Gestionas todo (tienda, marketing, envio)' })],
+        ['INPRNT', '~18$', tx({ fr: 'Giclee 8 encres', en: 'Giclee 8 inks', es: 'Giclee 8 tintas' }), tx({ fr: 'Sur invitation seulement', en: 'Invite only', es: 'Solo invitacion' })],
+        ['Massive Medias', '40-50$', tx({ fr: '12 encres musee', en: '12 inks museum', es: '12 tintas museo' }), tx({ fr: 'Zero gestion. Qualite superieure.', en: 'Zero management. Superior quality.', es: 'Cero gestion. Calidad superior.' })],
+      ];
+
+      doc.autoTable({
+        startY: y,
+        margin: { left: margin, right: margin },
+        head: [[tx({ fr: 'Plateforme', en: 'Platform', es: 'Plataforma' }), tx({ fr: 'Artiste garde', en: 'Artist keeps', es: 'Artista conserva' }), tx({ fr: 'Qualite', en: 'Quality', es: 'Calidad' }), 'Notes']],
+        body: competitorRows,
+        theme: 'grid',
+        headStyles: { fillColor: purple, textColor: white, fontSize: 8, fontStyle: 'bold' },
+        bodyStyles: { fontSize: 7.5, textColor: [40, 40, 40] },
+        alternateRowStyles: { fillColor: [248, 245, 255] },
+        styles: { cellPadding: 2.5, lineColor: [200, 200, 220], lineWidth: 0.2 },
+        didParseCell: (data) => {
+          // Highlight Massive row
+          if (data.section === 'body' && data.row.index === competitorRows.length - 1) {
+            data.cell.styles.fillColor = [240, 230, 255];
+            data.cell.styles.textColor = purple;
+            data.cell.styles.fontStyle = 'bold';
+          }
+        },
+      });
+      y = doc.lastAutoTable.finalY + 10;
+
+      // --- Footer ---
+      if (y > 250) { doc.addPage(); y = 20; }
+      doc.setFillColor(...dark);
+      doc.roundedRect(margin, y, contentW, 18, 3, 3, 'F');
+      doc.setTextColor(...accent);
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'bold');
+      doc.text(tx({
+        fr: "L'artiste et Massive font le meme profit reel, mais l'artiste n'a rien a faire.",
+        en: 'The artist and Massive make the same real profit, but the artist has nothing to do.',
+        es: 'El artista y Massive ganan lo mismo, pero el artista no hace nada.',
+      }), margin + 4, y + 7, { maxWidth: contentW - 8 });
+      doc.setTextColor(...grey);
+      doc.setFontSize(7);
+      doc.text('massivemedias.com - Montreal, QC', margin + 4, y + 14);
+
       doc.save('Massive-Medias-Grille-Tarifaire-Artistes.pdf');
     } catch (err) {
       console.error('PDF generation error:', err);
-      alert(tx({ fr: 'Erreur lors de la generation du PDF. Veuillez reessayer.', en: 'Error generating PDF. Please try again.', es: 'Error al generar el PDF. Intente de nuevo.' }));
+      alert(tx({ fr: 'Erreur lors de la generation du PDF.', en: 'Error generating PDF.', es: 'Error al generar el PDF.' }));
     } finally {
       setPdfLoading(false);
     }
