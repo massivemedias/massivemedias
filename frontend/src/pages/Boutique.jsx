@@ -80,6 +80,7 @@ function Boutique() {
   const [selectedGiftAmount, setSelectedGiftAmount] = useState(50);
   const [customGiftAmount, setCustomGiftAmount] = useState('');
   const [giftCardAdded, setGiftCardAdded] = useState(false);
+  const [saleAdded, setSaleAdded] = useState(null); // id of last added sale item
 
   // Reset view when navigating to /boutique
   useEffect(() => {
@@ -383,29 +384,20 @@ function Boutique() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
               >
-                {/* Banniere SOLDES */}
-                <div className="relative rounded-2xl overflow-hidden mb-8 p-6 md:p-8" style={{ background: 'linear-gradient(135deg, #FF52A0 0%, #8100D1 50%, #FF52A0 100%)', backgroundSize: '200% 200%', animation: 'gradient-shift 4s ease infinite' }}>
-                  <div className="relative z-10">
-                    <div className="flex items-center gap-3 mb-2">
-                      <Tag size={24} className="text-white" />
-                      <h2 className="text-3xl md:text-4xl font-heading font-bold text-white tracking-tight">
-                        SOLDES
-                      </h2>
-                    </div>
-                    <p className="text-white/80 text-sm md:text-base">
-                      {tx({
-                        fr: 'Profitez de nos offres speciales - quantites limitees!',
-                        en: 'Take advantage of our special offers - limited quantities!',
-                        es: 'Aprovecha nuestras ofertas especiales - cantidades limitadas!',
-                      })}
-                    </p>
-                  </div>
-                  <div className="absolute top-2 right-4 text-white/10 font-heading font-bold text-[120px] md:text-[180px] leading-none select-none pointer-events-none">%</div>
+                <div className="flex items-center justify-between mb-8">
+                  <h2 className="text-2xl md:text-3xl font-heading font-bold text-heading flex items-center gap-3">
+                    <Percent size={24} className="text-red-400" />
+                    {tx({ fr: 'Soldes', en: 'Sales', es: 'Ofertas' })}
+                  </h2>
+                  <span className="text-red-400 text-xs font-semibold uppercase tracking-wider">
+                    {tx({ fr: 'Quantites limitees', en: 'Limited quantities', es: 'Cantidades limitadas' })}
+                  </span>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                   {defaultSaleItems.map((item, i) => {
                     const discount = Math.round((1 - item.salePrice / item.originalPrice) * 100);
+                    const justAdded = saleAdded === item.id;
                     return (
                       <motion.div
                         key={item.id}
@@ -428,8 +420,12 @@ function Boutique() {
                               image: item.image,
                               notes: '',
                             });
+                            setSaleAdded(item.id);
+                            setTimeout(() => setSaleAdded(null), 2000);
                           }}
-                          className="group block w-full text-left rounded-2xl overflow-hidden card-bg-bordered hover:border-accent/50 transition-all duration-300 relative"
+                          className={`group block w-full text-left rounded-2xl overflow-hidden card-bg-bordered transition-all duration-300 relative ${
+                            justAdded ? 'ring-2 ring-green-400 border-green-400/50' : 'hover:border-accent/50'
+                          }`}
                         >
                           {/* Badge solde */}
                           <div className="absolute top-3 left-3 z-10 bg-red-500 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-lg">
@@ -443,20 +439,23 @@ function Boutique() {
                               loading="lazy"
                             />
                           </div>
-                          <div className="p-4">
-                            <h3 className="text-sm font-heading font-bold text-heading">
+                          <div className="p-3">
+                            <h3 className="text-sm font-heading font-bold text-heading truncate">
                               {tx({ fr: item.nameFr, en: item.nameEn, es: item.nameEs })}
                             </h3>
                             <p className="text-grey-muted text-[11px] mt-0.5">
                               {tx({ fr: item.descFr, en: item.descEn, es: item.descEs })}
                             </p>
                             <div className="flex items-center gap-2 mt-2">
-                              <span className="text-accent text-lg font-heading font-bold">{item.salePrice}$</span>
-                              <span className="text-grey-muted text-sm line-through">{item.originalPrice}$</span>
+                              <span className="text-accent text-base font-heading font-bold">{item.salePrice}$</span>
+                              <span className="text-grey-muted text-xs line-through">{item.originalPrice}$</span>
                             </div>
-                            <div className="mt-3 flex items-center gap-2 text-accent text-xs font-semibold">
-                              <ShoppingCart size={14} />
-                              {tx({ fr: 'Ajouter au panier', en: 'Add to cart', es: 'Agregar al carrito' })}
+                            <div className="mt-2 flex items-center gap-1.5 text-xs font-semibold">
+                              {justAdded ? (
+                                <span className="text-green-400 flex items-center gap-1"><Check size={14} />{tx({ fr: 'Ajoute!', en: 'Added!', es: 'Agregado!' })}</span>
+                              ) : (
+                                <span className="text-accent flex items-center gap-1"><ShoppingCart size={14} />{tx({ fr: 'Ajouter au panier', en: 'Add to cart', es: 'Agregar' })}</span>
+                              )}
                             </div>
                           </div>
                         </button>
@@ -464,6 +463,15 @@ function Boutique() {
                     );
                   })}
                 </div>
+
+                {/* Note sur les revenus partages */}
+                <p className="text-grey-muted text-[11px] mt-4 text-center">
+                  {tx({
+                    fr: 'Une partie des revenus de chaque vente est reversee aux artistes et labels partenaires.',
+                    en: 'A portion of the revenue from each sale goes to the partner artists and labels.',
+                    es: 'Una parte de los ingresos de cada venta se destina a los artistas y sellos asociados.',
+                  })}
+                </p>
               </motion.div>
             </section>
 
