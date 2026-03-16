@@ -11,6 +11,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { useUserRole } from '../contexts/UserRoleContext';
 import { getCommissions } from '../services/adminService';
 import { sendArtistMessage, getMyMessages, createWithdrawal, getMyWithdrawals } from '../services/artistService';
+import { uploadArtistFile } from '../services/api';
+import FileUpload from './FileUpload';
 import artistsData from '../data/artists';
 
 // Prix service (cout Massive) et prix artiste (prix client)
@@ -44,6 +46,7 @@ function AccountArtistDashboard() {
   const [msgLoading, setMsgLoading] = useState(true);
   const [showMsgForm, setShowMsgForm] = useState(false);
   const [msgForm, setMsgForm] = useState({ category: 'new-images', subject: '', message: '' });
+  const [msgFiles, setMsgFiles] = useState([]);
   const [msgSending, setMsgSending] = useState(false);
   const [msgSuccess, setMsgSuccess] = useState('');
 
@@ -159,9 +162,11 @@ function AccountArtistDashboard() {
         subject: msgForm.subject,
         message: msgForm.message,
         category: msgForm.category,
+        attachments: msgFiles.length > 0 ? msgFiles.map(f => ({ name: f.name, url: f.url, size: f.size, mime: f.mime })) : null,
       });
       setMsgSuccess(tx({ fr: 'Message envoye!', en: 'Message sent!', es: 'Mensaje enviado!' }));
       setMsgForm({ category: 'new-images', subject: '', message: '' });
+      setMsgFiles([]);
       setShowMsgForm(false);
       // Refresh messages
       const { data } = await getMyMessages(email);
@@ -494,13 +499,17 @@ function AccountArtistDashboard() {
                     required
                   />
                 </div>
-                <p className="text-grey-muted text-[10px]">
-                  {tx({
-                    fr: 'Pour envoyer des fichiers images, utilise massivemedias@gmail.com ou partage un lien (Google Drive, WeTransfer, Dropbox).',
-                    en: 'To send image files, use massivemedias@gmail.com or share a link (Google Drive, WeTransfer, Dropbox).',
-                    es: 'Para enviar archivos de imagenes, usa massivemedias@gmail.com o comparte un enlace (Google Drive, WeTransfer, Dropbox).',
-                  })}
-                </p>
+                {msgForm.category === 'new-images' && (
+                  <div>
+                    <FileUpload
+                      label={tx({ fr: 'Images a deposer (max 20 fichiers, 130 MB chacun)', en: 'Images to submit (max 20 files, 130 MB each)', es: 'Imagenes a enviar (max 20 archivos, 130 MB c/u)' })}
+                      files={msgFiles}
+                      onFilesChange={setMsgFiles}
+                      maxFiles={20}
+                      uploadFn={uploadArtistFile}
+                    />
+                  </div>
+                )}
                 <div className="flex gap-2">
                   <button type="submit" disabled={msgSending} className="btn-primary text-xs py-2 px-6 disabled:opacity-50">
                     {msgSending ? <Loader2 size={14} className="animate-spin mr-1" /> : <Send size={14} className="mr-1" />}
@@ -533,6 +542,16 @@ function AccountArtistDashboard() {
                   </span>
                 </div>
                 <p className="text-grey-muted text-xs truncate">{m.message}</p>
+                {m.attachments && m.attachments.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {m.attachments.map((att, j) => (
+                      <a key={j} href={att.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 px-2 py-1 rounded bg-accent/10 border border-accent/20 text-[10px] text-accent hover:bg-accent/20 transition-colors">
+                        <ImagePlus size={10} />
+                        {att.name?.length > 20 ? att.name.substring(0, 20) + '...' : att.name}
+                      </a>
+                    ))}
+                  </div>
+                )}
                 <p className="text-grey-muted/60 text-[10px] mt-1">{m.createdAt ? new Date(m.createdAt).toLocaleDateString('fr-CA') : ''}</p>
                 {m.adminReply && (
                   <div className="mt-2 p-2 rounded bg-accent/5 border border-accent/10">
@@ -667,6 +686,18 @@ function AccountArtistDashboard() {
             es: 'Nota: El formato A2 (18x24") se imprime en calidad museo unicamente (12 tintas pigmentadas). Sin marco disponible para este formato.',
           })}
         </p>
+        <div className="mt-4 p-3 rounded-lg bg-yellow-500/5 border border-yellow-500/20">
+          <p className="text-yellow-400 text-[11px] font-semibold mb-1">
+            {tx({ fr: 'Copies personnelles', en: 'Personal copies', es: 'Copias personales' })}
+          </p>
+          <p className="text-grey-muted text-[11px]">
+            {tx({
+              fr: 'Prints : tu peux commander tes propres copies au prix coutant (colonne "Cout Massive"), pour usage personnel, portfolio ou expos uniquement. Stickers : prix regulier, meme pour toi - c\'est un produit de distribution.',
+              en: 'Prints: you can order your own copies at cost price ("Massive cost" column), for personal use, portfolio or exhibitions only. Stickers: regular price, even for you - it\'s a distribution product.',
+              es: 'Prints: puedes pedir tus propias copias al precio de costo (columna "Costo Massive"), solo para uso personal, portafolio o exposiciones. Stickers: precio regular, incluso para ti - es un producto de distribucion.',
+            })}
+          </p>
+        </div>
       </div>
 
       {/* ====== HISTORIQUE VENTES ====== */}

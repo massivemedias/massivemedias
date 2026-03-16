@@ -40,6 +40,9 @@
       "enum": ["new", "read", "replied", "archived"],
       "default": "new"
     },
+    "attachments": {
+      "type": "json"
+    },
     "adminReply": {
       "type": "text"
     },

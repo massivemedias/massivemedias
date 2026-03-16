@@ -4,7 +4,7 @@ export default factories.createCoreController('api::artist-message.artist-messag
 
   // POST /artist-messages/send - Artiste envoie un message
   async send(ctx) {
-    const { artistSlug, artistName, email, subject, message, category } = ctx.request.body as any;
+    const { artistSlug, artistName, email, subject, message, category, attachments } = ctx.request.body as any;
 
     if (!email || !subject || !message) {
       ctx.throw(400, 'Email, subject and message required');
@@ -20,6 +20,7 @@ export default factories.createCoreController('api::artist-message.artist-messag
           subject,
           message,
           category: category || 'other',
+          attachments: attachments || null,
           status: 'new',
         },
       });
@@ -59,6 +60,7 @@ export default factories.createCoreController('api::artist-message.artist-messag
           message: e.message,
           category: e.category,
           status: e.status,
+          attachments: e.attachments,
           adminReply: e.adminReply,
           repliedAt: e.repliedAt,
           createdAt: e.createdAt,
@@ -87,6 +89,7 @@ export default factories.createCoreController('api::artist-message.artist-messag
           message: e.message,
           category: e.category,
           status: e.status,
+          attachments: e.attachments,
           adminReply: e.adminReply,
           repliedAt: e.repliedAt,
           createdAt: e.createdAt,

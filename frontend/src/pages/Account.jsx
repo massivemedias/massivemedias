@@ -5,7 +5,7 @@ import {
   User, Mail, Phone, MapPin, Building2, Package, LogOut, Loader2, Check, Lock,
   Eye, EyeOff, ChevronDown, ChevronUp, Shield, Pencil, Save, ShoppingBag,
   ArrowRight, Gift, Copy, Heart, Clock, RotateCcw, MessageCircle, Download,
-  Palette, Settings, Menu, X, Banknote, Receipt, BarChart3, DollarSign, UserCircle, Users,
+  Palette, Settings, Menu, X, Banknote, Receipt, BarChart3, DollarSign, Users,
 } from 'lucide-react';
 import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
@@ -184,8 +184,7 @@ function Account() {
     { to: '/admin/commissions', icon: Banknote, fr: 'Commissions', en: 'Commissions', es: 'Comisiones' },
     { to: '/admin/inventaire', icon: Package, fr: 'Inventaire', en: 'Inventory', es: 'Inventario' },
     { to: '/admin/messages', icon: MessageCircle, fr: 'Messages', en: 'Messages', es: 'Mensajes' },
-    { to: '/admin/clients', icon: Users, fr: 'Clients', en: 'Clients', es: 'Clientes' },
-    { to: '/admin/utilisateurs', icon: UserCircle, fr: 'Utilisateurs', en: 'Users', es: 'Usuarios' },
+    { to: '/admin/utilisateurs', icon: Users, fr: 'Utilisateurs', en: 'Users', es: 'Usuarios' },
     { to: '/admin/depenses', icon: Receipt, fr: 'Depenses', en: 'Expenses', es: 'Gastos' },
     { to: '/admin/stats', icon: BarChart3, fr: 'Stats', en: 'Stats', es: 'Stats' },
     { to: '/admin/tarifs', icon: DollarSign, fr: 'Tarifs', en: 'Pricing', es: 'Precios' },
@@ -206,10 +205,7 @@ function Account() {
   ];
 
   // Tabs pour users non-admin
-  const tabs = [
-    ...baseTabs,
-    ...(isArtist ? [{ id: 'artist', label: tx({ fr: 'Artiste', en: 'Artist', es: 'Artista' }), icon: Palette }] : []),
-  ];
+  const tabs = [...baseTabs];
 
   const [adminMobileOpen, setAdminMobileOpen] = useState(false);
 
@@ -824,6 +820,13 @@ function Account() {
                 {/* -- OVERVIEW TAB -- */}
                 {activeTab === 'overview' && (
                   <div className="space-y-6">
+                    {/* Artist dashboard inline for artist users */}
+                    {isArtist && (
+                      <Suspense fallback={<div className="flex items-center gap-2 text-grey-muted py-8 justify-center"><Loader2 size={16} className="animate-spin" /></div>}>
+                        <AccountArtistDashboard />
+                      </Suspense>
+                    )}
+
                     {/* Stats cards */}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       {[
@@ -1164,15 +1167,6 @@ function Account() {
 
                 {/* -- ADDRESS TAB -- */}
                 {activeTab === 'address' && renderAddressContent()}
-
-                {/* -- ARTIST TAB -- */}
-                {activeTab === 'artist' && isArtist && (
-                  <div className="rounded-2xl border border-purple-main/30 p-6 md:p-8 card-bg card-shadow">
-                    <Suspense fallback={<div className="flex items-center gap-2 text-grey-muted py-8 justify-center"><Loader2 size={16} className="animate-spin" /></div>}>
-                      <AccountArtistDashboard />
-                    </Suspense>
-                  </div>
-                )}
 
                 {/* -- SECURITY TAB -- */}
                 {activeTab === 'security' && renderSecurityContent()}

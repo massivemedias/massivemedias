@@ -305,6 +305,16 @@ function AdminMessages() {
                               {/* Message */}
                               <div className="rounded-lg bg-glass p-4">
                                 <p className="text-sm text-heading whitespace-pre-wrap">{item.message}</p>
+                                {item.attachments && item.attachments.length > 0 && (
+                                  <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-white/10">
+                                    {item.attachments.map((att, j) => (
+                                      <a key={j} href={att.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-accent/10 border border-accent/20 text-xs text-accent hover:bg-accent/20 transition-colors">
+                                        📎 {att.name?.length > 25 ? att.name.substring(0, 25) + '...' : att.name}
+                                        {att.size && <span className="text-grey-muted text-[10px]">({(att.size / 1024 / 1024).toFixed(1)} MB)</span>}
+                                      </a>
+                                    ))}
+                                  </div>
+                                )}
                               </div>
 
                               {/* Reply section */}

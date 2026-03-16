@@ -1,4 +1,4 @@
-export const ARTIST_CONTRACT_VERSION = 'v1';
+export const ARTIST_CONTRACT_VERSION = 'v2';
 
 export const ARTIST_CONTRACT_TEXT_EN = `
 <h3 style="text-align:center;margin-bottom:4px;">ARTIST PARTNERSHIP AGREEMENT</h3>
@@ -67,6 +67,14 @@ export const ARTIST_CONTRACT_TEXT_EN = `
 
 <p><strong>4.3 Payments</strong></p>
 <p>Payments to the Artist are made monthly via Interac e-Transfer, provided the amount exceeds $25 CAD. Amounts below this threshold are carried over to the following month.</p>
+
+<p><strong>4.4 Artist Personal Copies</strong></p>
+<p>The Artist may order personal copies of their <strong>prints</strong> at production cost (materials, consumables, no markup). These copies are strictly reserved for personal use, portfolio or exhibition purposes. Any resale or distribution of these copies - whether at reduced or full price - must go through the Massive Medias platform according to the revenue split agreed upon in section 4.1.</p>
+<p><strong>Stickers</strong> are distribution products by nature. Whether the Artist orders them personally or a customer purchases them, regular retail pricing applies. There is no discounted rate for personal sticker orders.</p>
+<p>Violation of this clause constitutes a breach of contract and may result in immediate termination of the partnership.</p>
+
+<p><strong>4.5 Good Faith Production</strong></p>
+<p>Massive Medias commits to never producing or selling prints or derivative products of the Artist's works without a confirmed and paid client order. No speculative production or unauthorized sales will be made. This mutual trust is the foundation of this partnership.</p>
 
 <h4>5. QUALITY COMMITMENT</h4>
 <p>Massive Medias commits to producing all items to gallery or premium standard, in keeping with the Artist's work. This commitment includes:</p>
@@ -206,6 +214,14 @@ export const ARTIST_CONTRACT_TEXT_ES = `
 <p><strong>4.3 Pagos</strong></p>
 <p>Los pagos al Artista se realizan mensualmente por transferencia Interac, siempre que el monto supere los $25 CAD. Los montos inferiores a este umbral se trasladan al mes siguiente.</p>
 
+<p><strong>4.4 Copias personales del Artista</strong></p>
+<p>El Artista puede solicitar copias personales de sus <strong>impresiones</strong> al costo de produccion (materiales, consumibles, sin margen). Estas copias estan estrictamente reservadas para uso personal, portafolio o exposiciones. Cualquier reventa o distribucion de estas copias - ya sea a precio reducido o completo - debe realizarse a traves de la plataforma Massive Medias segun el reparto acordado en el articulo 4.1.</p>
+<p>Los <strong>stickers</strong> son productos de distribucion por naturaleza. Ya sea que el Artista los solicite personalmente o que un cliente los compre, se aplican los precios regulares de venta. No existe tarifa preferencial para pedidos personales de stickers.</p>
+<p>La violacion de esta clausula constituye un incumplimiento del contrato y puede resultar en la terminacion inmediata de la asociacion.</p>
+
+<p><strong>4.5 Produccion de buena fe</strong></p>
+<p>Massive Medias se compromete a nunca producir ni vender impresiones o productos derivados de las obras del Artista sin una orden confirmada y pagada por un cliente. No se realizara ninguna produccion especulativa ni venta no autorizada. Esta confianza mutua es el fundamento de esta asociacion.</p>
+
 <h4>5. COMPROMISO DE CALIDAD</h4>
 <p>Massive Medias se compromete a producir todos los articulos con estandar de galeria o premium, en adecuacion con la obra del Artista. Este compromiso incluye:</p>
 <ul>
@@ -343,6 +359,14 @@ export const ARTIST_CONTRACT_TEXT = `
 
 <p><strong>4.3 Versements</strong></p>
 <p>Les versements a l'Artiste sont effectues mensuellement par virement Interac, a condition que le montant du depasse 25 $ CAD. Les montants inferieurs a ce seuil sont reportes au mois suivant.</p>
+
+<p><strong>4.4 Copies personnelles de l'Artiste</strong></p>
+<p>L'Artiste peut commander des copies personnelles de ses <strong>impressions (prints)</strong> au prix de production (materiaux, consommables, sans marge). Ces copies sont strictement reservees a un usage personnel, portfolio ou exposition. Toute revente ou distribution de ces copies - que ce soit a prix reduit ou au prix fort - doit passer par la plateforme Massive Medias selon le split convenu a l'article 4.1.</p>
+<p>Les <strong>stickers</strong> sont des produits de distribution par nature. Que l'Artiste les commande pour lui-meme ou qu'un client les achete, les prix reguliers de vente s'appliquent. Il n'existe pas de tarif preferentiel pour les commandes personnelles de stickers.</p>
+<p>La violation de cette clause constitue un manquement au contrat et peut entrainer la resiliation immediate du partenariat.</p>
+
+<p><strong>4.5 Production de bonne foi</strong></p>
+<p>Massive Medias s'engage a ne jamais produire ni vendre d'impressions ou de produits derives des oeuvres de l'Artiste sans commande confirmee et payee par un client. Aucune production speculative ni vente non autorisee ne sera effectuee. Cette confiance mutuelle est le fondement de ce partenariat.</p>
 
 <h4>5. ENGAGEMENT QUALITE</h4>
 <p>Massive Medias s'engage a produire tous les articles au standard galerie ou premium, en adequation avec l'oeuvre de l'Artiste. Cet engagement comprend :</p>

@@ -296,14 +296,13 @@ function AdminUtilisateurs() {
       {/* Users list */}
       {filtered.length > 0 && (
         <div className="rounded-xl bg-glass overflow-hidden card-border">
-          <div className="hidden md:grid grid-cols-[1fr_1fr_100px_100px_80px_100px_100px] gap-3 px-4 py-3 text-xs font-semibold text-grey-muted uppercase tracking-wider border-b card-border">
+          <div className="hidden md:grid grid-cols-[1fr_1.2fr_100px_110px_70px_100px] gap-3 px-4 py-3 text-xs font-semibold text-grey-muted uppercase tracking-wider border-b card-border">
             <span>{tx({ fr: 'Utilisateur', en: 'User', es: 'Usuario' })}</span>
             <span>Email</span>
             <span>{tx({ fr: 'Statut', en: 'Status', es: 'Estado' })}</span>
             <span>{tx({ fr: 'Role', en: 'Role', es: 'Rol' })}</span>
-            <span>{tx({ fr: 'Cmd', en: 'Orders', es: 'Ped' })}</span>
-            <span>{tx({ fr: 'Depense', en: 'Spent', es: 'Gastado' })}</span>
-            <span>Actions</span>
+            <span className="text-center">{tx({ fr: 'Cmd', en: 'Orders', es: 'Ped' })}</span>
+            <span className="text-right">{tx({ fr: 'Depense', en: 'Spent', es: 'Gastado' })}</span>
           </div>
 
           {filtered.map((user) => {
@@ -320,7 +319,7 @@ function AdminUtilisateurs() {
                 {/* Desktop row */}
                 <div
                   onClick={() => setExpandedId(isExpanded ? null : user.id)}
-                  className="hidden md:grid grid-cols-[1fr_1fr_100px_100px_80px_100px_100px] gap-3 px-4 py-3 items-center cursor-pointer hover:bg-accent/5 transition-colors"
+                  className="hidden md:grid grid-cols-[1fr_1.2fr_100px_110px_70px_100px] gap-3 px-4 py-3 items-center cursor-pointer hover:bg-accent/5 transition-colors"
                 >
                   {/* Name + provider */}
                   <div className="flex items-center gap-3">
@@ -367,7 +366,7 @@ function AdminUtilisateurs() {
                         {roleBadge.label}
                       </span>
                       {roleBadge.slug && (
-                        <span className="text-[9.5px] text-purple-400/70 truncate max-w-[90px] pl-0.5">{roleBadge.slug}</span>
+                        <span className="text-[9.5px] text-purple-400/70 truncate max-w-[100px] pl-0.5">{roleBadge.slug}</span>
                       )}
                     </div>
                   ) : (
@@ -375,49 +374,18 @@ function AdminUtilisateurs() {
                   )}
 
                   {/* Orders */}
-                  <span className={`text-[15px] font-semibold ${user.orderCount > 0 ? 'text-heading' : 'text-grey-muted'}`}>
+                  <span className={`text-[15px] font-semibold text-center ${user.orderCount > 0 ? 'text-heading' : 'text-grey-muted'}`}>
                     {user.orderCount || 0}
                   </span>
 
-                  {/* Total spent */}
-                  <span className={`text-[15px] font-bold ${user.totalSpent > 0 ? 'text-green-400' : 'text-grey-muted'}`}>
-                    {user.totalSpent > 0 ? formatMoney(user.totalSpent) : '-'}
-                  </span>
-
-                  {/* Actions */}
-                  <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
-                    {role === 'admin' ? (
-                      <span className="text-[11.5px] text-grey-muted italic">Admin</span>
-                    ) : user.isGuest ? (
-                      <span className="text-[11.5px] text-grey-muted italic">{tx({ fr: 'Invite', en: 'Guest', es: 'Invitado' })}</span>
-                    ) : role === 'artist' ? (
-                      <>
-                        <button
-                          onClick={() => { setEditingUser(isEditing ? null : user.email); setSelectedSlug(artistSlug || ''); }}
-                          className="text-[12.5px] text-accent hover:text-accent/80 transition-colors flex items-center gap-1"
-                        >
-                          <Palette size={12} />
-                          <ChevronDown size={12} className={`transition-transform ${isEditing ? 'rotate-180' : ''}`} />
-                        </button>
-                        <button
-                          onClick={() => handleRemoveArtist(user)}
-                          disabled={isSaving}
-                          title={tx({ fr: 'Retirer artiste', en: 'Remove artist', es: 'Quitar artista' })}
-                          className="p-1.5 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors disabled:opacity-50"
-                        >
-                          {isSaving ? <Loader2 size={12} className="animate-spin" /> : <X size={14} />}
-                        </button>
-                      </>
-                    ) : (
-                      <button
-                        onClick={() => { setEditingUser(isEditing ? null : user.email); setSelectedSlug(''); }}
-                        className="text-[12.5px] text-accent hover:text-accent/80 transition-colors flex items-center gap-1"
-                      >
-                        <Palette size={12} />
-                        {tx({ fr: 'Artiste', en: 'Artist', es: 'Artista' })}
-                        <ChevronDown size={12} className={`transition-transform ${isEditing ? 'rotate-180' : ''}`} />
-                      </button>
-                    )}
+                  {/* Total spent + chevron */}
+                  <div className="flex items-center justify-end gap-2">
+                    <span className={`text-[15px] font-bold ${user.totalSpent > 0 ? 'text-green-400' : 'text-grey-muted'}`}>
+                      {user.totalSpent > 0 ? formatMoney(user.totalSpent) : '-'}
+                    </span>
+                    <span className="text-grey-muted/50">
+                      {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                    </span>
                   </div>
                 </div>
 
@@ -589,38 +557,70 @@ function AdminUtilisateurs() {
                           </div>
                         </div>
 
-                        {/* Delete user */}
+                        {/* Actions */}
                         {role !== 'admin' && !user.isGuest && (
-                          <div className="mt-4 pt-3 border-t border-purple-main/10">
-                            {deleteConfirm === user.id ? (
-                              <div className="flex items-center gap-3">
-                                <span className="text-red-400 text-[13.5px]">
-                                  {tx({ fr: 'Confirmer la suppression de cet utilisateur?', en: 'Confirm deleting this user?', es: 'Confirmar eliminar este usuario?' })}
-                                </span>
+                          <div className="mt-4 pt-3 border-t border-purple-main/10 flex flex-wrap items-center gap-3">
+                            {/* Artist role actions */}
+                            {role === 'artist' ? (
+                              <>
                                 <button
-                                  onClick={() => handleDeleteUser(user)}
+                                  onClick={() => { setEditingUser(isEditing ? null : user.email); setSelectedSlug(artistSlug || ''); }}
+                                  className="px-3 py-1.5 rounded-lg bg-purple-500/10 text-purple-400 text-xs font-semibold hover:bg-purple-500/20 transition-colors flex items-center gap-1.5"
+                                >
+                                  <Palette size={12} />
+                                  {tx({ fr: 'Changer profil artiste', en: 'Change artist profile', es: 'Cambiar perfil artista' })}
+                                </button>
+                                <button
+                                  onClick={() => handleRemoveArtist(user)}
                                   disabled={isSaving}
-                                  className="px-3 py-1.5 rounded-lg bg-red-500/20 text-red-400 text-xs font-semibold hover:bg-red-500/30 transition-colors disabled:opacity-50 flex items-center gap-1"
+                                  className="px-3 py-1.5 rounded-lg bg-yellow-500/10 text-yellow-400 text-xs font-semibold hover:bg-yellow-500/20 transition-colors disabled:opacity-50 flex items-center gap-1.5"
                                 >
-                                  {isSaving ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
-                                  {tx({ fr: 'Supprimer', en: 'Delete', es: 'Eliminar' })}
+                                  {isSaving ? <Loader2 size={12} className="animate-spin" /> : <X size={12} />}
+                                  {tx({ fr: 'Retirer role artiste', en: 'Remove artist role', es: 'Quitar rol artista' })}
                                 </button>
-                                <button
-                                  onClick={() => setDeleteConfirm(null)}
-                                  className="text-grey-muted text-xs hover:text-heading transition-colors"
-                                >
-                                  {tx({ fr: 'Annuler', en: 'Cancel', es: 'Cancelar' })}
-                                </button>
-                              </div>
+                              </>
                             ) : (
                               <button
-                                onClick={() => setDeleteConfirm(user.id)}
-                                className="text-red-400/50 hover:text-red-400 text-xs transition-colors flex items-center gap-1.5"
+                                onClick={() => { setEditingUser(isEditing ? null : user.email); setSelectedSlug(''); }}
+                                className="px-3 py-1.5 rounded-lg bg-accent/10 text-accent text-xs font-semibold hover:bg-accent/20 transition-colors flex items-center gap-1.5"
                               >
-                                <Trash2 size={12} />
-                                {tx({ fr: 'Supprimer cet utilisateur', en: 'Delete this user', es: 'Eliminar este usuario' })}
+                                <Palette size={12} />
+                                {tx({ fr: 'Assigner comme artiste', en: 'Assign as artist', es: 'Asignar como artista' })}
                               </button>
                             )}
+
+                            {/* Delete */}
+                            <div className="ml-auto">
+                              {deleteConfirm === user.id ? (
+                                <div className="flex items-center gap-2">
+                                  <span className="text-red-400 text-xs">
+                                    {tx({ fr: 'Confirmer?', en: 'Confirm?', es: 'Confirmar?' })}
+                                  </span>
+                                  <button
+                                    onClick={() => handleDeleteUser(user)}
+                                    disabled={isSaving}
+                                    className="px-3 py-1.5 rounded-lg bg-red-500/20 text-red-400 text-xs font-semibold hover:bg-red-500/30 transition-colors disabled:opacity-50 flex items-center gap-1"
+                                  >
+                                    {isSaving ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
+                                    {tx({ fr: 'Supprimer', en: 'Delete', es: 'Eliminar' })}
+                                  </button>
+                                  <button
+                                    onClick={() => setDeleteConfirm(null)}
+                                    className="text-grey-muted text-xs hover:text-heading transition-colors"
+                                  >
+                                    {tx({ fr: 'Annuler', en: 'Cancel', es: 'Cancelar' })}
+                                  </button>
+                                </div>
+                              ) : (
+                                <button
+                                  onClick={() => setDeleteConfirm(user.id)}
+                                  className="text-red-400/50 hover:text-red-400 text-xs transition-colors flex items-center gap-1.5"
+                                >
+                                  <Trash2 size={12} />
+                                  {tx({ fr: 'Supprimer', en: 'Delete', es: 'Eliminar' })}
+                                </button>
+                              )}
+                            </div>
                           </div>
                         )}
                       </div>
