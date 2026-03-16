@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ArrowRight, ArrowLeft, ShoppingCart, Check, X, Code, PenTool, User, Palette, Image, Sticker, Wrench } from 'lucide-react';
+import { ArrowRight, ArrowLeft, ShoppingCart, Check, X, Code, PenTool, User, Palette, Image, Sticker, Wrench, Gift, Tag, Percent } from 'lucide-react';
 import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
 import { useCart } from '../contexts/CartContext';
@@ -28,11 +28,32 @@ const defaultStickerPricingTiers = [
   { qty: 25, label: '25+ packs', price: 15 },
 ];
 
+// Soldes - produits en promotion
+const defaultSaleItems = [
+  {
+    id: 'sale-stk-massive', nameFr: 'Pack Stickers Massive', nameEn: 'Massive Sticker Pack', nameEs: 'Pack Stickers Massive',
+    image: img('/images/stickers/Stickers-massive.webp'), originalPrice: 35, salePrice: 20,
+    descFr: 'Pack de stickers vinyle die-cut Massive Medias', descEn: 'Massive Medias die-cut vinyl sticker pack', descEs: 'Pack de stickers vinilo troquelados Massive Medias',
+    link: null, type: 'sticker',
+  },
+  {
+    id: 'sale-stk-fusion', nameFr: 'Pack Stickers Fusion State', nameEn: 'Fusion State Sticker Pack', nameEs: 'Pack Stickers Fusion State',
+    image: img('/images/stickers/Stickers-Fusion-State-Rec.webp'), originalPrice: 35, salePrice: 20,
+    descFr: 'Pack de stickers vinyle die-cut Fusion State Records', descEn: 'Fusion State Records die-cut vinyl sticker pack', descEs: 'Pack de stickers vinilo troquelados Fusion State Records',
+    link: null, type: 'sticker',
+  },
+];
+
+// Cartes cadeaux
+const giftCardAmounts = [25, 50, 100, 150];
+
 // Categories sidebar
 const sidebarCategories = [
+  { id: 'soldes', icon: Percent, fr: 'Soldes', en: 'Sales', es: 'Ofertas' },
   { id: 'artistes', icon: Palette, fr: 'Artistes', en: 'Artists', es: 'Artistas' },
   { id: 'prints', icon: Image, fr: 'Prints', en: 'Prints', es: 'Impresiones' },
   { id: 'stickers', icon: Sticker, fr: 'Stickers', en: 'Stickers', es: 'Stickers' },
+  { id: 'cartes-cadeaux', icon: Gift, fr: 'Cartes cadeaux', en: 'Gift cards', es: 'Tarjetas regalo' },
   { id: 'services', icon: Wrench, fr: 'Services', en: 'Services', es: 'Servicios' },
 ];
 
@@ -47,11 +68,18 @@ function Boutique() {
 
   // Refs pour scroll-to-section
   const sectionRefs = {
+    soldes: useRef(null),
     artistes: useRef(null),
     prints: useRef(null),
     stickers: useRef(null),
+    'cartes-cadeaux': useRef(null),
     services: useRef(null),
   };
+
+  // Gift card state
+  const [selectedGiftAmount, setSelectedGiftAmount] = useState(50);
+  const [customGiftAmount, setCustomGiftAmount] = useState('');
+  const [giftCardAdded, setGiftCardAdded] = useState(false);
 
   // Reset view when navigating to /boutique
   useEffect(() => {
@@ -347,6 +375,97 @@ function Boutique() {
 
           {/* Main content */}
           <div className="flex-1 min-w-0">
+
+            {/* ═══════════════════ SOLDES ═══════════════════ */}
+            <section ref={sectionRefs.soldes} data-section="soldes" className="mb-16 scroll-mt-20">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                {/* Banniere SOLDES */}
+                <div className="relative rounded-2xl overflow-hidden mb-8 p-6 md:p-8" style={{ background: 'linear-gradient(135deg, #FF52A0 0%, #8100D1 50%, #FF52A0 100%)', backgroundSize: '200% 200%', animation: 'gradient-shift 4s ease infinite' }}>
+                  <div className="relative z-10">
+                    <div className="flex items-center gap-3 mb-2">
+                      <Tag size={24} className="text-white" />
+                      <h2 className="text-3xl md:text-4xl font-heading font-bold text-white tracking-tight">
+                        SOLDES
+                      </h2>
+                    </div>
+                    <p className="text-white/80 text-sm md:text-base">
+                      {tx({
+                        fr: 'Profitez de nos offres speciales - quantites limitees!',
+                        en: 'Take advantage of our special offers - limited quantities!',
+                        es: 'Aprovecha nuestras ofertas especiales - cantidades limitadas!',
+                      })}
+                    </p>
+                  </div>
+                  <div className="absolute top-2 right-4 text-white/10 font-heading font-bold text-[120px] md:text-[180px] leading-none select-none pointer-events-none">%</div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {defaultSaleItems.map((item, i) => {
+                    const discount = Math.round((1 - item.salePrice / item.originalPrice) * 100);
+                    return (
+                      <motion.div
+                        key={item.id}
+                        initial={{ opacity: 0, y: 15 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.4, delay: i * 0.06 }}
+                        viewport={{ once: true }}
+                      >
+                        <button
+                          onClick={() => {
+                            addToCart({
+                              productId: item.id,
+                              productName: tx({ fr: item.nameFr, en: item.nameEn, es: item.nameEs }),
+                              finish: 'Solde',
+                              shape: null,
+                              size: null,
+                              quantity: 1,
+                              unitPrice: item.salePrice,
+                              totalPrice: item.salePrice,
+                              image: item.image,
+                              notes: '',
+                            });
+                          }}
+                          className="group block w-full text-left rounded-2xl overflow-hidden card-bg-bordered hover:border-accent/50 transition-all duration-300 relative"
+                        >
+                          {/* Badge solde */}
+                          <div className="absolute top-3 left-3 z-10 bg-red-500 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-lg">
+                            -{discount}%
+                          </div>
+                          <div className="aspect-square overflow-hidden bg-glass p-4">
+                            <img
+                              src={item.image}
+                              alt={tx({ fr: item.nameFr, en: item.nameEn, es: item.nameEs })}
+                              className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105"
+                              loading="lazy"
+                            />
+                          </div>
+                          <div className="p-4">
+                            <h3 className="text-sm font-heading font-bold text-heading">
+                              {tx({ fr: item.nameFr, en: item.nameEn, es: item.nameEs })}
+                            </h3>
+                            <p className="text-grey-muted text-[11px] mt-0.5">
+                              {tx({ fr: item.descFr, en: item.descEn, es: item.descEs })}
+                            </p>
+                            <div className="flex items-center gap-2 mt-2">
+                              <span className="text-accent text-lg font-heading font-bold">{item.salePrice}$</span>
+                              <span className="text-grey-muted text-sm line-through">{item.originalPrice}$</span>
+                            </div>
+                            <div className="mt-3 flex items-center gap-2 text-accent text-xs font-semibold">
+                              <ShoppingCart size={14} />
+                              {tx({ fr: 'Ajouter au panier', en: 'Add to cart', es: 'Agregar al carrito' })}
+                            </div>
+                          </div>
+                        </button>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </motion.div>
+            </section>
 
             {/* ═══════════════════ ARTISTES ═══════════════════ */}
             <section ref={sectionRefs.artistes} data-section="artistes" className="mb-16 scroll-mt-20">
@@ -657,6 +776,112 @@ function Boutique() {
                     );
                   })()}
                 </AnimatePresence>
+              </motion.div>
+            </section>
+
+            {/* ═══════════════════ CARTES CADEAUX ═══════════════════ */}
+            <section ref={sectionRefs['cartes-cadeaux']} data-section="cartes-cadeaux" className="mb-16 scroll-mt-20">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                viewport={{ once: true }}
+              >
+                <h2 className="text-2xl md:text-3xl font-heading font-bold text-heading mb-2">
+                  {tx({ fr: 'Cartes cadeaux', en: 'Gift cards', es: 'Tarjetas regalo' })}
+                </h2>
+                <p className="text-grey-muted text-sm mb-8">
+                  {tx({
+                    fr: 'Offrez de l\'art et de la creativite. Valable sur tous nos produits et services.',
+                    en: 'Give the gift of art and creativity. Valid on all our products and services.',
+                    es: 'Regala arte y creatividad. Valido en todos nuestros productos y servicios.',
+                  })}
+                </p>
+
+                <div className="rounded-2xl card-bg-bordered p-6 md:p-8">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center">
+                      <Gift size={24} className="text-accent" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-heading font-bold text-heading">
+                        {tx({ fr: 'Carte cadeau Massive Medias', en: 'Massive Medias Gift Card', es: 'Tarjeta regalo Massive Medias' })}
+                      </h3>
+                      <p className="text-grey-muted text-xs">
+                        {tx({ fr: 'Prints, stickers, design, web - tout est possible', en: 'Prints, stickers, design, web - anything goes', es: 'Prints, stickers, diseno, web - todo es posible' })}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Montants */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+                    {giftCardAmounts.map(amount => (
+                      <button
+                        key={amount}
+                        onClick={() => { setSelectedGiftAmount(amount); setCustomGiftAmount(''); setGiftCardAdded(false); }}
+                        className={`p-4 rounded-xl text-center transition-all border-2 ${
+                          selectedGiftAmount === amount && !customGiftAmount
+                            ? 'border-accent bg-accent/10'
+                            : 'border-transparent hover:border-grey-muted/20 bg-glass'
+                        }`}
+                      >
+                        <span className="block text-2xl font-heading font-bold text-heading">{amount}$</span>
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Montant personnalise */}
+                  <div className="flex items-center gap-3 mb-6">
+                    <span className="text-grey-muted text-sm whitespace-nowrap">
+                      {tx({ fr: 'Ou montant libre :', en: 'Or custom amount:', es: 'O monto personalizado:' })}
+                    </span>
+                    <div className="relative flex-1 max-w-[160px]">
+                      <input
+                        type="number"
+                        min="10"
+                        max="500"
+                        value={customGiftAmount}
+                        onChange={(e) => { setCustomGiftAmount(e.target.value); setGiftCardAdded(false); }}
+                        placeholder="..."
+                        className="w-full px-4 py-2.5 rounded-lg bg-transparent border-2 border-grey-muted/20 text-heading text-sm focus:border-accent focus:outline-none transition-colors"
+                      />
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-grey-muted text-sm">$</span>
+                    </div>
+                  </div>
+
+                  {/* Ajouter au panier */}
+                  <button
+                    onClick={() => {
+                      const amount = customGiftAmount ? parseInt(customGiftAmount) : selectedGiftAmount;
+                      if (!amount || amount < 10) return;
+                      addToCart({
+                        productId: `gift-card-${amount}`,
+                        productName: tx({ fr: `Carte cadeau ${amount}$`, en: `Gift card $${amount}`, es: `Tarjeta regalo ${amount}$` }),
+                        finish: tx({ fr: 'Carte cadeau', en: 'Gift card', es: 'Tarjeta regalo' }),
+                        shape: null,
+                        size: null,
+                        quantity: 1,
+                        unitPrice: amount,
+                        totalPrice: amount,
+                        image: null,
+                        notes: 'gift-card',
+                      });
+                      setGiftCardAdded(true);
+                      setTimeout(() => setGiftCardAdded(false), 2500);
+                    }}
+                    className="btn-primary py-3 px-8 text-base"
+                  >
+                    {giftCardAdded ? (
+                      <><Check size={18} className="mr-2" />{tx({ fr: 'Ajoute au panier!', en: 'Added to cart!', es: 'Agregado al carrito!' })}</>
+                    ) : (
+                      <><ShoppingCart size={18} className="mr-2" />{tx({
+                        fr: `Acheter la carte ${customGiftAmount ? customGiftAmount : selectedGiftAmount}$`,
+                        en: `Buy $${customGiftAmount ? customGiftAmount : selectedGiftAmount} gift card`,
+                        es: `Comprar tarjeta de ${customGiftAmount ? customGiftAmount : selectedGiftAmount}$`,
+                      })}</>
+                    )}
+                  </button>
+                </div>
               </motion.div>
             </section>
 
