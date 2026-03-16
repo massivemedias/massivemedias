@@ -1,7 +1,8 @@
 import { factories } from '@strapi/strapi';
 import Stripe from 'stripe';
 import { calculateShipping } from '../../../utils/shipping';
-import { sendOrderConfirmationEmail } from '../../../utils/email';
+import { sendOrderConfirmationEmail, sendTestimonialRequestEmail } from '../../../utils/email';
+import crypto from 'crypto';
 
 const getStripe = () => {
   const key = process.env.STRIPE_SECRET_KEY;
@@ -370,7 +371,51 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
       data: { status: newStatus },
     });
 
-    strapi.log.info(`Commande ${documentId} status: ${order.status} -> ${newStatus}`);
+    strapi.log.info(`Commande ${documentId} status: ${(order as any).status} -> ${newStatus}`);
+
+    // Quand la commande est livree, envoyer un email de demande de temoignage
+    if (newStatus === 'delivered' && (order as any).customerEmail) {
+      try {
+        const token = crypto.randomBytes(16).toString('hex');
+        const customerName = (order as any).customerName || (order as any).customerEmail.split('@')[0];
+
+        // Creer le temoignage en attente
+        const testimonialData: any = {
+          name: customerName,
+          email: (order as any).customerEmail,
+          textFr: '',
+          token,
+          approved: false,
+          order: { connect: [order.documentId] },
+        };
+
+        // Lier au client si existant
+        const client = await strapi.documents('api::client.client').findFirst({
+          filters: { email: (order as any).customerEmail },
+        });
+        if (client) {
+          testimonialData.client = { connect: [(client as any).documentId] };
+        }
+
+        await strapi.documents('api::testimonial.testimonial').create({ data: testimonialData });
+
+        const siteUrl = process.env.SITE_URL || 'https://massivemedias.com';
+        const link = `${siteUrl}/temoignage?token=${token}`;
+
+        await sendTestimonialRequestEmail({
+          customerName,
+          customerEmail: (order as any).customerEmail,
+          testimonialLink: link,
+          orderRef: (order as any).orderRef,
+        });
+
+        strapi.log.info(`Email temoignage envoye a ${(order as any).customerEmail} pour commande ${documentId}`);
+      } catch (err) {
+        strapi.log.error('Erreur envoi email temoignage:', err);
+        // Ne pas bloquer le changement de status si l'email echoue
+      }
+    }
+
     ctx.body = { data: updated };
   },
 

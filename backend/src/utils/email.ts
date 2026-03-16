@@ -238,6 +238,95 @@ export async function sendContactReplyEmail(data: ContactReplyData): Promise<boo
   }
 }
 
+// Email de demande de temoignage
+interface TestimonialRequestData {
+  customerName: string;
+  customerEmail: string;
+  testimonialLink: string;
+  orderRef?: string;
+}
+
+function buildTestimonialRequestHtml(data: TestimonialRequestData): string {
+  return `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#0f0f23;color:#e4e4f0;font-family:-apple-system,system-ui,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0f0f23;">
+    <tr><td align="center" style="padding:40px 16px;">
+      <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+
+        <!-- Header -->
+        <tr><td align="center" style="padding:0 0 32px;">
+          <h1 style="color:#FF52A0;margin:0;font-size:28px;font-weight:800;letter-spacing:-0.5px;">MASSIVE MEDIAS</h1>
+        </td></tr>
+
+        <!-- Main card -->
+        <tr><td style="background:#16162a;border-radius:12px;padding:32px;border:1px solid rgba(139,92,246,0.25);">
+
+          <h2 style="color:#e4e4f0;margin:0 0 8px;font-size:22px;">Bonjour ${data.customerName},</h2>
+
+          <p style="color:#a0a0b8;margin:16px 0;font-size:15px;line-height:1.7;">
+            Merci d'avoir fait confiance a Massive Medias${data.orderRef ? ` pour votre commande <strong style="color:#e4e4f0;font-family:monospace;background:#1e1e3a;padding:2px 8px;border-radius:4px;">${data.orderRef}</strong>` : ''} !
+          </p>
+
+          <p style="color:#a0a0b8;margin:16px 0;font-size:15px;line-height:1.7;">
+            Votre avis est precieux pour nous. Prenez un moment pour partager votre experience - ca ne prend que 2 minutes et ca nous aide enormement.
+          </p>
+
+          <!-- CTA Button -->
+          <table width="100%" cellpadding="0" cellspacing="0" style="margin:28px 0;">
+            <tr><td align="center">
+              <a href="${data.testimonialLink}" style="display:inline-block;background:#FF52A0;color:#ffffff;text-decoration:none;padding:14px 32px;border-radius:8px;font-size:16px;font-weight:700;letter-spacing:0.3px;">
+                Donner mon avis
+              </a>
+            </td></tr>
+          </table>
+
+          <p style="color:#777;margin:16px 0 0;font-size:12px;line-height:1.5;">
+            Ou copiez ce lien dans votre navigateur :<br>
+            <a href="${data.testimonialLink}" style="color:#FF52A0;word-break:break-all;">${data.testimonialLink}</a>
+          </p>
+
+        </td></tr>
+
+        <!-- Footer -->
+        <tr><td align="center" style="padding:32px 0 0;">
+          <p style="color:#555;font-size:12px;margin:0;">
+            Massive Medias - <a href="https://massivemedias.com" style="color:#FF52A0;text-decoration:none;">massivemedias.com</a>
+          </p>
+        </td></tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+}
+
+export async function sendTestimonialRequestEmail(data: TestimonialRequestData): Promise<boolean> {
+  const resend = getResend();
+  if (!resend) {
+    console.warn('[email] RESEND_API_KEY non configure, email non envoye');
+    return false;
+  }
+
+  const fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
+
+  try {
+    const result = await resend.emails.send({
+      from: `Massive Medias <${fromEmail}>`,
+      to: data.customerEmail,
+      subject: 'Votre avis compte - Massive Medias',
+      html: buildTestimonialRequestHtml(data),
+    });
+    console.log('[email] Demande temoignage envoyee a', data.customerEmail, result);
+    return true;
+  } catch (err) {
+    console.error('[email] Erreur envoi demande temoignage:', err);
+    return false;
+  }
+}
+
 export async function sendOrderConfirmationEmail(data: OrderEmailData): Promise<boolean> {
   const resend = getResend();
   if (!resend) {

@@ -39,6 +39,7 @@ const AdminCommissions = lazy(() => import('./pages/AdminCommissions'));
 const AdminDepenses = lazy(() => import('./pages/AdminDepenses'));
 const AdminStats = lazy(() => import('./pages/AdminStats'));
 const AdminTarifs = lazy(() => import('./pages/AdminTarifs'));
+const AdminTemoignages = lazy(() => import('./pages/AdminTemoignages'));
 const AdminUtilisateurs = lazy(() => import('./pages/AdminUtilisateurs'));
 const ProtectedRoute = lazy(() => import('./components/ProtectedRoute'));
 const AdminRoute = lazy(() => import('./components/AdminRoute'));
@@ -159,6 +160,7 @@ function App() {
               <Route path="clients" element={<Navigate to="/admin/utilisateurs" replace />} />
               <Route path="utilisateurs" element={<AdminUtilisateurs />} />
               <Route path="depenses" element={<AdminDepenses />} />
+              <Route path="temoignages" element={<AdminTemoignages />} />
               <Route path="stats" element={<AdminStats />} />
               <Route path="tarifs" element={<AdminTarifs />} />
             </Route>

@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import {
   ShoppingBag, Package, MessageSquare, Banknote,
   Users, Receipt, BarChart3, Menu, X, DollarSign,
-  Pencil, MapPin, Shield,
+  Pencil, MapPin, Shield, Star,
 } from 'lucide-react';
 import { useState } from 'react';
 import { useLang } from '../i18n/LanguageContext';
@@ -21,6 +21,7 @@ const NAV_ITEMS = [
   { to: '/admin/messages', icon: MessageSquare, fr: 'Messages', en: 'Messages', es: 'Mensajes' },
   { to: '/admin/utilisateurs', icon: Users, fr: 'Utilisateurs', en: 'Users', es: 'Usuarios' },
   { to: '/admin/depenses', icon: Receipt, fr: 'Depenses', en: 'Expenses', es: 'Gastos' },
+  { to: '/admin/temoignages', icon: Star, fr: 'Temoignages', en: 'Testimonials', es: 'Testimonios' },
   { to: '/admin/stats', icon: BarChart3, fr: 'Stats', en: 'Stats', es: 'Stats' },
   { to: '/admin/tarifs', icon: DollarSign, fr: 'Tarifs', en: 'Pricing', es: 'Precios' },
 ];
