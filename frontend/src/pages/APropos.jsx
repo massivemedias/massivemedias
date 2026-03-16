@@ -23,7 +23,7 @@ function APropos() {
   const cmsTeam = content?.aboutTeam?.length ? content.aboutTeam : null;
 
   // ── Universe ──
-  const cmsUniverse = content?.aboutUniverse?.length ? content.aboutUniverse : null;
+  const cmsUniverse = content?.aboutUniverse?.length >= 3 ? content.aboutUniverse : null;
 
   // Fallback data
   const fbTimelineEvents = t('aboutPage.timeline.events');
