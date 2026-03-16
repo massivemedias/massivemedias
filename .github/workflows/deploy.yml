@@ -43,6 +43,9 @@ jobs:
           VITE_GOOGLE_PLACES_API_KEY: ${{ secrets.VITE_GOOGLE_PLACES_API_KEY }}
           VITE_GA_ID: G-PYS2J1HVR7
 
+      - name: Generate SPA route files (SEO - avoid 404 on direct URL access)
+        run: bash frontend/scripts/generate-spa-routes.sh
+
       - name: Copy CNAME to dist
         run: cp CNAME frontend/dist/CNAME
 
