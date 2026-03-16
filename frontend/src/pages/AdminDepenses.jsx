@@ -4,11 +4,11 @@ import {
   Search, Receipt, DollarSign, Loader2, Plus, X, Save,
   ChevronLeft, ChevronRight, CheckCircle, ChevronDown, ChevronUp,
   Trash2, Upload, ExternalLink, BarChart3, TrendingUp, TrendingDown,
-  Edit3, Image as ImageIcon,
+  Edit3, Image as ImageIcon, FileText, Package,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import { getExpenses, createExpense, updateExpense, deleteExpense, getExpenseSummary } from '../services/adminService';
-import { uploadFile } from '../services/api';
+import api, { uploadFile } from '../services/api';
 
 const CATEGORY_LABELS = {
   consommables: { fr: 'Consommables', en: 'Consumables', es: 'Consumibles' },
@@ -36,6 +36,17 @@ const MONTH_NAMES = {
   fr: ['Jan', 'Fev', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aou', 'Sep', 'Oct', 'Nov', 'Dec'],
   en: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
   es: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
+};
+
+const INVENTORY_CATEGORIES = ['textile', 'frame', 'accessory', 'sticker', 'print', 'merch', 'other'];
+const INVENTORY_CATEGORY_LABELS = {
+  textile: { fr: 'Textile', en: 'Textile', es: 'Textil' },
+  frame: { fr: 'Cadre', en: 'Frame', es: 'Marco' },
+  accessory: { fr: 'Accessoire', en: 'Accessory', es: 'Accesorio' },
+  sticker: 'Sticker',
+  print: 'Print',
+  merch: 'Merch',
+  other: { fr: 'Autre', en: 'Other', es: 'Otro' },
 };
 
 const emptyForm = {
@@ -70,6 +81,18 @@ function AdminDepenses() {
   const [deletingId, setDeletingId] = useState(null);
   const editFileRef = useRef(null);
   const [uploadingEditReceipt, setUploadingEditReceipt] = useState(false);
+
+  // Invoice import
+  const [showImport, setShowImport] = useState(false);
+  const [parsing, setParsing] = useState(false);
+  const [parseError, setParseError] = useState('');
+  const [invoiceData, setInvoiceData] = useState(null);
+  const [importing, setImporting] = useState(false);
+  const [importSuccess, setImportSuccess] = useState('');
+  const [dragging, setDragging] = useState(false);
+  const [uploadingInvoice, setUploadingInvoice] = useState(false);
+  const [receiptUrl, setReceiptUrl] = useState('');
+  const invoiceInputRef = useRef(null);
 
   // Year summary
   const [showSummary, setShowSummary] = useState(false);
@@ -129,6 +152,116 @@ function AdminDepenses() {
       const result = await uploadFile(file);
       setEditData(p => ({ ...p, receiptUrl: result.url }));
     } catch { /* silent */ } finally { setUploadingEditReceipt(false); }
+  };
+
+  // --- Invoice PDF import ---
+  const handlePDFSelect = async (file) => {
+    if (!file || file.type !== 'application/pdf') {
+      setParseError(tx({ fr: 'Fichier PDF requis', en: 'PDF file required', es: 'Archivo PDF requerido' }));
+      return;
+    }
+    setParsing(true);
+    setParseError('');
+    setInvoiceData(null);
+    setImportSuccess('');
+    setReceiptUrl('');
+
+    try {
+      setUploadingInvoice(true);
+      const uploaded = await uploadFile(file);
+      setReceiptUrl(uploaded.url);
+      setUploadingInvoice(false);
+
+      const { parseInvoicePDF } = await import('../utils/invoiceParser');
+      const result = await parseInvoicePDF(file);
+      setInvoiceData(result);
+    } catch (err) {
+      console.error('Erreur parsing PDF:', err);
+      setParseError(tx({ fr: 'Erreur lors de l\'analyse du PDF. Verifiez que le fichier est valide.', en: 'Error analyzing PDF. Check that the file is valid.', es: 'Error al analizar el PDF.' }));
+    } finally {
+      setParsing(false);
+      setUploadingInvoice(false);
+    }
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setDragging(false);
+    handlePDFSelect(e.dataTransfer.files[0]);
+  };
+  const handleDragOver = (e) => { e.preventDefault(); setDragging(true); };
+  const handleDragLeave = () => setDragging(false);
+
+  const updateInvoiceItem = (index, field, value) => {
+    setInvoiceData(prev => {
+      const updated = { ...prev, lineItems: [...prev.lineItems] };
+      updated.lineItems[index] = { ...updated.lineItems[index], [field]: value };
+      return updated;
+    });
+  };
+
+  const removeInvoiceItem = (index) => {
+    setInvoiceData(prev => ({ ...prev, lineItems: prev.lineItems.filter((_, i) => i !== index) }));
+  };
+
+  const addInvoiceItem = () => {
+    setInvoiceData(prev => ({
+      ...prev,
+      lineItems: [...prev.lineItems, { description: '', quantity: 1, unitPrice: 0, total: 0, category: 'other', addToInventory: true }],
+    }));
+  };
+
+  const handleImport = async () => {
+    if (!invoiceData) return;
+    setImporting(true);
+    setParseError('');
+
+    try {
+      const inventoryItems = invoiceData.lineItems
+        .filter(i => i.addToInventory && i.description)
+        .map(i => ({
+          nameFr: i.description,
+          nameEn: i.description,
+          category: i.category || 'other',
+          quantity: parseInt(i.quantity) || 0,
+          costPrice: parseFloat(i.unitPrice) || 0,
+          notes: `Facture ${invoiceData.invoiceNumber || ''} - ${invoiceData.vendor || ''} - ${invoiceData.date}`,
+        }));
+
+      const expenseData = {
+        description: `Facture ${invoiceData.invoiceNumber || ''} - ${invoiceData.vendor || ''}`.trim().replace(/\s*-\s*$/, ''),
+        amount: invoiceData.total || invoiceData.subtotal || 0,
+        category: invoiceData.expenseCategory || 'materiel',
+        date: invoiceData.date,
+        vendor: invoiceData.vendor || '',
+        receiptNumber: invoiceData.invoiceNumber || '',
+        receiptUrl: receiptUrl || '',
+        taxDeductible: true,
+        tpsAmount: invoiceData.tps || 0,
+        tvqAmount: invoiceData.tvq || 0,
+        notes: `Import automatique - ${inventoryItems.length} item(s)`,
+      };
+
+      await api.post('/inventory-items/import-invoice', {
+        items: inventoryItems,
+        expense: expenseData,
+      });
+
+      const created = inventoryItems.length;
+      setImportSuccess(tx({
+        fr: `Import reussi! ${created} item(s) ajoute(s) a l'inventaire + 1 depense de ${expenseData.amount}$ creee.`,
+        en: `Import successful! ${created} item(s) added to inventory + 1 expense of $${expenseData.amount} created.`,
+        es: `Importacion exitosa! ${created} item(s) agregado(s) al inventario + 1 gasto de $${expenseData.amount} creado.`,
+      }));
+
+      setInvoiceData(null);
+      fetchItems();
+    } catch (err) {
+      console.error('Erreur import:', err);
+      setParseError(tx({ fr: 'Erreur lors de l\'import. Reessayez.', en: 'Import error. Try again.', es: 'Error de importacion.' }));
+    } finally {
+      setImporting(false);
+    }
   };
 
   const handleCreate = async (e) => {
@@ -358,11 +491,207 @@ function AdminDepenses() {
             </button>
           ))}
         </div>
-        <button onClick={() => setShowForm(!showForm)} className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-accent text-white text-sm font-semibold hover:bg-accent/80 transition-colors whitespace-nowrap">
-          {showForm ? <X size={16} /> : <Plus size={16} />}
-          {showForm ? tx({ fr: 'Annuler', en: 'Cancel', es: 'Cancelar' }) : tx({ fr: 'Ajouter', en: 'Add', es: 'Agregar' })}
-        </button>
+        <div className="flex gap-2">
+          <button onClick={() => { setShowImport(!showImport); setInvoiceData(null); setParseError(''); setImportSuccess(''); }}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-glass card-border text-sm font-semibold text-heading hover:bg-accent/10 transition-colors whitespace-nowrap">
+            {showImport ? <X size={16} /> : <FileText size={16} className="text-accent" />}
+            {showImport ? tx({ fr: 'Fermer', en: 'Close', es: 'Cerrar' }) : tx({ fr: 'Importer facture', en: 'Import invoice', es: 'Importar factura' })}
+          </button>
+          <button onClick={() => setShowForm(!showForm)} className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-accent text-white text-sm font-semibold hover:bg-accent/80 transition-colors whitespace-nowrap">
+            {showForm ? <X size={16} /> : <Plus size={16} />}
+            {showForm ? tx({ fr: 'Annuler', en: 'Cancel', es: 'Cancelar' }) : tx({ fr: 'Ajouter', en: 'Add', es: 'Agregar' })}
+          </button>
+        </div>
       </div>
+
+      {/* Invoice import section */}
+      <AnimatePresence>
+        {showImport && (
+          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+            <div className="rounded-xl bg-glass card-border p-4 space-y-4">
+              <h3 className="text-sm font-semibold text-heading uppercase tracking-wider flex items-center gap-2">
+                <FileText size={14} className="text-accent" />
+                {tx({ fr: 'Import de facture PDF', en: 'PDF Invoice Import', es: 'Importar factura PDF' })}
+              </h3>
+
+              {/* Drop zone */}
+              {!invoiceData && !parsing && (
+                <div
+                  onDrop={handleDrop}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onClick={() => invoiceInputRef.current?.click()}
+                  className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all ${
+                    dragging ? 'border-accent bg-accent/10' : 'border-white/10 hover:border-accent/50 hover:bg-accent/5'
+                  }`}
+                >
+                  <input type="file" ref={invoiceInputRef} onChange={(e) => handlePDFSelect(e.target.files?.[0])} accept=".pdf" className="hidden" />
+                  <Upload size={32} className={`mx-auto mb-3 ${dragging ? 'text-accent' : 'text-grey-muted'}`} />
+                  <p className="text-heading font-medium mb-1">
+                    {tx({ fr: 'Deposer une facture PDF ici', en: 'Drop a PDF invoice here', es: 'Soltar factura PDF aqui' })}
+                  </p>
+                  <p className="text-grey-muted text-xs">
+                    {tx({ fr: 'ou cliquer pour selectionner un fichier', en: 'or click to select a file', es: 'o hacer clic para seleccionar' })}
+                  </p>
+                </div>
+              )}
+
+              {/* Parsing loader */}
+              {parsing && (
+                <div className="flex flex-col items-center justify-center py-8 gap-3">
+                  <Loader2 size={32} className="animate-spin text-accent" />
+                  <p className="text-heading text-sm">
+                    {uploadingInvoice
+                      ? tx({ fr: 'Upload du PDF...', en: 'Uploading PDF...', es: 'Subiendo PDF...' })
+                      : tx({ fr: 'Analyse de la facture en cours...', en: 'Analyzing invoice...', es: 'Analizando factura...' })
+                    }
+                  </p>
+                </div>
+              )}
+
+              {/* Parse error */}
+              {parseError && (
+                <div className="p-3 rounded-lg border border-red-500/30 bg-red-500/10">
+                  <p className="text-red-400 text-sm">{parseError}</p>
+                </div>
+              )}
+
+              {/* Import success */}
+              {importSuccess && (
+                <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="p-4 rounded-lg border border-green-500/30 bg-green-500/10">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle size={16} className="text-green-400" />
+                    <p className="text-green-400 text-sm font-medium">{importSuccess}</p>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Parsed data preview */}
+              {invoiceData && (
+                <div className="space-y-4">
+                  {/* Invoice header */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                    <div>
+                      <label className="text-[10px] text-grey-muted uppercase tracking-wider">{tx({ fr: 'Fournisseur', en: 'Vendor', es: 'Proveedor' })}</label>
+                      <input type="text" value={invoiceData.vendor} onChange={(e) => setInvoiceData(prev => ({ ...prev, vendor: e.target.value }))} className="input-field text-sm mt-1" />
+                    </div>
+                    <div>
+                      <label className="text-[10px] text-grey-muted uppercase tracking-wider">Date</label>
+                      <input type="date" value={invoiceData.date} onChange={(e) => setInvoiceData(prev => ({ ...prev, date: e.target.value }))} className="input-field text-sm mt-1" />
+                    </div>
+                    <div>
+                      <label className="text-[10px] text-grey-muted uppercase tracking-wider">{tx({ fr: 'No. facture', en: 'Invoice #', es: 'No. factura' })}</label>
+                      <input type="text" value={invoiceData.invoiceNumber} onChange={(e) => setInvoiceData(prev => ({ ...prev, invoiceNumber: e.target.value }))} className="input-field text-sm mt-1" />
+                    </div>
+                    <div>
+                      <label className="text-[10px] text-grey-muted uppercase tracking-wider">{tx({ fr: 'Categorie depense', en: 'Expense category', es: 'Categoria gasto' })}</label>
+                      <select value={invoiceData.expenseCategory} onChange={(e) => setInvoiceData(prev => ({ ...prev, expenseCategory: e.target.value }))} className="input-field text-sm mt-1">
+                        {Object.entries(CATEGORY_LABELS).map(([k, v]) => <option key={k} value={k}>{tx(v)}</option>)}
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Line items */}
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="text-xs font-semibold text-heading uppercase tracking-wider">
+                        {tx({ fr: 'Articles', en: 'Line items', es: 'Articulos' })} ({invoiceData.lineItems.length})
+                      </h4>
+                      <button onClick={addInvoiceItem} className="flex items-center gap-1 px-2 py-1 rounded bg-accent/20 text-accent text-xs font-semibold hover:bg-accent/30 transition-colors">
+                        <Plus size={12} /> {tx({ fr: 'Ajouter', en: 'Add', es: 'Agregar' })}
+                      </button>
+                    </div>
+
+                    {invoiceData.lineItems.length === 0 ? (
+                      <div className="text-center py-6 text-grey-muted text-sm">
+                        {tx({ fr: 'Aucun article detecte. Ajoutez-en manuellement.', en: 'No items detected. Add manually.', es: 'Ningun articulo detectado. Agregue manualmente.' })}
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        {invoiceData.lineItems.map((lineItem, i) => (
+                          <div key={i} className="rounded-lg bg-glass/50 p-3 card-border">
+                            <div className="grid grid-cols-1 sm:grid-cols-[1fr_80px_90px_90px_100px_40px_40px] gap-2 items-center">
+                              <input type="text" value={lineItem.description} onChange={(e) => updateInvoiceItem(i, 'description', e.target.value)}
+                                placeholder={tx({ fr: 'Description', en: 'Description', es: 'Descripcion' })} className="input-field text-sm" />
+                              <input type="number" value={lineItem.quantity} onChange={(e) => updateInvoiceItem(i, 'quantity', Number(e.target.value))}
+                                placeholder="Qty" min="0" className="input-field text-sm text-center" />
+                              <input type="number" step="0.01" value={lineItem.unitPrice}
+                                onChange={(e) => {
+                                  const price = parseFloat(e.target.value) || 0;
+                                  updateInvoiceItem(i, 'unitPrice', price);
+                                  updateInvoiceItem(i, 'total', price * (lineItem.quantity || 1));
+                                }}
+                                placeholder={tx({ fr: 'Prix unit.', en: 'Unit price', es: 'Precio unit.' })} className="input-field text-sm text-right" />
+                              <div className="text-sm text-heading font-semibold text-right px-2">{(lineItem.total || 0).toFixed(2)}$</div>
+                              <select value={lineItem.category} onChange={(e) => updateInvoiceItem(i, 'category', e.target.value)} className="input-field text-[10px] p-1">
+                                {INVENTORY_CATEGORIES.map((c) => (
+                                  <option key={c} value={c}>{typeof INVENTORY_CATEGORY_LABELS[c] === 'string' ? INVENTORY_CATEGORY_LABELS[c] : tx(INVENTORY_CATEGORY_LABELS[c])}</option>
+                                ))}
+                              </select>
+                              <button onClick={() => updateInvoiceItem(i, 'addToInventory', !lineItem.addToInventory)}
+                                title={lineItem.addToInventory ? tx({ fr: 'Ajouter a l\'inventaire', en: 'Add to inventory', es: 'Agregar al inventario' }) : tx({ fr: 'Exclure de l\'inventaire', en: 'Exclude from inventory', es: 'Excluir del inventario' })}
+                                className={`p-1.5 rounded-lg transition-colors ${lineItem.addToInventory ? 'bg-green-500/20 text-green-400' : 'bg-glass text-grey-muted'}`}>
+                                <Package size={14} />
+                              </button>
+                              <button onClick={() => removeInvoiceItem(i)} className="p-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors">
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Totaux */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div>
+                      <label className="text-[10px] text-grey-muted uppercase tracking-wider">{tx({ fr: 'Sous-total', en: 'Subtotal', es: 'Subtotal' })}</label>
+                      <input type="number" step="0.01" value={invoiceData.subtotal} onChange={(e) => setInvoiceData(prev => ({ ...prev, subtotal: parseFloat(e.target.value) || 0 }))} className="input-field text-sm mt-1" />
+                    </div>
+                    <div>
+                      <label className="text-[10px] text-grey-muted uppercase tracking-wider">TPS (5%)</label>
+                      <input type="number" step="0.01" value={invoiceData.tps} onChange={(e) => setInvoiceData(prev => ({ ...prev, tps: parseFloat(e.target.value) || 0 }))} className="input-field text-sm mt-1" />
+                    </div>
+                    <div>
+                      <label className="text-[10px] text-grey-muted uppercase tracking-wider">TVQ (9.975%)</label>
+                      <input type="number" step="0.01" value={invoiceData.tvq} onChange={(e) => setInvoiceData(prev => ({ ...prev, tvq: parseFloat(e.target.value) || 0 }))} className="input-field text-sm mt-1" />
+                    </div>
+                    <div>
+                      <label className="text-[10px] text-grey-muted uppercase tracking-wider">Total</label>
+                      <input type="number" step="0.01" value={invoiceData.total} onChange={(e) => setInvoiceData(prev => ({ ...prev, total: parseFloat(e.target.value) || 0 }))} className="input-field text-sm mt-1 font-bold" />
+                    </div>
+                  </div>
+
+                  {/* Raw text toggle */}
+                  <details className="text-xs">
+                    <summary className="text-grey-muted cursor-pointer hover:text-heading transition-colors">
+                      {tx({ fr: 'Voir le texte brut extrait', en: 'View raw extracted text', es: 'Ver texto sin formato' })}
+                    </summary>
+                    <pre className="mt-2 p-3 rounded-lg bg-black/20 text-grey-muted overflow-x-auto max-h-40 text-[10px] whitespace-pre-wrap">{invoiceData.rawText}</pre>
+                  </details>
+
+                  {/* Actions */}
+                  <div className="flex items-center gap-3 pt-2 border-t card-border">
+                    <button onClick={() => { setInvoiceData(null); setReceiptUrl(''); }} className="px-4 py-2 rounded-lg bg-glass text-grey-muted text-sm hover:text-heading transition-colors">
+                      {tx({ fr: 'Annuler', en: 'Cancel', es: 'Cancelar' })}
+                    </button>
+                    <button onClick={handleImport} disabled={importing || invoiceData.lineItems.length === 0}
+                      className="flex items-center gap-1.5 px-5 py-2 rounded-lg bg-accent text-white text-sm font-semibold hover:bg-accent/80 transition-colors disabled:opacity-50 ml-auto">
+                      {importing ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+                      {tx({
+                        fr: `Importer ${invoiceData.lineItems.filter(i => i.addToInventory).length} item(s) + depense`,
+                        en: `Import ${invoiceData.lineItems.filter(i => i.addToInventory).length} item(s) + expense`,
+                        es: `Importar ${invoiceData.lineItems.filter(i => i.addToInventory).length} item(s) + gasto`,
+                      })}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Add form */}
       <AnimatePresence>

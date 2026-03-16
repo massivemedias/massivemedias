@@ -317,9 +317,10 @@ function AdminUtilisateurs() {
 
             return (
               <div key={user.id} className="border-b last:border-b-0 card-border">
+                {/* Desktop row */}
                 <div
                   onClick={() => setExpandedId(isExpanded ? null : user.id)}
-                  className="grid grid-cols-1 md:grid-cols-[1fr_1fr_100px_100px_80px_100px_100px] gap-2 md:gap-3 px-4 py-3 items-center cursor-pointer hover:bg-accent/5 transition-colors"
+                  className="hidden md:grid grid-cols-[1fr_1fr_100px_100px_80px_100px_100px] gap-3 px-4 py-3 items-center cursor-pointer hover:bg-accent/5 transition-colors"
                 >
                   {/* Name + provider */}
                   <div className="flex items-center gap-3">
@@ -417,6 +418,103 @@ function AdminUtilisateurs() {
                         <ChevronDown size={12} className={`transition-transform ${isEditing ? 'rotate-180' : ''}`} />
                       </button>
                     )}
+                  </div>
+                </div>
+
+                {/* Mobile card */}
+                <div
+                  onClick={() => setExpandedId(isExpanded ? null : user.id)}
+                  className="md:hidden px-4 py-3 cursor-pointer hover:bg-accent/5 transition-colors"
+                >
+                  {/* Line 1: Avatar + Name + Spent */}
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0 ${
+                      role === 'admin' ? 'bg-red-500/20 text-red-400' :
+                      role === 'artist' ? 'bg-purple-500/20 text-purple-400' :
+                      user.isBuyer ? 'bg-green-500/20 text-green-400' :
+                      'bg-accent/20 text-accent'
+                    }`}>
+                      {(user.fullName || user.email || '?')[0].toUpperCase()}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-heading font-semibold truncate">
+                        {user.fullName || tx({ fr: 'Sans nom', en: 'No name', es: 'Sin nombre' })}
+                      </p>
+                      <p className="text-xs text-grey-muted truncate">{user.email}</p>
+                    </div>
+                    <div className="flex flex-col items-end flex-shrink-0">
+                      {user.totalSpent > 0 ? (
+                        <span className="text-sm font-bold text-green-400">{formatMoney(user.totalSpent)}</span>
+                      ) : (
+                        <span className="text-xs text-grey-muted">-</span>
+                      )}
+                      {user.orderCount > 0 && (
+                        <span className="text-[10px] text-grey-muted">{user.orderCount} cmd</span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Line 2: Badges + provider + actions */}
+                  <div className="flex items-center gap-1.5 mt-2 ml-[52px] flex-wrap">
+                    <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-semibold ${buyerBadge.className}`}>
+                      {user.isBuyer ? <ShoppingBag size={9} /> : <Eye size={9} />}
+                      {buyerBadge.label}
+                    </span>
+                    {roleBadge && (
+                      <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-semibold ${roleBadge.className}`}>
+                        {role === 'artist' && <Palette size={9} />}
+                        {role === 'admin' && <Shield size={9} />}
+                        {roleBadge.label}
+                        {roleBadge.slug && <span className="opacity-70">({roleBadge.slug})</span>}
+                      </span>
+                    )}
+                    <span className="text-[10px] text-grey-muted flex items-center gap-0.5">
+                      <Shield size={8} /> {user.isGuest ? 'guest' : user.provider}
+                    </span>
+
+                    {/* Mobile actions */}
+                    <div className="ml-auto flex items-center gap-1" onClick={e => e.stopPropagation()}>
+                      {role !== 'admin' && !user.isGuest && (
+                        <>
+                          {role === 'artist' ? (
+                            <>
+                              <button
+                                onClick={() => { setEditingUser(isEditing ? null : user.email); setSelectedSlug(artistSlug || ''); }}
+                                className="p-1.5 rounded-lg bg-accent/10 text-accent"
+                              >
+                                <Palette size={14} />
+                              </button>
+                              <button
+                                onClick={() => handleRemoveArtist(user)}
+                                disabled={isSaving}
+                                className="p-1.5 rounded-lg bg-red-500/10 text-red-400 disabled:opacity-50"
+                              >
+                                {isSaving ? <Loader2 size={14} className="animate-spin" /> : <X size={14} />}
+                              </button>
+                            </>
+                          ) : (
+                            <button
+                              onClick={() => { setEditingUser(isEditing ? null : user.email); setSelectedSlug(''); }}
+                              className="p-1.5 rounded-lg bg-accent/10 text-accent"
+                            >
+                              <Palette size={14} />
+                            </button>
+                          )}
+                          <button
+                            onClick={() => {
+                              setExpandedId(user.id);
+                              setDeleteConfirm(user.id);
+                            }}
+                            className="p-1.5 rounded-lg bg-red-500/10 text-red-400"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </>
+                      )}
+                      <span className="text-grey-muted ml-1">
+                        {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                      </span>
+                    </div>
                   </div>
                 </div>
 
