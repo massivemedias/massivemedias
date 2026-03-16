@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { DollarSign, Copy, Check, Download, Printer, Users, BarChart3, Sticker, Shirt, Palette, Globe, FileText } from 'lucide-react';
-import { useLang } from '../i18n/LanguageContext';
+// Page admin interne - tout en francais
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 
@@ -151,7 +151,6 @@ function Td({ children, className = 'text-heading', center = true }) {
 // =============================================
 
 function AdminTarifs() {
-  const { tx } = useLang();
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState('artistes');
   const artistSheetRef = useRef(null);
@@ -270,7 +269,7 @@ function AdminTarifs() {
         <div>
           <h2 className="text-xl font-heading font-bold text-heading flex items-center gap-2">
             <DollarSign size={20} className="text-accent" />
-            {tx({ fr: 'Grille tarifaire', en: 'Pricing Grid', es: 'Tabla de precios' })}
+            Grille tarifaire
           </h2>
           <p className="text-sm text-grey-muted mt-1">Tous les prix avant taxes (TPS + TVQ en sus)</p>
         </div>
