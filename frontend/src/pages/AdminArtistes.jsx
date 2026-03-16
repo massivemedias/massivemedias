@@ -219,7 +219,7 @@ function AdminArtistes() {
 
                           {/* Bio */}
                           <div className="rounded-lg bg-glass p-4">
-                            <h4 className="text-xs font-semibold text-grey-muted uppercase tracking-wider mb-2">Bio / Demarche</h4>
+                            <h4 className="text-xs font-semibold text-grey-muted uppercase tracking-wider mb-2">{tx({ fr: 'Bio / Demarche', en: 'Bio / Statement', es: 'Bio / Propuesta' })}</h4>
                             <p className="text-sm text-heading whitespace-pre-wrap">{item.bio}</p>
                           </div>
 

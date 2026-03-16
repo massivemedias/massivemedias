@@ -256,7 +256,7 @@ function AdminOrders() {
         <div className="rounded-xl bg-glass overflow-hidden card-border">
           {/* Header */}
           <div className="hidden md:grid grid-cols-[1fr_100px_80px_120px_120px_40px] gap-3 px-4 py-3 text-xs font-semibold text-grey-muted uppercase tracking-wider border-b card-border">
-            <span>Client</span>
+            <span>{tx({ fr: 'Client', en: 'Client', es: 'Cliente' })}</span>
             <span>Date</span>
             <span>{tx({ fr: 'Articles', en: 'Items', es: 'Articulos' })}</span>
             <span>Total</span>
@@ -354,7 +354,7 @@ function AdminOrders() {
                           {/* Infos client + reference */}
                           <div className="flex flex-wrap gap-4 items-start">
                             <div className="space-y-1">
-                              <h4 className="text-xs font-semibold text-grey-muted uppercase tracking-wider">Client</h4>
+                              <h4 className="text-xs font-semibold text-grey-muted uppercase tracking-wider">{tx({ fr: 'Client', en: 'Client', es: 'Cliente' })}</h4>
                               <p className="text-sm text-heading font-medium">{order.customerName}</p>
                               <p className="text-xs text-grey-muted flex items-center gap-1.5"><Mail size={11} /> {order.customerEmail}</p>
                               {order.customerPhone && (
@@ -434,7 +434,7 @@ function AdminOrders() {
                                       <div className="flex-1 min-w-0">
                                         <div className="flex justify-between items-start gap-2">
                                           <div>
-                                            <p className="text-base font-semibold text-heading">{item.productName || 'Produit'}</p>
+                                            <p className="text-base font-semibold text-heading">{item.productName || tx({ fr: 'Produit', en: 'Product', es: 'Producto' })}</p>
                                             <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1">
                                               {item.size && <span className="text-xs text-grey-muted bg-glass px-2 py-0.5 rounded">{item.size}</span>}
                                               {item.finish && <span className="text-xs text-grey-muted bg-glass px-2 py-0.5 rounded">{item.finish}</span>}
@@ -508,7 +508,7 @@ function AdminOrders() {
                               </h4>
                               <div className="space-y-2 text-sm">
                                 <div className="flex justify-between">
-                                  <span className="text-grey-muted">Sous-total</span>
+                                  <span className="text-grey-muted">{tx({ fr: 'Sous-total', en: 'Subtotal', es: 'Subtotal' })}</span>
                                   <span className="text-heading">{dollars(order.subtotal)}</span>
                                 </div>
                                 <div className="flex justify-between">

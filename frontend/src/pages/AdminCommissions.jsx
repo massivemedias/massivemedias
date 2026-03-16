@@ -9,10 +9,10 @@ import { useLang } from '../i18n/LanguageContext';
 import { getCommissions, createArtistPayment } from '../services/adminService';
 
 const METHOD_LABELS = {
-  interac: 'Interac e-Transfer',
-  cash: 'Comptant',
-  cheque: 'Cheque',
-  other: 'Autre',
+  interac: { fr: 'Interac e-Transfer', en: 'Interac e-Transfer', es: 'Interac e-Transfer' },
+  cash: { fr: 'Comptant', en: 'Cash', es: 'Efectivo' },
+  cheque: { fr: 'Cheque', en: 'Cheque', es: 'Cheque' },
+  other: { fr: 'Autre', en: 'Other', es: 'Otro' },
 };
 
 function AdminCommissions() {
@@ -197,7 +197,7 @@ function AdminCommissions() {
                                 <tr className="text-grey-muted uppercase tracking-wider">
                                   <th className="text-left p-2">Date</th>
                                   <th className="text-left p-2">{tx({ fr: 'Produit', en: 'Product', es: 'Producto' })}</th>
-                                  <th className="text-left p-2">Client</th>
+                                  <th className="text-left p-2">{tx({ fr: 'Client', en: 'Client', es: 'Cliente' })}</th>
                                   <th className="text-right p-2">{tx({ fr: 'Vente', en: 'Sale', es: 'Venta' })}</th>
                                   <th className="text-right p-2">{tx({ fr: 'Cout prod.', en: 'Prod. cost', es: 'Costo prod.' })}</th>
                                   <th className="text-right p-2">{tx({ fr: 'Profit net', en: 'Net profit', es: 'Profit neto' })}</th>
@@ -243,7 +243,7 @@ function AdminCommissions() {
                                   <div className="flex-1 min-w-0">
                                     <span className="text-green-400 font-medium text-sm">{dollars(parseFloat(p.amount))}</span>
                                     <span className="text-grey-muted text-xs ml-2">
-                                      {METHOD_LABELS[p.method] || p.method} - {formatDate(p.date)}
+                                      {METHOD_LABELS[p.method] ? tx(METHOD_LABELS[p.method]) : p.method} - {formatDate(p.date)}
                                     </span>
                                     {p.notes && <span className="text-grey-muted text-xs ml-2">({p.notes})</span>}
                                   </div>
@@ -308,7 +308,7 @@ function AdminCommissions() {
                                       className="w-full px-3 py-2 rounded-lg bg-glass text-heading text-sm focus:outline-none focus:ring-1 focus:ring-green-400"
                                     >
                                       {Object.entries(METHOD_LABELS).map(([k, v]) => (
-                                        <option key={k} value={k}>{v}</option>
+                                        <option key={k} value={k}>{tx(v)}</option>
                                       ))}
                                     </select>
                                   </div>

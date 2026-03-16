@@ -9,9 +9,14 @@ import { useLang } from '../i18n/LanguageContext';
 import { getOrderStats } from '../services/adminService';
 
 const CATEGORY_LABELS = {
-  materials: 'Materiaux', shipping: 'Expedition', software: 'Logiciel',
-  marketing: 'Marketing', rent: 'Loyer', equipment: 'Equipement',
-  taxes: 'Taxes', other: 'Autre',
+  materials: { fr: 'Materiaux', en: 'Materials', es: 'Materiales' },
+  shipping: { fr: 'Expedition', en: 'Shipping', es: 'Envio' },
+  software: { fr: 'Logiciel', en: 'Software', es: 'Software' },
+  marketing: { fr: 'Marketing', en: 'Marketing', es: 'Marketing' },
+  rent: { fr: 'Loyer', en: 'Rent', es: 'Alquiler' },
+  equipment: { fr: 'Equipement', en: 'Equipment', es: 'Equipo' },
+  taxes: { fr: 'Taxes', en: 'Taxes', es: 'Impuestos' },
+  other: { fr: 'Autre', en: 'Other', es: 'Otro' },
 };
 
 function AdminStats() {
@@ -59,8 +64,13 @@ function AdminStats() {
   };
 
   const statusLabels = {
-    pending: 'En attente', paid: 'Paye', processing: 'En production',
-    shipped: 'Expedie', delivered: 'Livre', cancelled: 'Annule', refunded: 'Rembourse',
+    pending: tx({ fr: 'En attente', en: 'Pending', es: 'Pendiente' }),
+    paid: tx({ fr: 'Paye', en: 'Paid', es: 'Pagado' }),
+    processing: tx({ fr: 'En production', en: 'Processing', es: 'En proceso' }),
+    shipped: tx({ fr: 'Expedie', en: 'Shipped', es: 'Enviado' }),
+    delivered: tx({ fr: 'Livre', en: 'Delivered', es: 'Entregado' }),
+    cancelled: tx({ fr: 'Annule', en: 'Cancelled', es: 'Cancelado' }),
+    refunded: tx({ fr: 'Rembourse', en: 'Refunded', es: 'Reembolsado' }),
   };
 
   return (
@@ -96,7 +106,7 @@ function AdminStats() {
                     <div className="h-full rounded bg-green-400/60" style={{ width: `${(m.revenue / maxRevenue) * 100}%` }} />
                   </div>
                   <span className="text-xs text-heading font-semibold w-20 text-right">{(m.revenue / 100).toFixed(0)}$</span>
-                  <span className="text-[10px] text-grey-muted w-10 text-right">{m.orders} cmd</span>
+                  <span className="text-[10px] text-grey-muted w-10 text-right">{m.orders} {tx({ fr: 'cmd', en: 'ord', es: 'ped' })}</span>
                 </div>
               ))}
             </div>
@@ -115,7 +125,7 @@ function AdminStats() {
             <div className="space-y-2">
               {Object.entries(expByCat).sort(([,a], [,b]) => b - a).map(([cat, amount]) => (
                 <div key={cat} className="flex items-center gap-3">
-                  <span className="text-xs text-grey-muted w-20 flex-shrink-0 truncate">{CATEGORY_LABELS[cat] || cat}</span>
+                  <span className="text-xs text-grey-muted w-20 flex-shrink-0 truncate">{CATEGORY_LABELS[cat] ? tx(CATEGORY_LABELS[cat]) : cat}</span>
                   <div className="flex-1 h-5 rounded bg-glass overflow-hidden">
                     <div className="h-full rounded bg-red-400/60" style={{ width: `${(amount / maxExpCat) * 100}%` }} />
                   </div>
@@ -313,7 +323,7 @@ function AdminStats() {
                   </div>
                   <div className="text-right flex-shrink-0">
                     <p className="text-sm text-heading font-semibold">{(client.totalSpent / 100).toFixed(0)}$</p>
-                    <p className="text-[10px] text-grey-muted">{client.orderCount} cmd</p>
+                    <p className="text-[10px] text-grey-muted">{client.orderCount} {tx({ fr: 'cmd', en: 'ord', es: 'ped' })}</p>
                   </div>
                 </div>
               ))}

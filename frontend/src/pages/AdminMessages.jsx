@@ -233,7 +233,7 @@ function AdminMessages() {
         <div className="rounded-xl bg-glass overflow-hidden card-border">
           <div className="hidden md:grid grid-cols-[100px_1fr_1fr_120px_100px_40px] gap-3 px-4 py-3 text-xs font-semibold text-grey-muted uppercase tracking-wider border-b card-border">
             <span>Date</span>
-            <span>Nom</span>
+            <span>{tx({ fr: 'Nom', en: 'Name', es: 'Nombre' })}</span>
             <span>Email</span>
             <span>Service</span>
             <span>Status</span>
@@ -260,13 +260,13 @@ function AdminMessages() {
                       <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold ${st.color}`}>
                         <StIcon size={10} />{tx({ fr: st.fr, en: st.en, es: st.es })}
                       </span>
-                      {isCandidature && <span className="text-purple-400 text-[10px] font-semibold">Candidature</span>}
+                      {isCandidature && <span className="text-purple-400 text-[10px] font-semibold">{tx({ fr: 'Candidature', en: 'Application', es: 'Candidatura' })}</span>}
                     </span>
                     <span className="text-sm text-heading font-medium truncate">{item._nom}</span>
                     <span className="text-xs text-grey-muted truncate hidden md:block">{item._email}</span>
                     <span className="text-xs text-grey-muted truncate hidden md:block">
                       {isCandidature ? (
-                        <span className="text-purple-400 font-semibold">Candidature</span>
+                        <span className="text-purple-400 font-semibold">{tx({ fr: 'Candidature', en: 'Application', es: 'Candidatura' })}</span>
                       ) : item._service}
                     </span>
                     <span className={`hidden md:inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold w-fit ${st.color}`}>
@@ -388,7 +388,7 @@ function AdminMessages() {
                                   </div>
                                 )}
                                 {item.budget && <div><span className="text-grey-muted text-xs">Budget: </span><span className="text-heading">{item.budget}</span></div>}
-                                {item.urgence && <div><span className="text-grey-muted text-xs">Urgence: </span><span className="text-heading">{item.urgence}</span></div>}
+                                {item.urgence && <div><span className="text-grey-muted text-xs">{tx({ fr: 'Urgence', en: 'Urgency', es: 'Urgencia' })}: </span><span className="text-heading">{item.urgence}</span></div>}
                               </div>
                             </>
                           )}
@@ -426,7 +426,7 @@ function AdminMessages() {
                               {/* Bio */}
                               {item.bio && (
                                 <div className="rounded-lg bg-glass p-4">
-                                  <h4 className="text-xs font-semibold text-grey-muted uppercase tracking-wider mb-2">Bio / Demarche</h4>
+                                  <h4 className="text-xs font-semibold text-grey-muted uppercase tracking-wider mb-2">{tx({ fr: 'Bio / Demarche', en: 'Bio / Statement', es: 'Bio / Propuesta' })}</h4>
                                   <p className="text-sm text-heading whitespace-pre-wrap">{item.bio}</p>
                                 </div>
                               )}

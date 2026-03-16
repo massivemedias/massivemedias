@@ -214,13 +214,13 @@ function AdminUtilisateurs() {
 
   const getRoleBadge = (role, artistSlug) => {
     if (role === 'admin') return { label: 'Admin', slug: null, className: 'bg-red-500/20 text-red-400' };
-    if (role === 'artist') return { label: 'Artiste', slug: artistSlug || '?', className: 'bg-purple-500/20 text-purple-400' };
+    if (role === 'artist') return { label: tx({ fr: 'Artiste', en: 'Artist', es: 'Artista' }), slug: artistSlug || '?', className: 'bg-purple-500/20 text-purple-400' };
     return null;
   };
 
   const getBuyerBadge = (user) => {
     if (user.isBuyer) return { label: tx({ fr: 'Acheteur', en: 'Buyer', es: 'Comprador' }), className: 'bg-green-500/20 text-green-400' };
-    if (user.isGuest) return { label: 'Guest', className: 'bg-yellow-500/20 text-yellow-400' };
+    if (user.isGuest) return { label: tx({ fr: 'Invite', en: 'Guest', es: 'Invitado' }), className: 'bg-yellow-500/20 text-yellow-400' };
     return { label: tx({ fr: 'Visiteur', en: 'Visitor', es: 'Visitante' }), className: 'bg-gray-500/20 text-gray-400' };
   };
 
@@ -299,7 +299,7 @@ function AdminUtilisateurs() {
           <div className="hidden md:grid grid-cols-[1fr_1fr_100px_100px_80px_100px_100px] gap-3 px-4 py-3 text-xs font-semibold text-grey-muted uppercase tracking-wider border-b card-border">
             <span>{tx({ fr: 'Utilisateur', en: 'User', es: 'Usuario' })}</span>
             <span>Email</span>
-            <span>{tx({ fr: 'Type', en: 'Type', es: 'Tipo' })}</span>
+            <span>{tx({ fr: 'Statut', en: 'Status', es: 'Estado' })}</span>
             <span>{tx({ fr: 'Role', en: 'Role', es: 'Rol' })}</span>
             <span>{tx({ fr: 'Cmd', en: 'Orders', es: 'Ped' })}</span>
             <span>{tx({ fr: 'Depense', en: 'Spent', es: 'Gastado' })}</span>
@@ -337,7 +337,7 @@ function AdminUtilisateurs() {
                       </p>
                       <p className="text-[11px] text-grey-muted flex items-center gap-1">
                         {user.isGuest ? (
-                          <><ShoppingBag size={9} /> Guest checkout</>
+                          <><ShoppingBag size={9} /> {tx({ fr: 'Achat sans compte', en: 'Guest checkout', es: 'Compra sin cuenta' })}</>
                         ) : (
                           <><Shield size={9} /> {user.provider}</>
                         )}
@@ -388,7 +388,7 @@ function AdminUtilisateurs() {
                     {role === 'admin' ? (
                       <span className="text-[11.5px] text-grey-muted italic">Admin</span>
                     ) : user.isGuest ? (
-                      <span className="text-[11.5px] text-grey-muted italic">Guest</span>
+                      <span className="text-[11.5px] text-grey-muted italic">{tx({ fr: 'Invite', en: 'Guest', es: 'Invitado' })}</span>
                     ) : role === 'artist' ? (
                       <>
                         <button

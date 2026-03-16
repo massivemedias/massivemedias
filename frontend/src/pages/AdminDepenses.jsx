@@ -32,7 +32,11 @@ const CATEGORY_COLORS = {
   other: 'bg-gray-500/20 text-gray-400',
 };
 
-const MONTH_NAMES_FR = ['Jan', 'Fev', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aou', 'Sep', 'Oct', 'Nov', 'Dec'];
+const MONTH_NAMES = {
+  fr: ['Jan', 'Fev', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aou', 'Sep', 'Oct', 'Nov', 'Dec'],
+  en: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+  es: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
+};
 
 const emptyForm = {
   description: '', amount: '', category: 'consommables', date: new Date().toISOString().split('T')[0],
@@ -40,7 +44,7 @@ const emptyForm = {
 };
 
 function AdminDepenses() {
-  const { tx } = useLang();
+  const { tx, lang } = useLang();
 
   const [items, setItems] = useState([]);
   const [summary, setSummary] = useState(null);
@@ -256,7 +260,7 @@ function AdminDepenses() {
                           const hasData = m.revenue > 0 || m.expenses > 0;
                           if (!hasData) return (
                             <tr key={key} className="border-b card-border opacity-30">
-                              <td className="py-2 text-grey-muted">{MONTH_NAMES_FR[parseInt(key) - 1]}</td>
+                              <td className="py-2 text-grey-muted">{(MONTH_NAMES[lang] || MONTH_NAMES.fr)[parseInt(key) - 1]}</td>
                               <td className="text-right py-2 text-grey-muted">-</td>
                               <td className="text-right py-2 text-grey-muted">-</td>
                               <td className="text-right py-2 text-grey-muted">-</td>
@@ -266,7 +270,7 @@ function AdminDepenses() {
                           );
                           return (
                             <tr key={key} className="border-b card-border">
-                              <td className="py-2 text-heading font-medium">{MONTH_NAMES_FR[parseInt(key) - 1]}</td>
+                              <td className="py-2 text-heading font-medium">{(MONTH_NAMES[lang] || MONTH_NAMES.fr)[parseInt(key) - 1]}</td>
                               <td className="text-right py-2 text-green-400">{fmt(m.revenue)}$</td>
                               <td className="text-right py-2 text-red-400">{fmt(m.expenses)}$</td>
                               <td className="text-right py-2 text-blue-400">{fmt(m.tps)}$</td>
@@ -496,9 +500,9 @@ function AdminDepenses() {
                             <div className="space-y-3">
                               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                                 <input type="text" value={editData.description} onChange={(e) => setEditData(p => ({ ...p, description: e.target.value }))}
-                                  placeholder="Description" className="input-field text-sm" />
+                                  placeholder={tx({ fr: 'Description *', en: 'Description *', es: 'Descripcion *' })} className="input-field text-sm" />
                                 <input type="number" step="0.01" value={editData.amount} onChange={(e) => setEditData(p => ({ ...p, amount: e.target.value }))}
-                                  placeholder="Montant $" className="input-field text-sm" />
+                                  placeholder={tx({ fr: 'Montant $ *', en: 'Amount $ *', es: 'Monto $ *' })} className="input-field text-sm" />
                                 <input type="date" value={editData.date} onChange={(e) => setEditData(p => ({ ...p, date: e.target.value }))} className="input-field text-sm" />
                               </div>
                               <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
@@ -506,7 +510,7 @@ function AdminDepenses() {
                                   {Object.entries(CATEGORY_LABELS).map(([k, v]) => <option key={k} value={k}>{tx(v)}</option>)}
                                 </select>
                                 <input type="text" value={editData.vendor} onChange={(e) => setEditData(p => ({ ...p, vendor: e.target.value }))}
-                                  placeholder="Fournisseur" className="input-field text-sm" />
+                                  placeholder={tx({ fr: 'Fournisseur', en: 'Vendor', es: 'Proveedor' })} className="input-field text-sm" />
                                 <input type="number" step="0.01" value={editData.tpsAmount} onChange={(e) => setEditData(p => ({ ...p, tpsAmount: e.target.value }))}
                                   placeholder="TPS $" className="input-field text-sm" />
                                 <input type="number" step="0.01" value={editData.tvqAmount} onChange={(e) => setEditData(p => ({ ...p, tvqAmount: e.target.value }))}
@@ -514,9 +518,9 @@ function AdminDepenses() {
                               </div>
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                 <input type="text" value={editData.receiptNumber} onChange={(e) => setEditData(p => ({ ...p, receiptNumber: e.target.value }))}
-                                  placeholder="No. facture / recu" className="input-field text-sm" />
+                                  placeholder={tx({ fr: 'No. facture / recu', en: 'Invoice / receipt #', es: 'No. factura / recibo' })} className="input-field text-sm" />
                                 <textarea value={editData.notes} onChange={(e) => setEditData(p => ({ ...p, notes: e.target.value }))}
-                                  placeholder="Notes" rows={1} className="input-field text-sm resize-none" />
+                                  placeholder={tx({ fr: 'Notes', en: 'Notes', es: 'Notas' })} rows={1} className="input-field text-sm resize-none" />
                               </div>
                               <div className="flex items-center gap-3 flex-wrap">
                                 <label className="flex items-center gap-2 text-sm text-heading cursor-pointer">

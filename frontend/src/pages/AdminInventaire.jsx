@@ -9,19 +9,19 @@ import { useLang } from '../i18n/LanguageContext';
 import api from '../services/api';
 
 const STATUS_CONFIG = {
-  ok: { label: 'OK', icon: CheckCircle, color: 'bg-green-500/20 text-green-400' },
-  low: { label: 'Alerte', icon: AlertTriangle, color: 'bg-orange-500/20 text-orange-400' },
-  out: { label: 'Rupture', icon: XCircle, color: 'bg-red-500/20 text-red-400' },
+  ok: { label: { fr: 'OK', en: 'OK', es: 'OK' }, icon: CheckCircle, color: 'bg-green-500/20 text-green-400' },
+  low: { label: { fr: 'Alerte', en: 'Alert', es: 'Alerta' }, icon: AlertTriangle, color: 'bg-orange-500/20 text-orange-400' },
+  out: { label: { fr: 'Rupture', en: 'Out of stock', es: 'Agotado' }, icon: XCircle, color: 'bg-red-500/20 text-red-400' },
 };
 
 const CATEGORY_LABELS = {
-  textile: 'Textile',
-  frame: 'Cadre',
-  accessory: 'Accessoire',
+  textile: { fr: 'Textile', en: 'Textile', es: 'Textil' },
+  frame: { fr: 'Cadre', en: 'Frame', es: 'Marco' },
+  accessory: { fr: 'Accessoire', en: 'Accessory', es: 'Accesorio' },
   sticker: 'Sticker',
   print: 'Print',
   merch: 'Merch',
-  other: 'Autre',
+  other: { fr: 'Autre', en: 'Other', es: 'Otro' },
 };
 
 function AdminInventaire() {
@@ -43,7 +43,7 @@ function AdminInventaire() {
       setSummary(data.summary || null);
       setError('');
     } catch (err) {
-      setError('Impossible de charger l\'inventaire');
+      setError(tx({ fr: 'Impossible de charger l\'inventaire', en: 'Unable to load inventory', es: 'No se puede cargar el inventario' }));
       console.error(err);
     } finally {
       setLoading(false);
@@ -215,7 +215,7 @@ function AdminInventaire() {
                     filterStatus === s ? 'text-accent' : 'text-grey-muted hover:text-accent'
                   }`}
                 >
-                  {s === 'all' ? tx({ fr: 'Tous', en: 'All', es: 'Todos' }) : STATUS_CONFIG[s].label}
+                  {s === 'all' ? tx({ fr: 'Tous', en: 'All', es: 'Todos' }) : tx(STATUS_CONFIG[s].label)}
                 </button>
               ))}
             </div>
@@ -254,7 +254,7 @@ function AdminInventaire() {
                         >
                           <td className="px-4 py-2 text-heading font-medium">{getName(item)}</td>
                           <td className="px-4 py-2 font-mono text-grey-muted text-xs">{item.sku || '-'}</td>
-                          <td className="px-4 py-2 text-grey-muted">{CATEGORY_LABELS[item.category] || item.category}</td>
+                          <td className="px-4 py-2 text-grey-muted">{CATEGORY_LABELS[item.category] ? tx(CATEGORY_LABELS[item.category]) : item.category}</td>
                           <td className="px-4 py-2 text-center">
                             {isEditing ? (
                               <input
@@ -273,7 +273,7 @@ function AdminInventaire() {
                           <td className="px-4 py-2 text-center">
                             <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${statusCfg.color}`}>
                               <StatusIcon size={12} />
-                              {statusCfg.label}
+                              {tx(statusCfg.label)}
                             </span>
                           </td>
                           <td className="px-4 py-2 text-center">
