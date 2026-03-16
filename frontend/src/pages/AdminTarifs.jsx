@@ -179,16 +179,62 @@ function AdminTarifs() {
     if (!el) return;
     setPdfLoading(true);
     try {
-      // Recuperer la couleur de fond reelle du body
-      const bgColor = getComputedStyle(document.body).backgroundColor || '#1a1a2e';
+      // html2canvas ne supporte pas oklab() de Tailwind v4
+      // On convertit la couleur du body en hex via un canvas temporaire
+      let bgHex = '#1a1a2e';
+      try {
+        const tmp = document.createElement('canvas');
+        tmp.width = tmp.height = 1;
+        const ctx2 = tmp.getContext('2d');
+        ctx2.fillStyle = getComputedStyle(document.body).backgroundColor;
+        ctx2.fillRect(0, 0, 1, 1);
+        const [r, g, b] = ctx2.getImageData(0, 0, 1, 1).data;
+        bgHex = `#${((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1)}`;
+      } catch (_) { /* fallback to default */ }
+
+      // Temporairement forcer les couleurs problematiques en rgb pour html2canvas
+      const allEls = el.querySelectorAll('*');
+      const origStyles = [];
+      allEls.forEach((child) => {
+        const cs = getComputedStyle(child);
+        const bg = cs.backgroundColor;
+        const fg = cs.color;
+        if (bg.includes('oklab') || bg.includes('oklch') || fg.includes('oklab') || fg.includes('oklch')) {
+          origStyles.push({ el: child, bg: child.style.backgroundColor, fg: child.style.color });
+          // Convertir via canvas 2d
+          const c = document.createElement('canvas');
+          c.width = c.height = 1;
+          const cx = c.getContext('2d');
+          if (bg.includes('oklab') || bg.includes('oklch')) {
+            cx.fillStyle = bg;
+            cx.fillRect(0, 0, 1, 1);
+            const [r, g, b, a] = cx.getImageData(0, 0, 1, 1).data;
+            child.style.backgroundColor = a < 255 ? `rgba(${r},${g},${b},${(a/255).toFixed(3)})` : `rgb(${r},${g},${b})`;
+          }
+          if (fg.includes('oklab') || fg.includes('oklch')) {
+            cx.clearRect(0, 0, 1, 1);
+            cx.fillStyle = fg;
+            cx.fillRect(0, 0, 1, 1);
+            const [r, g, b] = cx.getImageData(0, 0, 1, 1).data;
+            child.style.color = `rgb(${r},${g},${b})`;
+          }
+        }
+      });
+
       const canvas = await html2canvas(el, {
         scale: 2,
-        backgroundColor: bgColor,
+        backgroundColor: bgHex,
         useCORS: true,
         logging: false,
         allowTaint: true,
         windowWidth: el.scrollWidth,
         windowHeight: el.scrollHeight,
+      });
+
+      // Restaurer les styles originaux
+      origStyles.forEach(({ el: child, bg, fg }) => {
+        child.style.backgroundColor = bg;
+        child.style.color = fg;
       });
       const imgData = canvas.toDataURL('image/png');
       const pdfW = 215.9;
