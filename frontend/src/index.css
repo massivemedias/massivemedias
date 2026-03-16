@@ -188,11 +188,7 @@ button, [role="button"], a, label[class*="cursor"], select, input[type="checkbox
 }
 
 [data-theme="vibrant"] .text-gradient {
-  background: var(--logo-accent, #FFCC02);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  color: unset;
+  color: var(--logo-accent, #FFCC02);
 }
 
 [data-theme="vibrant"] .price-table th {
@@ -200,10 +196,7 @@ button, [role="button"], a, label[class*="cursor"], select, input[type="checkbox
 }
 
 [data-theme="vibrant"] .price-table tr:hover td.text-gradient {
-  background: var(--logo-accent, #FFCC02) !important;
-  -webkit-background-clip: text !important;
-  -webkit-text-fill-color: transparent !important;
-  background-clip: text !important;
+  color: var(--logo-accent, #FFCC02) !important;
 }
 
 [data-theme="vibrant"] .section-container {
@@ -372,12 +365,9 @@ h1, h2, h3, h4, h5, h6 {
   border-color: var(--outline-hover-border);
 }
 
-/* Texte avec dégradé - adapté au thème */
+/* Texte accent */
 .text-gradient {
-  background: linear-gradient(135deg, var(--logo-main, #8100D1), var(--logo-accent, #FF52A0));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--accent-color, #FF52A0);
 }
 
 /* Section container */
@@ -511,10 +501,7 @@ select.input-field option {
 }
 
 .price-table tr:hover td.text-gradient {
-  background: linear-gradient(135deg, var(--logo-main, #8100D1), var(--logo-accent, #FF52A0));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--accent-color, #FF52A0);
 }
 
 /* Background classes */

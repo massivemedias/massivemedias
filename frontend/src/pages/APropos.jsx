@@ -139,7 +139,7 @@ function APropos() {
                   <div className={`flex-1 ml-14 md:ml-0 ${isLeft ? 'md:pr-10 md:text-right' : 'md:pl-10 md:text-left'}`}>
                     <div className="rounded-xl border border-purple-main/20 p-5 card-bg backdrop-blur-sm hover:border-accent/30 transition-all duration-300 group">
                       <div className={`flex items-center gap-3 mb-2 ${isLeft ? 'md:justify-end' : 'md:justify-start'}`}>
-                        <span className="text-2xl font-heading font-bold text-transparent bg-clip-text bg-gradient-to-r from-accent to-electric-purple">
+                        <span className="text-2xl font-heading font-bold text-gradient">
                           {item.year}
                         </span>
                       </div>
