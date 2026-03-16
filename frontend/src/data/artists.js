@@ -65,7 +65,7 @@ const artistsData = {
     ],
     pricing: {
       studio: { a4: 35, a3: 50, a3plus: 65, a2: 85 },
-      museum: { a4: 75, a3: 120, a3plus: 160, a2: 225 },
+      museum: { a4: 75, a3: 120, a3plus: 160, a2: 190 },
       framePrice: 30,
     },
   },
@@ -93,7 +93,7 @@ const artistsData = {
     ],
     pricing: {
       studio: { a4: 35, a3: 50, a3plus: 65, a2: 85 },
-      museum: { a4: 75, a3: 120, a3plus: 160, a2: 225 },
+      museum: { a4: 75, a3: 120, a3plus: 160, a2: 190 },
       framePrice: 30,
     },
   },
@@ -117,7 +117,7 @@ const artistsData = {
     ],
     pricing: {
       studio: { a4: 35, a3: 50, a3plus: 65, a2: 85 },
-      museum: { a4: 75, a3: 120, a3plus: 160, a2: 225 },
+      museum: { a4: 75, a3: 120, a3plus: 160, a2: 190 },
       framePrice: 30,
     },
   },
@@ -172,7 +172,7 @@ const artistsData = {
     ],
     pricing: {
       studio: { a4: 35, a3: 50, a3plus: 65, a2: 85 },
-      museum: { a4: 75, a3: 120, a3plus: 160, a2: 225 },
+      museum: { a4: 75, a3: 120, a3plus: 160, a2: 190 },
       framePrice: 30,
     },
   },

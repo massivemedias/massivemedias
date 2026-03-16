@@ -16,11 +16,11 @@ import artistsData from '../data/artists';
 // Prix service (cout Massive) et prix artiste (prix client)
 const SERVICE_PRICES = {
   studio: { a4: 20, a3: 25, a3plus: 35 },
-  museum: { a4: 35, a3: 65, a3plus: 95, a2: 75 },
+  museum: { a4: 35, a3: 65, a3plus: 95, a2: 110 },
 };
 const ARTIST_PRICES = {
   studio: { a4: 35, a3: 50, a3plus: 65 },
-  museum: { a4: 75, a3: 120, a3plus: 160, a2: 125 },
+  museum: { a4: 75, a3: 120, a3plus: 160, a2: 190 },
 };
 const FRAME_PRICE = 30;
 
@@ -638,7 +638,7 @@ function AccountArtistDashboard() {
                   <td className="py-2 px-2 text-right text-green-400 font-semibold">{ARTIST_PRICES.studio[key] - SERVICE_PRICES.studio[key]}$</td>
                 </tr>
               ))}
-              <tr className="border-b border-purple-main/10"><td colSpan="4" className="pt-4 pb-1 text-accent font-semibold text-xs">{tx({ fr: 'Serie Musee (12 encres - Canon Pro 2600)', en: 'Museum Series (12 inks - Canon Pro 2600)', es: 'Serie Museo (12 tintas - Canon Pro 2600)' })}</td></tr>
+              <tr className="border-b border-purple-main/10"><td colSpan="4" className="pt-4 pb-1 text-accent font-semibold text-xs">{tx({ fr: 'Serie Musee (12 encres pigmentees)', en: 'Museum Series (12 pigment inks)', es: 'Serie Museo (12 tintas pigmentadas)' })}</td></tr>
               {[{ format: 'A4 (8.5x11")', key: 'a4' }, { format: 'A3 (11x17")', key: 'a3' }, { format: 'A3+ (13x19")', key: 'a3plus' }, { format: 'A2 (18x24")', key: 'a2' }].map(({ format, key }) => (
                 <tr key={`m-${key}`} className="border-b border-purple-main/10 hover:bg-accent/5 transition-colors">
                   <td className="py-2 pr-3 text-heading">{format}</td>
@@ -658,9 +658,9 @@ function AccountArtistDashboard() {
         </div>
         <p className="text-grey-muted text-[11px] mt-3 italic">
           {tx({
-            fr: 'Note: Le format A2 (18x24") est imprime exclusivement sur la Canon Pro 2600 (12 encres). Pas de cadre disponible pour ce format.',
-            en: 'Note: A2 (18x24") is printed exclusively on Canon Pro 2600 (12 inks). No frame available for this format.',
-            es: 'Nota: El formato A2 (18x24") se imprime exclusivamente en Canon Pro 2600 (12 tintas). Sin marco disponible para este formato.',
+            fr: 'Note: Le format A2 (18x24") est imprime en qualite musee uniquement (12 encres pigmentees). Pas de cadre disponible pour ce format.',
+            en: 'Note: A2 (18x24") is printed in museum quality only (12 pigment inks). No frame available for this format.',
+            es: 'Nota: El formato A2 (18x24") se imprime en calidad museo unicamente (12 tintas pigmentadas). Sin marco disponible para este formato.',
           })}
         </p>
       </div>

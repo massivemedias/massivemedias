@@ -57,7 +57,7 @@ We also print flyers, postcards and business cards - everything you need to prom
             ['A4 (8.5x11")', '$20', '$35'],
             ['A3 (11x17")', '$25', '$65'],
             ['A3+ (13x19")', '$35', '$95'],
-            ['A2 (18x24")', '$55', '$125'],
+            ['A2 (18x24")', 'N/A', '$110'],
           ],
         },
         {

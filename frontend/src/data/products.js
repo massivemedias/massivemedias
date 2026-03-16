@@ -159,7 +159,7 @@ export const fineArtFormats = [
   { id: 'a4', label: 'A4 (8.5×11")', studioPrice: 20, museumPrice: 35 },
   { id: 'a3', label: 'A3 (11×17")', studioPrice: 25, museumPrice: 65 },
   { id: 'a3plus', label: 'A3+ (13×19")', studioPrice: 35, museumPrice: 95 },
-  { id: 'a2', label: 'A2 (18×24")', studioPrice: 55, museumPrice: 125 },
+  { id: 'a2', label: 'A2 (18×24")', studioPrice: null, museumPrice: 110 },
 ];
 
 export const fineArtFramePrice = 30;

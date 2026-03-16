@@ -77,7 +77,13 @@ function ConfiguratorFineArt() {
           {fineArtPrinterTiers.map(t => (
             <button
               key={t.id}
-              onClick={() => setTier(t.id)}
+              onClick={() => {
+                setTier(t.id);
+                // Reset format if current format unavailable in new tier
+                const curFmt = fineArtFormats.find(f => f.id === format);
+                const price = t.id === 'museum' ? curFmt?.museumPrice : curFmt?.studioPrice;
+                if (price == null) setFormat('a4');
+              }}
               className={`flex flex-col items-center justify-center min-w-[7rem] py-2.5 px-3 rounded-lg text-xs font-medium transition-all border-2 ${tier === t.id
                 ? 'border-accent option-selected'
                 : 'border-transparent hover:border-grey-muted/30 option-default'
@@ -102,22 +108,27 @@ function ConfiguratorFineArt() {
         <div className="grid grid-cols-4 gap-2">
           {fineArtFormats.map(f => {
             const price = tier === 'museum' ? f.museumPrice : f.studioPrice;
+            const isAvailable = price != null;
             const heights = { a4: 'h-8', a3: 'h-10', a3plus: 'h-11', a2: 'h-12' };
             const widths = { a4: 'w-6', a3: 'w-7', a3plus: 'w-8', a2: 'w-9' };
             return (
               <button
                 key={f.id}
-                onClick={() => setFormat(f.id)}
-                className={`flex flex-col items-center py-2 px-1.5 rounded-lg text-xs font-medium transition-all border-2 ${format === f.id
-                  ? 'border-accent ring-1 ring-accent/30 option-selected'
-                  : 'border-transparent hover:border-grey-muted/30 option-default'
+                onClick={() => isAvailable && setFormat(f.id)}
+                disabled={!isAvailable}
+                className={`flex flex-col items-center py-2 px-1.5 rounded-lg text-xs font-medium transition-all border-2 ${
+                  !isAvailable
+                    ? 'border-transparent opacity-30 cursor-not-allowed'
+                    : format === f.id
+                    ? 'border-accent ring-1 ring-accent/30 option-selected'
+                    : 'border-transparent hover:border-grey-muted/30 option-default'
                 }`}
               >
                 <div className={`${heights[f.id] || 'h-8'} ${widths[f.id] || 'w-6'} rounded border border-current text-grey-muted/40 mb-1.5 flex items-center justify-center`}>
                   <span className="text-[7px] text-grey-muted">{f.id.toUpperCase()}</span>
                 </div>
                 <span className="text-heading font-bold text-[11px]">{f.label}</span>
-                <span className="text-accent font-semibold text-[11px] mt-0.5">{price}$</span>
+                <span className="text-accent font-semibold text-[11px] mt-0.5">{isAvailable ? `${price}$` : 'N/A'}</span>
               </button>
             );
           })}

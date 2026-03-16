@@ -14,7 +14,7 @@ const SERVICE_PRICES = [
   { format: 'A4 (8.5x11")', studio: 20, museum: 35, frame: 30, notes: '' },
   { format: 'A3 (11x17")', studio: 25, museum: 65, frame: 30, notes: '' },
   { format: 'A3+ (13x19")', studio: 35, museum: 95, frame: 30, notes: '' },
-  { format: 'A2 (18x24")', studio: null, museum: 75, frame: null, notes: 'Canon Pro 2600 seulement (12 encres). Pas de frame.' },
+  { format: 'A2 (18x24")', studio: null, museum: 110, frame: null, notes: '12 encres pigmentees seulement. Pas de frame.' },
 ];
 
 // --- Prix boutique artiste (ce que le client final paie) ---
@@ -22,7 +22,7 @@ const ARTIST_PRICES = [
   { format: 'A4 (8.5x11")', studio: 35, museum: 75, frame: 30 },
   { format: 'A3 (11x17")', studio: 50, museum: 120, frame: 30 },
   { format: 'A3+ (13x19")', studio: 65, museum: 160, frame: 30 },
-  { format: 'A2 (18x24")', studio: null, museum: 225, frame: null },
+  { format: 'A2 (18x24")', studio: null, museum: 190, frame: null },
 ];
 
 // --- Stickers ---
@@ -176,13 +176,13 @@ function AdminTarifs() {
       }
     });
     lines.push('');
-    lines.push('SERIE MUSEE (12 encres pigmentees - Canon Pro 2600)');
+    lines.push('SERIE MUSEE (12 encres pigmentees)');
     lines.push('Format           | Sans frame | Avec frame');
     ARTIST_PRICES.forEach(p => {
       lines.push(`${p.format.padEnd(17)}| ${(p.museum + '$').padEnd(11)}| ${p.frame ? (p.museum + p.frame) + '$' : 'N/A'}`);
     });
     lines.push('');
-    lines.push('* A2 (18x24") = Canon Pro 2600 uniquement (12 encres), pas de frame');
+    lines.push('* A2 (18x24") = 12 encres pigmentees uniquement, pas de frame');
     lines.push('* Frame = cadre noir ou blanc (+30$)');
     lines.push('');
 
@@ -382,7 +382,7 @@ function AdminTarifs() {
               </DataTable>
             </div>
 
-            <h4 className="text-xs font-semibold text-heading mb-2 uppercase tracking-wider">Serie Musee - 12 encres pigmentees (Canon Pro 2600)</h4>
+            <h4 className="text-xs font-semibold text-heading mb-2 uppercase tracking-wider">Serie Musee - 12 encres pigmentees</h4>
             <div className="overflow-x-auto mb-4">
               <DataTable headers={[
                 { label: 'Format' }, { label: 'Sans frame' }, { label: 'Avec frame' },
@@ -406,7 +406,7 @@ function AdminTarifs() {
             </div>
 
             <div className="bg-accent/10 rounded-lg p-3 text-xs text-grey-muted space-y-1">
-              <p>* A2 (18x24") = Canon Pro 2600 uniquement (12 encres), pas de frame disponible</p>
+              <p>* A2 (18x24") = 12 encres pigmentees uniquement, pas de frame disponible</p>
               <p>* Frame = cadre noir ou blanc (+30$)</p>
               <p>* Commission artiste = profit net, identique avec ou sans frame (le frame va a Massive)</p>
             </div>
