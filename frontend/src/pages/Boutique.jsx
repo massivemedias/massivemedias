@@ -332,7 +332,7 @@ function Boutique() {
       </div>
 
       {/* Layout: sidebar + content */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 overflow-hidden">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 overflow-x-clip">
         <div className="flex gap-8">
 
           {/* Desktop sidebar */}
