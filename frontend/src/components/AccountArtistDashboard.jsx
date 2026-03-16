@@ -605,7 +605,7 @@ function AccountArtistDashboard() {
         </div>
 
         <div className="text-center text-sm text-grey-muted">
-          35$ + 30$ + 40$ = <span className="text-heading font-bold">105$</span> &mdash; {tx({ fr: 'Sans frame: client paie 75$, Massive 35$, toi 40$', en: 'Without frame: client pays $75, Massive $35, you $40', es: 'Sin marco: cliente paga 75$, Massive 35$, tu 40$' })}
+          35$ + 30$ + 40$ = <span className="text-heading font-bold">105$</span> - {tx({ fr: 'Sans frame: client paie 75$, Massive 35$, toi 40$', en: 'Without frame: client pays $75, Massive $35, you $40', es: 'Sin marco: cliente paga 75$, Massive 35$, tu 40$' })}
         </div>
       </div>
 
@@ -625,37 +625,37 @@ function AccountArtistDashboard() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-grey-muted text-xs uppercase tracking-wider border-b border-purple-main/20">
-                <th className="text-left py-2 pr-3">{tx({ fr: 'Format', en: 'Format', es: 'Formato' })}</th>
-                <th className="text-right py-2 px-2">{tx({ fr: 'Prix client', en: 'Client price', es: 'Precio cliente' })}</th>
-                <th className="text-right py-2 px-2">{tx({ fr: 'Cout Massive', en: 'Massive cost', es: 'Costo Massive' })}</th>
-                <th className="text-right py-2 px-2 text-green-400">{tx({ fr: 'Ta marge', en: 'Your margin', es: 'Tu margen' })}</th>
+              <tr className="text-grey-muted text-[10px] sm:text-xs uppercase tracking-wider border-b border-purple-main/20">
+                <th className="text-left py-2 pr-1 sm:pr-3">{tx({ fr: 'Format', en: 'Format', es: 'Formato' })}</th>
+                <th className="text-right py-2 px-1 sm:px-2">{tx({ fr: 'Prix client', en: 'Client price', es: 'Precio cliente' })}</th>
+                <th className="text-right py-2 px-1 sm:px-2">{tx({ fr: 'Cout Massive', en: 'Massive cost', es: 'Costo Massive' })}</th>
+                <th className="text-right py-2 px-1 sm:px-2 text-green-400">{tx({ fr: 'Ta marge', en: 'Your margin', es: 'Tu margen' })}</th>
               </tr>
             </thead>
             <tbody>
               <tr className="border-b border-purple-main/10"><td colSpan="4" className="pt-3 pb-1 text-accent font-semibold text-xs">{tx({ fr: 'Serie Studio (4 encres pigmentees)', en: 'Studio Series (4 pigment inks)', es: 'Serie Studio (4 tintas pigmentadas)' })}</td></tr>
               {[{ format: 'A4 (8.5x11")', key: 'a4' }, { format: 'A3 (11x17")', key: 'a3' }, { format: 'A3+ (13x19")', key: 'a3plus' }].map(({ format, key }) => (
                 <tr key={`s-${key}`} className="border-b border-purple-main/10 hover:bg-accent/5 transition-colors">
-                  <td className="py-2 pr-3 text-heading">{format}</td>
-                  <td className="py-2 px-2 text-right text-heading">{ARTIST_PRICES.studio[key]}$</td>
-                  <td className="py-2 px-2 text-right text-grey-muted">{SERVICE_PRICES.studio[key]}$</td>
-                  <td className="py-2 px-2 text-right text-green-400 font-semibold">{ARTIST_PRICES.studio[key] - SERVICE_PRICES.studio[key]}$</td>
+                  <td className="py-2 pr-1 sm:pr-3 text-heading text-xs sm:text-sm">{format}</td>
+                  <td className="py-2 px-1 sm:px-2 text-right text-heading text-xs sm:text-sm">{ARTIST_PRICES.studio[key]}$</td>
+                  <td className="py-2 px-1 sm:px-2 text-right text-grey-muted text-xs sm:text-sm">{SERVICE_PRICES.studio[key]}$</td>
+                  <td className="py-2 px-1 sm:px-2 text-right text-green-400 font-semibold text-xs sm:text-sm">{ARTIST_PRICES.studio[key] - SERVICE_PRICES.studio[key]}$</td>
                 </tr>
               ))}
               <tr className="border-b border-purple-main/10"><td colSpan="4" className="pt-4 pb-1 text-accent font-semibold text-xs">{tx({ fr: 'Serie Musee (12 encres pigmentees)', en: 'Museum Series (12 pigment inks)', es: 'Serie Museo (12 tintas pigmentadas)' })}</td></tr>
               {[{ format: 'A4 (8.5x11")', key: 'a4' }, { format: 'A3 (11x17")', key: 'a3' }, { format: 'A3+ (13x19")', key: 'a3plus' }, { format: 'A2 (18x24")', key: 'a2' }].map(({ format, key }) => (
                 <tr key={`m-${key}`} className="border-b border-purple-main/10 hover:bg-accent/5 transition-colors">
-                  <td className="py-2 pr-3 text-heading">{format}</td>
-                  <td className="py-2 px-2 text-right text-heading">{ARTIST_PRICES.museum[key]}$</td>
-                  <td className="py-2 px-2 text-right text-grey-muted">{SERVICE_PRICES.museum[key]}$</td>
-                  <td className="py-2 px-2 text-right text-green-400 font-semibold">{ARTIST_PRICES.museum[key] - SERVICE_PRICES.museum[key]}$</td>
+                  <td className="py-2 pr-1 sm:pr-3 text-heading text-xs sm:text-sm">{format}</td>
+                  <td className="py-2 px-1 sm:px-2 text-right text-heading text-xs sm:text-sm">{ARTIST_PRICES.museum[key]}$</td>
+                  <td className="py-2 px-1 sm:px-2 text-right text-grey-muted text-xs sm:text-sm">{SERVICE_PRICES.museum[key]}$</td>
+                  <td className="py-2 px-1 sm:px-2 text-right text-green-400 font-semibold text-xs sm:text-sm">{ARTIST_PRICES.museum[key] - SERVICE_PRICES.museum[key]}$</td>
                 </tr>
               ))}
               <tr className="border-t-2 border-purple-main/20">
-                <td className="py-2 pr-3 text-heading font-medium">{tx({ fr: 'Cadre (noir ou blanc)', en: 'Frame (black or white)', es: 'Marco (negro o blanco)' })}</td>
+                <td className="py-2 pr-1 sm:pr-3 text-heading font-medium text-xs sm:text-sm">{tx({ fr: 'Cadre (noir ou blanc)', en: 'Frame (black or white)', es: 'Marco (negro o blanco)' })}</td>
                 <td className="py-2 px-2 text-right text-heading">{FRAME_PRICE}$</td>
-                <td className="py-2 px-2 text-right text-grey-muted">{FRAME_PRICE}$</td>
-                <td className="py-2 px-2 text-right text-grey-muted">0$</td>
+                <td className="py-2 px-1 sm:px-2 text-right text-grey-muted text-xs sm:text-sm">{FRAME_PRICE}$</td>
+                <td className="py-2 px-1 sm:px-2 text-right text-grey-muted text-xs sm:text-sm">0$</td>
               </tr>
             </tbody>
           </table>

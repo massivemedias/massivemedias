@@ -90,7 +90,7 @@ function DataTable({ headers, children }) {
         <thead>
           <tr className="border-b card-border">
             {headers.map((h, i) => (
-              <th key={i} className={`py-2 px-3 font-medium ${h.className || 'text-grey-muted'} ${i === 0 ? 'text-left' : 'text-center'}`}>
+              <th key={i} className={`py-2 px-1.5 sm:px-3 font-medium text-xs sm:text-sm ${h.className || 'text-grey-muted'} ${i === 0 ? 'text-left' : 'text-center'}`}>
                 {h.label}
               </th>
             ))}
@@ -103,7 +103,7 @@ function DataTable({ headers, children }) {
 }
 
 function Td({ children, className = 'text-heading', center = true }) {
-  return <td className={`py-2.5 px-3 ${center ? 'text-center' : ''} ${className}`}>{children}</td>;
+  return <td className={`py-2.5 px-1.5 sm:px-3 text-xs sm:text-sm ${center ? 'text-center' : ''} ${className}`}>{children}</td>;
 }
 
 // =============================================
@@ -315,8 +315,8 @@ function AdminTarifs() {
       sectionTitle(tx({ fr: 'Comparaison concurrence (2025-2026)', en: 'Competition comparison (2025-2026)', es: 'Comparacion competencia (2025-2026)' }));
 
       const competitorRows = [
-        ['Society6', '~4$', tx({ fr: 'POD generique', en: 'Generic POD', es: 'POD generico' }), tx({ fr: '5-10% marge. Pas de controle des prix.', en: '5-10% margin. No price control.', es: '5-10% margen. Sin control de precios.' })],
-        ['Redbubble', '~2-3$', tx({ fr: 'POD generique', en: 'Generic POD', es: 'POD generico' }), tx({ fr: 'Frais 50% sur markup.', en: '50% markup fee.', es: 'Tarifa 50% sobre margen.' })],
+        ['Society6', '~4$', tx({ fr: 'Impression a la demande', en: 'Print on demand', es: 'Impresion bajo demanda' }), tx({ fr: '5-10% marge. Pas de controle des prix.', en: '5-10% margin. No price control.', es: '5-10% margen. Sin control de precios.' })],
+        ['Redbubble', '~2-3$', tx({ fr: 'Impression a la demande', en: 'Print on demand', es: 'Impresion bajo demanda' }), tx({ fr: 'Frais 50% sur markup.', en: '50% markup fee.', es: 'Tarifa 50% sobre margen.' })],
         ['Printify', '~20-25$', tx({ fr: 'Variable (dropship)', en: 'Variable (dropship)', es: 'Variable (dropship)' }), tx({ fr: 'Tu geres tout (boutique, marketing, livraison)', en: 'You manage everything (store, marketing, shipping)', es: 'Gestionas todo (tienda, marketing, envio)' })],
         ['INPRNT', '~18$', tx({ fr: 'Giclee 8 encres', en: 'Giclee 8 inks', es: 'Giclee 8 tintas' }), tx({ fr: 'Sur invitation seulement', en: 'Invite only', es: 'Solo invitacion' })],
         ['Massive Medias', '40-50$', tx({ fr: '12 encres musee', en: '12 inks museum', es: '12 tintas museo' }), tx({ fr: 'Zero gestion. Qualite superieure.', en: 'Zero management. Superior quality.', es: 'Cero gestion. Calidad superior.' })],
@@ -423,13 +423,13 @@ function AdminTarifs() {
   ];
 
   const COMPETITORS = [
-    { name: 'Society6', artistProfit: '~4$', quality: tx({ fr: 'POD generique', en: 'Generic POD', es: 'POD generico' }), notes: tx({ fr: "5-10% depuis mars 2025. L'artiste ne controle meme plus ses prix.", en: '5-10% since March 2025. The artist no longer controls their prices.', es: '5-10% desde marzo 2025. El artista ya no controla sus precios.' }), highlight: false },
-    { name: 'Redbubble', artistProfit: '~2-3$', quality: tx({ fr: 'POD generique', en: 'Generic POD', es: 'POD generico' }), notes: tx({ fr: 'Frais plateforme 50% sur le markup depuis sept. 2025. Net ~2-3$ par vente.', en: 'Platform fee 50% on markup since Sept. 2025. Net ~2-3$ per sale.', es: 'Tarifa de plataforma 50% sobre el margen desde sept. 2025. Neto ~2-3$ por venta.' }), highlight: false },
+    { name: 'Society6', artistProfit: '~4$', quality: tx({ fr: 'Impression a la demande', en: 'Print on demand', es: 'Impresion bajo demanda' }), notes: tx({ fr: "5-10% depuis mars 2025. L'artiste ne controle meme plus ses prix.", en: '5-10% since March 2025. The artist no longer controls their prices.', es: '5-10% desde marzo 2025. El artista ya no controla sus precios.' }), highlight: false },
+    { name: 'Redbubble', artistProfit: '~2-3$', quality: tx({ fr: 'Impression a la demande', en: 'Print on demand', es: 'Impresion bajo demanda' }), notes: tx({ fr: 'Frais plateforme 50% sur le markup depuis sept. 2025. Net ~2-3$ par vente.', en: 'Platform fee 50% on markup since Sept. 2025. Net ~2-3$ per sale.', es: 'Tarifa de plataforma 50% sobre el margen desde sept. 2025. Neto ~2-3$ por venta.' }), highlight: false },
     { name: 'Printify', artistProfit: '~20-25$', quality: tx({ fr: 'Variable (dropship)', en: 'Variable (dropship)', es: 'Variable (dropship)' }), notes: tx({ fr: 'Cout base ~10-12$ USD. MAIS: tu geres ta boutique, marketing, service client, livraison.', en: 'Base cost ~10-12$ USD. BUT: you manage your store, marketing, customer service, shipping.', es: 'Costo base ~10-12$ USD. PERO: gestionas tu tienda, marketing, servicio al cliente, envio.' }), highlight: 'printify' },
-    { name: 'Printful', artistProfit: '~20$', quality: tx({ fr: 'POD (giclee 8 encres)', en: 'POD (giclee 8 inks)', es: 'POD (giclee 8 tintas)' }), notes: tx({ fr: 'Cout base ~16$+ USD. Meme modele que Printify, tu geres tout.', en: 'Base cost ~16$+ USD. Same model as Printify, you manage everything.', es: 'Costo base ~16$+ USD. Mismo modelo que Printify, gestionas todo.' }), highlight: false },
-    { name: 'INPRNT', artistProfit: '~18$', quality: tx({ fr: "Giclee d'archives (8 encres)", en: 'Archival giclee (8 inks)', es: 'Giclee de archivo (8 tintas)' }), notes: tx({ fr: "Meilleur POD en qualite. Sur invitation. Print ~36$, artiste garde 18$.", en: 'Best POD quality. Invite-only. Print ~36$, artist keeps 18$.', es: 'Mejor calidad POD. Solo invitacion. Print ~36$, artista queda 18$.' }), highlight: false },
+    { name: 'Printful', artistProfit: '~20$', quality: tx({ fr: 'Giclee 8 encres', en: 'Giclee 8 inks', es: 'Giclee 8 tintas' }), notes: tx({ fr: 'Cout base ~16$+ USD. Meme modele que Printify, tu geres tout.', en: 'Base cost ~16$+ USD. Same model as Printify, you manage everything.', es: 'Costo base ~16$+ USD. Mismo modelo que Printify, gestionas todo.' }), highlight: false },
+    { name: 'INPRNT', artistProfit: '~18$', quality: tx({ fr: "Giclee d'archives (8 encres)", en: 'Archival giclee (8 inks)', es: 'Giclee de archivo (8 tintas)' }), notes: tx({ fr: "Meilleure qualite en impression a la demande. Sur invitation. Print ~36$, artiste garde 18$.", en: 'Best print-on-demand quality. Invite-only. Print ~36$, artist keeps 18$.', es: 'Mejor calidad en impresion bajo demanda. Solo invitacion. Print ~36$, artista queda 18$.' }), highlight: false },
     { name: 'Fine Art America', artistProfit: '~10-25$', quality: tx({ fr: "Giclee d'archives", en: 'Archival giclee', es: 'Giclee de archivo' }), notes: tx({ fr: 'Prix de base fixe + ton markup. Qualite correcte.', en: 'Fixed base price + your markup. Decent quality.', es: 'Precio base fijo + tu margen. Calidad correcta.' }), highlight: false },
-    { name: 'Massive Medias', artistProfit: '40-50$', quality: tx({ fr: '12 encres pigmentees, musee', en: '12 pigmented inks, museum', es: '12 tintas pigmentadas, museo' }), notes: tx({ fr: "Impression locale fine art. Zero gestion pour l'artiste. Qualite superieure a tout POD.", en: 'Local fine art printing. Zero management for the artist. Quality superior to all POD.', es: 'Impresion local fine art. Cero gestion para el artista. Calidad superior a todo POD.' }), highlight: 'massive' },
+    { name: 'Massive Medias', artistProfit: '40-50$', quality: tx({ fr: '12 encres pigmentees, musee', en: '12 pigmented inks, museum', es: '12 tintas pigmentadas, museo' }), notes: tx({ fr: "Impression locale fine art. Zero gestion pour l'artiste. Qualite superieure a toute impression a la demande.", en: 'Local fine art printing. Zero management for the artist. Quality superior to all print-on-demand.', es: 'Impresion local fine art. Cero gestion para el artista. Calidad superior a toda impresion bajo demanda.' }), highlight: 'massive' },
   ];
 
   // --- Tabs ---
@@ -520,7 +520,7 @@ function AdminTarifs() {
               </div>
 
               <div className="text-center text-sm text-grey-muted">
-                35$ + 30$ + 40$ = <span className="text-heading font-bold">105$</span> &mdash; {tx({ fr: 'Sans frame: client paie 75$, Massive 35$, artiste 40$', en: 'No frame: client pays 75$, Massive 35$, artist 40$', es: 'Sin marco: cliente paga 75$, Massive 35$, artista 40$' })}
+                35$ + 30$ + 40$ = <span className="text-heading font-bold">105$</span> - {tx({ fr: 'Sans frame: client paie 75$, Massive 35$, artiste 40$', en: 'No frame: client pays 75$, Massive 35$, artist 40$', es: 'Sin marco: cliente paga 75$, Massive 35$, artista 40$' })}
               </div>
 
               <div className="bg-accent/10 rounded-lg p-4 text-sm text-grey-muted space-y-2">
@@ -625,6 +625,21 @@ function AdminTarifs() {
           <SectionCard icon={BarChart3} iconColor="text-yellow-400"
             title={tx({ fr: 'Comparaison concurrence (donnees 2025-2026)', en: 'Competition comparison (2025-2026 data)', es: 'Comparacion competencia (datos 2025-2026)' })}
             subtitle={tx({ fr: "Combien l'artiste garde reellement sur chaque plateforme", en: 'How much the artist actually keeps on each platform', es: 'Cuanto el artista realmente conserva en cada plataforma' })}>
+            {/* Mobile: cards */}
+            <div className="sm:hidden space-y-3">
+              {COMPETITORS.map((c, i) => (
+                <div key={i} className={`rounded-lg p-3 card-border ${c.highlight === 'massive' ? 'bg-accent/10' : c.highlight === 'printify' ? 'bg-orange-500/5' : 'bg-glass'}`}>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className={`font-bold ${c.highlight === 'massive' ? 'text-accent' : 'text-heading'}`}>{c.name}</span>
+                    <span className={`font-bold text-lg ${c.highlight === 'massive' ? 'text-accent' : c.highlight === 'printify' ? 'text-orange-400' : 'text-heading'}`}>{c.artistProfit}</span>
+                  </div>
+                  <p className="text-xs text-grey-muted mb-1">{c.quality}</p>
+                  <p className="text-xs text-grey-muted">{c.notes}</p>
+                </div>
+              ))}
+            </div>
+            {/* Desktop: table */}
+            <div className="hidden sm:block">
             <DataTable headers={[
               { label: tx({ fr: 'Plateforme', en: 'Platform', es: 'Plataforma' }) },
               { label: tx({ fr: 'Artiste garde', en: 'Artist keeps', es: 'Artista conserva' }) },
@@ -640,6 +655,7 @@ function AdminTarifs() {
                 </tr>
               ))}
             </DataTable>
+            </div>
 
             {/* Printify comparison */}
             <div className="mt-4 bg-orange-500/10 rounded-lg p-4 text-xs space-y-2">
@@ -670,7 +686,7 @@ function AdminTarifs() {
               <p>- {tx({ fr: "Society6 / Redbubble: l'artiste fait 2-4$ par vente. C'est presque rien.", en: 'Society6 / Redbubble: the artist makes 2-4$ per sale. Almost nothing.', es: 'Society6 / Redbubble: el artista gana 2-4$ por venta. Casi nada.' })}</p>
               <p>- {tx({ fr: "Printify / Printful: ~20-25$ mais l'artiste gere tout (boutique, marketing, service client, livraison)", en: 'Printify / Printful: ~20-25$ but the artist manages everything (store, marketing, customer service, shipping)', es: 'Printify / Printful: ~20-25$ pero el artista gestiona todo (tienda, marketing, servicio al cliente, envio)' })}</p>
               <p>- {tx({ fr: "INPRNT: ~18$ et bonne qualite, mais sur invitation seulement", en: 'INPRNT: ~18$ and good quality, but invite-only', es: 'INPRNT: ~18$ y buena calidad, pero solo por invitacion' })}</p>
-              <p>- <strong>{tx({ fr: 'Massive: 40-50$ de profit net, zero gestion, qualite musee superieure a tout POD', en: 'Massive: 40-50$ net profit, zero management, museum quality superior to all POD', es: 'Massive: 40-50$ de ganancia neta, cero gestion, calidad museo superior a todo POD' })}</strong></p>
+              <p>- <strong>{tx({ fr: 'Massive: 40-50$ de profit net, zero gestion, qualite musee superieure a toute impression a la demande', en: 'Massive: 40-50$ net profit, zero management, museum quality superior to all print-on-demand', es: 'Massive: 40-50$ de ganancia neta, cero gestion, calidad museo superior a toda impresion bajo demanda' })}</strong></p>
             </div>
           </SectionCard>
         </div>
