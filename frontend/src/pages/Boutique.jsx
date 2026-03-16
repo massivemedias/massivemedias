@@ -221,7 +221,8 @@ function Boutique() {
           </button>
           {orderedArtists.map((artist, ai) => {
             const hasPrints = artist.prints && artist.prints.length > 0;
-            const minPrice = hasPrints ? Math.min(...Object.values(artist.pricing.studio)) : null;
+            const studioVals = hasPrints && artist.pricing?.studio ? Object.values(artist.pricing.studio) : [];
+            const minPrice = studioVals.length > 0 ? Math.min(...studioVals) : null;
             return (
               <motion.div
                 key={artist.slug}
@@ -325,9 +326,9 @@ function Boutique() {
         </div>
       </section>
 
-      {/* Mobile category tabs - sticky */}
-      <div className="md:hidden sticky top-0 z-30 bg-bg-primary/90 backdrop-blur-xl border-b card-border shadow-lg shadow-black/20">
-        <div ref={mobileTabsRef} className="flex overflow-x-auto scrollbar-hide px-3 py-2.5 gap-1.5">
+      {/* Mobile category tabs - sticky below fixed header */}
+      <div className="md:hidden sticky top-20 z-40 bg-bg-primary/95 backdrop-blur-xl border-b card-border shadow-lg shadow-black/30">
+        <div ref={mobileTabsRef} className="grid grid-cols-3 px-2 py-2 gap-1">
           {sidebarCategories.map(cat => {
             const Icon = cat.icon;
             const isActive = activeCategory === cat.id;
@@ -336,15 +337,15 @@ function Boutique() {
                 key={cat.id}
                 ref={el => tabRefs.current[cat.id] = el}
                 onClick={() => scrollToSection(cat.id)}
-                className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all duration-300 ${
+                className={`flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg text-[11px] font-bold transition-all duration-300 ${
                   isActive
                     ? cat.id === 'soldes'
-                      ? 'bg-red-500 text-white shadow-md shadow-red-500/30 scale-105'
-                      : 'bg-accent text-white shadow-md shadow-accent/30 scale-105'
+                      ? 'bg-red-500 text-white shadow-md shadow-red-500/30'
+                      : 'bg-accent text-white shadow-md shadow-accent/30'
                     : 'bg-glass text-grey-light hover:text-heading'
                 }`}
               >
-                <Icon size={14} />
+                <Icon size={13} />
                 {tx(cat)}
               </button>
             );
@@ -442,7 +443,7 @@ function Boutique() {
                                 {artist.name}
                               </h3>
                               <p className="text-white/60 text-[11px] mt-0.5 leading-snug">
-                                {tx({ fr: artist.tagline.fr, en: artist.tagline.en, es: artist.tagline.es || artist.tagline.en })}
+                                {tx({ fr: artist.tagline?.fr || '', en: artist.tagline?.en || '', es: artist.tagline?.es || artist.tagline?.en || '' })}
                               </p>
                               <div className="flex items-center justify-between mt-3 pt-2 border-t border-white/10">
                                 <span className="text-white/50 text-[10px]">
@@ -486,7 +487,8 @@ function Boutique() {
                 {/* Grille responsive */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                   {featuredPrints.map((print, i) => {
-                    const minPrice = Math.min(...Object.values(print.artist.pricing.studio));
+                    const studioVals = print.artist?.pricing?.studio ? Object.values(print.artist.pricing.studio) : [];
+                    const minPrice = studioVals.length > 0 ? Math.min(...studioVals) : 0;
                     return (
                       <motion.div
                         key={print.id}
@@ -537,11 +539,15 @@ function Boutique() {
                     {tx({ fr: 'Packs de stickers', en: 'Sticker packs', es: 'Packs de stickers' })}
                   </h2>
                   <span className="text-grey-muted text-xs">
-                    {tx({
-                      fr: `Des ${Math.min(...stickerProducts.flatMap(s => s.tiers.map(t => t.price)))}$ le pack`,
-                      en: `From $${Math.min(...stickerProducts.flatMap(s => s.tiers.map(t => t.price)))} per pack`,
-                      es: `Desde ${Math.min(...stickerProducts.flatMap(s => s.tiers.map(t => t.price)))}$ por pack`,
-                    })}
+                    {(() => {
+                      const prices = stickerProducts.flatMap(s => (s.tiers || []).map(t => t.price));
+                      const min = prices.length > 0 ? Math.min(...prices) : 0;
+                      return tx({
+                        fr: `Des ${min}$ le pack`,
+                        en: `From $${min} per pack`,
+                        es: `Desde ${min}$ por pack`,
+                      });
+                    })()}
                   </span>
                 </div>
 

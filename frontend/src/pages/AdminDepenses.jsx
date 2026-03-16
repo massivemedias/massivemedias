@@ -4,7 +4,7 @@ import {
   Search, Receipt, DollarSign, Loader2, Plus, X, Save,
   ChevronLeft, ChevronRight, CheckCircle, ChevronDown, ChevronUp,
   Trash2, Upload, ExternalLink, BarChart3, TrendingUp, TrendingDown,
-  Edit3, Image as ImageIcon, FileText, Package,
+  Edit3, Image as ImageIcon, FileText, Package, Download,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import { getExpenses, createExpense, updateExpense, deleteExpense, getExpenseSummary } from '../services/adminService';
@@ -37,6 +37,16 @@ const MONTH_NAMES = {
   en: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
   es: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
 };
+
+function downloadCSV(filename, csvContent) {
+  const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 const INVENTORY_CATEGORIES = ['textile', 'frame', 'accessory', 'sticker', 'print', 'merch', 'other'];
 const INVENTORY_CATEGORY_LABELS = {
@@ -368,6 +378,38 @@ function AdminDepenses() {
                   <button onClick={() => setSummaryYear(y => y - 1)} className="p-1 rounded bg-glass text-grey-muted hover:text-heading"><ChevronLeft size={14} /></button>
                   <span className="text-sm font-bold text-heading min-w-[4ch] text-center">{summaryYear}</span>
                   <button onClick={() => setSummaryYear(y => y + 1)} className="p-1 rounded bg-glass text-grey-muted hover:text-heading"><ChevronRight size={14} /></button>
+                  {yearData && (
+                    <button
+                      onClick={() => {
+                        const months = Object.entries(yearData.months);
+                        const mNames = MONTH_NAMES.fr;
+                        const lines = [
+                          `Massive Medias - Bilan annuel ${summaryYear}`,
+                          `NEQ: 2269057891 | TPS: 732457635RT0001 | TVQ: 4012577678TQ0001`,
+                          '',
+                          'Mois,Revenus,Depenses,TPS payee,TVQ payee,Bilan',
+                          ...months.map(([key, m]) => {
+                            const balance = m.revenue - m.expenses;
+                            return `${mNames[parseInt(key) - 1]},${fmt(m.revenue)},${fmt(m.expenses)},${fmt(m.tps)},${fmt(m.tvq)},${fmt(balance)}`;
+                          }),
+                          `Total,${fmt(yearData.totals.revenue)},${fmt(yearData.totals.expenses)},${fmt(yearData.totals.tps)},${fmt(yearData.totals.tvq)},${fmt(yearData.totals.revenue - yearData.totals.expenses)}`,
+                          '',
+                          'Taxes',
+                          `,TPS (5%),TVQ (9.975%)`,
+                          `Percue sur ventes,${fmt(yearData.totals.revenueTps)},${fmt(yearData.totals.revenueTvq)}`,
+                          `Payee sur achats,${fmt(yearData.totals.tps)},${fmt(yearData.totals.tvq)}`,
+                          `Net a remettre,${fmt(yearData.totals.revenueTps - yearData.totals.tps)},${fmt(yearData.totals.revenueTvq - yearData.totals.tvq)}`,
+                          '',
+                          `Depenses deductibles,${fmt(yearData.totals.deductible)}`,
+                        ];
+                        downloadCSV(`massive-bilan-${summaryYear}.csv`, lines.join('\n'));
+                      }}
+                      className="p-1.5 rounded bg-green-500/20 text-green-400 hover:bg-green-500/30 transition-colors"
+                      title={tx({ fr: 'Exporter CSV', en: 'Export CSV', es: 'Exportar CSV' })}
+                    >
+                      <Download size={14} />
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -492,6 +534,22 @@ function AdminDepenses() {
           ))}
         </div>
         <div className="flex gap-2">
+          <button
+            onClick={() => {
+              const lines = [
+                'Massive Medias - Depenses',
+                `NEQ: 2269057891 | TPS: 732457635RT0001 | TVQ: 4012577678TQ0001`,
+                '',
+                'Date,Description,Categorie,Montant HT,TPS,TVQ,Total',
+                ...items.map(e => `${e.date},"${(e.description || '').replace(/"/g, '""')}",${e.category},${fmt(e.amount)},${fmt(e.tps || 0)},${fmt(e.tvq || 0)},${fmt((e.amount || 0) + (e.tps || 0) + (e.tvq || 0))}`),
+              ];
+              downloadCSV(`massive-depenses-${new Date().toISOString().slice(0, 10)}.csv`, lines.join('\n'));
+            }}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-green-500/20 text-green-400 text-sm font-semibold hover:bg-green-500/30 transition-colors whitespace-nowrap"
+            title={tx({ fr: 'Exporter depenses CSV', en: 'Export expenses CSV', es: 'Exportar gastos CSV' })}
+          >
+            <Download size={16} />
+          </button>
           <button onClick={() => { setShowImport(!showImport); setInvoiceData(null); setParseError(''); setImportSuccess(''); }}
             className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-glass card-border text-sm font-semibold text-heading hover:bg-accent/10 transition-colors whitespace-nowrap">
             {showImport ? <X size={16} /> : <FileText size={16} className="text-accent" />}

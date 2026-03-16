@@ -37,3 +37,6 @@ export const getTestimonials = (params) => api.get('/testimonials/admin', { para
 export const approveTestimonial = (documentId, approved, featured) => api.put(`/testimonials/${documentId}/approve`, { approved, featured });
 export const deleteTestimonial = (documentId) => api.delete(`/testimonials/${documentId}`);
 export const generateTestimonialLink = (data) => api.post('/testimonials/generate-link', data);
+
+// --- Analytics ---
+export const getAnalytics = (period = 30) => api.get('/analytics/stats', { params: { period } });

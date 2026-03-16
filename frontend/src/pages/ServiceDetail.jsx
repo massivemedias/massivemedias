@@ -586,7 +586,7 @@ function ServiceDetail() {
         )}
 
         {/* ============ TARIFS ============ */}
-        <motion.div
+        {service.pricing && <motion.div
           id="tarifs"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -681,7 +681,7 @@ function ServiceDetail() {
               ))}
             </div>
           )}
-        </motion.div>
+        </motion.div>}
 
         {/* ============ ÉQUIPEMENT ============ */}
         {service.equipment && (

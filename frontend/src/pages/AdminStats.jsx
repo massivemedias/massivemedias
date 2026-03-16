@@ -3,14 +3,16 @@ import { motion } from 'framer-motion';
 import {
   DollarSign, TrendingUp, Receipt, Loader2,
   BarChart3, Users, ShoppingBag, Percent, ExternalLink,
-  Activity, ArrowUpRight, ArrowDownRight,
+  Activity, ArrowUpRight, ArrowDownRight, Download,
+  Globe, Monitor, Smartphone, Tablet, Clock, Eye, MousePointerClick,
 } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, AreaChart, Area, CartesianGrid,
+  LineChart, Line, Legend,
 } from 'recharts';
 import { useLang } from '../i18n/LanguageContext';
-import { getOrderStats } from '../services/adminService';
+import { getOrderStats, getAnalytics } from '../services/adminService';
 
 const CATEGORY_LABELS = {
   materials: { fr: 'Materiaux', en: 'Materials', es: 'Materiales' },
@@ -22,6 +24,16 @@ const CATEGORY_LABELS = {
   taxes: { fr: 'Taxes', en: 'Taxes', es: 'Impuestos' },
   other: { fr: 'Autre', en: 'Other', es: 'Otro' },
 };
+
+function downloadCSV(filename, csvContent) {
+  const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 // Helper: lire les couleurs CSS du theme actif
 function getThemeColor(varName, fallback = '#FF52A0') {
@@ -48,6 +60,11 @@ function AdminStats() {
   const { tx } = useLang();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [tab, setTab] = useState('business'); // 'business' | 'analytics'
+  const [analytics, setAnalytics] = useState(null);
+  const [analyticsLoading, setAnalyticsLoading] = useState(false);
+  const [analyticsPeriod, setAnalyticsPeriod] = useState(30);
+  const [analyticsError, setAnalyticsError] = useState('');
 
   useEffect(() => {
     getOrderStats()
@@ -55,6 +72,18 @@ function AdminStats() {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    if (tab !== 'analytics') return;
+    setAnalyticsLoading(true);
+    setAnalyticsError('');
+    getAnalytics(analyticsPeriod)
+      .then(({ data }) => setAnalytics(data.data || data))
+      .catch((err) => {
+        setAnalyticsError(err.response?.data?.error || 'Failed to load analytics');
+      })
+      .finally(() => setAnalyticsLoading(false));
+  }, [tab, analyticsPeriod]);
 
   // Couleurs theme (relues a chaque render pour suivre les changements de theme)
   const colors = useMemo(() => ({
@@ -127,8 +156,270 @@ function AdminStats() {
       pct: ((count / totalOrders) * 100).toFixed(1),
     }));
 
+  const DEVICE_ICONS = { desktop: Monitor, mobile: Smartphone, tablet: Tablet };
+
   return (
     <div className="space-y-6">
+      {/* Tab switcher */}
+      <div className="flex gap-2">
+        <button onClick={() => setTab('business')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${tab === 'business' ? 'bg-accent text-white' : 'bg-glass text-grey-muted hover:text-heading card-border'}`}>
+          <DollarSign size={16} />
+          {tx({ fr: 'Affaires', en: 'Business', es: 'Negocios' })}
+        </button>
+        <button onClick={() => setTab('analytics')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${tab === 'analytics' ? 'bg-accent text-white' : 'bg-glass text-grey-muted hover:text-heading card-border'}`}>
+          <Activity size={16} />
+          {tx({ fr: 'Trafic & Visiteurs', en: 'Traffic & Visitors', es: 'Trafico & Visitantes' })}
+        </button>
+      </div>
+
+      {/* ═══════════ ANALYTICS TAB ═══════════ */}
+      {tab === 'analytics' && (
+        <div className="space-y-6">
+          {/* Period selector */}
+          <div className="flex gap-2 flex-wrap">
+            {[7, 14, 30, 90].map(p => (
+              <button key={p} onClick={() => setAnalyticsPeriod(p)}
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${analyticsPeriod === p ? 'bg-accent text-white' : 'bg-glass text-grey-muted hover:text-heading'}`}>
+                {p} {tx({ fr: 'jours', en: 'days', es: 'dias' })}
+              </button>
+            ))}
+          </div>
+
+          {analyticsLoading ? (
+            <div className="flex items-center justify-center py-20"><Loader2 size={32} className="animate-spin text-accent" /></div>
+          ) : analyticsError ? (
+            <div className="rounded-xl bg-glass p-8 card-border text-center">
+              <Activity size={32} className="mx-auto mb-3 text-grey-muted" />
+              <p className="text-heading font-semibold mb-2">{tx({ fr: 'Analytics non configure', en: 'Analytics not configured', es: 'Analytics no configurado' })}</p>
+              <p className="text-grey-muted text-sm mb-4">{analyticsError}</p>
+              <p className="text-grey-muted text-xs mb-4">
+                {tx({
+                  fr: 'Configure GOOGLE_SERVICE_ACCOUNT_JSON dans les variables Render pour activer les analytics.',
+                  en: 'Set GOOGLE_SERVICE_ACCOUNT_JSON in Render env vars to enable analytics.',
+                  es: 'Configure GOOGLE_SERVICE_ACCOUNT_JSON en variables Render para activar analytics.',
+                })}
+              </p>
+              <div className="flex flex-wrap gap-3 justify-center">
+                <a href="https://analytics.google.com/analytics/web/#/p525792501/reports/dashboard" target="_blank" rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-blue-500/20 text-blue-400 text-sm font-semibold hover:bg-blue-500/30 transition-colors">
+                  <BarChart3 size={16} /> GA4 Dashboard <ExternalLink size={12} />
+                </a>
+                <a href="https://search.google.com/search-console" target="_blank" rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-glass text-grey-muted text-sm hover:text-heading transition-colors card-border">
+                  Search Console <ExternalLink size={12} />
+                </a>
+              </div>
+            </div>
+          ) : analytics ? (
+            <>
+              {/* Overview cards */}
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                {[
+                  { label: tx({ fr: 'En ligne', en: 'Online now', es: 'En linea' }), value: analytics.realtimeUsers ?? '-', icon: Activity, accent: 'text-green-400', pulse: true },
+                  { label: tx({ fr: 'Visiteurs', en: 'Visitors', es: 'Visitantes' }), value: analytics.overview?.activeUsers || 0, icon: Users, accent: 'text-blue-400' },
+                  { label: tx({ fr: 'Sessions', en: 'Sessions', es: 'Sesiones' }), value: analytics.overview?.sessions || 0, icon: MousePointerClick, accent: 'text-purple-400' },
+                  { label: tx({ fr: 'Pages vues', en: 'Page views', es: 'Paginas vistas' }), value: analytics.overview?.pageViews || 0, icon: Eye, accent: 'text-cyan-400' },
+                  { label: tx({ fr: 'Nouveaux', en: 'New users', es: 'Nuevos' }), value: analytics.overview?.newUsers || 0, icon: ArrowUpRight, accent: 'text-emerald-400' },
+                  { label: tx({ fr: 'Taux rebond', en: 'Bounce rate', es: 'Tasa rebote' }), value: `${((analytics.overview?.bounceRate || 0) * 100).toFixed(1)}%`, icon: ArrowDownRight, accent: 'text-orange-400' },
+                ].map((card, i) => {
+                  const Icon = card.icon;
+                  return (
+                    <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} className="rounded-xl p-3 bg-glass card-border">
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <Icon size={14} className={card.accent} />
+                        {card.pulse && <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />}
+                        <span className="text-grey-muted text-[10px]">{card.label}</span>
+                      </div>
+                      <span className="text-xl font-heading font-bold text-heading">{card.value}</span>
+                    </motion.div>
+                  );
+                })}
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Daily visitors chart */}
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="rounded-xl bg-glass p-5 card-border lg:col-span-2">
+                  <h3 className="text-sm font-heading font-bold text-heading mb-4 flex items-center gap-2">
+                    <BarChart3 size={16} className="text-blue-400" />
+                    {tx({ fr: 'Visiteurs quotidiens', en: 'Daily visitors', es: 'Visitantes diarios' })}
+                  </h3>
+                  <ResponsiveContainer width="100%" height={250}>
+                    <AreaChart data={analytics.daily || []} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+                      <defs>
+                        <linearGradient id="gradUsers" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor={colors.blue} stopOpacity={0.3} />
+                          <stop offset="95%" stopColor={colors.blue} stopOpacity={0} />
+                        </linearGradient>
+                        <linearGradient id="gradViews" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor={colors.cyan} stopOpacity={0.2} />
+                          <stop offset="95%" stopColor={colors.cyan} stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+                      <XAxis dataKey="date" tick={{ fill: colors.muted, fontSize: 10 }} axisLine={false} tickLine={false} />
+                      <YAxis tick={{ fill: colors.muted, fontSize: 11 }} axisLine={false} tickLine={false} />
+                      <Tooltip content={<ChartTooltip suffix="" />} />
+                      <Area type="monotone" dataKey="users" name={tx({ fr: 'Visiteurs', en: 'Visitors', es: 'Visitantes' })} stroke={colors.blue} strokeWidth={2} fill="url(#gradUsers)" />
+                      <Area type="monotone" dataKey="pageViews" name={tx({ fr: 'Pages vues', en: 'Page views', es: 'Paginas' })} stroke={colors.cyan} strokeWidth={1.5} fill="url(#gradViews)" />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </motion.div>
+
+                {/* Top pages */}
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="rounded-xl bg-glass p-5 card-border">
+                  <h3 className="text-sm font-heading font-bold text-heading mb-4 flex items-center gap-2">
+                    <Eye size={16} className="text-cyan-400" />
+                    {tx({ fr: 'Pages les plus visitees', en: 'Most visited pages', es: 'Paginas mas visitadas' })}
+                  </h3>
+                  <div className="space-y-2 max-h-[300px] overflow-y-auto">
+                    {(analytics.pages || []).map((page, i) => {
+                      const maxViews = analytics.pages[0]?.views || 1;
+                      return (
+                        <div key={i} className="relative">
+                          <div className="absolute inset-0 rounded-lg bg-cyan-500/10" style={{ width: `${(page.views / maxViews) * 100}%` }} />
+                          <div className="relative flex items-center justify-between px-3 py-2">
+                            <span className="text-xs text-heading truncate flex-1 font-mono">{page.path}</span>
+                            <div className="flex items-center gap-3 flex-shrink-0 ml-2">
+                              <span className="text-xs text-grey-muted">{page.users} <Users size={10} className="inline" /></span>
+                              <span className="text-xs text-heading font-semibold">{page.views}</span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+
+                {/* Traffic sources */}
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="rounded-xl bg-glass p-5 card-border">
+                  <h3 className="text-sm font-heading font-bold text-heading mb-4 flex items-center gap-2">
+                    <Globe size={16} className="text-green-400" />
+                    {tx({ fr: 'Sources de trafic', en: 'Traffic sources', es: 'Fuentes de trafico' })}
+                  </h3>
+                  <div className="flex items-center gap-4">
+                    <div className="w-36 h-36 flex-shrink-0">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie data={(analytics.sources || []).map((s, i) => ({ ...s, name: s.source, value: s.sessions, color: [colors.blue, colors.green, colors.purple, colors.yellow, colors.cyan, colors.red, colors.orange, colors.emerald, colors.accent, colors.gray][i % 10] }))}
+                            cx="50%" cy="50%" innerRadius={30} outerRadius={60} paddingAngle={2} dataKey="value">
+                            {(analytics.sources || []).map((_, i) => (
+                              <Cell key={i} fill={[colors.blue, colors.green, colors.purple, colors.yellow, colors.cyan, colors.red, colors.orange, colors.emerald, colors.accent, colors.gray][i % 10]} fillOpacity={0.7} stroke="none" />
+                            ))}
+                          </Pie>
+                          <Tooltip />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
+                    <div className="flex-1 space-y-1.5 max-h-36 overflow-y-auto">
+                      {(analytics.sources || []).map((s, i) => (
+                        <div key={i} className="flex items-center gap-2 text-xs">
+                          <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: [colors.blue, colors.green, colors.purple, colors.yellow, colors.cyan, colors.red, colors.orange, colors.emerald, colors.accent, colors.gray][i % 10], opacity: 0.7 }} />
+                          <span className="text-grey-muted flex-1 truncate">{s.source}</span>
+                          <span className="text-heading font-semibold">{s.sessions}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </motion.div>
+
+                {/* Countries */}
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="rounded-xl bg-glass p-5 card-border">
+                  <h3 className="text-sm font-heading font-bold text-heading mb-4 flex items-center gap-2">
+                    <Globe size={16} className="text-purple-400" />
+                    {tx({ fr: 'Pays', en: 'Countries', es: 'Paises' })}
+                  </h3>
+                  <div className="space-y-2">
+                    {(analytics.countries || []).map((c, i) => {
+                      const maxUsers = analytics.countries[0]?.users || 1;
+                      return (
+                        <div key={i} className="relative">
+                          <div className="absolute inset-0 rounded-lg bg-purple-500/10" style={{ width: `${(c.users / maxUsers) * 100}%` }} />
+                          <div className="relative flex items-center justify-between px-3 py-1.5">
+                            <span className="text-xs text-heading">{c.country}</span>
+                            <span className="text-xs text-heading font-semibold">{c.users} <Users size={10} className="inline text-grey-muted" /></span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+
+                {/* Devices */}
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="rounded-xl bg-glass p-5 card-border">
+                  <h3 className="text-sm font-heading font-bold text-heading mb-4 flex items-center gap-2">
+                    <Monitor size={16} className="text-yellow-400" />
+                    {tx({ fr: 'Appareils', en: 'Devices', es: 'Dispositivos' })}
+                  </h3>
+                  <div className="space-y-3">
+                    {(analytics.devices || []).map((d, i) => {
+                      const totalDeviceUsers = (analytics.devices || []).reduce((s, x) => s + x.users, 0) || 1;
+                      const pct = ((d.users / totalDeviceUsers) * 100).toFixed(1);
+                      const DevIcon = DEVICE_ICONS[d.device] || Monitor;
+                      return (
+                        <div key={i} className="flex items-center gap-3">
+                          <DevIcon size={18} className="text-yellow-400 flex-shrink-0" />
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="text-xs text-heading capitalize">{d.device}</span>
+                              <span className="text-xs text-heading font-semibold">{pct}%</span>
+                            </div>
+                            <div className="h-2 rounded-full bg-glass overflow-hidden">
+                              <div className="h-full rounded-full bg-yellow-400/60" style={{ width: `${pct}%` }} />
+                            </div>
+                          </div>
+                          <span className="text-xs text-grey-muted w-10 text-right">{d.users}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+
+                {/* Age groups */}
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }} className="rounded-xl bg-glass p-5 card-border">
+                  <h3 className="text-sm font-heading font-bold text-heading mb-4 flex items-center gap-2">
+                    <Users size={16} className="text-emerald-400" />
+                    {tx({ fr: 'Age des visiteurs', en: 'Visitor age', es: 'Edad de visitantes' })}
+                  </h3>
+                  {(analytics.ageGroups || []).length === 0 ? (
+                    <p className="text-grey-muted text-xs">{tx({ fr: 'Donnees insuffisantes', en: 'Insufficient data', es: 'Datos insuficientes' })}</p>
+                  ) : (
+                    <ResponsiveContainer width="100%" height={180}>
+                      <BarChart data={analytics.ageGroups} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+                        <XAxis dataKey="age" tick={{ fill: colors.muted, fontSize: 11 }} axisLine={false} tickLine={false} />
+                        <YAxis tick={{ fill: colors.muted, fontSize: 11 }} axisLine={false} tickLine={false} />
+                        <Tooltip content={<ChartTooltip suffix="" />} />
+                        <Bar dataKey="users" fill={colors.emerald} radius={[4, 4, 0, 0]} barSize={30} fillOpacity={0.7} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  )}
+                </motion.div>
+              </div>
+
+              {/* GA external links */}
+              <div className="flex flex-wrap gap-3">
+                <a href="https://analytics.google.com/analytics/web/#/p525792501/reports/dashboard" target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg bg-glass text-grey-muted text-xs hover:text-heading transition-colors card-border">
+                  GA4 Dashboard <ExternalLink size={10} />
+                </a>
+                <a href="https://search.google.com/search-console" target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg bg-glass text-grey-muted text-xs hover:text-heading transition-colors card-border">
+                  Search Console <ExternalLink size={10} />
+                </a>
+                <a href="https://dashboard.stripe.com/" target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg bg-glass text-grey-muted text-xs hover:text-heading transition-colors card-border">
+                  Stripe <ExternalLink size={10} />
+                </a>
+              </div>
+            </>
+          ) : null}
+        </div>
+      )}
+
+      {/* ═══════════ BUSINESS TAB ═══════════ */}
+      {tab === 'business' && <>
       {/* Summary cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {summaryCards.map((card, i) => {
@@ -140,6 +431,51 @@ function AdminStats() {
             </motion.div>
           );
         })}
+      </div>
+
+      {/* Export CSV button */}
+      <div className="flex justify-end">
+        <button
+          onClick={() => {
+            const lines = [
+              'Massive Medias - Bilan fiscal',
+              `NEQ: 2269057891 | TPS: 732457635RT0001 | TVQ: 4012577678TQ0001`,
+              '',
+              'Sommaire',
+              `Revenus totaux,${(stats.revenue?.totalDollars || 0).toFixed(2)}`,
+              `Depenses totales,${(stats.expenses?.total || 0).toFixed(2)}`,
+              `Profit brut,${(stats.profit?.gross || 0).toFixed(2)}`,
+              `Commandes,${stats.orderStats?.total || 0}`,
+              '',
+              'Taxes',
+              ',TPS (5%),TVQ (9.975%)',
+              `Percue,${(stats.taxes?.tpsCollected || 0).toFixed(2)},${(stats.taxes?.tvqCollected || 0).toFixed(2)}`,
+              `Payee,${(stats.taxes?.tpsPaid || 0).toFixed(2)},${(stats.taxes?.tvqPaid || 0).toFixed(2)}`,
+              `A remettre,${(stats.taxes?.tpsNet || 0).toFixed(2)},${(stats.taxes?.tvqNet || 0).toFixed(2)}`,
+              '',
+              'Revenus mensuels',
+              'Mois,Revenus ($),Commandes',
+              ...(stats.revenue?.monthly || []).map(m => `${m.month},${(m.revenue / 100).toFixed(2)},${m.orders}`),
+              '',
+              'Depenses par categorie',
+              'Categorie,Montant ($)',
+              ...Object.entries(stats.expenses?.byCategory || {}).map(([cat, amt]) => `${cat},${amt.toFixed(2)}`),
+              '',
+              'Status des commandes',
+              'Status,Nombre',
+              ...Object.entries(stats.orderStats?.byStatus || {}).map(([s, c]) => `${s},${c}`),
+              '',
+              'Top clients',
+              'Nom,Email,Total depense ($),Commandes',
+              ...(stats.topClients || []).map(c => `"${c.name}","${c.email}",${(c.totalSpent / 100).toFixed(2)},${c.orderCount}`),
+            ];
+            downloadCSV(`massive-bilan-fiscal-${new Date().toISOString().slice(0, 10)}.csv`, lines.join('\n'));
+          }}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-500/20 text-green-400 text-sm font-semibold hover:bg-green-500/30 transition-colors"
+        >
+          <Download size={16} />
+          {tx({ fr: 'Exporter CSV', en: 'Export CSV', es: 'Exportar CSV' })}
+        </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -271,81 +607,6 @@ function AdminStats() {
           </div>
         </motion.div>
 
-        {/* Google Analytics */}
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="rounded-xl bg-glass p-5 card-border">
-          <h3 className="text-sm font-heading font-bold text-heading mb-4 flex items-center gap-2">
-            <Activity size={16} className="text-blue-400" />
-            Google Analytics
-          </h3>
-          <p className="text-grey-muted text-sm mb-4">
-            {tx({
-              fr: 'Trafic, visiteurs, conversions et e-commerce.',
-              en: 'Traffic, visitors, conversions and e-commerce.',
-              es: 'Trafico, visitantes, conversiones y e-commerce.',
-            })}
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
-            <a
-              href="https://analytics.google.com/analytics/web/#/p525792501/reports/dashboard?r=firebase-overview"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-blue-500/20 text-blue-400 text-sm font-semibold hover:bg-blue-500/30 transition-colors"
-            >
-              <BarChart3 size={16} />
-              {tx({ fr: 'Dashboard GA4', en: 'GA4 Dashboard', es: 'Dashboard GA4' })}
-              <ExternalLink size={12} className="ml-auto" />
-            </a>
-            <a
-              href="https://analytics.google.com/analytics/web/#/p525792501/reports/explorer?params=_u..nav%3Dmaui&r=lifecycle-monetization-ecommerce-purchases"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-green-500/20 text-green-400 text-sm font-semibold hover:bg-green-500/30 transition-colors"
-            >
-              <DollarSign size={16} />
-              {tx({ fr: 'E-commerce', en: 'E-commerce', es: 'E-commerce' })}
-              <ExternalLink size={12} className="ml-auto" />
-            </a>
-            <a
-              href="https://analytics.google.com/analytics/web/#/p525792501/reports/explorer?params=_u..nav%3Dmaui&r=lifecycle-engagement-overview"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-purple-500/20 text-purple-400 text-sm font-semibold hover:bg-purple-500/30 transition-colors"
-            >
-              <Activity size={16} />
-              {tx({ fr: 'Engagement', en: 'Engagement', es: 'Engagement' })}
-              <ExternalLink size={12} className="ml-auto" />
-            </a>
-            <a
-              href="https://analytics.google.com/analytics/web/#/p525792501/reports/explorer?params=_u..nav%3Dmaui&r=all-pages-and-screens"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-yellow-500/20 text-yellow-400 text-sm font-semibold hover:bg-yellow-500/30 transition-colors"
-            >
-              <Users size={16} />
-              {tx({ fr: 'Pages vues', en: 'Page views', es: 'Paginas vistas' })}
-              <ExternalLink size={12} className="ml-auto" />
-            </a>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <a
-              href="https://search.google.com/search-console"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 px-3 py-2 rounded-lg bg-glass text-grey-muted text-xs hover:text-heading transition-colors"
-            >
-              Search Console <ExternalLink size={10} />
-            </a>
-            <a
-              href="https://dashboard.stripe.com/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 px-3 py-2 rounded-lg bg-glass text-grey-muted text-xs hover:text-heading transition-colors"
-            >
-              Stripe Dashboard <ExternalLink size={10} />
-            </a>
-          </div>
-        </motion.div>
-
         {/* KPIs calcules */}
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }} className="rounded-xl bg-glass p-5 card-border">
           <h3 className="text-sm font-heading font-bold text-heading mb-4 flex items-center gap-2">
@@ -417,6 +678,7 @@ function AdminStats() {
           )}
         </motion.div>
       </div>
+      </>}
     </div>
   );
 }
