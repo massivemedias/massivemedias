@@ -26,6 +26,7 @@ const CheckoutSuccess = lazy(() => import('./pages/CheckoutSuccess'));
 const CheckoutCancel = lazy(() => import('./pages/CheckoutCancel'));
 const Artistes = lazy(() => import('./pages/Artistes'));
 const ArtisteDetail = lazy(() => import('./pages/ArtisteDetail'));
+const Temoignage = lazy(() => import('./pages/Temoignage'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 const MmAdmin = lazy(() => import('./pages/MmAdmin'));
 const AdminLayout = lazy(() => import('./layouts/AdminLayout'));
@@ -133,6 +134,9 @@ function App() {
             {/* Auth & Account */}
             <Route path="/login" element={<Login />} />
             <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
+
+            {/* Temoignage */}
+            <Route path="/temoignage" element={<Temoignage />} />
 
             {/* Artistes */}
             <Route path="/artistes" element={<Artistes />} />

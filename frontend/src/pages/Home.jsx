@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -26,6 +27,7 @@ import { useLang } from '../i18n/LanguageContext';
 import { useSiteContent } from '../hooks/useSiteContent';
 import { bl, mediaUrl } from '../utils/cms';
 import { getIcon } from '../utils/iconMap';
+import api from '../services/api';
 
 // Fallback icons & data if CMS not available
 const fallbackServiceIcons = ['Printer', 'Sticker', 'Shirt', 'Palette', 'Globe'];
@@ -98,15 +100,29 @@ function Home() {
       }))
     : null;
 
-  // ── Testimonials ──
+  // ── Testimonials (API dediee > site-content > fallback) ──
+  const [apiTestimonials, setApiTestimonials] = useState(null);
+  useEffect(() => {
+    api.get('/testimonials/public').then(res => {
+      if (res.data?.data?.length) setApiTestimonials(res.data.data);
+    }).catch(() => {});
+  }, []);
+
   const cmsTestimonials = content?.testimonials?.length ? content.testimonials : null;
-  const testimonials = cmsTestimonials
-    ? cmsTestimonials.map((tm) => ({
+  const testimonials = apiTestimonials?.length
+    ? apiTestimonials.map((tm) => ({
         name: tm.name,
-        role: bl(tm, 'role', lang),
-        text: bl(tm, 'text', lang),
+        role: lang === 'en' ? (tm.roleEn || tm.roleFr) : tm.roleFr,
+        text: lang === 'en' ? (tm.textEn || tm.textFr) : tm.textFr,
+        rating: tm.rating,
       }))
-    : null;
+    : cmsTestimonials
+      ? cmsTestimonials.map((tm) => ({
+          name: tm.name,
+          role: bl(tm, 'role', lang),
+          text: bl(tm, 'text', lang),
+        }))
+      : null;
 
   // Fallback data from translations
   const fbServiceCards = t('home.serviceCards');
@@ -495,6 +511,15 @@ function Home() {
               className="p-8 rounded-xl transition-all duration-300 bg-glass card-shadow relative"
             >
               <Quote size={32} className="text-accent/20 absolute top-4 right-4" />
+              {item.rating && (
+                <div className="flex items-center gap-0.5 mb-3">
+                  {[1, 2, 3, 4, 5].map(s => (
+                    <svg key={s} className={`w-4 h-4 ${s <= item.rating ? 'text-yellow-400' : 'text-grey-muted/20'}`} fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                  ))}
+                </div>
+              )}
               <p className="text-grey-light leading-relaxed mb-6 italic">
                 "{item.text}"
               </p>
