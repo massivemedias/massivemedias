@@ -1,6 +1,6 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link, NavLink } from 'react-router-dom';
+import { Link, NavLink, useSearchParams } from 'react-router-dom';
 import {
   User, Mail, Phone, MapPin, Building2, Package, LogOut, Loader2, Check, Lock,
   Eye, EyeOff, ChevronDown, ChevronUp, Shield, Pencil, Save, ShoppingBag,
@@ -50,16 +50,16 @@ const STATUS_COLORS = {
 
 function FormInput({ icon: Icon, label, value, onChange, type = 'text', placeholder, autoComplete }) {
   return (
-    <div className="mb-4">
-      <label className="flex items-center gap-2 text-[11px] text-grey-muted uppercase tracking-wider font-medium mb-1.5">
-        <Icon size={14} />
+    <div className="mb-5">
+      <label className="flex items-center gap-2 text-xs text-grey-muted uppercase tracking-wider font-medium mb-2">
+        <Icon size={15} />
         {label}
       </label>
       <input
         type={type}
         value={value}
         onChange={e => onChange(e.target.value)}
-        className="input-field text-sm"
+        className="input-field text-base"
         placeholder={placeholder}
         autoComplete={autoComplete}
       />
@@ -69,15 +69,15 @@ function FormInput({ icon: Icon, label, value, onChange, type = 'text', placehol
 
 function FormSelect({ icon: Icon, label, value, onChange, options, autoComplete }) {
   return (
-    <div className="mb-4">
-      <label className="flex items-center gap-2 text-[11px] text-grey-muted uppercase tracking-wider font-medium mb-1.5">
-        <Icon size={14} />
+    <div className="mb-5">
+      <label className="flex items-center gap-2 text-xs text-grey-muted uppercase tracking-wider font-medium mb-2">
+        <Icon size={15} />
         {label}
       </label>
       <select
         value={value}
         onChange={e => onChange(e.target.value)}
-        className="input-field text-sm"
+        className="input-field text-base"
         autoComplete={autoComplete}
       >
         {options.map(o => (
@@ -108,9 +108,20 @@ function Account() {
   const { t, lang, tx } = useLang();
   const { user, signOut, updateProfile, updatePassword } = useAuth();
   const { role: userRole, isAdmin, isArtist, artistSlug } = useUserRole();
+  const [searchParams] = useSearchParams();
   const meta = user?.user_metadata || {};
 
-  const [activeTab, setActiveTab] = useState(isAdmin ? 'profile' : 'overview');
+  const tabFromUrl = searchParams.get('tab');
+  const validTabs = ['profile', 'address', 'security', 'overview', 'orders', 'artist'];
+  const initialTab = (tabFromUrl && validTabs.includes(tabFromUrl)) ? tabFromUrl : (isAdmin ? 'profile' : 'overview');
+  const [activeTab, setActiveTab] = useState(initialTab);
+
+  // Sync tab when URL query changes (e.g. from admin sidebar links)
+  useEffect(() => {
+    if (tabFromUrl && validTabs.includes(tabFromUrl) && tabFromUrl !== activeTab) {
+      setActiveTab(tabFromUrl);
+    }
+  }, [tabFromUrl]);
 
   // Orders
   const [orders, setOrders] = useState([]);
@@ -304,9 +315,9 @@ function Account() {
 
   // --- Contenu partage: Profile, Address, Security ---
   const renderProfileContent = () => (
-    <form onSubmit={handleProfileSave} className="rounded-2xl border border-purple-main/30 p-6 md:p-8 card-bg card-shadow">
-      <h3 className="text-heading font-semibold mb-6 flex items-center gap-2">
-        <User size={18} className="text-accent" />
+    <form onSubmit={handleProfileSave} className="rounded-2xl border border-purple-main/30 p-6 md:p-10 card-bg card-shadow">
+      <h3 className="text-heading font-semibold text-lg mb-6 flex items-center gap-2">
+        <User size={20} className="text-accent" />
         {tx({ fr: 'Informations personnelles', en: 'Personal information', es: 'Informacion personal' })}
       </h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6">
@@ -336,38 +347,38 @@ function Account() {
           autoComplete="organization"
         />
         <div className="mb-4">
-          <label className="flex items-center gap-2 text-[11px] text-grey-muted uppercase tracking-wider font-medium mb-1.5">
-            <Mail size={14} />
+          <label className="flex items-center gap-2 text-xs text-grey-muted uppercase tracking-wider font-medium mb-2">
+            <Mail size={15} />
             {tx({ fr: 'Courriel', en: 'Email', es: 'Correo' })}
           </label>
           <input
             type="email"
             value={user?.email || ''}
             disabled
-            className="input-field text-sm opacity-60 cursor-not-allowed"
+            className="input-field text-base opacity-60 cursor-not-allowed"
           />
-          <p className="text-grey-muted/50 text-[10px] mt-1">
+          <p className="text-grey-muted/50 text-[11px] mt-1">
             {tx({ fr: 'Le courriel ne peut pas etre modifie ici.', en: 'Email cannot be changed here.', es: 'El correo no se puede cambiar aqui.' })}
           </p>
         </div>
       </div>
-      <button type="submit" disabled={profileSaving} className="btn-primary text-sm py-2.5 px-8 mt-2">
-        {profileSaving ? <Loader2 size={16} className="animate-spin mr-2" /> : <Save size={16} className="mr-2" />}
+      <button type="submit" disabled={profileSaving} className="btn-primary text-base py-3 px-10 mt-3">
+        {profileSaving ? <Loader2 size={18} className="animate-spin mr-2" /> : <Save size={18} className="mr-2" />}
         {tx({ fr: 'Sauvegarder', en: 'Save', es: 'Guardar' })}
       </button>
     </form>
   );
 
   const renderAddressContent = () => (
-    <form onSubmit={handleAddressSave} className="rounded-2xl border border-purple-main/30 p-6 md:p-8 card-bg card-shadow">
-      <h3 className="text-heading font-semibold mb-6 flex items-center gap-2">
-        <MapPin size={18} className="text-accent" />
+    <form onSubmit={handleAddressSave} className="rounded-2xl border border-purple-main/30 p-6 md:p-10 card-bg card-shadow">
+      <h3 className="text-heading font-semibold text-lg mb-6 flex items-center gap-2">
+        <MapPin size={20} className="text-accent" />
         {tx({ fr: 'Adresse de livraison', en: 'Shipping address', es: 'Direccion de envio' })}
       </h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6">
-        <div className="md:col-span-2 mb-4">
-          <label className="flex items-center gap-2 text-[11px] text-grey-muted uppercase tracking-wider font-medium mb-1.5">
-            <MapPin size={14} />
+        <div className="md:col-span-2 mb-5">
+          <label className="flex items-center gap-2 text-xs text-grey-muted uppercase tracking-wider font-medium mb-2">
+            <MapPin size={15} />
             {tx({ fr: 'Adresse', en: 'Street address', es: 'Direccion' })}
           </label>
           <AddressAutocomplete
@@ -383,7 +394,7 @@ function Account() {
                 country: country === 'United States' ? 'US' : country || a.country,
               }));
             }}
-            className="input-field text-sm"
+            className="input-field text-base"
             placeholder={tx({ fr: '123 rue Exemple', en: '123 Example St', es: '123 Calle Ejemplo' })}
           />
         </div>
@@ -427,24 +438,24 @@ function Account() {
           ]}
         />
       </div>
-      <button type="submit" disabled={addressSaving} className="btn-primary text-sm py-2.5 px-8 mt-2">
-        {addressSaving ? <Loader2 size={16} className="animate-spin mr-2" /> : <Save size={16} className="mr-2" />}
+      <button type="submit" disabled={addressSaving} className="btn-primary text-base py-3 px-10 mt-3">
+        {addressSaving ? <Loader2 size={18} className="animate-spin mr-2" /> : <Save size={18} className="mr-2" />}
         {tx({ fr: 'Sauvegarder', en: 'Save', es: 'Guardar' })}
       </button>
     </form>
   );
 
   const renderSecurityContent = () => (
-    <div className="rounded-2xl border border-purple-main/30 p-6 md:p-8 card-bg card-shadow">
-      <div className="mb-6">
-        <h3 className="text-heading font-semibold text-sm mb-4 flex items-center gap-2">
-          <Lock size={16} className="text-accent" />
+    <div className="rounded-2xl border border-purple-main/30 p-6 md:p-10 card-bg card-shadow">
+      <div className="mb-8">
+        <h3 className="text-heading font-semibold text-lg mb-4 flex items-center gap-2">
+          <Lock size={20} className="text-accent" />
           {tx({ fr: 'Mot de passe', en: 'Password', es: 'Contrasena' })}
         </h3>
         {changingPassword ? (
           <form onSubmit={handlePasswordChange} className="max-w-sm space-y-4">
             <div>
-              <label className="text-[11px] text-grey-muted uppercase tracking-wider font-medium mb-1.5 block">
+              <label className="text-xs text-grey-muted uppercase tracking-wider font-medium mb-2 block">
                 {tx({ fr: 'Nouveau mot de passe', en: 'New password', es: 'Nueva contrasena' })}
               </label>
               <div className="relative">
@@ -452,7 +463,7 @@ function Account() {
                   type={showPwd ? 'text' : 'password'}
                   value={newPassword}
                   onChange={e => setNewPassword(e.target.value)}
-                  className="input-field text-sm"
+                  className="input-field text-base"
                   placeholder="--------"
                   required
                   minLength={6}
@@ -467,14 +478,14 @@ function Account() {
               </div>
             </div>
             <div>
-              <label className="text-[11px] text-grey-muted uppercase tracking-wider font-medium mb-1.5 block">
+              <label className="text-xs text-grey-muted uppercase tracking-wider font-medium mb-2 block">
                 {tx({ fr: 'Confirmer', en: 'Confirm', es: 'Confirmar' })}
               </label>
               <input
                 type={showPwd ? 'text' : 'password'}
                 value={confirmPwd}
                 onChange={e => setConfirmPwd(e.target.value)}
-                className="input-field text-sm"
+                className="input-field text-base"
                 placeholder="--------"
                 required
                 minLength={6}
@@ -502,8 +513,8 @@ function Account() {
         ) : (
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-heading text-sm">--------</p>
-              <p className="text-grey-muted text-xs mt-1">
+              <p className="text-heading text-base">--------</p>
+              <p className="text-grey-muted text-sm mt-1">
                 {tx({ fr: 'Change ton mot de passe regulierement pour securiser ton compte.', en: 'Change your password regularly to secure your account.', es: 'Cambia tu contrasena regularmente para proteger tu cuenta.' })}
               </p>
             </div>
@@ -518,21 +529,21 @@ function Account() {
         )}
       </div>
       <div className="pt-6 border-t border-purple-main/10">
-        <h3 className="text-heading font-semibold text-sm mb-2 flex items-center gap-2">
-          <Mail size={16} className="text-accent" />
+        <h3 className="text-heading font-semibold text-lg mb-3 flex items-center gap-2">
+          <Mail size={20} className="text-accent" />
           {tx({ fr: 'Email du compte', en: 'Account email', es: 'Correo de la cuenta' })}
         </h3>
-        <p className="text-heading text-sm">{user?.email}</p>
-        <p className="text-grey-muted text-xs mt-1">
+        <p className="text-heading text-base">{user?.email}</p>
+        <p className="text-grey-muted text-sm mt-1">
           {tx({ fr: 'L\'email est utilise pour la connexion et les notifications de commande.', en: 'Email is used for login and order notifications.', es: 'El correo se usa para iniciar sesion y notificaciones de pedidos.' })}
         </p>
       </div>
       <div className="pt-6 mt-6 border-t border-red-500/10">
-        <h3 className="text-red-400/70 font-semibold text-sm mb-2 flex items-center gap-2">
-          <Shield size={16} />
+        <h3 className="text-red-400/70 font-semibold text-base mb-2 flex items-center gap-2">
+          <Shield size={18} />
           {tx({ fr: 'Zone danger', en: 'Danger zone', es: 'Zona de peligro' })}
         </h3>
-        <p className="text-grey-muted text-xs mb-3">
+        <p className="text-grey-muted text-sm mb-3">
           {tx({ fr: 'Deconnexion de tous les appareils.', en: 'Sign out from all devices.', es: 'Cerrar sesion en todos los dispositivos.' })}
         </p>
         <button
@@ -687,7 +698,7 @@ function Account() {
 
             {/* Main content */}
             <main className="flex-1 min-w-0">
-              <h2 className="hidden lg:block text-2xl font-heading font-bold text-heading mb-6">
+              <h2 className="hidden lg:block text-3xl font-heading font-bold text-heading mb-6">
                 {getAdminSectionTitle()}
               </h2>
 
