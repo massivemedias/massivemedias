@@ -96,30 +96,29 @@ function Header() {
             </div>
 
             {/* Mobile Controls */}
-            <div className="flex items-center gap-1 lg:hidden">
+            <div className="flex items-center gap-1 lg:hidden overflow-visible">
               <BrightnessFader />
               <button
                 onClick={cycleLang}
-                className="text-sm font-semibold tracking-wide px-2.5 py-1 rounded-md transition-all duration-200 toggle-button"
+                className="flex-shrink-0 text-sm font-semibold tracking-wide px-2 py-1 rounded-md transition-all duration-200 toggle-button"
                 aria-label={{ fr: 'Changer la langue', en: 'Change language', es: 'Cambiar idioma' }[lang]}
               >
                 {lang.toUpperCase()}
               </button>
               {!user && (
-                <Link to="/login" className="flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-accent text-white text-[11px] font-bold transition-all duration-200 hover:brightness-110 whitespace-nowrap shadow-[0_0_14px_rgba(var(--accent-rgb,255,200,0),0.3)] animate-subtle-glow" aria-label={t('nav.login')}>
-                  <LogIn size={12} />
-                  <span>{tx({ fr: 'Connexion', en: 'Sign in', es: 'Conectarse' })}</span>
+                <Link to="/login" className="flex-shrink-0 flex items-center gap-1 p-1.5 rounded-full bg-accent text-white transition-all duration-200 hover:brightness-110 shadow-[0_0_14px_rgba(var(--accent-rgb,255,200,0),0.3)] animate-subtle-glow" aria-label={t('nav.login')}>
+                  <LogIn size={16} />
                 </Link>
               )}
               {user && (
-                <Link to="/account" className="p-1 transition-colors duration-200 nav-link" aria-label={t('nav.account')}>
-                  <span className="w-8 h-8 rounded-full bg-accent/20 text-accent flex items-center justify-center font-bold text-sm">
+                <Link to="/account" className="flex-shrink-0 p-1 transition-colors duration-200 nav-link" aria-label={t('nav.account')}>
+                  <span className="w-7 h-7 rounded-full bg-accent/20 text-accent flex items-center justify-center font-bold text-xs">
                     {(user.user_metadata?.full_name || user.email || '?')[0].toUpperCase()}
                   </span>
                 </Link>
               )}
-              <Link to="/panier" className="relative p-2 transition-colors duration-200 nav-link" aria-label={t('nav.panier')}>
-                <ShoppingCart size={20} />
+              <Link to="/panier" className="flex-shrink-0 relative p-1.5 transition-colors duration-200 nav-link" aria-label={t('nav.panier')}>
+                <ShoppingCart size={18} />
                 {cartCount > 0 && (
                   <span className="absolute -top-1 -right-1 bg-accent text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-bold text-[10px]">
                     {cartCount}
@@ -128,7 +127,7 @@ function Header() {
               </Link>
               <button
                 onClick={() => setMobileMenuOpen(true)}
-                className="p-2 transition-colors nav-link"
+                className="flex-shrink-0 p-1.5 transition-colors nav-link"
                 aria-label={tx({ fr: 'Ouvrir le menu', en: 'Open menu', es: 'Abrir menú' })}
               >
                 <Menu size={24} />
