@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import {
   DollarSign, Palette, Clock, CheckCircle,
   FileText, Loader2, AlertCircle, Package,
-  Send, MessageCircle, ImagePlus, Check, X, CreditCard, Download, ChevronDown, ChevronUp, ScrollText,
+  Send, ImagePlus, Check, X, CreditCard, Download, ChevronDown, ChevronUp, ScrollText,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -28,28 +28,31 @@ const ARTIST_PRICES = {
 };
 const FRAME_PRICE = 30;
 
-const MSG_CATEGORIES = [
-  { value: 'new-images', labelFr: 'Deposer de nouvelles images', labelEn: 'Submit new images', labelEs: 'Enviar nuevas imagenes' },
-  { value: 'update-profile', labelFr: 'Modifier mon profil', labelEn: 'Update my profile', labelEs: 'Actualizar mi perfil' },
-  { value: 'question', labelFr: 'Question generale', labelEn: 'General question', labelEs: 'Pregunta general' },
-  { value: 'other', labelFr: 'Autre', labelEn: 'Other', labelEs: 'Otro' },
-];
 
 function AccountArtistDashboard({ section = 'dashboard' }) {
   const { tx, lang } = useLang();
-  const { user } = useAuth();
+  const { user, updateProfile } = useAuth();
   const { artistSlug } = useUserRole();
   const [commissions, setCommissions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
-  // Messages
+  // Artist profile
+  const [artistProfileForm, setArtistProfileForm] = useState({ nomArtiste: '', bio: '', profileImage: '' });
+  const [artistProfileSaving, setArtistProfileSaving] = useState(false);
+  const [artistProfileMsg, setArtistProfileMsg] = useState('');
+  const [profileImageFile, setProfileImageFile] = useState(null);
+  const [profileImageUploading, setProfileImageUploading] = useState(false);
+
+  // Images deposit
+  const [imgFiles, setImgFiles] = useState([]);
+  const [imgSending, setImgSending] = useState(false);
+  const [imgSuccess, setImgSuccess] = useState('');
+  const [imgNote, setImgNote] = useState('');
+
+  // Messages (kept for sending image deposits as messages)
   const [messages, setMessages] = useState([]);
   const [msgLoading, setMsgLoading] = useState(true);
-  const [showMsgForm, setShowMsgForm] = useState(false);
-  const [msgForm, setMsgForm] = useState({ category: 'new-images', subject: '', message: '' });
-  const [msgFiles, setMsgFiles] = useState([]);
-  const [msgSending, setMsgSending] = useState(false);
   const [msgSuccess, setMsgSuccess] = useState('');
 
   // Retrait PayPal
@@ -94,6 +97,17 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
     fetchData();
     return () => { cancelled = true; };
   }, [artistSlug]);
+
+  // Init artist profile form from user metadata
+  useEffect(() => {
+    if (!user) return;
+    const meta = user.user_metadata || {};
+    setArtistProfileForm({
+      nomArtiste: meta.nomArtiste || '',
+      bio: meta.bio || '',
+      profileImage: meta.profileImage || '',
+    });
+  }, [user]);
 
   // Fetch messages + withdrawals
   useEffect(() => {
@@ -151,34 +165,71 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
 
   const formatMoney = (n) => `${n.toFixed(2)}$`;
 
-  const handleSendMessage = async (e) => {
+  // Save artist profile (nom, bio, image)
+  const handleArtistProfileSave = async (e) => {
     e.preventDefault();
-    if (!msgForm.subject.trim() || !msgForm.message.trim()) return;
+    setArtistProfileSaving(true);
+    try {
+      const { error } = await updateProfile({
+        nomArtiste: artistProfileForm.nomArtiste,
+        bio: artistProfileForm.bio,
+        profileImage: artistProfileForm.profileImage,
+      });
+      if (error) throw error;
+      setArtistProfileMsg(tx({ fr: 'Profil artiste sauvegarde!', en: 'Artist profile saved!', es: 'Perfil artista guardado!' }));
+      setTimeout(() => setArtistProfileMsg(''), 3000);
+    } catch {
+      setArtistProfileMsg(tx({ fr: 'Erreur lors de la sauvegarde', en: 'Error saving', es: 'Error al guardar' }));
+      setTimeout(() => setArtistProfileMsg(''), 3000);
+    } finally {
+      setArtistProfileSaving(false);
+    }
+  };
 
-    setMsgSending(true);
+  // Upload profile image
+  const handleProfileImageUpload = async (file) => {
+    if (!file) return;
+    setProfileImageUploading(true);
+    try {
+      const result = await uploadArtistFile(file);
+      setArtistProfileForm(f => ({ ...f, profileImage: result.url }));
+      setProfileImageFile(null);
+    } catch {
+      setToast(tx({ fr: 'Erreur upload image', en: 'Error uploading image', es: 'Error al subir imagen' }));
+      setTimeout(() => setToast(''), 3000);
+    } finally {
+      setProfileImageUploading(false);
+    }
+  };
+
+  // Submit images deposit
+  const handleImageDeposit = async (e) => {
+    e.preventDefault();
+    if (imgFiles.length === 0) return;
+
+    setImgSending(true);
     try {
       await sendArtistMessage({
         artistSlug,
         artistName: artist?.name || artistSlug,
         email,
-        subject: msgForm.subject,
-        message: msgForm.message,
-        category: msgForm.category,
-        attachments: msgFiles.length > 0 ? msgFiles.map(f => ({ name: f.name, url: f.url, size: f.size, mime: f.mime })) : null,
+        subject: tx({ fr: 'Depot de nouvelles images', en: 'New image deposit', es: 'Deposito de nuevas imagenes' }),
+        message: imgNote.trim() || tx({ fr: 'Nouvelles images deposees', en: 'New images deposited', es: 'Nuevas imagenes depositadas' }),
+        category: 'new-images',
+        attachments: imgFiles.map(f => ({ name: f.name, url: f.url, size: f.size, mime: f.mime })),
       });
-      setMsgSuccess(tx({ fr: 'Message envoye!', en: 'Message sent!', es: 'Mensaje enviado!' }));
-      setMsgForm({ category: 'new-images', subject: '', message: '' });
-      setMsgFiles([]);
-      setShowMsgForm(false);
+      setImgSuccess(tx({ fr: 'Images envoyees avec succes!', en: 'Images sent successfully!', es: 'Imagenes enviadas con exito!' }));
+      setImgFiles([]);
+      setImgNote('');
       // Refresh messages
       const { data } = await getMyMessages(email);
       setMessages(data.data || []);
-      setTimeout(() => setMsgSuccess(''), 3000);
+      setTimeout(() => setImgSuccess(''), 4000);
     } catch {
-      setToast(tx({ fr: 'Erreur envoi message', en: 'Error sending message', es: 'Error al enviar' }));
+      setToast(tx({ fr: 'Erreur envoi images', en: 'Error sending images', es: 'Error al enviar imagenes' }));
       setTimeout(() => setToast(''), 3000);
     } finally {
-      setMsgSending(false);
+      setImgSending(false);
     }
   };
 
@@ -239,7 +290,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
   // ---- Toast commun ----
   const toastElement = (
     <AnimatePresence>
-      {(msgSuccess || wdSuccess || toast) && (
+      {(msgSuccess || wdSuccess || imgSuccess || artistProfileMsg || toast) && (
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -249,7 +300,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
           }`}
         >
           <Check size={16} />
-          {msgSuccess || wdSuccess || toast}
+          {msgSuccess || wdSuccess || imgSuccess || artistProfileMsg || toast}
         </motion.div>
       )}
     </AnimatePresence>
@@ -547,137 +598,245 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
   }
 
   // ===========================
-  // SECTION: MESSAGES
+  // SECTION: PROFIL ARTISTE
   // ===========================
-  if (section === 'messages') {
+  if (section === 'profil-artiste') {
     return (
       <div className="space-y-6">
         {toastElement}
         <div className="rounded-2xl border border-purple-main/30 p-5 md:p-8 card-bg card-shadow">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-heading font-heading font-bold text-lg flex items-center gap-2">
-              <MessageCircle size={20} className="text-accent" />
-              {tx({ fr: 'Messages a Massive', en: 'Messages to Massive', es: 'Mensajes a Massive' })}
-            </h3>
-            <button
-              onClick={() => setShowMsgForm(!showMsgForm)}
-              className="btn-primary text-xs py-2 px-4"
+          <h3 className="text-heading font-heading font-bold text-lg flex items-center gap-2 mb-6">
+            <Palette size={20} className="text-accent" />
+            {tx({ fr: 'Mon profil artiste', en: 'My artist profile', es: 'Mi perfil artista' })}
+          </h3>
+
+          {artistProfileMsg && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-4 p-3 rounded-lg bg-green-500/10 border border-green-500/20 text-green-400 text-sm flex items-center gap-2"
             >
-              <ImagePlus size={14} className="mr-1" />
-              {tx({ fr: 'Nouveau', en: 'New', es: 'Nuevo' })}
-            </button>
-          </div>
+              <Check size={16} />
+              {artistProfileMsg}
+            </motion.div>
+          )}
 
-          {/* Formulaire message */}
-          <AnimatePresence>
-            {showMsgForm && (
-              <motion.form
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 'auto', opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                onSubmit={handleSendMessage}
-                className="overflow-hidden"
-              >
-                <div className="rounded-lg bg-accent/5 border border-accent/20 p-4 mb-6 space-y-3">
-                  <div>
-                    <label className="text-[11px] text-grey-muted uppercase tracking-wider font-medium mb-1 block">
-                      {tx({ fr: 'Categorie', en: 'Category', es: 'Categoria' })}
-                    </label>
-                    <select
-                      value={msgForm.category}
-                      onChange={(e) => setMsgForm(f => ({ ...f, category: e.target.value }))}
-                      className="input-field text-sm"
-                    >
-                      {MSG_CATEGORIES.map(c => (
-                        <option key={c.value} value={c.value}>
-                          {lang === 'en' ? c.labelEn : lang === 'es' ? c.labelEs : c.labelFr}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-[11px] text-grey-muted uppercase tracking-wider font-medium mb-1 block">
-                      {tx({ fr: 'Sujet', en: 'Subject', es: 'Asunto' })}
-                    </label>
-                    <input
-                      type="text"
-                      value={msgForm.subject}
-                      onChange={(e) => setMsgForm(f => ({ ...f, subject: e.target.value }))}
-                      className="input-field text-sm"
-                      placeholder={tx({ fr: 'Ex: Nouvelles images a ajouter', en: 'Ex: New images to add', es: 'Ej: Nuevas imagenes para agregar' })}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[11px] text-grey-muted uppercase tracking-wider font-medium mb-1 block">
-                      {tx({ fr: 'Message', en: 'Message', es: 'Mensaje' })}
-                    </label>
-                    <textarea
-                      value={msgForm.message}
-                      onChange={(e) => setMsgForm(f => ({ ...f, message: e.target.value }))}
-                      className="input-field text-sm min-h-[100px] resize-y"
-                      placeholder={tx({
-                        fr: 'Decris ta demande... Pour les images, envoie les fichiers par email a massivemedias@gmail.com ou partage un lien Google Drive / WeTransfer.',
-                        en: 'Describe your request... For images, send files by email to massivemedias@gmail.com or share a Google Drive / WeTransfer link.',
-                        es: 'Describe tu solicitud... Para imagenes, envia los archivos por email a massivemedias@gmail.com o comparte un enlace de Google Drive / WeTransfer.',
-                      })}
-                      required
-                    />
-                  </div>
-                  {msgForm.category === 'new-images' && (
-                    <div>
-                      <FileUpload
-                        label={tx({ fr: 'Images a deposer (max 20 fichiers, 130 MB chacun)', en: 'Images to submit (max 20 files, 130 MB each)', es: 'Imagenes a enviar (max 20 archivos, 130 MB c/u)' })}
-                        files={msgFiles}
-                        onFilesChange={setMsgFiles}
-                        maxFiles={20}
-                        uploadFn={uploadArtistFile}
-                      />
-                    </div>
+          <form onSubmit={handleArtistProfileSave} className="space-y-5">
+            {/* Image de profil */}
+            <div>
+              <label className="text-[11px] text-grey-muted uppercase tracking-wider font-medium mb-2 block">
+                {tx({ fr: 'Image de profil', en: 'Profile image', es: 'Imagen de perfil' })}
+              </label>
+              <div className="flex items-center gap-4">
+                <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-accent/30 flex-shrink-0 bg-glass flex items-center justify-center">
+                  {artistProfileForm.profileImage ? (
+                    <img src={artistProfileForm.profileImage} alt="Profile" className="w-full h-full object-cover" />
+                  ) : (
+                    <Palette size={28} className="text-accent/40" />
                   )}
-                  <div className="flex gap-2">
-                    <button type="submit" disabled={msgSending} className="btn-primary text-xs py-2 px-6 disabled:opacity-50">
-                      {msgSending ? <Loader2 size={14} className="animate-spin mr-1" /> : <Send size={14} className="mr-1" />}
-                      {tx({ fr: 'Envoyer', en: 'Send', es: 'Enviar' })}
-                    </button>
-                    <button type="button" onClick={() => setShowMsgForm(false)} className="text-grey-muted text-xs hover:text-heading transition-colors">
-                      {tx({ fr: 'Annuler', en: 'Cancel', es: 'Cancelar' })}
-                    </button>
-                  </div>
                 </div>
-              </motion.form>
-            )}
-          </AnimatePresence>
+                <div className="flex-grow">
+                  <label className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-accent/10 border border-accent/20 text-accent text-sm font-semibold hover:bg-accent/20 transition-colors">
+                    {profileImageUploading ? <Loader2 size={14} className="animate-spin" /> : <ImagePlus size={14} />}
+                    {tx({ fr: 'Changer l\'image', en: 'Change image', es: 'Cambiar imagen' })}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleProfileImageUpload(file);
+                      }}
+                      disabled={profileImageUploading}
+                    />
+                  </label>
+                  {artistProfileForm.profileImage && (
+                    <button
+                      type="button"
+                      onClick={() => setArtistProfileForm(f => ({ ...f, profileImage: '' }))}
+                      className="ml-2 text-red-400/60 hover:text-red-400 text-xs transition-colors"
+                    >
+                      {tx({ fr: 'Retirer', en: 'Remove', es: 'Eliminar' })}
+                    </button>
+                  )}
+                  <p className="text-grey-muted/60 text-[10px] mt-1">
+                    {tx({ fr: 'JPG, PNG ou WebP. Carre recommande.', en: 'JPG, PNG or WebP. Square recommended.', es: 'JPG, PNG o WebP. Cuadrado recomendado.' })}
+                  </p>
+                </div>
+              </div>
+            </div>
 
-          {/* Liste des messages */}
-          {!msgLoading && messages.length > 0 ? (
+            {/* Nom d'artiste */}
+            <div>
+              <label className="text-[11px] text-grey-muted uppercase tracking-wider font-medium mb-1 block">
+                {tx({ fr: 'Nom d\'artiste', en: 'Artist name', es: 'Nombre artistico' })}
+              </label>
+              <input
+                type="text"
+                value={artistProfileForm.nomArtiste}
+                onChange={(e) => setArtistProfileForm(f => ({ ...f, nomArtiste: e.target.value }))}
+                className="input-field text-sm"
+                placeholder={tx({ fr: 'Ton nom d\'artiste', en: 'Your artist name', es: 'Tu nombre artistico' })}
+              />
+            </div>
+
+            {/* Bio */}
+            <div>
+              <label className="text-[11px] text-grey-muted uppercase tracking-wider font-medium mb-1 block">
+                Bio
+              </label>
+              <textarea
+                value={artistProfileForm.bio}
+                onChange={(e) => setArtistProfileForm(f => ({ ...f, bio: e.target.value }))}
+                className="input-field text-sm min-h-[120px] resize-y"
+                placeholder={tx({
+                  fr: 'Parle de toi, de ton art, de tes inspirations...',
+                  en: 'Tell us about yourself, your art, your inspirations...',
+                  es: 'Cuentanos sobre ti, tu arte, tus inspiraciones...',
+                })}
+              />
+              <p className="text-grey-muted/60 text-[10px] mt-1">
+                {tx({
+                  fr: 'Cette bio sera visible sur ta page artiste.',
+                  en: 'This bio will be visible on your artist page.',
+                  es: 'Esta bio sera visible en tu pagina de artista.',
+                })}
+              </p>
+            </div>
+
+            {/* Info boutique */}
+            {artist && (
+              <div className="rounded-lg bg-accent/5 border border-accent/20 p-4">
+                <p className="text-grey-muted text-xs flex items-center gap-2">
+                  <Palette size={14} className="text-accent" />
+                  {tx({ fr: 'Ta boutique:', en: 'Your store:', es: 'Tu tienda:' })}
+                  <a href={`/artistes/${artistSlug}`} className="text-accent hover:underline font-medium">
+                    massivemedias.com/artistes/{artistSlug}
+                  </a>
+                </p>
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={artistProfileSaving}
+              className="btn-primary text-sm py-2.5 px-6 disabled:opacity-50"
+            >
+              {artistProfileSaving ? <Loader2 size={14} className="animate-spin mr-1.5" /> : <Check size={14} className="mr-1.5" />}
+              {tx({ fr: 'Sauvegarder', en: 'Save', es: 'Guardar' })}
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
+  // ===========================
+  // SECTION: MES IMAGES
+  // ===========================
+  if (section === 'images') {
+    // Filter image deposit messages
+    const imageDeposits = messages.filter(m => m.category === 'new-images' && m.attachments?.length > 0);
+
+    return (
+      <div className="space-y-6">
+        {toastElement}
+
+        {/* Formulaire depot d'images */}
+        <div className="rounded-2xl border border-purple-main/30 p-5 md:p-8 card-bg card-shadow">
+          <h3 className="text-heading font-heading font-bold text-lg flex items-center gap-2 mb-2">
+            <ImagePlus size={20} className="text-accent" />
+            {tx({ fr: 'Deposer de nouvelles images', en: 'Submit new images', es: 'Enviar nuevas imagenes' })}
+          </h3>
+          <p className="text-grey-muted text-sm mb-6">
+            {tx({
+              fr: 'Depose tes images haute-resolution ici. On les traitera et les ajoutera a ta boutique.',
+              en: 'Upload your high-resolution images here. We\'ll process them and add them to your store.',
+              es: 'Sube tus imagenes de alta resolucion aqui. Las procesaremos y las agregaremos a tu tienda.',
+            })}
+          </p>
+
+          {imgSuccess && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-4 p-3 rounded-lg bg-green-500/10 border border-green-500/20 text-green-400 text-sm flex items-center gap-2"
+            >
+              <Check size={16} />
+              {imgSuccess}
+            </motion.div>
+          )}
+
+          <form onSubmit={handleImageDeposit} className="space-y-4">
+            <FileUpload
+              label={tx({ fr: 'Images a deposer (max 20 fichiers, 130 MB chacun)', en: 'Images to submit (max 20 files, 130 MB each)', es: 'Imagenes a enviar (max 20 archivos, 130 MB c/u)' })}
+              files={imgFiles}
+              onFilesChange={setImgFiles}
+              maxFiles={20}
+              uploadFn={uploadArtistFile}
+            />
+
+            <div>
+              <label className="text-[11px] text-grey-muted uppercase tracking-wider font-medium mb-1 block">
+                {tx({ fr: 'Note (optionnel)', en: 'Note (optional)', es: 'Nota (opcional)' })}
+              </label>
+              <textarea
+                value={imgNote}
+                onChange={(e) => setImgNote(e.target.value)}
+                className="input-field text-sm min-h-[80px] resize-y"
+                placeholder={tx({
+                  fr: 'Instructions speciales, titres des oeuvres, formats souhaites...',
+                  en: 'Special instructions, artwork titles, desired formats...',
+                  es: 'Instrucciones especiales, titulos de las obras, formatos deseados...',
+                })}
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={imgSending || imgFiles.length === 0}
+              className="btn-primary text-sm py-2.5 px-6 disabled:opacity-50"
+            >
+              {imgSending ? <Loader2 size={14} className="animate-spin mr-1.5" /> : <Send size={14} className="mr-1.5" />}
+              {tx({ fr: 'Envoyer les images', en: 'Send images', es: 'Enviar imagenes' })}
+            </button>
+          </form>
+        </div>
+
+        {/* Historique des depots */}
+        <div className="rounded-2xl border border-purple-main/30 p-5 md:p-8 card-bg card-shadow">
+          <h3 className="text-heading font-heading font-bold text-base flex items-center gap-2 mb-4">
+            <Clock size={18} className="text-accent" />
+            {tx({ fr: 'Historique des depots', en: 'Deposit history', es: 'Historial de depositos' })}
+          </h3>
+
+          {!msgLoading && imageDeposits.length > 0 ? (
             <div className="space-y-3">
-              {messages.slice(0, 20).map((m, i) => (
+              {imageDeposits.map((m, i) => (
                 <div key={m.documentId || i} className="rounded-lg border border-purple-main/10 p-4">
-                  <div className="flex items-center justify-between mb-1">
-                    <p className="text-heading text-sm font-medium">{m.subject}</p>
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-grey-muted text-xs">{m.createdAt ? new Date(m.createdAt).toLocaleDateString('fr-CA') : ''}</p>
                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
                       m.status === 'replied' ? 'bg-green-500/20 text-green-400' :
                       m.status === 'read' ? 'bg-blue-500/20 text-blue-400' :
                       'bg-yellow-500/20 text-yellow-400'
                     }`}>
-                      {m.status === 'replied' ? tx({ fr: 'Repondu', en: 'Replied', es: 'Respondido' }) :
-                       m.status === 'read' ? tx({ fr: 'Lu', en: 'Read', es: 'Leido' }) :
+                      {m.status === 'replied' ? tx({ fr: 'Traite', en: 'Processed', es: 'Procesado' }) :
+                       m.status === 'read' ? tx({ fr: 'En cours', en: 'In progress', es: 'En progreso' }) :
                        tx({ fr: 'Envoye', en: 'Sent', es: 'Enviado' })}
                     </span>
                   </div>
-                  <p className="text-grey-muted text-xs">{m.message}</p>
-                  {m.attachments && m.attachments.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {m.attachments.map((att, j) => (
-                        <a key={j} href={att.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 px-2 py-1 rounded bg-accent/10 border border-accent/20 text-[10px] text-accent hover:bg-accent/20 transition-colors">
-                          <ImagePlus size={10} />
-                          {att.name?.length > 20 ? att.name.substring(0, 20) + '...' : att.name}
-                        </a>
-                      ))}
-                    </div>
+                  {m.message && m.message !== 'Nouvelles images deposees' && (
+                    <p className="text-grey-light text-xs mb-2">{m.message}</p>
                   )}
-                  <p className="text-grey-muted/60 text-[10px] mt-1">{m.createdAt ? new Date(m.createdAt).toLocaleDateString('fr-CA') : ''}</p>
+                  <div className="flex flex-wrap gap-2">
+                    {m.attachments.map((att, j) => (
+                      <a key={j} href={att.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 px-2 py-1 rounded bg-accent/10 border border-accent/20 text-[10px] text-accent hover:bg-accent/20 transition-colors">
+                        <ImagePlus size={10} />
+                        {att.name?.length > 25 ? att.name.substring(0, 25) + '...' : att.name}
+                      </a>
+                    ))}
+                  </div>
                   {m.adminReply && (
                     <div className="mt-2 p-3 rounded bg-accent/5 border border-accent/10">
                       <p className="text-[10px] text-accent font-semibold mb-0.5">Massive :</p>
@@ -689,12 +848,12 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
             </div>
           ) : !msgLoading ? (
             <div className="text-center py-8">
-              <MessageCircle size={32} className="text-grey-muted/20 mx-auto mb-2" />
+              <ImagePlus size={32} className="text-grey-muted/20 mx-auto mb-2" />
               <p className="text-grey-muted text-sm">
                 {tx({
-                  fr: 'Aucun message. Envoie un message pour deposer de nouvelles images ou poser une question.',
-                  en: 'No messages. Send a message to submit new images or ask a question.',
-                  es: 'Sin mensajes. Envia un mensaje para enviar nuevas imagenes o hacer una pregunta.',
+                  fr: 'Aucun depot d\'images pour l\'instant.',
+                  en: 'No image deposits yet.',
+                  es: 'Sin depositos de imagenes por el momento.',
                 })}
               </p>
             </div>

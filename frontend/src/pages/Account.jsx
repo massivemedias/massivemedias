@@ -847,16 +847,17 @@ function Account() {
   // ============================================================
   const ARTIST_SIDEBAR_ITEMS = isArtist ? [
     { id: 'dashboard', label: tx({ fr: 'Tableau de bord', en: 'Dashboard', es: 'Panel' }), icon: Palette },
+    { id: 'profil-artiste', label: tx({ fr: 'Mon profil artiste', en: 'Artist profile', es: 'Perfil artista' }), icon: User },
+    { id: 'images', label: tx({ fr: 'Mes images', en: 'My images', es: 'Mis imagenes' }), icon: Heart },
     { id: 'contrat', label: tx({ fr: 'Contrat', en: 'Contract', es: 'Contrato' }), icon: ScrollText },
     { id: 'tarifs', label: tx({ fr: 'Tarifs', en: 'Pricing', es: 'Precios' }), icon: DollarSign },
-    { id: 'messages', label: tx({ fr: 'Messages', en: 'Messages', es: 'Mensajes' }), icon: MessageCircle },
     { id: 'retrait', label: tx({ fr: 'Retrait', en: 'Withdrawal', es: 'Retiro' }), icon: Settings },
     { id: 'ventes', label: tx({ fr: 'Ventes', en: 'Sales', es: 'Ventas' }), icon: Package },
   ] : [];
 
   const [artistMobileOpen, setArtistMobileOpen] = useState(false);
 
-  const artistValidTabs = ['dashboard', 'contrat', 'tarifs', 'messages', 'retrait', 'ventes', 'profile', 'address', 'security', 'orders'];
+  const artistValidTabs = ['dashboard', 'profil-artiste', 'images', 'contrat', 'tarifs', 'retrait', 'ventes', 'profile', 'address', 'security', 'orders'];
 
   const getArtistSectionTitle = () => {
     const artistItem = ARTIST_SIDEBAR_ITEMS.find(i => i.id === activeTab);
@@ -1057,7 +1058,7 @@ function Account() {
                   transition={{ duration: 0.2 }}
                 >
                   {/* Artist sections */}
-                  {['dashboard', 'contrat', 'tarifs', 'messages', 'retrait', 'ventes'].includes(activeTab) && (
+                  {['dashboard', 'profil-artiste', 'images', 'contrat', 'tarifs', 'retrait', 'ventes'].includes(activeTab) && (
                     <Suspense fallback={<div className="flex items-center gap-2 text-grey-muted py-8 justify-center"><Loader2 size={16} className="animate-spin" /></div>}>
                       <AccountArtistDashboard section={activeTab} />
                     </Suspense>
