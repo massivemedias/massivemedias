@@ -410,7 +410,7 @@ function Boutique() {
                   {tx({ fr: 'Nos artistes', en: 'Our artists', es: 'Nuestros artistas' })}
                 </h2>
 
-                <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
                   {orderedArtists.map((artist, i) => {
                     const printCount = artist.prints?.length || 0;
                     return (
@@ -485,7 +485,7 @@ function Boutique() {
                 </div>
 
                 {/* Grille responsive */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
                   {featuredPrints.map((print, i) => {
                     const studioVals = print.artist?.pricing?.studio ? Object.values(print.artist.pricing.studio) : [];
                     const minPrice = studioVals.length > 0 ? Math.min(...studioVals) : 0;
@@ -552,7 +552,7 @@ function Boutique() {
                 </div>
 
                 {/* Grille responsive */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
                   {allStickers.map((sticker, i) => {
                     const isSelected = selectedSticker === sticker.id;
                     return (
@@ -784,7 +784,7 @@ function Boutique() {
                   </span>
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
                   {defaultSaleItems.map((item, i) => {
                     const discount = Math.round((1 - item.salePrice / item.originalPrice) * 100);
                     const justAdded = saleAdded === item.id;
