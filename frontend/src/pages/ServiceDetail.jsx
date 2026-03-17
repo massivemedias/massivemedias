@@ -488,8 +488,8 @@ function ServiceDetail() {
           </motion.div>
         )}
 
-        {/* ============ PROJETS WEB REALISES (webProjects) ============ */}
-        {service.webProjects && service.webProjects.length > 0 && (
+        {/* ============ PROJETS WEB REALISES (webProjects) - seulement pour le service web ============ */}
+        {slug === 'web' && service.webProjects && service.webProjects.length > 0 && (
           <div className="mb-24">
             <motion.div
               initial={{ opacity: 0, y: 20 }}

@@ -105,16 +105,16 @@ button, [role="button"], a, label[class*="cursor"], select, input[type="checkbox
    ============================================= */
 
 [data-theme="vibrant"] {
-  /* Override Tailwind theme colors - base #3D0079 */
-  --color-purple-dark: #200048;
-  --color-purple-mid: #3A0080;
-  --color-purple-main: #3D0079;
+  /* Override Tailwind theme colors - base #390071 */
+  --color-purple-dark: #1E0044;
+  --color-purple-mid: #370078;
+  --color-purple-main: #390071;
   --color-grey-light: #E8D4FF;
   --color-grey-muted: #B89CDB;
   --color-heading: #FFFFFF;
 
   /* Theme properties - Bold & Vibrant */
-  --bg-body: #3D0079;
+  --bg-body: #390071;
   --bg-card: rgba(255, 255, 255, 0.08);
   --bg-card-solid: rgba(35, 0, 70, 0.85);
   --bg-card-border: rgba(255, 82, 160, 0.15);

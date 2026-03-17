@@ -134,8 +134,8 @@ function Header() {
               </Link>
             </div>
 
-            {/* Mobile Controls */}
-            <div className="flex items-center gap-1 lg:hidden overflow-visible">
+            {/* Mobile Controls - minimal: theme, lang, hamburger */}
+            <div className="flex items-center gap-1.5 lg:hidden overflow-visible">
               <BrightnessFader />
               <button
                 onClick={cycleLang}
@@ -144,28 +144,15 @@ function Header() {
               >
                 {lang.toUpperCase()}
               </button>
-              {!user && (
-                <Link to="/login" className="flex-shrink-0 flex items-center gap-1 p-1.5 rounded-full bg-accent text-white transition-all duration-200 hover:brightness-110 shadow-[0_0_14px_rgba(var(--accent-rgb,255,200,0),0.3)] animate-subtle-glow" aria-label={t('nav.login')}>
-                  <LogIn size={16} />
-                </Link>
-              )}
-              <Link to="/panier" className="flex-shrink-0 relative p-1.5 transition-colors duration-200 nav-link" aria-label={t('nav.panier')}>
-                <ShoppingCart size={18} />
-                {cartCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-accent text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-bold text-[10px]">
-                    {cartCount}
-                  </span>
-                )}
-              </Link>
               <button
                 onClick={() => setMobileMenuOpen(true)}
                 className="flex-shrink-0 relative p-1.5 transition-colors nav-link"
                 aria-label={tx({ fr: 'Ouvrir le menu', en: 'Open menu', es: 'Abrir menú' })}
               >
                 <Menu size={24} />
-                {isAdmin && adminMsgCount > 0 && (
+                {(adminMsgCount > 0 || cartCount > 0) && (
                   <span className="absolute -top-1 -right-1 flex items-center justify-center min-w-[16px] h-4 px-1 rounded-full bg-accent text-white text-[9px] font-bold animate-pulse">
-                    {adminMsgCount}
+                    {adminMsgCount + cartCount}
                   </span>
                 )}
               </button>
@@ -266,6 +253,41 @@ function Header() {
                   <span className="font-semibold text-[15px]">{t('nav.aPropos')}</span>
                   <ChevronRight size={14} className="ml-auto opacity-25 group-hover:opacity-50 transition-opacity" />
                 </Link>
+
+                {/* Panier */}
+                <Link
+                  to="/panier"
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl nav-link mobile-drawer-item group transition-colors"
+                  onClick={close}
+                >
+                  <span className="w-8 h-8 rounded-lg flex items-center justify-center mobile-icon-bg flex-shrink-0 relative">
+                    <ShoppingCart size={15} className="text-accent" />
+                    {cartCount > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-accent text-white text-[9px] rounded-full w-4 h-4 flex items-center justify-center font-bold">
+                        {cartCount}
+                      </span>
+                    )}
+                  </span>
+                  <span className="font-semibold text-[15px]">{tx({ fr: 'Panier', en: 'Cart', es: 'Carrito' })}</span>
+                  <ChevronRight size={14} className="ml-auto opacity-25 group-hover:opacity-50 transition-opacity" />
+                </Link>
+
+                {isAdmin && adminMsgCount > 0 && (
+                  <Link
+                    to="/account?tab=messages"
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl nav-link mobile-drawer-item group transition-colors"
+                    onClick={close}
+                  >
+                    <span className="w-8 h-8 rounded-lg flex items-center justify-center mobile-icon-bg flex-shrink-0 relative">
+                      <Bell size={15} className="text-accent" />
+                      <span className="absolute -top-1 -right-1 bg-accent text-white text-[9px] rounded-full w-4 h-4 flex items-center justify-center font-bold animate-pulse">
+                        {adminMsgCount}
+                      </span>
+                    </span>
+                    <span className="font-semibold text-[15px]">{tx({ fr: 'Messages', en: 'Messages', es: 'Mensajes' })}</span>
+                    <ChevronRight size={14} className="ml-auto opacity-25 group-hover:opacity-50 transition-opacity" />
+                  </Link>
+                )}
 
                 <div className="h-px mobile-drawer-sep mx-2 my-2.5" />
 
