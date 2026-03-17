@@ -280,25 +280,6 @@ function AdminMessages() {
                     {isExpanded && (
                       <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
                         <div className="px-4 pb-5 pt-1 space-y-4 border-t card-border bg-glass/50">
-                          {/* Status actions */}
-                          {nextStatuses.length > 0 && (
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <span className="text-xs text-grey-muted mr-1">{tx({ fr: 'Marquer comme:', en: 'Mark as:', es: 'Marcar como:' })}</span>
-                              {nextStatuses.map((ns) => {
-                                const nst = ALL_STATUS[ns];
-                                const NsIcon = nst.icon;
-                                return (
-                                  <button key={ns} onClick={(e) => { e.stopPropagation(); handleStatusChange(item, ns); }}
-                                    disabled={updatingId === item._uid}
-                                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${nst.color} hover:scale-105 disabled:opacity-50`}>
-                                    {updatingId === item._uid ? <Loader2 size={12} className="animate-spin" /> : <NsIcon size={12} />}
-                                    {tx({ fr: nst.fr, en: nst.en, es: nst.es })}
-                                  </button>
-                                );
-                              })}
-                            </div>
-                          )}
-
                           {/* CONTACT expanded view */}
                           {!isCandidature && (
                             <>
