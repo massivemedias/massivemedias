@@ -289,7 +289,7 @@ export const ARTIST_CONTRACT_TEXT_EN = `
 
 <h4>SIGNATURE - MASSIVE MEDIAS</h4>
 <p>Electronically signed by: Massive Medias</p>
-<p>Representative: Yan Morin, Owner</p>
+<p>Representative: Michael Sanchez, Owner</p>
 <p>NEQ: 2269057891</p>
 
 <h4>SIGNATURE - THE ARTIST</h4>
@@ -585,7 +585,7 @@ export const ARTIST_CONTRACT_TEXT_ES = `
 
 <h4>FIRMA - MASSIVE MEDIAS</h4>
 <p>Firmado electronicamente por: Massive Medias</p>
-<p>Representante: Yan Morin, Propietario</p>
+<p>Representante: Michael Sanchez, Propietario</p>
 <p>NEQ: 2269057891</p>
 
 <h4>FIRMA - EL ARTISTA</h4>
@@ -881,7 +881,7 @@ export const ARTIST_CONTRACT_TEXT = `
 
 <h4>SIGNATURE - MASSIVE MEDIAS</h4>
 <p>Signe electroniquement par : Massive Medias</p>
-<p>Representant : Yan Morin, Proprietaire</p>
+<p>Representant : Michael Sanchez, Proprietaire</p>
 <p>NEQ : 2269057891</p>
 
 <h4>SIGNATURE - L'ARTISTE</h4>
