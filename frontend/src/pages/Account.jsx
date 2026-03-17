@@ -112,9 +112,16 @@ function Account() {
   const meta = user?.user_metadata || {};
 
   const tabFromUrl = searchParams.get('tab');
-  const validTabs = ['profile', 'address', 'security', 'overview', 'orders', 'artist', 'dashboard', 'contrat', 'tarifs', 'messages', 'retrait', 'ventes'];
+  const validTabs = ['profile', 'address', 'security', 'overview', 'orders', 'artist', 'dashboard', 'profil-artiste', 'images', 'contrat', 'tarifs', 'retrait', 'ventes'];
   const initialTab = (tabFromUrl && validTabs.includes(tabFromUrl)) ? tabFromUrl : (isAdmin ? 'profile' : isArtist ? 'dashboard' : 'overview');
   const [activeTab, setActiveTab] = useState(initialTab);
+
+  // Reset tab when role loads (artist may start with 'overview' before role resolves)
+  useEffect(() => {
+    if (isArtist && !tabFromUrl && (activeTab === 'overview' || activeTab === 'profile')) {
+      setActiveTab('dashboard');
+    }
+  }, [isArtist]);
 
   // Sync tab when URL query changes (e.g. from admin sidebar links)
   useEffect(() => {
