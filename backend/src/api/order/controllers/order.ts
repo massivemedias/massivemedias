@@ -1,7 +1,7 @@
 import { factories } from '@strapi/strapi';
 import Stripe from 'stripe';
 import { calculateShipping } from '../../../utils/shipping';
-import { sendOrderConfirmationEmail, sendTestimonialRequestEmail, sendArtistSaleNotificationEmail } from '../../../utils/email';
+import { sendOrderConfirmationEmail, sendTestimonialRequestEmail, sendArtistSaleNotificationEmail, sendNewOrderNotificationEmail } from '../../../utils/email';
 import crypto from 'crypto';
 
 const getStripe = () => {
@@ -226,6 +226,33 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
           strapi.log.info(`Email de confirmation envoye a ${order.customerEmail}`);
         } catch (emailErr) {
           strapi.log.warn('Erreur envoi email confirmation (non bloquant):', emailErr);
+        }
+
+        // Notifier l'admin de la nouvelle vente
+        try {
+          const orderItems2: any[] = Array.isArray(order.items) ? order.items : [];
+          const orderRef2 = paymentIntent.id.slice(-8).toUpperCase();
+          await sendNewOrderNotificationEmail({
+            orderRef: orderRef2,
+            customerName: order.customerName,
+            customerEmail: order.customerEmail,
+            items: orderItems2.map((item: any) => ({
+              productName: item.productName || 'Produit',
+              quantity: item.quantity || 1,
+              totalPrice: item.totalPrice || 0,
+              size: item.size || '',
+              finish: item.finish || '',
+            })),
+            subtotal: order.subtotal || 0,
+            shipping: order.shipping || 0,
+            tps: order.tps || 0,
+            tvq: order.tvq || 0,
+            total: order.total || 0,
+            shippingAddress: order.shippingAddress || null,
+          });
+          strapi.log.info(`Notification vente admin envoyee pour commande ${orderRef2}`);
+        } catch (adminEmailErr) {
+          strapi.log.warn('Erreur envoi notification vente admin (non bloquant):', adminEmailErr);
         }
 
         // Update client stats

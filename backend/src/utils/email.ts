@@ -555,6 +555,145 @@ export async function sendArtistSaleNotificationEmail(data: ArtistSaleNotificati
 }
 
 // -----------------------------------------------------------
+// Email de notification de nouvelle commande (vers admin)
+// -----------------------------------------------------------
+interface NewOrderNotificationData {
+  orderRef: string;
+  customerName: string;
+  customerEmail: string;
+  items: OrderItem[];
+  subtotal: number;
+  shipping: number;
+  tps: number;
+  tvq: number;
+  total: number;
+  shippingAddress: { address: string; city: string; province: string; postalCode: string } | null;
+}
+
+function buildNewOrderNotificationHtml(data: NewOrderNotificationData): string {
+  const date = new Date().toLocaleDateString('fr-CA', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  const itemCount = data.items.reduce((s, i) => s + i.quantity, 0);
+
+  const itemRows = data.items.map(item => `
+    <tr>
+      <td style="padding:8px 12px;border-bottom:1px solid #2a2a4a;color:#e4e4f0;font-size:13px;">
+        ${item.productName}${item.size ? ` - ${item.size}` : ''}${item.finish ? ` (${item.finish})` : ''}
+      </td>
+      <td style="padding:8px 12px;border-bottom:1px solid #2a2a4a;text-align:center;color:#e4e4f0;font-size:13px;">
+        ${item.quantity}
+      </td>
+      <td style="padding:8px 12px;border-bottom:1px solid #2a2a4a;text-align:right;color:#e4e4f0;font-size:13px;">
+        ${(typeof item.totalPrice === 'number' ? item.totalPrice.toFixed(2) : '0.00')}$
+      </td>
+    </tr>
+  `).join('');
+
+  const addr = data.shippingAddress;
+  const addressBlock = addr ? `${addr.city}, ${addr.province} ${addr.postalCode}` : 'N/A';
+
+  const content = `
+    <h2 style="color:#e4e4f0;margin:0 0 8px;font-size:22px;">&#128176; Nouvelle vente !</h2>
+    <p style="color:#a0a0b8;margin:0 0 20px;font-size:15px;line-height:1.5;">
+      ${itemCount} article${itemCount > 1 ? 's' : ''} commande${itemCount > 1 ? 's' : ''} par <strong style="color:#e4e4f0;">${data.customerName}</strong>
+    </p>
+
+    <!-- Client info -->
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:16px;">
+      <tr>
+        <td style="padding:8px 14px;border-bottom:1px solid #2a2a4a;color:#a0a0b8;font-size:13px;width:100px;">Client</td>
+        <td style="padding:8px 14px;border-bottom:1px solid #2a2a4a;color:#e4e4f0;font-size:14px;font-weight:600;">${data.customerName}</td>
+      </tr>
+      <tr>
+        <td style="padding:8px 14px;border-bottom:1px solid #2a2a4a;color:#a0a0b8;font-size:13px;">Courriel</td>
+        <td style="padding:8px 14px;border-bottom:1px solid #2a2a4a;color:#e4e4f0;font-size:14px;">${data.customerEmail}</td>
+      </tr>
+      <tr>
+        <td style="padding:8px 14px;border-bottom:1px solid #2a2a4a;color:#a0a0b8;font-size:13px;">Destination</td>
+        <td style="padding:8px 14px;border-bottom:1px solid #2a2a4a;color:#e4e4f0;font-size:14px;">${addressBlock}</td>
+      </tr>
+      <tr>
+        <td style="padding:8px 14px;border-bottom:1px solid #2a2a4a;color:#a0a0b8;font-size:13px;">Reference</td>
+        <td style="padding:8px 14px;border-bottom:1px solid #2a2a4a;color:#FF52A0;font-size:14px;font-weight:700;font-family:monospace;">${data.orderRef}</td>
+      </tr>
+      <tr>
+        <td style="padding:8px 14px;color:#a0a0b8;font-size:13px;">Date</td>
+        <td style="padding:8px 14px;color:#e4e4f0;font-size:14px;">${date}</td>
+      </tr>
+    </table>
+
+    <!-- Items table -->
+    <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin-bottom:16px;">
+      <tr style="border-bottom:2px solid #FF52A0;">
+        <th style="text-align:left;padding:8px 12px;color:#a0a0b8;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">Produit</th>
+        <th style="text-align:center;padding:8px 12px;color:#a0a0b8;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">Qte</th>
+        <th style="text-align:right;padding:8px 12px;color:#a0a0b8;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">Prix</th>
+      </tr>
+      ${itemRows}
+    </table>
+
+    <!-- Total -->
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px;">
+      <tr>
+        <td style="padding:4px 12px;color:#a0a0b8;font-size:13px;">Sous-total</td>
+        <td style="padding:4px 12px;text-align:right;color:#e4e4f0;font-size:13px;">${formatPrice(data.subtotal)}$</td>
+      </tr>
+      <tr>
+        <td style="padding:4px 12px;color:#a0a0b8;font-size:13px;">Livraison</td>
+        <td style="padding:4px 12px;text-align:right;color:#e4e4f0;font-size:13px;">${data.shipping === 0 ? 'Gratuit' : formatPrice(data.shipping) + '$'}</td>
+      </tr>
+      <tr>
+        <td style="padding:4px 12px;color:#a0a0b8;font-size:13px;">TPS</td>
+        <td style="padding:4px 12px;text-align:right;color:#e4e4f0;font-size:13px;">${formatPrice(data.tps)}$</td>
+      </tr>
+      ${data.tvq > 0 ? `<tr>
+        <td style="padding:4px 12px;color:#a0a0b8;font-size:13px;">TVQ</td>
+        <td style="padding:4px 12px;text-align:right;color:#e4e4f0;font-size:13px;">${formatPrice(data.tvq)}$</td>
+      </tr>` : ''}
+      <tr>
+        <td colspan="2" style="padding:6px 12px 0;"><div style="border-top:2px solid #FF52A0;"></div></td>
+      </tr>
+      <tr>
+        <td style="padding:10px 12px 4px;color:#e4e4f0;font-size:16px;font-weight:700;">Total</td>
+        <td style="padding:10px 12px 4px;text-align:right;color:#4ade80;font-size:22px;font-weight:900;">${formatPrice(data.total)}$</td>
+      </tr>
+    </table>
+
+    <!-- CTA -->
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin:24px 0 0;">
+      <tr><td align="center">
+        <a href="https://massivemedias.com/account?tab=commandes" style="display:inline-block;background:linear-gradient(135deg,#FF52A0,#6B21A8);color:#ffffff;text-decoration:none;padding:12px 28px;border-radius:10px;font-size:14px;font-weight:700;box-shadow:0 4px 16px rgba(255,82,160,0.3);">
+          Voir dans le panneau admin
+        </a>
+      </td></tr>
+    </table>
+  `;
+
+  return massiveEmailWrapper(content);
+}
+
+export async function sendNewOrderNotificationEmail(data: NewOrderNotificationData): Promise<boolean> {
+  const resend = getResend();
+  if (!resend) return false;
+
+  const sender = getSender();
+  const adminEmail = process.env.ADMIN_EMAIL || 'massivemedias@gmail.com';
+
+  try {
+    await resend.emails.send({
+      ...sender,
+      to: adminEmail,
+      subject: `[VENTE] ${formatPrice(data.total)}$ - ${data.customerName} (${data.orderRef})`,
+      html: buildNewOrderNotificationHtml(data),
+    });
+    console.log('[email] Notification nouvelle vente envoyee a', adminEmail);
+    return true;
+  } catch (err) {
+    console.error('[email] Erreur notification vente admin:', err);
+    return false;
+  }
+}
+
+// -----------------------------------------------------------
 // Email de notification de nouveau message contact (vers admin)
 // -----------------------------------------------------------
 interface NewContactData {
