@@ -55,6 +55,16 @@ export function AuthProvider({ children }) {
     return { data, error };
   }, []);
 
+  const verifyOtp = useCallback(async (email, token) => {
+    if (!supabase) return { error: { message: 'Supabase not configured' } };
+    const { data, error } = await supabase.auth.verifyOtp({
+      email,
+      token,
+      type: 'signup',
+    });
+    return { data, error };
+  }, []);
+
   const signIn = useCallback(async (email, password) => {
     if (!supabase) return { error: { message: 'Supabase not configured' } };
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
@@ -108,8 +118,8 @@ export function AuthProvider({ children }) {
 
   const value = useMemo(() => ({
     user, session, loading, passwordRecovery,
-    signUp, signIn, signInWithOAuth, signOut, resetPassword, updatePassword, updateProfile,
-  }), [user, session, loading, passwordRecovery, signUp, signIn, signInWithOAuth, signOut, resetPassword, updatePassword, updateProfile]);
+    signUp, signIn, signInWithOAuth, signOut, resetPassword, updatePassword, updateProfile, verifyOtp,
+  }), [user, session, loading, passwordRecovery, signUp, signIn, signInWithOAuth, signOut, resetPassword, updatePassword, updateProfile, verifyOtp]);
 
   return (
     <AuthContext.Provider value={value}>

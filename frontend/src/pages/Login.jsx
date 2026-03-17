@@ -8,14 +8,15 @@ import { useAuth } from '../contexts/AuthContext';
 
 function Login() {
   const { t, lang, tx } = useLang();
-  const { signIn, signUp, signInWithOAuth, resetPassword, updatePassword, session, passwordRecovery } = useAuth();
+  const { signIn, signUp, signInWithOAuth, resetPassword, updatePassword, verifyOtp, session, passwordRecovery } = useAuth();
   const navigate = useNavigate();
 
-  const [mode, setMode] = useState('login'); // 'login' | 'register' | 'forgot' | 'update-password'
+  const [mode, setMode] = useState('login'); // 'login' | 'register' | 'forgot' | 'update-password' | 'verify-otp'
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [fullName, setFullName] = useState('');
+  const [otpCode, setOtpCode] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -104,6 +105,17 @@ function Login() {
     setLoading(true);
 
     try {
+      if (mode === 'verify-otp') {
+        if (!otpCode || otpCode.length < 6) {
+          setError(tx({ fr: 'Entre le code a 6 chiffres recu par courriel.', en: 'Enter the 6-digit code received by email.', es: 'Ingresa el codigo de 6 digitos recibido por correo.' }));
+          return;
+        }
+        const { error: err } = await verifyOtp(email, otpCode);
+        if (err) { setError(translateSupabaseError(err)); return; }
+        navigate('/');
+        return;
+      }
+
       if (mode === 'update-password') {
         if (password !== confirmPassword) {
           setError(t('auth.passwordMismatch'));
@@ -141,9 +153,17 @@ function Login() {
           return;
         }
         const referralCode = localStorage.getItem('referralCode') || undefined;
-        const { error: err } = await signUp(email, password, fullName, referralCode);
+        const { data, error: err } = await signUp(email, password, fullName, referralCode);
         if (err) { setError(translateSupabaseError(err)); return; }
         if (referralCode) localStorage.removeItem('referralCode');
+        // Si l'email n'est pas encore confirme, montrer l'ecran OTP
+        if (data?.user && !data.user.confirmed_at && !data.session) {
+          setMode('verify-otp');
+          setError('');
+          setOtpCode('');
+          return;
+        }
+        // Si confirmation desactivee ou deja confirmee, naviguer directement
         navigate('/');
         return;
       }
@@ -171,6 +191,7 @@ function Login() {
   }
 
   function getTitle() {
+    if (mode === 'verify-otp') return tx({ fr: 'Verifie ton courriel', en: 'Verify your email', es: 'Verifica tu correo' });
     if (mode === 'update-password') return tx({ fr: 'Nouveau mot de passe', en: 'New password', es: 'Nueva contrasena' });
     if (mode === 'forgot') return t('auth.forgotTitle');
     if (mode === 'register') return t('auth.registerTitle');
@@ -178,6 +199,7 @@ function Login() {
   }
 
   function getSubtitle() {
+    if (mode === 'verify-otp') return tx({ fr: `Un code de verification a ete envoye a ${email}`, en: `A verification code was sent to ${email}`, es: `Se envio un codigo de verificacion a ${email}` });
     if (mode === 'update-password') return tx({ fr: 'Entre ton nouveau mot de passe', en: 'Enter your new password', es: 'Ingresa tu nueva contrasena' });
     if (mode === 'forgot') return t('auth.forgotSubtitle');
     if (mode === 'register') return t('auth.registerSubtitle');
@@ -270,6 +292,68 @@ function Login() {
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-5">
+                  {/* OTP verification screen */}
+                  {mode === 'verify-otp' && (
+                    <>
+                      <div className="text-center py-4">
+                        <div className="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center mx-auto mb-4">
+                          <Shield size={28} className="text-accent" />
+                        </div>
+                        <p className="text-grey-muted text-sm mb-6">
+                          {tx({
+                            fr: 'Verifie ta boite de reception (et tes spams). Entre le code a 6 chiffres pour activer ton compte.',
+                            en: 'Check your inbox (and spam folder). Enter the 6-digit code to activate your account.',
+                            es: 'Revisa tu bandeja de entrada (y spam). Ingresa el codigo de 6 digitos para activar tu cuenta.',
+                          })}
+                        </p>
+                      </div>
+                      <div>
+                        <label className="block text-sm text-grey-light mb-1.5">
+                          {tx({ fr: 'Code de verification', en: 'Verification code', es: 'Codigo de verificacion' })}
+                        </label>
+                        <input
+                          type="text"
+                          inputMode="numeric"
+                          pattern="[0-9]*"
+                          maxLength={6}
+                          value={otpCode}
+                          onChange={e => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                          className="input-field text-center text-2xl tracking-[0.5em] font-mono font-bold"
+                          placeholder="000000"
+                          autoFocus
+                          required
+                        />
+                      </div>
+
+                      {error && (
+                        <p className="text-red-400 text-sm">{error}</p>
+                      )}
+
+                      <button
+                        type="submit"
+                        disabled={loading || otpCode.length < 6}
+                        className="btn-primary w-full justify-center"
+                      >
+                        {loading ? (
+                          <span className="animate-pulse">...</span>
+                        ) : (
+                          <>
+                            {tx({ fr: 'Verifier et activer mon compte', en: 'Verify and activate my account', es: 'Verificar y activar mi cuenta' })}
+                            <ArrowRight size={18} className="ml-2" />
+                          </>
+                        )}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => { setMode('register'); setError(''); setOtpCode(''); }}
+                        className="block w-full text-center text-sm text-grey-muted hover:text-accent transition-colors"
+                      >
+                        {tx({ fr: 'Retour a l\'inscription', en: 'Back to registration', es: 'Volver al registro' })}
+                      </button>
+                    </>
+                  )}
+
                   {/* OAuth buttons - login & register only */}
                   {(mode === 'login' || mode === 'register') && (
                     <>
@@ -327,8 +411,8 @@ function Login() {
                     </div>
                   )}
 
-                  {/* Email (not for update-password mode) */}
-                  {mode !== 'update-password' && (
+                  {/* Email (not for update-password or verify-otp mode) */}
+                  {mode !== 'update-password' && mode !== 'verify-otp' && (
                     <div>
                       <label className="block text-sm text-grey-light mb-1.5">{t('auth.email')}</label>
                       <input
@@ -342,8 +426,8 @@ function Login() {
                     </div>
                   )}
 
-                  {/* Password (not for forgot mode) */}
-                  {mode !== 'forgot' && (
+                  {/* Password (not for forgot or verify-otp mode) */}
+                  {mode !== 'forgot' && mode !== 'verify-otp' && (
                     <div>
                       <label className="block text-sm text-grey-light mb-1.5">
                         {mode === 'update-password'
@@ -372,8 +456,8 @@ function Login() {
                     </div>
                   )}
 
-                  {/* Confirm password (register + update-password) */}
-                  {(mode === 'register' || mode === 'update-password') && (
+                  {/* Confirm password (register + update-password, not verify-otp) */}
+                  {(mode === 'register' || mode === 'update-password') && mode !== 'verify-otp' && (
                     <div>
                       <label className="block text-sm text-grey-light mb-1.5">{t('auth.confirmPassword')}</label>
                       <div className="relative">
@@ -391,10 +475,11 @@ function Login() {
                     </div>
                   )}
 
-                  {error && (
+                  {mode !== 'verify-otp' && error && (
                     <p className="text-red-400 text-sm">{error}</p>
                   )}
 
+                  {mode !== 'verify-otp' && (
                   <button
                     type="submit"
                     disabled={loading}
@@ -415,6 +500,7 @@ function Login() {
                       </>
                     )}
                   </button>
+                  )}
 
                   {mode === 'login' && (
                     <button
