@@ -16,6 +16,36 @@ import {
   getArtistMessagesAdmin, replyArtistMessage, updateArtistMessageStatus,
 } from '../services/artistService';
 
+// Helper: rend les URLs cliquables et parse les liens sociaux
+function Linkify({ text }) {
+  if (!text) return null;
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  const parts = text.split(urlRegex);
+  return parts.map((part, i) => {
+    if (urlRegex.test(part)) {
+      // Determine label
+      let label = part;
+      if (part.includes('instagram.com')) label = 'Instagram';
+      else if (part.includes('facebook.com')) label = 'Facebook';
+      else if (part.includes('tiktok.com')) label = 'TikTok';
+      else if (part.includes('youtube.com') || part.includes('youtu.be')) label = 'YouTube';
+      else if (part.includes('gallea.ca')) label = 'Gallea';
+      else {
+        try { label = new URL(part).hostname.replace('www.', ''); } catch { label = part; }
+      }
+      return (
+        <a key={i} href={part} target="_blank" rel="noopener noreferrer"
+          className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-accent/10 border border-accent/20 text-accent text-xs hover:bg-accent/20 transition-colors mx-0.5"
+          onClick={(e) => e.stopPropagation()}>
+          <ExternalLink size={10} />
+          {label}
+        </a>
+      );
+    }
+    return <span key={i}>{part}</span>;
+  });
+}
+
 // Unified status map - includes both contact and artist statuses
 const ALL_STATUS = {
   new:       { fr: 'Nouveau',     en: 'New',       es: 'Nuevo',      color: 'bg-blue-500/20 text-blue-400', icon: Mail },
@@ -339,7 +369,7 @@ function AdminMessages() {
                               {/* Message */}
                               {item.message && (
                                 <div className="rounded-lg bg-glass p-4">
-                                  <p className="text-sm text-heading whitespace-pre-wrap">{item.message}</p>
+                                  <p className="text-sm text-heading whitespace-pre-wrap"><Linkify text={item.message} /></p>
                                 </div>
                               )}
 
@@ -427,7 +457,7 @@ function AdminMessages() {
                             <>
                               {/* Message */}
                               <div className="rounded-lg bg-glass p-4">
-                                <p className="text-sm text-heading whitespace-pre-wrap">{item.message}</p>
+                                <p className="text-sm text-heading whitespace-pre-wrap"><Linkify text={item.message} /></p>
                                 {item.attachments && item.attachments.length > 0 && (
                                   <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-white/10">
                                     {item.attachments.map((att, j) => (

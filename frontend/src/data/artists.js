@@ -176,7 +176,8 @@ const artistsData = {
       es: "No Pixl captura la intensidad de la vida nocturna montrealesa y la belleza cruda de los paisajes quebequenses. Entre raves subterraneas y acantilados gaspesianos, su lente atrapa la energia de las multitudes en movimiento y la quietud de los grandes espacios. Cada imagen cuenta una historia de luces, contrastes e instantes fugaces congelados en el tiempo.",
     },
     socials: {
-      instagram: 'https://instagram.com/no.pixl',
+      instagram: 'https://www.instagram.com/no.pixl',
+      website: 'https://nopixl.myportfolio.com',
     },
     avatar: img('/images/prints/NoPixlAvatar.webp'),
     heroImage: thumb('/images/prints/NoPixl2.webp'),
