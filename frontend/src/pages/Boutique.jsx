@@ -980,7 +980,7 @@ function Boutique() {
                 viewport={{ once: true }}
               >
                 <Link
-                  to="/contact"
+                  to="/contact?tab=artiste"
                   className="group block p-8 md:p-10 rounded-2xl card-bg-bordered hover:border-accent/50 transition-all duration-300"
                 >
                   <div className="flex items-center gap-5">
