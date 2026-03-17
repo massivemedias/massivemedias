@@ -125,9 +125,9 @@ function ArtistPartnershipForm() {
         </h2>
         <p className="text-grey-light text-base leading-relaxed max-w-2xl mx-auto mb-3">
           {tx({
-            fr: 'Massive Medias offre aux artistes visuels une vitrine professionnelle pour vendre leurs oeuvres en tirages fine art et stickers de qualite. On s\'occupe de l\'impression, de la boutique en ligne et de la logistique - tu te concentres sur ta creation.',
-            en: 'Massive Medias offers visual artists a professional showcase to sell their work as fine art prints and quality stickers. We handle printing, the online store, and logistics - you focus on your art.',
-            es: 'Massive Medias ofrece a los artistas visuales un escaparate profesional para vender sus obras como impresiones fine art y stickers de calidad. Nosotros nos encargamos de la impresion, la tienda en linea y la logistica - tu te concentras en tu arte.',
+            fr: 'Un artiste Massive, c\'est un createur visuel qui rejoint notre reseau pour transformer ses oeuvres en produits physiques de qualite professionnelle - prints fine art, stickers, merch. Massive s\'occupe de tout : impression sur equipement pro, boutique en ligne, gestion des commandes et livraison. Toi, tu te concentres sur ta creation et tu touches ta part sur chaque vente. C\'est un partenariat gagnant-gagnant : ton art prend forme, et ton public peut enfin le tenir entre ses mains.',
+            en: 'A Massive artist is a visual creator who joins our network to turn their artwork into professional-quality physical products - fine art prints, stickers, merch. Massive handles everything: printing on pro equipment, online store, order management and shipping. You focus on creating and earn your share on every sale. It\'s a win-win partnership: your art comes to life, and your audience can finally hold it in their hands.',
+            es: 'Un artista Massive es un creador visual que se une a nuestra red para transformar sus obras en productos fisicos de calidad profesional - impresiones fine art, stickers, merch. Massive se encarga de todo: impresion en equipo profesional, tienda en linea, gestion de pedidos y envios. Tu te concentras en crear y ganas tu parte en cada venta. Es una asociacion donde todos ganan: tu arte cobra vida, y tu publico por fin puede tenerlo en sus manos.',
           })}
         </p>
       </motion.div>
@@ -215,9 +215,9 @@ function ArtistPartnershipForm() {
             />
             <span className="text-heading text-sm leading-relaxed group-hover:text-accent transition-colors">
               {tx({
-                fr: "J'ai lu et j'accepte les conditions du contrat de partenariat artiste ci-dessus.",
-                en: 'I have read and accept the terms of the artist partnership contract above.',
-                es: 'He leido y acepto los terminos del contrato de asociacion artistica anterior.',
+                fr: "En cochant cette case, je confirme avoir lu et compris les termes du contrat de partenariat artiste ci-dessus. Cette validation fait office de signature et constitue une entente entre Massive Medias et l'artiste.",
+                en: 'By checking this box, I confirm that I have read and understood the terms of the artist partnership contract above. This validation serves as a signature and constitutes an agreement between Massive Medias and the artist.',
+                es: 'Al marcar esta casilla, confirmo haber leido y comprendido los terminos del contrato de asociacion artistica anterior. Esta validacion sirve como firma y constituye un acuerdo entre Massive Medias y el artista.',
               })}
             </span>
           </label>

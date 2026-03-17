@@ -15,7 +15,7 @@ function ArtistFAQ({ lang, tx }) {
   const faq = ARTIST_FAQ[lang] || ARTIST_FAQ.fr;
 
   return (
-    <div className="max-w-4xl mx-auto mb-12">
+    <div className="max-w-4xl mx-auto mt-16 mb-4">
       <h2 className="text-2xl font-heading font-bold text-heading mb-6 flex items-center gap-3">
         <HelpCircle size={24} className="text-accent" />
         {tx({ fr: 'Questions frequentes - Artistes', en: 'FAQ - Artists', es: 'Preguntas frecuentes - Artistas' })}
@@ -462,8 +462,8 @@ function Contact() {
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.3 }}
           >
-            <ArtistFAQ lang={lang} tx={tx} />
             <ArtistPartnershipForm />
+            <ArtistFAQ lang={lang} tx={tx} />
           </motion.div>
         )}
         </AnimatePresence>
