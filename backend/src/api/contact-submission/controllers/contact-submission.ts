@@ -1,5 +1,5 @@
 import { factories } from '@strapi/strapi';
-import { sendContactReplyEmail } from '../../../utils/email';
+import { sendContactReplyEmail, sendNewContactNotificationEmail } from '../../../utils/email';
 
 export default factories.createCoreController('api::contact-submission.contact-submission', ({ strapi }) => ({
 
@@ -137,6 +137,13 @@ export default factories.createCoreController('api::contact-submission.contact-s
           message,
           status: 'new',
         },
+      });
+
+      // Notifier l'admin par email
+      sendNewContactNotificationEmail({
+        nom, email, telephone, entreprise, service, budget, urgence, message,
+      }).catch(err => {
+        strapi.log.warn('Email notification contact non envoye:', err);
       });
 
       ctx.body = { success: true, id: submission.documentId };

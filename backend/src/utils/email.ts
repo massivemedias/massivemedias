@@ -555,6 +555,91 @@ export async function sendArtistSaleNotificationEmail(data: ArtistSaleNotificati
 }
 
 // -----------------------------------------------------------
+// Email de notification de nouveau message contact (vers admin)
+// -----------------------------------------------------------
+interface NewContactData {
+  nom: string;
+  email: string;
+  telephone?: string;
+  entreprise?: string;
+  service?: string;
+  budget?: string;
+  urgence?: string;
+  message: string;
+}
+
+function buildNewContactNotificationHtml(data: NewContactData): string {
+  const date = new Date().toLocaleDateString('fr-CA', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+  const detailRows = [
+    { label: 'Nom', value: data.nom },
+    { label: 'Courriel', value: data.email },
+    data.telephone ? { label: 'Telephone', value: data.telephone } : null,
+    data.entreprise ? { label: 'Entreprise', value: data.entreprise } : null,
+    data.service ? { label: 'Service', value: data.service } : null,
+    data.budget ? { label: 'Budget', value: data.budget } : null,
+    data.urgence ? { label: 'Urgence', value: data.urgence } : null,
+    { label: 'Date', value: date },
+  ].filter(Boolean);
+
+  const rows = detailRows.map(r => `
+    <tr>
+      <td style="padding:8px 14px;border-bottom:1px solid #2a2a4a;color:#a0a0b8;font-size:13px;width:100px;">${r!.label}</td>
+      <td style="padding:8px 14px;border-bottom:1px solid #2a2a4a;color:#e4e4f0;font-size:14px;font-weight:600;">${r!.value}</td>
+    </tr>
+  `).join('');
+
+  const content = `
+    <h2 style="color:#e4e4f0;margin:0 0 16px;font-size:22px;">&#128172; Nouveau message de contact</h2>
+
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px;">
+      ${rows}
+    </table>
+
+    <!-- Message -->
+    <table width="100%" cellpadding="0" cellspacing="0">
+      <tr><td style="padding:16px;background:rgba(139,92,246,0.08);border-radius:8px;border:1px solid rgba(139,92,246,0.15);border-left:3px solid #FF52A0;">
+        <p style="margin:0 0 6px;color:#a0a0b8;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">Message</p>
+        <p style="margin:0;color:#e4e4f0;font-size:14px;line-height:1.6;white-space:pre-wrap;">${data.message}</p>
+      </td></tr>
+    </table>
+
+    <!-- CTA -->
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin:24px 0 0;">
+      <tr><td align="center">
+        <a href="https://massivemedias.com/account" style="display:inline-block;background:linear-gradient(135deg,#FF52A0,#6B21A8);color:#ffffff;text-decoration:none;padding:12px 28px;border-radius:10px;font-size:14px;font-weight:700;box-shadow:0 4px 16px rgba(255,82,160,0.3);">
+          Repondre dans le panneau admin
+        </a>
+      </td></tr>
+    </table>
+  `;
+
+  return massiveEmailWrapper(content);
+}
+
+export async function sendNewContactNotificationEmail(data: NewContactData): Promise<boolean> {
+  const resend = getResend();
+  if (!resend) return false;
+
+  const sender = getSender();
+  const adminEmail = process.env.ADMIN_EMAIL || 'massivemedias@gmail.com';
+
+  try {
+    await resend.emails.send({
+      ...sender,
+      to: adminEmail,
+      subject: `[MESSAGE] ${data.nom} - ${data.service || 'Contact'}`,
+      html: buildNewContactNotificationHtml(data),
+    });
+    console.log('[email] Notification contact envoyee pour', data.email);
+    return true;
+  } catch (err) {
+    console.error('[email] Erreur notification contact:', err);
+    return false;
+  }
+}
+
+// -----------------------------------------------------------
 // Email de notification de nouvelle inscription
 // -----------------------------------------------------------
 export async function sendNewUserNotificationEmail(userName: string, userEmail: string, provider: string): Promise<boolean> {

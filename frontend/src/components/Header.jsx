@@ -1,12 +1,15 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Menu, X, ShoppingCart, LogIn, Printer, Sticker, Shirt, Globe, Store, Info, Phone, ChevronRight } from 'lucide-react';
+import { Menu, X, ShoppingCart, LogIn, Printer, Sticker, Shirt, Globe, Store, Info, Phone, ChevronRight, Bell } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import MassiveLogo from './MassiveLogo';
 import { useLang } from '../i18n/LanguageContext';
 import BrightnessFader from './BrightnessFader';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useUserRole } from '../contexts/UserRoleContext';
+import { getContactSubmissions, getArtistSubmissions } from '../services/adminService';
+import { getArtistMessagesAdmin } from '../services/artistService';
 
 const SERVICE_ICONS = [Printer, Sticker, Shirt, Globe];
 
@@ -14,7 +17,34 @@ function Header() {
   const { lang, cycleLang, t, tx } = useLang();
   const { cartCount } = useCart();
   const { user } = useAuth();
+  const { isAdmin } = useUserRole();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [adminMsgCount, setAdminMsgCount] = useState(0);
+
+  // Polling notifications admin
+  useEffect(() => {
+    if (!isAdmin) return;
+    let cancelled = false;
+    async function fetchCount() {
+      try {
+        const [contactRes, artistRes, artistMsgRes] = await Promise.all([
+          getContactSubmissions({ pageSize: 200 }),
+          getArtistSubmissions({ pageSize: 200 }),
+          getArtistMessagesAdmin(),
+        ]);
+        const contacts = contactRes?.data?.data || [];
+        const artists = artistRes?.data?.data || [];
+        const artistMsgs = artistMsgRes?.data?.data || [];
+        const count = contacts.filter(c => (c.status || 'new') === 'new').length
+          + artists.filter(a => (a.status || 'new') === 'new').length
+          + artistMsgs.filter(m => (m.status || 'new') === 'new').length;
+        if (!cancelled) setAdminMsgCount(count);
+      } catch { /* ignore */ }
+    }
+    fetchCount();
+    const interval = setInterval(fetchCount, 60000);
+    return () => { cancelled = true; clearInterval(interval); };
+  }, [isAdmin]);
 
   const services = t('nav.servicesList');
   const close = () => setMobileMenuOpen(false);
@@ -80,6 +110,15 @@ function Header() {
                 </Link>
               )}
 
+              {isAdmin && adminMsgCount > 0 && (
+                <Link to="/account?tab=messages" className="relative p-2 transition-colors duration-200 nav-link" aria-label="Messages admin">
+                  <Bell size={18} />
+                  <span className="absolute -top-1 -right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-accent text-white text-[10px] font-bold animate-pulse">
+                    {adminMsgCount}
+                  </span>
+                </Link>
+              )}
+
               <Link to="/panier" className="relative p-2 transition-colors duration-200 nav-link" aria-label={t('nav.panier')}>
                 <ShoppingCart size={20} />
                 {cartCount > 0 && (
@@ -120,10 +159,15 @@ function Header() {
               </Link>
               <button
                 onClick={() => setMobileMenuOpen(true)}
-                className="flex-shrink-0 p-1.5 transition-colors nav-link"
+                className="flex-shrink-0 relative p-1.5 transition-colors nav-link"
                 aria-label={tx({ fr: 'Ouvrir le menu', en: 'Open menu', es: 'Abrir menú' })}
               >
                 <Menu size={24} />
+                {isAdmin && adminMsgCount > 0 && (
+                  <span className="absolute -top-1 -right-1 flex items-center justify-center min-w-[16px] h-4 px-1 rounded-full bg-accent text-white text-[9px] font-bold animate-pulse">
+                    {adminMsgCount}
+                  </span>
+                )}
               </button>
             </div>
           </div>
