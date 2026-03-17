@@ -116,10 +116,9 @@ function Artistes() {
       <div className="section-container max-w-6xl mx-auto">
 
         {/* Artists grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 mb-20">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-6 md:gap-8 mb-20">
           {artists.map((artist, index) => {
             const tagline = tx({ fr: artist.tagline.fr, en: artist.tagline.en, es: artist.tagline.es || artist.tagline.en });
-            const minPrice = Math.min(...Object.values(artist.pricing.studio).filter(v => v != null));
 
             return (
               <motion.div
@@ -131,27 +130,43 @@ function Artistes() {
               >
                 <Link
                   to={`/artistes/${artist.slug}`}
-                  className="group flex flex-col items-center text-center"
+                  className="group block relative rounded-2xl overflow-hidden aspect-[3/4] card-shadow"
                 >
-                  <div className="relative w-36 h-36 md:w-44 md:h-44 rounded-full overflow-hidden border-2 border-purple-main/30 group-hover:border-accent/60 transition-all duration-300 group-hover:scale-105 card-shadow">
-                    <img
-                      src={artist.avatar || artist.heroImage}
-                      alt={artist.name}
-                      className="w-full h-full object-cover"
-                      loading="lazy"
-                    />
+                  {/* Background hero image */}
+                  <img
+                    src={artist.heroImage || artist.avatar}
+                    alt={artist.name}
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    loading="lazy"
+                  />
+                  {/* Gradient overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/10" />
+
+                  {/* Content */}
+                  <div className="relative z-10 h-full flex flex-col justify-between p-4 md:p-6">
+                    {/* Avatar top */}
+                    <div>
+                      <div className="w-12 h-12 md:w-16 md:h-16 rounded-full overflow-hidden border-2 border-white/30 shadow-lg">
+                        <img
+                          src={artist.avatar || artist.heroImage}
+                          alt={artist.name}
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Info bottom */}
+                    <div>
+                      <h2 className="text-xl md:text-2xl font-heading font-bold text-white drop-shadow-lg mb-1">
+                        {artist.name}
+                      </h2>
+                      <p className="text-white/70 text-xs md:text-sm leading-snug mb-3 line-clamp-2">{tagline}</p>
+                      <p className="text-white/50 text-xs">
+                        {artist.prints.length} {tx({ fr: 'oeuvres', en: 'artworks', es: 'obras' })}
+                      </p>
+                    </div>
                   </div>
-                  <h2 className="text-lg md:text-xl font-heading font-bold text-heading mt-4 mb-1">
-                    {artist.name}
-                  </h2>
-                  <p className="text-grey-muted text-xs mb-2">{tagline}</p>
-                  <p className="text-grey-muted text-xs mb-3">
-                    {artist.prints.length} {tx({ fr: 'oeuvres', en: 'artworks', es: 'obras' })} · {tx({ fr: `${minPrice}$+`, en: `$${minPrice}+`, es: `$${minPrice}+` })}
-                  </p>
-                  <span className="inline-flex items-center gap-1.5 text-accent text-sm font-semibold group-hover:gap-2.5 transition-all">
-                    {tx({ fr: 'Voir', en: 'View', es: 'Ver' })}
-                    <ArrowRight size={16} />
-                  </span>
                 </Link>
               </motion.div>
             );
