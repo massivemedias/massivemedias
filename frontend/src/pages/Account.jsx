@@ -5,7 +5,7 @@ import {
   User, Mail, Phone, MapPin, Building2, Package, LogOut, Loader2, Check, Lock,
   Eye, EyeOff, ChevronDown, ChevronUp, Shield, Pencil, Save, ShoppingBag,
   ArrowRight, Gift, Copy, Heart, Clock, RotateCcw, MessageCircle, Download,
-  Palette, Settings, Menu, X, Banknote, Receipt, BarChart3, DollarSign, Users,
+  Palette, Settings, Menu, X, Banknote, Receipt, BarChart3, DollarSign, Users, ScrollText,
 } from 'lucide-react';
 import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
@@ -112,8 +112,8 @@ function Account() {
   const meta = user?.user_metadata || {};
 
   const tabFromUrl = searchParams.get('tab');
-  const validTabs = ['profile', 'address', 'security', 'overview', 'orders', 'artist'];
-  const initialTab = (tabFromUrl && validTabs.includes(tabFromUrl)) ? tabFromUrl : (isAdmin ? 'profile' : 'overview');
+  const validTabs = ['profile', 'address', 'security', 'overview', 'orders', 'artist', 'dashboard', 'contrat', 'tarifs', 'messages', 'retrait', 'ventes'];
+  const initialTab = (tabFromUrl && validTabs.includes(tabFromUrl)) ? tabFromUrl : (isAdmin ? 'profile' : isArtist ? 'dashboard' : 'overview');
   const [activeTab, setActiveTab] = useState(initialTab);
 
   // Sync tab when URL query changes (e.g. from admin sidebar links)
@@ -553,6 +553,115 @@ function Account() {
     </div>
   );
 
+  const renderOrdersContent = () => (
+    <div className="rounded-2xl border border-purple-main/30 p-6 md:p-8 card-bg card-shadow">
+      <h3 className="text-heading font-semibold mb-6 flex items-center gap-2">
+        <Package size={18} className="text-accent" />
+        {tx({ fr: 'Historique des commandes', en: 'Order history', es: 'Historial de pedidos' })}
+      </h3>
+      {ordersLoading ? (
+        <div className="flex items-center gap-3 text-grey-muted py-12 justify-center">
+          <Loader2 size={20} className="animate-spin" />
+          <span>{tx({ fr: 'Chargement...', en: 'Loading...', es: 'Cargando...' })}</span>
+        </div>
+      ) : ordersError ? (
+        <p className="text-grey-muted text-center py-12">{tx({ fr: 'Erreur au chargement des commandes.', en: 'Error loading orders.', es: 'Error al cargar los pedidos.' })}</p>
+      ) : orders.length === 0 ? (
+        <div className="text-center py-12">
+          <Package size={48} className="text-grey-muted/20 mx-auto mb-4" />
+          <p className="text-heading font-medium mb-1">{t('account.noOrders')}</p>
+          <p className="text-grey-muted text-sm mb-4">
+            {tx({ fr: 'Tes commandes apparaitront ici.', en: 'Your orders will appear here.', es: 'Tus pedidos apareceran aqui.' })}
+          </p>
+          <Link to="/boutique" className="btn-primary text-sm py-2.5 px-6 inline-flex items-center gap-2">
+            <ShoppingBag size={16} />
+            {tx({ fr: 'Decouvrir la boutique', en: 'Browse the shop', es: 'Descubrir la tienda' })}
+          </Link>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {orders.map((order) => {
+            const isExpanded = expandedOrder === (order.documentId || order.id);
+            return (
+              <div key={order.documentId || order.id} className="rounded-xl bg-glass overflow-hidden">
+                <button
+                  onClick={() => setExpandedOrder(isExpanded ? null : (order.documentId || order.id))}
+                  className="w-full p-4 flex items-center justify-between text-left hover:bg-white/5 transition-colors"
+                >
+                  <div>
+                    <p className="text-heading font-semibold text-sm">{formatDate(order.createdAt)}</p>
+                    <p className="text-grey-muted text-xs">
+                      {order.items?.length || 0} {(order.items?.length || 0) > 1 ? tx({ fr: 'articles', en: 'items', es: 'articulos' }) : tx({ fr: 'article', en: 'item', es: 'articulo' })}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${STATUS_COLORS[order.status] || 'bg-grey-500/20 text-grey-400'}`}>
+                      {getStatusLabel(order.status)}
+                    </span>
+                    <span className="text-heading font-bold text-sm">{((order.total || 0) / 100).toFixed(2)}$</span>
+                    {isExpanded ? <ChevronUp size={16} className="text-grey-muted" /> : <ChevronDown size={16} className="text-grey-muted" />}
+                  </div>
+                </button>
+
+                {isExpanded && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    className="border-t border-purple-main/10 px-4 pb-4"
+                  >
+                    {order.items && (
+                      <div className="mt-3 space-y-2">
+                        {order.items.map((item, i) => (
+                          <div key={i} className="flex items-center gap-3 py-2">
+                            {item.image && <img src={item.image} alt="" className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />}
+                            <div className="flex-grow min-w-0">
+                              <p className="text-heading text-sm font-medium truncate">{item.productName}</p>
+                              <p className="text-grey-muted text-xs">
+                                {[item.finish, item.shape, item.size, `${item.quantity}x`].filter(Boolean).join(' - ')}
+                              </p>
+                              {item.notes && <p className="text-grey-muted text-xs mt-0.5 italic">"{item.notes}"</p>}
+                            </div>
+                            <span className="text-heading text-sm font-medium flex-shrink-0">{item.totalPrice}$</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {order.notes && (
+                      <div className="mt-3 p-3 rounded-lg bg-purple-main/10">
+                        <p className="text-xs text-grey-muted mb-1">Notes</p>
+                        <p className="text-heading text-xs whitespace-pre-wrap">{order.notes}</p>
+                      </div>
+                    )}
+                    <div className="mt-3 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-grey-muted">
+                      {order.designReady !== undefined && (
+                        <span>{tx({ fr: 'Design pret', en: 'Design ready', es: 'Diseno listo' })}: {order.designReady ? tx({ fr: 'Oui', en: 'Yes', es: 'Si' }) : tx({ fr: 'Non', en: 'No', es: 'No' })}</span>
+                      )}
+                      <span>{tx({ fr: 'Devise', en: 'Currency', es: 'Moneda' })}: {(order.currency || 'cad').toUpperCase()}</span>
+                      <button
+                        onClick={() => generateInvoicePDF(order, 'receipt')}
+                        className="flex items-center gap-1.5 text-accent font-medium hover:underline"
+                      >
+                        <Download size={12} />
+                        {tx({ fr: 'Telecharger le recu', en: 'Download receipt', es: 'Descargar recibo' })}
+                      </button>
+                      <Link
+                        to="/boutique"
+                        className="ml-auto flex items-center gap-1.5 text-accent font-medium hover:underline"
+                      >
+                        <RotateCcw size={12} />
+                        {tx({ fr: 'Commander a nouveau', en: 'Order again', es: 'Ordenar de nuevo' })}
+                      </Link>
+                    </div>
+                  </motion.div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+
   // Titre de la section active (admin sidebar)
   const getAdminSectionTitle = () => {
     const item = ACCOUNT_SIDEBAR_ITEMS.find(i => i.id === activeTab);
@@ -734,7 +843,240 @@ function Account() {
   }
 
   // ============================================================
-  // USER / ARTIST LAYOUT - tabs style (original)
+  // ARTIST LAYOUT - sidebar style like admin
+  // ============================================================
+  const ARTIST_SIDEBAR_ITEMS = isArtist ? [
+    { id: 'dashboard', label: tx({ fr: 'Tableau de bord', en: 'Dashboard', es: 'Panel' }), icon: Palette },
+    { id: 'contrat', label: tx({ fr: 'Contrat', en: 'Contract', es: 'Contrato' }), icon: ScrollText },
+    { id: 'tarifs', label: tx({ fr: 'Tarifs', en: 'Pricing', es: 'Precios' }), icon: DollarSign },
+    { id: 'messages', label: tx({ fr: 'Messages', en: 'Messages', es: 'Mensajes' }), icon: MessageCircle },
+    { id: 'retrait', label: tx({ fr: 'Retrait', en: 'Withdrawal', es: 'Retiro' }), icon: Settings },
+    { id: 'ventes', label: tx({ fr: 'Ventes', en: 'Sales', es: 'Ventas' }), icon: Package },
+  ] : [];
+
+  const [artistMobileOpen, setArtistMobileOpen] = useState(false);
+
+  const artistValidTabs = ['dashboard', 'contrat', 'tarifs', 'messages', 'retrait', 'ventes', 'profile', 'address', 'security', 'orders'];
+
+  const getArtistSectionTitle = () => {
+    const artistItem = ARTIST_SIDEBAR_ITEMS.find(i => i.id === activeTab);
+    if (artistItem) return artistItem.label;
+    const accountItem = ACCOUNT_SIDEBAR_ITEMS.find(i => i.id === activeTab);
+    if (accountItem) return accountItem.label;
+    if (activeTab === 'orders') return tx({ fr: 'Commandes', en: 'Orders', es: 'Pedidos' });
+    return tx({ fr: 'Tableau de bord', en: 'Dashboard', es: 'Panel' });
+  };
+
+  if (isArtist) {
+    return (
+      <>
+        <SEO title={`${t('account.title')} - Massive`} description="" noindex />
+        <section className="section-container pt-28 pb-20 min-h-screen">
+          {/* Header */}
+          <div className="max-w-7xl mx-auto mb-6">
+            <div className="flex items-center gap-5">
+              <div className="w-14 h-14 rounded-full bg-accent/20 border-2 border-accent/40 flex items-center justify-center flex-shrink-0">
+                <span className="text-lg font-bold text-accent">{initials}</span>
+              </div>
+              <div className="flex-grow min-w-0">
+                <h1 className="text-2xl md:text-3xl font-heading font-bold text-heading">
+                  {tx({ fr: 'Bonjour', en: 'Hello', es: 'Hola' })}, {firstName}
+                </h1>
+                <p className="text-grey-muted text-sm mt-0.5">
+                  {user?.email}
+                  {memberSince && (
+                    <span className="ml-3 text-grey-muted/60">
+                      {tx({ fr: 'Membre depuis', en: 'Member since', es: 'Miembro desde' })} {memberSince}
+                    </span>
+                  )}
+                </p>
+              </div>
+              <button onClick={signOut} className="flex items-center gap-2 px-4 py-2 rounded-lg border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:border-red-500/50 transition-all text-sm font-semibold flex-shrink-0">
+                <LogOut size={16} />
+                <span className="hidden sm:inline">{tx({ fr: 'Deconnexion', en: 'Sign out', es: 'Cerrar sesion' })}</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Mobile header */}
+          <div className="lg:hidden flex items-center justify-between mb-4 max-w-7xl mx-auto">
+            <h2 className="text-xl font-heading font-bold text-heading">{getArtistSectionTitle()}</h2>
+            <button
+              onClick={() => setArtistMobileOpen(!artistMobileOpen)}
+              className="p-2 rounded-lg bg-glass text-heading"
+            >
+              {artistMobileOpen ? <X size={20} /> : <Menu size={20} />}
+            </button>
+          </div>
+
+          {/* Mobile nav */}
+          {artistMobileOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="lg:hidden flex flex-wrap gap-2 mb-6 max-w-7xl mx-auto"
+            >
+              {ARTIST_SIDEBAR_ITEMS.map((item) => {
+                const Icon = item.icon;
+                const isActive = activeTab === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => { setActiveTab(item.id); setArtistMobileOpen(false); }}
+                    className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
+                      isActive ? 'bg-accent text-white' : 'bg-glass text-grey-muted hover:text-heading'
+                    }`}
+                  >
+                    <Icon size={14} />
+                    {item.label}
+                  </button>
+                );
+              })}
+              <div className="w-full border-t border-purple-main/20 mt-1 pt-2" />
+              <button
+                onClick={() => { setActiveTab('orders'); setArtistMobileOpen(false); }}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
+                  activeTab === 'orders' ? 'bg-accent text-white' : 'bg-glass text-grey-muted hover:text-heading'
+                }`}
+              >
+                <ShoppingBag size={14} />
+                {tx({ fr: 'Commandes', en: 'Orders', es: 'Pedidos' })}
+              </button>
+              {ACCOUNT_SIDEBAR_ITEMS.map((item) => {
+                const Icon = item.icon;
+                const isActive = activeTab === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => { setActiveTab(item.id); setArtistMobileOpen(false); }}
+                    className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
+                      isActive ? 'bg-accent text-white' : 'bg-glass text-grey-muted hover:text-heading'
+                    }`}
+                  >
+                    <Icon size={14} />
+                    {item.label}
+                  </button>
+                );
+              })}
+            </motion.div>
+          )}
+
+          <div className="flex gap-6 max-w-7xl mx-auto">
+            {/* Sidebar desktop */}
+            <aside className="hidden lg:block w-52 flex-shrink-0">
+              <div className="sticky top-28 rounded-xl bg-glass p-3 space-y-1">
+                <h2 className="text-xs font-semibold text-grey-muted uppercase tracking-wider px-3 py-2">
+                  {tx({ fr: 'Artiste', en: 'Artist', es: 'Artista' })}
+                </h2>
+                {ARTIST_SIDEBAR_ITEMS.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = activeTab === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => setActiveTab(item.id)}
+                      className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                        isActive
+                          ? 'bg-accent/20 text-accent'
+                          : 'text-grey-muted hover:text-heading hover:bg-glass'
+                      }`}
+                    >
+                      <Icon size={16} />
+                      {item.label}
+                    </button>
+                  );
+                })}
+
+                <div className="border-t border-purple-main/20 my-2" />
+
+                <h2 className="text-xs font-semibold text-grey-muted uppercase tracking-wider px-3 py-2">
+                  {tx({ fr: 'Mon compte', en: 'My account', es: 'Mi cuenta' })}
+                </h2>
+                <button
+                  onClick={() => setActiveTab('orders')}
+                  className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    activeTab === 'orders'
+                      ? 'bg-accent/20 text-accent'
+                      : 'text-grey-muted hover:text-heading hover:bg-glass'
+                  }`}
+                >
+                  <ShoppingBag size={16} />
+                  {tx({ fr: 'Commandes', en: 'Orders', es: 'Pedidos' })}
+                  {orders.length > 0 && (
+                    <span className="text-[10px] bg-accent/20 text-accent rounded-full px-1.5 py-0.5 font-bold ml-auto">{orders.length}</span>
+                  )}
+                </button>
+                {ACCOUNT_SIDEBAR_ITEMS.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = activeTab === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => setActiveTab(item.id)}
+                      className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                        isActive
+                          ? 'bg-accent/20 text-accent'
+                          : 'text-grey-muted hover:text-heading hover:bg-glass'
+                      }`}
+                    >
+                      <Icon size={16} />
+                      {item.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </aside>
+
+            {/* Main content */}
+            <main className="flex-1 min-w-0">
+              <h2 className="hidden lg:block text-3xl font-heading font-bold text-heading mb-6">
+                {getArtistSectionTitle()}
+              </h2>
+
+              {/* Save feedback */}
+              <AnimatePresence>
+                {saveMsg && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="mb-4 p-3 rounded-lg bg-green-500/10 border border-green-500/20 text-green-400 text-sm flex items-center gap-2"
+                  >
+                    <Check size={16} />
+                    {saveMsg}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={activeTab}
+                  initial={{ opacity: 0, x: 10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -10 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  {/* Artist sections */}
+                  {['dashboard', 'contrat', 'tarifs', 'messages', 'retrait', 'ventes'].includes(activeTab) && (
+                    <Suspense fallback={<div className="flex items-center gap-2 text-grey-muted py-8 justify-center"><Loader2 size={16} className="animate-spin" /></div>}>
+                      <AccountArtistDashboard section={activeTab} />
+                    </Suspense>
+                  )}
+                  {activeTab === 'profile' && renderProfileContent()}
+                  {activeTab === 'address' && renderAddressContent()}
+                  {activeTab === 'security' && renderSecurityContent()}
+                  {activeTab === 'orders' && renderOrdersContent()}
+                </motion.div>
+              </AnimatePresence>
+            </main>
+          </div>
+        </section>
+      </>
+    );
+  }
+
+  // ============================================================
+  // REGULAR USER LAYOUT - tabs style (original)
   // ============================================================
   return (
     <>
@@ -820,13 +1162,6 @@ function Account() {
                 {/* -- OVERVIEW TAB -- */}
                 {activeTab === 'overview' && (
                   <div className="space-y-6">
-                    {/* Artist dashboard inline for artist users */}
-                    {isArtist && (
-                      <Suspense fallback={<div className="flex items-center gap-2 text-grey-muted py-8 justify-center"><Loader2 size={16} className="animate-spin" /></div>}>
-                        <AccountArtistDashboard />
-                      </Suspense>
-                    )}
-
                     {/* Stats cards */}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       {[
@@ -965,11 +1300,6 @@ function Account() {
                             </>
                           )}
                         </button>
-                        {meta.referred_by && (
-                          <p className="text-grey-muted/60 text-[10px] mt-2 text-center">
-                            {tx({ fr: 'Parraine via', en: 'Referred via', es: 'Referido via' })} #{meta.referred_by}
-                          </p>
-                        )}
                       </div>
 
                       {/* Recent orders mini */}
@@ -1056,114 +1386,7 @@ function Account() {
                 {activeTab === 'profile' && renderProfileContent()}
 
                 {/* -- ORDERS TAB -- */}
-                {activeTab === 'orders' && (
-                  <div className="rounded-2xl border border-purple-main/30 p-6 md:p-8 card-bg card-shadow">
-                    <h3 className="text-heading font-semibold mb-6 flex items-center gap-2">
-                      <Package size={18} className="text-accent" />
-                      {tx({ fr: 'Historique des commandes', en: 'Order history', es: 'Historial de pedidos' })}
-                    </h3>
-                    {ordersLoading ? (
-                      <div className="flex items-center gap-3 text-grey-muted py-12 justify-center">
-                        <Loader2 size={20} className="animate-spin" />
-                        <span>{tx({ fr: 'Chargement...', en: 'Loading...', es: 'Cargando...' })}</span>
-                      </div>
-                    ) : ordersError ? (
-                      <p className="text-grey-muted text-center py-12">{tx({ fr: 'Erreur au chargement des commandes.', en: 'Error loading orders.', es: 'Error al cargar los pedidos.' })}</p>
-                    ) : orders.length === 0 ? (
-                      <div className="text-center py-12">
-                        <Package size={48} className="text-grey-muted/20 mx-auto mb-4" />
-                        <p className="text-heading font-medium mb-1">{t('account.noOrders')}</p>
-                        <p className="text-grey-muted text-sm mb-4">
-                          {tx({ fr: 'Tes commandes apparaitront ici.', en: 'Your orders will appear here.', es: 'Tus pedidos apareceran aqui.' })}
-                        </p>
-                        <Link to="/boutique" className="btn-primary text-sm py-2.5 px-6 inline-flex items-center gap-2">
-                          <ShoppingBag size={16} />
-                          {tx({ fr: 'Decouvrir la boutique', en: 'Browse the shop', es: 'Descubrir la tienda' })}
-                        </Link>
-                      </div>
-                    ) : (
-                      <div className="space-y-3">
-                        {orders.map((order) => {
-                          const isExpanded = expandedOrder === (order.documentId || order.id);
-                          return (
-                            <div key={order.documentId || order.id} className="rounded-xl bg-glass overflow-hidden">
-                              <button
-                                onClick={() => setExpandedOrder(isExpanded ? null : (order.documentId || order.id))}
-                                className="w-full p-4 flex items-center justify-between text-left hover:bg-white/5 transition-colors"
-                              >
-                                <div>
-                                  <p className="text-heading font-semibold text-sm">{formatDate(order.createdAt)}</p>
-                                  <p className="text-grey-muted text-xs">
-                                    {order.items?.length || 0} {(order.items?.length || 0) > 1 ? tx({ fr: 'articles', en: 'items', es: 'articulos' }) : tx({ fr: 'article', en: 'item', es: 'articulo' })}
-                                  </p>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                  <span className={`px-3 py-1 rounded-full text-xs font-semibold ${STATUS_COLORS[order.status] || 'bg-grey-500/20 text-grey-400'}`}>
-                                    {getStatusLabel(order.status)}
-                                  </span>
-                                  <span className="text-heading font-bold text-sm">{((order.total || 0) / 100).toFixed(2)}$</span>
-                                  {isExpanded ? <ChevronUp size={16} className="text-grey-muted" /> : <ChevronDown size={16} className="text-grey-muted" />}
-                                </div>
-                              </button>
-
-                              {isExpanded && (
-                                <motion.div
-                                  initial={{ opacity: 0, height: 0 }}
-                                  animate={{ opacity: 1, height: 'auto' }}
-                                  className="border-t border-purple-main/10 px-4 pb-4"
-                                >
-                                  {order.items && (
-                                    <div className="mt-3 space-y-2">
-                                      {order.items.map((item, i) => (
-                                        <div key={i} className="flex items-center gap-3 py-2">
-                                          {item.image && <img src={item.image} alt="" className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />}
-                                          <div className="flex-grow min-w-0">
-                                            <p className="text-heading text-sm font-medium truncate">{item.productName}</p>
-                                            <p className="text-grey-muted text-xs">
-                                              {[item.finish, item.shape, item.size, `${item.quantity}x`].filter(Boolean).join(' - ')}
-                                            </p>
-                                            {item.notes && <p className="text-grey-muted text-xs mt-0.5 italic">"{item.notes}"</p>}
-                                          </div>
-                                          <span className="text-heading text-sm font-medium flex-shrink-0">{item.totalPrice}$</span>
-                                        </div>
-                                      ))}
-                                    </div>
-                                  )}
-                                  {order.notes && (
-                                    <div className="mt-3 p-3 rounded-lg bg-purple-main/10">
-                                      <p className="text-xs text-grey-muted mb-1">Notes</p>
-                                      <p className="text-heading text-xs whitespace-pre-wrap">{order.notes}</p>
-                                    </div>
-                                  )}
-                                  <div className="mt-3 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-grey-muted">
-                                    {order.designReady !== undefined && (
-                                      <span>{tx({ fr: 'Design pret', en: 'Design ready', es: 'Diseno listo' })}: {order.designReady ? tx({ fr: 'Oui', en: 'Yes', es: 'Si' }) : tx({ fr: 'Non', en: 'No', es: 'No' })}</span>
-                                    )}
-                                    <span>{tx({ fr: 'Devise', en: 'Currency', es: 'Moneda' })}: {(order.currency || 'cad').toUpperCase()}</span>
-                                    <button
-                                      onClick={() => generateInvoicePDF(order, 'receipt')}
-                                      className="flex items-center gap-1.5 text-accent font-medium hover:underline"
-                                    >
-                                      <Download size={12} />
-                                      {tx({ fr: 'Telecharger le recu', en: 'Download receipt', es: 'Descargar recibo' })}
-                                    </button>
-                                    <Link
-                                      to="/boutique"
-                                      className="ml-auto flex items-center gap-1.5 text-accent font-medium hover:underline"
-                                    >
-                                      <RotateCcw size={12} />
-                                      {tx({ fr: 'Commander a nouveau', en: 'Order again', es: 'Ordenar de nuevo' })}
-                                    </Link>
-                                  </div>
-                                </motion.div>
-                              )}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                )}
+                {activeTab === 'orders' && renderOrdersContent()}
 
                 {/* -- ADDRESS TAB -- */}
                 {activeTab === 'address' && renderAddressContent()}

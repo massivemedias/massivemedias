@@ -35,7 +35,7 @@ const MSG_CATEGORIES = [
   { value: 'other', labelFr: 'Autre', labelEn: 'Other', labelEs: 'Otro' },
 ];
 
-function AccountArtistDashboard() {
+function AccountArtistDashboard({ section = 'dashboard' }) {
   const { tx, lang } = useLang();
   const { user } = useAuth();
   const { artistSlug } = useUserRole();
@@ -62,9 +62,6 @@ function AccountArtistDashboard() {
   const [wdSending, setWdSending] = useState(false);
   const [wdSuccess, setWdSuccess] = useState('');
   const [wdError, setWdError] = useState('');
-
-  // Grille tarifaire collapsible
-  const [showPricing, setShowPricing] = useState(false);
 
   // Toast
   const [toast, setToast] = useState('');
@@ -239,675 +236,695 @@ function AccountArtistDashboard() {
     return map[status] || map.pending;
   };
 
-  return (
-    <div className="space-y-6">
-      {/* Toast */}
-      <AnimatePresence>
-        {(msgSuccess || wdSuccess || toast) && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className={`fixed top-4 right-4 z-50 p-4 rounded-lg text-sm flex items-center gap-2 shadow-lg ${
-              toast ? 'bg-red-500/10 border border-red-500/20 text-red-400' : 'bg-green-500/10 border border-green-500/20 text-green-400'
-            }`}
-          >
-            <Check size={16} />
-            {msgSuccess || wdSuccess || toast}
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Header artiste */}
-      <div className="flex items-center gap-4 mb-2">
-        {artist?.avatar && (
-          <img src={artist.avatar} alt={artist?.name} className="w-12 h-12 rounded-full object-cover border-2 border-accent/40" />
-        )}
-        <div>
-          <h3 className="text-heading font-heading font-bold text-lg flex items-center gap-2">
-            <Palette size={18} className="text-accent" />
-            {tx({ fr: 'Tableau de bord artiste', en: 'Artist Dashboard', es: 'Panel de artista' })}
-          </h3>
-          {artist && (
-            <p className="text-grey-muted text-sm">
-              {artist.name} - {artist.prints?.length || 0} {tx({ fr: 'oeuvres en ligne', en: 'artworks online', es: 'obras en linea' })}
-            </p>
-          )}
-        </div>
-      </div>
-
-      {/* ====== ACTIONS RAPIDES (en haut) ====== */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        {artist && (
-          <Link to={`/artistes/${artistSlug}`} className="flex flex-col items-center gap-2 p-4 rounded-xl bg-accent/5 border border-accent/20 hover:bg-accent/10 transition-colors group text-center">
-            <Palette size={22} className="text-accent" />
-            <p className="text-heading text-xs font-medium">{tx({ fr: 'Ma boutique', en: 'My store', es: 'Mi tienda' })}</p>
-          </Link>
-        )}
-        <a href="mailto:massivemedias@gmail.com" className="flex flex-col items-center gap-2 p-4 rounded-xl bg-green-500/5 border border-green-500/20 hover:bg-green-500/10 transition-colors group text-center">
-          <Send size={22} className="text-green-400" />
-          <p className="text-heading text-xs font-medium">{tx({ fr: 'Envoyer des fichiers', en: 'Send files', es: 'Enviar archivos' })}</p>
-        </a>
-        <button
-          onClick={() => setShowMsgForm(!showMsgForm)}
-          className="flex flex-col items-center gap-2 p-4 rounded-xl bg-blue-500/5 border border-blue-500/20 hover:bg-blue-500/10 transition-colors text-center"
+  // ---- Toast commun ----
+  const toastElement = (
+    <AnimatePresence>
+      {(msgSuccess || wdSuccess || toast) && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          className={`fixed top-4 right-4 z-50 p-4 rounded-lg text-sm flex items-center gap-2 shadow-lg ${
+            toast ? 'bg-red-500/10 border border-red-500/20 text-red-400' : 'bg-green-500/10 border border-green-500/20 text-green-400'
+          }`}
         >
-          <MessageCircle size={22} className="text-blue-400" />
-          <p className="text-heading text-xs font-medium">{tx({ fr: 'Messages', en: 'Messages', es: 'Mensajes' })}</p>
-        </button>
-        {balance > 0 && !hasPendingWithdrawal && (
-          <button
-            onClick={() => setShowWdForm(!showWdForm)}
-            className="flex flex-col items-center gap-2 p-4 rounded-xl bg-yellow-500/5 border border-yellow-500/20 hover:bg-yellow-500/10 transition-colors text-center"
-          >
-            <CreditCard size={22} className="text-yellow-400" />
-            <p className="text-heading text-xs font-medium">{tx({ fr: 'Retrait PayPal', en: 'PayPal Withdrawal', es: 'Retiro PayPal' })}</p>
-          </button>
-        )}
-      </div>
-
-      {/* ====== MINI STATS (compact) ====== */}
-      <div className="grid grid-cols-4 gap-3">
-        {[
-          { value: loading ? '-' : formatMoney(totalEarned), label: tx({ fr: 'Gains', en: 'Earnings', es: 'Ganancias' }), color: 'text-green-400' },
-          { value: loading ? '-' : formatMoney(totalPaid), label: tx({ fr: 'Paye', en: 'Paid', es: 'Pagado' }), color: 'text-blue-400' },
-          { value: loading ? '-' : formatMoney(balance), label: tx({ fr: 'Solde', en: 'Balance', es: 'Saldo' }), color: balance > 0 ? 'text-accent' : 'text-grey-muted' },
-          { value: loading ? '-' : orderCount, label: tx({ fr: 'Ventes', en: 'Sales', es: 'Ventas' }), color: 'text-purple-400' },
-        ].map((s, i) => (
-          <div key={i} className="text-center py-3 px-2 rounded-xl border border-purple-main/15 card-bg">
-            <p className={`text-lg font-bold ${s.color}`}>{s.value}</p>
-            <p className="text-[10px] text-grey-muted uppercase tracking-wider">{s.label}</p>
-          </div>
-        ))}
-      </div>
-
-      {/* ====== RAPPELS-CLES DU CONTRAT ====== */}
-      <div className="rounded-2xl border border-purple-main/30 p-5 card-bg card-shadow">
-        <h4 className="text-heading font-heading font-bold text-base mb-4 flex items-center gap-2">
-          <ScrollText size={18} className="text-accent" />
-          {tx({ fr: 'Points-cles de ton contrat', en: 'Key contract points', es: 'Puntos clave de tu contrato' })}
-        </h4>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {/* Droits d'auteur */}
-          <div className="p-4 rounded-xl bg-green-500/5 border border-green-500/20">
-            <p className="text-green-400 text-sm font-bold mb-1.5 flex items-center gap-2">
-              <CheckCircle size={14} />
-              {tx({ fr: 'Tes droits d\'auteur', en: 'Your copyrights', es: 'Tus derechos de autor' })}
-            </p>
-            <p className="text-grey-light text-xs leading-relaxed">
-              {tx({
-                fr: 'Tu conserves 100% de tes droits. Massive detient uniquement une licence limitee, non-exclusive et revocable pour l\'impression et la vente en ligne.',
-                en: 'You keep 100% of your rights. Massive only holds a limited, non-exclusive, revocable license for printing and online sales.',
-                es: 'Conservas el 100% de tus derechos. Massive solo tiene una licencia limitada, no exclusiva y revocable para impresion y venta en linea.',
-              })}
-            </p>
-          </div>
-
-          {/* Prix uniformes */}
-          <div className="p-4 rounded-xl bg-blue-500/5 border border-blue-500/20">
-            <p className="text-blue-400 text-sm font-bold mb-1.5 flex items-center gap-2">
-              <CheckCircle size={14} />
-              {tx({ fr: 'Prix uniformes', en: 'Uniform pricing', es: 'Precios uniformes' })}
-            </p>
-            <p className="text-grey-light text-xs leading-relaxed">
-              {tx({
-                fr: 'La grille tarifaire est identique pour tous les artistes partenaires - memes prix, memes couts, memes marges. Aucun traitement preferentiel.',
-                en: 'The pricing grid is identical for all partner artists - same prices, same costs, same margins. No preferential treatment.',
-                es: 'La grilla de precios es identica para todos los artistas asociados - mismos precios, mismos costos, mismos margenes. Sin trato preferencial.',
-              })}
-            </p>
-          </div>
-
-          {/* Prints uniques */}
-          <div className="p-4 rounded-xl bg-purple-500/5 border border-purple-500/20">
-            <p className="text-purple-400 text-sm font-bold mb-1.5 flex items-center gap-2">
-              <CheckCircle size={14} />
-              {tx({ fr: 'Prints uniques (edition unique)', en: 'Unique prints (single edition)', es: 'Prints unicos (edicion unica)' })}
-            </p>
-            <p className="text-grey-light text-xs leading-relaxed">
-              {tx({
-                fr: 'Un seul exemplaire produit, format fixe A2 qualite musee, sans cadre, non-reproductible. Une fois vendu, c\'est fini - piece de collection.',
-                en: 'Only one copy produced, fixed A2 museum quality format, no frame, non-reproducible. Once sold, it\'s gone - collector\'s piece.',
-                es: 'Solo una copia producida, formato fijo A2 calidad museo, sin marco, no reproducible. Una vez vendido, se acabo - pieza de coleccion.',
-              })}
-            </p>
-          </div>
-
-          {/* Aucune production sans accord */}
-          <div className="p-4 rounded-xl bg-yellow-500/5 border border-yellow-500/20">
-            <p className="text-yellow-400 text-sm font-bold mb-1.5 flex items-center gap-2">
-              <CheckCircle size={14} />
-              {tx({ fr: 'Zero production sans accord', en: 'No production without approval', es: 'Sin produccion sin aprobacion' })}
-            </p>
-            <p className="text-grey-light text-xs leading-relaxed">
-              {tx({
-                fr: 'Massive ne produit jamais de prints sans commande confirmee et payee. Aucune production speculative. Ton approbation ecrite est requise pour tout produit.',
-                en: 'Massive never produces prints without a confirmed, paid order. No speculative production. Your written approval is required for every product.',
-                es: 'Massive nunca produce prints sin pedido confirmado y pagado. Sin produccion especulativa. Tu aprobacion escrita es necesaria para cada producto.',
-              })}
-            </p>
-          </div>
-
-          {/* Copies perso au coutant */}
-          <div className="p-4 rounded-xl bg-green-500/5 border border-green-500/20">
-            <p className="text-green-400 text-sm font-bold mb-1.5 flex items-center gap-2">
-              <DollarSign size={14} />
-              {tx({ fr: 'Copies perso au coutant', en: 'Personal copies at cost', es: 'Copias personales al costo' })}
-            </p>
-            <p className="text-grey-light text-xs leading-relaxed">
-              {tx({
-                fr: 'Tu peux commander tes propres prints au prix coutant (colonne "Cout Massive") pour usage personnel, portfolio ou expos. Stickers: prix regulier pour tous.',
-                en: 'You can order your own prints at cost price ("Massive cost" column) for personal use, portfolio or exhibitions. Stickers: regular price for everyone.',
-                es: 'Puedes pedir tus propios prints al precio de costo (columna "Costo Massive") para uso personal, portafolio o exposiciones. Stickers: precio regular para todos.',
-              })}
-            </p>
-          </div>
-
-          {/* Festivals / bulk */}
-          <div className="p-4 rounded-xl bg-purple-500/5 border border-purple-500/20">
-            <p className="text-purple-400 text-sm font-bold mb-1.5 flex items-center gap-2">
-              <Package size={14} />
-              {tx({ fr: 'Vente en personne (festivals, galeries)', en: 'In-person sales (festivals, galleries)', es: 'Venta en persona (festivales, galerias)' })}
-            </p>
-            <p className="text-grey-light text-xs leading-relaxed">
-              {tx({
-                fr: 'Commande en volume au prix regulier et revends au prix que tu veux. Le profit supplementaire est 100% pour toi.',
-                en: 'Order in bulk at regular price and resell at whatever price you want. The extra profit is 100% yours.',
-                es: 'Pide en volumen al precio regular y revende al precio que quieras. La ganancia adicional es 100% tuya.',
-              })}
-            </p>
-          </div>
-
-          {/* Fichiers proteges */}
-          <div className="p-4 rounded-xl bg-blue-500/5 border border-blue-500/20">
-            <p className="text-blue-400 text-sm font-bold mb-1.5 flex items-center gap-2">
-              <CheckCircle size={14} />
-              {tx({ fr: 'Fichiers proteges', en: 'Protected files', es: 'Archivos protegidos' })}
-            </p>
-            <p className="text-grey-light text-xs leading-relaxed">
-              {tx({
-                fr: 'Tes fichiers haute-resolution ne sont jamais partages, publies en ligne en haute-res, ni utilises hors du cadre du contrat. Seulement 72 DPI + watermark sur le site.',
-                en: 'Your high-resolution files are never shared, published online in high-res, or used outside the scope of the contract. Only 72 DPI + watermark on the website.',
-                es: 'Tus archivos de alta resolucion nunca se comparten, publican en alta-res en linea, ni se usan fuera del alcance del contrato. Solo 72 DPI + watermark en el sitio.',
-              })}
-            </p>
-          </div>
-
-          {/* Resiliation */}
-          <div className="p-4 rounded-xl bg-yellow-500/5 border border-yellow-500/20">
-            <p className="text-yellow-400 text-sm font-bold mb-1.5 flex items-center gap-2">
-              <Clock size={14} />
-              {tx({ fr: 'Resiliation libre', en: 'Free termination', es: 'Terminacion libre' })}
-            </p>
-            <p className="text-grey-light text-xs leading-relaxed">
-              {tx({
-                fr: 'Tu peux quitter a tout moment avec 30 jours de preavis par email. Tes fichiers sont supprimes de nos serveurs sous 14 jours, confirmation ecrite incluse.',
-                en: 'You can leave at any time with 30 days written notice by email. Your files are deleted from our servers within 14 days, written confirmation included.',
-                es: 'Puedes salir en cualquier momento con 30 dias de preaviso por email. Tus archivos se eliminan de nuestros servidores en 14 dias, confirmacion escrita incluida.',
-              })}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* ====== RETRAIT PAYPAL ====== */}
-      <div className="rounded-2xl border border-purple-main/30 p-5 card-bg card-shadow">
-        <div className="flex items-center justify-between mb-4">
-          <h4 className="text-heading font-semibold text-sm flex items-center gap-2">
-            <CreditCard size={16} className="text-accent" />
-            {tx({ fr: 'Retirer mon argent (PayPal)', en: 'Withdraw money (PayPal)', es: 'Retirar dinero (PayPal)' })}
-          </h4>
-          {balance > 0 && !hasPendingWithdrawal && (
-            <button
-              onClick={() => setShowWdForm(!showWdForm)}
-              className="btn-primary text-xs py-1.5 px-4"
-            >
-              <DollarSign size={14} className="mr-1" />
-              {tx({ fr: 'Demander un retrait', en: 'Request withdrawal', es: 'Solicitar retiro' })}
-            </button>
-          )}
-        </div>
-
-        {hasPendingWithdrawal && (
-          <div className="rounded-lg bg-yellow-500/10 border border-yellow-500/20 p-3 mb-4 flex items-center gap-2">
-            <Clock size={14} className="text-yellow-400 flex-shrink-0" />
-            <p className="text-yellow-400 text-xs">
-              {tx({
-                fr: 'Tu as deja une demande de retrait en cours. Massive va traiter ta demande sous 24-48h.',
-                en: 'You already have a pending withdrawal request. Massive will process it within 24-48h.',
-                es: 'Ya tienes una solicitud de retiro pendiente. Massive la procesara en 24-48h.',
-              })}
-            </p>
-          </div>
-        )}
-
-        {/* Formulaire retrait */}
-        <AnimatePresence>
-          {showWdForm && (
-            <motion.form
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              onSubmit={handleWithdrawal}
-              className="overflow-hidden"
-            >
-              <div className="rounded-lg bg-accent/5 border border-accent/20 p-4 mb-4 space-y-3">
-                <p className="text-grey-muted text-xs">
-                  {tx({
-                    fr: 'Entre ton email PayPal et le montant a retirer. Massive enverra le paiement sous 24-48h.',
-                    en: 'Enter your PayPal email and amount to withdraw. Massive will send payment within 24-48h.',
-                    es: 'Ingresa tu email PayPal y el monto a retirar. Massive enviara el pago en 24-48h.',
-                  })}
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-[11px] text-grey-muted uppercase tracking-wider font-medium mb-1 block">
-                      {tx({ fr: 'Email PayPal', en: 'PayPal Email', es: 'Email PayPal' })}
-                    </label>
-                    <input
-                      type="email"
-                      value={paypalEmail}
-                      onChange={(e) => setPaypalEmail(e.target.value)}
-                      placeholder="ton@email.com"
-                      className="input-field text-sm"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[11px] text-grey-muted uppercase tracking-wider font-medium mb-1 block">
-                      {tx({ fr: 'Montant a retirer', en: 'Amount to withdraw', es: 'Monto a retirar' })} ({tx({ fr: 'max', en: 'max', es: 'max' })}: {formatMoney(balance)})
-                    </label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      min="1"
-                      max={balance}
-                      value={wdAmount}
-                      onChange={(e) => setWdAmount(e.target.value)}
-                      placeholder="0.00"
-                      className="input-field text-sm"
-                      required
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="text-[11px] text-grey-muted uppercase tracking-wider font-medium mb-1 block">
-                    {tx({ fr: 'Notes (optionnel)', en: 'Notes (optional)', es: 'Notas (opcional)' })}
-                  </label>
-                  <input
-                    type="text"
-                    value={wdNotes}
-                    onChange={(e) => setWdNotes(e.target.value)}
-                    className="input-field text-sm"
-                    placeholder={tx({ fr: 'Ex: Merci!', en: 'Ex: Thanks!', es: 'Ej: Gracias!' })}
-                  />
-                </div>
-                {wdError && <p className="text-red-400 text-xs">{wdError}</p>}
-                <div className="flex gap-2">
-                  <button type="submit" disabled={wdSending} className="btn-primary text-xs py-2 px-6 disabled:opacity-50">
-                    {wdSending ? <Loader2 size={14} className="animate-spin mr-1" /> : <Send size={14} className="mr-1" />}
-                    {tx({ fr: 'Envoyer la demande', en: 'Send request', es: 'Enviar solicitud' })}
-                  </button>
-                  <button type="button" onClick={() => { setShowWdForm(false); setWdError(''); }} className="text-grey-muted text-xs hover:text-heading transition-colors">
-                    {tx({ fr: 'Annuler', en: 'Cancel', es: 'Cancelar' })}
-                  </button>
-                </div>
-              </div>
-            </motion.form>
-          )}
-        </AnimatePresence>
-
-        {/* Historique retraits */}
-        {!wdLoading && withdrawals.length > 0 && (
-          <div className="space-y-2">
-            {withdrawals.slice(0, 5).map((w, i) => {
-              const badge = getStatusBadge(w.status);
-              return (
-                <div key={w.documentId || i} className="flex items-center justify-between py-2 border-b border-purple-main/10 last:border-0">
-                  <div>
-                    <p className="text-heading text-sm font-medium">{formatMoney(parseFloat(w.amount) || 0)}</p>
-                    <p className="text-grey-muted text-xs">
-                      PayPal: {w.paypalEmail} - {w.createdAt ? new Date(w.createdAt).toLocaleDateString('fr-CA') : '-'}
-                    </p>
-                    {w.adminNotes && <p className="text-grey-muted text-[10px] italic mt-0.5">Massive: {w.adminNotes}</p>}
-                  </div>
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${badge.cls}`}>{badge.label}</span>
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        {!wdLoading && withdrawals.length === 0 && !showWdForm && (
-          <p className="text-grey-muted text-xs text-center py-2">
-            {balance > 0
-              ? tx({ fr: 'Aucun retrait effectue. Clique "Demander un retrait" pour recevoir ton argent via PayPal.', en: 'No withdrawals yet. Click "Request withdrawal" to receive your money via PayPal.', es: 'Sin retiros aun. Haz clic en "Solicitar retiro" para recibir tu dinero via PayPal.' })
-              : tx({ fr: 'Aucun solde disponible pour le moment.', en: 'No balance available at this time.', es: 'Sin saldo disponible por el momento.' })
-            }
-          </p>
-        )}
-      </div>
-
-      {/* ====== MESSAGERIE ====== */}
-      <div className="rounded-2xl border border-purple-main/30 p-5 card-bg card-shadow">
-        <div className="flex items-center justify-between mb-4">
-          <h4 className="text-heading font-semibold text-sm flex items-center gap-2">
-            <MessageCircle size={16} className="text-accent" />
-            {tx({ fr: 'Messages a Massive', en: 'Messages to Massive', es: 'Mensajes a Massive' })}
-          </h4>
-          <button
-            onClick={() => setShowMsgForm(!showMsgForm)}
-            className="btn-primary text-xs py-1.5 px-4"
-          >
-            <ImagePlus size={14} className="mr-1" />
-            {tx({ fr: 'Nouveau message', en: 'New message', es: 'Nuevo mensaje' })}
-          </button>
-        </div>
-
-        {/* Formulaire message */}
-        <AnimatePresence>
-          {showMsgForm && (
-            <motion.form
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              onSubmit={handleSendMessage}
-              className="overflow-hidden"
-            >
-              <div className="rounded-lg bg-accent/5 border border-accent/20 p-4 mb-4 space-y-3">
-                <div>
-                  <label className="text-[11px] text-grey-muted uppercase tracking-wider font-medium mb-1 block">
-                    {tx({ fr: 'Categorie', en: 'Category', es: 'Categoria' })}
-                  </label>
-                  <select
-                    value={msgForm.category}
-                    onChange={(e) => setMsgForm(f => ({ ...f, category: e.target.value }))}
-                    className="input-field text-sm"
-                  >
-                    {MSG_CATEGORIES.map(c => (
-                      <option key={c.value} value={c.value}>
-                        {lang === 'en' ? c.labelEn : lang === 'es' ? c.labelEs : c.labelFr}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="text-[11px] text-grey-muted uppercase tracking-wider font-medium mb-1 block">
-                    {tx({ fr: 'Sujet', en: 'Subject', es: 'Asunto' })}
-                  </label>
-                  <input
-                    type="text"
-                    value={msgForm.subject}
-                    onChange={(e) => setMsgForm(f => ({ ...f, subject: e.target.value }))}
-                    className="input-field text-sm"
-                    placeholder={tx({ fr: 'Ex: Nouvelles images a ajouter', en: 'Ex: New images to add', es: 'Ej: Nuevas imagenes para agregar' })}
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="text-[11px] text-grey-muted uppercase tracking-wider font-medium mb-1 block">
-                    {tx({ fr: 'Message', en: 'Message', es: 'Mensaje' })}
-                  </label>
-                  <textarea
-                    value={msgForm.message}
-                    onChange={(e) => setMsgForm(f => ({ ...f, message: e.target.value }))}
-                    className="input-field text-sm min-h-[100px] resize-y"
-                    placeholder={tx({
-                      fr: 'Decris ta demande... Pour les images, envoie les fichiers par email a massivemedias@gmail.com ou partage un lien Google Drive / WeTransfer.',
-                      en: 'Describe your request... For images, send files by email to massivemedias@gmail.com or share a Google Drive / WeTransfer link.',
-                      es: 'Describe tu solicitud... Para imagenes, envia los archivos por email a massivemedias@gmail.com o comparte un enlace de Google Drive / WeTransfer.',
-                    })}
-                    required
-                  />
-                </div>
-                {msgForm.category === 'new-images' && (
-                  <div>
-                    <FileUpload
-                      label={tx({ fr: 'Images a deposer (max 20 fichiers, 130 MB chacun)', en: 'Images to submit (max 20 files, 130 MB each)', es: 'Imagenes a enviar (max 20 archivos, 130 MB c/u)' })}
-                      files={msgFiles}
-                      onFilesChange={setMsgFiles}
-                      maxFiles={20}
-                      uploadFn={uploadArtistFile}
-                    />
-                  </div>
-                )}
-                <div className="flex gap-2">
-                  <button type="submit" disabled={msgSending} className="btn-primary text-xs py-2 px-6 disabled:opacity-50">
-                    {msgSending ? <Loader2 size={14} className="animate-spin mr-1" /> : <Send size={14} className="mr-1" />}
-                    {tx({ fr: 'Envoyer', en: 'Send', es: 'Enviar' })}
-                  </button>
-                  <button type="button" onClick={() => setShowMsgForm(false)} className="text-grey-muted text-xs hover:text-heading transition-colors">
-                    {tx({ fr: 'Annuler', en: 'Cancel', es: 'Cancelar' })}
-                  </button>
-                </div>
-              </div>
-            </motion.form>
-          )}
-        </AnimatePresence>
-
-        {/* Liste des messages */}
-        {!msgLoading && messages.length > 0 ? (
-          <div className="space-y-2">
-            {messages.slice(0, 10).map((m, i) => (
-              <div key={m.documentId || i} className="rounded-lg border border-purple-main/10 p-3">
-                <div className="flex items-center justify-between mb-1">
-                  <p className="text-heading text-sm font-medium">{m.subject}</p>
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
-                    m.status === 'replied' ? 'bg-green-500/20 text-green-400' :
-                    m.status === 'read' ? 'bg-blue-500/20 text-blue-400' :
-                    'bg-yellow-500/20 text-yellow-400'
-                  }`}>
-                    {m.status === 'replied' ? tx({ fr: 'Repondu', en: 'Replied', es: 'Respondido' }) :
-                     m.status === 'read' ? tx({ fr: 'Lu', en: 'Read', es: 'Leido' }) :
-                     tx({ fr: 'Envoye', en: 'Sent', es: 'Enviado' })}
-                  </span>
-                </div>
-                <p className="text-grey-muted text-xs truncate">{m.message}</p>
-                {m.attachments && m.attachments.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {m.attachments.map((att, j) => (
-                      <a key={j} href={att.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 px-2 py-1 rounded bg-accent/10 border border-accent/20 text-[10px] text-accent hover:bg-accent/20 transition-colors">
-                        <ImagePlus size={10} />
-                        {att.name?.length > 20 ? att.name.substring(0, 20) + '...' : att.name}
-                      </a>
-                    ))}
-                  </div>
-                )}
-                <p className="text-grey-muted/60 text-[10px] mt-1">{m.createdAt ? new Date(m.createdAt).toLocaleDateString('fr-CA') : ''}</p>
-                {m.adminReply && (
-                  <div className="mt-2 p-2 rounded bg-accent/5 border border-accent/10">
-                    <p className="text-[10px] text-accent font-semibold mb-0.5">Massive :</p>
-                    <p className="text-grey-light text-xs">{m.adminReply}</p>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        ) : !msgLoading ? (
-          <p className="text-grey-muted text-xs text-center py-2">
-            {tx({
-              fr: 'Aucun message. Envoie un message pour deposer de nouvelles images ou poser une question.',
-              en: 'No messages. Send a message to submit new images or ask a question.',
-              es: 'Sin mensajes. Envia un mensaje para enviar nuevas imagenes o hacer una pregunta.',
-            })}
-          </p>
-        ) : null}
-      </div>
-
-      {/* ====== GRILLE TARIFAIRE (collapsible) ====== */}
-      <div className="rounded-2xl border border-purple-main/30 card-bg card-shadow overflow-hidden">
-        <button
-          onClick={() => setShowPricing(!showPricing)}
-          className="w-full flex items-center gap-3 p-5 text-left hover:bg-accent/5 transition-colors"
-        >
-          <FileText size={20} className="text-accent flex-shrink-0" />
-          <div className="flex-grow">
-            <h4 className="text-heading font-heading font-bold text-base">
-              {tx({ fr: 'Grille tarifaire', en: 'Pricing grid', es: 'Grilla de precios' })}
-            </h4>
-            <p className="text-grey-muted text-xs mt-0.5">
-              {tx({ fr: 'Prix clients, couts Massive et tes marges', en: 'Client prices, Massive costs and your margins', es: 'Precios clientes, costos Massive y tus margenes' })}
-            </p>
-          </div>
-          {showPricing ? <ChevronUp size={18} className="text-grey-muted" /> : <ChevronDown size={18} className="text-grey-muted" />}
-        </button>
-        <AnimatePresence>
-          {showPricing && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              className="overflow-hidden"
-            >
-              <div className="px-5 pb-5 border-t border-purple-main/20">
-                <div className="overflow-x-auto mt-4">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="text-grey-muted text-[10px] sm:text-xs uppercase tracking-wider border-b border-purple-main/20">
-                        <th className="text-left py-2 pr-1 sm:pr-3">{tx({ fr: 'Format', en: 'Format', es: 'Formato' })}</th>
-                        <th className="text-right py-2 px-1 sm:px-2">{tx({ fr: 'Prix client', en: 'Client price', es: 'Precio cliente' })}</th>
-                        <th className="text-right py-2 px-1 sm:px-2">{tx({ fr: 'Cout Massive', en: 'Massive cost', es: 'Costo Massive' })}</th>
-                        <th className="text-right py-2 px-1 sm:px-2 text-green-400">{tx({ fr: 'Ta marge', en: 'Your margin', es: 'Tu margen' })}</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr className="border-b border-purple-main/10"><td colSpan="4" className="pt-3 pb-1 text-accent font-semibold text-xs">{tx({ fr: 'Serie Studio (4 encres pigmentees)', en: 'Studio Series (4 pigment inks)', es: 'Serie Studio (4 tintas pigmentadas)' })}</td></tr>
-                      {[{ format: 'A4 (8.5x11")', key: 'a4' }, { format: 'A3 (11x17")', key: 'a3' }, { format: 'A3+ (13x19")', key: 'a3plus' }].map(({ format, key }) => (
-                        <tr key={`s-${key}`} className="border-b border-purple-main/10 hover:bg-accent/5 transition-colors">
-                          <td className="py-2 pr-1 sm:pr-3 text-heading text-xs sm:text-sm">{format}</td>
-                          <td className="py-2 px-1 sm:px-2 text-right text-heading text-xs sm:text-sm">{ARTIST_PRICES.studio[key]}$</td>
-                          <td className="py-2 px-1 sm:px-2 text-right text-grey-muted text-xs sm:text-sm">{SERVICE_PRICES.studio[key]}$</td>
-                          <td className="py-2 px-1 sm:px-2 text-right text-green-400 font-semibold text-xs sm:text-sm">{ARTIST_PRICES.studio[key] - SERVICE_PRICES.studio[key]}$</td>
-                        </tr>
-                      ))}
-                      <tr className="border-b border-purple-main/10"><td colSpan="4" className="pt-4 pb-1 text-accent font-semibold text-xs">{tx({ fr: 'Serie Musee (12 encres pigmentees)', en: 'Museum Series (12 pigment inks)', es: 'Serie Museo (12 tintas pigmentadas)' })}</td></tr>
-                      {[{ format: 'A4 (8.5x11")', key: 'a4' }, { format: 'A3 (11x17")', key: 'a3' }, { format: 'A3+ (13x19")', key: 'a3plus' }, { format: 'A2 (18x24")', key: 'a2' }].map(({ format, key }) => (
-                        <tr key={`m-${key}`} className="border-b border-purple-main/10 hover:bg-accent/5 transition-colors">
-                          <td className="py-2 pr-1 sm:pr-3 text-heading text-xs sm:text-sm">{format}</td>
-                          <td className="py-2 px-1 sm:px-2 text-right text-heading text-xs sm:text-sm">{ARTIST_PRICES.museum[key]}$</td>
-                          <td className="py-2 px-1 sm:px-2 text-right text-grey-muted text-xs sm:text-sm">{SERVICE_PRICES.museum[key]}$</td>
-                          <td className="py-2 px-1 sm:px-2 text-right text-green-400 font-semibold text-xs sm:text-sm">{ARTIST_PRICES.museum[key] - SERVICE_PRICES.museum[key]}$</td>
-                        </tr>
-                      ))}
-                      <tr className="border-t-2 border-purple-main/20">
-                        <td className="py-2 pr-1 sm:pr-3 text-heading font-medium text-xs sm:text-sm">{tx({ fr: 'Cadre (noir ou blanc)', en: 'Frame (black or white)', es: 'Marco (negro o blanco)' })}</td>
-                        <td className="py-2 px-2 text-right text-heading">{FRAME_PRICE}$</td>
-                        <td className="py-2 px-1 sm:px-2 text-right text-grey-muted text-xs sm:text-sm">{FRAME_PRICE}$</td>
-                        <td className="py-2 px-1 sm:px-2 text-right text-grey-muted text-xs sm:text-sm">0$</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-                <p className="text-grey-muted text-xs mt-3 italic">
-                  {tx({
-                    fr: 'Note: Le format A2 (18x24") est imprime en qualite musee uniquement. Pas de cadre disponible pour ce format. TPS + TVQ en sus.',
-                    en: 'Note: A2 (18x24") is printed in museum quality only. No frame available for this format. GST + QST extra.',
-                    es: 'Nota: El formato A2 (18x24") se imprime en calidad museo unicamente. Sin marco disponible para este formato. Impuestos adicionales.',
-                  })}
-                </p>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-
-      {/* ====== HISTORIQUE VENTES ====== */}
-      <div className="rounded-2xl border border-purple-main/30 p-5 card-bg card-shadow">
-        <h4 className="text-heading font-semibold text-sm mb-4 flex items-center gap-2">
-          <Clock size={16} className="text-accent" />
-          {tx({ fr: 'Historique des ventes', en: 'Sales history', es: 'Historial de ventas' })}
-        </h4>
-        {loading ? (
-          <div className="flex items-center gap-2 text-grey-muted py-8 justify-center"><Loader2 size={16} className="animate-spin" /></div>
-        ) : error ? (
-          <div className="flex items-center gap-2 text-yellow-400 py-4"><AlertCircle size={16} /><span className="text-sm">{tx({ fr: 'Impossible de charger les ventes', en: 'Unable to load sales', es: 'No se pueden cargar las ventas' })}</span></div>
-        ) : commissions.length === 0 ? (
-          <div className="text-center py-8">
-            <Package size={32} className="text-grey-muted/20 mx-auto mb-2" />
-            <p className="text-grey-muted text-sm">{tx({ fr: 'Aucune vente pour le moment', en: 'No sales yet', es: 'Sin ventas por el momento' })}</p>
-            <p className="text-grey-muted/60 text-xs mt-1">{tx({ fr: 'Les ventes de tes prints apparaitront ici automatiquement.', en: 'Sales of your prints will appear here automatically.', es: 'Las ventas de tus prints apareceran aqui automaticamente.' })}</p>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {commissions.map((c, i) => (
-              <div key={c.documentId || i} className="flex items-center justify-between py-3 border-b border-purple-main/10 last:border-0">
-                <div>
-                  <p className="text-heading text-sm font-medium">{c.customerName || c.customerEmail || 'Client'}</p>
-                  <p className="text-grey-muted text-xs">{c.createdAt ? new Date(c.createdAt).toLocaleDateString('fr-CA') : '-'}{c.items && ` - ${c.items.length} article${c.items.length > 1 ? 's' : ''}`}</p>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${c.paid || c.status === 'paid' ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'}`}>
-                    {c.paid || c.status === 'paid' ? tx({ fr: 'Paye', en: 'Paid', es: 'Pagado' }) : tx({ fr: 'En attente', en: 'Pending', es: 'Pendiente' })}
-                  </span>
-                  <span className="text-green-400 font-bold text-sm">+{formatMoney(c.artistEarning || c.commission || 0)}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* ====== CONTRAT DE PARTENARIAT ====== */}
-      <ContractSection lang={lang} tx={tx} />
-    </div>
+          <Check size={16} />
+          {msgSuccess || wdSuccess || toast}
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
-}
 
-function ContractSection({ lang, tx }) {
-  const [open, setOpen] = useState(false);
-  const contractText = lang === 'en' ? ARTIST_CONTRACT_TEXT_EN : lang === 'es' ? ARTIST_CONTRACT_TEXT_ES : ARTIST_CONTRACT_TEXT;
+  // ===========================
+  // SECTION: DASHBOARD (rappels-cles + mini stats)
+  // ===========================
+  if (section === 'dashboard') {
+    return (
+      <div className="space-y-6">
+        {toastElement}
 
-  return (
-    <div className="rounded-2xl border border-purple-main/30 card-bg card-shadow overflow-hidden">
-      <button
-        onClick={() => setOpen(!open)}
-        className="w-full flex items-center gap-3 p-5 text-left hover:bg-accent/5 transition-colors"
-      >
-        <ScrollText size={20} className="text-accent flex-shrink-0" />
-        <div className="flex-grow">
-          <h4 className="text-heading font-heading font-bold text-base">
-            {tx({ fr: 'Contrat de partenariat', en: 'Partnership Agreement', es: 'Contrato de asociacion' })}
-          </h4>
-          <p className="text-grey-muted text-xs mt-0.5">
-            {tx({ fr: `Version ${ARTIST_CONTRACT_VERSION} - Clauses, tarifs et FAQ`, en: `Version ${ARTIST_CONTRACT_VERSION} - Terms, pricing and FAQ`, es: `Version ${ARTIST_CONTRACT_VERSION} - Clausulas, precios y FAQ` })}
-          </p>
-        </div>
-        {open ? <ChevronUp size={18} className="text-grey-muted" /> : <ChevronDown size={18} className="text-grey-muted" />}
-      </button>
-
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="overflow-hidden"
-          >
-            <div className="px-5 pb-5 border-t border-purple-main/20">
-              {/* PDF download button */}
-              <div className="flex gap-3 mt-4 mb-4">
-                <button
-                  onClick={() => generateContractPDF(lang)}
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-accent/10 border border-accent/30 text-accent text-sm font-semibold hover:bg-accent/20 transition-colors"
-                >
-                  <Download size={16} />
-                  {tx({ fr: 'Telecharger le PDF', en: 'Download PDF', es: 'Descargar PDF' })}
-                </button>
-              </div>
-
-              {/* Contract content */}
-              <div
-                className="contract-content prose prose-invert prose-sm max-w-none max-h-[600px] overflow-y-auto rounded-xl bg-glass p-5 md:p-6 border border-purple-main/10 text-grey-light text-sm md:text-base leading-relaxed"
-                dangerouslySetInnerHTML={{ __html: contractText }}
-              />
+        {/* Mini stats compacts */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {[
+            { value: loading ? '-' : formatMoney(totalEarned), label: tx({ fr: 'Gains totaux', en: 'Total earnings', es: 'Ganancias totales' }), color: 'text-green-400' },
+            { value: loading ? '-' : formatMoney(totalPaid), label: tx({ fr: 'Deja paye', en: 'Already paid', es: 'Ya pagado' }), color: 'text-blue-400' },
+            { value: loading ? '-' : formatMoney(balance), label: tx({ fr: 'Solde dispo', en: 'Balance', es: 'Saldo' }), color: balance > 0 ? 'text-accent' : 'text-grey-muted' },
+            { value: loading ? '-' : orderCount, label: tx({ fr: 'Ventes', en: 'Sales', es: 'Ventas' }), color: 'text-purple-400' },
+          ].map((s, i) => (
+            <div key={i} className="text-center py-4 px-3 rounded-xl border border-purple-main/20 card-bg card-shadow">
+              <p className={`text-xl font-bold ${s.color}`}>{s.value}</p>
+              <p className="text-[10px] text-grey-muted uppercase tracking-wider mt-1">{s.label}</p>
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
+          ))}
+        </div>
+
+        {/* Liens rapides */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {artist && (
+            <Link to={`/artistes/${artistSlug}`} className="flex items-center gap-3 p-4 rounded-xl bg-accent/5 border border-accent/20 hover:bg-accent/10 transition-colors group">
+              <Palette size={20} className="text-accent" />
+              <div className="flex-grow">
+                <p className="text-heading text-sm font-medium">{tx({ fr: 'Ma boutique', en: 'My store', es: 'Mi tienda' })}</p>
+                <p className="text-grey-muted text-xs">massivemedias.com/artistes/{artistSlug}</p>
+              </div>
+            </Link>
+          )}
+          <a href="mailto:massivemedias@gmail.com" className="flex items-center gap-3 p-4 rounded-xl bg-green-500/5 border border-green-500/20 hover:bg-green-500/10 transition-colors group">
+            <Send size={20} className="text-green-400" />
+            <div className="flex-grow">
+              <p className="text-heading text-sm font-medium">{tx({ fr: 'Envoyer des fichiers', en: 'Send files', es: 'Enviar archivos' })}</p>
+              <p className="text-grey-muted text-xs">massivemedias@gmail.com</p>
+            </div>
+          </a>
+        </div>
+
+        {/* Rappels-cles du contrat */}
+        <div className="rounded-2xl border border-purple-main/30 p-5 card-bg card-shadow">
+          <h4 className="text-heading font-heading font-bold text-base mb-4 flex items-center gap-2">
+            <ScrollText size={18} className="text-accent" />
+            {tx({ fr: 'Points-cles de ton contrat', en: 'Key contract points', es: 'Puntos clave de tu contrato' })}
+          </h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="p-4 rounded-xl bg-green-500/5 border border-green-500/20">
+              <p className="text-green-400 text-sm font-bold mb-1.5 flex items-center gap-2">
+                <CheckCircle size={14} />
+                {tx({ fr: 'Tes droits d\'auteur', en: 'Your copyrights', es: 'Tus derechos de autor' })}
+              </p>
+              <p className="text-grey-light text-xs leading-relaxed">
+                {tx({
+                  fr: 'Tu conserves 100% de tes droits. Massive detient uniquement une licence limitee, non-exclusive et revocable pour l\'impression et la vente en ligne.',
+                  en: 'You keep 100% of your rights. Massive only holds a limited, non-exclusive, revocable license for printing and online sales.',
+                  es: 'Conservas el 100% de tus derechos. Massive solo tiene una licencia limitada, no exclusiva y revocable para impresion y venta en linea.',
+                })}
+              </p>
+            </div>
+            <div className="p-4 rounded-xl bg-blue-500/5 border border-blue-500/20">
+              <p className="text-blue-400 text-sm font-bold mb-1.5 flex items-center gap-2">
+                <CheckCircle size={14} />
+                {tx({ fr: 'Prix uniformes', en: 'Uniform pricing', es: 'Precios uniformes' })}
+              </p>
+              <p className="text-grey-light text-xs leading-relaxed">
+                {tx({
+                  fr: 'La grille tarifaire est identique pour tous les artistes partenaires - memes prix, memes couts, memes marges. Aucun traitement preferentiel.',
+                  en: 'The pricing grid is identical for all partner artists - same prices, same costs, same margins. No preferential treatment.',
+                  es: 'La grilla de precios es identica para todos los artistas asociados - mismos precios, mismos costos, mismos margenes. Sin trato preferencial.',
+                })}
+              </p>
+            </div>
+            <div className="p-4 rounded-xl bg-purple-500/5 border border-purple-500/20">
+              <p className="text-purple-400 text-sm font-bold mb-1.5 flex items-center gap-2">
+                <CheckCircle size={14} />
+                {tx({ fr: 'Prints uniques (edition unique)', en: 'Unique prints (single edition)', es: 'Prints unicos (edicion unica)' })}
+              </p>
+              <p className="text-grey-light text-xs leading-relaxed">
+                {tx({
+                  fr: 'Un seul exemplaire produit, format fixe A2 qualite musee, sans cadre, non-reproductible. Une fois vendu, c\'est fini - piece de collection.',
+                  en: 'Only one copy produced, fixed A2 museum quality format, no frame, non-reproducible. Once sold, it\'s gone - collector\'s piece.',
+                  es: 'Solo una copia producida, formato fijo A2 calidad museo, sin marco, no reproducible. Una vez vendido, se acabo - pieza de coleccion.',
+                })}
+              </p>
+            </div>
+            <div className="p-4 rounded-xl bg-yellow-500/5 border border-yellow-500/20">
+              <p className="text-yellow-400 text-sm font-bold mb-1.5 flex items-center gap-2">
+                <CheckCircle size={14} />
+                {tx({ fr: 'Zero production sans accord', en: 'No production without approval', es: 'Sin produccion sin aprobacion' })}
+              </p>
+              <p className="text-grey-light text-xs leading-relaxed">
+                {tx({
+                  fr: 'Massive ne produit jamais de prints sans commande confirmee et payee. Aucune production speculative. Ton approbation ecrite est requise pour tout produit.',
+                  en: 'Massive never produces prints without a confirmed, paid order. No speculative production. Your written approval is required for every product.',
+                  es: 'Massive nunca produce prints sin pedido confirmado y pagado. Sin produccion especulativa. Tu aprobacion escrita es necesaria para cada producto.',
+                })}
+              </p>
+            </div>
+            <div className="p-4 rounded-xl bg-green-500/5 border border-green-500/20">
+              <p className="text-green-400 text-sm font-bold mb-1.5 flex items-center gap-2">
+                <DollarSign size={14} />
+                {tx({ fr: 'Copies perso au coutant', en: 'Personal copies at cost', es: 'Copias personales al costo' })}
+              </p>
+              <p className="text-grey-light text-xs leading-relaxed">
+                {tx({
+                  fr: 'Tu peux commander tes propres prints au prix coutant (colonne "Cout Massive") pour usage personnel, portfolio ou expos. Stickers: prix regulier pour tous.',
+                  en: 'You can order your own prints at cost price ("Massive cost" column) for personal use, portfolio or exhibitions. Stickers: regular price for everyone.',
+                  es: 'Puedes pedir tus propios prints al precio de costo (columna "Costo Massive") para uso personal, portafolio o exposiciones. Stickers: precio regular para todos.',
+                })}
+              </p>
+            </div>
+            <div className="p-4 rounded-xl bg-purple-500/5 border border-purple-500/20">
+              <p className="text-purple-400 text-sm font-bold mb-1.5 flex items-center gap-2">
+                <Package size={14} />
+                {tx({ fr: 'Vente en personne (festivals, galeries)', en: 'In-person sales (festivals, galleries)', es: 'Venta en persona (festivales, galerias)' })}
+              </p>
+              <p className="text-grey-light text-xs leading-relaxed">
+                {tx({
+                  fr: 'Commande en volume au prix regulier et revends au prix que tu veux. Le profit supplementaire est 100% pour toi.',
+                  en: 'Order in bulk at regular price and resell at whatever price you want. The extra profit is 100% yours.',
+                  es: 'Pide en volumen al precio regular y revende al precio que quieras. La ganancia adicional es 100% tuya.',
+                })}
+              </p>
+            </div>
+            <div className="p-4 rounded-xl bg-blue-500/5 border border-blue-500/20">
+              <p className="text-blue-400 text-sm font-bold mb-1.5 flex items-center gap-2">
+                <CheckCircle size={14} />
+                {tx({ fr: 'Fichiers proteges', en: 'Protected files', es: 'Archivos protegidos' })}
+              </p>
+              <p className="text-grey-light text-xs leading-relaxed">
+                {tx({
+                  fr: 'Tes fichiers haute-resolution ne sont jamais partages, publies en ligne en haute-res, ni utilises hors du cadre du contrat. Seulement 72 DPI + watermark sur le site.',
+                  en: 'Your high-resolution files are never shared, published online in high-res, or used outside the scope of the contract. Only 72 DPI + watermark on the website.',
+                  es: 'Tus archivos de alta resolucion nunca se comparten, publican en alta-res en linea, ni se usan fuera del alcance del contrato. Solo 72 DPI + watermark en el sitio.',
+                })}
+              </p>
+            </div>
+            <div className="p-4 rounded-xl bg-yellow-500/5 border border-yellow-500/20">
+              <p className="text-yellow-400 text-sm font-bold mb-1.5 flex items-center gap-2">
+                <Clock size={14} />
+                {tx({ fr: 'Resiliation libre', en: 'Free termination', es: 'Terminacion libre' })}
+              </p>
+              <p className="text-grey-light text-xs leading-relaxed">
+                {tx({
+                  fr: 'Tu peux quitter a tout moment avec 30 jours de preavis par email. Tes fichiers sont supprimes de nos serveurs sous 14 jours, confirmation ecrite incluse.',
+                  en: 'You can leave at any time with 30 days written notice by email. Your files are deleted from our servers within 14 days, written confirmation included.',
+                  es: 'Puedes salir en cualquier momento con 30 dias de preaviso por email. Tus archivos se eliminan de nuestros servidores en 14 dias, confirmacion escrita incluida.',
+                })}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ===========================
+  // SECTION: CONTRAT
+  // ===========================
+  if (section === 'contrat') {
+    const contractText = lang === 'en' ? ARTIST_CONTRACT_TEXT_EN : lang === 'es' ? ARTIST_CONTRACT_TEXT_ES : ARTIST_CONTRACT_TEXT;
+    return (
+      <div className="space-y-6">
+        <div className="rounded-2xl border border-purple-main/30 p-5 md:p-8 card-bg card-shadow">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h3 className="text-heading font-heading font-bold text-lg flex items-center gap-2">
+                <ScrollText size={20} className="text-accent" />
+                {tx({ fr: 'Contrat de partenariat', en: 'Partnership Agreement', es: 'Contrato de asociacion' })}
+              </h3>
+              <p className="text-grey-muted text-sm mt-1">
+                {tx({ fr: `Version ${ARTIST_CONTRACT_VERSION} - Clauses, tarifs et FAQ`, en: `Version ${ARTIST_CONTRACT_VERSION} - Terms, pricing and FAQ`, es: `Version ${ARTIST_CONTRACT_VERSION} - Clausulas, precios y FAQ` })}
+              </p>
+            </div>
+            <button
+              onClick={() => generateContractPDF(lang)}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-accent/10 border border-accent/30 text-accent text-sm font-semibold hover:bg-accent/20 transition-colors flex-shrink-0"
+            >
+              <Download size={16} />
+              {tx({ fr: 'PDF', en: 'PDF', es: 'PDF' })}
+            </button>
+          </div>
+          <div
+            className="contract-content prose prose-invert prose-sm max-w-none max-h-[70vh] overflow-y-auto rounded-xl bg-glass p-5 md:p-6 border border-purple-main/10 text-grey-light text-sm md:text-base leading-relaxed"
+            dangerouslySetInnerHTML={{ __html: contractText }}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // ===========================
+  // SECTION: TARIFS
+  // ===========================
+  if (section === 'tarifs') {
+    return (
+      <div className="space-y-6">
+        <div className="rounded-2xl border border-purple-main/30 p-5 md:p-8 card-bg card-shadow">
+          <h3 className="text-heading font-heading font-bold text-lg mb-2 flex items-center gap-2">
+            <FileText size={20} className="text-accent" />
+            {tx({ fr: 'Grille tarifaire', en: 'Pricing grid', es: 'Grilla de precios' })}
+          </h3>
+          <p className="text-grey-muted text-xs mb-6">
+            {tx({
+              fr: 'Prix affiches aux clients dans ta boutique. Ta marge = prix client - cout impression Massive. Le cadre (30$) va entierement a Massive. TPS + TVQ en sus.',
+              en: 'Prices shown to customers in your store. Your margin = client price - Massive print cost. Frame ($30) goes entirely to Massive. GST + QST extra.',
+              es: 'Precios mostrados a los clientes en tu tienda. Tu margen = precio cliente - costo impresion Massive. El marco (30$) va completamente a Massive. Impuestos adicionales.',
+            })}
+          </p>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-grey-muted text-[10px] sm:text-xs uppercase tracking-wider border-b border-purple-main/20">
+                  <th className="text-left py-2 pr-1 sm:pr-3">{tx({ fr: 'Format', en: 'Format', es: 'Formato' })}</th>
+                  <th className="text-right py-2 px-1 sm:px-2">{tx({ fr: 'Prix client', en: 'Client price', es: 'Precio cliente' })}</th>
+                  <th className="text-right py-2 px-1 sm:px-2">{tx({ fr: 'Cout Massive', en: 'Massive cost', es: 'Costo Massive' })}</th>
+                  <th className="text-right py-2 px-1 sm:px-2 text-green-400">{tx({ fr: 'Ta marge', en: 'Your margin', es: 'Tu margen' })}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-b border-purple-main/10"><td colSpan="4" className="pt-3 pb-1 text-accent font-semibold text-xs">{tx({ fr: 'Serie Studio (4 encres pigmentees)', en: 'Studio Series (4 pigment inks)', es: 'Serie Studio (4 tintas pigmentadas)' })}</td></tr>
+                {[{ format: 'A4 (8.5x11")', key: 'a4' }, { format: 'A3 (11x17")', key: 'a3' }, { format: 'A3+ (13x19")', key: 'a3plus' }].map(({ format, key }) => (
+                  <tr key={`s-${key}`} className="border-b border-purple-main/10 hover:bg-accent/5 transition-colors">
+                    <td className="py-2 pr-1 sm:pr-3 text-heading text-xs sm:text-sm">{format}</td>
+                    <td className="py-2 px-1 sm:px-2 text-right text-heading text-xs sm:text-sm">{ARTIST_PRICES.studio[key]}$</td>
+                    <td className="py-2 px-1 sm:px-2 text-right text-grey-muted text-xs sm:text-sm">{SERVICE_PRICES.studio[key]}$</td>
+                    <td className="py-2 px-1 sm:px-2 text-right text-green-400 font-semibold text-xs sm:text-sm">{ARTIST_PRICES.studio[key] - SERVICE_PRICES.studio[key]}$</td>
+                  </tr>
+                ))}
+                <tr className="border-b border-purple-main/10"><td colSpan="4" className="pt-4 pb-1 text-accent font-semibold text-xs">{tx({ fr: 'Serie Musee (12 encres pigmentees)', en: 'Museum Series (12 pigment inks)', es: 'Serie Museo (12 tintas pigmentadas)' })}</td></tr>
+                {[{ format: 'A4 (8.5x11")', key: 'a4' }, { format: 'A3 (11x17")', key: 'a3' }, { format: 'A3+ (13x19")', key: 'a3plus' }, { format: 'A2 (18x24")', key: 'a2' }].map(({ format, key }) => (
+                  <tr key={`m-${key}`} className="border-b border-purple-main/10 hover:bg-accent/5 transition-colors">
+                    <td className="py-2 pr-1 sm:pr-3 text-heading text-xs sm:text-sm">{format}</td>
+                    <td className="py-2 px-1 sm:px-2 text-right text-heading text-xs sm:text-sm">{ARTIST_PRICES.museum[key]}$</td>
+                    <td className="py-2 px-1 sm:px-2 text-right text-grey-muted text-xs sm:text-sm">{SERVICE_PRICES.museum[key]}$</td>
+                    <td className="py-2 px-1 sm:px-2 text-right text-green-400 font-semibold text-xs sm:text-sm">{ARTIST_PRICES.museum[key] - SERVICE_PRICES.museum[key]}$</td>
+                  </tr>
+                ))}
+                <tr className="border-t-2 border-purple-main/20">
+                  <td className="py-2 pr-1 sm:pr-3 text-heading font-medium text-xs sm:text-sm">{tx({ fr: 'Cadre (noir ou blanc)', en: 'Frame (black or white)', es: 'Marco (negro o blanco)' })}</td>
+                  <td className="py-2 px-2 text-right text-heading">{FRAME_PRICE}$</td>
+                  <td className="py-2 px-1 sm:px-2 text-right text-grey-muted text-xs sm:text-sm">{FRAME_PRICE}$</td>
+                  <td className="py-2 px-1 sm:px-2 text-right text-grey-muted text-xs sm:text-sm">0$</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p className="text-grey-muted text-xs mt-4 italic">
+            {tx({
+              fr: 'Note: Le format A2 (18x24") est imprime en qualite musee uniquement. Pas de cadre disponible pour ce format.',
+              en: 'Note: A2 (18x24") is printed in museum quality only. No frame available for this format.',
+              es: 'Nota: El formato A2 (18x24") se imprime en calidad museo unicamente. Sin marco disponible para este formato.',
+            })}
+          </p>
+        </div>
+
+        {/* Notes copies perso + festivals */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="p-5 rounded-2xl bg-yellow-500/5 border border-yellow-500/20 card-shadow">
+            <p className="text-yellow-400 text-sm font-bold mb-2">
+              {tx({ fr: 'Copies personnelles', en: 'Personal copies', es: 'Copias personales' })}
+            </p>
+            <p className="text-grey-light text-xs leading-relaxed">
+              {tx({
+                fr: 'Prints: tu peux commander tes propres copies au prix coutant (colonne "Cout Massive"), pour usage personnel, portfolio ou expos uniquement. Stickers: prix regulier, meme pour toi.',
+                en: 'Prints: you can order your own copies at cost price ("Massive cost" column), for personal use, portfolio or exhibitions only. Stickers: regular price, even for you.',
+                es: 'Prints: puedes pedir tus propias copias al precio de costo (columna "Costo Massive"), solo para uso personal, portafolio o exposiciones. Stickers: precio regular, incluso para ti.',
+              })}
+            </p>
+          </div>
+          <div className="p-5 rounded-2xl bg-purple-500/5 border border-purple-500/20 card-shadow">
+            <p className="text-purple-400 text-sm font-bold mb-2">
+              {tx({ fr: 'Festivals, galeries et boutiques', en: 'Festivals, galleries and shops', es: 'Festivales, galerias y tiendas' })}
+            </p>
+            <p className="text-grey-light text-xs leading-relaxed">
+              {tx({
+                fr: 'Commande en volume au prix regulier (colonne "Prix client"), et revends au prix que tu veux. Le profit supplementaire est 100% pour toi.',
+                en: 'Order in bulk at regular price ("Client price" column), and resell at whatever price you want. The extra profit is 100% yours.',
+                es: 'Pide en volumen al precio regular (columna "Precio cliente"), y revende al precio que quieras. La ganancia adicional es 100% tuya.',
+              })}
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ===========================
+  // SECTION: MESSAGES
+  // ===========================
+  if (section === 'messages') {
+    return (
+      <div className="space-y-6">
+        {toastElement}
+        <div className="rounded-2xl border border-purple-main/30 p-5 md:p-8 card-bg card-shadow">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-heading font-heading font-bold text-lg flex items-center gap-2">
+              <MessageCircle size={20} className="text-accent" />
+              {tx({ fr: 'Messages a Massive', en: 'Messages to Massive', es: 'Mensajes a Massive' })}
+            </h3>
+            <button
+              onClick={() => setShowMsgForm(!showMsgForm)}
+              className="btn-primary text-xs py-2 px-4"
+            >
+              <ImagePlus size={14} className="mr-1" />
+              {tx({ fr: 'Nouveau', en: 'New', es: 'Nuevo' })}
+            </button>
+          </div>
+
+          {/* Formulaire message */}
+          <AnimatePresence>
+            {showMsgForm && (
+              <motion.form
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                onSubmit={handleSendMessage}
+                className="overflow-hidden"
+              >
+                <div className="rounded-lg bg-accent/5 border border-accent/20 p-4 mb-6 space-y-3">
+                  <div>
+                    <label className="text-[11px] text-grey-muted uppercase tracking-wider font-medium mb-1 block">
+                      {tx({ fr: 'Categorie', en: 'Category', es: 'Categoria' })}
+                    </label>
+                    <select
+                      value={msgForm.category}
+                      onChange={(e) => setMsgForm(f => ({ ...f, category: e.target.value }))}
+                      className="input-field text-sm"
+                    >
+                      {MSG_CATEGORIES.map(c => (
+                        <option key={c.value} value={c.value}>
+                          {lang === 'en' ? c.labelEn : lang === 'es' ? c.labelEs : c.labelFr}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-[11px] text-grey-muted uppercase tracking-wider font-medium mb-1 block">
+                      {tx({ fr: 'Sujet', en: 'Subject', es: 'Asunto' })}
+                    </label>
+                    <input
+                      type="text"
+                      value={msgForm.subject}
+                      onChange={(e) => setMsgForm(f => ({ ...f, subject: e.target.value }))}
+                      className="input-field text-sm"
+                      placeholder={tx({ fr: 'Ex: Nouvelles images a ajouter', en: 'Ex: New images to add', es: 'Ej: Nuevas imagenes para agregar' })}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[11px] text-grey-muted uppercase tracking-wider font-medium mb-1 block">
+                      {tx({ fr: 'Message', en: 'Message', es: 'Mensaje' })}
+                    </label>
+                    <textarea
+                      value={msgForm.message}
+                      onChange={(e) => setMsgForm(f => ({ ...f, message: e.target.value }))}
+                      className="input-field text-sm min-h-[100px] resize-y"
+                      placeholder={tx({
+                        fr: 'Decris ta demande... Pour les images, envoie les fichiers par email a massivemedias@gmail.com ou partage un lien Google Drive / WeTransfer.',
+                        en: 'Describe your request... For images, send files by email to massivemedias@gmail.com or share a Google Drive / WeTransfer link.',
+                        es: 'Describe tu solicitud... Para imagenes, envia los archivos por email a massivemedias@gmail.com o comparte un enlace de Google Drive / WeTransfer.',
+                      })}
+                      required
+                    />
+                  </div>
+                  {msgForm.category === 'new-images' && (
+                    <div>
+                      <FileUpload
+                        label={tx({ fr: 'Images a deposer (max 20 fichiers, 130 MB chacun)', en: 'Images to submit (max 20 files, 130 MB each)', es: 'Imagenes a enviar (max 20 archivos, 130 MB c/u)' })}
+                        files={msgFiles}
+                        onFilesChange={setMsgFiles}
+                        maxFiles={20}
+                        uploadFn={uploadArtistFile}
+                      />
+                    </div>
+                  )}
+                  <div className="flex gap-2">
+                    <button type="submit" disabled={msgSending} className="btn-primary text-xs py-2 px-6 disabled:opacity-50">
+                      {msgSending ? <Loader2 size={14} className="animate-spin mr-1" /> : <Send size={14} className="mr-1" />}
+                      {tx({ fr: 'Envoyer', en: 'Send', es: 'Enviar' })}
+                    </button>
+                    <button type="button" onClick={() => setShowMsgForm(false)} className="text-grey-muted text-xs hover:text-heading transition-colors">
+                      {tx({ fr: 'Annuler', en: 'Cancel', es: 'Cancelar' })}
+                    </button>
+                  </div>
+                </div>
+              </motion.form>
+            )}
+          </AnimatePresence>
+
+          {/* Liste des messages */}
+          {!msgLoading && messages.length > 0 ? (
+            <div className="space-y-3">
+              {messages.slice(0, 20).map((m, i) => (
+                <div key={m.documentId || i} className="rounded-lg border border-purple-main/10 p-4">
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="text-heading text-sm font-medium">{m.subject}</p>
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+                      m.status === 'replied' ? 'bg-green-500/20 text-green-400' :
+                      m.status === 'read' ? 'bg-blue-500/20 text-blue-400' :
+                      'bg-yellow-500/20 text-yellow-400'
+                    }`}>
+                      {m.status === 'replied' ? tx({ fr: 'Repondu', en: 'Replied', es: 'Respondido' }) :
+                       m.status === 'read' ? tx({ fr: 'Lu', en: 'Read', es: 'Leido' }) :
+                       tx({ fr: 'Envoye', en: 'Sent', es: 'Enviado' })}
+                    </span>
+                  </div>
+                  <p className="text-grey-muted text-xs">{m.message}</p>
+                  {m.attachments && m.attachments.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {m.attachments.map((att, j) => (
+                        <a key={j} href={att.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 px-2 py-1 rounded bg-accent/10 border border-accent/20 text-[10px] text-accent hover:bg-accent/20 transition-colors">
+                          <ImagePlus size={10} />
+                          {att.name?.length > 20 ? att.name.substring(0, 20) + '...' : att.name}
+                        </a>
+                      ))}
+                    </div>
+                  )}
+                  <p className="text-grey-muted/60 text-[10px] mt-1">{m.createdAt ? new Date(m.createdAt).toLocaleDateString('fr-CA') : ''}</p>
+                  {m.adminReply && (
+                    <div className="mt-2 p-3 rounded bg-accent/5 border border-accent/10">
+                      <p className="text-[10px] text-accent font-semibold mb-0.5">Massive :</p>
+                      <p className="text-grey-light text-xs">{m.adminReply}</p>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : !msgLoading ? (
+            <div className="text-center py-8">
+              <MessageCircle size={32} className="text-grey-muted/20 mx-auto mb-2" />
+              <p className="text-grey-muted text-sm">
+                {tx({
+                  fr: 'Aucun message. Envoie un message pour deposer de nouvelles images ou poser une question.',
+                  en: 'No messages. Send a message to submit new images or ask a question.',
+                  es: 'Sin mensajes. Envia un mensaje para enviar nuevas imagenes o hacer una pregunta.',
+                })}
+              </p>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 text-grey-muted py-8 justify-center"><Loader2 size={16} className="animate-spin" /></div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // ===========================
+  // SECTION: RETRAIT PAYPAL
+  // ===========================
+  if (section === 'retrait') {
+    return (
+      <div className="space-y-6">
+        {toastElement}
+        <div className="rounded-2xl border border-purple-main/30 p-5 md:p-8 card-bg card-shadow">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h3 className="text-heading font-heading font-bold text-lg flex items-center gap-2">
+                <CreditCard size={20} className="text-accent" />
+                {tx({ fr: 'Retrait PayPal', en: 'PayPal Withdrawal', es: 'Retiro PayPal' })}
+              </h3>
+              <p className="text-grey-muted text-sm mt-1">
+                {tx({ fr: 'Solde disponible:', en: 'Available balance:', es: 'Saldo disponible:' })} <span className={`font-bold ${balance > 0 ? 'text-accent' : 'text-grey-muted'}`}>{formatMoney(balance)}</span>
+              </p>
+            </div>
+            {balance > 0 && !hasPendingWithdrawal && (
+              <button
+                onClick={() => setShowWdForm(!showWdForm)}
+                className="btn-primary text-xs py-2 px-4"
+              >
+                <DollarSign size={14} className="mr-1" />
+                {tx({ fr: 'Demander un retrait', en: 'Request withdrawal', es: 'Solicitar retiro' })}
+              </button>
+            )}
+          </div>
+
+          {hasPendingWithdrawal && (
+            <div className="rounded-lg bg-yellow-500/10 border border-yellow-500/20 p-3 mb-4 flex items-center gap-2">
+              <Clock size={14} className="text-yellow-400 flex-shrink-0" />
+              <p className="text-yellow-400 text-xs">
+                {tx({
+                  fr: 'Tu as deja une demande de retrait en cours. Massive va traiter ta demande sous 24-48h.',
+                  en: 'You already have a pending withdrawal request. Massive will process it within 24-48h.',
+                  es: 'Ya tienes una solicitud de retiro pendiente. Massive la procesara en 24-48h.',
+                })}
+              </p>
+            </div>
+          )}
+
+          {/* Formulaire retrait */}
+          <AnimatePresence>
+            {showWdForm && (
+              <motion.form
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                onSubmit={handleWithdrawal}
+                className="overflow-hidden"
+              >
+                <div className="rounded-lg bg-accent/5 border border-accent/20 p-4 mb-4 space-y-3">
+                  <p className="text-grey-muted text-xs">
+                    {tx({
+                      fr: 'Entre ton email PayPal et le montant a retirer. Massive enverra le paiement sous 24-48h.',
+                      en: 'Enter your PayPal email and amount to withdraw. Massive will send payment within 24-48h.',
+                      es: 'Ingresa tu email PayPal y el monto a retirar. Massive enviara el pago en 24-48h.',
+                    })}
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-[11px] text-grey-muted uppercase tracking-wider font-medium mb-1 block">
+                        {tx({ fr: 'Email PayPal', en: 'PayPal Email', es: 'Email PayPal' })}
+                      </label>
+                      <input
+                        type="email"
+                        value={paypalEmail}
+                        onChange={(e) => setPaypalEmail(e.target.value)}
+                        placeholder="ton@email.com"
+                        className="input-field text-sm"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[11px] text-grey-muted uppercase tracking-wider font-medium mb-1 block">
+                        {tx({ fr: 'Montant a retirer', en: 'Amount to withdraw', es: 'Monto a retirar' })} ({tx({ fr: 'max', en: 'max', es: 'max' })}: {formatMoney(balance)})
+                      </label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="1"
+                        max={balance}
+                        value={wdAmount}
+                        onChange={(e) => setWdAmount(e.target.value)}
+                        placeholder="0.00"
+                        className="input-field text-sm"
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-[11px] text-grey-muted uppercase tracking-wider font-medium mb-1 block">
+                      {tx({ fr: 'Notes (optionnel)', en: 'Notes (optional)', es: 'Notas (opcional)' })}
+                    </label>
+                    <input
+                      type="text"
+                      value={wdNotes}
+                      onChange={(e) => setWdNotes(e.target.value)}
+                      className="input-field text-sm"
+                      placeholder={tx({ fr: 'Ex: Merci!', en: 'Ex: Thanks!', es: 'Ej: Gracias!' })}
+                    />
+                  </div>
+                  {wdError && <p className="text-red-400 text-xs">{wdError}</p>}
+                  <div className="flex gap-2">
+                    <button type="submit" disabled={wdSending} className="btn-primary text-xs py-2 px-6 disabled:opacity-50">
+                      {wdSending ? <Loader2 size={14} className="animate-spin mr-1" /> : <Send size={14} className="mr-1" />}
+                      {tx({ fr: 'Envoyer la demande', en: 'Send request', es: 'Enviar solicitud' })}
+                    </button>
+                    <button type="button" onClick={() => { setShowWdForm(false); setWdError(''); }} className="text-grey-muted text-xs hover:text-heading transition-colors">
+                      {tx({ fr: 'Annuler', en: 'Cancel', es: 'Cancelar' })}
+                    </button>
+                  </div>
+                </div>
+              </motion.form>
+            )}
+          </AnimatePresence>
+
+          {/* Historique retraits */}
+          {!wdLoading && withdrawals.length > 0 ? (
+            <div className="space-y-2">
+              <h4 className="text-heading font-semibold text-sm mb-3">{tx({ fr: 'Historique des retraits', en: 'Withdrawal history', es: 'Historial de retiros' })}</h4>
+              {withdrawals.map((w, i) => {
+                const badge = getStatusBadge(w.status);
+                return (
+                  <div key={w.documentId || i} className="flex items-center justify-between py-3 border-b border-purple-main/10 last:border-0">
+                    <div>
+                      <p className="text-heading text-sm font-medium">{formatMoney(parseFloat(w.amount) || 0)}</p>
+                      <p className="text-grey-muted text-xs">
+                        PayPal: {w.paypalEmail} - {w.createdAt ? new Date(w.createdAt).toLocaleDateString('fr-CA') : '-'}
+                      </p>
+                      {w.adminNotes && <p className="text-grey-muted text-[10px] italic mt-0.5">Massive: {w.adminNotes}</p>}
+                    </div>
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${badge.cls}`}>{badge.label}</span>
+                  </div>
+                );
+              })}
+            </div>
+          ) : !wdLoading ? (
+            <div className="text-center py-8">
+              <CreditCard size={32} className="text-grey-muted/20 mx-auto mb-2" />
+              <p className="text-grey-muted text-sm">
+                {balance > 0
+                  ? tx({ fr: 'Aucun retrait effectue. Clique "Demander un retrait" pour recevoir ton argent via PayPal.', en: 'No withdrawals yet. Click "Request withdrawal" to receive your money via PayPal.', es: 'Sin retiros aun. Haz clic en "Solicitar retiro" para recibir tu dinero via PayPal.' })
+                  : tx({ fr: 'Aucun solde disponible pour le moment.', en: 'No balance available at this time.', es: 'Sin saldo disponible por el momento.' })
+                }
+              </p>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 text-grey-muted py-8 justify-center"><Loader2 size={16} className="animate-spin" /></div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // ===========================
+  // SECTION: VENTES
+  // ===========================
+  if (section === 'ventes') {
+    return (
+      <div className="space-y-6">
+        <div className="rounded-2xl border border-purple-main/30 p-5 md:p-8 card-bg card-shadow">
+          <h3 className="text-heading font-heading font-bold text-lg mb-6 flex items-center gap-2">
+            <Clock size={20} className="text-accent" />
+            {tx({ fr: 'Historique des ventes', en: 'Sales history', es: 'Historial de ventas' })}
+          </h3>
+
+          {/* Mini stats en haut */}
+          <div className="grid grid-cols-3 gap-3 mb-6">
+            <div className="text-center py-3 px-2 rounded-xl border border-purple-main/15 card-bg">
+              <p className="text-lg font-bold text-green-400">{loading ? '-' : formatMoney(totalEarned)}</p>
+              <p className="text-[10px] text-grey-muted uppercase tracking-wider">{tx({ fr: 'Gains totaux', en: 'Total earnings', es: 'Ganancias totales' })}</p>
+            </div>
+            <div className="text-center py-3 px-2 rounded-xl border border-purple-main/15 card-bg">
+              <p className="text-lg font-bold text-blue-400">{loading ? '-' : formatMoney(totalPaid)}</p>
+              <p className="text-[10px] text-grey-muted uppercase tracking-wider">{tx({ fr: 'Deja paye', en: 'Already paid', es: 'Ya pagado' })}</p>
+            </div>
+            <div className="text-center py-3 px-2 rounded-xl border border-purple-main/15 card-bg">
+              <p className="text-lg font-bold text-purple-400">{loading ? '-' : orderCount}</p>
+              <p className="text-[10px] text-grey-muted uppercase tracking-wider">{tx({ fr: 'Ventes', en: 'Sales', es: 'Ventas' })}</p>
+            </div>
+          </div>
+
+          {loading ? (
+            <div className="flex items-center gap-2 text-grey-muted py-8 justify-center"><Loader2 size={16} className="animate-spin" /></div>
+          ) : error ? (
+            <div className="flex items-center gap-2 text-yellow-400 py-4"><AlertCircle size={16} /><span className="text-sm">{tx({ fr: 'Impossible de charger les ventes', en: 'Unable to load sales', es: 'No se pueden cargar las ventas' })}</span></div>
+          ) : commissions.length === 0 ? (
+            <div className="text-center py-8">
+              <Package size={32} className="text-grey-muted/20 mx-auto mb-2" />
+              <p className="text-grey-muted text-sm">{tx({ fr: 'Aucune vente pour le moment', en: 'No sales yet', es: 'Sin ventas por el momento' })}</p>
+              <p className="text-grey-muted/60 text-xs mt-1">{tx({ fr: 'Les ventes de tes prints apparaitront ici automatiquement.', en: 'Sales of your prints will appear here automatically.', es: 'Las ventas de tus prints apareceran aqui automaticamente.' })}</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {commissions.map((c, i) => (
+                <div key={c.documentId || i} className="flex items-center justify-between py-3 border-b border-purple-main/10 last:border-0">
+                  <div>
+                    <p className="text-heading text-sm font-medium">{c.customerName || c.customerEmail || 'Client'}</p>
+                    <p className="text-grey-muted text-xs">{c.createdAt ? new Date(c.createdAt).toLocaleDateString('fr-CA') : '-'}{c.items && ` - ${c.items.length} article${c.items.length > 1 ? 's' : ''}`}</p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${c.paid || c.status === 'paid' ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'}`}>
+                      {c.paid || c.status === 'paid' ? tx({ fr: 'Paye', en: 'Paid', es: 'Pagado' }) : tx({ fr: 'En attente', en: 'Pending', es: 'Pendiente' })}
+                    </span>
+                    <span className="text-green-400 font-bold text-sm">+{formatMoney(c.artistEarning || c.commission || 0)}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // Fallback
+  return null;
 }
 
 export default AccountArtistDashboard;

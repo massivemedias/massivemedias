@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ArrowRight, ArrowLeft, ShoppingCart, Check, X, Code, PenTool, User, Palette, Image, Sticker, Wrench, Gift, Tag, Percent } from 'lucide-react';
+import { ArrowRight, ArrowLeft, ShoppingCart, Check, X, User, Palette, Image, Sticker, Gift, Tag, Percent, Handshake } from 'lucide-react';
 import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
 import { useCart } from '../contexts/CartContext';
@@ -54,7 +54,7 @@ const sidebarCategories = [
   { id: 'prints', icon: Image, fr: 'Prints', en: 'Prints', es: 'Impresiones' },
   { id: 'stickers', icon: Sticker, fr: 'Stickers', en: 'Stickers', es: 'Stickers' },
   { id: 'cartes-cadeaux', icon: Gift, fr: 'Cartes cadeaux', en: 'Gift cards', es: 'Tarjetas regalo' },
-  { id: 'services', icon: Wrench, fr: 'Services', en: 'Services', es: 'Servicios' },
+  { id: 'devenir-artiste', icon: Handshake, fr: 'Devenir artiste', en: 'Become an artist', es: 'Ser artista' },
 ];
 
 function Boutique() {
@@ -73,7 +73,7 @@ function Boutique() {
     prints: useRef(null),
     stickers: useRef(null),
     'cartes-cadeaux': useRef(null),
-    services: useRef(null),
+    'devenir-artiste': useRef(null),
   };
   const mobileTabsRef = useRef(null);
   const tabRefs = useRef({});
@@ -971,72 +971,37 @@ function Boutique() {
               </motion.div>
             </section>
 
-            {/* ═══════════════════ SERVICES ═══════════════════ */}
-            <section ref={sectionRefs.services} data-section="services" className="mb-16 scroll-mt-20">
+            {/* ═══════════════════ DEVENIR ARTISTE ═══════════════════ */}
+            <section ref={sectionRefs['devenir-artiste']} data-section="devenir-artiste" className="mb-16 scroll-mt-20">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
                 viewport={{ once: true }}
               >
-                <div className="flex items-center justify-between mb-8">
-                  <h2 className="text-2xl md:text-3xl font-heading font-bold text-heading">
-                    Services
-                  </h2>
-                  <Link
-                    to="/#services"
-                    className="inline-flex items-center gap-1.5 text-accent text-sm font-semibold hover:gap-2.5 transition-all"
-                  >
-                    {tx({ fr: 'Tous les services', en: 'All services', es: 'Todos los servicios' })}
-                    <ArrowRight size={14} />
-                  </Link>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  <Link
-                    to="/services/design"
-                    className="group flex items-center gap-5 p-6 rounded-2xl card-bg-bordered hover:border-accent/50 transition-all duration-300"
-                  >
-                    <div className="w-12 h-12 rounded-xl bg-glass flex items-center justify-center flex-shrink-0 group-hover:bg-accent/10 transition-colors">
-                      <PenTool size={24} className="text-accent/60 group-hover:text-accent transition-colors" />
+                <Link
+                  to="/contact"
+                  className="group block p-8 md:p-10 rounded-2xl card-bg-bordered hover:border-accent/50 transition-all duration-300"
+                >
+                  <div className="flex items-center gap-5">
+                    <div className="w-14 h-14 rounded-xl bg-accent/10 flex items-center justify-center flex-shrink-0 group-hover:bg-accent/20 transition-colors">
+                      <Handshake size={28} className="text-accent" />
                     </div>
                     <div className="flex-grow min-w-0">
-                      <h3 className="text-base font-heading font-bold text-heading group-hover:text-accent transition-colors">
-                        Design graphique
-                      </h3>
-                      <p className="text-grey-muted text-xs mt-0.5">
+                      <h2 className="text-2xl md:text-3xl font-heading font-bold text-heading group-hover:text-accent transition-colors">
+                        {tx({ fr: 'Devenir artiste partenaire', en: 'Become a partner artist', es: 'Convertirse en artista asociado' })}
+                      </h2>
+                      <p className="text-grey-light text-sm md:text-base mt-2 max-w-2xl">
                         {tx({
-                          fr: 'Logos, identites visuelles, affiches et pochettes.',
-                          en: 'Logos, visual identities, posters and covers.',
-                          es: 'Logos, identidades visuales, carteles y portadas.',
+                          fr: 'Rejoins le reseau Massive et vends tes prints en ligne. Zero frais, zero gestion - tu fournis ton art, on s\'occupe du reste.',
+                          en: 'Join the Massive network and sell your prints online. Zero fees, zero management - you provide your art, we handle the rest.',
+                          es: 'Unete a la red Massive y vende tus prints en linea. Cero costos, cero gestion - tu proporcionas tu arte, nosotros nos encargamos del resto.',
                         })}
                       </p>
                     </div>
-                    <ArrowRight size={18} className="text-grey-muted group-hover:text-accent group-hover:translate-x-1 transition-all flex-shrink-0" />
-                  </Link>
-
-                  <Link
-                    to="/services/web"
-                    className="group flex items-center gap-5 p-6 rounded-2xl card-bg-bordered hover:border-accent/50 transition-all duration-300"
-                  >
-                    <div className="w-12 h-12 rounded-xl bg-glass flex items-center justify-center flex-shrink-0 group-hover:bg-accent/10 transition-colors">
-                      <Code size={24} className="text-accent/60 group-hover:text-accent transition-colors" />
-                    </div>
-                    <div className="flex-grow min-w-0">
-                      <h3 className="text-base font-heading font-bold text-heading group-hover:text-accent transition-colors">
-                        {tx({ fr: 'Developpement web', en: 'Web development', es: 'Desarrollo web' })}
-                      </h3>
-                      <p className="text-grey-muted text-xs mt-0.5">
-                        {tx({
-                          fr: 'Sites web, applications et solutions sur mesure.',
-                          en: 'Websites, applications and custom solutions.',
-                          es: 'Sitios web, aplicaciones y soluciones a medida.',
-                        })}
-                      </p>
-                    </div>
-                    <ArrowRight size={18} className="text-grey-muted group-hover:text-accent group-hover:translate-x-1 transition-all flex-shrink-0" />
-                  </Link>
-                </div>
+                    <ArrowRight size={24} className="text-grey-muted group-hover:text-accent group-hover:translate-x-1 transition-all flex-shrink-0 hidden md:block" />
+                  </div>
+                </Link>
               </motion.div>
             </section>
 
