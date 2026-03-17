@@ -237,8 +237,11 @@ function AdminMessages() {
   const toggleExpand = (item) => {
     if (expandedId === item._uid) { setExpandedId(null); return; }
     setExpandedId(item._uid);
-    // Auto-mark contact/artist-msg as read
-    if ((item._type === 'contact' || item._type === 'artist-msg') && item.status === 'new') handleStatusChange(item, 'read');
+    // Auto-mark as read/reviewing when expanded
+    if (item.status === 'new') {
+      if (item._type === 'contact' || item._type === 'artist-msg') handleStatusChange(item, 'read');
+      else if (item._type === 'candidature') handleStatusChange(item, 'reviewing');
+    }
   };
 
   const newCount = items.filter(i => i.status === 'new').length;

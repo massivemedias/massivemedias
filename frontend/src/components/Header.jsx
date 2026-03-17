@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, X, ShoppingCart, LogIn, Printer, Sticker, Shirt, Globe, Store, Info, Phone, ChevronRight, Bell } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -20,6 +20,27 @@ function Header() {
   const { isAdmin } = useUserRole();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [adminMsgCount, setAdminMsgCount] = useState(0);
+  const prevCountRef = useRef(0);
+
+  // Son de notification admin (Web Audio API - pas de fichier externe)
+  const playNotifSound = useCallback(() => {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      // Double beep sympathique
+      [0, 0.15].forEach((delay) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.value = delay === 0 ? 880 : 1100;
+        gain.gain.setValueAtTime(0.3, ctx.currentTime + delay);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + delay + 0.15);
+        osc.start(ctx.currentTime + delay);
+        osc.stop(ctx.currentTime + delay + 0.15);
+      });
+    } catch { /* Audio not supported */ }
+  }, []);
 
   // Polling notifications admin
   useEffect(() => {
@@ -38,13 +59,20 @@ function Header() {
         const count = contacts.filter(c => (c.status || 'new') === 'new').length
           + artists.filter(a => (a.status || 'new') === 'new').length
           + artistMsgs.filter(m => (m.status || 'new') === 'new').length;
-        if (!cancelled) setAdminMsgCount(count);
+        if (!cancelled) {
+          // Jouer le son si le count augmente (nouveau message)
+          if (count > prevCountRef.current && prevCountRef.current !== 0) {
+            playNotifSound();
+          }
+          prevCountRef.current = count;
+          setAdminMsgCount(count);
+        }
       } catch { /* ignore */ }
     }
     fetchCount();
     const interval = setInterval(fetchCount, 60000);
     return () => { cancelled = true; clearInterval(interval); };
-  }, [isAdmin]);
+  }, [isAdmin, playNotifSound]);
 
   const services = t('nav.servicesList');
   const close = () => setMobileMenuOpen(false);
