@@ -64,19 +64,44 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
     try {
       const stripe = getStripe();
 
+      // Resume lisible des items pour Stripe
+      const itemsSummary = items.map((i: any) => {
+        const parts = [i.productName || 'Produit'];
+        if (i.size) parts.push(i.size);
+        if (i.finish) parts.push(i.finish);
+        if (i.quantity > 1) parts.push(`x${i.quantity}`);
+        return parts.join(' - ');
+      }).join(', ');
+
+      const addrLine = shippingAddress
+        ? `${shippingAddress.address || ''}, ${shippingAddress.city || ''}, ${shippingAddress.province || ''} ${shippingAddress.postalCode || ''}`
+        : '';
+
       // Create Stripe PaymentIntent with automatic payment methods
       // (enables Apple Pay, Google Pay, PayPal, cards, etc.)
       const paymentIntent = await stripe.paymentIntents.create({
         amount: amountInCents,
         currency: 'cad',
         automatic_payment_methods: { enabled: true },
+        description: `${customerName} - ${itemsSummary}`.slice(0, 1000),
+        receipt_email: customerEmail,
         metadata: {
-          customerEmail,
           customerName,
-          supabaseUserId: supabaseUserId || '',
-          itemCount: items.length.toString(),
+          customerEmail,
+          customerPhone: customerPhone || '',
+          items: itemsSummary.slice(0, 500),
+          shippingAddress: addrLine.slice(0, 500),
           shippingProvince: province,
           shippingCity: shippingAddress?.city || '',
+          subtotal: subtotal.toFixed(2),
+          shipping: shippingCost.toFixed(2),
+          tps: tps.toFixed(2),
+          tvq: tvq.toFixed(2),
+          totalWeight: totalWeight.toString(),
+          itemCount: items.length.toString(),
+          designReady: designReady !== false ? 'oui' : 'non',
+          notes: (notes || '').slice(0, 500),
+          supabaseUserId: supabaseUserId || '',
         },
       });
 
