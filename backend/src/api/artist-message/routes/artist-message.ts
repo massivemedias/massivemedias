@@ -1,3 +1,4 @@
-import { factories } from '@strapi/strapi';
-
-export default factories.createCoreRouter('api::artist-message.artist-message');
+// Core router disabled - all routes are custom (custom-artist-message.ts)
+// The default core router was intercepting custom paths like /admin and /my-messages
+// by matching them as :id params (GET /artist-messages/:id) with auth required.
+export default { routes: [] };

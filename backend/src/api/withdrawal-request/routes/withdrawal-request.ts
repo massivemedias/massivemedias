@@ -1,3 +1,2 @@
-import { factories } from '@strapi/strapi';
-
-export default factories.createCoreRouter('api::withdrawal-request.withdrawal-request');
+// Core router disabled - all routes are custom (custom-withdrawal-request.ts)
+export default { routes: [] };
