@@ -5,7 +5,7 @@ import {
   DollarSign, Palette, Clock, CheckCircle,
   FileText, Loader2, AlertCircle, Package,
   Send, ImagePlus, Check, X, CreditCard, Download, ChevronDown, ChevronUp, ScrollText,
-  User, Heart, BarChart3, Banknote, Receipt, ExternalLink,
+  User, Heart, BarChart3, Banknote, Receipt, ExternalLink, Globe, Link2,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -50,6 +50,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
   const [imgSending, setImgSending] = useState(false);
   const [imgSuccess, setImgSuccess] = useState('');
   const [imgNote, setImgNote] = useState('');
+  const [imgSocials, setImgSocials] = useState({ instagram: '', website: '', facebook: '', tiktok: '', youtube: '', other: '' });
 
   // Messages (kept for sending image deposits as messages)
   const [messages, setMessages] = useState([]);
@@ -231,18 +232,29 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
 
     setImgSending(true);
     try {
+      // Build message with socials
+      const socialsLines = Object.entries(imgSocials)
+        .filter(([, v]) => v.trim())
+        .map(([k, v]) => `${k}: ${v.trim()}`)
+        .join('\n');
+      const fullMessage = [
+        imgNote.trim() || tx({ fr: 'Nouvelles images deposees', en: 'New images deposited', es: 'Nuevas imagenes depositadas' }),
+        socialsLines ? `\n---\nLiens:\n${socialsLines}` : '',
+      ].join('');
+
       await sendArtistMessage({
         artistSlug,
         artistName: artist?.name || artistSlug,
         email,
         subject: tx({ fr: 'Depot de nouvelles images', en: 'New image deposit', es: 'Deposito de nuevas imagenes' }),
-        message: imgNote.trim() || tx({ fr: 'Nouvelles images deposees', en: 'New images deposited', es: 'Nuevas imagenes depositadas' }),
+        message: fullMessage,
         category: 'new-images',
         attachments: imgFiles.map(f => ({ name: f.name, url: f.url, size: f.size, mime: f.mime })),
       });
       setImgSuccess(tx({ fr: 'Images envoyees avec succes!', en: 'Images sent successfully!', es: 'Imagenes enviadas con exito!' }));
       setImgFiles([]);
       setImgNote('');
+      setImgSocials({ instagram: '', website: '', facebook: '', tiktok: '', youtube: '', other: '' });
       // Refresh messages
       const { data } = await getMyMessages(email);
       setMessages(data.data || []);
@@ -847,6 +859,78 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
                   es: 'Instrucciones especiales, titulos de las obras, formatos deseados...',
                 })}
               />
+            </div>
+
+            {/* Liens sociaux */}
+            <div className="rounded-xl border border-purple-main/20 p-4 space-y-3">
+              <div className="flex items-center gap-2 mb-1">
+                <Link2 size={14} className="text-accent" />
+                <span className="text-[11px] text-grey-muted uppercase tracking-wider font-medium">
+                  {tx({ fr: 'Tes liens (optionnel)', en: 'Your links (optional)', es: 'Tus enlaces (opcional)' })}
+                </span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[10px] text-grey-muted mb-0.5 block">Instagram</label>
+                  <input
+                    type="url"
+                    value={imgSocials.instagram}
+                    onChange={(e) => setImgSocials(s => ({ ...s, instagram: e.target.value }))}
+                    className="input-field text-sm py-2"
+                    placeholder="https://instagram.com/..."
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] text-grey-muted mb-0.5 block">Site web</label>
+                  <input
+                    type="url"
+                    value={imgSocials.website}
+                    onChange={(e) => setImgSocials(s => ({ ...s, website: e.target.value }))}
+                    className="input-field text-sm py-2"
+                    placeholder="https://..."
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] text-grey-muted mb-0.5 block">Facebook</label>
+                  <input
+                    type="url"
+                    value={imgSocials.facebook}
+                    onChange={(e) => setImgSocials(s => ({ ...s, facebook: e.target.value }))}
+                    className="input-field text-sm py-2"
+                    placeholder="https://facebook.com/..."
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] text-grey-muted mb-0.5 block">TikTok</label>
+                  <input
+                    type="url"
+                    value={imgSocials.tiktok}
+                    onChange={(e) => setImgSocials(s => ({ ...s, tiktok: e.target.value }))}
+                    className="input-field text-sm py-2"
+                    placeholder="https://tiktok.com/@..."
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] text-grey-muted mb-0.5 block">YouTube</label>
+                  <input
+                    type="url"
+                    value={imgSocials.youtube}
+                    onChange={(e) => setImgSocials(s => ({ ...s, youtube: e.target.value }))}
+                    className="input-field text-sm py-2"
+                    placeholder="https://youtube.com/@..."
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] text-grey-muted mb-0.5 block">{tx({ fr: 'Autre lien', en: 'Other link', es: 'Otro enlace' })}</label>
+                  <input
+                    type="url"
+                    value={imgSocials.other}
+                    onChange={(e) => setImgSocials(s => ({ ...s, other: e.target.value }))}
+                    className="input-field text-sm py-2"
+                    placeholder="https://..."
+                  />
+                </div>
+              </div>
             </div>
 
             <button
