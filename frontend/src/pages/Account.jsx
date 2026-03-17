@@ -114,7 +114,7 @@ function Account() {
   const meta = user?.user_metadata || {};
 
   const tabFromUrl = searchParams.get('tab');
-  const validTabs = ['profile', 'address', 'security', 'overview', 'orders', 'artist', 'dashboard', 'profil-artiste', 'images', 'contrat', 'tarifs', 'retrait', 'ventes'];
+  const validTabs = ['profile', 'address', 'security', 'overview', 'orders', 'artist', 'dashboard', 'profil-artiste', 'contrat', 'tarifs', 'retrait', 'ventes'];
   const initialTab = (tabFromUrl && validTabs.includes(tabFromUrl)) ? tabFromUrl : (isAdmin ? 'profile' : isArtist ? 'dashboard' : 'overview');
   const [activeTab, setActiveTab] = useState(initialTab);
 
@@ -909,8 +909,7 @@ function Account() {
   // ============================================================
   const ARTIST_SIDEBAR_ITEMS = isArtist ? [
     { id: 'dashboard', label: tx({ fr: 'Tableau de bord', en: 'Dashboard', es: 'Panel' }), icon: Palette },
-    { id: 'profil-artiste', label: tx({ fr: 'Mon profil artiste', en: 'Artist profile', es: 'Perfil artista' }), icon: User },
-    { id: 'images', label: tx({ fr: 'Mes images', en: 'My images', es: 'Mis imagenes' }), icon: Heart },
+    { id: 'profil-artiste', label: tx({ fr: 'Mon profil', en: 'My profile', es: 'Mi perfil' }), icon: User },
     { id: 'contrat', label: tx({ fr: 'Contrat', en: 'Contract', es: 'Contrato' }), icon: ScrollText },
     { id: 'tarifs', label: tx({ fr: 'Tarifs Massive', en: 'Massive Pricing', es: 'Precios Massive' }), icon: Receipt },
     { id: 'ventes', label: tx({ fr: 'Mes ventes', en: 'My sales', es: 'Mis ventas' }), icon: BarChart3 },
@@ -919,7 +918,7 @@ function Account() {
 
   const [artistMobileOpen, setArtistMobileOpen] = useState(false);
 
-  const artistValidTabs = ['dashboard', 'profil-artiste', 'images', 'contrat', 'tarifs', 'retrait', 'ventes', 'profile', 'address', 'security', 'orders'];
+  const artistValidTabs = ['dashboard', 'profil-artiste', 'contrat', 'tarifs', 'retrait', 'ventes', 'profile', 'address', 'security', 'orders'];
 
   const getArtistSectionTitle = () => {
     const artistItem = ARTIST_SIDEBAR_ITEMS.find(i => i.id === activeTab);
@@ -1124,7 +1123,7 @@ function Account() {
                   transition={{ duration: 0.2 }}
                 >
                   {/* Artist sections */}
-                  {['dashboard', 'profil-artiste', 'images', 'contrat', 'tarifs', 'retrait', 'ventes'].includes(activeTab) && (
+                  {['dashboard', 'profil-artiste', 'contrat', 'tarifs', 'retrait', 'ventes'].includes(activeTab) && (
                     <Suspense fallback={<div className="flex items-center gap-2 text-grey-muted py-8 justify-center"><Loader2 size={16} className="animate-spin" /></div>}>
                       <AccountArtistDashboard section={activeTab} />
                     </Suspense>

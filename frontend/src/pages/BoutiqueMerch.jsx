@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useParams, Navigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingCart, Check, ArrowLeft } from 'lucide-react';
+import { ShoppingCart, Check, ArrowLeft, X, ZoomIn } from 'lucide-react';
 import SEO from '../components/SEO';
 import ColorDropdown from '../components/ColorDropdown';
 import { useLang } from '../i18n/LanguageContext';
@@ -97,6 +97,7 @@ function MerchPage({ config, type }) {
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
   const [notes, setNotes] = useState('');
+  const [lightbox, setLightbox] = useState(false);
 
   const colorObj = colors.find(c => c.id === selectedColor) || colors[0];
   const unitPrice = pricing.sizes[selectedSize] || pricing.base;
@@ -163,19 +164,25 @@ function MerchPage({ config, type }) {
             transition={{ duration: 0.5 }}
             className="lg:sticky lg:top-24"
           >
-            <div className="rounded-2xl bg-white p-6 md:p-10 overflow-hidden">
+            <div
+              className="rounded-2xl bg-white p-6 md:p-10 overflow-hidden cursor-zoom-in relative group"
+              onClick={() => setLightbox(true)}
+            >
               <AnimatePresence mode="wait">
                 <motion.img
                   key={selectedColor}
                   src={config.getImage(selectedColor)}
                   alt={`${productLabel} ${colorObj.name}`}
-                  className="w-full h-auto object-contain max-h-[500px] mx-auto"
+                  className="w-full h-auto object-contain max-h-[500px] mx-auto drop-shadow-[0_4px_20px_rgba(0,0,0,0.12)]"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.2 }}
                 />
               </AnimatePresence>
+              <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/5 transition-colors rounded-2xl">
+                <ZoomIn size={28} className="text-gray-400 opacity-0 group-hover:opacity-60 transition-opacity" />
+              </div>
             </div>
             <p className="text-center text-grey-muted text-sm mt-3 font-medium">{colorObj.name}</p>
           </motion.div>
@@ -284,6 +291,41 @@ function MerchPage({ config, type }) {
           </motion.div>
         </div>
       </div>
+
+      {/* Lightbox */}
+      <AnimatePresence>
+        {lightbox && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 cursor-zoom-out"
+            onClick={() => setLightbox(false)}
+          >
+            <button
+              onClick={() => setLightbox(false)}
+              className="absolute top-4 right-4 z-50 p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors text-white"
+            >
+              <X size={24} />
+            </button>
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              className="bg-white rounded-2xl p-6 md:p-10 max-w-3xl w-full max-h-[90vh] flex items-center justify-center"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <img
+                src={config.getImage(selectedColor)}
+                alt={`${productLabel} ${colorObj.name}`}
+                className="w-full h-auto object-contain max-h-[80vh] drop-shadow-[0_4px_20px_rgba(0,0,0,0.12)]"
+              />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }

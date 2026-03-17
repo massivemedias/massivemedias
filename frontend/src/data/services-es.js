@@ -102,7 +102,7 @@ También imprimimos flyers, postales y tarjetas de presentación - todo lo que n
     ],
     seo: {
       title: 'Impresion Fine Art Montreal | Tirajes Galeria, Posters & Flyers - Massive',
-      description: 'Tirajes fine art calidad galeria en Montreal. Impresion pigmentaria 12 colores en papel Hahnemuhle. Posters, flyers y tarjetas. Produccion local Mile-End, entrega 24-48h.',
+      description: 'Tirajes fine art calidad galeria en Montreal. Impresion pigmentaria 12 colores en papel Hahnemuhle. Posters, flyers y tarjetas. Produccion local Mile-End, envio local disponible.',
     },
   },
 
@@ -123,7 +123,7 @@ Cortados a la forma exacta de tu diseño con nuestro equipo de corte profesional
       'Laminación incluida - resistente al agua, UV, rayones',
       'Diseño gráfico del sticker incluido en el precio',
       'Entrega local disponible',
-      'Tiempo rápido: 24-72h',
+      'Produccion local Montreal',
     ],
     process: [
       { step: 1, title: 'Brief creativo', desc: 'Dinos lo que quieres - logo, ilustración, texto, forma personalizada' },
@@ -306,7 +306,7 @@ Trabajamos con Adobe Illustrator, Figma y Photoshop para crear visuales impactan
             ['Afiche / flyer de evento', '$150 - $300', '3-5 días'],
             ['Portada de álbum / single', '$200 - $400', '5-7 días'],
             ['Set de iconos', '$200 - $500', '3-7 días'],
-            ['Retoque fotográfico (por imagen)', '$15 - $50', '24-48h'],
+            ['Retoque fotográfico (por imagen)', '$15 - $50', 'Variable'],
           ],
         },
       ],

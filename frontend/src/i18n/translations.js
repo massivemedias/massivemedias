@@ -45,7 +45,7 @@ const translations = {
     home: {
       seo: {
         title: 'Massive | Impression Fine Art, Stickers Personnalisés, Merch, Design Graphique & Web - Montréal',
-        description: 'Massive - Studio d\'impression fine art et stickers personnalisés à Montréal. T-shirts, hoodies, sublimation textile, design graphique et webdesign. Production locale Mile-End, livraison gratuite 24-48h.',
+        description: 'Massive - Studio d\'impression fine art et stickers personnalisés à Montréal. T-shirts, hoodies, sublimation textile, design graphique et webdesign. Production locale Mile-End, livraison gratuite Montréal.',
       },
       hero: {
         tagline: 'Create. Print. Repeat.',
@@ -134,7 +134,7 @@ const translations = {
         title: 'Ce que nos clients disent',
         items: [
           { name: 'Samuel L.', role: 'Photographe', text: "Tirages fine art impeccables. La qualité des couleurs est fidèle à mes fichiers. Je recommande à tous les photographes de Montréal." },
-          { name: 'Marie-Ève D.', role: 'Promotrice d\'événements', text: "Stickers et affiches pour notre festival en 48h. Qualité et rapidité au rendez-vous. On revient chaque année!" },
+          { name: 'Marie-Ève D.', role: 'Promotrice d\'événements', text: "Stickers et affiches pour notre festival, qualité impeccable au rendez-vous. On revient chaque année!" },
           { name: 'Julien P.', role: 'Musicien', text: "Du merch pour notre tournée: t-shirts, stickers, affiches. Tout était parfait et livré dans les temps. Le one-stop shop idéal." },
         ],
       },
@@ -264,7 +264,7 @@ const translations = {
         ],
         urgencyOptions: [
           'Standard (5-7 jours)',
-          'Rush (24-48h)',
+          'Rush',
           'Flexible',
         ],
         submit: 'Envoyer ma demande',
@@ -406,7 +406,7 @@ const translations = {
     home: {
       seo: {
         title: 'Massive | Fine Art Printing, Custom Stickers, Merch, Graphic Design & Web - Montreal',
-        description: 'Massive - Fine art printing and custom stickers studio in Montreal. T-shirts, hoodies, textile sublimation, graphic design and web development. Local production Mile-End, free 24-48h delivery.',
+        description: 'Massive - Fine art printing and custom stickers studio in Montreal. T-shirts, hoodies, textile sublimation, graphic design and web development. Local production Mile-End, free Montreal delivery.',
       },
       hero: {
         tagline: 'Create. Print. Repeat.',
@@ -495,7 +495,7 @@ const translations = {
         title: 'What Our Clients Say',
         items: [
           { name: 'Samuel L.', role: 'Photographer', text: "Flawless fine art prints. Color quality is true to my files. I recommend to all Montreal photographers." },
-          { name: 'Marie-Ève D.', role: 'Event Promoter', text: "Stickers and posters for our festival in 48h. Quality and speed delivered. We come back every year!" },
+          { name: 'Marie-Ève D.', role: 'Event Promoter', text: "Stickers and posters for our festival, impeccable quality delivered. We come back every year!" },
           { name: 'Julien P.', role: 'Musician', text: "Merch for our tour: t-shirts, stickers, posters. Everything was perfect and delivered on time. The ideal one-stop shop." },
         ],
       },
@@ -625,7 +625,7 @@ const translations = {
         ],
         urgencyOptions: [
           'Standard (5-7 days)',
-          'Rush (24-48h)',
+          'Rush',
           'Flexible',
         ],
         submit: 'Send My Request',
@@ -767,7 +767,7 @@ const translations = {
     home: {
       seo: {
         title: 'Massive | Impresion Fine Art, Stickers Personalizados, Merch, Diseno Grafico & Web - Montreal',
-        description: 'Massive - Estudio de impresion fine art y stickers personalizados en Montreal. Camisetas, sudaderas, sublimacion textil, diseno grafico y desarrollo web. Produccion local Mile-End, entrega gratis 24-48h.',
+        description: 'Massive - Estudio de impresion fine art y stickers personalizados en Montreal. Camisetas, sudaderas, sublimacion textil, diseno grafico y desarrollo web. Produccion local Mile-End, entrega gratis Montreal.',
       },
       hero: {
         tagline: 'Create. Print. Repeat.',
@@ -856,7 +856,7 @@ const translations = {
         title: 'Lo que dicen nuestros clientes',
         items: [
           { name: 'Samuel L.', role: 'Fotógrafo', text: 'Impresiones fine art impecables. La calidad de color es fiel a mis archivos. Lo recomiendo a todos los fotógrafos de Montreal.' },
-          { name: 'Marie-Eve D.', role: 'Promotora de eventos', text: 'Stickers y carteles para nuestro festival en 48h. Calidad y rapidez garantizadas. ¡Volvemos cada año!' },
+          { name: 'Marie-Eve D.', role: 'Promotora de eventos', text: 'Stickers y carteles para nuestro festival, calidad impecable garantizada. ¡Volvemos cada año!' },
           { name: 'Julien P.', role: 'Músico', text: 'Merch para nuestra gira: camisetas, stickers, carteles. Todo perfecto y entregado a tiempo. La tienda ideal todo-en-uno.' },
         ],
       },
@@ -986,7 +986,7 @@ const translations = {
         ],
         urgencyOptions: [
           'Estándar (5-7 días)',
-          'Urgente (24-48h)',
+          'Urgente',
           'Flexible',
         ],
         submit: 'Enviar mi solicitud',

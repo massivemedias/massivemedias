@@ -694,6 +694,95 @@ export async function sendNewOrderNotificationEmail(data: NewOrderNotificationDa
 }
 
 // -----------------------------------------------------------
+// Email de suivi de colis (vers client)
+// -----------------------------------------------------------
+interface TrackingEmailData {
+  customerName: string;
+  customerEmail: string;
+  orderRef: string;
+  trackingNumber: string;
+  carrier: string;
+}
+
+function buildTrackingEmailHtml(data: TrackingEmailData): string {
+  const trackingUrl = data.carrier === 'postes-canada'
+    ? `https://www.canadapost-postescanada.ca/track-reperage/fr#/search?searchFor=${data.trackingNumber}`
+    : data.carrier === 'purolator'
+    ? `https://www.purolator.com/en/shipping/tracker?pin=${data.trackingNumber}`
+    : data.carrier === 'ups'
+    ? `https://www.ups.com/track?tracknum=${data.trackingNumber}`
+    : `https://www.canadapost-postescanada.ca/track-reperage/fr#/search?searchFor=${data.trackingNumber}`;
+
+  const carrierName = data.carrier === 'postes-canada' ? 'Postes Canada'
+    : data.carrier === 'purolator' ? 'Purolator'
+    : data.carrier === 'ups' ? 'UPS'
+    : 'Postes Canada';
+
+  const content = `
+    <h2 style="color:#e4e4f0;margin:0 0 8px;font-size:22px;">&#128230; Votre colis est en route !</h2>
+    <p style="color:#a0a0b8;margin:0 0 24px;font-size:15px;line-height:1.5;">
+      Bonjour ${data.customerName}, votre commande <strong style="color:#e4e4f0;font-family:monospace;background:#1e1e3a;padding:2px 8px;border-radius:4px;">${data.orderRef}</strong> a ete expediee.
+    </p>
+
+    <!-- Tracking info -->
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
+      <tr><td style="padding:20px;background:rgba(139,92,246,0.08);border-radius:12px;border:1px solid rgba(139,92,246,0.15);">
+        <table width="100%" cellpadding="0" cellspacing="0">
+          <tr>
+            <td style="padding:8px 0;color:#a0a0b8;font-size:13px;">Transporteur</td>
+            <td style="padding:8px 0;text-align:right;color:#e4e4f0;font-size:14px;font-weight:600;">${carrierName}</td>
+          </tr>
+          <tr>
+            <td style="padding:8px 0;color:#a0a0b8;font-size:13px;">Numero de suivi</td>
+            <td style="padding:8px 0;text-align:right;color:#FF52A0;font-size:14px;font-weight:700;font-family:monospace;">${data.trackingNumber}</td>
+          </tr>
+        </table>
+      </td></tr>
+    </table>
+
+    <!-- CTA Button -->
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 24px;">
+      <tr><td align="center">
+        <a href="${trackingUrl}" style="display:inline-block;background:linear-gradient(135deg,#FF52A0,#6B21A8);color:#ffffff;text-decoration:none;padding:14px 32px;border-radius:10px;font-size:16px;font-weight:700;letter-spacing:0.3px;box-shadow:0 4px 16px rgba(255,82,160,0.3);">
+          Suivre mon colis
+        </a>
+      </td></tr>
+    </table>
+
+    <p style="color:#666;margin:0;font-size:12px;line-height:1.5;">
+      Ou copiez ce lien dans votre navigateur :<br>
+      <a href="${trackingUrl}" style="color:#FF52A0;word-break:break-all;">${trackingUrl}</a>
+    </p>
+  `;
+
+  return massiveEmailWrapper(content);
+}
+
+export async function sendTrackingEmail(data: TrackingEmailData): Promise<boolean> {
+  const resend = getResend();
+  if (!resend) {
+    console.warn('[email] Resend non configure, email suivi non envoye');
+    return false;
+  }
+
+  const sender = getSender();
+
+  try {
+    await resend.emails.send({
+      ...sender,
+      to: data.customerEmail,
+      subject: `Votre colis est en route ! - ${data.orderRef}`,
+      html: buildTrackingEmailHtml(data),
+    });
+    console.log('[email] Email suivi envoye a', data.customerEmail);
+    return true;
+  } catch (err) {
+    console.error('[email] Erreur envoi email suivi:', err);
+    return false;
+  }
+}
+
+// -----------------------------------------------------------
 // Email de notification de nouveau message contact (vers admin)
 // -----------------------------------------------------------
 interface NewContactData {

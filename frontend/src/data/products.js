@@ -91,7 +91,7 @@ export const stickerHighlights = {
     'Lamination incluse - résistant eau, UV, rayures',
     'Design graphique inclus dans le prix',
     'Livraison locale disponible',
-    'Délai rapide : 24-72h',
+    'Production locale Montreal',
   ],
   en: [
     'Professional precision cutting',
@@ -100,7 +100,7 @@ export const stickerHighlights = {
     'Lamination included - water, UV, scratch resistant',
     'Graphic design included in price',
     'Local delivery available',
-    'Fast turnaround: 24-72h',
+    'Local production Montreal',
   ],
   es: [
     'Corte de precisión profesional',
@@ -109,14 +109,14 @@ export const stickerHighlights = {
     'Laminación incluida - resistente al agua, UV, rayaduras',
     'Diseño gráfico incluido en el precio',
     'Entrega local disponible',
-    'Plazo rápido: 24-72h',
+    'Produccion local Montreal',
   ],
 };
 
 export const stickerFaq = {
   fr: [
     { q: 'Quels fichiers dois-je fournir?', a: 'Idéalement un fichier vectoriel (AI, SVG, PDF) ou un PNG haute résolution (300 DPI minimum) avec fond transparent. Si vous n\'avez pas de fichier prêt, notre service de design graphique est inclus dans le prix.' },
-    { q: 'Quel est le délai de production?', a: 'Production en 24 à 72 heures selon la complexité et la quantité. Nous vous confirmerons le délai exact lors de la validation de votre commande.' },
+    { q: 'Quel est le délai de production?', a: 'Le delai de production varie selon la complexite et la quantite. Contactez-nous pour un estime. Nous vous confirmerons le délai exact lors de la validation de votre commande.' },
     { q: 'Peut-on commander une forme totalement custom?', a: 'Oui! L\'option die-cut permet de découper vos stickers selon n\'importe quelle forme. Le contour suit exactement votre design.' },
     { q: 'Quelle est la qualité du vinyle?', a: 'Nous utilisons du vinyle professionnel avec lamination intégrée. Résistant à l\'eau, aux UV et aux rayures. Durée de vie extérieure de 3-5 ans.' },
     { q: 'La livraison est-elle disponible?', a: 'Livraison locale gratuite à Montréal (Mile-End et environs). Envoi postal disponible partout au Canada.' },
@@ -308,7 +308,7 @@ export const sublimationFaq = {
     { q: 'Puis-je fournir mon propre design?', a: 'Oui! Si vous avez un design prêt, le prix est celui affiché. Si vous avez besoin de création graphique, un supplément de 100-150$ s\'applique selon la complexité.' },
     { q: 'Quelle est la quantité minimale?', a: 'Nous acceptons les commandes à partir d\'une seule unité. Les prix sont dégressifs à partir de 5 et 10 unités.' },
     { q: 'L\'impression est-elle vraiment permanente?', a: 'Oui, la sublimation produit une impression permanente intégrée dans la fibre. Pas de texture en relief, pas de craquement après lavage. Les couleurs restent vibrantes.' },
-    { q: 'Quel est le délai de production?', a: 'Généralement 3 à 5 jours ouvrables selon la quantité. Délai express disponible sur demande.' },
+    { q: 'Quel est le délai de production?', a: 'Le délai varie selon la quantité. Contactez-nous pour un estimé.' },
   ],
   en: [
     { q: 'What is sublimation?', a: 'Sublimation is a printing process that transfers ink directly into the fabric fiber at high temperature. The result is a permanent print that doesn\'t crack, doesn\'t fade, and is wash-resistant.' },
@@ -316,7 +316,7 @@ export const sublimationFaq = {
     { q: 'Can I provide my own design?', a: 'Yes! If you have a ready design, the price shown applies. If you need graphic design, an additional $100-150 applies depending on complexity.' },
     { q: 'What is the minimum quantity?', a: 'We accept orders starting from a single unit. Prices decrease at 5 and 10 units.' },
     { q: 'Is the print really permanent?', a: 'Yes, sublimation produces a permanent print integrated into the fiber. No raised texture, no cracking after washing. Colors stay vibrant.' },
-    { q: 'What is the production time?', a: 'Generally 3 to 5 business days depending on quantity. Express turnaround available on request.' },
+    { q: 'What is the production time?', a: 'Production time varies depending on quantity. Contact us for an estimate.' },
   ],
   es: [
     { q: '¿Qué es la sublimación?', a: 'La sublimación es un proceso de impresión que transfiere la tinta directamente en la fibra del tejido a alta temperatura. El resultado es una impresión permanente que no se agrieta, no se desvanece y resiste el lavado.' },
@@ -324,7 +324,7 @@ export const sublimationFaq = {
     { q: '¿Puedo proporcionar mi propio diseño?', a: '¡Sí! Si tienes un diseño listo, el precio mostrado aplica. Si necesitas diseño gráfico, se aplica un suplemento de $100-150 según la complejidad.' },
     { q: '¿Cuál es la cantidad mínima?', a: 'Aceptamos pedidos desde una sola unidad. Los precios son decrecientes a partir de 5 y 10 unidades.' },
     { q: '¿La impresión es realmente permanente?', a: 'Sí, la sublimación produce una impresión permanente integrada en la fibra. Sin textura en relieve, sin agrietamiento después del lavado. Los colores se mantienen vibrantes.' },
-    { q: '¿Cuál es el plazo de producción?', a: 'Generalmente de 3 a 5 días hábiles según la cantidad. Plazo express disponible bajo pedido.' },
+    { q: '¿Cuál es el plazo de producción?', a: 'El plazo varía según la cantidad. Contáctanos para un estimado.' },
   ],
 };
 
@@ -370,7 +370,7 @@ export const flyerFaq = {
     { q: 'Quels formats proposez-vous?', a: 'Flyers A6 (4"×6"), A5, lettre (8,5×11"). Cartes postales et cartes d\'affaires. Formats personnalisés disponibles sur demande.' },
     { q: 'Quel papier utilisez-vous?', a: 'Papier premium 300g+ en finition matte ou brillante. Qualité professionnelle supérieure à l\'impression en ligne standard.' },
     { q: 'Offrez-vous l\'impression recto-verso?', a: 'Oui! L\'option recto-verso est disponible avec un supplément de 30%. Parfait pour les cartes d\'affaires et flyers avec plus d\'informations.' },
-    { q: 'Quel est le délai de production?', a: 'Délai standard de 24 à 48 heures. Service express disponible le jour même pour les urgences.' },
+    { q: 'Quel est le délai de production?', a: 'Le délai varie selon la quantité. Service express disponible sur demande.' },
     { q: 'Puis-je faire faire le design aussi?', a: 'Oui, notre service de design graphique est disponible en option. Contactez-nous pour un devis incluant la création graphique.' },
     { q: 'La livraison est-elle disponible?', a: 'Pick-up gratuit au Mile-End. Livraison locale disponible à Montréal. Idéal pour les événements du Plateau et Mile-End.' },
   ],
@@ -378,7 +378,7 @@ export const flyerFaq = {
     { q: 'What formats do you offer?', a: 'A6 (4"×6"), A5, letter (8.5×11") flyers. Postcards and business cards. Custom formats available on request.' },
     { q: 'What paper do you use?', a: 'Premium 300g+ paper in matte or glossy finish. Professional quality superior to standard online printing.' },
     { q: 'Do you offer double-sided printing?', a: 'Yes! Double-sided option is available with a 30% surcharge. Perfect for business cards and flyers with more information.' },
-    { q: 'What is the production time?', a: 'Standard turnaround of 24 to 48 hours. Same-day express service available for urgent needs.' },
+    { q: 'What is the production time?', a: 'Production time varies depending on quantity. Express service available on request.' },
     { q: 'Can you design my flyers too?', a: 'Yes, our graphic design service is available as an option. Contact us for a quote including graphic creation.' },
     { q: 'Is delivery available?', a: 'Free pick-up in Mile-End. Local delivery available in Montreal. Ideal for Plateau and Mile-End events.' },
   ],
@@ -386,7 +386,7 @@ export const flyerFaq = {
     { q: '¿Qué formatos ofrecen?', a: 'Flyers A6 (4"x6"), A5, carta (8,5x11"). Postales y tarjetas de presentación. Formatos personalizados disponibles bajo pedido.' },
     { q: '¿Qué papel utilizan?', a: 'Papel premium de 300g+ en acabado mate o brillante. Calidad profesional superior a la impresión en línea estándar.' },
     { q: '¿Ofrecen impresión a doble cara?', a: '¡Sí! La opción a doble cara está disponible con un suplemento del 30%. Perfecto para tarjetas de presentación y flyers con más información.' },
-    { q: '¿Cuál es el plazo de producción?', a: 'Plazo estándar de 24 a 48 horas. Servicio express disponible el mismo día para urgencias.' },
+    { q: '¿Cuál es el plazo de producción?', a: 'El plazo varía según la cantidad. Servicio express disponible bajo pedido.' },
     { q: '¿Pueden hacer el diseño también?', a: 'Sí, nuestro servicio de diseño gráfico está disponible como opción. Contáctanos para un presupuesto que incluya la creación gráfica.' },
     { q: '¿Hay entrega disponible?', a: 'Recogida gratuita en Mile-End. Entrega local disponible en Montreal. Ideal para eventos del Plateau y Mile-End.' },
   ],
@@ -402,7 +402,7 @@ export const designServices = [
   { id: 'poster', labelFr: 'Affiche / flyer événement', labelEn: 'Event poster / flyer', labelEs: 'Afiche / flyer de evento', priceRange: '150$ - 300$', timelineFr: '3-5 jours', timelineEn: '3-5 days', timelineEs: '3-5 días' },
   { id: 'album', labelFr: 'Pochette album / single', labelEn: 'Album / single cover', labelEs: 'Portada de álbum / single', priceRange: '200$ - 400$', timelineFr: '5-7 jours', timelineEn: '5-7 days', timelineEs: '5-7 días' },
   { id: 'icons', labelFr: 'Design d\'icônes (set)', labelEn: 'Icon set design', labelEs: 'Set de íconos', priceRange: '200$ - 500$', timelineFr: '3-7 jours', timelineEn: '3-7 days', timelineEs: '3-7 días' },
-  { id: 'retouching', labelFr: 'Retouche photo (par image)', labelEn: 'Photo retouching (per image)', labelEs: 'Retoque fotográfico (por imagen)', priceRange: '15$ - 50$', timelineFr: '24-48h', timelineEn: '24-48h', timelineEs: '24-48h' },
+  { id: 'retouching', labelFr: 'Retouche photo (par image)', labelEn: 'Photo retouching (per image)', labelEs: 'Retoque fotográfico (por imagen)', priceRange: '15$ - 50$', timelineFr: 'Variable', timelineEn: 'Variable', timelineEs: 'Variable' },
 ];
 
 export const designImages = [

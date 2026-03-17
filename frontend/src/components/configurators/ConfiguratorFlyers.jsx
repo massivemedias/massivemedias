@@ -160,7 +160,7 @@ function ConfiguratorFlyers() {
       </Link>
 
       <p className="text-grey-muted text-xs mt-3 text-center">
-        {tx({ fr: 'Design graphique disponible en option. D\u00e9lai express 24h disponible.', en: 'Graphic design available as an option. 24h express turnaround available.', es: 'Dise\u00f1o gr\u00e1fico disponible como opci\u00f3n. Entrega express 24h disponible.' })}
+        {tx({ fr: 'Design graphique disponible en option. Service express disponible sur demande.', en: 'Graphic design available as an option. Express service available on request.', es: 'Diseño gráfico disponible como opción. Servicio express disponible bajo pedido.' })}
       </p>
     </>
   );

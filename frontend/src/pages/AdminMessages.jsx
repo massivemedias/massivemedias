@@ -31,7 +31,12 @@ function Linkify({ text }) {
       else if (part.includes('youtube.com') || part.includes('youtu.be')) label = 'YouTube';
       else if (part.includes('gallea.ca')) label = 'Gallea';
       else {
-        try { label = new URL(part).hostname.replace('www.', ''); } catch { label = part; }
+        try {
+          const h = new URL(part).hostname.replace('www.', '');
+          const domainParts = h.split('.');
+          const main = domainParts.length >= 2 ? domainParts[domainParts.length - 2] : domainParts[0];
+          label = main.charAt(0).toUpperCase() + main.slice(1);
+        } catch { label = part; }
       }
       return (
         <a key={i} href={part} target="_blank" rel="noopener noreferrer"

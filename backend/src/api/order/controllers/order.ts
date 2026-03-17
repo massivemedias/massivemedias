@@ -1,7 +1,7 @@
 import { factories } from '@strapi/strapi';
 import Stripe from 'stripe';
 import { calculateShipping } from '../../../utils/shipping';
-import { sendOrderConfirmationEmail, sendTestimonialRequestEmail, sendArtistSaleNotificationEmail, sendNewOrderNotificationEmail } from '../../../utils/email';
+import { sendOrderConfirmationEmail, sendTestimonialRequestEmail, sendArtistSaleNotificationEmail, sendNewOrderNotificationEmail, sendTrackingEmail } from '../../../utils/email';
 import crypto from 'crypto';
 
 const getStripe = () => {
@@ -550,6 +550,51 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
       documentId: order.documentId,
       data: { notes: notes || '' },
     });
+
+    ctx.body = { data: updated };
+  },
+
+  async addTracking(ctx) {
+    const { documentId } = ctx.params;
+    const { trackingNumber, carrier } = ctx.request.body as any;
+
+    if (!trackingNumber) {
+      return ctx.badRequest('Numero de suivi requis');
+    }
+
+    const order = await strapi.documents('api::order.order').findFirst({
+      filters: { documentId },
+    });
+
+    if (!order) {
+      return ctx.notFound('Commande introuvable');
+    }
+
+    const updated = await strapi.documents('api::order.order').update({
+      documentId: order.documentId,
+      data: {
+        trackingNumber,
+        carrier: carrier || 'postes-canada',
+        status: 'shipped',
+      },
+    });
+
+    strapi.log.info(`Commande ${documentId} tracking: ${trackingNumber} (${carrier || 'postes-canada'})`);
+
+    // Envoyer email de suivi au client
+    if ((order as any).customerEmail) {
+      try {
+        await sendTrackingEmail({
+          customerName: (order as any).customerName || 'Client',
+          customerEmail: (order as any).customerEmail,
+          orderRef: (order as any).orderRef || documentId.slice(0, 7).toUpperCase(),
+          trackingNumber,
+          carrier: carrier || 'postes-canada',
+        });
+      } catch (err) {
+        strapi.log.error('Erreur envoi email suivi:', err);
+      }
+    }
 
     ctx.body = { data: updated };
   },

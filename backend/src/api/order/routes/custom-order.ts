@@ -81,6 +81,14 @@ export default {
       },
     },
     {
+      method: 'PUT',
+      path: '/orders/:documentId/tracking',
+      handler: 'order.addTracking',
+      config: {
+        auth: false,
+      },
+    },
+    {
       method: 'DELETE',
       path: '/orders/:documentId',
       handler: 'order.deleteOrder',

@@ -8,7 +8,7 @@ import {
   Download, Receipt, Trash2,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
-import { getOrders, getOrderStats, updateOrderStatus, updateOrderNotes, deleteOrder } from '../services/adminService';
+import { getOrders, getOrderStats, updateOrderStatus, updateOrderNotes, updateOrderTracking, deleteOrder } from '../services/adminService';
 import { generateInvoicePDF } from '../utils/generateInvoice';
 
 const ORDER_STATUS = {
@@ -50,6 +50,9 @@ function AdminOrders() {
   const [savingNotes, setSavingNotes] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+  const [trackingInputs, setTrackingInputs] = useState({});
+  const [trackingCarrier, setTrackingCarrier] = useState({});
+  const [savingTracking, setSavingTracking] = useState(null);
 
   // Debounce search
   useEffect(() => {
@@ -106,6 +109,23 @@ function AdminOrders() {
       // silent
     } finally {
       setSavingNotes(null);
+    }
+  };
+
+  const handleSaveTracking = async (documentId) => {
+    const tracking = trackingInputs[documentId]?.trim();
+    if (!tracking) return;
+    setSavingTracking(documentId);
+    try {
+      const carrier = trackingCarrier[documentId] || 'postes-canada';
+      await updateOrderTracking(documentId, tracking, carrier);
+      setOrders(prev => prev.map(o =>
+        o.documentId === documentId ? { ...o, trackingNumber: tracking, carrier, status: 'shipped' } : o
+      ));
+    } catch {
+      // silent
+    } finally {
+      setSavingTracking(null);
     }
   };
 
@@ -562,6 +582,76 @@ function AdminOrders() {
                                 </span>
                               </div>
                             </div>
+                          </div>
+
+                          {/* Suivi de colis */}
+                          <div className="rounded-lg bg-glass p-4">
+                            <h4 className="text-xs font-semibold text-grey-muted uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                              <Truck size={12} />
+                              {tx({ fr: 'Suivi de colis', en: 'Package tracking', es: 'Seguimiento de paquete' })}
+                            </h4>
+                            {order.trackingNumber ? (
+                              <div className="space-y-2">
+                                <div className="flex items-center gap-3">
+                                  <span className="text-sm text-heading font-mono font-bold">{order.trackingNumber}</span>
+                                  <span className="text-xs text-grey-muted">
+                                    {order.carrier === 'purolator' ? 'Purolator' : order.carrier === 'ups' ? 'UPS' : 'Postes Canada'}
+                                  </span>
+                                </div>
+                                <a
+                                  href={order.carrier === 'purolator'
+                                    ? `https://www.purolator.com/en/shipping/tracker?pin=${order.trackingNumber}`
+                                    : order.carrier === 'ups'
+                                    ? `https://www.ups.com/track?tracknum=${order.trackingNumber}`
+                                    : `https://www.canadapost-postescanada.ca/track-reperage/fr#/search?searchFor=${order.trackingNumber}`
+                                  }
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-accent/20 text-accent hover:bg-accent/30 transition-colors"
+                                >
+                                  <ExternalLink size={12} />
+                                  {tx({ fr: 'Suivre le colis', en: 'Track package', es: 'Rastrear paquete' })}
+                                </a>
+                              </div>
+                            ) : (
+                              <div className="space-y-3" onClick={(e) => e.stopPropagation()}>
+                                <div className="flex gap-2">
+                                  <select
+                                    value={trackingCarrier[order.documentId] || 'postes-canada'}
+                                    onChange={(e) => setTrackingCarrier(prev => ({ ...prev, [order.documentId]: e.target.value }))}
+                                    className="input-field text-sm py-2 w-auto"
+                                  >
+                                    <option value="postes-canada">Postes Canada</option>
+                                    <option value="purolator">Purolator</option>
+                                    <option value="ups">UPS</option>
+                                    <option value="autre">{tx({ fr: 'Autre', en: 'Other', es: 'Otro' })}</option>
+                                  </select>
+                                  <input
+                                    type="text"
+                                    value={trackingInputs[order.documentId] || ''}
+                                    onChange={(e) => setTrackingInputs(prev => ({ ...prev, [order.documentId]: e.target.value }))}
+                                    placeholder={tx({ fr: 'Numero de suivi...', en: 'Tracking number...', es: 'Numero de seguimiento...' })}
+                                    className="input-field text-sm py-2 flex-1 font-mono"
+                                  />
+                                  <button
+                                    onClick={() => handleSaveTracking(order.documentId)}
+                                    disabled={savingTracking === order.documentId || !trackingInputs[order.documentId]?.trim()}
+                                    className="px-3 py-2 rounded-lg bg-accent text-white text-xs font-semibold hover:bg-accent/80 transition-colors disabled:opacity-50 flex items-center gap-1 flex-shrink-0"
+                                  >
+                                    {savingTracking === order.documentId ? <Loader2 size={12} className="animate-spin" /> : <Truck size={12} />}
+                                    {tx({ fr: 'Envoyer', en: 'Send', es: 'Enviar' })}
+                                  </button>
+                                </div>
+                                <p className="text-[10px] text-grey-muted">
+                                  {tx({
+                                    fr: 'Le client recevra un email automatique avec le lien de suivi.',
+                                    en: 'The customer will receive an automatic email with the tracking link.',
+                                    es: 'El cliente recibira un email automatico con el enlace de seguimiento.',
+                                  })}
+                                </p>
+                              </div>
+                            )}
                           </div>
 
                           {/* Admin notes + delete */}

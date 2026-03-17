@@ -5,6 +5,7 @@ export const getOrders = (params) => api.get('/orders/admin', { params });
 export const getOrderStats = () => api.get('/orders/stats');
 export const updateOrderStatus = (documentId, status) => api.put(`/orders/${documentId}/status`, { status });
 export const updateOrderNotes = (documentId, notes) => api.put(`/orders/${documentId}/notes`, { notes });
+export const updateOrderTracking = (documentId, trackingNumber, carrier) => api.put(`/orders/${documentId}/tracking`, { trackingNumber, carrier });
 export const deleteOrder = (documentId) => api.delete(`/orders/${documentId}`);
 
 // --- Messages contact ---

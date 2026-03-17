@@ -161,6 +161,10 @@ const artistsData = {
       museum: { a4: 75, a3: 120, a3plus: 160, a2: 190 },
       framePrice: 30,
     },
+    socials: {
+      facebook: 'https://www.facebook.com/quentind',
+      instagram: 'https://www.instagram.com/poppip.art/',
+    },
   },
   'no-pixl': {
     slug: 'no-pixl',

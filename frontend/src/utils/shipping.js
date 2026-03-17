@@ -72,19 +72,19 @@ export function calculateTotalWeight(items) {
 // --- Tarifs livraison par zone ---
 
 const QUEBEC_TIERS = [
-  { maxGrams: 500,    price: 8 },
-  { maxGrams: 1000,   price: 12 },
-  { maxGrams: 2000,   price: 15 },
-  { maxGrams: 5000,   price: 20 },
-  { maxGrams: Infinity, price: 28 },
+  { maxGrams: 500,    price: 12 },
+  { maxGrams: 1000,   price: 16 },
+  { maxGrams: 2000,   price: 20 },
+  { maxGrams: 5000,   price: 28 },
+  { maxGrams: Infinity, price: 38 },
 ];
 
 const CANADA_TIERS = [
-  { maxGrams: 500,    price: 14 },
-  { maxGrams: 1000,   price: 18 },
-  { maxGrams: 2000,   price: 22 },
-  { maxGrams: 5000,   price: 30 },
-  { maxGrams: Infinity, price: 40 },
+  { maxGrams: 500,    price: 16 },
+  { maxGrams: 1000,   price: 22 },
+  { maxGrams: 2000,   price: 28 },
+  { maxGrams: 5000,   price: 38 },
+  { maxGrams: Infinity, price: 50 },
 ];
 
 function getTierPrice(tiers, weightGrams) {

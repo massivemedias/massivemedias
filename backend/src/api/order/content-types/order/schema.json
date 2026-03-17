@@ -83,6 +83,14 @@
       "type": "integer",
       "default": 0
     },
+    "trackingNumber": {
+      "type": "string"
+    },
+    "carrier": {
+      "type": "enumeration",
+      "enum": ["postes-canada", "purolator", "ups", "autre"],
+      "default": "postes-canada"
+    },
     "client": {
       "type": "relation",
       "relation": "manyToOne",

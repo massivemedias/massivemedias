@@ -373,8 +373,8 @@ function Home() {
           <Counter end={150} suffix="+" label={t('home.stats.projects')} />
           <Counter end={100} suffix="%" label={t('home.stats.local')} />
           <div className="text-center p-6">
-            <div className="text-5xl md:text-6xl font-heading font-bold text-gradient mb-2 hero-title">24-48h</div>
-            <div className="text-grey-light text-lg">{t('home.stats.delay')}</div>
+            <div className="text-5xl md:text-6xl font-heading font-bold text-gradient mb-2 hero-title">100%</div>
+            <div className="text-grey-light text-lg">{tx({ fr: 'Qualite garantie', en: 'Guaranteed quality', es: 'Calidad garantizada' })}</div>
           </div>
         </div>
       </section>
@@ -391,7 +391,7 @@ function Home() {
             {[
               { icon: Shield, fr: 'La promesse Massive', en: 'The Massive Promise', es: 'La promesa Massive', descFr: 'Satisfaction garantie ou on refait', descEn: 'Satisfaction guaranteed or we redo it', descEs: 'Satisfaccion garantizada o lo rehacemos' },
               { icon: MapPin, fr: 'Imprimé à Montréal', en: 'Printed in Montreal', es: 'Impreso en Montreal', descFr: 'Production 100% locale, Mile-End', descEn: '100% local production, Mile-End', descEs: 'Producción 100% local, Mile-End' },
-              { icon: Clock, fr: 'Délai rapide', en: 'Fast turnaround', es: 'Entrega rápida', descFr: '24-48h sur la plupart des produits', descEn: '24-48h on most products', descEs: '24-48h en la mayoría de productos' },
+              { icon: Clock, fr: 'Production locale', en: 'Local production', es: 'Produccion local', descFr: 'Fabrique a Montreal, Mile-End', descEn: 'Made in Montreal, Mile-End', descEs: 'Hecho en Montreal, Mile-End' },
               { icon: Heart, fr: 'Design inclus', en: 'Design included', es: 'Diseño incluido', descFr: 'Création graphique incluse', descEn: 'Graphic design included', descEs: 'Creación gráfica incluida' },
             ].map((item, i) => {
               const Icon = item.icon;

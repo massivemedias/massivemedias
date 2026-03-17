@@ -12,14 +12,14 @@ function BoutiqueFlyers() {
   const trustItems = [
     { icon: FileText, fr: 'Papier premium 300g+', en: 'Premium 300g+ paper', es: 'Papel premium 300g+' },
     { icon: Shield, fr: 'Qualit\u00e9 professionnelle', en: 'Professional quality', es: 'Calidad profesional' },
-    { icon: Sparkles, fr: 'D\u00e9lai express 24h', en: '24h express turnaround', es: 'Plazo express 24h' },
+    { icon: Sparkles, fr: 'Production locale', en: 'Local production', es: 'Producción local' },
     { icon: Truck, fr: 'Pick-up gratuit Mile-End', en: 'Free pick-up Mile-End', es: 'Recogida gratis Mile-End' },
   ];
 
   const features = [
     { icon: FileText, fr: 'Papier premium', en: 'Premium paper', es: 'Papel premium', descFr: 'Papier 300g+ en finition matte ou brillante. Qualit\u00e9 sup\u00e9rieure \u00e0 l\'impression en ligne standard.', descEn: 'Premium 300g+ paper in matte or glossy finish. Quality superior to standard online printing.', descEs: 'Papel 300g+ en acabado mate o brillante. Calidad superior a la impresi\u00f3n en l\u00ednea est\u00e1ndar.' },
     { icon: Shield, fr: 'Impression pro', en: 'Pro printing', es: 'Impresi\u00f3n profesional', descFr: 'Imprimante professionnelle 12 couleurs pigment\u00e9es. Couleurs vibrantes et pr\u00e9cises m\u00eame pour les flyers.', descEn: 'Professional 12-color pigmented printer. Vibrant and precise colors even for flyers.', descEs: 'Impresora profesional de 12 colores pigmentados. Colores vibrantes y precisos incluso para flyers.' },
-    { icon: Sparkles, fr: 'Service rapide', en: 'Fast service', es: 'Servicio r\u00e1pido', descFr: 'D\u00e9lai standard 24-48h. Service express le jour m\u00eame disponible pour les urgences.', descEn: 'Standard 24-48h turnaround. Same-day express service available for urgent needs.', descEs: 'Plazo est\u00e1ndar 24-48h. Servicio express el mismo d\u00eda disponible para urgencias.' },
+    { icon: Sparkles, fr: 'Service rapide', en: 'Fast service', es: 'Servicio r\u00e1pido', descFr: 'Production locale Mile-End. Service express disponible sur demande.', descEn: 'Local production Mile-End. Express service available on request.', descEs: 'Producción local Mile-End. Servicio express disponible bajo pedido.' },
   ];
 
   const useCases = [
@@ -51,7 +51,7 @@ function BoutiqueFlyers() {
         en: 'Fast printing for events and promotions.',
         es: 'Impresi\u00f3n r\u00e1pida para eventos y promociones.',
       }}
-      badge={{ fr: 'Express 24h', en: '24h Express', es: 'Express 24h', icon: Sparkles }}
+      badge={{ fr: 'Express', en: 'Express', es: 'Express', icon: Sparkles }}
       trustItems={trustItems}
       features={features}
       featuresTitle={{ fr: 'Pourquoi nos flyers?', en: 'Why our flyers?', es: '\u00bfPor qu\u00e9 nuestros flyers?' }}

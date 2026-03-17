@@ -97,12 +97,12 @@ Nous imprimons aussi des flyers, cartes postales et cartes d'affaires - tout ce 
       { q: 'Quelle est la différence entre Série Studio et Série Musée?', a: 'La Série Studio utilise une imprimante 4 encres pigmentées, excellente pour decoration et cadeaux. La Série Musée utilise une imprimante 12 encres pigmentées pour une fidélité galerie et une longévité de 100+ ans.' },
       { q: 'Quel format de fichier dois-je fournir?', a: 'Idéalement un fichier haute résolution (300 DPI minimum) en TIFF, PNG ou JPEG. On peut aussi travailler à partir de fichiers PSD ou PDF.' },
       { q: 'Offrez-vous l\'encadrement?', a: 'Oui, on propose l\'encadrement sur demande à partir de 30$. Cadres noirs, blancs ou bois naturel disponibles.' },
-      { q: 'Quel est le délai de production?', a: 'Généralement 24 à 48 heures pour les tirages standards. Les commandes en volume ou grand format peuvent nécessiter 3 à 5 jours.' },
+      { q: 'Quel est le délai de production?', a: 'Le delai varie selon le type de tirage et la quantite. Contactez-nous pour un estime.' },
       { q: 'Peut-on récupérer sur place?', a: 'Oui! Pick-up gratuit au Mile-End. On offre aussi la livraison locale à Montréal.' },
     ],
     seo: {
       title: 'Impression Fine Art Montréal | Tirages Galerie, Posters & Affiches - Massive',
-      description: 'Tirages fine art qualité galerie à Montréal. Impression pigmentaire 12 couleurs sur papier Hahnemühle. Posters, affiches, flyers et cartes. Production locale Mile-End, livraison 24-48h.',
+      description: 'Tirages fine art qualité galerie à Montréal. Impression pigmentaire 12 couleurs sur papier Hahnemühle. Posters, affiches, flyers et cartes. Production locale Mile-End, livraison locale disponible.',
     },
   },
 
@@ -123,7 +123,7 @@ Découpés à la forme exacte de ton design avec notre équipement de découpe p
       'Lamination incluse - résistant eau, UV, rayures',
       'Création graphique du sticker incluse dans le prix',
       'Livraison locale disponible',
-      'Délai rapide : 24-72h',
+      'Production locale Montreal',
     ],
     process: [
       { step: 1, title: 'Brief créatif', desc: 'Dis-nous ce que tu veux - logo, illustration, texte, forme custom' },
@@ -288,7 +288,7 @@ Nous travaillons avec Adobe Illustrator, Figma et Photoshop pour créer des visu
             ['Affiche / flyer événement', '150$ - 300$', '3-5 jours'],
             ['Pochette album / single', '200$ - 400$', '5-7 jours'],
             ['Design d\'icônes (set)', '200$ - 500$', '3-7 jours'],
-            ['Retouche photo (par image)', '15$ - 50$', '24-48h'],
+            ['Retouche photo (par image)', '15$ - 50$', 'Variable'],
           ],
         },
       ],

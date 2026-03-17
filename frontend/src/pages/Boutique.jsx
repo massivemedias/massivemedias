@@ -36,12 +36,6 @@ const defaultSaleItems = [
     descFr: 'Pack de stickers vinyle die-cut Massive Medias', descEn: 'Massive Medias die-cut vinyl sticker pack', descEs: 'Pack de stickers vinilo troquelados Massive Medias',
     link: null, type: 'sticker',
   },
-  {
-    id: 'sale-stk-fusion', nameFr: 'Pack Stickers Fusion State', nameEn: 'Fusion State Sticker Pack', nameEs: 'Pack Stickers Fusion State',
-    image: img('/images/stickers/Stickers-Fusion-State-Rec.webp'), originalPrice: 35, salePrice: 20,
-    descFr: 'Pack de stickers vinyle die-cut Fusion State Records', descEn: 'Fusion State Records die-cut vinyl sticker pack', descEs: 'Pack de stickers vinilo troquelados Fusion State Records',
-    link: null, type: 'sticker',
-  },
 ];
 
 // Cartes cadeaux

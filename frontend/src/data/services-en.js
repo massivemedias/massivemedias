@@ -102,7 +102,7 @@ We also print flyers, postcards and business cards - everything you need to prom
     ],
     seo: {
       title: 'Fine Art Printing Montreal | Gallery Prints, Posters & Flyers - Massive',
-      description: 'Gallery-quality fine art prints in Montreal. 12-color pigment printing on Hahnemuhle paper. Posters, flyers and business cards. Local production in Mile-End, 24-48h delivery.',
+      description: 'Gallery-quality fine art prints in Montreal. 12-color pigment printing on Hahnemuhle paper. Posters, flyers and business cards. Local production in Mile-End, local delivery available.',
     },
   },
 
@@ -123,7 +123,7 @@ Cut to the exact shape of your design with our professional cutting equipment, e
       'Lamination included - water, UV, scratch resistant',
       'Sticker graphic design included in the price',
       'Local delivery available',
-      'Fast turnaround: 24-72h',
+      'Local production Montreal',
     ],
     process: [
       { step: 1, title: 'Creative brief', desc: 'Tell us what you want - logo, illustration, text, custom shape' },
@@ -306,7 +306,7 @@ We work with Adobe Illustrator, Figma and Photoshop to create impactful visuals 
             ['Event poster / flyer', '$150 - $300', '3-5 days'],
             ['Album / single cover', '$200 - $400', '5-7 days'],
             ['Icon set design', '$200 - $500', '3-7 days'],
-            ['Photo retouching (per image)', '$15 - $50', '24-48h'],
+            ['Photo retouching (per image)', '$15 - $50', 'Variable'],
           ],
         },
       ],

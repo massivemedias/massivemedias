@@ -39,7 +39,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
   const [error, setError] = useState(false);
 
   // Artist profile
-  const [artistProfileForm, setArtistProfileForm] = useState({ nomArtiste: '', bio: '', profileImage: '' });
+  const [artistProfileForm, setArtistProfileForm] = useState({ nomArtiste: '', bio: '', profileImage: '', paypalEmail: '' });
   const [artistProfileSaving, setArtistProfileSaving] = useState(false);
   const [artistProfileMsg, setArtistProfileMsg] = useState('');
   const [profileImageFile, setProfileImageFile] = useState(null);
@@ -109,6 +109,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
       nomArtiste: meta.nomArtiste || (artistData?.name) || '',
       bio: meta.bio || (artistData?.bio?.[lang] || artistData?.bio?.fr) || '',
       profileImage: meta.profileImage || (artistData?.avatar) || '',
+      paypalEmail: meta.paypalEmail || '',
     });
   }, [user, artist, lang]);
 
@@ -177,6 +178,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
         nomArtiste: artistProfileForm.nomArtiste,
         bio: artistProfileForm.bio,
         profileImage: artistProfileForm.profileImage,
+        paypalEmail: artistProfileForm.paypalEmail,
       });
       if (error) throw error;
 
@@ -185,6 +187,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
         `Nom d'artiste: ${artistProfileForm.nomArtiste || '-'}`,
         `Bio: ${artistProfileForm.bio || '-'}`,
         `Image de profil: ${artistProfileForm.profileImage || 'Aucune'}`,
+        `Email PayPal: ${artistProfileForm.paypalEmail || '-'}`,
         `Email: ${email}`,
         `Slug: ${artistSlug}`,
       ].join('\n');
@@ -351,14 +354,17 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
         {/* Mini stats compacts */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { value: loading ? '-' : formatMoney(totalEarned), label: tx({ fr: 'Gains totaux', en: 'Total earnings', es: 'Ganancias totales' }), color: 'text-green-400' },
-            { value: loading ? '-' : formatMoney(totalPaid), label: tx({ fr: 'Deja paye', en: 'Already paid', es: 'Ya pagado' }), color: 'text-blue-400' },
-            { value: loading ? '-' : formatMoney(balance), label: tx({ fr: 'Solde dispo', en: 'Balance', es: 'Saldo' }), color: balance > 0 ? 'text-accent' : 'text-grey-muted' },
-            { value: loading ? '-' : orderCount, label: tx({ fr: 'Ventes', en: 'Sales', es: 'Ventas' }), color: 'text-purple-400' },
+            { value: loading ? '-' : formatMoney(totalEarned), label: tx({ fr: 'Gains totaux', en: 'Total earnings', es: 'Ganancias totales' }), color: 'text-green-400', tooltip: tx({ fr: 'Total de tes commissions sur toutes les ventes de tes prints', en: 'Total commissions earned from all your print sales', es: 'Total de comisiones de todas las ventas de tus prints' }) },
+            { value: loading ? '-' : formatMoney(totalPaid), label: tx({ fr: 'Deja paye', en: 'Already paid', es: 'Ya pagado' }), color: 'text-blue-400', tooltip: tx({ fr: 'Montant total qui t\'a deja ete verse via PayPal', en: 'Total amount already paid out to you via PayPal', es: 'Monto total que ya se te ha pagado via PayPal' }) },
+            { value: loading ? '-' : formatMoney(balance), label: tx({ fr: 'Solde dispo', en: 'Balance', es: 'Saldo' }), color: balance > 0 ? 'text-accent' : 'text-grey-muted', tooltip: tx({ fr: 'Montant disponible que tu peux demander en retrait', en: 'Available amount you can request as a withdrawal', es: 'Monto disponible que puedes solicitar como retiro' }) },
+            { value: loading ? '-' : orderCount, label: tx({ fr: 'Ventes', en: 'Sales', es: 'Ventas' }), color: 'text-purple-400', tooltip: tx({ fr: 'Nombre total de commandes contenant tes prints', en: 'Total number of orders containing your prints', es: 'Numero total de pedidos que contienen tus prints' }) },
           ].map((s, i) => (
-            <div key={i} className="text-center py-4 px-3 rounded-xl border border-purple-main/20 card-bg card-shadow">
+            <div key={i} className="text-center py-4 px-3 rounded-xl border border-purple-main/20 card-bg card-shadow relative group cursor-default">
               <p className={`text-xl font-bold ${s.color}`}>{s.value}</p>
               <p className="text-[10px] text-grey-muted uppercase tracking-wider mt-1">{s.label}</p>
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 rounded-lg bg-[#1a1a2e] border border-purple-main/30 text-grey-light text-xs whitespace-normal max-w-[200px] text-center opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 shadow-lg z-20">
+                {s.tooltip}
+              </div>
             </div>
           ))}
         </div>
@@ -379,10 +385,6 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
             <Link to="/account?tab=profil-artiste" className="flex flex-col items-center gap-2 p-4 md:p-5 rounded-xl bg-purple-500/5 border border-purple-500/20 hover:bg-purple-500/15 hover:border-purple-500/40 transition-all group text-center">
               <User size={22} className="text-purple-400 group-hover:scale-110 transition-transform" />
               <p className="text-heading text-sm font-semibold">{tx({ fr: 'Mon profil', en: 'My profile', es: 'Mi perfil' })}</p>
-            </Link>
-            <Link to="/account?tab=images" className="flex flex-col items-center gap-2 p-4 md:p-5 rounded-xl bg-pink-500/5 border border-pink-500/20 hover:bg-pink-500/15 hover:border-pink-500/40 transition-all group text-center">
-              <Heart size={22} className="text-pink-400 group-hover:scale-110 transition-transform" />
-              <p className="text-heading text-sm font-semibold">{tx({ fr: 'Mes images', en: 'My images', es: 'Mis imagenes' })}</p>
             </Link>
             <Link to="/account?tab=ventes" className="flex flex-col items-center gap-2 p-4 md:p-5 rounded-xl bg-green-500/5 border border-green-500/20 hover:bg-green-500/15 hover:border-green-500/40 transition-all group text-center">
               <BarChart3 size={22} className="text-green-400 group-hover:scale-110 transition-transform" />
@@ -656,16 +658,20 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
   }
 
   // ===========================
-  // SECTION: PROFIL ARTISTE
+  // SECTION: PROFIL ARTISTE (fusionné profil + images)
   // ===========================
   if (section === 'profil-artiste') {
+    const imageDeposits = messages.filter(m => m.category === 'new-images' && m.attachments?.length > 0);
+
     return (
       <div className="space-y-6">
         {toastElement}
+
+        {/* Profil artiste */}
         <div className="rounded-2xl border border-purple-main/30 p-5 md:p-8 card-bg card-shadow">
           <h3 className="text-heading font-heading font-bold text-lg flex items-center gap-2 mb-6">
             <Palette size={20} className="text-accent" />
-            {tx({ fr: 'Mon profil artiste', en: 'My artist profile', es: 'Mi perfil artista' })}
+            {tx({ fr: 'Mon profil', en: 'My profile', es: 'Mi perfil' })}
           </h3>
 
           {artistProfileMsg && (
@@ -762,6 +768,27 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
               </p>
             </div>
 
+            {/* Email PayPal */}
+            <div>
+              <label className="text-[11px] text-grey-muted uppercase tracking-wider font-medium mb-1 block">
+                {tx({ fr: 'Email PayPal (pour les virements)', en: 'PayPal email (for payouts)', es: 'Email PayPal (para transferencias)' })}
+              </label>
+              <input
+                type="email"
+                value={artistProfileForm.paypalEmail}
+                onChange={(e) => setArtistProfileForm(f => ({ ...f, paypalEmail: e.target.value }))}
+                className="input-field text-sm"
+                placeholder={tx({ fr: 'ton@email-paypal.com', en: 'your@paypal-email.com', es: 'tu@email-paypal.com' })}
+              />
+              <p className="text-grey-muted/60 text-[10px] mt-1">
+                {tx({
+                  fr: 'Adresse email associee a ton compte PayPal pour recevoir tes paiements.',
+                  en: 'Email address linked to your PayPal account to receive your payments.',
+                  es: 'Direccion de email asociada a tu cuenta PayPal para recibir tus pagos.',
+                })}
+              </p>
+            </div>
+
             {/* Info boutique */}
             {artist ? (
               <div className="rounded-lg bg-accent/5 border border-accent/20 p-4">
@@ -796,22 +823,8 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
             </button>
           </form>
         </div>
-      </div>
-    );
-  }
 
-  // ===========================
-  // SECTION: MES IMAGES
-  // ===========================
-  if (section === 'images') {
-    // Filter image deposit messages
-    const imageDeposits = messages.filter(m => m.category === 'new-images' && m.attachments?.length > 0);
-
-    return (
-      <div className="space-y-6">
-        {toastElement}
-
-        {/* Formulaire depot d'images */}
+        {/* Depot d'images */}
         <div className="rounded-2xl border border-purple-main/30 p-5 md:p-8 card-bg card-shadow">
           <h3 className="text-heading font-heading font-bold text-lg flex items-center gap-2 mb-2">
             <ImagePlus size={20} className="text-accent" />
