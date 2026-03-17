@@ -12,6 +12,8 @@ import { useLang } from '../i18n/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useUserRole } from '../contexts/UserRoleContext';
 import { getMyOrders } from '../services/orderService';
+import { getContactSubmissions, getArtistSubmissions } from '../services/adminService';
+import { getArtistMessagesAdmin } from '../services/artistService';
 import { generateInvoicePDF } from '../utils/generateInvoice';
 import AddressAutocomplete from '../components/AddressAutocomplete';
 
@@ -215,6 +217,32 @@ function Account() {
   const tabs = [...baseTabs];
 
   const [adminMobileOpen, setAdminMobileOpen] = useState(false);
+
+  // Admin notification badge - count new messages
+  const [adminNewMsgCount, setAdminNewMsgCount] = useState(0);
+  useEffect(() => {
+    if (!isAdmin) return;
+    let cancelled = false;
+    async function fetchNewCount() {
+      try {
+        const [contactRes, artistRes, artistMsgRes] = await Promise.all([
+          getContactSubmissions({ pageSize: 200 }),
+          getArtistSubmissions({ pageSize: 200 }),
+          getArtistMessagesAdmin(),
+        ]);
+        const contacts = contactRes?.data?.data || [];
+        const artists = artistRes?.data?.data || [];
+        const artistMsgs = artistMsgRes?.data?.data || [];
+        const newContacts = contacts.filter(c => (c.status || 'new') === 'new').length;
+        const newArtists = artists.filter(a => (a.status || 'new') === 'new').length;
+        const newArtistMsgs = artistMsgs.filter(m => (m.status || 'new') === 'new').length;
+        if (!cancelled) setAdminNewMsgCount(newContacts + newArtists + newArtistMsgs);
+      } catch { /* ignore */ }
+    }
+    fetchNewCount();
+    const interval = setInterval(fetchNewCount, 60000);
+    return () => { cancelled = true; clearInterval(interval); };
+  }, [isAdmin]);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -746,15 +774,21 @@ function Account() {
               <div className="w-full border-t border-purple-main/20 mt-1 pt-2" />
               {ADMIN_NAV_ITEMS.map((item) => {
                 const Icon = item.icon;
+                const isMessages = item.to === '/admin/messages';
                 return (
                   <NavLink
                     key={item.to}
                     to={item.to}
                     onClick={() => setAdminMobileOpen(false)}
-                    className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all bg-glass text-grey-muted hover:text-heading"
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all bg-glass text-grey-muted hover:text-heading relative"
                   >
                     <Icon size={14} />
                     {tx({ fr: item.fr, en: item.en, es: item.es })}
+                    {isMessages && adminNewMsgCount > 0 && (
+                      <span className="ml-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-accent text-white text-[9px] font-bold animate-pulse">
+                        {adminNewMsgCount}
+                      </span>
+                    )}
                   </NavLink>
                 );
               })}
@@ -794,14 +828,20 @@ function Account() {
                 </h2>
                 {ADMIN_NAV_ITEMS.map((item) => {
                   const Icon = item.icon;
+                  const isMessages = item.to === '/admin/messages';
                   return (
                     <NavLink
                       key={item.to}
                       to={item.to}
-                      className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 text-grey-muted hover:text-heading hover:bg-glass"
+                      className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 text-grey-muted hover:text-heading hover:bg-glass relative"
                     >
                       <Icon size={16} />
                       {tx({ fr: item.fr, en: item.en, es: item.es })}
+                      {isMessages && adminNewMsgCount > 0 && (
+                        <span className="ml-auto flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-accent text-white text-[10px] font-bold animate-pulse">
+                          {adminNewMsgCount}
+                        </span>
+                      )}
                     </NavLink>
                   );
                 })}

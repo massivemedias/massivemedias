@@ -98,16 +98,17 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
     return () => { cancelled = true; };
   }, [artistSlug]);
 
-  // Init artist profile form from user metadata
+  // Init artist profile form from user metadata, fallback to artistsData
   useEffect(() => {
     if (!user) return;
     const meta = user.user_metadata || {};
+    const artistData = artist; // from artistsData[artistSlug]
     setArtistProfileForm({
-      nomArtiste: meta.nomArtiste || '',
-      bio: meta.bio || '',
-      profileImage: meta.profileImage || '',
+      nomArtiste: meta.nomArtiste || (artistData?.name) || '',
+      bio: meta.bio || (artistData?.bio?.[lang] || artistData?.bio?.fr) || '',
+      profileImage: meta.profileImage || (artistData?.avatar) || '',
     });
-  }, [user]);
+  }, [user, artist, lang]);
 
   // Fetch messages + withdrawals
   useEffect(() => {
