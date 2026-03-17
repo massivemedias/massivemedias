@@ -72,9 +72,9 @@ function Header() {
                   </span>
                 </Link>
               ) : (
-                <Link to="/login" className="flex items-center gap-2 px-4 py-1.5 rounded-full border border-accent/60 text-accent text-sm font-semibold transition-all duration-200 hover:bg-accent hover:text-white whitespace-nowrap">
+                <Link to="/login" className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-accent text-white text-sm font-bold transition-all duration-200 hover:brightness-110 hover:scale-105 whitespace-nowrap shadow-[0_0_20px_rgba(var(--accent-rgb,255,200,0),0.35)] animate-subtle-glow">
                   <LogIn size={16} />
-                  {t('nav.login')}
+                  {tx({ fr: 'Connexion / Inscription', en: 'Sign in / Register', es: 'Conectarse / Registro' })}
                 </Link>
               )}
 
@@ -103,6 +103,17 @@ function Header() {
               >
                 {lang.toUpperCase()}
               </button>
+              {!user && (
+                <Link to="/login" className="flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-accent text-white text-[11px] font-bold transition-all duration-200 hover:brightness-110 whitespace-nowrap shadow-[0_0_14px_rgba(var(--accent-rgb,255,200,0),0.3)] animate-subtle-glow" aria-label={t('nav.login')}>
+                  <LogIn size={12} />
+                  <span>{tx({ fr: 'Connexion', en: 'Sign in', es: 'Conectarse' })}</span>
+                </Link>
+              )}
+              {user && (
+                <Link to="/account" className="p-2 transition-colors duration-200 nav-link" aria-label={t('nav.account')}>
+                  <UserCircle size={20} />
+                </Link>
+              )}
               <Link to="/panier" className="relative p-2 transition-colors duration-200 nav-link" aria-label={t('nav.panier')}>
                 <ShoppingCart size={20} />
                 {cartCount > 0 && (
@@ -236,14 +247,17 @@ function Header() {
                 ) : (
                   <Link
                     to="/login"
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl nav-link mobile-drawer-item group transition-colors"
+                    className="flex items-center gap-3 px-4 py-3.5 rounded-xl bg-accent text-white group transition-all hover:brightness-110 mt-2 shadow-[0_0_20px_rgba(var(--accent-rgb,255,200,0),0.3)]"
                     onClick={close}
                   >
-                    <span className="w-8 h-8 rounded-lg flex items-center justify-center mobile-icon-bg flex-shrink-0">
-                      <LogIn size={15} className="text-accent" />
+                    <span className="w-9 h-9 rounded-lg flex items-center justify-center bg-white/20 flex-shrink-0">
+                      <LogIn size={18} className="text-white" />
                     </span>
-                    <span className="font-semibold text-[15px] text-accent">{t('nav.login')}</span>
-                    <ChevronRight size={14} className="ml-auto opacity-25 group-hover:opacity-50 transition-opacity" />
+                    <div>
+                      <span className="font-bold text-[15px] block">{tx({ fr: 'Connexion / Inscription', en: 'Sign in / Register', es: 'Conectarse / Registro' })}</span>
+                      <span className="text-[11px] text-white/70">{tx({ fr: 'Google, Apple ou email', en: 'Google, Apple or email', es: 'Google, Apple o email' })}</span>
+                    </div>
+                    <ChevronRight size={14} className="ml-auto text-white/60 group-hover:text-white transition-opacity" />
                   </Link>
                 )}
               </div>

@@ -235,6 +235,15 @@ button, [role="button"], a, label[class*="cursor"], select, input[type="checkbox
   transition: background 0.3s;
 }
 
+/* Subtle glow pulse for CTA buttons */
+@keyframes subtle-glow {
+  0%, 100% { box-shadow: 0 0 12px rgba(var(--accent-rgb, 255, 200, 0), 0.25); }
+  50% { box-shadow: 0 0 22px rgba(var(--accent-rgb, 255, 200, 0), 0.45); }
+}
+.animate-subtle-glow {
+  animation: subtle-glow 2.5s ease-in-out infinite;
+}
+
 /* =============================================
    Styles globaux
    ============================================= */
