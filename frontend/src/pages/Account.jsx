@@ -912,9 +912,9 @@ function Account() {
     { id: 'profil-artiste', label: tx({ fr: 'Mon profil artiste', en: 'Artist profile', es: 'Perfil artista' }), icon: User },
     { id: 'images', label: tx({ fr: 'Mes images', en: 'My images', es: 'Mis imagenes' }), icon: Heart },
     { id: 'contrat', label: tx({ fr: 'Contrat', en: 'Contract', es: 'Contrato' }), icon: ScrollText },
-    { id: 'tarifs', label: tx({ fr: 'Tarifs', en: 'Pricing', es: 'Precios' }), icon: DollarSign },
-    { id: 'retrait', label: tx({ fr: 'Retrait', en: 'Withdrawal', es: 'Retiro' }), icon: Settings },
-    { id: 'ventes', label: tx({ fr: 'Ventes', en: 'Sales', es: 'Ventas' }), icon: Package },
+    { id: 'tarifs', label: tx({ fr: 'Tarifs Massive', en: 'Massive Pricing', es: 'Precios Massive' }), icon: Receipt },
+    { id: 'ventes', label: tx({ fr: 'Mes ventes', en: 'My sales', es: 'Mis ventas' }), icon: BarChart3 },
+    { id: 'retrait', label: tx({ fr: 'Retrait', en: 'Withdrawal', es: 'Retiro' }), icon: Banknote },
   ] : [];
 
   const [artistMobileOpen, setArtistMobileOpen] = useState(false);
@@ -979,23 +979,7 @@ function Account() {
               animate={{ opacity: 1, y: 0 }}
               className="lg:hidden flex flex-wrap gap-2 mb-6 max-w-7xl mx-auto"
             >
-              {ARTIST_SIDEBAR_ITEMS.map((item) => {
-                const Icon = item.icon;
-                const isActive = activeTab === item.id;
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => { setActiveTab(item.id); setArtistMobileOpen(false); }}
-                    className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
-                      isActive ? 'bg-accent text-white' : 'bg-glass text-grey-muted hover:text-heading'
-                    }`}
-                  >
-                    <Icon size={14} />
-                    {item.label}
-                  </button>
-                );
-              })}
-              <div className="w-full border-t border-purple-main/20 mt-1 pt-2" />
+              {/* Mon compte en premier */}
               <button
                 onClick={() => { setActiveTab('orders'); setArtistMobileOpen(false); }}
                 className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
@@ -1021,6 +1005,24 @@ function Account() {
                   </button>
                 );
               })}
+              <div className="w-full border-t border-purple-main/20 mt-1 pt-2" />
+              {/* Artiste */}
+              {ARTIST_SIDEBAR_ITEMS.map((item) => {
+                const Icon = item.icon;
+                const isActive = activeTab === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => { setActiveTab(item.id); setArtistMobileOpen(false); }}
+                    className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
+                      isActive ? 'bg-accent text-white' : 'bg-glass text-grey-muted hover:text-heading'
+                    }`}
+                  >
+                    <Icon size={14} />
+                    {item.label}
+                  </button>
+                );
+              })}
             </motion.div>
           )}
 
@@ -1028,10 +1030,25 @@ function Account() {
             {/* Sidebar desktop */}
             <aside className="hidden lg:block w-52 flex-shrink-0">
               <div className="sticky top-28 rounded-xl bg-glass p-3 space-y-1">
+                {/* Mon compte EN PREMIER */}
                 <h2 className="text-xs font-semibold text-grey-muted uppercase tracking-wider px-3 py-2">
-                  {tx({ fr: 'Artiste', en: 'Artist', es: 'Artista' })}
+                  {tx({ fr: 'Mon compte', en: 'My account', es: 'Mi cuenta' })}
                 </h2>
-                {ARTIST_SIDEBAR_ITEMS.map((item) => {
+                <button
+                  onClick={() => setActiveTab('orders')}
+                  className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    activeTab === 'orders'
+                      ? 'bg-accent/20 text-accent'
+                      : 'text-grey-muted hover:text-heading hover:bg-glass'
+                  }`}
+                >
+                  <ShoppingBag size={16} />
+                  {tx({ fr: 'Commandes', en: 'Orders', es: 'Pedidos' })}
+                  {orders.length > 0 && (
+                    <span className="text-[10px] bg-accent/20 text-accent rounded-full px-1.5 py-0.5 font-bold ml-auto">{orders.length}</span>
+                  )}
+                </button>
+                {ACCOUNT_SIDEBAR_ITEMS.map((item) => {
                   const Icon = item.icon;
                   const isActive = activeTab === item.id;
                   return (
@@ -1052,24 +1069,11 @@ function Account() {
 
                 <div className="border-t border-purple-main/20 my-2" />
 
+                {/* Artiste EN SECOND */}
                 <h2 className="text-xs font-semibold text-grey-muted uppercase tracking-wider px-3 py-2">
-                  {tx({ fr: 'Mon compte', en: 'My account', es: 'Mi cuenta' })}
+                  {tx({ fr: 'Artiste', en: 'Artist', es: 'Artista' })}
                 </h2>
-                <button
-                  onClick={() => setActiveTab('orders')}
-                  className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
-                    activeTab === 'orders'
-                      ? 'bg-accent/20 text-accent'
-                      : 'text-grey-muted hover:text-heading hover:bg-glass'
-                  }`}
-                >
-                  <ShoppingBag size={16} />
-                  {tx({ fr: 'Commandes', en: 'Orders', es: 'Pedidos' })}
-                  {orders.length > 0 && (
-                    <span className="text-[10px] bg-accent/20 text-accent rounded-full px-1.5 py-0.5 font-bold ml-auto">{orders.length}</span>
-                  )}
-                </button>
-                {ACCOUNT_SIDEBAR_ITEMS.map((item) => {
+                {ARTIST_SIDEBAR_ITEMS.map((item) => {
                   const Icon = item.icon;
                   const isActive = activeTab === item.id;
                   return (
