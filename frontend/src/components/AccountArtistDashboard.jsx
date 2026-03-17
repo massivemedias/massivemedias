@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import {
   DollarSign, TrendingUp, Palette, Clock, CheckCircle,
   FileText, Loader2, AlertCircle, ExternalLink, Package,
-  Send, MessageCircle, ImagePlus, Check, X, CreditCard,
+  Send, MessageCircle, ImagePlus, Check, X, CreditCard, Download, ChevronDown, ChevronUp, ScrollText,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -14,6 +14,8 @@ import { sendArtistMessage, getMyMessages, createWithdrawal, getMyWithdrawals } 
 import { uploadArtistFile } from '../services/api';
 import FileUpload from './FileUpload';
 import artistsData from '../data/artists';
+import { ARTIST_CONTRACT_TEXT, ARTIST_CONTRACT_TEXT_EN, ARTIST_CONTRACT_TEXT_ES, ARTIST_CONTRACT_VERSION } from '../data/artistContract';
+import { generateContractPDF } from '../utils/generateContractPDF';
 
 // Prix service (cout Massive) et prix artiste (prix client)
 const SERVICE_PRICES = {
@@ -750,6 +752,9 @@ function AccountArtistDashboard() {
         )}
       </div>
 
+      {/* ====== CONTRAT DE PARTENARIAT ====== */}
+      <ContractSection lang={lang} tx={tx} />
+
       {/* Liens rapides */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {artist && (
@@ -771,6 +776,62 @@ function AccountArtistDashboard() {
           <ExternalLink size={16} className="text-green-400 opacity-0 group-hover:opacity-100 transition-opacity" />
         </a>
       </div>
+    </div>
+  );
+}
+
+function ContractSection({ lang, tx }) {
+  const [open, setOpen] = useState(false);
+  const contractText = lang === 'en' ? ARTIST_CONTRACT_TEXT_EN : lang === 'es' ? ARTIST_CONTRACT_TEXT_ES : ARTIST_CONTRACT_TEXT;
+
+  return (
+    <div className="rounded-2xl border border-purple-main/30 card-bg card-shadow overflow-hidden">
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center gap-3 p-5 text-left hover:bg-accent/5 transition-colors"
+      >
+        <ScrollText size={20} className="text-accent flex-shrink-0" />
+        <div className="flex-grow">
+          <h4 className="text-heading font-heading font-bold text-base">
+            {tx({ fr: 'Contrat de partenariat', en: 'Partnership Agreement', es: 'Contrato de asociacion' })}
+          </h4>
+          <p className="text-grey-muted text-xs mt-0.5">
+            {tx({ fr: `Version ${ARTIST_CONTRACT_VERSION} - Clauses, tarifs et FAQ`, en: `Version ${ARTIST_CONTRACT_VERSION} - Terms, pricing and FAQ`, es: `Version ${ARTIST_CONTRACT_VERSION} - Clausulas, precios y FAQ` })}
+          </p>
+        </div>
+        {open ? <ChevronUp size={18} className="text-grey-muted" /> : <ChevronDown size={18} className="text-grey-muted" />}
+      </button>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="overflow-hidden"
+          >
+            <div className="px-5 pb-5 border-t border-purple-main/20">
+              {/* PDF download button */}
+              <div className="flex gap-3 mt-4 mb-4">
+                <button
+                  onClick={() => generateContractPDF(lang)}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-accent/10 border border-accent/30 text-accent text-sm font-semibold hover:bg-accent/20 transition-colors"
+                >
+                  <Download size={16} />
+                  {tx({ fr: 'Telecharger le PDF', en: 'Download PDF', es: 'Descargar PDF' })}
+                </button>
+              </div>
+
+              {/* Contract content */}
+              <div
+                className="contract-content prose prose-invert prose-sm max-w-none max-h-[600px] overflow-y-auto rounded-xl bg-glass p-5 md:p-6 border border-purple-main/10 text-grey-light text-sm md:text-base leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: contractText }}
+              />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
