@@ -133,7 +133,7 @@ const artistsData = {
       es: "Cuando descubri la fotografia, se convirtio en mi segunda memoria. Una nueva capacidad de revivir con una exactitud conmovedora la intensidad de los momentos, la luz, los intercambios, los contrastes... Compartir la fotografia con los demas es entregarles una version intima de la realidad tal como la percibo.",
     },
     avatar: img('/images/prints/QuentinDelobelAvatar.webp'),
-    heroImage: thumb('/images/prints/QuentinDelobel1.webp'),
+    heroImage: img('/images/prints/QuentinDelobel15.webp'),
     prints: [
       { id: 'qd-001', titleFr: 'Photo 1', titleEn: 'Photo 1', titleEs: 'Foto 1', image: thumb('/images/prints/QuentinDelobel1.webp'), fullImage: img('/images/prints/QuentinDelobel1.webp'), limited: false },
       { id: 'qd-002', titleFr: 'Photo 2', titleEn: 'Photo 2', titleEs: 'Foto 2', image: thumb('/images/prints/QuentinDelobel2.webp'), fullImage: img('/images/prints/QuentinDelobel2.webp'), limited: false },

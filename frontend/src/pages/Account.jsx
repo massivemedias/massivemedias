@@ -109,7 +109,7 @@ function getMemberSince(createdAt, lang) {
 function Account() {
   const { t, lang, tx } = useLang();
   const { user, signOut, updateProfile, updatePassword } = useAuth();
-  const { role: userRole, isAdmin, isArtist, artistSlug } = useUserRole();
+  const { role: userRole, isAdmin, isArtist, artistSlug, loading: roleLoading } = useUserRole();
   const [searchParams] = useSearchParams();
   const meta = user?.user_metadata || {};
 
@@ -702,6 +702,21 @@ function Account() {
     const item = ACCOUNT_SIDEBAR_ITEMS.find(i => i.id === activeTab);
     return item ? item.label : tx({ fr: 'Mon compte', en: 'My account', es: 'Mi cuenta' });
   };
+
+  // ============================================================
+  // Attendre que le role soit resolu avant d'afficher le layout
+  // (evite le flash overview -> dashboard sur refresh)
+  // ============================================================
+  if (roleLoading) {
+    return (
+      <>
+        <SEO title={`${t('account.title')} - Massive`} description="" noindex />
+        <section className="section-container pt-28 pb-20 min-h-screen flex items-center justify-center">
+          <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+        </section>
+      </>
+    );
+  }
 
   // ============================================================
   // ADMIN LAYOUT - sidebar style like /admin pages
