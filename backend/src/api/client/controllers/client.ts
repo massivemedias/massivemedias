@@ -90,6 +90,7 @@ export default factories.createCoreController('api::client.client', ({ strapi })
           lastSignIn: u.last_sign_in_at,
           emailConfirmed: !!u.email_confirmed_at,
           provider: u.app_metadata?.provider || 'email',
+          referredBy: meta.referred_by || null,
           profileAddress,
         };
       });

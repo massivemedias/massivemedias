@@ -4,7 +4,7 @@ import {
   Users, UserCheck, Clock, Mail, Calendar, Search,
   Loader2, Shield, Palette, ChevronDown, ChevronUp, Check, X,
   DollarSign, ShoppingBag, Phone, Building2, MapPin, Trash2,
-  Eye, MousePointerClick, ArrowUpRight, ExternalLink, BarChart3,
+  Eye, MousePointerClick, ArrowUpRight, ExternalLink, BarChart3, Gift,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import api from '../services/api';
@@ -44,14 +44,14 @@ function AdminUtilisateurs() {
           getUserRoles().catch(() => ({ data: { data: [] } })),
           getClients({ pageSize: 999 }).catch(() => ({ data: { data: [] } })),
         ]);
-        setUsers(usersRes.data.data || []);
+        setUsers(usersRes.data?.data || usersRes.data || []);
 
         const roleMap = {};
-        (rolesRes.data.data || []).forEach(r => {
-          roleMap[r.email.toLowerCase()] = r;
+        (rolesRes.data?.data || rolesRes.data || []).forEach(r => {
+          if (r?.email) roleMap[r.email.toLowerCase()] = r;
         });
         setRoles(roleMap);
-        setClients(clientsRes.data?.data || []);
+        setClients(clientsRes.data?.data || clientsRes.data || []);
         setError('');
       } catch {
         setError(tx({ fr: 'Impossible de charger les donnees', en: 'Unable to load data', es: 'No se pueden cargar los datos' }));
@@ -73,7 +73,7 @@ function AdminUtilisateurs() {
 
   // Merge users with buyer data
   const mergedUsers = users.map(u => {
-    const buyer = buyerMap[u.email?.toLowerCase()];
+    const buyer = buyerMap[(u.email || '').toLowerCase()];
     return {
       ...u,
       isBuyer: !!buyer,
@@ -83,6 +83,7 @@ function AdminUtilisateurs() {
       company: buyer?.company || null,
       phone: buyer?.lastCustomerPhone || buyer?.phone || null,
       lastShippingAddress: buyer?.lastShippingAddress || u.profileAddress || null,
+      referredBy: u.referredBy || null,
     };
   });
 
@@ -161,7 +162,7 @@ function AdminUtilisateurs() {
   ];
 
   const handleSetArtist = async (user) => {
-    const email = user.email.toLowerCase();
+    const email = (user.email || '').toLowerCase();
     if (!selectedSlug) return;
     setSaving(email);
     try {
@@ -180,7 +181,7 @@ function AdminUtilisateurs() {
   };
 
   const handleRemoveArtist = async (user) => {
-    const email = user.email.toLowerCase();
+    const email = (user.email || '').toLowerCase();
     setSaving(email);
     try {
       await setUserRole(email, 'user', null, user.id, user.fullName);
@@ -553,6 +554,12 @@ function AdminUtilisateurs() {
                                 <span className="text-grey-muted">{tx({ fr: 'Inscrit le', en: 'Signed up', es: 'Registrado' })}</span>
                                 <span className="text-heading">{formatDate(user.createdAt)}</span>
                               </div>
+                              {user.referredBy && (
+                                <div className="flex justify-between items-center">
+                                  <span className="text-grey-muted flex items-center gap-1"><Gift size={12} className="text-yellow-400" /> {tx({ fr: 'Parraine par', en: 'Referred by', es: 'Referido por' })}</span>
+                                  <span className="text-yellow-400 font-semibold text-sm">#{user.referredBy}</span>
+                                </div>
+                              )}
                             </div>
                           </div>
                         </div>
