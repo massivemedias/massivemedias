@@ -679,19 +679,19 @@ function AccountArtistDashboard() {
             </tbody>
           </table>
         </div>
-        <p className="text-grey-muted text-[11px] mt-3 italic">
+        <p className="text-grey-muted text-xs md:text-sm mt-3 italic">
           {tx({
             fr: 'Note: Le format A2 (18x24") est imprime en qualite musee uniquement (12 encres pigmentees). Pas de cadre disponible pour ce format.',
             en: 'Note: A2 (18x24") is printed in museum quality only (12 pigment inks). No frame available for this format.',
             es: 'Nota: El formato A2 (18x24") se imprime en calidad museo unicamente (12 tintas pigmentadas). Sin marco disponible para este formato.',
           })}
         </p>
-        <div className="mt-4 space-y-3">
-          <div className="p-3 rounded-lg bg-yellow-500/5 border border-yellow-500/20">
-            <p className="text-yellow-400 text-[11px] font-semibold mb-1">
+        <div className="mt-5 space-y-4">
+          <div className="p-4 md:p-5 rounded-xl bg-yellow-500/5 border border-yellow-500/20">
+            <p className="text-yellow-400 text-sm md:text-base font-bold mb-1.5">
               {tx({ fr: 'Copies personnelles', en: 'Personal copies', es: 'Copias personales' })}
             </p>
-            <p className="text-grey-muted text-[11px]">
+            <p className="text-grey-light text-xs md:text-sm leading-relaxed">
               {tx({
                 fr: 'Prints : tu peux commander tes propres copies au prix coutant (colonne "Cout Massive"), pour usage personnel, portfolio ou expos uniquement. Stickers : prix regulier, meme pour toi - c\'est un produit de distribution.',
                 en: 'Prints: you can order your own copies at cost price ("Massive cost" column), for personal use, portfolio or exhibitions only. Stickers: regular price, even for you - it\'s a distribution product.',
@@ -699,11 +699,11 @@ function AccountArtistDashboard() {
               })}
             </p>
           </div>
-          <div className="p-3 rounded-lg bg-purple-500/5 border border-purple-500/20">
-            <p className="text-purple-400 text-[11px] font-semibold mb-1">
+          <div className="p-4 md:p-5 rounded-xl bg-purple-500/5 border border-purple-500/20">
+            <p className="text-purple-400 text-sm md:text-base font-bold mb-1.5">
               {tx({ fr: 'Festivals, galeries et boutiques', en: 'Festivals, galleries and shops', es: 'Festivales, galerias y tiendas' })}
             </p>
-            <p className="text-grey-muted text-[11px]">
+            <p className="text-grey-light text-xs md:text-sm leading-relaxed">
               {tx({
                 fr: 'Tu veux vendre tes prints en personne? Commande en volume au prix regulier (colonne "Prix client"), et revends au prix que tu veux. Le profit supplementaire est 100% pour toi. Meme chose pour les stickers.',
                 en: 'Want to sell your prints in person? Order in bulk at regular price ("Client price" column), and resell at whatever price you want. The extra profit is 100% yours. Same for stickers.',
