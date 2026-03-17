@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, MapPin, Instagram, Facebook, Send, CheckCircle, AlertCircle, Briefcase, Palette } from 'lucide-react';
+import { Mail, MapPin, Instagram, Facebook, Send, CheckCircle, AlertCircle, Briefcase, Palette, ChevronDown, HelpCircle } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import SEO from '../components/SEO';
@@ -8,6 +8,50 @@ import { useSiteContent } from '../hooks/useSiteContent';
 import { bl } from '../utils/cms';
 import api from '../services/api';
 import ArtistPartnershipForm from '../components/ArtistPartnershipForm';
+import { ARTIST_FAQ } from '../data/artistContract';
+
+function ArtistFAQ({ lang, tx }) {
+  const [openIdx, setOpenIdx] = useState(null);
+  const faq = ARTIST_FAQ[lang] || ARTIST_FAQ.fr;
+
+  return (
+    <div className="max-w-4xl mx-auto mb-12">
+      <h2 className="text-2xl font-heading font-bold text-heading mb-6 flex items-center gap-3">
+        <HelpCircle size={24} className="text-accent" />
+        {tx({ fr: 'Questions frequentes - Artistes', en: 'FAQ - Artists', es: 'Preguntas frecuentes - Artistas' })}
+      </h2>
+      <div className="space-y-2">
+        {faq.map((item, i) => (
+          <div key={i} className="rounded-xl border border-purple-main/20 bg-glass overflow-hidden">
+            <button
+              onClick={() => setOpenIdx(openIdx === i ? null : i)}
+              className="w-full flex items-center gap-3 px-5 py-4 text-left hover:bg-accent/5 transition-colors"
+            >
+              <span className="text-heading font-semibold text-sm flex-1">{item.q}</span>
+              <ChevronDown
+                size={16}
+                className={`text-accent flex-shrink-0 transition-transform duration-200 ${openIdx === i ? 'rotate-180' : ''}`}
+              />
+            </button>
+            <AnimatePresence>
+              {openIdx === i && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="overflow-hidden"
+                >
+                  <p className="px-5 pb-4 text-grey-light text-sm leading-relaxed">{item.a}</p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 const socialIconMap = {
   instagram: Instagram,
@@ -418,6 +462,7 @@ function Contact() {
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.3 }}
           >
+            <ArtistFAQ lang={lang} tx={tx} />
             <ArtistPartnershipForm />
           </motion.div>
         )}

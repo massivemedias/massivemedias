@@ -1,4 +1,5 @@
 import { factories } from '@strapi/strapi';
+import { sendNewUserNotificationEmail } from '../../../utils/email';
 
 export default factories.createCoreController('api::client.client', ({ strapi }) => ({
 
@@ -91,6 +92,10 @@ export default factories.createCoreController('api::client.client', ({ strapi })
           emailConfirmed: !!u.email_confirmed_at,
           provider: u.app_metadata?.provider || 'email',
           referredBy: meta.referred_by || null,
+          contractSigned: meta.contractSigned || false,
+          contractSignedAt: meta.contractSignedAt || null,
+          contractVersion: meta.contractVersion || null,
+          nomArtiste: meta.nomArtiste || null,
           profileAddress,
         };
       });
@@ -103,6 +108,22 @@ export default factories.createCoreController('api::client.client', ({ strapi })
       ctx.status = 500;
       ctx.body = { error: 'Impossible de recuperer les utilisateurs' };
     }
+  },
+
+  // Notification de nouvelle inscription
+  async notifySignup(ctx) {
+    const { name, email, provider } = ctx.request.body as any;
+    if (!email) {
+      ctx.status = 400;
+      ctx.body = { error: 'Email requis' };
+      return;
+    }
+
+    sendNewUserNotificationEmail(name || '', email, provider || 'email').catch(err => {
+      strapi.log.warn('Email notification inscription non envoye:', err);
+    });
+
+    ctx.body = { success: true };
   },
 
   // Supprimer un utilisateur Supabase

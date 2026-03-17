@@ -34,16 +34,13 @@
       "type": "string"
     },
     "bio": {
-      "type": "text",
-      "required": true
+      "type": "text"
     },
     "photoProfilUrl": {
-      "type": "string",
-      "required": true
+      "type": "string"
     },
     "portfolioUrls": {
-      "type": "json",
-      "required": true
+      "type": "json"
     },
     "contractAccepted": {
       "type": "boolean",

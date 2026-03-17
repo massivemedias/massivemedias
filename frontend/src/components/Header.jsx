@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Menu, X, ShoppingCart, UserCircle, LogIn, Printer, Sticker, Shirt, Globe, Store, Info, Phone, ChevronRight } from 'lucide-react';
+import { Menu, X, ShoppingCart, LogIn, Printer, Sticker, Shirt, Globe, Store, Info, Phone, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import MassiveLogo from './MassiveLogo';
 import { useLang } from '../i18n/LanguageContext';
@@ -65,8 +65,10 @@ function Header() {
               </button>
 
               {user ? (
-                <Link to="/account" className="flex items-center gap-1.5 p-2 transition-colors duration-200 nav-link" title={t('nav.account')}>
-                  <UserCircle size={20} />
+                <Link to="/account" className="flex items-center gap-1.5 p-1 transition-colors duration-200 nav-link" title={t('nav.account')}>
+                  <span className="w-8 h-8 rounded-full bg-accent/20 text-accent flex items-center justify-center font-bold text-sm flex-shrink-0">
+                    {(user.user_metadata?.full_name || user.email || '?')[0].toUpperCase()}
+                  </span>
                   <span className="text-sm font-medium max-w-[100px] truncate">
                     {user.user_metadata?.full_name?.split(' ')[0] || user.email?.split('@')[0]}
                   </span>
@@ -110,8 +112,10 @@ function Header() {
                 </Link>
               )}
               {user && (
-                <Link to="/account" className="p-2 transition-colors duration-200 nav-link" aria-label={t('nav.account')}>
-                  <UserCircle size={20} />
+                <Link to="/account" className="p-1 transition-colors duration-200 nav-link" aria-label={t('nav.account')}>
+                  <span className="w-8 h-8 rounded-full bg-accent/20 text-accent flex items-center justify-center font-bold text-sm">
+                    {(user.user_metadata?.full_name || user.email || '?')[0].toUpperCase()}
+                  </span>
                 </Link>
               )}
               <Link to="/panier" className="relative p-2 transition-colors duration-200 nav-link" aria-label={t('nav.panier')}>
@@ -236,8 +240,8 @@ function Header() {
                     className="flex items-center gap-3 px-3 py-2.5 rounded-xl nav-link mobile-drawer-item group transition-colors"
                     onClick={close}
                   >
-                    <span className="w-8 h-8 rounded-lg flex items-center justify-center mobile-icon-bg flex-shrink-0">
-                      <UserCircle size={15} className="text-accent" />
+                    <span className="w-8 h-8 rounded-full bg-accent/20 text-accent flex items-center justify-center font-bold text-sm flex-shrink-0">
+                      {(user.user_metadata?.full_name || user.email || '?')[0].toUpperCase()}
                     </span>
                     <span className="font-semibold text-[15px]">
                       {user.user_metadata?.full_name?.split(' ')[0] || t('nav.account')}

@@ -13,6 +13,7 @@
   "attributes": {
     "slug": { "type": "string", "unique": true, "required": true },
     "name": { "type": "string", "required": true },
+    "email": { "type": "email" },
     "taglineFr": { "type": "string" },
     "taglineEn": { "type": "string" },
     "taglineEs": { "type": "string" },

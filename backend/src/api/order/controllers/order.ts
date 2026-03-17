@@ -1,7 +1,7 @@
 import { factories } from '@strapi/strapi';
 import Stripe from 'stripe';
 import { calculateShipping } from '../../../utils/shipping';
-import { sendOrderConfirmationEmail, sendTestimonialRequestEmail } from '../../../utils/email';
+import { sendOrderConfirmationEmail, sendTestimonialRequestEmail, sendArtistSaleNotificationEmail } from '../../../utils/email';
 import crypto from 'crypto';
 
 const getStripe = () => {
@@ -272,6 +272,69 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
           }
         } catch (err) {
           strapi.log.warn('Could not update inventory:', err);
+        }
+
+        // Notifier les artistes concernes par la vente
+        try {
+          const orderItems: any[] = Array.isArray(order.items) ? order.items : [];
+          const artistItemsMap: Record<string, any[]> = {};
+
+          // Charger tous les artistes actifs
+          const artists = await strapi.documents('api::artist.artist').findMany({
+            filters: { active: true },
+          });
+          const artistMap: Record<string, any> = {};
+          for (const a of artists) {
+            artistMap[a.slug] = a;
+          }
+          const slugs = Object.keys(artistMap);
+
+          // Grouper les items par artiste
+          for (const item of orderItems) {
+            const pid = item.productId || '';
+            if (!pid.startsWith('artist-print-')) continue;
+
+            let matchedSlug: string | null = null;
+            for (const slug of slugs) {
+              if (pid.startsWith(`artist-print-${slug}-`)) {
+                if (!matchedSlug || slug.length > matchedSlug.length) {
+                  matchedSlug = slug;
+                }
+              }
+            }
+            if (!matchedSlug) continue;
+
+            if (!artistItemsMap[matchedSlug]) artistItemsMap[matchedSlug] = [];
+            artistItemsMap[matchedSlug].push({
+              productName: item.productName || 'Oeuvre',
+              size: item.size || '',
+              finish: item.finish || '',
+              quantity: item.quantity || 1,
+            });
+          }
+
+          // Envoyer un email a chaque artiste concerne
+          const shippingAddr = order.shippingAddress as any;
+          const customerCity = shippingAddr?.city || '';
+
+          for (const [slug, items] of Object.entries(artistItemsMap)) {
+            const artist = artistMap[slug];
+            if (!artist?.email) {
+              strapi.log.info(`Artiste ${slug} n'a pas d'email configure, notification non envoyee`);
+              continue;
+            }
+            sendArtistSaleNotificationEmail({
+              artistName: artist.name,
+              artistEmail: artist.email,
+              items,
+              orderDate: new Date().toISOString(),
+              customerCity,
+            }).catch(err => {
+              strapi.log.warn(`Notification vente artiste ${slug} non envoyee:`, err);
+            });
+          }
+        } catch (err) {
+          strapi.log.warn('Could not notify artists:', err);
         }
       }
     }

@@ -1,44 +1,42 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Send, CheckCircle, AlertCircle, FileText, Palette, Download } from 'lucide-react';
+import { Send, CheckCircle, AlertCircle, FileText, Palette, Download, LogIn } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
-import api, { uploadArtistFile } from '../services/api';
-import FileUpload from './FileUpload';
+import { useAuth } from '../contexts/AuthContext';
+import api from '../services/api';
 import { ARTIST_CONTRACT_TEXT, ARTIST_CONTRACT_TEXT_EN, ARTIST_CONTRACT_TEXT_ES, ARTIST_CONTRACT_VERSION } from '../data/artistContract';
 import { generateContractPDF } from '../utils/generateContractPDF';
 
 function ArtistPartnershipForm() {
   const { tx, lang } = useLang();
+  const { user, updateProfile } = useAuth();
   const contractText = lang === 'en' ? ARTIST_CONTRACT_TEXT_EN : lang === 'es' ? ARTIST_CONTRACT_TEXT_ES : ARTIST_CONTRACT_TEXT;
 
   const [formData, setFormData] = useState({
-    nomLegal: '',
+    nomLegal: user?.user_metadata?.full_name || '',
     nomArtiste: '',
     adresse: '',
-    email: '',
+    email: user?.email || '',
     telephone: '',
     tpsTvq: '',
-    bio: '',
   });
-  const [profilePhoto, setProfilePhoto] = useState([]);
-  const [portfolioFiles, setPortfolioFiles] = useState([]);
   const [contractAccepted, setContractAccepted] = useState(false);
   const [status, setStatus] = useState('idle');
   const [error, setError] = useState('');
 
   const handleChange = (e) => {
+    if (!user) return; // champs bloques si pas connecte
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
     if (error) setError('');
   };
 
   const canSubmit =
+    user &&
     formData.nomLegal &&
     formData.email &&
     formData.telephone &&
     formData.adresse &&
-    formData.bio &&
-    profilePhoto.length > 0 &&
-    portfolioFiles.length > 0 &&
     contractAccepted &&
     status !== 'sending';
 
@@ -52,16 +50,23 @@ function ArtistPartnershipForm() {
     try {
       await api.post('/artist-submissions/submit', {
         ...formData,
-        photoProfilUrl: profilePhoto[0].url,
-        portfolioUrls: portfolioFiles.map(f => ({
-          name: f.name,
-          url: f.url,
-          size: f.size,
-          mime: f.mime,
-        })),
+        supabaseUserId: user?.id || null,
         contractAccepted: true,
         contractVersion: ARTIST_CONTRACT_VERSION,
       });
+      // Enregistrer la signature du contrat dans le profil Supabase
+      if (user && updateProfile) {
+        try {
+          await updateProfile({
+            contractSigned: true,
+            contractSignedAt: new Date().toISOString(),
+            contractVersion: ARTIST_CONTRACT_VERSION,
+            nomArtiste: formData.nomArtiste || null,
+          });
+        } catch (e) {
+          console.warn('Could not update profile with contract info:', e);
+        }
+      }
       setStatus('success');
     } catch (err) {
       setError(
@@ -71,6 +76,9 @@ function ArtistPartnershipForm() {
       setStatus('error');
     }
   };
+
+  // Signature numerique - nom avec font manuscrite
+  const signatureName = formData.nomLegal || user?.user_metadata?.full_name || '';
 
   // -- Succes --
   if (status === 'success') {
@@ -82,13 +90,20 @@ function ArtistPartnershipForm() {
       >
         <CheckCircle size={64} className="text-green-400 mx-auto mb-6" />
         <h3 className="font-heading text-3xl font-bold text-heading mb-4">
-          {tx({ fr: 'Soumission envoyee!', en: 'Submission sent!', es: 'Solicitud enviada!' })}
+          {tx({ fr: 'Contrat signe et candidature envoyee!', en: 'Contract signed and application sent!', es: 'Contrato firmado y solicitud enviada!' })}
         </h3>
         <p className="text-grey-muted text-lg mb-2">
           {tx({
-            fr: 'Merci pour ta soumission! On examine ton portfolio et on te revient rapidement.',
-            en: 'Thanks for your submission! We are reviewing your portfolio and will get back to you soon.',
-            es: 'Gracias por tu solicitud! Estamos revisando tu portafolio y te contactaremos pronto.',
+            fr: 'Tu recevras une copie du contrat signe par courriel. On examine ta candidature et on te revient rapidement.',
+            en: 'You will receive a copy of the signed contract by email. We are reviewing your application and will get back to you soon.',
+            es: 'Recibiras una copia del contrato firmado por correo. Estamos revisando tu solicitud y te contactaremos pronto.',
+          })}
+        </p>
+        <p className="text-grey-muted text-sm mt-4">
+          {tx({
+            fr: 'Une fois accepte, tu pourras envoyer ton portfolio et ta bio depuis ton espace compte.',
+            en: 'Once accepted, you can submit your portfolio and bio from your account page.',
+            es: 'Una vez aceptado, podras enviar tu portafolio y bio desde tu cuenta.',
           })}
         </p>
       </motion.div>
@@ -102,7 +117,7 @@ function ArtistPartnershipForm() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="mb-10 text-center"
+        className="mb-8 text-center"
       >
         <h2 className="text-3xl font-heading font-bold text-gradient mb-4 flex items-center justify-center gap-3">
           <Palette size={28} className="text-accent" />
@@ -115,14 +130,40 @@ function ArtistPartnershipForm() {
             es: 'Massive Medias ofrece a los artistas visuales un escaparate profesional para vender sus obras como impresiones fine art y stickers de calidad. Nosotros nos encargamos de la impresion, la tienda en linea y la logistica - tu te concentras en tu arte.',
           })}
         </p>
-        <p className="text-grey-muted text-sm">
-          {tx({
-            fr: 'Soumets ton portfolio ci-dessous. On examine chaque candidature et on te contacte rapidement.',
-            en: 'Submit your portfolio below. We review every application and will get back to you quickly.',
-            es: 'Envia tu portafolio a continuacion. Revisamos cada solicitud y te contactamos rapidamente.',
-          })}
-        </p>
       </motion.div>
+
+      {/* Login requis - en haut, bien visible */}
+      {!user && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8"
+        >
+          <div className="flex flex-col sm:flex-row items-center gap-4 p-6 rounded-2xl border-2 border-accent/40 bg-accent/5 text-center sm:text-left">
+            <LogIn size={32} className="text-accent flex-shrink-0" />
+            <div className="flex-1">
+              <p className="text-heading font-bold text-lg mb-1">
+                {tx({
+                  fr: 'Connecte-toi ou cree un compte pour commencer',
+                  en: 'Sign in or create an account to get started',
+                  es: 'Inicia sesion o crea una cuenta para comenzar',
+                })}
+              </p>
+              <p className="text-grey-muted text-sm">
+                {tx({
+                  fr: 'Tu dois etre connecte pour signer le contrat et soumettre ta candidature.',
+                  en: 'You must be signed in to sign the contract and submit your application.',
+                  es: 'Debes estar conectado para firmar el contrato y enviar tu solicitud.',
+                })}
+              </p>
+            </div>
+            <Link to="/login" className="btn-primary text-base py-3 px-8 whitespace-nowrap flex items-center gap-2 shadow-[0_0_20px_rgba(var(--accent-rgb,255,200,0),0.3)] animate-subtle-glow">
+              <LogIn size={18} />
+              {tx({ fr: 'Connexion / Inscription', en: 'Sign in / Register', es: 'Conectarse / Registro' })}
+            </Link>
+          </div>
+        </motion.div>
+      )}
 
       {/* Contrat */}
       <motion.div
@@ -158,14 +199,19 @@ function ArtistPartnershipForm() {
           dangerouslySetInnerHTML={{ __html: contractText }}
         />
 
-        {/* Checkbox contrat - juste apres le contrat */}
-        <div className="mb-10">
-          <label className="flex items-start gap-3 cursor-pointer group p-4 rounded-xl border border-purple-main/20 bg-glass/50 hover:border-accent/40 transition-colors">
+        {/* Checkbox contrat */}
+        <div className="mb-8">
+          <label className={`flex items-start gap-3 p-4 rounded-xl border bg-glass/50 transition-colors ${
+            user
+              ? 'cursor-pointer border-purple-main/20 hover:border-accent/40 group'
+              : 'cursor-not-allowed border-purple-main/10 opacity-50'
+          }`}>
             <input
               type="checkbox"
               checked={contractAccepted}
-              onChange={(e) => setContractAccepted(e.target.checked)}
-              className="mt-0.5 w-5 h-5 rounded border-2 border-grey-muted/50 accent-accent cursor-pointer flex-shrink-0"
+              onChange={(e) => user && setContractAccepted(e.target.checked)}
+              disabled={!user}
+              className="mt-0.5 w-5 h-5 rounded border-2 border-grey-muted/50 accent-accent cursor-pointer flex-shrink-0 disabled:cursor-not-allowed"
             />
             <span className="text-heading text-sm leading-relaxed group-hover:text-accent transition-colors">
               {tx({
@@ -178,15 +224,16 @@ function ArtistPartnershipForm() {
         </div>
       </motion.div>
 
-      {/* Formulaire */}
+      {/* Formulaire - coordonnees */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.1 }}
+        transition={{ duration: 0.4, delay: 0.15 }}
+        className={!user ? 'opacity-40 pointer-events-none select-none' : ''}
       >
         <h2 className="text-2xl font-heading font-bold text-heading mb-6 flex items-center gap-3">
           <Palette size={24} className="text-accent" />
-          {tx({ fr: 'Ta candidature', en: 'Your application', es: 'Tu solicitud' })}
+          {tx({ fr: 'Tes coordonnees', en: 'Your information', es: 'Tu informacion' })}
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-5">
@@ -199,8 +246,9 @@ function ArtistPartnershipForm() {
               <input
                 type="text" id="nomLegal" name="nomLegal" required
                 value={formData.nomLegal} onChange={handleChange}
+                disabled={!user}
                 placeholder={tx({ fr: 'Prenom Nom', en: 'First Last', es: 'Nombre Apellido' })}
-                className="input-field"
+                className="input-field disabled:opacity-50 disabled:cursor-not-allowed"
               />
             </div>
             <div>
@@ -210,8 +258,9 @@ function ArtistPartnershipForm() {
               <input
                 type="text" id="nomArtiste" name="nomArtiste"
                 value={formData.nomArtiste} onChange={handleChange}
+                disabled={!user}
                 placeholder={tx({ fr: 'Si different du nom legal', en: 'If different from legal name', es: 'Si es diferente del nombre legal' })}
-                className="input-field"
+                className="input-field disabled:opacity-50 disabled:cursor-not-allowed"
               />
             </div>
           </div>
@@ -225,8 +274,9 @@ function ArtistPartnershipForm() {
               <input
                 type="email" id="artistEmail" name="email" required
                 value={formData.email} onChange={handleChange}
+                disabled={!user}
                 placeholder="ton@email.com"
-                className="input-field"
+                className="input-field disabled:opacity-50 disabled:cursor-not-allowed"
               />
             </div>
             <div>
@@ -236,8 +286,9 @@ function ArtistPartnershipForm() {
               <input
                 type="tel" id="artistTel" name="telephone" required
                 value={formData.telephone} onChange={handleChange}
+                disabled={!user}
                 placeholder="514-xxx-xxxx"
-                className="input-field"
+                className="input-field disabled:opacity-50 disabled:cursor-not-allowed"
               />
             </div>
           </div>
@@ -250,8 +301,9 @@ function ArtistPartnershipForm() {
             <input
               type="text" id="artistAdresse" name="adresse" required
               value={formData.adresse} onChange={handleChange}
+              disabled={!user}
               placeholder={tx({ fr: '123 rue Exemple, Montreal, QC H2X 1Y4', en: '123 Example St, Montreal, QC H2X 1Y4', es: '123 Calle Ejemplo, Montreal, QC H2X 1Y4' })}
-              className="input-field"
+              className="input-field disabled:opacity-50 disabled:cursor-not-allowed"
             />
           </div>
 
@@ -263,51 +315,33 @@ function ArtistPartnershipForm() {
             <input
               type="text" id="tpsTvq" name="tpsTvq"
               value={formData.tpsTvq} onChange={handleChange}
+              disabled={!user}
               placeholder={tx({ fr: 'Si applicable', en: 'If applicable', es: 'Si aplica' })}
-              className="input-field"
+              className="input-field disabled:opacity-50 disabled:cursor-not-allowed"
             />
           </div>
 
-          {/* Bio */}
-          <div>
-            <label htmlFor="bio" className="block text-heading font-semibold text-sm mb-2">
-              {tx({ fr: 'Bio / Demarche artistique', en: 'Bio / Artistic statement', es: 'Bio / Declaracion artistica' })} *
-            </label>
-            <textarea
-              id="bio" name="bio" required
-              value={formData.bio} onChange={handleChange}
-              rows={5}
-              placeholder={tx({
-                fr: 'Decris ton parcours artistique, ta demarche, tes influences, les mediums que tu utilises...',
-                en: 'Describe your artistic journey, your approach, your influences, the mediums you use...',
-                es: 'Describe tu trayectoria artistica, tu enfoque, tus influencias, los medios que utilizas...',
-              })}
-              className="input-field resize-none"
-            />
-          </div>
-
-          {/* Photo de profil */}
-          <div>
-            <FileUpload
-              label={tx({ fr: 'Photo de profil *', en: 'Profile photo *', es: 'Foto de perfil *' })}
-              files={profilePhoto}
-              onFilesChange={setProfilePhoto}
-              maxFiles={1}
-              compact
-              uploadFn={uploadArtistFile}
-            />
-          </div>
-
-          {/* Portfolio */}
-          <div>
-            <FileUpload
-              label={tx({ fr: 'Portfolio / Oeuvres (max 20 fichiers, 130 MB chacun) *', en: 'Portfolio / Artworks (max 20 files, 130 MB each) *', es: 'Portafolio / Obras (max 20 archivos, 130 MB c/u) *' })}
-              files={portfolioFiles}
-              onFilesChange={setPortfolioFiles}
-              maxFiles={20}
-              uploadFn={uploadArtistFile}
-            />
-          </div>
+          {/* Signature numerique */}
+          {user && contractAccepted && signatureName && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="rounded-xl border border-green-500/30 bg-green-500/5 p-5"
+            >
+              <p className="text-grey-muted text-xs uppercase tracking-wider mb-3 font-semibold">
+                {tx({ fr: 'Signature numerique - L\'artiste', en: 'Digital signature - The artist', es: 'Firma digital - El artista' })}
+              </p>
+              <p
+                className="text-green-400 text-3xl md:text-4xl"
+                style={{ fontFamily: "'Caveat', 'Dancing Script', 'Segoe Script', 'Comic Sans MS', cursive" }}
+              >
+                {signatureName}
+              </p>
+              <p className="text-grey-muted text-xs mt-2">
+                {tx({ fr: 'Date :', en: 'Date:', es: 'Fecha:' })} {new Date().toLocaleDateString(lang === 'en' ? 'en-CA' : lang === 'es' ? 'es-CA' : 'fr-CA', { day: 'numeric', month: 'long', year: 'numeric' })}
+              </p>
+            </motion.div>
+          )}
 
           {/* Erreur */}
           {error && (
@@ -321,7 +355,7 @@ function ArtistPartnershipForm() {
           <button
             type="submit"
             disabled={!canSubmit}
-            className="btn-primary w-full justify-center text-base py-3.5 disabled:opacity-40 disabled:cursor-not-allowed"
+            className={`btn-primary w-full justify-center text-base py-3.5 disabled:cursor-not-allowed ${!user ? 'opacity-30' : 'disabled:opacity-40'}`}
           >
             {status === 'sending' ? (
               <>
@@ -334,7 +368,7 @@ function ArtistPartnershipForm() {
             ) : (
               <>
                 <Send size={18} />
-                {tx({ fr: 'Soumettre ma candidature', en: 'Submit my application', es: 'Enviar mi solicitud' })}
+                {tx({ fr: 'Signer et soumettre ma candidature', en: 'Sign and submit my application', es: 'Firmar y enviar mi solicitud' })}
               </>
             )}
           </button>

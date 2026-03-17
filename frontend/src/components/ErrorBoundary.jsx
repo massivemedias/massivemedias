@@ -4,25 +4,62 @@ import { Link, useLocation } from 'react-router-dom';
 class ErrorBoundaryInner extends Component {
   constructor(props) {
     super(props);
-    this.state = { hasError: false, error: null };
+    this.state = { hasError: false, error: null, resetKey: 0 };
   }
 
   static getDerivedStateFromError(error) {
-    return { hasError: true, error };
+    // Check if it's a chunk/module loading error (lazy import failure)
+    const isChunkError =
+      error?.name === 'ChunkLoadError' ||
+      error?.message?.includes('Failed to fetch dynamically imported module') ||
+      error?.message?.includes('Loading chunk') ||
+      error?.message?.includes('Loading CSS chunk') ||
+      error?.message?.includes('Unable to preload CSS') ||
+      error?.message?.includes('error loading dynamically imported module');
+
+    return { hasError: true, error, isChunkError };
   }
 
   componentDidUpdate(prevProps) {
+    // Reset error state on route change - increment resetKey to force fresh React tree
     if (this.state.hasError && prevProps.pathname !== this.props.pathname) {
-      this.setState({ hasError: false, error: null });
+      this.setState((prev) => ({
+        hasError: false,
+        error: null,
+        isChunkError: false,
+        resetKey: prev.resetKey + 1,
+      }));
     }
   }
 
   componentDidCatch(error, info) {
     console.error('[ErrorBoundary]', error, info?.componentStack);
+
+    // For chunk loading errors, auto-retry after a short delay
+    if (this.state.isChunkError) {
+      console.warn('[ErrorBoundary] Chunk load error detected, auto-recovering...');
+      setTimeout(() => {
+        this.setState((prev) => ({
+          hasError: false,
+          error: null,
+          isChunkError: false,
+          resetKey: prev.resetKey + 1,
+        }));
+      }, 100);
+    }
   }
 
+  handleReset = () => {
+    this.setState((prev) => ({
+      hasError: false,
+      error: null,
+      isChunkError: false,
+      resetKey: prev.resetKey + 1,
+    }));
+  };
+
   render() {
-    if (this.state.hasError) {
+    if (this.state.hasError && !this.state.isChunkError) {
       const isDev = import.meta.env.DEV;
       return (
         <div className="min-h-screen flex items-center justify-center px-4">
@@ -50,7 +87,7 @@ class ErrorBoundaryInner extends Component {
               </button>
               <Link
                 to="/"
-                onClick={() => this.setState({ hasError: false, error: null })}
+                onClick={this.handleReset}
                 className="btn-outline"
               >
                 Accueil
@@ -61,7 +98,8 @@ class ErrorBoundaryInner extends Component {
       );
     }
 
-    return this.props.children;
+    // Use resetKey to force React to create a fresh component tree after error recovery
+    return <div key={this.state.resetKey}>{this.props.children}</div>;
   }
 }
 

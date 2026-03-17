@@ -7,42 +7,60 @@ import { useLang } from './i18n/LanguageContext';
 import ScrollToTop from './components/ScrollToTop';
 import './index.css';
 
-// Lazy-loaded pages (chargées à la demande)
-const ServiceDetail = lazy(() => import('./pages/ServiceDetail'));
-const Contact = lazy(() => import('./pages/Contact'));
-const APropos = lazy(() => import('./pages/APropos'));
-const Boutique = lazy(() => import('./pages/Boutique'));
-const BoutiqueStickers = lazy(() => import('./pages/BoutiqueStickers'));
-const BoutiqueFineArt = lazy(() => import('./pages/BoutiqueFineArt'));
-const BoutiqueSublimation = lazy(() => import('./pages/BoutiqueSublimation'));
-const BoutiqueDesign = lazy(() => import('./pages/BoutiqueDesign'));
-const BoutiqueWeb = lazy(() => import('./pages/BoutiqueWeb'));
-const BoutiqueMerch = lazy(() => import('./pages/BoutiqueMerch'));
-const Panier = lazy(() => import('./pages/Panier'));
-const Login = lazy(() => import('./pages/Login'));
-const Account = lazy(() => import('./pages/Account'));
-const Checkout = lazy(() => import('./pages/Checkout'));
-const CheckoutSuccess = lazy(() => import('./pages/CheckoutSuccess'));
-const CheckoutCancel = lazy(() => import('./pages/CheckoutCancel'));
-const Artistes = lazy(() => import('./pages/Artistes'));
-const ArtisteDetail = lazy(() => import('./pages/ArtisteDetail'));
-const Temoignage = lazy(() => import('./pages/Temoignage'));
-const NotFound = lazy(() => import('./pages/NotFound'));
-const MmAdmin = lazy(() => import('./pages/MmAdmin'));
-const AdminLayout = lazy(() => import('./layouts/AdminLayout'));
-const AdminOrders = lazy(() => import('./pages/AdminOrders'));
-const AdminInventaire = lazy(() => import('./pages/AdminInventaire'));
-const AdminMessages = lazy(() => import('./pages/AdminMessages'));
-const AdminArtistes = lazy(() => import('./pages/AdminArtistes'));
-const AdminCommissions = lazy(() => import('./pages/AdminCommissions'));
+// Retry wrapper for lazy imports - retries up to 3 times on chunk load failure
+function lazyWithRetry(importFn) {
+  return lazy(() =>
+    importFn().catch((err) => {
+      console.warn('[lazyWithRetry] Import failed, retrying...', err.message);
+      // Clear module cache for Vite by adding a timestamp query param
+      return new Promise((resolve) => setTimeout(resolve, 200)).then(() =>
+        importFn().catch((err2) => {
+          console.warn('[lazyWithRetry] 2nd attempt failed, retrying...', err2.message);
+          return new Promise((resolve) => setTimeout(resolve, 500)).then(() => importFn());
+        })
+      );
+    })
+  );
+}
+
+// Lazy-loaded pages (chargees a la demande, avec retry automatique)
+const ServiceDetail = lazyWithRetry(() => import('./pages/ServiceDetail'));
+const Contact = lazyWithRetry(() => import('./pages/Contact'));
+const APropos = lazyWithRetry(() => import('./pages/APropos'));
+const Boutique = lazyWithRetry(() => import('./pages/Boutique'));
+const BoutiqueStickers = lazyWithRetry(() => import('./pages/BoutiqueStickers'));
+const BoutiqueFineArt = lazyWithRetry(() => import('./pages/BoutiqueFineArt'));
+const BoutiqueSublimation = lazyWithRetry(() => import('./pages/BoutiqueSublimation'));
+const BoutiqueDesign = lazyWithRetry(() => import('./pages/BoutiqueDesign'));
+const BoutiqueWeb = lazyWithRetry(() => import('./pages/BoutiqueWeb'));
+const BoutiqueMerch = lazyWithRetry(() => import('./pages/BoutiqueMerch'));
+const Panier = lazyWithRetry(() => import('./pages/Panier'));
+const Login = lazyWithRetry(() => import('./pages/Login'));
+const Account = lazyWithRetry(() => import('./pages/Account'));
+const Checkout = lazyWithRetry(() => import('./pages/Checkout'));
+const CheckoutSuccess = lazyWithRetry(() => import('./pages/CheckoutSuccess'));
+const CheckoutCancel = lazyWithRetry(() => import('./pages/CheckoutCancel'));
+const Artistes = lazyWithRetry(() => import('./pages/Artistes'));
+const ArtisteDetail = lazyWithRetry(() => import('./pages/ArtisteDetail'));
+const Temoignage = lazyWithRetry(() => import('./pages/Temoignage'));
+const NotFound = lazyWithRetry(() => import('./pages/NotFound'));
+const MmAdmin = lazyWithRetry(() => import('./pages/MmAdmin'));
+const AdminLayout = lazyWithRetry(() => import('./layouts/AdminLayout'));
+const AdminOrders = lazyWithRetry(() => import('./pages/AdminOrders'));
+const AdminInventaire = lazyWithRetry(() => import('./pages/AdminInventaire'));
+const AdminMessages = lazyWithRetry(() => import('./pages/AdminMessages'));
+const AdminArtistes = lazyWithRetry(() => import('./pages/AdminArtistes'));
+const AdminCommissions = lazyWithRetry(() => import('./pages/AdminCommissions'));
 // AdminClients merged into AdminUtilisateurs - redirect in routes
-const AdminDepenses = lazy(() => import('./pages/AdminDepenses'));
-const AdminStats = lazy(() => import('./pages/AdminStats'));
-const AdminTarifs = lazy(() => import('./pages/AdminTarifs'));
-const AdminTemoignages = lazy(() => import('./pages/AdminTemoignages'));
-const AdminUtilisateurs = lazy(() => import('./pages/AdminUtilisateurs'));
-const ProtectedRoute = lazy(() => import('./components/ProtectedRoute'));
-const AdminRoute = lazy(() => import('./components/AdminRoute'));
+const AdminDepenses = lazyWithRetry(() => import('./pages/AdminDepenses'));
+const AdminStats = lazyWithRetry(() => import('./pages/AdminStats'));
+const AdminTarifs = lazyWithRetry(() => import('./pages/AdminTarifs'));
+const AdminTemoignages = lazyWithRetry(() => import('./pages/AdminTemoignages'));
+const AdminUtilisateurs = lazyWithRetry(() => import('./pages/AdminUtilisateurs'));
+
+// These are small wrappers - load eagerly to avoid lazy-loading auth guards
+import ProtectedRoute from './components/ProtectedRoute';
+import AdminRoute from './components/AdminRoute';
 
 // Base path pour GitHub Pages
 const basename = import.meta.env.BASE_URL;
@@ -101,7 +119,7 @@ function App() {
       <RecoveryRedirect />
       <ScrollToTop />
       <ErrorBoundary>
-      <Suspense fallback={null}>
+      <Suspense fallback={<div className="min-h-screen" />}>
         <Routes>
           <Route element={<MainLayout />}>
             <Route index element={subdomainSlug ? <ArtisteDetail subdomainSlug={subdomainSlug} /> : <Home />} />

@@ -4,7 +4,7 @@ import {
   Users, UserCheck, Clock, Mail, Calendar, Search,
   Loader2, Shield, Palette, ChevronDown, ChevronUp, Check, X,
   DollarSign, ShoppingBag, Phone, Building2, MapPin, Trash2,
-  Eye, MousePointerClick, ArrowUpRight, ExternalLink, BarChart3, Gift,
+  Eye, MousePointerClick, ArrowUpRight, ExternalLink, BarChart3, Gift, FileCheck,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import api from '../services/api';
@@ -84,6 +84,10 @@ function AdminUtilisateurs() {
       phone: buyer?.lastCustomerPhone || buyer?.phone || null,
       lastShippingAddress: buyer?.lastShippingAddress || u.profileAddress || null,
       referredBy: u.referredBy || null,
+      contractSigned: u.contractSigned || false,
+      contractSignedAt: u.contractSignedAt || null,
+      contractVersion: u.contractVersion || null,
+      nomArtiste: u.nomArtiste || null,
     };
   });
 
@@ -300,7 +304,7 @@ function AdminUtilisateurs() {
           <div className="hidden md:grid grid-cols-[1fr_1.2fr_100px_110px_70px_100px] gap-3 px-4 py-3 text-xs font-semibold text-grey-muted uppercase tracking-wider border-b card-border">
             <span>{tx({ fr: 'Utilisateur', en: 'User', es: 'Usuario' })}</span>
             <span>Email</span>
-            <span>{tx({ fr: 'Statut', en: 'Status', es: 'Estado' })}</span>
+            <span>{tx({ fr: 'Inscrit', en: 'Joined', es: 'Registro' })}</span>
             <span>{tx({ fr: 'Role', en: 'Role', es: 'Rol' })}</span>
             <span className="text-center">{tx({ fr: 'Cmd', en: 'Orders', es: 'Ped' })}</span>
             <span className="text-right">{tx({ fr: 'Depense', en: 'Spent', es: 'Gastado' })}</span>
@@ -352,10 +356,9 @@ function AdminUtilisateurs() {
                     <span className="text-[13.5px] text-grey-muted truncate">{user.email}</span>
                   </div>
 
-                  {/* Buyer/Visitor badge */}
-                  <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-semibold w-fit ${buyerBadge.className}`}>
-                    {user.isBuyer ? <ShoppingBag size={10} /> : <Eye size={10} />}
-                    {buyerBadge.label}
+                  {/* Date inscription */}
+                  <span className="text-[12px] text-grey-muted">
+                    {formatDate(user.createdAt)}
                   </span>
 
                   {/* Role badge */}
@@ -506,6 +509,9 @@ function AdminUtilisateurs() {
                             </h4>
                             <div className="space-y-2 text-[15px]">
                               <p className="text-heading font-medium">{user.fullName || '-'}</p>
+                              {user.nomArtiste && (
+                                <p className="text-purple-400 flex items-center gap-2 text-sm"><Palette size={13} /> {user.nomArtiste}</p>
+                              )}
                               <p className="text-grey-muted flex items-center gap-2"><Mail size={13} /> {user.email}</p>
                               {user.phone && <p className="text-grey-muted flex items-center gap-2"><Phone size={13} /> {user.phone}</p>}
                               {user.company && <p className="text-grey-muted flex items-center gap-2"><Building2 size={13} /> {user.company}</p>}
@@ -560,6 +566,23 @@ function AdminUtilisateurs() {
                                   <span className="text-yellow-400 font-semibold text-sm">#{user.referredBy}</span>
                                 </div>
                               )}
+                              <div className="flex justify-between items-center">
+                                <span className="text-grey-muted flex items-center gap-1">
+                                  <FileCheck size={12} className={user.contractSigned ? 'text-green-400' : 'text-grey-muted/50'} />
+                                  {tx({ fr: 'Contrat', en: 'Contract', es: 'Contrato' })}
+                                </span>
+                                {user.contractSigned ? (
+                                  <span className="text-green-400 font-semibold text-sm flex items-center gap-1">
+                                    <Check size={12} />
+                                    {tx({ fr: 'Signe', en: 'Signed', es: 'Firmado' })} {user.contractVersion || ''}
+                                    {user.contractSignedAt && (
+                                      <span className="text-green-400/60 text-xs ml-1">({formatDate(user.contractSignedAt)})</span>
+                                    )}
+                                  </span>
+                                ) : (
+                                  <span className="text-grey-muted/50 text-sm">{tx({ fr: 'Non signe', en: 'Not signed', es: 'No firmado' })}</span>
+                                )}
+                              </div>
                             </div>
                           </div>
                         </div>

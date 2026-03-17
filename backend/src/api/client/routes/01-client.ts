@@ -24,5 +24,13 @@ export default {
         auth: false,
       },
     },
+    {
+      method: 'POST',
+      path: '/clients/notify-signup',
+      handler: 'client.notifySignup',
+      config: {
+        auth: false,
+      },
+    },
   ],
 };

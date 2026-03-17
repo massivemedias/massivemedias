@@ -1,4 +1,5 @@
 import { factories } from '@strapi/strapi';
+import { sendContractSignedEmail } from '../../../utils/email';
 
 export default factories.createCoreController('api::artist-submission.artist-submission', ({ strapi }) => ({
 
@@ -80,21 +81,13 @@ export default factories.createCoreController('api::artist-submission.artist-sub
     const {
       nomLegal, nomArtiste, adresse, email, telephone,
       tpsTvq, bio, photoProfilUrl, portfolioUrls,
-      contractAccepted, contractVersion,
+      contractAccepted, contractVersion, supabaseUserId,
     } = ctx.request.body as any;
 
-    // Validation
-    if (!nomLegal || !email || !telephone || !adresse || !bio) {
+    // Validation - bio, photo et portfolio sont maintenant optionnels
+    // (l'artiste les enverra depuis son compte une fois accepte)
+    if (!nomLegal || !email || !telephone || !adresse) {
       return ctx.badRequest('Champs requis manquants');
-    }
-    if (!photoProfilUrl) {
-      return ctx.badRequest('Photo de profil requise');
-    }
-    if (!portfolioUrls || !Array.isArray(portfolioUrls) || portfolioUrls.length === 0) {
-      return ctx.badRequest('Au moins une oeuvre requise');
-    }
-    if (portfolioUrls.length > 20) {
-      return ctx.badRequest('Maximum 20 oeuvres');
     }
     if (!contractAccepted) {
       return ctx.badRequest('Le contrat doit etre accepte');
@@ -109,16 +102,31 @@ export default factories.createCoreController('api::artist-submission.artist-sub
           email,
           telephone,
           tpsTvq: tpsTvq || '',
-          bio,
-          photoProfilUrl,
-          portfolioUrls,
+          bio: bio || '',
+          photoProfilUrl: photoProfilUrl || '',
+          portfolioUrls: portfolioUrls || [],
           contractAccepted: true,
-          contractVersion: contractVersion || 'v1',
+          contractVersion: contractVersion || 'v3',
           status: 'new',
         },
       });
 
       strapi.log.info(`Nouvelle soumission artiste: ${nomLegal} (${email})`);
+
+      // Envoyer les emails de contrat signe (copie artiste + original Massive)
+      const signedAt = new Date().toISOString();
+      sendContractSignedEmail({
+        artistName: nomLegal,
+        artistEmail: email,
+        nomArtiste: nomArtiste || undefined,
+        telephone,
+        adresse,
+        contractVersion: contractVersion || 'v3',
+        signedAt,
+      }).catch(err => {
+        strapi.log.warn('Email contrat non envoye:', err);
+      });
+
       ctx.body = { success: true, id: submission.documentId };
     } catch (err: any) {
       strapi.log.error('Artist submission error:', err);

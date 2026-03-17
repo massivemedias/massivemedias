@@ -1,5 +1,6 @@
-import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { supabase } from '../lib/supabase';
+import api from '../services/api';
 
 const AuthContext = createContext();
 
@@ -43,6 +44,14 @@ export function AuthProvider({ children }) {
       password,
       options: { data: meta },
     });
+    // Notifier le backend de la nouvelle inscription
+    if (!error && data?.user) {
+      api.post('/clients/notify-signup', {
+        name: fullName,
+        email,
+        provider: 'email',
+      }).catch(() => {});
+    }
     return { data, error };
   }, []);
 
