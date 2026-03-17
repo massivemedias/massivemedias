@@ -168,6 +168,28 @@ function AdminUtilisateurs() {
 
   const handleSetArtist = async (user) => {
     const email = (user.email || '').toLowerCase();
+
+    // Downgrade to normal user
+    if (selectedSlug === '__downgrade__') {
+      setSaving(email);
+      try {
+        await setUserRole(email, 'user', null, user.id, user.fullName);
+        const newRoles = { ...roles };
+        delete newRoles[email];
+        setRoles(newRoles);
+        setEditingUser(null);
+        setSelectedSlug('');
+        setToast(tx({ fr: `${user.fullName || email} est maintenant un utilisateur normal`, en: `${user.fullName || email} is now a normal user`, es: `${user.fullName || email} ahora es un usuario normal` }));
+        setTimeout(() => setToast(''), 3000);
+      } catch {
+        setToast(tx({ fr: 'Erreur lors de la mise a jour', en: 'Error updating role', es: 'Error al actualizar' }));
+        setTimeout(() => setToast(''), 3000);
+      } finally {
+        setSaving(null);
+      }
+      return;
+    }
+
     const slug = selectedSlug === '__new__' ? customSlug.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-') : selectedSlug;
     if (!slug) return;
     setSaving(email);
@@ -312,12 +334,13 @@ function AdminUtilisateurs() {
       {/* Users list */}
       {filtered.length > 0 && (
         <div className="rounded-xl bg-glass overflow-hidden card-border">
-          <div className="hidden md:grid grid-cols-[1fr_1.2fr_100px_70px_100px] gap-3 px-4 py-3 text-xs font-semibold text-grey-muted uppercase tracking-wider border-b card-border">
+          <div className="hidden md:grid grid-cols-[1fr_1.2fr_100px_70px_100px_32px] gap-3 px-4 py-3 text-xs font-semibold text-grey-muted uppercase tracking-wider border-b card-border">
             <span>{tx({ fr: 'Utilisateur', en: 'User', es: 'Usuario' })}</span>
             <span>Email</span>
             <span>{tx({ fr: 'Inscrit', en: 'Joined', es: 'Registro' })}</span>
             <span className="text-center">{tx({ fr: 'Cmd', en: 'Orders', es: 'Ped' })}</span>
             <span className="text-right">{tx({ fr: 'Depense', en: 'Spent', es: 'Gastado' })}</span>
+            <span></span>
           </div>
 
           {filtered.map((user) => {
@@ -334,7 +357,7 @@ function AdminUtilisateurs() {
                 {/* Desktop row */}
                 <div
                   onClick={() => setExpandedId(isExpanded ? null : user.id)}
-                  className={`hidden md:grid grid-cols-[1fr_1.2fr_100px_70px_100px] gap-3 px-4 py-3 items-center cursor-pointer hover:bg-accent/5 transition-colors ${
+                  className={`hidden md:grid grid-cols-[1fr_1.2fr_100px_70px_100px_32px] gap-3 px-4 py-3 items-center cursor-pointer hover:bg-accent/5 transition-colors ${
                     role === 'admin' ? 'border-l-2 border-l-red-400' :
                     role === 'artist' ? 'border-l-2 border-l-purple-400' :
                     user.isBuyer ? 'border-l-2 border-l-green-400' :
@@ -388,15 +411,15 @@ function AdminUtilisateurs() {
                     {user.orderCount || 0}
                   </span>
 
-                  {/* Total spent + chevron */}
-                  <div className="flex items-center justify-end gap-2">
-                    <span className={`text-[15px] font-bold ${user.totalSpent > 0 ? 'text-green-400' : 'text-grey-muted'}`}>
-                      {user.totalSpent > 0 ? formatMoney(user.totalSpent) : '-'}
-                    </span>
-                    <span className="text-grey-muted/50">
-                      {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                    </span>
-                  </div>
+                  {/* Total spent */}
+                  <span className={`text-[15px] font-bold text-right ${user.totalSpent > 0 ? 'text-green-400' : 'text-grey-muted'}`}>
+                    {user.totalSpent > 0 ? formatMoney(user.totalSpent) : '-'}
+                  </span>
+
+                  {/* Chevron */}
+                  <span className="text-grey-muted justify-self-end">
+                    {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                  </span>
                 </div>
 
                 {/* Mobile card */}
@@ -491,7 +514,7 @@ function AdminUtilisateurs() {
                         </>
                       )}
                       <span className="text-grey-muted ml-1">
-                        {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                        {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                       </span>
                     </div>
                   </div>
@@ -687,6 +710,9 @@ function AdminUtilisateurs() {
                           className="input-field text-sm py-1.5 px-3 max-w-xs"
                         >
                           <option value="">{tx({ fr: '-- Choisir --', en: '-- Choose --', es: '-- Elegir --' })}</option>
+                          {role === 'artist' && (
+                            <option value="__downgrade__">{tx({ fr: 'Utilisateur normal (retirer artiste)', en: 'Normal user (remove artist)', es: 'Usuario normal (quitar artista)' })}</option>
+                          )}
                           <option value="__new__">{tx({ fr: '+ Nouvel artiste (slug personnalise)', en: '+ New artist (custom slug)', es: '+ Nuevo artista (slug personalizado)' })}</option>
                           {ARTIST_SLUGS.map(slug => (
                             <option key={slug} value={slug}>
@@ -705,7 +731,7 @@ function AdminUtilisateurs() {
                         )}
                         <button
                           onClick={() => handleSetArtist(user)}
-                          disabled={(!selectedSlug || (selectedSlug === '__new__' && !customSlug.trim())) || isSaving}
+                          disabled={(!selectedSlug || (selectedSlug === '__new__' && !customSlug.trim()) || selectedSlug === '') || isSaving}
                           className="btn-primary text-xs py-1.5 px-4 disabled:opacity-50"
                         >
                           {isSaving ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
