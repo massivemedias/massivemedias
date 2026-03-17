@@ -586,9 +586,9 @@ function Account() {
                   )}
                 </p>
               </div>
-              <button onClick={signOut} className="flex items-center gap-2 text-grey-muted hover:text-red-400 transition-colors text-sm flex-shrink-0">
+              <button onClick={signOut} className="flex items-center gap-2 px-4 py-2 rounded-lg border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:border-red-500/50 transition-all text-sm font-semibold flex-shrink-0">
                 <LogOut size={16} />
-                <span className="hidden sm:inline">{t('auth.logout')}</span>
+                <span className="hidden sm:inline">{tx({ fr: 'Deconnexion', en: 'Sign out', es: 'Cerrar sesion' })}</span>
               </button>
             </div>
           </div>
@@ -765,9 +765,9 @@ function Account() {
                   )}
                 </p>
               </div>
-              <button onClick={signOut} className="flex items-center gap-2 text-grey-muted hover:text-red-400 transition-colors text-sm flex-shrink-0">
+              <button onClick={signOut} className="flex items-center gap-2 px-4 py-2 rounded-lg border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:border-red-500/50 transition-all text-sm font-semibold flex-shrink-0">
                 <LogOut size={16} />
-                <span className="hidden sm:inline">{t('auth.logout')}</span>
+                <span className="hidden sm:inline">{tx({ fr: 'Deconnexion', en: 'Sign out', es: 'Cerrar sesion' })}</span>
               </button>
             </div>
 
