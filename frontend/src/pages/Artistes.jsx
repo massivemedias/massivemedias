@@ -119,7 +119,7 @@ function Artistes() {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 mb-20">
           {artists.map((artist, index) => {
             const tagline = tx({ fr: artist.tagline.fr, en: artist.tagline.en, es: artist.tagline.es || artist.tagline.en });
-            const minPrice = Math.min(...Object.values(artist.pricing.studio));
+            const minPrice = Math.min(...Object.values(artist.pricing.studio).filter(v => v != null));
 
             return (
               <motion.div

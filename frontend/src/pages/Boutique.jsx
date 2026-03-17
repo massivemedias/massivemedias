@@ -221,7 +221,7 @@ function Boutique() {
           </button>
           {orderedArtists.map((artist, ai) => {
             const hasPrints = artist.prints && artist.prints.length > 0;
-            const studioVals = hasPrints && artist.pricing?.studio ? Object.values(artist.pricing.studio) : [];
+            const studioVals = hasPrints && artist.pricing?.studio ? Object.values(artist.pricing.studio).filter(v => v != null) : [];
             const minPrice = studioVals.length > 0 ? Math.min(...studioVals) : null;
             return (
               <motion.div
@@ -487,7 +487,7 @@ function Boutique() {
                 {/* Grille responsive */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
                   {featuredPrints.map((print, i) => {
-                    const studioVals = print.artist?.pricing?.studio ? Object.values(print.artist.pricing.studio) : [];
+                    const studioVals = print.artist?.pricing?.studio ? Object.values(print.artist.pricing.studio).filter(v => v != null) : [];
                     const minPrice = studioVals.length > 0 ? Math.min(...studioVals) : 0;
                     return (
                       <motion.div
