@@ -4,11 +4,11 @@ import {
   Users, UserCheck, Clock, Mail, Calendar, Search,
   Loader2, Shield, Palette, ChevronDown, ChevronUp, Check, X,
   DollarSign, ShoppingBag, Phone, Building2, MapPin, Trash2,
-  Eye, MousePointerClick, ArrowUpRight, ExternalLink, BarChart3, Gift, FileCheck,
+  Eye, MousePointerClick, ArrowUpRight, ExternalLink, BarChart3, Gift, FileCheck, Receipt,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import api from '../services/api';
-import { getClients } from '../services/adminService';
+import { getClients, getArtistSubmissions } from '../services/adminService';
 import { getUserRoles, setUserRole } from '../services/userRoleService';
 import artistsData from '../data/artists';
 
@@ -25,6 +25,9 @@ function AdminUtilisateurs() {
   // Clients from orders (buyers)
   const [clients, setClients] = useState([]);
 
+  // Artist submissions (candidatures)
+  const [artistSubs, setArtistSubs] = useState({});
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(null);
@@ -40,10 +43,11 @@ function AdminUtilisateurs() {
   useEffect(() => {
     const fetchAll = async () => {
       try {
-        const [usersRes, rolesRes, clientsRes] = await Promise.all([
+        const [usersRes, rolesRes, clientsRes, subsRes] = await Promise.all([
           api.get('/clients/users'),
           getUserRoles().catch(() => ({ data: { data: [] } })),
           getClients({ pageSize: 999 }).catch(() => ({ data: { data: [] } })),
+          getArtistSubmissions({ pageSize: 999 }).catch(() => ({ data: { data: [] } })),
         ]);
         setUsers(usersRes.data?.data || usersRes.data || []);
 
@@ -53,6 +57,13 @@ function AdminUtilisateurs() {
         });
         setRoles(roleMap);
         setClients(clientsRes.data?.data || clientsRes.data || []);
+
+        // Build artist submissions map by email
+        const subsMap = {};
+        (subsRes.data?.data || subsRes.data || []).forEach(s => {
+          if (s?.email) subsMap[s.email.toLowerCase()] = s;
+        });
+        setArtistSubs(subsMap);
         setError('');
       } catch {
         setError(tx({ fr: 'Impossible de charger les donnees', en: 'Unable to load data', es: 'No se pueden cargar los datos' }));
@@ -531,6 +542,49 @@ function AdminUtilisateurs() {
                       className="overflow-hidden"
                     >
                       <div className="px-4 pb-4 pt-1 border-t card-border bg-glass/50">
+                        {/* Candidature artiste - TPS/TVQ */}
+                        {(() => {
+                          const sub = artistSubs[(user.email || '').toLowerCase()];
+                          if (!sub) return null;
+                          return (
+                            <div className="mt-3 mb-3 rounded-lg bg-purple-500/5 border border-purple-500/20 p-4">
+                              <h4 className="text-xs font-semibold text-purple-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                                <Receipt size={12} />
+                                {tx({ fr: 'Infos candidature artiste', en: 'Artist application info', es: 'Info solicitud artista' })}
+                              </h4>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
+                                {sub.nomLegal && (
+                                  <div>
+                                    <span className="text-grey-muted text-xs">{tx({ fr: 'Nom legal', en: 'Legal name', es: 'Nombre legal' })}</span>
+                                    <p className="text-heading font-medium">{sub.nomLegal}</p>
+                                  </div>
+                                )}
+                                {sub.telephone && (
+                                  <div>
+                                    <span className="text-grey-muted text-xs flex items-center gap-1"><Phone size={10} /> {tx({ fr: 'Telephone', en: 'Phone', es: 'Telefono' })}</span>
+                                    <p className="text-heading font-medium">{sub.telephone}</p>
+                                  </div>
+                                )}
+                                {sub.adresse && (
+                                  <div>
+                                    <span className="text-grey-muted text-xs flex items-center gap-1"><MapPin size={10} /> {tx({ fr: 'Adresse', en: 'Address', es: 'Direccion' })}</span>
+                                    <p className="text-heading font-medium">{sub.adresse}</p>
+                                  </div>
+                                )}
+                                {sub.tpsTvq && (
+                                  <div>
+                                    <span className="text-grey-muted text-xs flex items-center gap-1"><Receipt size={10} /> TPS / TVQ</span>
+                                    <p className="text-green-400 font-bold">{sub.tpsTvq}</p>
+                                  </div>
+                                )}
+                              </div>
+                              {!sub.tpsTvq && (
+                                <p className="text-grey-muted/60 text-xs mt-2 italic">{tx({ fr: 'Aucun numero TPS/TVQ fourni', en: 'No GST/QST number provided', es: 'Sin numero TPS/TVQ' })}</p>
+                              )}
+                            </div>
+                          );
+                        })()}
+
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-3">
                           {/* Contact */}
                           <div className="rounded-lg bg-glass p-3">
@@ -543,7 +597,9 @@ function AdminUtilisateurs() {
                                 <p className="text-purple-400 flex items-center gap-2 text-sm"><Palette size={13} /> {user.nomArtiste}</p>
                               )}
                               <p className="text-grey-muted flex items-center gap-2"><Mail size={13} /> {user.email}</p>
-                              {user.phone && <p className="text-grey-muted flex items-center gap-2"><Phone size={13} /> {user.phone}</p>}
+                              {(user.phone || artistSubs[(user.email || '').toLowerCase()]?.telephone) && (
+                                <p className="text-grey-muted flex items-center gap-2"><Phone size={13} /> {user.phone || artistSubs[(user.email || '').toLowerCase()]?.telephone}</p>
+                              )}
                               {user.company && <p className="text-grey-muted flex items-center gap-2"><Building2 size={13} /> {user.company}</p>}
                             </div>
                           </div>
@@ -560,6 +616,11 @@ function AdminUtilisateurs() {
                               <div className="text-[15px] text-heading space-y-0.5">
                                 <p>{user.lastShippingAddress.address}</p>
                                 <p>{user.lastShippingAddress.city}, {user.lastShippingAddress.province} {user.lastShippingAddress.postalCode}</p>
+                              </div>
+                            ) : artistSubs[(user.email || '').toLowerCase()]?.adresse ? (
+                              <div className="text-[15px] text-heading">
+                                <p>{artistSubs[(user.email || '').toLowerCase()].adresse}</p>
+                                <p className="text-grey-muted text-xs mt-1 italic">{tx({ fr: '(depuis candidature)', en: '(from application)', es: '(desde solicitud)' })}</p>
                               </div>
                             ) : (
                               <p className="text-[15px] text-grey-muted">{tx({ fr: 'Aucune adresse', en: 'No address', es: 'Sin direccion' })}</p>

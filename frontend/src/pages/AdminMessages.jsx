@@ -12,6 +12,9 @@ import {
   getContactSubmissions, updateContactStatus, replyToContact, deleteContact,
   getArtistSubmissions, updateArtistStatus, deleteArtistSubmission,
 } from '../services/adminService';
+import {
+  getArtistMessagesAdmin, replyArtistMessage, updateArtistMessageStatus,
+} from '../services/artistService';
 
 // Unified status map - includes both contact and artist statuses
 const ALL_STATUS = {
@@ -39,6 +42,22 @@ const ARTIST_FLOW = {
   archived: [],
 };
 
+const ARTIST_MSG_FLOW = {
+  new: ['read', 'replied', 'archived'],
+  read: ['replied', 'archived'],
+  replied: ['archived'],
+  archived: [],
+};
+
+// Category labels for artist messages
+const CATEGORY_LABELS = {
+  'new-images': { fr: 'Depot images', en: 'Image deposit', es: 'Deposito imagenes' },
+  'question': { fr: 'Question', en: 'Question', es: 'Pregunta' },
+  'withdrawal': { fr: 'Retrait', en: 'Withdrawal', es: 'Retiro' },
+  'update-profile': { fr: 'Profil', en: 'Profile', es: 'Perfil' },
+  'other': { fr: 'Autre', en: 'Other', es: 'Otro' },
+};
+
 // Filter buttons: show only the combined relevant statuses
 const FILTER_STATUSES = ['all', 'new', 'read', 'reviewing', 'replied', 'accepted', 'rejected', 'archived'];
 
@@ -59,7 +78,7 @@ function AdminMessages() {
   const [search, setSearch] = useState('');
   const [searchDebounce, setSearchDebounce] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
-  const [filterType, setFilterType] = useState('all'); // all, contact, candidature
+  const [filterType, setFilterType] = useState('all'); // all, contact, candidature, artist-msg
   const [expandedId, setExpandedId] = useState(null);
   const [updatingId, setUpdatingId] = useState(null);
   const [replyingTo, setReplyingTo] = useState(null);
@@ -77,10 +96,11 @@ function AdminMessages() {
   const fetchItems = useCallback(async () => {
     setLoading(true);
     try {
-      // Fetch both in parallel
-      const [contactRes, artistRes] = await Promise.all([
+      // Fetch all three in parallel
+      const [contactRes, artistRes, artistMsgRes] = await Promise.all([
         getContactSubmissions({ pageSize: 100, ...(searchDebounce ? { search: searchDebounce } : {}) }),
         getArtistSubmissions({ pageSize: 100, ...(searchDebounce ? { search: searchDebounce } : {}) }),
+        getArtistMessagesAdmin().catch(() => ({ data: { data: [] } })),
       ]);
 
       // Normalize contact messages
@@ -103,8 +123,18 @@ function AdminMessages() {
         _service: 'Candidature',
       }));
 
+      // Normalize artist messages (image deposits, questions, etc.)
+      const artistMsgs = (artistMsgRes.data?.data || artistMsgRes.data || []).map(m => ({
+        ...m,
+        _type: 'artist-msg',
+        _uid: `amsg-${m.documentId}`,
+        _nom: m.artistName || m.artistSlug || m.email,
+        _email: m.email,
+        _service: tx(CATEGORY_LABELS[m.category] || CATEGORY_LABELS.other),
+      }));
+
       // Merge and sort by date descending
-      const merged = [...contacts, ...artists].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      const merged = [...contacts, ...artists, ...artistMsgs].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       setItems(merged);
     } catch { /* silent */ } finally { setLoading(false); }
   }, [searchDebounce]);
@@ -123,6 +153,8 @@ function AdminMessages() {
     try {
       if (item._type === 'contact') {
         await updateContactStatus(item.documentId, newStatus);
+      } else if (item._type === 'artist-msg') {
+        await updateArtistMessageStatus(item.documentId, newStatus);
       } else {
         await updateArtistStatus(item.documentId, newStatus);
       }
@@ -150,9 +182,13 @@ function AdminMessages() {
     setSendingReply(true);
     setReplySuccess(null);
     try {
-      const { data } = await replyToContact(item.documentId, replyText.trim());
-      setItems(prev => prev.map(i => i._uid === item._uid ? { ...i, status: 'replied', notes: data.notes } : i));
-      setEditNotes(prev => ({ ...prev, [item._uid]: data.notes }));
+      if (item._type === 'artist-msg') {
+        await replyArtistMessage(item.documentId, replyText.trim());
+        setItems(prev => prev.map(i => i._uid === item._uid ? { ...i, status: 'replied', adminReply: replyText.trim() } : i));
+      } else {
+        const { data } = await replyToContact(item.documentId, replyText.trim());
+        setItems(prev => prev.map(i => i._uid === item._uid ? { ...i, status: 'replied', notes: data.notes } : i));
+      }
       setReplySuccess(item._uid);
       setReplyText('');
       setTimeout(() => { setReplySuccess(null); setReplyingTo(null); }, 2000);
@@ -166,8 +202,8 @@ function AdminMessages() {
   const toggleExpand = (item) => {
     if (expandedId === item._uid) { setExpandedId(null); return; }
     setExpandedId(item._uid);
-    // Auto-mark contact as read
-    if (item._type === 'contact' && item.status === 'new') handleStatusChange(item, 'read');
+    // Auto-mark contact/artist-msg as read
+    if ((item._type === 'contact' || item._type === 'artist-msg') && item.status === 'new') handleStatusChange(item, 'read');
   };
 
   const newCount = items.filter(i => i.status === 'new').length;
@@ -175,8 +211,8 @@ function AdminMessages() {
   const summaryCards = [
     { label: tx({ fr: 'Total', en: 'Total', es: 'Total' }), value: items.length, icon: MessageSquare, accent: 'text-accent' },
     { label: tx({ fr: 'Nouveaux', en: 'New', es: 'Nuevos' }), value: newCount, icon: Mail, accent: 'text-blue-400' },
+    { label: tx({ fr: 'Artistes', en: 'Artists', es: 'Artistas' }), value: items.filter(i => i._type === 'artist-msg').length, icon: Image, accent: 'text-pink-400' },
     { label: tx({ fr: 'Candidatures', en: 'Applications', es: 'Candidaturas' }), value: items.filter(i => i._type === 'candidature').length, icon: Palette, accent: 'text-purple-400' },
-    { label: tx({ fr: 'Repondus', en: 'Replied', es: 'Respondidos' }), value: items.filter(i => i.status === 'replied').length, icon: Reply, accent: 'text-green-400' },
   ];
 
   return (
@@ -207,10 +243,13 @@ function AdminMessages() {
         </div>
         <div className="flex flex-wrap gap-1.5">
           {/* Type filter */}
-          {['all', 'contact', 'candidature'].map((t) => (
+          {['all', 'contact', 'artist-msg', 'candidature'].map((t) => (
             <button key={t} onClick={() => { setFilterType(t); setExpandedId(null); }}
               className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${filterType === t ? 'text-accent' : 'text-grey-muted hover:text-accent'}`}>
-              {t === 'all' ? tx({ fr: 'Tout', en: 'All', es: 'Todo' }) : t === 'contact' ? tx({ fr: 'Messages', en: 'Messages', es: 'Mensajes' }) : tx({ fr: 'Candidatures', en: 'Applications', es: 'Candidaturas' })}
+              {t === 'all' ? tx({ fr: 'Tout', en: 'All', es: 'Todo' })
+                : t === 'contact' ? tx({ fr: 'Messages', en: 'Messages', es: 'Mensajes' })
+                : t === 'artist-msg' ? tx({ fr: 'Artistes', en: 'Artists', es: 'Artistas' })
+                : tx({ fr: 'Candidatures', en: 'Applications', es: 'Candidaturas' })}
             </button>
           ))}
           <span className="w-px bg-grey-muted/20 mx-1 self-stretch" />
@@ -245,9 +284,10 @@ function AdminMessages() {
               const st = ALL_STATUS[item.status] || ALL_STATUS.new;
               const StIcon = st.icon;
               const isExpanded = expandedId === item._uid;
-              const statusFlow = item._type === 'contact' ? CONTACT_FLOW : ARTIST_FLOW;
+              const statusFlow = item._type === 'contact' ? CONTACT_FLOW : item._type === 'artist-msg' ? ARTIST_MSG_FLOW : ARTIST_FLOW;
               const nextStatuses = statusFlow[item.status] || [];
               const isCandidature = item._type === 'candidature';
+              const isArtistMsg = item._type === 'artist-msg';
 
               return (
                 <motion.div key={item._uid} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="border-b last:border-b-0 card-border">
@@ -261,12 +301,15 @@ function AdminMessages() {
                         <StIcon size={10} />{tx({ fr: st.fr, en: st.en, es: st.es })}
                       </span>
                       {isCandidature && <span className="text-purple-400 text-[10px] font-semibold">{tx({ fr: 'Candidature', en: 'Application', es: 'Candidatura' })}</span>}
+                      {isArtistMsg && <span className="text-pink-400 text-[10px] font-semibold">{item._service}</span>}
                     </span>
                     <span className="text-sm text-heading font-medium truncate">{item._nom}</span>
                     <span className="text-xs text-grey-muted truncate hidden md:block">{item._email}</span>
                     <span className="text-xs text-grey-muted truncate hidden md:block">
                       {isCandidature ? (
                         <span className="text-purple-400 font-semibold">{tx({ fr: 'Candidature', en: 'Application', es: 'Candidatura' })}</span>
+                      ) : isArtistMsg ? (
+                        <span className="text-pink-400 font-semibold">{item._service}</span>
                       ) : item._service}
                     </span>
                     <span className={`hidden md:inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold w-fit ${st.color}`}>
@@ -280,8 +323,107 @@ function AdminMessages() {
                     {isExpanded && (
                       <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
                         <div className="px-4 pb-5 pt-1 space-y-4 border-t card-border bg-glass/50">
+                          {/* ARTIST MESSAGE expanded view */}
+                          {isArtistMsg && (
+                            <>
+                              {/* Artist info bar */}
+                              <div className="flex items-center gap-3 rounded-lg bg-pink-500/5 border border-pink-500/20 p-3">
+                                <Palette size={16} className="text-pink-400 flex-shrink-0" />
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-heading text-sm font-semibold">{item.artistName || item.artistSlug}</p>
+                                  <p className="text-grey-muted text-xs">{item.email}</p>
+                                </div>
+                                <span className="px-2 py-1 rounded-full bg-pink-500/20 text-pink-400 text-[10px] font-semibold">{item._service}</span>
+                              </div>
+
+                              {/* Message */}
+                              {item.message && (
+                                <div className="rounded-lg bg-glass p-4">
+                                  <p className="text-sm text-heading whitespace-pre-wrap">{item.message}</p>
+                                </div>
+                              )}
+
+                              {/* Attachments / Images */}
+                              {(() => {
+                                const atts = Array.isArray(item.attachments) ? item.attachments : [];
+                                return atts.length > 0 && (
+                                  <div>
+                                    <h4 className="text-xs font-semibold text-grey-muted uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                                      <Image size={12} className="text-pink-400" />
+                                      {tx({ fr: 'Fichiers joints', en: 'Attachments', es: 'Archivos adjuntos' })} ({atts.length})
+                                    </h4>
+                                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
+                                      {atts.map((att, ai) => {
+                                        const isImg = att.mime && att.mime.startsWith('image/');
+                                        return (
+                                          <a key={ai} href={att.url} target="_blank" rel="noopener noreferrer"
+                                            onClick={(e) => e.stopPropagation()} className="block group relative aspect-square" title={att.name}>
+                                            {isImg ? (
+                                              <img src={att.url} alt={att.name} className="w-full h-full rounded-lg object-cover border-2 border-transparent group-hover:border-pink-400 transition-colors" />
+                                            ) : (
+                                              <div className="w-full h-full rounded-lg bg-glass flex flex-col items-center justify-center gap-1 border-2 border-transparent group-hover:border-pink-400 transition-colors">
+                                                <FileText size={24} className="text-pink-400" />
+                                                <span className="text-[8px] text-grey-muted truncate max-w-[90%] px-1">{att.name}</span>
+                                              </div>
+                                            )}
+                                            <div className="absolute inset-0 rounded-lg bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                                              <ExternalLink size={16} className="text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                                            </div>
+                                          </a>
+                                        );
+                                      })}
+                                    </div>
+                                  </div>
+                                );
+                              })()}
+
+                              {/* Admin reply display */}
+                              {item.adminReply && (
+                                <div className="rounded-lg bg-green-500/5 border border-green-500/20 p-3">
+                                  <h4 className="text-xs font-semibold text-green-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                                    <Reply size={12} /> {tx({ fr: 'Reponse admin', en: 'Admin reply', es: 'Respuesta admin' })}
+                                  </h4>
+                                  <p className="text-sm text-heading whitespace-pre-wrap">{item.adminReply}</p>
+                                </div>
+                              )}
+
+                              {/* Reply + actions */}
+                              {replyingTo === item._uid ? (
+                                <div className="rounded-lg bg-accent/5 border card-border p-4 space-y-3" onClick={(e) => e.stopPropagation()}>
+                                  <div className="flex items-center justify-between">
+                                    <h4 className="text-xs font-semibold text-accent uppercase tracking-wider flex items-center gap-1.5">
+                                      <Reply size={12} />
+                                      {tx({ fr: `Repondre a ${item._nom}`, en: `Reply to ${item._nom}`, es: `Responder a ${item._nom}` })}
+                                    </h4>
+                                    <button onClick={() => { setReplyingTo(null); setReplyText(''); }} className="text-grey-muted hover:text-heading"><X size={14} /></button>
+                                  </div>
+                                  <textarea value={replyText} onChange={(e) => setReplyText(e.target.value)} rows={4} autoFocus
+                                    placeholder={tx({ fr: 'Ecrire votre reponse...', en: 'Write your reply...', es: 'Escribir su respuesta...' })}
+                                    className="input-field text-sm w-full resize-none" />
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-[11px] text-grey-muted">{tx({ fr: 'Visible dans le panneau artiste', en: 'Visible in artist panel', es: 'Visible en panel artista' })}</span>
+                                    <button onClick={() => handleReply(item)} disabled={sendingReply || !replyText.trim()}
+                                      className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-accent text-white text-xs font-semibold hover:bg-accent/80 transition-colors disabled:opacity-50">
+                                      {sendingReply ? <Loader2 size={12} className="animate-spin" /> : <Send size={12} />}
+                                      {tx({ fr: 'Envoyer', en: 'Send', es: 'Enviar' })}
+                                    </button>
+                                  </div>
+                                  {replySuccess === item._uid && <p className="text-xs text-green-400 font-semibold">{tx({ fr: 'Reponse envoyee!', en: 'Reply sent!', es: 'Respuesta enviada!' })}</p>}
+                                  {replySuccess === false && <p className="text-xs text-red-400 font-semibold">{tx({ fr: 'Erreur lors de l\'envoi', en: 'Error sending reply', es: 'Error al enviar' })}</p>}
+                                </div>
+                              ) : (
+                                <div className="flex items-center gap-2">
+                                  <button onClick={(e) => { e.stopPropagation(); setReplyingTo(item._uid); setReplyText(''); setReplySuccess(null); }}
+                                    className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-accent/20 text-accent text-sm font-semibold hover:bg-accent/30 transition-colors">
+                                    <Reply size={14} /> {tx({ fr: 'Repondre', en: 'Reply', es: 'Responder' })}
+                                  </button>
+                                </div>
+                              )}
+                            </>
+                          )}
+
                           {/* CONTACT expanded view */}
-                          {!isCandidature && (
+                          {!isCandidature && !isArtistMsg && (
                             <>
                               {/* Message */}
                               <div className="rounded-lg bg-glass p-4">

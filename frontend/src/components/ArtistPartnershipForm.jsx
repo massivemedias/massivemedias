@@ -62,6 +62,8 @@ function ArtistPartnershipForm() {
             contractSignedAt: new Date().toISOString(),
             contractVersion: ARTIST_CONTRACT_VERSION,
             nomArtiste: formData.nomArtiste || null,
+            phone: formData.telephone || null,
+            address: formData.adresse || null,
           });
         } catch (e) {
           console.warn('Could not update profile with contract info:', e);

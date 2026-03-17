@@ -5,6 +5,7 @@ import {
   DollarSign, Palette, Clock, CheckCircle,
   FileText, Loader2, AlertCircle, Package,
   Send, ImagePlus, Check, X, CreditCard, Download, ChevronDown, ChevronUp, ScrollText,
+  User, Heart, BarChart3, Banknote, Receipt, ExternalLink,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -350,39 +351,63 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
           ))}
         </div>
 
-        {/* Liens rapides */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {artist && (
-            <Link to={`/artistes/${artistSlug}`} className="flex items-center gap-3 p-4 rounded-xl bg-accent/5 border border-accent/20 hover:bg-accent/10 transition-colors group">
-              <Palette size={20} className="text-accent" />
-              <div className="flex-grow">
-                <p className="text-heading text-sm font-medium">{tx({ fr: 'Ma boutique', en: 'My store', es: 'Mi tienda' })}</p>
-                <p className="text-grey-muted text-xs">massivemedias.com/artistes/{artistSlug}</p>
-              </div>
+        {/* Actions rapides artiste */}
+        <div className="rounded-2xl border border-purple-main/30 p-5 md:p-6 card-bg card-shadow">
+          <h4 className="text-heading font-heading font-bold text-base md:text-lg mb-4 flex items-center gap-2">
+            <Palette size={20} className="text-accent" />
+            {tx({ fr: 'Actions rapides', en: 'Quick actions', es: 'Acciones rapidas' })}
+          </h4>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+            {artist && (
+              <Link to={`/artistes/${artistSlug}`} className="flex flex-col items-center gap-2 p-4 md:p-5 rounded-xl bg-accent/5 border border-accent/20 hover:bg-accent/15 hover:border-accent/40 transition-all group text-center">
+                <ExternalLink size={22} className="text-accent group-hover:scale-110 transition-transform" />
+                <p className="text-heading text-sm font-semibold">{tx({ fr: 'Ma boutique', en: 'My store', es: 'Mi tienda' })}</p>
+              </Link>
+            )}
+            <Link to="/account?tab=profil-artiste" className="flex flex-col items-center gap-2 p-4 md:p-5 rounded-xl bg-purple-500/5 border border-purple-500/20 hover:bg-purple-500/15 hover:border-purple-500/40 transition-all group text-center">
+              <User size={22} className="text-purple-400 group-hover:scale-110 transition-transform" />
+              <p className="text-heading text-sm font-semibold">{tx({ fr: 'Mon profil', en: 'My profile', es: 'Mi perfil' })}</p>
             </Link>
-          )}
-          <a href="mailto:massivemedias@gmail.com" className="flex items-center gap-3 p-4 rounded-xl bg-green-500/5 border border-green-500/20 hover:bg-green-500/10 transition-colors group">
-            <Send size={20} className="text-green-400" />
-            <div className="flex-grow">
-              <p className="text-heading text-sm font-medium">{tx({ fr: 'Envoyer des fichiers', en: 'Send files', es: 'Enviar archivos' })}</p>
-              <p className="text-grey-muted text-xs">massivemedias@gmail.com</p>
-            </div>
-          </a>
+            <Link to="/account?tab=images" className="flex flex-col items-center gap-2 p-4 md:p-5 rounded-xl bg-pink-500/5 border border-pink-500/20 hover:bg-pink-500/15 hover:border-pink-500/40 transition-all group text-center">
+              <Heart size={22} className="text-pink-400 group-hover:scale-110 transition-transform" />
+              <p className="text-heading text-sm font-semibold">{tx({ fr: 'Mes images', en: 'My images', es: 'Mis imagenes' })}</p>
+            </Link>
+            <Link to="/account?tab=ventes" className="flex flex-col items-center gap-2 p-4 md:p-5 rounded-xl bg-green-500/5 border border-green-500/20 hover:bg-green-500/15 hover:border-green-500/40 transition-all group text-center">
+              <BarChart3 size={22} className="text-green-400 group-hover:scale-110 transition-transform" />
+              <p className="text-heading text-sm font-semibold">{tx({ fr: 'Ventes', en: 'Sales', es: 'Ventas' })}</p>
+            </Link>
+            <Link to="/account?tab=retrait" className="flex flex-col items-center gap-2 p-4 md:p-5 rounded-xl bg-yellow-500/5 border border-yellow-500/20 hover:bg-yellow-500/15 hover:border-yellow-500/40 transition-all group text-center">
+              <Banknote size={22} className="text-yellow-400 group-hover:scale-110 transition-transform" />
+              <p className="text-heading text-sm font-semibold">{tx({ fr: 'Retrait', en: 'Withdraw', es: 'Retiro' })}</p>
+            </Link>
+            <Link to="/account?tab=tarifs" className="flex flex-col items-center gap-2 p-4 md:p-5 rounded-xl bg-blue-500/5 border border-blue-500/20 hover:bg-blue-500/15 hover:border-blue-500/40 transition-all group text-center">
+              <Receipt size={22} className="text-blue-400 group-hover:scale-110 transition-transform" />
+              <p className="text-heading text-sm font-semibold">{tx({ fr: 'Tarifs', en: 'Pricing', es: 'Precios' })}</p>
+            </Link>
+            <Link to="/account?tab=contrat" className="flex flex-col items-center gap-2 p-4 md:p-5 rounded-xl bg-orange-500/5 border border-orange-500/20 hover:bg-orange-500/15 hover:border-orange-500/40 transition-all group text-center">
+              <ScrollText size={22} className="text-orange-400 group-hover:scale-110 transition-transform" />
+              <p className="text-heading text-sm font-semibold">{tx({ fr: 'Contrat', en: 'Contract', es: 'Contrato' })}</p>
+            </Link>
+            <a href="mailto:massivemedias@gmail.com" className="flex flex-col items-center gap-2 p-4 md:p-5 rounded-xl bg-green-500/5 border border-green-500/20 hover:bg-green-500/15 hover:border-green-500/40 transition-all group text-center">
+              <Send size={22} className="text-green-400 group-hover:scale-110 transition-transform" />
+              <p className="text-heading text-sm font-semibold">{tx({ fr: 'Envoyer fichiers', en: 'Send files', es: 'Enviar archivos' })}</p>
+            </a>
+          </div>
         </div>
 
         {/* Rappels-cles du contrat */}
-        <div className="rounded-2xl border border-purple-main/30 p-5 card-bg card-shadow">
-          <h4 className="text-heading font-heading font-bold text-base mb-4 flex items-center gap-2">
-            <ScrollText size={18} className="text-accent" />
+        <div className="rounded-2xl border border-purple-main/30 p-5 md:p-8 card-bg card-shadow">
+          <h4 className="text-heading font-heading font-bold text-lg md:text-xl mb-5 flex items-center gap-2">
+            <ScrollText size={22} className="text-accent" />
             {tx({ fr: 'Points-cles de ton contrat', en: 'Key contract points', es: 'Puntos clave de tu contrato' })}
           </h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div className="p-4 rounded-xl bg-green-500/5 border border-green-500/20">
-              <p className="text-green-400 text-sm font-bold mb-1.5 flex items-center gap-2">
-                <CheckCircle size={14} />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="p-5 md:p-6 rounded-xl bg-green-500/5 border border-green-500/20">
+              <p className="text-green-400 text-sm md:text-base font-bold mb-2 flex items-center gap-2">
+                <CheckCircle size={16} />
                 {tx({ fr: 'Tes droits d\'auteur', en: 'Your copyrights', es: 'Tus derechos de autor' })}
               </p>
-              <p className="text-grey-light text-xs leading-relaxed">
+              <p className="text-grey-light text-xs md:text-sm leading-relaxed">
                 {tx({
                   fr: 'Tu conserves 100% de tes droits. Massive detient uniquement une licence limitee, non-exclusive et revocable pour l\'impression et la vente en ligne.',
                   en: 'You keep 100% of your rights. Massive only holds a limited, non-exclusive, revocable license for printing and online sales.',
@@ -390,12 +415,12 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
                 })}
               </p>
             </div>
-            <div className="p-4 rounded-xl bg-blue-500/5 border border-blue-500/20">
-              <p className="text-blue-400 text-sm font-bold mb-1.5 flex items-center gap-2">
-                <CheckCircle size={14} />
+            <div className="p-5 md:p-6 rounded-xl bg-blue-500/5 border border-blue-500/20">
+              <p className="text-blue-400 text-sm md:text-base font-bold mb-2 flex items-center gap-2">
+                <CheckCircle size={16} />
                 {tx({ fr: 'Prix uniformes', en: 'Uniform pricing', es: 'Precios uniformes' })}
               </p>
-              <p className="text-grey-light text-xs leading-relaxed">
+              <p className="text-grey-light text-xs md:text-sm leading-relaxed">
                 {tx({
                   fr: 'La grille tarifaire est identique pour tous les artistes partenaires - memes prix, memes couts, memes marges. Aucun traitement preferentiel.',
                   en: 'The pricing grid is identical for all partner artists - same prices, same costs, same margins. No preferential treatment.',
@@ -403,12 +428,12 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
                 })}
               </p>
             </div>
-            <div className="p-4 rounded-xl bg-purple-500/5 border border-purple-500/20">
-              <p className="text-purple-400 text-sm font-bold mb-1.5 flex items-center gap-2">
-                <CheckCircle size={14} />
+            <div className="p-5 md:p-6 rounded-xl bg-purple-500/5 border border-purple-500/20">
+              <p className="text-purple-400 text-sm md:text-base font-bold mb-2 flex items-center gap-2">
+                <CheckCircle size={16} />
                 {tx({ fr: 'Prints uniques (edition unique)', en: 'Unique prints (single edition)', es: 'Prints unicos (edicion unica)' })}
               </p>
-              <p className="text-grey-light text-xs leading-relaxed">
+              <p className="text-grey-light text-xs md:text-sm leading-relaxed">
                 {tx({
                   fr: 'Un seul exemplaire produit, format fixe A2 qualite musee, sans cadre, non-reproductible. Une fois vendu, c\'est fini - piece de collection.',
                   en: 'Only one copy produced, fixed A2 museum quality format, no frame, non-reproducible. Once sold, it\'s gone - collector\'s piece.',
@@ -416,12 +441,12 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
                 })}
               </p>
             </div>
-            <div className="p-4 rounded-xl bg-yellow-500/5 border border-yellow-500/20">
-              <p className="text-yellow-400 text-sm font-bold mb-1.5 flex items-center gap-2">
-                <CheckCircle size={14} />
+            <div className="p-5 md:p-6 rounded-xl bg-yellow-500/5 border border-yellow-500/20">
+              <p className="text-yellow-400 text-sm md:text-base font-bold mb-2 flex items-center gap-2">
+                <CheckCircle size={16} />
                 {tx({ fr: 'Zero production sans accord', en: 'No production without approval', es: 'Sin produccion sin aprobacion' })}
               </p>
-              <p className="text-grey-light text-xs leading-relaxed">
+              <p className="text-grey-light text-xs md:text-sm leading-relaxed">
                 {tx({
                   fr: 'Massive ne produit jamais de prints sans commande confirmee et payee. Aucune production speculative. Ton approbation ecrite est requise pour tout produit.',
                   en: 'Massive never produces prints without a confirmed, paid order. No speculative production. Your written approval is required for every product.',
@@ -429,12 +454,12 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
                 })}
               </p>
             </div>
-            <div className="p-4 rounded-xl bg-green-500/5 border border-green-500/20">
-              <p className="text-green-400 text-sm font-bold mb-1.5 flex items-center gap-2">
-                <DollarSign size={14} />
+            <div className="p-5 md:p-6 rounded-xl bg-green-500/5 border border-green-500/20">
+              <p className="text-green-400 text-sm md:text-base font-bold mb-2 flex items-center gap-2">
+                <DollarSign size={16} />
                 {tx({ fr: 'Copies perso au coutant', en: 'Personal copies at cost', es: 'Copias personales al costo' })}
               </p>
-              <p className="text-grey-light text-xs leading-relaxed">
+              <p className="text-grey-light text-xs md:text-sm leading-relaxed">
                 {tx({
                   fr: 'Tu peux commander tes propres prints au prix coutant (colonne "Cout Massive") pour usage personnel, portfolio ou expos. Stickers: prix regulier pour tous.',
                   en: 'You can order your own prints at cost price ("Massive cost" column) for personal use, portfolio or exhibitions. Stickers: regular price for everyone.',
@@ -442,12 +467,12 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
                 })}
               </p>
             </div>
-            <div className="p-4 rounded-xl bg-purple-500/5 border border-purple-500/20">
-              <p className="text-purple-400 text-sm font-bold mb-1.5 flex items-center gap-2">
-                <Package size={14} />
+            <div className="p-5 md:p-6 rounded-xl bg-purple-500/5 border border-purple-500/20">
+              <p className="text-purple-400 text-sm md:text-base font-bold mb-2 flex items-center gap-2">
+                <Package size={16} />
                 {tx({ fr: 'Vente en personne (festivals, galeries)', en: 'In-person sales (festivals, galleries)', es: 'Venta en persona (festivales, galerias)' })}
               </p>
-              <p className="text-grey-light text-xs leading-relaxed">
+              <p className="text-grey-light text-xs md:text-sm leading-relaxed">
                 {tx({
                   fr: 'Commande en volume au prix regulier et revends au prix que tu veux. Le profit supplementaire est 100% pour toi.',
                   en: 'Order in bulk at regular price and resell at whatever price you want. The extra profit is 100% yours.',
@@ -455,12 +480,12 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
                 })}
               </p>
             </div>
-            <div className="p-4 rounded-xl bg-blue-500/5 border border-blue-500/20">
-              <p className="text-blue-400 text-sm font-bold mb-1.5 flex items-center gap-2">
-                <CheckCircle size={14} />
+            <div className="p-5 md:p-6 rounded-xl bg-blue-500/5 border border-blue-500/20">
+              <p className="text-blue-400 text-sm md:text-base font-bold mb-2 flex items-center gap-2">
+                <CheckCircle size={16} />
                 {tx({ fr: 'Fichiers proteges', en: 'Protected files', es: 'Archivos protegidos' })}
               </p>
-              <p className="text-grey-light text-xs leading-relaxed">
+              <p className="text-grey-light text-xs md:text-sm leading-relaxed">
                 {tx({
                   fr: 'Tes fichiers haute-resolution ne sont jamais partages, publies en ligne en haute-res, ni utilises hors du cadre du contrat. Seulement 72 DPI + watermark sur le site.',
                   en: 'Your high-resolution files are never shared, published online in high-res, or used outside the scope of the contract. Only 72 DPI + watermark on the website.',
@@ -468,12 +493,12 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
                 })}
               </p>
             </div>
-            <div className="p-4 rounded-xl bg-yellow-500/5 border border-yellow-500/20">
-              <p className="text-yellow-400 text-sm font-bold mb-1.5 flex items-center gap-2">
-                <Clock size={14} />
+            <div className="p-5 md:p-6 rounded-xl bg-yellow-500/5 border border-yellow-500/20">
+              <p className="text-yellow-400 text-sm md:text-base font-bold mb-2 flex items-center gap-2">
+                <Clock size={16} />
                 {tx({ fr: 'Resiliation libre', en: 'Free termination', es: 'Terminacion libre' })}
               </p>
-              <p className="text-grey-light text-xs leading-relaxed">
+              <p className="text-grey-light text-xs md:text-sm leading-relaxed">
                 {tx({
                   fr: 'Tu peux quitter a tout moment avec 30 jours de preavis par email. Tes fichiers sont supprimes de nos serveurs sous 14 jours, confirmation ecrite incluse.',
                   en: 'You can leave at any time with 30 days written notice by email. Your files are deleted from our servers within 14 days, written confirmation included.',

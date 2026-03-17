@@ -99,7 +99,7 @@ function BoutiqueMerchTshirt() {
             transition={{ duration: 0.5 }}
             className="lg:sticky lg:top-24"
           >
-            <div className="rounded-2xl card-bg-bordered p-6 md:p-10 overflow-hidden">
+            <div className="rounded-2xl bg-white p-6 md:p-10 overflow-hidden">
               <AnimatePresence mode="wait">
                 <motion.img
                   key={selectedColor}
