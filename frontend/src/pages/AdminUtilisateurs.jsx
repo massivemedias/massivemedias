@@ -30,6 +30,7 @@ function AdminUtilisateurs() {
   const [saving, setSaving] = useState(null);
   const [editingUser, setEditingUser] = useState(null);
   const [selectedSlug, setSelectedSlug] = useState('');
+  const [customSlug, setCustomSlug] = useState('');
   const [toast, setToast] = useState('');
   const [search, setSearch] = useState('');
   const [tab, setTab] = useState('all'); // 'all' | 'buyers' | 'visitors' | 'artists'
@@ -167,14 +168,16 @@ function AdminUtilisateurs() {
 
   const handleSetArtist = async (user) => {
     const email = (user.email || '').toLowerCase();
-    if (!selectedSlug) return;
+    const slug = selectedSlug === '__new__' ? customSlug.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-') : selectedSlug;
+    if (!slug) return;
     setSaving(email);
     try {
-      await setUserRole(email, 'artist', selectedSlug, user.id, user.fullName);
-      setRoles(prev => ({ ...prev, [email]: { role: 'artist', artistSlug: selectedSlug, email } }));
+      await setUserRole(email, 'artist', slug, user.id, user.fullName);
+      setRoles(prev => ({ ...prev, [email]: { role: 'artist', artistSlug: slug, email } }));
       setEditingUser(null);
       setSelectedSlug('');
-      setToast(tx({ fr: `${user.fullName || email} est maintenant artiste (${selectedSlug})`, en: `${user.fullName || email} is now an artist (${selectedSlug})`, es: `${user.fullName || email} ahora es artista (${selectedSlug})` }));
+      setCustomSlug('');
+      setToast(tx({ fr: `${user.fullName || email} est maintenant artiste (${slug})`, en: `${user.fullName || email} is now an artist (${slug})`, es: `${user.fullName || email} ahora es artista (${slug})` }));
       setTimeout(() => setToast(''), 3000);
     } catch {
       setToast(tx({ fr: 'Erreur lors de la mise a jour', en: 'Error updating role', es: 'Error al actualizar' }));
@@ -680,26 +683,36 @@ function AdminUtilisateurs() {
                         </span>
                         <select
                           value={selectedSlug}
-                          onChange={(e) => setSelectedSlug(e.target.value)}
+                          onChange={(e) => { setSelectedSlug(e.target.value); if (e.target.value !== '__new__') setCustomSlug(''); }}
                           className="input-field text-sm py-1.5 px-3 max-w-xs"
                         >
                           <option value="">{tx({ fr: '-- Choisir --', en: '-- Choose --', es: '-- Elegir --' })}</option>
+                          <option value="__new__">{tx({ fr: '+ Nouvel artiste (slug personnalise)', en: '+ New artist (custom slug)', es: '+ Nuevo artista (slug personalizado)' })}</option>
                           {ARTIST_SLUGS.map(slug => (
                             <option key={slug} value={slug}>
                               {artistsData[slug]?.name || slug}
                             </option>
                           ))}
                         </select>
+                        {selectedSlug === '__new__' && (
+                          <input
+                            type="text"
+                            value={customSlug}
+                            onChange={(e) => setCustomSlug(e.target.value)}
+                            className="input-field text-sm py-1.5 px-3 max-w-xs"
+                            placeholder={tx({ fr: 'ex: nom-artiste', en: 'eg: artist-name', es: 'ej: nombre-artista' })}
+                          />
+                        )}
                         <button
                           onClick={() => handleSetArtist(user)}
-                          disabled={!selectedSlug || isSaving}
+                          disabled={(!selectedSlug || (selectedSlug === '__new__' && !customSlug.trim())) || isSaving}
                           className="btn-primary text-xs py-1.5 px-4 disabled:opacity-50"
                         >
                           {isSaving ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
                           <span className="ml-1">{tx({ fr: 'Confirmer', en: 'Confirm', es: 'Confirmar' })}</span>
                         </button>
                         <button
-                          onClick={() => setEditingUser(null)}
+                          onClick={() => { setEditingUser(null); setCustomSlug(''); }}
                           className="text-grey-muted hover:text-heading text-xs transition-colors"
                         >
                           {tx({ fr: 'Annuler', en: 'Cancel', es: 'Cancelar' })}

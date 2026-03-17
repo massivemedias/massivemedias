@@ -165,7 +165,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
 
   const formatMoney = (n) => `${n.toFixed(2)}$`;
 
-  // Save artist profile (nom, bio, image)
+  // Save artist profile (nom, bio, image) + notify admin
   const handleArtistProfileSave = async (e) => {
     e.preventDefault();
     setArtistProfileSaving(true);
@@ -176,6 +176,26 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
         profileImage: artistProfileForm.profileImage,
       });
       if (error) throw error;
+
+      // Send profile update to admin as a message
+      const profileDetails = [
+        `Nom d'artiste: ${artistProfileForm.nomArtiste || '-'}`,
+        `Bio: ${artistProfileForm.bio || '-'}`,
+        `Image de profil: ${artistProfileForm.profileImage || 'Aucune'}`,
+        `Email: ${email}`,
+        `Slug: ${artistSlug}`,
+      ].join('\n');
+
+      await sendArtistMessage({
+        artistSlug,
+        artistName: artistProfileForm.nomArtiste || artistSlug,
+        email,
+        subject: 'Mise a jour du profil artiste',
+        message: profileDetails,
+        category: 'update-profile',
+        attachments: artistProfileForm.profileImage ? [{ name: 'photo-profil', url: artistProfileForm.profileImage }] : null,
+      }).catch(() => {}); // silent fail if message fails
+
       setArtistProfileMsg(tx({ fr: 'Profil artiste sauvegarde!', en: 'Artist profile saved!', es: 'Perfil artista guardado!' }));
       setTimeout(() => setArtistProfileMsg(''), 3000);
     } catch {
@@ -705,7 +725,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
             </div>
 
             {/* Info boutique */}
-            {artist && (
+            {artist ? (
               <div className="rounded-lg bg-accent/5 border border-accent/20 p-4">
                 <p className="text-grey-muted text-xs flex items-center gap-2">
                   <Palette size={14} className="text-accent" />
@@ -713,6 +733,17 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
                   <a href={`/artistes/${artistSlug}`} className="text-accent hover:underline font-medium">
                     massivemedias.com/artistes/{artistSlug}
                   </a>
+                </p>
+              </div>
+            ) : (
+              <div className="rounded-lg bg-yellow-500/5 border border-yellow-500/20 p-4">
+                <p className="text-yellow-400 text-xs flex items-center gap-2">
+                  <Clock size={14} />
+                  {tx({
+                    fr: 'Ta page artiste sera creee par Massive une fois ton profil complete. Tu recevras une notification.',
+                    en: 'Your artist page will be created by Massive once your profile is complete. You\'ll be notified.',
+                    es: 'Tu pagina de artista sera creada por Massive una vez que tu perfil este completo. Seras notificado.',
+                  })}
                 </p>
               </div>
             )}
