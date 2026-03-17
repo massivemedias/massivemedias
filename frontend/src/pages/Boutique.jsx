@@ -10,7 +10,7 @@ import artistsData from '../data/artists';
 import { img } from '../utils/paths';
 
 // Maudite Machine (Massive) en premier
-const artistOrder = ['maudite-machine', 'psyqu33n', 'adrift', 'mok'];
+const artistOrder = ['maudite-machine', 'psyqu33n', 'adrift', 'mok', 'quentin-delobel'];
 
 // Fallback - Stickers produits finis
 const defaultStickerProducts = [

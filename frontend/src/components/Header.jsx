@@ -110,13 +110,6 @@ function Header() {
                   <LogIn size={16} />
                 </Link>
               )}
-              {user && (
-                <Link to="/account" className="flex-shrink-0 p-1 transition-colors duration-200 nav-link" aria-label={t('nav.account')}>
-                  <span className="w-7 h-7 rounded-full bg-accent/20 text-accent flex items-center justify-center font-bold text-xs">
-                    {(user.user_metadata?.full_name || user.email || '?')[0].toUpperCase()}
-                  </span>
-                </Link>
-              )}
               <Link to="/panier" className="flex-shrink-0 relative p-1.5 transition-colors duration-200 nav-link" aria-label={t('nav.panier')}>
                 <ShoppingCart size={18} />
                 {cartCount > 0 && (
