@@ -131,7 +131,7 @@ function ArtisteDetail({ subdomainSlug }) {
 
   const tagline = tx({ fr: artist.tagline.fr, en: artist.tagline.en, es: artist.tagline.es || artist.tagline.en });
   const bio = tx({ fr: artist.bio.fr, en: artist.bio.en, es: artist.bio.es || artist.bio.en });
-  const minPrice = Math.min(...Object.values(artist.pricing.studio));
+  const minPrice = Math.min(...Object.values(artist.pricing.studio).filter(v => v != null));
 
   const handleSelectPrint = (print) => {
     setSelectedPrint(print);
@@ -422,6 +422,7 @@ function ArtisteDetail({ subdomainSlug }) {
                     <ArtistPrintCard
                       print={print}
                       minPrice={minPrice}
+                      pricing={artist.pricing}
                       selected={selectedPrint?.id === print.id}
                       onClick={() => handleSelectPrint(print)}
                       onZoom={() => {

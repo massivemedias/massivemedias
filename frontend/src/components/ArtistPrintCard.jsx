@@ -1,11 +1,17 @@
 import { motion } from 'framer-motion';
 import { ZoomIn } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
+import { getArtistPrintPrice } from '../data/artists';
 import { toFull } from '../utils/paths';
 
-function ArtistPrintCard({ print, minPrice, selected, onClick, onZoom }) {
+function ArtistPrintCard({ print, minPrice, pricing, selected, onClick, onZoom }) {
   const { tx } = useLang();
   const title = tx({ fr: print.titleFr, en: print.titleEn, es: print.titleEs || print.titleEn });
+
+  // Pour les pieces uniques avec format/tier fixe, afficher le prix exact
+  const fixedPrice = (print.fixedFormat && print.fixedTier && pricing)
+    ? getArtistPrintPrice(pricing, print.fixedTier, print.fixedFormat, false)?.basePrice
+    : null;
 
   const handleZoom = (e) => {
     e.stopPropagation();
@@ -55,7 +61,10 @@ function ArtistPrintCard({ print, minPrice, selected, onClick, onZoom }) {
       <div className="p-4">
         <h3 className="text-heading font-heading font-bold text-sm">{title}</h3>
         <p className="text-grey-muted text-xs mt-1">
-          {tx({ fr: `A partir de ${minPrice}$`, en: `Starting at $${minPrice}`, es: `Desde $${minPrice}` })}
+          {fixedPrice != null
+            ? `${fixedPrice}$`
+            : tx({ fr: `A partir de ${minPrice}$`, en: `Starting at $${minPrice}`, es: `Desde $${minPrice}` })
+          }
         </p>
       </div>
     </motion.button>
