@@ -298,14 +298,21 @@ function AdminUtilisateurs() {
         ))}
       </div>
 
+      {/* Legend */}
+      <div className="flex flex-wrap items-center gap-4 text-xs text-grey-muted">
+        <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-red-500/20 border border-red-400"></span> Admin</span>
+        <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-purple-500/20 border border-purple-400"></span> {tx({ fr: 'Artiste', en: 'Artist', es: 'Artista' })}</span>
+        <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-green-500/20 border border-green-400"></span> {tx({ fr: 'Acheteur', en: 'Buyer', es: 'Comprador' })}</span>
+        <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-accent/20 border border-accent"></span> {tx({ fr: 'Utilisateur', en: 'User', es: 'Usuario' })}</span>
+      </div>
+
       {/* Users list */}
       {filtered.length > 0 && (
         <div className="rounded-xl bg-glass overflow-hidden card-border">
-          <div className="hidden md:grid grid-cols-[1fr_1.2fr_100px_110px_70px_100px] gap-3 px-4 py-3 text-xs font-semibold text-grey-muted uppercase tracking-wider border-b card-border">
+          <div className="hidden md:grid grid-cols-[1fr_1.2fr_100px_70px_100px] gap-3 px-4 py-3 text-xs font-semibold text-grey-muted uppercase tracking-wider border-b card-border">
             <span>{tx({ fr: 'Utilisateur', en: 'User', es: 'Usuario' })}</span>
             <span>Email</span>
             <span>{tx({ fr: 'Inscrit', en: 'Joined', es: 'Registro' })}</span>
-            <span>{tx({ fr: 'Role', en: 'Role', es: 'Rol' })}</span>
             <span className="text-center">{tx({ fr: 'Cmd', en: 'Orders', es: 'Ped' })}</span>
             <span className="text-right">{tx({ fr: 'Depense', en: 'Spent', es: 'Gastado' })}</span>
           </div>
@@ -324,7 +331,12 @@ function AdminUtilisateurs() {
                 {/* Desktop row */}
                 <div
                   onClick={() => setExpandedId(isExpanded ? null : user.id)}
-                  className="hidden md:grid grid-cols-[1fr_1.2fr_100px_110px_70px_100px] gap-3 px-4 py-3 items-center cursor-pointer hover:bg-accent/5 transition-colors"
+                  className={`hidden md:grid grid-cols-[1fr_1.2fr_100px_70px_100px] gap-3 px-4 py-3 items-center cursor-pointer hover:bg-accent/5 transition-colors ${
+                    role === 'admin' ? 'border-l-2 border-l-red-400' :
+                    role === 'artist' ? 'border-l-2 border-l-purple-400' :
+                    user.isBuyer ? 'border-l-2 border-l-green-400' :
+                    'border-l-2 border-l-transparent'
+                  }`}
                 >
                   {/* Name + provider */}
                   <div className="flex items-center gap-3">
@@ -337,8 +349,15 @@ function AdminUtilisateurs() {
                       {(user.fullName || user.email || '?')[0].toUpperCase()}
                     </div>
                     <div className="min-w-0">
-                      <p className="text-[15px] text-heading font-semibold truncate">
+                      <p className={`text-[15px] font-semibold truncate ${
+                        role === 'admin' ? 'text-red-400' :
+                        role === 'artist' ? 'text-purple-400' :
+                        'text-heading'
+                      }`}>
                         {user.fullName || tx({ fr: 'Sans nom', en: 'No name', es: 'Sin nombre' })}
+                        {role === 'artist' && artistSlug && (
+                          <span className="text-[11px] text-purple-400/60 font-normal ml-1.5">({artistSlug})</span>
+                        )}
                       </p>
                       <p className="text-[11px] text-grey-muted flex items-center gap-1">
                         {user.isGuest ? (
@@ -361,22 +380,6 @@ function AdminUtilisateurs() {
                     {formatDate(user.createdAt)}
                   </span>
 
-                  {/* Role badge */}
-                  {roleBadge ? (
-                    <div className="flex flex-col gap-0.5">
-                      <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-semibold w-fit ${roleBadge.className}`}>
-                        {role === 'artist' && <Palette size={9} />}
-                        {role === 'admin' && <Shield size={9} />}
-                        {roleBadge.label}
-                      </span>
-                      {roleBadge.slug && (
-                        <span className="text-[9.5px] text-purple-400/70 truncate max-w-[100px] pl-0.5">{roleBadge.slug}</span>
-                      )}
-                    </div>
-                  ) : (
-                    <span className="text-[11px] text-grey-muted">-</span>
-                  )}
-
                   {/* Orders */}
                   <span className={`text-[15px] font-semibold text-center ${user.orderCount > 0 ? 'text-heading' : 'text-grey-muted'}`}>
                     {user.orderCount || 0}
@@ -396,7 +399,12 @@ function AdminUtilisateurs() {
                 {/* Mobile card */}
                 <div
                   onClick={() => setExpandedId(isExpanded ? null : user.id)}
-                  className="md:hidden px-4 py-3 cursor-pointer hover:bg-accent/5 transition-colors"
+                  className={`md:hidden px-4 py-3 cursor-pointer hover:bg-accent/5 transition-colors ${
+                    role === 'admin' ? 'border-l-2 border-l-red-400' :
+                    role === 'artist' ? 'border-l-2 border-l-purple-400' :
+                    user.isBuyer ? 'border-l-2 border-l-green-400' :
+                    'border-l-2 border-l-transparent'
+                  }`}
                 >
                   {/* Line 1: Avatar + Name + Spent */}
                   <div className="flex items-center gap-3">
@@ -409,7 +417,11 @@ function AdminUtilisateurs() {
                       {(user.fullName || user.email || '?')[0].toUpperCase()}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm text-heading font-semibold truncate">
+                      <p className={`text-sm font-semibold truncate ${
+                        role === 'admin' ? 'text-red-400' :
+                        role === 'artist' ? 'text-purple-400' :
+                        'text-heading'
+                      }`}>
                         {user.fullName || tx({ fr: 'Sans nom', en: 'No name', es: 'Sin nombre' })}
                       </p>
                       <p className="text-xs text-grey-muted truncate">{user.email}</p>
@@ -432,14 +444,6 @@ function AdminUtilisateurs() {
                       {user.isBuyer ? <ShoppingBag size={9} /> : <Eye size={9} />}
                       {buyerBadge.label}
                     </span>
-                    {roleBadge && (
-                      <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-semibold ${roleBadge.className}`}>
-                        {role === 'artist' && <Palette size={9} />}
-                        {role === 'admin' && <Shield size={9} />}
-                        {roleBadge.label}
-                        {roleBadge.slug && <span className="opacity-70">({roleBadge.slug})</span>}
-                      </span>
-                    )}
                     <span className="text-[10px] text-grey-muted flex items-center gap-0.5">
                       <Shield size={8} /> {user.isGuest ? 'guest' : user.provider}
                     </span>
