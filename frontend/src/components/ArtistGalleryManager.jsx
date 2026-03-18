@@ -53,19 +53,19 @@ function ArtistGalleryManager() {
     return cmsArtists.find(a => a.slug === artistSlug) || null;
   }, [cmsArtists, artistSlug]);
 
-  // Merge prints/stickers from CMS + local data
+  // Merge prints/stickers from CMS + local data (CMS prioritaire si non-vide)
   const artistPrints = useMemo(() => {
-    if (cmsArtist?.prints && Array.isArray(cmsArtist.prints)) return cmsArtist.prints;
+    if (cmsArtist?.prints && Array.isArray(cmsArtist.prints) && cmsArtist.prints.length > 0) return cmsArtist.prints;
     return localArtist?.prints || [];
   }, [cmsArtist, localArtist]);
 
   const artistStickers = useMemo(() => {
-    if (cmsArtist?.stickers && Array.isArray(cmsArtist.stickers)) return cmsArtist.stickers;
+    if (cmsArtist?.stickers && Array.isArray(cmsArtist.stickers) && cmsArtist.stickers.length > 0) return cmsArtist.stickers;
     return localArtist?.stickers || [];
   }, [cmsArtist, localArtist]);
 
   const artistMerch = useMemo(() => {
-    if (cmsArtist?.merch && Array.isArray(cmsArtist.merch)) return cmsArtist.merch;
+    if (cmsArtist?.merch && Array.isArray(cmsArtist.merch) && cmsArtist.merch.length > 0) return cmsArtist.merch;
     return localArtist?.merch || [];
   }, [cmsArtist, localArtist]);
 

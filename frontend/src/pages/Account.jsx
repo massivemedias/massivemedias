@@ -170,6 +170,7 @@ function Account() {
 
   // Referral copy
   const [refCopied, setRefCopied] = useState(false);
+  const [artistMobileOpen, setArtistMobileOpen] = useState(false);
 
   // Sync forms when user metadata changes
   useEffect(() => {
@@ -915,8 +916,6 @@ function Account() {
     { id: 'ventes', label: tx({ fr: 'Mes ventes', en: 'My sales', es: 'Mis ventas' }), icon: BarChart3 },
     { id: 'retrait', label: tx({ fr: 'Retrait', en: 'Withdrawal', es: 'Retiro' }), icon: Banknote },
   ] : [];
-
-  const [artistMobileOpen, setArtistMobileOpen] = useState(false);
 
   const artistValidTabs = ['dashboard', 'profil-artiste', 'contrat', 'tarifs', 'retrait', 'ventes', 'profile', 'address', 'security', 'orders'];
 
