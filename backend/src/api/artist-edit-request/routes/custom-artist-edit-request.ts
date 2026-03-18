@@ -30,5 +30,11 @@ export default {
       handler: 'artist-edit-request.reject',
       config: { auth: false },
     },
+    {
+      method: 'POST',
+      path: '/artist-edit-requests/cleanup-originals',
+      handler: 'artist-edit-request.cleanupOriginals',
+      config: { auth: false },
+    },
   ],
 };

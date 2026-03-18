@@ -69,3 +69,39 @@ export async function processArtistImage(
 
   return { fullUrl, thumbUrl };
 }
+
+// Supprime un fichier original de Supabase apres traitement
+// Utilise pour le nettoyage des gros fichiers temporaires (TIFF, PNG haute-res)
+export async function deleteFromSupabase(fileUrl: string): Promise<boolean> {
+  const apiUrl = process.env.SUPABASE_API_URL;
+  const apiKey = process.env.SUPABASE_API_KEY;
+  if (!apiUrl || !apiKey) return false;
+
+  try {
+    // Extraire le chemin du bucket depuis l'URL publique
+    // Format: .../storage/v1/object/public/{bucket}/{path}
+    const publicPrefix = '/storage/v1/object/public/';
+    const idx = fileUrl.indexOf(publicPrefix);
+    if (idx === -1) return false;
+
+    const rest = fileUrl.substring(idx + publicPrefix.length);
+    const slashIdx = rest.indexOf('/');
+    if (slashIdx === -1) return false;
+
+    const bucket = rest.substring(0, slashIdx);
+    const path = rest.substring(slashIdx + 1);
+
+    const storageBase = `${apiUrl}/storage/v1`;
+    const res = await fetch(`${storageBase}/object/${bucket}/${path}`, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        apikey: apiKey,
+      },
+    });
+
+    return res.ok;
+  } catch {
+    return false;
+  }
+}

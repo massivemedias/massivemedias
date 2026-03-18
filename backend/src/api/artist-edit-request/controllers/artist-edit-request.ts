@@ -1,5 +1,5 @@
 import { factories } from '@strapi/strapi';
-import { processArtistImage } from '../../../utils/image-processor';
+import { processArtistImage, deleteFromSupabase } from '../../../utils/image-processor';
 
 // Types de requetes qui s'appliquent automatiquement (pas besoin d'approbation admin)
 const AUTO_APPLY_TYPES = ['update-profile', 'update-bio', 'update-socials', 'update-avatar'];
@@ -252,6 +252,17 @@ export default factories.createCoreController('api::artist-edit-request.artist-e
         },
       });
 
+      // Nettoyer les fichiers originaux de Supabase (pas besoin de les garder si rejete)
+      const changeData = (request as any).changeData;
+      const reqType = (request as any).requestType;
+      if (['add-prints', 'add-stickers', 'add-merch'].includes(reqType) && changeData?.images) {
+        for (const img of changeData.images) {
+          if (img.originalUrl) {
+            await deleteFromSupabase(img.originalUrl).catch(() => {});
+          }
+        }
+      }
+
       // Mettre a jour le message lie
       if (request.linkedMessageId) {
         await strapi.documents('api::artist-message.artist-message').update({
@@ -267,6 +278,53 @@ export default factories.createCoreController('api::artist-edit-request.artist-e
       ctx.body = { data: { documentId, status: 'rejected' } };
     } catch (err: any) {
       if (err.status) throw err;
+      ctx.throw(500, err.message);
+    }
+  },
+
+  // POST /artist-edit-requests/cleanup-originals
+  // Supprime les fichiers originaux des demandes en attente depuis plus de 30 jours
+  async cleanupOriginals(ctx) {
+    try {
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+      const oldPending = await strapi.documents('api::artist-edit-request.artist-edit-request').findMany({
+        filters: {
+          status: { $eq: 'pending' },
+          createdAt: { $lt: thirtyDaysAgo.toISOString() },
+          requestType: { $in: ['add-prints', 'add-stickers', 'add-merch'] },
+        },
+        limit: 100,
+      });
+
+      let cleaned = 0;
+      for (const request of (oldPending || [])) {
+        const images = (request as any).changeData?.images || [];
+        for (const img of images) {
+          if (img.originalUrl) {
+            const deleted = await deleteFromSupabase(img.originalUrl);
+            if (deleted) cleaned++;
+          }
+        }
+        // Marquer comme expiree
+        await strapi.documents('api::artist-edit-request.artist-edit-request').update({
+          documentId: (request as any).documentId,
+          data: {
+            status: 'rejected',
+            adminNotes: 'Expire automatiquement apres 30 jours sans approbation. Fichiers originaux supprimes.',
+            processedAt: new Date().toISOString(),
+          },
+        });
+      }
+
+      ctx.body = {
+        data: {
+          requestsCleaned: (oldPending || []).length,
+          filesCleaned: cleaned,
+        },
+      };
+    } catch (err: any) {
       ctx.throw(500, err.message);
     }
   },
@@ -300,7 +358,9 @@ function buildNotificationMessage(requestType: string, changeData: any, artistNa
           msg += `   Format original: ${originalName}\n`;
           msg += `   Telecharger: ${originalUrl}\n`;
         });
-        msg += `\n--- Ces fichiers sont les originaux non comprimes envoyes par l'artiste ---`;
+        msg += `\n--- IMPORTANT: Telecharge les originaux AVANT d'approuver! ---`;
+        msg += `\n--- Les fichiers originaux seront supprimes du serveur apres approbation ---`;
+        msg += `\n--- Seules les versions WebP compressees seront conservees pour le site ---`;
       }
       return msg;
     }
@@ -408,6 +468,11 @@ async function handleAddImages(strapi: any, artist: any, requestType: string, ch
       imageId
     );
 
+    // Supprimer le fichier original de Supabase (nettoyage - seuls les WebP restent)
+    if (img.originalUrl) {
+      await deleteFromSupabase(img.originalUrl).catch(() => {});
+    }
+
     const newItem: any = {
       id: imageId,
       titleFr: img.title || img.titleFr || '',
@@ -415,10 +480,6 @@ async function handleAddImages(strapi: any, artist: any, requestType: string, ch
       titleEs: img.titleEs || '',
       image: thumbUrl,
       fullImage: fullUrl,
-      // Conserver le lien vers le fichier original haute qualite (TIFF, PNG, etc.)
-      originalUrl: img.originalUrl || '',
-      originalName: img.originalName || '',
-      originalSize: img.originalSize || 0,
     };
 
     // Proprietes specifiques aux prints
