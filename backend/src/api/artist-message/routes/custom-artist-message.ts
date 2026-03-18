@@ -30,5 +30,11 @@ export default {
       handler: 'artist-message.updateStatus',
       config: { auth: false },
     },
+    {
+      method: 'DELETE',
+      path: '/artist-messages/:documentId',
+      handler: 'artist-message.deleteMessage',
+      config: { auth: false },
+    },
   ],
 };

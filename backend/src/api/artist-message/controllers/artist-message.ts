@@ -142,4 +142,16 @@ export default factories.createCoreController('api::artist-message.artist-messag
       ctx.throw(500, err.message);
     }
   },
+
+  // DELETE /artist-messages/:documentId - Supprimer un message
+  async deleteMessage(ctx) {
+    const { documentId } = ctx.params;
+
+    try {
+      await strapi.documents('api::artist-message.artist-message').delete({ documentId });
+      ctx.body = { data: { success: true } };
+    } catch (err: any) {
+      ctx.throw(500, err.message);
+    }
+  },
 }));

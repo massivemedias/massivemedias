@@ -6,6 +6,7 @@ export const getMyMessages = (email) => api.get('/artist-messages/my-messages', 
 export const getArtistMessagesAdmin = () => api.get('/artist-messages/admin');
 export const replyArtistMessage = (documentId, adminReply) => api.put(`/artist-messages/${documentId}/reply`, { adminReply });
 export const updateArtistMessageStatus = (documentId, status) => api.put(`/artist-messages/${documentId}/status`, { status });
+export const deleteArtistMessage = (documentId) => api.delete(`/artist-messages/${documentId}`);
 
 // --- Retraits PayPal ---
 export const createWithdrawal = (data) => api.post('/withdrawal-requests/create', data);

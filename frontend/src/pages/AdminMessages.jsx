@@ -13,7 +13,7 @@ import {
   getArtistSubmissions, updateArtistStatus, deleteArtistSubmission,
 } from '../services/adminService';
 import {
-  getArtistMessagesAdmin, replyArtistMessage, updateArtistMessageStatus,
+  getArtistMessagesAdmin, replyArtistMessage, updateArtistMessageStatus, deleteArtistMessage,
   approveEditRequest, rejectEditRequest,
 } from '../services/artistService';
 
@@ -104,7 +104,9 @@ const formatDate = (d) => {
   const y = dt.getFullYear();
   const m = String(dt.getMonth() + 1).padStart(2, '0');
   const day = String(dt.getDate()).padStart(2, '0');
-  return `${y} ${m} ${day}`;
+  const h = String(dt.getHours()).padStart(2, '0');
+  const min = String(dt.getMinutes()).padStart(2, '0');
+  return `${y}${m}${day} ${h}h${min}`;
 };
 
 function AdminMessages() {
@@ -205,6 +207,8 @@ function AdminMessages() {
     try {
       if (item._type === 'contact') {
         await deleteContact(item.documentId);
+      } else if (item._type === 'artist-msg') {
+        await deleteArtistMessage(item.documentId);
       } else {
         await deleteArtistSubmission(item.documentId);
       }
