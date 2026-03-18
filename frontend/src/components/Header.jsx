@@ -100,7 +100,7 @@ function Header() {
                 </Link>
               ))}
 
-              <Link to="/boutique" className="transition-colors duration-200 font-medium text-sm nav-link whitespace-nowrap">
+              <Link to="/boutique" className="transition-colors duration-200 font-bold text-sm whitespace-nowrap" style={{ color: 'var(--logo-accent, #FFCC02)' }}>
                 {t('nav.boutique')}
               </Link>
 
@@ -263,9 +263,9 @@ function Header() {
                   onClick={close}
                 >
                   <span className="w-8 h-8 rounded-lg flex items-center justify-center mobile-icon-bg flex-shrink-0">
-                    <Store size={15} className="text-accent" />
+                    <Store size={15} style={{ color: 'var(--logo-accent, #FFCC02)' }} />
                   </span>
-                  <span className="font-semibold text-[15px]">{t('nav.boutique')}</span>
+                  <span className="font-bold text-[15px]" style={{ color: 'var(--logo-accent, #FFCC02)' }}>{t('nav.boutique')}</span>
                   <ChevronRight size={14} className="ml-auto opacity-25 group-hover:opacity-50 transition-opacity" />
                 </Link>
 
