@@ -1,5 +1,6 @@
 import { factories } from '@strapi/strapi';
 import { processArtistImage, deleteFromSupabase } from '../../../utils/image-processor';
+import { uploadToGoogleDrive } from '../../../utils/google-drive';
 
 // Types de requetes qui s'appliquent automatiquement (pas besoin d'approbation admin)
 const AUTO_APPLY_TYPES = ['update-profile', 'update-bio', 'update-socials', 'update-avatar'];
@@ -30,6 +31,37 @@ export default factories.createCoreController('api::artist-edit-request.artist-e
     }
 
     try {
+      // Upload des originaux sur Google Drive (pour les ajouts d'images)
+      let enrichedChangeData = { ...changeData };
+      if (['add-prints', 'add-stickers', 'add-merch'].includes(requestType) && changeData?.images) {
+        const driveResults = [];
+        for (const img of changeData.images) {
+          if (img.originalUrl) {
+            try {
+              const driveFile = await uploadToGoogleDrive(
+                img.originalUrl,
+                img.originalName || 'image',
+                artistSlug || 'unknown',
+                img.mime
+              );
+              driveResults.push({
+                ...img,
+                driveFileId: driveFile.fileId,
+                driveViewLink: driveFile.webViewLink,
+                driveDownloadLink: driveFile.webContentLink,
+                driveFileName: driveFile.fileName,
+              });
+            } catch (driveErr: any) {
+              // Si Google Drive echoue, on continue sans - l'original reste sur Supabase
+              driveResults.push({ ...img, driveError: driveErr.message });
+            }
+          } else {
+            driveResults.push(img);
+          }
+        }
+        enrichedChangeData = { ...changeData, images: driveResults };
+      }
+
       // Creer la demande
       const entry = await strapi.documents('api::artist-edit-request.artist-edit-request').create({
         data: {
@@ -37,7 +69,7 @@ export default factories.createCoreController('api::artist-edit-request.artist-e
           artistName: artistName || '',
           email: email.toLowerCase().trim(),
           requestType,
-          changeData,
+          changeData: enrichedChangeData,
           status: 'pending',
         },
       });
@@ -49,13 +81,13 @@ export default factories.createCoreController('api::artist-edit-request.artist-e
         artistName: artistName || '',
         email: email.toLowerCase().trim(),
         subject: `[Modif] ${label}`,
-        message: buildNotificationMessage(requestType, changeData, artistName),
+        message: buildNotificationMessage(requestType, enrichedChangeData, artistName),
         category: 'edit-request',
         status: 'new',
         attachments: {
           editRequestId: entry.documentId,
           requestType,
-          changeData,
+          changeData: enrichedChangeData,
         },
       };
 
@@ -348,19 +380,32 @@ function buildNotificationMessage(requestType: string, changeData: any, artistNa
       let msg = `${name} souhaite ajouter ${count} image(s). Type: ${label}. En attente de validation.\n\n`;
       // Liens de telechargement haute qualite des originaux
       if (images.length > 0) {
-        msg += `--- FICHIERS ORIGINAUX HAUTE QUALITE ---\n`;
+        const hasDrive = images.some((img: any) => img.driveViewLink);
+        if (hasDrive) {
+          msg += `--- ORIGINAUX SAUVEGARDES SUR GOOGLE DRIVE ---\n`;
+        } else {
+          msg += `--- FICHIERS ORIGINAUX (temporaires sur Supabase) ---\n`;
+        }
         images.forEach((img: any, i: number) => {
           const title = img.title || img.titleFr || `Image ${i + 1}`;
-          const originalUrl = img.originalUrl || '';
           const originalName = img.originalName || '';
           const originalSize = img.originalSize ? `(${(img.originalSize / (1024 * 1024)).toFixed(1)} Mo)` : '';
-          msg += `\n${i + 1}. ${title} ${originalSize}\n`;
-          msg += `   Format original: ${originalName}\n`;
-          msg += `   Telecharger: ${originalUrl}\n`;
+          msg += `\n${i + 1}. ${title} ${originalSize}`;
+          msg += `\n   Fichier: ${originalName}`;
+          if (img.driveViewLink) {
+            msg += `\n   Google Drive: ${img.driveViewLink}`;
+          } else if (img.originalUrl) {
+            msg += `\n   Telecharger: ${img.originalUrl}`;
+          }
+          msg += `\n`;
         });
-        msg += `\n--- IMPORTANT: Telecharge les originaux AVANT d'approuver! ---`;
-        msg += `\n--- Les fichiers originaux seront supprimes du serveur apres approbation ---`;
-        msg += `\n--- Seules les versions WebP compressees seront conservees pour le site ---`;
+        if (hasDrive) {
+          msg += `\n--- Les originaux sont sur Google Drive (Massive > Projets > Originaux Artistes) ---`;
+          msg += `\n--- Tu peux approuver sans risque, les originaux restent sur Drive ---`;
+        } else {
+          msg += `\n--- IMPORTANT: Telecharge les originaux AVANT d'approuver! ---`;
+          msg += `\n--- Les fichiers seront supprimes de Supabase apres approbation ---`;
+        }
       }
       return msg;
     }
