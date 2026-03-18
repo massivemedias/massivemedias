@@ -352,6 +352,7 @@ async function applyProfileChange(strapi: any, artistSlug: string, requestType: 
     await strapi.documents('api::artist.artist').update({
       documentId: artist.documentId,
       data: updateData,
+      status: 'published',
     });
   }
 }
@@ -407,6 +408,7 @@ async function handleAddImages(strapi: any, artist: any, requestType: string, ch
   await strapi.documents('api::artist.artist').update({
     documentId: artist.documentId,
     data: { [fieldName]: currentItems },
+    status: 'published',
   });
 }
 
@@ -424,5 +426,6 @@ async function handleRemoveImages(strapi: any, artist: any, requestType: string,
   await strapi.documents('api::artist.artist').update({
     documentId: artist.documentId,
     data: { [fieldName]: filtered },
+    status: 'published',
   });
 }
