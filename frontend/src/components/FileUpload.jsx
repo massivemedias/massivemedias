@@ -96,8 +96,8 @@ function FileUpload({ files = [], onFilesChange, label, maxFiles = 5, compact = 
         {files.length === 0 ? (
           /* Empty: small drop zone */
           <div
-            className={`border-2 border-dashed rounded-xl text-center cursor-pointer transition-all p-3 min-h-[100px] flex flex-col items-center justify-center ${
-              dragOver ? 'border-accent bg-accent/5' : 'border-grey-muted/30 hover:border-grey-muted/50'
+            className={`rounded-xl text-center cursor-pointer transition-all p-3 min-h-[100px] flex flex-col items-center justify-center shadow-lg ${
+              dragOver ? 'bg-accent/10 ring-2 ring-accent' : 'bg-black/20 hover:bg-black/25'
             }`}
             onClick={() => inputRef.current?.click()}
             onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
@@ -209,8 +209,8 @@ function FileUpload({ files = [], onFilesChange, label, maxFiles = 5, compact = 
 
       {/* Drop zone */}
       <div
-        className={`relative border-2 border-dashed rounded-xl text-center cursor-pointer transition-all p-5 ${
-          dragOver ? 'border-accent bg-accent/5' : 'border-grey-muted/30 hover:border-grey-muted/50'
+        className={`relative rounded-xl text-center cursor-pointer transition-all p-5 shadow-lg ${
+          dragOver ? 'bg-accent/10 ring-2 ring-accent' : 'bg-black/20 hover:bg-black/25'
         }`}
         onClick={() => inputRef.current?.click()}
         onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}

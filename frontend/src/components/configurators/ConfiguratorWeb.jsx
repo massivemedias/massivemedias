@@ -41,7 +41,7 @@ function ConfiguratorWeb() {
             en: 'Describe your ideal website: site goals, desired features, reference sites you like, existing content, timeline...',
             es: 'Describa su sitio web ideal: objetivo del sitio, funcionalidades deseadas, sitios de referencia, contenido existente, cronograma...',
           })}
-          className="w-full min-h-[140px] rounded-lg border-2 border-grey-muted/20 bg-transparent px-4 py-3 text-sm text-heading placeholder:text-grey-muted/50 focus:border-accent focus:outline-none transition-colors resize-none"
+          className="w-full min-h-[140px] rounded-lg bg-black/20 shadow-lg px-4 py-3 text-sm text-heading placeholder:text-grey-muted/50 focus:ring-2 focus:ring-accent focus:outline-none transition-all resize-none"
         />
       </div>
 
