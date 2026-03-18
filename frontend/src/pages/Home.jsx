@@ -370,7 +370,7 @@ function Home() {
       <section className="section-container">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           <Counter end={2022} suffix="" label={t('home.stats.since')} />
-          <Counter end={150} suffix="+" label={t('home.stats.projects')} />
+          <Counter end={50} suffix="+" label={t('home.stats.projects')} />
           <Counter end={100} suffix="%" label={t('home.stats.local')} />
           <div className="text-center p-6">
             <div className="text-5xl md:text-6xl font-heading font-bold text-gradient mb-2 hero-title">100%</div>
