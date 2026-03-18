@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from './AuthContext';
 import api from '../services/api';
 
@@ -11,25 +11,25 @@ const UserRoleContext = createContext(null);
 export function UserRoleProvider({ children }) {
   const { user, loading: authLoading } = useAuth();
   const [roleData, setRoleData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [fetched, setFetched] = useState(false);
 
   const email = (user?.email || '').toLowerCase();
   const isAdmin = ADMIN_EMAILS.includes(email);
 
+  // loading = true tant que auth OU role n'ont pas fini
+  const loading = authLoading || (!fetched && !!user?.email);
+
   useEffect(() => {
-    // Attendre que l'auth soit resolue avant de decider
-    if (authLoading) {
-      setLoading(true);
-      return;
-    }
+    if (authLoading) return;
 
     if (!user?.email) {
       setRoleData(null);
-      setLoading(false);
+      setFetched(true);
       return;
     }
 
     let cancelled = false;
+    setFetched(false);
 
     async function fetchRole() {
       try {
@@ -40,12 +40,11 @@ export function UserRoleProvider({ children }) {
           setRoleData(data.data || { role: 'user', artistSlug: null });
         }
       } catch {
-        // API pas dispo -> fallback user normal
         if (!cancelled) {
           setRoleData({ role: 'user', artistSlug: null });
         }
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) setFetched(true);
       }
     }
 
@@ -55,7 +54,6 @@ export function UserRoleProvider({ children }) {
 
   const role = isAdmin ? 'admin' : (roleData?.role || 'user');
   const artistSlug = roleData?.artistSlug || null;
-  const isArtist = role === 'artist' || isAdmin; // admin peut aussi voir le dashboard artiste
 
   const refreshRole = useCallback(async () => {
     if (!user?.email) return;
