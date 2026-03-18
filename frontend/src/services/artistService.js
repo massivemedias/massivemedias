@@ -13,3 +13,10 @@ export const getMyWithdrawals = (email) => api.get('/withdrawal-requests/my-requ
 export const getWithdrawalsAdmin = () => api.get('/withdrawal-requests/admin');
 export const processWithdrawal = (documentId, status, adminNotes, paypalTransactionId) =>
   api.put(`/withdrawal-requests/${documentId}/process`, { status, adminNotes, paypalTransactionId });
+
+// --- Edit requests artiste ---
+export const createEditRequest = (data) => api.post('/artist-edit-requests/create', data);
+export const getMyEditRequests = (email) => api.get('/artist-edit-requests/my-requests', { params: { email } });
+export const getEditRequestsAdmin = () => api.get('/artist-edit-requests/admin');
+export const approveEditRequest = (documentId) => api.put(`/artist-edit-requests/${documentId}/approve`);
+export const rejectEditRequest = (documentId, adminNotes) => api.put(`/artist-edit-requests/${documentId}/reject`, { adminNotes });

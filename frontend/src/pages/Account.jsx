@@ -5,7 +5,7 @@ import {
   User, Mail, Phone, MapPin, Building2, Package, LogOut, Loader2, Check, Lock,
   Eye, EyeOff, ChevronDown, ChevronUp, Shield, Pencil, Save, ShoppingBag,
   ArrowRight, Gift, Copy, Heart, Clock, RotateCcw, MessageCircle, Download,
-  Palette, Settings, Menu, X, Banknote, Receipt, BarChart3, DollarSign, Users, ScrollText,
+  Palette, Settings, Menu, X, Banknote, Receipt, BarChart3, DollarSign, Users, ScrollText, ImagePlus,
 } from 'lucide-react';
 import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
@@ -909,6 +909,7 @@ function Account() {
   // ============================================================
   const ARTIST_SIDEBAR_ITEMS = isArtist ? [
     { id: 'dashboard', label: tx({ fr: 'Tableau de bord', en: 'Dashboard', es: 'Panel' }), icon: Palette },
+    { id: 'mes-images', label: tx({ fr: 'Mes images', en: 'My images', es: 'Mis imagenes' }), icon: ImagePlus },
     { id: 'profil-artiste', label: tx({ fr: 'Mon profil', en: 'My profile', es: 'Mi perfil' }), icon: User },
     { id: 'contrat', label: tx({ fr: 'Contrat', en: 'Contract', es: 'Contrato' }), icon: ScrollText },
     { id: 'tarifs', label: tx({ fr: 'Tarifs Massive', en: 'Massive Pricing', es: 'Precios Massive' }), icon: Receipt },
@@ -918,7 +919,7 @@ function Account() {
 
   const [artistMobileOpen, setArtistMobileOpen] = useState(false);
 
-  const artistValidTabs = ['dashboard', 'profil-artiste', 'contrat', 'tarifs', 'retrait', 'ventes', 'profile', 'address', 'security', 'orders'];
+  const artistValidTabs = ['dashboard', 'mes-images', 'profil-artiste', 'contrat', 'tarifs', 'retrait', 'ventes', 'profile', 'address', 'security', 'orders'];
 
   const getArtistSectionTitle = () => {
     const artistItem = ARTIST_SIDEBAR_ITEMS.find(i => i.id === activeTab);

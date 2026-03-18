@@ -14,6 +14,7 @@ import {
 } from '../services/adminService';
 import {
   getArtistMessagesAdmin, replyArtistMessage, updateArtistMessageStatus,
+  approveEditRequest, rejectEditRequest,
 } from '../services/artistService';
 
 // Helper: rend les URLs cliquables et parse les liens sociaux
@@ -90,6 +91,7 @@ const CATEGORY_LABELS = {
   'question': { fr: 'Question', en: 'Question', es: 'Pregunta' },
   'withdrawal': { fr: 'Retrait', en: 'Withdrawal', es: 'Retiro' },
   'update-profile': { fr: 'Profil', en: 'Profile', es: 'Perfil' },
+  'edit-request': { fr: 'Demande modif', en: 'Edit request', es: 'Solicitud modif' },
   'other': { fr: 'Autre', en: 'Other', es: 'Otro' },
 };
 
@@ -424,6 +426,107 @@ function AdminMessages() {
                                   <p className="text-sm text-heading whitespace-pre-wrap">{item.adminReply}</p>
                                 </div>
                               )}
+
+                              {/* Edit request: Approve/Reject buttons */}
+                              {item.category === 'edit-request' && item.attachments?.editRequestId && (() => {
+                                const editReqId = item.attachments.editRequestId;
+                                const reqType = item.attachments.requestType || '';
+                                const changeData = item.attachments.changeData || {};
+                                const isGalleryChange = reqType.startsWith('add-') || reqType.startsWith('remove-');
+                                const isAlreadyProcessed = item.status === 'replied' || item.adminReply;
+
+                                if (!isGalleryChange || isAlreadyProcessed) return null;
+
+                                const images = changeData.images || [];
+                                const itemIds = changeData.itemIds || [];
+
+                                return (
+                                  <div className="rounded-lg bg-purple-main/10 border border-purple-main/20 p-4 space-y-3" onClick={(e) => e.stopPropagation()}>
+                                    <h4 className="text-xs font-semibold text-heading uppercase tracking-wider flex items-center gap-1.5">
+                                      <Image size={12} className="text-accent" />
+                                      {tx({ fr: 'Demande de modification', en: 'Edit request', es: 'Solicitud de modificacion' })}
+                                      <span className="ml-2 px-2 py-0.5 rounded-full bg-yellow-500/20 text-yellow-400 text-[10px]">{reqType}</span>
+                                    </h4>
+
+                                    {/* Preview images for add requests */}
+                                    {images.length > 0 && (
+                                      <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                                        {images.map((img, idx) => (
+                                          <div key={idx} className="aspect-square rounded-lg overflow-hidden bg-glass">
+                                            <img src={img.originalUrl} alt={img.title || ''} className="w-full h-full object-cover" loading="lazy" />
+                                            {img.title && <p className="text-[9px] text-grey-muted truncate px-1 py-0.5">{img.title}</p>}
+                                          </div>
+                                        ))}
+                                      </div>
+                                    )}
+
+                                    {/* Info for remove requests */}
+                                    {itemIds.length > 0 && (
+                                      <p className="text-sm text-heading">
+                                        {tx({ fr: `Suppression de ${itemIds.length} element(s):`, en: `Removal of ${itemIds.length} item(s):`, es: `Eliminacion de ${itemIds.length} elemento(s):` })}
+                                        <span className="text-grey-muted ml-1">{itemIds.join(', ')}</span>
+                                      </p>
+                                    )}
+
+                                    {/* Reject reason input */}
+                                    {replyingTo === `reject-${item._uid}` ? (
+                                      <div className="space-y-2">
+                                        <textarea
+                                          value={replyText}
+                                          onChange={(e) => setReplyText(e.target.value)}
+                                          rows={2}
+                                          autoFocus
+                                          placeholder={tx({ fr: 'Raison du refus (optionnel)...', en: 'Rejection reason (optional)...', es: 'Razon del rechazo (opcional)...' })}
+                                          className="input-field text-sm w-full resize-none"
+                                        />
+                                        <div className="flex gap-2">
+                                          <button
+                                            onClick={async () => {
+                                              try {
+                                                await rejectEditRequest(editReqId, replyText);
+                                                setReplyingTo(null);
+                                                setReplyText('');
+                                                // Refresh
+                                                fetchItems();
+                                              } catch {}
+                                            }}
+                                            className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-red-500 text-white text-xs font-semibold hover:bg-red-600 transition-colors"
+                                          >
+                                            <XCircle size={12} /> {tx({ fr: 'Confirmer le refus', en: 'Confirm rejection', es: 'Confirmar rechazo' })}
+                                          </button>
+                                          <button onClick={() => { setReplyingTo(null); setReplyText(''); }} className="text-grey-muted text-xs hover:text-heading">
+                                            {tx({ fr: 'Annuler', en: 'Cancel', es: 'Cancelar' })}
+                                          </button>
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      <div className="flex items-center gap-2">
+                                        <button
+                                          onClick={async () => {
+                                            try {
+                                              await approveEditRequest(editReqId);
+                                              // Refresh
+                                              const { data } = await getArtistMessagesAdmin();
+                                              fetchItems();
+                                            } catch (err) {
+                                              console.error('Approve failed:', err);
+                                            }
+                                          }}
+                                          className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-green-600 text-white text-xs font-semibold hover:bg-green-700 transition-colors"
+                                        >
+                                          <CheckCircle size={14} /> {tx({ fr: 'Approuver', en: 'Approve', es: 'Aprobar' })}
+                                        </button>
+                                        <button
+                                          onClick={() => { setReplyingTo(`reject-${item._uid}`); setReplyText(''); }}
+                                          className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-red-500/20 text-red-400 text-xs font-semibold hover:bg-red-500/30 transition-colors"
+                                        >
+                                          <XCircle size={14} /> {tx({ fr: 'Rejeter', en: 'Reject', es: 'Rechazar' })}
+                                        </button>
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })()}
 
                               {/* Reply + actions */}
                               {replyingTo === item._uid ? (

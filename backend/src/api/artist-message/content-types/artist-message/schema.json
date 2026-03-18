@@ -32,7 +32,7 @@
     },
     "category": {
       "type": "enumeration",
-      "enum": ["new-images", "question", "withdrawal", "update-profile", "other"],
+      "enum": ["new-images", "question", "withdrawal", "update-profile", "edit-request", "other"],
       "default": "other"
     },
     "status": {

@@ -1,0 +1,60 @@
+{
+  "kind": "collectionType",
+  "collectionName": "artist_edit_requests",
+  "info": {
+    "singularName": "artist-edit-request",
+    "pluralName": "artist-edit-requests",
+    "displayName": "Artist Edit Request",
+    "description": "Demandes de modification de contenu par les artistes"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "artistSlug": {
+      "type": "string",
+      "required": true
+    },
+    "artistName": {
+      "type": "string"
+    },
+    "email": {
+      "type": "email",
+      "required": true
+    },
+    "requestType": {
+      "type": "enumeration",
+      "enum": [
+        "add-prints",
+        "remove-prints",
+        "add-stickers",
+        "remove-stickers",
+        "add-merch",
+        "remove-merch",
+        "update-profile",
+        "update-bio",
+        "update-socials",
+        "update-avatar"
+      ],
+      "required": true
+    },
+    "changeData": {
+      "type": "json",
+      "required": true
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": ["pending", "approved", "rejected"],
+      "default": "pending"
+    },
+    "adminNotes": {
+      "type": "text"
+    },
+    "processedAt": {
+      "type": "datetime"
+    },
+    "linkedMessageId": {
+      "type": "string"
+    }
+  }
+}

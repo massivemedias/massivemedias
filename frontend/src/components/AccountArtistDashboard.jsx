@@ -1,6 +1,8 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
+
+const ArtistGalleryManager = lazy(() => import('./ArtistGalleryManager'));
 import {
   DollarSign, Palette, Clock, CheckCircle,
   FileText, Loader2, AlertCircle, Package,
@@ -11,7 +13,7 @@ import { useLang } from '../i18n/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useUserRole } from '../contexts/UserRoleContext';
 import { getCommissions } from '../services/adminService';
-import { sendArtistMessage, getMyMessages, createWithdrawal, getMyWithdrawals } from '../services/artistService';
+import { sendArtistMessage, getMyMessages, createWithdrawal, getMyWithdrawals, createEditRequest } from '../services/artistService';
 import { uploadArtistFile } from '../services/api';
 import FileUpload from './FileUpload';
 import artistsData from '../data/artists';
@@ -182,25 +184,28 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
       });
       if (error) throw error;
 
-      // Send profile update to admin as a message
-      const profileDetails = [
-        `Nom d'artiste: ${artistProfileForm.nomArtiste || '-'}`,
-        `Bio: ${artistProfileForm.bio || '-'}`,
-        `Image de profil: ${artistProfileForm.profileImage || 'Aucune'}`,
-        `Email PayPal: ${artistProfileForm.paypalEmail || '-'}`,
-        `Email: ${email}`,
-        `Slug: ${artistSlug}`,
-      ].join('\n');
-
-      await sendArtistMessage({
+      // Auto-apply bio update to CMS via edit request (admin gets notified)
+      await createEditRequest({
         artistSlug,
         artistName: artistProfileForm.nomArtiste || artistSlug,
         email,
-        subject: 'Mise a jour du profil artiste',
-        message: profileDetails,
-        category: 'update-profile',
-        attachments: artistProfileForm.profileImage ? [{ name: 'photo-profil', url: artistProfileForm.profileImage }] : null,
-      }).catch(() => {}); // silent fail if message fails
+        requestType: 'update-bio',
+        changeData: {
+          bioFr: artistProfileForm.bio || '',
+          name: artistProfileForm.nomArtiste || '',
+        },
+      }).catch(() => {});
+
+      // If avatar changed, send avatar update too
+      if (artistProfileForm.profileImage) {
+        await createEditRequest({
+          artistSlug,
+          artistName: artistProfileForm.nomArtiste || artistSlug,
+          email,
+          requestType: 'update-avatar',
+          changeData: { avatarUrl: artistProfileForm.profileImage },
+        }).catch(() => {});
+      }
 
       setArtistProfileMsg(tx({ fr: 'Profil artiste sauvegarde!', en: 'Artist profile saved!', es: 'Perfil artista guardado!' }));
       setTimeout(() => setArtistProfileMsg(''), 3000);
@@ -342,6 +347,17 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
       )}
     </AnimatePresence>
   );
+
+  // ===========================
+  // SECTION: MES IMAGES (gestion galerie artiste)
+  // ===========================
+  if (section === 'mes-images') {
+    return (
+      <Suspense fallback={<div className="flex items-center justify-center py-20"><Loader2 size={24} className="animate-spin text-accent" /></div>}>
+        <ArtistGalleryManager />
+      </Suspense>
+    );
+  }
 
   // ===========================
   // SECTION: DASHBOARD (rappels-cles + mini stats)
@@ -824,196 +840,70 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
           </form>
         </div>
 
-        {/* Depot d'images */}
+        {/* Liens sociaux */}
         <div className="rounded-2xl p-5 md:p-8 card-bg card-shadow">
-          <h3 className="text-heading font-heading font-bold text-lg flex items-center gap-2 mb-2">
-            <ImagePlus size={20} className="text-accent" />
-            {tx({ fr: 'Deposer de nouvelles images', en: 'Submit new images', es: 'Enviar nuevas imagenes' })}
+          <h3 className="text-heading font-heading font-bold text-lg flex items-center gap-2 mb-4">
+            <Link2 size={20} className="text-accent" />
+            {tx({ fr: 'Liens sociaux', en: 'Social links', es: 'Enlaces sociales' })}
           </h3>
-          <p className="text-grey-muted text-sm mb-6">
+          <p className="text-grey-muted text-sm mb-4">
             {tx({
-              fr: 'Depose tes images haute-resolution ici. On les traitera et les ajoutera a ta boutique.',
-              en: 'Upload your high-resolution images here. We\'ll process them and add them to your store.',
-              es: 'Sube tus imagenes de alta resolucion aqui. Las procesaremos y las agregaremos a tu tienda.',
+              fr: 'Ces liens apparaitront sur ta page artiste. Sauvegarde pour appliquer les changements.',
+              en: 'These links will appear on your artist page. Save to apply changes.',
+              es: 'Estos enlaces apareceran en tu pagina de artista. Guarda para aplicar los cambios.',
             })}
           </p>
-
-          {imgSuccess && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mb-4 p-3 rounded-lg bg-green-500/10 border border-green-500/20 text-green-400 text-sm flex items-center gap-2"
-            >
-              <Check size={16} />
-              {imgSuccess}
-            </motion.div>
-          )}
-
-          <form onSubmit={handleImageDeposit} className="space-y-4">
-            <FileUpload
-              label={tx({ fr: 'Images a deposer (max 20 fichiers, 130 MB chacun)', en: 'Images to submit (max 20 files, 130 MB each)', es: 'Imagenes a enviar (max 20 archivos, 130 MB c/u)' })}
-              files={imgFiles}
-              onFilesChange={setImgFiles}
-              maxFiles={20}
-              uploadFn={uploadArtistFile}
-            />
-
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
             <div>
-              <label className="text-[11px] text-grey-muted uppercase tracking-wider font-medium mb-1 block">
-                {tx({ fr: 'Note (optionnel)', en: 'Note (optional)', es: 'Nota (opcional)' })}
-              </label>
-              <textarea
-                value={imgNote}
-                onChange={(e) => setImgNote(e.target.value)}
-                className="input-field text-sm min-h-[80px] resize-y"
-                placeholder={tx({
-                  fr: 'Instructions speciales, titres des oeuvres, formats souhaites...',
-                  en: 'Special instructions, artwork titles, desired formats...',
-                  es: 'Instrucciones especiales, titulos de las obras, formatos deseados...',
-                })}
-              />
+              <label className="text-[10px] text-grey-muted mb-0.5 block">Instagram</label>
+              <input type="url" value={imgSocials.instagram} onChange={(e) => setImgSocials(s => ({ ...s, instagram: e.target.value }))} className="input-field text-sm py-2" placeholder="https://instagram.com/..." />
             </div>
-
-            {/* Liens sociaux */}
-            <div className="rounded-xl border border-purple-main/20 p-4 space-y-3">
-              <div className="flex items-center gap-2 mb-1">
-                <Link2 size={14} className="text-accent" />
-                <span className="text-[11px] text-grey-muted uppercase tracking-wider font-medium">
-                  {tx({ fr: 'Tes liens (optionnel)', en: 'Your links (optional)', es: 'Tus enlaces (opcional)' })}
-                </span>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="text-[10px] text-grey-muted mb-0.5 block">Instagram</label>
-                  <input
-                    type="url"
-                    value={imgSocials.instagram}
-                    onChange={(e) => setImgSocials(s => ({ ...s, instagram: e.target.value }))}
-                    className="input-field text-sm py-2"
-                    placeholder="https://instagram.com/..."
-                  />
-                </div>
-                <div>
-                  <label className="text-[10px] text-grey-muted mb-0.5 block">Site web</label>
-                  <input
-                    type="url"
-                    value={imgSocials.website}
-                    onChange={(e) => setImgSocials(s => ({ ...s, website: e.target.value }))}
-                    className="input-field text-sm py-2"
-                    placeholder="https://..."
-                  />
-                </div>
-                <div>
-                  <label className="text-[10px] text-grey-muted mb-0.5 block">Facebook</label>
-                  <input
-                    type="url"
-                    value={imgSocials.facebook}
-                    onChange={(e) => setImgSocials(s => ({ ...s, facebook: e.target.value }))}
-                    className="input-field text-sm py-2"
-                    placeholder="https://facebook.com/..."
-                  />
-                </div>
-                <div>
-                  <label className="text-[10px] text-grey-muted mb-0.5 block">TikTok</label>
-                  <input
-                    type="url"
-                    value={imgSocials.tiktok}
-                    onChange={(e) => setImgSocials(s => ({ ...s, tiktok: e.target.value }))}
-                    className="input-field text-sm py-2"
-                    placeholder="https://tiktok.com/@..."
-                  />
-                </div>
-                <div>
-                  <label className="text-[10px] text-grey-muted mb-0.5 block">YouTube</label>
-                  <input
-                    type="url"
-                    value={imgSocials.youtube}
-                    onChange={(e) => setImgSocials(s => ({ ...s, youtube: e.target.value }))}
-                    className="input-field text-sm py-2"
-                    placeholder="https://youtube.com/@..."
-                  />
-                </div>
-                <div>
-                  <label className="text-[10px] text-grey-muted mb-0.5 block">{tx({ fr: 'Autre lien', en: 'Other link', es: 'Otro enlace' })}</label>
-                  <input
-                    type="url"
-                    value={imgSocials.other}
-                    onChange={(e) => setImgSocials(s => ({ ...s, other: e.target.value }))}
-                    className="input-field text-sm py-2"
-                    placeholder="https://..."
-                  />
-                </div>
-              </div>
+            <div>
+              <label className="text-[10px] text-grey-muted mb-0.5 block">Site web</label>
+              <input type="url" value={imgSocials.website} onChange={(e) => setImgSocials(s => ({ ...s, website: e.target.value }))} className="input-field text-sm py-2" placeholder="https://..." />
             </div>
-
-            <button
-              type="submit"
-              disabled={imgSending || imgFiles.length === 0}
-              className="btn-primary text-sm py-2.5 px-6 disabled:opacity-50"
-            >
-              {imgSending ? <Loader2 size={14} className="animate-spin mr-1.5" /> : <Send size={14} className="mr-1.5" />}
-              {tx({ fr: 'Envoyer les images', en: 'Send images', es: 'Enviar imagenes' })}
-            </button>
-          </form>
-        </div>
-
-        {/* Historique des depots */}
-        <div className="rounded-2xl p-5 md:p-8 card-bg card-shadow">
-          <h3 className="text-heading font-heading font-bold text-base flex items-center gap-2 mb-4">
-            <Clock size={18} className="text-accent" />
-            {tx({ fr: 'Historique des depots', en: 'Deposit history', es: 'Historial de depositos' })}
-          </h3>
-
-          {!msgLoading && imageDeposits.length > 0 ? (
-            <div className="space-y-3">
-              {imageDeposits.map((m, i) => (
-                <div key={m.documentId || i} className="rounded-lg border border-purple-main/10 p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="text-grey-muted text-xs">{m.createdAt ? new Date(m.createdAt).toLocaleDateString('fr-CA') : ''}</p>
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
-                      m.status === 'replied' ? 'bg-green-500/20 text-green-400' :
-                      m.status === 'read' ? 'bg-blue-500/20 text-blue-400' :
-                      'bg-yellow-500/20 text-yellow-400'
-                    }`}>
-                      {m.status === 'replied' ? tx({ fr: 'Traite', en: 'Processed', es: 'Procesado' }) :
-                       m.status === 'read' ? tx({ fr: 'En cours', en: 'In progress', es: 'En progreso' }) :
-                       tx({ fr: 'Envoye', en: 'Sent', es: 'Enviado' })}
-                    </span>
-                  </div>
-                  {m.message && m.message !== 'Nouvelles images deposees' && (
-                    <p className="text-grey-light text-xs mb-2">{m.message}</p>
-                  )}
-                  <div className="flex flex-wrap gap-2">
-                    {m.attachments.map((att, j) => (
-                      <a key={j} href={att.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 px-2 py-1 rounded bg-accent/10 border border-accent/20 text-[10px] text-accent hover:bg-accent/20 transition-colors">
-                        <ImagePlus size={10} />
-                        {att.name?.length > 25 ? att.name.substring(0, 25) + '...' : att.name}
-                      </a>
-                    ))}
-                  </div>
-                  {m.adminReply && (
-                    <div className="mt-2 p-3 rounded bg-accent/5 border border-accent/10">
-                      <p className="text-[10px] text-accent font-semibold mb-0.5">Massive :</p>
-                      <p className="text-grey-light text-xs">{m.adminReply}</p>
-                    </div>
-                  )}
-                </div>
-              ))}
+            <div>
+              <label className="text-[10px] text-grey-muted mb-0.5 block">Facebook</label>
+              <input type="url" value={imgSocials.facebook} onChange={(e) => setImgSocials(s => ({ ...s, facebook: e.target.value }))} className="input-field text-sm py-2" placeholder="https://facebook.com/..." />
             </div>
-          ) : !msgLoading ? (
-            <div className="text-center py-8">
-              <ImagePlus size={32} className="text-grey-muted/20 mx-auto mb-2" />
-              <p className="text-grey-muted text-sm">
-                {tx({
-                  fr: 'Aucun depot d\'images pour l\'instant.',
-                  en: 'No image deposits yet.',
-                  es: 'Sin depositos de imagenes por el momento.',
-                })}
-              </p>
+            <div>
+              <label className="text-[10px] text-grey-muted mb-0.5 block">TikTok</label>
+              <input type="url" value={imgSocials.tiktok} onChange={(e) => setImgSocials(s => ({ ...s, tiktok: e.target.value }))} className="input-field text-sm py-2" placeholder="https://tiktok.com/@..." />
             </div>
-          ) : (
-            <div className="flex items-center gap-2 text-grey-muted py-8 justify-center"><Loader2 size={16} className="animate-spin" /></div>
-          )}
+            <div>
+              <label className="text-[10px] text-grey-muted mb-0.5 block">YouTube</label>
+              <input type="url" value={imgSocials.youtube} onChange={(e) => setImgSocials(s => ({ ...s, youtube: e.target.value }))} className="input-field text-sm py-2" placeholder="https://youtube.com/@..." />
+            </div>
+            <div>
+              <label className="text-[10px] text-grey-muted mb-0.5 block">{tx({ fr: 'Autre lien', en: 'Other link', es: 'Otro enlace' })}</label>
+              <input type="url" value={imgSocials.other} onChange={(e) => setImgSocials(s => ({ ...s, other: e.target.value }))} className="input-field text-sm py-2" placeholder="https://..." />
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={async () => {
+              try {
+                const socials = {};
+                Object.entries(imgSocials).forEach(([k, v]) => { if (v.trim()) socials[k] = v.trim(); });
+                await createEditRequest({
+                  artistSlug,
+                  artistName: artistProfileForm.nomArtiste || artistSlug,
+                  email,
+                  requestType: 'update-socials',
+                  changeData: { socials },
+                });
+                setToast(tx({ fr: 'Liens sociaux sauvegardes!', en: 'Social links saved!', es: 'Enlaces sociales guardados!' }));
+                setTimeout(() => setToast(''), 3000);
+              } catch {
+                setToast(tx({ fr: 'Erreur', en: 'Error', es: 'Error' }));
+                setTimeout(() => setToast(''), 3000);
+              }
+            }}
+            className="btn-primary text-sm py-2.5 px-6"
+          >
+            <Check size={14} className="mr-1.5" />
+            {tx({ fr: 'Sauvegarder les liens', en: 'Save links', es: 'Guardar enlaces' })}
+          </button>
         </div>
       </div>
     );
