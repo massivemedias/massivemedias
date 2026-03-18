@@ -1,6 +1,15 @@
 import { factories } from '@strapi/strapi';
 import { processArtistImage, deleteFromSupabase } from '../../../utils/image-processor';
-import { uploadToGoogleDrive } from '../../../utils/google-drive';
+
+// Import dynamique pour eviter crash si googleapis pas installe ou env vars manquantes
+async function tryUploadToGoogleDrive(fileUrl: string, fileName: string, artistSlug: string, mimeType?: string) {
+  try {
+    const { uploadToGoogleDrive } = await import('../../../utils/google-drive');
+    return await uploadToGoogleDrive(fileUrl, fileName, artistSlug, mimeType);
+  } catch (err: any) {
+    return { error: err.message || 'Google Drive upload failed' };
+  }
+}
 
 // Types de requetes qui s'appliquent automatiquement (pas besoin d'approbation admin)
 const AUTO_APPLY_TYPES = ['update-profile', 'update-bio', 'update-socials', 'update-avatar'];
@@ -37,23 +46,22 @@ export default factories.createCoreController('api::artist-edit-request.artist-e
         const driveResults = [];
         for (const img of changeData.images) {
           if (img.originalUrl) {
-            try {
-              const driveFile = await uploadToGoogleDrive(
-                img.originalUrl,
-                img.originalName || 'image',
-                artistSlug || 'unknown',
-                img.mime
-              );
+            const driveResult = await tryUploadToGoogleDrive(
+              img.originalUrl,
+              img.originalName || 'image',
+              artistSlug || 'unknown',
+              img.mime
+            );
+            if (driveResult && !('error' in driveResult)) {
               driveResults.push({
                 ...img,
-                driveFileId: driveFile.fileId,
-                driveViewLink: driveFile.webViewLink,
-                driveDownloadLink: driveFile.webContentLink,
-                driveFileName: driveFile.fileName,
+                driveFileId: driveResult.fileId,
+                driveViewLink: driveResult.webViewLink,
+                driveDownloadLink: driveResult.webContentLink,
+                driveFileName: driveResult.fileName,
               });
-            } catch (driveErr: any) {
-              // Si Google Drive echoue, on continue sans - l'original reste sur Supabase
-              driveResults.push({ ...img, driveError: driveErr.message });
+            } else {
+              driveResults.push({ ...img, driveError: (driveResult as any)?.error || 'Unknown error' });
             }
           } else {
             driveResults.push(img);
