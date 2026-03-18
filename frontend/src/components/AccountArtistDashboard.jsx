@@ -349,17 +349,6 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
   );
 
   // ===========================
-  // SECTION: MES IMAGES (gestion galerie artiste)
-  // ===========================
-  if (section === 'mes-images') {
-    return (
-      <Suspense fallback={<div className="flex items-center justify-center py-20"><Loader2 size={24} className="animate-spin text-accent" /></div>}>
-        <ArtistGalleryManager />
-      </Suspense>
-    );
-  }
-
-  // ===========================
   // SECTION: DASHBOARD (rappels-cles + mini stats)
   // ===========================
   if (section === 'dashboard') {
@@ -905,6 +894,11 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
             {tx({ fr: 'Sauvegarder les liens', en: 'Save links', es: 'Guardar enlaces' })}
           </button>
         </div>
+
+        {/* Gestion galerie artiste */}
+        <Suspense fallback={<div className="flex items-center justify-center py-10"><Loader2 size={24} className="animate-spin text-accent" /></div>}>
+          <ArtistGalleryManager />
+        </Suspense>
       </div>
     );
   }
