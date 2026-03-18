@@ -15,7 +15,7 @@ function CookieBanner() {
   const labels = {
     title: tx({ fr: 'Respect de votre vie privee', en: 'Your privacy matters', es: 'Su privacidad importa' }),
     desc: tx({
-      fr: 'Nous utilisons des cookies pour analyser le trafic et ameliorer votre experience. Conformement a la Loi 25 du Quebec, votre consentement est requis.',
+      fr: 'Nous utilisons des cookies pour analyser le trafic et améliorer votre expérience. Conformément à la Loi 25 du Québec, votre consentement est requis.',
       en: 'We use cookies to analyze traffic and improve your experience. As required by Quebec\'s Law 25, your consent is needed.',
       es: 'Usamos cookies para analizar el trafico y mejorar su experiencia. Segun la Ley 25 de Quebec, se requiere su consentimiento.',
     }),
@@ -31,7 +31,7 @@ function CookieBanner() {
     }),
     analyticsLabel: tx({ fr: 'Analytique', en: 'Analytics', es: 'Analitica' }),
     analyticsDesc: tx({
-      fr: 'Google Analytics - comprendre comment vous utilisez le site pour l\'ameliorer.',
+      fr: 'Google Analytics - comprendre comment vous utilisez le site pour l\'améliorer.',
       en: 'Google Analytics - understand how you use the site to improve it.',
       es: 'Google Analytics - entender como usa el sitio para mejorarlo.',
     }),

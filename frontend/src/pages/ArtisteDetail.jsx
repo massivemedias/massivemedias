@@ -193,8 +193,8 @@ function ArtisteDetail({ subdomainSlug }) {
   });
 
   const equipmentItems = [
-    { name: tx({ fr: 'Impression pigmentee 4 couleurs', en: '4-Color Pigment Printing', es: 'Impresion pigmentada 4 colores' }), desc: tx({ fr: 'Qualite decoration - Serie Studio', en: 'Decoration quality - Studio Series', es: 'Calidad decoracion - Serie Studio' }) },
-    { name: tx({ fr: 'Impression pigmentee 12 couleurs', en: '12-Color Pigment Printing', es: 'Impresion pigmentada 12 colores' }), desc: tx({ fr: 'Qualite galerie - Serie Musee', en: 'Gallery quality - Museum Series', es: 'Calidad galeria - Serie Museo' }) },
+    { name: tx({ fr: 'Impression pigmentée 4 couleurs', en: '4-Color Pigment Printing', es: 'Impresion pigmentada 4 colores' }), desc: tx({ fr: 'Qualité décoration - Série Studio', en: 'Decoration quality - Studio Series', es: 'Calidad decoracion - Serie Studio' }) },
+    { name: tx({ fr: 'Impression pigmentée 12 couleurs', en: '12-Color Pigment Printing', es: 'Impresion pigmentada 12 colores' }), desc: tx({ fr: 'Qualité galerie - Série Musée', en: 'Gallery quality - Museum Series', es: 'Calidad galeria - Serie Museo' }) },
     { name: tx({ fr: 'Papiers Fine Art', en: 'Fine Art Papers', es: 'Papeles Fine Art' }), desc: 'Hahnemuhle, Canson, Ilford' },
   ];
 
@@ -278,7 +278,7 @@ function ArtisteDetail({ subdomainSlug }) {
               </p>
               <p className="text-sm text-grey-muted mb-8">
                 {tx({
-                  fr: `${artist.prints.length} oeuvres disponibles · Tirages a partir de ${minPrice}$`,
+                  fr: `${artist.prints.length} oeuvres disponibles · Tirages à partir de ${minPrice}$`,
                   en: `${artist.prints.length} artworks available · Prints starting at $${minPrice}`,
                   es: `${artist.prints.length} obras disponibles · Impresiones desde ${minPrice}$`,
                 })}
@@ -744,7 +744,7 @@ function ArtisteDetail({ subdomainSlug }) {
           </h2>
           <p className="text-grey-light text-lg mb-8 max-w-2xl mx-auto">
             {tx({
-              fr: 'On s\'occupe de tout : site web dedie, impression pro, packaging et shipping. Tu fournis tes fichiers, tu fixes ta marge, et tu recois ton argent.',
+              fr: 'On s\'occupe de tout : site web dédié, impression pro, packaging et shipping. Tu fournis tes fichiers, tu fixes ta marge, et tu reçois ton argent.',
               en: 'We handle everything: dedicated website, professional printing, packaging and shipping. You provide your files, set your margin, and get paid.',
               es: 'Nos encargamos de todo: sitio web dedicado, impresion profesional, empaque y envio. Tu proporcionas tus archivos, fijas tu margen y recibes tu dinero.',
             })}

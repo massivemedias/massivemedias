@@ -362,7 +362,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
             { value: loading ? '-' : formatMoney(totalEarned), label: tx({ fr: 'Gains totaux', en: 'Total earnings', es: 'Ganancias totales' }), color: 'text-green-400', tooltip: tx({ fr: 'Total de tes commissions sur toutes les ventes de tes prints', en: 'Total commissions earned from all your print sales', es: 'Total de comisiones de todas las ventas de tus prints' }) },
-            { value: loading ? '-' : formatMoney(totalPaid), label: tx({ fr: 'Deja paye', en: 'Already paid', es: 'Ya pagado' }), color: 'text-blue-400', tooltip: tx({ fr: 'Montant total qui t\'a deja ete verse via PayPal', en: 'Total amount already paid out to you via PayPal', es: 'Monto total que ya se te ha pagado via PayPal' }) },
+            { value: loading ? '-' : formatMoney(totalPaid), label: tx({ fr: 'Déjà payé', en: 'Already paid', es: 'Ya pagado' }), color: 'text-blue-400', tooltip: tx({ fr: 'Montant total qui t\'a déjà été versé via PayPal', en: 'Total amount already paid out to you via PayPal', es: 'Monto total que ya se te ha pagado via PayPal' }) },
             { value: loading ? '-' : formatMoney(balance), label: tx({ fr: 'Solde dispo', en: 'Balance', es: 'Saldo' }), color: balance > 0 ? 'text-accent' : 'text-grey-muted', tooltip: tx({ fr: 'Montant disponible que tu peux demander en retrait', en: 'Available amount you can request as a withdrawal', es: 'Monto disponible que puedes solicitar como retiro' }) },
             { value: loading ? '-' : orderCount, label: tx({ fr: 'Ventes', en: 'Sales', es: 'Ventas' }), color: 'text-purple-400', tooltip: tx({ fr: 'Nombre total de commandes contenant tes prints', en: 'Total number of orders containing your prints', es: 'Numero total de pedidos que contienen tus prints' }) },
           ].map((s, i) => (
@@ -456,7 +456,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
               </p>
               <p className="text-grey-light text-xs md:text-sm leading-relaxed mb-3">
                 {tx({
-                  fr: 'Tu peux designer certaines de tes oeuvres comme "piece unique". Un seul exemplaire sera jamais produit - format fixe, prix fixe, non-reproductible. Une fois vendue, elle disparait definitivement de ta boutique. C\'est une vraie piece de collection.',
+                  fr: 'Tu peux désigner certaines de tes oeuvres comme "pièce unique". Un seul exemplaire sera jamais produit - format fixe, prix fixe, non-reproductible. Une fois vendue, elle disparaît définitivement de ta boutique. C\'est une vraie pièce de collection.',
                   en: 'You can designate certain works as "unique pieces". Only one copy will ever be produced - fixed format, fixed price, non-reproducible. Once sold, it permanently disappears from your store. It\'s a true collector\'s item.',
                   es: 'Puedes designar ciertas obras como "pieza unica". Solo una copia sera producida - formato fijo, precio fijo, no reproducible. Una vez vendida, desaparece definitivamente de tu tienda. Es una verdadera pieza de coleccion.',
                 })}
@@ -483,7 +483,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
               </p>
               <p className="text-grey-light text-xs md:text-sm leading-relaxed">
                 {tx({
-                  fr: 'Massive ne produit jamais de prints sans commande confirmee et payee. Aucune production speculative. Ton approbation ecrite est requise pour tout produit.',
+                  fr: 'Massive ne produit jamais de prints sans commande confirmée et payée. Aucune production spéculative. Ton approbation écrite est requise pour tout produit.',
                   en: 'Massive never produces prints without a confirmed, paid order. No speculative production. Your written approval is required for every product.',
                   es: 'Massive nunca produce prints sin pedido confirmado y pagado. Sin produccion especulativa. Tu aprobacion escrita es necesaria para cada producto.',
                 })}
@@ -496,7 +496,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
               </p>
               <p className="text-grey-light text-xs md:text-sm leading-relaxed">
                 {tx({
-                  fr: 'Tu beneficies d\'un rabais exclusif sur tes propres prints (voir onglet Tarifs). Pour usage personnel, portfolio ou expos. Stickers: prix regulier pour tous.',
+                  fr: 'Tu bénéficies d\'un rabais exclusif sur tes propres prints (voir onglet Tarifs). Pour usage personnel, portfolio ou expos. Stickers: prix régulier pour tous.',
                   en: 'You get an exclusive discount on your own prints (see Pricing tab). For personal use, portfolio or exhibitions. Stickers: regular price for everyone.',
                   es: 'Tienes un descuento exclusivo en tus propios prints (ver pestana Precios). Para uso personal, portafolio o exposiciones. Stickers: precio regular para todos.',
                 })}
@@ -509,7 +509,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
               </p>
               <p className="text-grey-light text-xs md:text-sm leading-relaxed">
                 {tx({
-                  fr: 'Commande en volume au prix regulier et revends au prix que tu veux. Le profit supplementaire est 100% pour toi.',
+                  fr: 'Commande en volume au prix régulier et revends au prix que tu veux. Le profit supplémentaire est 100% pour toi.',
                   en: 'Order in bulk at regular price and resell at whatever price you want. The extra profit is 100% yours.',
                   es: 'Pide en volumen al precio regular y revende al precio que quieras. La ganancia adicional es 100% tuya.',
                 })}
@@ -531,11 +531,11 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
             <div className="p-5 md:p-6 rounded-xl bg-black/20 shadow-lg">
               <p className="text-yellow-400 text-sm md:text-base font-bold mb-2 flex items-center gap-2">
                 <Clock size={16} />
-                {tx({ fr: 'Resiliation libre', en: 'Free termination', es: 'Terminacion libre' })}
+                {tx({ fr: 'Résiliation libre', en: 'Free termination', es: 'Terminacion libre' })}
               </p>
               <p className="text-grey-light text-xs md:text-sm leading-relaxed">
                 {tx({
-                  fr: 'Tu peux quitter a tout moment avec 30 jours de preavis par email. Tes fichiers sont supprimes de nos serveurs sous 14 jours, confirmation ecrite incluse.',
+                  fr: 'Tu peux quitter à tout moment avec 30 jours de préavis par email. Tes fichiers sont supprimés de nos serveurs sous 14 jours, confirmation écrite incluse.',
                   en: 'You can leave at any time with 30 days written notice by email. Your files are deleted from our servers within 14 days, written confirmation included.',
                   es: 'Puedes salir en cualquier momento con 30 dias de preaviso por email. Tus archivos se eliminan de nuestros servidores en 14 dias, confirmacion escrita incluida.',
                 })}
@@ -595,7 +595,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
           </h3>
           <p className="text-grey-muted text-xs mb-6">
             {tx({
-              fr: 'Prix affiches aux clients dans ta boutique. Ta marge = prix client - prix de production. Le cadre (30$) va entierement a Massive. TPS + TVQ en sus.',
+              fr: 'Prix affichés aux clients dans ta boutique. Ta marge = prix client - prix de production. Le cadre (30$) va entièrement à Massive. TPS + TVQ en sus.',
               en: 'Prices shown to customers in your store. Your margin = client price - production price. Frame ($30) goes entirely to Massive. GST + QST extra.',
               es: 'Precios mostrados a los clientes en tu tienda. Tu margen = precio cliente - precio produccion. El marco (30$) va completamente a Massive. Impuestos adicionales.',
             })}
@@ -612,7 +612,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
                 </tr>
               </thead>
               <tbody>
-                <tr className="border-b border-purple-main/10"><td colSpan="5" className="pt-3 pb-1 text-accent font-semibold text-xs">{tx({ fr: 'Serie Studio (4 encres pigmentees)', en: 'Studio Series (4 pigment inks)', es: 'Serie Studio (4 tintas pigmentadas)' })}</td></tr>
+                <tr className="border-b border-purple-main/10"><td colSpan="5" className="pt-3 pb-1 text-accent font-semibold text-xs">{tx({ fr: 'Série Studio (4 encres pigmentées)', en: 'Studio Series (4 pigment inks)', es: 'Serie Studio (4 tintas pigmentadas)' })}</td></tr>
                 {[{ format: 'A4 (8.5x11")', key: 'a4' }, { format: 'A3 (11x17")', key: 'a3' }, { format: 'A3+ (13x19")', key: 'a3plus' }].map(({ format, key }) => {
                   const clientPrice = CLIENT_PRICES.studio[key];
                   const artistPrice = ARTIST_DISCOUNT_PRICES.studio[key];
@@ -627,7 +627,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
                     </tr>
                   );
                 })}
-                <tr className="border-b border-purple-main/10"><td colSpan="5" className="pt-4 pb-1 text-accent font-semibold text-xs">{tx({ fr: 'Serie Musee (12 encres pigmentees)', en: 'Museum Series (12 pigment inks)', es: 'Serie Museo (12 tintas pigmentadas)' })}</td></tr>
+                <tr className="border-b border-purple-main/10"><td colSpan="5" className="pt-4 pb-1 text-accent font-semibold text-xs">{tx({ fr: 'Série Musée (12 encres pigmentées)', en: 'Museum Series (12 pigment inks)', es: 'Serie Museo (12 tintas pigmentadas)' })}</td></tr>
                 {[{ format: 'A4 (8.5x11")', key: 'a4' }, { format: 'A3 (11x17")', key: 'a3' }, { format: 'A3+ (13x19")', key: 'a3plus' }, { format: 'A2 (18x24")', key: 'a2' }].map(({ format, key }) => {
                   const clientPrice = CLIENT_PRICES.museum[key];
                   const artistPrice = ARTIST_DISCOUNT_PRICES.museum[key];
@@ -654,7 +654,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
           </div>
           <p className="text-grey-muted text-xs mt-4 italic">
             {tx({
-              fr: 'Note: Le format A2 (18x24") est imprime en qualite musee uniquement. Pas de cadre disponible pour ce format.',
+              fr: 'Note: Le format A2 (18x24") est imprimé en qualité musée uniquement. Pas de cadre disponible pour ce format.',
               en: 'Note: A2 (18x24") is printed in museum quality only. No frame available for this format.',
               es: 'Nota: El formato A2 (18x24") se imprime en calidad museo unicamente. Sin marco disponible para este formato.',
             })}
@@ -669,7 +669,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
             </p>
             <p className="text-grey-light text-xs leading-relaxed">
               {tx({
-                fr: 'En tant qu\'artiste partenaire, tu beneficies d\'un rabais exclusif sur tes propres prints (colonne "Prix artiste"). Stickers: prix regulier pour tous.',
+                fr: 'En tant qu\'artiste partenaire, tu bénéficies d\'un rabais exclusif sur tes propres prints (colonne "Prix artiste"). Stickers: prix régulier pour tous.',
                 en: 'As a partner artist, you get an exclusive discount on your own prints ("Artist price" column). Stickers: regular price for everyone.',
                 es: 'Como artista asociado, tienes un descuento exclusivo en tus propios prints (columna "Precio artista"). Stickers: precio regular para todos.',
               })}
@@ -681,7 +681,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
             </p>
             <p className="text-grey-light text-xs leading-relaxed">
               {tx({
-                fr: 'Commande en volume au prix regulier (colonne "Prix client"), et revends au prix que tu veux. Le profit supplementaire est 100% pour toi.',
+                fr: 'Commande en volume au prix régulier (colonne "Prix client"), et revends au prix que tu veux. Le profit supplémentaire est 100% pour toi.',
                 en: 'Order in bulk at regular price ("Client price" column), and resell at whatever price you want. The extra profit is 100% yours.',
                 es: 'Pide en volumen al precio regular (columna "Precio cliente"), y revende al precio que quieras. La ganancia adicional es 100% tuya.',
               })}
@@ -759,7 +759,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
                     </button>
                   )}
                   <p className="text-grey-muted/60 text-[10px] mt-1">
-                    {tx({ fr: 'JPG, PNG ou WebP. Carre recommande.', en: 'JPG, PNG or WebP. Square recommended.', es: 'JPG, PNG o WebP. Cuadrado recomendado.' })}
+                    {tx({ fr: 'JPG, PNG ou WebP. Carré recommandé.', en: 'JPG, PNG or WebP. Square recommended.', es: 'JPG, PNG o WebP. Cuadrado recomendado.' })}
                   </p>
                 </div>
               </div>
@@ -1109,7 +1109,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
             </div>
             <div className="text-center py-3 px-2 rounded-xl card-bg">
               <p className="text-lg font-bold text-blue-400">{loading ? '-' : formatMoney(totalPaid)}</p>
-              <p className="text-[10px] text-grey-muted uppercase tracking-wider">{tx({ fr: 'Deja paye', en: 'Already paid', es: 'Ya pagado' })}</p>
+              <p className="text-[10px] text-grey-muted uppercase tracking-wider">{tx({ fr: 'Déjà payé', en: 'Already paid', es: 'Ya pagado' })}</p>
             </div>
             <div className="text-center py-3 px-2 rounded-xl card-bg">
               <p className="text-lg font-bold text-purple-400">{loading ? '-' : orderCount}</p>

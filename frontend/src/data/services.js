@@ -94,7 +94,7 @@ Nous imprimons aussi des flyers, cartes postales et cartes d'affaires - tout ce 
       { name: 'Découpeuse professionnelle', desc: 'Découpe de précision pour formats personnalisés.' },
     ],
     faq: [
-      { q: 'Quelle est la différence entre Série Studio et Série Musée?', a: 'La Série Studio utilise une imprimante 4 encres pigmentées, excellente pour decoration et cadeaux. La Série Musée utilise une imprimante 12 encres pigmentées pour une fidélité galerie et une longévité de 100+ ans.' },
+      { q: 'Quelle est la différence entre Série Studio et Série Musée?', a: 'La Série Studio utilise une imprimante 4 encres pigmentées, excellente pour décoration et cadeaux. La Série Musée utilise une imprimante 12 encres pigmentées pour une fidélité galerie et une longévité de 100+ ans.' },
       { q: 'Quel format de fichier dois-je fournir?', a: 'Idéalement un fichier haute résolution (300 DPI minimum) en TIFF, PNG ou JPEG. On peut aussi travailler à partir de fichiers PSD ou PDF.' },
       { q: 'Offrez-vous l\'encadrement?', a: 'Oui, on propose l\'encadrement sur demande à partir de 30$. Cadres noirs, blancs ou bois naturel disponibles.' },
       { q: 'Quel est le délai de production?', a: 'Le délai varie selon le type de tirage et la quantité. Contactez-nous pour un estime.' },

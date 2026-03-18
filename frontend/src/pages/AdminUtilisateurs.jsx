@@ -609,7 +609,7 @@ function AdminUtilisateurs() {
                             <h4 className="text-xs font-semibold text-grey-muted uppercase tracking-wider mb-2 flex items-center gap-1.5">
                               <MapPin size={12} />
                               {user.isBuyer && user.lastShippingAddress
-                                ? tx({ fr: 'Derniere adresse', en: 'Last address', es: 'Ultima direccion' })
+                                ? tx({ fr: 'Dernière adresse', en: 'Last address', es: 'Ultima direccion' })
                                 : tx({ fr: 'Adresse', en: 'Address', es: 'Direccion' })}
                             </h4>
                             {user.lastShippingAddress ? (
@@ -643,7 +643,7 @@ function AdminUtilisateurs() {
                               </div>
                               {user.lastOrderDate && (
                                 <div className="flex justify-between">
-                                  <span className="text-grey-muted">{tx({ fr: 'Derniere cmd', en: 'Last order', es: 'Ultimo pedido' })}</span>
+                                  <span className="text-grey-muted">{tx({ fr: 'Dernière cmd', en: 'Last order', es: 'Ultimo pedido' })}</span>
                                   <span className="text-heading">{formatDate(user.lastOrderDate)}</span>
                                 </div>
                               )}

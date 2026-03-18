@@ -297,7 +297,7 @@ function Home() {
             {tx({ fr: 'Nos artistes', en: 'Our artists', es: 'Nuestros artistas' })}
           </h2>
           <p className="text-xl text-grey-light max-w-2xl mx-auto">
-            {tx({ fr: 'Prints fine art disponibles en boutique - oeuvres originales imprimees sur commande', en: 'Fine art prints available in our shop - original works printed on demand', es: 'Prints fine art disponibles en tienda - obras originales impresas a pedido' })}
+            {tx({ fr: 'Prints fine art disponibles en boutique - oeuvres originales imprimées sur commande', en: 'Fine art prints available in our shop - original works printed on demand', es: 'Prints fine art disponibles en tienda - obras originales impresas a pedido' })}
           </p>
         </motion.div>
 
@@ -374,7 +374,7 @@ function Home() {
           <Counter end={100} suffix="%" label={t('home.stats.local')} />
           <div className="text-center p-6">
             <div className="text-5xl md:text-6xl font-heading font-bold text-gradient mb-2 hero-title">100%</div>
-            <div className="text-grey-light text-lg">{tx({ fr: 'Qualite garantie', en: 'Guaranteed quality', es: 'Calidad garantizada' })}</div>
+            <div className="text-grey-light text-lg">{tx({ fr: 'Qualité garantie', en: 'Guaranteed quality', es: 'Calidad garantizada' })}</div>
           </div>
         </div>
       </section>

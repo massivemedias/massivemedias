@@ -195,7 +195,7 @@ function Account() {
     { to: '/admin/inventaire', icon: Package, fr: 'Inventaire', en: 'Inventory', es: 'Inventario' },
     { to: '/admin/messages', icon: MessageCircle, fr: 'Messages', en: 'Messages', es: 'Mensajes' },
     { to: '/admin/utilisateurs', icon: Users, fr: 'Utilisateurs', en: 'Users', es: 'Usuarios' },
-    { to: '/admin/depenses', icon: Receipt, fr: 'Depenses', en: 'Expenses', es: 'Gastos' },
+    { to: '/admin/depenses', icon: Receipt, fr: 'Dépenses', en: 'Expenses', es: 'Gastos' },
     { to: '/admin/stats', icon: BarChart3, fr: 'Stats', en: 'Stats', es: 'Stats' },
     { to: '/admin/tarifs', icon: DollarSign, fr: 'Tarifs', en: 'Pricing', es: 'Precios' },
   ];
@@ -390,7 +390,7 @@ function Account() {
             className="input-field text-base opacity-60 cursor-not-allowed"
           />
           <p className="text-grey-muted/50 text-[11px] mt-1">
-            {tx({ fr: 'Le courriel ne peut pas etre modifie ici.', en: 'Email cannot be changed here.', es: 'El correo no se puede cambiar aqui.' })}
+            {tx({ fr: 'Le courriel ne peut pas être modifié ici.', en: 'Email cannot be changed here.', es: 'El correo no se puede cambiar aqui.' })}
           </p>
         </div>
       </div>
@@ -547,7 +547,7 @@ function Account() {
             <div>
               <p className="text-heading text-base">--------</p>
               <p className="text-grey-muted text-sm mt-1">
-                {tx({ fr: 'Change ton mot de passe regulierement pour securiser ton compte.', en: 'Change your password regularly to secure your account.', es: 'Cambia tu contrasena regularmente para proteger tu cuenta.' })}
+                {tx({ fr: 'Change ton mot de passe régulièrement pour sécuriser ton compte.', en: 'Change your password regularly to secure your account.', es: 'Cambia tu contrasena regularmente para proteger tu cuenta.' })}
               </p>
             </div>
             <button
@@ -567,7 +567,7 @@ function Account() {
         </h3>
         <p className="text-heading text-base">{user?.email}</p>
         <p className="text-grey-muted text-sm mt-1">
-          {tx({ fr: 'L\'email est utilise pour la connexion et les notifications de commande.', en: 'Email is used for login and order notifications.', es: 'El correo se usa para iniciar sesion y notificaciones de pedidos.' })}
+          {tx({ fr: 'L\'email est utilisé pour la connexion et les notifications de commande.', en: 'Email is used for login and order notifications.', es: 'El correo se usa para iniciar sesion y notificaciones de pedidos.' })}
         </p>
       </div>
       <div className="pt-6 mt-6 border-t border-red-500/10">
@@ -576,7 +576,7 @@ function Account() {
           {tx({ fr: 'Zone danger', en: 'Danger zone', es: 'Zona de peligro' })}
         </h3>
         <p className="text-grey-muted text-sm mb-3">
-          {tx({ fr: 'Deconnexion de tous les appareils.', en: 'Sign out from all devices.', es: 'Cerrar sesion en todos los dispositivos.' })}
+          {tx({ fr: 'Déconnexion de tous les appareils.', en: 'Sign out from all devices.', es: 'Cerrar sesion en todos los dispositivos.' })}
         </p>
         <button
           onClick={signOut}
@@ -678,7 +678,7 @@ function Account() {
                         className="flex items-center gap-1.5 text-accent font-medium hover:underline"
                       >
                         <Download size={12} />
-                        {tx({ fr: 'Telecharger le recu', en: 'Download receipt', es: 'Descargar recibo' })}
+                        {tx({ fr: 'Télécharger le reçu', en: 'Download receipt', es: 'Descargar recibo' })}
                       </button>
                       <Link
                         to="/boutique"
@@ -748,7 +748,7 @@ function Account() {
               </div>
               <button onClick={signOut} className="flex items-center gap-2 px-4 py-2 rounded-lg border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:border-red-500/50 transition-all text-sm font-semibold flex-shrink-0">
                 <LogOut size={16} />
-                <span className="hidden sm:inline">{tx({ fr: 'Deconnexion', en: 'Sign out', es: 'Cerrar sesion' })}</span>
+                <span className="hidden sm:inline">{tx({ fr: 'Déconnexion', en: 'Sign out', es: 'Cerrar sesion' })}</span>
               </button>
             </div>
           </div>
@@ -954,7 +954,7 @@ function Account() {
               </div>
               <button onClick={signOut} className="flex items-center gap-2 px-4 py-2 rounded-lg border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:border-red-500/50 transition-all text-sm font-semibold flex-shrink-0">
                 <LogOut size={16} />
-                <span className="hidden sm:inline">{tx({ fr: 'Deconnexion', en: 'Sign out', es: 'Cerrar sesion' })}</span>
+                <span className="hidden sm:inline">{tx({ fr: 'Déconnexion', en: 'Sign out', es: 'Cerrar sesion' })}</span>
               </button>
             </div>
           </div>
@@ -1174,7 +1174,7 @@ function Account() {
               </div>
               <button onClick={signOut} className="flex items-center gap-2 px-4 py-2 rounded-lg border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:border-red-500/50 transition-all text-sm font-semibold flex-shrink-0">
                 <LogOut size={16} />
-                <span className="hidden sm:inline">{tx({ fr: 'Deconnexion', en: 'Sign out', es: 'Cerrar sesion' })}</span>
+                <span className="hidden sm:inline">{tx({ fr: 'Déconnexion', en: 'Sign out', es: 'Cerrar sesion' })}</span>
               </button>
             </div>
 
@@ -1240,7 +1240,7 @@ function Account() {
                         {
                           icon: Heart,
                           value: ordersLoading ? '-' : orders.filter(o => o.status === 'delivered').length,
-                          label: tx({ fr: 'Livrees', en: 'Delivered', es: 'Entregados' }),
+                          label: tx({ fr: 'Livrées', en: 'Delivered', es: 'Entregados' }),
                           color: 'text-green-400',
                           bgColor: 'bg-green-500/10',
                         },
@@ -1344,7 +1344,7 @@ function Account() {
                         </div>
                         <p className="text-grey-muted text-xs mb-4">
                           {tx({
-                            fr: 'Partage ton lien et recois 10% de rabais sur ta prochaine commande quand ton ami commande.',
+                            fr: 'Partage ton lien et reçois 10% de rabais sur ta prochaine commande quand ton ami commande.',
                             en: 'Share your link and get 10% off your next order when your friend orders.',
                             es: 'Comparte tu enlace y recibe 10% de descuento en tu proximo pedido cuando tu amigo ordene.',
                           })}

@@ -185,7 +185,7 @@ function AdminTemoignages() {
           className="btn-primary text-sm py-2 px-4 flex items-center gap-2"
         >
           <Link2 size={16} />
-          {tx({ fr: 'Generer un lien', en: 'Generate link', es: 'Generar enlace' })}
+          {tx({ fr: 'Générer un lien', en: 'Generate link', es: 'Generar enlace' })}
         </button>
       </div>
 
@@ -201,7 +201,7 @@ function AdminTemoignages() {
             <div className="p-5 rounded-xl bg-glass bg-accent/5">
               <h3 className="text-heading font-heading font-bold mb-3 flex items-center gap-2">
                 <Send size={16} className="text-accent" />
-                {tx({ fr: 'Generer un lien de temoignage', en: 'Generate testimonial link', es: 'Generar enlace de testimonio' })}
+                {tx({ fr: 'Générer un lien de témoignage', en: 'Generate testimonial link', es: 'Generar enlace de testimonio' })}
               </h3>
 
               {!generatedLink ? (
@@ -227,7 +227,7 @@ function AdminTemoignages() {
                     disabled={generating}
                     className="btn-primary text-sm py-2.5 px-6 disabled:opacity-50"
                   >
-                    {generating ? <Loader2 size={16} className="animate-spin" /> : tx({ fr: 'Generer', en: 'Generate', es: 'Generar' })}
+                    {generating ? <Loader2 size={16} className="animate-spin" /> : tx({ fr: 'Générer', en: 'Generate', es: 'Generar' })}
                   </button>
                 </form>
               ) : (
@@ -252,7 +252,7 @@ function AdminTemoignages() {
                     </button>
                   </div>
                   <button onClick={resetGenerate} className="text-xs text-grey-muted hover:text-heading">
-                    {tx({ fr: 'Generer un autre lien', en: 'Generate another link', es: 'Generar otro enlace' })}
+                    {tx({ fr: 'Générer un autre lien', en: 'Generate another link', es: 'Generar otro enlace' })}
                   </button>
                 </div>
               )}
@@ -269,7 +269,7 @@ function AdminTemoignages() {
       ) : items.length === 0 ? (
         <div className="text-center py-20 text-grey-muted">
           <Star size={48} className="mx-auto mb-4 opacity-30" />
-          <p>{tx({ fr: 'Aucun temoignage', en: 'No testimonials', es: 'Sin testimonios' })}</p>
+          <p>{tx({ fr: 'Aucun témoignage', en: 'No testimonials', es: 'Sin testimonios' })}</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -389,7 +389,7 @@ function AdminTemoignages() {
                           <p className="text-grey-muted text-sm italic flex items-center gap-2">
                             <Clock size={14} />
                             {tx({
-                              fr: 'Le client n\'a pas encore soumis son temoignage.',
+                              fr: 'Le client n\'a pas encore soumis son témoignage.',
                               en: 'The client has not submitted their testimonial yet.',
                               es: 'El cliente aun no ha enviado su testimonio.',
                             })}
@@ -473,7 +473,7 @@ function AdminTemoignages() {
                         {confirmDelete === item.documentId && (
                           <div className="flex items-center gap-2 p-3 rounded-lg bg-red-500/10 bg-red-500/5">
                             <span className="text-red-400 text-xs flex-1">
-                              {tx({ fr: 'Supprimer ce temoignage?', en: 'Delete this testimonial?', es: 'Eliminar este testimonio?' })}
+                              {tx({ fr: 'Supprimer ce témoignage?', en: 'Delete this testimonial?', es: 'Eliminar este testimonio?' })}
                             </span>
                             <button
                               onClick={() => handleDelete(item.documentId)}

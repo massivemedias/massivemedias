@@ -335,10 +335,10 @@ function AdminDepenses() {
   const fmt = (v) => parseFloat(v || 0).toFixed(2);
 
   const summaryCards = [
-    { label: tx({ fr: 'Total depenses', en: 'Total expenses', es: 'Total gastos' }), value: summary ? `${fmt(summary.total)}$` : '-', icon: Receipt, accent: 'text-accent' },
-    { label: tx({ fr: 'TPS payee', en: 'GST paid', es: 'TPS pagado' }), value: summary ? `${fmt(summary.tps)}$` : '-', icon: DollarSign, accent: 'text-blue-400' },
-    { label: tx({ fr: 'TVQ payee', en: 'QST paid', es: 'TVQ pagado' }), value: summary ? `${fmt(summary.tvq)}$` : '-', icon: DollarSign, accent: 'text-purple-400' },
-    { label: tx({ fr: 'Deductible', en: 'Deductible', es: 'Deducible' }), value: summary ? `${fmt(summary.deductible)}$` : '-', icon: CheckCircle, accent: 'text-green-400' },
+    { label: tx({ fr: 'Total dépenses', en: 'Total expenses', es: 'Total gastos' }), value: summary ? `${fmt(summary.total)}$` : '-', icon: Receipt, accent: 'text-accent' },
+    { label: tx({ fr: 'TPS payée', en: 'GST paid', es: 'TPS pagado' }), value: summary ? `${fmt(summary.tps)}$` : '-', icon: DollarSign, accent: 'text-blue-400' },
+    { label: tx({ fr: 'TVQ payée', en: 'QST paid', es: 'TVQ pagado' }), value: summary ? `${fmt(summary.tvq)}$` : '-', icon: DollarSign, accent: 'text-purple-400' },
+    { label: tx({ fr: 'Déductible', en: 'Deductible', es: 'Deducible' }), value: summary ? `${fmt(summary.deductible)}$` : '-', icon: CheckCircle, accent: 'text-green-400' },
   ];
 
   return (
@@ -387,7 +387,7 @@ function AdminDepenses() {
                           `Massive Medias - Bilan annuel ${summaryYear}`,
                           `NEQ: 2269057891 | TPS: 732457635RT0001 | TVQ: 4012577678TQ0001`,
                           '',
-                          'Mois,Revenus,Depenses,TPS payee,TVQ payee,Bilan',
+                          'Mois,Revenus,Dépenses,TPS payée,TVQ payée,Bilan',
                           ...months.map(([key, m]) => {
                             const balance = m.revenue - m.expenses;
                             return `${mNames[parseInt(key) - 1]},${fmt(m.revenue)},${fmt(m.expenses)},${fmt(m.tps)},${fmt(m.tvq)},${fmt(balance)}`;
@@ -400,7 +400,7 @@ function AdminDepenses() {
                           `Payee sur achats,${fmt(yearData.totals.tps)},${fmt(yearData.totals.tvq)}`,
                           `Net a remettre,${fmt(yearData.totals.revenueTps - yearData.totals.tps)},${fmt(yearData.totals.revenueTvq - yearData.totals.tvq)}`,
                           '',
-                          `Depenses deductibles,${fmt(yearData.totals.deductible)}`,
+                          `Dépenses déductibles,${fmt(yearData.totals.deductible)}`,
                         ];
                         downloadCSV(`massive-bilan-${summaryYear}.csv`, lines.join('\n'));
                       }}
@@ -423,7 +423,7 @@ function AdminDepenses() {
                         <tr className="border-b border-white/5">
                           <th className="text-left py-2 text-grey-muted font-semibold">{tx({ fr: 'Mois', en: 'Month', es: 'Mes' })}</th>
                           <th className="text-right py-2 text-green-400 font-semibold">{tx({ fr: 'Revenus', en: 'Revenue', es: 'Ingresos' })}</th>
-                          <th className="text-right py-2 text-red-400 font-semibold">{tx({ fr: 'Depenses', en: 'Expenses', es: 'Gastos' })}</th>
+                          <th className="text-right py-2 text-red-400 font-semibold">{tx({ fr: 'Dépenses', en: 'Expenses', es: 'Gastos' })}</th>
                           <th className="text-right py-2 text-blue-400 font-semibold">TPS</th>
                           <th className="text-right py-2 text-purple-400 font-semibold">TVQ</th>
                           <th className="text-right py-2 text-heading font-semibold">{tx({ fr: 'Bilan', en: 'Balance', es: 'Balance' })}</th>
@@ -479,7 +479,7 @@ function AdminDepenses() {
                       <p className="text-sm font-bold text-green-400">{fmt(yearData.totals.revenueTps)}$</p>
                     </div>
                     <div className="rounded-lg bg-accent/5 p-3">
-                      <p className="text-[10px] text-grey-muted uppercase tracking-wider mb-1">{tx({ fr: 'TPS payee', en: 'GST paid', es: 'TPS pagado' })}</p>
+                      <p className="text-[10px] text-grey-muted uppercase tracking-wider mb-1">{tx({ fr: 'TPS payée', en: 'GST paid', es: 'TPS pagado' })}</p>
                       <p className="text-sm font-bold text-red-400">{fmt(yearData.totals.tps)}$</p>
                     </div>
                     <div className="rounded-lg bg-accent/5 p-3">
@@ -487,7 +487,7 @@ function AdminDepenses() {
                       <p className="text-sm font-bold text-green-400">{fmt(yearData.totals.revenueTvq)}$</p>
                     </div>
                     <div className="rounded-lg bg-accent/5 p-3">
-                      <p className="text-[10px] text-grey-muted uppercase tracking-wider mb-1">{tx({ fr: 'TVQ payee', en: 'QST paid', es: 'TVQ pagado' })}</p>
+                      <p className="text-[10px] text-grey-muted uppercase tracking-wider mb-1">{tx({ fr: 'TVQ payée', en: 'QST paid', es: 'TVQ pagado' })}</p>
                       <p className="text-sm font-bold text-red-400">{fmt(yearData.totals.tvq)}$</p>
                     </div>
                   </div>
@@ -507,7 +507,7 @@ function AdminDepenses() {
                       </p>
                     </div>
                     <div className="flex-1 rounded-lg bg-accent/5 p-3">
-                      <p className="text-[10px] text-grey-muted uppercase tracking-wider mb-1">{tx({ fr: 'Depenses deductibles', en: 'Deductible expenses', es: 'Gastos deducibles' })}</p>
+                      <p className="text-[10px] text-grey-muted uppercase tracking-wider mb-1">{tx({ fr: 'Dépenses déductibles', en: 'Deductible expenses', es: 'Gastos deducibles' })}</p>
                       <p className="text-lg font-bold text-green-400">{fmt(yearData.totals.deductible)}$</p>
                     </div>
                   </div>
@@ -776,14 +776,14 @@ function AdminDepenses() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <input type="text" value={formData.receiptNumber} onChange={(e) => setFormData(p => ({ ...p, receiptNumber: e.target.value }))}
-                placeholder={tx({ fr: 'No. facture / recu', en: 'Invoice / receipt #', es: 'No. factura / recibo' })} className="input-field text-sm" />
+                placeholder={tx({ fr: 'No. facture / reçu', en: 'Invoice / receipt #', es: 'No. factura / recibo' })} className="input-field text-sm" />
               <textarea value={formData.notes} onChange={(e) => setFormData(p => ({ ...p, notes: e.target.value }))}
                 placeholder={tx({ fr: 'Notes', en: 'Notes', es: 'Notas' })} rows={1} className="input-field text-sm resize-none" />
             </div>
             <div className="flex items-center gap-4 flex-wrap">
               <label className="flex items-center gap-2 text-sm text-heading cursor-pointer">
                 <input type="checkbox" checked={formData.taxDeductible} onChange={(e) => setFormData(p => ({ ...p, taxDeductible: e.target.checked }))} className="w-4 h-4 accent-accent" />
-                {tx({ fr: 'Deductible d\'impot', en: 'Tax deductible', es: 'Deducible' })}
+                {tx({ fr: 'Déductible d\'impôt', en: 'Tax deductible', es: 'Deducible' })}
               </label>
 
               {/* Receipt upload */}
@@ -791,7 +791,7 @@ function AdminDepenses() {
               <button type="button" onClick={() => fileInputRef.current?.click()} disabled={uploadingReceipt}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg card-bg shadow-lg shadow-black/20 text-xs text-grey-muted hover:text-heading transition-colors disabled:opacity-50">
                 {uploadingReceipt ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
-                {formData.receiptUrl ? tx({ fr: 'Recu joint', en: 'Receipt attached', es: 'Recibo adjunto' }) : tx({ fr: 'Joindre recu', en: 'Attach receipt', es: 'Adjuntar recibo' })}
+                {formData.receiptUrl ? tx({ fr: 'Reçu joint', en: 'Receipt attached', es: 'Recibo adjunto' }) : tx({ fr: 'Joindre reçu', en: 'Attach receipt', es: 'Adjuntar recibo' })}
               </button>
               {formData.receiptUrl && (
                 <a href={formData.receiptUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-accent hover:underline flex items-center gap-1">
@@ -905,24 +905,24 @@ function AdminDepenses() {
                               </div>
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                 <input type="text" value={editData.receiptNumber} onChange={(e) => setEditData(p => ({ ...p, receiptNumber: e.target.value }))}
-                                  placeholder={tx({ fr: 'No. facture / recu', en: 'Invoice / receipt #', es: 'No. factura / recibo' })} className="input-field text-sm" />
+                                  placeholder={tx({ fr: 'No. facture / reçu', en: 'Invoice / receipt #', es: 'No. factura / recibo' })} className="input-field text-sm" />
                                 <textarea value={editData.notes} onChange={(e) => setEditData(p => ({ ...p, notes: e.target.value }))}
                                   placeholder={tx({ fr: 'Notes', en: 'Notes', es: 'Notas' })} rows={1} className="input-field text-sm resize-none" />
                               </div>
                               <div className="flex items-center gap-3 flex-wrap">
                                 <label className="flex items-center gap-2 text-sm text-heading cursor-pointer">
                                   <input type="checkbox" checked={editData.taxDeductible} onChange={(e) => setEditData(p => ({ ...p, taxDeductible: e.target.checked }))} className="w-4 h-4 accent-accent" />
-                                  {tx({ fr: 'Deductible', en: 'Deductible', es: 'Deducible' })}
+                                  {tx({ fr: 'Déductible', en: 'Deductible', es: 'Deducible' })}
                                 </label>
                                 <input type="file" ref={editFileRef} onChange={handleEditReceiptUpload} accept="image/*,.pdf" className="hidden" />
                                 <button type="button" onClick={() => editFileRef.current?.click()} disabled={uploadingEditReceipt}
                                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg card-bg shadow-lg shadow-black/20 text-xs text-grey-muted hover:text-heading transition-colors disabled:opacity-50">
                                   {uploadingEditReceipt ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
-                                  {editData.receiptUrl ? tx({ fr: 'Recu joint', en: 'Receipt attached', es: 'Recibo adjunto' }) : tx({ fr: 'Joindre recu', en: 'Attach receipt', es: 'Adjuntar recibo' })}
+                                  {editData.receiptUrl ? tx({ fr: 'Reçu joint', en: 'Receipt attached', es: 'Recibo adjunto' }) : tx({ fr: 'Joindre reçu', en: 'Attach receipt', es: 'Adjuntar recibo' })}
                                 </button>
                                 {editData.receiptUrl && (
                                   <a href={editData.receiptUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-accent hover:underline flex items-center gap-1">
-                                    <ExternalLink size={10} /> {tx({ fr: 'Voir recu', en: 'View receipt', es: 'Ver recibo' })}
+                                    <ExternalLink size={10} /> {tx({ fr: 'Voir reçu', en: 'View receipt', es: 'Ver recibo' })}
                                   </a>
                                 )}
                                 <div className="ml-auto flex items-center gap-2">
@@ -950,7 +950,7 @@ function AdminDepenses() {
                               {/* Info grid */}
                               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
                                 {item.receiptNumber && (
-                                  <div><span className="text-grey-muted text-xs">{tx({ fr: 'No. recu:', en: 'Receipt #:', es: 'No. recibo:' })} </span><span className="text-heading">{item.receiptNumber}</span></div>
+                                  <div><span className="text-grey-muted text-xs">{tx({ fr: 'No. reçu:', en: 'Receipt #:', es: 'No. recibo:' })} </span><span className="text-heading">{item.receiptNumber}</span></div>
                                 )}
                                 {item.notes && (
                                   <div className="col-span-2"><span className="text-grey-muted text-xs">Notes: </span><span className="text-heading whitespace-pre-wrap">{item.notes}</span></div>

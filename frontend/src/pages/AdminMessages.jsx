@@ -577,15 +577,29 @@ function AdminMessages() {
                                       {tx({ fr: 'Envoyer', en: 'Send', es: 'Enviar' })}
                                     </button>
                                   </div>
-                                  {replySuccess === item._uid && <p className="text-xs text-green-400 font-semibold">{tx({ fr: 'Reponse envoyee!', en: 'Reply sent!', es: 'Respuesta enviada!' })}</p>}
+                                  {replySuccess === item._uid && <p className="text-xs text-green-400 font-semibold">{tx({ fr: 'Réponse envoyée!', en: 'Reply sent!', es: 'Respuesta enviada!' })}</p>}
                                   {replySuccess === false && <p className="text-xs text-red-400 font-semibold">{tx({ fr: 'Erreur lors de l\'envoi', en: 'Error sending reply', es: 'Error al enviar' })}</p>}
                                 </div>
                               ) : (
                                 <div className="flex items-center gap-2">
                                   <button onClick={(e) => { e.stopPropagation(); setReplyingTo(item._uid); setReplyText(''); setReplySuccess(null); }}
                                     className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-accent/20 text-accent text-sm font-semibold hover:bg-accent/30 transition-colors">
-                                    <Reply size={14} /> {tx({ fr: 'Repondre', en: 'Reply', es: 'Responder' })}
+                                    <Reply size={14} /> {tx({ fr: 'Répondre', en: 'Reply', es: 'Responder' })}
                                   </button>
+                                  <button onClick={(e) => { e.stopPropagation(); handleDelete(item); }}
+                                    disabled={deleting === item._uid}
+                                    className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all bg-red-500/10 text-red-400 hover:bg-red-500/20 disabled:opacity-50">
+                                    {deleting === item._uid ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
+                                    {confirmDelete === item._uid
+                                      ? tx({ fr: 'Confirmer', en: 'Confirm', es: 'Confirmar' })
+                                      : tx({ fr: 'Supprimer', en: 'Delete', es: 'Eliminar' })}
+                                  </button>
+                                  {confirmDelete === item._uid && (
+                                    <button onClick={(e) => { e.stopPropagation(); setConfirmDelete(null); }}
+                                      className="px-3 py-2 rounded-lg text-xs font-semibold text-grey-muted hover:text-heading transition-colors">
+                                      {tx({ fr: 'Annuler', en: 'Cancel', es: 'Cancelar' })}
+                                    </button>
+                                  )}
                                 </div>
                               )}
                             </>
@@ -643,7 +657,7 @@ function AdminMessages() {
                                     </button>
                                   </div>
                                   {replySuccess === item._uid && (
-                                    <p className="text-xs text-green-400 font-semibold">{tx({ fr: 'Reponse envoyee!', en: 'Reply sent!', es: 'Respuesta enviada!' })}</p>
+                                    <p className="text-xs text-green-400 font-semibold">{tx({ fr: 'Réponse envoyée!', en: 'Reply sent!', es: 'Respuesta enviada!' })}</p>
                                   )}
                                   {replySuccess === false && (
                                     <p className="text-xs text-red-400 font-semibold">{tx({ fr: 'Erreur lors de l\'envoi', en: 'Error sending reply', es: 'Error al enviar' })}</p>
@@ -656,7 +670,7 @@ function AdminMessages() {
                                     className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-accent/20 text-accent text-sm font-semibold hover:bg-accent/30 transition-colors"
                                   >
                                     <Reply size={14} />
-                                    {tx({ fr: 'Repondre par email', en: 'Reply by email', es: 'Responder por email' })}
+                                    {tx({ fr: 'Répondre par email', en: 'Reply by email', es: 'Responder por email' })}
                                   </button>
                                   <button onClick={(e) => { e.stopPropagation(); handleDelete(item); }}
                                     disabled={deleting === item._uid}

@@ -87,7 +87,7 @@ function ConfiguratorWeb() {
       </Link>
 
       <p className="text-grey-muted text-xs mt-3 text-center">
-        {tx({ fr: '15+ ans d\'experience. Chaque projet est unique.', en: '15+ years of experience. Every project is unique.', es: '15+ anos de experiencia. Cada proyecto es unico.' })}
+        {tx({ fr: '15+ ans d\'expérience. Chaque projet est unique.', en: '15+ years of experience. Every project is unique.', es: '15+ anos de experiencia. Cada proyecto es unico.' })}
       </p>
     </>
   );

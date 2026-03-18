@@ -73,7 +73,7 @@ function ConfiguratorDesign() {
         <FileUpload
           files={uploadedFiles}
           onFilesChange={setUploadedFiles}
-          label={tx({ fr: 'References', en: 'References', es: 'Referencias' })}
+          label={tx({ fr: 'Références', en: 'References', es: 'Referencias' })}
           compact
         />
         <div>

@@ -51,10 +51,10 @@ function AdminClients() {
   ];
 
   const sortOptions = [
-    { value: 'lastOrderDate:desc', fr: 'Derniere commande', en: 'Last order', es: 'Ultimo pedido' },
+    { value: 'lastOrderDate:desc', fr: 'Dernière commande', en: 'Last order', es: 'Ultimo pedido' },
     { value: 'totalSpent:desc', fr: 'Plus gros client', en: 'Highest spender', es: 'Mayor gasto' },
     { value: 'orderCount:desc', fr: 'Plus de commandes', en: 'Most orders', es: 'Mas pedidos' },
-    { value: 'createdAt:desc', fr: 'Plus recent', en: 'Newest', es: 'Mas reciente' },
+    { value: 'createdAt:desc', fr: 'Plus récent', en: 'Newest', es: 'Mas reciente' },
   ];
 
   const toggleExpand = (id) => setExpandedId(expandedId === id ? null : id);
@@ -96,9 +96,9 @@ function AdminClients() {
           <div className="hidden md:grid grid-cols-[1fr_1fr_120px_80px_100px_40px] gap-3 px-4 py-3 text-xs font-semibold text-grey-muted uppercase tracking-wider border-b border-white/5">
             <span>{tx({ fr: 'Client', en: 'Client', es: 'Cliente' })}</span>
             <span>{tx({ fr: 'Contact', en: 'Contact', es: 'Contacto' })}</span>
-            <span>{tx({ fr: 'Depense', en: 'Spent', es: 'Gastado' })}</span>
+            <span>{tx({ fr: 'Dépensé', en: 'Spent', es: 'Gastado' })}</span>
             <span>{tx({ fr: 'Cmd', en: 'Orders', es: 'Ped' })}</span>
-            <span>{tx({ fr: 'Derniere cmd', en: 'Last order', es: 'Ultimo ped' })}</span>
+            <span>{tx({ fr: 'Dernière cmd', en: 'Last order', es: 'Ultimo ped' })}</span>
             <span></span>
           </div>
 
@@ -193,7 +193,7 @@ function AdminClients() {
                             <div className="rounded-lg bg-glass p-3">
                               <h4 className="text-xs font-semibold text-grey-muted uppercase tracking-wider mb-2 flex items-center gap-1.5">
                                 <MapPin size={12} />
-                                {tx({ fr: 'Derniere adresse', en: 'Last address', es: 'Ultima direccion' })}
+                                {tx({ fr: 'Dernière adresse', en: 'Last address', es: 'Ultima direccion' })}
                               </h4>
                               {addr ? (
                                 <div className="text-sm text-heading space-y-0.5">
@@ -216,11 +216,11 @@ function AdminClients() {
                                   <span className="text-heading font-semibold">{client.orderCount || 0}</span>
                                 </div>
                                 <div className="flex justify-between">
-                                  <span className="text-grey-muted">{tx({ fr: 'Total depense', en: 'Total spent', es: 'Total gastado' })}</span>
+                                  <span className="text-grey-muted">{tx({ fr: 'Total dépensé', en: 'Total spent', es: 'Total gastado' })}</span>
                                   <span className="text-heading font-bold">{formatMoney(client.totalSpent)}</span>
                                 </div>
                                 <div className="flex justify-between">
-                                  <span className="text-grey-muted">{tx({ fr: 'Derniere commande', en: 'Last order', es: 'Ultimo pedido' })}</span>
+                                  <span className="text-grey-muted">{tx({ fr: 'Dernière commande', en: 'Last order', es: 'Ultimo pedido' })}</span>
                                   <span className="text-heading">{formatDate(client.lastOrderDate)}</span>
                                 </div>
                                 <div className="flex justify-between">

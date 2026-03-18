@@ -153,7 +153,7 @@ function ArtistPartnershipForm() {
               </p>
               <p className="text-grey-muted text-sm">
                 {tx({
-                  fr: 'Tu dois etre connecte pour signer le contrat et soumettre ta candidature.',
+                  fr: 'Tu dois être connecté pour signer le contrat et soumettre ta candidature.',
                   en: 'You must be signed in to sign the contract and submit your application.',
                   es: 'Debes estar conectado para firmar el contrato y enviar tu solicitud.',
                 })}
@@ -189,7 +189,7 @@ function ArtistPartnershipForm() {
             type="button"
             onClick={() => generateContractPDF(lang, contractText)}
             className="btn-outline text-xs px-3 py-1.5 flex items-center gap-1.5 flex-shrink-0 ml-4"
-            title={tx({ fr: 'Telecharger en PDF', en: 'Download as PDF', es: 'Descargar en PDF' })}
+            title={tx({ fr: 'Télécharger en PDF', en: 'Download as PDF', es: 'Descargar en PDF' })}
           >
             <Download size={14} />
             PDF

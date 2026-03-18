@@ -26,7 +26,7 @@ function Temoignage() {
       <>
         <SEO
           title={tx({ fr: 'Temoignage', en: 'Testimonial', es: 'Testimonio' })}
-          description={tx({ fr: 'Partagez votre experience avec Massive Medias', en: 'Share your experience with Massive Medias', es: 'Comparta su experiencia con Massive Medias' })}
+          description={tx({ fr: 'Partagez votre expérience avec Massive Medias', en: 'Share your experience with Massive Medias', es: 'Comparta su experiencia con Massive Medias' })}
         />
         <div className="section-container pt-32 pb-20 min-h-screen">
           <motion.div
@@ -40,7 +40,7 @@ function Temoignage() {
             </h1>
             <p className="text-grey-muted mb-6">
               {tx({
-                fr: 'Ce lien de temoignage est invalide ou a expire. Si vous avez recu un email de notre part, verifiez le lien.',
+                fr: 'Ce lien de témoignage est invalide ou a expiré. Si vous avez reçu un email de notre part, vérifiez le lien.',
                 en: 'This testimonial link is invalid or expired. If you received an email from us, please check the link.',
                 es: 'Este enlace de testimonio es invalido o ha expirado. Si recibio un correo nuestro, verifique el enlace.',
               })}
@@ -78,14 +78,14 @@ function Temoignage() {
             </h1>
             <p className="text-grey-muted text-lg mb-2">
               {tx({
-                fr: 'Votre temoignage compte enormement pour nous.',
+                fr: 'Votre témoignage compte énormément pour nous.',
                 en: 'Your testimonial means a lot to us.',
                 es: 'Su testimonio significa mucho para nosotros.',
               })}
             </p>
             <p className="text-grey-muted mb-8">
               {tx({
-                fr: 'Il sera affiche sur notre site apres verification.',
+                fr: 'Il sera affiché sur notre site après vérification.',
                 en: 'It will be displayed on our website after review.',
                 es: 'Se mostrara en nuestro sitio web despues de la revision.',
               })}
@@ -126,13 +126,13 @@ function Temoignage() {
       const msg = err.response?.data?.error?.message || err.response?.data?.error;
       if (msg?.includes('deja ete soumis') || msg?.includes('already')) {
         setError(tx({
-          fr: 'Ce temoignage a deja ete soumis. Merci!',
+          fr: 'Ce témoignage a déjà été soumis. Merci!',
           en: 'This testimonial has already been submitted. Thank you!',
           es: 'Este testimonio ya fue enviado. Gracias!',
         }));
       } else if (msg?.includes('invalide') || msg?.includes('invalid') || err.response?.status === 404) {
         setError(tx({
-          fr: 'Ce lien est invalide ou a expire.',
+          fr: 'Ce lien est invalide ou a expiré.',
           en: 'This link is invalid or expired.',
           es: 'Este enlace es invalido o ha expirado.',
         }));
@@ -152,7 +152,7 @@ function Temoignage() {
     <>
       <SEO
         title={tx({ fr: 'Votre avis - Massive Medias', en: 'Your review - Massive Medias', es: 'Su opinion - Massive Medias' })}
-        description={tx({ fr: 'Partagez votre experience avec Massive Medias', en: 'Share your experience with Massive Medias', es: 'Comparta su experiencia con Massive Medias' })}
+        description={tx({ fr: 'Partagez votre expérience avec Massive Medias', en: 'Share your experience with Massive Medias', es: 'Comparta su experiencia con Massive Medias' })}
       />
 
       <div className="section-container pt-32 pb-20 min-h-screen">
@@ -172,7 +172,7 @@ function Temoignage() {
             </h1>
             <p className="text-grey-muted text-lg">
               {tx({
-                fr: 'Prenez un moment pour partager votre experience avec Massive Medias. Votre temoignage aide d\'autres clients a nous decouvrir.',
+                fr: 'Prenez un moment pour partager votre expérience avec Massive Medias. Votre témoignage aide d\'autres clients à nous découvrir.',
                 en: 'Take a moment to share your experience with Massive Medias. Your testimonial helps other customers discover us.',
                 es: 'Tome un momento para compartir su experiencia con Massive Medias. Su testimonio ayuda a otros clientes a descubrirnos.',
               })}
@@ -212,7 +212,7 @@ function Temoignage() {
             {/* Temoignage */}
             <div>
               <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-2">
-                {tx({ fr: 'Votre temoignage', en: 'Your testimonial', es: 'Su testimonio' })} *
+                {tx({ fr: 'Votre témoignage', en: 'Your testimonial', es: 'Su testimonio' })} *
               </label>
               <textarea
                 value={text}
@@ -220,7 +220,7 @@ function Temoignage() {
                 rows={5}
                 required
                 placeholder={tx({
-                  fr: 'Racontez votre experience: le service recu, la qualite, ce que vous avez le plus apprecie...',
+                  fr: 'Racontez votre expérience: le service reçu, la qualité, ce que vous avez le plus apprécié...',
                   en: 'Tell us about your experience: the service received, the quality, what you appreciated most...',
                   es: 'Cuentenos su experiencia: el servicio recibido, la calidad, lo que mas aprecio...',
                 })}
@@ -284,14 +284,14 @@ function Temoignage() {
               ) : (
                 <span className="flex items-center gap-2">
                   <Send size={18} />
-                  {tx({ fr: 'Envoyer mon temoignage', en: 'Send my testimonial', es: 'Enviar mi testimonio' })}
+                  {tx({ fr: 'Envoyer mon témoignage', en: 'Send my testimonial', es: 'Enviar mi testimonio' })}
                 </span>
               )}
             </button>
 
             <p className="text-grey-muted text-xs text-center">
               {tx({
-                fr: 'Votre temoignage pourra etre affiche sur notre site web. Nous nous reservons le droit de moderer le contenu.',
+                fr: 'Votre témoignage pourra être affiché sur notre site web. Nous nous réservons le droit de modérer le contenu.',
                 en: 'Your testimonial may be displayed on our website. We reserve the right to moderate content.',
                 es: 'Su testimonio podra mostrarse en nuestro sitio web. Nos reservamos el derecho de moderar el contenido.',
               })}

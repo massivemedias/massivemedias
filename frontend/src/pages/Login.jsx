@@ -57,7 +57,7 @@ function Login() {
       setIsRecoveryFlow(false);
       if (errorCode === 'otp_expired') {
         setError(tx({
-          fr: 'Le lien a expire. Demande un nouveau lien de reinitialisation.',
+          fr: 'Le lien a expiré. Demande un nouveau lien de réinitialisation.',
           en: 'The link has expired. Request a new reset link.',
           es: 'El enlace ha expirado. Solicita un nuevo enlace de restablecimiento.',
         }));
@@ -107,7 +107,7 @@ function Login() {
     try {
       if (mode === 'verify-otp') {
         if (!otpCode || otpCode.length < 6) {
-          setError(tx({ fr: 'Entre le code a 6 chiffres recu par courriel.', en: 'Enter the 6-digit code received by email.', es: 'Ingresa el codigo de 6 digitos recibido por correo.' }));
+          setError(tx({ fr: 'Entre le code à 6 chiffres reçu par courriel.', en: 'Enter the 6-digit code received by email.', es: 'Ingresa el codigo de 6 digitos recibido por correo.' }));
           return;
         }
         const { error: err } = await verifyOtp(email, otpCode);
@@ -225,7 +225,7 @@ function Login() {
     {
       icon: Shield,
       title: tx({ fr: 'Parrainage 10%', en: 'Referral 10%', es: 'Referidos 10%' }),
-      desc: tx({ fr: 'Invite un ami, recois 10% de rabais', en: 'Invite a friend, get 10% off', es: 'Invita a un amigo, recibe 10% de descuento' }),
+      desc: tx({ fr: 'Invite un ami, reçois 10% de rabais', en: 'Invite a friend, get 10% off', es: 'Invita a un amigo, recibe 10% de descuento' }),
     },
   ];
 
@@ -281,7 +281,7 @@ function Login() {
                   </p>
                   <p className="text-grey-muted text-xs mb-6">
                     {tx({
-                      fr: 'Si tu ne recois rien, assure-toi que l\'email est bien celui utilise pour creer ton compte.',
+                      fr: 'Si tu ne reçois rien, assure-toi que l\'email est bien celui utilisé pour créer ton compte.',
                       en: 'If you don\'t receive anything, make sure the email matches the one used to create your account.',
                       es: 'Si no recibes nada, asegurate de que el correo es el que usaste para crear tu cuenta.',
                     })}
@@ -560,7 +560,7 @@ function Login() {
             >
               <h2 className="text-lg font-heading font-bold text-heading mb-2">
                 {mode === 'register'
-                  ? tx({ fr: 'Pourquoi creer un compte?', en: 'Why create an account?', es: 'Por que crear una cuenta?' })
+                  ? tx({ fr: 'Pourquoi créer un compte?', en: 'Why create an account?', es: 'Por que crear una cuenta?' })
                   : tx({ fr: 'Avantages membres', en: 'Member benefits', es: 'Beneficios de miembros' })}
               </h2>
               <p className="text-grey-muted text-sm mb-6">

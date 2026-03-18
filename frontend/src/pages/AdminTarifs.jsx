@@ -13,7 +13,7 @@ const SERVICE_PRICES = [
   { format: 'A4 (8.5x11")', studio: 20, museum: 35, frame: 30, notes: { fr: '', en: '', es: '' } },
   { format: 'A3 (11x17")', studio: 25, museum: 65, frame: 30, notes: { fr: '', en: '', es: '' } },
   { format: 'A3+ (13x19")', studio: 35, museum: 95, frame: 30, notes: { fr: '', en: '', es: '' } },
-  { format: 'A2 (18x24")', studio: null, museum: 110, frame: null, notes: { fr: '12 encres pigmentees seulement. Pas de frame.', en: '12 pigmented inks only. No frame.', es: '12 tintas pigmentadas solamente. Sin marco.' } },
+  { format: 'A2 (18x24")', studio: null, museum: 110, frame: null, notes: { fr: '12 encres pigmentées seulement. Pas de frame.', en: '12 pigmented inks only. No frame.', es: '12 tintas pigmentadas solamente. Sin marco.' } },
 ];
 
 const ARTIST_PRICES = [
@@ -126,7 +126,7 @@ function AdminTarifs() {
     lines.push('IMPRESSION FINE ART');
     lines.push('-'.repeat(55));
     lines.push('');
-    lines.push(tx({ fr: 'SERIE STUDIO (4 encres pigmentees)', en: 'STUDIO SERIES (4 pigmented inks)', es: 'SERIE ESTUDIO (4 tintas pigmentadas)' }));
+    lines.push(tx({ fr: 'SÉRIE STUDIO (4 encres pigmentées)', en: 'STUDIO SERIES (4 pigmented inks)', es: 'SERIE ESTUDIO (4 tintas pigmentadas)' }));
     lines.push(`Format           | ${tx({ fr: 'Sans frame', en: 'No frame', es: 'Sin marco' })} | ${tx({ fr: 'Avec frame', en: 'With frame', es: 'Con marco' })}`);
     ARTIST_PRICES.forEach(p => {
       if (p.studio) {
@@ -134,13 +134,13 @@ function AdminTarifs() {
       }
     });
     lines.push('');
-    lines.push(tx({ fr: 'SERIE MUSEE (12 encres pigmentees)', en: 'MUSEUM SERIES (12 pigmented inks)', es: 'SERIE MUSEO (12 tintas pigmentadas)' }));
+    lines.push(tx({ fr: 'SÉRIE MUSÉE (12 encres pigmentées)', en: 'MUSEUM SERIES (12 pigmented inks)', es: 'SERIE MUSEO (12 tintas pigmentadas)' }));
     lines.push(`Format           | ${tx({ fr: 'Sans frame', en: 'No frame', es: 'Sin marco' })} | ${tx({ fr: 'Avec frame', en: 'With frame', es: 'Con marco' })}`);
     ARTIST_PRICES.forEach(p => {
       lines.push(`${p.format.padEnd(17)}| ${(p.museum + '$').padEnd(11)}| ${p.frame ? (p.museum + p.frame) + '$' : 'N/A'}`);
     });
     lines.push('');
-    lines.push(tx({ fr: '* A2 (18x24") = 12 encres pigmentees uniquement, pas de frame', en: '* A2 (18x24") = 12 pigmented inks only, no frame', es: '* A2 (18x24") = 12 tintas pigmentadas solamente, sin marco' }));
+    lines.push(tx({ fr: '* A2 (18x24") = 12 encres pigmentées uniquement, pas de frame', en: '* A2 (18x24") = 12 pigmented inks only, no frame', es: '* A2 (18x24") = 12 tintas pigmentadas solamente, sin marco' }));
     lines.push(tx({ fr: '* Frame = cadre noir ou blanc (+30$)', en: '* Frame = black or white frame (+30$)', es: '* Marco = marco negro o blanco (+30$)' }));
     lines.push('');
     lines.push(tx({ fr: 'PACKS STICKERS (design inclus)', en: 'STICKER PACKS (design included)', es: 'PACKS STICKERS (diseno incluido)' }));
@@ -218,7 +218,7 @@ function AdminTarifs() {
       doc.setFont('helvetica', 'normal');
       doc.setTextColor(60, 60, 60);
       doc.text(tx({
-        fr: 'Client achete print musee + frame = 105$. Massive 35$ (impression) + 30$ (frame) = 65$. Artiste = 40$ profit net.',
+        fr: 'Client achète print musée + frame = 105$. Massive 35$ (impression) + 30$ (frame) = 65$. Artiste = 40$ profit net.',
         en: 'Client buys museum print + frame = 105$. Massive 35$ (print) + 30$ (frame) = 65$. Artist = 40$ net profit.',
         es: 'Cliente compra print museo + marco = 105$. Massive 35$ (impresion) + 30$ (marco) = 65$. Artista = 40$ ganancia neta.',
       }), margin + 4, y + 13, { maxWidth: contentW - 8 });
@@ -255,7 +255,7 @@ function AdminTarifs() {
       };
 
       // --- Serie Studio (4 encres) ---
-      sectionTitle(tx({ fr: 'Serie Studio - 4 encres pigmentees', en: 'Studio Series - 4 pigmented inks', es: 'Serie Estudio - 4 tintas pigmentadas' }));
+      sectionTitle(tx({ fr: 'Série Studio - 4 encres pigmentées', en: 'Studio Series - 4 pigmented inks', es: 'Serie Estudio - 4 tintas pigmentadas' }));
       addTable(
         ['Format', tx({ fr: 'Sans frame', en: 'No frame', es: 'Sin marco' }), tx({ fr: 'Avec frame', en: 'With frame', es: 'Con marco' }), 'Massive', tx({ fr: 'Artiste', en: 'Artist', es: 'Artista' })],
         ARTIST_PRICES.filter(p => p.studio).map(p => {
@@ -266,7 +266,7 @@ function AdminTarifs() {
       );
 
       // --- Serie Musee (12 encres) ---
-      sectionTitle(tx({ fr: 'Serie Musee - 12 encres pigmentees', en: 'Museum Series - 12 pigmented inks', es: 'Serie Museo - 12 tintas pigmentadas' }));
+      sectionTitle(tx({ fr: 'Série Musée - 12 encres pigmentées', en: 'Museum Series - 12 pigmented inks', es: 'Serie Museo - 12 tintas pigmentadas' }));
       addTable(
         ['Format', tx({ fr: 'Sans frame', en: 'No frame', es: 'Sin marco' }), tx({ fr: 'Avec frame', en: 'With frame', es: 'Con marco' }), 'Massive', tx({ fr: 'Artiste', en: 'Artist', es: 'Artista' })],
         ARTIST_PRICES.map((p, i) => {
@@ -280,7 +280,7 @@ function AdminTarifs() {
       doc.setFontSize(7);
       doc.setTextColor(...grey);
       doc.text([
-        tx({ fr: '* A2 (18x24") = 12 encres pigmentees uniquement, pas de frame disponible', en: '* A2 (18x24") = 12 pigmented inks only, no frame available', es: '* A2 = solo 12 tintas, sin marco' }),
+        tx({ fr: '* A2 (18x24") = 12 encres pigmentées uniquement, pas de frame disponible', en: '* A2 (18x24") = 12 pigmented inks only, no frame available', es: '* A2 = solo 12 tintas, sin marco' }),
         tx({ fr: '* Frame = cadre noir ou blanc (+30$)', en: '* Frame = black or white (+30$)', es: '* Marco = negro o blanco (+30$)' }),
         tx({ fr: '* Commission artiste = profit net, identique avec ou sans frame', en: '* Artist commission = net profit, same with or without frame', es: '* Comision = ganancia neta, igual con o sin marco' }),
       ], margin, y);
@@ -319,13 +319,13 @@ function AdminTarifs() {
         ['Redbubble', '~2-3$', tx({ fr: 'Impression a la demande', en: 'Print on demand', es: 'Impresion bajo demanda' }), tx({ fr: 'Frais 50% sur markup.', en: '50% markup fee.', es: 'Tarifa 50% sobre margen.' })],
         ['Printify', '~20-25$', tx({ fr: 'Variable (dropship)', en: 'Variable (dropship)', es: 'Variable (dropship)' }), tx({ fr: 'Tu geres tout (boutique, marketing, livraison)', en: 'You manage everything (store, marketing, shipping)', es: 'Gestionas todo (tienda, marketing, envio)' })],
         ['INPRNT', '~18$', tx({ fr: 'Giclee 8 encres', en: 'Giclee 8 inks', es: 'Giclee 8 tintas' }), tx({ fr: 'Sur invitation seulement', en: 'Invite only', es: 'Solo invitacion' })],
-        ['Massive Medias', '40-50$', tx({ fr: '12 encres musee', en: '12 inks museum', es: '12 tintas museo' }), tx({ fr: 'Zero gestion. Qualite superieure.', en: 'Zero management. Superior quality.', es: 'Cero gestion. Calidad superior.' })],
+        ['Massive Medias', '40-50$', tx({ fr: '12 encres musée', en: '12 inks museum', es: '12 tintas museo' }), tx({ fr: 'Zéro gestion. Qualité supérieure.', en: 'Zero management. Superior quality.', es: 'Cero gestion. Calidad superior.' })],
       ];
 
       autoTable(doc, {
         startY: y,
         margin: { left: margin, right: margin },
-        head: [[tx({ fr: 'Plateforme', en: 'Platform', es: 'Plataforma' }), tx({ fr: 'Artiste garde', en: 'Artist keeps', es: 'Artista conserva' }), tx({ fr: 'Qualite', en: 'Quality', es: 'Calidad' }), 'Notes']],
+        head: [[tx({ fr: 'Plateforme', en: 'Platform', es: 'Plataforma' }), tx({ fr: 'Artiste garde', en: 'Artist keeps', es: 'Artista conserva' }), tx({ fr: 'Qualité', en: 'Quality', es: 'Calidad' }), 'Notes']],
         body: competitorRows,
         theme: 'grid',
         headStyles: { fillColor: purple, textColor: white, fontSize: 8, fontStyle: 'bold' },
@@ -387,7 +387,7 @@ function AdminTarifs() {
     notes: 'Notes',
     product: tx({ fr: 'Produit', en: 'Product', es: 'Producto' }),
     service: 'Service',
-    delay: tx({ fr: 'Delai', en: 'Timeline', es: 'Plazo' }),
+    delay: tx({ fr: 'Délai', en: 'Timeline', es: 'Plazo' }),
     sizes: tx({ fr: 'Tailles', en: 'Sizes', es: 'Tallas' }),
     front: tx({ fr: 'Recto', en: 'Front', es: 'Anverso' }),
     frontBack: tx({ fr: 'Recto-verso', en: 'Front & back', es: 'Anverso-reverso' }),
@@ -427,9 +427,9 @@ function AdminTarifs() {
     { name: 'Redbubble', artistProfit: '~2-3$', quality: tx({ fr: 'Impression a la demande', en: 'Print on demand', es: 'Impresion bajo demanda' }), notes: tx({ fr: 'Frais plateforme 50% sur le markup depuis sept. 2025. Net ~2-3$ par vente.', en: 'Platform fee 50% on markup since Sept. 2025. Net ~2-3$ per sale.', es: 'Tarifa de plataforma 50% sobre el margen desde sept. 2025. Neto ~2-3$ por venta.' }), highlight: false },
     { name: 'Printify', artistProfit: '~20-25$', quality: tx({ fr: 'Variable (dropship)', en: 'Variable (dropship)', es: 'Variable (dropship)' }), notes: tx({ fr: 'Cout base ~10-12$ USD. MAIS: tu geres ta boutique, marketing, service client, livraison.', en: 'Base cost ~10-12$ USD. BUT: you manage your store, marketing, customer service, shipping.', es: 'Costo base ~10-12$ USD. PERO: gestionas tu tienda, marketing, servicio al cliente, envio.' }), highlight: 'printify' },
     { name: 'Printful', artistProfit: '~20$', quality: tx({ fr: 'Giclee 8 encres', en: 'Giclee 8 inks', es: 'Giclee 8 tintas' }), notes: tx({ fr: 'Cout base ~16$+ USD. Meme modele que Printify, tu geres tout.', en: 'Base cost ~16$+ USD. Same model as Printify, you manage everything.', es: 'Costo base ~16$+ USD. Mismo modelo que Printify, gestionas todo.' }), highlight: false },
-    { name: 'INPRNT', artistProfit: '~18$', quality: tx({ fr: "Giclee d'archives (8 encres)", en: 'Archival giclee (8 inks)', es: 'Giclee de archivo (8 tintas)' }), notes: tx({ fr: "Meilleure qualite en impression a la demande. Sur invitation. Print ~36$, artiste garde 18$.", en: 'Best print-on-demand quality. Invite-only. Print ~36$, artist keeps 18$.', es: 'Mejor calidad en impresion bajo demanda. Solo invitacion. Print ~36$, artista queda 18$.' }), highlight: false },
-    { name: 'Fine Art America', artistProfit: '~10-25$', quality: tx({ fr: "Giclee d'archives", en: 'Archival giclee', es: 'Giclee de archivo' }), notes: tx({ fr: 'Prix de base fixe + ton markup. Qualite correcte.', en: 'Fixed base price + your markup. Decent quality.', es: 'Precio base fijo + tu margen. Calidad correcta.' }), highlight: false },
-    { name: 'Massive Medias', artistProfit: '40-50$', quality: tx({ fr: '12 encres pigmentees, musee', en: '12 pigmented inks, museum', es: '12 tintas pigmentadas, museo' }), notes: tx({ fr: "Impression locale fine art. Zero gestion pour l'artiste. Qualite superieure a toute impression a la demande.", en: 'Local fine art printing. Zero management for the artist. Quality superior to all print-on-demand.', es: 'Impresion local fine art. Cero gestion para el artista. Calidad superior a toda impresion bajo demanda.' }), highlight: 'massive' },
+    { name: 'INPRNT', artistProfit: '~18$', quality: tx({ fr: "Giclee d'archives (8 encres)", en: 'Archival giclee (8 inks)', es: 'Giclee de archivo (8 tintas)' }), notes: tx({ fr: "Meilleure qualité en impression à la demande. Sur invitation. Print ~36$, artiste garde 18$.", en: 'Best print-on-demand quality. Invite-only. Print ~36$, artist keeps 18$.', es: 'Mejor calidad en impresion bajo demanda. Solo invitacion. Print ~36$, artista queda 18$.' }), highlight: false },
+    { name: 'Fine Art America', artistProfit: '~10-25$', quality: tx({ fr: "Giclee d'archives", en: 'Archival giclee', es: 'Giclee de archivo' }), notes: tx({ fr: 'Prix de base fixe + ton markup. Qualité correcte.', en: 'Fixed base price + your markup. Decent quality.', es: 'Precio base fijo + tu margen. Calidad correcta.' }), highlight: false },
+    { name: 'Massive Medias', artistProfit: '40-50$', quality: tx({ fr: '12 encres pigmentées, musée', en: '12 pigmented inks, museum', es: '12 tintas pigmentadas, museo' }), notes: tx({ fr: "Impression locale fine art. Zéro gestion pour l'artiste. Qualité supérieure à toute impression à la demande.", en: 'Local fine art printing. Zero management for the artist. Quality superior to all print-on-demand.', es: 'Impresion local fine art. Cero gestion para el artista. Calidad superior a toda impresion bajo demanda.' }), highlight: 'massive' },
   ];
 
   // --- Tabs ---
@@ -492,7 +492,7 @@ function AdminTarifs() {
                   <div className="text-xs text-green-400 font-bold mt-1 uppercase tracking-wider">Massive - {tx({ fr: 'Impression', en: 'Printing', es: 'Impresion' })}</div>
                   <div className="text-[11px] text-grey-muted mt-3 text-left space-y-1">
                     <p>- {tx({ fr: "Papier d'archives", en: 'Archival paper', es: 'Papel de archivo' })}</p>
-                    <p>- {tx({ fr: '12 encres pigmentees', en: '12 pigmented inks', es: '12 tintas pigmentadas' })}</p>
+                    <p>- {tx({ fr: '12 encres pigmentées', en: '12 pigmented inks', es: '12 tintas pigmentadas' })}</p>
                     <p>- {tx({ fr: 'Calibration couleurs', en: 'Color calibration', es: 'Calibracion de colores' })}</p>
                     <p>- Soft proofing</p>
                     <p>- {tx({ fr: "Main d'oeuvre", en: 'Labor', es: 'Mano de obra' })}</p>
@@ -536,7 +536,7 @@ function AdminTarifs() {
           <SectionCard icon={Users} iconColor="text-green-400"
             title={tx({ fr: 'Boutique artiste (prix client final)', en: 'Artist store (client final price)', es: 'Tienda artista (precio cliente final)' })}
             subtitle={tx({ fr: "Ce que le client de l'artiste paie + split des revenus", en: "What the artist's client pays + revenue split", es: 'Lo que el cliente del artista paga + division de ingresos' })}>
-            <h4 className="text-xs font-semibold text-heading mb-2 mt-2 uppercase tracking-wider">{tx({ fr: 'Serie Studio - 4 encres pigmentees', en: 'Studio Series - 4 pigmented inks', es: 'Serie Estudio - 4 tintas pigmentadas' })}</h4>
+            <h4 className="text-xs font-semibold text-heading mb-2 mt-2 uppercase tracking-wider">{tx({ fr: 'Série Studio - 4 encres pigmentées', en: 'Studio Series - 4 pigmented inks', es: 'Serie Estudio - 4 tintas pigmentadas' })}</h4>
             <div className="overflow-x-auto mb-6">
               <DataTable headers={[
                 { label: L.format }, { label: L.noFrame }, { label: L.withFrame },
@@ -559,7 +559,7 @@ function AdminTarifs() {
               </DataTable>
             </div>
 
-            <h4 className="text-xs font-semibold text-heading mb-2 uppercase tracking-wider">{tx({ fr: 'Serie Musee - 12 encres pigmentees', en: 'Museum Series - 12 pigmented inks', es: 'Serie Museo - 12 tintas pigmentadas' })}</h4>
+            <h4 className="text-xs font-semibold text-heading mb-2 uppercase tracking-wider">{tx({ fr: 'Série Musée - 12 encres pigmentées', en: 'Museum Series - 12 pigmented inks', es: 'Serie Museo - 12 tintas pigmentadas' })}</h4>
             <div className="overflow-x-auto mb-4">
               <DataTable headers={[
                 { label: L.format }, { label: L.noFrame }, { label: L.withFrame },
@@ -583,7 +583,7 @@ function AdminTarifs() {
             </div>
 
             <div className="bg-accent/10 rounded-lg p-3 text-xs text-grey-muted space-y-1">
-              <p>* {tx({ fr: 'A2 (18x24") = 12 encres pigmentees uniquement, pas de frame disponible', en: 'A2 (18x24") = 12 pigmented inks only, no frame available', es: 'A2 (18x24") = 12 tintas pigmentadas solamente, sin marco disponible' })}</p>
+              <p>* {tx({ fr: 'A2 (18x24") = 12 encres pigmentées uniquement, pas de frame disponible', en: 'A2 (18x24") = 12 pigmented inks only, no frame available', es: 'A2 (18x24") = 12 tintas pigmentadas solamente, sin marco disponible' })}</p>
               <p>* {tx({ fr: 'Frame = cadre noir ou blanc (+30$)', en: 'Frame = black or white frame (+30$)', es: 'Marco = marco negro o blanco (+30$)' })}</p>
               <p>* {tx({ fr: 'Commission artiste = profit net, identique avec ou sans frame (le frame va a Massive)', en: 'Artist commission = net profit, same with or without frame (frame goes to Massive)', es: 'Comision artista = ganancia neta, identica con o sin marco (el marco va a Massive)' })}</p>
             </div>
@@ -643,7 +643,7 @@ function AdminTarifs() {
             <DataTable headers={[
               { label: tx({ fr: 'Plateforme', en: 'Platform', es: 'Plataforma' }) },
               { label: tx({ fr: 'Artiste garde', en: 'Artist keeps', es: 'Artista conserva' }) },
-              { label: tx({ fr: 'Qualite', en: 'Quality', es: 'Calidad' }) },
+              { label: tx({ fr: 'Qualité', en: 'Quality', es: 'Calidad' }) },
               { label: tx({ fr: "Ce que l'artiste doit gerer", en: 'What the artist must manage', es: 'Lo que el artista debe gestionar' }) },
             ]}>
               {COMPETITORS.map((c, i) => (
@@ -667,7 +667,7 @@ function AdminTarifs() {
                   <p className="text-grey-muted">- {tx({ fr: 'Creer et payer sa boutique (Etsy ~6.5% frais, Shopify ~39$/mois)', en: 'Create and pay for their store (Etsy ~6.5% fees, Shopify ~39$/mo)', es: 'Crear y pagar su tienda (Etsy ~6.5% tarifas, Shopify ~39$/mes)' })}</p>
                   <p className="text-grey-muted">- {tx({ fr: 'Gerer le service client et les retours', en: 'Manage customer service and returns', es: 'Gestionar servicio al cliente y devoluciones' })}</p>
                   <p className="text-grey-muted">- {tx({ fr: 'Payer pour la publicite / marketing', en: 'Pay for advertising / marketing', es: 'Pagar por publicidad / marketing' })}</p>
-                  <p className="text-grey-muted">- {tx({ fr: 'Accepter une qualite variable (dropshipping, 4-8 encres, papier 170-200 gsm)', en: 'Accept variable quality (dropshipping, 4-8 inks, 170-200 gsm paper)', es: 'Aceptar calidad variable (dropshipping, 4-8 tintas, papel 170-200 gsm)' })}</p>
+                  <p className="text-grey-muted">- {tx({ fr: 'Accepter une qualité variable (dropshipping, 4-8 encres, papier 170-200 gsm)', en: 'Accept variable quality (dropshipping, 4-8 inks, 170-200 gsm paper)', es: 'Aceptar calidad variable (dropshipping, 4-8 tintas, papel 170-200 gsm)' })}</p>
                   <p className="text-grey-muted">- {tx({ fr: 'Cout base en USD (~10-12$ USD = ~14-16$ CAD)', en: 'Base cost in USD (~10-12$ USD = ~14-16$ CAD)', es: 'Costo base en USD (~10-12$ USD = ~14-16$ CAD)' })}</p>
                 </div>
                 <div className="space-y-1">
@@ -675,7 +675,7 @@ function AdminTarifs() {
                   <p className="text-grey-muted">- {tx({ fr: "Fournir son fichier. C'est tout.", en: "Provide their file. That's it.", es: 'Proporcionar su archivo. Eso es todo.' })}</p>
                   <p className="text-grey-muted">- {tx({ fr: 'Zero frais de boutique (page artiste gratuite sur massivemedias.com)', en: 'Zero store fees (free artist page on massivemedias.com)', es: 'Cero costos de tienda (pagina de artista gratuita en massivemedias.com)' })}</p>
                   <p className="text-grey-muted">- {tx({ fr: 'Zero gestion, zero service client', en: 'Zero management, zero customer service', es: 'Cero gestion, cero servicio al cliente' })}</p>
-                  <p className="text-grey-muted">- {tx({ fr: "Qualite musee garantie (12 encres pigmentees, papier d'archives)", en: 'Guaranteed museum quality (12 pigmented inks, archival paper)', es: 'Calidad museo garantizada (12 tintas pigmentadas, papel de archivo)' })}</p>
+                  <p className="text-grey-muted">- {tx({ fr: "Qualité musée garantie (12 encres pigmentées, papier d'archives)", en: 'Guaranteed museum quality (12 pigmented inks, archival paper)', es: 'Calidad museo garantizada (12 tintas pigmentadas, papel de archivo)' })}</p>
                   <p className="text-grey-muted">- {tx({ fr: 'Impression locale a Montreal, pick-up Mile-End', en: 'Local printing in Montreal, pick-up Mile-End', es: 'Impresion local en Montreal, recoger en Mile-End' })}</p>
                 </div>
               </div>
@@ -685,8 +685,8 @@ function AdminTarifs() {
               <p className="font-semibold">{tx({ fr: 'En résumé:', en: 'In summary:', es: 'En resumen:' })}</p>
               <p>- {tx({ fr: "Society6 / Redbubble: l'artiste fait 2-4$ par vente. C'est presque rien.", en: 'Society6 / Redbubble: the artist makes 2-4$ per sale. Almost nothing.', es: 'Society6 / Redbubble: el artista gana 2-4$ por venta. Casi nada.' })}</p>
               <p>- {tx({ fr: "Printify / Printful: ~20-25$ mais l'artiste gere tout (boutique, marketing, service client, livraison)", en: 'Printify / Printful: ~20-25$ but the artist manages everything (store, marketing, customer service, shipping)', es: 'Printify / Printful: ~20-25$ pero el artista gestiona todo (tienda, marketing, servicio al cliente, envio)' })}</p>
-              <p>- {tx({ fr: "INPRNT: ~18$ et bonne qualite, mais sur invitation seulement", en: 'INPRNT: ~18$ and good quality, but invite-only', es: 'INPRNT: ~18$ y buena calidad, pero solo por invitacion' })}</p>
-              <p>- <strong>{tx({ fr: 'Massive: 40-50$ de profit net, zero gestion, qualite musee superieure a toute impression a la demande', en: 'Massive: 40-50$ net profit, zero management, museum quality superior to all print-on-demand', es: 'Massive: 40-50$ de ganancia neta, cero gestion, calidad museo superior a toda impresion bajo demanda' })}</strong></p>
+              <p>- {tx({ fr: "INPRNT: ~18$ et bonne qualité, mais sur invitation seulement", en: 'INPRNT: ~18$ and good quality, but invite-only', es: 'INPRNT: ~18$ y buena calidad, pero solo por invitacion' })}</p>
+              <p>- <strong>{tx({ fr: 'Massive: 40-50$ de profit net, zéro gestion, qualité musée supérieure à toute impression à la demande', en: 'Massive: 40-50$ net profit, zero management, museum quality superior to all print-on-demand', es: 'Massive: 40-50$ de ganancia neta, cero gestion, calidad museo superior a toda impresion bajo demanda' })}</strong></p>
             </div>
           </SectionCard>
         </div>

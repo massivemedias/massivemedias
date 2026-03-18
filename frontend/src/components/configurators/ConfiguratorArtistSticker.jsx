@@ -251,7 +251,7 @@ function ConfiguratorArtistSticker({ artist, selectedSticker }) {
 
       <p className="text-grey-muted text-xs text-center">
         {tx({
-          fr: 'Stickers vinyl professionnels, imprimes par Massive.',
+          fr: 'Stickers vinyl professionnels, imprimés par Massive.',
           en: 'Professional vinyl stickers, printed by Massive.',
           es: 'Stickers vinyl profesionales, impresos por Massive.',
         })}

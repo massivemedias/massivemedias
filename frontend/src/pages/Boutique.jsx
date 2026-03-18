@@ -186,12 +186,12 @@ function Boutique() {
       <>
         <SEO
           title={tx({
-            fr: 'Fine Art Prints Montreal - Tirages Qualite Galerie | Massive',
+            fr: 'Fine Art Prints Montreal - Tirages Qualité Galerie | Massive',
             en: 'Fine Art Prints Montreal - Gallery Quality Prints | Massive',
             es: 'Fine Art Prints Montreal - Impresiones Calidad Galeria | Massive',
           })}
           description={tx({
-            fr: 'Achetez des tirages fine art par des artistes de Montreal. Impression 12 encres pigmentees sur papier Hahnemuhle. Qualite musee, livraison locale.',
+            fr: 'Achetez des tirages fine art par des artistes de Montréal. Impression 12 encres pigmentées sur papier Hahnemühle. Qualité musée, livraison locale.',
             en: 'Buy fine art prints from Montreal artists. 12 pigmented ink printing on Hahnemuhle paper. Museum quality, local delivery.',
             es: 'Compra impresiones fine art de artistas de Montreal. Impresion 12 tintas pigmentadas en papel Hahnemuhle. Calidad museo, entrega local.',
           })}
@@ -679,7 +679,7 @@ function Boutique() {
                             <div className="flex-1 min-w-0">
                               <p className="text-grey-light text-sm mb-4">
                                 {tx({
-                                  fr: 'Pack de stickers vinyle die-cut imprimes en haute qualite a Montreal. Chaque pack contient plusieurs stickers du design selectionne.',
+                                  fr: 'Pack de stickers vinyle die-cut imprimés en haute qualité à Montréal. Chaque pack contient plusieurs stickers du design sélectionné.',
                                   en: 'Die-cut vinyl sticker pack printed in high quality in Montreal. Each pack contains multiple stickers of the selected design.',
                                   es: 'Pack de stickers de vinilo troquelados impresos en alta calidad en Montreal. Cada pack contiene varios stickers del diseno seleccionado.',
                                 })}
@@ -757,7 +757,7 @@ function Boutique() {
                           {!sticker.artistSlug && (
                             <p className="text-grey-muted text-[11px] mt-5 pt-4 border-t card-border text-center">
                               {tx({
-                                fr: 'Une partie des revenus de chaque vente est reversee aux artistes et labels partenaires.',
+                                fr: 'Une partie des revenus de chaque vente est reversée aux artistes et labels partenaires.',
                                 en: 'A portion of the revenue from each sale goes to the partner artists and labels.',
                                 es: 'Una parte de los ingresos de cada venta se destina a los artistas y sellos asociados.',
                               })}
@@ -862,7 +862,7 @@ function Boutique() {
                 {/* Note sur les revenus partages */}
                 <p className="text-grey-muted text-[11px] mt-4 text-center">
                   {tx({
-                    fr: 'Une partie des revenus de chaque vente est reversee aux artistes et labels partenaires.',
+                    fr: 'Une partie des revenus de chaque vente est reversée aux artistes et labels partenaires.',
                     en: 'A portion of the revenue from each sale goes to the partner artists and labels.',
                     es: 'Una parte de los ingresos de cada venta se destina a los artistas y sellos asociados.',
                   })}

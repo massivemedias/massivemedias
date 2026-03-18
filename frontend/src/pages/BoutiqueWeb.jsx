@@ -32,9 +32,9 @@ function BoutiqueWeb() {
     <BoutiqueProductLayout
       serviceSlug="developpement-web"
       startingPrice={85}
-      pageTitle={{ fr: 'Developpement Web Montreal - Sites, E-Commerce, SEO | Massive', en: 'Web Development Montreal - Sites, E-Commerce, SEO | Massive', es: 'Desarrollo Web Montreal - Sitios, E-Commerce, SEO | Massive' }}
+      pageTitle={{ fr: 'Développement Web Montréal - Sites, E-Commerce, SEO | Massive', en: 'Web Development Montreal - Sites, E-Commerce, SEO | Massive', es: 'Desarrollo Web Montreal - Sitios, E-Commerce, SEO | Massive' }}
       metaDescription={{
-        fr: 'Developpement web professionnel a Montreal. Sites vitrines, e-commerce, landing pages, SEO. React, WordPress, Shopify. 15+ ans d\'experience. Studio Mile-End.',
+        fr: 'Développement web professionnel à Montréal. Sites vitrines, e-commerce, landing pages, SEO. React, WordPress, Shopify. 15+ ans d\'expérience. Studio Mile-End.',
         en: 'Professional web development in Montreal. Showcase sites, e-commerce, landing pages, SEO. React, WordPress, Shopify. 15+ years experience. Mile-End studio.',
         es: 'Sitios vitrina, e-commerce, landing pages. React, WordPress, Shopify. 15+ a\u00f1os de experiencia. Montreal.',
       }}
