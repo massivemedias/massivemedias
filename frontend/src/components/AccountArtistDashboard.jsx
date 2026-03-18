@@ -20,14 +20,14 @@ import artistsData from '../data/artists';
 import { ARTIST_CONTRACT_TEXT, ARTIST_CONTRACT_TEXT_EN, ARTIST_CONTRACT_TEXT_ES, ARTIST_CONTRACT_VERSION } from '../data/artistContract';
 import { generateContractPDF } from '../utils/generateContractPDF';
 
-// Prix service (cout Massive) et prix artiste (prix client)
-const SERVICE_PRICES = {
-  studio: { a4: 20, a3: 25, a3plus: 35 },
-  museum: { a4: 35, a3: 65, a3plus: 95, a2: 110 },
-};
-const ARTIST_PRICES = {
+// Prix client et prix artiste (rabais partenaire)
+const CLIENT_PRICES = {
   studio: { a4: 35, a3: 50, a3plus: 65 },
   museum: { a4: 75, a3: 120, a3plus: 160, a2: 190 },
+};
+const ARTIST_DISCOUNT_PRICES = {
+  studio: { a4: 20, a3: 25, a3plus: 35 },
+  museum: { a4: 35, a3: 65, a3plus: 95, a2: 110 },
 };
 const FRAME_PRICE = 30;
 
@@ -476,13 +476,13 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
             <div className="p-5 md:p-6 rounded-xl bg-black/20 shadow-lg">
               <p className="text-green-400 text-sm md:text-base font-bold mb-2 flex items-center gap-2">
                 <DollarSign size={16} />
-                {tx({ fr: 'Copies perso au coutant', en: 'Personal copies at cost', es: 'Copias personales al costo' })}
+                {tx({ fr: 'Rabais artiste partenaire', en: 'Partner artist discount', es: 'Descuento artista asociado' })}
               </p>
               <p className="text-grey-light text-xs md:text-sm leading-relaxed">
                 {tx({
-                  fr: 'Tu peux commander tes propres prints au prix coutant (colonne "Cout Massive") pour usage personnel, portfolio ou expos. Stickers: prix regulier pour tous.',
-                  en: 'You can order your own prints at cost price ("Massive cost" column) for personal use, portfolio or exhibitions. Stickers: regular price for everyone.',
-                  es: 'Puedes pedir tus propios prints al precio de costo (columna "Costo Massive") para uso personal, portafolio o exposiciones. Stickers: precio regular para todos.',
+                  fr: 'Tu beneficies d\'un rabais exclusif sur tes propres prints (voir onglet Tarifs). Pour usage personnel, portfolio ou expos. Stickers: prix regulier pour tous.',
+                  en: 'You get an exclusive discount on your own prints (see Pricing tab). For personal use, portfolio or exhibitions. Stickers: regular price for everyone.',
+                  es: 'Tienes un descuento exclusivo en tus propios prints (ver pestana Precios). Para uso personal, portafolio o exposiciones. Stickers: precio regular para todos.',
                 })}
               </p>
             </div>
@@ -579,9 +579,9 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
           </h3>
           <p className="text-grey-muted text-xs mb-6">
             {tx({
-              fr: 'Prix affiches aux clients dans ta boutique. Ta marge = prix client - cout impression Massive. Le cadre (30$) va entierement a Massive. TPS + TVQ en sus.',
-              en: 'Prices shown to customers in your store. Your margin = client price - Massive print cost. Frame ($30) goes entirely to Massive. GST + QST extra.',
-              es: 'Precios mostrados a los clientes en tu tienda. Tu margen = precio cliente - costo impresion Massive. El marco (30$) va completamente a Massive. Impuestos adicionales.',
+              fr: 'Prix affiches aux clients dans ta boutique. Ta marge = prix client - prix de production. Le cadre (30$) va entierement a Massive. TPS + TVQ en sus.',
+              en: 'Prices shown to customers in your store. Your margin = client price - production price. Frame ($30) goes entirely to Massive. GST + QST extra.',
+              es: 'Precios mostrados a los clientes en tu tienda. Tu margen = precio cliente - precio produccion. El marco (30$) va completamente a Massive. Impuestos adicionales.',
             })}
           </p>
           <div className="overflow-x-auto">
@@ -590,33 +590,47 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
                 <tr className="text-grey-muted text-[10px] sm:text-xs uppercase tracking-wider border-b border-purple-main/20">
                   <th className="text-left py-2 pr-1 sm:pr-3">{tx({ fr: 'Format', en: 'Format', es: 'Formato' })}</th>
                   <th className="text-right py-2 px-1 sm:px-2">{tx({ fr: 'Prix client', en: 'Client price', es: 'Precio cliente' })}</th>
-                  <th className="text-right py-2 px-1 sm:px-2">{tx({ fr: 'Cout Massive', en: 'Massive cost', es: 'Costo Massive' })}</th>
+                  <th className="text-right py-2 px-1 sm:px-2 text-accent">{tx({ fr: 'Prix artiste', en: 'Artist price', es: 'Precio artista' })}</th>
+                  <th className="text-right py-2 px-1 sm:px-2 text-yellow-400">{tx({ fr: 'Rabais', en: 'Discount', es: 'Descuento' })}</th>
                   <th className="text-right py-2 px-1 sm:px-2 text-green-400">{tx({ fr: 'Ta marge', en: 'Your margin', es: 'Tu margen' })}</th>
                 </tr>
               </thead>
               <tbody>
-                <tr className="border-b border-purple-main/10"><td colSpan="4" className="pt-3 pb-1 text-accent font-semibold text-xs">{tx({ fr: 'Serie Studio (4 encres pigmentees)', en: 'Studio Series (4 pigment inks)', es: 'Serie Studio (4 tintas pigmentadas)' })}</td></tr>
-                {[{ format: 'A4 (8.5x11")', key: 'a4' }, { format: 'A3 (11x17")', key: 'a3' }, { format: 'A3+ (13x19")', key: 'a3plus' }].map(({ format, key }) => (
-                  <tr key={`s-${key}`} className="border-b border-purple-main/10 hover:bg-accent/5 transition-colors">
-                    <td className="py-2 pr-1 sm:pr-3 text-heading text-xs sm:text-sm">{format}</td>
-                    <td className="py-2 px-1 sm:px-2 text-right text-heading text-xs sm:text-sm">{ARTIST_PRICES.studio[key]}$</td>
-                    <td className="py-2 px-1 sm:px-2 text-right text-grey-muted text-xs sm:text-sm">{SERVICE_PRICES.studio[key]}$</td>
-                    <td className="py-2 px-1 sm:px-2 text-right text-green-400 font-semibold text-xs sm:text-sm">{ARTIST_PRICES.studio[key] - SERVICE_PRICES.studio[key]}$</td>
-                  </tr>
-                ))}
-                <tr className="border-b border-purple-main/10"><td colSpan="4" className="pt-4 pb-1 text-accent font-semibold text-xs">{tx({ fr: 'Serie Musee (12 encres pigmentees)', en: 'Museum Series (12 pigment inks)', es: 'Serie Museo (12 tintas pigmentadas)' })}</td></tr>
-                {[{ format: 'A4 (8.5x11")', key: 'a4' }, { format: 'A3 (11x17")', key: 'a3' }, { format: 'A3+ (13x19")', key: 'a3plus' }, { format: 'A2 (18x24")', key: 'a2' }].map(({ format, key }) => (
-                  <tr key={`m-${key}`} className="border-b border-purple-main/10 hover:bg-accent/5 transition-colors">
-                    <td className="py-2 pr-1 sm:pr-3 text-heading text-xs sm:text-sm">{format}</td>
-                    <td className="py-2 px-1 sm:px-2 text-right text-heading text-xs sm:text-sm">{ARTIST_PRICES.museum[key]}$</td>
-                    <td className="py-2 px-1 sm:px-2 text-right text-grey-muted text-xs sm:text-sm">{SERVICE_PRICES.museum[key]}$</td>
-                    <td className="py-2 px-1 sm:px-2 text-right text-green-400 font-semibold text-xs sm:text-sm">{ARTIST_PRICES.museum[key] - SERVICE_PRICES.museum[key]}$</td>
-                  </tr>
-                ))}
+                <tr className="border-b border-purple-main/10"><td colSpan="5" className="pt-3 pb-1 text-accent font-semibold text-xs">{tx({ fr: 'Serie Studio (4 encres pigmentees)', en: 'Studio Series (4 pigment inks)', es: 'Serie Studio (4 tintas pigmentadas)' })}</td></tr>
+                {[{ format: 'A4 (8.5x11")', key: 'a4' }, { format: 'A3 (11x17")', key: 'a3' }, { format: 'A3+ (13x19")', key: 'a3plus' }].map(({ format, key }) => {
+                  const clientPrice = CLIENT_PRICES.studio[key];
+                  const artistPrice = ARTIST_DISCOUNT_PRICES.studio[key];
+                  const discount = Math.round((1 - artistPrice / clientPrice) * 100);
+                  return (
+                    <tr key={`s-${key}`} className="border-b border-purple-main/10 hover:bg-accent/5 transition-colors">
+                      <td className="py-2 pr-1 sm:pr-3 text-heading text-xs sm:text-sm">{format}</td>
+                      <td className="py-2 px-1 sm:px-2 text-right text-heading text-xs sm:text-sm">{clientPrice}$</td>
+                      <td className="py-2 px-1 sm:px-2 text-right text-accent font-semibold text-xs sm:text-sm">{artistPrice}$</td>
+                      <td className="py-2 px-1 sm:px-2 text-right text-yellow-400 text-xs sm:text-sm">-{discount}%</td>
+                      <td className="py-2 px-1 sm:px-2 text-right text-green-400 font-semibold text-xs sm:text-sm">{clientPrice - artistPrice}$</td>
+                    </tr>
+                  );
+                })}
+                <tr className="border-b border-purple-main/10"><td colSpan="5" className="pt-4 pb-1 text-accent font-semibold text-xs">{tx({ fr: 'Serie Musee (12 encres pigmentees)', en: 'Museum Series (12 pigment inks)', es: 'Serie Museo (12 tintas pigmentadas)' })}</td></tr>
+                {[{ format: 'A4 (8.5x11")', key: 'a4' }, { format: 'A3 (11x17")', key: 'a3' }, { format: 'A3+ (13x19")', key: 'a3plus' }, { format: 'A2 (18x24")', key: 'a2' }].map(({ format, key }) => {
+                  const clientPrice = CLIENT_PRICES.museum[key];
+                  const artistPrice = ARTIST_DISCOUNT_PRICES.museum[key];
+                  const discount = Math.round((1 - artistPrice / clientPrice) * 100);
+                  return (
+                    <tr key={`m-${key}`} className="border-b border-purple-main/10 hover:bg-accent/5 transition-colors">
+                      <td className="py-2 pr-1 sm:pr-3 text-heading text-xs sm:text-sm">{format}</td>
+                      <td className="py-2 px-1 sm:px-2 text-right text-heading text-xs sm:text-sm">{clientPrice}$</td>
+                      <td className="py-2 px-1 sm:px-2 text-right text-accent font-semibold text-xs sm:text-sm">{artistPrice}$</td>
+                      <td className="py-2 px-1 sm:px-2 text-right text-yellow-400 text-xs sm:text-sm">-{discount}%</td>
+                      <td className="py-2 px-1 sm:px-2 text-right text-green-400 font-semibold text-xs sm:text-sm">{clientPrice - artistPrice}$</td>
+                    </tr>
+                  );
+                })}
                 <tr className="border-t-2 border-purple-main/20">
                   <td className="py-2 pr-1 sm:pr-3 text-heading font-medium text-xs sm:text-sm">{tx({ fr: 'Cadre (noir ou blanc)', en: 'Frame (black or white)', es: 'Marco (negro o blanco)' })}</td>
                   <td className="py-2 px-2 text-right text-heading">{FRAME_PRICE}$</td>
                   <td className="py-2 px-1 sm:px-2 text-right text-grey-muted text-xs sm:text-sm">{FRAME_PRICE}$</td>
+                  <td className="py-2 px-1 sm:px-2 text-right text-grey-muted text-xs sm:text-sm">-</td>
                   <td className="py-2 px-1 sm:px-2 text-right text-grey-muted text-xs sm:text-sm">0$</td>
                 </tr>
               </tbody>
@@ -639,9 +653,9 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
             </p>
             <p className="text-grey-light text-xs leading-relaxed">
               {tx({
-                fr: 'Prints: tu peux commander tes propres copies au prix coutant (colonne "Cout Massive"), pour usage personnel, portfolio ou expos uniquement. Stickers: prix regulier, meme pour toi.',
-                en: 'Prints: you can order your own copies at cost price ("Massive cost" column), for personal use, portfolio or exhibitions only. Stickers: regular price, even for you.',
-                es: 'Prints: puedes pedir tus propias copias al precio de costo (columna "Costo Massive"), solo para uso personal, portafolio o exposiciones. Stickers: precio regular, incluso para ti.',
+                fr: 'En tant qu\'artiste partenaire, tu beneficies d\'un rabais exclusif sur tes propres prints (colonne "Prix artiste"). Stickers: prix regulier pour tous.',
+                en: 'As a partner artist, you get an exclusive discount on your own prints ("Artist price" column). Stickers: regular price for everyone.',
+                es: 'Como artista asociado, tienes un descuento exclusivo en tus propios prints (columna "Precio artista"). Stickers: precio regular para todos.',
               })}
             </p>
           </div>
