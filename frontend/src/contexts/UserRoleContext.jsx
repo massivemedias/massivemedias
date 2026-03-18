@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useAuth } from './AuthContext';
 import api from '../services/api';
 
@@ -9,7 +9,7 @@ const ADMIN_EMAILS = (import.meta.env.VITE_ADMIN_EMAILS || 'massivemedias@gmail.
 const UserRoleContext = createContext(null);
 
 export function UserRoleProvider({ children }) {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [roleData, setRoleData] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -17,6 +17,12 @@ export function UserRoleProvider({ children }) {
   const isAdmin = ADMIN_EMAILS.includes(email);
 
   useEffect(() => {
+    // Attendre que l'auth soit resolue avant de decider
+    if (authLoading) {
+      setLoading(true);
+      return;
+    }
+
     if (!user?.email) {
       setRoleData(null);
       setLoading(false);
@@ -45,7 +51,7 @@ export function UserRoleProvider({ children }) {
 
     fetchRole();
     return () => { cancelled = true; };
-  }, [user?.email]);
+  }, [user?.email, authLoading]);
 
   const role = isAdmin ? 'admin' : (roleData?.role || 'user');
   const artistSlug = roleData?.artistSlug || null;

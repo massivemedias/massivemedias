@@ -108,7 +108,7 @@ function getMemberSince(createdAt, lang) {
 
 function Account() {
   const { t, lang, tx } = useLang();
-  const { user, signOut, updateProfile, updatePassword } = useAuth();
+  const { user, signOut, updateProfile, updatePassword, loading: authLoading } = useAuth();
   const { role: userRole, isAdmin, isArtist, artistSlug, loading: roleLoading } = useUserRole();
   const [searchParams] = useSearchParams();
   const meta = user?.user_metadata || {};
@@ -707,7 +707,7 @@ function Account() {
   // Attendre que le role soit resolu avant d'afficher le layout
   // (evite le flash overview -> dashboard sur refresh)
   // ============================================================
-  if (roleLoading) {
+  if (authLoading || roleLoading) {
     return (
       <>
         <SEO title={`${t('account.title')} - Massive`} description="" noindex />
