@@ -4,6 +4,8 @@ import { useLang } from '../i18n/LanguageContext';
 import { uploadFile } from '../services/api';
 
 const MAX_SIZE = 130 * 1024 * 1024; // 130 MB
+const UPLOAD_MAX = 50 * 1024 * 1024; // 50 MB - limite Supabase
+const COMPRESS_QUALITY = 0.92; // JPEG quality for auto-compression
 
 const ACCEPTED_TYPES = [
   'image/png', 'image/jpeg', 'image/tiff', 'image/svg+xml', 'image/webp',
@@ -17,6 +19,62 @@ const ACCEPTED_TYPES = [
 
 const ACCEPTED_EXT = '.png,.jpg,.jpeg,.tiff,.tif,.svg,.webp,.pdf,.ai,.eps,.psd';
 
+// Compresse les images trop grosses (TIFF, PNG haute-res) en JPEG cote client
+const COMPRESSIBLE = ['image/tiff', 'image/png', 'image/bmp', 'image/webp'];
+
+function compressImage(file, maxBytes = UPLOAD_MAX) {
+  return new Promise((resolve) => {
+    // Si le fichier est petit ou non-compressible, on le garde tel quel
+    if (file.size <= maxBytes || !COMPRESSIBLE.includes(file.type)) {
+      return resolve(file);
+    }
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const canvas = document.createElement('canvas');
+      // Garder la resolution originale (max 8000px pour eviter crash navigateur)
+      const maxDim = 8000;
+      let { width, height } = img;
+      if (width > maxDim || height > maxDim) {
+        const ratio = Math.min(maxDim / width, maxDim / height);
+        width = Math.round(width * ratio);
+        height = Math.round(height * ratio);
+      }
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+      canvas.toBlob(
+        (blob) => {
+          if (!blob || blob.size > maxBytes) {
+            // 2eme passe avec qualite reduite
+            canvas.toBlob(
+              (blob2) => {
+                if (!blob2) return resolve(file);
+                const name = file.name.replace(/\.[^.]+$/, '.jpg');
+                resolve(new File([blob2], name, { type: 'image/jpeg' }));
+              },
+              'image/jpeg',
+              0.80
+            );
+            return;
+          }
+          const name = file.name.replace(/\.[^.]+$/, '.jpg');
+          resolve(new File([blob], name, { type: 'image/jpeg' }));
+        },
+        'image/jpeg',
+        COMPRESS_QUALITY
+      );
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      resolve(file); // fallback: upload tel quel
+    };
+    img.src = url;
+  });
+}
+
 function formatSize(bytes) {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
@@ -27,6 +85,7 @@ function FileUpload({ files = [], onFilesChange, label, maxFiles = 5, compact = 
   const { tx } = useLang();
   const inputRef = useRef(null);
   const [uploading, setUploading] = useState(false);
+  const [compressing, setCompressing] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const [error, setError] = useState('');
 
@@ -50,19 +109,34 @@ function FileUpload({ files = [], onFilesChange, label, maxFiles = 5, compact = 
     try {
       const uploaded = [];
       for (const file of toUpload) {
+        // Compression auto des gros fichiers image (TIFF, PNG > 50 Mo)
+        if (file.size > UPLOAD_MAX && COMPRESSIBLE.includes(file.type)) {
+          setCompressing(true);
+        }
+        const processedFile = await compressImage(file);
+        setCompressing(false);
         const doUpload = uploadFn || uploadFile;
-        const result = await doUpload(file);
+        const result = await doUpload(processedFile);
         uploaded.push({
           id: result.id,
-          name: result.name,
+          name: result.name || processedFile.name,
           url: result.url,
-          size: result.size,
-          mime: result.mime,
+          size: result.size || processedFile.size,
+          mime: result.mime || processedFile.type,
         });
       }
       onFilesChange([...files, ...uploaded]);
     } catch (err) {
-      setError(tx({ fr: 'Erreur lors de l\'upload. Reessayez.', en: 'Upload failed. Please try again.', es: 'Error al subir. Intentalo de nuevo.' }));
+      const msg = err?.message || '';
+      if (msg.includes('Payload too large') || msg.includes('413') || msg.includes('exceeded')) {
+        setError(tx({
+          fr: `Fichier trop volumineux pour le serveur (max 50 Mo). Essayez un format JPEG.`,
+          en: `File too large for server (max 50 MB). Try JPEG format.`,
+          es: `Archivo demasiado grande para el servidor (max 50 MB). Prueba formato JPEG.`
+        }));
+      } else {
+        setError(tx({ fr: 'Erreur lors de l\'upload. Reessayez.', en: 'Upload failed. Please try again.', es: 'Error al subir. Intentalo de nuevo.' }));
+      }
     } finally {
       setUploading(false);
     }
@@ -228,7 +302,7 @@ function FileUpload({ files = [], onFilesChange, label, maxFiles = 5, compact = 
         {uploading ? (
           <div className="flex flex-col items-center gap-2 py-2">
             <Loader2 size={24} className="text-accent animate-spin" />
-            <span className="text-grey-muted text-xs">{tx({ fr: 'Upload...', en: 'Uploading...', es: 'Subiendo...' })}</span>
+            <span className="text-grey-muted text-xs">{compressing ? tx({ fr: 'Compression en cours...', en: 'Compressing...', es: 'Comprimiendo...' }) : tx({ fr: 'Upload...', en: 'Uploading...', es: 'Subiendo...' })}</span>
           </div>
         ) : (
           <div className="flex flex-col items-center gap-2 py-2">

@@ -330,12 +330,14 @@ async function applyProfileChange(strapi: any, artistSlug: string, requestType: 
       if (changeData.taglineEs !== undefined) updateData.taglineEs = changeData.taglineEs;
       break;
     case 'update-socials':
-      if (changeData.socials) updateData.socials = changeData.socials;
+      if (changeData.socials) {
+        // Merger avec les socials existants pour ne pas ecraser avatarUrl
+        const existingSocials = artist.socials || {};
+        updateData.socials = { ...existingSocials, ...changeData.socials };
+      }
       break;
     case 'update-avatar':
-      // L'avatar est une URL Supabase - on la stocke dans le profil
-      // Note: on ne peut pas directement assigner une URL a un champ media Strapi
-      // On stocke dans socials.avatarUrl comme fallback
+      // L'avatar est une URL Supabase - on la stocke dans socials.avatarUrl
       if (changeData.avatarUrl) {
         const socials = artist.socials || {};
         socials.avatarUrl = changeData.avatarUrl;
