@@ -393,32 +393,32 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
           </h4>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
             {artist && (
-              <Link to={`/artistes/${artistSlug}`} className="flex flex-col items-center gap-2 p-4 md:p-5 rounded-xl bg-accent/5 border border-accent/20 hover:bg-accent/15 hover:border-accent/40 transition-all group text-center">
+              <Link to={`/artistes/${artistSlug}`} className="flex flex-col items-center gap-2 p-4 md:p-5 rounded-xl bg-black/20 shadow-lg hover:bg-black/30 transition-all group text-center">
                 <ExternalLink size={22} className="text-accent group-hover:scale-110 transition-transform" />
                 <p className="text-heading text-sm font-semibold">{tx({ fr: 'Ma boutique', en: 'My store', es: 'Mi tienda' })}</p>
               </Link>
             )}
-            <Link to="/account?tab=profil-artiste" className="flex flex-col items-center gap-2 p-4 md:p-5 rounded-xl bg-purple-500/5 border border-purple-500/20 hover:bg-purple-500/15 hover:border-purple-500/40 transition-all group text-center">
+            <Link to="/account?tab=profil-artiste" className="flex flex-col items-center gap-2 p-4 md:p-5 rounded-xl bg-black/20 shadow-lg hover:bg-black/30 transition-all group text-center">
               <User size={22} className="text-purple-400 group-hover:scale-110 transition-transform" />
               <p className="text-heading text-sm font-semibold">{tx({ fr: 'Mon profil', en: 'My profile', es: 'Mi perfil' })}</p>
             </Link>
-            <Link to="/account?tab=ventes" className="flex flex-col items-center gap-2 p-4 md:p-5 rounded-xl bg-green-500/5 border border-green-500/20 hover:bg-green-500/15 hover:border-green-500/40 transition-all group text-center">
+            <Link to="/account?tab=ventes" className="flex flex-col items-center gap-2 p-4 md:p-5 rounded-xl bg-black/20 shadow-lg hover:bg-black/30 transition-all group text-center">
               <BarChart3 size={22} className="text-green-400 group-hover:scale-110 transition-transform" />
               <p className="text-heading text-sm font-semibold">{tx({ fr: 'Ventes', en: 'Sales', es: 'Ventas' })}</p>
             </Link>
-            <Link to="/account?tab=retrait" className="flex flex-col items-center gap-2 p-4 md:p-5 rounded-xl bg-yellow-500/5 border border-yellow-500/20 hover:bg-yellow-500/15 hover:border-yellow-500/40 transition-all group text-center">
+            <Link to="/account?tab=retrait" className="flex flex-col items-center gap-2 p-4 md:p-5 rounded-xl bg-black/20 shadow-lg hover:bg-black/30 transition-all group text-center">
               <Banknote size={22} className="text-yellow-400 group-hover:scale-110 transition-transform" />
               <p className="text-heading text-sm font-semibold">{tx({ fr: 'Retrait', en: 'Withdraw', es: 'Retiro' })}</p>
             </Link>
-            <Link to="/account?tab=tarifs" className="flex flex-col items-center gap-2 p-4 md:p-5 rounded-xl bg-blue-500/5 border border-blue-500/20 hover:bg-blue-500/15 hover:border-blue-500/40 transition-all group text-center">
+            <Link to="/account?tab=tarifs" className="flex flex-col items-center gap-2 p-4 md:p-5 rounded-xl bg-black/20 shadow-lg hover:bg-black/30 transition-all group text-center">
               <Receipt size={22} className="text-blue-400 group-hover:scale-110 transition-transform" />
               <p className="text-heading text-sm font-semibold">{tx({ fr: 'Tarifs', en: 'Pricing', es: 'Precios' })}</p>
             </Link>
-            <Link to="/account?tab=contrat" className="flex flex-col items-center gap-2 p-4 md:p-5 rounded-xl bg-orange-500/5 border border-orange-500/20 hover:bg-orange-500/15 hover:border-orange-500/40 transition-all group text-center">
+            <Link to="/account?tab=contrat" className="flex flex-col items-center gap-2 p-4 md:p-5 rounded-xl bg-black/20 shadow-lg hover:bg-black/30 transition-all group text-center">
               <ScrollText size={22} className="text-orange-400 group-hover:scale-110 transition-transform" />
               <p className="text-heading text-sm font-semibold">{tx({ fr: 'Contrat', en: 'Contract', es: 'Contrato' })}</p>
             </Link>
-            <a href="mailto:massivemedias@gmail.com" className="flex flex-col items-center gap-2 p-4 md:p-5 rounded-xl bg-green-500/5 border border-green-500/20 hover:bg-green-500/15 hover:border-green-500/40 transition-all group text-center">
+            <a href="mailto:massivemedias@gmail.com" className="flex flex-col items-center gap-2 p-4 md:p-5 rounded-xl bg-black/20 shadow-lg hover:bg-black/30 transition-all group text-center">
               <Send size={22} className="text-green-400 group-hover:scale-110 transition-transform" />
               <p className="text-heading text-sm font-semibold">{tx({ fr: 'Envoyer fichiers', en: 'Send files', es: 'Enviar archivos' })}</p>
             </a>
@@ -432,7 +432,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
             {tx({ fr: 'Points-cles de ton contrat', en: 'Key contract points', es: 'Puntos clave de tu contrato' })}
           </h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="p-5 md:p-6 rounded-xl bg-green-500/5 border border-green-500/20">
+            <div className="p-5 md:p-6 rounded-xl bg-black/20 shadow-lg">
               <p className="text-green-400 text-sm md:text-base font-bold mb-2 flex items-center gap-2">
                 <CheckCircle size={16} />
                 {tx({ fr: 'Tes droits d\'auteur', en: 'Your copyrights', es: 'Tus derechos de autor' })}
@@ -445,7 +445,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
                 })}
               </p>
             </div>
-            <div className="p-5 md:p-6 rounded-xl bg-blue-500/5 border border-blue-500/20">
+            <div className="p-5 md:p-6 rounded-xl bg-black/20 shadow-lg">
               <p className="text-blue-400 text-sm md:text-base font-bold mb-2 flex items-center gap-2">
                 <CheckCircle size={16} />
                 {tx({ fr: 'Prix uniformes', en: 'Uniform pricing', es: 'Precios uniformes' })}
@@ -458,7 +458,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
                 })}
               </p>
             </div>
-            <div className="p-5 md:p-6 rounded-xl bg-purple-500/5 border border-purple-500/20">
+            <div className="p-5 md:p-6 rounded-xl bg-black/20 shadow-lg">
               <p className="text-purple-400 text-sm md:text-base font-bold mb-2 flex items-center gap-2">
                 <CheckCircle size={16} />
                 {tx({ fr: 'Prints uniques (edition unique)', en: 'Unique prints (single edition)', es: 'Prints unicos (edicion unica)' })}
@@ -471,7 +471,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
                 })}
               </p>
             </div>
-            <div className="p-5 md:p-6 rounded-xl bg-yellow-500/5 border border-yellow-500/20">
+            <div className="p-5 md:p-6 rounded-xl bg-black/20 shadow-lg">
               <p className="text-yellow-400 text-sm md:text-base font-bold mb-2 flex items-center gap-2">
                 <CheckCircle size={16} />
                 {tx({ fr: 'Zero production sans accord', en: 'No production without approval', es: 'Sin produccion sin aprobacion' })}
@@ -484,7 +484,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
                 })}
               </p>
             </div>
-            <div className="p-5 md:p-6 rounded-xl bg-green-500/5 border border-green-500/20">
+            <div className="p-5 md:p-6 rounded-xl bg-black/20 shadow-lg">
               <p className="text-green-400 text-sm md:text-base font-bold mb-2 flex items-center gap-2">
                 <DollarSign size={16} />
                 {tx({ fr: 'Copies perso au coutant', en: 'Personal copies at cost', es: 'Copias personales al costo' })}
@@ -497,7 +497,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
                 })}
               </p>
             </div>
-            <div className="p-5 md:p-6 rounded-xl bg-purple-500/5 border border-purple-500/20">
+            <div className="p-5 md:p-6 rounded-xl bg-black/20 shadow-lg">
               <p className="text-purple-400 text-sm md:text-base font-bold mb-2 flex items-center gap-2">
                 <Package size={16} />
                 {tx({ fr: 'Vente en personne (festivals, galeries)', en: 'In-person sales (festivals, galleries)', es: 'Venta en persona (festivales, galerias)' })}
@@ -510,7 +510,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
                 })}
               </p>
             </div>
-            <div className="p-5 md:p-6 rounded-xl bg-blue-500/5 border border-blue-500/20">
+            <div className="p-5 md:p-6 rounded-xl bg-black/20 shadow-lg">
               <p className="text-blue-400 text-sm md:text-base font-bold mb-2 flex items-center gap-2">
                 <CheckCircle size={16} />
                 {tx({ fr: 'Fichiers proteges', en: 'Protected files', es: 'Archivos protegidos' })}
@@ -523,7 +523,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
                 })}
               </p>
             </div>
-            <div className="p-5 md:p-6 rounded-xl bg-yellow-500/5 border border-yellow-500/20">
+            <div className="p-5 md:p-6 rounded-xl bg-black/20 shadow-lg">
               <p className="text-yellow-400 text-sm md:text-base font-bold mb-2 flex items-center gap-2">
                 <Clock size={16} />
                 {tx({ fr: 'Resiliation libre', en: 'Free termination', es: 'Terminacion libre' })}
@@ -644,7 +644,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
 
         {/* Notes copies perso + festivals */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="p-5 rounded-2xl bg-yellow-500/5 border border-yellow-500/20 card-shadow">
+          <div className="p-5 rounded-2xl bg-black/20 shadow-lg card-shadow">
             <p className="text-yellow-400 text-sm font-bold mb-2">
               {tx({ fr: 'Copies personnelles', en: 'Personal copies', es: 'Copias personales' })}
             </p>
@@ -656,7 +656,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
               })}
             </p>
           </div>
-          <div className="p-5 rounded-2xl bg-purple-500/5 border border-purple-500/20 card-shadow">
+          <div className="p-5 rounded-2xl bg-black/20 shadow-lg card-shadow">
             <p className="text-purple-400 text-sm font-bold mb-2">
               {tx({ fr: 'Festivals, galeries et boutiques', en: 'Festivals, galleries and shops', es: 'Festivales, galerias y tiendas' })}
             </p>
@@ -817,7 +817,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
                 </p>
               </div>
             ) : (
-              <div className="rounded-lg bg-yellow-500/5 border border-yellow-500/20 p-4">
+              <div className="rounded-lg bg-black/20 shadow-lg p-4">
                 <p className="text-yellow-400 text-xs flex items-center gap-2">
                   <Clock size={14} />
                   {tx({
