@@ -220,11 +220,33 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
 
       if (orders.length > 0) {
         const order = orders[0] as any;
+        // Generer le numero de facture sequentiel MM-AAAA-XXXX
+        let invoiceNumber = '';
+        try {
+          const now = new Date();
+          const year = now.getFullYear();
+          const prefix = `MM-${year}-`;
+          const existingOrders = await strapi.documents('api::order.order').findMany({
+            filters: { invoiceNumber: { $startsWith: prefix } },
+            sort: { invoiceNumber: 'desc' },
+            limit: 1,
+          });
+          let seq = 1;
+          if (existingOrders.length > 0 && (existingOrders[0] as any).invoiceNumber) {
+            const lastNum = (existingOrders[0] as any).invoiceNumber.replace(prefix, '');
+            seq = (parseInt(lastNum, 10) || 0) + 1;
+          }
+          invoiceNumber = `${prefix}${String(seq).padStart(4, '0')}`;
+        } catch (invoiceErr) {
+          strapi.log.warn('Erreur generation numero facture:', invoiceErr);
+          invoiceNumber = `MM-${new Date().getFullYear()}-0000`;
+        }
+
         await strapi.documents('api::order.order').update({
           documentId: order.documentId,
-          data: { status: 'paid' },
+          data: { status: 'paid', invoiceNumber },
         });
-        strapi.log.info(`Order ${order.documentId} marked as paid`);
+        strapi.log.info(`Order ${order.documentId} marked as paid (${invoiceNumber})`);
 
         // Envoyer email de confirmation
         try {
@@ -234,6 +256,7 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
             customerName: order.customerName,
             customerEmail: order.customerEmail,
             orderRef,
+            invoiceNumber,
             items: orderItems.map((item: any) => ({
               productName: item.productName || 'Produit',
               quantity: item.quantity || 1,

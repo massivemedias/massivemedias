@@ -45,13 +45,13 @@ function massiveEmailWrapper(content: string): string {
             <tr>
               <td style="padding:0 8px;"><a href="https://massivemedias.com" style="color:#FF52A0;text-decoration:none;font-size:12px;font-weight:600;">massivemedias.com</a></td>
               <td style="color:#333;font-size:12px;">|</td>
-              <td style="padding:0 8px;"><a href="https://instagram.com/massivemedias" style="color:#6B21A8;text-decoration:none;font-size:12px;">Instagram</a></td>
+              <td style="padding:0 8px;"><a href="https://instagram.com/massivemedias" style="color:#6B21A8;text-decoration:none;font-size:12px;">@massivemedias</a></td>
               <td style="color:#333;font-size:12px;">|</td>
-              <td style="padding:0 8px;"><a href="mailto:massivemedias@gmail.com" style="color:#6B21A8;text-decoration:none;font-size:12px;">Contact</a></td>
+              <td style="padding:0 8px;"><a href="mailto:massivemedias@gmail.com" style="color:#6B21A8;text-decoration:none;font-size:12px;">massivemedias@gmail.com</a></td>
             </tr>
           </table>
           <p style="color:#444;font-size:10px;margin:10px 0 0;">
-            Massive Medias - NEQ: 2269057891
+            Massive Medias - 7049 rue Saint-Urbain, Montr\u00e9al, QC H2S 3H5 - NEQ: 2269057891
           </p>
         </td></tr>
 
@@ -86,6 +86,7 @@ interface OrderEmailData {
   customerName: string;
   customerEmail: string;
   orderRef: string;
+  invoiceNumber?: string;
   items: OrderItem[];
   subtotal: number;
   shipping: number;
@@ -124,18 +125,42 @@ function buildOrderConfirmationHtml(data: OrderEmailData): string {
     ? `${addr.address}<br>${addr.city}, ${addr.province} ${addr.postalCode}`
     : 'N/A';
 
+  // Date formatee en francais
+  const now = new Date();
+  const moisFr = ['janvier', 'f\u00e9vrier', 'mars', 'avril', 'mai', 'juin', 'juillet', 'ao\u00fbt', 'septembre', 'octobre', 'novembre', 'd\u00e9cembre'];
+  const dateFr = `${now.getDate()} ${moisFr[now.getMonth()]} ${now.getFullYear()}`;
+
   const content = `
+    <!-- Titre document -->
+    <h1 style="color:#FF52A0;margin:0 0 4px;font-size:13px;text-transform:uppercase;letter-spacing:2px;font-weight:700;">Confirmation de commande</h1>
+
     <h2 style="color:#e4e4f0;margin:0 0 8px;font-size:22px;">Merci ${data.customerName} !</h2>
-    <p style="color:#a0a0b8;margin:0 0 24px;font-size:15px;line-height:1.5;">
-      Votre commande a ete acceptee et est en cours de traitement.<br>
-      Reference : <strong style="color:#e4e4f0;font-family:monospace;background:#1e1e3a;padding:2px 8px;border-radius:4px;">${data.orderRef}</strong>
+    <p style="color:#a0a0b8;margin:0 0 4px;font-size:15px;line-height:1.5;">
+      Votre commande a \u00e9t\u00e9 accept\u00e9e et est en cours de traitement.
     </p>
+    <p style="color:#a0a0b8;margin:0 0 4px;font-size:14px;">
+      R\u00e9f\u00e9rence : <strong style="color:#e4e4f0;font-family:monospace;background:#1e1e3a;padding:2px 8px;border-radius:4px;">${data.orderRef}</strong>
+    </p>
+    ${data.invoiceNumber ? `<p style="color:#a0a0b8;margin:0 0 4px;font-size:14px;">
+      Facture : <strong style="color:#e4e4f0;font-family:monospace;background:#1e1e3a;padding:2px 8px;border-radius:4px;">${data.invoiceNumber}</strong>
+    </p>` : ''}
+    <p style="color:#a0a0b8;margin:0 0 24px;font-size:14px;">
+      Date : <strong style="color:#e4e4f0;">${dateFr}</strong>
+    </p>
+
+    <!-- Adresse emettrice -->
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px;">
+      <tr><td style="padding:12px 16px;background:rgba(139,92,246,0.05);border-radius:8px;">
+        <p style="margin:0;color:#e4e4f0;font-weight:600;font-size:13px;">Massive Medias</p>
+        <p style="margin:2px 0 0;color:#a0a0b8;font-size:12px;line-height:1.4;">7049 rue Saint-Urbain, Montr\u00e9al, QC H2S 3H5<br>TPS : 732457635RT0001 | TVQ : 4012577678TQ0001 | NEQ : 2269057891</p>
+      </td></tr>
+    </table>
 
     <!-- Items table -->
     <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin-bottom:20px;">
       <tr style="border-bottom:2px solid #FF52A0;">
         <th style="text-align:left;padding:8px 12px;color:#a0a0b8;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Produit</th>
-        <th style="text-align:center;padding:8px 12px;color:#a0a0b8;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Qte</th>
+        <th style="text-align:center;padding:8px 12px;color:#a0a0b8;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Qt\u00e9</th>
         <th style="text-align:right;padding:8px 12px;color:#a0a0b8;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Prix</th>
       </tr>
       ${itemRows}
@@ -168,6 +193,10 @@ function buildOrderConfirmationHtml(data: OrderEmailData): string {
         <td style="padding:12px 12px 4px;color:#e4e4f0;font-size:16px;font-weight:700;">Total</td>
         <td style="padding:12px 12px 4px;text-align:right;color:#FF52A0;font-size:20px;font-weight:700;">${formatPrice(data.total)}$</td>
       </tr>
+      <tr>
+        <td style="padding:4px 12px;color:#a0a0b8;font-size:12px;">Paiement par carte de cr\u00e9dit</td>
+        <td></td>
+      </tr>
     </table>
 
     <!-- Shipping address -->
@@ -182,8 +211,9 @@ function buildOrderConfirmationHtml(data: OrderEmailData): string {
     <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:16px;">
       <tr><td style="padding:16px;background:rgba(255,82,160,0.06);border-radius:8px;border:1px solid rgba(255,82,160,0.15);">
         <p style="margin:0;color:#e4e4f0;font-size:14px;line-height:1.6;">
-          &#128666; Veuillez noter qu'un delai de traitement est necessaire avant l'expedition de votre commande.
-          Nous vous contacterons si nous avons besoin d'informations supplementaires.
+          &#128666; Votre commande sera trait\u00e9e dans un d\u00e9lai de 3 \u00e0 5 jours ouvrables.
+          Vous recevrez un courriel de confirmation lors de l'exp\u00e9dition.
+          Pour toute question : <a href="mailto:massivemedias@gmail.com" style="color:#FF52A0;text-decoration:none;">massivemedias@gmail.com</a>
         </p>
       </td></tr>
     </table>
@@ -260,7 +290,7 @@ function buildTestimonialRequestHtml(data: TestimonialRequestData): string {
     <h2 style="color:#e4e4f0;margin:0 0 8px;font-size:22px;">Bonjour ${data.customerName},</h2>
 
     <p style="color:#a0a0b8;margin:16px 0;font-size:15px;line-height:1.7;">
-      Merci d'avoir fait confiance a Massive Medias${data.orderRef ? ` pour votre commande <strong style="color:#e4e4f0;font-family:monospace;background:#1e1e3a;padding:2px 8px;border-radius:4px;">${data.orderRef}</strong>` : ''} !
+      Merci d'avoir fait confiance \u00e0 Massive Medias${data.orderRef ? ` pour votre commande <strong style="color:#e4e4f0;font-family:monospace;background:#1e1e3a;padding:2px 8px;border-radius:4px;">${data.orderRef}</strong>` : ''} !
     </p>
 
     <p style="color:#a0a0b8;margin:16px 0;font-size:15px;line-height:1.7;">
@@ -357,7 +387,7 @@ function buildContractSignedHtml(data: ContractEmailData, isForArtist: boolean):
     <h2 style="color:#e4e4f0;margin:0 0 16px;font-size:22px;">${title}</h2>
 
     ${isForArtist ? `<p style="color:#a0a0b8;margin:0 0 20px;font-size:15px;line-height:1.6;">
-      Felicitations ! Ton contrat de partenariat artiste avec Massive Medias a ete signe avec succes. Voici un resume des informations enregistrees.
+      F\u00e9licitations ! Ton contrat de partenariat artiste avec Massive Medias a \u00e9t\u00e9 sign\u00e9 avec succ\u00e8s. Voici un r\u00e9sum\u00e9 des informations enregistr\u00e9es.
     </p>` : ''}
 
     <!-- Infos artiste -->
@@ -410,7 +440,7 @@ function buildContractSignedHtml(data: ContractEmailData, isForArtist: boolean):
 
     ${isForArtist ? `<p style="color:#666;font-size:13px;margin-top:24px;line-height:1.6;">
       Ce courriel sert de confirmation de ta signature numerique du contrat de partenariat artiste avec Massive Medias. Conserve-le pour tes dossiers.
-      <br><br>Une fois ta candidature acceptee, tu pourras envoyer ton portfolio et ta bio depuis ton espace compte sur <a href="https://massivemedias.com/account" style="color:#FF52A0;text-decoration:none;">massivemedias.com</a>.
+      <br><br>Une fois ta candidature accept\u00e9e, tu pourras envoyer ton portfolio et ta bio depuis ton espace compte sur <a href="https://massivemedias.com/account" style="color:#FF52A0;text-decoration:none;">massivemedias.com</a>.
     </p>` : ''}
   `;
 
@@ -721,7 +751,7 @@ function buildTrackingEmailHtml(data: TrackingEmailData): string {
   const content = `
     <h2 style="color:#e4e4f0;margin:0 0 8px;font-size:22px;">&#128230; Votre colis est en route !</h2>
     <p style="color:#a0a0b8;margin:0 0 24px;font-size:15px;line-height:1.5;">
-      Bonjour ${data.customerName}, votre commande <strong style="color:#e4e4f0;font-family:monospace;background:#1e1e3a;padding:2px 8px;border-radius:4px;">${data.orderRef}</strong> a ete expediee.
+      Bonjour ${data.customerName}, votre commande <strong style="color:#e4e4f0;font-family:monospace;background:#1e1e3a;padding:2px 8px;border-radius:4px;">${data.orderRef}</strong> a \u00e9t\u00e9 exp\u00e9di\u00e9e.
     </p>
 
     <!-- Tracking info -->

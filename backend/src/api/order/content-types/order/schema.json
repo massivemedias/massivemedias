@@ -91,6 +91,10 @@
       "enum": ["postes-canada", "purolator", "ups", "autre"],
       "default": "postes-canada"
     },
+    "invoiceNumber": {
+      "type": "string",
+      "unique": true
+    },
     "client": {
       "type": "relation",
       "relation": "manyToOne",
