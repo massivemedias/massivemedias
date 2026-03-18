@@ -26,7 +26,10 @@ async function getAccessToken(): Promise<string> {
   const refreshToken = process.env.GOOGLE_DRIVE_REFRESH_TOKEN;
 
   if (!clientId || !clientSecret || !refreshToken) {
-    throw new Error('Google Drive OAuth2 env vars not set (CLIENT_ID, CLIENT_SECRET, REFRESH_TOKEN)');
+    const hasClientId = !!clientId;
+    const hasSecret = !!clientSecret;
+    const hasRefresh = !!refreshToken;
+    throw new Error(`Google Drive OAuth2 env vars not set - CLIENT_ID:${hasClientId} SECRET:${hasSecret} REFRESH:${hasRefresh}`);
   }
 
   const res = await fetch(TOKEN_URL, {
