@@ -16,6 +16,7 @@ import {
   getArtistMessagesAdmin, replyArtistMessage, updateArtistMessageStatus, deleteArtistMessage,
   approveEditRequest, rejectEditRequest,
 } from '../services/artistService';
+import artistsData from '../data/artists';
 
 // Helper: rend les URLs cliquables et parse les liens sociaux
 function Linkify({ text }) {
@@ -464,13 +465,36 @@ function AdminMessages() {
                                       </div>
                                     )}
 
-                                    {/* Info for remove requests */}
-                                    {itemIds.length > 0 && (
-                                      <p className="text-sm text-heading">
-                                        {tx({ fr: `Suppression de ${itemIds.length} element(s):`, en: `Removal of ${itemIds.length} item(s):`, es: `Eliminacion de ${itemIds.length} elemento(s):` })}
-                                        <span className="text-grey-muted ml-1">{itemIds.join(', ')}</span>
-                                      </p>
-                                    )}
+                                    {/* Vignettes for remove requests */}
+                                    {itemIds.length > 0 && (() => {
+                                      const artistLocal = Object.values(artistsData).find(a => a.slug === item.artistSlug);
+                                      const allItems = [...(artistLocal?.prints || []), ...(artistLocal?.stickers || [])];
+                                      return (
+                                        <div>
+                                          <p className="text-sm text-heading mb-2">
+                                            {tx({ fr: `Suppression de ${itemIds.length} element(s):`, en: `Removal of ${itemIds.length} item(s):`, es: `Eliminacion de ${itemIds.length} elemento(s):` })}
+                                          </p>
+                                          <div className="flex flex-wrap gap-3">
+                                            {itemIds.map(id => {
+                                              const found = allItems.find(p => p.id === id);
+                                              return (
+                                                <div key={id} className="relative rounded-lg overflow-hidden bg-black/20 shadow-md">
+                                                  {found?.image ? (
+                                                    <img src={found.image} alt={found.titleFr || id} className="w-20 h-20 object-cover" />
+                                                  ) : (
+                                                    <div className="w-20 h-20 flex items-center justify-center text-grey-muted text-xs">{id}</div>
+                                                  )}
+                                                  <div className="absolute inset-0 bg-red-500/30 flex items-center justify-center">
+                                                    <Trash2 size={20} className="text-white drop-shadow-lg" />
+                                                  </div>
+                                                  <p className="text-[9px] text-center text-grey-muted truncate px-1 py-0.5 bg-black/50">{found?.titleFr || id}</p>
+                                                </div>
+                                              );
+                                            })}
+                                          </div>
+                                        </div>
+                                      );
+                                    })()}
 
                                     {/* Reject reason input */}
                                     {replyingTo === `reject-${item._uid}` ? (
