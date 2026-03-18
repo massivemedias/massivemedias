@@ -33,7 +33,7 @@ function Artistes() {
           en: cms.bioEn || local.bio.en,
           es: local.bio.es || local.bio.en,
         },
-        avatar: cms.avatar ? mediaUrl(cms.avatar) : local.avatar,
+        avatar: cms.socials?.avatarUrl || (cms.avatar ? mediaUrl(cms.avatar) : null) || local.avatar,
         heroImage: cms.heroImage ? mediaUrl(cms.heroImage) : local.heroImage,
       };
     });

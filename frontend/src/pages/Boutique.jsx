@@ -7,6 +7,7 @@ import { useLang } from '../i18n/LanguageContext';
 import { useCart } from '../contexts/CartContext';
 import { useProducts } from '../hooks/useProducts';
 import artistsData from '../data/artists';
+import { useArtists } from '../hooks/useArtists';
 import { img } from '../utils/paths';
 
 // Maudite Machine (Massive) en premier
@@ -55,6 +56,7 @@ function Boutique() {
   const { tx } = useLang();
   const { addToCart } = useCart();
   const { products: cmsProducts } = useProducts();
+  const { artists: cmsArtists } = useArtists();
   const location = useLocation();
   const navigate = useNavigate();
   const [activeCategory, setActiveCategory] = useState(null);
@@ -144,8 +146,17 @@ function Boutique() {
   }, [cmsProducts]);
 
   const orderedArtists = artistOrder
-    .map(slug => ({ ...artistsData[slug], slug }))
-    .filter(a => a.name);
+    .map(slug => {
+      const local = artistsData[slug];
+      if (!local) return null;
+      const cms = cmsArtists?.find(a => a.slug === slug);
+      return {
+        ...local,
+        slug,
+        avatar: cms?.socials?.avatarUrl || local.avatar,
+      };
+    })
+    .filter(a => a && a.name);
 
   // Stickers individuels des artistes
   const allStickers = useMemo(() => {
