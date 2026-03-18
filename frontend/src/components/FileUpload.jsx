@@ -3,7 +3,9 @@ import { Upload, X, FileText, Loader2, Plus } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import { uploadFile } from '../services/api';
 
-const MAX_SIZE = 200 * 1024 * 1024; // 200 MB - on accepte les gros fichiers originaux
+const MAX_SIZE = 500 * 1024 * 1024; // 500 MB - les originaux vont sur Google Drive
+const SUPABASE_MAX = 50 * 1024 * 1024; // 50 MB - limite Supabase free tier
+const COMPRESSIBLE = ['image/tiff', 'image/png', 'image/bmp', 'image/webp', 'image/jpeg'];
 
 const ACCEPTED_TYPES = [
   'image/png', 'image/jpeg', 'image/tiff', 'image/svg+xml', 'image/webp',
@@ -17,6 +19,60 @@ const ACCEPTED_TYPES = [
 
 const ACCEPTED_EXT = '.png,.jpg,.jpeg,.tiff,.tif,.svg,.webp,.pdf,.ai,.eps,.psd';
 
+// Compresse une image pour Supabase (< 50 Mo)
+// L'original est conserve pour envoi direct a Google Drive via le backend
+function compressForSupabase(file) {
+  return new Promise((resolve) => {
+    if (!COMPRESSIBLE.includes(file.type) || file.size <= SUPABASE_MAX) {
+      return resolve(file);
+    }
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const canvas = document.createElement('canvas');
+      const maxDim = 6000;
+      let { width, height } = img;
+      if (width > maxDim || height > maxDim) {
+        const ratio = Math.min(maxDim / width, maxDim / height);
+        width = Math.round(width * ratio);
+        height = Math.round(height * ratio);
+      }
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+      // Premiere passe: JPEG 92%
+      canvas.toBlob(
+        (blob) => {
+          if (!blob || blob.size > SUPABASE_MAX) {
+            // 2eme passe: JPEG 75%
+            canvas.toBlob(
+              (blob2) => {
+                if (!blob2) return resolve(file);
+                const name = file.name.replace(/\.[^.]+$/, '.jpg');
+                resolve(new File([blob2], name, { type: 'image/jpeg' }));
+              },
+              'image/jpeg',
+              0.75
+            );
+            return;
+          }
+          const name = file.name.replace(/\.[^.]+$/, '.jpg');
+          resolve(new File([blob], name, { type: 'image/jpeg' }));
+        },
+        'image/jpeg',
+        0.92
+      );
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      resolve(file);
+    };
+    img.src = url;
+  });
+}
+
 function formatSize(bytes) {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
@@ -27,6 +83,7 @@ function FileUpload({ files = [], onFilesChange, label, maxFiles = 5, compact = 
   const { tx } = useLang();
   const inputRef = useRef(null);
   const [uploading, setUploading] = useState(false);
+  const [uploadStatus, setUploadStatus] = useState('');
   const [dragOver, setDragOver] = useState(false);
   const [error, setError] = useState('');
 
@@ -41,7 +98,7 @@ function FileUpload({ files = [], onFilesChange, label, maxFiles = 5, compact = 
 
     for (const file of toUpload) {
       if (file.size > MAX_SIZE) {
-        setError(tx({ fr: `${file.name} depasse 130 MB`, en: `${file.name} exceeds 130 MB`, es: `${file.name} excede 130 MB` }));
+        setError(tx({ fr: `${file.name} depasse 500 MB`, en: `${file.name} exceeds 500 MB`, es: `${file.name} excede 500 MB` }));
         return;
       }
     }
@@ -50,33 +107,34 @@ function FileUpload({ files = [], onFilesChange, label, maxFiles = 5, compact = 
     try {
       const uploaded = [];
       for (const file of toUpload) {
+        const wasCompressed = file.size > SUPABASE_MAX && COMPRESSIBLE.includes(file.type);
+        // Compresser pour Supabase si necessaire (les originaux iront sur Google Drive via le backend)
+        if (wasCompressed) {
+          setUploadStatus(tx({ fr: 'Compression...', en: 'Compressing...', es: 'Comprimiendo...' }));
+        }
+        const fileForSupabase = await compressForSupabase(file);
+        setUploadStatus(tx({ fr: 'Upload en cours...', en: 'Uploading...', es: 'Subiendo...' }));
         const doUpload = uploadFn || uploadFile;
-        const result = await doUpload(file);
+        const result = await doUpload(fileForSupabase);
         uploaded.push({
           id: result.id,
           name: result.name || file.name,
           url: result.url,
-          size: result.size || file.size,
-          mime: result.mime || file.type,
+          size: result.size || fileForSupabase.size,
+          mime: result.mime || fileForSupabase.type,
           originalName: file.name,
           originalSize: file.size,
+          originalMime: file.type,
+          wasCompressed,
         });
       }
+      setUploadStatus('');
       onFilesChange([...files, ...uploaded]);
     } catch (err) {
-      const msg = err?.message || err?.statusCode || '';
-      const isTooBig = String(msg).includes('Payload too large') || String(msg).includes('413') || String(msg).includes('exceeded') || String(msg).includes('413');
-      if (isTooBig) {
-        setError(tx({
-          fr: `Fichier trop volumineux. Limite: 50 Mo par fichier. Convertissez en JPEG avant d'uploader.`,
-          en: `File too large. Limit: 50 MB per file. Convert to JPEG before uploading.`,
-          es: `Archivo demasiado grande. Limite: 50 MB por archivo. Convierta a JPEG antes de subir.`
-        }));
-      } else {
-        setError(tx({ fr: 'Erreur lors de l\'upload. Reessayez.', en: 'Upload failed. Please try again.', es: 'Error al subir. Intentalo de nuevo.' }));
-      }
+      setError(tx({ fr: 'Erreur lors de l\'upload. Reessayez.', en: 'Upload failed. Please try again.', es: 'Error al subir. Intentalo de nuevo.' }));
     } finally {
       setUploading(false);
+      setUploadStatus('');
     }
   };
 
@@ -240,7 +298,7 @@ function FileUpload({ files = [], onFilesChange, label, maxFiles = 5, compact = 
         {uploading ? (
           <div className="flex flex-col items-center gap-2 py-2">
             <Loader2 size={24} className="text-accent animate-spin" />
-            <span className="text-grey-muted text-xs">{tx({ fr: 'Upload en cours...', en: 'Uploading...', es: 'Subiendo...' })}</span>
+            <span className="text-grey-muted text-xs">{uploadStatus || tx({ fr: 'Upload en cours...', en: 'Uploading...', es: 'Subiendo...' })}</span>
           </div>
         ) : (
           <div className="flex flex-col items-center gap-2 py-2">
@@ -248,7 +306,7 @@ function FileUpload({ files = [], onFilesChange, label, maxFiles = 5, compact = 
             <span className="text-grey-muted text-sm">
               {tx({ fr: 'Glissez vos fichiers ici ou cliquez pour parcourir', en: 'Drag files here or click to browse', es: 'Arrastra archivos aqui o haz clic para explorar' })}
             </span>
-            <span className="text-grey-muted/60 text-[10px]">PNG, JPG, TIFF, SVG, PDF, AI - max 50 Mo/fichier</span>
+            <span className="text-grey-muted/60 text-[10px]">PNG, JPG, TIFF, SVG, PDF, AI</span>
           </div>
         )}
       </div>
