@@ -1,9 +1,8 @@
 // Upload de fichiers originaux artistes vers Google Drive
+// Utilise google-auth-library (leger) + fetch direct sur l'API Drive REST v3
 // Service Account: massive-drive-upload@massive-489719.iam.gserviceaccount.com
-// Dossier cible: Massive > Projets > Originaux Artistes
 
-import { google } from 'googleapis';
-import { Readable } from 'stream';
+import { GoogleAuth } from 'google-auth-library';
 
 interface DriveUploadResult {
   fileId: string;
@@ -12,45 +11,64 @@ interface DriveUploadResult {
   webContentLink: string;
 }
 
-function getAuth() {
+const DRIVE_API = 'https://www.googleapis.com/upload/drive/v3/files';
+const DRIVE_API_META = 'https://www.googleapis.com/drive/v3/files';
+
+async function getAccessToken(): Promise<string> {
   const credentials = process.env.GOOGLE_DRIVE_CREDENTIALS;
   if (!credentials) throw new Error('GOOGLE_DRIVE_CREDENTIALS env var not set');
 
   const parsed = JSON.parse(credentials);
-  return new google.auth.GoogleAuth({
+  const auth = new GoogleAuth({
     credentials: parsed,
     scopes: ['https://www.googleapis.com/auth/drive.file'],
   });
+
+  const client = await auth.getClient();
+  const token = await client.getAccessToken();
+  if (!token.token) throw new Error('Failed to get access token');
+  return token.token;
 }
 
-// Trouve ou cree un sous-dossier pour l'artiste dans le dossier parent
-async function getOrCreateArtistFolder(drive: any, parentFolderId: string, artistSlug: string): Promise<string> {
-  // Chercher si le dossier existe deja
-  const search = await drive.files.list({
-    q: `'${parentFolderId}' in parents and name = '${artistSlug}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false`,
-    fields: 'files(id, name)',
-    spaces: 'drive',
+// Trouve ou cree un sous-dossier pour l'artiste
+async function getOrCreateArtistFolder(token: string, parentFolderId: string, artistSlug: string): Promise<string> {
+  // Chercher si le dossier existe
+  const searchUrl = `${DRIVE_API_META}?q='${parentFolderId}'+in+parents+and+name='${artistSlug}'+and+mimeType='application/vnd.google-apps.folder'+and+trashed=false&fields=files(id,name)`;
+  const searchRes = await fetch(searchUrl, {
+    headers: { Authorization: `Bearer ${token}` },
   });
 
-  if (search.data.files && search.data.files.length > 0) {
-    return search.data.files[0].id;
+  if (searchRes.ok) {
+    const data = await searchRes.json();
+    if (data.files && data.files.length > 0) {
+      return data.files[0].id;
+    }
   }
 
   // Creer le dossier
-  const folder = await drive.files.create({
-    requestBody: {
+  const createRes = await fetch(`${DRIVE_API_META}`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
       name: artistSlug,
       mimeType: 'application/vnd.google-apps.folder',
       parents: [parentFolderId],
-    },
-    fields: 'id',
+    }),
   });
 
-  return folder.data.id;
+  if (!createRes.ok) {
+    const err = await createRes.text();
+    throw new Error(`Failed to create folder: ${err}`);
+  }
+
+  const folder = await createRes.json();
+  return folder.id;
 }
 
-// Upload un fichier original vers Google Drive
-// Structure: Originaux Artistes/{artistSlug}/{date}_{filename}
+// Upload un fichier original vers Google Drive via multipart upload
 export async function uploadToGoogleDrive(
   fileUrl: string,
   fileName: string,
@@ -60,50 +78,77 @@ export async function uploadToGoogleDrive(
   const parentFolderId = process.env.GOOGLE_DRIVE_FOLDER_ID;
   if (!parentFolderId) throw new Error('GOOGLE_DRIVE_FOLDER_ID env var not set');
 
-  const auth = getAuth();
-  const drive = google.drive({ version: 'v3', auth });
+  const token = await getAccessToken();
 
   // Trouver ou creer le dossier de l'artiste
-  const artistFolderId = await getOrCreateArtistFolder(drive, parentFolderId, artistSlug);
+  const artistFolderId = await getOrCreateArtistFolder(token, parentFolderId, artistSlug);
 
   // Telecharger le fichier depuis Supabase
   const response = await fetch(fileUrl);
   if (!response.ok) throw new Error(`Failed to download file: ${response.status}`);
-  const arrayBuffer = await response.arrayBuffer();
-  const buffer = Buffer.from(arrayBuffer);
+  const fileBuffer = Buffer.from(await response.arrayBuffer());
+  const contentType = mimeType || response.headers.get('content-type') || 'application/octet-stream';
 
   // Nom du fichier avec date
-  const date = new Date().toISOString().split('T')[0]; // 2026-03-18
+  const date = new Date().toISOString().split('T')[0];
   const safeName = `${date}_${fileName}`;
 
-  // Upload vers Google Drive
-  const file = await drive.files.create({
-    requestBody: {
-      name: safeName,
-      parents: [artistFolderId],
-    },
-    media: {
-      mimeType: mimeType || 'application/octet-stream',
-      body: Readable.from(buffer),
-    },
-    fields: 'id, name, webViewLink, webContentLink',
+  // Metadata JSON
+  const metadata = JSON.stringify({
+    name: safeName,
+    parents: [artistFolderId],
   });
 
+  // Multipart upload (metadata + file content)
+  const boundary = '===massive_upload_boundary===';
+  const body = Buffer.concat([
+    Buffer.from(
+      `--${boundary}\r\n` +
+      `Content-Type: application/json; charset=UTF-8\r\n\r\n` +
+      metadata + `\r\n` +
+      `--${boundary}\r\n` +
+      `Content-Type: ${contentType}\r\n\r\n`
+    ),
+    fileBuffer,
+    Buffer.from(`\r\n--${boundary}--`),
+  ]);
+
+  const uploadRes = await fetch(
+    `${DRIVE_API}?uploadType=multipart&fields=id,name,webViewLink,webContentLink`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': `multipart/related; boundary=${boundary}`,
+        'Content-Length': String(body.length),
+      },
+      body,
+    }
+  );
+
+  if (!uploadRes.ok) {
+    const err = await uploadRes.text();
+    throw new Error(`Drive upload failed (${uploadRes.status}): ${err}`);
+  }
+
+  const file = await uploadRes.json();
   return {
-    fileId: file.data.id,
-    fileName: file.data.name,
-    webViewLink: file.data.webViewLink || '',
-    webContentLink: file.data.webContentLink || '',
+    fileId: file.id,
+    fileName: file.name,
+    webViewLink: file.webViewLink || `https://drive.google.com/file/d/${file.id}/view`,
+    webContentLink: file.webContentLink || '',
   };
 }
 
 // Supprime un fichier de Google Drive par son ID
 export async function deleteFromGoogleDrive(fileId: string): Promise<boolean> {
   try {
-    const auth = getAuth();
-    const drive = google.drive({ version: 'v3', auth });
-    await drive.files.delete({ fileId });
-    return true;
+    const token = await getAccessToken();
+    const res = await fetch(`${DRIVE_API_META}/${fileId}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return res.ok;
   } catch {
     return false;
   }
