@@ -103,21 +103,23 @@ function ArtistGalleryManager() {
       .map(r => ({ ...r, images: r.changeData?.images || [] }));
   }, [editRequests]);
 
-  // Resolve image URL (CMS media or local path)
+  // Resolve image URL
+  // Les images locales (artists.js) sont deja resolues via thumb()/img() a l'import
+  // Les images CMS commencent par http
+  // On detecte si c'est deja resolu en verifiant le prefix BASE_URL ou http
   const resolveThumb = (item) => {
-    if (!item) return '';
-    if (item.image?.startsWith?.('http')) return item.image;
-    if (item.image) return thumb(item.image);
-    return '';
+    if (!item?.image) return '';
+    // Deja une URL absolue ou deja resolue avec le base path
+    if (item.image.startsWith('http') || item.image.startsWith('/')) return item.image;
+    return thumb(item.image);
   };
 
   const resolveFull = (item) => {
     if (!item) return '';
-    if (item.fullImage?.startsWith?.('http')) return item.fullImage;
-    if (item.fullImage) return img(item.fullImage);
-    if (item.image?.startsWith?.('http')) return item.image;
-    if (item.image) return img(item.image);
-    return '';
+    const src = item.fullImage || item.image;
+    if (!src) return '';
+    if (src.startsWith('http') || src.startsWith('/')) return src;
+    return img(src);
   };
 
   // Supprimer une image
