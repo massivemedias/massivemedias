@@ -579,7 +579,7 @@ function AdminUtilisateurs() {
                                 )}
                               </div>
                               {!sub.tpsTvq && (
-                                <p className="text-grey-muted/60 text-xs mt-2 italic">{tx({ fr: 'Aucun numero TPS/TVQ fourni', en: 'No GST/QST number provided', es: 'Sin numero TPS/TVQ' })}</p>
+                                <p className="text-grey-muted/60 text-xs mt-2 italic">{tx({ fr: 'Aucun numéro TPS/TVQ fourni', en: 'No GST/QST number provided', es: 'Sin numero TPS/TVQ' })}</p>
                               )}
                             </div>
                           );

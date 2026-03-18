@@ -97,7 +97,7 @@ Nous imprimons aussi des flyers, cartes postales et cartes d'affaires - tout ce 
       { q: 'Quelle est la différence entre Série Studio et Série Musée?', a: 'La Série Studio utilise une imprimante 4 encres pigmentées, excellente pour decoration et cadeaux. La Série Musée utilise une imprimante 12 encres pigmentées pour une fidélité galerie et une longévité de 100+ ans.' },
       { q: 'Quel format de fichier dois-je fournir?', a: 'Idéalement un fichier haute résolution (300 DPI minimum) en TIFF, PNG ou JPEG. On peut aussi travailler à partir de fichiers PSD ou PDF.' },
       { q: 'Offrez-vous l\'encadrement?', a: 'Oui, on propose l\'encadrement sur demande à partir de 30$. Cadres noirs, blancs ou bois naturel disponibles.' },
-      { q: 'Quel est le délai de production?', a: 'Le delai varie selon le type de tirage et la quantite. Contactez-nous pour un estime.' },
+      { q: 'Quel est le délai de production?', a: 'Le délai varie selon le type de tirage et la quantité. Contactez-nous pour un estime.' },
       { q: 'Peut-on récupérer sur place?', a: 'Oui! Pick-up gratuit au Mile-End. On offre aussi la livraison locale à Montréal.' },
     ],
     seo: {

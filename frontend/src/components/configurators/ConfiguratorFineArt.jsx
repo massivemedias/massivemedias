@@ -197,7 +197,7 @@ function ConfiguratorFineArt() {
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             rows={4}
-            placeholder={tx({ fr: 'Decrivez le produit souhaite (format, finition, details...)', en: 'Describe the desired product (format, finish, details...)', es: 'Describe el producto deseado (formato, acabado, detalles...)' })}
+            placeholder={tx({ fr: 'Décrivez le produit souhaité (format, finition, details...)', en: 'Describe the desired product (format, finish, details...)', es: 'Describe el producto deseado (formato, acabado, detalles...)' })}
             className="w-full min-h-[100px] rounded-lg border-2 border-grey-muted/20 bg-transparent px-4 py-3 text-sm text-heading placeholder:text-grey-muted/50 focus:border-accent focus:outline-none transition-colors resize-none"
           />
         </div>

@@ -58,7 +58,7 @@ function extractDate(text) {
 }
 
 /**
- * Extraire le numero de facture
+ * Extraire le numéro de facture
  */
 function extractInvoiceNumber(text) {
   const patterns = [
@@ -150,7 +150,7 @@ function extractTotals(text) {
 }
 
 /**
- * Deviner la categorie d'inventaire a partir de la description
+ * Deviner la catégorie d'inventaire a partir de la description
  */
 function guessCategory(description) {
   const d = description.toLowerCase();
@@ -164,7 +164,7 @@ function guessCategory(description) {
 }
 
 /**
- * Deviner la categorie de depense
+ * Deviner la catégorie de depense
  */
 function guessExpenseCategory(description, vendor) {
   const text = `${description} ${vendor}`.toLowerCase();

@@ -457,7 +457,7 @@ function AdminStats() {
               'Mois,Revenus ($),Commandes',
               ...(stats.revenue?.monthly || []).map(m => `${m.month},${(m.revenue / 100).toFixed(2)},${m.orders}`),
               '',
-              'Depenses par categorie',
+              'Dépenses par catégorie',
               'Categorie,Montant ($)',
               ...Object.entries(stats.expenses?.byCategory || {}).map(([cat, amt]) => `${cat},${amt.toFixed(2)}`),
               '',
@@ -520,7 +520,7 @@ function AdminStats() {
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="rounded-xl card-bg shadow-lg shadow-black/20 p-5">
           <h3 className="text-sm font-heading font-bold text-heading mb-4 flex items-center gap-2">
             <Receipt size={16} className="text-red-400" />
-            {tx({ fr: 'Depenses par categorie', en: 'Expenses by category', es: 'Gastos por categoria' })}
+            {tx({ fr: 'Dépenses par catégorie', en: 'Expenses by category', es: 'Gastos por categoria' })}
           </h3>
           {expenseData.length === 0 ? (
             <p className="text-grey-muted text-sm">{tx({ fr: 'Aucune donnee', en: 'No data', es: 'Sin datos' })}</p>

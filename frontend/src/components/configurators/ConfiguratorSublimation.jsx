@@ -293,7 +293,7 @@ function ConfiguratorSublimation() {
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             rows={3}
-            placeholder={tx({ fr: 'Decrivez le produit souhaite (taille, couleur, placement...)', en: 'Describe the desired product (size, color, placement...)', es: 'Describe el producto deseado (talla, color, ubicacion...)' })}
+            placeholder={tx({ fr: 'Décrivez le produit souhaité (taille, couleur, placement...)', en: 'Describe the desired product (size, color, placement...)', es: 'Describe el producto deseado (talla, color, ubicacion...)' })}
             className="w-full min-h-[80px] md:min-h-[100px] rounded-lg border-2 border-grey-muted/20 bg-transparent px-3 py-2.5 md:px-4 md:py-3 text-sm text-heading placeholder:text-grey-muted/50 focus:border-accent focus:outline-none transition-colors resize-none"
           />
         </div>

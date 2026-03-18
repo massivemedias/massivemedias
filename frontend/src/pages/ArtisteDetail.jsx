@@ -661,7 +661,7 @@ function ArtisteDetail({ subdomainSlug }) {
           className="mb-20"
         >
           <h2 className="text-3xl font-heading font-bold text-gradient mb-8 text-center">
-            {tx({ fr: 'Notre equipement', en: 'Our Equipment', es: 'Nuestro equipo' })}
+            {tx({ fr: 'Notre équipement', en: 'Our Equipment', es: 'Nuestro equipo' })}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
             {equipmentItems.map((item, index) => (

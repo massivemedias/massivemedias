@@ -23,7 +23,7 @@ const dollars = (cents) => {
   return val.toFixed(2) + ' $';
 };
 
-// Generer un numero de facture unique basee sur la date et l'ID
+// Générer un numéro de facture unique basee sur la date et l'ID
 const generateInvoiceNumber = (order) => {
   const date = new Date(order.createdAt);
   const y = date.getFullYear();

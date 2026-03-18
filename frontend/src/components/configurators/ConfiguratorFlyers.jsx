@@ -125,7 +125,7 @@ function ConfiguratorFlyers() {
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             rows={4}
-            placeholder={tx({ fr: 'Decrivez le produit souhaite (contenu, style, details...)', en: 'Describe the desired product (content, style, details...)', es: 'Describa el producto deseado (contenido, estilo, detalles...)' })}
+            placeholder={tx({ fr: 'Décrivez le produit souhaité (contenu, style, details...)', en: 'Describe the desired product (content, style, details...)', es: 'Describa el producto deseado (contenido, estilo, detalles...)' })}
             className="w-full min-h-[100px] rounded-lg border-2 border-grey-muted/20 bg-transparent px-4 py-3 text-sm text-heading placeholder:text-grey-muted/50 focus:border-accent focus:outline-none transition-colors resize-none"
           />
         </div>

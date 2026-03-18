@@ -116,7 +116,7 @@ export const stickerHighlights = {
 export const stickerFaq = {
   fr: [
     { q: 'Quels fichiers dois-je fournir?', a: 'Idéalement un fichier vectoriel (AI, SVG, PDF) ou un PNG haute résolution (300 DPI minimum) avec fond transparent. Si vous n\'avez pas de fichier prêt, notre service de design graphique est inclus dans le prix.' },
-    { q: 'Quel est le délai de production?', a: 'Le delai de production varie selon la complexite et la quantite. Contactez-nous pour un estime. Nous vous confirmerons le délai exact lors de la validation de votre commande.' },
+    { q: 'Quel est le délai de production?', a: 'Le délai de production varie selon la complexité et la quantité. Contactez-nous pour un estime. Nous vous confirmerons le délai exact lors de la validation de votre commande.' },
     { q: 'Peut-on commander une forme totalement custom?', a: 'Oui! L\'option die-cut permet de découper vos stickers selon n\'importe quelle forme. Le contour suit exactement votre design.' },
     { q: 'Quelle est la qualité du vinyle?', a: 'Nous utilisons du vinyle professionnel avec lamination intégrée. Résistant à l\'eau, aux UV et aux rayures. Durée de vie extérieure de 3-5 ans.' },
     { q: 'La livraison est-elle disponible?', a: 'Livraison locale gratuite à Montréal (Mile-End et environs). Envoi postal disponible partout au Canada.' },

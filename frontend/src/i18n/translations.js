@@ -163,7 +163,7 @@ const translations = {
         events: [
           { year: '2022', event: 'Lancement de Massive Medias - creation de sites web, design graphique et direction artistique pour entreprises et createurs montrealais.' },
           { year: '2023', event: 'Projets d\'envergure avec des clients majeurs dont La Presse. Demarrage d\'un service de creation pour particuliers.' },
-          { year: '2024', event: 'Acquisition d\'equipements professionnels d\'impression fine art, decoupe et sublimation textile. Le studio devient un one-stop shop creatif.' },
+          { year: '2024', event: 'Acquisition d\'équipements professionnels d\'impression fine art, decoupe et sublimation textile. Le studio devient un one-stop shop creatif.' },
           { year: '2025', event: 'Enregistrement officiel au REQ. Recentrage sur quatre piliers: prints fine art, stickers custom, design graphique et developpement web.' },
           { year: '2026', event: 'Lancement du Merch-as-a-Service, de la boutique en ligne pour prints, stickers et produits sublimes, et mise en ligne du site massivemedias.com.' },
         ],

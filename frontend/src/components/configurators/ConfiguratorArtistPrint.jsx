@@ -225,7 +225,7 @@ function ConfiguratorArtistPrint({ artist, selectedPrint }) {
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           rows={3}
-          placeholder={tx({ fr: 'Decrivez vos preferences (dedicace, message, details...)', en: 'Describe your preferences (dedication, message, details...)', es: 'Describe tus preferencias (dedicatoria, mensaje, detalles...)' })}
+          placeholder={tx({ fr: 'Décrivez vos préférences (dedicace, message, details...)', en: 'Describe your preferences (dedication, message, details...)', es: 'Describe tus preferencias (dedicatoria, mensaje, detalles...)' })}
           className="w-full rounded-lg border-2 border-grey-muted/20 bg-transparent px-4 py-3 text-sm text-heading placeholder:text-grey-muted/50 focus:border-accent focus:outline-none transition-colors resize-none"
         />
       </div>

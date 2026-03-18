@@ -203,7 +203,7 @@ function Account() {
   const ACCOUNT_SIDEBAR_ITEMS = [
     { id: 'profile', label: tx({ fr: 'Profil', en: 'Profile', es: 'Perfil' }), icon: Pencil },
     { id: 'address', label: tx({ fr: 'Adresse', en: 'Address', es: 'Direccion' }), icon: MapPin },
-    { id: 'security', label: tx({ fr: 'Securite', en: 'Security', es: 'Seguridad' }), icon: Shield },
+    { id: 'security', label: tx({ fr: 'Sécurité', en: 'Security', es: 'Seguridad' }), icon: Shield },
   ];
 
   const baseTabs = [
@@ -211,7 +211,7 @@ function Account() {
     { id: 'orders', label: tx({ fr: 'Commandes', en: 'Orders', es: 'Pedidos' }), icon: Package },
     { id: 'profile', label: tx({ fr: 'Profil', en: 'Profile', es: 'Perfil' }), icon: Pencil },
     { id: 'address', label: tx({ fr: 'Adresse', en: 'Address', es: 'Direccion' }), icon: MapPin },
-    { id: 'security', label: tx({ fr: 'Securite', en: 'Security', es: 'Seguridad' }), icon: Shield },
+    { id: 'security', label: tx({ fr: 'Sécurité', en: 'Security', es: 'Seguridad' }), icon: Shield },
   ];
 
   // Tabs pour users non-admin

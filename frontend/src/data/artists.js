@@ -28,12 +28,12 @@ const artistsData = {
     slug: 'adrift',
     name: 'Adrift',
     tagline: {
-      fr: 'Art numerique & univers immersifs',
+      fr: 'Art numérique & univers immersifs',
       en: 'Digital Art & Immersive Worlds',
       es: 'Arte digital y mundos inmersivos',
     },
     bio: {
-      fr: "Adrift explore les frontieres entre le reel et le virtuel a travers des compositions numeriques saisissantes. Son univers visuel puise dans la science-fiction, les textures organiques et les paysages oniriques pour creer des oeuvres qui transportent le spectateur dans des dimensions paralleles.",
+      fr: "Adrift explore les frontieres entre le reel et le virtuel a travers des compositions numériques saisissantes. Son univers visuel puise dans la science-fiction, les textures organiques et les paysages oniriques pour creer des oeuvres qui transportent le spectateur dans des dimensions paralleles.",
       en: "Adrift explores the boundaries between real and virtual through striking digital compositions. Their visual universe draws from science fiction, organic textures and dreamlike landscapes to create works that transport the viewer into parallel dimensions.",
       es: "Adrift explora las fronteras entre lo real y lo virtual a través de composiciones digitales impactantes. Su universo visual se nutre de la ciencia ficción, las texturas orgánicas y los paisajes oníricos para crear obras que transportan al espectador a dimensiones paralelas.",
     },
@@ -71,12 +71,12 @@ const artistsData = {
     slug: 'maudite-machine',
     name: 'Maudite Machine',
     tagline: {
-      fr: 'Musique electronique & culture visuelle',
+      fr: 'Musique électronique & culture visuelle',
       en: 'Electronic Music & Visual Culture',
       es: 'Música electrónica y cultura visual',
     },
     bio: {
-      fr: "Maudite Machine est un collectif audiovisuel montrealais qui fusionne musique electronique et art visuel. Leurs creations graphiques - affiches, pochettes et illustrations - capturent l'energie brute de la scene underground et la transforment en oeuvres visuelles percutantes.",
+      fr: "Maudite Machine est un collectif audiovisuel montrealais qui fusionne musique electronique et art visuel. Leurs créations graphiques - affiches, pochettes et illustrations - capturent l'energie brute de la scene underground et la transforment en oeuvres visuelles percutantes.",
       en: "Maudite Machine is a Montreal-based audiovisual collective that fuses electronic music and visual art. Their graphic creations - posters, album covers and illustrations - capture the raw energy of the underground scene and transform it into striking visual works.",
       es: "Maudite Machine es un colectivo audiovisual de Montreal que fusiona música electrónica y arte visual. Sus creaciones gráficas - carteles, portadas de álbum e ilustraciones - capturan la energía cruda de la escena underground y la transforman en obras visuales impactantes.",
     },
@@ -170,7 +170,7 @@ const artistsData = {
     slug: 'no-pixl',
     name: 'No Pixl',
     tagline: {
-      fr: 'Photographie evenementielle & paysages',
+      fr: 'Photographie événementielle & paysages',
       en: 'Event Photography & Landscapes',
       es: 'Fotografia de eventos y paisajes',
     },

@@ -84,7 +84,7 @@ function ConfiguratorDesign() {
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             rows={4}
-            placeholder={tx({ fr: 'Decrivez votre projet (objectif, style, references...)', en: 'Describe your project (goal, style, references...)', es: 'Describa su proyecto (objetivo, estilo, referencias...)' })}
+            placeholder={tx({ fr: 'Décrivez votre projet (objectif, style, références...)', en: 'Describe your project (goal, style, references...)', es: 'Describa su proyecto (objetivo, estilo, referencias...)' })}
             className="w-full min-h-[100px] rounded-lg border-2 border-grey-muted/20 bg-transparent px-4 py-3 text-sm text-heading placeholder:text-grey-muted/50 focus:border-accent focus:outline-none transition-colors resize-none"
           />
         </div>

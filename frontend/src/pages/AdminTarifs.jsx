@@ -400,9 +400,9 @@ function AdminTarifs() {
 
   // --- Donnees design/web traduites ---
   const DESIGN_SERVICES = [
-    { service: tx({ fr: 'Creation logo', en: 'Logo creation', es: 'Creacion de logo' }), price: '300$ - 600$', delai: tx({ fr: '5-10 jours', en: '5-10 days', es: '5-10 dias' }) },
-    { service: tx({ fr: 'Identite visuelle complete', en: 'Full visual identity', es: 'Identidad visual completa' }), price: '800$ - 1 500$', delai: tx({ fr: '2-3 semaines', en: '2-3 weeks', es: '2-3 semanas' }) },
-    { service: tx({ fr: 'Affiche / flyer evenement', en: 'Poster / event flyer', es: 'Cartel / flyer de evento' }), price: '150$ - 300$', delai: tx({ fr: '3-5 jours', en: '3-5 days', es: '3-5 dias' }) },
+    { service: tx({ fr: 'Création logo', en: 'Logo creation', es: 'Creacion de logo' }), price: '300$ - 600$', delai: tx({ fr: '5-10 jours', en: '5-10 days', es: '5-10 dias' }) },
+    { service: tx({ fr: 'Identité visuelle complète', en: 'Full visual identity', es: 'Identidad visual completa' }), price: '800$ - 1 500$', delai: tx({ fr: '2-3 semaines', en: '2-3 weeks', es: '2-3 semanas' }) },
+    { service: tx({ fr: 'Affiche / flyer événement', en: 'Poster / event flyer', es: 'Cartel / flyer de evento' }), price: '150$ - 300$', delai: tx({ fr: '3-5 jours', en: '3-5 days', es: '3-5 dias' }) },
     { service: tx({ fr: 'Pochette album / single', en: 'Album / single artwork', es: 'Portada album / single' }), price: '200$ - 400$', delai: tx({ fr: '5-7 jours', en: '5-7 days', es: '5-7 dias' }) },
     { service: tx({ fr: "Design d'icones (set)", en: 'Icon design (set)', es: 'Diseno de iconos (set)' }), price: '200$ - 500$', delai: tx({ fr: '3-7 jours', en: '3-7 days', es: '3-7 dias' }) },
     { service: tx({ fr: 'Retouche photo (par image)', en: 'Photo retouching (per image)', es: 'Retoque de foto (por imagen)' }), price: '15$ - 50$', delai: '24-48h' },
@@ -682,7 +682,7 @@ function AdminTarifs() {
             </div>
 
             <div className="mt-4 bg-green-500/10 rounded-lg p-3 text-xs text-green-400 space-y-1">
-              <p className="font-semibold">{tx({ fr: 'En resume:', en: 'In summary:', es: 'En resumen:' })}</p>
+              <p className="font-semibold">{tx({ fr: 'En résumé:', en: 'In summary:', es: 'En resumen:' })}</p>
               <p>- {tx({ fr: "Society6 / Redbubble: l'artiste fait 2-4$ par vente. C'est presque rien.", en: 'Society6 / Redbubble: the artist makes 2-4$ per sale. Almost nothing.', es: 'Society6 / Redbubble: el artista gana 2-4$ por venta. Casi nada.' })}</p>
               <p>- {tx({ fr: "Printify / Printful: ~20-25$ mais l'artiste gere tout (boutique, marketing, service client, livraison)", en: 'Printify / Printful: ~20-25$ but the artist manages everything (store, marketing, customer service, shipping)', es: 'Printify / Printful: ~20-25$ pero el artista gestiona todo (tienda, marketing, servicio al cliente, envio)' })}</p>
               <p>- {tx({ fr: "INPRNT: ~18$ et bonne qualite, mais sur invitation seulement", en: 'INPRNT: ~18$ and good quality, but invite-only', es: 'INPRNT: ~18$ y buena calidad, pero solo por invitacion' })}</p>

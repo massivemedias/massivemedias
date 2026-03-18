@@ -108,7 +108,7 @@ function FileUpload({ files = [], onFilesChange, label, maxFiles = 5, compact = 
       const uploaded = [];
       for (const file of toUpload) {
         const wasCompressed = file.size > SUPABASE_MAX && COMPRESSIBLE.includes(file.type);
-        // Compresser pour Supabase si necessaire (les originaux iront sur Google Drive via le backend)
+        // Compresser pour Supabase si nécessaire (les originaux iront sur Google Drive via le backend)
         if (wasCompressed) {
           setUploadStatus(tx({ fr: 'Compression...', en: 'Compressing...', es: 'Comprimiendo...' }));
         }

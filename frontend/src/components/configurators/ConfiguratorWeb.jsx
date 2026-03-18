@@ -20,7 +20,7 @@ function ConfiguratorWeb() {
       <div className="mb-6">
         <p className="text-sm text-grey-muted leading-relaxed">
           {tx({
-            fr: 'Decrivez votre projet web et vos attentes. Joignez tout document utile (maquettes, cahier des charges, references, logos...). Nous vous repondrons avec un devis personnalise.',
+            fr: 'Décrivez votre projet web et vos attentes. Joignez tout document utile (maquettes, cahier des charges, références, logos...). Nous vous répondrons avec un devis personnalisé.',
             en: 'Describe your web project and expectations. Attach any useful documents (mockups, specs, references, logos...). We\'ll respond with a personalized quote.',
             es: 'Describa su proyecto web y sus expectativas. Adjunte cualquier documento util (maquetas, especificaciones, referencias, logos...). Le responderemos con un presupuesto personalizado.',
           })}
@@ -37,7 +37,7 @@ function ConfiguratorWeb() {
           onChange={(e) => setNotes(e.target.value)}
           rows={6}
           placeholder={tx({
-            fr: 'Decrivez votre site web ideal: objectif du site, fonctionnalites souhaitees, references de sites que vous aimez, contenu existant, echeancier...',
+            fr: 'Décrivez votre site web idéal: objectif du site, fonctionnalités souhaitées, références de sites que vous aimez, contenu existant, échéancier...',
             en: 'Describe your ideal website: site goals, desired features, reference sites you like, existing content, timeline...',
             es: 'Describa su sitio web ideal: objetivo del sitio, funcionalidades deseadas, sitios de referencia, contenido existente, cronograma...',
           })}
@@ -56,7 +56,7 @@ function ConfiguratorWeb() {
             es: 'Documentos (opcional)',
           })}
           hint={tx({
-            fr: 'Maquettes, cahier des charges, logos, images, references...',
+            fr: 'Maquettes, cahier des charges, logos, images, références...',
             en: 'Mockups, specs, logos, images, references...',
             es: 'Maquetas, especificaciones, logos, imagenes, referencias...',
           })}
