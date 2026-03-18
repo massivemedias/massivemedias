@@ -6,7 +6,7 @@ const ArtistGalleryManager = lazy(() => import('./ArtistGalleryManager'));
 import {
   DollarSign, Palette, Clock, CheckCircle,
   FileText, Loader2, AlertCircle, Package,
-  Send, ImagePlus, Check, X, CreditCard, Download, ChevronDown, ChevronUp, ScrollText,
+  Send, ImagePlus, Check, X, CreditCard, Download, ChevronDown, ChevronUp, ScrollText, Gem,
   User, Heart, BarChart3, Banknote, Receipt, ExternalLink, Globe, Link2,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
@@ -447,18 +447,32 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
                 })}
               </p>
             </div>
-            <div className="p-5 md:p-6 rounded-xl bg-black/20 shadow-lg">
-              <p className="text-purple-400 text-sm md:text-base font-bold mb-2 flex items-center gap-2">
-                <CheckCircle size={16} />
-                {tx({ fr: 'Prints uniques (edition unique)', en: 'Unique prints (single edition)', es: 'Prints unicos (edicion unica)' })}
+            <div className="p-5 md:p-6 rounded-xl bg-gradient-to-br from-purple-900/40 to-pink-900/20 shadow-lg md:col-span-2">
+              <p className="text-pink-400 text-sm md:text-base font-bold mb-3 flex items-center gap-2">
+                <Gem size={18} />
+                {tx({ fr: 'Pieces uniques - Edition unique', en: 'Unique pieces - Single edition', es: 'Piezas unicas - Edicion unica' })}
               </p>
-              <p className="text-grey-light text-xs md:text-sm leading-relaxed">
+              <p className="text-grey-light text-xs md:text-sm leading-relaxed mb-3">
                 {tx({
-                  fr: 'Un seul exemplaire produit, format fixe A2 qualite musee, sans cadre, non-reproductible. Une fois vendu, c\'est fini - piece de collection.',
-                  en: 'Only one copy produced, fixed A2 museum quality format, no frame, non-reproducible. Once sold, it\'s gone - collector\'s piece.',
-                  es: 'Solo una copia producida, formato fijo A2 calidad museo, sin marco, no reproducible. Una vez vendido, se acabo - pieza de coleccion.',
+                  fr: 'Tu peux designer certaines de tes oeuvres comme "piece unique". Un seul exemplaire sera jamais produit - format fixe, prix fixe, non-reproductible. Une fois vendue, elle disparait definitivement de ta boutique. C\'est une vraie piece de collection.',
+                  en: 'You can designate certain works as "unique pieces". Only one copy will ever be produced - fixed format, fixed price, non-reproducible. Once sold, it permanently disappears from your store. It\'s a true collector\'s item.',
+                  es: 'Puedes designar ciertas obras como "pieza unica". Solo una copia sera producida - formato fijo, precio fijo, no reproducible. Una vez vendida, desaparece definitivamente de tu tienda. Es una verdadera pieza de coleccion.',
                 })}
               </p>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px]">
+                <div className="flex items-center gap-2 p-2 rounded-lg bg-black/20">
+                  <span className="text-pink-400 font-bold">1x</span>
+                  <span className="text-grey-light">{tx({ fr: 'Un seul exemplaire', en: 'One copy only', es: 'Un solo ejemplar' })}</span>
+                </div>
+                <div className="flex items-center gap-2 p-2 rounded-lg bg-black/20">
+                  <span className="text-pink-400 font-bold">$</span>
+                  <span className="text-grey-light">{tx({ fr: 'Prix fixe par l\'artiste', en: 'Price set by artist', es: 'Precio fijado por el artista' })}</span>
+                </div>
+                <div className="flex items-center gap-2 p-2 rounded-lg bg-black/20">
+                  <span className="text-pink-400 font-bold">&times;</span>
+                  <span className="text-grey-light">{tx({ fr: 'Retiree apres vente', en: 'Removed after sale', es: 'Retirada tras venta' })}</span>
+                </div>
+              </div>
             </div>
             <div className="p-5 md:p-6 rounded-xl bg-black/20 shadow-lg">
               <p className="text-yellow-400 text-sm md:text-base font-bold mb-2 flex items-center gap-2">
