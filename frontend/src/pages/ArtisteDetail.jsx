@@ -331,7 +331,7 @@ function ArtisteDetail({ subdomainSlug }) {
           <div className="flex flex-col lg:flex-row gap-10">
             {/* Bio artiste - prend 1/3 en desktop, sticky */}
             <div className="lg:w-1/3 lg:sticky lg:top-24 self-start order-2 lg:order-1">
-              <div className="p-6 rounded-2xl border border-purple-main/30 transition-colors duration-300 highlight-shadow">
+              <div className="p-6 rounded-2xl transition-colors duration-300 highlight-shadow">
                 <h3 className="text-xl font-heading font-bold text-gradient mb-4">
                   {tx({ fr: 'L\'artiste', en: 'The Artist', es: 'El artista' })}
                 </h3>
@@ -378,7 +378,7 @@ function ArtisteDetail({ subdomainSlug }) {
               </div>
 
               {/* Ce qui est inclus */}
-              <div className="mt-6 p-6 rounded-2xl border border-purple-main/30 transition-colors duration-300 highlight-shadow">
+              <div className="mt-6 p-6 rounded-2xl transition-colors duration-300 highlight-shadow">
                 <h3 className="text-lg font-heading font-bold text-heading mb-4 flex items-center gap-2">
                   <CheckCircle size={18} className="text-accent" />
                   {tx({ fr: 'Ce qui est inclus', en: 'What\'s included', es: 'Que esta incluido' })}
@@ -468,10 +468,10 @@ function ArtisteDetail({ subdomainSlug }) {
                   className="w-[calc(50%-0.5rem)] md:w-[calc(33.333%-0.667rem)] lg:w-[calc(25%-0.75rem)]"
                 >
                   <div
-                    className={`group relative rounded-2xl overflow-hidden border card-shadow cursor-pointer transition-all duration-300 ${
+                    className={`group relative rounded-2xl overflow-hidden card-shadow cursor-pointer transition-all duration-300 ${
                       selectedSticker?.id === sticker.id
-                        ? 'border-accent shadow-lg shadow-accent/20'
-                        : 'border-purple-main/30 hover:border-accent/60 hover:shadow-lg'
+                        ? 'border border-accent shadow-lg shadow-accent/20'
+                        : 'hover:shadow-lg'
                     }`}
                     onClick={() => handleSelectSticker(sticker)}
                   >
@@ -521,7 +521,7 @@ function ArtisteDetail({ subdomainSlug }) {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-8 max-w-5xl mx-auto">
               {/* Preview */}
               <div
-                className="relative rounded-2xl overflow-hidden aspect-square border border-purple-main/30 card-shadow cursor-pointer group flex items-center justify-center p-6"
+                className="relative rounded-2xl overflow-hidden aspect-square card-shadow cursor-pointer group flex items-center justify-center p-6"
                 onClick={() => setLightbox({ type: 'sticker', index: artist.stickers.findIndex(s => s.id === selectedSticker.id) })}
               >
                 <img
@@ -535,7 +535,7 @@ function ArtisteDetail({ subdomainSlug }) {
               </div>
 
               {/* Options */}
-              <div className="p-4 sm:p-6 rounded-2xl border border-purple-main/30 transition-colors duration-300 highlight-shadow lg:sticky lg:top-24 self-start">
+              <div className="p-4 sm:p-6 rounded-2xl transition-colors duration-300 highlight-shadow lg:sticky lg:top-24 self-start">
                 <ConfiguratorArtistSticker
                   artist={artist}
                   selectedSticker={selectedSticker}
@@ -561,7 +561,7 @@ function ArtisteDetail({ subdomainSlug }) {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-8 max-w-5xl mx-auto">
               {/* Preview */}
               <div
-                className="relative rounded-2xl overflow-hidden aspect-[2/3] border border-purple-main/30 card-shadow cursor-pointer group"
+                className="relative rounded-2xl overflow-hidden aspect-[2/3] card-shadow cursor-pointer group"
                 onClick={() => setLightbox(artist.prints.findIndex(p => p.id === selectedPrint.id))}
               >
                 <img
@@ -575,7 +575,7 @@ function ArtisteDetail({ subdomainSlug }) {
               </div>
 
               {/* Options */}
-              <div className="p-4 sm:p-6 rounded-2xl border border-purple-main/30 transition-colors duration-300 highlight-shadow lg:sticky lg:top-24 self-start">
+              <div className="p-4 sm:p-6 rounded-2xl transition-colors duration-300 highlight-shadow lg:sticky lg:top-24 self-start">
                 <ConfiguratorArtistPrint
                   artist={artist}
                   selectedPrint={selectedPrint}
@@ -635,7 +635,7 @@ function ArtisteDetail({ subdomainSlug }) {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: index * 0.1 }}
                 viewport={{ once: true }}
-                className="p-6 rounded-xl border border-purple-main/30 relative transition-colors duration-300 glass-shadow"
+                className="p-6 rounded-xl relative transition-colors duration-300 glass-shadow"
               >
                 <div className="absolute -top-3 -left-1 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold text-white" style={{ background: theme === 'light' ? '#1A1A1A' : `linear-gradient(135deg, var(--logo-main, #8100D1), var(--accent-color, #FF52A0))` }}>
                   {item.step}
@@ -671,7 +671,7 @@ function ArtisteDetail({ subdomainSlug }) {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: index * 0.1 }}
                 viewport={{ once: true }}
-                className="p-6 rounded-xl border border-purple-main/30 text-center transition-colors duration-300 glass-shadow"
+                className="p-6 rounded-xl text-center transition-colors duration-300 glass-shadow"
               >
                 <h4 className="text-heading font-heading font-bold mb-2">{item.name}</h4>
                 <p className="text-grey-muted text-sm">{item.desc}</p>

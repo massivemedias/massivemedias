@@ -419,7 +419,7 @@ function Checkout() {
 
               {/* Right: Order Summary */}
               <div className="lg:col-span-2">
-                <div className="rounded-2xl border border-purple-main/30 p-6 sticky top-28 card-bg card-shadow">
+                <div className="rounded-2xl p-6 sticky top-28 card-bg card-shadow">
                   <h3 className="font-heading font-bold text-heading mb-4">
                     {t('checkout.orderSummary')}
                   </h3>

@@ -22,7 +22,7 @@ function ArtistFAQ({ lang, tx }) {
       </h2>
       <div className="space-y-2">
         {faq.map((item, i) => (
-          <div key={i} className="rounded-xl border border-purple-main/20 bg-glass overflow-hidden">
+          <div key={i} className="rounded-xl bg-glass overflow-hidden">
             <button
               onClick={() => setOpenIdx(openIdx === i ? null : i)}
               className="w-full flex items-center gap-3 px-5 py-4 text-left hover:bg-accent/5 transition-colors"

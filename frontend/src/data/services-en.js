@@ -333,6 +333,18 @@ We work with Adobe Illustrator, Figma and Photoshop to create impactful visuals 
       { q: 'Do you make event posters and flyers?', a: 'Absolutely. Concert posters, promotional flyers, postcards, album covers - we cover all print materials to promote your events and music.' },
       { q: 'Can I see a proof before final production?', a: 'Always. We send a digital proof for approval before finalizing. Two rounds of revisions are included with every project.' },
     ],
+    technologies: [
+      'Adobe Illustrator',
+      'Adobe Photoshop',
+      'Adobe InDesign',
+      'Figma',
+      'UX / UI Design',
+      'Color Theory',
+      'Typography',
+      'Vector Design',
+      'Photo Retouching',
+      'Visual Identity',
+    ],
     seo: {
       title: 'Graphic Design Montreal | Logos, Branding & Posters - Massive',
       description: 'Professional graphic design in Montreal. Logos, visual identities, posters, album covers, packaging. Custom creation. Mile-End creative studio.',

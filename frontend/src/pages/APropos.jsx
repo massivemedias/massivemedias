@@ -137,7 +137,7 @@ function APropos() {
 
                   {/* Card */}
                   <div className={`flex-1 ml-14 md:ml-0 ${isLeft ? 'md:pr-10 md:text-right' : 'md:pl-10 md:text-left'}`}>
-                    <div className="rounded-xl border border-purple-main/20 p-5 card-bg backdrop-blur-sm hover:border-accent/30 transition-all duration-300 group">
+                    <div className="rounded-xl p-5 card-bg backdrop-blur-sm transition-all duration-300 group">
                       <div className={`flex items-center gap-3 mb-2 ${isLeft ? 'md:justify-end' : 'md:justify-start'}`}>
                         <span className="text-2xl font-heading font-bold text-gradient">
                           {item.year}
@@ -207,7 +207,7 @@ function APropos() {
             {cmsUniverse
               ? cmsUniverse.map((project, index) => (
                   <a key={index} href={project.url || '#'} target="_blank" rel="noopener noreferrer" className="block">
-                    <div className="p-8 rounded-2xl border border-purple-main/30 transition-colors duration-300 card-bg card-shadow">
+                    <div className="p-8 rounded-2xl transition-colors duration-300 card-bg card-shadow">
                       <h3 className="text-2xl font-heading font-bold text-heading mb-3">{bl(project, 'title', lang)}</h3>
                       <p className="text-grey-light leading-relaxed">
                         {bl(project, 'description', lang)}
@@ -216,19 +216,19 @@ function APropos() {
                   </a>
                 ))
               : <>
-                  <a href="https://mauditemachine.com" target="_blank" rel="noopener noreferrer" className="block p-8 rounded-2xl border border-purple-main/30 hover:border-accent/50 transition-colors duration-300 card-bg card-shadow group">
+                  <a href="https://mauditemachine.com" target="_blank" rel="noopener noreferrer" className="block p-8 rounded-2xl transition-colors duration-300 card-bg card-shadow group">
                     <h3 className="text-2xl font-heading font-bold text-heading mb-3 group-hover:text-accent transition-colors">{t('aboutPage.universe.mauditeMachine.title')}</h3>
                     <p className="text-grey-light leading-relaxed">
                       {t('aboutPage.universe.mauditeMachine.description')}
                     </p>
                   </a>
-                  <a href="https://vrstlrecords.com" target="_blank" rel="noopener noreferrer" className="block p-8 rounded-2xl border border-purple-main/30 hover:border-accent/50 transition-colors duration-300 card-bg card-shadow group">
+                  <a href="https://vrstlrecords.com" target="_blank" rel="noopener noreferrer" className="block p-8 rounded-2xl transition-colors duration-300 card-bg card-shadow group">
                     <h3 className="text-2xl font-heading font-bold text-heading mb-3 group-hover:text-accent transition-colors">{t('aboutPage.universe.vrstl.title')}</h3>
                     <p className="text-grey-light leading-relaxed">
                       {t('aboutPage.universe.vrstl.description')}
                     </p>
                   </a>
-                  <a href="https://belette3000.com" target="_blank" rel="noopener noreferrer" className="block p-8 rounded-2xl border border-purple-main/30 hover:border-accent/50 transition-colors duration-300 card-bg card-shadow group">
+                  <a href="https://belette3000.com" target="_blank" rel="noopener noreferrer" className="block p-8 rounded-2xl transition-colors duration-300 card-bg card-shadow group">
                     <h3 className="text-2xl font-heading font-bold text-heading mb-3 group-hover:text-accent transition-colors">{t('aboutPage.universe.belette3000.title')}</h3>
                     <p className="text-grey-light leading-relaxed">
                       {t('aboutPage.universe.belette3000.description')}

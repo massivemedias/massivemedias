@@ -366,17 +366,15 @@ h1, h2, h3, h4, h5, h6 {
   padding: 2rem;
   border-radius: 1rem;
   background: var(--bg-card);
-  border: 1px solid var(--bg-card-border);
   box-shadow: var(--card-shadow);
   cursor: pointer;
-  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
   text-decoration: none;
   display: block;
 }
 
 .card-service:hover {
   transform: scale(1.04);
-  border-color: var(--outline-hover-border);
 }
 
 /* Texte accent */
@@ -814,20 +812,17 @@ select.input-field option {
 /* Highlight with border */
 .highlight-bordered {
   background: var(--highlight-bg);
-  border: 1px solid var(--bg-card-border);
 }
 
 /* Glass bordered with top accent */
 .glass-accent-top {
   background: var(--bg-glass);
-  border: 1px solid var(--bg-card-border);
   border-top: 2px solid var(--accent-color, #FF52A0);
 }
 
 /* CTA text bg with border */
 .cta-text-bordered {
   background: var(--cta-text-bg);
-  border: 1px solid var(--bg-card-border);
 }
 
 /* CTA bg with shadow */
@@ -887,8 +882,6 @@ select.input-field option {
 /* Highlight border (for separation) */
 .highlight-border-y {
   background: var(--highlight-bg);
-  border-top: 1px solid var(--bg-card-border);
-  border-bottom: 1px solid var(--bg-card-border);
 }
 
 /* Option selection states */

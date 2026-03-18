@@ -333,6 +333,18 @@ Trabajamos con Adobe Illustrator, Figma y Photoshop para crear visuales impactan
       { q: '¿Hacen afiches y flyers de eventos?', a: 'Absolutamente. Afiches de conciertos, flyers promocionales, postales, portadas de álbum - cubrimos todos los materiales impresos para promover tus eventos y tu música.' },
       { q: '¿Puedo ver una prueba antes de la producción final?', a: 'Siempre. Enviamos una prueba digital para aprobación antes de finalizar. Dos rondas de revisiones están incluidas en cada proyecto.' },
     ],
+    technologies: [
+      'Adobe Illustrator',
+      'Adobe Photoshop',
+      'Adobe InDesign',
+      'Figma',
+      'Diseno UX / UI',
+      'Colorimetria',
+      'Tipografia',
+      'Diseno vectorial',
+      'Retoque fotografico',
+      'Identidad visual',
+    ],
     seo: {
       title: 'Diseno Grafico Montreal | Logos, Identidad Visual & Afiches - Massive',
       description: 'Diseno grafico profesional en Montreal. Logos, identidades visuales, afiches, portadas de album, packaging. Creacion a medida. Estudio creativo Mile-End.',

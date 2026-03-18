@@ -315,6 +315,18 @@ Nous travaillons avec Adobe Illustrator, Figma et Photoshop pour créer des visu
       { q: 'Faites-vous des affiches et flyers d\'événement?', a: 'Absolument. Affiches de concerts, flyers promotionnels, cartes postales, pochettes d\'album - on couvre tous les supports imprimés pour promouvoir tes événements et ta musique.' },
       { q: 'Puis-je voir un proof avant la production finale?', a: 'Toujours. On envoie un proof numérique pour validation avant de finaliser. Deux rondes de révisions sont incluses dans chaque projet.' },
     ],
+    technologies: [
+      'Adobe Illustrator',
+      'Adobe Photoshop',
+      'Adobe InDesign',
+      'Figma',
+      'UX / UI Design',
+      'Colorimetrie',
+      'Typographie',
+      'Design vectoriel',
+      'Retouche photo',
+      'Identite visuelle',
+    ],
     seo: {
       title: 'Design Graphique Montréal | Logos, Identité Visuelle & Affiches - Massive',
       description: 'Design graphique professionnel à Montréal. Logos, identités visuelles, affiches, pochettes d\'album, packaging. Création sur mesure. Studio créatif Mile-End.',

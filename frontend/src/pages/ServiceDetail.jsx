@@ -69,7 +69,7 @@ function WebProjectCard({ project, index }) {
     >
       {/* Colonne info */}
       <div className="flex-none w-full md:w-56 flex flex-col items-center md:items-start text-center md:text-left">
-        <div className="w-28 h-20 flex items-center justify-center mb-4 rounded-xl border border-purple-main/25 bg-white/5 p-2">
+        <div className="w-28 h-20 flex items-center justify-center mb-4 rounded-xl bg-white/5 p-2">
           <img src={project.logo} alt={project.name} className="max-w-full max-h-full object-contain" loading="lazy" />
         </div>
         <h3 className="text-lg font-heading font-bold text-heading mb-1.5">{project.name}</h3>
@@ -374,7 +374,7 @@ function ServiceDetail() {
               />
             </motion.div>
           ) : (
-            <div className="p-8 rounded-2xl border border-purple-main/30 transition-colors duration-300 highlight-shadow">
+            <div className="p-8 rounded-2xl transition-colors duration-300 highlight-shadow">
               <h3 className="text-xl font-heading font-bold text-heading mb-6 flex items-center gap-2">
                 <CheckCircle size={22} className="text-accent" />
                 {t('serviceDetail.highlights')}
@@ -422,7 +422,7 @@ function ServiceDetail() {
               />
             </motion.div>
 
-            <div className="p-8 rounded-2xl border border-purple-main/30 transition-colors duration-300 highlight-shadow">
+            <div className="p-8 rounded-2xl transition-colors duration-300 highlight-shadow">
               <h3 className="text-xl font-heading font-bold text-heading mb-6 flex items-center gap-2">
                 <CheckCircle size={22} className="text-accent" />
                 {t('serviceDetail.highlights')}
@@ -472,7 +472,7 @@ function ServiceDetail() {
                     whileInView={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4, delay: index * 0.08 }}
                     viewport={{ once: true }}
-                    className="p-6 rounded-xl border border-purple-main/30 transition-colors duration-300 glass-shadow"
+                    className="p-6 rounded-xl transition-colors duration-300 glass-shadow"
                   >
                     <div className="flex items-center gap-3 mb-3">
                       <div className="p-2 rounded-lg icon-bg">
@@ -532,7 +532,7 @@ function ServiceDetail() {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: index * 0.1 }}
                 viewport={{ once: true }}
-                className="p-6 rounded-xl border border-purple-main/30 relative transition-colors duration-300 glass-shadow"
+                className="p-6 rounded-xl relative transition-colors duration-300 glass-shadow"
               >
                 <div className="absolute -top-3 -left-1 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold text-white" style={{ background: theme === 'light' ? '#1A1A1A' : `linear-gradient(135deg, var(--logo-main, #8100D1), var(--accent-color, #FF52A0))` }}>
                   {item.step}
@@ -560,7 +560,7 @@ function ServiceDetail() {
             <h2 className="text-3xl font-heading font-bold text-gradient mb-8 text-center">
               {service.comparison.title}
             </h2>
-            <div className="rounded-xl overflow-hidden border border-purple-main/30 max-w-5xl mx-auto card-shadow">
+            <div className="rounded-xl overflow-hidden max-w-5xl mx-auto card-shadow">
               <table className="price-table">
                 <thead>
                   <tr>
@@ -600,7 +600,7 @@ function ServiceDetail() {
           <p className="text-grey-muted text-center mb-8">{service.pricing.note}</p>
 
           {service.pricing.headers && (
-            <div className="rounded-xl overflow-hidden border border-purple-main/30 max-w-5xl mx-auto card-shadow overflow-x-auto">
+            <div className="rounded-xl overflow-hidden max-w-5xl mx-auto card-shadow overflow-x-auto">
               <table className="price-table">
                 <thead>
                   <tr>
@@ -632,7 +632,7 @@ function ServiceDetail() {
           {service.pricing.cards && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-5xl mx-auto">
               {service.pricing.cards.map((card, ci) => (
-                <div key={ci} className="rounded-xl border border-purple-main/30 card-shadow overflow-hidden">
+                <div key={ci} className="rounded-xl card-shadow overflow-hidden">
                   <div className="p-4 border-b border-purple-main/30 bg-glass-alt">
                     <h3 className="text-heading font-heading font-bold text-base">{card.product}</h3>
                     {card.desc && <p className="text-grey-muted text-xs mt-0.5">{card.desc}</p>}
@@ -653,7 +653,7 @@ function ServiceDetail() {
           {service.pricing.tables && (
             <div className={`gap-8 mx-auto ${service.pricing.tables.length === 1 ? 'max-w-5xl' : 'grid grid-cols-1 md:grid-cols-2 max-w-5xl'}`}>
               {service.pricing.tables.map((table, tableIndex) => (
-                <div key={tableIndex} className="rounded-xl overflow-hidden border border-purple-main/30 card-shadow">
+                <div key={tableIndex} className="rounded-xl overflow-hidden card-shadow">
                   <div className="p-3 md:p-4 border-b border-purple-main/30 bg-glass-alt">
                     <h3 className="text-heading font-heading font-bold text-sm md:text-base">{table.subtitle}</h3>
                   </div>
@@ -704,7 +704,7 @@ function ServiceDetail() {
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, delay: index * 0.1 }}
                   viewport={{ once: true }}
-                  className="p-6 rounded-xl border border-purple-main/30 text-center transition-colors duration-300 glass-shadow"
+                  className="p-6 rounded-xl text-center transition-colors duration-300 glass-shadow"
                 >
                   <h4 className="text-heading font-heading font-bold mb-2">{item.name}</h4>
                   <p className="text-grey-muted text-sm">{item.desc}</p>
@@ -756,7 +756,7 @@ function ServiceDetail() {
               <Users size={28} className="text-accent" />
               {t('serviceDetail.team')}
             </h2>
-            <div className="max-w-2xl mx-auto p-8 rounded-2xl border border-purple-main/30 text-center transition-colors duration-300 highlight-shadow">
+            <div className="max-w-2xl mx-auto p-8 rounded-2xl text-center transition-colors duration-300 highlight-shadow">
               <h3 className="text-2xl font-heading font-bold text-heading mb-1">{service.team.name}</h3>
               <p className="text-accent font-semibold mb-4">{service.team.role}</p>
               <p className="text-grey-light leading-relaxed mb-4">{service.team.bio}</p>

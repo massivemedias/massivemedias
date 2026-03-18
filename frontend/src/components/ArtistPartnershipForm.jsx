@@ -197,16 +197,16 @@ function ArtistPartnershipForm() {
         </div>
 
         <div
-          className="rounded-xl bg-glass border border-purple-main/20 p-6 max-h-[500px] overflow-y-auto mb-6 text-sm text-grey-light leading-relaxed contract-content"
+          className="rounded-xl bg-glass p-6 max-h-[500px] overflow-y-auto mb-6 text-sm text-grey-light leading-relaxed contract-content"
           dangerouslySetInnerHTML={{ __html: contractText }}
         />
 
         {/* Checkbox contrat */}
         <div className="mb-8">
-          <label className={`flex items-start gap-3 p-4 rounded-xl border bg-glass/50 transition-colors ${
+          <label className={`flex items-start gap-3 p-4 rounded-xl bg-glass/50 transition-colors ${
             user
-              ? 'cursor-pointer border-purple-main/20 hover:border-accent/40 group'
-              : 'cursor-not-allowed border-purple-main/10 opacity-50'
+              ? 'cursor-pointer group'
+              : 'cursor-not-allowed opacity-50'
           }`}>
             <input
               type="checkbox"
