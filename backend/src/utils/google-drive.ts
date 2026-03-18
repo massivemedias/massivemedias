@@ -1,8 +1,6 @@
 // Upload de fichiers originaux artistes vers Google Drive
-// Zero dependance externe - utilise crypto natif Node + fetch
-// Service Account JWT auth + API Drive REST v3
-
-import crypto from 'crypto';
+// OAuth2 avec refresh token - upload en tant que mauditemachine@gmail.com
+// Zero dependance externe - fetch natif + API Drive REST v3
 
 interface DriveUploadResult {
   fileId: string;
@@ -15,36 +13,7 @@ const DRIVE_API = 'https://www.googleapis.com/upload/drive/v3/files';
 const DRIVE_API_META = 'https://www.googleapis.com/drive/v3/files';
 const TOKEN_URL = 'https://oauth2.googleapis.com/token';
 
-function base64url(data: string | Buffer): string {
-  const b64 = Buffer.isBuffer(data) ? data.toString('base64') : Buffer.from(data).toString('base64');
-  return b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-}
-
-// Genere un JWT signe avec la cle privee du service account
-function createSignedJWT(email: string, privateKey: string, scope: string): string {
-  const now = Math.floor(Date.now() / 1000);
-  const header = { alg: 'RS256', typ: 'JWT' };
-  const payload = {
-    iss: email,
-    scope,
-    aud: TOKEN_URL,
-    iat: now,
-    exp: now + 3600,
-  };
-
-  const headerB64 = base64url(JSON.stringify(header));
-  const payloadB64 = base64url(JSON.stringify(payload));
-  const signInput = `${headerB64}.${payloadB64}`;
-
-  const sign = crypto.createSign('RSA-SHA256');
-  sign.update(signInput);
-  const signature = sign.sign(privateKey, 'base64')
-    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-
-  return `${signInput}.${signature}`;
-}
-
-// Cache du token (valide 1h)
+// Cache du token (valide ~1h)
 let cachedToken: { token: string; expiry: number } | null = null;
 
 async function getAccessToken(): Promise<string> {
@@ -52,25 +21,23 @@ async function getAccessToken(): Promise<string> {
     return cachedToken.token;
   }
 
-  const credentials = process.env.GOOGLE_DRIVE_CREDENTIALS;
-  if (!credentials) throw new Error('GOOGLE_DRIVE_CREDENTIALS env var not set');
+  const clientId = process.env.GOOGLE_DRIVE_CLIENT_ID;
+  const clientSecret = process.env.GOOGLE_DRIVE_CLIENT_SECRET;
+  const refreshToken = process.env.GOOGLE_DRIVE_REFRESH_TOKEN;
 
-  const creds = JSON.parse(credentials);
-  const jwt = createSignedJWT(
-    creds.client_email,
-    creds.private_key,
-    'https://www.googleapis.com/auth/drive.file'
-  );
+  if (!clientId || !clientSecret || !refreshToken) {
+    throw new Error('Google Drive OAuth2 env vars not set (CLIENT_ID, CLIENT_SECRET, REFRESH_TOKEN)');
+  }
 
   const res = await fetch(TOKEN_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: `grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=${jwt}`,
+    body: `client_id=${clientId}&client_secret=${clientSecret}&refresh_token=${refreshToken}&grant_type=refresh_token`,
   });
 
   if (!res.ok) {
     const err = await res.text();
-    throw new Error(`Token exchange failed: ${err}`);
+    throw new Error(`Token refresh failed: ${err}`);
   }
 
   const data = await res.json();
@@ -123,7 +90,7 @@ export async function uploadToGoogleDrive(
   const token = await getAccessToken();
   const artistFolderId = await getOrCreateArtistFolder(token, parentFolderId, artistSlug);
 
-  // Telecharger le fichier
+  // Telecharger le fichier depuis Supabase
   const response = await fetch(fileUrl);
   if (!response.ok) throw new Error(`Failed to download: ${response.status}`);
   const fileBuffer = Buffer.from(await response.arrayBuffer());
