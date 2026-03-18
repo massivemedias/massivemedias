@@ -41,7 +41,7 @@ function Linkify({ text }) {
       }
       return (
         <a key={i} href={part} target="_blank" rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-accent/10 border border-accent/20 text-accent text-xs hover:bg-accent/20 transition-colors mx-0.5"
+          className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-accent/5 text-accent text-xs hover:bg-accent/20 transition-colors mx-0.5"
           onClick={(e) => e.stopPropagation()}>
           <ExternalLink size={10} />
           {label}
@@ -266,7 +266,7 @@ function AdminMessages() {
         {summaryCards.map((card, i) => {
           const Icon = card.icon;
           return (
-            <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} className="rounded-xl p-4 bg-glass card-border">
+            <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} className="rounded-xl p-4 card-bg shadow-lg shadow-black/20">
               <div className="flex items-center gap-2 mb-2">
                 <Icon size={16} className={card.accent} />
                 <span className="text-grey-muted text-xs">{card.label}</span>
@@ -313,8 +313,8 @@ function AdminMessages() {
       ) : filtered.length === 0 ? (
         <div className="text-center py-20 text-grey-muted">{tx({ fr: 'Aucun message', en: 'No messages', es: 'Sin mensajes' })}</div>
       ) : (
-        <div className="rounded-xl bg-glass overflow-hidden card-border">
-          <div className="hidden md:grid grid-cols-[100px_1fr_1fr_120px_100px_40px] gap-3 px-4 py-3 text-xs font-semibold text-grey-muted uppercase tracking-wider border-b card-border">
+        <div className="rounded-xl card-bg shadow-lg shadow-black/20 overflow-hidden">
+          <div className="hidden md:grid grid-cols-[100px_1fr_1fr_120px_100px_40px] gap-3 px-4 py-3 text-xs font-semibold text-grey-muted uppercase tracking-wider border-b border-white/5">
             <span>Date</span>
             <span>{tx({ fr: 'Nom', en: 'Name', es: 'Nombre' })}</span>
             <span>Email</span>
@@ -334,7 +334,7 @@ function AdminMessages() {
               const isArtistMsg = item._type === 'artist-msg';
 
               return (
-                <motion.div key={item._uid} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="border-b last:border-b-0 card-border">
+                <motion.div key={item._uid} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="border-b last:border-b-0 border-white/5">
                   <div onClick={() => toggleExpand(item)}
                     className={`grid grid-cols-1 md:grid-cols-[100px_1fr_1fr_120px_100px_40px] gap-2 md:gap-3 px-4 py-3 items-center cursor-pointer hover:bg-accent/5 transition-colors ${item.status === 'new' ? 'bg-blue-500/5' : ''}`}>
                     {/* Mobile: 2-line compact */}
@@ -366,12 +366,12 @@ function AdminMessages() {
                   <AnimatePresence>
                     {isExpanded && (
                       <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
-                        <div className="px-4 pb-5 pt-1 space-y-4 border-t card-border bg-glass/50">
+                        <div className="px-4 pb-5 pt-1 space-y-4 border-t border-white/5 bg-glass/50">
                           {/* ARTIST MESSAGE expanded view */}
                           {isArtistMsg && (
                             <>
                               {/* Artist info bar */}
-                              <div className="flex items-center gap-3 rounded-lg bg-pink-500/5 border border-pink-500/20 p-3">
+                              <div className="flex items-center gap-3 rounded-lg bg-pink-500/5 p-3">
                                 <Palette size={16} className="text-pink-400 flex-shrink-0" />
                                 <div className="flex-1 min-w-0">
                                   <p className="text-heading text-sm font-semibold">{item.artistName || item.artistSlug}</p>
@@ -423,7 +423,7 @@ function AdminMessages() {
 
                               {/* Admin reply display */}
                               {item.adminReply && (
-                                <div className="rounded-lg bg-green-500/5 border border-green-500/20 p-3">
+                                <div className="rounded-lg bg-green-500/5 p-3">
                                   <h4 className="text-xs font-semibold text-green-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
                                     <Reply size={12} /> {tx({ fr: 'Reponse admin', en: 'Admin reply', es: 'Respuesta admin' })}
                                   </h4>
@@ -445,7 +445,7 @@ function AdminMessages() {
                                 const itemIds = changeData.itemIds || [];
 
                                 return (
-                                  <div className="rounded-lg bg-purple-main/10 border border-purple-main/20 p-4 space-y-3" onClick={(e) => e.stopPropagation()}>
+                                  <div className="rounded-lg bg-purple-main/5 p-4 space-y-3" onClick={(e) => e.stopPropagation()}>
                                     <h4 className="text-xs font-semibold text-heading uppercase tracking-wider flex items-center gap-1.5">
                                       <Image size={12} className="text-accent" />
                                       {tx({ fr: 'Demande de modification', en: 'Edit request', es: 'Solicitud de modificacion' })}
@@ -534,7 +534,7 @@ function AdminMessages() {
 
                               {/* Reply + actions */}
                               {replyingTo === item._uid ? (
-                                <div className="rounded-lg bg-accent/5 border card-border p-4 space-y-3" onClick={(e) => e.stopPropagation()}>
+                                <div className="rounded-lg bg-white/3 p-4 space-y-3" onClick={(e) => e.stopPropagation()}>
                                   <div className="flex items-center justify-between">
                                     <h4 className="text-xs font-semibold text-accent uppercase tracking-wider flex items-center gap-1.5">
                                       <Reply size={12} />
@@ -574,9 +574,9 @@ function AdminMessages() {
                               <div className="rounded-lg bg-glass p-4">
                                 <p className="text-sm text-heading whitespace-pre-wrap"><Linkify text={item.message} /></p>
                                 {item.attachments && item.attachments.length > 0 && (
-                                  <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-white/10">
+                                  <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-white/5">
                                     {item.attachments.map((att, j) => (
-                                      <a key={j} href={att.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-accent/10 border border-accent/20 text-xs text-accent hover:bg-accent/20 transition-colors">
+                                      <a key={j} href={att.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-accent/5 text-xs text-accent hover:bg-accent/20 transition-colors">
                                         📎 {att.name?.length > 25 ? att.name.substring(0, 25) + '...' : att.name}
                                         {att.size && <span className="text-grey-muted text-[10px]">({(att.size / 1024 / 1024).toFixed(1)} MB)</span>}
                                       </a>
@@ -587,7 +587,7 @@ function AdminMessages() {
 
                               {/* Reply section */}
                               {replyingTo === item._uid ? (
-                                <div className="rounded-lg bg-accent/5 border card-border p-4 space-y-3" onClick={(e) => e.stopPropagation()}>
+                                <div className="rounded-lg bg-white/3 p-4 space-y-3" onClick={(e) => e.stopPropagation()}>
                                   <div className="flex items-center justify-between">
                                     <h4 className="text-xs font-semibold text-accent uppercase tracking-wider flex items-center gap-1.5">
                                       <Reply size={12} />

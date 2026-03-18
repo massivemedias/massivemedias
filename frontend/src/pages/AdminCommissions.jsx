@@ -85,7 +85,7 @@ function AdminCommissions() {
       </p>
 
       {error && (
-        <div className="p-4 rounded-lg border border-red-500/30 bg-red-500/10">
+        <div className="p-4 rounded-lg bg-red-500/10 shadow-sm bg-red-500/10">
           <p className="text-red-400 text-sm">{error}</p>
         </div>
       )}
@@ -100,7 +100,7 @@ function AdminCommissions() {
         ].map((card, i) => {
           const Icon = card.icon;
           return (
-            <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} className="rounded-xl p-4 bg-glass card-border">
+            <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} className="rounded-xl p-4 card-bg shadow-lg shadow-black/20">
               <div className="flex items-center gap-2 mb-2">
                 <Icon size={16} className={card.accent} />
                 <span className="text-grey-muted text-xs">{card.label}</span>
@@ -128,7 +128,7 @@ function AdminCommissions() {
                 key={artist.slug}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="rounded-xl bg-glass card-border overflow-hidden"
+                className="rounded-xl card-bg shadow-lg shadow-black/20 overflow-hidden"
               >
                 {/* Artist row */}
                 <button
@@ -218,7 +218,7 @@ function AdminCommissions() {
                                 ))}
                               </tbody>
                               <tfoot>
-                                <tr className="border-t-2 border-white/10 font-semibold">
+                                <tr className="border-t-2 border-white/5 font-semibold">
                                   <td colSpan={3} className="p-2 text-heading">Total</td>
                                   <td className="p-2 text-right text-heading">{dollars(artist.totalSales)}</td>
                                   <td className="p-2 text-right text-grey-muted">{dollars(artist.totalProduction)}</td>
@@ -238,7 +238,7 @@ function AdminCommissions() {
                             </h4>
                             <div className="space-y-2">
                               {artist.payments.map((p, i) => (
-                                <div key={i} className="flex items-center gap-3 p-2 rounded-lg bg-green-500/5 border border-green-500/10">
+                                <div key={i} className="flex items-center gap-3 p-2 rounded-lg bg-green-500/5 bg-green-500/5">
                                   <CheckCircle size={14} className="text-green-400 flex-shrink-0" />
                                   <div className="flex-1 min-w-0">
                                     <span className="text-green-400 font-medium text-sm">{dollars(parseFloat(p.amount))}</span>
@@ -254,7 +254,7 @@ function AdminCommissions() {
                         )}
 
                         {/* Balance summary */}
-                        <div className="flex items-center justify-between p-3 rounded-lg bg-glass border border-white/10">
+                        <div className="flex items-center justify-between p-3 rounded-lg bg-glass bg-white/5">
                           <div className="flex items-center gap-6 text-sm">
                             <span className="text-grey-muted">{tx({ fr: 'Commission totale', en: 'Total commission', es: 'Comision total' })}: <span className="text-blue-400 font-medium">{dollars(artist.totalCommission)}</span></span>
                             <span className="text-grey-muted">{tx({ fr: 'Verse', en: 'Paid', es: 'Pagado' })}: <span className="text-green-400 font-medium">{dollars(artist.totalPaid)}</span></span>
@@ -283,7 +283,7 @@ function AdminCommissions() {
                               exit={{ height: 0, opacity: 0 }}
                               className="overflow-hidden"
                             >
-                              <div className="p-4 rounded-lg border border-green-500/20 bg-green-500/5 space-y-3">
+                              <div className="p-4 rounded-lg bg-green-500/5 bg-green-500/5 space-y-3">
                                 <h4 className="text-sm font-semibold text-heading flex items-center gap-2">
                                   <Banknote size={16} className="text-green-400" />
                                   {tx({ fr: 'Nouveau paiement a', en: 'New payment to', es: 'Nuevo pago a' })} {artist.name}

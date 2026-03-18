@@ -218,7 +218,7 @@ function AdminOrders() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05 }}
-              className="rounded-xl p-3 md:p-4 bg-glass card-border"
+              className="rounded-xl p-3 md:p-4 card-bg shadow-lg shadow-black/20"
             >
               <div className="flex items-center gap-1.5 mb-1 md:mb-2">
                 <Icon size={14} className={card.accent} />
@@ -273,9 +273,9 @@ function AdminOrders() {
           {tx({ fr: 'Aucune commande trouvee', en: 'No orders found', es: 'No se encontraron pedidos' })}
         </div>
       ) : (
-        <div className="rounded-xl bg-glass overflow-hidden card-border">
+        <div className="rounded-xl card-bg shadow-lg shadow-black/20 overflow-hidden">
           {/* Header */}
-          <div className="hidden md:grid grid-cols-[1fr_100px_80px_120px_120px_40px] gap-3 px-4 py-3 text-xs font-semibold text-grey-muted uppercase tracking-wider border-b card-border">
+          <div className="hidden md:grid grid-cols-[1fr_100px_80px_120px_120px_40px] gap-3 px-4 py-3 text-xs font-semibold text-grey-muted uppercase tracking-wider border-b border-white/5">
             <span>{tx({ fr: 'Client', en: 'Client', es: 'Cliente' })}</span>
             <span>Date</span>
             <span>{tx({ fr: 'Articles', en: 'Items', es: 'Articulos' })}</span>
@@ -300,7 +300,7 @@ function AdminOrders() {
                   key={order.documentId}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="border-b last:border-b-0 card-border"
+                  className="border-b last:border-b-0 border-white/5"
                 >
                   {/* Row - Compact mobile, full desktop */}
                   <div
@@ -369,7 +369,7 @@ function AdminOrders() {
                         transition={{ duration: 0.2 }}
                         className="overflow-hidden"
                       >
-                        <div className="px-4 pb-5 pt-1 space-y-5 border-t card-border bg-glass/50">
+                        <div className="px-4 pb-5 pt-1 space-y-5 border-t border-white/5 bg-glass/50">
 
                           {/* Infos client + reference */}
                           <div className="flex flex-wrap gap-4 items-start">
@@ -449,7 +449,7 @@ function AdminOrders() {
                                     <div className="flex items-start gap-4">
                                       {/* Image produit - plus grande */}
                                       {item.image && (
-                                        <img src={item.image} alt="" className="w-16 h-16 rounded-lg object-cover flex-shrink-0 border card-border" />
+                                        <img src={item.image} alt="" className="w-16 h-16 rounded-lg object-cover flex-shrink-0 border" />
                                       )}
                                       <div className="flex-1 min-w-0">
                                         <div className="flex justify-between items-start gap-2">
@@ -545,7 +545,7 @@ function AdminOrders() {
                                     <span className="text-heading">{dollars(order.tvq)}</span>
                                   </div>
                                 )}
-                                <div className="flex justify-between border-t pt-2 mt-2 card-border">
+                                <div className="flex justify-between border-t pt-2 mt-2">
                                   <span className="text-heading font-bold text-base">Total</span>
                                   <span className="text-heading font-bold text-lg">{dollars(order.total)}</span>
                                 </div>

@@ -719,7 +719,7 @@ select.input-field option {
 }
 
 .card-border {
-  border: 1px solid var(--bg-card-border);
+  border: none;
 }
 
 .card-shadow {

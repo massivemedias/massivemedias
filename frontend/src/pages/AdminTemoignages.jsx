@@ -198,7 +198,7 @@ function AdminTemoignages() {
             exit={{ opacity: 0, height: 0 }}
             className="overflow-hidden"
           >
-            <div className="p-5 rounded-xl bg-glass border border-accent/20">
+            <div className="p-5 rounded-xl bg-glass bg-accent/5">
               <h3 className="text-heading font-heading font-bold mb-3 flex items-center gap-2">
                 <Send size={16} className="text-accent" />
                 {tx({ fr: 'Generer un lien de temoignage', en: 'Generate testimonial link', es: 'Generar enlace de testimonio' })}
@@ -282,7 +282,7 @@ function AdminTemoignages() {
               <motion.div
                 key={item.documentId}
                 layout
-                className="rounded-xl bg-glass overflow-hidden"
+                className="rounded-xl card-bg shadow-lg shadow-black/20 overflow-hidden"
               >
                 {/* Row header */}
                 <div
@@ -384,7 +384,7 @@ function AdminTemoignages() {
                       exit={{ height: 0, opacity: 0 }}
                       className="overflow-hidden"
                     >
-                      <div className="px-4 pb-4 pt-1 space-y-3 border-t border-purple-main/10">
+                      <div className="px-4 pb-4 pt-1 space-y-3 border-t border-white/5">
                         {isWaiting ? (
                           <p className="text-grey-muted text-sm italic flex items-center gap-2">
                             <Clock size={14} />
@@ -431,7 +431,7 @@ function AdminTemoignages() {
                         )}
 
                         {/* Mobile actions */}
-                        <div className="flex items-center gap-2 md:hidden pt-2 border-t border-purple-main/10">
+                        <div className="flex items-center gap-2 md:hidden pt-2 border-t border-white/5">
                           {!isWaiting && !item.approved && (
                             <button
                               onClick={() => handleApprove(item, true)}
@@ -471,7 +471,7 @@ function AdminTemoignages() {
 
                         {/* Confirm delete */}
                         {confirmDelete === item.documentId && (
-                          <div className="flex items-center gap-2 p-3 rounded-lg bg-red-500/10 border border-red-500/20">
+                          <div className="flex items-center gap-2 p-3 rounded-lg bg-red-500/10 bg-red-500/5">
                             <span className="text-red-400 text-xs flex-1">
                               {tx({ fr: 'Supprimer ce temoignage?', en: 'Delete this testimonial?', es: 'Eliminar este testimonio?' })}
                             </span>

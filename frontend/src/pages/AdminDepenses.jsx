@@ -348,7 +348,7 @@ function AdminDepenses() {
         {summaryCards.map((card, i) => {
           const Icon = card.icon;
           return (
-            <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} className="rounded-xl p-3 md:p-4 bg-glass card-border">
+            <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} className="rounded-xl p-3 md:p-4 card-bg shadow-lg shadow-black/20">
               <div className="flex items-center gap-2 mb-2"><Icon size={16} className={card.accent} /><span className="text-grey-muted text-[10px] md:text-xs">{card.label}</span></div>
               <span className="text-xl md:text-2xl font-heading font-bold text-heading">{card.value}</span>
             </motion.div>
@@ -358,7 +358,7 @@ function AdminDepenses() {
 
       {/* Year summary toggle */}
       <button onClick={() => setShowSummary(!showSummary)}
-        className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-glass card-border text-sm font-semibold text-heading hover:bg-accent/10 transition-colors w-full md:w-auto">
+        className="flex items-center gap-2 px-4 py-2.5 rounded-lg card-bg shadow-lg shadow-black/20 text-sm font-semibold text-heading hover:bg-accent/10 transition-colors w-full md:w-auto">
         <BarChart3 size={16} className="text-accent" />
         {tx({ fr: 'Etat des comptes', en: 'Financial statement', es: 'Estado de cuentas' })}
         {showSummary ? <ChevronUp size={14} className="ml-auto md:ml-2" /> : <ChevronDown size={14} className="ml-auto md:ml-2" />}
@@ -368,7 +368,7 @@ function AdminDepenses() {
       <AnimatePresence>
         {showSummary && (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
-            <div className="rounded-xl bg-glass card-border p-4 space-y-4">
+            <div className="rounded-xl card-bg shadow-lg shadow-black/20 p-4 space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-semibold text-heading uppercase tracking-wider flex items-center gap-2">
                   <BarChart3 size={14} className="text-accent" />
@@ -420,7 +420,7 @@ function AdminDepenses() {
                   <div className="overflow-x-auto -mx-4 px-4">
                     <table className="w-full text-xs min-w-[600px]">
                       <thead>
-                        <tr className="border-b card-border">
+                        <tr className="border-b border-white/5">
                           <th className="text-left py-2 text-grey-muted font-semibold">{tx({ fr: 'Mois', en: 'Month', es: 'Mes' })}</th>
                           <th className="text-right py-2 text-green-400 font-semibold">{tx({ fr: 'Revenus', en: 'Revenue', es: 'Ingresos' })}</th>
                           <th className="text-right py-2 text-red-400 font-semibold">{tx({ fr: 'Depenses', en: 'Expenses', es: 'Gastos' })}</th>
@@ -434,7 +434,7 @@ function AdminDepenses() {
                           const balance = m.revenue - m.expenses;
                           const hasData = m.revenue > 0 || m.expenses > 0;
                           if (!hasData) return (
-                            <tr key={key} className="border-b card-border opacity-30">
+                            <tr key={key} className="border-b border-white/5 opacity-30">
                               <td className="py-2 text-grey-muted">{(MONTH_NAMES[lang] || MONTH_NAMES.fr)[parseInt(key) - 1]}</td>
                               <td className="text-right py-2 text-grey-muted">-</td>
                               <td className="text-right py-2 text-grey-muted">-</td>
@@ -444,7 +444,7 @@ function AdminDepenses() {
                             </tr>
                           );
                           return (
-                            <tr key={key} className="border-b card-border">
+                            <tr key={key} className="border-b border-white/5">
                               <td className="py-2 text-heading font-medium">{(MONTH_NAMES[lang] || MONTH_NAMES.fr)[parseInt(key) - 1]}</td>
                               <td className="text-right py-2 text-green-400">{fmt(m.revenue)}$</td>
                               <td className="text-right py-2 text-red-400">{fmt(m.expenses)}$</td>
@@ -474,19 +474,19 @@ function AdminDepenses() {
 
                   {/* Tax summary */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-2">
-                    <div className="rounded-lg bg-accent/5 p-3 card-border">
+                    <div className="rounded-lg bg-accent/5 p-3">
                       <p className="text-[10px] text-grey-muted uppercase tracking-wider mb-1">{tx({ fr: 'TPS percue', en: 'GST collected', es: 'TPS cobrado' })}</p>
                       <p className="text-sm font-bold text-green-400">{fmt(yearData.totals.revenueTps)}$</p>
                     </div>
-                    <div className="rounded-lg bg-accent/5 p-3 card-border">
+                    <div className="rounded-lg bg-accent/5 p-3">
                       <p className="text-[10px] text-grey-muted uppercase tracking-wider mb-1">{tx({ fr: 'TPS payee', en: 'GST paid', es: 'TPS pagado' })}</p>
                       <p className="text-sm font-bold text-red-400">{fmt(yearData.totals.tps)}$</p>
                     </div>
-                    <div className="rounded-lg bg-accent/5 p-3 card-border">
+                    <div className="rounded-lg bg-accent/5 p-3">
                       <p className="text-[10px] text-grey-muted uppercase tracking-wider mb-1">{tx({ fr: 'TVQ percue', en: 'QST collected', es: 'TVQ cobrado' })}</p>
                       <p className="text-sm font-bold text-green-400">{fmt(yearData.totals.revenueTvq)}$</p>
                     </div>
-                    <div className="rounded-lg bg-accent/5 p-3 card-border">
+                    <div className="rounded-lg bg-accent/5 p-3">
                       <p className="text-[10px] text-grey-muted uppercase tracking-wider mb-1">{tx({ fr: 'TVQ payee', en: 'QST paid', es: 'TVQ pagado' })}</p>
                       <p className="text-sm font-bold text-red-400">{fmt(yearData.totals.tvq)}$</p>
                     </div>
@@ -494,19 +494,19 @@ function AdminDepenses() {
 
                   {/* Net tax owing */}
                   <div className="flex flex-col md:flex-row gap-3">
-                    <div className="flex-1 rounded-lg bg-blue-500/5 p-3 card-border">
+                    <div className="flex-1 rounded-lg bg-blue-500/5 p-3">
                       <p className="text-[10px] text-grey-muted uppercase tracking-wider mb-1">{tx({ fr: 'TPS nette a remettre', en: 'Net GST owing', es: 'TPS neto a remitir' })}</p>
                       <p className={`text-lg font-bold ${(yearData.totals.revenueTps - yearData.totals.tps) >= 0 ? 'text-red-400' : 'text-green-400'}`}>
                         {fmt(yearData.totals.revenueTps - yearData.totals.tps)}$
                       </p>
                     </div>
-                    <div className="flex-1 rounded-lg bg-purple-500/5 p-3 card-border">
+                    <div className="flex-1 rounded-lg bg-purple-500/5 p-3">
                       <p className="text-[10px] text-grey-muted uppercase tracking-wider mb-1">{tx({ fr: 'TVQ nette a remettre', en: 'Net QST owing', es: 'TVQ neto a remitir' })}</p>
                       <p className={`text-lg font-bold ${(yearData.totals.revenueTvq - yearData.totals.tvq) >= 0 ? 'text-red-400' : 'text-green-400'}`}>
                         {fmt(yearData.totals.revenueTvq - yearData.totals.tvq)}$
                       </p>
                     </div>
-                    <div className="flex-1 rounded-lg bg-accent/5 p-3 card-border">
+                    <div className="flex-1 rounded-lg bg-accent/5 p-3">
                       <p className="text-[10px] text-grey-muted uppercase tracking-wider mb-1">{tx({ fr: 'Depenses deductibles', en: 'Deductible expenses', es: 'Gastos deducibles' })}</p>
                       <p className="text-lg font-bold text-green-400">{fmt(yearData.totals.deductible)}$</p>
                     </div>
@@ -551,7 +551,7 @@ function AdminDepenses() {
             <Download size={16} />
           </button>
           <button onClick={() => { setShowImport(!showImport); setInvoiceData(null); setParseError(''); setImportSuccess(''); }}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-glass card-border text-sm font-semibold text-heading hover:bg-accent/10 transition-colors whitespace-nowrap">
+            className="flex items-center gap-1.5 px-4 py-2 rounded-lg card-bg shadow-lg shadow-black/20 text-sm font-semibold text-heading hover:bg-accent/10 transition-colors whitespace-nowrap">
             {showImport ? <X size={16} /> : <FileText size={16} className="text-accent" />}
             {showImport ? tx({ fr: 'Fermer', en: 'Close', es: 'Cerrar' }) : tx({ fr: 'Importer facture', en: 'Import invoice', es: 'Importar factura' })}
           </button>
@@ -566,7 +566,7 @@ function AdminDepenses() {
       <AnimatePresence>
         {showImport && (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
-            <div className="rounded-xl bg-glass card-border p-4 space-y-4">
+            <div className="rounded-xl card-bg shadow-lg shadow-black/20 p-4 space-y-4">
               <h3 className="text-sm font-semibold text-heading uppercase tracking-wider flex items-center gap-2">
                 <FileText size={14} className="text-accent" />
                 {tx({ fr: 'Import de facture PDF', en: 'PDF Invoice Import', es: 'Importar factura PDF' })}
@@ -609,14 +609,14 @@ function AdminDepenses() {
 
               {/* Parse error */}
               {parseError && (
-                <div className="p-3 rounded-lg border border-red-500/30 bg-red-500/10">
+                <div className="p-3 rounded-lg bg-red-500/10 shadow-sm bg-red-500/10">
                   <p className="text-red-400 text-sm">{parseError}</p>
                 </div>
               )}
 
               {/* Import success */}
               {importSuccess && (
-                <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="p-4 rounded-lg border border-green-500/30 bg-green-500/10">
+                <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="p-4 rounded-lg bg-green-500/10 bg-green-500/10">
                   <div className="flex items-center gap-2">
                     <CheckCircle size={16} className="text-green-400" />
                     <p className="text-green-400 text-sm font-medium">{importSuccess}</p>
@@ -667,7 +667,7 @@ function AdminDepenses() {
                     ) : (
                       <div className="space-y-2">
                         {invoiceData.lineItems.map((lineItem, i) => (
-                          <div key={i} className="rounded-lg bg-glass/50 p-3 card-border">
+                          <div key={i} className="rounded-lg card-bg shadow-md shadow-black/15 p-3">
                             <div className="grid grid-cols-1 sm:grid-cols-[1fr_80px_90px_90px_100px_40px_40px] gap-2 items-center">
                               <input type="text" value={lineItem.description} onChange={(e) => updateInvoiceItem(i, 'description', e.target.value)}
                                 placeholder={tx({ fr: 'Description', en: 'Description', es: 'Descripcion' })} className="input-field text-sm" />
@@ -730,7 +730,7 @@ function AdminDepenses() {
                   </details>
 
                   {/* Actions */}
-                  <div className="flex items-center gap-3 pt-2 border-t card-border">
+                  <div className="flex items-center gap-3 pt-2 border-t border-white/5">
                     <button onClick={() => { setInvoiceData(null); setReceiptUrl(''); }} className="px-4 py-2 rounded-lg bg-glass text-grey-muted text-sm hover:text-heading transition-colors">
                       {tx({ fr: 'Annuler', en: 'Cancel', es: 'Cancelar' })}
                     </button>
@@ -755,7 +755,7 @@ function AdminDepenses() {
       <AnimatePresence>
         {showForm && (
           <motion.form initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
-            onSubmit={handleCreate} className="rounded-xl bg-glass p-4 card-border overflow-hidden space-y-3">
+            onSubmit={handleCreate} className="rounded-xl bg-glass p-4 overflow-hidden space-y-3">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <input type="text" value={formData.description} onChange={(e) => setFormData(p => ({ ...p, description: e.target.value }))}
                 placeholder={tx({ fr: 'Description *', en: 'Description *', es: 'Descripcion *' })} className="input-field text-sm" required />
@@ -789,7 +789,7 @@ function AdminDepenses() {
               {/* Receipt upload */}
               <input type="file" ref={fileInputRef} onChange={handleReceiptUpload} accept="image/*,.pdf" className="hidden" />
               <button type="button" onClick={() => fileInputRef.current?.click()} disabled={uploadingReceipt}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-glass card-border text-xs text-grey-muted hover:text-heading transition-colors disabled:opacity-50">
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg card-bg shadow-lg shadow-black/20 text-xs text-grey-muted hover:text-heading transition-colors disabled:opacity-50">
                 {uploadingReceipt ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
                 {formData.receiptUrl ? tx({ fr: 'Recu joint', en: 'Receipt attached', es: 'Recibo adjunto' }) : tx({ fr: 'Joindre recu', en: 'Attach receipt', es: 'Adjuntar recibo' })}
               </button>
@@ -814,9 +814,9 @@ function AdminDepenses() {
       ) : items.length === 0 ? (
         <div className="text-center py-20 text-grey-muted">{tx({ fr: 'Aucune depense', en: 'No expenses', es: 'Sin gastos' })}</div>
       ) : (
-        <div className="rounded-xl bg-glass overflow-hidden card-border">
+        <div className="rounded-xl card-bg shadow-lg shadow-black/20 overflow-hidden">
           {/* Desktop header */}
-          <div className="hidden md:grid grid-cols-[90px_1fr_120px_110px_80px_55px_55px_30px_30px] gap-3 px-4 py-3 text-xs font-semibold text-grey-muted uppercase tracking-wider border-b card-border">
+          <div className="hidden md:grid grid-cols-[90px_1fr_120px_110px_80px_55px_55px_30px_30px] gap-3 px-4 py-3 text-xs font-semibold text-grey-muted uppercase tracking-wider border-b border-white/5">
             <span>Date</span>
             <span>Description</span>
             <span>{tx({ fr: 'Fournisseur', en: 'Vendor', es: 'Proveedor' })}</span>
@@ -835,7 +835,7 @@ function AdminDepenses() {
               const catColor = CATEGORY_COLORS[item.category] || CATEGORY_COLORS.other;
 
               return (
-                <motion.div key={item.documentId} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="border-b last:border-b-0 card-border">
+                <motion.div key={item.documentId} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="border-b last:border-b-0 border-white/5">
                   {/* Desktop row */}
                   <div onClick={() => toggleExpand(item.documentId)}
                     className="hidden md:grid grid-cols-[90px_1fr_120px_110px_80px_55px_55px_30px_30px] gap-3 px-4 py-3 items-center cursor-pointer hover:bg-accent/5 transition-colors">
@@ -880,7 +880,7 @@ function AdminDepenses() {
                   <AnimatePresence>
                     {isExpanded && (
                       <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
-                        <div className="px-4 pb-4 pt-1 space-y-3 border-t card-border bg-glass/50" onClick={(e) => e.stopPropagation()}>
+                        <div className="px-4 pb-4 pt-1 space-y-3 border-t border-white/5 bg-glass/50" onClick={(e) => e.stopPropagation()}>
 
                           {isEditing ? (
                             /* Edit form */
@@ -916,7 +916,7 @@ function AdminDepenses() {
                                 </label>
                                 <input type="file" ref={editFileRef} onChange={handleEditReceiptUpload} accept="image/*,.pdf" className="hidden" />
                                 <button type="button" onClick={() => editFileRef.current?.click()} disabled={uploadingEditReceipt}
-                                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-glass card-border text-xs text-grey-muted hover:text-heading transition-colors disabled:opacity-50">
+                                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg card-bg shadow-lg shadow-black/20 text-xs text-grey-muted hover:text-heading transition-colors disabled:opacity-50">
                                   {uploadingEditReceipt ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
                                   {editData.receiptUrl ? tx({ fr: 'Recu joint', en: 'Receipt attached', es: 'Recibo adjunto' }) : tx({ fr: 'Joindre recu', en: 'Attach receipt', es: 'Adjuntar recibo' })}
                                 </button>
@@ -943,7 +943,7 @@ function AdminDepenses() {
                               {/* Receipt image */}
                               {item.receiptUrl && (
                                 <a href={item.receiptUrl} target="_blank" rel="noopener noreferrer" className="block">
-                                  <img src={item.receiptUrl} alt="Recu" className="max-h-48 rounded-lg border card-border object-contain" />
+                                  <img src={item.receiptUrl} alt="Recu" className="max-h-48 rounded-lg border object-contain" />
                                 </a>
                               )}
 

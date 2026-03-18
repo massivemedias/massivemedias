@@ -45,7 +45,7 @@ function getThemeColor(varName, fallback = '#FF52A0') {
 function ChartTooltip({ active, payload, label, suffix = '$' }) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="rounded-lg bg-glass card-border px-3 py-2 shadow-lg backdrop-blur-sm">
+    <div className="rounded-lg card-bg shadow-lg shadow-black/20 px-3 py-2 shadow-lg backdrop-blur-sm">
       <p className="text-xs text-grey-muted mb-1">{label}</p>
       {payload.map((p, i) => (
         <p key={i} className="text-sm font-semibold" style={{ color: p.color || p.fill }}>
@@ -163,12 +163,12 @@ function AdminStats() {
       {/* Tab switcher */}
       <div className="flex gap-2">
         <button onClick={() => setTab('business')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${tab === 'business' ? 'bg-accent text-white' : 'bg-glass text-grey-muted hover:text-heading card-border'}`}>
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${tab === 'business' ? 'bg-accent text-white' : 'bg-glass text-grey-muted hover:text-heading'}`}>
           <DollarSign size={16} />
           {tx({ fr: 'Affaires', en: 'Business', es: 'Negocios' })}
         </button>
         <button onClick={() => setTab('analytics')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${tab === 'analytics' ? 'bg-accent text-white' : 'bg-glass text-grey-muted hover:text-heading card-border'}`}>
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${tab === 'analytics' ? 'bg-accent text-white' : 'bg-glass text-grey-muted hover:text-heading'}`}>
           <Activity size={16} />
           {tx({ fr: 'Trafic & Visiteurs', en: 'Traffic & Visitors', es: 'Trafico & Visitantes' })}
         </button>
@@ -190,7 +190,7 @@ function AdminStats() {
           {analyticsLoading ? (
             <div className="flex items-center justify-center py-20"><Loader2 size={32} className="animate-spin text-accent" /></div>
           ) : analyticsError ? (
-            <div className="rounded-xl bg-glass p-8 card-border text-center">
+            <div className="rounded-xl bg-glass p-8 text-center">
               <Activity size={32} className="mx-auto mb-3 text-grey-muted" />
               <p className="text-heading font-semibold mb-2">{tx({ fr: 'Analytics non configure', en: 'Analytics not configured', es: 'Analytics no configurado' })}</p>
               <p className="text-grey-muted text-sm mb-4">{analyticsError}</p>
@@ -207,7 +207,7 @@ function AdminStats() {
                   <BarChart3 size={16} /> GA4 Dashboard <ExternalLink size={12} />
                 </a>
                 <a href="https://search.google.com/search-console" target="_blank" rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-glass text-grey-muted text-sm hover:text-heading transition-colors card-border">
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-glass text-grey-muted text-sm hover:text-heading transition-colors">
                   Search Console <ExternalLink size={12} />
                 </a>
               </div>
@@ -226,7 +226,7 @@ function AdminStats() {
                 ].map((card, i) => {
                   const Icon = card.icon;
                   return (
-                    <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} className="rounded-xl p-3 bg-glass card-border">
+                    <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} className="rounded-xl p-3 card-bg shadow-lg shadow-black/20">
                       <div className="flex items-center gap-1.5 mb-1">
                         <Icon size={14} className={card.accent} />
                         {card.pulse && <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />}
@@ -240,7 +240,7 @@ function AdminStats() {
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Daily visitors chart */}
-                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="rounded-xl bg-glass p-5 card-border lg:col-span-2">
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="rounded-xl bg-glass p-5 lg:col-span-2">
                   <h3 className="text-sm font-heading font-bold text-heading mb-4 flex items-center gap-2">
                     <BarChart3 size={16} className="text-blue-400" />
                     {tx({ fr: 'Visiteurs quotidiens', en: 'Daily visitors', es: 'Visitantes diarios' })}
@@ -268,7 +268,7 @@ function AdminStats() {
                 </motion.div>
 
                 {/* Top pages */}
-                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="rounded-xl bg-glass p-5 card-border">
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="rounded-xl card-bg shadow-lg shadow-black/20 p-5">
                   <h3 className="text-sm font-heading font-bold text-heading mb-4 flex items-center gap-2">
                     <Eye size={16} className="text-cyan-400" />
                     {tx({ fr: 'Pages les plus visitees', en: 'Most visited pages', es: 'Paginas mas visitadas' })}
@@ -293,7 +293,7 @@ function AdminStats() {
                 </motion.div>
 
                 {/* Traffic sources */}
-                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="rounded-xl bg-glass p-5 card-border">
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="rounded-xl card-bg shadow-lg shadow-black/20 p-5">
                   <h3 className="text-sm font-heading font-bold text-heading mb-4 flex items-center gap-2">
                     <Globe size={16} className="text-green-400" />
                     {tx({ fr: 'Sources de trafic', en: 'Traffic sources', es: 'Fuentes de trafico' })}
@@ -325,7 +325,7 @@ function AdminStats() {
                 </motion.div>
 
                 {/* Countries */}
-                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="rounded-xl bg-glass p-5 card-border">
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="rounded-xl card-bg shadow-lg shadow-black/20 p-5">
                   <h3 className="text-sm font-heading font-bold text-heading mb-4 flex items-center gap-2">
                     <Globe size={16} className="text-purple-400" />
                     {tx({ fr: 'Pays', en: 'Countries', es: 'Paises' })}
@@ -347,7 +347,7 @@ function AdminStats() {
                 </motion.div>
 
                 {/* Devices */}
-                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="rounded-xl bg-glass p-5 card-border">
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="rounded-xl card-bg shadow-lg shadow-black/20 p-5">
                   <h3 className="text-sm font-heading font-bold text-heading mb-4 flex items-center gap-2">
                     <Monitor size={16} className="text-yellow-400" />
                     {tx({ fr: 'Appareils', en: 'Devices', es: 'Dispositivos' })}
@@ -377,7 +377,7 @@ function AdminStats() {
                 </motion.div>
 
                 {/* Age groups */}
-                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }} className="rounded-xl bg-glass p-5 card-border">
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }} className="rounded-xl card-bg shadow-lg shadow-black/20 p-5">
                   <h3 className="text-sm font-heading font-bold text-heading mb-4 flex items-center gap-2">
                     <Users size={16} className="text-emerald-400" />
                     {tx({ fr: 'Age des visiteurs', en: 'Visitor age', es: 'Edad de visitantes' })}
@@ -401,15 +401,15 @@ function AdminStats() {
               {/* GA external links */}
               <div className="flex flex-wrap gap-3">
                 <a href="https://analytics.google.com/analytics/web/#/p525792501/reports/dashboard" target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg bg-glass text-grey-muted text-xs hover:text-heading transition-colors card-border">
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg bg-glass text-grey-muted text-xs hover:text-heading transition-colors">
                   GA4 Dashboard <ExternalLink size={10} />
                 </a>
                 <a href="https://search.google.com/search-console" target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg bg-glass text-grey-muted text-xs hover:text-heading transition-colors card-border">
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg bg-glass text-grey-muted text-xs hover:text-heading transition-colors">
                   Search Console <ExternalLink size={10} />
                 </a>
                 <a href="https://dashboard.stripe.com/" target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg bg-glass text-grey-muted text-xs hover:text-heading transition-colors card-border">
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg bg-glass text-grey-muted text-xs hover:text-heading transition-colors">
                   Stripe <ExternalLink size={10} />
                 </a>
               </div>
@@ -425,7 +425,7 @@ function AdminStats() {
         {summaryCards.map((card, i) => {
           const Icon = card.icon;
           return (
-            <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} className="rounded-xl p-4 bg-glass card-border">
+            <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} className="rounded-xl p-4 card-bg shadow-lg shadow-black/20">
               <div className="flex items-center gap-2 mb-2"><Icon size={16} className={card.accent} /><span className="text-grey-muted text-xs">{card.label}</span></div>
               <span className="text-2xl font-heading font-bold text-heading">{card.value}</span>
             </motion.div>
@@ -480,7 +480,7 @@ function AdminStats() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Monthly Revenue - Area Chart */}
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="rounded-xl bg-glass p-5 card-border">
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="rounded-xl card-bg shadow-lg shadow-black/20 p-5">
           <h3 className="text-sm font-heading font-bold text-heading mb-4 flex items-center gap-2">
             <BarChart3 size={16} className="text-green-400" />
             {tx({ fr: 'Revenus mensuels', en: 'Monthly revenue', es: 'Ingresos mensuales' })}
@@ -517,7 +517,7 @@ function AdminStats() {
         </motion.div>
 
         {/* Expenses by category - Bar Chart */}
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="rounded-xl bg-glass p-5 card-border">
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="rounded-xl card-bg shadow-lg shadow-black/20 p-5">
           <h3 className="text-sm font-heading font-bold text-heading mb-4 flex items-center gap-2">
             <Receipt size={16} className="text-red-400" />
             {tx({ fr: 'Depenses par categorie', en: 'Expenses by category', es: 'Gastos por categoria' })}
@@ -538,7 +538,7 @@ function AdminStats() {
         </motion.div>
 
         {/* Order status - Donut Chart */}
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="rounded-xl bg-glass p-5 card-border">
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="rounded-xl card-bg shadow-lg shadow-black/20 p-5">
           <h3 className="text-sm font-heading font-bold text-heading mb-4 flex items-center gap-2">
             <ShoppingBag size={16} className="text-accent" />
             {tx({ fr: 'Status des commandes', en: 'Order status', es: 'Estado de pedidos' })}
@@ -578,7 +578,7 @@ function AdminStats() {
         </motion.div>
 
         {/* Taxes */}
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="rounded-xl bg-glass p-5 card-border">
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="rounded-xl card-bg shadow-lg shadow-black/20 p-5">
           <h3 className="text-sm font-heading font-bold text-heading mb-4 flex items-center gap-2">
             <Percent size={16} className="text-purple-400" />
             {tx({ fr: 'Bilan taxes', en: 'Tax summary', es: 'Resumen impuestos' })}
@@ -599,7 +599,7 @@ function AdminStats() {
               <span className="text-heading text-center">{(stats.taxes?.tpsPaid || 0).toFixed(2)}$</span>
               <span className="text-heading text-center">{(stats.taxes?.tvqPaid || 0).toFixed(2)}$</span>
             </div>
-            <div className="grid grid-cols-3 gap-2 text-sm border-t pt-2 card-border">
+            <div className="grid grid-cols-3 gap-2 text-sm border-t pt-2">
               <span className="text-heading font-semibold text-xs">{tx({ fr: 'A remettre', en: 'Net owed', es: 'A remitir' })}</span>
               <span className={`text-center font-bold ${(stats.taxes?.tpsNet || 0) >= 0 ? 'text-red-400' : 'text-green-400'}`}>{(stats.taxes?.tpsNet || 0).toFixed(2)}$</span>
               <span className={`text-center font-bold ${(stats.taxes?.tvqNet || 0) >= 0 ? 'text-red-400' : 'text-green-400'}`}>{(stats.taxes?.tvqNet || 0).toFixed(2)}$</span>
@@ -608,7 +608,7 @@ function AdminStats() {
         </motion.div>
 
         {/* KPIs calcules */}
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }} className="rounded-xl bg-glass p-5 card-border">
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }} className="rounded-xl card-bg shadow-lg shadow-black/20 p-5">
           <h3 className="text-sm font-heading font-bold text-heading mb-4 flex items-center gap-2">
             <TrendingUp size={16} className="text-accent" />
             KPIs
@@ -650,7 +650,7 @@ function AdminStats() {
         </motion.div>
 
         {/* Top clients */}
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="rounded-xl bg-glass p-5 card-border lg:col-span-2">
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="rounded-xl bg-glass p-5 lg:col-span-2">
           <h3 className="text-sm font-heading font-bold text-heading mb-4 flex items-center gap-2">
             <Users size={16} className="text-accent" />
             {tx({ fr: 'Top 10 clients', en: 'Top 10 clients', es: 'Top 10 clientes' })}

@@ -278,7 +278,7 @@ function AdminUtilisateurs() {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="fixed top-4 right-4 z-50 p-4 rounded-lg bg-green-500/10 border border-green-500/20 text-green-400 text-sm flex items-center gap-2 shadow-lg"
+            className="fixed top-4 right-4 z-50 p-4 rounded-lg bg-green-500/10 bg-green-500/5 text-green-400 text-sm flex items-center gap-2 shadow-lg"
           >
             <Check size={16} />
             {toast}
@@ -291,7 +291,7 @@ function AdminUtilisateurs() {
         {summaryCards.map((card, i) => {
           const Icon = card.icon;
           return (
-            <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} className="rounded-xl p-4 bg-glass card-border">
+            <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} className="rounded-xl p-4 card-bg shadow-lg shadow-black/20">
               <div className="flex items-center gap-2 mb-2"><Icon size={16} className={card.accent} /><span className="text-grey-muted text-xs">{card.label}</span></div>
               <span className="text-2xl font-heading font-bold text-heading">{card.value}</span>
             </motion.div>
@@ -300,7 +300,7 @@ function AdminUtilisateurs() {
       </div>
 
       {error && (
-        <div className="p-4 rounded-lg border border-red-500/30 bg-red-500/10">
+        <div className="p-4 rounded-lg bg-red-500/10 shadow-sm bg-red-500/10">
           <p className="text-red-400 text-sm">{error}</p>
         </div>
       )}
@@ -344,8 +344,8 @@ function AdminUtilisateurs() {
 
       {/* Users list */}
       {filtered.length > 0 && (
-        <div className="rounded-xl bg-glass overflow-hidden card-border">
-          <div className="hidden md:grid grid-cols-[1fr_1.2fr_100px_70px_100px_32px] gap-3 px-4 py-3 text-xs font-semibold text-grey-muted uppercase tracking-wider border-b card-border">
+        <div className="rounded-xl card-bg shadow-lg shadow-black/20 overflow-hidden">
+          <div className="hidden md:grid grid-cols-[1fr_1.2fr_100px_70px_100px_32px] gap-3 px-4 py-3 text-xs font-semibold text-grey-muted uppercase tracking-wider border-b border-white/5">
             <span>{tx({ fr: 'Utilisateur', en: 'User', es: 'Usuario' })}</span>
             <span>Email</span>
             <span>{tx({ fr: 'Inscrit', en: 'Joined', es: 'Registro' })}</span>
@@ -364,7 +364,7 @@ function AdminUtilisateurs() {
             const isExpanded = expandedId === user.id;
 
             return (
-              <div key={user.id} className="border-b last:border-b-0 card-border">
+              <div key={user.id} className="border-b last:border-b-0 border-white/5">
                 {/* Desktop row */}
                 <div
                   onClick={() => setExpandedId(isExpanded ? null : user.id)}
@@ -541,13 +541,13 @@ function AdminUtilisateurs() {
                       transition={{ duration: 0.2 }}
                       className="overflow-hidden"
                     >
-                      <div className="px-4 pb-4 pt-1 border-t card-border bg-glass/50">
+                      <div className="px-4 pb-4 pt-1 border-t border-white/5 bg-glass/50">
                         {/* Candidature artiste - TPS/TVQ */}
                         {(() => {
                           const sub = artistSubs[(user.email || '').toLowerCase()];
                           if (!sub) return null;
                           return (
-                            <div className="mt-3 mb-3 rounded-lg bg-purple-500/5 border border-purple-500/20 p-4">
+                            <div className="mt-3 mb-3 rounded-lg bg-purple-500/5 bg-purple-500/5 p-4">
                               <h4 className="text-xs font-semibold text-purple-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
                                 <Receipt size={12} />
                                 {tx({ fr: 'Infos candidature artiste', en: 'Artist application info', es: 'Info solicitud artista' })}
@@ -680,7 +680,7 @@ function AdminUtilisateurs() {
 
                         {/* Actions */}
                         {role !== 'admin' && !user.isGuest && (
-                          <div className="mt-4 pt-3 border-t border-purple-main/10 flex flex-wrap items-center gap-3">
+                          <div className="mt-4 pt-3 border-t border-white/5 flex flex-wrap items-center gap-3">
                             {/* Artist role actions */}
                             {role === 'artist' ? (
                               <>
@@ -759,7 +759,7 @@ function AdminUtilisateurs() {
                       transition={{ duration: 0.2 }}
                       className="overflow-hidden"
                     >
-                      <div className="px-4 py-3 flex flex-wrap items-center gap-3 bg-accent/5 border-t border-accent/10">
+                      <div className="px-4 py-3 flex flex-wrap items-center gap-3 bg-accent/5 border-t border-white/5">
                         <span className="text-xs text-grey-muted whitespace-nowrap">
                           {role === 'artist'
                             ? tx({ fr: 'Changer le profil artiste:', en: 'Change artist profile:', es: 'Cambiar perfil artista:' })
@@ -822,7 +822,7 @@ function AdminUtilisateurs() {
       )}
 
       {/* Google Analytics - Navigation habits */}
-      <div className="rounded-xl bg-glass p-5 card-border">
+      <div className="rounded-xl card-bg shadow-lg shadow-black/20 p-5">
         <h3 className="text-sm font-heading font-bold text-heading mb-4 flex items-center gap-2">
           <BarChart3 size={16} className="text-blue-400" />
           {tx({ fr: 'Habitudes de navigation', en: 'Navigation habits', es: 'Habitos de navegacion' })}

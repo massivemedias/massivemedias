@@ -104,7 +104,7 @@ function AdminInventaire() {
       </p>
 
       {error && (
-        <div className="p-4 rounded-lg border border-red-500/30 error-bg mb-6">
+        <div className="p-4 rounded-lg bg-red-500/10 shadow-sm error-bg mb-6">
           <p className="text-red-400">{error}</p>
         </div>
       )}
@@ -166,7 +166,7 @@ function AdminInventaire() {
       </div>
 
       {/* Table */}
-      <div className="rounded-xl bg-glass overflow-hidden">
+      <div className="rounded-xl card-bg shadow-lg shadow-black/20 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
