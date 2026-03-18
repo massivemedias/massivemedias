@@ -43,6 +43,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
   // Artist profile
   const [artistProfileForm, setArtistProfileForm] = useState({ nomArtiste: '', bio: '', profileImage: '', paypalEmail: '' });
   const [artistProfileSaving, setArtistProfileSaving] = useState(false);
+  const [profileSaved, setProfileSaved] = useState(false);
   const [artistProfileMsg, setArtistProfileMsg] = useState('');
   const [profileImageFile, setProfileImageFile] = useState(null);
   const [profileImageUploading, setProfileImageUploading] = useState(false);
@@ -53,6 +54,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
   const [imgSuccess, setImgSuccess] = useState('');
   const [imgNote, setImgNote] = useState('');
   const [imgSocials, setImgSocials] = useState({ instagram: '', website: '', facebook: '', tiktok: '', youtube: '', other: '' });
+  const [socialsSaved, setSocialsSaved] = useState(false);
 
   // Messages (kept for sending image deposits as messages)
   const [messages, setMessages] = useState([]);
@@ -207,8 +209,8 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
         }).catch(() => {});
       }
 
-      setArtistProfileMsg(tx({ fr: 'Profil artiste sauvegarde!', en: 'Artist profile saved!', es: 'Perfil artista guardado!' }));
-      setTimeout(() => setArtistProfileMsg(''), 3000);
+      setProfileSaved(true);
+      setTimeout(() => setProfileSaved(false), 3000);
     } catch {
       setArtistProfileMsg(tx({ fr: 'Erreur lors de la sauvegarde', en: 'Error saving', es: 'Error al guardar' }));
       setTimeout(() => setArtistProfileMsg(''), 3000);
@@ -849,10 +851,10 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
             <button
               type="submit"
               disabled={artistProfileSaving}
-              className="btn-primary text-sm py-2.5 px-6 disabled:opacity-50"
+              className={`text-sm py-2.5 px-6 rounded-full font-semibold flex items-center gap-1.5 transition-all duration-300 disabled:opacity-50 ${profileSaved ? 'bg-green-500 text-white shadow-lg shadow-green-500/30' : 'btn-primary'}`}
             >
-              {artistProfileSaving ? <Loader2 size={14} className="animate-spin mr-1.5" /> : <Check size={14} className="mr-1.5" />}
-              {tx({ fr: 'Sauvegarder', en: 'Save', es: 'Guardar' })}
+              {artistProfileSaving ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
+              {profileSaved ? tx({ fr: 'Sauvegarde!', en: 'Saved!', es: 'Guardado!' }) : tx({ fr: 'Sauvegarder', en: 'Save', es: 'Guardar' })}
             </button>
           </form>
         </div>
@@ -909,17 +911,17 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
                   requestType: 'update-socials',
                   changeData: { socials },
                 });
-                setToast(tx({ fr: 'Liens sociaux sauvegardes!', en: 'Social links saved!', es: 'Enlaces sociales guardados!' }));
-                setTimeout(() => setToast(''), 3000);
+                setSocialsSaved(true);
+                setTimeout(() => setSocialsSaved(false), 3000);
               } catch {
                 setToast(tx({ fr: 'Erreur', en: 'Error', es: 'Error' }));
                 setTimeout(() => setToast(''), 3000);
               }
             }}
-            className="btn-primary text-sm py-2.5 px-6"
+            className={`text-sm py-2.5 px-6 rounded-full font-semibold flex items-center gap-1.5 transition-all duration-300 ${socialsSaved ? 'bg-green-500 text-white shadow-lg shadow-green-500/30' : 'btn-primary'}`}
           >
-            <Check size={14} className="mr-1.5" />
-            {tx({ fr: 'Sauvegarder les liens', en: 'Save links', es: 'Guardar enlaces' })}
+            <Check size={14} />
+            {socialsSaved ? tx({ fr: 'Sauvegarde!', en: 'Saved!', es: 'Guardado!' }) : tx({ fr: 'Sauvegarder les liens', en: 'Save links', es: 'Guardar enlaces' })}
           </button>
         </div>
 
