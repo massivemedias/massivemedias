@@ -58,7 +58,7 @@ function ArtisteDetail({ subdomainSlug }) {
       prints: cms.prints && cms.prints.length > (local.prints || []).length ? cms.prints : local.prints,
       stickers: local.stickers || [],
       pricing: cms.pricing || local.pricing,
-      avatar: local.avatar || (cms.avatar && !cms.avatar.includes('undefined') ? cms.avatar : null),
+      avatar: (cms.socials?.avatarUrl) || (cms.avatar && !cms.avatar.includes('undefined') ? cms.avatar : null) || local.avatar,
       heroImage: cms.heroImage && !cms.heroImage.includes('undefined') ? cms.heroImage : local.heroImage,
     };
   }, [cmsArtists, slug]);
