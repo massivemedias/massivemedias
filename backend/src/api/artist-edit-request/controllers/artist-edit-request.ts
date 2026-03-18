@@ -285,8 +285,24 @@ function buildNotificationMessage(requestType: string, changeData: any, artistNa
     case 'add-prints':
     case 'add-stickers':
     case 'add-merch': {
-      const count = changeData?.images?.length || 0;
-      return `${name} souhaite ajouter ${count} image(s). Type: ${label}. En attente de validation.`;
+      const images = changeData?.images || [];
+      const count = images.length;
+      let msg = `${name} souhaite ajouter ${count} image(s). Type: ${label}. En attente de validation.\n\n`;
+      // Liens de telechargement haute qualite des originaux
+      if (images.length > 0) {
+        msg += `--- FICHIERS ORIGINAUX HAUTE QUALITE ---\n`;
+        images.forEach((img: any, i: number) => {
+          const title = img.title || img.titleFr || `Image ${i + 1}`;
+          const originalUrl = img.originalUrl || '';
+          const originalName = img.originalName || '';
+          const originalSize = img.originalSize ? `(${(img.originalSize / (1024 * 1024)).toFixed(1)} Mo)` : '';
+          msg += `\n${i + 1}. ${title} ${originalSize}\n`;
+          msg += `   Format original: ${originalName}\n`;
+          msg += `   Telecharger: ${originalUrl}\n`;
+        });
+        msg += `\n--- Ces fichiers sont les originaux non comprimes envoyes par l'artiste ---`;
+      }
+      return msg;
     }
     case 'remove-prints':
     case 'remove-stickers':
@@ -295,11 +311,14 @@ function buildNotificationMessage(requestType: string, changeData: any, artistNa
       return `${name} souhaite supprimer ${ids.length} element(s). Type: ${label}. En attente de validation.`;
     }
     case 'update-bio':
-      return `${name} a mis a jour sa bio. Applique automatiquement.`;
-    case 'update-socials':
-      return `${name} a mis a jour ses liens sociaux. Applique automatiquement.`;
+      return `${name} a mis a jour sa bio. Applique automatiquement.\n\nNouvelle bio:\n${changeData?.bioFr || '(vide)'}`;
+    case 'update-socials': {
+      const socials = changeData?.socials || {};
+      const links = Object.entries(socials).filter(([, v]) => v).map(([k, v]) => `  ${k}: ${v}`).join('\n');
+      return `${name} a mis a jour ses liens sociaux. Applique automatiquement.\n\n${links}`;
+    }
     case 'update-avatar':
-      return `${name} a change sa photo de profil. Applique automatiquement.`;
+      return `${name} a change sa photo de profil. Applique automatiquement.\n\nNouvelle photo: ${changeData?.avatarUrl || ''}`;
     case 'update-profile':
       return `${name} a mis a jour son profil. Applique automatiquement.`;
     default:
@@ -396,6 +415,10 @@ async function handleAddImages(strapi: any, artist: any, requestType: string, ch
       titleEs: img.titleEs || '',
       image: thumbUrl,
       fullImage: fullUrl,
+      // Conserver le lien vers le fichier original haute qualite (TIFF, PNG, etc.)
+      originalUrl: img.originalUrl || '',
+      originalName: img.originalName || '',
+      originalSize: img.originalSize || 0,
     };
 
     // Proprietes specifiques aux prints

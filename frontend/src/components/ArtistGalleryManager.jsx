@@ -159,6 +159,8 @@ function ArtistGalleryManager() {
       const cat = CATEGORIES.find(c => c.id === uploadCategory);
       const images = uploadFiles.map((f, i) => ({
         originalUrl: f.url,
+        originalName: f.originalName || f.name || '',
+        originalSize: f.originalSize || f.size || 0,
         title: uploadTitles[i] || f.name?.replace(/\.[^/.]+$/, '') || '',
         titleFr: uploadTitles[i] || f.name?.replace(/\.[^/.]+$/, '') || '',
       }));
