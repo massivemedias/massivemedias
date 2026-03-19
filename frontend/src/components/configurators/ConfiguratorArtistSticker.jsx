@@ -59,21 +59,25 @@ function ConfiguratorArtistSticker({ artist, selectedSticker }) {
 
   const handleAddToCart = () => {
     if (!priceInfo) return;
-    addToCart({
-      productId: `artist-sticker-${artist.slug}-${selectedSticker.id}`,
-      productName: `${artist.name} - ${stickerTitle}`,
-      finish: tx({ fr: finishLabel?.labelFr, en: finishLabel?.labelEn, es: finishLabel?.labelEn }),
-      shape: tx({ fr: shapeLabel?.labelFr, en: shapeLabel?.labelEn, es: shapeLabel?.labelEn }),
-      size: sizeLabel,
-      quantity: priceInfo.qty,
-      unitPrice: priceInfo.unitPrice,
-      totalPrice: priceInfo.price,
-      image: selectedSticker.image,
-      uploadedFiles: [],
-      notes,
-    });
-    setAdded(true);
-    setTimeout(() => setAdded(false), 2000);
+    try {
+      addToCart({
+        productId: `artist-sticker-${artist.slug}-${selectedSticker.id}`,
+        productName: `${artist.name} - ${stickerTitle}`,
+        finish: tx({ fr: finishLabel?.labelFr, en: finishLabel?.labelEn, es: finishLabel?.labelEn }),
+        shape: tx({ fr: shapeLabel?.labelFr, en: shapeLabel?.labelEn, es: shapeLabel?.labelEn }),
+        size: sizeLabel,
+        quantity: priceInfo.qty,
+        unitPrice: priceInfo.unitPrice,
+        totalPrice: priceInfo.price,
+        image: selectedSticker.image,
+        uploadedFiles: [],
+        notes,
+      });
+      setAdded(true);
+      setTimeout(() => setAdded(false), 2000);
+    } catch (err) {
+      console.error('addToCart error:', err);
+    }
   };
 
   return (

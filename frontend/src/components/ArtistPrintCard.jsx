@@ -51,7 +51,7 @@ function ArtistPrintCard({ print, minPrice, pricing, selected, onClick, onZoom }
         {onZoom && (
           <div
             onClick={handleZoom}
-            className="absolute top-3 left-3 p-1.5 rounded-full bg-black/50 hover:bg-black/70 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer"
+            className="absolute top-3 left-3 p-1.5 rounded-full bg-black/50 hover:bg-black/70 text-white md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 cursor-pointer"
           >
             <ZoomIn size={16} />
           </div>

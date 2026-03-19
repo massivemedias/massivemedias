@@ -512,7 +512,7 @@ function ArtisteDetail({ subdomainSlug }) {
                     </div>
                     {/* Zoom button */}
                     <button
-                      className="absolute top-2 right-2 p-1.5 rounded-full bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-black/70 z-10"
+                      className="absolute top-2 right-2 p-1.5 rounded-full bg-black/50 text-white md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 hover:bg-black/70 z-10"
                       onClick={(e) => { e.stopPropagation(); setLightbox({ type: 'sticker', index }); }}
                       aria-label="Zoom"
                     >
@@ -550,7 +550,7 @@ function ArtisteDetail({ subdomainSlug }) {
                   className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105 sticker-diecut"
                 />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
-                  <ZoomIn size={32} className="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 drop-shadow-lg" />
+                  <ZoomIn size={32} className="text-white md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 drop-shadow-lg" />
                 </div>
               </div>
 
@@ -591,7 +591,7 @@ function ArtisteDetail({ subdomainSlug }) {
                   onLoad={(e) => setIsLandscape(e.target.naturalWidth > e.target.naturalHeight)}
                 />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
-                  <ZoomIn size={32} className="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 drop-shadow-lg" />
+                  <ZoomIn size={32} className="text-white md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 drop-shadow-lg" />
                 </div>
               </div>
 

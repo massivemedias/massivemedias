@@ -57,31 +57,35 @@ function ConfiguratorArtistPrint({ artist, selectedPrint }) {
 
   const handleAddToCart = () => {
     if (!effectivePrice) return;
-    addToCart({
-      productId: `artist-print-${artist.slug}-${selectedPrint.id}`,
-      productName: `${artist.name} - ${printTitle}`,
-      finish: isUnique
-        ? tx({ fr: 'Piece unique', en: 'One of a kind', es: 'Pieza unica' })
-        : tx({ fr: tierLabel?.labelFr, en: tierLabel?.labelEn, es: tierLabel?.labelEn }),
-      shape: withFrame
-        ? tx({
-            fr: `Cadre ${frameColor === 'black' ? 'noir' : 'blanc'}`,
-            en: `${frameColor === 'black' ? 'Black' : 'White'} frame`,
-            es: `Marco ${frameColor === 'black' ? 'negro' : 'blanco'}`,
-          })
-        : null,
-      size: isUnique ? tx({ fr: 'Piece unique', en: 'Unique piece', es: 'Pieza unica' }) : formatLabel?.label,
-      quantity: 1,
-      unitPrice: effectivePrice,
-      totalPrice: effectivePrice,
-      image: selectedPrint.image,
-      uploadedFiles: [],
-      notes,
-      isUnique: isUnique || false,
-      ...(isArtistOwnPrint ? { isArtistOwnPrint: true, artistSlug: artist.slug } : {}),
-    });
-    setAdded(true);
-    setTimeout(() => setAdded(false), 2000);
+    try {
+      addToCart({
+        productId: `artist-print-${artist.slug}-${selectedPrint.id}`,
+        productName: `${artist.name} - ${printTitle}`,
+        finish: isUnique
+          ? tx({ fr: 'Piece unique', en: 'One of a kind', es: 'Pieza unica' })
+          : tx({ fr: tierLabel?.labelFr, en: tierLabel?.labelEn, es: tierLabel?.labelEn }),
+        shape: withFrame
+          ? tx({
+              fr: `Cadre ${frameColor === 'black' ? 'noir' : 'blanc'}`,
+              en: `${frameColor === 'black' ? 'Black' : 'White'} frame`,
+              es: `Marco ${frameColor === 'black' ? 'negro' : 'blanco'}`,
+            })
+          : null,
+        size: isUnique ? tx({ fr: 'Piece unique', en: 'Unique piece', es: 'Pieza unica' }) : formatLabel?.label,
+        quantity: 1,
+        unitPrice: effectivePrice,
+        totalPrice: effectivePrice,
+        image: selectedPrint.image,
+        uploadedFiles: [],
+        notes,
+        isUnique: isUnique || false,
+        ...(isArtistOwnPrint ? { isArtistOwnPrint: true, artistSlug: artist.slug } : {}),
+      });
+      setAdded(true);
+      setTimeout(() => setAdded(false), 2000);
+    } catch (err) {
+      console.error('addToCart error:', err);
+    }
   };
 
   // Get price for display in format buttons

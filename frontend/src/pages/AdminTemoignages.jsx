@@ -90,6 +90,7 @@ function AdminTemoignages() {
       await fetchItems();
     } catch (err) {
       console.error('Delete error:', err);
+      alert(tx({ fr: 'Erreur lors de la suppression', en: 'Error deleting', es: 'Error al eliminar' }));
     } finally {
       setDeleting(null);
     }

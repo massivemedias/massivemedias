@@ -1292,7 +1292,7 @@ function Account() {
                             <p className="text-heading text-sm font-medium">{tx({ fr: 'Voir la boutique', en: 'Browse shop', es: 'Ver la tienda' })}</p>
                             <p className="text-grey-muted text-xs">{tx({ fr: 'Stickers, prints, merch', en: 'Stickers, prints, merch', es: 'Stickers, prints, merch' })}</p>
                           </div>
-                          <ArrowRight size={16} className="text-accent opacity-0 group-hover:opacity-100 transition-opacity" />
+                          <ArrowRight size={16} className="text-accent md:opacity-0 md:group-hover:opacity-100 transition-opacity" />
                         </Link>
                         {orders.length > 0 ? (
                           <button
@@ -1304,7 +1304,7 @@ function Account() {
                               <p className="text-heading text-sm font-medium">{tx({ fr: 'Recommander', en: 'Reorder', es: 'Reordenar' })}</p>
                               <p className="text-grey-muted text-xs">{tx({ fr: 'Voir mes commandes', en: 'View my orders', es: 'Ver mis pedidos' })}</p>
                             </div>
-                            <ArrowRight size={16} className="text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                            <ArrowRight size={16} className="text-blue-400 md:opacity-0 md:group-hover:opacity-100 transition-opacity" />
                           </button>
                         ) : (
                           <Link
@@ -1316,7 +1316,7 @@ function Account() {
                               <p className="text-heading text-sm font-medium">{tx({ fr: 'Populaire', en: 'Popular', es: 'Popular' })}</p>
                               <p className="text-grey-muted text-xs">{tx({ fr: 'Stickers custom', en: 'Custom stickers', es: 'Stickers personalizados' })}</p>
                             </div>
-                            <ArrowRight size={16} className="text-purple-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                            <ArrowRight size={16} className="text-purple-400 md:opacity-0 md:group-hover:opacity-100 transition-opacity" />
                           </Link>
                         )}
                         <Link
@@ -1328,7 +1328,7 @@ function Account() {
                             <p className="text-heading text-sm font-medium">{tx({ fr: 'Support', en: 'Support', es: 'Soporte' })}</p>
                             <p className="text-grey-muted text-xs">{tx({ fr: 'On repond vite!', en: 'We reply fast!', es: 'Respondemos rapido!' })}</p>
                           </div>
-                          <ArrowRight size={16} className="text-green-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                          <ArrowRight size={16} className="text-green-400 md:opacity-0 md:group-hover:opacity-100 transition-opacity" />
                         </Link>
                       </div>
                     </div>

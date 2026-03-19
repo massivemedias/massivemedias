@@ -325,15 +325,13 @@ function FileUpload({ files = [], onFilesChange, label, maxFiles = 5, compact = 
                 {imageFiles.map((file) => (
                   <div key={file.id || file._idx} className="relative group aspect-square rounded-lg overflow-hidden bg-glass">
                     <img src={file.url} alt={file.name} className="w-full h-full object-cover" />
-                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <button
-                        type="button"
-                        onClick={(e) => { e.stopPropagation(); handleRemove(file._idx); }}
-                        className="p-1.5 rounded-full bg-red-500/80 text-white hover:bg-red-500 transition-colors"
-                      >
-                        <X size={14} />
-                      </button>
-                    </div>
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); handleRemove(file._idx); }}
+                      className="absolute top-1 right-1 p-1 rounded-full bg-red-500/90 text-white hover:bg-red-500 transition-colors z-10"
+                    >
+                      <X size={12} />
+                    </button>
                     <span className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-[9px] px-1 py-0.5 truncate">{file.name}</span>
                   </div>
                 ))}

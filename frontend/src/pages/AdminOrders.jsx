@@ -53,6 +53,7 @@ function AdminOrders() {
   const [trackingInputs, setTrackingInputs] = useState({});
   const [trackingCarrier, setTrackingCarrier] = useState({});
   const [savingTracking, setSavingTracking] = useState(null);
+  const [opError, setOpError] = useState('');
 
   // Debounce search
   useEffect(() => {
@@ -106,7 +107,8 @@ function AdminOrders() {
         o.documentId === documentId ? { ...o, notes: editNotes[documentId] || '' } : o
       ));
     } catch {
-      // silent
+      setOpError(tx({ fr: 'Erreur sauvegarde notes', en: 'Error saving notes', es: 'Error guardando notas' }));
+      setTimeout(() => setOpError(''), 4000);
     } finally {
       setSavingNotes(null);
     }
@@ -123,7 +125,8 @@ function AdminOrders() {
         o.documentId === documentId ? { ...o, trackingNumber: tracking, carrier, status: 'shipped' } : o
       ));
     } catch {
-      // silent
+      setOpError(tx({ fr: 'Erreur sauvegarde tracking', en: 'Error saving tracking', es: 'Error guardando tracking' }));
+      setTimeout(() => setOpError(''), 4000);
     } finally {
       setSavingTracking(null);
     }
@@ -137,7 +140,8 @@ function AdminOrders() {
       setExpandedId(null);
       setConfirmDeleteId(null);
     } catch {
-      // silent
+      setOpError(tx({ fr: 'Erreur suppression commande', en: 'Error deleting order', es: 'Error eliminando orden' }));
+      setTimeout(() => setOpError(''), 4000);
     } finally {
       setDeletingId(null);
     }
@@ -208,6 +212,12 @@ function AdminOrders() {
 
   return (
     <div className="space-y-6">
+      {/* Error toast */}
+      {opError && (
+        <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+          {opError}
+        </div>
+      )}
       {/* Summary cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {summaryCards.map((card, i) => {
@@ -505,7 +515,7 @@ function AdminOrders() {
                                                   </div>
                                                 )}
                                                 <div className="absolute inset-0 rounded-lg bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-                                                  <ExternalLink size={16} className="text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                  <ExternalLink size={16} className="text-white md:opacity-0 md:group-hover:opacity-100 transition-opacity" />
                                                 </div>
                                               </a>
                                             );

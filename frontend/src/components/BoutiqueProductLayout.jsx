@@ -396,7 +396,7 @@ function BoutiqueProductLayout({
                 >
                   <img src={imgSrc} alt={`${productTitle} - ${tx({ fr: 'realisation', en: 'example', es: 'ejemplo' })} ${i + 1}`} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" loading="lazy" />
                   <div className="absolute inset-0 transition-colors duration-300 flex items-center justify-center">
-                    <ZoomIn size={28} className="text-white drop-shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    <ZoomIn size={28} className="text-white drop-shadow-lg md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300" />
                   </div>
                 </motion.div>
               ))}

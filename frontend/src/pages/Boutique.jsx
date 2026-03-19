@@ -249,7 +249,7 @@ function Boutique() {
                         : tx({ fr: 'Bientot disponible', en: 'Coming soon', es: 'Disponible pronto' })}
                     </p>
                   </div>
-                  <ArrowRight size={18} className="text-grey-muted group-hover:text-accent ml-auto flex-shrink-0 opacity-0 group-hover:opacity-100 transition-all" />
+                  <ArrowRight size={18} className="text-grey-muted group-hover:text-accent ml-auto flex-shrink-0 md:opacity-0 md:group-hover:opacity-100 transition-all" />
                 </Link>
                 {hasPrints ? (
                   <div className="flex flex-wrap gap-4">
@@ -456,7 +456,7 @@ function Boutique() {
                                     ? `${printCount} ${tx({ fr: 'oeuvres', en: 'artworks', es: 'obras' })}`
                                     : tx({ fr: 'Bientot', en: 'Soon', es: 'Pronto' })}
                                 </span>
-                                <ArrowRight size={12} className="text-accent opacity-0 group-hover:opacity-100 transition-opacity" />
+                                <ArrowRight size={12} className="text-accent md:opacity-0 md:group-hover:opacity-100 transition-opacity" />
                               </div>
                             </div>
                           </div>
