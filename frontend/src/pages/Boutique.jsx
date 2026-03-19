@@ -11,7 +11,7 @@ import { useArtists } from '../hooks/useArtists';
 import { img } from '../utils/paths';
 
 // Maudite Machine (Massive) en premier
-const artistOrder = ['maudite-machine', 'psyqu33n', 'adrift', 'mok', 'quentin-delobel', 'no-pixl'];
+const artistOrder = ['maudite-machine', 'psyqu33n', 'adrift', 'mok', 'quentin-delobel', 'no-pixl', 'cornelia-rose'];
 
 // Fallback - Stickers produits finis
 const defaultStickerProducts = [

@@ -123,12 +123,16 @@ function Header() {
               </button>
 
               {user ? (
-                <Link to="/account" className="flex items-center gap-1.5 p-1 transition-colors duration-200 nav-link" title={t('nav.account')}>
-                  <span className="w-8 h-8 rounded-full bg-accent/20 text-accent flex items-center justify-center font-bold text-sm flex-shrink-0">
-                    {(user.user_metadata?.full_name || user.email || '?')[0].toUpperCase()}
-                  </span>
-                  <span className="text-sm font-medium max-w-[100px] truncate">
-                    {user.user_metadata?.full_name?.split(' ')[0] || user.email?.split('@')[0]}
+                <Link to="/account" className="p-1 transition-colors duration-200 nav-link" title={t('nav.account')}>
+                  <span className="w-8 h-8 rounded-full bg-accent/20 text-accent flex items-center justify-center font-bold text-sm">
+                    {(() => {
+                      const name = user.user_metadata?.full_name;
+                      if (name) {
+                        const parts = name.trim().split(' ');
+                        return parts.length >= 2 ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase() : parts[0].substring(0, 2).toUpperCase();
+                      }
+                      return (user.email || '?').substring(0, 2).toUpperCase();
+                    })()}
                   </span>
                 </Link>
               ) : (
@@ -327,10 +331,17 @@ function Header() {
                     onClick={close}
                   >
                     <span className="w-8 h-8 rounded-full bg-accent/20 text-accent flex items-center justify-center font-bold text-sm flex-shrink-0">
-                      {(user.user_metadata?.full_name || user.email || '?')[0].toUpperCase()}
+                      {(() => {
+                        const name = user.user_metadata?.full_name;
+                        if (name) {
+                          const parts = name.trim().split(' ');
+                          return parts.length >= 2 ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase() : parts[0].substring(0, 2).toUpperCase();
+                        }
+                        return (user.email || '?').substring(0, 2).toUpperCase();
+                      })()}
                     </span>
                     <span className="font-semibold text-[15px]">
-                      {user.user_metadata?.full_name?.split(' ')[0] || t('nav.account')}
+                      {t('nav.account')}
                     </span>
                     <ChevronRight size={14} className="ml-auto opacity-25 group-hover:opacity-50 transition-opacity" />
                   </Link>
