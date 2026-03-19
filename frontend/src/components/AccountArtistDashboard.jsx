@@ -477,9 +477,9 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
               </p>
               <p className="text-grey-light text-xs md:text-sm leading-relaxed mb-3">
                 {tx({
-                  fr: 'Tu peux désigner certaines de tes oeuvres comme "pièce unique". Un seul exemplaire sera jamais produit - format fixe, prix fixe, non-reproductible. Une fois vendue, elle disparaît définitivement de ta boutique. C\'est une vraie pièce de collection.',
-                  en: 'You can designate certain works as "unique pieces". Only one copy will ever be produced - fixed format, fixed price, non-reproducible. Once sold, it permanently disappears from your store. It\'s a true collector\'s item.',
-                  es: 'Puedes designar ciertas obras como "pieza unica". Solo una copia sera producida - formato fijo, precio fijo, no reproducible. Una vez vendida, desaparece definitivamente de tu tienda. Es una verdadera pieza de coleccion.',
+                  fr: 'Tu peux designer certains de tes produits comme "piece unique" - prints, merch, textile, stickers ou tout autre medium. Un seul exemplaire sera produit. Une fois vendue, la piece disparait definitivement. Le prix est fixe par toi en accord avec Massive.',
+                  en: 'You can designate any of your products as a "unique piece" - prints, merch, textiles, stickers or any other medium. Only one copy will ever be produced. Once sold, it permanently disappears. Pricing is set by you in agreement with Massive.',
+                  es: 'Puedes designar cualquiera de tus productos como "pieza unica" - prints, merch, textil, stickers o cualquier otro medio. Solo una copia sera producida. Una vez vendida, desaparece definitivamente. El precio es fijado por ti en acuerdo con Massive.',
                 })}
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px]">

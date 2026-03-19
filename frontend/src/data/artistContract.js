@@ -49,8 +49,8 @@ export const ARTIST_CONTRACT_TEXT_EN = `
 <p><strong>Are prices the same for all artists?</strong></p>
 <p>Yes. The pricing grid is uniform and identical for all partner artists - same prices, same production costs, same margins. No preferential treatment for anyone (see section 3).</p>
 
-<p><strong>What is a unique print?</strong></p>
-<p>A unique print is a one-of-a-kind piece - only a single copy is ever produced. Once sold, it cannot be reproduced. These are typically produced in a fixed format (A2, museum quality) with no framing option, and are priced as collector's items following the museum series grid (see section 3).</p>
+<p><strong>What is a unique piece?</strong></p>
+<p>A unique piece is a one-of-a-kind item - only a single copy is ever produced. This applies to any product type: prints, merch, textiles, stickers or any other medium. Once sold, it cannot be reproduced. Pricing is set by the artist in agreement with Massive Medias (see section 3).</p>
 
 <h4>3. PRICING GRID</h4>
 
@@ -134,8 +134,8 @@ export const ARTIST_CONTRACT_TEXT_EN = `
 <p><strong>Uniform pricing:</strong></p>
 <p>The pricing grid above applies identically to all partner artists, without exception. Whether for prints, stickers, merch or any other product, every artist benefits from the same prices, the same production costs and the same margins. There is no preferential pricing for any artist.</p>
 
-<p><strong>Unique prints (single edition):</strong></p>
-<p>Certain works may be designated as <strong>unique prints</strong> - a single copy produced, making them one-of-a-kind pieces. These unique prints are produced in a fixed format (typically A2, museum quality) with no framing option, and are priced accordingly as collector's items. The unique nature of the work must be clearly indicated on the product listing. Once sold, a unique print cannot be reproduced. The pricing for unique prints follows the museum series grid for the applicable format.</p>
+<p><strong>Unique pieces (single edition):</strong></p>
+<p>Certain works may be designated as <strong>unique pieces</strong> - a single copy ever produced, making them true one-of-a-kind items. This applies to any product type: prints, merch, textiles, stickers or any other medium. The unique nature of the piece must be clearly indicated on the product listing. Once sold, a unique piece cannot be reproduced. Pricing is set by the artist in agreement with Massive Medias.</p>
 
 <h4>4. IDENTIFICATION OF PARTIES</h4>
 
@@ -345,8 +345,8 @@ export const ARTIST_CONTRACT_TEXT_ES = `
 <p><strong>Los precios son iguales para todos los artistas?</strong></p>
 <p>Si. La grilla de precios es uniforme e identica para todos los artistas asociados - mismos precios, mismos costos de produccion, mismos margenes. Sin trato preferencial para nadie (ver articulo 3).</p>
 
-<p><strong>Que es una impresion unica?</strong></p>
-<p>Una impresion unica es una pieza unica - solo se produce una copia. Una vez vendida, no puede reproducirse. Estas se producen tipicamente en un formato fijo (A2, calidad museo) sin opcion de enmarcado, y su precio se establece como piezas de coleccionista segun la grilla de la serie museo (ver articulo 3).</p>
+<p><strong>Que es una pieza unica?</strong></p>
+<p>Una pieza unica es un articulo unico - solo se produce una copia. Esto se aplica a cualquier tipo de producto: prints, merch, textil, stickers o cualquier otro medio. Una vez vendida, no puede reproducirse. El precio es fijado por el artista en acuerdo con Massive Medias (ver articulo 3).</p>
 
 <h4>3. GRILLA DE PRECIOS</h4>
 
@@ -430,8 +430,8 @@ export const ARTIST_CONTRACT_TEXT_ES = `
 <p><strong>Precios uniformes:</strong></p>
 <p>La grilla de precios anterior se aplica de manera identica a todos los artistas asociados, sin excepcion. Ya sea para impresiones, stickers, merch o cualquier otro producto, cada artista se beneficia de los mismos precios, los mismos costos de produccion y los mismos margenes. No hay precios preferenciales para ningun artista.</p>
 
-<p><strong>Impresiones unicas (edicion unica):</strong></p>
-<p>Ciertas obras pueden ser designadas como <strong>impresiones unicas</strong> - una sola copia producida, convirtiendolas en piezas unicas. Estas impresiones unicas se producen en un formato fijo (tipicamente A2, calidad museo) sin opcion de enmarcado, y su precio se establece como piezas de coleccionista. La naturaleza unica de la obra debe indicarse claramente en la ficha del producto. Una vez vendida, una impresion unica no puede reproducirse. El precio de las impresiones unicas sigue la grilla de la serie museo para el formato correspondiente.</p>
+<p><strong>Piezas unicas (edicion unica):</strong></p>
+<p>Ciertas obras pueden ser designadas como <strong>piezas unicas</strong> - una sola copia producida, convirtiendolas en verdaderas piezas de coleccion. Esto se aplica a cualquier tipo de producto: prints, merch, textil, stickers o cualquier otro medio. La naturaleza unica de la pieza debe indicarse claramente en la ficha del producto. Una vez vendida, una pieza unica no puede reproducirse. El precio es fijado por el artista en acuerdo con Massive Medias.</p>
 
 <h4>4. IDENTIFICACION DE LAS PARTES</h4>
 
@@ -641,8 +641,8 @@ export const ARTIST_CONTRACT_TEXT = `
 <p><strong>Les prix sont-ils les memes pour tous les artistes?</strong></p>
 <p>Oui. La grille tarifaire est uniforme et identique pour tous les artistes partenaires - mêmes prix, mêmes coûts de production, mêmes marges. Aucun traitement préférentiel pour personne (voir article 3).</p>
 
-<p><strong>C'est quoi un print unique?</strong></p>
-<p>Un print unique est une pièce unique - un seul exemplaire est imprimé. Une fois vendu, il ne peut pas être reproduit. Ces prints sont typiquement produits dans un format fixe (A2, qualité musée) sans option de cadre, et sont tarifiés comme des pièces de collection selon la grille de la série musée (voir article 3).</p>
+<p><strong>C'est quoi une piece unique?</strong></p>
+<p>Une piece unique est un article unique - un seul exemplaire est produit. Cela s'applique a tout type de produit : prints, merch, textile, stickers ou tout autre medium. Une fois vendue, la piece ne peut pas etre reproduite. Le prix est fixe par l'artiste en accord avec Massive Medias (voir article 3).</p>
 
 <h4>3. GRILLE TARIFAIRE</h4>
 
@@ -726,8 +726,8 @@ export const ARTIST_CONTRACT_TEXT = `
 <p><strong>Tarification uniforme :</strong></p>
 <p>La grille tarifaire ci-dessus s'applique de manière identique à tous les artistes partenaires, sans exception. Que ce soit pour les prints, stickers, merch ou tout autre produit, chaque artiste bénéficie des mêmes prix, des mêmes coûts de production et des mêmes marges. Il n'y a aucun tarif préférentiel pour aucun artiste.</p>
 
-<p><strong>Prints uniques (edition unique) :</strong></p>
-<p>Certaines oeuvres peuvent être désignées comme <strong>prints uniques</strong> - un seul exemplaire imprimé, ce qui en fait des pièces uniques. Ces prints uniques sont produits dans un format fixe (typiquement A2, qualité musée) sans option de cadre, et sont tarifiés comme des pièces de collection. Le caractère unique de l'oeuvre doit être clairement indiqué sur la fiche produit. Une fois vendu, un print unique ne peut pas être reproduit. La tarification des prints uniques suit la grille de la série musée pour le format correspondant.</p>
+<p><strong>Pieces uniques (edition unique) :</strong></p>
+<p>Certaines oeuvres peuvent etre designees comme <strong>pieces uniques</strong> - un seul exemplaire produit, ce qui en fait de veritables pieces de collection. Cela s'applique a tout type de produit : prints, merch, textile, stickers ou tout autre medium. Le caractere unique de la piece doit etre clairement indique sur la fiche produit. Une fois vendue, une piece unique ne peut pas etre reproduite. Le prix est fixe par l'artiste en accord avec Massive Medias.</p>
 
 <h4>4. IDENTIFICATION DES PARTIES</h4>
 
@@ -906,7 +906,7 @@ export const ARTIST_FAQ = {
     { q: "Est-ce que mes fichiers haute résolution sont en sécurité?", a: "Oui. Tes fichiers sources sont utilisés exclusivement pour l'impression physique. Ils ne sont jamais partagés avec des tiers ni publiés en ligne en haute résolution. Seules des versions basse résolution (72 DPI max) avec filigrane sont utilisées sur le site web." },
     { q: "Et pour l'encadrement?", a: "L'encadrement n'est pas inclus dans l'offre standard. Un cadre (noir ou blanc) peut être ajouté pour 30$ (formats jusqu'à A3+). Ça peut se discuter au cas par cas." },
     { q: "Les prix sont-ils les mêmes pour tous les artistes?", a: "Oui. La grille tarifaire est uniforme et identique pour tous les artistes partenaires - mêmes prix, mêmes coûts de production, mêmes marges. Aucun traitement préférentiel pour personne." },
-    { q: "C'est quoi un print unique?", a: "Un print unique est une pièce unique - un seul exemplaire est imprimé. Une fois vendu, il ne peut pas être reproduit. Ces prints sont typiquement produits dans un format fixe (A2, qualité musée) sans option de cadre, et sont tarifiés comme des pièces de collection." },
+    { q: "C'est quoi une piece unique?", a: "Une piece unique est un article dont un seul exemplaire est produit. Ca s'applique a tout : prints, merch, textile, stickers ou tout autre medium. Une fois vendue, elle ne peut pas etre reproduite. Le prix est fixe par l'artiste en accord avec Massive Medias." },
   ],
   en: [
     { q: "Can I order prints of my own works for myself?", a: "Yes! You get a 30% discount on the client price for personal copies. For example, a Museum A3 print at 120$ costs you 84$. Shipping fees apply, or free pickup at our Mile-End studio. These copies are for personal use, portfolio or exhibition only - resale of discounted prints is strictly prohibited." },
@@ -924,7 +924,7 @@ export const ARTIST_FAQ = {
     { q: "Are my high-resolution files safe?", a: "Yes. Your source files are used exclusively for physical printing. They are never shared with third parties or published online in high resolution. Only low-resolution versions (72 DPI max) with watermarks are used on the website." },
     { q: "What about framing?", a: "Framing is not included in the standard offering. A frame (black or white) can be added for $30 (formats up to A3+). This can be discussed on a case-by-case basis." },
     { q: "Are prices the same for all artists?", a: "Yes. The pricing grid is uniform and identical for all partner artists - same prices, same production costs, same margins. No preferential treatment for anyone." },
-    { q: "What is a unique print?", a: "A unique print is a one-of-a-kind piece - only a single copy is ever produced. Once sold, it cannot be reproduced. These are typically produced in a fixed format (A2, museum quality) with no framing option, and are priced as collector's items." },
+    { q: "What is a unique piece?", a: "A unique piece is a one-of-a-kind item - only a single copy is ever produced. This applies to any product type: prints, merch, textiles, stickers or any other medium. Once sold, it cannot be reproduced. Pricing is set by the artist in agreement with Massive Medias." },
   ],
   es: [
     { q: "Puedo pedir impresiones de mis obras para mi?", a: "Si! Tienes un descuento del 30% sobre el precio cliente para copias personales. Por ejemplo, un print Museo A3 a 120$ te cuesta 84$. Los gastos de envio aplican normalmente, o puedes recoger gratis en el estudio Mile-End. Estas copias son para uso personal, portafolio o exposicion - la reventa de prints obtenidos a precio reducido esta estrictamente prohibida." },
@@ -942,6 +942,6 @@ export const ARTIST_FAQ = {
     { q: "Mis archivos de alta resolucion estan seguros?", a: "Si. Tus archivos fuente se utilizan exclusivamente para impresion fisica. Nunca se comparten con terceros ni se publican en alta resolucion. Solo se usan versiones de baja resolucion (72 DPI max) con marca de agua." },
     { q: "Que hay sobre el enmarcado?", a: "El enmarcado no esta incluido en la oferta estandar. Un marco (negro o blanco) puede agregarse por $30 (formatos hasta A3+). Se puede discutir caso por caso." },
     { q: "Los precios son iguales para todos los artistas?", a: "Si. La grilla de precios es uniforme e identica para todos los artistas asociados - mismos precios, mismos costos de produccion, mismos margenes. Sin trato preferencial para nadie." },
-    { q: "Que es una impresion unica?", a: "Una impresion unica es una pieza unica - solo se produce una copia. Una vez vendida, no puede reproducirse. Estas se producen tipicamente en un formato fijo (A2, calidad museo) sin opcion de enmarcado, y su precio se establece como piezas de coleccionista." },
+    { q: "Que es una pieza unica?", a: "Una pieza unica es un articulo del cual solo se produce una copia. Esto se aplica a cualquier tipo de producto: prints, merch, textil, stickers o cualquier otro medio. Una vez vendida, no puede reproducirse. El precio es fijado por el artista en acuerdo con Massive Medias." },
   ],
 };
