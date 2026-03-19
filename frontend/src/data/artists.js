@@ -268,16 +268,19 @@ const artistsData = {
     slug: 'cornelia-rose',
     name: 'Cornelia Rose',
     tagline: {
-      fr: 'Art visuel & peinture',
-      en: 'Visual Art & Painting',
-      es: 'Arte visual y pintura',
+      fr: 'Art visionnaire & peinture corporelle',
+      en: 'Visionary Art & Body Painting',
+      es: 'Arte visionario y pintura corporal',
     },
     bio: {
-      fr: '',
-      en: '',
-      es: '',
+      fr: "Cornelia Rose est une artiste visionnaire et peintre corporelle, residant actuellement a Kingston, Ontario. Ayant grandi dans une ferme en Suisse, elle a toujours aime plonger ses mains dans la terre et ressentir la connexion avec le monde naturel. Titulaire d'un baccalaureat en psychologie et arts visuels, elle aspire a fusionner ces deux disciplines, utilisant l'art comme outil therapeutique pour explorer les themes de la nature, la psychologie humaine et notre connexion spirituelle a l'ensemble. Ses peintures sont devenues son recit personnel, documentant son parcours d'utilisation de l'art comme force de guerison. Dans ses oeuvres mystiques, Cornelia emploie des figures et un langage psychedelique, invitant le spectateur a un voyage visuel pour voir le monde a travers de nouveaux yeux.",
+      en: "Cornelia Rose is a visionary artist and body painter, currently residing in Kingston, Ontario. Growing up on a farm in Switzerland, she has always loved getting her hands into the soil and feeling the connection to our natural world. With a BA in Psychology and Visual Arts, she aspires to merge these two disciplines, using art as a therapeutic tool to explore themes of nature, understanding human psychology and our spiritual connection to it all. Cornelia's paintings have become her own personal narrative, documenting her journey of using art as a healing force, a medicine in her own personal life and traumas. In her mystical works, Cornelia employs figures and psychedelic language, inviting the viewers on a visual journey to see the world through new eyes.",
+      es: "Cornelia Rose es una artista visionaria y pintora corporal, que reside actualmente en Kingston, Ontario. Habiendo crecido en una granja en Suiza, siempre ha amado sumergir sus manos en la tierra y sentir la conexion con el mundo natural. Con una licenciatura en Psicologia y Artes Visuales, aspira a fusionar estas dos disciplinas, utilizando el arte como herramienta terapeutica para explorar temas de la naturaleza, la psicologia humana y nuestra conexion espiritual con todo. Sus pinturas se han convertido en su narrativa personal, documentando su camino de usar el arte como fuerza de sanacion. En sus obras misticas, Cornelia emplea figuras y un lenguaje psicodelico, invitando al espectador a un viaje visual para ver el mundo a traves de nuevos ojos.",
     },
-    socials: {},
+    socials: {
+      instagram: 'https://www.instagram.com/corneliarose_art/',
+      website: 'https://www.corneliaroseart.com/',
+    },
     avatar: img('/images/prints/CorneliaRoseAvatar.webp'),
     heroImage: thumb('/images/prints/CorneliaRose1.webp'),
     prints: [
