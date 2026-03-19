@@ -2,6 +2,11 @@ import { thumb, img } from '../utils/paths';
 
 /**
  * Artist print pricing - returns final client price (production + artist margin included)
+ *
+ * maxFormat sur un print: limite le format max dispo (fichier source < 6 Mo)
+ *   - pas de maxFormat = tous les formats (a4, a3, a3plus, a2)
+ *   - maxFormat: 'a3' = max A3, A3+ et A2 grises
+ *   - maxFormat: 'a4' = seulement A4
  */
 export function getArtistPrintPrice(pricing, tier, format, withFrame) {
   const prices = tier === 'museum' ? pricing.museum : pricing.studio;
@@ -17,11 +22,20 @@ export const artistPrinterTiers = [
 ];
 
 export const artistFormats = [
-  { id: 'a4', label: 'A4 (8.5×11")' },
-  { id: 'a3', label: 'A3 (11×17")' },
-  { id: 'a3plus', label: 'A3+ (13×19")' },
-  { id: 'a2', label: 'A2 (18×24")' },
+  { id: 'a4', label: 'A4 (8.5×11")', rank: 0 },
+  { id: 'a3', label: 'A3 (11×17")', rank: 1 },
+  { id: 'a3plus', label: 'A3+ (13×19")', rank: 2 },
+  { id: 'a2', label: 'A2 (18×24")', rank: 3 },
 ];
+
+// Verifie si un format est disponible pour un print selon maxFormat
+export function isFormatAvailable(formatId, maxFormat) {
+  if (!maxFormat) return true; // pas de restriction
+  const fmt = artistFormats.find(f => f.id === formatId);
+  const max = artistFormats.find(f => f.id === maxFormat);
+  if (!fmt || !max) return true;
+  return fmt.rank <= max.rank;
+}
 
 const artistsData = {
   'adrift': {

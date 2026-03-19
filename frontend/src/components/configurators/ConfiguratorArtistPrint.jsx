@@ -5,7 +5,7 @@ import { useCart } from '../../contexts/CartContext';
 import { useLang } from '../../i18n/LanguageContext';
 import { useUserRole } from '../../contexts/UserRoleContext';
 import {
-  getArtistPrintPrice, artistPrinterTiers, artistFormats,
+  getArtistPrintPrice, artistPrinterTiers, artistFormats, isFormatAvailable,
 } from '../../data/artists';
 
 function ConfiguratorArtistPrint({ artist, selectedPrint }) {
@@ -18,6 +18,7 @@ function ConfiguratorArtistPrint({ artist, selectedPrint }) {
   const fixedTier = selectedPrint?.fixedTier;
   const noFrame = selectedPrint?.noFrame;
   const customPrice = selectedPrint?.customPrice;
+  const maxFormat = selectedPrint?.maxFormat; // ex: 'a3' = max A3, pas de A3+ ni A2
 
   const [tier, setTier] = useState(fixedTier || 'studio');
   const [format, setFormat] = useState(fixedFormat || 'a4');
@@ -36,6 +37,10 @@ function ConfiguratorArtistPrint({ artist, selectedPrint }) {
     else setTier('studio');
     if (selectedPrint?.noFrame) setWithFrame(false);
     if (selectedPrint?.unique) setQuantity(1);
+    // Si le format actuel depasse maxFormat, redescendre
+    if (selectedPrint?.maxFormat && !isFormatAvailable(format, selectedPrint.maxFormat)) {
+      setFormat(selectedPrint.maxFormat);
+    }
   }, [selectedPrint?.id]);
 
   if (!selectedPrint || !artist) return null;
@@ -168,25 +173,46 @@ function ConfiguratorArtistPrint({ artist, selectedPrint }) {
           <div className="grid grid-cols-2 gap-2">
             {artistFormats.map(f => {
               const price = getFormatPrice(f.id);
-              const isAvailable = price != null;
+              const hasPricing = price != null;
+              const fmtAllowed = isFormatAvailable(f.id, maxFormat);
+              const isAvailable = hasPricing && fmtAllowed;
               return (
                 <button
                   key={f.id}
                   onClick={() => { if (isAvailable) { setFormat(f.id); if (f.id === 'a2') setWithFrame(false); } }}
                   disabled={!isAvailable}
-                  className={`block w-full text-center py-3.5 px-3 rounded-lg text-xs font-medium transition-all border-2 ${!isAvailable
-                    ? 'opacity-30 cursor-not-allowed border-transparent option-default'
+                  className={`relative block w-full text-center py-3.5 px-3 rounded-lg text-xs font-medium transition-all border-2 ${!isAvailable
+                    ? 'opacity-40 cursor-not-allowed border-transparent option-default'
                     : format === f.id
                       ? 'border-accent option-selected'
                       : 'border-transparent hover:border-grey-muted/30 option-default'
                   }`}
                 >
                   <div className="text-heading font-bold text-sm">{f.label}</div>
-                  <div className="text-grey-muted mt-0.5">{isAvailable ? `${price}$` : 'N/A'}</div>
+                  {!fmtAllowed ? (
+                    <div className="text-grey-muted mt-0.5 text-[10px] leading-tight">
+                      {tx({
+                        fr: 'Resolution insuffisante',
+                        en: 'Insufficient resolution',
+                        es: 'Resolucion insuficiente',
+                      })}
+                    </div>
+                  ) : (
+                    <div className="text-grey-muted mt-0.5">{hasPricing ? `${price}$` : 'N/A'}</div>
+                  )}
                 </button>
               );
             })}
           </div>
+          {maxFormat && (
+            <p className="text-grey-muted text-[11px] mt-2 leading-snug">
+              {tx({
+                fr: `Cette oeuvre est disponible jusqu'au format ${artistFormats.find(f => f.id === maxFormat)?.label || maxFormat}. Les grands formats necessitent un fichier source haute resolution.`,
+                en: `This artwork is available up to ${artistFormats.find(f => f.id === maxFormat)?.label || maxFormat} format. Larger formats require a high-resolution source file.`,
+                es: `Esta obra esta disponible hasta el formato ${artistFormats.find(f => f.id === maxFormat)?.label || maxFormat}. Los formatos grandes requieren un archivo fuente de alta resolucion.`,
+              })}
+            </p>
+          )}
         </div>
       )}
 
