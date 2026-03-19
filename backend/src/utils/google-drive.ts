@@ -56,7 +56,7 @@ async function getOrCreateArtistFolder(token: string, parentFolderId: string, ar
   });
 
   if (searchRes.ok) {
-    const data = await searchRes.json();
+    const data: any = await searchRes.json();
     if (data.files && data.files.length > 0) {
       return data.files[0].id;
     }
@@ -76,7 +76,7 @@ async function getOrCreateArtistFolder(token: string, parentFolderId: string, ar
   });
 
   if (!createRes.ok) throw new Error(`Failed to create folder: ${await createRes.text()}`);
-  const folder = await createRes.json();
+  const folder: any = await createRes.json();
   return folder.id;
 }
 
@@ -126,7 +126,7 @@ export async function uploadToGoogleDrive(
   );
 
   if (!uploadRes.ok) throw new Error(`Drive upload failed: ${await uploadRes.text()}`);
-  const file = await uploadRes.json();
+  const file: any = await uploadRes.json();
 
   return {
     fileId: file.id,
