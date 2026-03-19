@@ -438,25 +438,6 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
           </div>
         </div>
 
-        {/* FAQ */}
-        <div className="rounded-2xl p-5 md:p-8 card-bg card-shadow">
-          <h4 className="text-heading font-heading font-bold text-lg md:text-xl mb-5 flex items-center gap-2">
-            <HelpCircle size={22} className="text-accent" />
-            {tx({ fr: 'Questions frequentes', en: 'Frequently asked questions', es: 'Preguntas frecuentes' })}
-          </h4>
-          <div className="space-y-2">
-            {(ARTIST_FAQ[lang] || ARTIST_FAQ.fr).map((item, idx) => (
-              <details key={idx} className="group rounded-xl bg-black/20 shadow-lg overflow-hidden">
-                <summary className="flex items-center justify-between cursor-pointer px-4 py-3 text-sm font-medium text-heading hover:bg-white/[0.03] transition-colors">
-                  {item.q}
-                  <ChevronDown size={16} className="text-grey-muted flex-shrink-0 ml-2 transition-transform group-open:rotate-180" />
-                </summary>
-                <p className="px-4 pb-4 text-sm text-grey-light leading-relaxed">{item.a}</p>
-              </details>
-            ))}
-          </div>
-        </div>
-
         {/* Rappels-cles du contrat */}
         <div className="rounded-2xl p-5 md:p-8 card-bg card-shadow">
           <h4 className="text-heading font-heading font-bold text-lg md:text-xl mb-5 flex items-center gap-2">
@@ -582,6 +563,25 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
                 })}
               </p>
             </div>
+          </div>
+        </div>
+
+        {/* FAQ */}
+        <div className="rounded-2xl p-5 md:p-8 card-bg card-shadow">
+          <h4 className="text-heading font-heading font-bold text-lg md:text-xl mb-5 flex items-center gap-2">
+            <HelpCircle size={22} className="text-accent" />
+            {tx({ fr: 'Questions frequentes', en: 'Frequently asked questions', es: 'Preguntas frecuentes' })}
+          </h4>
+          <div className="space-y-2">
+            {(ARTIST_FAQ[lang] || ARTIST_FAQ.fr).map((item, idx) => (
+              <details key={idx} className="group rounded-xl bg-black/20 shadow-lg overflow-hidden">
+                <summary className="flex items-center justify-between cursor-pointer px-4 py-3 text-sm font-medium text-heading hover:bg-white/[0.03] transition-colors">
+                  {item.q}
+                  <ChevronDown size={16} className="text-grey-muted flex-shrink-0 ml-2 transition-transform group-open:rotate-180" />
+                </summary>
+                <p className="px-4 pb-4 text-sm text-grey-light leading-relaxed">{item.a}</p>
+              </details>
+            ))}
           </div>
         </div>
       </div>
