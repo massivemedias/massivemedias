@@ -264,6 +264,43 @@ const artistsData = {
       framePrice: 30,
     },
   },
+  'cornelia-rose': {
+    slug: 'cornelia-rose',
+    name: 'Cornelia Rose',
+    tagline: {
+      fr: 'Art visuel & peinture',
+      en: 'Visual Art & Painting',
+      es: 'Arte visual y pintura',
+    },
+    bio: {
+      fr: '',
+      en: '',
+      es: '',
+    },
+    socials: {},
+    avatar: img('/images/prints/CorneliaRoseAvatar.webp'),
+    heroImage: thumb('/images/prints/CorneliaRose1.webp'),
+    prints: [
+      { id: 'cr-001', titleFr: 'Cornelia Rose Art', titleEn: 'Cornelia Rose Art', titleEs: 'Cornelia Rose Art', image: thumb('/images/prints/CorneliaRose1.webp'), fullImage: img('/images/prints/CorneliaRose1.webp'), limited: false },
+      { id: 'cr-002', titleFr: 'Chrystaline Nectar', titleEn: 'Chrystaline Nectar', titleEs: 'Chrystaline Nectar', image: thumb('/images/prints/CorneliaRose2.webp'), fullImage: img('/images/prints/CorneliaRose2.webp'), limited: false },
+      { id: 'cr-003', titleFr: 'Cosmic Compass', titleEn: 'Cosmic Compass', titleEs: 'Cosmic Compass', image: thumb('/images/prints/CorneliaRose3.webp'), fullImage: img('/images/prints/CorneliaRose3.webp'), limited: false },
+      { id: 'cr-004', titleFr: 'Liongate', titleEn: 'Liongate', titleEs: 'Liongate', image: thumb('/images/prints/CorneliaRose4.webp'), fullImage: img('/images/prints/CorneliaRose4.webp'), limited: false },
+      { id: 'cr-005', titleFr: 'Owl Eyes', titleEn: 'Owl Eyes', titleEs: 'Owl Eyes', image: thumb('/images/prints/CorneliaRose5.webp'), fullImage: img('/images/prints/CorneliaRose5.webp'), limited: false },
+      { id: 'cr-006', titleFr: 'The Bear', titleEn: 'The Bear', titleEs: 'The Bear', image: thumb('/images/prints/CorneliaRose6.webp'), fullImage: img('/images/prints/CorneliaRose6.webp'), limited: false },
+      { id: 'cr-007', titleFr: 'Sans titre I', titleEn: 'Untitled I', titleEs: 'Sin titulo I', image: thumb('/images/prints/CorneliaRose7.webp'), fullImage: img('/images/prints/CorneliaRose7.webp'), limited: false },
+      { id: 'cr-008', titleFr: 'Sans titre II', titleEn: 'Untitled II', titleEs: 'Sin titulo II', image: thumb('/images/prints/CorneliaRose8.webp'), fullImage: img('/images/prints/CorneliaRose8.webp'), limited: false },
+      { id: 'cr-009', titleFr: 'Sans titre III', titleEn: 'Untitled III', titleEs: 'Sin titulo III', image: thumb('/images/prints/CorneliaRose9.webp'), fullImage: img('/images/prints/CorneliaRose9.webp'), limited: false },
+      { id: 'cr-010', titleFr: 'Sans titre IV', titleEn: 'Untitled IV', titleEs: 'Sin titulo IV', image: thumb('/images/prints/CorneliaRose10.webp'), fullImage: img('/images/prints/CorneliaRose10.webp'), limited: false },
+      { id: 'cr-011', titleFr: 'Sans titre V', titleEn: 'Untitled V', titleEs: 'Sin titulo V', image: thumb('/images/prints/CorneliaRose11.webp'), fullImage: img('/images/prints/CorneliaRose11.webp'), limited: false },
+      { id: 'cr-012', titleFr: 'Sans titre VI', titleEn: 'Untitled VI', titleEs: 'Sin titulo VI', image: thumb('/images/prints/CorneliaRose12.webp'), fullImage: img('/images/prints/CorneliaRose12.webp'), limited: false },
+      { id: 'cr-013', titleFr: 'Sans titre VII', titleEn: 'Untitled VII', titleEs: 'Sin titulo VII', image: thumb('/images/prints/CorneliaRose13.webp'), fullImage: img('/images/prints/CorneliaRose13.webp'), limited: false },
+    ],
+    pricing: {
+      studio: { a4: 35, a3: 50, a3plus: 65, a2: 85 },
+      museum: { a4: 75, a3: 120, a3plus: 160, a2: 190 },
+      framePrice: 30,
+    },
+  },
 };
 
 export default artistsData;

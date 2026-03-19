@@ -16,6 +16,7 @@ import { getContactSubmissions, getArtistSubmissions } from '../services/adminSe
 import { getArtistMessagesAdmin } from '../services/artistService';
 import { generateInvoicePDF } from '../utils/generateInvoice';
 import AddressAutocomplete from '../components/AddressAutocomplete';
+import artistsData from '../data/artists';
 
 const AccountArtistDashboard = lazy(() => import('../components/AccountArtistDashboard'));
 
@@ -929,6 +930,7 @@ function Account() {
   };
 
   if (isArtist) {
+    const artistAvatar = artistSlug && artistsData[artistSlug]?.avatar;
     return (
       <>
         <SEO title={`${t('account.title')} - Massive`} description="" noindex />
@@ -936,12 +938,16 @@ function Account() {
           {/* Header */}
           <div className="max-w-7xl mx-auto mb-6">
             <div className="flex items-center gap-5">
-              <div className="w-14 h-14 rounded-full bg-accent/20 border-2 border-accent/40 flex items-center justify-center flex-shrink-0">
-                <span className="text-lg font-bold text-accent">{initials}</span>
-              </div>
+              {artistAvatar ? (
+                <img src={artistAvatar} alt={initials} className="w-14 h-14 rounded-full object-cover border-2 border-accent/40 flex-shrink-0" />
+              ) : (
+                <div className="w-14 h-14 rounded-full bg-accent/20 border-2 border-accent/40 flex items-center justify-center flex-shrink-0">
+                  <span className="text-lg font-bold text-accent">{initials}</span>
+                </div>
+              )}
               <div className="flex-grow min-w-0">
                 <h1 className="text-2xl md:text-3xl font-heading font-bold text-heading">
-                  {tx({ fr: 'Bonjour', en: 'Hello', es: 'Hola' })}, {firstName}
+                  {tx({ fr: 'Bonjour', en: 'Hello', es: 'Hola' })} 👋
                 </h1>
                 <p className="text-grey-muted text-sm mt-0.5">
                   {user?.email}
@@ -1156,12 +1162,19 @@ function Account() {
           >
             {/* -- Header with Avatar -- */}
             <div className="flex items-center gap-5 mb-8">
-              <div className="w-16 h-16 rounded-full bg-accent/20 border-2 border-accent/40 flex items-center justify-center flex-shrink-0">
-                <span className="text-xl font-bold text-accent">{initials}</span>
-              </div>
+              {(() => {
+                const av = artistSlug && artistsData[artistSlug]?.avatar;
+                return av ? (
+                  <img src={av} alt={initials} className="w-16 h-16 rounded-full object-cover border-2 border-accent/40 flex-shrink-0" />
+                ) : (
+                  <div className="w-16 h-16 rounded-full bg-accent/20 border-2 border-accent/40 flex items-center justify-center flex-shrink-0">
+                    <span className="text-xl font-bold text-accent">{initials}</span>
+                  </div>
+                );
+              })()}
               <div className="flex-grow min-w-0">
                 <h1 className="text-2xl md:text-3xl font-heading font-bold text-heading">
-                  {tx({ fr: 'Bonjour', en: 'Hello', es: 'Hola' })}, {firstName}
+                  {tx({ fr: 'Bonjour', en: 'Hello', es: 'Hola' })} 👋
                 </h1>
                 <p className="text-grey-muted text-sm mt-0.5">
                   {user?.email}
