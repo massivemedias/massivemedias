@@ -61,7 +61,7 @@ function Header() {
           + artistMsgs.filter(m => (m.status || 'new') === 'new').length;
         if (!cancelled) {
           // Jouer le son si le count augmente (nouveau message)
-          if (count > prevCountRef.current && prevCountRef.current !== 0) {
+          if (count > prevCountRef.current) {
             playNotifSound();
           }
           prevCountRef.current = count;
@@ -70,7 +70,7 @@ function Header() {
       } catch { /* ignore */ }
     }
     fetchCount();
-    const interval = setInterval(fetchCount, 60000);
+    const interval = setInterval(fetchCount, 30000);
     return () => { cancelled = true; clearInterval(interval); };
   }, [isAdmin, playNotifSound]);
 
@@ -123,7 +123,7 @@ function Header() {
               </button>
 
               {user ? (
-                <Link to="/account" className="p-1 transition-colors duration-200 nav-link" title={t('nav.account')}>
+                <Link to={isAdmin && adminMsgCount > 0 ? "/admin/messages" : "/account"} className="relative p-1 transition-colors duration-200 nav-link" title={t('nav.account')}>
                   <span className="w-8 h-8 rounded-full bg-accent/20 text-accent flex items-center justify-center font-bold text-sm">
                     {(() => {
                       const name = user.user_metadata?.full_name;
@@ -134,20 +134,16 @@ function Header() {
                       return (user.email || '?').substring(0, 2).toUpperCase();
                     })()}
                   </span>
+                  {isAdmin && adminMsgCount > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold shadow-lg shadow-red-500/40 animate-pulse">
+                      {adminMsgCount}
+                    </span>
+                  )}
                 </Link>
               ) : (
                 <Link to="/login" className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-accent text-white text-sm font-bold transition-all duration-200 hover:brightness-110 hover:scale-105 whitespace-nowrap shadow-[0_0_20px_rgba(var(--accent-rgb,255,200,0),0.35)] animate-subtle-glow">
                   <LogIn size={16} />
                   {tx({ fr: 'Connexion / Inscription', en: 'Sign in / Register', es: 'Conectarse / Registro' })}
-                </Link>
-              )}
-
-              {isAdmin && adminMsgCount > 0 && (
-                <Link to="/account?tab=messages" className="relative p-2 transition-colors duration-200 nav-link" aria-label="Messages admin">
-                  <Bell size={18} />
-                  <span className="absolute -top-1 -right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-accent text-white text-[10px] font-bold animate-pulse">
-                    {adminMsgCount}
-                  </span>
                 </Link>
               )}
 
@@ -312,7 +308,7 @@ function Header() {
                   >
                     <span className="w-8 h-8 rounded-lg flex items-center justify-center mobile-icon-bg flex-shrink-0 relative">
                       <Bell size={15} className="text-accent" />
-                      <span className="absolute -top-1 -right-1 bg-accent text-white text-[9px] rounded-full w-4 h-4 flex items-center justify-center font-bold animate-pulse">
+                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] rounded-full w-4 h-4 flex items-center justify-center font-bold animate-pulse shadow-lg shadow-red-500/40">
                         {adminMsgCount}
                       </span>
                     </span>
@@ -330,15 +326,22 @@ function Header() {
                     className="flex items-center gap-3 px-3 py-2.5 rounded-xl nav-link mobile-drawer-item group transition-colors"
                     onClick={close}
                   >
-                    <span className="w-8 h-8 rounded-full bg-accent/20 text-accent flex items-center justify-center font-bold text-sm flex-shrink-0">
-                      {(() => {
-                        const name = user.user_metadata?.full_name;
-                        if (name) {
-                          const parts = name.trim().split(' ');
-                          return parts.length >= 2 ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase() : parts[0].substring(0, 2).toUpperCase();
-                        }
-                        return (user.email || '?').substring(0, 2).toUpperCase();
-                      })()}
+                    <span className="relative flex-shrink-0">
+                      <span className="w-8 h-8 rounded-full bg-accent/20 text-accent flex items-center justify-center font-bold text-sm">
+                        {(() => {
+                          const name = user.user_metadata?.full_name;
+                          if (name) {
+                            const parts = name.trim().split(' ');
+                            return parts.length >= 2 ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase() : parts[0].substring(0, 2).toUpperCase();
+                          }
+                          return (user.email || '?').substring(0, 2).toUpperCase();
+                        })()}
+                      </span>
+                      {isAdmin && adminMsgCount > 0 && (
+                        <span className="absolute -top-1 -right-1 flex items-center justify-center min-w-[16px] h-4 px-1 rounded-full bg-red-500 text-white text-[9px] font-bold shadow-lg shadow-red-500/40">
+                          {adminMsgCount}
+                        </span>
+                      )}
                     </span>
                     <span className="font-semibold text-[15px]">
                       {t('nav.account')}
