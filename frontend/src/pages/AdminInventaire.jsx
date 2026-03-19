@@ -150,19 +150,6 @@ function AdminInventaire() {
             className="w-full pl-10 pr-4 py-2.5 rounded-lg bg-glass text-heading placeholder-grey-muted text-sm focus:outline-none focus:ring-1 focus:ring-accent"
           />
         </div>
-        <div className="flex gap-2">
-          {['all', 'ok', 'low', 'out'].map((s) => (
-            <button
-              key={s}
-              onClick={() => setFilterStatus(s)}
-              className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
-                filterStatus === s ? 'text-accent' : 'text-grey-muted hover:text-accent'
-              }`}
-            >
-              {s === 'all' ? tx({ fr: 'Tous', en: 'All', es: 'Todos' }) : tx(STATUS_CONFIG[s].label)}
-            </button>
-          ))}
-        </div>
       </div>
 
       {/* Table */}
@@ -175,9 +162,6 @@ function AdminInventaire() {
                 <th className="text-left px-4 py-2">SKU</th>
                 <th className="text-left px-4 py-2">{tx({ fr: 'Categorie', en: 'Category', es: 'Categoria' })}</th>
                 <th className="text-center px-4 py-2">Stock</th>
-                <th className="text-center px-4 py-2">{tx({ fr: 'Dispo', en: 'Avail.', es: 'Disp.' })}</th>
-                <th className="text-center px-4 py-2">{tx({ fr: 'Seuil', en: 'Threshold', es: 'Umbral' })}</th>
-                <th className="text-center px-4 py-2">Status</th>
                 <th className="text-center px-4 py-2">Actions</th>
               </tr>
             </thead>
@@ -211,14 +195,6 @@ function AdminInventaire() {
                         ) : (
                           <span className="text-heading font-medium">{item.quantity}</span>
                         )}
-                      </td>
-                      <td className="px-4 py-2 text-center font-medium text-heading">{item.available}</td>
-                      <td className="px-4 py-2 text-center text-grey-muted">{item.lowStockThreshold}</td>
-                      <td className="px-4 py-2 text-center">
-                        <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${statusCfg.color}`}>
-                          <StatusIcon size={12} />
-                          {tx(statusCfg.label)}
-                        </span>
                       </td>
                       <td className="px-4 py-2 text-center">
                         {isEditing ? (
