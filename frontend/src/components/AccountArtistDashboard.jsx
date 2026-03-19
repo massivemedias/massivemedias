@@ -17,6 +17,7 @@ import { sendArtistMessage, getMyMessages, createWithdrawal, getMyWithdrawals, c
 import { uploadArtistFile } from '../services/api';
 import FileUpload from './FileUpload';
 import artistsData from '../data/artists';
+import { useArtists } from '../hooks/useArtists';
 import { ARTIST_CONTRACT_TEXT, ARTIST_CONTRACT_TEXT_EN, ARTIST_CONTRACT_TEXT_ES, ARTIST_CONTRACT_VERSION, ARTIST_FAQ } from '../data/artistContract';
 import { HelpCircle } from 'lucide-react';
 import { generateContractPDF } from '../utils/generateContractPDF';
@@ -78,6 +79,8 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
   const [toast, setToast] = useState('');
 
   const artist = artistsData[artistSlug] || null;
+  const { artists: cmsArtists } = useArtists();
+  const cmsArtist = cmsArtists?.find(a => a.slug === artistSlug) || null;
   const email = user?.email || '';
 
   useEffect(() => {
@@ -118,6 +121,23 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
       paypalEmail: meta.paypalEmail || '',
     });
   }, [user, artist, lang]);
+
+  // Pre-remplir les liens sociaux depuis le CMS puis local
+  useEffect(() => {
+    const socials = cmsArtist?.socials && Object.keys(cmsArtist.socials).length > 0
+      ? cmsArtist.socials
+      : artist?.socials || {};
+    if (Object.keys(socials).length > 0) {
+      setImgSocials(prev => ({
+        instagram: socials.instagram || prev.instagram || '',
+        website: socials.website || prev.website || '',
+        facebook: socials.facebook || prev.facebook || '',
+        tiktok: socials.tiktok || prev.tiktok || '',
+        youtube: socials.youtube || prev.youtube || '',
+        other: socials.other || socials.gallea || socials.email || prev.other || '',
+      }));
+    }
+  }, [cmsArtist, artist]);
 
   // Fetch messages + withdrawals
   useEffect(() => {
