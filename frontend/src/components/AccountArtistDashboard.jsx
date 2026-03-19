@@ -588,7 +588,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
             </div>
             <button
               onClick={() => generateContractPDF(lang)}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-accent/10 border border-accent/30 text-accent text-sm font-semibold hover:bg-accent/20 transition-colors flex-shrink-0"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-accent/10 shadow-lg shadow-black/20 text-accent text-sm font-semibold hover:bg-accent/20 transition-colors flex-shrink-0"
             >
               <Download size={16} />
               {tx({ fr: 'PDF', en: 'PDF', es: 'PDF' })}
@@ -748,7 +748,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
                 {tx({ fr: 'Image de profil', en: 'Profile image', es: 'Imagen de perfil' })}
               </label>
               <div className="flex items-center gap-4">
-                <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-accent/30 flex-shrink-0 bg-glass flex items-center justify-center">
+                <div className="w-20 h-20 rounded-full overflow-hidden shadow-lg shadow-black/30 flex-shrink-0 bg-glass flex items-center justify-center">
                   {artistProfileForm.profileImage ? (
                     <img src={artistProfileForm.profileImage} alt="Profile" className="w-full h-full object-cover" />
                   ) : (
@@ -756,7 +756,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
                   )}
                 </div>
                 <div className="flex-grow">
-                  <label className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-accent/10 border border-accent/20 text-accent text-sm font-semibold hover:bg-accent/20 transition-colors">
+                  <label className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-accent/10 shadow-lg shadow-black/20 text-accent text-sm font-semibold hover:bg-accent/20 transition-colors">
                     {profileImageUploading ? <Loader2 size={14} className="animate-spin" /> : <ImagePlus size={14} />}
                     {tx({ fr: 'Changer l\'image', en: 'Change image', es: 'Cambiar imagen' })}
                     <input
@@ -847,7 +847,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
 
             {/* Info boutique */}
             {artist ? (
-              <div className="rounded-lg bg-accent/5 border border-accent/20 p-4">
+              <div className="rounded-lg bg-accent/5 shadow-lg shadow-black/20 p-4">
                 <p className="text-grey-muted text-xs flex items-center gap-2">
                   <Palette size={14} className="text-accent" />
                   {tx({ fr: 'Ta boutique:', en: 'Your store:', es: 'Tu tienda:' })}
@@ -1006,7 +1006,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
                 onSubmit={handleWithdrawal}
                 className="overflow-hidden"
               >
-                <div className="rounded-lg bg-accent/5 border border-accent/20 p-4 mb-4 space-y-3">
+                <div className="rounded-lg bg-accent/5 shadow-lg shadow-black/20 p-4 mb-4 space-y-3">
                   <p className="text-grey-muted text-xs">
                     {tx({
                       fr: 'Entre ton email PayPal et le montant a retirer. Massive enverra le paiement sous 24-48h.',
