@@ -55,7 +55,7 @@ function ArtisteDetail({ subdomainSlug }) {
       bio: { fr: cms.bio.fr || local.bio.fr, en: cms.bio.en || local.bio.en, es: local.bio.es || local.bio.en },
       demarche: cms.demarche || local.demarche || null,
       socials: Object.keys(cms.socials || {}).length > 0 ? cms.socials : local.socials,
-      prints: cms.prints && cms.prints.length > (local.prints || []).length ? cms.prints : local.prints,
+      prints: cms.prints && cms.prints.length > 0 ? cms.prints : local.prints,
       stickers: local.stickers || [],
       pricing: cms.pricing || local.pricing,
       avatar: (cms.socials?.avatarUrl) || (cms.avatar && !cms.avatar.includes('undefined') ? cms.avatar : null) || local.avatar,
