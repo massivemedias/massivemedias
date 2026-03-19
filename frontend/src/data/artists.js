@@ -254,8 +254,7 @@ const artistsData = {
       { id: 'psyqu33n-008', titleFr: 'Néfertiti', titleEn: 'Nefertiti', titleEs: 'Nefertiti', image: thumb('/images/prints/Psyqu33n8.webp'), fullImage: img('/images/prints/Psyqu33n8.webp'), limited: false },
       { id: 'psyqu33n-009', titleFr: 'Rabbit', titleEn: 'Rabbit', titleEs: 'Conejo', image: thumb('/images/prints/Psyqu33n9.webp'), fullImage: img('/images/prints/Psyqu33n9.webp'), limited: false },
       { id: 'psyqu33n-010', titleFr: 'Renard', titleEn: 'Fox', titleEs: 'Zorro', image: thumb('/images/prints/Psyqu33n10.webp'), fullImage: img('/images/prints/Psyqu33n10.webp'), limited: false },
-      { id: 'psyqu33n-011', titleFr: 'The Rebirth', titleEn: 'The Rebirth', titleEs: 'El Renacimiento', image: thumb('/images/prints/Psyqu33n11.webp'), fullImage: img('/images/prints/Psyqu33n11.webp'), limited: false },
-      { id: 'psyqu33n-012', titleFr: 'Trouver le divin en soi', titleEn: 'Finding the Divine Within', titleEs: 'Encontrar lo divino en uno mismo', image: thumb('/images/prints/Psyqu33n12.webp'), fullImage: img('/images/prints/Psyqu33n12.webp'), limited: false },
+{ id: 'psyqu33n-012', titleFr: 'Trouver le divin en soi', titleEn: 'Finding the Divine Within', titleEs: 'Encontrar lo divino en uno mismo', image: thumb('/images/prints/Psyqu33n12.webp'), fullImage: img('/images/prints/Psyqu33n12.webp'), limited: false },
       { id: 'psyqu33n-013', titleFr: 'Trusting the Process', titleEn: 'Trusting the Process', titleEs: 'Confiar en el proceso', image: thumb('/images/prints/Psyqu33n13.webp'), fullImage: img('/images/prints/Psyqu33n13.webp'), limited: false },
     ],
     pricing: {
