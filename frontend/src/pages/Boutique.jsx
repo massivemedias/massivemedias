@@ -331,9 +331,9 @@ function Boutique() {
         </div>
       </section>
 
-      {/* Mobile category tabs - sticky below fixed header */}
-      <div className="md:hidden sticky top-20 z-40 bg-bg-primary/95 backdrop-blur-xl border-b card-border shadow-lg shadow-black/30">
-        <div ref={mobileTabsRef} className="grid grid-cols-3 px-2 py-2 gap-1">
+      {/* Mobile category tabs - horizontal scroll pills */}
+      <div className="md:hidden sticky top-20 z-40 bg-bg-primary/95 backdrop-blur-xl border-b card-border">
+        <div ref={mobileTabsRef} className="flex overflow-x-auto scrollbar-hide px-3 py-2.5 gap-2">
           {sidebarCategories.map(cat => {
             const Icon = cat.icon;
             const isActive = activeCategory === cat.id;
@@ -342,12 +342,12 @@ function Boutique() {
                 key={cat.id}
                 ref={el => tabRefs.current[cat.id] = el}
                 onClick={() => scrollToSection(cat.id)}
-                className={`flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg text-[11px] font-bold transition-all duration-300 ${
+                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-200 flex-shrink-0 ${
                   isActive
                     ? cat.id === 'soldes'
-                      ? 'bg-red-500 text-white shadow-md shadow-red-500/30'
-                      : 'bg-accent text-white shadow-md shadow-accent/30'
-                    : 'bg-glass text-grey-light hover:text-heading'
+                      ? 'bg-red-500 text-white'
+                      : 'bg-accent text-white'
+                    : 'bg-glass text-grey-light'
                 }`}
               >
                 <Icon size={13} />
