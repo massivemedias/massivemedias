@@ -57,10 +57,19 @@ function ArtisteDetail({ subdomainSlug }) {
       socials: Object.keys(cms.socials || {}).length > 0 ? cms.socials : local.socials,
       prints: cms.prints && cms.prints.length > 0
         ? cms.prints.map(cp => {
-            // Si le print CMS n'a pas d'image, chercher dans le local par id
-            if (!cp.image && local.prints) {
+            // Merger avec le local par id (images, titres, flags)
+            if (local.prints) {
               const localPrint = local.prints.find(lp => lp.id === cp.id);
-              if (localPrint) return { ...cp, image: localPrint.image, fullImage: localPrint.fullImage };
+              if (localPrint) {
+                return {
+                  ...localPrint,
+                  ...cp,
+                  image: cp.image || localPrint.image,
+                  fullImage: cp.fullImage || localPrint.fullImage,
+                  titleFr: localPrint.titleFr || cp.titleFr,
+                  titleEn: localPrint.titleEn || cp.titleEn,
+                };
+              }
             }
             return cp;
           })
