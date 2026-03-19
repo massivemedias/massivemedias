@@ -96,8 +96,8 @@ const CATEGORY_LABELS = {
   'other': { fr: 'Autre', en: 'Other', es: 'Otro' },
 };
 
-// Filter buttons: show only the combined relevant statuses
-const FILTER_STATUSES = ['all', 'new', 'read', 'reviewing', 'replied', 'accepted', 'rejected', 'archived'];
+// Filter buttons: juste Tous et Archive
+const FILTER_STATUSES = ['all', 'archived'];
 
 const formatDate = (d) => {
   if (!d) return '-';
@@ -229,10 +229,9 @@ function AdminMessages() {
   const toggleExpand = (item) => {
     if (expandedId === item._uid) { setExpandedId(null); return; }
     setExpandedId(item._uid);
-    // Auto-mark as read/reviewing when expanded
+    // Auto-mark as read when expanded
     if (item.status === 'new') {
-      if (item._type === 'contact' || item._type === 'artist-msg') handleStatusChange(item, 'read');
-      else if (item._type === 'candidature') handleStatusChange(item, 'reviewing');
+      handleStatusChange(item, 'read');
     }
   };
 
@@ -272,22 +271,11 @@ function AdminMessages() {
             className="input-field pl-9 text-sm" />
         </div>
         <div className="flex flex-wrap gap-1.5">
-          {/* Type filter */}
-          {['all', 'contact', 'artist-msg', 'candidature'].map((t) => (
-            <button key={t} onClick={() => { setFilterType(t); setExpandedId(null); }}
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${filterType === t ? 'text-accent' : 'text-grey-muted hover:text-accent'}`}>
-              {t === 'all' ? tx({ fr: 'Tout', en: 'All', es: 'Todo' })
-                : t === 'contact' ? tx({ fr: 'Messages', en: 'Messages', es: 'Mensajes' })
-                : t === 'artist-msg' ? tx({ fr: 'Artistes', en: 'Artists', es: 'Artistas' })
-                : tx({ fr: 'Candidatures', en: 'Applications', es: 'Candidaturas' })}
-            </button>
-          ))}
-          <span className="w-px bg-grey-muted/20 mx-1 self-stretch" />
-          {/* Status filter */}
+          {/* Status filter: Tous / Archive */}
           {FILTER_STATUSES.map((s) => (
             <button key={s} onClick={() => { setFilterStatus(s); setExpandedId(null); }}
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${filterStatus === s ? 'text-accent' : 'text-grey-muted hover:text-accent'}`}>
-              {s === 'all' ? tx({ fr: 'Tous', en: 'All', es: 'Todos' }) : tx({ fr: ALL_STATUS[s].fr, en: ALL_STATUS[s].en, es: ALL_STATUS[s].es })}
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${filterStatus === s ? 'bg-accent/20 text-accent' : 'text-grey-muted hover:text-accent'}`}>
+              {s === 'all' ? tx({ fr: 'Tous', en: 'All', es: 'Todos' }) : tx({ fr: 'Archives', en: 'Archives', es: 'Archivos' })}
             </button>
           ))}
         </div>
