@@ -37,7 +37,7 @@ export default {
       config: { auth: false },
     },
     {
-      method: 'POST',
+      method: 'GET',
       path: '/artist-edit-requests/sync-images',
       handler: 'artist-edit-request.syncImages',
       config: { auth: false },
