@@ -8,7 +8,7 @@ export const ARTIST_CONTRACT_TEXT_EN = `
 <h4>2. FREQUENTLY ASKED QUESTIONS (FAQ)</h4>
 
 <p><strong>Can I order prints of my own works for myself?</strong></p>
-<p>Yes. You can order personal copies of your prints at production cost (materials and consumables only, no markup). These copies are reserved for personal use, portfolio or exhibition. Any resale must go through the Massive Medias platform with the agreed revenue split (see section 7.4).</p>
+<p>Yes. You can order personal copies of your prints with a 30% discount on the client price. These copies are reserved for personal use, portfolio or exhibition. Resale of prints obtained at a reduced price is strictly prohibited (see section 7.4).</p>
 
 <p><strong>What about stickers - can I get a discount on my own?</strong></p>
 <p>No. Stickers are distribution products by nature. The regular retail price applies for everyone, including the Artist, whether for personal use, events or retail (see section 7.4).</p>
@@ -201,7 +201,7 @@ export const ARTIST_CONTRACT_TEXT_EN = `
 <p>Payments to the Artist are made monthly via Interac e-Transfer, provided the amount exceeds $25 CAD. Amounts below this threshold are carried over to the following month.</p>
 
 <p><strong>7.4 Artist Personal Copies</strong></p>
-<p>The Artist may order personal copies of their <strong>prints</strong> at production cost (materials, consumables, no markup). These copies are strictly reserved for personal use, portfolio or exhibition purposes. Any resale or distribution of these copies - whether at reduced or full price - must go through the Massive Medias platform according to the revenue split agreed upon in section 7.1.</p>
+<p>The Artist may order personal copies of their <strong>prints</strong> with a 30% discount on the client price. These copies are strictly reserved for personal use, portfolio or exhibition purposes. Resale or distribution of prints obtained at a reduced price is strictly prohibited.</p>
 <p><strong>Stickers</strong> are distribution products by nature. Whether the Artist orders them personally or a customer purchases them, whether for personal use, events, or retail, regular retail pricing applies. There is no discounted rate for personal sticker orders.</p>
 <p>Violation of this clause constitutes a breach of contract and may result in immediate termination of the partnership.</p>
 
@@ -304,7 +304,7 @@ export const ARTIST_CONTRACT_TEXT_ES = `
 <h4>2. PREGUNTAS FRECUENTES (FAQ)</h4>
 
 <p><strong>Puedo pedir impresiones de mis obras para mi?</strong></p>
-<p>Si. Puedes solicitar copias personales de tus impresiones al costo de produccion (materiales y consumibles unicamente, sin margen). Estas copias estan reservadas para uso personal, portafolio o exposiciones. Cualquier reventa debe realizarse a traves de la plataforma Massive Medias con el reparto de ingresos acordado (ver articulo 7.4).</p>
+<p>Si. Puedes solicitar copias personales de tus impresiones con un descuento del 30% sobre el precio cliente. Estas copias estan reservadas para uso personal, portafolio o exposiciones. La reventa de prints obtenidos a precio reducido esta estrictamente prohibida (ver articulo 7.4).</p>
 
 <p><strong>Y los stickers - puedo obtener un descuento?</strong></p>
 <p>No. Los stickers son productos de distribucion por naturaleza. El precio regular de venta se aplica para todos, incluido el Artista, ya sea para uso personal, eventos o tiendas (ver articulo 7.4).</p>
@@ -497,7 +497,7 @@ export const ARTIST_CONTRACT_TEXT_ES = `
 <p>Los pagos al Artista se realizan mensualmente por transferencia Interac, siempre que el monto supere los $25 CAD. Los montos inferiores a este umbral se trasladan al mes siguiente.</p>
 
 <p><strong>7.4 Copias personales del Artista</strong></p>
-<p>El Artista puede solicitar copias personales de sus <strong>impresiones</strong> al costo de produccion (materiales, consumibles, sin margen). Estas copias estan estrictamente reservadas para uso personal, portafolio o exposiciones. Cualquier reventa o distribucion de estas copias - ya sea a precio reducido o completo - debe realizarse a traves de la plataforma Massive Medias segun el reparto acordado en el articulo 7.1.</p>
+<p>El Artista puede solicitar copias personales de sus <strong>impresiones</strong> con un descuento del 30% sobre el precio cliente. Estas copias estan estrictamente reservadas para uso personal, portafolio o exposiciones. La reventa o distribucion de prints obtenidos a precio reducido esta estrictamente prohibida.</p>
 <p>Los <strong>stickers</strong> son productos de distribucion por naturaleza. Ya sea que el Artista los solicite personalmente o que un cliente los compre, ya sea para uso personal, eventos o tiendas, se aplican los precios regulares de venta. No existe tarifa preferencial para pedidos personales de stickers.</p>
 <p>La violacion de esta clausula constituye un incumplimiento del contrato y puede resultar en la terminacion inmediata de la asociacion.</p>
 
@@ -600,7 +600,7 @@ export const ARTIST_CONTRACT_TEXT = `
 <h4>2. FOIRE AUX QUESTIONS (FAQ)</h4>
 
 <p><strong>Est-ce que je peux commander des prints de mes oeuvres pour moi?</strong></p>
-<p>Oui. Tu peux commander des copies personnelles de tes impressions au coût de production (matériaux et consommables seulement, sans marge). Ces copies sont réservées à un usage personnel, portfolio ou exposition. Toute revente doit passer par la plateforme Massive Medias avec le split convenu (voir article 7.4).</p>
+<p>Oui. Tu peux commander des copies personnelles de tes impressions avec un rabais de 30% sur le prix client. Ces copies sont reservees a un usage personnel, portfolio ou exposition. La revente de prints obtenus a prix reduit est strictement interdite (voir article 7.4).</p>
 
 <p><strong>Et les stickers - est-ce que j'ai un rabais?</strong></p>
 <p>Non. Les stickers sont des produits de distribution par nature. Le prix régulier de vente s'applique pour tout le monde, incluant l'Artiste, que ce soit pour usage personnel, événements ou points de vente (voir article 7.4).</p>
@@ -793,7 +793,7 @@ export const ARTIST_CONTRACT_TEXT = `
 <p>Les versements à l'Artiste sont effectués mensuellement par virement Interac, à condition que le montant dépasse 25 $ CAD. Les montants inférieurs à ce seuil sont reportés au mois suivant.</p>
 
 <p><strong>7.4 Copies personnelles de l'Artiste</strong></p>
-<p>L'Artiste peut commander des copies personnelles de ses <strong>impressions (prints)</strong> au prix de production (matériaux, consommables, sans marge). Ces copies sont strictement réservées à un usage personnel, portfolio ou exposition. Toute revente ou distribution de ces copies - que ce soit à prix réduit ou au prix fort - doit passer par la plateforme Massive Medias selon le split convenu à l'article 7.1.</p>
+<p>L'Artiste peut commander des copies personnelles de ses <strong>impressions (prints)</strong> avec un rabais de 30% sur le prix client. Ces copies sont strictement reservees a un usage personnel, portfolio ou exposition. La revente ou distribution de prints obtenus a prix reduit est strictement interdite.</p>
 <p>Les <strong>stickers</strong> sont des produits de distribution par nature. Que l'Artiste les commande pour lui-même ou qu'un client les achète, que ce soit pour usage personnel, pour un événement ou pour un point de vente, les prix réguliers de vente s'appliquent. Il n'existe pas de tarif préférentiel pour les commandes personnelles de stickers.</p>
 <p>La violation de cette clause constitue un manquement au contrat et peut entraîner la résiliation immédiate du partenariat.</p>
 
@@ -891,7 +891,7 @@ export const ARTIST_CONTRACT_TEXT = `
 // FAQ structuree pour affichage en accordeon hors contrat
 export const ARTIST_FAQ = {
   fr: [
-    { q: "Est-ce que je peux commander des prints de mes oeuvres pour moi?", a: "Oui. Tu peux commander des copies personnelles de tes impressions au coût de production (matériaux et consommables seulement, sans marge). Ces copies sont réservées à un usage personnel, portfolio ou exposition. Toute revente doit passer par la plateforme Massive Medias avec le split convenu." },
+    { q: "Est-ce que je peux commander des prints de mes oeuvres pour moi?", a: "Oui! Tu beneficies d'un rabais de 30% sur le prix client pour tes copies personnelles. Par exemple, un print Musee A3 a 120$ te revient a 84$. Les frais de livraison s'appliquent normalement, ou tu peux ramasser gratuitement au studio Mile-End. Ces copies sont reservees a un usage personnel, portfolio ou exposition - la revente de prints obtenus a prix reduit est strictement interdite." },
     { q: "Et les stickers - est-ce que j'ai un rabais?", a: "Non. Les stickers sont des produits de distribution par nature. Le prix régulier de vente s'applique pour tout le monde, incluant l'Artiste, que ce soit pour usage personnel, événements ou points de vente." },
     { q: "Comment fonctionne le partage des revenus?", a: "Pour chaque vente, les coûts de production sont déduits en premier (matériaux, consommables, emballage, amortissement équipement). Le profit net restant est partagé selon le split convenu entre toi et Massive Medias. Par exemple, avec un ratio 50/50 sur un print vendu 35$ avec 12$ de coûts de production, chaque partie reçoit 11,50$." },
     { q: "Je veux vendre des prints à un festival. Comment ça marche?", a: "Tu peux commander des prints en volume au prix de vente régulier (prix client). Massive Medias les produit, et tu es libre de les revendre au prix que tu veux sur place. Tout profit supplémentaire au-dessus du prix d'achat est 100% à toi." },
@@ -909,7 +909,7 @@ export const ARTIST_FAQ = {
     { q: "C'est quoi un print unique?", a: "Un print unique est une pièce unique - un seul exemplaire est imprimé. Une fois vendu, il ne peut pas être reproduit. Ces prints sont typiquement produits dans un format fixe (A2, qualité musée) sans option de cadre, et sont tarifiés comme des pièces de collection." },
   ],
   en: [
-    { q: "Can I order prints of my own works for myself?", a: "Yes. You can order personal copies of your prints at production cost (materials and consumables only, no markup). These copies are reserved for personal use, portfolio or exhibition. Any resale must go through the Massive Medias platform with the agreed revenue split." },
+    { q: "Can I order prints of my own works for myself?", a: "Yes! You get a 30% discount on the client price for personal copies. For example, a Museum A3 print at 120$ costs you 84$. Shipping fees apply, or free pickup at our Mile-End studio. These copies are for personal use, portfolio or exhibition only - resale of discounted prints is strictly prohibited." },
     { q: "What about stickers - can I get a discount?", a: "No. Stickers are distribution products by nature. The regular retail price applies for everyone, including the Artist, whether for personal use, events or retail." },
     { q: "How does the revenue split work?", a: "For each sale, production costs are deducted first (materials, consumables, packaging, equipment depreciation). The remaining net profit is shared according to the agreed split. For example, with a 50/50 split on a $35 print with $12 in production costs, each party receives $11.50." },
     { q: "I want to sell prints at a festival. How does that work?", a: "You can order prints in bulk at the regular retail price (client price). Massive Medias produces them, and you are free to resell them at whatever price you choose. Any markup above the purchase price is 100% yours." },
@@ -927,7 +927,7 @@ export const ARTIST_FAQ = {
     { q: "What is a unique print?", a: "A unique print is a one-of-a-kind piece - only a single copy is ever produced. Once sold, it cannot be reproduced. These are typically produced in a fixed format (A2, museum quality) with no framing option, and are priced as collector's items." },
   ],
   es: [
-    { q: "Puedo pedir impresiones de mis obras para mi?", a: "Si. Puedes solicitar copias personales de tus impresiones al costo de produccion (materiales y consumibles unicamente, sin margen). Estas copias estan reservadas para uso personal, portafolio o exposiciones. Cualquier reventa debe realizarse a traves de la plataforma Massive Medias." },
+    { q: "Puedo pedir impresiones de mis obras para mi?", a: "Si! Tienes un descuento del 30% sobre el precio cliente para copias personales. Por ejemplo, un print Museo A3 a 120$ te cuesta 84$. Los gastos de envio aplican normalmente, o puedes recoger gratis en el estudio Mile-End. Estas copias son para uso personal, portafolio o exposicion - la reventa de prints obtenidos a precio reducido esta estrictamente prohibida." },
     { q: "Y los stickers - puedo obtener un descuento?", a: "No. Los stickers son productos de distribucion por naturaleza. El precio regular de venta se aplica para todos, incluido el Artista." },
     { q: "Como funciona el reparto de ingresos?", a: "Para cada venta, primero se deducen los costos de produccion. El beneficio neto restante se reparte segun la clave convenida. Por ejemplo, con un reparto 50/50 en una impresion de $35 con $12 de costos, cada parte recibe $11.50." },
     { q: "Quiero vender impresiones en un festival. Como funciona?", a: "Puedes pedir impresiones en volumen al precio regular de venta. Massive Medias las produce, y tu eres libre de revenderlas al precio que quieras. Cualquier margen por encima del precio de compra es 100% tuyo." },
