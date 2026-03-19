@@ -36,11 +36,5 @@ export default {
       handler: 'artist-edit-request.cleanupOriginals',
       config: { auth: false },
     },
-    {
-      method: 'GET',
-      path: '/artist-edit-requests/sync-images',
-      handler: 'artist-edit-request.syncImages',
-      config: { auth: false },
-    },
   ],
 };

@@ -75,6 +75,7 @@ function ArtisteDetail({ subdomainSlug }) {
   const [selectedSticker, setSelectedSticker] = useState(null);
   const [openFaq, setOpenFaq] = useState(null);
   const [lightbox, setLightbox] = useState(null);
+  const [isLandscape, setIsLandscape] = useState(false);
   const configuratorRef = useRef(null);
   const stickerConfiguratorRef = useRef(null);
   const [searchParams] = useSearchParams();
@@ -571,13 +572,14 @@ function ArtisteDetail({ subdomainSlug }) {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-8 max-w-5xl mx-auto">
               {/* Preview */}
               <div
-                className="relative rounded-2xl overflow-hidden aspect-[2/3] card-shadow cursor-pointer group"
+                className={`relative rounded-2xl overflow-hidden ${isLandscape ? 'aspect-[3/2]' : 'aspect-[2/3]'} card-shadow cursor-pointer group`}
                 onClick={() => setLightbox(artist.prints.findIndex(p => p.id === selectedPrint.id))}
               >
                 <img
                   src={selectedPrint.image}
                   alt={tx({ fr: selectedPrint.titleFr, en: selectedPrint.titleEn, es: selectedPrint.titleEs || selectedPrint.titleEn })}
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  onLoad={(e) => setIsLandscape(e.target.naturalWidth > e.target.naturalHeight)}
                 />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
                   <ZoomIn size={32} className="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 drop-shadow-lg" />
