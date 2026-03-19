@@ -911,7 +911,7 @@ function Account() {
   // ============================================================
   const ARTIST_SIDEBAR_ITEMS = isArtist ? [
     { id: 'dashboard', label: tx({ fr: 'Tableau de bord', en: 'Dashboard', es: 'Panel' }), icon: Palette },
-    { id: 'profil-artiste', label: tx({ fr: 'Mon profil', en: 'My profile', es: 'Mi perfil' }), icon: User },
+    { id: 'profil-artiste', label: tx({ fr: 'Page Artiste', en: 'Artist Page', es: 'Pagina Artista' }), icon: User },
     { id: 'contrat', label: tx({ fr: 'Contrat', en: 'Contract', es: 'Contrato' }), icon: ScrollText },
     { id: 'tarifs', label: tx({ fr: 'Tarifs Massive', en: 'Massive Pricing', es: 'Precios Massive' }), icon: Receipt },
     { id: 'ventes', label: tx({ fr: 'Mes ventes', en: 'My sales', es: 'Mis ventas' }), icon: BarChart3 },

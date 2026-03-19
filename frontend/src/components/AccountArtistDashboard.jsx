@@ -393,7 +393,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
             )}
             <Link to="/account?tab=profil-artiste" className="flex flex-col items-center gap-2 p-4 md:p-5 rounded-xl bg-black/20 shadow-lg hover:bg-black/30 transition-all group text-center">
               <User size={22} className="text-purple-400 group-hover:scale-110 transition-transform" />
-              <p className="text-heading text-sm font-semibold">{tx({ fr: 'Mon profil', en: 'My profile', es: 'Mi perfil' })}</p>
+              <p className="text-heading text-sm font-semibold">{tx({ fr: 'Page Artiste', en: 'Artist Page', es: 'Pagina Artista' })}</p>
             </Link>
             <Link to="/account?tab=ventes" className="flex flex-col items-center gap-2 p-4 md:p-5 rounded-xl bg-black/20 shadow-lg hover:bg-black/30 transition-all group text-center">
               <BarChart3 size={22} className="text-green-400 group-hover:scale-110 transition-transform" />
@@ -727,7 +727,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
         <div className="rounded-2xl p-5 md:p-8 card-bg card-shadow">
           <h3 className="text-heading font-heading font-bold text-lg flex items-center gap-2 mb-6">
             <Palette size={20} className="text-accent" />
-            {tx({ fr: 'Mon profil', en: 'My profile', es: 'Mi perfil' })}
+            {tx({ fr: 'Page Artiste', en: 'Artist Page', es: 'Pagina Artista' })}
           </h3>
 
           {artistProfileMsg && (
