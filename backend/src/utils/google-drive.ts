@@ -43,7 +43,7 @@ async function getAccessToken(): Promise<string> {
     throw new Error(`Token refresh failed: ${err}`);
   }
 
-  const data = await res.json();
+  const data: any = await res.json();
   cachedToken = { token: data.access_token, expiry: Date.now() + 3500 * 1000 };
   return data.access_token;
 }

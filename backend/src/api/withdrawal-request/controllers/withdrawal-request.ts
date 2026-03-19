@@ -1,6 +1,6 @@
 import { factories } from '@strapi/strapi';
 
-export default factories.createCoreController('api::withdrawal-request.withdrawal-request', ({ strapi }) => ({
+export default factories.createCoreController('api::withdrawal-request.withdrawal-request' as any, ({ strapi }) => ({
 
   // POST /withdrawal-requests/create - Artiste demande un retrait
   async createRequest(ctx) {
@@ -18,7 +18,7 @@ export default factories.createCoreController('api::withdrawal-request.withdrawa
 
     try {
       // Verifier pas de demande pending deja en cours
-      const pending = await strapi.documents('api::withdrawal-request.withdrawal-request').findMany({
+      const pending = await strapi.documents('api::withdrawal-request.withdrawal-request' as any).findMany({
         filters: {
           email: { $eqi: email },
           status: { $in: ['pending', 'processing'] },
@@ -31,7 +31,7 @@ export default factories.createCoreController('api::withdrawal-request.withdrawa
         return;
       }
 
-      const entry = await strapi.documents('api::withdrawal-request.withdrawal-request').create({
+      const entry = await strapi.documents('api::withdrawal-request.withdrawal-request' as any).create({
         data: {
           artistSlug: artistSlug || '',
           artistName: artistName || '',
@@ -66,7 +66,7 @@ export default factories.createCoreController('api::withdrawal-request.withdrawa
     }
 
     try {
-      const entries = await strapi.documents('api::withdrawal-request.withdrawal-request').findMany({
+      const entries = await strapi.documents('api::withdrawal-request.withdrawal-request' as any).findMany({
         filters: { email: { $eqi: email as string } },
         sort: { createdAt: 'desc' },
         limit: 50,
@@ -92,7 +92,7 @@ export default factories.createCoreController('api::withdrawal-request.withdrawa
   // GET /withdrawal-requests/admin - Toutes les demandes (admin)
   async adminList(ctx) {
     try {
-      const entries = await strapi.documents('api::withdrawal-request.withdrawal-request').findMany({
+      const entries = await strapi.documents('api::withdrawal-request.withdrawal-request' as any).findMany({
         sort: { createdAt: 'desc' },
         limit: 100,
       });
@@ -136,16 +136,17 @@ export default factories.createCoreController('api::withdrawal-request.withdrawa
         data.processedAt = new Date().toISOString();
       }
 
-      const entry = await strapi.documents('api::withdrawal-request.withdrawal-request').update({
+      const entry = await strapi.documents('api::withdrawal-request.withdrawal-request' as any).update({
         documentId,
         data,
       });
 
+      const result = entry as any;
       ctx.body = {
         data: {
-          documentId: entry.documentId,
-          status: entry.status,
-          processedAt: entry.processedAt,
+          documentId: result.documentId,
+          status: result.status,
+          processedAt: result.processedAt,
         },
       };
     } catch (err: any) {
