@@ -368,6 +368,100 @@ export default factories.createCoreController('api::artist-edit-request.artist-e
       ctx.throw(500, err.message);
     }
   },
+
+  // POST /artist-edit-requests/sync-images - One-shot fix: sync CMS prints with local image paths
+  async syncImages(ctx) {
+    const LOCAL_PRINTS: Record<string, any[]> = {
+      'mok': [
+        { id: 'mok-001', titleFr: 'Metro Montreal', titleEn: 'Montreal Metro', image: '/images/thumbs/prints/Mok1.webp', fullImage: '/images/prints/Mok1.webp', limited: false },
+      ],
+      'quentin-delobel': Array.from({ length: 20 }, (_, i) => ({
+        id: `qd-${String(i + 1).padStart(3, '0')}`, titleFr: `Photo ${i + 1}`, titleEn: `Photo ${i + 1}`,
+        image: `/images/thumbs/prints/QuentinDelobel${i + 1}.webp`, fullImage: `/images/prints/QuentinDelobel${i + 1}.webp`, limited: false,
+      })),
+      'psyqu33n': [
+        { id: 'psyqu33n-001', titleFr: "Accepter ses parts d'ombres et de lumiere", image: '/images/thumbs/prints/Psyqu33n1.webp', fullImage: '/images/prints/Psyqu33n1.webp', limited: false },
+        { id: 'psyqu33n-002', titleFr: 'Croire en quelque chose de plus grand', image: '/images/thumbs/prints/Psyqu33n2.webp', fullImage: '/images/prints/Psyqu33n2.webp', limited: false },
+        { id: 'psyqu33n-003', titleFr: "L'archetype de la reine", image: '/images/thumbs/prints/Psyqu33n3.webp', fullImage: '/images/prints/Psyqu33n3.webp', limited: false },
+        { id: 'psyqu33n-004', titleFr: 'La douleur derriere le masque', image: '/images/thumbs/prints/Psyqu33n4.webp', fullImage: '/images/prints/Psyqu33n4.webp', limited: false },
+        { id: 'psyqu33n-005', titleFr: 'La purge', image: '/images/thumbs/prints/Psyqu33n5.webp', fullImage: '/images/prints/Psyqu33n5.webp', limited: false },
+        { id: 'psyqu33n-006', titleFr: 'Le masque de la femme forte', image: '/images/thumbs/prints/Psyqu33n6.webp', fullImage: '/images/prints/Psyqu33n6.webp', limited: false },
+        { id: 'psyqu33n-007', titleFr: 'Le Vampire', image: '/images/thumbs/prints/Psyqu33n7.webp', fullImage: '/images/prints/Psyqu33n7.webp', limited: false },
+        { id: 'psyqu33n-008', titleFr: 'Nefertiti', image: '/images/thumbs/prints/Psyqu33n8.webp', fullImage: '/images/prints/Psyqu33n8.webp', limited: false },
+        { id: 'psyqu33n-009', titleFr: 'Rabbit', image: '/images/thumbs/prints/Psyqu33n9.webp', fullImage: '/images/prints/Psyqu33n9.webp', limited: false },
+        { id: 'psyqu33n-010', titleFr: 'Renard', image: '/images/thumbs/prints/Psyqu33n10.webp', fullImage: '/images/prints/Psyqu33n10.webp', limited: false },
+        { id: 'psyqu33n-011', titleFr: 'The Rebirth', image: '/images/thumbs/prints/Psyqu33n11.webp', fullImage: '/images/prints/Psyqu33n11.webp', limited: false },
+        { id: 'psyqu33n-012', titleFr: 'Trouver le divin en soi', image: '/images/thumbs/prints/Psyqu33n12.webp', fullImage: '/images/prints/Psyqu33n12.webp', limited: false },
+        { id: 'psyqu33n-013', titleFr: 'Trusting the Process', image: '/images/thumbs/prints/Psyqu33n13.webp', fullImage: '/images/prints/Psyqu33n13.webp', limited: false },
+      ],
+      'no-pixl': Array.from({ length: 16 }, (_, i) => {
+        const n = i + 1;
+        const titles: Record<number, [string, string]> = {
+          1: ['Red Room', 'Red Room'], 2: ['Blue Beams', 'Blue Beams'], 4: ['Behind the Decks', 'Behind the Decks'],
+          5: ['Hands Up', 'Hands Up'], 6: ['Laser V', 'Laser V'], 7: ['Backstage', 'Backstage'],
+          8: ['Holy Priest', 'Holy Priest'], 9: ['Holy Priest II', 'Holy Priest II'], 10: ['Holy Priest III', 'Holy Priest III'],
+          11: ['Baie Eternite', 'Eternity Bay'], 12: ['Cap Gaspe', 'Cape Gaspe'], 13: ['Horizon', 'Horizon'],
+          14: ['Rocher Perce', 'Perce Rock'], 15: ['Falaises', 'Cliffs'], 16: ['Plongeurs', 'Divers'],
+        };
+        const ids = [1,2,4,5,6,7,8,9,10,11,12,13,14,15,16];
+        const id = ids[i];
+        if (!id) return null;
+        const t = titles[id] || [`Print ${id}`, `Print ${id}`];
+        return { id: `nopixl-${String(id).padStart(3, '0')}`, titleFr: t[0], titleEn: t[1], image: `/images/thumbs/prints/NoPixl${id}.webp`, fullImage: `/images/prints/NoPixl${id}.webp`, limited: false };
+      }).filter(Boolean),
+      'cornelia-rose': (() => {
+        const titles = ['Cornelia Rose Art','Chrystaline Nectar','Cosmic Compass','Liongate','Owl Eyes','The Bear','Sans titre I','Sans titre II','Sans titre III','Sans titre IV','Sans titre V','Sans titre VI','Sans titre VII'];
+        return titles.map((t, i) => ({ id: `cr-${String(i+1).padStart(3,'0')}`, titleFr: t, titleEn: t, image: `/images/thumbs/prints/CorneliaRose${i+1}.webp`, fullImage: `/images/prints/CorneliaRose${i+1}.webp`, limited: false }));
+      })(),
+      'adrift': (() => {
+        const nums = [1,2,5,6,7,8,9,10,11,12,13,14,15,16];
+        return nums.map((n, i) => ({ id: `adrift-${String(i+1).padStart(3,'0')}`, titleFr: `Print ${i+1}`, titleEn: `Print ${i+1}`, image: `/images/thumbs/prints/Adrift${n}.webp`, fullImage: `/images/prints/Adrift${n}.webp`, limited: false }));
+      })(),
+      'maudite-machine': [
+        { id: 'gemini-002', titleFr: 'Affiche 1', titleEn: 'Poster 1', image: '/images/thumbs/prints/Gemini2.webp', fullImage: '/images/prints/Gemini2.webp', limited: false, unique: true, fixedFormat: 'a2', fixedTier: 'studio', noFrame: true },
+        { id: 'gemini-004', titleFr: 'Affiche 2', titleEn: 'Poster 2', image: '/images/thumbs/prints/Gemini4.webp', fullImage: '/images/prints/Gemini4.webp', limited: false, unique: true, fixedFormat: 'a2', fixedTier: 'studio', noFrame: true },
+      ],
+    };
+
+    const results: any[] = [];
+    try {
+      const artists = await strapi.documents('api::artist.artist' as any).findMany({ limit: 100 });
+      for (const artist of (artists || []) as any[]) {
+        const slug = artist.slug;
+        const localPrints = LOCAL_PRINTS[slug];
+        if (!localPrints) { results.push({ slug, action: 'skip' }); continue; }
+
+        const cmsPrints: any[] = Array.isArray(artist.prints) ? [...artist.prints] : [];
+        const localById: Record<string, any> = {};
+        for (const lp of localPrints) localById[lp.id] = lp;
+
+        const newPrints: any[] = [];
+        const changes: string[] = [];
+
+        for (const cp of cmsPrints) {
+          const hasImg = cp.image && String(cp.image).trim();
+          const isSupa = hasImg && String(cp.image).includes('supabase');
+          if (isSupa) { newPrints.push(cp); changes.push(`KEEP: ${cp.id}`); }
+          else if (localById[cp.id]) {
+            const l = localById[cp.id];
+            const u = { ...cp, image: l.image, fullImage: l.fullImage };
+            for (const k of ['unique','fixedFormat','fixedTier','noFrame','limited']) { if (l[k] !== undefined) u[k] = l[k]; }
+            newPrints.push(u); changes.push(`FIX: ${cp.id}`);
+          } else { changes.push(`REMOVE: ${cp.id}`); }
+        }
+        const cmsIds = new Set(cmsPrints.map((p: any) => p.id));
+        for (const lp of localPrints) { if (!cmsIds.has(lp.id)) { newPrints.push(lp); changes.push(`ADD: ${lp.id}`); } }
+
+        if (changes.length === 0) { results.push({ slug, action: 'ok' }); continue; }
+
+        await strapi.documents('api::artist.artist' as any).update({
+          documentId: artist.documentId, data: { prints: newPrints }, status: 'published',
+        });
+        results.push({ slug, action: 'updated', prints: newPrints.length, changes });
+      }
+      ctx.body = { success: true, results };
+    } catch (err: any) { ctx.throw(500, err.message); }
+  },
 }));
 
 
