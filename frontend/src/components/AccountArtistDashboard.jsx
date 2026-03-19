@@ -431,7 +431,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
                   {item.q}
                   <ChevronDown size={16} className="text-grey-muted flex-shrink-0 ml-2 transition-transform group-open:rotate-180" />
                 </summary>
-                <p className="px-4 pb-4 text-xs text-grey-light leading-relaxed">{item.a}</p>
+                <p className="px-4 pb-4 text-sm text-grey-light leading-relaxed">{item.a}</p>
               </details>
             ))}
           </div>
