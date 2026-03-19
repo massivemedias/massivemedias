@@ -21,14 +21,15 @@ import { ARTIST_CONTRACT_TEXT, ARTIST_CONTRACT_TEXT_EN, ARTIST_CONTRACT_TEXT_ES,
 import { HelpCircle } from 'lucide-react';
 import { generateContractPDF } from '../utils/generateContractPDF';
 
-// Prix client et prix artiste (rabais partenaire)
+// Prix client et prix artiste (rabais 30% sur prix client)
+const ARTIST_DISCOUNT = 0.30;
 const CLIENT_PRICES = {
   studio: { a4: 35, a3: 50, a3plus: 65 },
   museum: { a4: 75, a3: 120, a3plus: 160, a2: 190 },
 };
 const ARTIST_DISCOUNT_PRICES = {
-  studio: { a4: 20, a3: 25, a3plus: 35 },
-  museum: { a4: 35, a3: 65, a3plus: 95, a2: 110 },
+  studio: { a4: Math.round(35 * (1 - ARTIST_DISCOUNT)), a3: Math.round(50 * (1 - ARTIST_DISCOUNT)), a3plus: Math.round(65 * (1 - ARTIST_DISCOUNT)) },
+  museum: { a4: Math.round(75 * (1 - ARTIST_DISCOUNT)), a3: Math.round(120 * (1 - ARTIST_DISCOUNT)), a3plus: Math.round(160 * (1 - ARTIST_DISCOUNT)), a2: Math.round(190 * (1 - ARTIST_DISCOUNT)) },
 };
 const FRAME_PRICE = 30;
 

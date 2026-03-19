@@ -128,7 +128,7 @@ export const ARTIST_CONTRACT_TEXT_EN = `
 <p style="font-size:0.85em;opacity:0.8;"><em>Note: Format A2 (18x24") is printed in museum quality only (12 pigment inks). No frame available for this format.</em></p>
 
 <p><strong>Personal copies:</strong></p>
-<p>Prints: you can order your own copies at cost price ("Massive cost" column), for personal use, portfolio or exhibitions only.</p>
+<p>Prints: you benefit from a 30% discount on the client price for your own copies, for personal use, portfolio or exhibitions only. Resale of prints obtained at a reduced price is strictly prohibited.</p>
 <p>Stickers: regular price for everyone, no exception - it's a distribution product.</p>
 
 <p><strong>Uniform pricing:</strong></p>
@@ -424,7 +424,7 @@ export const ARTIST_CONTRACT_TEXT_ES = `
 <p style="font-size:0.85em;opacity:0.8;"><em>Nota: El formato A2 (18x24") se imprime en calidad museo unicamente (12 tintas pigmentadas). No hay marco disponible para este formato.</em></p>
 
 <p><strong>Copias personales:</strong></p>
-<p>Impresiones: puedes pedir tus propias copias al precio de costo (columna "Costo Massive"), para uso personal, portafolio o exposiciones unicamente.</p>
+<p>Impresiones: tienes un descuento del 30% sobre el precio cliente para tus propias copias, para uso personal, portafolio o exposiciones unicamente. La reventa de prints obtenidos a precio reducido esta estrictamente prohibida.</p>
 <p>Stickers: precio regular para todos, sin excepcion - es un producto de distribucion.</p>
 
 <p><strong>Precios uniformes:</strong></p>
@@ -720,7 +720,7 @@ export const ARTIST_CONTRACT_TEXT = `
 <p style="font-size:0.85em;opacity:0.8;"><em>Note : Le format A2 (18x24") est imprimé en qualité musée uniquement (12 encres pigmentées). Pas de cadre disponible pour ce format.</em></p>
 
 <p><strong>Copies personnelles :</strong></p>
-<p>Prints : tu peux commander tes propres copies au prix coûtant (colonne "Coût Massive"), pour usage personnel, portfolio ou expos uniquement.</p>
+<p>Prints : tu beneficies d'un rabais de 30% sur le prix client pour tes propres copies, pour usage personnel, portfolio ou expos uniquement. La revente de prints obtenus a prix reduit est strictement interdite.</p>
 <p>Stickers : prix régulier pour tout le monde, sans exception - c'est un produit de distribution.</p>
 
 <p><strong>Tarification uniforme :</strong></p>
