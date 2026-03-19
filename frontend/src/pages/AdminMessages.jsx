@@ -274,7 +274,7 @@ function AdminMessages() {
           {/* Status filter: Tous / Archive */}
           {FILTER_STATUSES.map((s) => (
             <button key={s} onClick={() => { setFilterStatus(s); setExpandedId(null); }}
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${filterStatus === s ? 'bg-accent/20 text-accent' : 'text-grey-muted hover:text-accent'}`}>
+              className={`px-3 py-1.5 text-xs font-semibold transition-all ${filterStatus === s ? 'text-accent border-b-2 border-accent' : 'text-grey-muted hover:text-accent'}`}>
               {s === 'all' ? tx({ fr: 'Tous', en: 'All', es: 'Todos' }) : tx({ fr: 'Archives', en: 'Archives', es: 'Archivos' })}
             </button>
           ))}
