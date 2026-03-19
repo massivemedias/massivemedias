@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ImagePlus, Trash2, Loader2, Check, X, Clock, Send, AlertCircle,
-  ChevronDown, ChevronUp, Eye,
+  ChevronDown, ChevronUp, Eye, Pencil,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -43,6 +43,8 @@ function ArtistGalleryManager() {
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
   const [showHistory, setShowHistory] = useState(false);
+  const [renamingId, setRenamingId] = useState(null);
+  const [renameValue, setRenameValue] = useState('');
 
   const email = user?.email || '';
   const localArtist = artistsData[artistSlug] || null;
@@ -146,6 +148,22 @@ function ArtistGalleryManager() {
     }
   };
 
+  // Renommer un item
+  const handleRename = async (itemId, category) => {
+    if (!renameValue.trim()) { setRenamingId(null); return; }
+    try {
+      await createEditRequest({
+        artistSlug, artistName, email,
+        requestType: 'rename-item',
+        changeData: { itemId, newTitle: renameValue.trim(), field: category },
+      });
+      setRenamingId(null);
+      setRenameValue('');
+    } catch {
+      setError(tx({ fr: 'Erreur lors du renommage.', en: 'Error renaming.', es: 'Error al renombrar.' }));
+    }
+  };
+
   // Soumettre de nouvelles images
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -228,9 +246,25 @@ function ArtistGalleryManager() {
                 </div>
               )}
 
-              {/* Overlay avec titre */}
+              {/* Overlay avec titre (editable) */}
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2 pt-6">
-                <p className="text-white text-[10px] truncate">{title || item.id}</p>
+                {renamingId === item.id ? (
+                  <form onSubmit={(e) => { e.preventDefault(); handleRename(item.id, category); }} className="flex gap-1">
+                    <input
+                      value={renameValue}
+                      onChange={(e) => setRenameValue(e.target.value)}
+                      className="flex-1 bg-black/50 text-white text-[10px] px-1.5 py-0.5 rounded border border-white/30 focus:outline-none focus:border-accent"
+                      autoFocus
+                      onBlur={() => setTimeout(() => setRenamingId(null), 200)}
+                    />
+                    <button type="submit" className="text-green-400 hover:text-green-300"><Check size={12} /></button>
+                  </form>
+                ) : (
+                  <p className="text-white text-[10px] truncate cursor-pointer hover:text-accent transition-colors"
+                    onClick={(e) => { e.stopPropagation(); setRenamingId(item.id); setRenameValue(title || ''); }}>
+                    {title || item.id} <Pencil size={8} className="inline ml-0.5 opacity-50" />
+                  </p>
+                )}
               </div>
 
               {/* Badge pending removal */}

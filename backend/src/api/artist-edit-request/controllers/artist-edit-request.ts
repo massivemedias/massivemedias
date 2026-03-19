@@ -12,7 +12,7 @@ async function tryUploadToGoogleDrive(fileUrl: string, fileName: string, artistS
 }
 
 // Types de requetes qui s'appliquent automatiquement (pas besoin d'approbation admin)
-const AUTO_APPLY_TYPES = ['update-profile', 'update-bio', 'update-socials', 'update-avatar'];
+const AUTO_APPLY_TYPES = ['update-profile', 'update-bio', 'update-socials', 'update-avatar', 'rename-item'];
 
 // Labels humains pour les notifications
 const TYPE_LABELS: Record<string, string> = {
@@ -26,6 +26,7 @@ const TYPE_LABELS: Record<string, string> = {
   'update-bio': 'Mise a jour de la bio',
   'update-socials': 'Mise a jour des liens sociaux',
   'update-avatar': 'Changement de photo de profil',
+  'rename-item': 'Renommage d\'un item',
 };
 
 export default factories.createCoreController('api::artist-edit-request.artist-edit-request', ({ strapi }) => ({
@@ -574,6 +575,18 @@ async function applyProfileChange(strapi: any, artistSlug: string, requestType: 
       if (changeData.name) updateData.name = changeData.name;
       if (changeData.taglineFr !== undefined) updateData.taglineFr = changeData.taglineFr;
       break;
+    case 'rename-item': {
+      const { itemId, newTitle, field } = changeData;
+      if (!itemId || !newTitle) break;
+      const fieldName = field === 'stickers' ? 'stickers' : field === 'merch' ? 'merch' : 'prints';
+      const items = Array.isArray(artist[fieldName]) ? [...artist[fieldName]] : [];
+      const idx = items.findIndex((it: any) => it.id === itemId);
+      if (idx >= 0) {
+        items[idx] = { ...items[idx], titleFr: newTitle, titleEn: newTitle };
+        updateData[fieldName] = items;
+      }
+      break;
+    }
   }
 
   if (Object.keys(updateData).length > 0) {
