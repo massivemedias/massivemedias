@@ -128,12 +128,14 @@ function ArtistGalleryManager() {
   };
 
   // Supprimer une image
+  const [removingId, setRemovingId] = useState(null);
   const handleRemove = async (itemId, category) => {
     if (pendingRemovalIds.includes(itemId)) return;
 
     const cat = CATEGORIES.find(c => c.id === category);
     if (!cat) return;
 
+    setRemovingId(itemId);
     try {
       const res = await createEditRequest({
         artistSlug,
@@ -146,8 +148,12 @@ function ArtistGalleryManager() {
       if (newReq) {
         setEditRequests(prev => [newReq, ...prev]);
       }
+      setSuccess(tx({ fr: 'Demande de suppression envoyee!', en: 'Removal request sent!', es: 'Solicitud de eliminacion enviada!' }));
+      setTimeout(() => setSuccess(''), 4000);
     } catch (err) {
       setError(tx({ fr: 'Erreur lors de la demande de suppression.', en: 'Error requesting removal.', es: 'Error al solicitar la eliminacion.' }));
+    } finally {
+      setRemovingId(null);
     }
   };
 
@@ -155,13 +161,21 @@ function ArtistGalleryManager() {
   const handleRename = async (itemId, category) => {
     if (!renameValue.trim()) { setRenamingId(null); return; }
     try {
-      await createEditRequest({
+      const res = await createEditRequest({
         artistSlug, artistName, email,
         requestType: 'rename-item',
         changeData: { itemId, newTitle: renameValue.trim(), field: category },
       });
+      const newReq = res.data?.data;
+      if (newReq) setEditRequests(prev => [newReq, ...prev]);
       setRenamingId(null);
       setRenameValue('');
+      setSuccess(tx({
+        fr: `Demande de renommage envoyee: "${renameValue.trim()}"`,
+        en: `Rename request sent: "${renameValue.trim()}"`,
+        es: `Solicitud de renombrar enviada: "${renameValue.trim()}"`,
+      }));
+      setTimeout(() => setSuccess(''), 4000);
     } catch {
       setError(tx({ fr: 'Erreur lors du renommage.', en: 'Error renaming.', es: 'Error al renombrar.' }));
     }
@@ -391,16 +405,17 @@ function ArtistGalleryManager() {
                 </div>
               )}
 
-              {/* Boutons d'action (hover) */}
+              {/* Boutons d'action (toujours visibles sur mobile, hover sur desktop) */}
               {!isPendingRemoval && !showUniqueForm && (
-                <div className="absolute top-2 right-2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="absolute top-2 right-2 flex flex-col gap-1 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                   {/* Bouton supprimer */}
                   <button
-                    onClick={() => handleRemove(item.id, category)}
-                    className="p-1.5 rounded-full bg-red-500/80 text-white hover:bg-red-500"
+                    onClick={(e) => { e.stopPropagation(); handleRemove(item.id, category); }}
+                    disabled={removingId === item.id}
+                    className="p-1.5 rounded-full bg-red-500/80 text-white hover:bg-red-500 disabled:opacity-50"
                     title={tx({ fr: 'Demander la suppression', en: 'Request removal', es: 'Solicitar eliminacion' })}
                   >
-                    <Trash2 size={12} />
+                    {removingId === item.id ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
                   </button>
                   {/* Bouton piece unique */}
                   {!isUnique && !isPendingUnique && category === 'prints' && (
@@ -433,7 +448,7 @@ function ArtistGalleryManager() {
 
   // Historique des demandes
   const recentRequests = editRequests.filter(r =>
-    ['add-prints', 'add-stickers', 'add-merch', 'remove-prints', 'remove-stickers', 'remove-merch', 'mark-unique', 'unmark-unique'].includes(r.requestType)
+    ['add-prints', 'add-stickers', 'add-merch', 'remove-prints', 'remove-stickers', 'remove-merch', 'mark-unique', 'unmark-unique', 'rename-item'].includes(r.requestType)
   ).slice(0, 20);
 
   return (
@@ -652,20 +667,34 @@ function ArtistGalleryManager() {
                   recentRequests.map((req) => {
                     const badge = STATUS_BADGE[req.status] || STATUS_BADGE.pending;
                     const isAdd = req.requestType?.startsWith('add-');
+                    const isRename = req.requestType === 'rename-item';
+                    const isUnique = req.requestType === 'mark-unique' || req.requestType === 'unmark-unique';
                     const count = isAdd
                       ? (req.changeData?.images?.length || 0)
                       : (req.changeData?.itemIds?.length || 0);
+
+                    const getIcon = () => {
+                      if (isRename) return <Pencil size={14} className="text-blue-400" />;
+                      if (isUnique) return <Gem size={14} className="text-accent" />;
+                      if (isAdd) return <ImagePlus size={14} className="text-accent" />;
+                      return <Trash2 size={14} className="text-red-400" />;
+                    };
+
+                    const getLabel = () => {
+                      if (isRename) return `${tx({ fr: 'Renommage', en: 'Rename', es: 'Renombrar' })} - "${req.changeData?.newTitle || ''}"`;
+                      if (req.requestType === 'mark-unique') return `${tx({ fr: 'Piece unique', en: 'Unique piece', es: 'Pieza unica' })} - ${req.changeData?.itemTitle || ''} (${req.changeData?.customPrice || 0}$)`;
+                      if (req.requestType === 'unmark-unique') return `${tx({ fr: 'Retrait unique', en: 'Remove unique', es: 'Quitar unica' })} - ${req.changeData?.itemTitle || ''}`;
+                      if (isAdd) return `${tx({ fr: 'Ajout', en: 'Add', es: 'Agregar' })} - ${req.requestType?.replace('add-', '')} (${count})`;
+                      return `${tx({ fr: 'Suppression', en: 'Remove', es: 'Eliminar' })} - ${req.requestType?.replace('remove-', '')} (${count})`;
+                    };
 
                     return (
                       <div key={req.documentId} className="rounded-lg border border-purple-main/10 p-4">
                         <div className="flex items-center justify-between mb-1">
                           <div className="flex items-center gap-2">
-                            {isAdd ? <ImagePlus size={14} className="text-accent" /> : <Trash2 size={14} className="text-red-400" />}
+                            {getIcon()}
                             <span className="text-heading text-sm font-medium">
-                              {isAdd ? tx({ fr: 'Ajout', en: 'Add', es: 'Agregar' }) : tx({ fr: 'Suppression', en: 'Remove', es: 'Eliminar' })}
-                              {' - '}
-                              {req.requestType?.replace('add-', '').replace('remove-', '')}
-                              {` (${count})`}
+                              {getLabel()}
                             </span>
                           </div>
                           <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${badge.bg} ${badge.text}`}>
