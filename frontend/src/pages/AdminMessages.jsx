@@ -125,8 +125,6 @@ function AdminMessages() {
   const [replyText, setReplyText] = useState('');
   const [sendingReply, setSendingReply] = useState(false);
   const [replySuccess, setReplySuccess] = useState(null);
-  const [confirmDelete, setConfirmDelete] = useState(null);
-  const [deleting, setDeleting] = useState(null);
   const [processingEditReq, setProcessingEditReq] = useState(null);
   const [editReqError, setEditReqError] = useState(null);
 
@@ -184,8 +182,10 @@ function AdminMessages() {
   useEffect(() => { fetchItems(); }, [fetchItems]);
 
   // Apply filters client-side since we fetch all
+  // 'all' exclut les archives, 'archived' montre seulement les archives
   const filtered = items.filter(i => {
     if (filterType !== 'all' && i._type !== filterType) return false;
+    if (filterStatus === 'all') return i.status !== 'archived';
     if (filterStatus !== 'all' && i.status !== filterStatus) return false;
     return true;
   });
@@ -202,23 +202,6 @@ function AdminMessages() {
       }
       setItems(prev => prev.map(i => i._uid === item._uid ? { ...i, status: newStatus } : i));
     } catch { /* silent */ } finally { setUpdatingId(null); }
-  };
-
-  const handleDelete = async (item) => {
-    if (confirmDelete !== item._uid) { setConfirmDelete(item._uid); return; }
-    setDeleting(item._uid);
-    try {
-      if (item._type === 'contact') {
-        await deleteContact(item.documentId);
-      } else if (item._type === 'artist-msg') {
-        await deleteArtistMessage(item.documentId);
-      } else {
-        await deleteArtistSubmission(item.documentId);
-      }
-      setItems(prev => prev.filter(i => i._uid !== item._uid));
-      setExpandedId(null);
-      setConfirmDelete(null);
-    } catch { /* silent */ } finally { setDeleting(null); }
   };
 
   const handleReply = async (item) => {
@@ -619,20 +602,12 @@ function AdminMessages() {
                                     className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-accent/20 text-accent text-sm font-semibold hover:bg-accent/30 transition-colors">
                                     <Reply size={14} /> {tx({ fr: 'Répondre', en: 'Reply', es: 'Responder' })}
                                   </button>
-                                  <button onClick={(e) => { e.stopPropagation(); handleDelete(item); }}
-                                    disabled={deleting === item._uid}
-                                    className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all bg-red-500/10 text-red-400 hover:bg-red-500/20 disabled:opacity-50">
-                                    {deleting === item._uid ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
-                                    {confirmDelete === item._uid
-                                      ? tx({ fr: 'Confirmer', en: 'Confirm', es: 'Confirmar' })
-                                      : tx({ fr: 'Supprimer', en: 'Delete', es: 'Eliminar' })}
+                                  <button onClick={(e) => { e.stopPropagation(); handleStatusChange(item, 'archived'); }}
+                                    disabled={updatingId === item._uid}
+                                    className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all bg-gray-500/10 text-gray-400 hover:bg-gray-500/20 disabled:opacity-50">
+                                    {updatingId === item._uid ? <Loader2 size={12} className="animate-spin" /> : <Archive size={12} />}
+                                    {tx({ fr: 'Archiver', en: 'Archive', es: 'Archivar' })}
                                   </button>
-                                  {confirmDelete === item._uid && (
-                                    <button onClick={(e) => { e.stopPropagation(); setConfirmDelete(null); }}
-                                      className="px-3 py-2 rounded-lg text-xs font-semibold text-grey-muted hover:text-heading transition-colors">
-                                      {tx({ fr: 'Annuler', en: 'Cancel', es: 'Cancelar' })}
-                                    </button>
-                                  )}
                                 </div>
                               )}
                             </>
@@ -705,20 +680,12 @@ function AdminMessages() {
                                     <Reply size={14} />
                                     {tx({ fr: 'Répondre par email', en: 'Reply by email', es: 'Responder por email' })}
                                   </button>
-                                  <button onClick={(e) => { e.stopPropagation(); handleDelete(item); }}
-                                    disabled={deleting === item._uid}
-                                    className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all bg-red-500/10 text-red-400 hover:bg-red-500/20 disabled:opacity-50">
-                                    {deleting === item._uid ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
-                                    {confirmDelete === item._uid
-                                      ? tx({ fr: 'Confirmer', en: 'Confirm', es: 'Confirmar' })
-                                      : tx({ fr: 'Supprimer', en: 'Delete', es: 'Eliminar' })}
+                                  <button onClick={(e) => { e.stopPropagation(); handleStatusChange(item, 'archived'); }}
+                                    disabled={updatingId === item._uid}
+                                    className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all bg-gray-500/10 text-gray-400 hover:bg-gray-500/20 disabled:opacity-50">
+                                    {updatingId === item._uid ? <Loader2 size={12} className="animate-spin" /> : <Archive size={12} />}
+                                    {tx({ fr: 'Archiver', en: 'Archive', es: 'Archivar' })}
                                   </button>
-                                  {confirmDelete === item._uid && (
-                                    <button onClick={(e) => { e.stopPropagation(); setConfirmDelete(null); }}
-                                      className="px-3 py-2 rounded-lg text-xs font-semibold text-grey-muted hover:text-heading transition-colors">
-                                      {tx({ fr: 'Annuler', en: 'Cancel', es: 'Cancelar' })}
-                                    </button>
-                                  )}
                                 </div>
                               )}
 
@@ -819,20 +786,12 @@ function AdminMessages() {
                                 <CheckCircle size={14} className="text-green-400" />
                                 <span>{tx({ fr: 'Contrat accepte', en: 'Contract accepted', es: 'Contrato aceptado' })} (v{item.contractVersion || '1'})</span>
                                 <span className="flex-1" />
-                                <button onClick={(e) => { e.stopPropagation(); handleDelete(item); }}
-                                  disabled={deleting === item._uid}
-                                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all bg-red-500/10 text-red-400 hover:bg-red-500/20 disabled:opacity-50">
-                                  {deleting === item._uid ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
-                                  {confirmDelete === item._uid
-                                    ? tx({ fr: 'Confirmer', en: 'Confirm', es: 'Confirmar' })
-                                    : tx({ fr: 'Supprimer', en: 'Delete', es: 'Eliminar' })}
+                                <button onClick={(e) => { e.stopPropagation(); handleStatusChange(item, 'archived'); }}
+                                  disabled={updatingId === item._uid}
+                                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all bg-gray-500/10 text-gray-400 hover:bg-gray-500/20 disabled:opacity-50">
+                                  {updatingId === item._uid ? <Loader2 size={12} className="animate-spin" /> : <Archive size={12} />}
+                                  {tx({ fr: 'Archiver', en: 'Archive', es: 'Archivar' })}
                                 </button>
-                                {confirmDelete === item._uid && (
-                                  <button onClick={(e) => { e.stopPropagation(); setConfirmDelete(null); }}
-                                    className="px-3 py-1.5 rounded-lg text-xs font-semibold text-grey-muted hover:text-heading transition-colors">
-                                    {tx({ fr: 'Annuler', en: 'Cancel', es: 'Cancelar' })}
-                                  </button>
-                                )}
                               </div>
                             </>
                           )}
