@@ -114,7 +114,6 @@ function Td({ children, className = 'text-heading', center = true }) {
 function AdminTarifs() {
   const { tx } = useLang();
   const [copied, setCopied] = useState(false);
-  const [activeTab, setActiveTab] = useState('artistes');
   const artistSheetRef = useRef(null);
 
   // --- Copier texte artiste ---
@@ -433,12 +432,6 @@ function AdminTarifs() {
     { name: 'Massive Medias', artistProfit: '40-50$', quality: tx({ fr: '12 encres pigmentées, musée', en: '12 pigmented inks, museum', es: '12 tintas pigmentadas, museo' }), notes: tx({ fr: "Impression locale fine art. Zéro gestion pour l'artiste. Qualité supérieure à toute impression à la demande.", en: 'Local fine art printing. Zero management for the artist. Quality superior to all print-on-demand.', es: 'Impresion local fine art. Cero gestion para el artista. Calidad superior a toda impresion bajo demanda.' }), highlight: 'massive' },
   ];
 
-  // --- Tabs ---
-  const tabs = [
-    { id: 'artistes', label: L.tabArtists, icon: Users },
-    { id: 'services', label: L.tabAll, icon: DollarSign },
-  ];
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -462,22 +455,10 @@ function AdminTarifs() {
         </div>
       </div>
 
-      {/* Tab switcher */}
-      <div className="flex gap-2">
-        {tabs.map(tab => (
-          <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${activeTab === tab.id ? 'bg-accent text-white' : 'card-bg shadow-lg shadow-black/20 text-grey-muted hover:text-heading'}`}>
-            <tab.icon size={16} />
-            {tab.label}
-          </button>
-        ))}
-      </div>
-
       {/* ========================================= */}
-      {/* TAB ARTISTES */}
+      {/* SECTION 1: PRINTS - SPLIT ARTISTE/MASSIVE */}
       {/* ========================================= */}
-      {activeTab === 'artistes' && (
-        <div ref={artistSheetRef}>
+      <div ref={artistSheetRef}>
           {/* Exemple concret */}
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="rounded-xl bg-glass p-5 mb-6">
             <div className="space-y-4">
@@ -691,13 +672,11 @@ function AdminTarifs() {
             </div>
           </SectionCard>
         </div>
-      )}
 
       {/* ========================================= */}
-      {/* TAB TOUS LES TARIFS */}
+      {/* SECTION 2: TOUS LES TARIFS SERVICES */}
       {/* ========================================= */}
-      {activeTab === 'services' && (
-        <div>
+      <div>
           {/* Prints */}
           <SectionCard icon={Printer} iconColor="text-blue-400"
             title="Prints Fine Art"
@@ -890,7 +869,6 @@ function AdminTarifs() {
             </DataTable>
           </SectionCard>
         </div>
-      )}
     </div>
   );
 }
