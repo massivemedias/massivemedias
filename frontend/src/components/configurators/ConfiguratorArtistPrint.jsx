@@ -192,9 +192,9 @@ function ConfiguratorArtistPrint({ artist, selectedPrint }) {
                   {!fmtAllowed ? (
                     <div className="text-grey-muted mt-0.5 text-[10px] leading-tight">
                       {tx({
-                        fr: 'Resolution insuffisante',
-                        en: 'Insufficient resolution',
-                        es: 'Resolucion insuficiente',
+                        fr: 'Non disponible',
+                        en: 'Not available',
+                        es: 'No disponible',
                       })}
                     </div>
                   ) : (
@@ -207,9 +207,9 @@ function ConfiguratorArtistPrint({ artist, selectedPrint }) {
           {maxFormat && (
             <p className="text-grey-muted text-[11px] mt-2 leading-snug">
               {tx({
-                fr: `Cette oeuvre est disponible jusqu'au format ${artistFormats.find(f => f.id === maxFormat)?.label || maxFormat}. Les grands formats necessitent un fichier source haute resolution.`,
-                en: `This artwork is available up to ${artistFormats.find(f => f.id === maxFormat)?.label || maxFormat} format. Larger formats require a high-resolution source file.`,
-                es: `Esta obra esta disponible hasta el formato ${artistFormats.find(f => f.id === maxFormat)?.label || maxFormat}. Los formatos grandes requieren un archivo fuente de alta resolucion.`,
+                fr: `Cette oeuvre est disponible jusqu'au format ${artistFormats.find(f => f.id === maxFormat)?.label || maxFormat}.`,
+                en: `This artwork is available up to ${artistFormats.find(f => f.id === maxFormat)?.label || maxFormat} format.`,
+                es: `Esta obra esta disponible hasta el formato ${artistFormats.find(f => f.id === maxFormat)?.label || maxFormat}.`,
               })}
             </p>
           )}
