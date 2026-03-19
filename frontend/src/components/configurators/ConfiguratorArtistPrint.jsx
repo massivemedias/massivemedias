@@ -3,6 +3,7 @@ import { ShoppingCart, Check, Frame } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../../contexts/CartContext';
 import { useLang } from '../../i18n/LanguageContext';
+import { useUserRole } from '../../contexts/UserRoleContext';
 import {
   getArtistPrintPrice, artistPrinterTiers, artistFormats,
 } from '../../data/artists';
@@ -10,6 +11,7 @@ import {
 function ConfiguratorArtistPrint({ artist, selectedPrint }) {
   const { lang, tx } = useLang();
   const { addToCart } = useCart();
+  const { artistSlug: loggedArtistSlug } = useUserRole();
 
   const isUnique = selectedPrint?.unique;
   const fixedFormat = selectedPrint?.fixedFormat;
@@ -42,6 +44,8 @@ function ConfiguratorArtistPrint({ artist, selectedPrint }) {
   const formatLabel = artistFormats.find(f => f.id === format);
   const printTitle = tx({ fr: selectedPrint.titleFr, en: selectedPrint.titleEn, es: selectedPrint.titleEn });
 
+  const isArtistOwnPrint = loggedArtistSlug && loggedArtistSlug === artist?.slug;
+
   const handleAddToCart = () => {
     if (!priceInfo) return;
     addToCart({
@@ -62,6 +66,7 @@ function ConfiguratorArtistPrint({ artist, selectedPrint }) {
       image: selectedPrint.image,
       uploadedFiles: [],
       notes,
+      ...(isArtistOwnPrint ? { isArtistOwnPrint: true, artistSlug: artist.slug } : {}),
     });
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);

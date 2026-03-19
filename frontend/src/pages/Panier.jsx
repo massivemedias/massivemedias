@@ -1,13 +1,21 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Trash2, ShoppingCart, ArrowLeft, ArrowRight, Paperclip } from 'lucide-react';
+import { Trash2, ShoppingCart, ArrowLeft, ArrowRight, Paperclip, Percent, MapPin, AlertTriangle } from 'lucide-react';
 import SEO from '../components/SEO';
 import { useCart } from '../contexts/CartContext';
 import { useLang } from '../i18n/LanguageContext';
 
+const ARTIST_DISCOUNT = 0.30;
+
 function Panier() {
   const { tx } = useLang();
   const { items, removeFromCart, updateQuantity, cartTotal } = useCart();
+
+  const hasArtistOwnPrints = items.some(i => i.isArtistOwnPrint);
+  const artistDiscountTotal = items
+    .filter(i => i.isArtistOwnPrint)
+    .reduce((sum, i) => sum + Math.round(i.totalPrice * ARTIST_DISCOUNT), 0);
+  const adjustedTotal = cartTotal - artistDiscountTotal;
 
   // Empty cart
   if (items.length === 0) {
@@ -82,8 +90,22 @@ function Panier() {
                   </button>
                 </div>
                 <div className="text-right">
-                  <p className="font-bold text-heading">{item.totalPrice}$</p>
-                  {item.quantity > 1 && <p className="text-grey-muted text-xs">{item.unitPrice}$/u</p>}
+                  {item.isArtistOwnPrint ? (
+                    <>
+                      <p className="font-bold text-heading">
+                        <span className="line-through text-grey-muted text-sm mr-1">{item.totalPrice}$</span>
+                        {Math.round(item.totalPrice * (1 - ARTIST_DISCOUNT))}$
+                      </p>
+                      <p className="text-green-400 text-xs font-semibold flex items-center gap-1 justify-end">
+                        <Percent size={10} /> -30%
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="font-bold text-heading">{item.totalPrice}$</p>
+                      {item.quantity > 1 && <p className="text-grey-muted text-xs">{item.unitPrice}$/u</p>}
+                    </>
+                  )}
                 </div>
                 <button
                   onClick={() => removeFromCart(i)}
@@ -97,13 +119,64 @@ function Panier() {
           ))}
         </div>
 
+        {/* Artist own prints notice */}
+        {hasArtistOwnPrints && (
+          <div className="space-y-3 mb-6">
+            <div className="p-4 rounded-xl bg-green-500/10 border border-green-500/20">
+              <div className="flex items-center gap-2 mb-2">
+                <Percent size={16} className="text-green-400" />
+                <span className="text-green-400 font-semibold text-sm">
+                  {tx({ fr: 'Rabais artiste 30% applique', en: 'Artist 30% discount applied', es: 'Descuento artista 30% aplicado' })}
+                </span>
+              </div>
+              <div className="flex items-start gap-2 mt-2">
+                <MapPin size={14} className="text-grey-muted flex-shrink-0 mt-0.5" />
+                <p className="text-grey-muted text-xs">
+                  {tx({
+                    fr: 'Frais de livraison en sus. Pickup gratuit au 7049 St-Urbain, Montreal.',
+                    en: 'Shipping fees extra. Free pickup at 7049 St-Urbain, Montreal.',
+                    es: 'Gastos de envio adicionales. Recogida gratis en 7049 St-Urbain, Montreal.',
+                  })}
+                </p>
+              </div>
+              <div className="flex items-start gap-2 mt-2">
+                <AlertTriangle size={14} className="text-yellow-400 flex-shrink-0 mt-0.5" />
+                <p className="text-yellow-400/80 text-xs">
+                  {tx({
+                    fr: 'Usage personnel, portfolio ou exposition uniquement. Revente interdite (contrat signe).',
+                    en: 'Personal use, portfolio or exhibition only. Resale prohibited (signed contract).',
+                    es: 'Uso personal, portafolio o exposicion solamente. Reventa prohibida (contrato firmado).',
+                  })}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Summary */}
         <div className="p-6 rounded-xl mb-8 highlight-bordered">
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-heading font-semibold">{tx({ fr: 'Sous-total', en: 'Subtotal', es: 'Subtotal' })}</span>
-            <span className="text-2xl font-heading font-bold text-heading">{cartTotal}$</span>
-          </div>
-          <p className="text-grey-muted text-sm">
+          {hasArtistOwnPrints ? (
+            <>
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-grey-muted text-sm">{tx({ fr: 'Sous-total', en: 'Subtotal', es: 'Subtotal' })}</span>
+                <span className="text-grey-muted line-through">{cartTotal}$</span>
+              </div>
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-green-400 text-sm">{tx({ fr: 'Rabais artiste (-30%)', en: 'Artist discount (-30%)', es: 'Descuento artista (-30%)' })}</span>
+                <span className="text-green-400 font-semibold">-{artistDiscountTotal}$</span>
+              </div>
+              <div className="flex justify-between items-center pt-2 border-t border-white/10">
+                <span className="text-heading font-semibold">{tx({ fr: 'Total', en: 'Total', es: 'Total' })}</span>
+                <span className="text-2xl font-heading font-bold text-heading">{adjustedTotal}$</span>
+              </div>
+            </>
+          ) : (
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-heading font-semibold">{tx({ fr: 'Sous-total', en: 'Subtotal', es: 'Subtotal' })}</span>
+              <span className="text-2xl font-heading font-bold text-heading">{cartTotal}$</span>
+            </div>
+          )}
+          <p className="text-grey-muted text-sm mt-2">
             {tx({ fr: 'Taxes en sus si applicable. Livraison locale gratuite a Montreal.', en: 'Taxes extra if applicable. Free local delivery in Montreal.', es: 'Impuestos adicionales si aplica. Envio local gratis en Montreal.' })}
           </p>
         </div>
