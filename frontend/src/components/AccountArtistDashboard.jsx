@@ -17,7 +17,8 @@ import { sendArtistMessage, getMyMessages, createWithdrawal, getMyWithdrawals, c
 import { uploadArtistFile } from '../services/api';
 import FileUpload from './FileUpload';
 import artistsData from '../data/artists';
-import { ARTIST_CONTRACT_TEXT, ARTIST_CONTRACT_TEXT_EN, ARTIST_CONTRACT_TEXT_ES, ARTIST_CONTRACT_VERSION } from '../data/artistContract';
+import { ARTIST_CONTRACT_TEXT, ARTIST_CONTRACT_TEXT_EN, ARTIST_CONTRACT_TEXT_ES, ARTIST_CONTRACT_VERSION, ARTIST_FAQ } from '../data/artistContract';
+import { HelpCircle } from 'lucide-react';
 import { generateContractPDF } from '../utils/generateContractPDF';
 
 // Prix client et prix artiste (rabais partenaire)
@@ -413,6 +414,25 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
               <Send size={22} className="text-green-400 group-hover:scale-110 transition-transform" />
               <p className="text-heading text-sm font-semibold">{tx({ fr: 'Envoyer fichiers', en: 'Send files', es: 'Enviar archivos' })}</p>
             </a>
+          </div>
+        </div>
+
+        {/* FAQ */}
+        <div className="rounded-2xl p-5 md:p-8 card-bg card-shadow">
+          <h4 className="text-heading font-heading font-bold text-lg md:text-xl mb-5 flex items-center gap-2">
+            <HelpCircle size={22} className="text-accent" />
+            {tx({ fr: 'Questions frequentes', en: 'Frequently asked questions', es: 'Preguntas frecuentes' })}
+          </h4>
+          <div className="space-y-2">
+            {(ARTIST_FAQ[lang] || ARTIST_FAQ.fr).map((item, idx) => (
+              <details key={idx} className="group rounded-xl bg-black/20 shadow-lg overflow-hidden">
+                <summary className="flex items-center justify-between cursor-pointer px-4 py-3 text-sm font-medium text-heading hover:bg-white/[0.03] transition-colors">
+                  {item.q}
+                  <ChevronDown size={16} className="text-grey-muted flex-shrink-0 ml-2 transition-transform group-open:rotate-180" />
+                </summary>
+                <p className="px-4 pb-4 text-xs text-grey-light leading-relaxed">{item.a}</p>
+              </details>
+            ))}
           </div>
         </div>
 
