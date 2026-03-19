@@ -5,7 +5,7 @@ export const ARTIST_CONTRACT_TEXT_EN = `
 <p style="text-align:center;margin-bottom:4px;"><strong>Massive Medias</strong></p>
 <p style="text-align:center;margin-bottom:24px;font-size:0.85em;opacity:0.7;">Fine Art Printing - Stickers - Merch - Web Distribution</p>
 
-<h4>2. FREQUENTLY ASKED QUESTIONS (FAQ)</h4>
+<h4>1. FREQUENTLY ASKED QUESTIONS (FAQ)</h4>
 
 <p><strong>Can I order prints of my own works for myself?</strong></p>
 <p>Yes. You can order personal copies of your prints with a 30% discount on the client price. These copies are reserved for personal use, portfolio or exhibition. Resale of prints obtained at a reduced price is strictly prohibited (see section 7.4).</p>
@@ -52,7 +52,7 @@ export const ARTIST_CONTRACT_TEXT_EN = `
 <p><strong>What is a unique piece?</strong></p>
 <p>A unique piece is a one-of-a-kind item - only a single copy is ever produced. This applies to any product type: prints, merch, textiles, stickers or any other medium. Once sold, it cannot be reproduced. Pricing is set by the artist in agreement with Massive Medias (see section 3).</p>
 
-<h4>3. PRICING GRID</h4>
+<h4>2. PRICING GRID</h4>
 
 <p><strong>Studio Series (4 pigment inks):</strong></p>
 <table style="width:100%;border-collapse:collapse;margin:16px 0;">
@@ -137,7 +137,7 @@ export const ARTIST_CONTRACT_TEXT_EN = `
 <p><strong>Unique pieces (single edition):</strong></p>
 <p>Certain works may be designated as <strong>unique pieces</strong> - a single copy ever produced, making them true one-of-a-kind items. This applies to any product type: prints, merch, textiles, stickers or any other medium. The unique nature of the piece must be clearly indicated on the product listing. Once sold, a unique piece cannot be reproduced. Pricing is set by the artist in agreement with Massive Medias.</p>
 
-<h4>4. IDENTIFICATION OF PARTIES</h4>
+<h4>3. IDENTIFICATION OF PARTIES</h4>
 
 <p><strong>Party A - Producer / Distributor</strong></p>
 <ul>
@@ -155,7 +155,7 @@ export const ARTIST_CONTRACT_TEXT_EN = `
   <li>Initial term: 12 months, automatically renewable</li>
 </ul>
 
-<h4>5. PURPOSE OF THE AGREEMENT</h4>
+<h4>4. PURPOSE OF THE AGREEMENT</h4>
 <p>This agreement defines the terms of collaboration between Massive Medias and the Artist for the production, sale and distribution of physical derivative products based on the Artist's original works.</p>
 <p>Covered products may include, but are not limited to:</p>
 <ul>
@@ -167,7 +167,7 @@ export const ARTIST_CONTRACT_TEXT_EN = `
 </ul>
 <p>Each product or series must receive prior written approval (email or form) from the Artist before production. No unilateral decisions are permitted.</p>
 
-<h4>6. INTELLECTUAL PROPERTY</h4>
+<h4>5. INTELLECTUAL PROPERTY</h4>
 
 <p><strong>6.1 Artist's Rights</strong></p>
 <p>The Artist retains full ownership of their original works, copyrights and all related rights. This agreement does not constitute any assignment or transfer of intellectual property.</p>
@@ -181,7 +181,7 @@ export const ARTIST_CONTRACT_TEXT_EN = `
 </ul>
 <p>This license is strictly limited to the purposes listed above and cannot be extended without written agreement from the Artist.</p>
 
-<h4>7. FINANCIAL STRUCTURE & REPORTING</h4>
+<h4>6. FINANCIAL STRUCTURE & REPORTING</h4>
 
 <p><strong>7.1 Revenue Sharing Mechanism</strong></p>
 <p>For each product sold, the revenue split is calculated as follows:</p>
@@ -216,7 +216,7 @@ export const ARTIST_CONTRACT_TEXT_EN = `
 <p>All bulk orders must be paid in full before production. No returns are accepted on bulk orders, except in cases of confirmed production defects (see section 8).</p>
 <p><strong>The total invoice amount must be paid within 30 days of the invoice date.</strong> After this period, Massive Medias reserves the right to suspend production and distribution of the Artist's products until the balance is settled.</p>
 
-<h4>8. QUALITY COMMITMENT</h4>
+<h4>7. QUALITY COMMITMENT</h4>
 <p>Massive Medias commits to producing all items to gallery or premium standard, in keeping with the Artist's work. This commitment includes:</p>
 <ul>
   <li>Use of professional printing equipment suited to each product type</li>
@@ -226,7 +226,7 @@ export const ARTIST_CONTRACT_TEXT_EN = `
 </ul>
 <p>In case of a confirmed production defect, Massive Medias takes back the product at its own cost and produces a replacement at no additional cost to the Artist.</p>
 
-<h4>9. TERMINATION</h4>
+<h4>8. TERMINATION</h4>
 
 <p><strong>9.1 Cancellation</strong></p>
 <p>Either party may terminate this agreement by providing 30 days written notice by email to the other party. During this period, both parties honour their respective obligations.</p>
@@ -242,7 +242,7 @@ export const ARTIST_CONTRACT_TEXT_EN = `
 <p><strong>9.3 Website Removal</strong></p>
 <p>Within 7 days of the effective end of the agreement, Massive Medias removes all visuals and products related to the Artist's works from massivemedias.com.</p>
 
-<h4>10. FILE PROTECTION & MANAGEMENT</h4>
+<h4>9. FILE PROTECTION & MANAGEMENT</h4>
 
 <p><strong>10.1 High-Resolution File Usage</strong></p>
 <p>High-resolution source files provided by the Artist are used exclusively for physical printing purposes. They are never shared with third parties, used in contexts not covered by this agreement, or published online in high resolution.</p>
@@ -253,7 +253,7 @@ export const ARTIST_CONTRACT_TEXT_EN = `
 <p><strong>10.3 Deletion Upon Contract End</strong></p>
 <p>Within 14 days of the end of the agreement, Massive Medias commits to permanently deleting all of the Artist's high-resolution files from its servers and equipment, and to providing written confirmation of this deletion.</p>
 
-<h4>11. CONFIDENTIALITY</h4>
+<h4>10. CONFIDENTIALITY</h4>
 
 <p><strong>11.1 Massive Medias Obligations</strong></p>
 <p>Massive Medias commits to keeping confidential all commercial, artistic and personal information provided by the Artist under this agreement.</p>
@@ -268,7 +268,7 @@ export const ARTIST_CONTRACT_TEXT_EN = `
 </ul>
 <p>This confidentiality obligation remains valid for a period of 2 years following the end of this agreement.</p>
 
-<h4>12. RESPONSIBILITIES & WARRANTIES</h4>
+<h4>11. RESPONSIBILITIES & WARRANTIES</h4>
 
 <p><strong>12.1 Artist Warranties</strong></p>
 <p>The Artist declares and warrants that they are the original creator and/or rights holder of the provided works, that these works do not infringe on third-party intellectual property rights, and that they have full authority to enter into this agreement.</p>
@@ -276,7 +276,7 @@ export const ARTIST_CONTRACT_TEXT_EN = `
 <p><strong>12.2 Massive Medias Limitation of Liability</strong></p>
 <p>Massive Medias cannot be held liable for revenue losses due to factors beyond its control (equipment failure, material shortages, force majeure).</p>
 
-<h4>13. GENERAL PROVISIONS</h4>
+<h4>12. GENERAL PROVISIONS</h4>
 <ul>
   <li><strong>Governing law:</strong> This agreement is governed by the laws of the Province of Quebec and applicable federal laws of Canada.</li>
   <li><strong>Amendments:</strong> Any modification must be agreed upon in writing and signed by both parties to be valid.</li>
@@ -301,7 +301,7 @@ export const ARTIST_CONTRACT_TEXT_ES = `
 <p style="text-align:center;margin-bottom:4px;"><strong>Massive Medias</strong></p>
 <p style="text-align:center;margin-bottom:24px;font-size:0.85em;opacity:0.7;">Impresion fine art - Stickers - Merch - Distribucion web</p>
 
-<h4>2. PREGUNTAS FRECUENTES (FAQ)</h4>
+<h4>1. PREGUNTAS FRECUENTES (FAQ)</h4>
 
 <p><strong>Puedo pedir impresiones de mis obras para mi?</strong></p>
 <p>Si. Puedes solicitar copias personales de tus impresiones con un descuento del 30% sobre el precio cliente. Estas copias estan reservadas para uso personal, portafolio o exposiciones. La reventa de prints obtenidos a precio reducido esta estrictamente prohibida (ver articulo 7.4).</p>
@@ -348,7 +348,7 @@ export const ARTIST_CONTRACT_TEXT_ES = `
 <p><strong>Que es una pieza unica?</strong></p>
 <p>Una pieza unica es un articulo unico - solo se produce una copia. Esto se aplica a cualquier tipo de producto: prints, merch, textil, stickers o cualquier otro medio. Una vez vendida, no puede reproducirse. El precio es fijado por el artista en acuerdo con Massive Medias (ver articulo 3).</p>
 
-<h4>3. GRILLA DE PRECIOS</h4>
+<h4>2. GRILLA DE PRECIOS</h4>
 
 <p><strong>Serie Studio (4 tintas pigmentadas):</strong></p>
 <table style="width:100%;border-collapse:collapse;margin:16px 0;">
@@ -433,7 +433,7 @@ export const ARTIST_CONTRACT_TEXT_ES = `
 <p><strong>Piezas unicas (edicion unica):</strong></p>
 <p>Ciertas obras pueden ser designadas como <strong>piezas unicas</strong> - una sola copia producida, convirtiendolas en verdaderas piezas de coleccion. Esto se aplica a cualquier tipo de producto: prints, merch, textil, stickers o cualquier otro medio. La naturaleza unica de la pieza debe indicarse claramente en la ficha del producto. Una vez vendida, una pieza unica no puede reproducirse. El precio es fijado por el artista en acuerdo con Massive Medias.</p>
 
-<h4>4. IDENTIFICACION DE LAS PARTES</h4>
+<h4>3. IDENTIFICACION DE LAS PARTES</h4>
 
 <p><strong>Parte A - Productor / Distribuidor</strong></p>
 <ul>
@@ -451,7 +451,7 @@ export const ARTIST_CONTRACT_TEXT_ES = `
   <li>Duracion inicial: 12 meses, renovable automaticamente</li>
 </ul>
 
-<h4>5. OBJETO DEL ACUERDO</h4>
+<h4>4. OBJETO DEL ACUERDO</h4>
 <p>El presente acuerdo define las condiciones de colaboracion entre Massive Medias y el Artista para la produccion, venta y distribucion de productos derivados fisicos basados en las obras originales del Artista.</p>
 <p>Los productos cubiertos pueden incluir, sin limitarse a:</p>
 <ul>
@@ -463,7 +463,7 @@ export const ARTIST_CONTRACT_TEXT_ES = `
 </ul>
 <p>Cada producto o serie debe contar con la aprobacion escrita previa (correo o formulario) del Artista antes de su produccion. No se permiten decisiones unilaterales.</p>
 
-<h4>6. PROPIEDAD INTELECTUAL</h4>
+<h4>5. PROPIEDAD INTELECTUAL</h4>
 
 <p><strong>6.1 Derechos del Artista</strong></p>
 <p>El Artista conserva la propiedad total de sus obras originales, derechos de autor y todos los derechos conexos. Este acuerdo no constituye en ningun caso una cesion o transferencia de propiedad intelectual.</p>
@@ -477,7 +477,7 @@ export const ARTIST_CONTRACT_TEXT_ES = `
 </ul>
 <p>Esta licencia se limita estrictamente a los fines enumerados anteriormente y no puede ampliarse sin acuerdo escrito del Artista.</p>
 
-<h4>7. ESTRUCTURA FINANCIERA Y RENDICION DE CUENTAS</h4>
+<h4>6. ESTRUCTURA FINANCIERA Y RENDICION DE CUENTAS</h4>
 
 <p><strong>7.1 Mecanismo de reparto</strong></p>
 <p>Para cada producto vendido, el reparto se efectua en el siguiente orden:</p>
@@ -512,7 +512,7 @@ export const ARTIST_CONTRACT_TEXT_ES = `
 <p>Todos los pedidos en volumen deben pagarse integralmente antes de la produccion. No se aceptan devoluciones en pedidos en volumen, salvo en caso de defecto de produccion confirmado (ver articulo 8).</p>
 <p><strong>El monto total de la factura debe pagarse dentro de los 30 dias siguientes a la fecha de facturacion.</strong> Pasado este plazo, Massive Medias se reserva el derecho de suspender la produccion y distribucion de los productos del Artista hasta que se liquide el saldo.</p>
 
-<h4>8. COMPROMISO DE CALIDAD</h4>
+<h4>7. COMPROMISO DE CALIDAD</h4>
 <p>Massive Medias se compromete a producir todos los articulos con estandar de galeria o premium, en adecuacion con la obra del Artista. Este compromiso incluye:</p>
 <ul>
   <li>El uso de equipos de impresion profesionales adaptados a cada tipo de producto</li>
@@ -522,7 +522,7 @@ export const ARTIST_CONTRACT_TEXT_ES = `
 </ul>
 <p>En caso de defecto de produccion confirmado, Massive Medias retira el producto a su cargo y produce un reemplazo sin costo adicional para el Artista.</p>
 
-<h4>9. FIN DEL ACUERDO</h4>
+<h4>8. FIN DEL ACUERDO</h4>
 
 <p><strong>9.1 Rescision</strong></p>
 <p>Cada parte puede poner fin al presente acuerdo transmitiendo un préaviso escrito de 30 dias por correo electronico a la otra parte. Durante este plazo, ambas partes honran sus obligaciones respectivas.</p>
@@ -538,7 +538,7 @@ export const ARTIST_CONTRACT_TEXT_ES = `
 <p><strong>9.3 Retiro del sitio web</strong></p>
 <p>Dentro de los 7 dias siguientes al fin efectivo del acuerdo, Massive Medias retira la totalidad de los visuales y productos relacionados con las obras del Artista en massivemedias.com.</p>
 
-<h4>10. PROTECCION Y GESTION DE ARCHIVOS</h4>
+<h4>9. PROTECCION Y GESTION DE ARCHIVOS</h4>
 
 <p><strong>10.1 Uso de archivos de alta resolucion</strong></p>
 <p>Los archivos fuente de alta resolucion proporcionados por el Artista se utilizan exclusivamente con fines de impresion fisica. Nunca se comparten con terceros, se utilizan en otros contextos no previstos por este acuerdo, ni se publican en linea en alta resolucion.</p>
@@ -549,7 +549,7 @@ export const ARTIST_CONTRACT_TEXT_ES = `
 <p><strong>10.3 Destruccion al final del contrato</strong></p>
 <p>Dentro de los 14 dias siguientes al fin del acuerdo, Massive Medias se compromete a eliminar definitivamente todos los archivos de alta resolucion del Artista de sus servidores y equipos, y a proporcionar una confirmacion escrita de esta eliminacion.</p>
 
-<h4>11. CONFIDENCIALIDAD</h4>
+<h4>10. CONFIDENCIALIDAD</h4>
 
 <p><strong>11.1 Obligaciones de Massive Medias</strong></p>
 <p>Massive Medias se compromete a mantener confidencial toda la informacion comercial, artistica y personal transmitida por el Artista en el marco de este acuerdo.</p>
@@ -564,7 +564,7 @@ export const ARTIST_CONTRACT_TEXT_ES = `
 </ul>
 <p>Esta obligacion de confidencialidad permanece valida por un periodo de 2 anos despues del fin del presente acuerdo.</p>
 
-<h4>12. RESPONSABILIDADES Y GARANTIAS</h4>
+<h4>11. RESPONSABILIDADES Y GARANTIAS</h4>
 
 <p><strong>12.1 Garantias del Artista</strong></p>
 <p>El Artista declara y garantiza que es el creador original y/o titular de los derechos de las obras proporcionadas, que estas no violan los derechos de propiedad intelectual de terceros, y que tiene pleno derecho a celebrar este acuerdo.</p>
@@ -572,7 +572,7 @@ export const ARTIST_CONTRACT_TEXT_ES = `
 <p><strong>12.2 Limitacion de responsabilidad de Massive Medias</strong></p>
 <p>Massive Medias no puede ser considerado responsable de las perdidas de ingresos debidas a factores fuera de su control (falla de equipos, escasez de materiales, fuerza mayor).</p>
 
-<h4>13. DISPOSICIONES GENERALES</h4>
+<h4>12. DISPOSICIONES GENERALES</h4>
 <ul>
   <li><strong>Derecho aplicable:</strong> Este acuerdo se rige por las leyes de la provincia de Quebec y las leyes federales de Canada aplicables.</li>
   <li><strong>Modificaciones:</strong> Toda modificacion debe ser acordada por escrito y firmada por ambas partes para ser valida.</li>
@@ -597,28 +597,28 @@ export const ARTIST_CONTRACT_TEXT = `
 <p style="text-align:center;margin-bottom:4px;"><strong>Massive Medias</strong></p>
 <p style="text-align:center;margin-bottom:24px;font-size:0.85em;opacity:0.7;">Impression fine art - Stickers - Merch - Distribution web</p>
 
-<h4>2. FOIRE AUX QUESTIONS (FAQ)</h4>
+<h4>1. FOIRE AUX QUESTIONS (FAQ)</h4>
 
 <p><strong>Est-ce que je peux commander des prints de mes oeuvres pour moi?</strong></p>
-<p>Oui. Tu peux commander des copies personnelles de tes impressions avec un rabais de 30% sur le prix client. Ces copies sont reservees a un usage personnel, portfolio ou exposition. La revente de prints obtenus a prix reduit est strictement interdite (voir article 7.4).</p>
+<p>Oui. Tu peux commander des copies personnelles de tes impressions avec un rabais de 30% sur le prix client. Ces copies sont reservees a un usage personnel, portfolio ou exposition. La revente de prints obtenus a prix reduit est strictement interdite (voir article 6.4).</p>
 
 <p><strong>Et les stickers - est-ce que j'ai un rabais?</strong></p>
-<p>Non. Les stickers sont des produits de distribution par nature. Le prix régulier de vente s'applique pour tout le monde, incluant l'Artiste, que ce soit pour usage personnel, événements ou points de vente (voir article 7.4).</p>
+<p>Non. Les stickers sont des produits de distribution par nature. Le prix régulier de vente s'applique pour tout le monde, incluant l'Artiste, que ce soit pour usage personnel, événements ou points de vente (voir article 6.4).</p>
 
 <p><strong>Comment fonctionne le partage des revenus exactement?</strong></p>
-<p>Pour chaque vente, les coûts de production sont déduits en premier (matériaux, consommables, emballage, amortissement équipement). Le profit net restant est partagé selon le split convenu entre toi et Massive Medias. Par exemple, avec un ratio 50/50 sur un print vendu 35$ avec 12$ de coûts de production, chaque partie reçoit 11,50$ (voir article 7.1).</p>
+<p>Pour chaque vente, les coûts de production sont déduits en premier (matériaux, consommables, emballage, amortissement équipement). Le profit net restant est partagé selon le split convenu entre toi et Massive Medias. Par exemple, avec un ratio 50/50 sur un print vendu 35$ avec 12$ de coûts de production, chaque partie reçoit 11,50$ (voir article 6.1).</p>
 
 <p><strong>Je veux vendre des prints a un festival ou une foire d'art. Comment ca marche?</strong></p>
-<p>Tu peux commander des prints en volume au prix de vente régulier (prix client). Massive Medias les produit, et tu es libre de les revendre au prix que tu veux sur place. Tout profit supplémentaire au-dessus du prix d'achat est 100% à toi. Exemple : tu achètes 50 prints A3+ musée à 160$ chacun et tu les vends 250$ au festival - les 90$ de différence par print sont entièrement à toi (voir article 7.6).</p>
+<p>Tu peux commander des prints en volume au prix de vente régulier (prix client). Massive Medias les produit, et tu es libre de les revendre au prix que tu veux sur place. Tout profit supplémentaire au-dessus du prix d'achat est 100% à toi. Exemple : tu achètes 50 prints A3+ musée à 160$ chacun et tu les vends 250$ au festival - les 90$ de différence par print sont entièrement à toi (voir article 6.6).</p>
 
 <p><strong>Est-ce que je peux vendre des stickers en événement ou dans une galerie/boutique?</strong></p>
-<p>Oui, meme principe que les prints. Tu commandes les stickers au prix régulier de la grille tarifaire, puis tu les revends librement a ton propre prix. Tout profit au-dessus du prix d'achat est a toi (voir article 7.6).</p>
+<p>Oui, meme principe que les prints. Tu commandes les stickers au prix régulier de la grille tarifaire, puis tu les revends librement a ton propre prix. Tout profit au-dessus du prix d'achat est a toi (voir article 6.6).</p>
 
 <p><strong>Est-ce que je dois payer d'avance pour les commandes en volume?</strong></p>
 <p>Oui. Toutes les commandes en volume (festivals, galeries, boutiques) doivent être payées intégralement avant la production. Aucun retour n'est accepté, sauf en cas de défaut de production avéré (voir articles 7.6 et 8). Le montant total de la facture doit être payé dans les 30 jours suivant la date de facturation.</p>
 
 <p><strong>Qu'est-ce qui se passe s'il y a un défaut d'impression?</strong></p>
-<p>Massive Medias reprend le produit défectueux à ses frais et produit un remplacement sans coût additionnel pour toi (voir article 8).</p>
+<p>Massive Medias reprend le produit défectueux à ses frais et produit un remplacement sans coût additionnel pour toi (voir article 7).</p>
 
 <p><strong>Est-ce que Massive Medias peut imprimer et vendre mes oeuvres sans mon approbation?</strong></p>
 <p>Non. Chaque produit ou série doit avoir ton approbation écrite préalable avant la production. Massive Medias s'engage aussi à ne jamais produire de prints sans commande confirmée et payée. Aucune production spéculative n'est permise (voir articles 5 et 7.5).</p>
@@ -627,24 +627,24 @@ export const ARTIST_CONTRACT_TEXT = `
 <p>Dans les 14 jours suivant la fin de l'entente, Massive Medias supprime définitivement tous tes fichiers haute résolution de ses serveurs et équipements, et fournit une confirmation écrite. Tes oeuvres sont aussi retirées du site web dans les 7 jours (voir articles 9.3 et 10.3).</p>
 
 <p><strong>Est-ce que je peux mettre fin au partenariat quand je veux?</strong></p>
-<p>Oui. L'une ou l'autre des parties peut résilier l'entente avec un préavis écrit de 30 jours par courriel. Pendant ce délai, les deux parties continuent d'honorer leurs obligations (voir article 9.1).</p>
+<p>Oui. L'une ou l'autre des parties peut résilier l'entente avec un préavis écrit de 30 jours par courriel. Pendant ce délai, les deux parties continuent d'honorer leurs obligations (voir article 8.1).</p>
 
 <p><strong>Est-ce que je garde mes droits d'auteur?</strong></p>
-<p>Absolument. Tu conserves l'entière propriété de tes oeuvres originales et tous les droits connexes. Cette entente accorde seulement à Massive Medias une licence limitée, non exclusive et révocable pour les fins spécifiques décrites dans le contrat (voir article 6).</p>
+<p>Absolument. Tu conserves l'entière propriété de tes oeuvres originales et tous les droits connexes. Cette entente accorde seulement à Massive Medias une licence limitée, non exclusive et révocable pour les fins spécifiques décrites dans le contrat (voir article 5).</p>
 
 <p><strong>Est-ce que mes fichiers haute résolution sont en sécurité?</strong></p>
-<p>Oui. Tes fichiers sources sont utilisés exclusivement pour l'impression physique. Ils ne sont jamais partagés avec des tiers, utilisés en dehors du cadre de cette entente, ni publiés en ligne en haute résolution. Seules des versions basse résolution (72 DPI max) avec filigrane sont utilisées sur le site web (voir article 10).</p>
+<p>Oui. Tes fichiers sources sont utilisés exclusivement pour l'impression physique. Ils ne sont jamais partagés avec des tiers, utilisés en dehors du cadre de cette entente, ni publiés en ligne en haute résolution. Seules des versions basse résolution (72 DPI max) avec filigrane sont utilisées sur le site web (voir article 9).</p>
 
 <p><strong>Et pour l'encadrement?</strong></p>
-<p>Les cadres (noir ou blanc) sont disponibles pour 30$ pour les formats jusqu'à A3+ (13x19"). Consulte la grille tarifaire à l'article 3 pour les détails. Le format A2 (18x24") n'a pas d'option de cadre disponible.</p>
+<p>Les cadres (noir ou blanc) sont disponibles pour 30$ pour les formats jusqu'à A3+ (13x19"). Consulte la grille tarifaire à l'article 2 pour les détails. Le format A2 (18x24") n'a pas d'option de cadre disponible.</p>
 
 <p><strong>Les prix sont-ils les memes pour tous les artistes?</strong></p>
-<p>Oui. La grille tarifaire est uniforme et identique pour tous les artistes partenaires - mêmes prix, mêmes coûts de production, mêmes marges. Aucun traitement préférentiel pour personne (voir article 3).</p>
+<p>Oui. La grille tarifaire est uniforme et identique pour tous les artistes partenaires - mêmes prix, mêmes coûts de production, mêmes marges. Aucun traitement préférentiel pour personne (voir article 2).</p>
 
 <p><strong>C'est quoi une piece unique?</strong></p>
-<p>Une piece unique est un article unique - un seul exemplaire est produit. Cela s'applique a tout type de produit : prints, merch, textile, stickers ou tout autre medium. Une fois vendue, la piece ne peut pas etre reproduite. Le prix est fixe par l'artiste en accord avec Massive Medias (voir article 3).</p>
+<p>Une piece unique est un article unique - un seul exemplaire est produit. Cela s'applique a tout type de produit : prints, merch, textile, stickers ou tout autre medium. Une fois vendue, la piece ne peut pas etre reproduite. Le prix est fixe par l'artiste en accord avec Massive Medias (voir article 2).</p>
 
-<h4>3. GRILLE TARIFAIRE</h4>
+<h4>2. GRILLE TARIFAIRE</h4>
 
 <p><strong>Série Studio (4 encres pigmentées) :</strong></p>
 <table style="width:100%;border-collapse:collapse;margin:16px 0;">
@@ -729,7 +729,7 @@ export const ARTIST_CONTRACT_TEXT = `
 <p><strong>Pieces uniques (edition unique) :</strong></p>
 <p>Certaines oeuvres peuvent etre designees comme <strong>pieces uniques</strong> - un seul exemplaire produit, ce qui en fait de veritables pieces de collection. Cela s'applique a tout type de produit : prints, merch, textile, stickers ou tout autre medium. Le caractere unique de la piece doit etre clairement indique sur la fiche produit. Une fois vendue, une piece unique ne peut pas etre reproduite. Le prix est fixe par l'artiste en accord avec Massive Medias.</p>
 
-<h4>4. IDENTIFICATION DES PARTIES</h4>
+<h4>3. IDENTIFICATION DES PARTIES</h4>
 
 <p><strong>Partie A - Producteur / Distributeur</strong></p>
 <ul>
@@ -747,7 +747,7 @@ export const ARTIST_CONTRACT_TEXT = `
   <li>Durée initiale : 12 mois, renouvelable automatiquement</li>
 </ul>
 
-<h4>5. OBJET DE L'ENTENTE</h4>
+<h4>4. OBJET DE L'ENTENTE</h4>
 <p>La présente entente définit les conditions de collaboration entre Massive Medias et l'Artiste pour la production, la mise en vente et la distribution de produits dérivés physiques basés sur les oeuvres originales de l'Artiste.</p>
 <p>Les produits couverts peuvent inclure, sans s'y limiter :</p>
 <ul>
@@ -759,7 +759,7 @@ export const ARTIST_CONTRACT_TEXT = `
 </ul>
 <p>Chaque produit ou série doit faire l'objet d'une approbation écrite préalable (courriel ou formulaire) de l'Artiste avant sa mise en production. Aucune décision unilatérale n'est permise.</p>
 
-<h4>6. PROPRIETE INTELLECTUELLE</h4>
+<h4>5. PROPRIETE INTELLECTUELLE</h4>
 
 <p><strong>6.1 Droits de l'Artiste</strong></p>
 <p>L'Artiste conserve l'entière propriété de ses oeuvres originales, de ses droits d'auteur et de tous droits connexes. La présente entente ne constitue en aucun cas une cession ou un transfert de propriété intellectuelle.</p>
@@ -767,13 +767,13 @@ export const ARTIST_CONTRACT_TEXT = `
 <p><strong>6.2 Licence accordee a Massive Medias</strong></p>
 <p>L'Artiste accorde à Massive Medias une licence d'exploitation non exclusive, limitée, révocable et non transférable, afin de :</p>
 <ul>
-  <li>Reproduire les oeuvres approuvées sur les produits physiques définis à l'article 5</li>
+  <li>Reproduire les oeuvres approuvées sur les produits physiques définis à l'article 4</li>
   <li>Afficher les oeuvres en basse résolution avec filigrane sur massivemedias.com à des fins de vente</li>
   <li>Utiliser le nom d'artiste et les images des produits dans les communications marketing de Massive Medias liées à ce partenariat</li>
 </ul>
 <p>Cette licence est strictement limitée aux fins énumérées ci-dessus et ne peut être étendue sans accord écrit de l'Artiste.</p>
 
-<h4>7. STRUCTURE FINANCIERE & REDDITION DE COMPTES</h4>
+<h4>6. STRUCTURE FINANCIERE & REDDITION DE COMPTES</h4>
 
 <p><strong>7.1 Mécanisme de répartition</strong></p>
 <p>Pour chaque produit vendu, la répartition s'effectue dans l'ordre suivant :</p>
@@ -805,10 +805,10 @@ export const ARTIST_CONTRACT_TEXT = `
 <p>L'Artiste est ensuite libre de fixer son propre prix de revente sur place. Le profit supplémentaire entre le prix d'achat et le prix de revente appartient entièrement à l'Artiste.</p>
 <p><em>Exemple : L'Artiste commande 50 prints A3+ musée à 160$ chacun. Massive produit les 50 prints. L'Artiste les vend 250$ au festival. Les 90$ de différence par print sont entièrement pour l'Artiste.</em></p>
 <p>Les <strong>stickers</strong> destines a la revente en événement ou en point de vente suivent la meme logique : prix régulier de la grille tarifaire, revente libre par l'Artiste.</p>
-<p>Toute commande en volume doit être payée intégralement avant la production. Aucun retour n'est accepté sur les commandes en volume, sauf en cas de défaut de production avéré (voir article 8).</p>
+<p>Toute commande en volume doit être payée intégralement avant la production. Aucun retour n'est accepté sur les commandes en volume, sauf en cas de défaut de production avéré (voir article 7).</p>
 <p><strong>Le montant total de la facture doit être payé dans les 30 jours suivant la date de facturation.</strong> Passé ce délai, Massive Medias se réserve le droit de suspendre la production et la distribution des produits de l'Artiste jusqu'au règlement du solde.</p>
 
-<h4>8. ENGAGEMENT QUALITE</h4>
+<h4>7. ENGAGEMENT QUALITE</h4>
 <p>Massive Medias s'engage à produire tous les articles au standard galerie ou premium, en adéquation avec l'oeuvre de l'Artiste. Cet engagement comprend :</p>
 <ul>
   <li>L'utilisation d'équipements d'impression professionnels adaptés à chaque type de produit</li>
@@ -818,7 +818,7 @@ export const ARTIST_CONTRACT_TEXT = `
 </ul>
 <p>En cas de défaut de production avéré, Massive Medias reprend le produit à ses frais et produit un remplacement sans coût additionnel pour l'Artiste.</p>
 
-<h4>9. FIN D'ENTENTE</h4>
+<h4>8. FIN D'ENTENTE</h4>
 
 <p><strong>9.1 Résiliation</strong></p>
 <p>Chaque partie peut mettre fin à la présente entente en transmettant un préavis écrit de 30 jours par courriel à l'autre partie. Pendant ce délai, les deux parties honorent leurs obligations respectives.</p>
@@ -834,7 +834,7 @@ export const ARTIST_CONTRACT_TEXT = `
 <p><strong>9.3 Retrait du site web</strong></p>
 <p>Dans les 7 jours suivant la fin effective de l'entente, Massive Medias retire l'intégralité des visuels et produits liés aux oeuvres de l'Artiste sur massivemedias.com.</p>
 
-<h4>10. PROTECTION ET GESTION DES FICHIERS</h4>
+<h4>9. PROTECTION ET GESTION DES FICHIERS</h4>
 
 <p><strong>10.1 Utilisation des fichiers haute résolution</strong></p>
 <p>Les fichiers sources haute résolution fournis par l'Artiste sont utilisés exclusivement à des fins d'impression physique. Ils ne sont jamais partagés avec des tiers, utilisés dans d'autres contextes non prévus par la présente entente, ni publiés en ligne en haute résolution.</p>
@@ -845,7 +845,7 @@ export const ARTIST_CONTRACT_TEXT = `
 <p><strong>10.3 Destruction a la fin du contrat</strong></p>
 <p>Dans les 14 jours suivant la fin de l'entente, Massive Medias s'engage à supprimer définitivement tous les fichiers haute résolution de l'Artiste de ses serveurs et équipements, et à fournir une confirmation écrite de cette suppression.</p>
 
-<h4>11. CONFIDENTIALITE</h4>
+<h4>10. CONFIDENTIALITE</h4>
 
 <p><strong>11.1 Obligations de Massive Medias</strong></p>
 <p>Massive Medias s'engage à maintenir confidentielles toutes les informations commerciales, artistiques et personnelles transmises par l'Artiste dans le cadre de cette entente.</p>
@@ -860,7 +860,7 @@ export const ARTIST_CONTRACT_TEXT = `
 </ul>
 <p>Cette obligation de confidentialité demeure valide pour une période de 2 ans suivant la fin de la présente entente.</p>
 
-<h4>12. RESPONSABILITES & GARANTIES</h4>
+<h4>11. RESPONSABILITES & GARANTIES</h4>
 
 <p><strong>12.1 Garanties de l'Artiste</strong></p>
 <p>L'Artiste déclare et garantit qu'il est le créateur original et/ou le titulaire des droits des oeuvres fournies, que celles-ci ne violent pas les droits de propriété intellectuelle de tiers, et qu'il a le plein droit de conclure cette entente.</p>
@@ -868,7 +868,7 @@ export const ARTIST_CONTRACT_TEXT = `
 <p><strong>12.2 Limitation de responsabilité de Massive Medias</strong></p>
 <p>Massive Medias ne peut être tenu responsable des pertes de revenus dues à des facteurs hors de son contrôle (panne d'équipement, rupture de stock de matériaux, cas de force majeure).</p>
 
-<h4>13. DISPOSITIONS GÉNÉRALES</h4>
+<h4>12. DISPOSITIONS GÉNÉRALES</h4>
 <ul>
   <li><strong>Droit applicable :</strong> Cette entente est régie par les lois de la province de Québec et les lois fédérales du Canada applicables.</li>
   <li><strong>Modifications :</strong> Toute modification doit être convenue par écrit et signée par les deux parties pour être valide.</li>
