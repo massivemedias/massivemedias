@@ -127,6 +127,8 @@ function AdminMessages() {
   const [replySuccess, setReplySuccess] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [deleting, setDeleting] = useState(null);
+  const [processingEditReq, setProcessingEditReq] = useState(null);
+  const [editReqError, setEditReqError] = useState(null);
 
   useEffect(() => {
     const t = setTimeout(() => setSearchDebounce(search), 400);
@@ -367,7 +369,7 @@ function AdminMessages() {
                   <AnimatePresence>
                     {isExpanded && (
                       <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
-                        <div className="px-4 pb-5 pt-1 space-y-4 border-t border-white/5 bg-glass/50">
+                        <div className="px-4 pb-5 pt-1 space-y-4 border-t border-white/5 bg-glass/50" onClick={(e) => e.stopPropagation()}>
                           {/* ARTIST MESSAGE expanded view */}
                           {isArtistMsg && (
                             <>
@@ -509,47 +511,78 @@ function AdminMessages() {
                                         />
                                         <div className="flex gap-2">
                                           <button
-                                            onClick={async () => {
+                                            onClick={async (e) => {
+                                              e.stopPropagation();
+                                              setProcessingEditReq(editReqId);
+                                              setEditReqError(null);
                                               try {
                                                 await rejectEditRequest(editReqId, replyText);
+                                                setItems(prev => prev.map(i => i._uid === item._uid ? { ...i, status: 'replied', adminReply: replyText || 'Demande refusee.' } : i));
                                                 setReplyingTo(null);
                                                 setReplyText('');
-                                                // Refresh
-                                                fetchItems();
-                                              } catch {}
+                                              } catch (err) {
+                                                console.error('Reject failed:', err);
+                                                setEditReqError(err?.response?.data?.error?.message || err?.message || 'Erreur inconnue');
+                                              } finally {
+                                                setProcessingEditReq(null);
+                                              }
                                             }}
-                                            className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-red-500 text-white text-xs font-semibold hover:bg-red-600 transition-colors"
+                                            disabled={processingEditReq === editReqId}
+                                            className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-red-500 text-white text-xs font-semibold hover:bg-red-600 transition-colors disabled:opacity-50"
                                           >
-                                            <XCircle size={12} /> {tx({ fr: 'Confirmer le refus', en: 'Confirm rejection', es: 'Confirmar rechazo' })}
+                                            {processingEditReq === editReqId ? <Loader2 size={12} className="animate-spin" /> : <XCircle size={12} />}
+                                            {tx({ fr: 'Confirmer le refus', en: 'Confirm rejection', es: 'Confirmar rechazo' })}
                                           </button>
-                                          <button onClick={() => { setReplyingTo(null); setReplyText(''); }} className="text-grey-muted text-xs hover:text-heading">
+                                          <button onClick={() => { setReplyingTo(null); setReplyText(''); }} className="text-grey-muted text-xs hover:text-heading"
+                                            disabled={processingEditReq === editReqId}>
                                             {tx({ fr: 'Annuler', en: 'Cancel', es: 'Cancelar' })}
                                           </button>
                                         </div>
+                                        {editReqError && (
+                                          <p className="text-xs text-red-400 font-semibold">
+                                            {tx({ fr: 'Erreur:', en: 'Error:', es: 'Error:' })} {editReqError}
+                                          </p>
+                                        )}
                                       </div>
                                     ) : (
-                                      <div className="flex items-center gap-2">
-                                        <button
-                                          onClick={async () => {
-                                            try {
-                                              await approveEditRequest(editReqId);
-                                              // Refresh
-                                              const { data } = await getArtistMessagesAdmin();
-                                              fetchItems();
-                                            } catch (err) {
-                                              console.error('Approve failed:', err);
-                                            }
-                                          }}
-                                          className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-green-600 text-white text-xs font-semibold hover:bg-green-700 transition-colors"
-                                        >
-                                          <CheckCircle size={14} /> {tx({ fr: 'Approuver', en: 'Approve', es: 'Aprobar' })}
-                                        </button>
-                                        <button
-                                          onClick={() => { setReplyingTo(`reject-${item._uid}`); setReplyText(''); }}
-                                          className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-red-500/20 text-red-400 text-xs font-semibold hover:bg-red-500/30 transition-colors"
-                                        >
-                                          <XCircle size={14} /> {tx({ fr: 'Rejeter', en: 'Reject', es: 'Rechazar' })}
-                                        </button>
+                                      <div className="space-y-2">
+                                        <div className="flex items-center gap-2">
+                                          <button
+                                            onClick={async (e) => {
+                                              e.stopPropagation();
+                                              setProcessingEditReq(editReqId);
+                                              setEditReqError(null);
+                                              try {
+                                                await approveEditRequest(editReqId);
+                                                setItems(prev => prev.map(i => i._uid === item._uid ? { ...i, status: 'replied', adminReply: 'Modifications approuvees et appliquees.' } : i));
+                                              } catch (err) {
+                                                console.error('Approve failed:', err);
+                                                setEditReqError(err?.response?.data?.error?.message || err?.message || 'Erreur inconnue');
+                                              } finally {
+                                                setProcessingEditReq(null);
+                                              }
+                                            }}
+                                            disabled={processingEditReq === editReqId}
+                                            className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-green-600 text-white text-xs font-semibold hover:bg-green-700 transition-colors disabled:opacity-50"
+                                          >
+                                            {processingEditReq === editReqId ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle size={14} />}
+                                            {processingEditReq === editReqId
+                                              ? tx({ fr: 'En cours...', en: 'Processing...', es: 'Procesando...' })
+                                              : tx({ fr: 'Approuver', en: 'Approve', es: 'Aprobar' })}
+                                          </button>
+                                          <button
+                                            onClick={() => { setReplyingTo(`reject-${item._uid}`); setReplyText(''); }}
+                                            disabled={processingEditReq === editReqId}
+                                            className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-red-500/20 text-red-400 text-xs font-semibold hover:bg-red-500/30 transition-colors disabled:opacity-50"
+                                          >
+                                            <XCircle size={14} /> {tx({ fr: 'Rejeter', en: 'Reject', es: 'Rechazar' })}
+                                          </button>
+                                        </div>
+                                        {editReqError && (
+                                          <p className="text-xs text-red-400 font-semibold">
+                                            {tx({ fr: 'Erreur:', en: 'Error:', es: 'Error:' })} {editReqError}
+                                          </p>
+                                        )}
                                       </div>
                                     )}
                                   </div>
