@@ -1,9 +1,10 @@
 import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { DollarSign, Copy, Check, Download, Printer, Users, BarChart3, Sticker, Shirt, Palette, Globe, FileText, Loader2 } from 'lucide-react';
+import { DollarSign, Copy, Check, Download, Printer, Users, BarChart3, Sticker, Shirt, Palette, Globe, FileText, Loader2, Image } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import artistsData, { artistPrinterTiers, artistFormats } from '../data/artists';
 
 // =============================================
 // DONNEES TARIFS
@@ -807,6 +808,44 @@ function AdminTarifs() {
                 </tr>
               ))}
             </DataTable>
+          </SectionCard>
+
+          {/* Tarifs artistes */}
+          <SectionCard icon={Image} iconColor="text-violet-400"
+            title={tx({ fr: 'Tarifs artistes (boutique prints)', en: 'Artist pricing (prints store)', es: 'Tarifas artistas (tienda prints)' })}
+            subtitle={tx({ fr: 'Prix client final par artiste - commission 50/50 (Massive / Artiste)', en: 'Final client price per artist - 50/50 split (Massive / Artist)', es: 'Precio final cliente por artista - split 50/50 (Massive / Artista)' })} delay={0.22}>
+            {Object.values(artistsData).map((artist) => (
+              <div key={artist.slug} className="mb-6 last:mb-0">
+                <div className="flex items-center gap-2 mb-2">
+                  {artist.avatar && <img src={artist.avatar} alt={artist.name} className="w-6 h-6 rounded-full object-cover" />}
+                  <h4 className="text-xs font-semibold text-heading uppercase tracking-wider">{artist.name}</h4>
+                  <span className="text-[10px] text-grey-muted">({artist.prints?.length || 0} prints)</span>
+                </div>
+                {artist.pricing ? (
+                  <DataTable headers={[
+                    { label: 'Format' },
+                    { label: 'Studio' },
+                    { label: tx({ fr: 'Musee', en: 'Museum', es: 'Museo' }) },
+                    { label: tx({ fr: '+ Frame', en: '+ Frame', es: '+ Marco' }) },
+                  ]}>
+                    {artistFormats.map((fmt) => {
+                      const studioPrice = artist.pricing.studio?.[fmt.id];
+                      const museumPrice = artist.pricing.museum?.[fmt.id];
+                      return (
+                        <tr key={fmt.id} className="border-b border-white/5 hover:bg-accent/5 transition-colors">
+                          <Td center={false} className="text-heading font-medium">{fmt.label}</Td>
+                          <Td>{studioPrice ? `${studioPrice}$` : <span className="text-grey-muted">-</span>}</Td>
+                          <Td>{museumPrice ? `${museumPrice}$` : <span className="text-grey-muted">-</span>}</Td>
+                          <Td>{artist.pricing.framePrice ? `+${artist.pricing.framePrice}$` : <span className="text-grey-muted">-</span>}</Td>
+                        </tr>
+                      );
+                    })}
+                  </DataTable>
+                ) : (
+                  <p className="text-xs text-grey-muted italic">{tx({ fr: 'Pas de tarifs configures', en: 'No pricing configured', es: 'Sin tarifas configuradas' })}</p>
+                )}
+              </div>
+            ))}
           </SectionCard>
 
           {/* Design */}

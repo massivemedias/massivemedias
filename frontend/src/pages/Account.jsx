@@ -937,29 +937,24 @@ function Account() {
         <section className="section-container pt-28 pb-20 min-h-screen">
           {/* Header */}
           <div className="max-w-7xl mx-auto mb-6">
-            <div className="flex items-center gap-5">
+            <div className="flex items-center gap-4">
               {artistAvatar ? (
-                <img src={artistAvatar} alt={initials} className="w-14 h-14 rounded-full object-cover border-2 border-accent/40 flex-shrink-0" />
+                <img src={artistAvatar} alt={initials} className="w-11 h-11 rounded-full object-cover border-2 border-accent/40 flex-shrink-0" />
               ) : (
-                <div className="w-14 h-14 rounded-full bg-accent/20 border-2 border-accent/40 flex items-center justify-center flex-shrink-0">
-                  <span className="text-lg font-bold text-accent">{initials}</span>
+                <div className="w-11 h-11 rounded-full bg-accent/20 border-2 border-accent/40 flex items-center justify-center flex-shrink-0">
+                  <span className="text-sm font-bold text-accent">{initials}</span>
                 </div>
               )}
               <div className="flex-grow min-w-0">
-                <h1 className="text-2xl md:text-3xl font-heading font-bold text-heading">
-                  {tx({ fr: 'Bonjour', en: 'Hello', es: 'Hola' })} 👋
-                </h1>
-                <p className="text-grey-muted text-sm mt-0.5">
-                  {user?.email}
-                  {memberSince && (
-                    <span className="ml-3 text-grey-muted/60">
-                      {tx({ fr: 'Membre depuis', en: 'Member since', es: 'Miembro desde' })} {memberSince}
-                    </span>
-                  )}
-                </p>
+                <p className="text-sm text-heading font-medium">{user?.email}</p>
+                {memberSince && (
+                  <p className="text-xs text-grey-muted/60">
+                    {tx({ fr: 'Membre depuis', en: 'Member since', es: 'Miembro desde' })} {memberSince}
+                  </p>
+                )}
               </div>
-              <button onClick={signOut} className="flex items-center gap-2 px-4 py-2 rounded-lg border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:border-red-500/50 transition-all text-sm font-semibold flex-shrink-0">
-                <LogOut size={16} />
+              <button onClick={signOut} className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:border-red-500/50 transition-all text-xs font-semibold flex-shrink-0">
+                <LogOut size={14} />
                 <span className="hidden sm:inline">{tx({ fr: 'Déconnexion', en: 'Sign out', es: 'Cerrar sesion' })}</span>
               </button>
             </div>
@@ -1161,19 +1156,19 @@ function Account() {
             transition={{ duration: 0.6 }}
           >
             {/* -- Header with Avatar -- */}
-            <div className="flex items-center gap-5 mb-8">
+            <div className="flex items-center gap-4 mb-8">
               {(() => {
                 const av = artistSlug && artistsData[artistSlug]?.avatar;
                 return av ? (
-                  <img src={av} alt={initials} className="w-16 h-16 rounded-full object-cover border-2 border-accent/40 flex-shrink-0" />
+                  <img src={av} alt={initials} className="w-11 h-11 rounded-full object-cover border-2 border-accent/40 flex-shrink-0" />
                 ) : (
-                  <div className="w-16 h-16 rounded-full bg-accent/20 border-2 border-accent/40 flex items-center justify-center flex-shrink-0">
-                    <span className="text-xl font-bold text-accent">{initials}</span>
+                  <div className="w-11 h-11 rounded-full bg-accent/20 border-2 border-accent/40 flex items-center justify-center flex-shrink-0">
+                    <span className="text-sm font-bold text-accent">{initials}</span>
                   </div>
                 );
               })()}
               <div className="flex-grow min-w-0">
-                <h1 className="text-2xl md:text-3xl font-heading font-bold text-heading">
+                <h1 className="text-lg font-heading font-bold text-heading">
                   {tx({ fr: 'Bonjour', en: 'Hello', es: 'Hola' })} 👋
                 </h1>
                 <p className="text-grey-muted text-sm mt-0.5">
