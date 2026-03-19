@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ImagePlus, Trash2, Loader2, Check, X, Clock, Send, AlertCircle,
-  ChevronDown, ChevronUp, Eye, Pencil,
+  ChevronDown, ChevronUp, Eye, Pencil, Gem, DollarSign,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -45,6 +45,9 @@ function ArtistGalleryManager() {
   const [showHistory, setShowHistory] = useState(false);
   const [renamingId, setRenamingId] = useState(null);
   const [renameValue, setRenameValue] = useState('');
+  const [uniqueFormId, setUniqueFormId] = useState(null);
+  const [uniquePrice, setUniquePrice] = useState('');
+  const [uniqueSending, setUniqueSending] = useState(false);
 
   const email = user?.email || '';
   const localArtist = artistsData[artistSlug] || null;
@@ -164,6 +167,60 @@ function ArtistGalleryManager() {
     }
   };
 
+  // Marquer comme piece unique
+  const handleMarkUnique = async (itemId, category, itemTitle) => {
+    const price = parseFloat(uniquePrice);
+    if (!price || price <= 0) {
+      setError(tx({ fr: 'Entre un prix valide.', en: 'Enter a valid price.', es: 'Ingresa un precio valido.' }));
+      return;
+    }
+    setUniqueSending(true);
+    try {
+      const res = await createEditRequest({
+        artistSlug, artistName, email,
+        requestType: 'mark-unique',
+        changeData: { itemId, category, customPrice: price, itemTitle },
+      });
+      const newReq = res.data?.data;
+      if (newReq) setEditRequests(prev => [newReq, ...prev]);
+      setUniqueFormId(null);
+      setUniquePrice('');
+      setSuccess(tx({
+        fr: `Demande de piece unique envoyee pour "${itemTitle}" a ${price}$`,
+        en: `Unique piece request sent for "${itemTitle}" at $${price}`,
+        es: `Solicitud de pieza unica enviada para "${itemTitle}" a $${price}`,
+      }));
+      setTimeout(() => setSuccess(''), 5000);
+    } catch {
+      setError(tx({ fr: 'Erreur lors de la demande.', en: 'Error submitting request.', es: 'Error al enviar la solicitud.' }));
+    } finally {
+      setUniqueSending(false);
+    }
+  };
+
+  // Retirer le statut piece unique
+  const handleUnmarkUnique = async (itemId, category, itemTitle) => {
+    try {
+      const res = await createEditRequest({
+        artistSlug, artistName, email,
+        requestType: 'unmark-unique',
+        changeData: { itemId, category, itemTitle },
+      });
+      const newReq = res.data?.data;
+      if (newReq) setEditRequests(prev => [newReq, ...prev]);
+    } catch {
+      setError(tx({ fr: 'Erreur lors de la demande.', en: 'Error submitting request.', es: 'Error al enviar la solicitud.' }));
+    }
+  };
+
+  // Pending unique requests
+  const pendingUniqueIds = useMemo(() => {
+    return editRequests
+      .filter(r => r.status === 'pending' && (r.requestType === 'mark-unique' || r.requestType === 'unmark-unique'))
+      .map(r => r.changeData?.itemId)
+      .filter(Boolean);
+  }, [editRequests]);
+
   // Soumettre de nouvelles images
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -223,8 +280,11 @@ function ArtistGalleryManager() {
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
         {items.map((item) => {
           const isPendingRemoval = pendingRemovalIds.includes(item.id);
+          const isPendingUnique = pendingUniqueIds.includes(item.id);
           const thumbSrc = resolveThumb(item);
           const title = item[`title${lang === 'fr' ? 'Fr' : lang === 'en' ? 'En' : 'Es'}`] || item.titleFr || item.title || '';
+          const isUnique = item.unique;
+          const showUniqueForm = uniqueFormId === item.id;
 
           return (
             <div
@@ -243,6 +303,23 @@ function ArtistGalleryManager() {
               ) : (
                 <div className="w-full h-full bg-glass flex items-center justify-center">
                   <ImagePlus size={24} className="text-grey-muted/30" />
+                </div>
+              )}
+
+              {/* Badge piece unique */}
+              {isUnique && (
+                <div className="absolute top-2 left-2 px-1.5 py-0.5 rounded-full bg-accent/90 text-white text-[8px] font-bold uppercase tracking-wider flex items-center gap-0.5">
+                  <Gem size={8} />
+                  {tx({ fr: 'Unique', en: 'Unique', es: 'Unica' })}
+                  {item.customPrice ? ` ${item.customPrice}$` : ''}
+                </div>
+              )}
+
+              {/* Badge pending unique */}
+              {isPendingUnique && !isUnique && (
+                <div className="absolute top-2 left-2 px-1.5 py-0.5 rounded-full bg-yellow-500/80 text-white text-[8px] font-bold uppercase tracking-wider flex items-center gap-0.5">
+                  <Clock size={8} />
+                  {tx({ fr: 'Unique en attente', en: 'Pending unique', es: 'Unica pendiente' })}
                 </div>
               )}
 
@@ -267,6 +344,44 @@ function ArtistGalleryManager() {
                 )}
               </div>
 
+              {/* Formulaire piece unique (overlay) */}
+              {showUniqueForm && (
+                <div className="absolute inset-0 bg-black/80 flex flex-col items-center justify-center p-3 z-10" onClick={(e) => e.stopPropagation()}>
+                  <Gem size={20} className="text-accent mb-2" />
+                  <p className="text-white text-[10px] text-center mb-2 font-medium">
+                    {tx({ fr: 'Prix de la piece unique', en: 'Unique piece price', es: 'Precio de la pieza unica' })}
+                  </p>
+                  <div className="flex items-center gap-1 mb-3">
+                    <input
+                      type="number"
+                      min="1"
+                      value={uniquePrice}
+                      onChange={(e) => setUniquePrice(e.target.value)}
+                      className="w-20 bg-black/50 text-white text-sm px-2 py-1.5 rounded border border-accent/50 focus:outline-none focus:border-accent text-center"
+                      placeholder="150"
+                      autoFocus
+                    />
+                    <span className="text-white text-sm font-bold">$</span>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleMarkUnique(item.id, category, title)}
+                      disabled={uniqueSending}
+                      className="px-3 py-1.5 rounded-lg bg-accent text-white text-[10px] font-semibold hover:bg-accent/80 disabled:opacity-50 flex items-center gap-1"
+                    >
+                      {uniqueSending ? <Loader2 size={10} className="animate-spin" /> : <Check size={10} />}
+                      {tx({ fr: 'Envoyer', en: 'Submit', es: 'Enviar' })}
+                    </button>
+                    <button
+                      onClick={() => { setUniqueFormId(null); setUniquePrice(''); }}
+                      className="px-3 py-1.5 rounded-lg bg-white/10 text-white text-[10px] font-semibold hover:bg-white/20"
+                    >
+                      <X size={10} />
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {/* Badge pending removal */}
               {isPendingRemoval && (
                 <div className="absolute inset-0 flex items-center justify-center bg-red-500/20">
@@ -276,15 +391,38 @@ function ArtistGalleryManager() {
                 </div>
               )}
 
-              {/* Bouton supprimer */}
-              {!isPendingRemoval && (
-                <button
-                  onClick={() => handleRemove(item.id, category)}
-                  className="absolute top-2 right-2 p-1.5 rounded-full bg-red-500/80 text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500"
-                  title={tx({ fr: 'Demander la suppression', en: 'Request removal', es: 'Solicitar eliminacion' })}
-                >
-                  <Trash2 size={12} />
-                </button>
+              {/* Boutons d'action (hover) */}
+              {!isPendingRemoval && !showUniqueForm && (
+                <div className="absolute top-2 right-2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  {/* Bouton supprimer */}
+                  <button
+                    onClick={() => handleRemove(item.id, category)}
+                    className="p-1.5 rounded-full bg-red-500/80 text-white hover:bg-red-500"
+                    title={tx({ fr: 'Demander la suppression', en: 'Request removal', es: 'Solicitar eliminacion' })}
+                  >
+                    <Trash2 size={12} />
+                  </button>
+                  {/* Bouton piece unique */}
+                  {!isUnique && !isPendingUnique && category === 'prints' && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setUniqueFormId(item.id); setUniquePrice(''); }}
+                      className="p-1.5 rounded-full bg-accent/80 text-white hover:bg-accent"
+                      title={tx({ fr: 'Designer comme piece unique', en: 'Mark as unique piece', es: 'Marcar como pieza unica' })}
+                    >
+                      <Gem size={12} />
+                    </button>
+                  )}
+                  {/* Bouton retirer unique */}
+                  {isUnique && !isPendingUnique && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleUnmarkUnique(item.id, category, title); }}
+                      className="p-1.5 rounded-full bg-yellow-500/80 text-white hover:bg-yellow-500"
+                      title={tx({ fr: 'Retirer le statut piece unique', en: 'Remove unique status', es: 'Quitar estado de pieza unica' })}
+                    >
+                      <X size={12} />
+                    </button>
+                  )}
+                </div>
               )}
             </div>
           );
@@ -295,7 +433,7 @@ function ArtistGalleryManager() {
 
   // Historique des demandes
   const recentRequests = editRequests.filter(r =>
-    ['add-prints', 'add-stickers', 'add-merch', 'remove-prints', 'remove-stickers', 'remove-merch'].includes(r.requestType)
+    ['add-prints', 'add-stickers', 'add-merch', 'remove-prints', 'remove-stickers', 'remove-merch', 'mark-unique', 'unmark-unique'].includes(r.requestType)
   ).slice(0, 20);
 
   return (

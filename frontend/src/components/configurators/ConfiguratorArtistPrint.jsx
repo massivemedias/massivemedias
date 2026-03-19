@@ -17,6 +17,7 @@ function ConfiguratorArtistPrint({ artist, selectedPrint }) {
   const fixedFormat = selectedPrint?.fixedFormat;
   const fixedTier = selectedPrint?.fixedTier;
   const noFrame = selectedPrint?.noFrame;
+  const customPrice = selectedPrint?.customPrice;
 
   const [tier, setTier] = useState(fixedTier || 'studio');
   const [format, setFormat] = useState(fixedFormat || 'a4');
@@ -46,12 +47,17 @@ function ConfiguratorArtistPrint({ artist, selectedPrint }) {
 
   const isArtistOwnPrint = loggedArtistSlug && loggedArtistSlug === artist?.slug;
 
+  // Prix effectif: customPrice pour pieces uniques, sinon prix standard
+  const effectivePrice = (isUnique && customPrice) ? customPrice : priceInfo?.price;
+
   const handleAddToCart = () => {
-    if (!priceInfo) return;
+    if (!effectivePrice) return;
     addToCart({
       productId: `artist-print-${artist.slug}-${selectedPrint.id}`,
       productName: `${artist.name} - ${printTitle}`,
-      finish: tx({ fr: tierLabel?.labelFr, en: tierLabel?.labelEn, es: tierLabel?.labelEn }),
+      finish: isUnique
+        ? tx({ fr: 'Piece unique', en: 'One of a kind', es: 'Pieza unica' })
+        : tx({ fr: tierLabel?.labelFr, en: tierLabel?.labelEn, es: tierLabel?.labelEn }),
       shape: withFrame
         ? tx({
             fr: `Cadre ${frameColor === 'black' ? 'noir' : 'blanc'}`,
@@ -59,13 +65,14 @@ function ConfiguratorArtistPrint({ artist, selectedPrint }) {
             es: `Marco ${frameColor === 'black' ? 'negro' : 'blanco'}`,
           })
         : null,
-      size: formatLabel?.label,
-      quantity,
-      unitPrice: priceInfo.price,
-      totalPrice: priceInfo.price * quantity,
+      size: isUnique ? tx({ fr: 'Piece unique', en: 'Unique piece', es: 'Pieza unica' }) : formatLabel?.label,
+      quantity: 1,
+      unitPrice: effectivePrice,
+      totalPrice: effectivePrice,
       image: selectedPrint.image,
       uploadedFiles: [],
       notes,
+      isUnique: isUnique || false,
       ...(isArtistOwnPrint ? { isArtistOwnPrint: true, artistSlug: artist.slug } : {}),
     });
     setAdded(true);
@@ -100,19 +107,29 @@ function ConfiguratorArtistPrint({ artist, selectedPrint }) {
 
       {/* Unique print info */}
       {isUnique && (
-        <div className="p-4 rounded-xl border border-accent/30 bg-accent/5 text-sm">
+        <div className="p-4 rounded-xl border border-accent/30 bg-accent/5 text-sm space-y-2">
           <p className="text-heading font-medium">
-            {tx({
-              fr: `Cette oeuvre est une pièce unique - Format ${(fixedFormat || '').toUpperCase()}, série studio, sans cadre.`,
-              en: `This artwork is one of a kind - ${(fixedFormat || '').toUpperCase()} format, studio series, unframed.`,
-              es: `Esta obra es una pieza única - Formato ${(fixedFormat || '').toUpperCase()}, serie estudio, sin marco.`,
-            })}
+            {customPrice
+              ? tx({
+                  fr: `Cette oeuvre est une piece unique. Un seul exemplaire sera produit.`,
+                  en: `This artwork is one of a kind. Only one copy will be produced.`,
+                  es: `Esta obra es una pieza unica. Solo se producira una copia.`,
+                })
+              : tx({
+                  fr: `Cette oeuvre est une piece unique - Format ${(fixedFormat || '').toUpperCase()}, serie studio, sans cadre.`,
+                  en: `This artwork is one of a kind - ${(fixedFormat || '').toUpperCase()} format, studio series, unframed.`,
+                  es: `Esta obra es una pieza unica - Formato ${(fixedFormat || '').toUpperCase()}, serie estudio, sin marco.`,
+                })
+            }
           </p>
+          {customPrice && (
+            <p className="text-accent font-bold text-lg">{customPrice}$</p>
+          )}
         </div>
       )}
 
       {/* Printer tier selector */}
-      {!fixedTier && (
+      {!fixedTier && !(isUnique && customPrice) && (
         <div>
           <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2.5">
             {tx({ fr: 'Qualité d\'impression', en: 'Print Quality', es: 'Calidad de impresión' })}
@@ -143,7 +160,7 @@ function ConfiguratorArtistPrint({ artist, selectedPrint }) {
       )}
 
       {/* Format selector */}
-      {!fixedFormat && (
+      {!fixedFormat && !(isUnique && customPrice) && (
         <div>
           <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2.5">
             Format
@@ -173,8 +190,8 @@ function ConfiguratorArtistPrint({ artist, selectedPrint }) {
         </div>
       )}
 
-      {/* Frame option - disabled for A2 (no frame available) */}
-      {!noFrame && format !== 'a2' && (
+      {/* Frame option - disabled for A2, unique pieces with custom price */}
+      {!noFrame && format !== 'a2' && !(isUnique && customPrice) && (
         <div>
           <label className={`flex items-center gap-3 w-full p-4 rounded-lg cursor-pointer transition-all border-2 ${withFrame ? 'checkbox-active' : 'option-default'}`}>
             <input
@@ -260,44 +277,63 @@ function ConfiguratorArtistPrint({ artist, selectedPrint }) {
       )}
 
       {/* Price display */}
-      {!priceInfo && (
-        <div className="p-5 rounded-xl highlight-bordered text-center">
-          <span className="text-grey-muted text-sm">
-            {tx({
-              fr: 'Ce format n\'est pas disponible dans cette serie.',
-              en: 'This format is not available in this series.',
-              es: 'Este formato no esta disponible en esta serie.',
-            })}
-          </span>
-        </div>
-      )}
-      {priceInfo && (
+      {isUnique && customPrice ? (
         <div className="p-5 rounded-xl highlight-bordered">
           <div className="flex items-baseline gap-3">
-            <span className="text-3xl font-heading font-bold text-heading">{priceInfo.price * quantity}$</span>
-            {quantity > 1 && <span className="text-grey-muted text-sm">{quantity} x {priceInfo.price}$</span>}
+            <span className="text-3xl font-heading font-bold text-heading">{customPrice}$</span>
           </div>
-          {withFrame && (
-            <div className="text-grey-muted text-xs mt-1">
-              {tx({
-                fr: `Tirage ${priceInfo.basePrice}$ + Cadre ${priceInfo.framePrice}$`,
-                en: `Print ${priceInfo.basePrice}$ + Frame ${priceInfo.framePrice}$`,
-                es: `Impresión ${priceInfo.basePrice}$ + Marco ${priceInfo.framePrice}$`,
-              })}
-            </div>
-          )}
           <div className="flex items-center gap-2 mt-2">
             <span className="text-grey-muted text-xs">
-              {tier === 'museum'
-                ? tx({ fr: 'Qualité musée - 12 encres pigmentées, conservation 100+ ans', en: 'Museum quality - 12 pigmented inks, 100+ year archival', es: 'Calidad museo - 12 tintas pigmentadas, conservación 100+ años' })
-                : tx({ fr: 'Qualité studio - impression professionnelle pigmentée', en: 'Studio quality - professional pigmented printing', es: 'Calidad estudio - impresión profesional pigmentada' })}
+              {tx({
+                fr: 'Piece unique - prix fixe par l\'artiste. Certificat d\'authenticite inclus.',
+                en: 'Unique piece - price set by the artist. Certificate of authenticity included.',
+                es: 'Pieza unica - precio fijado por el artista. Certificado de autenticidad incluido.',
+              })}
             </span>
           </div>
         </div>
+      ) : (
+        <>
+          {!priceInfo && (
+            <div className="p-5 rounded-xl highlight-bordered text-center">
+              <span className="text-grey-muted text-sm">
+                {tx({
+                  fr: 'Ce format n\'est pas disponible dans cette serie.',
+                  en: 'This format is not available in this series.',
+                  es: 'Este formato no esta disponible en esta serie.',
+                })}
+              </span>
+            </div>
+          )}
+          {priceInfo && (
+            <div className="p-5 rounded-xl highlight-bordered">
+              <div className="flex items-baseline gap-3">
+                <span className="text-3xl font-heading font-bold text-heading">{priceInfo.price * quantity}$</span>
+                {quantity > 1 && <span className="text-grey-muted text-sm">{quantity} x {priceInfo.price}$</span>}
+              </div>
+              {withFrame && (
+                <div className="text-grey-muted text-xs mt-1">
+                  {tx({
+                    fr: `Tirage ${priceInfo.basePrice}$ + Cadre ${priceInfo.framePrice}$`,
+                    en: `Print ${priceInfo.basePrice}$ + Frame ${priceInfo.framePrice}$`,
+                    es: `Impresion ${priceInfo.basePrice}$ + Marco ${priceInfo.framePrice}$`,
+                  })}
+                </div>
+              )}
+              <div className="flex items-center gap-2 mt-2">
+                <span className="text-grey-muted text-xs">
+                  {tier === 'museum'
+                    ? tx({ fr: 'Qualite musee - 12 encres pigmentees, conservation 100+ ans', en: 'Museum quality - 12 pigmented inks, 100+ year archival', es: 'Calidad museo - 12 tintas pigmentadas, conservacion 100+ anos' })
+                    : tx({ fr: 'Qualite studio - impression professionnelle pigmentee', en: 'Studio quality - professional pigmented printing', es: 'Calidad estudio - impresion profesional pigmentada' })}
+                </span>
+              </div>
+            </div>
+          )}
+        </>
       )}
 
       {/* Add to cart */}
-      <button onClick={handleAddToCart} disabled={!priceInfo} className={`btn-primary w-full justify-center text-base py-4 ${!priceInfo ? 'opacity-40 cursor-not-allowed' : ''}`}>
+      <button onClick={handleAddToCart} disabled={!effectivePrice} className={`btn-primary w-full justify-center text-base py-4 ${!effectivePrice ? 'opacity-40 cursor-not-allowed' : ''}`}>
         {added ? (
           <><Check size={20} className="mr-2" />{tx({ fr: 'Ajouté au panier!', en: 'Added to cart!', es: 'Agregado al carrito!' })}</>
         ) : (

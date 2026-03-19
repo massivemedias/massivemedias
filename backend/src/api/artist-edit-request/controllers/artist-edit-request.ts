@@ -27,6 +27,8 @@ const TYPE_LABELS: Record<string, string> = {
   'update-socials': 'Mise a jour des liens sociaux',
   'update-avatar': 'Changement de photo de profil',
   'rename-item': 'Renommage d\'un item',
+  'mark-unique': 'Piece unique - prix personnalise',
+  'unmark-unique': 'Retrait du statut piece unique',
 };
 
 export default factories.createCoreController('api::artist-edit-request.artist-edit-request', ({ strapi }) => ({
@@ -240,6 +242,14 @@ export default factories.createCoreController('api::artist-edit-request.artist-e
         case 'remove-stickers':
         case 'remove-merch': {
           await handleRemoveImages(strapi, artist, requestType, changeData);
+          break;
+        }
+        case 'mark-unique': {
+          await handleMarkUnique(strapi, artist, changeData);
+          break;
+        }
+        case 'unmark-unique': {
+          await handleUnmarkUnique(strapi, artist, changeData);
           break;
         }
         default: {
@@ -529,6 +539,17 @@ function buildNotificationMessage(requestType: string, changeData: any, artistNa
       return `${name} a change sa photo de profil. Applique automatiquement.\n\nNouvelle photo: ${changeData?.avatarUrl || ''}`;
     case 'update-profile':
       return `${name} a mis a jour son profil. Applique automatiquement.`;
+    case 'mark-unique': {
+      const itemId = changeData?.itemId || '';
+      const price = changeData?.customPrice || 0;
+      const itemTitle = changeData?.itemTitle || itemId;
+      return `${name} souhaite designer "${itemTitle}" comme piece unique au prix de ${price}$. En attente de validation.`;
+    }
+    case 'unmark-unique': {
+      const itemId2 = changeData?.itemId || '';
+      const itemTitle2 = changeData?.itemTitle || itemId2;
+      return `${name} souhaite retirer le statut piece unique de "${itemTitle2}". En attente de validation.`;
+    }
     default:
       return `${name} a fait une demande de modification (${label}).`;
   }
@@ -656,6 +677,49 @@ async function handleAddImages(strapi: any, artist: any, requestType: string, ch
     data: { [fieldName]: currentItems },
     status: 'published',
   });
+}
+
+async function handleMarkUnique(strapi: any, artist: any, changeData: any) {
+  const { itemId, customPrice, category } = changeData || {};
+  if (!itemId) return;
+
+  const fieldName = category === 'stickers' ? 'stickers' : category === 'merch' ? 'merch' : 'prints';
+  const items = Array.isArray(artist[fieldName]) ? [...artist[fieldName]] : [];
+  const idx = items.findIndex((it: any) => it.id === itemId);
+
+  if (idx >= 0) {
+    items[idx] = {
+      ...items[idx],
+      unique: true,
+      customPrice: parseFloat(customPrice) || 0,
+    };
+
+    await strapi.documents('api::artist.artist').update({
+      documentId: artist.documentId,
+      data: { [fieldName]: items },
+      status: 'published',
+    });
+  }
+}
+
+async function handleUnmarkUnique(strapi: any, artist: any, changeData: any) {
+  const { itemId, category } = changeData || {};
+  if (!itemId) return;
+
+  const fieldName = category === 'stickers' ? 'stickers' : category === 'merch' ? 'merch' : 'prints';
+  const items = Array.isArray(artist[fieldName]) ? [...artist[fieldName]] : [];
+  const idx = items.findIndex((it: any) => it.id === itemId);
+
+  if (idx >= 0) {
+    const { unique, customPrice, fixedFormat, fixedTier, noFrame, ...rest } = items[idx];
+    items[idx] = rest;
+
+    await strapi.documents('api::artist.artist').update({
+      documentId: artist.documentId,
+      data: { [fieldName]: items },
+      status: 'published',
+    });
+  }
 }
 
 async function handleRemoveImages(strapi: any, artist: any, requestType: string, changeData: any) {

@@ -133,9 +133,9 @@ const translations = {
       testimonials: {
         title: 'Ce que nos clients disent',
         items: [
-          { name: 'Samuel L.', role: 'Photographe', text: "Tirages fine art impeccables. La qualité des couleurs est fidèle à mes fichiers. Je recommande à tous les photographes de Montréal." },
-          { name: 'Marie-Ève D.', role: 'Promotrice d\'événements', text: "Stickers et affiches pour notre festival, qualité impeccable au rendez-vous. On revient chaque année!" },
-          { name: 'Julien P.', role: 'Musicien', text: "Du merch pour notre tournée: t-shirts, stickers, affiches. Tout était parfait et livré dans les temps. Le one-stop shop idéal." },
+          { name: 'Jeremy G.', role: 'Client', text: "Je te jure ton site est crazy" },
+          { name: 'Samuel L.', role: 'Photographe', text: "Tirages fine art impeccables. La qualite des couleurs est fidele a mes fichiers. Je recommande a tous les photographes de Montreal." },
+          { name: 'Marie-Eve D.', role: 'Promotrice d\'evenements', text: "Stickers et affiches pour notre festival, qualite impeccable au rendez-vous. On revient chaque annee!" },
         ],
       },
     },
@@ -494,9 +494,9 @@ const translations = {
       testimonials: {
         title: 'What Our Clients Say',
         items: [
+          { name: 'Jeremy G.', role: 'Client', text: "I swear your site is crazy" },
           { name: 'Samuel L.', role: 'Photographer', text: "Flawless fine art prints. Color quality is true to my files. I recommend to all Montreal photographers." },
-          { name: 'Marie-Ève D.', role: 'Event Promoter', text: "Stickers and posters for our festival, impeccable quality delivered. We come back every year!" },
-          { name: 'Julien P.', role: 'Musician', text: "Merch for our tour: t-shirts, stickers, posters. Everything was perfect and delivered on time. The ideal one-stop shop." },
+          { name: 'Marie-Eve D.', role: 'Event Promoter', text: "Stickers and posters for our festival, impeccable quality delivered. We come back every year!" },
         ],
       },
     },

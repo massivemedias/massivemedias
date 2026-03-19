@@ -8,10 +8,12 @@ function ArtistPrintCard({ print, minPrice, pricing, selected, onClick, onZoom }
   const { tx } = useLang();
   const title = tx({ fr: print.titleFr, en: print.titleEn, es: print.titleEs || print.titleEn });
 
-  // Pour les pieces uniques avec format/tier fixe, afficher le prix exact
-  const fixedPrice = (print.fixedFormat && print.fixedTier && pricing)
-    ? getArtistPrintPrice(pricing, print.fixedTier, print.fixedFormat, false)?.basePrice
-    : null;
+  // Pour les pieces uniques: prix custom ou prix fixe
+  const fixedPrice = print.customPrice
+    ? print.customPrice
+    : (print.fixedFormat && print.fixedTier && pricing)
+      ? getArtistPrintPrice(pricing, print.fixedTier, print.fixedFormat, false)?.basePrice
+      : null;
 
   const handleZoom = (e) => {
     e.stopPropagation();
