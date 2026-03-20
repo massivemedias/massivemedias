@@ -4,31 +4,41 @@ export default {
       method: 'GET',
       path: '/expenses/admin',
       handler: 'expense.adminList',
-      config: {},
+      config: {
+        auth: false,
+      },
     },
     {
       method: 'GET',
       path: '/expenses/summary/:year',
       handler: 'expense.yearSummary',
-      config: {},
+      config: {
+        auth: false,
+      },
     },
     {
       method: 'POST',
       path: '/expenses/create',
       handler: 'expense.createExpense',
-      config: {},
+      config: {
+        auth: false,
+      },
     },
     {
       method: 'PUT',
       path: '/expenses/:documentId',
       handler: 'expense.updateExpense',
-      config: {},
+      config: {
+        auth: false,
+      },
     },
     {
       method: 'DELETE',
       path: '/expenses/:documentId',
       handler: 'expense.deleteExpense',
-      config: {},
+      config: {
+        auth: false,
+      },
     },
   ],
 };

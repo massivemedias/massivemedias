@@ -4,13 +4,17 @@ export default {
       method: 'GET',
       path: '/artist-payments/list',
       handler: 'artist-payment.listPayments',
-      config: {},
+      config: {
+        auth: false,
+      },
     },
     {
       method: 'POST',
       path: '/artist-payments/create',
       handler: 'artist-payment.createPayment',
-      config: {},
+      config: {
+        auth: false,
+      },
     },
   ],
 };
