@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ArrowRight, ArrowLeft, ShoppingCart, Check, X, User, Palette, Image, Sticker, Gift, Tag, Percent, Handshake } from 'lucide-react';
+import { ArrowRight, ArrowLeft, ShoppingCart, Check, X, User, Palette, Image, Sticker, Gift, Tag, Percent, Handshake, Sparkles } from 'lucide-react';
 import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
 import { useCart } from '../contexts/CartContext';
@@ -415,10 +415,10 @@ function Boutique() {
                   {tx({ fr: 'Nos artistes', en: 'Our artists', es: 'Nuestros artistas' })}
                 </h2>
 
-                {/* Mobile: grid compact */}
-                <div className="grid grid-cols-2 gap-3 sm:hidden">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-5">
                   {orderedArtists.map((artist, i) => {
                     const printCount = artist.prints?.length || 0;
+                    const isHero = i === 0;
                     return (
                       <motion.div
                         key={artist.slug}
@@ -426,133 +426,49 @@ function Boutique() {
                         whileInView={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.4, delay: i * 0.06 }}
                         viewport={{ once: true }}
+                        className={isHero ? 'lg:col-span-2 lg:row-span-2' : ''}
                       >
                         <Link
                           to={`/artistes/${artist.slug}`}
-                          className="group block rounded-2xl overflow-hidden card-bg-bordered hover:border-accent/50 transition-all duration-300"
+                          className={`group block rounded-2xl overflow-hidden card-bg-bordered hover:border-accent/50 transition-all duration-300 h-full ${isHero ? 'lg:ring-1 lg:ring-accent/20' : ''}`}
                         >
-                          <div className="aspect-[3/4] overflow-hidden relative">
+                          <div className="aspect-[3/4] overflow-hidden relative h-full">
                             <img
                               src={artist.heroImage || artist.avatar}
                               alt={artist.name}
                               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                               loading="lazy"
                             />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
-                            <div className="absolute bottom-0 left-0 right-0 p-3">
-                              <img src={artist.avatar} alt={artist.name} className="w-10 h-10 rounded-full ring-2 ring-white/20 object-cover mb-1.5" />
-                              <h3 className="text-base font-heading font-bold text-white leading-tight">{artist.name}</h3>
-                              <p className="text-white/60 text-[10px] mt-0.5 leading-snug line-clamp-1">
-                                {tx({ fr: artist.tagline?.fr || '', en: artist.tagline?.en || '', es: artist.tagline?.es || '' })}
+                            <div className={`absolute inset-0 bg-gradient-to-t ${isHero ? 'from-black/95 via-black/40 to-transparent' : 'from-black/90 via-black/30 to-transparent'}`} />
+                            {isHero && (
+                              <span className="hidden lg:inline-flex absolute top-4 left-4 text-[10px] uppercase tracking-widest text-accent/90 bg-black/50 backdrop-blur-sm px-3 py-1 rounded-full items-center gap-1.5">
+                                <Sparkles size={10} />
+                                {tx({ fr: 'Collection Massive', en: 'Massive Collection', es: 'Coleccion Massive' })}
+                              </span>
+                            )}
+                            <div className={`absolute bottom-0 left-0 right-0 ${isHero ? 'p-4 lg:p-8' : 'p-4'}`}>
+                              <img
+                                src={artist.avatar}
+                                alt={`${artist.name} - Artiste Massive`}
+                                className={`rounded-full ring-2 ring-white/20 object-cover mb-2 ${isHero ? 'w-12 h-12 lg:w-20 lg:h-20 lg:mb-3 lg:ring-accent/30' : 'w-12 h-12'}`}
+                              />
+                              <h3 className={`font-heading font-bold text-white group-hover:text-accent transition-colors leading-tight ${isHero ? 'text-lg lg:text-3xl' : 'text-lg'}`}>
+                                {artist.name}
+                              </h3>
+                              <p className={`text-white/60 mt-0.5 leading-snug ${isHero ? 'text-[11px] lg:text-sm lg:mt-1' : 'text-[11px]'}`}>
+                                {tx({ fr: artist.tagline?.fr || '', en: artist.tagline?.en || '', es: artist.tagline?.es || artist.tagline?.en || '' })}
                               </p>
-                              <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-white/10">
-                                <span className="text-white/50 text-[10px]">
-                                  {printCount > 0 ? `${printCount} ${tx({ fr: 'oeuvres', en: 'artworks', es: 'obras' })}` : tx({ fr: 'Bientot', en: 'Soon', es: 'Pronto' })}
+                              <div className={`flex items-center justify-between border-t border-white/10 ${isHero ? 'mt-3 pt-2 lg:mt-4 lg:pt-3' : 'mt-3 pt-2'}`}>
+                                <span className={`text-white/50 ${isHero ? 'text-[10px] lg:text-xs' : 'text-[10px]'}`}>
+                                  {printCount > 0
+                                    ? `${printCount} ${tx({ fr: 'oeuvres', en: 'artworks', es: 'obras' })}`
+                                    : tx({ fr: 'Bientot', en: 'Soon', es: 'Pronto' })}
                                 </span>
-                                <ArrowRight size={12} className="text-accent" />
+                                <ArrowRight size={isHero ? 16 : 12} className="text-accent md:opacity-0 md:group-hover:opacity-100 transition-opacity" />
                               </div>
                             </div>
                           </div>
                         </Link>
-                      </motion.div>
-                    );
-                  })}
-                </div>
-
-                {/* Desktop: editorial scroll - chaque artiste prend de la place */}
-                <div className="hidden sm:flex flex-col gap-20">
-                  {orderedArtists.map((artist, i) => {
-                    const works = artist.prints || [];
-                    const previewWorks = works.slice(0, 6);
-                    const printCount = works.length;
-                    const isEven = i % 2 === 0;
-
-                    return (
-                      <motion.div
-                        key={artist.slug}
-                        initial={{ opacity: 0, y: 40 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6 }}
-                        viewport={{ once: true, margin: '-80px' }}
-                      >
-                        {/* Layout editorial: hero artiste + grille oeuvres */}
-                        <div className={`flex flex-col ${isEven ? 'lg:flex-row' : 'lg:flex-row-reverse'} gap-6`}>
-
-                          {/* Bloc artiste - grande image hero */}
-                          <Link
-                            to={`/artistes/${artist.slug}`}
-                            className="lg:w-2/5 group relative rounded-2xl overflow-hidden aspect-[3/4] lg:aspect-auto lg:min-h-[420px]"
-                          >
-                            <img
-                              src={artist.heroImage || artist.avatar}
-                              alt={artist.name}
-                              className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                              loading="lazy"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
-                            <div className="absolute bottom-0 left-0 right-0 p-6 lg:p-8">
-                              <div className="flex items-center gap-3 mb-3">
-                                <img
-                                  src={artist.avatar}
-                                  alt=""
-                                  className="w-12 h-12 rounded-full ring-2 ring-white/20 object-cover"
-                                />
-                                <div>
-                                  <h3 className="text-2xl lg:text-3xl font-heading font-bold text-white">{artist.name}</h3>
-                                  <p className="text-white/60 text-sm">
-                                    {tx({ fr: artist.tagline?.fr || '', en: artist.tagline?.en || '', es: artist.tagline?.es || '' })}
-                                  </p>
-                                </div>
-                              </div>
-                              <div className="flex items-center justify-between">
-                                <span className="text-white/40 text-xs">
-                                  {printCount} {tx({ fr: 'oeuvres disponibles', en: 'artworks available', es: 'obras disponibles' })}
-                                </span>
-                                <span className="inline-flex items-center gap-1.5 text-accent text-sm font-medium group-hover:gap-3 transition-all">
-                                  {tx({ fr: 'Voir la collection', en: 'View collection', es: 'Ver coleccion' })}
-                                  <ArrowRight size={16} />
-                                </span>
-                              </div>
-                            </div>
-                          </Link>
-
-                          {/* Grille oeuvres - layout asymetrique */}
-                          <div className="lg:w-3/5 grid grid-cols-3 gap-2.5 auto-rows-[180px]">
-                            {previewWorks.map((work, wi) => {
-                              // Premiere oeuvre plus grande
-                              const spanClass = wi === 0 ? 'col-span-2 row-span-2' : '';
-                              return (
-                                <Link
-                                  key={work.id}
-                                  to={`/artistes/${artist.slug}`}
-                                  className={`${spanClass} rounded-xl overflow-hidden relative group/card`}
-                                >
-                                  <img
-                                    src={work.image || work.fullImage}
-                                    alt={work.titleFr || work.titleEn}
-                                    className="w-full h-full object-cover transition-transform duration-500 group-hover/card:scale-110"
-                                    loading="lazy"
-                                  />
-                                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity duration-300" />
-                                  <div className="absolute bottom-0 left-0 right-0 p-3 opacity-0 group-hover/card:opacity-100 translate-y-1 group-hover/card:translate-y-0 transition-all duration-300">
-                                    <p className="text-white text-xs font-medium truncate">{tx({ fr: work.titleFr, en: work.titleEn, es: work.titleEs || work.titleEn })}</p>
-                                  </div>
-                                </Link>
-                              );
-                            })}
-                            {/* Carte +N si plus d'oeuvres */}
-                            {printCount > previewWorks.length && (
-                              <Link
-                                to={`/artistes/${artist.slug}`}
-                                className="rounded-xl card-bg-bordered hover:border-accent/40 transition-all duration-300 flex flex-col items-center justify-center gap-2"
-                              >
-                                <span className="text-2xl font-heading font-bold text-accent">+{printCount - previewWorks.length}</span>
-                                <span className="text-muted text-xs">{tx({ fr: 'oeuvres', en: 'artworks', es: 'obras' })}</span>
-                                <ArrowRight size={16} className="text-accent/60" />
-                              </Link>
-                            )}
-                          </div>
-                        </div>
                       </motion.div>
                     );
                   })}
