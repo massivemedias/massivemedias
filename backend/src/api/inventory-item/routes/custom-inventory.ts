@@ -4,33 +4,25 @@ export default {
       method: 'GET',
       path: '/inventory-items/low-stock',
       handler: 'inventory-item.lowStock',
-      config: {
-        auth: false,
-      },
+      config: {},
     },
     {
       method: 'GET',
       path: '/inventory-items/dashboard',
       handler: 'inventory-item.dashboard',
-      config: {
-        auth: false,
-      },
+      config: {},
     },
     {
       method: 'PUT',
       path: '/inventory-items/:documentId/adjust',
       handler: 'inventory-item.adjustStock',
-      config: {
-        auth: false,
-      },
+      config: {},
     },
     {
       method: 'POST',
       path: '/inventory-items/import-invoice',
       handler: 'inventory-item.importInvoice',
-      config: {
-        auth: false,
-      },
+      config: {},
     },
   ],
 };

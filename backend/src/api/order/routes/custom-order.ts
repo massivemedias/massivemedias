@@ -28,73 +28,55 @@ export default {
       method: 'GET',
       path: '/orders/clients',
       handler: 'order.clients',
-      config: {
-        auth: false,
-      },
+      config: {},
     },
     {
       method: 'GET',
       path: '/orders/stats',
       handler: 'order.stats',
-      config: {
-        auth: false,
-      },
+      config: {},
     },
     {
       method: 'POST',
       path: '/orders/upload',
       handler: 'order.uploadFile',
-      config: {
-        auth: false,
-      },
+      config: {},
     },
     {
       method: 'GET',
       path: '/orders/commissions',
       handler: 'order.commissions',
-      config: {
-        auth: false,
-      },
+      config: {},
     },
     {
       method: 'GET',
       path: '/orders/admin',
       handler: 'order.adminList',
-      config: {
-        auth: false,
-      },
+      config: {},
     },
     {
       method: 'PUT',
       path: '/orders/:documentId/status',
       handler: 'order.updateStatus',
-      config: {
-        auth: false,
-      },
+      config: {},
     },
     {
       method: 'PUT',
       path: '/orders/:documentId/notes',
       handler: 'order.updateNotes',
-      config: {
-        auth: false,
-      },
+      config: {},
     },
     {
       method: 'PUT',
       path: '/orders/:documentId/tracking',
       handler: 'order.addTracking',
-      config: {
-        auth: false,
-      },
+      config: {},
     },
     {
       method: 'DELETE',
       path: '/orders/:documentId',
       handler: 'order.deleteOrder',
-      config: {
-        auth: false,
-      },
+      config: {},
     },
   ],
 };

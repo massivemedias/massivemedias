@@ -12,33 +12,25 @@ export default {
       method: 'GET',
       path: '/contact-submissions/admin',
       handler: 'contact-submission.adminList',
-      config: {
-        auth: false,
-      },
+      config: {},
     },
     {
       method: 'PUT',
       path: '/contact-submissions/:documentId/status',
       handler: 'contact-submission.updateStatus',
-      config: {
-        auth: false,
-      },
+      config: {},
     },
     {
       method: 'POST',
       path: '/contact-submissions/:documentId/reply',
       handler: 'contact-submission.reply',
-      config: {
-        auth: false,
-      },
+      config: {},
     },
     {
       method: 'DELETE',
       path: '/contact-submissions/:documentId',
       handler: 'contact-submission.deleteSubmission',
-      config: {
-        auth: false,
-      },
+      config: {},
     },
   ],
 };
