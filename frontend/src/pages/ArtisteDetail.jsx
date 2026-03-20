@@ -139,13 +139,15 @@ function ArtisteDetail({ subdomainSlug }) {
 
   // Fleches clavier dans le configurateur (quand pas de lightbox)
   useEffect(() => {
-    if (!selectedPrint || lightbox !== null) return;
+    if (!selectedPrint || lightbox !== null || !artist?.prints?.length) return;
     const handleKey = (e) => {
       if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
-      // Ne pas intercepter si on est dans un input/textarea
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
       e.preventDefault();
-      navigatePrint(e.key === 'ArrowLeft' ? -1 : 1);
+      const dir = e.key === 'ArrowLeft' ? -1 : 1;
+      const idx = artist.prints.findIndex(p => p.id === selectedPrint.id);
+      const next = (idx + dir + artist.prints.length) % artist.prints.length;
+      setSelectedPrint(artist.prints[next]);
     };
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
