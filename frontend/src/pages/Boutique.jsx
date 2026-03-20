@@ -528,6 +528,17 @@ function Boutique() {
                     );
                   })}
                 </div>
+
+                {/* Voir tout en bas */}
+                <div className="flex justify-center mt-8">
+                  <button
+                    onClick={() => { setView('prints'); window.scrollTo(0, 0); }}
+                    className="btn-outline !py-2 !px-6 text-sm inline-flex items-center gap-2"
+                  >
+                    {tx({ fr: 'Voir toutes les oeuvres', en: 'View all artworks', es: 'Ver todas las obras' })}
+                    <ArrowRight size={16} />
+                  </button>
+                </div>
               </motion.div>
             </section>
 
