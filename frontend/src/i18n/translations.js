@@ -208,7 +208,7 @@ const translations = {
         },
         vrstl: {
           title: 'VRSTL Records',
-          description: "Label canadien dédié à l'Indie Dance et la Dark Minimal. Direction artistique, gestion des sorties, distribution digitale et promotion.",
+          description: "Label canadien dedié au Dark Disco. Direction artistique, gestion des sorties, distribution digitale et promotion. vrstlrecords.com",
         },
         belette3000: {
           title: 'Belette 3000',
@@ -569,7 +569,7 @@ const translations = {
         },
         vrstl: {
           title: 'VRSTL Records',
-          description: 'Canadian label dedicated to Indie Dance and Dark Minimal. Art direction, release management, digital distribution and promotion.',
+          description: 'Canadian label dedicated to Dark Disco. Art direction, release management, digital distribution and promotion. vrstlrecords.com',
         },
         belette3000: {
           title: 'Belette 3000',
@@ -930,7 +930,7 @@ const translations = {
         },
         vrstl: {
           title: 'VRSTL Records',
-          description: 'Sello canadiense dedicado al Indie Dance y Dark Minimal. Dirección artística, gestión de lanzamientos, distribución digital y promoción.',
+          description: 'Sello canadiense dedicado al Dark Disco. Dirección artística, gestión de lanzamientos, distribución digital y promoción. vrstlrecords.com',
         },
         belette3000: {
           title: 'Belette 3000',
