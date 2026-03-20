@@ -87,6 +87,7 @@ function ArtisteDetail({ subdomainSlug }) {
   const [isLandscape, setIsLandscape] = useState(false);
   const configuratorRef = useRef(null);
   const stickerConfiguratorRef = useRef(null);
+  const printConfigsRef = useRef({}); // Sauvegarder la config par print id
   const [searchParams] = useSearchParams();
 
   // Auto-select sticker from URL param (e.g. ?sticker=psyqu33n-stk-002)
@@ -117,6 +118,7 @@ function ArtisteDetail({ subdomainSlug }) {
     }
   }, [artist, searchParams]);
 
+  // Fleches clavier dans le lightbox
   useEffect(() => {
     if (lightbox === null) return;
     const handleKey = (e) => {
@@ -134,6 +136,20 @@ function ArtisteDetail({ subdomainSlug }) {
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
   }, [lightbox, artist]);
+
+  // Fleches clavier dans le configurateur (quand pas de lightbox)
+  useEffect(() => {
+    if (!selectedPrint || lightbox !== null) return;
+    const handleKey = (e) => {
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+      // Ne pas intercepter si on est dans un input/textarea
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      e.preventDefault();
+      navigatePrint(e.key === 'ArrowLeft' ? -1 : 1);
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [selectedPrint, lightbox, artist]);
 
   if (!artist) {
     return (
@@ -157,6 +173,13 @@ function ArtisteDetail({ subdomainSlug }) {
     setTimeout(() => {
       configuratorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 100);
+  };
+
+  const navigatePrint = (dir) => {
+    if (!selectedPrint || !artist?.prints?.length) return;
+    const idx = artist.prints.findIndex(p => p.id === selectedPrint.id);
+    const next = (idx + dir + artist.prints.length) % artist.prints.length;
+    setSelectedPrint(artist.prints[next]);
   };
 
   const handleSelectSticker = (sticker) => {
@@ -579,19 +602,44 @@ function ArtisteDetail({ subdomainSlug }) {
             </h2>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-8 max-w-5xl mx-auto">
-              {/* Preview */}
-              <div
-                className={`relative rounded-2xl overflow-hidden ${isLandscape ? 'aspect-[3/2]' : 'aspect-[2/3]'} card-shadow cursor-pointer group`}
-                onClick={() => setLightbox(artist.prints.findIndex(p => p.id === selectedPrint.id))}
-              >
-                <img
-                  src={selectedPrint.image}
-                  alt={tx({ fr: selectedPrint.titleFr, en: selectedPrint.titleEn, es: selectedPrint.titleEs || selectedPrint.titleEn })}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  onLoad={(e) => setIsLandscape(e.target.naturalWidth > e.target.naturalHeight)}
-                />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
-                  <ZoomIn size={32} className="text-white md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 drop-shadow-lg" />
+              {/* Preview avec fleches navigation */}
+              <div className="relative">
+                <div
+                  className={`relative rounded-2xl overflow-hidden ${isLandscape ? 'aspect-[3/2]' : 'aspect-[2/3]'} card-shadow cursor-pointer group`}
+                  onClick={() => setLightbox(artist.prints.findIndex(p => p.id === selectedPrint.id))}
+                >
+                  <img
+                    src={selectedPrint.image}
+                    alt={tx({ fr: selectedPrint.titleFr, en: selectedPrint.titleEn, es: selectedPrint.titleEs || selectedPrint.titleEn })}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    onLoad={(e) => setIsLandscape(e.target.naturalWidth > e.target.naturalHeight)}
+                  />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
+                    <ZoomIn size={32} className="text-white md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 drop-shadow-lg" />
+                  </div>
+                </div>
+                {/* Fleches gauche/droite */}
+                {artist.prints.length > 1 && (
+                  <>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); navigatePrint(-1); }}
+                      className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white transition-colors z-10"
+                      aria-label="Previous"
+                    >
+                      <ChevronLeft size={20} />
+                    </button>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); navigatePrint(1); }}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white transition-colors z-10"
+                      aria-label="Next"
+                    >
+                      <ChevronRight size={20} />
+                    </button>
+                  </>
+                )}
+                {/* Indicateur position */}
+                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/50 backdrop-blur-sm text-white text-xs px-3 py-1 rounded-full">
+                  {artist.prints.findIndex(p => p.id === selectedPrint.id) + 1} / {artist.prints.length}
                 </div>
               </div>
 
@@ -600,6 +648,7 @@ function ArtisteDetail({ subdomainSlug }) {
                 <ConfiguratorArtistPrint
                   artist={artist}
                   selectedPrint={selectedPrint}
+                  savedConfigs={printConfigsRef.current}
                 />
               </div>
             </div>

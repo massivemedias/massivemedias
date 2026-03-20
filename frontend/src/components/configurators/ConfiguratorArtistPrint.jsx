@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ShoppingCart, Check, Frame } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../../contexts/CartContext';
@@ -8,7 +8,7 @@ import {
   getArtistPrintPrice, artistPrinterTiers, artistFormats, isFormatAvailable,
 } from '../../data/artists';
 
-function ConfiguratorArtistPrint({ artist, selectedPrint }) {
+function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {} }) {
   const { lang, tx } = useLang();
   const { addToCart } = useCart();
   const { artistSlug: loggedArtistSlug } = useUserRole();
@@ -27,19 +27,41 @@ function ConfiguratorArtistPrint({ artist, selectedPrint }) {
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
   const [notes, setNotes] = useState('');
+  const prevPrintIdRef = useRef(selectedPrint?.id);
 
-  // Reset state when print changes
+  // Sauvegarder la config actuelle avant de changer de print
   useEffect(() => {
-    setAdded(false);
-    if (selectedPrint?.fixedFormat) setFormat(selectedPrint.fixedFormat);
-    else setFormat('a4');
-    if (selectedPrint?.fixedTier) setTier(selectedPrint.fixedTier);
-    else setTier('studio');
-    if (selectedPrint?.noFrame) setWithFrame(false);
-    if (selectedPrint?.unique) setQuantity(1);
-    // Si le format actuel depasse maxFormat, redescendre
-    if (selectedPrint?.maxFormat && !isFormatAvailable(format, selectedPrint.maxFormat)) {
-      setFormat(selectedPrint.maxFormat);
+    if (prevPrintIdRef.current && prevPrintIdRef.current !== selectedPrint?.id) {
+      savedConfigs[prevPrintIdRef.current] = { tier, format, withFrame, frameColor, quantity, notes };
+    }
+    prevPrintIdRef.current = selectedPrint?.id;
+
+    // Restaurer config sauvegardee ou reset
+    const saved = savedConfigs[selectedPrint?.id];
+    if (saved) {
+      setTier(saved.tier);
+      setFormat(saved.format);
+      setWithFrame(saved.withFrame);
+      setFrameColor(saved.frameColor);
+      setQuantity(saved.quantity);
+      setNotes(saved.notes);
+      setAdded(false);
+    } else {
+      setAdded(false);
+      if (selectedPrint?.fixedFormat) setFormat(selectedPrint.fixedFormat);
+      else setFormat('a4');
+      if (selectedPrint?.fixedTier) setTier(selectedPrint.fixedTier);
+      else setTier('studio');
+      if (selectedPrint?.noFrame) setWithFrame(false);
+      else setWithFrame(false);
+      setFrameColor('black');
+      if (selectedPrint?.unique) setQuantity(1);
+      else setQuantity(1);
+      setNotes('');
+      // Si le format actuel depasse maxFormat, redescendre
+      if (selectedPrint?.maxFormat && !isFormatAvailable('a4', selectedPrint.maxFormat)) {
+        setFormat(selectedPrint.maxFormat);
+      }
     }
   }, [selectedPrint?.id]);
 
