@@ -89,7 +89,7 @@ function DataTable({ headers, children }) {
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-white/5">
+          <tr className="shadow-[0_1px_0_rgba(255,255,255,0.04)]">
             {headers.map((h, i) => (
               <th key={i} className={`py-2 px-1.5 sm:px-3 font-medium text-xs sm:text-sm ${h.className || 'text-grey-muted'} ${i === 0 ? 'text-left' : 'text-center'}`}>
                 {h.label}
@@ -488,7 +488,7 @@ function AdminTarifs() {
                     <p>- {tx({ fr: 'Materiaux + assemblage', en: 'Materials + assembly', es: 'Materiales + ensamblaje' })}</p>
                   </div>
                 </div>
-                <div className="bg-purple-500/15 rounded-xl p-4 text-center border border-purple-500/30">
+                <div className="bg-purple-500/15 rounded-xl p-4 text-center shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)]">
                   <div className="text-3xl font-bold text-purple-400">40$</div>
                   <div className="text-xs text-purple-400 font-bold mt-1 uppercase tracking-wider">{tx({ fr: 'Artiste - Profit net', en: 'Artist - Net profit', es: 'Artista - Ganancia neta' })}</div>
                   <div className="text-[11px] text-grey-muted mt-3 text-left space-y-1">
@@ -529,7 +529,7 @@ function AdminTarifs() {
                   const sp = SERVICE_PRICES.find(s => s.format === p.format);
                   const artistCut = p.studio - (sp?.studio || 0);
                   return (
-                    <tr key={idx} className="border-b border-white/5 hover:bg-accent/5 transition-colors">
+                    <tr key={idx} className="shadow-[0_1px_0_rgba(255,255,255,0.04)] hover:bg-accent/5 transition-colors">
                       <Td center={false} className="text-heading font-medium">{p.format}</Td>
                       <Td className="text-heading font-semibold">{p.studio}$</Td>
                       <Td className="text-heading font-semibold">{p.frame ? `${p.studio + p.frame}$` : 'N/A'}</Td>
@@ -552,7 +552,7 @@ function AdminTarifs() {
                   const sp = SERVICE_PRICES[idx];
                   const artistCut = p.museum - sp.museum;
                   return (
-                    <tr key={idx} className="border-b border-white/5 hover:bg-accent/5 transition-colors">
+                    <tr key={idx} className="shadow-[0_1px_0_rgba(255,255,255,0.04)] hover:bg-accent/5 transition-colors">
                       <Td center={false} className="text-heading font-medium">{p.format}</Td>
                       <Td className="text-heading font-semibold">{p.museum}$</Td>
                       <Td className="text-heading font-semibold">{p.frame ? `${p.museum + p.frame}$` : 'N/A'}</Td>
@@ -580,7 +580,7 @@ function AdminTarifs() {
                 <h4 className="text-xs font-semibold text-heading mb-2 uppercase tracking-wider">Standard (Matte / Glossy / Die-cut)</h4>
                 <DataTable headers={[{ label: L.qty }, { label: L.price }, { label: L.unit }]}>
                   {STICKER_STANDARD.map((s, i) => (
-                    <tr key={i} className="border-b border-white/5 hover:bg-accent/5 transition-colors">
+                    <tr key={i} className="shadow-[0_1px_0_rgba(255,255,255,0.04)] hover:bg-accent/5 transition-colors">
                       <Td center={false} className="text-heading font-medium">{s.qty}</Td>
                       <Td className="text-heading font-semibold">{s.price}$</Td>
                       <Td className="text-accent font-semibold">{s.unit.toFixed(2)}$</Td>
@@ -592,7 +592,7 @@ function AdminTarifs() {
                 <h4 className="text-xs font-semibold text-heading mb-2 uppercase tracking-wider">FX (Holographique / Broken Glass / Stars)</h4>
                 <DataTable headers={[{ label: L.qty }, { label: L.price }, { label: L.unit }]}>
                   {STICKER_HOLO.map((s, i) => (
-                    <tr key={i} className="border-b border-white/5 hover:bg-accent/5 transition-colors">
+                    <tr key={i} className="shadow-[0_1px_0_rgba(255,255,255,0.04)] hover:bg-accent/5 transition-colors">
                       <Td center={false} className="text-heading font-medium">{s.qty}</Td>
                       <Td className="text-heading font-semibold">{s.price}$</Td>
                       <Td className="text-accent font-semibold">{s.unit.toFixed(2)}$</Td>
@@ -629,7 +629,7 @@ function AdminTarifs() {
               { label: tx({ fr: "Ce que l'artiste doit gerer", en: 'What the artist must manage', es: 'Lo que el artista debe gestionar' }) },
             ]}>
               {COMPETITORS.map((c, i) => (
-                <tr key={i} className={`border-b border-white/5 transition-colors ${c.highlight === 'massive' ? 'bg-accent/10' : c.highlight === 'printify' ? 'bg-orange-500/5' : 'hover:bg-accent/5'}`}>
+                <tr key={i} className={`shadow-[0_1px_0_rgba(255,255,255,0.04)] transition-colors ${c.highlight === 'massive' ? 'bg-accent/10' : c.highlight === 'printify' ? 'bg-orange-500/5' : 'hover:bg-accent/5'}`}>
                   <Td center={false} className={c.highlight === 'massive' ? 'text-accent font-bold' : 'text-heading font-medium'}>{c.name}</Td>
                   <Td className={`font-bold text-base ${c.highlight === 'massive' ? 'text-accent' : c.highlight === 'printify' ? 'text-orange-400' : 'text-heading'}`}>{c.artistProfit}</Td>
                   <Td className="text-xs text-grey-muted">{c.quality}</Td>
@@ -683,7 +683,7 @@ function AdminTarifs() {
             subtitle={tx({ fr: 'Service impression (client apporte son fichier)', en: 'Print service (client provides their file)', es: 'Servicio de impresion (cliente trae su archivo)' })}>
             <DataTable headers={[{ label: L.format }, { label: 'Studio (4 pig.)' }, { label: tx({ fr: 'Musee (12 pig.)', en: 'Museum (12 pig.)', es: 'Museo (12 pig.)' }) }, { label: L.frame }, { label: L.notes }]}>
               {SERVICE_PRICES.map((p, i) => (
-                <tr key={i} className="border-b border-white/5 hover:bg-accent/5 transition-colors">
+                <tr key={i} className="shadow-[0_1px_0_rgba(255,255,255,0.04)] hover:bg-accent/5 transition-colors">
                   <Td center={false} className="text-heading font-medium">{p.format}</Td>
                   <Td>{p.studio !== null ? `${p.studio}$` : <span className="text-grey-muted">N/A</span>}</Td>
                   <Td>{p.museum}$</Td>
@@ -701,7 +701,7 @@ function AdminTarifs() {
                 <h4 className="text-xs font-semibold text-heading mb-2 uppercase tracking-wider">Standard (Matte / Glossy / Die-cut)</h4>
                 <DataTable headers={[{ label: L.qty }, { label: L.price }, { label: L.unit }]}>
                   {STICKER_STANDARD.map((s, i) => (
-                    <tr key={i} className="border-b border-white/5 hover:bg-accent/5 transition-colors">
+                    <tr key={i} className="shadow-[0_1px_0_rgba(255,255,255,0.04)] hover:bg-accent/5 transition-colors">
                       <Td center={false} className="text-heading font-medium">{s.qty}</Td>
                       <Td className="text-heading font-semibold">{s.price}$</Td>
                       <Td className="text-accent font-semibold">{s.unit.toFixed(2)}$</Td>
@@ -713,7 +713,7 @@ function AdminTarifs() {
                 <h4 className="text-xs font-semibold text-heading mb-2 uppercase tracking-wider">FX (Holographique / Broken Glass / Stars)</h4>
                 <DataTable headers={[{ label: L.qty }, { label: L.price }, { label: L.unit }]}>
                   {STICKER_HOLO.map((s, i) => (
-                    <tr key={i} className="border-b border-white/5 hover:bg-accent/5 transition-colors">
+                    <tr key={i} className="shadow-[0_1px_0_rgba(255,255,255,0.04)] hover:bg-accent/5 transition-colors">
                       <Td center={false} className="text-heading font-medium">{s.qty}</Td>
                       <Td className="text-heading font-semibold">{s.price}$</Td>
                       <Td className="text-accent font-semibold">{s.unit.toFixed(2)}$</Td>
@@ -730,7 +730,7 @@ function AdminTarifs() {
             subtitle="Format A6 (4x6&quot;)" delay={0.1}>
             <DataTable headers={[{ label: L.qty }, { label: L.front }, { label: L.frontBack }, { label: L.perUnitFront }, { label: L.perUnitFB }]}>
               {FLYERS.map((f, i) => (
-                <tr key={i} className="border-b border-white/5 hover:bg-accent/5 transition-colors">
+                <tr key={i} className="shadow-[0_1px_0_rgba(255,255,255,0.04)] hover:bg-accent/5 transition-colors">
                   <Td center={false} className="text-heading font-medium">{f.qty}</Td>
                   <Td className="text-heading font-semibold">{f.single}$</Td>
                   <Td className="text-heading font-semibold">{f.double}$</Td>
@@ -748,14 +748,14 @@ function AdminTarifs() {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-white/5">
+                  <tr className="shadow-[0_1px_0_rgba(255,255,255,0.04)]">
                     <th className="text-left py-2 px-3 text-grey-muted font-medium">{L.product}</th>
                     <th className="text-center py-2 px-3 text-grey-muted font-medium" colSpan={4}>{L.pricePerQty}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {SUBLIMATION.map((s, i) => (
-                    <tr key={i} className="border-b border-white/5 hover:bg-accent/5 transition-colors">
+                    <tr key={i} className="shadow-[0_1px_0_rgba(255,255,255,0.04)] hover:bg-accent/5 transition-colors">
                       <Td center={false} className="text-heading font-medium">{typeof s.product === 'object' ? tx(s.product) : s.product}</Td>
                       {s.tiers.map((t, j) => (
                         <Td key={j} className="text-heading">
@@ -780,7 +780,7 @@ function AdminTarifs() {
             subtitle={tx({ fr: 'Prix de vente boutique Massive', en: 'Massive store selling price', es: 'Precio de venta tienda Massive' })} delay={0.2}>
             <DataTable headers={[{ label: L.product }, { label: L.price }, { label: L.sizes }]}>
               {MERCH_MASSIVE.map((m, i) => (
-                <tr key={i} className="border-b border-white/5 hover:bg-accent/5 transition-colors">
+                <tr key={i} className="shadow-[0_1px_0_rgba(255,255,255,0.04)] hover:bg-accent/5 transition-colors">
                   <Td center={false} className="text-heading font-medium">{m.product}</Td>
                   <Td className="text-heading font-semibold">{m.price}$</Td>
                   <Td className="text-grey-muted text-xs">S - 3XL</Td>
@@ -810,7 +810,7 @@ function AdminTarifs() {
           <SectionCard icon={Palette} iconColor="text-yellow-400" title={tx({ fr: 'Design graphique', en: 'Graphic Design', es: 'Diseno grafico' })} delay={0.25}>
             <DataTable headers={[{ label: L.service }, { label: L.price }, { label: L.delay }]}>
               {DESIGN_SERVICES.map((d, i) => (
-                <tr key={i} className="border-b border-white/5 hover:bg-accent/5 transition-colors">
+                <tr key={i} className="shadow-[0_1px_0_rgba(255,255,255,0.04)] hover:bg-accent/5 transition-colors">
                   <Td center={false} className="text-heading font-medium">{d.service}</Td>
                   <Td className="text-heading font-semibold">{d.price}</Td>
                   <Td className="text-grey-muted">{d.delai}</Td>
@@ -828,7 +828,7 @@ function AdminTarifs() {
             <div className="mb-6">
               <DataTable headers={[{ label: L.service }, { label: L.price }, { label: L.delay }]}>
                 {WEB_SERVICES.map((w, i) => (
-                  <tr key={i} className="border-b border-white/5 hover:bg-accent/5 transition-colors">
+                  <tr key={i} className="shadow-[0_1px_0_rgba(255,255,255,0.04)] hover:bg-accent/5 transition-colors">
                     <Td center={false} className="text-heading font-medium">{w.service}</Td>
                     <Td className="text-heading font-semibold">{w.price}</Td>
                     <Td className="text-grey-muted">{w.delai}</Td>
@@ -840,7 +840,7 @@ function AdminTarifs() {
             <h4 className="text-xs font-semibold text-heading mb-2 uppercase tracking-wider">{tx({ fr: 'Webdesign seulement (livrable Figma)', en: 'Webdesign only (Figma deliverable)', es: 'Webdesign solamente (entregable Figma)' })}</h4>
             <DataTable headers={[{ label: L.service }, { label: L.price }]}>
               {WEB_DESIGN_ONLY.map((w, i) => (
-                <tr key={i} className="border-b border-white/5 hover:bg-accent/5 transition-colors">
+                <tr key={i} className="shadow-[0_1px_0_rgba(255,255,255,0.04)] hover:bg-accent/5 transition-colors">
                   <Td center={false} className="text-heading font-medium">{w.service}</Td>
                   <Td className="text-heading font-semibold">{w.price}</Td>
                 </tr>

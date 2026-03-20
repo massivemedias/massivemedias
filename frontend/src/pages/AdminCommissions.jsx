@@ -183,7 +183,7 @@ function AdminCommissions() {
                       initial={{ height: 0, opacity: 0 }}
                       animate={{ height: 'auto', opacity: 1 }}
                       exit={{ height: 0, opacity: 0 }}
-                      className="border-t border-white/5"
+                      className="shadow-[0_-1px_0_rgba(255,255,255,0.04)]"
                     >
                       <div className="p-4 space-y-4">
                         {/* Orders table */}
@@ -206,7 +206,7 @@ function AdminCommissions() {
                               </thead>
                               <tbody>
                                 {artist.orders.map((o, i) => (
-                                  <tr key={i} className="border-t border-white/5">
+                                  <tr key={i} className="shadow-[0_-1px_0_rgba(255,255,255,0.04)]">
                                     <td className="p-2 text-grey-muted">{formatDate(o.orderDate)}</td>
                                     <td className="p-2 text-heading">{o.productName}</td>
                                     <td className="p-2 text-grey-muted">{o.customerName}</td>
@@ -218,7 +218,7 @@ function AdminCommissions() {
                                 ))}
                               </tbody>
                               <tfoot>
-                                <tr className="border-t-2 border-white/5 font-semibold">
+                                <tr className="shadow-[0_-2px_0_rgba(255,255,255,0.06)] font-semibold">
                                   <td colSpan={3} className="p-2 text-heading">Total</td>
                                   <td className="p-2 text-right text-heading">{dollars(artist.totalSales)}</td>
                                   <td className="p-2 text-right text-grey-muted">{dollars(artist.totalProduction)}</td>

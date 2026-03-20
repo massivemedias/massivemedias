@@ -70,7 +70,7 @@ function AdminLayout() {
               </NavLink>
             );
           })}
-          <div className="w-full border-t border-white/5 mt-1 pt-2" />
+          <div className="w-full shadow-[0_-1px_0_rgba(255,255,255,0.04)] mt-1 pt-2" />
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon;
             const isActive = location.pathname.startsWith(item.to);
@@ -114,7 +114,7 @@ function AdminLayout() {
               );
             })}
 
-            <div className="border-t border-white/5 my-2" />
+            <div className="shadow-[0_-1px_0_rgba(255,255,255,0.04)] my-2" />
 
             <h2 className="text-xs font-semibold text-grey-muted uppercase tracking-wider px-3 py-2">
               Admin

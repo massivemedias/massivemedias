@@ -561,7 +561,7 @@ function Account() {
           </div>
         )}
       </div>
-      <div className="pt-6 border-t border-purple-main/10">
+      <div className="pt-6 shadow-[0_-1px_0_rgba(255,255,255,0.04)]">
         <h3 className="text-heading font-semibold text-lg mb-3 flex items-center gap-2">
           <Mail size={20} className="text-accent" />
           {tx({ fr: 'Email du compte', en: 'Account email', es: 'Correo de la cuenta' })}
@@ -571,7 +571,7 @@ function Account() {
           {tx({ fr: 'L\'email est utilisé pour la connexion et les notifications de commande.', en: 'Email is used for login and order notifications.', es: 'El correo se usa para iniciar sesion y notificaciones de pedidos.' })}
         </p>
       </div>
-      <div className="pt-6 mt-6 border-t border-red-500/10">
+      <div className="pt-6 mt-6 shadow-[0_-1px_0_rgba(239,68,68,0.1)]">
         <h3 className="text-red-400/70 font-semibold text-base mb-2 flex items-center gap-2">
           <Shield size={18} />
           {tx({ fr: 'Zone danger', en: 'Danger zone', es: 'Zona de peligro' })}
@@ -644,7 +644,7 @@ function Account() {
                   <motion.div
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
-                    className="border-t border-purple-main/10 px-4 pb-4"
+                    className="shadow-[0_-1px_0_rgba(255,255,255,0.04)] px-4 pb-4"
                   >
                     {order.items && (
                       <div className="mt-3 space-y-2">
@@ -747,7 +747,7 @@ function Account() {
                   )}
                 </p>
               </div>
-              <button onClick={signOut} className="flex items-center gap-2 px-4 py-2 rounded-lg border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:border-red-500/50 transition-all text-sm font-semibold flex-shrink-0">
+              <button onClick={signOut} className="flex items-center gap-2 px-4 py-2 rounded-lg shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)] bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all text-sm font-semibold flex-shrink-0">
                 <LogOut size={16} />
                 <span className="hidden sm:inline">{tx({ fr: 'Déconnexion', en: 'Sign out', es: 'Cerrar sesion' })}</span>
               </button>
@@ -788,7 +788,7 @@ function Account() {
                   </button>
                 );
               })}
-              <div className="w-full border-t border-purple-main/20 mt-1 pt-2" />
+              <div className="w-full shadow-[0_-1px_0_rgba(255,255,255,0.04)] mt-1 pt-2" />
               {ADMIN_NAV_ITEMS.map((item) => {
                 const Icon = item.icon;
                 const isMessages = item.to === '/admin/messages';
@@ -838,7 +838,7 @@ function Account() {
                   );
                 })}
 
-                <div className="border-t border-purple-main/20 my-2" />
+                <div className="shadow-[0_-1px_0_rgba(255,255,255,0.04)] my-2" />
 
                 <h2 className="text-xs font-semibold text-grey-muted uppercase tracking-wider px-3 py-2">
                   Admin
@@ -878,7 +878,7 @@ function Account() {
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
-                    className="mb-4 p-3 rounded-lg bg-green-500/10 border border-green-500/20 text-green-400 text-sm flex items-center gap-2"
+                    className="mb-4 p-3 rounded-lg bg-green-500/10 shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)] text-green-400 text-sm flex items-center gap-2"
                   >
                     <Check size={16} />
                     {saveMsg}
@@ -953,7 +953,7 @@ function Account() {
                   </p>
                 )}
               </div>
-              <button onClick={signOut} className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:border-red-500/50 transition-all text-xs font-semibold flex-shrink-0">
+              <button onClick={signOut} className="flex items-center gap-2 px-3 py-1.5 rounded-lg shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)] bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all text-xs font-semibold flex-shrink-0">
                 <LogOut size={14} />
                 <span className="hidden sm:inline">{tx({ fr: 'Déconnexion', en: 'Sign out', es: 'Cerrar sesion' })}</span>
               </button>
@@ -1004,7 +1004,7 @@ function Account() {
                   </button>
                 );
               })}
-              <div className="w-full border-t border-purple-main/20 mt-1 pt-2" />
+              <div className="w-full shadow-[0_-1px_0_rgba(255,255,255,0.04)] mt-1 pt-2" />
               {/* Artiste */}
               {ARTIST_SIDEBAR_ITEMS.map((item) => {
                 const Icon = item.icon;
@@ -1066,7 +1066,7 @@ function Account() {
                   );
                 })}
 
-                <div className="border-t border-purple-main/20 my-2" />
+                <div className="shadow-[0_-1px_0_rgba(255,255,255,0.04)] my-2" />
 
                 {/* Artiste EN SECOND */}
                 <h2 className="text-xs font-semibold text-grey-muted uppercase tracking-wider px-3 py-2">
@@ -1106,7 +1106,7 @@ function Account() {
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
-                    className="mb-4 p-3 rounded-lg bg-green-500/10 border border-green-500/20 text-green-400 text-sm flex items-center gap-2"
+                    className="mb-4 p-3 rounded-lg bg-green-500/10 shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)] text-green-400 text-sm flex items-center gap-2"
                   >
                     <Check size={16} />
                     {saveMsg}
@@ -1180,14 +1180,14 @@ function Account() {
                   )}
                 </p>
               </div>
-              <button onClick={signOut} className="flex items-center gap-2 px-4 py-2 rounded-lg border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:border-red-500/50 transition-all text-sm font-semibold flex-shrink-0">
+              <button onClick={signOut} className="flex items-center gap-2 px-4 py-2 rounded-lg shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)] bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all text-sm font-semibold flex-shrink-0">
                 <LogOut size={16} />
                 <span className="hidden sm:inline">{tx({ fr: 'Déconnexion', en: 'Sign out', es: 'Cerrar sesion' })}</span>
               </button>
             </div>
 
             {/* -- Tab navigation -- */}
-            <div className="flex gap-1 mb-8 border-b border-purple-main/20 overflow-x-auto scrollbar-hide">
+            <div className="flex gap-1 mb-8 shadow-[0_1px_0_rgba(255,255,255,0.04)] overflow-x-auto scrollbar-hide">
               {tabs.map(tab => (
                 <button
                   key={tab.id}
@@ -1214,7 +1214,7 @@ function Account() {
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
-                  className="mb-4 p-3 rounded-lg bg-green-500/10 border border-green-500/20 text-green-400 text-sm flex items-center gap-2"
+                  className="mb-4 p-3 rounded-lg bg-green-500/10 shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)] text-green-400 text-sm flex items-center gap-2"
                 >
                   <Check size={16} />
                   {saveMsg}
@@ -1285,7 +1285,7 @@ function Account() {
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <Link
                           to="/boutique"
-                          className="flex items-center gap-3 p-4 rounded-xl bg-accent/5 border border-accent/20 hover:bg-accent/10 transition-colors group"
+                          className="flex items-center gap-3 p-4 rounded-xl bg-accent/5 shadow-[inset_0_1px_2px_rgba(0,0,0,0.15)] hover:bg-accent/10 transition-colors group"
                         >
                           <ShoppingBag size={20} className="text-accent" />
                           <div className="flex-grow">
@@ -1297,7 +1297,7 @@ function Account() {
                         {orders.length > 0 ? (
                           <button
                             onClick={() => setActiveTab('orders')}
-                            className="flex items-center gap-3 p-4 rounded-xl bg-blue-500/5 border border-blue-500/20 hover:bg-blue-500/10 transition-colors group text-left"
+                            className="flex items-center gap-3 p-4 rounded-xl bg-blue-500/5 shadow-[inset_0_1px_2px_rgba(0,0,0,0.15)] hover:bg-blue-500/10 transition-colors group text-left"
                           >
                             <RotateCcw size={20} className="text-blue-400" />
                             <div className="flex-grow">
@@ -1309,7 +1309,7 @@ function Account() {
                         ) : (
                           <Link
                             to="/boutique/stickers"
-                            className="flex items-center gap-3 p-4 rounded-xl bg-purple-500/5 border border-purple-500/20 hover:bg-purple-500/10 transition-colors group"
+                            className="flex items-center gap-3 p-4 rounded-xl bg-purple-500/5 shadow-[inset_0_1px_2px_rgba(0,0,0,0.15)] hover:bg-purple-500/10 transition-colors group"
                           >
                             <Heart size={20} className="text-purple-400" />
                             <div className="flex-grow">
@@ -1321,7 +1321,7 @@ function Account() {
                         )}
                         <Link
                           to="/contact"
-                          className="flex items-center gap-3 p-4 rounded-xl bg-green-500/5 border border-green-500/20 hover:bg-green-500/10 transition-colors group"
+                          className="flex items-center gap-3 p-4 rounded-xl bg-green-500/5 shadow-[inset_0_1px_2px_rgba(0,0,0,0.15)] hover:bg-green-500/10 transition-colors group"
                         >
                           <MessageCircle size={20} className="text-green-400" />
                           <div className="flex-grow">
@@ -1359,7 +1359,7 @@ function Account() {
                         </p>
                         <button
                           onClick={handleCopyReferral}
-                          className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg bg-accent/10 border border-accent/20 text-accent text-sm font-medium hover:bg-accent/20 transition-colors"
+                          className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg bg-accent/10 shadow-[inset_0_1px_2px_rgba(0,0,0,0.15)] text-accent text-sm font-medium hover:bg-accent/20 transition-colors"
                         >
                           {refCopied ? (
                             <>
@@ -1405,7 +1405,7 @@ function Account() {
                         ) : (
                           <div className="space-y-2">
                             {orders.slice(0, 3).map((order) => (
-                              <div key={order.documentId || order.id} className="flex items-center justify-between py-2 border-b border-purple-main/10 last:border-0">
+                              <div key={order.documentId || order.id} className="flex items-center justify-between py-2 shadow-[0_1px_0_rgba(255,255,255,0.03)] last:shadow-none">
                                 <div>
                                   <p className="text-heading text-xs font-medium">{formatDate(order.createdAt)}</p>
                                   <p className="text-grey-muted text-[10px]">
@@ -1427,7 +1427,7 @@ function Account() {
 
                     {/* Profile completion prompt */}
                     {(!meta.full_name || !meta.phone || !meta.address) && (
-                      <div className="rounded-xl border border-accent/20 bg-accent/5 p-5 flex items-center gap-4">
+                      <div className="rounded-xl shadow-[inset_0_1px_2px_rgba(0,0,0,0.15)] bg-accent/5 p-5 flex items-center gap-4">
                         <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0">
                           <User size={18} className="text-accent" />
                         </div>

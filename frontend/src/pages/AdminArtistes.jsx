@@ -133,7 +133,7 @@ function AdminArtistes() {
         <div className="text-center py-20 text-grey-muted">{tx({ fr: 'Aucune soumission', en: 'No submissions', es: 'Sin solicitudes' })}</div>
       ) : (
         <div className="rounded-xl card-bg shadow-lg shadow-black/20 overflow-hidden">
-          <div className="hidden md:grid grid-cols-[1fr_1fr_1fr_80px_80px_110px_40px] gap-3 px-4 py-3 text-xs font-semibold text-grey-muted uppercase tracking-wider border-b border-white/5">
+          <div className="hidden md:grid grid-cols-[1fr_1fr_1fr_80px_80px_110px_40px] gap-3 px-4 py-3 text-xs font-semibold text-grey-muted uppercase tracking-wider shadow-[0_1px_0_rgba(255,255,255,0.04)]">
             <span>Date</span>
             <span>{tx({ fr: 'Nom legal', en: 'Legal name', es: 'Nombre legal' })}</span>
             <span>Email</span>
@@ -152,7 +152,7 @@ function AdminArtistes() {
               const portfolio = Array.isArray(item.portfolioUrls) ? item.portfolioUrls : [];
 
               return (
-                <motion.div key={item.documentId} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="border-b last:border-b-0 border-white/5">
+                <motion.div key={item.documentId} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="">
                   <div onClick={() => toggleExpand(item.documentId)}
                     className={`grid grid-cols-1 md:grid-cols-[1fr_1fr_1fr_80px_80px_110px_40px] gap-2 md:gap-3 px-4 py-3 items-center cursor-pointer hover:bg-accent/5 transition-colors ${item.status === 'new' ? 'bg-blue-500/5' : ''}`}>
                     <span className="text-xs text-grey-muted">{formatDate(item.createdAt)}</span>
@@ -170,7 +170,7 @@ function AdminArtistes() {
                   <AnimatePresence>
                     {isExpanded && (
                       <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
-                        <div className="px-4 pb-5 pt-1 space-y-4 border-t border-white/5 bg-glass/50">
+                        <div className="px-4 pb-5 pt-1 space-y-4 shadow-[0_-1px_0_rgba(255,255,255,0.04)] bg-glass/50">
 
                           {/* Status actions */}
                           {nextStatuses.length > 0 && (

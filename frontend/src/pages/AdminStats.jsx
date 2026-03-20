@@ -599,7 +599,7 @@ function AdminStats() {
               <span className="text-heading text-center">{(stats.taxes?.tpsPaid || 0).toFixed(2)}$</span>
               <span className="text-heading text-center">{(stats.taxes?.tvqPaid || 0).toFixed(2)}$</span>
             </div>
-            <div className="grid grid-cols-3 gap-2 text-sm border-t pt-2">
+            <div className="grid grid-cols-3 gap-2 text-sm shadow-[0_-1px_0_rgba(255,255,255,0.04)] pt-2">
               <span className="text-heading font-semibold text-xs">{tx({ fr: 'A remettre', en: 'Net owed', es: 'A remitir' })}</span>
               <span className={`text-center font-bold ${(stats.taxes?.tpsNet || 0) >= 0 ? 'text-red-400' : 'text-green-400'}`}>{(stats.taxes?.tpsNet || 0).toFixed(2)}$</span>
               <span className={`text-center font-bold ${(stats.taxes?.tvqNet || 0) >= 0 ? 'text-red-400' : 'text-green-400'}`}>{(stats.taxes?.tvqNet || 0).toFixed(2)}$</span>

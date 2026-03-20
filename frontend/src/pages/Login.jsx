@@ -12,6 +12,7 @@ function Login() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const sessionExpired = searchParams.get('expired') === '1';
+  const redirectTo = searchParams.get('redirect') || '/';
 
   const [mode, setMode] = useState('login'); // 'login' | 'register' | 'forgot' | 'update-password' | 'verify-otp'
   const [email, setEmail] = useState('');
@@ -33,7 +34,7 @@ function Login() {
   // Redirect if already logged in (but NOT during password recovery flow)
   useEffect(() => {
     if (session && !passwordRecovery && !passwordUpdated && !isRecoveryFlow) {
-      navigate('/');
+      navigate(redirectTo);
     }
   }, [session, passwordRecovery, isRecoveryFlow]);
 
@@ -114,7 +115,7 @@ function Login() {
         }
         const { error: err } = await verifyOtp(email, otpCode);
         if (err) { setError(translateSupabaseError(err)); return; }
-        navigate('/');
+        navigate(redirectTo);
         return;
       }
 
@@ -130,7 +131,7 @@ function Login() {
         const { error: err } = await updatePassword(password);
         if (err) { setError(translateSupabaseError(err)); return; }
         setPasswordUpdated(true);
-        setTimeout(() => navigate('/'), 2000);
+        setTimeout(() => navigate(redirectTo), 2000);
         return;
       }
 
@@ -166,14 +167,14 @@ function Login() {
           return;
         }
         // Si confirmation desactivee ou deja confirmee, naviguer directement
-        navigate('/');
+        navigate(redirectTo);
         return;
       }
 
       // Login
       const { error: err } = await signIn(email, password);
       if (err) { setError(translateSupabaseError(err)); return; }
-      navigate('/');
+      navigate(redirectTo);
     } finally {
       setLoading(false);
     }

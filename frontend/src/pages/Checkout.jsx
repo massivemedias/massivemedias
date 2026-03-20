@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, User, MapPin, AlertCircle, Paperclip } from 'lucide-react';
 import { Elements } from '@stripe/react-stripe-js';
 import SEO from '../components/SEO';
@@ -44,8 +44,16 @@ function calculateTaxes(subtotal, province) {
 function Checkout() {
   const { t, lang, tx } = useLang();
   const { items, cartTotal } = useCart();
-  const { user } = useAuth();
+  const { user, session } = useAuth();
   const { step: themeStep } = useTheme();
+  const navigate = useNavigate();
+
+  // Rediriger vers login si pas connecte
+  useEffect(() => {
+    if (!session) {
+      navigate('/login?redirect=/checkout', { replace: true });
+    }
+  }, [session, navigate]);
 
   const [step, setStep] = useState('info'); // 'info' | 'payment'
   const [clientSecret, setClientSecret] = useState('');

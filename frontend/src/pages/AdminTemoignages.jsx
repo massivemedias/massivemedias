@@ -213,7 +213,7 @@ function AdminTemoignages() {
                     onChange={(e) => setGenName(e.target.value)}
                     placeholder={tx({ fr: 'Nom du client', en: 'Client name', es: 'Nombre del cliente' })}
                     required
-                    className="flex-1 px-4 py-2.5 rounded-lg bg-transparent border border-grey-muted/20 text-heading text-sm placeholder:text-grey-muted/50 focus:border-accent focus:outline-none"
+                    className="flex-1 px-4 py-2.5 rounded-lg bg-transparent shadow-[inset_0_1px_3px_rgba(0,0,0,0.3)] text-heading text-sm placeholder:text-grey-muted/50 focus:shadow-[inset_0_1px_4px_rgba(255,82,160,0.3)] focus:outline-none"
                   />
                   <input
                     type="email"
@@ -221,7 +221,7 @@ function AdminTemoignages() {
                     onChange={(e) => setGenEmail(e.target.value)}
                     placeholder={tx({ fr: 'Email du client', en: 'Client email', es: 'Email del cliente' })}
                     required
-                    className="flex-1 px-4 py-2.5 rounded-lg bg-transparent border border-grey-muted/20 text-heading text-sm placeholder:text-grey-muted/50 focus:border-accent focus:outline-none"
+                    className="flex-1 px-4 py-2.5 rounded-lg bg-transparent shadow-[inset_0_1px_3px_rgba(0,0,0,0.3)] text-heading text-sm placeholder:text-grey-muted/50 focus:shadow-[inset_0_1px_4px_rgba(255,82,160,0.3)] focus:outline-none"
                   />
                   <button
                     type="submit"
@@ -242,7 +242,7 @@ function AdminTemoignages() {
                       type="text"
                       value={generatedLink}
                       readOnly
-                      className="flex-1 px-4 py-2.5 rounded-lg bg-transparent border border-grey-muted/20 text-heading text-sm font-mono"
+                      className="flex-1 px-4 py-2.5 rounded-lg bg-transparent shadow-[inset_0_1px_3px_rgba(0,0,0,0.3)] text-heading text-sm font-mono"
                     />
                     <button
                       onClick={handleCopy}
@@ -385,7 +385,7 @@ function AdminTemoignages() {
                       exit={{ height: 0, opacity: 0 }}
                       className="overflow-hidden"
                     >
-                      <div className="px-4 pb-4 pt-1 space-y-3 border-t border-white/5">
+                      <div className="px-4 pb-4 pt-1 space-y-3 shadow-[0_-1px_0_rgba(255,255,255,0.04)]">
                         {isWaiting ? (
                           <p className="text-grey-muted text-sm italic flex items-center gap-2">
                             <Clock size={14} />
@@ -432,7 +432,7 @@ function AdminTemoignages() {
                         )}
 
                         {/* Mobile actions */}
-                        <div className="flex items-center gap-2 md:hidden pt-2 border-t border-white/5">
+                        <div className="flex items-center gap-2 md:hidden pt-2 shadow-[0_-1px_0_rgba(255,255,255,0.04)]">
                           {!isWaiting && !item.approved && (
                             <button
                               onClick={() => handleApprove(item, true)}
@@ -457,14 +457,14 @@ function AdminTemoignages() {
                             <button
                               onClick={() => handleFeatured(item)}
                               disabled={isUpdating}
-                              className={`btn-outline text-xs py-2 px-3 ${item.featured ? 'text-accent border-accent/30' : ''}`}
+                              className={`btn-outline text-xs py-2 px-3 ${item.featured ? 'text-accent' : ''}`}
                             >
                               <Award size={14} />
                             </button>
                           )}
                           <button
                             onClick={() => setConfirmDelete(item.documentId)}
-                            className="btn-outline text-xs py-2 px-3 text-red-400 border-red-500/20 hover:bg-red-500/10"
+                            className="btn-outline text-xs py-2 px-3 text-red-400 hover:bg-red-500/10"
                           >
                             <Trash2 size={14} />
                           </button>

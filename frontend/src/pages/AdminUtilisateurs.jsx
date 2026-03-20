@@ -345,7 +345,7 @@ function AdminUtilisateurs() {
       {/* Users list */}
       {filtered.length > 0 && (
         <div className="rounded-xl card-bg shadow-lg shadow-black/20 overflow-hidden">
-          <div className="hidden md:grid grid-cols-[1fr_1.2fr_100px_70px_100px_32px] gap-3 px-4 py-3 text-xs font-semibold text-grey-muted uppercase tracking-wider border-b border-white/5">
+          <div className="hidden md:grid grid-cols-[1fr_1.2fr_100px_70px_100px_32px] gap-3 px-4 py-3 text-xs font-semibold text-grey-muted uppercase tracking-wider shadow-[0_1px_0_rgba(255,255,255,0.04)]">
             <span>{tx({ fr: 'Utilisateur', en: 'User', es: 'Usuario' })}</span>
             <span>Email</span>
             <span>{tx({ fr: 'Inscrit', en: 'Joined', es: 'Registro' })}</span>
@@ -364,7 +364,7 @@ function AdminUtilisateurs() {
             const isExpanded = expandedId === user.id;
 
             return (
-              <div key={user.id} className="border-b last:border-b-0 border-white/5">
+              <div key={user.id} className="">
                 {/* Desktop row */}
                 <div
                   onClick={() => setExpandedId(isExpanded ? null : user.id)}
@@ -541,7 +541,7 @@ function AdminUtilisateurs() {
                       transition={{ duration: 0.2 }}
                       className="overflow-hidden"
                     >
-                      <div className="px-4 pb-4 pt-1 border-t border-white/5 bg-glass/50">
+                      <div className="px-4 pb-4 pt-1 shadow-[0_-1px_0_rgba(255,255,255,0.04)] bg-glass/50">
                         {/* Candidature artiste - TPS/TVQ */}
                         {(() => {
                           const sub = artistSubs[(user.email || '').toLowerCase()];
@@ -680,7 +680,7 @@ function AdminUtilisateurs() {
 
                         {/* Actions */}
                         {role !== 'admin' && !user.isGuest && (
-                          <div className="mt-4 pt-3 border-t border-white/5 flex flex-wrap items-center gap-3">
+                          <div className="mt-4 pt-3 shadow-[0_-1px_0_rgba(255,255,255,0.04)] flex flex-wrap items-center gap-3">
                             {/* Artist role actions */}
                             {role === 'artist' ? (
                               <>
@@ -759,7 +759,7 @@ function AdminUtilisateurs() {
                       transition={{ duration: 0.2 }}
                       className="overflow-hidden"
                     >
-                      <div className="px-4 py-3 flex flex-wrap items-center gap-3 bg-accent/5 border-t border-white/5">
+                      <div className="px-4 py-3 flex flex-wrap items-center gap-3 bg-accent/5 shadow-[0_-1px_0_rgba(255,255,255,0.04)]">
                         <span className="text-xs text-grey-muted whitespace-nowrap">
                           {role === 'artist'
                             ? tx({ fr: 'Changer le profil artiste:', en: 'Change artist profile:', es: 'Cambiar perfil artista:' })

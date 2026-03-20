@@ -420,7 +420,7 @@ function AdminDepenses() {
                   <div className="overflow-x-auto -mx-4 px-4">
                     <table className="w-full text-xs min-w-[600px]">
                       <thead>
-                        <tr className="border-b border-white/5">
+                        <tr className="shadow-[0_1px_0_rgba(255,255,255,0.04)]">
                           <th className="text-left py-2 text-grey-muted font-semibold">{tx({ fr: 'Mois', en: 'Month', es: 'Mes' })}</th>
                           <th className="text-right py-2 text-green-400 font-semibold">{tx({ fr: 'Revenus', en: 'Revenue', es: 'Ingresos' })}</th>
                           <th className="text-right py-2 text-red-400 font-semibold">{tx({ fr: 'Dépenses', en: 'Expenses', es: 'Gastos' })}</th>
@@ -434,7 +434,7 @@ function AdminDepenses() {
                           const balance = m.revenue - m.expenses;
                           const hasData = m.revenue > 0 || m.expenses > 0;
                           if (!hasData) return (
-                            <tr key={key} className="border-b border-white/5 opacity-30">
+                            <tr key={key} className="shadow-[0_1px_0_rgba(255,255,255,0.04)] opacity-30">
                               <td className="py-2 text-grey-muted">{(MONTH_NAMES[lang] || MONTH_NAMES.fr)[parseInt(key) - 1]}</td>
                               <td className="text-right py-2 text-grey-muted">-</td>
                               <td className="text-right py-2 text-grey-muted">-</td>
@@ -444,7 +444,7 @@ function AdminDepenses() {
                             </tr>
                           );
                           return (
-                            <tr key={key} className="border-b border-white/5">
+                            <tr key={key} className="shadow-[0_1px_0_rgba(255,255,255,0.04)]">
                               <td className="py-2 text-heading font-medium">{(MONTH_NAMES[lang] || MONTH_NAMES.fr)[parseInt(key) - 1]}</td>
                               <td className="text-right py-2 text-green-400">{fmt(m.revenue)}$</td>
                               <td className="text-right py-2 text-red-400">{fmt(m.expenses)}$</td>
@@ -458,7 +458,7 @@ function AdminDepenses() {
                         })}
                       </tbody>
                       <tfoot>
-                        <tr className="border-t-2 border-accent/30">
+                        <tr className="shadow-[0_-2px_0_rgba(255,82,160,0.2)]">
                           <td className="py-3 text-heading font-bold">Total {summaryYear}</td>
                           <td className="text-right py-3 text-green-400 font-bold">{fmt(yearData.totals.revenue)}$</td>
                           <td className="text-right py-3 text-red-400 font-bold">{fmt(yearData.totals.expenses)}$</td>
@@ -730,7 +730,7 @@ function AdminDepenses() {
                   </details>
 
                   {/* Actions */}
-                  <div className="flex items-center gap-3 pt-2 border-t border-white/5">
+                  <div className="flex items-center gap-3 pt-2 shadow-[0_-1px_0_rgba(255,255,255,0.04)]">
                     <button onClick={() => { setInvoiceData(null); setReceiptUrl(''); }} className="px-4 py-2 rounded-lg bg-glass text-grey-muted text-sm hover:text-heading transition-colors">
                       {tx({ fr: 'Annuler', en: 'Cancel', es: 'Cancelar' })}
                     </button>
@@ -816,7 +816,7 @@ function AdminDepenses() {
       ) : (
         <div className="rounded-xl card-bg shadow-lg shadow-black/20 overflow-hidden">
           {/* Desktop header */}
-          <div className="hidden md:grid grid-cols-[90px_1fr_120px_110px_80px_55px_55px_30px_30px] gap-3 px-4 py-3 text-xs font-semibold text-grey-muted uppercase tracking-wider border-b border-white/5">
+          <div className="hidden md:grid grid-cols-[90px_1fr_120px_110px_80px_55px_55px_30px_30px] gap-3 px-4 py-3 text-xs font-semibold text-grey-muted uppercase tracking-wider shadow-[0_1px_0_rgba(255,255,255,0.04)]">
             <span>Date</span>
             <span>Description</span>
             <span>{tx({ fr: 'Fournisseur', en: 'Vendor', es: 'Proveedor' })}</span>
@@ -835,7 +835,7 @@ function AdminDepenses() {
               const catColor = CATEGORY_COLORS[item.category] || CATEGORY_COLORS.other;
 
               return (
-                <motion.div key={item.documentId} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="border-b last:border-b-0 border-white/5">
+                <motion.div key={item.documentId} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="">
                   {/* Desktop row */}
                   <div onClick={() => toggleExpand(item.documentId)}
                     className="hidden md:grid grid-cols-[90px_1fr_120px_110px_80px_55px_55px_30px_30px] gap-3 px-4 py-3 items-center cursor-pointer hover:bg-accent/5 transition-colors">
@@ -880,7 +880,7 @@ function AdminDepenses() {
                   <AnimatePresence>
                     {isExpanded && (
                       <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
-                        <div className="px-4 pb-4 pt-1 space-y-3 border-t border-white/5 bg-glass/50" onClick={(e) => e.stopPropagation()}>
+                        <div className="px-4 pb-4 pt-1 space-y-3 shadow-[0_-1px_0_rgba(255,255,255,0.04)] bg-glass/50" onClick={(e) => e.stopPropagation()}>
 
                           {isEditing ? (
                             /* Edit form */
@@ -943,7 +943,7 @@ function AdminDepenses() {
                               {/* Receipt image */}
                               {item.receiptUrl && (
                                 <a href={item.receiptUrl} target="_blank" rel="noopener noreferrer" className="block">
-                                  <img src={item.receiptUrl} alt="Recu" className="max-h-48 rounded-lg border object-contain" />
+                                  <img src={item.receiptUrl} alt="Recu" className="max-h-48 rounded-lg shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)] object-contain" />
                                 </a>
                               )}
 

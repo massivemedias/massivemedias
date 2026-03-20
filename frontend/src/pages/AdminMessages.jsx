@@ -288,7 +288,7 @@ function AdminMessages() {
         <div className="text-center py-20 text-grey-muted">{tx({ fr: 'Aucun message', en: 'No messages', es: 'Sin mensajes' })}</div>
       ) : (
         <div className="rounded-xl card-bg shadow-lg shadow-black/20 overflow-hidden">
-          <div className="hidden md:grid grid-cols-[100px_1fr_1fr_120px_100px_40px] gap-3 px-4 py-3 text-xs font-semibold text-grey-muted uppercase tracking-wider border-b border-white/5">
+          <div className="hidden md:grid grid-cols-[100px_1fr_1fr_120px_100px_40px] gap-3 px-4 py-3 text-xs font-semibold text-grey-muted uppercase tracking-wider shadow-[0_1px_0_rgba(255,255,255,0.04)]">
             <span>Date</span>
             <span>{tx({ fr: 'Nom', en: 'Name', es: 'Nombre' })}</span>
             <span>Email</span>
@@ -308,7 +308,7 @@ function AdminMessages() {
               const isArtistMsg = item._type === 'artist-msg';
 
               return (
-                <motion.div key={item._uid} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="border-b last:border-b-0 border-white/5">
+                <motion.div key={item._uid} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="">
                   <div onClick={() => toggleExpand(item)}
                     className={`grid grid-cols-1 md:grid-cols-[100px_1fr_1fr_120px_100px_40px] gap-2 md:gap-3 px-4 py-3 items-center cursor-pointer hover:bg-accent/5 transition-colors ${item.status === 'new' ? 'bg-blue-500/5' : ''}`}>
                     {/* Mobile: 2-line compact */}
@@ -340,7 +340,7 @@ function AdminMessages() {
                   <AnimatePresence>
                     {isExpanded && (
                       <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
-                        <div className="px-4 pb-5 pt-1 space-y-4 border-t border-white/5 bg-glass/50" onClick={(e) => e.stopPropagation()}>
+                        <div className="px-4 pb-5 pt-1 space-y-4 shadow-[0_-1px_0_rgba(255,255,255,0.04)] bg-glass/50" onClick={(e) => e.stopPropagation()}>
                           {/* ARTIST MESSAGE expanded view */}
                           {isArtistMsg && (
                             <>
@@ -608,7 +608,7 @@ function AdminMessages() {
                               <div className="rounded-lg bg-glass p-4">
                                 <p className="text-sm text-heading whitespace-pre-wrap"><Linkify text={item.message} /></p>
                                 {item.attachments && item.attachments.length > 0 && (
-                                  <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-white/5">
+                                  <div className="flex flex-wrap gap-2 mt-3 pt-3 shadow-[0_-1px_0_rgba(255,255,255,0.04)]">
                                     {item.attachments.map((att, j) => (
                                       <a key={j} href={att.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-accent/5 text-xs text-accent hover:bg-accent/20 transition-colors">
                                         📎 {att.name?.length > 25 ? att.name.substring(0, 25) + '...' : att.name}

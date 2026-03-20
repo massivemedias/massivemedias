@@ -362,7 +362,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
           className={`fixed top-4 right-4 z-50 p-4 rounded-lg text-sm flex items-center gap-2 shadow-lg ${
-            toast ? 'bg-red-500/10 border border-red-500/20 text-red-400' : 'bg-green-500/10 border border-green-500/20 text-green-400'
+            toast ? 'bg-red-500/10 shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)] text-red-400' : 'bg-green-500/10 shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)] text-green-400'
           }`}
         >
           <Check size={16} />
@@ -644,7 +644,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-grey-muted text-[10px] sm:text-xs uppercase tracking-wider border-b border-purple-main/20">
+                <tr className="text-grey-muted text-[10px] sm:text-xs uppercase tracking-wider shadow-[0_1px_0_rgba(255,255,255,0.04)]">
                   <th className="text-left py-2 pr-1 sm:pr-3">{tx({ fr: 'Format', en: 'Format', es: 'Formato' })}</th>
                   <th className="text-right py-2 px-1 sm:px-2">{tx({ fr: 'Prix client', en: 'Client price', es: 'Precio cliente' })}</th>
                   <th className="text-right py-2 px-1 sm:px-2 text-accent">{tx({ fr: 'Prix artiste', en: 'Artist price', es: 'Precio artista' })}</th>
@@ -653,13 +653,13 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
                 </tr>
               </thead>
               <tbody>
-                <tr className="border-b border-purple-main/10"><td colSpan="5" className="pt-3 pb-1 text-accent font-semibold text-xs">{tx({ fr: 'Série Studio (4 encres pigmentées)', en: 'Studio Series (4 pigment inks)', es: 'Serie Studio (4 tintas pigmentadas)' })}</td></tr>
+                <tr className="shadow-[0_1px_0_rgba(255,255,255,0.03)]"><td colSpan="5" className="pt-3 pb-1 text-accent font-semibold text-xs">{tx({ fr: 'Série Studio (4 encres pigmentées)', en: 'Studio Series (4 pigment inks)', es: 'Serie Studio (4 tintas pigmentadas)' })}</td></tr>
                 {[{ format: 'A4 (8.5x11")', key: 'a4' }, { format: 'A3 (11x17")', key: 'a3' }, { format: 'A3+ (13x19")', key: 'a3plus' }].map(({ format, key }) => {
                   const clientPrice = CLIENT_PRICES.studio[key];
                   const artistPrice = ARTIST_DISCOUNT_PRICES.studio[key];
                   const discount = Math.round((1 - artistPrice / clientPrice) * 100);
                   return (
-                    <tr key={`s-${key}`} className="border-b border-purple-main/10 hover:bg-accent/5 transition-colors">
+                    <tr key={`s-${key}`} className="shadow-[0_1px_0_rgba(255,255,255,0.03)] hover:bg-accent/5 transition-colors">
                       <td className="py-2 pr-1 sm:pr-3 text-heading text-xs sm:text-sm">{format}</td>
                       <td className="py-2 px-1 sm:px-2 text-right text-heading text-xs sm:text-sm">{clientPrice}$</td>
                       <td className="py-2 px-1 sm:px-2 text-right text-accent font-semibold text-xs sm:text-sm">{artistPrice}$</td>
@@ -668,13 +668,13 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
                     </tr>
                   );
                 })}
-                <tr className="border-b border-purple-main/10"><td colSpan="5" className="pt-4 pb-1 text-accent font-semibold text-xs">{tx({ fr: 'Série Musée (12 encres pigmentées)', en: 'Museum Series (12 pigment inks)', es: 'Serie Museo (12 tintas pigmentadas)' })}</td></tr>
+                <tr className="shadow-[0_1px_0_rgba(255,255,255,0.03)]"><td colSpan="5" className="pt-4 pb-1 text-accent font-semibold text-xs">{tx({ fr: 'Série Musée (12 encres pigmentées)', en: 'Museum Series (12 pigment inks)', es: 'Serie Museo (12 tintas pigmentadas)' })}</td></tr>
                 {[{ format: 'A4 (8.5x11")', key: 'a4' }, { format: 'A3 (11x17")', key: 'a3' }, { format: 'A3+ (13x19")', key: 'a3plus' }, { format: 'A2 (18x24")', key: 'a2' }].map(({ format, key }) => {
                   const clientPrice = CLIENT_PRICES.museum[key];
                   const artistPrice = ARTIST_DISCOUNT_PRICES.museum[key];
                   const discount = Math.round((1 - artistPrice / clientPrice) * 100);
                   return (
-                    <tr key={`m-${key}`} className="border-b border-purple-main/10 hover:bg-accent/5 transition-colors">
+                    <tr key={`m-${key}`} className="shadow-[0_1px_0_rgba(255,255,255,0.03)] hover:bg-accent/5 transition-colors">
                       <td className="py-2 pr-1 sm:pr-3 text-heading text-xs sm:text-sm">{format}</td>
                       <td className="py-2 px-1 sm:px-2 text-right text-heading text-xs sm:text-sm">{clientPrice}$</td>
                       <td className="py-2 px-1 sm:px-2 text-right text-accent font-semibold text-xs sm:text-sm">{artistPrice}$</td>
@@ -683,7 +683,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
                     </tr>
                   );
                 })}
-                <tr className="border-t-2 border-purple-main/20">
+                <tr className="shadow-[0_-2px_0_rgba(255,255,255,0.06)]">
                   <td className="py-2 pr-1 sm:pr-3 text-heading font-medium text-xs sm:text-sm">{tx({ fr: 'Cadre (noir ou blanc)', en: 'Frame (black or white)', es: 'Marco (negro o blanco)' })}</td>
                   <td className="py-2 px-2 text-right text-heading">{FRAME_PRICE}$</td>
                   <td className="py-2 px-1 sm:px-2 text-right text-grey-muted text-xs sm:text-sm">{FRAME_PRICE}$</td>
@@ -754,7 +754,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mb-4 p-3 rounded-lg bg-green-500/10 border border-green-500/20 text-green-400 text-sm flex items-center gap-2"
+              className="mb-4 p-3 rounded-lg bg-green-500/10 shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)] text-green-400 text-sm flex items-center gap-2"
             >
               <Check size={16} />
               {artistProfileMsg}
@@ -1004,7 +1004,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
           </div>
 
           {hasPendingWithdrawal && (
-            <div className="rounded-lg bg-yellow-500/10 border border-yellow-500/20 p-3 mb-4 flex items-center gap-2">
+            <div className="rounded-lg bg-yellow-500/10 shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)] p-3 mb-4 flex items-center gap-2">
               <Clock size={14} className="text-yellow-400 flex-shrink-0" />
               <p className="text-yellow-400 text-xs">
                 {tx({
@@ -1099,7 +1099,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
               {withdrawals.map((w, i) => {
                 const badge = getStatusBadge(w.status);
                 return (
-                  <div key={w.documentId || i} className="flex items-center justify-between py-3 border-b border-purple-main/10 last:border-0">
+                  <div key={w.documentId || i} className="flex items-center justify-between py-3 shadow-[0_1px_0_rgba(255,255,255,0.03)] last:shadow-none">
                     <div>
                       <p className="text-heading text-sm font-medium">{formatMoney(parseFloat(w.amount) || 0)}</p>
                       <p className="text-grey-muted text-xs">
@@ -1171,7 +1171,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
           ) : (
             <div className="space-y-2">
               {commissions.map((c, i) => (
-                <div key={c.documentId || i} className="flex items-center justify-between py-3 border-b border-purple-main/10 last:border-0">
+                <div key={c.documentId || i} className="flex items-center justify-between py-3 shadow-[0_1px_0_rgba(255,255,255,0.03)] last:shadow-none">
                   <div>
                     <p className="text-heading text-sm font-medium">{c.customerName || c.customerEmail || 'Client'}</p>
                     <p className="text-grey-muted text-xs">{c.createdAt ? new Date(c.createdAt).toLocaleDateString('fr-CA') : '-'}{c.items && ` - ${c.items.length} article${c.items.length > 1 ? 's' : ''}`}</p>

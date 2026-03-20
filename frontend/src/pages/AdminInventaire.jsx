@@ -178,7 +178,7 @@ function AdminInventaire() {
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
-                      className="border-t border-white/5 hover:bg-white/[0.02] transition-colors"
+                      className="shadow-[0_-1px_0_rgba(255,255,255,0.04)] hover:bg-white/[0.02] transition-colors"
                     >
                       <td className="px-4 py-2 text-heading font-medium">{getName(item)}</td>
                       <td className="px-4 py-2 font-mono text-grey-muted text-xs">{item.sku || '-'}</td>

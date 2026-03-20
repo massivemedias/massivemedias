@@ -1,15 +1,18 @@
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Trash2, ShoppingCart, ArrowLeft, ArrowRight, Paperclip, Percent, MapPin, AlertTriangle } from 'lucide-react';
 import SEO from '../components/SEO';
 import { useCart } from '../contexts/CartContext';
 import { useLang } from '../i18n/LanguageContext';
+import { useAuth } from '../contexts/AuthContext';
 
 const ARTIST_DISCOUNT = 0.30;
 
 function Panier() {
   const { tx } = useLang();
   const { items, removeFromCart, updateQuantity, cartTotal } = useCart();
+  const { session } = useAuth();
+  const navigate = useNavigate();
 
   const hasArtistOwnPrints = items.some(i => i.isArtistOwnPrint);
   const artistDiscountTotal = items
@@ -187,10 +190,19 @@ function Panier() {
             <ArrowLeft size={18} className="mr-2" />
             {tx({ fr: 'Continuer mes achats', en: 'Continue shopping', es: 'Seguir comprando' })}
           </Link>
-          <Link to="/checkout" className="btn-primary flex-1 justify-center">
+          <button
+            onClick={() => {
+              if (!session) {
+                navigate('/login?redirect=/checkout');
+              } else {
+                navigate('/checkout');
+              }
+            }}
+            className="btn-primary flex-1 justify-center"
+          >
             {tx({ fr: 'Passer au paiement', en: 'Proceed to checkout', es: 'Proceder al pago' })}
             <ArrowRight size={18} className="ml-2" />
-          </Link>
+          </button>
         </div>
       </div>
     </>
