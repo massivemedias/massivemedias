@@ -134,8 +134,8 @@ const translations = {
         title: 'Ce que nos clients disent',
         items: [
           { name: 'Jeremy G.', role: 'Client', text: "Je te jure ton site est crazy" },
-          { name: 'Samuel L.', role: 'Photographe', text: "Tirages fine art impeccables. La qualite des couleurs est fidele a mes fichiers. Je recommande a tous les photographes de Montreal." },
-          { name: 'Marie-Eve D.', role: 'Promotrice d\'evenements', text: "Stickers et affiches pour notre festival, qualite impeccable au rendez-vous. On revient chaque annee!" },
+          { name: 'Samuel L.', role: 'Photographe', text: "Tirages fine art impeccables. La qualité des couleurs est fidèle à mes fichiers. Je recommande à tous les photographes de Montréal." },
+          { name: 'Marie-Ève D.', role: 'Promotrice d\'événements', text: "Stickers et affiches pour notre festival, qualité impeccable au rendez-vous. On revient chaque année!" },
         ],
       },
     },

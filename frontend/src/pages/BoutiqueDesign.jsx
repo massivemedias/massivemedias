@@ -32,9 +32,9 @@ function BoutiqueDesign() {
     <BoutiqueProductLayout
       serviceSlug="design-graphique"
       startingPrice={85}
-      pageTitle={{ fr: 'Design Graphique Montreal - Logos, Affiches, Identite | Massive', en: 'Graphic Design Montreal - Logos, Posters, Identity | Massive', es: 'Diseno Grafico Montreal - Logos, Afiches, Identidad | Massive' }}
+      pageTitle={{ fr: 'Design Graphique Montréal - Logos, Affiches, Identité | Massive', en: 'Graphic Design Montreal - Logos, Posters, Identity | Massive', es: 'Diseno Grafico Montreal - Logos, Afiches, Identidad | Massive' }}
       metaDescription={{
-        fr: 'Design graphique professionnel a Montreal. Logos, identites visuelles, affiches, pochettes album, packaging. Creation sur mesure. Studio creatif Mile-End. Depuis 2013.',
+        fr: 'Design graphique professionnel à Montréal. Logos, identités visuelles, affiches, pochettes album, packaging. Création sur mesure. Studio créatif Mile-End. Depuis 2013.',
         en: 'Professional graphic design in Montreal. Logos, visual identities, posters, album covers, packaging. Custom creation. Mile-End creative studio. Since 2013.',
         es: 'Logos, identidades visuales, afiches, portadas de \u00e1lbum. Dise\u00f1o gr\u00e1fico profesional. Montreal.',
       }}

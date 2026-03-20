@@ -322,7 +322,7 @@ function Boutique() {
             </h1>
             <p className="text-xl md:text-2xl text-grey-light max-w-3xl mx-auto">
               {tx({
-                fr: 'Prints d\'artistes, stickers et services creatifs. Fabrique a Montreal.',
+                fr: 'Prints d\'artistes, stickers et services créatifs. Fabriqué à Montréal.',
                 en: 'Artist prints, stickers and creative services. Made in Montreal.',
                 es: 'Impresiones de artistas, stickers y servicios creativos. Hecho en Montreal.',
               })}
