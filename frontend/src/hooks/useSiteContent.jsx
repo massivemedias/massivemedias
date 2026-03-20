@@ -45,6 +45,8 @@ export function SiteContentProvider({ children }) {
             if (key.startsWith('about')) delete raw[key];
           });
           delete raw.contactEmail;
+          // Testimonials geres localement (Jeremy G. toujours en premier)
+          delete raw.testimonials;
         }
         setContent(raw);
       } catch (err) {

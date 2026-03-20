@@ -100,29 +100,8 @@ function Home() {
       }))
     : null;
 
-  // ── Testimonials (API dediee > site-content > fallback) ──
-  const [apiTestimonials, setApiTestimonials] = useState(null);
-  useEffect(() => {
-    api.get('/testimonials/public').then(res => {
-      if (res.data?.data?.length) setApiTestimonials(res.data.data);
-    }).catch(() => {});
-  }, []);
-
-  const cmsTestimonials = content?.testimonials?.length ? content.testimonials : null;
-  const testimonials = apiTestimonials?.length
-    ? apiTestimonials.map((tm) => ({
-        name: tm.name,
-        role: lang === 'en' ? (tm.roleEn || tm.roleFr) : tm.roleFr,
-        text: lang === 'en' ? (tm.textEn || tm.textFr) : tm.textFr,
-        rating: tm.rating,
-      }))
-    : cmsTestimonials
-      ? cmsTestimonials.map((tm) => ({
-          name: tm.name,
-          role: bl(tm, 'role', lang),
-          text: bl(tm, 'text', lang),
-        }))
-      : null;
+  // ── Testimonials (donnees locales uniquement, Jeremy G. toujours en premier) ──
+  const testimonials = null;
 
   // Fallback data from translations
   const fbServiceCards = t('home.serviceCards');
