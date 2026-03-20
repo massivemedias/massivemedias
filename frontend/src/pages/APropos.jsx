@@ -16,8 +16,8 @@ function APropos() {
   // ── Team ──
   const cmsTeam = content?.aboutTeam?.length ? content.aboutTeam : null;
 
-  // ── Universe ──
-  const cmsUniverse = content?.aboutUniverse?.length >= 3 ? content.aboutUniverse : null;
+  // ── Universe (forcer donnees locales, CMS a des infos incorrectes) ──
+  const cmsUniverse = null;
 
   // Fallback data
   const fbTimelineEvents = t('aboutPage.timeline.events');
@@ -178,10 +178,10 @@ function APropos() {
                 </span>
               </div>
               <h2 className="text-3xl md:text-4xl font-heading font-bold text-heading mb-4">
-                {(content && bl(content, 'aboutSpaceTitle', lang)) || t('aboutPage.space.title')}
+                {t('aboutPage.space.title')}
               </h2>
               <p className="text-grey-light text-lg max-w-2xl">
-                {(content && bl(content, 'aboutSpaceDescription', lang)) || t('aboutPage.space.description')}
+                {t('aboutPage.space.description')}
               </p>
             </div>
           </div>
