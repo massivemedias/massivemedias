@@ -501,7 +501,13 @@ function Home() {
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-          {(testimonials || fbTestimonials).slice(0, 3).map((item, index) => (
+          {(() => {
+            const all = testimonials || fbTestimonials;
+            // Jeremy G. toujours en premier
+            const jeremy = all.find(t => t.name === 'Jeremy G.');
+            const others = all.filter(t => t.name !== 'Jeremy G.');
+            return jeremy ? [jeremy, ...others].slice(0, 3) : all.slice(0, 3);
+          })().map((item, index) => (
             <motion.div
               key={item.name}
               initial={{ opacity: 0, y: 20 }}
