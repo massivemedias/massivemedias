@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { Menu, X, ShoppingCart, LogIn, Printer, Sticker, Shirt, Globe, Store, Info, Phone, ChevronRight, Bell } from 'lucide-react';
+import { Menu, X, ShoppingCart, LogIn, Printer, Sticker, Shirt, Globe, Monitor, Store, Info, Phone, ChevronRight, Bell } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import MassiveLogo from './MassiveLogo';
 import { useLang } from '../i18n/LanguageContext';
@@ -11,7 +11,7 @@ import { useUserRole } from '../contexts/UserRoleContext';
 import { getContactSubmissions, getArtistSubmissions } from '../services/adminService';
 import { getArtistMessagesAdmin } from '../services/artistService';
 
-const SERVICE_ICONS = [Printer, Sticker, Shirt, Globe];
+const SERVICE_ICONS = [Printer, Sticker, Shirt, Globe, Monitor];
 
 function Header() {
   const { lang, cycleLang, t, tx } = useLang();
@@ -108,7 +108,7 @@ function Header() {
                 {t('nav.aPropos')}
               </Link>
 
-              <Link to="/contact" className="btn-primary text-sm py-2 px-5 whitespace-nowrap">
+              <Link to="/contact" className="btn-primary text-sm py-1.5 px-4 whitespace-nowrap">
                 {t('nav.contact')}
               </Link>
 
