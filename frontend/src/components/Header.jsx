@@ -108,7 +108,7 @@ function Header() {
                 {t('nav.aPropos')}
               </Link>
 
-              <Link to="/contact" className="btn-primary text-sm py-1.5 px-4 whitespace-nowrap">
+              <Link to="/contact" className="btn-primary text-sm !py-1 !px-3.5 whitespace-nowrap">
                 {t('nav.contact')}
               </Link>
 
