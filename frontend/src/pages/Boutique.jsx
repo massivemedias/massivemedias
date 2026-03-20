@@ -11,7 +11,7 @@ import { useArtists } from '../hooks/useArtists';
 import { img } from '../utils/paths';
 
 // Maudite Machine (Massive) en premier
-const artistOrder = ['maudite-machine', 'psyqu33n', 'adrift', 'mok', 'quentin-delobel', 'no-pixl', 'cornelia-rose'];
+const artistOrder = ['cornelia-rose', 'psyqu33n', 'no-pixl', 'maudite-machine', 'adrift', 'mok', 'quentin-delobel'];
 
 // Fallback - Stickers produits finis
 const defaultStickerProducts = [
@@ -463,7 +463,7 @@ function Boutique() {
                 <div className="hidden sm:flex flex-col gap-10">
                   {orderedArtists.map((artist, i) => {
                     const allWorks = [...(artist.prints || [])];
-                    const previewWorks = allWorks.slice(0, 5);
+                    const previewWorks = allWorks.slice(0, 7);
                     const printCount = allWorks.length;
                     return (
                       <motion.div
@@ -501,14 +501,14 @@ function Boutique() {
                         </div>
 
                         {/* Horizontal scroll of works */}
-                        <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide -mx-2 px-2 snap-x snap-mandatory">
+                        <div className="flex gap-3 flex-wrap">
                           {previewWorks.map((work, wi) => (
                             <Link
                               key={work.id}
                               to={`/artistes/${artist.slug}`}
-                              className="shrink-0 snap-start"
+                              className="shrink-0"
                             >
-                              <div className="w-36 lg:w-40 xl:w-44 aspect-[3/4] rounded-xl overflow-hidden relative group/card">
+                              <div className="w-28 lg:w-[120px] xl:w-[130px] aspect-[3/4] rounded-xl overflow-hidden relative group/card">
                                 <img
                                   src={work.image || work.fullImage}
                                   alt={work.titleFr || work.titleEn}
@@ -526,9 +526,9 @@ function Boutique() {
                           {printCount > previewWorks.length && (
                             <Link
                               to={`/artistes/${artist.slug}`}
-                              className="shrink-0 snap-start"
+                              className="shrink-0"
                             >
-                              <div className="w-36 lg:w-40 xl:w-44 aspect-[3/4] rounded-xl overflow-hidden relative card-bg-bordered hover:border-accent/40 transition-all duration-300 flex flex-col items-center justify-center gap-3">
+                              <div className="w-28 lg:w-[120px] xl:w-[130px] aspect-[3/4] rounded-xl overflow-hidden relative card-bg-bordered hover:border-accent/40 transition-all duration-300 flex flex-col items-center justify-center gap-3">
                                 <span className="text-3xl font-heading font-bold text-accent">+{printCount - previewWorks.length}</span>
                                 <span className="text-muted text-sm">{tx({ fr: 'oeuvres', en: 'artworks', es: 'obras' })}</span>
                                 <ArrowRight size={20} className="text-accent/60" />

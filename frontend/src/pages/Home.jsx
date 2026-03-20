@@ -501,9 +501,9 @@ function Home() {
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-          {(testimonials || fbTestimonials).map((item, index) => (
+          {(testimonials || fbTestimonials).slice(0, 3).map((item, index) => (
             <motion.div
-              key={index}
+              key={item.name}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
