@@ -650,7 +650,7 @@ function Account() {
                       <div className="mt-3 space-y-2">
                         {order.items.map((item, i) => (
                           <div key={i} className="flex items-center gap-3 py-2">
-                            {item.image && <img src={item.image} alt="" className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />}
+                            {item.image && <img src={item.image} alt={item.productName || ''} className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />}
                             <div className="flex-grow min-w-0">
                               <p className="text-heading text-sm font-medium truncate">{item.productName}</p>
                               <p className="text-grey-muted text-xs">

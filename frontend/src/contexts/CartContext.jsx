@@ -13,7 +13,9 @@ function loadCart() {
 }
 
 function saveCart(items) {
-  try { localStorage.setItem('massive-cart', JSON.stringify(items)); } catch {}
+  try { localStorage.setItem('massive-cart', JSON.stringify(items)); } catch (e) {
+    console.warn('Erreur sauvegarde panier localStorage:', e);
+  }
 }
 
 export function CartProvider({ children }) {

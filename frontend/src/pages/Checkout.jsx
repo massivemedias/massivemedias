@@ -297,6 +297,8 @@ function Checkout() {
                             type="text" id="codePostal" name="codePostal" required autoComplete="postal-code"
                             value={formData.codePostal} onChange={handleChange}
                             placeholder="H2X 1Y4"
+                            pattern="[A-Za-z]\d[A-Za-z][ -]?\d[A-Za-z]\d"
+                            title="Format: A1A 1A1"
                             className="input-field uppercase"
                             maxLength={7}
                           />
@@ -427,7 +429,7 @@ function Checkout() {
                   <div className="space-y-3 mb-4">
                     {items.map((item, i) => (
                       <div key={i} className="flex gap-3">
-                        <img src={item.image} alt="" className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />
+                        <img src={item.image} alt={item.productName || ''} className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />
                         <div className="flex-grow min-w-0">
                           <p className="text-heading text-sm font-medium truncate">{item.productName}</p>
                           <p className="text-grey-muted text-xs">

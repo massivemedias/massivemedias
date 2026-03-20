@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowRight, Eye, EyeOff, CheckCircle, ShoppingBag, Truck, Heart, Shield } from 'lucide-react';
 import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
@@ -10,6 +10,8 @@ function Login() {
   const { t, lang, tx } = useLang();
   const { signIn, signUp, signInWithOAuth, resetPassword, updatePassword, verifyOtp, session, passwordRecovery } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const sessionExpired = searchParams.get('expired') === '1';
 
   const [mode, setMode] = useState('login'); // 'login' | 'register' | 'forgot' | 'update-password' | 'verify-otp'
   const [email, setEmail] = useState('');
@@ -324,6 +326,10 @@ function Login() {
                           required
                         />
                       </div>
+
+                      {sessionExpired && !error && (
+                        <p className="text-yellow-400 text-sm">{tx({ fr: 'Ta session a expire, reconnecte-toi.', en: 'Your session has expired, please sign in again.', es: 'Tu sesion ha expirado, inicia sesion de nuevo.' })}</p>
+                      )}
 
                       {error && (
                         <p className="text-red-400 text-sm">{error}</p>

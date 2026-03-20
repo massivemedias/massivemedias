@@ -79,7 +79,7 @@ api.interceptors.response.use(
       localStorage.removeItem('token');
       const protectedPaths = ['/account', '/checkout', '/mm-admin', '/admin'];
       if (protectedPaths.some(p => window.location.pathname.startsWith(p))) {
-        window.location.href = '/login';
+        window.location.href = '/login?expired=1';
       }
     }
     return Promise.reject(error);
