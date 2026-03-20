@@ -15,7 +15,7 @@ function Footer() {
   const cmsSocialLinks = content?.socialLinks;
 
   // CMS contact info
-  const contactEmail = content?.contactEmail || 'massivemedias@gmail.com';
+  const contactEmail = 'massivemedias@gmail.com';
   const contactPhone = content?.contactPhone;
 
   // Social icon components mapping

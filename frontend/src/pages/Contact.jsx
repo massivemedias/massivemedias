@@ -63,7 +63,7 @@ function Contact() {
   const { t, lang, tx } = useLang();
   const { content } = useSiteContent();
 
-  const contactEmail = content?.contactEmail || 'massivemedias@gmail.com';
+  const contactEmail = 'massivemedias@gmail.com';
   const cmsSocialLinks = content?.socialLinks;
   const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState(searchParams.get('tab') === 'artiste' ? 'artist' : 'service');
