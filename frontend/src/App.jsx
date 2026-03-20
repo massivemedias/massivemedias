@@ -57,6 +57,8 @@ const AdminStats = lazyWithRetry(() => import('./pages/AdminStats'));
 const AdminTarifs = lazyWithRetry(() => import('./pages/AdminTarifs'));
 const AdminTemoignages = lazyWithRetry(() => import('./pages/AdminTemoignages'));
 const AdminUtilisateurs = lazyWithRetry(() => import('./pages/AdminUtilisateurs'));
+const AdminDashboard = lazyWithRetry(() => import('./pages/AdminDashboard'));
+const AdminNotes = lazyWithRetry(() => import('./pages/AdminNotes'));
 
 // These are small wrappers - load eagerly to avoid lazy-loading auth guards
 import ProtectedRoute from './components/ProtectedRoute';
@@ -168,7 +170,9 @@ function App() {
           {/* Admin dashboard */}
           <Route element={<MainLayout />}>
             <Route path="/admin" element={<AdminRoute><AdminLayout /></AdminRoute>}>
-              <Route index element={<Navigate to="/admin/commandes" replace />} />
+              <Route index element={<Navigate to="/admin/dashboard" replace />} />
+              <Route path="dashboard" element={<AdminDashboard />} />
+              <Route path="notes" element={<AdminNotes />} />
               <Route path="commandes" element={<AdminOrders />} />
               <Route path="commissions" element={<AdminCommissions />} />
               <Route path="inventaire" element={<AdminInventaire />} />

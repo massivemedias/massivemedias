@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import {
   ShoppingBag, Package, MessageSquare, Banknote,
   Users, Receipt, BarChart3, Menu, X, DollarSign,
-  Pencil, MapPin, Shield, Star,
+  Pencil, MapPin, Shield, Star, LayoutDashboard, StickyNote,
 } from 'lucide-react';
 import { useState } from 'react';
 import { useLang } from '../i18n/LanguageContext';
@@ -15,6 +15,8 @@ const ACCOUNT_ITEMS = [
 ];
 
 const NAV_ITEMS = [
+  { to: '/admin/dashboard', icon: LayoutDashboard, fr: 'Dashboard', en: 'Dashboard', es: 'Dashboard' },
+  { to: '/admin/notes', icon: StickyNote, fr: 'Notes', en: 'Notes', es: 'Notas' },
   { to: '/admin/commandes', icon: ShoppingBag, fr: 'Commandes', en: 'Orders', es: 'Pedidos' },
   { to: '/admin/commissions', icon: Banknote, fr: 'Commissions', en: 'Commissions', es: 'Comisiones' },
   { to: '/admin/inventaire', icon: Package, fr: 'Inventaire', en: 'Inventory', es: 'Inventario' },
