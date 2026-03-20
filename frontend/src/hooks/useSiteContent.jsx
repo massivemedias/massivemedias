@@ -36,7 +36,21 @@ export function SiteContentProvider({ children }) {
             'populate[21]': 'socialLinks',
           },
         });
-        setContent(data.data || null);
+        const raw = data.data || null;
+        if (raw) {
+          // Supprimer les champs CMS qui ont des donnees incorrectes
+          // Les donnees locales (translations.js) sont la source de verite
+          delete raw.aboutTimeline;
+          delete raw.aboutUniverse;
+          delete raw.aboutSpaceTitleFr;
+          delete raw.aboutSpaceTitleEn;
+          delete raw.aboutSpaceTitleEs;
+          delete raw.aboutSpaceDescriptionFr;
+          delete raw.aboutSpaceDescriptionEn;
+          delete raw.aboutSpaceDescriptionEs;
+          delete raw.contactEmail;
+        }
+        setContent(raw);
       } catch (err) {
         console.warn('CMS site content unavailable:', err.message);
       } finally {
