@@ -38,15 +38,23 @@ export function SiteContentProvider({ children }) {
         });
         const raw = data.data || null;
         if (raw) {
-          // Supprimer TOUS les champs about* du CMS - la page A propos
-          // est entierement geree par les donnees locales (translations.js)
-          // Le CMS a des donnees obsoletes qui ecrasent les corrections
+          // WHITELIST: on garde SEULEMENT les champs CMS qu'on sait fiables.
+          // Tout le reste vient des donnees locales (translations.js).
+          // Ca empeche le CMS d'overrider quoi que ce soit qu'on a corrige.
+          const allowed = new Set([
+            'heroImages',
+            'serviceCards',
+            'featuredProjects',
+            'stats',
+            'advantages',
+            'ctaBackgroundImage',
+            'homeSeo',
+            'contactSeo',
+            'socialLinks',
+          ]);
           Object.keys(raw).forEach(key => {
-            if (key.startsWith('about')) delete raw[key];
+            if (!allowed.has(key)) delete raw[key];
           });
-          delete raw.contactEmail;
-          // Testimonials geres localement (Jeremy G. toujours en premier)
-          delete raw.testimonials;
         }
         setContent(raw);
       } catch (err) {
