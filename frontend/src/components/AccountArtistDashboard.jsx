@@ -391,7 +391,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
             <div key={i} className="text-center py-4 px-3 rounded-xl card-bg card-shadow relative group cursor-default">
               <p className={`text-xl font-bold ${s.color}`}>{s.value}</p>
               <p className="text-[10px] text-grey-muted uppercase tracking-wider mt-1">{s.label}</p>
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 rounded-lg bg-[#1a1a2e] text-grey-light text-xs whitespace-normal max-w-[200px] text-center md:opacity-0 md:group-hover:opacity-100 pointer-events-none transition-opacity duration-200 shadow-lg z-20">
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 rounded-lg bg-[#1a1a2e] text-grey-light text-xs whitespace-normal max-w-[200px] text-center opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 shadow-lg z-20 hidden md:block">
                 {s.tooltip}
               </div>
             </div>
