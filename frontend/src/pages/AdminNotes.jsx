@@ -56,7 +56,7 @@ function EditorToolbar({ editorRef }) {
   ];
 
   return (
-    <div className="flex flex-wrap gap-1 p-2 border-b border-white/10 bg-black/10">
+    <div className="flex flex-wrap gap-1 p-2 bg-black/15">
       {btns.map((b, i) => (
         <button
           key={i}
@@ -143,7 +143,7 @@ function AdminNotes({ embedded = false }) {
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 placeholder={tx({ fr: 'Rechercher...', en: 'Search...', es: 'Buscar...' })}
-                className="w-full pl-8 pr-3 py-2 rounded-lg bg-black/20 border border-white/10 text-heading text-sm placeholder:text-grey-muted focus:outline-none focus:border-accent/50"
+                className="w-full pl-8 pr-3 py-2 rounded-lg bg-black/20 shadow-[inset_0_1px_4px_rgba(0,0,0,0.3)] text-heading text-sm placeholder:text-grey-muted focus:outline-none"
               />
             </div>
             <button
@@ -169,8 +169,8 @@ function AdminNotes({ embedded = false }) {
                 onClick={() => setActiveId(n.id)}
                 className={`w-full text-left p-3 rounded-lg transition-all text-sm group ${
                   activeId === n.id
-                    ? 'bg-accent/15 border border-accent/30'
-                    : 'bg-black/10 border border-transparent hover:bg-black/20'
+                    ? 'bg-accent/15 shadow-[inset_0_0_0_1px_rgba(255,82,160,0.25)]'
+                    : 'bg-black/10 hover:bg-black/20'
                 }`}
               >
                 <div className="flex items-start justify-between gap-2">
@@ -198,9 +198,9 @@ function AdminNotes({ embedded = false }) {
         {/* Editeur */}
         <div className="flex-1 min-w-0">
           {activeNote ? (
-            <div className="rounded-xl border border-white/10 bg-black/10 overflow-hidden flex flex-col h-full min-h-[450px]">
+            <div className="rounded-xl bg-black/10 shadow-[inset_0_1px_6px_rgba(0,0,0,0.25)] overflow-hidden flex flex-col h-full min-h-[450px]">
               {/* Bouton retour mobile */}
-              <div className="lg:hidden flex items-center gap-2 p-2 border-b border-white/10">
+              <div className="lg:hidden flex items-center gap-2 p-2 bg-black/10">
                 <button
                   onClick={() => setActiveId(null)}
                   className="p-1.5 rounded-lg hover:bg-white/10 text-grey-muted"
@@ -219,7 +219,7 @@ function AdminNotes({ embedded = false }) {
                 value={activeNote.title}
                 onChange={(e) => updateNote(activeId, { title: e.target.value })}
                 placeholder={tx({ fr: 'Titre de la note...', en: 'Note title...', es: 'Titulo de la nota...' })}
-                className="w-full px-4 py-3 bg-transparent text-heading text-lg font-heading font-bold placeholder:text-grey-muted/50 focus:outline-none border-b border-white/5"
+                className="w-full px-4 py-3 bg-transparent text-heading text-lg font-heading font-bold placeholder:text-grey-muted/50 focus:outline-none"
               />
 
               {/* Toolbar WYSIWYG */}

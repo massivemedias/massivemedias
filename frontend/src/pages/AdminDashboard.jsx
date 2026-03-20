@@ -13,7 +13,7 @@ import AdminNotes from './AdminNotes';
 
 function StatCard({ icon: Icon, label, value, color, to }) {
   const content = (
-    <div className="flex items-center gap-3 p-4 rounded-xl bg-black/20 border border-white/5 hover:border-white/10 transition-all group">
+    <div className="flex items-center gap-3 p-4 rounded-xl bg-black/20 shadow-[inset_0_1px_4px_rgba(0,0,0,0.2)] hover:bg-black/25 transition-all group">
       <div className={`p-2.5 rounded-lg ${color}`}>
         <Icon size={20} />
       </div>
@@ -142,7 +142,7 @@ function AdminDashboard() {
           <Link
             key={item.to}
             to={item.to}
-            className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-black/10 border border-white/5 hover:border-accent/30 hover:bg-black/20 transition-all text-center group"
+            className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-black/10 shadow-[inset_0_1px_4px_rgba(0,0,0,0.15)] hover:bg-black/20 transition-all text-center group"
           >
             <item.icon size={20} className="text-grey-muted group-hover:text-accent transition-colors" />
             <span className="text-xs text-heading font-medium">{item.label}</span>
