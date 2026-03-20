@@ -11,7 +11,7 @@ import { useArtists } from '../hooks/useArtists';
 import { img } from '../utils/paths';
 
 // Maudite Machine (Massive) en premier
-const artistOrder = ['cornelia-rose', 'psyqu33n', 'no-pixl', 'maudite-machine', 'adrift', 'mok', 'quentin-delobel'];
+const artistOrder = ['cornelia-rose', 'psyqu33n', 'no-pixl', 'maudite-machine', 'adrift', 'quentin-delobel', 'mok'];
 
 // Fallback - Stickers produits finis
 const defaultStickerProducts = [
@@ -459,91 +459,108 @@ function Boutique() {
                   })}
                 </div>
 
-                {/* Desktop: showcase galerie immersive */}
-                <div className="hidden sm:flex flex-col gap-10">
-                  {orderedArtists.map((artist, i) => {
-                    const allWorks = [...(artist.prints || [])];
-                    const previewWorks = allWorks.slice(0, 7);
-                    const printCount = allWorks.length;
-                    return (
-                      <motion.div
-                        key={artist.slug}
-                        initial={{ opacity: 0, y: 30 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, delay: i * 0.08 }}
-                        viewport={{ once: true, margin: '-50px' }}
-                        className="group"
-                      >
-                        {/* Artist header */}
-                        <div className="flex items-center gap-4 mb-4">
-                          <Link to={`/artistes/${artist.slug}`} className="shrink-0">
-                            <img
-                              src={artist.avatar}
-                              alt={artist.name}
-                              className="w-14 h-14 rounded-full ring-2 ring-white/10 group-hover:ring-accent/40 object-cover transition-all duration-300"
-                            />
-                          </Link>
-                          <div className="flex-1 min-w-0">
-                            <Link to={`/artistes/${artist.slug}`} className="hover:text-accent transition-colors">
-                              <h3 className="text-xl font-heading font-bold text-heading">{artist.name}</h3>
-                            </Link>
-                            <p className="text-muted text-sm mt-0.5">
-                              {tx({ fr: artist.tagline?.fr || '', en: artist.tagline?.en || '', es: artist.tagline?.es || '' })}
-                            </p>
-                          </div>
-                          <Link
-                            to={`/artistes/${artist.slug}`}
-                            className="shrink-0 text-xs text-accent/80 hover:text-accent flex items-center gap-1.5 transition-colors"
-                          >
-                            {tx({ fr: 'Voir la collection', en: 'View collection', es: 'Ver coleccion' })}
-                            <ArrowRight size={14} />
-                          </Link>
-                        </div>
+                {/* Desktop: galerie organique style mur d'art */}
+                <div className="hidden sm:block">
+                  {(() => {
+                    // Collecter toutes les oeuvres avec info artiste
+                    const allItems = [];
+                    orderedArtists.forEach((artist) => {
+                      const works = artist.prints || [];
+                      // Ajouter une carte artiste
+                      allItems.push({ type: 'artist', artist });
+                      // Ajouter les oeuvres (max 4 par artiste)
+                      works.slice(0, 4).forEach((work) => {
+                        allItems.push({ type: 'work', work, artist });
+                      });
+                    });
 
-                        {/* Horizontal scroll of works */}
-                        <div className="flex gap-3 flex-wrap">
-                          {previewWorks.map((work, wi) => (
-                            <Link
-                              key={work.id}
-                              to={`/artistes/${artist.slug}`}
-                              className="shrink-0"
+                    // Tailles variees pour effet masonry
+                    const sizePatterns = [
+                      'row-span-2 col-span-2', // grand
+                      'col-span-1',             // normal
+                      'col-span-1',             // normal
+                      'row-span-2',             // haut
+                      'col-span-1',             // normal
+                    ];
+
+                    return (
+                      <div
+                        className="grid gap-3 auto-rows-[140px]"
+                        style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))' }}
+                      >
+                        {allItems.map((item, idx) => {
+                          const sizeClass = sizePatterns[idx % sizePatterns.length];
+
+                          if (item.type === 'artist') {
+                            return (
+                              <motion.div
+                                key={`a-${item.artist.slug}`}
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                whileInView={{ opacity: 1, scale: 1 }}
+                                transition={{ duration: 0.4, delay: idx * 0.02 }}
+                                viewport={{ once: true }}
+                                className={`${sizeClass} rounded-2xl overflow-hidden relative group`}
+                              >
+                                <Link to={`/artistes/${item.artist.slug}`} className="block h-full">
+                                  <img
+                                    src={item.artist.heroImage || item.artist.avatar}
+                                    alt={item.artist.name}
+                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                    loading="lazy"
+                                  />
+                                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                                  <div className="absolute bottom-0 left-0 right-0 p-4">
+                                    <div className="flex items-center gap-2.5 mb-1.5">
+                                      <img
+                                        src={item.artist.avatar}
+                                        alt=""
+                                        className="w-8 h-8 rounded-full ring-1 ring-white/30 object-cover"
+                                      />
+                                      <div>
+                                        <h3 className="text-white font-heading font-bold text-sm leading-tight">{item.artist.name}</h3>
+                                        <p className="text-white/50 text-[10px] leading-tight">
+                                          {(item.artist.prints?.length || 0)} {tx({ fr: 'oeuvres', en: 'works', es: 'obras' })}
+                                        </p>
+                                      </div>
+                                    </div>
+                                    <span className="inline-flex items-center gap-1 text-accent text-[10px] font-medium group-hover:gap-2 transition-all">
+                                      {tx({ fr: 'Explorer', en: 'Explore', es: 'Explorar' })}
+                                      <ArrowRight size={10} />
+                                    </span>
+                                  </div>
+                                </Link>
+                              </motion.div>
+                            );
+                          }
+
+                          return (
+                            <motion.div
+                              key={`w-${item.work.id}`}
+                              initial={{ opacity: 0, scale: 0.9 }}
+                              whileInView={{ opacity: 1, scale: 1 }}
+                              transition={{ duration: 0.4, delay: idx * 0.02 }}
+                              viewport={{ once: true }}
+                              className={`${sizeClass} rounded-2xl overflow-hidden relative group/card`}
                             >
-                              <div className="w-28 lg:w-[120px] xl:w-[130px] aspect-[3/4] rounded-xl overflow-hidden relative group/card">
+                              <Link to={`/artistes/${item.artist.slug}`} className="block h-full">
                                 <img
-                                  src={work.image || work.fullImage}
-                                  alt={work.titleFr || work.titleEn}
-                                  className="w-full h-full object-cover transition-transform duration-500 group-hover/card:scale-105"
+                                  src={item.work.image || item.work.fullImage}
+                                  alt={item.work.titleFr || item.work.titleEn}
+                                  className="w-full h-full object-cover transition-transform duration-500 group-hover/card:scale-110"
                                   loading="lazy"
                                 />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity duration-300" />
-                                <div className="absolute bottom-0 left-0 right-0 p-3 opacity-0 group-hover/card:opacity-100 translate-y-2 group-hover/card:translate-y-0 transition-all duration-300">
-                                  <p className="text-white text-xs font-medium truncate">{tx({ fr: work.titleFr, en: work.titleEn, es: work.titleEs || work.titleEn })}</p>
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity duration-300" />
+                                <div className="absolute bottom-0 left-0 right-0 p-3 opacity-0 group-hover/card:opacity-100 translate-y-1 group-hover/card:translate-y-0 transition-all duration-300">
+                                  <p className="text-white text-xs font-medium truncate">{tx({ fr: item.work.titleFr, en: item.work.titleEn, es: item.work.titleEs || item.work.titleEn })}</p>
+                                  <p className="text-white/50 text-[10px]">{item.artist.name}</p>
                                 </div>
-                              </div>
-                            </Link>
-                          ))}
-                          {/* "See all" card */}
-                          {printCount > previewWorks.length && (
-                            <Link
-                              to={`/artistes/${artist.slug}`}
-                              className="shrink-0"
-                            >
-                              <div className="w-28 lg:w-[120px] xl:w-[130px] aspect-[3/4] rounded-xl overflow-hidden relative card-bg-bordered hover:border-accent/40 transition-all duration-300 flex flex-col items-center justify-center gap-3">
-                                <span className="text-3xl font-heading font-bold text-accent">+{printCount - previewWorks.length}</span>
-                                <span className="text-muted text-sm">{tx({ fr: 'oeuvres', en: 'artworks', es: 'obras' })}</span>
-                                <ArrowRight size={20} className="text-accent/60" />
-                              </div>
-                            </Link>
-                          )}
-                        </div>
-
-                        {/* Separator */}
-                        {i < orderedArtists.length - 1 && (
-                          <div className="border-t border-white/5 mt-8" />
-                        )}
-                      </motion.div>
+                              </Link>
+                            </motion.div>
+                          );
+                        })}
+                      </div>
                     );
-                  })}
+                  })()}
                 </div>
               </motion.div>
             </section>
