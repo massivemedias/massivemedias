@@ -150,16 +150,22 @@ function Home() {
     ? [...resolvedServiceCards, boutiqueCard]
     : [boutiqueCard];
 
-  // Oeuvres artistes pour le showcase homepage (interleaved)
+  // Oeuvres artistes pour le showcase homepage (aleatoire a chaque visite)
   const artistsList = Object.values(artistsData);
-  const artworksShowcase = [];
-  for (let i = 0; i < 4; i++) {
+  const displayArtworks = useMemo(() => {
+    const all = [];
     artistsList.forEach(artist => {
-      const works = [...(artist.prints || []), ...(artist.stickers || [])];
-      if (works[i]) artworksShowcase.push({ ...works[i], artistSlug: artist.slug, artistName: artist.name });
+      (artist.prints || []).forEach(work => {
+        all.push({ ...work, artistSlug: artist.slug, artistName: artist.name });
+      });
     });
-  }
-  const displayArtworks = artworksShowcase.slice(0, 8);
+    // Fisher-Yates shuffle
+    for (let i = all.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [all[i], all[j]] = [all[j], all[i]];
+    }
+    return all.slice(0, 8);
+  }, []);
 
   return (
     <>
