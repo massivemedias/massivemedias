@@ -160,7 +160,7 @@ function APropos() {
           </div>
         </motion.div>
 
-        {/* L'espace Versatile */}
+        {/* L'espace Age of Union */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -171,7 +171,7 @@ function APropos() {
           <div className="rounded-2xl overflow-hidden relative">
             <img
               src={content?.aboutSpaceImage ? mediaUrl(content.aboutSpaceImage) : thumb('/images/locale/locale11.webp')}
-              alt="Espace Versatile"
+              alt="Espace Age of Union"
               className="w-full h-80 object-cover"
               loading="lazy"
             />

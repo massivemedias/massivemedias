@@ -197,8 +197,8 @@ const translations = {
       },
       space: {
         location: 'Mile-End, Montréal',
-        title: "L'espace Versatile",
-        description: "On opère depuis l'espace collaboratif Versatile, au 7049 rue Saint-Urbain dans le Mile-End. Un lieu de création partagé avec une quinzaine de créateurs : vidéastes, photographes, designers, artistes. Pick-up disponible sur rendez-vous.",
+        title: "L'espace Age of Union",
+        description: "On opere depuis l'espace Age of Union, au 7049 rue Saint-Urbain dans le Mile-End. Pick-up disponible sur rendez-vous.",
       },
       universe: {
         title: "Aussi dans l'univers Massive",
@@ -558,8 +558,8 @@ const translations = {
       },
       space: {
         location: 'Mile-End, Montreal',
-        title: 'The Versatile Space',
-        description: "We operate from the Versatile collaborative space, at 7049 Saint-Urbain Street in Mile-End. A shared creative space with about fifteen creators: videographers, photographers, designers, artists. Pick-up available by appointment.",
+        title: 'The Age of Union Space',
+        description: "We operate from the Age of Union space, at 7049 Saint-Urbain Street in Mile-End. Pick-up available by appointment.",
       },
       universe: {
         title: 'Also in the Massive Universe',
@@ -919,8 +919,8 @@ const translations = {
       },
       space: {
         location: 'Mile-End, Montreal',
-        title: 'El espacio Versatile',
-        description: 'Operamos desde el espacio colaborativo Versatile, en el 7049 rue Saint-Urbain en Mile-End. Un lugar de creación compartido con unos quince creadores: videastas, fotógrafos, diseñadores, artistas. Recogida disponible con cita previa.',
+        title: 'El espacio Age of Union',
+        description: 'Operamos desde el espacio Age of Union, en el 7049 rue Saint-Urbain en Mile-End. Recogida disponible con cita previa.',
       },
       universe: {
         title: 'También en el universo Massive',
