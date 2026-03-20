@@ -459,108 +459,103 @@ function Boutique() {
                   })}
                 </div>
 
-                {/* Desktop: galerie organique style mur d'art */}
-                <div className="hidden sm:block">
-                  {(() => {
-                    // Collecter toutes les oeuvres avec info artiste
-                    const allItems = [];
-                    orderedArtists.forEach((artist) => {
-                      const works = artist.prints || [];
-                      // Ajouter une carte artiste
-                      allItems.push({ type: 'artist', artist });
-                      // Ajouter les oeuvres (max 4 par artiste)
-                      works.slice(0, 4).forEach((work) => {
-                        allItems.push({ type: 'work', work, artist });
-                      });
-                    });
-
-                    // Tailles variees pour effet masonry
-                    const sizePatterns = [
-                      'row-span-2 col-span-2', // grand
-                      'col-span-1',             // normal
-                      'col-span-1',             // normal
-                      'row-span-2',             // haut
-                      'col-span-1',             // normal
-                    ];
+                {/* Desktop: editorial scroll - chaque artiste prend de la place */}
+                <div className="hidden sm:flex flex-col gap-20">
+                  {orderedArtists.map((artist, i) => {
+                    const works = artist.prints || [];
+                    const previewWorks = works.slice(0, 6);
+                    const printCount = works.length;
+                    const isEven = i % 2 === 0;
 
                     return (
-                      <div
-                        className="grid gap-3 auto-rows-[140px]"
-                        style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))' }}
+                      <motion.div
+                        key={artist.slug}
+                        initial={{ opacity: 0, y: 40 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.6 }}
+                        viewport={{ once: true, margin: '-80px' }}
                       >
-                        {allItems.map((item, idx) => {
-                          const sizeClass = sizePatterns[idx % sizePatterns.length];
+                        {/* Layout editorial: hero artiste + grille oeuvres */}
+                        <div className={`flex flex-col ${isEven ? 'lg:flex-row' : 'lg:flex-row-reverse'} gap-6`}>
 
-                          if (item.type === 'artist') {
-                            return (
-                              <motion.div
-                                key={`a-${item.artist.slug}`}
-                                initial={{ opacity: 0, scale: 0.9 }}
-                                whileInView={{ opacity: 1, scale: 1 }}
-                                transition={{ duration: 0.4, delay: idx * 0.02 }}
-                                viewport={{ once: true }}
-                                className={`${sizeClass} rounded-2xl overflow-hidden relative group`}
-                              >
-                                <Link to={`/artistes/${item.artist.slug}`} className="block h-full">
+                          {/* Bloc artiste - grande image hero */}
+                          <Link
+                            to={`/artistes/${artist.slug}`}
+                            className="lg:w-2/5 group relative rounded-2xl overflow-hidden aspect-[3/4] lg:aspect-auto lg:min-h-[420px]"
+                          >
+                            <img
+                              src={artist.heroImage || artist.avatar}
+                              alt={artist.name}
+                              className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                              loading="lazy"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
+                            <div className="absolute bottom-0 left-0 right-0 p-6 lg:p-8">
+                              <div className="flex items-center gap-3 mb-3">
+                                <img
+                                  src={artist.avatar}
+                                  alt=""
+                                  className="w-12 h-12 rounded-full ring-2 ring-white/20 object-cover"
+                                />
+                                <div>
+                                  <h3 className="text-2xl lg:text-3xl font-heading font-bold text-white">{artist.name}</h3>
+                                  <p className="text-white/60 text-sm">
+                                    {tx({ fr: artist.tagline?.fr || '', en: artist.tagline?.en || '', es: artist.tagline?.es || '' })}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="flex items-center justify-between">
+                                <span className="text-white/40 text-xs">
+                                  {printCount} {tx({ fr: 'oeuvres disponibles', en: 'artworks available', es: 'obras disponibles' })}
+                                </span>
+                                <span className="inline-flex items-center gap-1.5 text-accent text-sm font-medium group-hover:gap-3 transition-all">
+                                  {tx({ fr: 'Voir la collection', en: 'View collection', es: 'Ver coleccion' })}
+                                  <ArrowRight size={16} />
+                                </span>
+                              </div>
+                            </div>
+                          </Link>
+
+                          {/* Grille oeuvres - layout asymetrique */}
+                          <div className="lg:w-3/5 grid grid-cols-3 gap-2.5 auto-rows-[180px]">
+                            {previewWorks.map((work, wi) => {
+                              // Premiere oeuvre plus grande
+                              const spanClass = wi === 0 ? 'col-span-2 row-span-2' : '';
+                              return (
+                                <Link
+                                  key={work.id}
+                                  to={`/artistes/${artist.slug}`}
+                                  className={`${spanClass} rounded-xl overflow-hidden relative group/card`}
+                                >
                                   <img
-                                    src={item.artist.heroImage || item.artist.avatar}
-                                    alt={item.artist.name}
-                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                    src={work.image || work.fullImage}
+                                    alt={work.titleFr || work.titleEn}
+                                    className="w-full h-full object-cover transition-transform duration-500 group-hover/card:scale-110"
                                     loading="lazy"
                                   />
-                                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                                  <div className="absolute bottom-0 left-0 right-0 p-4">
-                                    <div className="flex items-center gap-2.5 mb-1.5">
-                                      <img
-                                        src={item.artist.avatar}
-                                        alt=""
-                                        className="w-8 h-8 rounded-full ring-1 ring-white/30 object-cover"
-                                      />
-                                      <div>
-                                        <h3 className="text-white font-heading font-bold text-sm leading-tight">{item.artist.name}</h3>
-                                        <p className="text-white/50 text-[10px] leading-tight">
-                                          {(item.artist.prints?.length || 0)} {tx({ fr: 'oeuvres', en: 'works', es: 'obras' })}
-                                        </p>
-                                      </div>
-                                    </div>
-                                    <span className="inline-flex items-center gap-1 text-accent text-[10px] font-medium group-hover:gap-2 transition-all">
-                                      {tx({ fr: 'Explorer', en: 'Explore', es: 'Explorar' })}
-                                      <ArrowRight size={10} />
-                                    </span>
+                                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity duration-300" />
+                                  <div className="absolute bottom-0 left-0 right-0 p-3 opacity-0 group-hover/card:opacity-100 translate-y-1 group-hover/card:translate-y-0 transition-all duration-300">
+                                    <p className="text-white text-xs font-medium truncate">{tx({ fr: work.titleFr, en: work.titleEn, es: work.titleEs || work.titleEn })}</p>
                                   </div>
                                 </Link>
-                              </motion.div>
-                            );
-                          }
-
-                          return (
-                            <motion.div
-                              key={`w-${item.work.id}`}
-                              initial={{ opacity: 0, scale: 0.9 }}
-                              whileInView={{ opacity: 1, scale: 1 }}
-                              transition={{ duration: 0.4, delay: idx * 0.02 }}
-                              viewport={{ once: true }}
-                              className={`${sizeClass} rounded-2xl overflow-hidden relative group/card`}
-                            >
-                              <Link to={`/artistes/${item.artist.slug}`} className="block h-full">
-                                <img
-                                  src={item.work.image || item.work.fullImage}
-                                  alt={item.work.titleFr || item.work.titleEn}
-                                  className="w-full h-full object-cover transition-transform duration-500 group-hover/card:scale-110"
-                                  loading="lazy"
-                                />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity duration-300" />
-                                <div className="absolute bottom-0 left-0 right-0 p-3 opacity-0 group-hover/card:opacity-100 translate-y-1 group-hover/card:translate-y-0 transition-all duration-300">
-                                  <p className="text-white text-xs font-medium truncate">{tx({ fr: item.work.titleFr, en: item.work.titleEn, es: item.work.titleEs || item.work.titleEn })}</p>
-                                  <p className="text-white/50 text-[10px]">{item.artist.name}</p>
-                                </div>
+                              );
+                            })}
+                            {/* Carte +N si plus d'oeuvres */}
+                            {printCount > previewWorks.length && (
+                              <Link
+                                to={`/artistes/${artist.slug}`}
+                                className="rounded-xl card-bg-bordered hover:border-accent/40 transition-all duration-300 flex flex-col items-center justify-center gap-2"
+                              >
+                                <span className="text-2xl font-heading font-bold text-accent">+{printCount - previewWorks.length}</span>
+                                <span className="text-muted text-xs">{tx({ fr: 'oeuvres', en: 'artworks', es: 'obras' })}</span>
+                                <ArrowRight size={16} className="text-accent/60" />
                               </Link>
-                            </motion.div>
-                          );
-                        })}
-                      </div>
+                            )}
+                          </div>
+                        </div>
+                      </motion.div>
                     );
-                  })()}
+                  })}
                 </div>
               </motion.div>
             </section>
