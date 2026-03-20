@@ -10,14 +10,8 @@ function APropos() {
   const { t, lang, tx } = useLang();
   const { content } = useSiteContent();
 
-  // ── Timeline ──
-  const cmsTimeline = content?.aboutTimeline?.length ? content.aboutTimeline : null;
-  const timelineEvents = cmsTimeline
-    ? cmsTimeline.map((ev) => ({
-        year: ev.year,
-        event: bl(ev, 'event', lang),
-      }))
-    : null;
+  // ── Timeline (forcer les donnees locales, le CMS a des dates incorrectes) ──
+  const timelineEvents = null;
 
   // ── Team ──
   const cmsTeam = content?.aboutTeam?.length ? content.aboutTeam : null;
