@@ -67,7 +67,7 @@ function ConfiguratorWeb() {
       {/* Hourly rate note */}
       <div className="p-3 rounded-lg mb-5 text-xs text-grey-muted bg-glass">
         {tx({
-          fr: `Taux horaire : ${webHourlyRate} - Design, developpement, SEO, maintenance`,
+          fr: `Taux horaire : ${webHourlyRate} - Design, développement, SEO, maintenance`,
           en: `Hourly rate: ${webHourlyRate} - Design, development, SEO, maintenance`,
           es: `Tarifa por hora: ${webHourlyRate} - Diseno, desarrollo, SEO, mantenimiento`,
         })}

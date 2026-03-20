@@ -133,7 +133,7 @@ function Panier() {
                 <MapPin size={14} className="text-grey-muted flex-shrink-0 mt-0.5" />
                 <p className="text-grey-muted text-xs">
                   {tx({
-                    fr: 'Frais de livraison en sus. Pickup gratuit au 7049 St-Urbain, Montreal.',
+                    fr: 'Frais de livraison en sus. Pickup gratuit au 7049 St-Urbain, Montréal.',
                     en: 'Shipping fees extra. Free pickup at 7049 St-Urbain, Montreal.',
                     es: 'Gastos de envio adicionales. Recogida gratis en 7049 St-Urbain, Montreal.',
                   })}
@@ -177,7 +177,7 @@ function Panier() {
             </div>
           )}
           <p className="text-grey-muted text-sm mt-2">
-            {tx({ fr: 'Taxes en sus si applicable. Livraison locale gratuite a Montreal.', en: 'Taxes extra if applicable. Free local delivery in Montreal.', es: 'Impuestos adicionales si aplica. Envio local gratis en Montreal.' })}
+            {tx({ fr: 'Taxes en sus si applicable. Livraison locale gratuite à Montréal.', en: 'Taxes extra if applicable. Free local delivery in Montreal.', es: 'Impuestos adicionales si aplica. Envio local gratis en Montreal.' })}
           </p>
         </div>
 

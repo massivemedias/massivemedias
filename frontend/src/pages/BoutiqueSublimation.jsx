@@ -26,7 +26,7 @@ function BoutiqueSublimation() {
     { icon: Music, fr: 'Merch artiste', en: 'Artist merch', es: 'Merch de artista', descFr: 'T-shirts et hoodies de concert', descEn: 'Concert t-shirts and hoodies', descEs: 'Camisetas y hoodies de concierto' },
     { icon: Users, fr: 'Équipe', en: 'Team', es: 'Equipo', descFr: 'Uniformes et vêtements de marque', descEn: 'Uniforms and branded apparel', descEs: 'Uniformes y ropa de marca' },
     { icon: Gift, fr: 'Cadeau promo', en: 'Promo gifts', es: 'Regalos promo', descFr: 'Goodies pour événements', descEn: 'Goodies for events', descEs: 'Goodies para eventos' },
-    { icon: Store, fr: 'Boutique en ligne', en: 'Online store', es: 'Tienda en l\u00ednea', descFr: 'Vente de merch personnalise', descEn: 'Selling custom merch', descEs: 'Venta de merch personalizado' },
+    { icon: Store, fr: 'Boutique en ligne', en: 'Online store', es: 'Tienda en l\u00ednea', descFr: 'Vente de merch personnalisé', descEn: 'Selling custom merch', descEs: 'Venta de merch personalizado' },
   ];
 
   const ctaLinks = [
@@ -39,9 +39,9 @@ function BoutiqueSublimation() {
     <BoutiqueProductLayout
       serviceSlug="sublimation-merch"
       startingPrice={15}
-      pageTitle={{ fr: 'Sublimation Textile Montreal - T-Shirts, Hoodies, Mugs | Massive', en: 'Textile Sublimation Montreal - T-Shirts, Hoodies, Mugs | Massive', es: 'Sublimacion Textil Montreal - Camisetas, Hoodies, Tazas | Massive' }}
+      pageTitle={{ fr: 'Sublimation Textile Montréal - T-Shirts, Hoodies, Mugs | Massive', en: 'Textile Sublimation Montreal - T-Shirts, Hoodies, Mugs | Massive', es: 'Sublimacion Textil Montreal - Camisetas, Hoodies, Tazas | Massive' }}
       metaDescription={{
-        fr: 'Sublimation textile a Montreal. T-shirts, hoodies, crewnecks, mugs, tote bags. Impression all-over permanente. Merch d\'artiste et corporatif. A partir d\'1 unite. Production locale Mile-End.',
+        fr: 'Sublimation textile à Montréal. T-shirts, hoodies, crewnecks, mugs, tote bags. Impression all-over permanente. Merch d\'artiste et corporatif. À partir d\'1 unité. Production locale Mile-End.',
         en: 'Textile sublimation in Montreal. T-shirts, hoodies, crewnecks, mugs, tote bags. Permanent all-over printing. Artist and corporate merch. From 1 unit. Local production Mile-End.',
         es: 'Camisetas, hoodies, tazas en sublimaci\u00f3n. Impresi\u00f3n permanente. Merch de artista personalizado. Montreal.',
       }}

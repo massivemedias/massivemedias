@@ -334,7 +334,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
     } catch (err) {
       const msg = err?.response?.data?.error?.message || '';
       if (msg.includes('pending')) {
-        setWdError(tx({ fr: 'Tu as deja une demande en cours', en: 'You already have a pending request', es: 'Ya tienes una solicitud pendiente' }));
+        setWdError(tx({ fr: 'Tu as déjà une demande en cours', en: 'You already have a pending request', es: 'Ya tienes una solicitud pendiente' }));
       } else {
         setWdError(tx({ fr: 'Erreur lors de la demande', en: 'Error creating request', es: 'Error al crear solicitud' }));
       }
@@ -347,8 +347,8 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
     const map = {
       pending: { label: tx({ fr: 'En attente', en: 'Pending', es: 'Pendiente' }), cls: 'bg-yellow-500/20 text-yellow-400' },
       processing: { label: tx({ fr: 'En traitement', en: 'Processing', es: 'En proceso' }), cls: 'bg-blue-500/20 text-blue-400' },
-      completed: { label: tx({ fr: 'Complete', en: 'Completed', es: 'Completado' }), cls: 'bg-green-500/20 text-green-400' },
-      rejected: { label: tx({ fr: 'Refuse', en: 'Rejected', es: 'Rechazado' }), cls: 'bg-red-500/20 text-red-400' },
+      completed: { label: tx({ fr: 'Complété', en: 'Completed', es: 'Completado' }), cls: 'bg-green-500/20 text-green-400' },
+      rejected: { label: tx({ fr: 'Refusé', en: 'Rejected', es: 'Rechazado' }), cls: 'bg-red-500/20 text-red-400' },
     };
     return map[status] || map.pending;
   };
@@ -570,7 +570,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
         <div className="rounded-2xl p-5 md:p-8 card-bg card-shadow">
           <h4 className="text-heading font-heading font-bold text-lg md:text-xl mb-5 flex items-center gap-2">
             <HelpCircle size={22} className="text-accent" />
-            {tx({ fr: 'Questions frequentes', en: 'Frequently asked questions', es: 'Preguntas frecuentes' })}
+            {tx({ fr: 'Questions fréquentes', en: 'Frequently asked questions', es: 'Preguntas frecuentes' })}
           </h4>
           <div className="space-y-2">
             {(ARTIST_FAQ[lang] || ARTIST_FAQ.fr).map((item, idx) => (
@@ -881,7 +881,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
                 <p className="text-yellow-400 text-xs flex items-center gap-2">
                   <Clock size={14} />
                   {tx({
-                    fr: 'Ta page artiste sera creee par Massive une fois ton profil complete. Tu recevras une notification.',
+                    fr: 'Ta page artiste sera créée par Massive une fois ton profil complété. Tu recevras une notification.',
                     en: 'Your artist page will be created by Massive once your profile is complete. You\'ll be notified.',
                     es: 'Tu pagina de artista sera creada por Massive una vez que tu perfil este completo. Seras notificado.',
                   })}
@@ -1008,7 +1008,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
               <Clock size={14} className="text-yellow-400 flex-shrink-0" />
               <p className="text-yellow-400 text-xs">
                 {tx({
-                  fr: 'Tu as deja une demande de retrait en cours. Massive va traiter ta demande sous 24-48h.',
+                  fr: 'Tu as déjà une demande de retrait en cours. Massive va traiter ta demande sous 24-48h.',
                   en: 'You already have a pending withdrawal request. Massive will process it within 24-48h.',
                   es: 'Ya tienes una solicitud de retiro pendiente. Massive la procesara en 24-48h.',
                 })}

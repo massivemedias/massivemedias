@@ -82,19 +82,19 @@ function Login() {
       return tx({ fr: 'Email ou mot de passe incorrect', en: 'Invalid email or password', es: 'Correo o contrasena incorrectos' });
     }
     if (msg.includes('Email not confirmed')) {
-      return tx({ fr: 'Ton email n\'est pas encore confirme. Verifie ta boite de reception.', en: 'Your email is not confirmed. Check your inbox.', es: 'Tu correo aun no esta confirmado. Revisa tu bandeja de entrada.' });
+      return tx({ fr: 'Ton email n\'est pas encore confirmé. Vérifie ta boîte de réception.', en: 'Your email is not confirmed. Check your inbox.', es: 'Tu correo aun no esta confirmado. Revisa tu bandeja de entrada.' });
     }
     if (msg.includes('User already registered')) {
-      return tx({ fr: 'Un compte existe deja avec cet email.', en: 'An account already exists with this email.', es: 'Ya existe una cuenta con este correo.' });
+      return tx({ fr: 'Un compte existe déjà avec cet email.', en: 'An account already exists with this email.', es: 'Ya existe una cuenta con este correo.' });
     }
     if (msg.includes('Password should be at least')) {
-      return tx({ fr: 'Le mot de passe doit contenir au moins 6 caracteres.', en: 'Password must be at least 6 characters.', es: 'La contrasena debe tener al menos 6 caracteres.' });
+      return tx({ fr: 'Le mot de passe doit contenir au moins 6 caractères.', en: 'Password must be at least 6 characters.', es: 'La contrasena debe tener al menos 6 caracteres.' });
     }
     if (msg.includes('rate limit') || msg.includes('too many requests')) {
       return tx({ fr: 'Trop de tentatives. Attends quelques minutes.', en: 'Too many attempts. Wait a few minutes.', es: 'Demasiados intentos. Espera unos minutos.' });
     }
     if (msg.includes('network') || msg.includes('fetch')) {
-      return tx({ fr: 'Erreur de connexion. Verifie ta connexion internet.', en: 'Connection error. Check your internet.', es: 'Error de conexion. Verifica tu internet.' });
+      return tx({ fr: 'Erreur de connexion. Vérifie ta connexion internet.', en: 'Connection error. Check your internet.', es: 'Error de conexion. Verifica tu internet.' });
     }
     return msg || tx({ fr: 'Une erreur est survenue.', en: 'An error occurred.', es: 'Ocurrio un error.' });
   }
@@ -191,7 +191,7 @@ function Login() {
   }
 
   function getTitle() {
-    if (mode === 'verify-otp') return tx({ fr: 'Verifie ton courriel', en: 'Verify your email', es: 'Verifica tu correo' });
+    if (mode === 'verify-otp') return tx({ fr: 'Vérifie ton courriel', en: 'Verify your email', es: 'Verifica tu correo' });
     if (mode === 'update-password') return tx({ fr: 'Nouveau mot de passe', en: 'New password', es: 'Nueva contrasena' });
     if (mode === 'forgot') return t('auth.forgotTitle');
     if (mode === 'register') return t('auth.registerTitle');
@@ -199,7 +199,7 @@ function Login() {
   }
 
   function getSubtitle() {
-    if (mode === 'verify-otp') return tx({ fr: `Un code de verification a ete envoye a ${email}`, en: `A verification code was sent to ${email}`, es: `Se envio un codigo de verificacion a ${email}` });
+    if (mode === 'verify-otp') return tx({ fr: `Un code de vérification a été envoyé à ${email}`, en: `A verification code was sent to ${email}`, es: `Se envio un codigo de verificacion a ${email}` });
     if (mode === 'update-password') return tx({ fr: 'Entre ton nouveau mot de passe', en: 'Enter your new password', es: 'Ingresa tu nueva contrasena' });
     if (mode === 'forgot') return t('auth.forgotSubtitle');
     if (mode === 'register') return t('auth.registerSubtitle');
@@ -267,14 +267,14 @@ function Login() {
                   <div className="text-green-400 font-medium mb-2">{t('auth.resetSent')}</div>
                   <p className="text-grey-muted text-sm mb-1">
                     {tx({
-                      fr: 'Tu vas recevoir un courriel de Supabase (notre service d\'authentification) avec un lien pour reinitialiser ton mot de passe.',
+                      fr: 'Tu vas recevoir un courriel de Supabase (notre service d\'authentification) avec un lien pour réinitialiser ton mot de passe.',
                       en: 'You will receive an email from Supabase (our authentication service) with a link to reset your password.',
                       es: 'Recibiras un correo de Supabase (nuestro servicio de autenticacion) con un enlace para restablecer tu contrasena.',
                     })}
                   </p>
                   <p className="text-grey-muted text-xs mb-1">
                     {tx({
-                      fr: 'Verifie ta boite de reception et tes spams.',
+                      fr: 'Vérifie ta boîte de réception et tes spams.',
                       en: 'Check your inbox and spam folder.',
                       es: 'Revisa tu bandeja de entrada y la carpeta de spam.',
                     })}
@@ -301,7 +301,7 @@ function Login() {
                         </div>
                         <p className="text-grey-muted text-sm mb-6">
                           {tx({
-                            fr: 'Verifie ta boite de reception (et tes spams). Entre le code a 6 chiffres pour activer ton compte.',
+                            fr: 'Vérifie ta boîte de réception (et tes spams). Entre le code à 6 chiffres pour activer ton compte.',
                             en: 'Check your inbox (and spam folder). Enter the 6-digit code to activate your account.',
                             es: 'Revisa tu bandeja de entrada (y spam). Ingresa el codigo de 6 digitos para activar tu cuenta.',
                           })}
@@ -309,7 +309,7 @@ function Login() {
                       </div>
                       <div>
                         <label className="block text-sm text-grey-light mb-1.5">
-                          {tx({ fr: 'Code de verification', en: 'Verification code', es: 'Codigo de verificacion' })}
+                          {tx({ fr: 'Code de vérification', en: 'Verification code', es: 'Codigo de verificacion' })}
                         </label>
                         <input
                           type="text"
@@ -589,7 +589,7 @@ function Login() {
               <div className="mt-8 pt-6 border-t border-purple-main/10">
                 <p className="text-grey-muted text-xs text-center">
                   {tx({
-                    fr: 'Impression locale a Montreal - Pick-up gratuit Mile-End',
+                    fr: 'Impression locale à Montréal - Pick-up gratuit Mile-End',
                     en: 'Local printing in Montreal - Free Mile-End pickup',
                     es: 'Impresion local en Montreal - Recogida gratis Mile-End',
                   })}

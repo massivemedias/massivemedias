@@ -774,7 +774,7 @@ function AdminUtilisateurs() {
                           {role === 'artist' && (
                             <option value="__downgrade__">{tx({ fr: 'Utilisateur normal (retirer artiste)', en: 'Normal user (remove artist)', es: 'Usuario normal (quitar artista)' })}</option>
                           )}
-                          <option value="__new__">{tx({ fr: '+ Nouvel artiste (slug personnalise)', en: '+ New artist (custom slug)', es: '+ Nuevo artista (slug personalizado)' })}</option>
+                          <option value="__new__">{tx({ fr: '+ Nouvel artiste (slug personnalisé)', en: '+ New artist (custom slug)', es: '+ Nuevo artista (slug personalizado)' })}</option>
                           {ARTIST_SLUGS.map(slug => (
                             <option key={slug} value={slug}>
                               {artistsData[slug]?.name || slug}

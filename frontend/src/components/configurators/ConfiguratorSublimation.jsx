@@ -338,7 +338,7 @@ function ConfiguratorSublimation() {
           </div>
           <div className="text-grey-muted text-xs mt-1">
             {tx({
-              fr: `${priceInfo.qty}+ unites - a partir de ${priceInfo.unitPrice}$/unite`,
+              fr: `${priceInfo.qty}+ unités - à partir de ${priceInfo.unitPrice}$/unité`,
               en: `${priceInfo.qty}+ units - from ${priceInfo.unitPrice}$/unit`,
               es: `${priceInfo.qty}+ unidades - desde ${priceInfo.unitPrice}$/unidad`,
             })}

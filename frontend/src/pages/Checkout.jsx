@@ -474,7 +474,7 @@ function Checkout() {
                     </div>
                     {shipping === 0 && formData.province === 'QC' && formData.codePostal?.toUpperCase().startsWith('H') && (
                       <p className="text-green-400 text-xs mt-1">
-                        {tx({ fr: 'Livraison gratuite - region de Montreal', en: 'Free shipping - Montreal area', es: 'Envio gratis - zona de Montreal' })}
+                        {tx({ fr: 'Livraison gratuite - région de Montréal', en: 'Free shipping - Montreal area', es: 'Envio gratis - zona de Montreal' })}
                       </p>
                     )}
                   </div>

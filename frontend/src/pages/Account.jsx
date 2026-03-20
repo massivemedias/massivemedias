@@ -314,7 +314,7 @@ function Account() {
     setPwdError('');
     setPwdSuccess(false);
     if (newPassword.length < 6) {
-      setPwdError(tx({ fr: 'Minimum 6 caracteres.', en: 'Minimum 6 characters.', es: 'Minimo 6 caracteres.' }));
+      setPwdError(tx({ fr: 'Minimum 6 caractères.', en: 'Minimum 6 characters.', es: 'Minimo 6 caracteres.' }));
       return;
     }
     if (newPassword !== confirmPwd) {

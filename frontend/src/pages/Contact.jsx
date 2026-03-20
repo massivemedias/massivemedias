@@ -18,7 +18,7 @@ function ArtistFAQ({ lang, tx }) {
     <div className="max-w-4xl mx-auto mt-16 mb-4">
       <h2 className="text-2xl font-heading font-bold text-heading mb-6 flex items-center gap-3">
         <HelpCircle size={24} className="text-accent" />
-        {tx({ fr: 'Questions frequentes - Artistes', en: 'FAQ - Artists', es: 'Preguntas frecuentes - Artistas' })}
+        {tx({ fr: 'Questions fréquentes - Artistes', en: 'FAQ - Artists', es: 'Preguntas frecuentes - Artistas' })}
       </h2>
       <div className="space-y-2">
         {faq.map((item, i) => (

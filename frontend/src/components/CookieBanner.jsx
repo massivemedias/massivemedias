@@ -37,7 +37,7 @@ function CookieBanner() {
     }),
     marketingLabel: tx({ fr: 'Marketing', en: 'Marketing', es: 'Marketing' }),
     marketingDesc: tx({
-      fr: 'Permettre le suivi pour des publicites personnalisees (Meta Pixel, etc.).',
+      fr: 'Permettre le suivi pour des publicités personnalisées (Meta Pixel, etc.).',
       en: 'Allow tracking for personalized ads (Meta Pixel, etc.).',
       es: 'Permitir el seguimiento para anuncios personalizados (Meta Pixel, etc.).',
     }),

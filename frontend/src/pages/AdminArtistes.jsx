@@ -11,10 +11,10 @@ import { getArtistSubmissions, updateArtistStatus } from '../services/adminServi
 
 const ARTIST_STATUS = {
   new:       { fr: 'Nouvelle',    en: 'New',       es: 'Nueva',      color: 'bg-blue-500/20 text-blue-400', icon: Mail },
-  reviewing: { fr: 'En revision', en: 'Reviewing', es: 'En revision', color: 'bg-yellow-500/20 text-yellow-400', icon: Eye },
-  accepted:  { fr: 'Accepte',     en: 'Accepted',  es: 'Aceptado',   color: 'bg-green-500/20 text-green-400', icon: CheckCircle },
-  rejected:  { fr: 'Refuse',      en: 'Rejected',  es: 'Rechazado',  color: 'bg-red-500/20 text-red-400', icon: XCircle },
-  archived:  { fr: 'Archive',     en: 'Archived',  es: 'Archivado',  color: 'bg-gray-500/20 text-gray-400', icon: Archive },
+  reviewing: { fr: 'En révision', en: 'Reviewing', es: 'En revision', color: 'bg-yellow-500/20 text-yellow-400', icon: Eye },
+  accepted:  { fr: 'Accepté',     en: 'Accepted',  es: 'Aceptado',   color: 'bg-green-500/20 text-green-400', icon: CheckCircle },
+  rejected:  { fr: 'Refusé',      en: 'Rejected',  es: 'Rechazado',  color: 'bg-red-500/20 text-red-400', icon: XCircle },
+  archived:  { fr: 'Archivé',     en: 'Archived',  es: 'Archivado',  color: 'bg-gray-500/20 text-gray-400', icon: Archive },
 };
 
 const STATUS_FLOW = {
@@ -86,8 +86,8 @@ function AdminArtistes() {
   const summaryCards = [
     { label: tx({ fr: 'Total soumissions', en: 'Total submissions', es: 'Total solicitudes' }), value: meta.total || 0, icon: Palette, accent: 'text-accent' },
     { label: tx({ fr: 'Nouvelles', en: 'New', es: 'Nuevas' }), value: items.filter(i => i.status === 'new').length, icon: Clock, accent: 'text-blue-400' },
-    { label: tx({ fr: 'En revision', en: 'Reviewing', es: 'En revision' }), value: items.filter(i => i.status === 'reviewing').length, icon: Eye, accent: 'text-yellow-400' },
-    { label: tx({ fr: 'Acceptees', en: 'Accepted', es: 'Aceptadas' }), value: items.filter(i => i.status === 'accepted').length, icon: UserCheck, accent: 'text-green-400' },
+    { label: tx({ fr: 'En révision', en: 'Reviewing', es: 'En revision' }), value: items.filter(i => i.status === 'reviewing').length, icon: Eye, accent: 'text-yellow-400' },
+    { label: tx({ fr: 'Acceptées', en: 'Accepted', es: 'Aceptadas' }), value: items.filter(i => i.status === 'accepted').length, icon: UserCheck, accent: 'text-green-400' },
   ];
 
   return (
@@ -257,7 +257,7 @@ function AdminArtistes() {
                           {/* Contract info */}
                           <div className="flex items-center gap-3 text-xs text-grey-muted">
                             <CheckCircle size={14} className="text-green-400" />
-                            <span>{tx({ fr: 'Contrat accepte', en: 'Contract accepted', es: 'Contrato aceptado' })} (v{item.contractVersion || '1'})</span>
+                            <span>{tx({ fr: 'Contrat accepté', en: 'Contract accepted', es: 'Contrato aceptado' })} (v{item.contractVersion || '1'})</span>
                           </div>
 
                           {/* Notes */}

@@ -49,9 +49,9 @@ function BoutiqueMerchTshirt() {
   return (
     <>
       <SEO
-        title={tx({ fr: 'T-Shirt Sublimation Montreal - 60+ Couleurs | Massive', en: 'Sublimation T-Shirt Montreal - 60+ Colors | Massive', es: 'Camiseta Sublimacion Montreal - 60+ Colores | Massive' })}
+        title={tx({ fr: 'T-Shirt Sublimation Montréal - 60+ Couleurs | Massive', en: 'Sublimation T-Shirt Montreal - 60+ Colors | Massive', es: 'Camiseta Sublimacion Montreal - 60+ Colores | Massive' })}
         description={tx({
-          fr: 'T-Shirt sublimation all-over Massive a Montreal. 60+ couleurs, tailles S a 3XL. Impression full-color permanente. A partir de 30$. Production locale Mile-End.',
+          fr: 'T-Shirt sublimation all-over Massive à Montréal. 60+ couleurs, tailles S à 3XL. Impression full-color permanente. À partir de 30$. Production locale Mile-End.',
           en: 'All-over sublimation T-Shirt by Massive in Montreal. 60+ colors, sizes S to 3XL. Permanent full-color print. From $30. Local production Mile-End.',
           es: 'Camiseta sublimacion all-over de Massive en Montreal. 60+ colores, tallas S a 3XL. Impresion full-color permanente. Desde 30$. Produccion local Mile-End.',
         })}

@@ -73,7 +73,7 @@ function ArtistPartnershipForm() {
     } catch (err) {
       setError(
         err?.response?.data?.error?.message ||
-        tx({ fr: 'Une erreur est survenue. Reessaie plus tard.', en: 'An error occurred. Please try again later.', es: 'Ocurrio un error. Intentalo mas tarde.' })
+        tx({ fr: 'Une erreur est survenue. Réessaie plus tard.', en: 'An error occurred. Please try again later.', es: 'Ocurrio un error. Intentalo mas tarde.' })
       );
       setStatus('error');
     }
@@ -92,18 +92,18 @@ function ArtistPartnershipForm() {
       >
         <CheckCircle size={64} className="text-green-400 mx-auto mb-6" />
         <h3 className="font-heading text-3xl font-bold text-heading mb-4">
-          {tx({ fr: 'Contrat signe et candidature envoyee!', en: 'Contract signed and application sent!', es: 'Contrato firmado y solicitud enviada!' })}
+          {tx({ fr: 'Contrat signé et candidature envoyée!', en: 'Contract signed and application sent!', es: 'Contrato firmado y solicitud enviada!' })}
         </h3>
         <p className="text-grey-muted text-lg mb-2">
           {tx({
-            fr: 'Tu recevras une copie du contrat signe par courriel. On examine ta candidature et on te revient rapidement.',
+            fr: 'Tu recevras une copie du contrat signé par courriel. On examine ta candidature et on te revient rapidement.',
             en: 'You will receive a copy of the signed contract by email. We are reviewing your application and will get back to you soon.',
             es: 'Recibiras una copia del contrato firmado por correo. Estamos revisando tu solicitud y te contactaremos pronto.',
           })}
         </p>
         <p className="text-grey-muted text-sm mt-4">
           {tx({
-            fr: 'Une fois accepte, tu pourras envoyer ton portfolio et ta bio depuis ton espace compte.',
+            fr: 'Une fois accepté, tu pourras envoyer ton portfolio et ta bio depuis ton espace compte.',
             en: 'Once accepted, you can submit your portfolio and bio from your account page.',
             es: 'Una vez aceptado, podras enviar tu portafolio y bio desde tu cuenta.',
           })}
@@ -127,7 +127,7 @@ function ArtistPartnershipForm() {
         </h2>
         <p className="text-grey-light text-base leading-relaxed max-w-2xl mx-auto mb-3">
           {tx({
-            fr: 'Un artiste Massive, c\'est un createur visuel qui rejoint notre reseau pour transformer ses oeuvres en produits physiques de qualite professionnelle - prints fine art, stickers, merch. Massive s\'occupe de tout : impression sur equipement pro, boutique en ligne, gestion des commandes et livraison. Toi, tu te concentres sur ta creation et tu touches ta part sur chaque vente. C\'est un partenariat gagnant-gagnant : ton art prend forme, et ton public peut enfin le tenir entre ses mains.',
+            fr: 'Un artiste Massive, c\'est un créateur visuel qui rejoint notre réseau pour transformer ses oeuvres en produits physiques de qualité professionnelle - prints fine art, stickers, merch. Massive s\'occupe de tout : impression sur équipement pro, boutique en ligne, gestion des commandes et livraison. Toi, tu te concentres sur ta création et tu touches ta part sur chaque vente. C\'est un partenariat gagnant-gagnant : ton art prend forme, et ton public peut enfin le tenir entre ses mains.',
             en: 'A Massive artist is a visual creator who joins our network to turn their artwork into professional-quality physical products - fine art prints, stickers, merch. Massive handles everything: printing on pro equipment, online store, order management and shipping. You focus on creating and earn your share on every sale. It\'s a win-win partnership: your art comes to life, and your audience can finally hold it in their hands.',
             es: 'Un artista Massive es un creador visual que se une a nuestra red para transformar sus obras en productos fisicos de calidad profesional - impresiones fine art, stickers, merch. Massive se encarga de todo: impresion en equipo profesional, tienda en linea, gestion de pedidos y envios. Tu te concentras en crear y ganas tu parte en cada venta. Es una asociacion donde todos ganan: tu arte cobra vida, y tu publico por fin puede tenerlo en sus manos.',
           })}
@@ -146,7 +146,7 @@ function ArtistPartnershipForm() {
             <div className="flex-1">
               <p className="text-heading font-bold text-lg mb-1">
                 {tx({
-                  fr: 'Connecte-toi ou cree un compte pour commencer',
+                  fr: 'Connecte-toi ou crée un compte pour commencer',
                   en: 'Sign in or create an account to get started',
                   es: 'Inicia sesion o crea una cuenta para comenzar',
                 })}
@@ -304,7 +304,7 @@ function ArtistPartnershipForm() {
               type="text" id="artistAdresse" name="adresse" required
               value={formData.adresse} onChange={handleChange}
               disabled={!user}
-              placeholder={tx({ fr: '123 rue Exemple, Montreal, QC H2X 1Y4', en: '123 Example St, Montreal, QC H2X 1Y4', es: '123 Calle Ejemplo, Montreal, QC H2X 1Y4' })}
+              placeholder={tx({ fr: '123 rue Exemple, Montréal, QC H2X 1Y4', en: '123 Example St, Montreal, QC H2X 1Y4', es: '123 Calle Ejemplo, Montreal, QC H2X 1Y4' })}
               className="input-field disabled:opacity-50 disabled:cursor-not-allowed"
             />
           </div>

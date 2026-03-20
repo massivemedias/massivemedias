@@ -186,7 +186,7 @@ function Boutique() {
       <>
         <SEO
           title={tx({
-            fr: 'Fine Art Prints Montreal - Tirages Qualité Galerie | Massive',
+            fr: 'Fine Art Prints Montréal - Tirages Qualité Galerie | Massive',
             en: 'Fine Art Prints Montreal - Gallery Quality Prints | Massive',
             es: 'Fine Art Prints Montreal - Impresiones Calidad Galeria | Massive',
           })}
@@ -245,8 +245,8 @@ function Boutique() {
                     <h2 className="text-xl md:text-2xl font-heading font-bold text-heading group-hover:text-accent transition-colors">{artist.name}</h2>
                     <p className="text-grey-muted text-xs">
                       {hasPrints
-                        ? `${artist.prints.length} ${tx({ fr: 'oeuvres', en: 'artworks', es: 'obras' })}${minPrice ? tx({ fr: ` - a partir de ${minPrice}$`, en: ` - from $${minPrice}`, es: ` - desde ${minPrice}$` }) : ''}`
-                        : tx({ fr: 'Bientot disponible', en: 'Coming soon', es: 'Disponible pronto' })}
+                        ? `${artist.prints.length} ${tx({ fr: 'oeuvres', en: 'artworks', es: 'obras' })}${minPrice ? tx({ fr: ` - à partir de ${minPrice}$`, en: ` - from $${minPrice}`, es: ` - desde ${minPrice}$` }) : ''}`
+                        : tx({ fr: 'Bientôt disponible', en: 'Coming soon', es: 'Disponible pronto' })}
                     </p>
                   </div>
                   <ArrowRight size={18} className="text-grey-muted group-hover:text-accent ml-auto flex-shrink-0 md:opacity-0 md:group-hover:opacity-100 transition-all" />
@@ -297,12 +297,12 @@ function Boutique() {
     <>
       <SEO
         title={tx({
-          fr: 'Boutique Massive Montreal - Prints, Stickers & Design | Massive',
+          fr: 'Boutique Massive Montréal - Prints, Stickers & Design | Massive',
           en: 'Massive Shop Montreal - Prints, Stickers & Design | Massive',
           es: 'Tienda Massive Montreal - Prints, Stickers & Diseno | Massive',
         })}
         description={tx({
-          fr: 'Boutique en ligne Massive a Montreal. Tirages fine art, stickers die-cut, design graphique et developpement web. Production locale Mile-End, livraison rapide.',
+          fr: 'Boutique en ligne Massive à Montréal. Tirages fine art, stickers die-cut, design graphique et développement web. Production locale Mile-End, livraison rapide.',
           en: 'Massive online shop in Montreal. Fine art prints, die-cut stickers, graphic design and web development. Local production Mile-End, fast delivery.',
           es: 'Tienda en linea Massive en Montreal. Impresiones fine art, stickers die-cut, diseno grafico y desarrollo web. Produccion local Mile-End, entrega rapida.',
         })}

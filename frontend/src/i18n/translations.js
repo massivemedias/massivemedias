@@ -212,7 +212,7 @@ const translations = {
         },
         belette3000: {
           title: 'Belette 3000',
-          description: "Sacoches faites a la main a Montreal.",
+          description: "Sacoches faites à la main à Montréal.",
         },
       },
     },

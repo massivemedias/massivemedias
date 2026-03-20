@@ -187,7 +187,7 @@ function AdminDepenses() {
       setInvoiceData(result);
     } catch (err) {
       console.error('Erreur parsing PDF:', err);
-      setParseError(tx({ fr: 'Erreur lors de l\'analyse du PDF. Verifiez que le fichier est valide.', en: 'Error analyzing PDF. Check that the file is valid.', es: 'Error al analizar el PDF.' }));
+      setParseError(tx({ fr: 'Erreur lors de l\'analyse du PDF. Vérifiez que le fichier est valide.', en: 'Error analyzing PDF. Check that the file is valid.', es: 'Error al analizar el PDF.' }));
     } finally {
       setParsing(false);
       setUploadingInvoice(false);

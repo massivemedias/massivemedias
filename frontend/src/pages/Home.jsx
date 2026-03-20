@@ -199,7 +199,7 @@ function Home() {
             </motion.div>
             <h1 className="sr-only">
               {tx({
-                fr: 'Massive Medias - Impression Fine Art, Stickers personnalises, Merch, Design graphique et Developpement web a Montreal',
+                fr: 'Massive Medias - Impression Fine Art, Stickers personnalisés, Merch, Design graphique et Développement web à Montréal',
                 en: 'Massive Medias - Fine Art Printing, Custom Stickers, Merch, Graphic Design and Web Development in Montreal',
                 es: 'Massive Medias - Impresion Fine Art, Stickers personalizados, Merch, Diseno grafico y Desarrollo web en Montreal',
               })}

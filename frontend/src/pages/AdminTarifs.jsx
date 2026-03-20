@@ -658,7 +658,7 @@ function AdminTarifs() {
                   <p className="text-grey-muted">- {tx({ fr: 'Zero frais de boutique (page artiste gratuite sur massivemedias.com)', en: 'Zero store fees (free artist page on massivemedias.com)', es: 'Cero costos de tienda (pagina de artista gratuita en massivemedias.com)' })}</p>
                   <p className="text-grey-muted">- {tx({ fr: 'Zero gestion, zero service client', en: 'Zero management, zero customer service', es: 'Cero gestion, cero servicio al cliente' })}</p>
                   <p className="text-grey-muted">- {tx({ fr: "Qualité musée garantie (12 encres pigmentées, papier d'archives)", en: 'Guaranteed museum quality (12 pigmented inks, archival paper)', es: 'Calidad museo garantizada (12 tintas pigmentadas, papel de archivo)' })}</p>
-                  <p className="text-grey-muted">- {tx({ fr: 'Impression locale a Montreal, pick-up Mile-End', en: 'Local printing in Montreal, pick-up Mile-End', es: 'Impresion local en Montreal, recoger en Mile-End' })}</p>
+                  <p className="text-grey-muted">- {tx({ fr: 'Impression locale à Montréal, pick-up Mile-End', en: 'Local printing in Montreal, pick-up Mile-End', es: 'Impresion local en Montreal, recoger en Mile-End' })}</p>
                 </div>
               </div>
             </div>
@@ -822,7 +822,7 @@ function AdminTarifs() {
 
           {/* Web */}
           <SectionCard icon={Globe} iconColor="text-emerald-400"
-            title={tx({ fr: 'Developpement Web', en: 'Web Development', es: 'Desarrollo Web' })}
+            title={tx({ fr: 'Développement Web', en: 'Web Development', es: 'Desarrollo Web' })}
             subtitle={`${L.hourly}: ${WEB_HOURLY}`} delay={0.3}>
             <h4 className="text-xs font-semibold text-heading mb-2 uppercase tracking-wider">{tx({ fr: 'Sites complets (design + code + SEO)', en: 'Full sites (design + code + SEO)', es: 'Sitios completos (diseno + codigo + SEO)' })}</h4>
             <div className="mb-6">

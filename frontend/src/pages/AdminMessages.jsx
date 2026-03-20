@@ -57,11 +57,11 @@ function Linkify({ text }) {
 const ALL_STATUS = {
   new:       { fr: 'Nouveau',     en: 'New',       es: 'Nuevo',      color: 'bg-blue-500/20 text-blue-400', icon: Mail },
   read:      { fr: 'Lu',          en: 'Read',      es: 'Leido',      color: 'bg-yellow-500/20 text-yellow-400', icon: Eye },
-  reviewing: { fr: 'En revision', en: 'Reviewing', es: 'En revision', color: 'bg-yellow-500/20 text-yellow-400', icon: Eye },
-  replied:   { fr: 'Repondu',     en: 'Replied',   es: 'Respondido',  color: 'bg-green-500/20 text-green-400', icon: Reply },
-  accepted:  { fr: 'Accepte',     en: 'Accepted',  es: 'Aceptado',    color: 'bg-green-500/20 text-green-400', icon: CheckCircle },
-  rejected:  { fr: 'Refuse',      en: 'Rejected',  es: 'Rechazado',   color: 'bg-red-500/20 text-red-400', icon: XCircle },
-  archived:  { fr: 'Archive',     en: 'Archived',  es: 'Archivado',   color: 'bg-gray-500/20 text-gray-400', icon: Archive },
+  reviewing: { fr: 'En révision', en: 'Reviewing', es: 'En revision', color: 'bg-yellow-500/20 text-yellow-400', icon: Eye },
+  replied:   { fr: 'Répondu',     en: 'Replied',   es: 'Respondido',  color: 'bg-green-500/20 text-green-400', icon: Reply },
+  accepted:  { fr: 'Accepté',     en: 'Accepted',  es: 'Aceptado',    color: 'bg-green-500/20 text-green-400', icon: CheckCircle },
+  rejected:  { fr: 'Refusé',      en: 'Rejected',  es: 'Rechazado',   color: 'bg-red-500/20 text-red-400', icon: XCircle },
+  archived:  { fr: 'Archivé',     en: 'Archived',  es: 'Archivado',   color: 'bg-gray-500/20 text-gray-400', icon: Archive },
 };
 
 const CONTACT_FLOW = {
@@ -772,7 +772,7 @@ function AdminMessages() {
                               {/* Contract info + delete */}
                               <div className="flex items-center gap-3 text-xs text-grey-muted">
                                 <CheckCircle size={14} className="text-green-400" />
-                                <span>{tx({ fr: 'Contrat accepte', en: 'Contract accepted', es: 'Contrato aceptado' })} (v{item.contractVersion || '1'})</span>
+                                <span>{tx({ fr: 'Contrat accepté', en: 'Contract accepted', es: 'Contrato aceptado' })} (v{item.contractVersion || '1'})</span>
                                 <span className="flex-1" />
                                 <button onClick={(e) => { e.stopPropagation(); handleStatusChange(item, 'archived'); }}
                                   disabled={updatingId === item._uid}

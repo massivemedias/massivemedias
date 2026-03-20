@@ -710,7 +710,7 @@ function ArtisteDetail({ subdomainSlug }) {
           className="mb-20"
         >
           <h2 className="text-3xl font-heading font-bold text-gradient mb-8 text-center">
-            {tx({ fr: 'Questions frequentes', en: 'Frequently Asked Questions', es: 'Preguntas frecuentes' })}
+            {tx({ fr: 'Questions fréquentes', en: 'Frequently Asked Questions', es: 'Preguntas frecuentes' })}
           </h2>
           <div className="max-w-3xl mx-auto space-y-3">
             {faqItems.map((item, index) => (
