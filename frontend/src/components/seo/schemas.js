@@ -25,10 +25,10 @@ export function getOrganizationSchema() {
     ],
     address: {
       '@type': 'PostalAddress',
-      streetAddress: 'Mile-End',
-      addressLocality: 'Montreal',
+      streetAddress: '7049 rue Saint-Urbain',
+      addressLocality: 'Montréal',
       addressRegion: 'QC',
-      postalCode: 'H2T',
+      postalCode: 'H2S 3H5',
       addressCountry: 'CA',
     },
     contactPoint: {
@@ -60,10 +60,10 @@ export function getLocalBusinessSchema(lang) {
     paymentAccepted: 'Credit Card, Debit Card, Apple Pay, Google Pay',
     address: {
       '@type': 'PostalAddress',
-      streetAddress: 'Mile-End',
-      addressLocality: 'Montreal',
+      streetAddress: '7049 rue Saint-Urbain',
+      addressLocality: 'Montréal',
       addressRegion: 'QC',
-      postalCode: 'H2T',
+      postalCode: 'H2S 3H5',
       addressCountry: 'CA',
     },
     geo: {

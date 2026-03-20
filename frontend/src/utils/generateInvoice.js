@@ -11,9 +11,9 @@ const COMPANY = {
   neq: '2269057891',
   tps: '732457635RT0001',
   tvq: '4012577678TQ0001',
-  address: '5338 rue Marquette',
-  city: 'Montreal (QC) H2J 3Z3',
-  email: 'hello@massivemedias.com',
+  address: '7049 rue Saint-Urbain',
+  city: 'Montréal (QC)',
+  email: 'massivemedias@gmail.com',
   website: 'massivemedias.com',
 };
 
