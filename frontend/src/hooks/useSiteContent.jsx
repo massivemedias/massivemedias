@@ -40,6 +40,7 @@ export function SiteContentProvider({ children }) {
         if (raw) {
           // Supprimer les champs CMS qui ont des donnees incorrectes
           // Les donnees locales (translations.js) sont la source de verite
+          // Page A propos - toute la section est geree localement
           delete raw.aboutTimeline;
           delete raw.aboutUniverse;
           delete raw.aboutSpaceTitleFr;
@@ -48,6 +49,19 @@ export function SiteContentProvider({ children }) {
           delete raw.aboutSpaceDescriptionFr;
           delete raw.aboutSpaceDescriptionEn;
           delete raw.aboutSpaceDescriptionEs;
+          delete raw.aboutTextFr;
+          delete raw.aboutTextEn;
+          delete raw.aboutTextEs;
+          delete raw.aboutHistoryTitleFr;
+          delete raw.aboutHistoryTitleEn;
+          delete raw.aboutHeroTitleFr;
+          delete raw.aboutHeroTitleEn;
+          delete raw.aboutHeroSubtitleFr;
+          delete raw.aboutHeroSubtitleEn;
+          delete raw.aboutTimelineTitleFr;
+          delete raw.aboutTimelineTitleEn;
+          delete raw.aboutUniverseTitleFr;
+          delete raw.aboutUniverseTitleEn;
           delete raw.contactEmail;
         }
         setContent(raw);
