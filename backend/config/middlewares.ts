@@ -29,8 +29,10 @@ const config: Core.Config.Middlewares = [
       origin: [
         'http://localhost:3000',
         'http://localhost:5173',
+        'http://localhost:5174',
         'https://massivemedias.com',
         'https://www.massivemedias.com',
+        /\.massivemedias\.com$/,
         process.env.RENDER_EXTERNAL_URL || 'https://massivemedias-api.onrender.com',
       ],
       methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
