@@ -56,6 +56,7 @@ const AdminDepenses = lazyWithRetry(() => import('./pages/AdminDepenses'));
 const AdminStats = lazyWithRetry(() => import('./pages/AdminStats'));
 const AdminTarifs = lazyWithRetry(() => import('./pages/AdminTarifs'));
 const AdminTemoignages = lazyWithRetry(() => import('./pages/AdminTemoignages'));
+const AdminFactures = lazyWithRetry(() => import('./pages/AdminFactures'));
 const AdminUtilisateurs = lazyWithRetry(() => import('./pages/AdminUtilisateurs'));
 const AdminDashboard = lazyWithRetry(() => import('./pages/AdminDashboard'));
 const AdminNotes = lazyWithRetry(() => import('./pages/AdminNotes'));
@@ -174,6 +175,7 @@ function App() {
               <Route path="dashboard" element={<AdminDashboard />} />
               <Route path="notes" element={<AdminNotes />} />
               <Route path="commandes" element={<AdminOrders />} />
+              <Route path="factures" element={<AdminFactures />} />
               <Route path="commissions" element={<AdminCommissions />} />
               <Route path="inventaire" element={<AdminInventaire />} />
               <Route path="messages" element={<AdminMessages />} />

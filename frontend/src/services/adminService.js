@@ -41,3 +41,9 @@ export const generateTestimonialLink = (data) => api.post('/testimonials/generat
 
 // --- Analytics ---
 export const getAnalytics = (period = 30) => api.get('/analytics/stats', { params: { period } });
+
+// --- Factures ---
+export const getInvoices = () => api.get('/invoices', { params: { sort: 'date:desc', pagination: { pageSize: 100 } } });
+export const createInvoice = (data) => api.post('/invoices', { data });
+export const updateInvoice = (documentId, data) => api.put(`/invoices/${documentId}`, { data });
+export const deleteInvoice = (documentId) => api.delete(`/invoices/${documentId}`);

@@ -309,3 +309,146 @@ export function generateInvoicePDF(order, type = 'invoice') {
 }
 
 export default generateInvoicePDF;
+
+// ==================== FACTURE MANUELLE (admin) ====================
+export function generateManualInvoicePDF(invoice) {
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const margin = 18;
+
+  // Logo
+  try { doc.addImage(LOGO_B64, 'PNG', margin, 12, 22, 22); } catch {}
+
+  // Titre FACTURE
+  doc.setFontSize(24);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(61, 0, 121);
+  doc.text('FACTURE', pageWidth - margin, 22, { align: 'right' });
+
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(120, 120, 120);
+  doc.text(`No: ${invoice.invoiceNumber}`, pageWidth - margin, 30, { align: 'right' });
+  const dateStr = new Date(invoice.date).toLocaleDateString('fr-CA', { day: 'numeric', month: 'long', year: 'numeric' });
+  doc.text(`Date: ${dateStr}`, pageWidth - margin, 36, { align: 'right' });
+
+  // Ligne separatrice
+  doc.setDrawColor(220);
+  doc.line(margin, 42, pageWidth - margin, 42);
+
+  // DE
+  let y = 50;
+  doc.setFontSize(7);
+  doc.setTextColor(150);
+  doc.text('DE', margin, y);
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(30);
+  doc.text(COMPANY.name, margin, y + 5);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
+  doc.setTextColor(120);
+  doc.text(COMPANY.address, margin, y + 11);
+  doc.text(COMPANY.city, margin, y + 16);
+  doc.text(COMPANY.email, margin, y + 21);
+  doc.text(`NEQ ${COMPANY.neq}`, margin, y + 26);
+
+  // FACTURER A
+  const col2 = pageWidth / 2 + 10;
+  doc.setFontSize(7);
+  doc.setTextColor(150);
+  doc.text('FACTURER \u00c0', col2, y);
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(30);
+  doc.text(invoice.customerName, col2, y + 5);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
+  doc.setTextColor(120);
+  if (invoice.customerAddress) doc.text(invoice.customerAddress, col2, y + 11);
+  if (invoice.customerPhone) doc.text(invoice.customerPhone, col2, y + 16);
+  if (invoice.customerEmail) doc.text(invoice.customerEmail, col2, y + 21);
+
+  // Table items
+  const tableY = y + 38;
+  const items = invoice.items || [];
+  const tableBody = items.map(it => [
+    it.description + (it.papier ? ` - ${it.papier}` : '') + (it.format ? ` (${it.format})` : ''),
+    `${it.qty || 1}`,
+    `${Number(it.prix || 0).toFixed(2)} $`,
+    `${(Number(it.prix || 0) * (it.qty || 1)).toFixed(2)} $`,
+  ]);
+
+  autoTable(doc, {
+    startY: tableY,
+    head: [['Description', 'Qte', 'Prix/u', 'Total']],
+    body: tableBody,
+    theme: 'grid',
+    headStyles: { fillColor: [61, 0, 121], textColor: 255, fontSize: 8, fontStyle: 'bold' },
+    bodyStyles: { fontSize: 8, textColor: [40, 40, 40] },
+    alternateRowStyles: { fillColor: [248, 248, 248] },
+    margin: { left: margin, right: margin },
+    columnStyles: {
+      0: { cellWidth: 'auto' },
+      1: { cellWidth: 15, halign: 'center' },
+      2: { cellWidth: 25, halign: 'right' },
+      3: { cellWidth: 25, halign: 'right' },
+    },
+  });
+
+  // Totals
+  const finalY = doc.lastAutoTable.finalY + 8;
+  const totalsX = pageWidth - margin - 55;
+
+  doc.setFontSize(9);
+  doc.setTextColor(120);
+  doc.text('Sous-total', totalsX, finalY);
+  doc.setTextColor(30);
+  doc.text(`${Number(invoice.subtotal).toFixed(2)} $`, pageWidth - margin, finalY, { align: 'right' });
+
+  let ty = finalY;
+  if (invoice.discountPercent > 0) {
+    ty += 6;
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(46, 125, 50);
+    doc.text(`Rabais (${invoice.discountPercent}%)`, totalsX, ty);
+    doc.text(`-${Number(invoice.discountAmount).toFixed(2)} $`, pageWidth - margin, ty, { align: 'right' });
+    doc.setFont('helvetica', 'normal');
+  }
+
+  ty += 6;
+  doc.setTextColor(120);
+  doc.text('TPS (5%)', totalsX, ty);
+  doc.setTextColor(30);
+  doc.text(`${Number(invoice.tps).toFixed(2)} $`, pageWidth - margin, ty, { align: 'right' });
+
+  ty += 6;
+  doc.setTextColor(120);
+  doc.text('TVQ (9,975%)', totalsX, ty);
+  doc.setTextColor(30);
+  doc.text(`${Number(invoice.tvq).toFixed(2)} $`, pageWidth - margin, ty, { align: 'right' });
+
+  ty += 3;
+  doc.setDrawColor(61, 0, 121);
+  doc.setLineWidth(0.5);
+  doc.line(totalsX, ty, pageWidth - margin, ty);
+
+  ty += 7;
+  doc.setFontSize(12);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(61, 0, 121);
+  doc.text('TOTAL', totalsX, ty);
+  doc.text(`${Number(invoice.total).toFixed(2)} $`, pageWidth - margin, ty, { align: 'right' });
+
+  // Footer
+  doc.setFontSize(6);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(160);
+  doc.text(
+    `${COMPANY.name} - ${COMPANY.address}, ${COMPANY.city} - ${COMPANY.email} - NEQ ${COMPANY.neq}`,
+    pageWidth / 2, 282, { align: 'center' }
+  );
+  doc.text('Merci pour votre confiance!', pageWidth / 2, 286, { align: 'center' });
+
+  doc.save(`facture-${invoice.invoiceNumber}.pdf`);
+}

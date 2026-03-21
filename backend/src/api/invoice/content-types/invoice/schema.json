@@ -1,0 +1,77 @@
+{
+  "kind": "collectionType",
+  "collectionName": "invoices",
+  "info": {
+    "singularName": "invoice",
+    "pluralName": "invoices",
+    "displayName": "Facture",
+    "description": "Factures clients (manuelles et automatiques)"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "invoiceNumber": {
+      "type": "string",
+      "unique": true,
+      "required": true
+    },
+    "date": {
+      "type": "date",
+      "required": true
+    },
+    "customerName": {
+      "type": "string",
+      "required": true
+    },
+    "customerEmail": {
+      "type": "email"
+    },
+    "customerPhone": {
+      "type": "string"
+    },
+    "customerAddress": {
+      "type": "text"
+    },
+    "items": {
+      "type": "json",
+      "required": true
+    },
+    "subtotal": {
+      "type": "decimal",
+      "required": true
+    },
+    "discountPercent": {
+      "type": "decimal"
+    },
+    "discountAmount": {
+      "type": "decimal"
+    },
+    "tps": {
+      "type": "decimal"
+    },
+    "tvq": {
+      "type": "decimal"
+    },
+    "total": {
+      "type": "decimal",
+      "required": true
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": ["draft", "sent", "paid", "cancelled"],
+      "default": "draft"
+    },
+    "notes": {
+      "type": "text"
+    },
+    "order": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::order.order"
+    },
+    "paidAt": {
+      "type": "datetime"
+    }
+  }
+}
