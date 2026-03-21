@@ -25,14 +25,14 @@ import { generateContractPDF } from '../utils/generateContractPDF';
 // Prix client et prix artiste (rabais 30% sur prix client)
 const ARTIST_DISCOUNT = 0.30;
 const CLIENT_PRICES = {
-  studio: { a4: 35, a3: 50, a3plus: 65 },
-  museum: { a4: 75, a3: 120, a3plus: 160, a2: 190 },
+  studio: { postcard: 15, a4: 35, a3: 50, a3plus: 65, a2: 85 },
+  museum: { postcard: 25, a4: 75, a3: 120, a3plus: 160, a2: 190 },
 };
 const ARTIST_DISCOUNT_PRICES = {
-  studio: { a4: Math.round(35 * (1 - ARTIST_DISCOUNT)), a3: Math.round(50 * (1 - ARTIST_DISCOUNT)), a3plus: Math.round(65 * (1 - ARTIST_DISCOUNT)) },
-  museum: { a4: Math.round(75 * (1 - ARTIST_DISCOUNT)), a3: Math.round(120 * (1 - ARTIST_DISCOUNT)), a3plus: Math.round(160 * (1 - ARTIST_DISCOUNT)), a2: Math.round(190 * (1 - ARTIST_DISCOUNT)) },
+  studio: { postcard: Math.floor(15 * (1 - ARTIST_DISCOUNT)), a4: Math.floor(35 * (1 - ARTIST_DISCOUNT)), a3: Math.floor(50 * (1 - ARTIST_DISCOUNT)), a3plus: Math.floor(65 * (1 - ARTIST_DISCOUNT)), a2: Math.floor(85 * (1 - ARTIST_DISCOUNT)) },
+  museum: { postcard: Math.floor(25 * (1 - ARTIST_DISCOUNT)), a4: Math.floor(75 * (1 - ARTIST_DISCOUNT)), a3: Math.floor(120 * (1 - ARTIST_DISCOUNT)), a3plus: Math.floor(160 * (1 - ARTIST_DISCOUNT)), a2: Math.floor(190 * (1 - ARTIST_DISCOUNT)) },
 };
-const FRAME_PRICE = 30;
+const FRAME_PRICES = { postcard: 20, a4: 20, a3: 30, a3plus: 35, a2: 45 };
 
 
 function AccountArtistDashboard({ section = 'dashboard' }) {
@@ -654,10 +654,10 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
               </thead>
               <tbody>
                 <tr className="shadow-[0_1px_0_rgba(255,255,255,0.03)]"><td colSpan="5" className="pt-3 pb-1 text-accent font-semibold text-xs">{tx({ fr: 'Série Studio (4 encres pigmentées)', en: 'Studio Series (4 pigment inks)', es: 'Serie Studio (4 tintas pigmentadas)' })}</td></tr>
-                {[{ format: 'A4 (8.5x11")', key: 'a4' }, { format: 'A3 (11x17")', key: 'a3' }, { format: 'A3+ (13x19")', key: 'a3plus' }].map(({ format, key }) => {
+                {[{ format: 'A6 (4x6")', key: 'postcard' }, { format: 'A4 (8.5x11")', key: 'a4' }, { format: 'A3 (11x17")', key: 'a3' }, { format: 'A3+ (13x19")', key: 'a3plus' }, { format: 'A2 (18x24")', key: 'a2' }].map(({ format, key }) => {
                   const clientPrice = CLIENT_PRICES.studio[key];
                   const artistPrice = ARTIST_DISCOUNT_PRICES.studio[key];
-                  const discount = Math.round((1 - artistPrice / clientPrice) * 100);
+                  const discount = 30;
                   return (
                     <tr key={`s-${key}`} className="shadow-[0_1px_0_rgba(255,255,255,0.03)] hover:bg-accent/5 transition-colors">
                       <td className="py-2 pr-1 sm:pr-3 text-heading text-xs sm:text-sm">{format}</td>
@@ -669,10 +669,10 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
                   );
                 })}
                 <tr className="shadow-[0_1px_0_rgba(255,255,255,0.03)]"><td colSpan="5" className="pt-4 pb-1 text-accent font-semibold text-xs">{tx({ fr: 'Série Musée (12 encres pigmentées)', en: 'Museum Series (12 pigment inks)', es: 'Serie Museo (12 tintas pigmentadas)' })}</td></tr>
-                {[{ format: 'A4 (8.5x11")', key: 'a4' }, { format: 'A3 (11x17")', key: 'a3' }, { format: 'A3+ (13x19")', key: 'a3plus' }, { format: 'A2 (18x24")', key: 'a2' }].map(({ format, key }) => {
+                {[{ format: 'A6 (4x6")', key: 'postcard' }, { format: 'A4 (8.5x11")', key: 'a4' }, { format: 'A3 (11x17")', key: 'a3' }, { format: 'A3+ (13x19")', key: 'a3plus' }, { format: 'A2 (18x24")', key: 'a2' }].map(({ format, key }) => {
                   const clientPrice = CLIENT_PRICES.museum[key];
                   const artistPrice = ARTIST_DISCOUNT_PRICES.museum[key];
-                  const discount = Math.round((1 - artistPrice / clientPrice) * 100);
+                  const discount = 30;
                   return (
                     <tr key={`m-${key}`} className="shadow-[0_1px_0_rgba(255,255,255,0.03)] hover:bg-accent/5 transition-colors">
                       <td className="py-2 pr-1 sm:pr-3 text-heading text-xs sm:text-sm">{format}</td>
@@ -683,21 +683,24 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
                     </tr>
                   );
                 })}
-                <tr className="shadow-[0_-2px_0_rgba(255,255,255,0.06)]">
-                  <td className="py-2 pr-1 sm:pr-3 text-heading font-medium text-xs sm:text-sm">{tx({ fr: 'Cadre (noir ou blanc)', en: 'Frame (black or white)', es: 'Marco (negro o blanco)' })}</td>
-                  <td className="py-2 px-2 text-right text-heading">{FRAME_PRICE}$</td>
-                  <td className="py-2 px-1 sm:px-2 text-right text-grey-muted text-xs sm:text-sm">{FRAME_PRICE}$</td>
-                  <td className="py-2 px-1 sm:px-2 text-right text-grey-muted text-xs sm:text-sm">-</td>
-                  <td className="py-2 px-1 sm:px-2 text-right text-grey-muted text-xs sm:text-sm">0$</td>
-                </tr>
+                <tr className="shadow-[0_1px_0_rgba(255,255,255,0.03)]"><td colSpan="5" className="pt-4 pb-1 text-accent font-semibold text-xs">{tx({ fr: 'Cadres (noir ou blanc)', en: 'Frames (black or white)', es: 'Marcos (negro o blanco)' })}</td></tr>
+                {[{ format: 'A6 / A4', key: 'a4' }, { format: 'A3', key: 'a3' }, { format: 'A3+', key: 'a3plus' }, { format: 'A2', key: 'a2' }].map(({ format, key }) => (
+                  <tr key={`f-${key}`} className="shadow-[0_1px_0_rgba(255,255,255,0.03)]">
+                    <td className="py-2 pr-1 sm:pr-3 text-heading text-xs sm:text-sm">{format}</td>
+                    <td className="py-2 px-1 sm:px-2 text-right text-heading text-xs sm:text-sm">{FRAME_PRICES[key]}$</td>
+                    <td className="py-2 px-1 sm:px-2 text-right text-grey-muted text-xs sm:text-sm">{FRAME_PRICES[key]}$</td>
+                    <td className="py-2 px-1 sm:px-2 text-right text-grey-muted text-xs sm:text-sm">-</td>
+                    <td className="py-2 px-1 sm:px-2 text-right text-grey-muted text-xs sm:text-sm">0$</td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
           <p className="text-grey-muted text-xs mt-4 italic">
             {tx({
-              fr: 'Note: Le format A2 (18x24") est imprimé en qualité musée uniquement. Pas de cadre disponible pour ce format.',
-              en: 'Note: A2 (18x24") is printed in museum quality only. No frame available for this format.',
-              es: 'Nota: El formato A2 (18x24") se imprime en calidad museo unicamente. Sin marco disponible para este formato.',
+              fr: 'Note: Rabais artiste de 30% sur tous les formats. Le cadre est facture au client, pas de marge artiste sur les cadres.',
+              en: 'Note: 30% artist discount on all formats. Frames are charged to the client, no artist margin on frames.',
+              es: 'Nota: Descuento artista del 30% en todos los formatos. Los marcos se cobran al cliente, sin margen artista en marcos.',
             })}
           </p>
         </div>
