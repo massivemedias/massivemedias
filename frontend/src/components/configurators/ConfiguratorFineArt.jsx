@@ -105,30 +105,40 @@ function ConfiguratorFineArt() {
         <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2.5">
           Format
         </label>
-        <div className="grid grid-cols-4 gap-2">
+        <div className="flex items-end gap-2 md:gap-3 justify-center">
           {fineArtFormats.map(f => {
             const price = tier === 'museum' ? f.museumPrice : f.studioPrice;
             const isAvailable = price != null;
-            const heights = { a4: 'h-8', a3: 'h-10', a3plus: 'h-11', a2: 'h-12' };
-            const widths = { a4: 'w-6', a3: 'w-7', a3plus: 'w-8', a2: 'w-9' };
+            const scale = 4.5;
+            const rectH = Math.round((f.h || 11) * scale);
+            const rectW = Math.round((f.w || 8.5) * scale);
             return (
               <button
                 key={f.id}
                 onClick={() => isAvailable && setFormat(f.id)}
                 disabled={!isAvailable}
-                className={`flex flex-col items-center py-2 px-1.5 rounded-lg text-xs font-medium transition-all border-2 ${
-                  !isAvailable
-                    ? 'border-transparent opacity-30 cursor-not-allowed'
-                    : format === f.id
-                    ? 'border-accent ring-1 ring-accent/30 option-selected'
-                    : 'border-transparent hover:border-grey-muted/30 option-default'
+                title={f.typeName || f.label}
+                className={`group flex flex-col items-center transition-all ${
+                  !isAvailable ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer'
                 }`}
               >
-                <div className={`${heights[f.id] || 'h-8'} ${widths[f.id] || 'w-6'} rounded border border-current text-grey-muted/40 mb-1.5 flex items-center justify-center`}>
-                  <span className="text-[7px] text-grey-muted">{f.id.toUpperCase()}</span>
-                </div>
-                <span className="text-heading font-bold text-[11px]">{f.label}</span>
-                <span className="text-accent font-semibold text-[11px] mt-0.5">{isAvailable ? `${price}$` : 'N/A'}</span>
+                <div
+                  className={`rounded-sm transition-all duration-200 flex items-center justify-center mb-2 ${
+                    format === f.id
+                      ? 'bg-accent/30 ring-2 ring-accent'
+                      : 'bg-white/8 hover:bg-white/12'
+                  }`}
+                  style={{ width: `${rectW}px`, height: `${rectH}px` }}
+                />
+                <span className={`text-[11px] font-bold ${format === f.id ? 'text-accent' : 'text-heading'}`}>
+                  {f.label}
+                </span>
+                <span className={`text-[11px] mt-0.5 ${format === f.id ? 'text-accent' : 'text-grey-muted'}`}>
+                  {isAvailable ? `${price}$` : 'N/A'}
+                </span>
+                {format === f.id && f.typeName && (
+                  <span className="text-[9px] text-accent/70 mt-0.5 font-medium">{f.typeName}</span>
+                )}
               </button>
             );
           })}

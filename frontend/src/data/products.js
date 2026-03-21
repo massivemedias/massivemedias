@@ -155,13 +155,14 @@ export const fineArtPrinterTiers = [
 ];
 
 export const fineArtFormats = [
-  { id: 'a4', label: 'A4 (8.5×11")', studioPrice: 20, museumPrice: 35 },
-  { id: 'a3', label: 'A3 (11×17")', studioPrice: 25, museumPrice: 65 },
-  { id: 'a3plus', label: 'A3+ (13×19")', studioPrice: 35, museumPrice: 95 },
-  { id: 'a2', label: 'A2 (18×24")', studioPrice: null, museumPrice: 110 },
+  { id: 'postcard', label: '4×6"', studioPrice: 15, museumPrice: 25, w: 6, h: 4, typeName: 'Carte postale' },
+  { id: 'a4', label: 'A4 (8.5×11")', studioPrice: 20, museumPrice: 35, w: 8.5, h: 11, typeName: 'Affiche' },
+  { id: 'a3', label: 'A3 (11×17")', studioPrice: 25, museumPrice: 65, w: 11, h: 17, typeName: 'Affiche' },
+  { id: 'a3plus', label: 'A3+ (13×19")', studioPrice: 35, museumPrice: 95, w: 13, h: 19, typeName: 'Poster' },
+  { id: 'a2', label: 'A2 (18×24")', studioPrice: null, museumPrice: 110, w: 18, h: 24, typeName: 'Grand format' },
 ];
 
-export const fineArtFramePriceByFormat = { a4: 20, a3: 30, a3plus: 35, a2: 45 };
+export const fineArtFramePriceByFormat = { postcard: 20, a4: 20, a3: 30, a3plus: 35, a2: 45 };
 export const fineArtFramePrice = 30; // fallback
 
 export function getFineArtPrice(tier, format, withFrame) {
