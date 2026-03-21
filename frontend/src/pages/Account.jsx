@@ -953,12 +953,13 @@ function Account() {
                 </div>
               )}
               <div className="flex-grow min-w-0">
-                <p className="text-sm text-heading font-medium">{user?.email}</p>
-                {memberSince && (
-                  <p className="text-xs text-grey-muted/60">
-                    {tx({ fr: 'Membre depuis', en: 'Member since', es: 'Miembro desde' })} {memberSince}
-                  </p>
-                )}
+                <p className="text-sm text-heading font-bold">{meta.full_name || user?.email?.split('@')[0] || ''}</p>
+                <p className="text-xs text-grey-muted/60">
+                  {user?.email}
+                  {memberSince && (
+                    <span className="ml-2">- {tx({ fr: 'Membre depuis', en: 'Member since', es: 'Miembro desde' })} {memberSince}</span>
+                  )}
+                </p>
               </div>
               <button onClick={signOut} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all text-xs font-semibold flex-shrink-0">
                 <LogOut size={14} />
