@@ -111,7 +111,8 @@ function ConfiguratorFineArt() {
         const fmt = fineArtFormats.find(x => x.id === f);
         if (!fmt) return null;
         const base = t === 'museum' ? fmt.museumPrice : fmt.studioPrice;
-        return { price: base + (frame ? fineArtFramePrice : 0), basePrice: base, framePrice: frame ? fineArtFramePrice : 0 };
+        const fp = frame ? (fineArtFramePriceByFormat[f] || fineArtFramePrice) : 0;
+        return { price: base + fp, basePrice: base, framePrice: fp };
       }
     : defaultGetPrice;
 

@@ -217,7 +217,7 @@ const productPricingData = {
       { id: 'a3plus', label: 'A3+ (13×19")', studioPrice: 35, museumPrice: 95 },
       { id: 'a2', label: 'A2 (18×24")', studioPrice: null, museumPrice: 110 },
     ],
-    frameOption: { price: 30, labelFr: 'Cadre (+30$)', labelEn: 'Frame (+$30)' },
+    frameOption: { priceByFormat: { postcard: 20, a4: 20, a3: 30, a3plus: 35, a2: 45 }, labelFr: 'Cadre (20$-45$)', labelEn: 'Frame ($20-$45)' },
   },
   sublimation: {
     products: [

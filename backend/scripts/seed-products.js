@@ -105,7 +105,7 @@ const products = [
         { id: 'a3plus', label: 'A3+ (13×19")', studioPrice: 35, museumPrice: 95 },
         { id: 'a2', label: 'A2 (18×24")', studioPrice: null, museumPrice: 110 },
       ],
-      framePrice: 30,
+      framePriceByFormat: { postcard: 20, a4: 20, a3: 30, a3plus: 35, a2: 45 },
     },
     highlightsFr: [
       'Imprimantes professionnelles fine art',

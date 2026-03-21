@@ -175,7 +175,7 @@ function AdminNotes({ embedded = false }) {
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0 flex-1">
-                    <p className={`font-normal truncate text-sm ${activeId === n.id ? 'text-accent' : 'text-heading'}`} style={{ fontFamily: "-apple-system, 'SF Pro Display', 'Helvetica Neue', sans-serif" }}>
+                    <p className={`font-normal truncate text-base ${activeId === n.id ? 'text-accent' : 'text-heading'}`} style={{ fontFamily: "-apple-system, 'SF Pro Display', 'Helvetica Neue', sans-serif" }}>
                       {n.title || tx({ fr: 'Sans titre', en: 'Untitled', es: 'Sin titulo' })}
                     </p>
                   </div>
