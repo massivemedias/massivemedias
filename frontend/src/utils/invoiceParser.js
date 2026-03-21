@@ -124,7 +124,7 @@ function extractInvoiceNumber(text) {
 function extractVendor(text) {
   // Detecter les gros fournisseurs connus
   const knownVendors = [
-    { pattern: /amazon/i, name: 'Amazon' },
+    { pattern: /amazon|amzn|www\.amazon\./i, name: 'Amazon' },
     { pattern: /bureau en gros|staples/i, name: 'Bureau en Gros / Staples' },
     { pattern: /dollarama/i, name: 'Dollarama' },
     { pattern: /canva/i, name: 'Canva' },
@@ -134,6 +134,25 @@ function extractVendor(text) {
     { pattern: /fedex/i, name: 'FedEx' },
     { pattern: /jiffy/i, name: 'Jiffy Shirts' },
     { pattern: /siser/i, name: 'Siser' },
+    { pattern: /uline/i, name: 'Uline' },
+    { pattern: /costco/i, name: 'Costco' },
+    { pattern: /walmart/i, name: 'Walmart' },
+    { pattern: /best buy|bestbuy/i, name: 'Best Buy' },
+    { pattern: /ikea/i, name: 'IKEA' },
+    { pattern: /home depot|homedepot/i, name: 'Home Depot' },
+    { pattern: /rona/i, name: 'RONA' },
+    { pattern: /michaels/i, name: 'Michaels' },
+    { pattern: /deserres/i, name: 'DeSerres' },
+    { pattern: /omer deserres|omer de serres/i, name: 'Omer DeSerres' },
+    { pattern: /hahnem[uü]hle/i, name: 'Hahnemuhle' },
+    { pattern: /ilford/i, name: 'Ilford' },
+    { pattern: /epson/i, name: 'Epson' },
+    { pattern: /canon\b/i, name: 'Canon' },
+    { pattern: /stripe/i, name: 'Stripe' },
+    { pattern: /shopify/i, name: 'Shopify' },
+    { pattern: /render/i, name: 'Render' },
+    { pattern: /cloudflare/i, name: 'Cloudflare' },
+    { pattern: /google/i, name: 'Google' },
   ];
   for (const kv of knownVendors) {
     if (kv.pattern.test(text)) return kv.name;
@@ -264,31 +283,43 @@ function extractLineItems(text) {
 
   if (asins.length > 0) {
     // Format Amazon detecte - parser differemment
-    // Chercher chaque bloc: description avant ASIN, puis qty + prix apres
     for (const asin of asins) {
       const asinIdx = text.indexOf(asin[0]);
       // Remonter pour trouver la description (entre le precedent \n et l'ASIN)
-      const before = text.substring(Math.max(0, asinIdx - 300), asinIdx);
+      const before = text.substring(Math.max(0, asinIdx - 500), asinIdx);
       const descLines = before.split(/\n/).map(l => l.trim()).filter(Boolean);
-      // Prendre les dernieres lignes non-header comme description
-      let desc = '';
+      // Collecter les lignes de description (peuvent etre sur plusieurs lignes)
+      let descParts = [];
       for (let i = descLines.length - 1; i >= 0; i--) {
         const line = descLines[i];
-        if (skipPattern.test(line)) continue;
-        if (/^\$/.test(line)) continue;
-        if (line.length > 10) { desc = line; break; }
+        if (skipPattern.test(line)) break;
+        if (/^\$/.test(line)) break;
+        if (/^(Order|Shipment|Invoice|Billing|Delivery|Sold by|For questions)/i.test(line)) break;
+        if (/^(Commande|Expédition|Facture|Adresse|Vendu par|Pour toute)/i.test(line)) break;
+        if (line.length > 5) descParts.unshift(line);
+        if (descParts.length >= 4) break;
       }
+      // Prendre la description EN (avant le /) ou la description complete
+      let desc = descParts.join(' ').trim();
+      // Si bilingue (EN / FR), garder juste la partie EN
+      const slashIdx = desc.indexOf(' / ');
+      if (slashIdx > 15) desc = desc.substring(0, slashIdx).trim();
+      // Nettoyer
+      desc = desc.replace(/\s+/g, ' ').trim();
 
-      // Chercher les prix apres l'ASIN
-      const after = text.substring(asinIdx + asin[0].length, asinIdx + asin[0].length + 200);
-      const prices = [...after.matchAll(/\$?([\d,]+\.\d{2})/g)].map(m => parseFloat(m[1].replace(',', '')));
-      const qtyMatch = after.match(/^\s*(\d{1,4})\s/);
+      // Chercher les prix AUTOUR de l'ASIN (avant et apres, car les colonnes se melangent)
+      const context = text.substring(Math.max(0, asinIdx - 100), asinIdx + asin[0].length + 300);
+      const allPrices = [...context.matchAll(/\$\s*([\d,]+\.\d{2})/g)].map(m => parseFloat(m[1].replace(',', '')));
+      // Chercher la quantite (chiffre seul sur une ligne ou avant un prix)
+      const qtyMatch = context.match(/\b(\d{1,3})\s+\$[\d,]+\.\d{2}/);
       const qty = qtyMatch ? parseInt(qtyMatch[1]) : 1;
 
-      if (desc && prices.length > 0) {
-        const unitPrice = prices[0];
-        const total = prices.length >= 4 ? prices[prices.length - 1] : unitPrice * qty;
-        items.push({ description: desc.trim(), quantity: qty, unitPrice, total });
+      // Le prix unitaire est le premier prix non-zero, le total est le dernier non-zero
+      const nonZeroPrices = allPrices.filter(p => p > 0);
+      if (desc && nonZeroPrices.length > 0) {
+        const unitPrice = nonZeroPrices[0];
+        const total = nonZeroPrices[nonZeroPrices.length - 1];
+        items.push({ description: desc, quantity: qty, unitPrice, total });
       }
     }
   }
