@@ -196,7 +196,7 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {} }) {
           <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2.5">
             Format
           </label>
-          <div className="flex flex-wrap items-end gap-2 justify-center">
+          <div className="flex flex-wrap items-end gap-3 justify-center">
             {artistFormats.map(f => {
               const price = getFormatPrice(f.id);
               const hasPricing = price != null;
@@ -204,13 +204,15 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {} }) {
               const isAvailable = hasPricing && fmtAllowed;
               // Taille proportionnelle: le plus grand (A2=24") = 80px de hauteur
               const scale = 80 / 24;
-              const rectW = Math.round(f.w * scale);
-              const rectH = Math.round(f.h * scale);
+              const rectW = Math.max(20, Math.round(f.w * scale));
+              const rectH = Math.max(28, Math.round(f.h * scale));
+              const formatDesc = lang === 'fr' ? f.descFr : f.descEn;
               return (
                 <button
                   key={f.id}
                   onClick={() => { if (isAvailable) { setFormat(f.id); if (f.id === 'a2') setWithFrame(false); } }}
                   disabled={!isAvailable}
+                  title={formatDesc}
                   className={`flex flex-col items-center gap-1.5 transition-all ${!isAvailable ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer'}`}
                 >
                   {/* Rectangle proportionnel avec label */}
@@ -237,6 +239,15 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {} }) {
               );
             })}
           </div>
+          {/* Nom du format selectionne */}
+          {(() => {
+            const sel = artistFormats.find(f => f.id === format);
+            return sel ? (
+              <p className="text-center text-accent text-xs font-medium mt-2">
+                {lang === 'fr' ? sel.descFr : sel.descEn} - {sel.label}
+              </p>
+            ) : null;
+          })()}
           {maxFormat && (
             <p className="text-grey-muted text-[11px] mt-2 leading-snug">
               {tx({
