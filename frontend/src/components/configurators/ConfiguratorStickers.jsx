@@ -46,14 +46,15 @@ function ConfiguratorStickers({ onFinishChange }) {
   const shapeLabel = stickerShapes.find(s => s.id === shape);
   const sizeLabel = stickerSizes.find(s => s.id === size)?.label;
 
-  // Preview image per finish type
+  // Preview image per finish type - cache bust avec build ID
+  const v = import.meta.env.VITE_BUILD_TIME ? `?v=${import.meta.env.VITE_BUILD_TIME}` : '';
   const finishImages = {
-    matte: '/images/stickers/finish-matte.webp',
-    glossy: '/images/stickers/finish-glossy.webp',
-    holographic: '/images/stickers/finish-holographic.webp',
-    'broken-glass': '/images/stickers/finish-broken-glass.webp',
-    stars: '/images/stickers/finish-stars.webp',
-    dots: '/images/stickers/finish-dots-v2.webp',
+    matte: `/images/stickers/finish-matte.webp${v}`,
+    glossy: `/images/stickers/finish-glossy.webp${v}`,
+    holographic: `/images/stickers/finish-holographic.webp${v}`,
+    'broken-glass': `/images/stickers/finish-broken-glass.webp${v}`,
+    stars: `/images/stickers/finish-stars.webp${v}`,
+    dots: `/images/stickers/finish-dots-v2.webp${v}`,
   };
   const previewImage = finishImages[finish] || finishImages.matte;
 
