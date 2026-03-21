@@ -248,7 +248,7 @@ button, [role="button"], a, label[class*="cursor"], select, input[type="checkbox
    Styles globaux
    ============================================= */
 
-html, body {
+html, body, #root {
   overflow-x: hidden;
   max-width: 100vw;
 }

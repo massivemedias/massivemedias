@@ -384,28 +384,28 @@ function ArtistGalleryManager() {
 
       {/* Panneau de detail quand on selectionne un item */}
       {selectedItem && (
-        <div className="mt-3 p-4 rounded-xl bg-black/20 space-y-3">
-          <div className="flex items-start gap-4">
+        <div className="mt-3 p-3 sm:p-4 rounded-xl bg-black/20 space-y-3 overflow-hidden">
+          <div className="flex items-start gap-3 sm:gap-4">
             <img
               src={resolveThumb(selectedItem) || ''}
               alt=""
-              className={`rounded-lg flex-shrink-0 ${category === 'stickers' ? 'w-16 h-16 object-contain' : 'w-20 h-28 object-cover'}`}
+              className={`rounded-lg flex-shrink-0 ${category === 'stickers' ? 'w-12 h-12 sm:w-16 sm:h-16 object-contain' : 'w-16 h-24 sm:w-20 sm:h-28 object-cover'}`}
             />
-            <div className="flex-1 min-w-0">
+            <div className="flex-1 min-w-0 overflow-hidden">
               {/* Nom editable */}
               <label className="text-grey-muted text-[10px] uppercase tracking-wider mb-1 block">
                 {tx({ fr: 'Nom', en: 'Name', es: 'Nombre' })}
               </label>
               {renamingId === selectedItem.id ? (
-                <form onSubmit={(e) => { e.preventDefault(); handleRename(selectedItem.id, category); }} className="flex gap-1.5 mb-2">
+                <form onSubmit={(e) => { e.preventDefault(); handleRename(selectedItem.id, category); }} className="flex gap-1 sm:gap-1.5 mb-2">
                   <input
                     value={renameValue}
                     onChange={(e) => setRenameValue(e.target.value)}
-                    className="flex-1 bg-black/40 text-heading text-sm px-2.5 py-1.5 rounded-lg border border-white/20 focus:outline-none focus:border-accent"
+                    className="flex-1 min-w-0 bg-black/40 text-heading text-xs sm:text-sm px-2 py-1.5 rounded-lg border border-white/20 focus:outline-none focus:border-accent"
                     autoFocus
                   />
-                  <button type="submit" className="px-2 py-1.5 rounded-lg bg-green-500/20 text-green-400 hover:bg-green-500/30"><Check size={14} /></button>
-                  <button type="button" onClick={() => setRenamingId(null)} className="px-2 py-1.5 rounded-lg bg-white/10 text-grey-muted hover:bg-white/20"><X size={14} /></button>
+                  <button type="submit" className="flex-shrink-0 px-2 py-1.5 rounded-lg bg-green-500/20 text-green-400 hover:bg-green-500/30"><Check size={14} /></button>
+                  <button type="button" onClick={() => setRenamingId(null)} className="flex-shrink-0 px-2 py-1.5 rounded-lg bg-white/10 text-grey-muted hover:bg-white/20"><X size={14} /></button>
                 </form>
               ) : (
                 <p
