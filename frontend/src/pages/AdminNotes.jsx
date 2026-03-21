@@ -175,11 +175,8 @@ function AdminNotes({ embedded = false }) {
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0 flex-1">
-                    <p className={`font-semibold truncate ${activeId === n.id ? 'text-accent' : 'text-heading'}`}>
+                    <p className={`font-medium truncate text-xs ${activeId === n.id ? 'text-accent' : 'text-heading'}`}>
                       {n.title || tx({ fr: 'Sans titre', en: 'Untitled', es: 'Sin titulo' })}
-                    </p>
-                    <p className="text-grey-muted text-xs mt-1 line-clamp-2">
-                      {n.body ? n.body.replace(/<[^>]*>/g, '').slice(0, 80) : '...'}
                     </p>
                   </div>
                   <button
