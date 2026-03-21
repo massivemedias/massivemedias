@@ -211,7 +211,7 @@ const productPricingData = {
       { id: 'museum', labelFr: 'Série Musée (12 encres pigmentées)', labelEn: 'Museum Series (12 pigmented inks)' },
     ],
     formats: [
-      { id: 'postcard', label: 'Carte postale (4×6")', studioPrice: 15, museumPrice: 25 },
+      { id: 'postcard', label: 'A6 (4×6")', studioPrice: 15, museumPrice: 30 },
       { id: 'a4', label: 'A4 (8.5×11")', studioPrice: 20, museumPrice: 40 },
       { id: 'a3', label: 'A3 (11×17")', studioPrice: 25, museumPrice: 55 },
       { id: 'a3plus', label: 'A3+ (13×19")', studioPrice: 35, museumPrice: 95 },

@@ -54,7 +54,7 @@ Nous imprimons aussi des flyers, cartes postales et cartes d'affaires - tout ce 
           subtitle: 'Impression Fine Art',
           headers: ['Format', 'Studio (4 pigments)', 'Musee (12 pigments)'],
           rows: [
-            ['A6 (4x6")', '15$', '25$'],
+            ['A6 (4x6")', '15$', '30$'],
             ['A4 (8.5x11")', '20$', '40$'],
             ['A3 (11x17")', '25$', '55$'],
             ['A3+ (13x19")', '35$', '95$'],
