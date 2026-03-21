@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRight, MessageSquare, Image } from 'lucide-react';
+import { ArrowRight, MessageSquare } from 'lucide-react';
 import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
 import { useArtists } from '../hooks/useArtists';
@@ -75,96 +75,111 @@ function Artistes() {
         ]}
       />
 
-      {/* ============ HERO ============ */}
-      <section className="relative py-[2.08rem] md:py-[2.6rem] overflow-hidden">
-        <div className="absolute inset-0 hero-aurora"></div>
-        <div className="relative z-10 section-container !py-0">
+      {/* ============ HERO EDITORIAL ============ */}
+      <section className="pt-24 pb-6 md:pt-32 md:pb-10">
+        <div className="section-container">
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="max-w-4xl"
+            transition={{ duration: 0.6 }}
           >
-            <div className="flex items-center gap-2 mb-6 text-sm">
-              <Link to="/" className="text-grey-muted hover:text-accent transition-colors">{tx({ fr: 'Accueil', en: 'Home', es: 'Inicio' })}</Link>
+            <div className="flex items-center gap-2 mb-8 text-sm">
+              <Link to="/" className="text-grey-muted hover:text-accent transition-colors">
+                {tx({ fr: 'Accueil', en: 'Home', es: 'Inicio' })}
+              </Link>
               <span className="text-grey-muted">/</span>
-              <span className="text-accent">{tx({ fr: 'Artistes', en: 'Artists', es: 'Artistas' })}</span>
+              <span className="text-accent">
+                {tx({ fr: 'Artistes', en: 'Artists', es: 'Artistas' })}
+              </span>
             </div>
 
-            <div className="flex items-center gap-4 mb-6">
-              <div className="p-4 rounded-xl icon-bg-blur">
-                <Image size={36} className="text-accent" />
-              </div>
-              <div>
-                <h1 className="text-4xl md:text-6xl font-heading font-bold text-heading">
-                  {tx({ fr: 'Artistes', en: 'Artists', es: 'Artistas' })}
-                </h1>
-              </div>
-            </div>
+            <h1 className="text-5xl md:text-8xl font-heading font-bold text-heading tracking-tight leading-none mb-4">
+              {tx({ fr: 'Artistes', en: 'Artists', es: 'Artistas' })}
+            </h1>
 
-            <p className="text-xl md:text-2xl text-grey-light mb-8">
+            <div className="w-16 h-1 bg-accent mb-6" />
+
+            <p className="text-lg md:text-xl text-grey-light max-w-xl">
               {tx({
-                fr: 'Tirages fine art d\'artistes sélectionnés. Imprimés professionnellement, qualité galerie.',
-                en: 'Fine art prints from selected artists. Professionally printed, gallery quality.',
-                es: 'Impresiones fine art de artistas seleccionados. Impresas profesionalmente, calidad galería.',
+                fr: "Tirages fine art d'artistes selectionnes. Qualite galerie.",
+                en: 'Fine art prints from selected artists. Gallery quality.',
+                es: 'Impresiones fine art de artistas seleccionados. Calidad galeria.',
               })}
             </p>
           </motion.div>
         </div>
       </section>
 
-      <div className="section-container max-w-6xl mx-auto">
-
-        {/* Artists grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-6 md:gap-8 mb-20">
+      {/* ============ EDITORIAL GRID ============ */}
+      <div className="section-container max-w-7xl mx-auto pb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 mb-20">
           {artists.map((artist, index) => {
             const tagline = tx({ fr: artist.tagline.fr, en: artist.tagline.en, es: artist.tagline.es || artist.tagline.en });
+
+            // Layout assignments based on position
+            const isFeatured = index === 0;
+            const isTallRight = index === 1;
+            const isWide = index === artists.length - 1 && artists.length >= 6;
+
+            // Grid classes
+            let gridClasses = '';
+            let aspectClasses = 'aspect-[3/4]';
+
+            if (isFeatured) {
+              gridClasses = 'md:col-span-2 md:row-span-2';
+              aspectClasses = 'aspect-[3/4] md:aspect-auto md:h-full min-h-[400px] md:min-h-0';
+            } else if (isTallRight) {
+              gridClasses = 'md:row-span-2';
+              aspectClasses = 'aspect-[3/4] md:aspect-auto md:h-full min-h-[400px] md:min-h-0';
+            } else if (isWide) {
+              gridClasses = 'md:col-span-2';
+              aspectClasses = 'aspect-[3/4] md:aspect-[16/9]';
+            }
 
             return (
               <motion.div
                 key={artist.slug}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.08 }}
+                viewport={{ once: true, margin: '-50px' }}
+                className={gridClasses}
               >
                 <Link
                   to={`/artistes/${artist.slug}`}
-                  className="group block relative rounded-2xl overflow-hidden aspect-[3/4] card-shadow"
+                  className={`group block relative overflow-hidden ${aspectClasses}`}
                 >
-                  {/* Background hero image */}
+                  {/* Full-bleed image */}
                   <img
                     src={artist.heroImage || artist.avatar}
                     alt={artist.name}
-                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    loading="lazy"
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                    loading={index < 2 ? 'eager' : 'lazy'}
                   />
+
                   {/* Gradient overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/10" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent group-hover:from-black/80 transition-all duration-500" />
 
-                  {/* Content */}
-                  <div className="relative z-10 h-full flex flex-col justify-between p-4 md:p-6">
-                    {/* Avatar top */}
-                    <div>
-                      <div className="w-12 h-12 md:w-16 md:h-16 rounded-full overflow-hidden border-2 border-white/30 shadow-lg">
-                        <img
-                          src={artist.avatar || artist.heroImage}
-                          alt={artist.name}
-                          className="w-full h-full object-cover"
-                          loading="lazy"
-                        />
-                      </div>
-                    </div>
+                  {/* Content - bottom aligned */}
+                  <div className="absolute inset-0 flex flex-col justify-end p-5 md:p-8">
+                    {/* Artist name */}
+                    <h2 className={`font-heading font-bold text-white leading-none mb-2 drop-shadow-lg ${
+                      isFeatured ? 'text-3xl md:text-6xl' : 'text-2xl md:text-3xl'
+                    }`}>
+                      {artist.name}
+                    </h2>
 
-                    {/* Info bottom */}
-                    <div>
-                      <h2 className="text-xl md:text-2xl font-heading font-bold text-white drop-shadow-lg mb-1">
-                        {artist.name}
-                      </h2>
-                      <p className="text-white/70 text-xs md:text-sm leading-snug mb-3 line-clamp-2">{tagline}</p>
-                      <p className="text-white/50 text-xs">
-                        {artist.prints.length} {tx({ fr: 'oeuvres', en: 'artworks', es: 'obras' })}
-                      </p>
+                    {/* Tagline */}
+                    <p className="text-white/60 text-sm md:text-base leading-snug max-w-md line-clamp-2">
+                      {tagline}
+                    </p>
+
+                    {/* Artwork count + arrow - hover reveal */}
+                    <div className="flex items-center justify-between mt-3 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
+                      <span className="text-white/40 text-xs uppercase tracking-widest">
+                        {artist.prints?.length || 0} {tx({ fr: 'oeuvres', en: 'artworks', es: 'obras' })}
+                      </span>
+                      <ArrowRight size={18} className="text-accent" />
                     </div>
                   </div>
                 </Link>
@@ -186,14 +201,14 @@ function Artistes() {
           </h2>
           <p className="text-grey-light text-lg mb-8 max-w-2xl mx-auto">
             {tx({
-              fr: 'Rejoins notre plateforme. On s\'occupe de tout : site web dédié, impression pro, packaging et shipping. Tu fournis tes fichiers, tu fixes ta marge, et tu reçois ton argent. Zéro mal de tête.',
+              fr: 'Rejoins notre plateforme. On s\'occupe de tout : site web dedie, impression pro, packaging et shipping. Tu fournis tes fichiers, tu fixes ta marge, et tu recois ton argent. Zero mal de tete.',
               en: 'Join our platform. We handle everything: dedicated website, professional printing, packaging and shipping. You provide your files, set your margin, and get paid. Zero headaches.',
-              es: 'Únete a nuestra plataforma. Nos encargamos de todo: sitio web dedicado, impresión profesional, empaque y envío. Tú provees tus archivos, fijas tu margen y recibes tu dinero. Cero dolores de cabeza.',
+              es: 'Unete a nuestra plataforma. Nos encargamos de todo: sitio web dedicado, impresion profesional, empaque y envio. Tu provees tus archivos, fijas tu margen y recibes tu dinero. Cero dolores de cabeza.',
             })}
           </p>
           <Link to="/contact" className="btn-primary">
             <MessageSquare size={20} className="mr-2" />
-            {tx({ fr: 'Nous contacter', en: 'Contact us', es: 'Contáctanos' })}
+            {tx({ fr: 'Nous contacter', en: 'Contact us', es: 'Contactanos' })}
             <ArrowRight className="ml-2" size={20} />
           </Link>
         </motion.div>
