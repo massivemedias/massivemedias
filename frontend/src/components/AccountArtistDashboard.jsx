@@ -878,8 +878,8 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
                 <p className="text-grey-muted text-xs flex items-center gap-2">
                   <Palette size={14} className="text-accent" />
                   {tx({ fr: 'Ta boutique:', en: 'Your store:', es: 'Tu tienda:' })}
-                  <a href={`/artistes/${artistSlug}`} className="text-accent hover:underline font-medium">
-                    massivemedias.com/artistes/{artistSlug}
+                  <a href={`https://${artistSlug}.massivemedias.com`} target="_blank" rel="noopener noreferrer" className="text-accent hover:underline font-medium">
+                    {artistSlug}.massivemedias.com
                   </a>
                 </p>
               </div>
