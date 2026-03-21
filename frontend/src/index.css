@@ -398,7 +398,7 @@ h1, h2, h3, h4, h5, h6 {
     color: var(--color-heading);
     border: none;
     background: var(--bg-input);
-    box-shadow: inset 0 1px 4px rgba(0,0,0,0.25);
+    box-shadow: none;
     transition: box-shadow 0.2s, background 0.2s, color 0.2s;
     font-family: -apple-system, 'SF Pro Display', 'Helvetica Neue', sans-serif;
     font-size: 1rem;
@@ -407,7 +407,7 @@ h1, h2, h3, h4, h5, h6 {
 
   .input-field:focus {
     outline: none;
-    box-shadow: inset 0 1px 4px rgba(255,82,160,0.3);
+    box-shadow: 0 0 0 2px var(--accent-color, #FF52A0);
   }
 
   .input-field::placeholder {
@@ -790,7 +790,7 @@ select.input-field option {
 /* Cards with background + shadow */
 .card-bg {
   background: var(--bg-card);
-  box-shadow: var(--card-shadow), inset 0 1px 2px rgba(255,255,255,0.03);
+  box-shadow: var(--card-shadow);
 }
 
 .card-bg-bordered {
