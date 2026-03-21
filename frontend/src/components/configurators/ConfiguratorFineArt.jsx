@@ -201,186 +201,138 @@ function ConfiguratorFineArt() {
       </div>
 
       {/* ========== COLONNE DROITE : Selecteurs ========== */}
-      <div className="flex-1 min-w-0 space-y-4">
-        {/* Printer tier selector */}
-        <div>
-          <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2.5">
-            {tx({ fr: 'Imprimante', en: 'Printer', es: 'Impresora' })}
-          </label>
-          <div className="flex flex-wrap gap-2">
-            {fineArtPrinterTiers.map(t => (
+      <div className="flex-1 min-w-0 space-y-3">
+        {/* Imprimante - pills inline */}
+        <div className="flex items-center gap-2">
+          <span className="text-grey-muted text-[10px] uppercase tracking-wider font-semibold w-20 flex-shrink-0">
+            {tx({ fr: 'Qualite', en: 'Quality', es: 'Calidad' })}
+          </span>
+          {fineArtPrinterTiers.map(t => (
+            <button
+              key={t.id}
+              onClick={() => {
+                setTier(t.id);
+                const curFmt = fineArtFormats.find(f => f.id === format);
+                const price = t.id === 'museum' ? curFmt?.museumPrice : curFmt?.studioPrice;
+                if (price == null) setFormat('a4');
+              }}
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${tier === t.id
+                ? 'bg-accent text-white'
+                : 'bg-white/5 text-grey-muted hover:bg-white/10 hover:text-heading'
+              }`}
+              title={tx({ fr: t.descFr, en: t.descEn, es: t.descEn })}
+            >
+              {tx({ fr: t.labelFr, en: t.labelEn, es: t.labelEn })}
+            </button>
+          ))}
+        </div>
+
+        {/* Format - pills inline avec prix */}
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <span className="text-grey-muted text-[10px] uppercase tracking-wider font-semibold w-20 flex-shrink-0">
+            Format
+          </span>
+          {fineArtFormats.map(f => {
+            const price = tier === 'museum' ? f.museumPrice : f.studioPrice;
+            const isAvailable = price != null;
+            return (
               <button
-                key={t.id}
-                onClick={() => {
-                  setTier(t.id);
-                  const curFmt = fineArtFormats.find(f => f.id === format);
-                  const price = t.id === 'museum' ? curFmt?.museumPrice : curFmt?.studioPrice;
-                  if (price == null) setFormat('a4');
-                }}
-                className={`flex flex-col items-center justify-center min-w-[7rem] py-2.5 px-3 rounded-lg text-xs font-medium transition-all border-2 ${tier === t.id
-                  ? 'border-accent option-selected'
-                  : 'border-transparent hover:border-grey-muted/30 option-default'
+                key={f.id}
+                onClick={() => isAvailable && setFormat(f.id)}
+                disabled={!isAvailable}
+                title={f.typeName || f.label}
+                className={`px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition-all ${
+                  !isAvailable
+                    ? 'opacity-25 cursor-not-allowed bg-white/5 text-grey-muted'
+                    : format === f.id
+                    ? 'bg-accent text-white'
+                    : 'bg-white/5 text-grey-muted hover:bg-white/10 hover:text-heading'
                 }`}
               >
-                <span className="text-heading leading-tight text-center font-semibold">
-                  {tx({ fr: t.labelFr, en: t.labelEn, es: t.labelEn })}
-                </span>
-                <span className="text-grey-muted mt-0.5 text-[10px]">
-                  {tx({ fr: t.descFr, en: t.descEn, es: t.descEn })}
+                {f.label.split(' (')[0]}
+                <span className={`ml-1 ${format === f.id ? 'text-white/80' : 'text-grey-muted/60'}`}>
+                  {isAvailable ? `${price}$` : 'N/A'}
                 </span>
               </button>
-            ))}
-          </div>
+            );
+          })}
         </div>
 
-        {/* Format selector */}
-        <div>
-          <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2.5">
-            Format
-          </label>
-          <div className="flex items-end gap-2 md:gap-3 justify-center">
-            {fineArtFormats.map(f => {
-              const price = tier === 'museum' ? f.museumPrice : f.studioPrice;
-              const isAvailable = price != null;
-              const scale = 4.5;
-              const rectH = Math.max(40, Math.round((f.h || 11) * scale));
-              const rectW = Math.max(28, Math.round((f.w || 8.5) * scale));
-              return (
-                <button
-                  key={f.id}
-                  onClick={() => isAvailable && setFormat(f.id)}
-                  disabled={!isAvailable}
-                  title={f.typeName || f.label}
-                  className={`group flex flex-col items-center transition-all ${
-                    !isAvailable ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer'
-                  }`}
-                >
-                  <div
-                    className={`rounded-sm transition-all duration-200 flex items-center justify-center mb-2 ${
-                      format === f.id
-                        ? 'bg-accent/30 ring-2 ring-accent'
-                        : 'bg-white/8 hover:bg-white/12'
-                    }`}
-                    style={{ width: `${rectW}px`, height: `${rectH}px` }}
-                  />
-                  <span className={`text-[11px] font-bold ${format === f.id ? 'text-accent' : 'text-heading'}`}>
-                    {f.label}
-                  </span>
-                  <span className={`text-[11px] mt-0.5 ${format === f.id ? 'text-accent' : 'text-grey-muted'}`}>
-                    {isAvailable ? `${price}$` : 'N/A'}
-                  </span>
-                  {format === f.id && f.typeName && (
-                    <span className="text-[9px] text-accent/70 mt-0.5 font-medium">{f.typeName}</span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Frame option */}
-        <div>
-          <label className={`flex items-center gap-3 p-4 rounded-lg cursor-pointer transition-all border-2 ${withFrame ? 'checkbox-active' : 'option-default'}`}>
-            <input
-              type="checkbox"
-              checked={withFrame}
-              onChange={(e) => setWithFrame(e.target.checked)}
-              className="sr-only"
-            />
-            <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${withFrame ? 'bg-accent border-accent' : 'border-grey-muted/50'}`}>
-              {withFrame && <Check size={14} className="text-white" />}
-            </div>
-            <div className="flex-1">
-              <span className="text-heading font-medium text-sm">
-                {tx({ fr: 'Ajouter un cadre', en: 'Add a frame', es: 'Agregar un marco' })}
-              </span>
-            </div>
-            <span className="text-accent font-semibold text-sm">+{fineArtFramePriceByFormat[format] || fineArtFramePrice}$</span>
-          </label>
-
+        {/* Cadre - ligne compacte */}
+        <div className="flex items-center gap-2">
+          <span className="text-grey-muted text-[10px] uppercase tracking-wider font-semibold w-20 flex-shrink-0">
+            {tx({ fr: 'Cadre', en: 'Frame', es: 'Marco' })}
+          </span>
+          <button
+            onClick={() => setWithFrame(!withFrame)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+              withFrame ? 'bg-accent text-white' : 'bg-white/5 text-grey-muted hover:bg-white/10'
+            }`}
+          >
+            {withFrame && <Check size={12} />}
+            {withFrame
+              ? tx({ fr: `Oui +${fineArtFramePriceByFormat[format] || fineArtFramePrice}$`, en: `Yes +${fineArtFramePriceByFormat[format] || fineArtFramePrice}$`, es: `Si +${fineArtFramePriceByFormat[format] || fineArtFramePrice}$` })
+              : tx({ fr: 'Non', en: 'No', es: 'No' })}
+          </button>
           {withFrame && (
-            <div className="flex gap-2 mt-3 ml-1">
+            <>
               <button
                 onClick={() => setFrameColor('black')}
-                className={`flex items-center gap-2 py-2 px-4 rounded-lg text-xs font-medium transition-all border-2 ${frameColor === 'black'
-                  ? 'border-accent option-selected'
-                  : 'border-transparent hover:border-grey-muted/30 option-default'
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                  frameColor === 'black' ? 'bg-white/15 text-heading ring-1 ring-accent' : 'bg-white/5 text-grey-muted hover:bg-white/10'
                 }`}
               >
-                <span className="w-4 h-4 rounded-full bg-black border border-grey-muted/30" />
-                <span className="text-heading font-semibold">{tx({ fr: 'Noir', en: 'Black', es: 'Negro' })}</span>
+                <span className="w-3 h-3 rounded-full bg-black border border-grey-muted/30" />
+                {tx({ fr: 'Noir', en: 'Black', es: 'Negro' })}
               </button>
               <button
                 onClick={() => setFrameColor('white')}
-                className={`flex items-center gap-2 py-2 px-4 rounded-lg text-xs font-medium transition-all border-2 ${frameColor === 'white'
-                  ? 'border-accent option-selected'
-                  : 'border-transparent hover:border-grey-muted/30 option-default'
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                  frameColor === 'white' ? 'bg-white/15 text-heading ring-1 ring-accent' : 'bg-white/5 text-grey-muted hover:bg-white/10'
                 }`}
               >
-                <span className="w-4 h-4 rounded-full bg-white border border-grey-muted/30" />
-                <span className="text-heading font-semibold">{tx({ fr: 'Blanc', en: 'White', es: 'Blanco' })}</span>
+                <span className="w-3 h-3 rounded-full bg-white border border-grey-muted/30" />
+                {tx({ fr: 'Blanc', en: 'White', es: 'Blanco' })}
               </button>
-            </div>
+            </>
           )}
         </div>
 
-        {/* Notes */}
-        <div>
-          <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2.5">
-            {tx({ fr: 'Notes / Description', en: 'Notes / Description', es: 'Notas / Descripcion' })}
-          </label>
-          <textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            rows={3}
-            placeholder={tx({ fr: 'Decrivez le produit souhaite (format, finition, details...)', en: 'Describe the desired product (format, finish, details...)', es: 'Describe el producto deseado (formato, acabado, detalles...)' })}
-            className="w-full min-h-[80px] rounded-lg border-2 border-grey-muted/20 bg-transparent px-4 py-3 text-sm text-heading placeholder:text-grey-muted/50 focus:border-accent focus:outline-none transition-colors resize-none"
-          />
-        </div>
+        {/* Notes - compact */}
+        <textarea
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          rows={2}
+          placeholder={tx({ fr: 'Notes ou instructions (optionnel)', en: 'Notes or instructions (optional)', es: 'Notas o instrucciones (opcional)' })}
+          className="w-full rounded-lg bg-white/5 px-3 py-2.5 text-xs text-heading placeholder:text-grey-muted/40 focus:bg-white/8 focus:outline-none transition-colors resize-none"
+        />
 
-        {/* Price display */}
+        {/* Prix + bouton - inline */}
         {priceInfo && (
-          <div className="p-5 rounded-xl highlight-bordered">
-            <div className="flex items-baseline gap-3">
-              <span className="text-3xl font-heading font-bold text-heading">{priceInfo.price}$</span>
+          <div className="flex items-center gap-3">
+            <div className="flex-shrink-0">
+              <span className="text-2xl font-heading font-bold text-heading">{priceInfo.price}$</span>
+              {withFrame && (
+                <span className="text-grey-muted text-[10px] ml-1.5">
+                  ({priceInfo.basePrice}$ + {priceInfo.framePrice}$)
+                </span>
+              )}
             </div>
-            {withFrame && (
-              <div className="text-grey-muted text-xs mt-1">
-                {tx({
-                  fr: `Tirage ${priceInfo.basePrice}$ + Cadre ${priceInfo.framePrice}$`,
-                  en: `Print ${priceInfo.basePrice}$ + Frame ${priceInfo.framePrice}$`,
-                  es: `Impresion ${priceInfo.basePrice}$ + Marco ${priceInfo.framePrice}$`,
-                })}
-              </div>
-            )}
-            <div className="flex items-center gap-2 mt-2">
-              <span className="text-grey-muted text-xs">
-                {tier === 'museum'
-                  ? tx({ fr: 'Qualite musee - 12 encres pigmentees', en: 'Museum quality - 12 pigmented inks', es: 'Calidad museo - 12 tintas pigmentadas' })
-                  : tx({ fr: 'Qualite studio - impression professionnelle', en: 'Studio quality - professional printing', es: 'Calidad estudio - impresion profesional' })}
-              </span>
-            </div>
+            <button onClick={handleAddToCart} className="btn-primary flex-1 justify-center text-sm py-2.5">
+              {added ? (
+                <><Check size={16} className="mr-1.5" />{tx({ fr: 'Ajoute!', en: 'Added!', es: 'Agregado!' })}</>
+              ) : (
+                <><ShoppingCart size={16} className="mr-1.5" />{tx({ fr: 'Ajouter au panier', en: 'Add to cart', es: 'Agregar al carrito' })}</>
+              )}
+            </button>
           </div>
         )}
 
-        {/* Add to cart */}
-        <button onClick={handleAddToCart} className="btn-primary w-full justify-center text-base py-3.5 mb-3">
-          {added ? (
-            <><Check size={20} className="mr-2" />{tx({ fr: 'Ajoute au panier!', en: 'Added to cart!', es: 'Agregado al carrito!' })}</>
-          ) : (
-            <><ShoppingCart size={20} className="mr-2" />{tx({ fr: 'Ajouter au panier', en: 'Add to cart', es: 'Agregar al carrito' })}</>
-          )}
-        </button>
-
-        <Link to="/panier" className="btn-outline w-full justify-center text-sm py-2.5">
-          {tx({ fr: 'Voir le panier', en: 'View cart', es: 'Ver el carrito' })}
-        </Link>
-
-        <p className="text-grey-muted text-xs mt-3 text-center">
+        <p className="text-grey-muted/50 text-[10px]">
           {tx({
-            fr: 'Soft proofing inclus. Nous validerons les couleurs avec vous avant impression.',
-            en: 'Soft proofing included. We\'ll validate colors with you before printing.',
-            es: 'Soft proofing incluido. Validaremos los colores contigo antes de imprimir.',
+            fr: 'Soft proofing inclus - validation des couleurs avant impression',
+            en: 'Soft proofing included - color validation before printing',
+            es: 'Soft proofing incluido - validacion de colores antes de imprimir',
           })}
         </p>
       </div>
