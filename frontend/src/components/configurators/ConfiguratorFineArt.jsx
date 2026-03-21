@@ -19,18 +19,17 @@ function FramePreview({ image, withFrame, frameColor, format, formats, tx, isLan
   const w = isLandscape ? Math.max(fmtW, fmtH) : Math.min(fmtW, fmtH);
   const h = isLandscape ? Math.min(fmtW, fmtH) : Math.max(fmtW, fmtH);
 
-  // Taille du preview proportionnelle au format reel (A6 petit, A2 grand)
-  // Base : A2 (24") = 320px max, les autres proportionnellement plus petits
+  // Taille du preview proportionnelle mais compacte
   const maxDim = Math.max(fmtW, fmtH);
-  const scaleFactor = 320 / 24; // 24" = 320px
-  const previewMaxW = Math.max(180, Math.round(maxDim * scaleFactor));
+  const scaleFactor = 220 / 24; // A2 = 220px max (compact)
+  const previewMaxW = Math.max(120, Math.round(maxDim * scaleFactor));
 
   // Epaisseur du cadre proportionnelle
   const frameThickness = withFrame ? Math.max(8, Math.round(previewMaxW * 0.04)) : 0;
   const matThickness = withFrame ? Math.max(12, Math.round(previewMaxW * 0.06)) : 0;
 
   return (
-    <div className="flex items-center justify-center p-4">
+    <div className="flex items-center justify-center p-2">
       <div
         className="relative transition-all duration-500 ease-out"
         style={{
@@ -154,22 +153,11 @@ function ConfiguratorFineArt() {
   };
 
   return (
-    <div className="flex flex-col md:flex-row gap-6">
-      {/* ========== COLONNE GAUCHE : Preview ========== */}
-      <div className="md:w-[45%] lg:w-[42%]">
-        {/* Upload mobile seulement */}
-        <div className="md:hidden mb-4">
-          <FileUpload
-            files={uploadedFiles}
-            onFilesChange={setUploadedFiles}
-            label={tx({ fr: 'Votre fichier', en: 'Your file', es: 'Tu archivo' })}
-            compact
-            hidePreview
-          />
-        </div>
-
-        {/* Preview cadre - sticky en desktop */}
-        <div className="md:sticky md:top-28">
+    <div className="flex flex-col md:flex-row gap-4 md:gap-5">
+      {/* ========== COLONNE GAUCHE : Preview + Upload ========== */}
+      <div className="md:w-[35%] lg:w-[30%] flex-shrink-0">
+        <div className="md:sticky md:top-28 space-y-3">
+          {/* Preview cadre */}
           <FramePreview
             image={previewImage}
             withFrame={withFrame}
@@ -181,31 +169,39 @@ function ConfiguratorFineArt() {
           />
           {/* Bullets navigation entre images */}
           {imageFiles.length > 1 && (
-            <div className="flex items-center justify-center gap-2 mt-3">
+            <div className="flex items-center justify-center gap-2">
               {imageFiles.map((_, i) => (
                 <button
                   key={i}
                   onClick={() => setActiveImageIdx(i)}
-                  className={`w-2.5 h-2.5 rounded-full transition-all ${
+                  className={`w-2 h-2 rounded-full transition-all ${
                     i === activeImageIdx ? 'bg-accent scale-125' : 'bg-white/20 hover:bg-white/40'
                   }`}
                 />
               ))}
             </div>
           )}
-          {/* Info format sous le preview */}
-          <div className="text-center mt-2">
-            <span className="text-grey-muted text-xs">
+          {/* Info format */}
+          <div className="text-center">
+            <span className="text-grey-muted text-[10px]">
               {formatLabel?.label} · {tier === 'museum'
-                ? tx({ fr: 'Serie Musee', en: 'Museum Series', es: 'Serie Museo' })
-                : tx({ fr: 'Serie Studio', en: 'Studio Series', es: 'Serie Studio' })}
+                ? tx({ fr: 'Musee', en: 'Museum', es: 'Museo' })
+                : tx({ fr: 'Studio', en: 'Studio', es: 'Studio' })}
             </span>
           </div>
+          {/* Upload sous le cadre */}
+          <FileUpload
+            files={uploadedFiles}
+            onFilesChange={setUploadedFiles}
+            label={tx({ fr: 'Votre fichier', en: 'Your file', es: 'Tu archivo' })}
+            compact
+            hidePreview
+          />
         </div>
       </div>
 
       {/* ========== COLONNE DROITE : Selecteurs ========== */}
-      <div className="flex-1 min-w-0 space-y-5">
+      <div className="flex-1 min-w-0 space-y-4">
         {/* Printer tier selector */}
         <div>
           <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2.5">
@@ -326,17 +322,6 @@ function ConfiguratorFineArt() {
               </button>
             </div>
           )}
-        </div>
-
-        {/* File upload - desktop only (mobile is above the preview) */}
-        <div className="hidden md:block">
-          <FileUpload
-            files={uploadedFiles}
-            onFilesChange={setUploadedFiles}
-            label={tx({ fr: 'Votre fichier', en: 'Your file', es: 'Tu archivo' })}
-            compact
-            hidePreview
-          />
         </div>
 
         {/* Notes */}
