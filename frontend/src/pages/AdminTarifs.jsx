@@ -11,41 +11,43 @@ import artistsData, { artistPrinterTiers, artistFormats } from '../data/artists'
 // =============================================
 
 const SERVICE_PRICES = [
-  { format: 'A4 (8.5x11")', studio: 20, museum: 35, frame: 30, notes: { fr: '', en: '', es: '' } },
-  { format: 'A3 (11x17")', studio: 25, museum: 65, frame: 30, notes: { fr: '', en: '', es: '' } },
-  { format: 'A3+ (13x19")', studio: 35, museum: 95, frame: 30, notes: { fr: '', en: '', es: '' } },
-  { format: 'A2 (18x24")', studio: null, museum: 110, frame: null, notes: { fr: '12 encres pigmentées seulement. Pas de frame.', en: '12 pigmented inks only. No frame.', es: '12 tintas pigmentadas solamente. Sin marco.' } },
+  { format: 'A6 (4×6") - Carte postale', studio: 15, museum: 30, frame: 20, notes: { fr: '', en: '', es: '' } },
+  { format: 'A4 (8.5×11")', studio: 20, museum: 40, frame: 20, notes: { fr: '', en: '', es: '' } },
+  { format: 'A3 (11×17")', studio: 25, museum: 55, frame: 30, notes: { fr: '', en: '', es: '' } },
+  { format: 'A3+ (13×19")', studio: 35, museum: 95, frame: 35, notes: { fr: '', en: '', es: '' } },
+  { format: 'A2 (18×24")', studio: null, museum: 110, frame: 45, notes: { fr: '12 encres pigmentées seulement', en: '12 pigmented inks only', es: '12 tintas pigmentadas solamente' } },
 ];
 
 const ARTIST_PRICES = [
-  { format: 'A4 (8.5x11")', studio: 35, museum: 75, frame: 30 },
-  { format: 'A3 (11x17")', studio: 50, museum: 120, frame: 30 },
-  { format: 'A3+ (13x19")', studio: 65, museum: 160, frame: 30 },
-  { format: 'A2 (18x24")', studio: null, museum: 190, frame: null },
+  { format: 'A6 (4×6") - Carte postale', studio: 25, museum: 50, frame: 20 },
+  { format: 'A4 (8.5×11")', studio: 35, museum: 75, frame: 20 },
+  { format: 'A3 (11×17")', studio: 50, museum: 120, frame: 30 },
+  { format: 'A3+ (13×19")', studio: 65, museum: 160, frame: 35 },
+  { format: 'A2 (18×24")', studio: null, museum: 190, frame: 45 },
 ];
 
 const STICKER_STANDARD = [
-  { qty: 25, price: 45, unit: 1.80 },
-  { qty: 50, price: 69, unit: 1.38 },
-  { qty: 100, price: 85, unit: 0.85 },
-  { qty: 250, price: 125, unit: 0.50 },
-  { qty: 500, price: 179, unit: 0.36 },
+  { qty: 25, price: 30, unit: 1.20 },
+  { qty: 50, price: 45, unit: 0.90 },
+  { qty: 100, price: 75, unit: 0.75 },
+  { qty: 250, price: 150, unit: 0.60 },
+  { qty: 500, price: 250, unit: 0.50 },
 ];
 
-const STICKER_HOLO = [
-  { qty: 25, price: 55, unit: 2.20 },
-  { qty: 50, price: 85, unit: 1.70 },
-  { qty: 100, price: 105, unit: 1.05 },
-  { qty: 250, price: 155, unit: 0.62 },
-  { qty: 500, price: 219, unit: 0.44 },
+const STICKER_FX = [
+  { qty: 25, price: 35, unit: 1.40 },
+  { qty: 50, price: 55, unit: 1.10 },
+  { qty: 100, price: 90, unit: 0.90 },
+  { qty: 250, price: 175, unit: 0.70 },
+  { qty: 500, price: 300, unit: 0.60 },
 ];
 
 const FLYERS = [
   { qty: 50, single: 40, double: 52 },
-  { qty: 100, single: 65, double: 85 },
-  { qty: 150, single: 90, double: 117 },
-  { qty: 250, single: 130, double: 169 },
-  { qty: 500, single: 225, double: 293 },
+  { qty: 100, single: 70, double: 91 },
+  { qty: 150, single: 98, double: 127 },
+  { qty: 250, single: 138, double: 179 },
+  { qty: 500, single: 250, double: 325 },
 ];
 
 const SUBLIMATION = [
@@ -141,13 +143,13 @@ function AdminTarifs() {
     });
     lines.push('');
     lines.push(tx({ fr: '* A2 (18x24") = 12 encres pigmentées uniquement, pas de frame', en: '* A2 (18x24") = 12 pigmented inks only, no frame', es: '* A2 (18x24") = 12 tintas pigmentadas solamente, sin marco' }));
-    lines.push(tx({ fr: '* Frame = cadre noir ou blanc (+30$)', en: '* Frame = black or white frame (+30$)', es: '* Marco = marco negro o blanco (+30$)' }));
+    lines.push(tx({ fr: '* Frame = cadre noir ou blanc (20$ A6/A4, 30$ A3, 35$ A3+, 45$ A2)', en: '* Frame = black or white (20$ A6/A4, 30$ A3, 35$ A3+, 45$ A2)', es: '* Marco = negro o blanco (20$ A6/A4, 30$ A3, 35$ A3+, 45$ A2)' }));
     lines.push('');
     lines.push(tx({ fr: 'PACKS STICKERS (design inclus)', en: 'STICKER PACKS (design included)', es: 'PACKS STICKERS (diseno incluido)' }));
     lines.push('-'.repeat(55));
-    lines.push(`${tx({ fr: 'Quantité', en: 'Quantity', es: 'Cantidad' })} | Standard (Matte/Glossy) | FX (Holo/Broken Glass)`);
+    lines.push(`${tx({ fr: 'Quantité', en: 'Quantity', es: 'Cantidad' })} | Standard (Matte/Lustre) | FX (Holo/Broken Glass)`);
     STICKER_STANDARD.forEach((s, i) => {
-      const h = STICKER_HOLO[i];
+      const h = STICKER_FX[i];
       lines.push(`${(s.qty + ' stickers').padEnd(13)}| ${(s.price + '$ (' + s.unit.toFixed(2) + '$/u)').padEnd(24)}| ${h.price}$ (${h.unit.toFixed(2)}$/u)`);
     });
     lines.push('');
@@ -218,8 +220,8 @@ function AdminTarifs() {
       doc.setFont('helvetica', 'normal');
       doc.setTextColor(60, 60, 60);
       doc.text(tx({
-        fr: 'Client achète print musée + frame = 105$. Massive 35$ (impression) + 30$ (frame) = 65$. Artiste = 40$ profit net.',
-        en: 'Client buys museum print + frame = 105$. Massive 35$ (print) + 30$ (frame) = 65$. Artist = 40$ net profit.',
+        fr: 'Client achete print A4 musee + frame = 75$ + 20$ = 95$. Massive 40$ (impression) + 20$ (frame) = 60$. Artiste = 35$ profit net.',
+        en: 'Client buys A4 museum print + frame = 75$ + 20$ = 95$. Massive 40$ (print) + 20$ (frame) = 60$. Artist = 35$ net profit.',
         es: 'Cliente compra print museo + marco = 105$. Massive 35$ (impresion) + 30$ (marco) = 65$. Artista = 40$ ganancia neta.',
       }), margin + 4, y + 13, { maxWidth: contentW - 8 });
       y += 28;
@@ -281,7 +283,7 @@ function AdminTarifs() {
       doc.setTextColor(...grey);
       doc.text([
         tx({ fr: '* A2 (18x24") = 12 encres pigmentées uniquement, pas de frame disponible', en: '* A2 (18x24") = 12 pigmented inks only, no frame available', es: '* A2 = solo 12 tintas, sin marco' }),
-        tx({ fr: '* Frame = cadre noir ou blanc (+30$)', en: '* Frame = black or white (+30$)', es: '* Marco = negro o blanco (+30$)' }),
+        tx({ fr: '* Frame = cadre noir ou blanc (20$ A6/A4, 30$ A3, 35$ A3+, 45$ A2)', en: '* Frame = black or white (20$ A6/A4, 30$ A3, 35$ A3+, 45$ A2)', es: '* Marco = negro o blanco (20$ A6/A4, 30$ A3, 35$ A3+, 45$ A2)' }),
         tx({ fr: '* Commission artiste = profit net, identique avec ou sans frame', en: '* Artist commission = net profit, same with or without frame', es: '* Comision = ganancia neta, igual con o sin marco' }),
       ], margin, y);
       y += 14;
@@ -292,7 +294,7 @@ function AdminTarifs() {
       addTable(
         [tx({ fr: 'Quantité', en: 'Quantity', es: 'Cantidad' }), 'Standard', '$/unit', 'FX (Holo)', '$/unit'],
         STICKER_STANDARD.map((s, i) => {
-          const h = STICKER_HOLO[i];
+          const h = STICKER_FX[i];
           return [`${s.qty}`, `${s.price}$`, `${s.unit.toFixed(2)}$`, `${h.price}$`, `${h.unit.toFixed(2)}$`];
         })
       );
@@ -566,7 +568,7 @@ function AdminTarifs() {
 
             <div className="bg-accent/10 rounded-lg p-3 text-xs text-grey-muted space-y-1">
               <p>* {tx({ fr: 'A2 (18x24") = 12 encres pigmentées uniquement, pas de frame disponible', en: 'A2 (18x24") = 12 pigmented inks only, no frame available', es: 'A2 (18x24") = 12 tintas pigmentadas solamente, sin marco disponible' })}</p>
-              <p>* {tx({ fr: 'Frame = cadre noir ou blanc (+30$)', en: 'Frame = black or white frame (+30$)', es: 'Marco = marco negro o blanco (+30$)' })}</p>
+              <p>* {tx({ fr: 'Frame = cadre noir ou blanc (20$ A6/A4, 30$ A3, 35$ A3+, 45$ A2)', en: 'Frame = black or white (20$ A6/A4, 30$ A3, 35$ A3+, 45$ A2)', es: 'Marco = negro o blanco (20$ A6/A4, 30$ A3, 35$ A3+, 45$ A2)' })}</p>
               <p>* {tx({ fr: 'Commission artiste = profit net, identique avec ou sans frame (le frame va a Massive)', en: 'Artist commission = net profit, same with or without frame (frame goes to Massive)', es: 'Comision artista = ganancia neta, identica con o sin marco (el marco va a Massive)' })}</p>
             </div>
           </SectionCard>
@@ -577,7 +579,7 @@ function AdminTarifs() {
             subtitle={tx({ fr: 'Prix pour les artistes qui veulent vendre des stickers (design inclus)', en: 'Prices for artists who want to sell stickers (design included)', es: 'Precios para artistas que quieren vender stickers (diseno incluido)' })}>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <div>
-                <h4 className="text-xs font-semibold text-heading mb-2 uppercase tracking-wider">Standard (Matte / Glossy / Die-cut)</h4>
+                <h4 className="text-xs font-semibold text-heading mb-2 uppercase tracking-wider">Standard (Matte / Lustre / Die-cut)</h4>
                 <DataTable headers={[{ label: L.qty }, { label: L.price }, { label: L.unit }]}>
                   {STICKER_STANDARD.map((s, i) => (
                     <tr key={i} className="shadow-[0_1px_0_rgba(255,255,255,0.04)] hover:bg-accent/5 transition-colors">
@@ -591,7 +593,7 @@ function AdminTarifs() {
               <div>
                 <h4 className="text-xs font-semibold text-heading mb-2 uppercase tracking-wider">FX (Holographique / Broken Glass / Stars)</h4>
                 <DataTable headers={[{ label: L.qty }, { label: L.price }, { label: L.unit }]}>
-                  {STICKER_HOLO.map((s, i) => (
+                  {STICKER_FX.map((s, i) => (
                     <tr key={i} className="shadow-[0_1px_0_rgba(255,255,255,0.04)] hover:bg-accent/5 transition-colors">
                       <Td center={false} className="text-heading font-medium">{s.qty}</Td>
                       <Td className="text-heading font-semibold">{s.price}$</Td>
@@ -698,7 +700,7 @@ function AdminTarifs() {
           <SectionCard icon={Sticker} iconColor="text-pink-400" title="Stickers" subtitle={tx({ fr: 'Design inclus dans le prix', en: 'Design included in price', es: 'Diseno incluido en el precio' })} delay={0.05}>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <div>
-                <h4 className="text-xs font-semibold text-heading mb-2 uppercase tracking-wider">Standard (Matte / Glossy / Die-cut)</h4>
+                <h4 className="text-xs font-semibold text-heading mb-2 uppercase tracking-wider">Standard (Matte / Lustre / Die-cut)</h4>
                 <DataTable headers={[{ label: L.qty }, { label: L.price }, { label: L.unit }]}>
                   {STICKER_STANDARD.map((s, i) => (
                     <tr key={i} className="shadow-[0_1px_0_rgba(255,255,255,0.04)] hover:bg-accent/5 transition-colors">
@@ -712,7 +714,7 @@ function AdminTarifs() {
               <div>
                 <h4 className="text-xs font-semibold text-heading mb-2 uppercase tracking-wider">FX (Holographique / Broken Glass / Stars)</h4>
                 <DataTable headers={[{ label: L.qty }, { label: L.price }, { label: L.unit }]}>
-                  {STICKER_HOLO.map((s, i) => (
+                  {STICKER_FX.map((s, i) => (
                     <tr key={i} className="shadow-[0_1px_0_rgba(255,255,255,0.04)] hover:bg-accent/5 transition-colors">
                       <Td center={false} className="text-heading font-medium">{s.qty}</Td>
                       <Td className="text-heading font-semibold">{s.price}$</Td>

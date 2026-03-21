@@ -119,7 +119,7 @@ Nous imprimons aussi des flyers, cartes postales et cartes d'affaires - tout ce 
 Découpés à la forme exacte de ton design avec notre équipement de découpe professionnel, chaque sticker est fini avec une lamination pour résister à l'eau, aux UV et aux rayures.`,
     highlights: [
       'Équipement de découpe de précision professionnel',
-      'Vinyle matte, lustre, holographique, transparent, verre brise, etoiles',
+      'Vinyle matte, lustré, holographique, transparent, verre brisé, étoiles, points',
       'Découpe contour à la forme exacte du design',
       'Lamination incluse - résistant eau, UV, rayures',
       'Création graphique du sticker incluse dans le prix',
@@ -176,7 +176,7 @@ Découpés à la forme exacte de ton design avec notre équipement de découpe p
       { name: 'Imprimante vinyle', desc: 'Impression vinyle haute qualité, couleurs vibrantes.' },
     ],
     faq: [
-      { q: 'Quels types de finis sont disponibles?', a: 'On offre matte, lustre, holographique, fond transparent, verre brise et etoiles/points. Chaque fini a ses avantages selon l\'utilisation.' },
+      { q: 'Quels types de finis sont disponibles?', a: 'On offre matte, lustré, holographique, fond transparent, verre brisé, étoiles et points. Chaque fini a ses avantages selon l\'utilisation.' },
       { q: 'Le design graphique est-il inclus?', a: 'Oui! La création ou adaptation de ton visuel pour la découpe est incluse dans le prix. Tu peux aussi fournir un fichier prêt.' },
       { q: 'Quelle est la quantité minimum?', a: 'À partir de 25 stickers identiques. Une démo photo/vidéo est envoyée pour validation avant la production complète.' },
       { q: 'Les stickers sont-ils résistants à l\'eau?', a: 'Oui, tous nos stickers sont laminés et résistants à l\'eau, aux UV et aux rayures. Durabilité extérieure de 3 à 5 ans.' },

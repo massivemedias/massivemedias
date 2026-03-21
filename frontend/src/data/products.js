@@ -2,7 +2,7 @@ import { img } from '../utils/paths';
 
 export const stickerFinishes = [
   { id: 'matte', labelFr: 'Vinyle Matte', labelEn: 'Matte Vinyl', labelEs: 'Vinilo Mate', descFr: 'Toucher velouté, sans reflet', descEn: 'Smooth feel, glare-free', descEs: 'Tacto aterciopelado, sin reflejos' },
-  { id: 'glossy', labelFr: 'Vinyle Glossy', labelEn: 'Glossy Vinyl', labelEs: 'Vinilo Brillante', descFr: 'Brillant, couleurs éclatantes', descEn: 'Shiny, vibrant colors', descEs: 'Brillante, colores vibrantes' },
+  { id: 'glossy', labelFr: 'Vinyle Lustré', labelEn: 'Luster Vinyl', labelEs: 'Vinilo Lustrado', descFr: 'Brillant subtil, couleurs éclatantes', descEn: 'Subtle shine, vibrant colors', descEs: 'Brillo sutil, colores vibrantes' },
   { id: 'holographic', labelFr: 'Holographique', labelEn: 'Holographic', labelEs: 'Holográfico', descFr: 'Reflets arc-en-ciel, effet wow', descEn: 'Rainbow reflections, wow effect', descEs: 'Reflejos arcoíris, efecto wow' },
   { id: 'broken-glass', labelFr: 'Verre Brisé', labelEn: 'Broken Glass', labelEs: 'Vidrio Roto', descFr: 'Éclats cristallins, reflets prismatiques', descEn: 'Crystal shards, prismatic reflections', descEs: 'Fragmentos cristalinos, reflejos prismáticos' },
   { id: 'stars', labelFr: 'Étoiles', labelEn: 'Stars', labelEs: 'Estrellas', descFr: 'Motif étoiles scintillantes', descEn: 'Sparkling star pattern', descEs: 'Patrón de estrellas centelleantes' },
