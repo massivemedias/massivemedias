@@ -179,8 +179,14 @@
             if (b !== null) step = Math.round((Number(b) / 100) * 9);
           }
           if (step <= 7) document.documentElement.setAttribute('data-theme', 'vibrant');
+          else document.documentElement.removeAttribute('data-theme');
           var meta = document.querySelector('meta[name="theme-color"]');
           if (meta) meta.setAttribute('content', colors[step]);
+          // Appliquer bg-body et bg-header immediatement pour eviter le flash mauve
+          var c = colors[step];
+          document.documentElement.style.setProperty('--bg-body', c);
+          document.documentElement.style.setProperty('--bg-header', c + 'f5');
+          document.documentElement.style.backgroundColor = c;
         } catch(e) {}
       })();
     </script>
