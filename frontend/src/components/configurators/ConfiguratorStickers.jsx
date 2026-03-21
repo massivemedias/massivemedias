@@ -31,7 +31,7 @@ function ConfiguratorStickers({ onFinishChange }) {
 
   const getStickerPrice = pd?.tiers
     ? (f, s, qty) => {
-        const isSpecial = f === 'holographic' || f === 'broken-glass' || f === 'stars';
+        const isSpecial = f === 'holographic' || f === 'broken-glass' || f === 'stars' || f === 'dots';
         const tiers = isSpecial ? (pd.tiers.holographic || pd.tiers.standard) : pd.tiers.standard;
         const tier = tiers?.find(t => t.qty === qty);
         return tier ? { qty: tier.qty, price: tier.price, unitPrice: tier.unitPrice } : null;
@@ -53,6 +53,7 @@ function ConfiguratorStickers({ onFinishChange }) {
     holographic: '/images/stickers/finish-holographic.webp',
     'broken-glass': '/images/stickers/finish-broken-glass.webp',
     stars: '/images/stickers/finish-stars.webp',
+    dots: '/images/stickers/finish-dots.webp',
   };
   const previewImage = finishImages[finish] || finishImages.matte;
 
@@ -91,7 +92,12 @@ function ConfiguratorStickers({ onFinishChange }) {
               src={previewImage}
               alt={tx({ fr: finishLabel?.labelFr, en: finishLabel?.labelEn, es: finishLabel?.labelEn })}
               className="w-20 h-20 md:w-full md:h-auto object-contain rounded-lg flex-shrink-0"
-              style={finish === 'glossy' ? { filter: 'brightness(0.85) saturate(0.9) contrast(0.95)' } : undefined}
+              style={
+                finish === 'glossy' ? { filter: 'brightness(0.92) saturate(0.95)' } :
+                finish === 'stars' ? { filter: 'brightness(0.9) saturate(0.85)' } :
+                finish === 'dots' ? { filter: 'brightness(0.9) saturate(0.85)' } :
+                undefined
+              }
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -105,7 +111,7 @@ function ConfiguratorStickers({ onFinishChange }) {
             <span className="block text-grey-muted text-xs mt-0.5">
               {sizeLabel} · {tx({ fr: shapeLabel?.labelFr, en: shapeLabel?.labelEn, es: shapeLabel?.labelEn })}
             </span>
-            {(finish === 'holographic' || finish === 'broken-glass' || finish === 'stars') && (
+            {(finish === 'holographic' || finish === 'broken-glass' || finish === 'stars' || finish === 'dots') && (
               <span className="block text-grey-muted/60 text-[10px] mt-1.5 italic">
                 {tx({ fr: '* Image exageree pour illustrer l\'effet', en: '* Image exaggerated to illustrate the effect', es: '* Imagen exagerada para ilustrar el efecto' })}
               </span>
@@ -120,12 +126,12 @@ function ConfiguratorStickers({ onFinishChange }) {
             <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2">
               {tx({ fr: 'Finition', en: 'Finish', es: 'Acabado' })}
             </label>
-            <div className="grid grid-cols-3 sm:grid-cols-5 md:flex md:flex-wrap gap-1.5 md:gap-2">
+            <div className="grid grid-cols-3 sm:grid-cols-6 md:flex md:flex-wrap gap-1.5 md:gap-2">
               {stickerFinishes.map(f => (
                 <button
                   key={f.id}
                   onClick={() => { setFinish(f.id); onFinishChange?.(f.id); }}
-                  title={['holographic', 'broken-glass', 'stars'].includes(f.id) ? tx({ fr: 'Effet Fx - image exageree pour illustrer', en: 'Fx effect - image exaggerated to illustrate', es: 'Efecto Fx - imagen exagerada para ilustrar' }) : ''}
+                  title={['holographic', 'broken-glass', 'stars', 'dots'].includes(f.id) ? tx({ fr: 'Effet Fx - image exageree pour illustrer', en: 'Fx effect - image exaggerated to illustrate', es: 'Efecto Fx - imagen exagerada para ilustrar' }) : ''}
                   className={`flex flex-col items-center justify-center py-2 px-2 md:min-w-[4.5rem] md:py-2.5 md:px-3 rounded-lg text-xs font-medium transition-all border-2 ${finish === f.id
                     ? 'border-accent option-selected'
                     : 'border-transparent hover:border-grey-muted/30 option-default'
@@ -136,6 +142,7 @@ function ConfiguratorStickers({ onFinishChange }) {
                     f.id === 'glossy' ? 'bg-white border-gray-300 shadow-sm' :
                     f.id === 'broken-glass' ? 'bg-gradient-to-br from-cyan-200 via-white to-cyan-400 border-cyan-300' :
                     f.id === 'stars' ? 'bg-gradient-to-br from-yellow-200 via-amber-300 to-yellow-400 border-yellow-300' :
+                    f.id === 'dots' ? 'bg-gradient-to-br from-orange-200 via-rose-300 to-pink-400 border-rose-300' :
                     'bg-gradient-to-br from-pink-300 via-purple-300 to-cyan-300 border-transparent'
                   }`} />
                   <span className="text-heading leading-tight text-center font-semibold text-[11px] md:text-xs">
@@ -261,7 +268,7 @@ function ConfiguratorStickers({ onFinishChange }) {
             </span>
           </div>
           <div className="flex items-center gap-2 mt-1.5 md:mt-2">
-            {(finish === 'holographic' || finish === 'broken-glass' || finish === 'stars') && (
+            {(finish === 'holographic' || finish === 'broken-glass' || finish === 'stars' || finish === 'dots') && (
               <span className="text-accent text-xs font-medium">
                 {tx({ fr: 'Effets Speciaux', en: 'Special Effects', es: 'Efectos Especiales' })}
               </span>

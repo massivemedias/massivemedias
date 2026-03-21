@@ -6,6 +6,7 @@ export const stickerFinishes = [
   { id: 'holographic', labelFr: 'Holographique', labelEn: 'Holographic', labelEs: 'Holográfico', descFr: 'Reflets arc-en-ciel, effet wow', descEn: 'Rainbow reflections, wow effect', descEs: 'Reflejos arcoíris, efecto wow' },
   { id: 'broken-glass', labelFr: 'Verre Brisé', labelEn: 'Broken Glass', labelEs: 'Vidrio Roto', descFr: 'Éclats cristallins, reflets prismatiques', descEn: 'Crystal shards, prismatic reflections', descEs: 'Fragmentos cristalinos, reflejos prismáticos' },
   { id: 'stars', labelFr: 'Étoiles', labelEn: 'Stars', labelEs: 'Estrellas', descFr: 'Motif étoiles scintillantes', descEn: 'Sparkling star pattern', descEs: 'Patrón de estrellas centelleantes' },
+  { id: 'dots', labelFr: 'Points', labelEn: 'Dots', labelEs: 'Puntos', descFr: 'Motif points structuré', descEn: 'Structured dot pattern', descEs: 'Patrón de puntos estructurado' },
 ];
 
 export const stickerShapes = [
