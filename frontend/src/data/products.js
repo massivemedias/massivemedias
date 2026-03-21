@@ -189,7 +189,7 @@ export const fineArtFaq = {
     { q: 'Quelle est la différence entre Série Studio et Série Musée?', a: 'La Série Studio utilise une imprimante 4 encres pigmentées, excellente pour tous les usages. La Série Musée utilise une imprimante 12 encres pigmentées pour une qualité supérieure, parfaite pour la photographie et les tirages galerie.' },
     { q: 'Quels papiers utilisez-vous?', a: 'Nous utilisons des papiers fine art professionnels premium : coton, alpha-cellulose, papiers d\'archives. Chaque papier est calibré avec un profil ICC sur mesure pour des couleurs fidèles.' },
     { q: 'Quelle est la durée de conservation?', a: 'Nos tirages fine art ont une durée de conservation de 100+ ans grâce aux encres pigmentées et papiers d\'archives. C\'est le standard des galeries et musées.' },
-    { q: 'Puis-je faire encadrer mon tirage?', a: 'Oui! Nous offrons l\'option cadre noir ou blanc pour 30$ supplémentaires. Vous pouvez l\'ajouter directement dans le configurateur.' },
+    { q: 'Puis-je faire encadrer mon tirage?', a: 'Oui! Cadre noir ou blanc disponible : 20$ pour carte postale et A4, 30$ pour A3, 35$ pour A3+ et 45$ pour A2. Ajoutez-le directement dans le configurateur.' },
     { q: 'Quel fichier dois-je fournir?', a: 'Idéalement un fichier haute résolution (300 DPI minimum). Nous effectuons un soft proofing (prévisualisation numérique) avant impression pour valider les couleurs avec vous.' },
     { q: 'La livraison est-elle disponible?', a: 'Pick-up gratuit au Mile-End. Livraison locale disponible à Montréal. Envoi postal avec emballage protection pour le reste du Canada.' },
   ],
