@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { ShoppingCart, Check, Frame, Upload, ImageIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../../contexts/CartContext';
@@ -10,26 +10,41 @@ import {
   fineArtFramePriceByFormat, getFineArtPrice as defaultGetPrice, fineArtImages,
 } from '../../data/products';
 
-function FramePreview({ image, withFrame, frameColor, format, formats, tx }) {
+function FramePreview({ image, withFrame, frameColor, format, formats, tx, isLandscape }) {
   const fmt = formats.find(f => f.id === format);
-  const w = fmt?.w || 8.5;
-  const h = fmt?.h || 11;
-  // Aspect ratio pour le preview
-  const aspect = w / h;
+  const fmtW = fmt?.w || 8.5;
+  const fmtH = fmt?.h || 11;
+
+  // Si l'image est paysage, inverser w/h du format
+  const w = isLandscape ? Math.max(fmtW, fmtH) : Math.min(fmtW, fmtH);
+  const h = isLandscape ? Math.min(fmtW, fmtH) : Math.max(fmtW, fmtH);
+
+  // Taille du preview proportionnelle au format reel (A6 petit, A2 grand)
+  // Base : A2 (24") = 320px max, les autres proportionnellement plus petits
+  const maxDim = Math.max(fmtW, fmtH);
+  const scaleFactor = 320 / 24; // 24" = 320px
+  const previewMaxW = Math.max(180, Math.round(maxDim * scaleFactor));
+
+  // Epaisseur du cadre proportionnelle
+  const frameThickness = withFrame ? Math.max(8, Math.round(previewMaxW * 0.04)) : 0;
+  const matThickness = withFrame ? Math.max(12, Math.round(previewMaxW * 0.06)) : 0;
 
   return (
     <div className="flex items-center justify-center p-4">
       <div
-        className="relative transition-all duration-300 w-full max-w-[320px]"
-        style={{ aspectRatio: `${w}/${h}` }}
+        className="relative transition-all duration-500 ease-out"
+        style={{
+          aspectRatio: `${w}/${h}`,
+          width: '100%',
+          maxWidth: `${previewMaxW}px`,
+        }}
       >
-        {/* Cadre */}
         {withFrame ? (
           <div
-            className="w-full h-full transition-colors duration-300"
+            className="w-full h-full transition-all duration-500"
             style={{
-              border: `12px solid ${frameColor === 'white' ? '#e5e5e5' : '#1a1a1a'}`,
-              padding: '16px',
+              border: `${frameThickness}px solid ${frameColor === 'white' ? '#e5e5e5' : '#1a1a1a'}`,
+              padding: `${matThickness}px`,
               background: '#ffffff',
               boxShadow: '0 8px 30px rgba(0,0,0,0.25)',
             }}
@@ -39,21 +54,20 @@ function FramePreview({ image, withFrame, frameColor, format, formats, tx }) {
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-gray-50">
                 <div className="text-center text-gray-300">
-                  <ImageIcon size={32} className="mx-auto mb-2" />
-                  <p className="text-xs">{tx({ fr: 'Votre image ici', en: 'Your image here', es: 'Tu imagen aqui' })}</p>
+                  <ImageIcon size={28} className="mx-auto mb-1" />
+                  <p className="text-[10px]">{tx({ fr: 'Votre image ici', en: 'Your image here', es: 'Tu imagen aqui' })}</p>
                 </div>
               </div>
             )}
           </div>
         ) : (
-          /* Sans cadre - juste l'image sur fond blanc */
           <div className="w-full h-full bg-white flex items-center justify-center" style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.15)' }}>
             {image ? (
               <img src={image} alt="Preview" className="w-full h-full object-contain p-2" />
             ) : (
               <div className="text-center text-gray-300">
-                <ImageIcon size={32} className="mx-auto mb-2" />
-                <p className="text-xs">{tx({ fr: 'Deposez votre image', en: 'Drop your image', es: 'Deposita tu imagen' })}</p>
+                <ImageIcon size={28} className="mx-auto mb-1" />
+                <p className="text-[10px]">{tx({ fr: 'Deposez votre image', en: 'Drop your image', es: 'Deposita tu imagen' })}</p>
               </div>
             )}
           </div>
@@ -94,11 +108,22 @@ function ConfiguratorFineArt() {
   const tierLabel = fineArtPrinterTiers.find(t => t.id === tier);
   const formatLabel = fineArtFormats.find(f => f.id === format);
 
+  // Detection paysage/portrait de l'image uploadee
+  const [isLandscape, setIsLandscape] = useState(false);
+
   // Image preview : premiere image uploadee
   const previewImage = useMemo(() => {
     const img = uploadedFiles.find(f => f.mime?.startsWith('image/'));
     return img?.url || null;
   }, [uploadedFiles]);
+
+  // Detecter orientation de l'image uploadee
+  useEffect(() => {
+    if (!previewImage) { setIsLandscape(false); return; }
+    const img = new Image();
+    img.onload = () => setIsLandscape(img.naturalWidth > img.naturalHeight);
+    img.src = previewImage;
+  }, [previewImage]);
 
   const handleAddToCart = () => {
     if (!priceInfo) return;
@@ -148,6 +173,7 @@ function ConfiguratorFineArt() {
             format={format}
             formats={fineArtFormats}
             tx={tx}
+            isLandscape={isLandscape}
           />
           {/* Info format sous le preview */}
           <div className="text-center mt-2">
