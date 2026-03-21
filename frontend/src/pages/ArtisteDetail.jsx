@@ -170,6 +170,15 @@ function ArtisteDetail({ subdomainSlug }) {
   const bio = tx({ fr: artist.bio.fr, en: artist.bio.en, es: artist.bio.es || artist.bio.en });
   const minPrice = Math.min(...Object.values(artist.pricing.studio).filter(v => v != null));
 
+  // Renommages locaux (depuis le panneau artiste)
+  const localRenames = useMemo(() => {
+    try { return JSON.parse(localStorage.getItem(`massive-rename-${slug}`) || '{}'); } catch { return {}; }
+  }, [slug]);
+  const getItemTitle = (item) => {
+    if (localRenames[item.id]) return localRenames[item.id];
+    return tx({ fr: item.titleFr, en: item.titleEn, es: item.titleEs || item.titleEn });
+  };
+
   const handleSelectPrint = (print) => {
     setSelectedPrint(print);
     setTimeout(() => {
@@ -523,13 +532,13 @@ function ArtisteDetail({ subdomainSlug }) {
                     <div className="aspect-square p-4">
                       <img
                         src={sticker.image}
-                        alt={tx({ fr: sticker.titleFr, en: sticker.titleEn, es: sticker.titleEs || sticker.titleEn })}
+                        alt={getItemTitle(sticker)}
                         className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-110 sticker-diecut"
                       />
                     </div>
                     <div className="p-3 text-center">
                       <h3 className="text-sm font-heading font-bold text-heading truncate">
-                        {tx({ fr: sticker.titleFr, en: sticker.titleEn, es: sticker.titleEs || sticker.titleEn })}
+                        {getItemTitle(sticker)}
                       </h3>
                       <p className="text-accent text-xs font-semibold mt-1">
                         {tx({ fr: 'Des 30$ / 25x', en: 'From $30 / 25x', es: 'Desde 30$ / 25x' })}
@@ -613,7 +622,7 @@ function ArtisteDetail({ subdomainSlug }) {
                 >
                   <img
                     src={selectedPrint.fullImage || toFull(selectedPrint.image)}
-                    alt={tx({ fr: selectedPrint.titleFr, en: selectedPrint.titleEn, es: selectedPrint.titleEs || selectedPrint.titleEn })}
+                    alt={getItemTitle(selectedPrint)}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     onLoad={(e) => setIsLandscape(e.target.naturalWidth > e.target.naturalHeight)}
                   />
