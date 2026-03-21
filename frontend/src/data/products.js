@@ -161,13 +161,15 @@ export const fineArtFormats = [
   { id: 'a2', label: 'A2 (18×24")', studioPrice: null, museumPrice: 110 },
 ];
 
-export const fineArtFramePrice = 30;
+export const fineArtFramePriceByFormat = { a4: 20, a3: 30, a3plus: 35, a2: 45 };
+export const fineArtFramePrice = 30; // fallback
 
 export function getFineArtPrice(tier, format, withFrame) {
   const fmt = fineArtFormats.find(f => f.id === format);
   if (!fmt) return null;
   const base = tier === 'museum' ? fmt.museumPrice : fmt.studioPrice;
-  return { price: base + (withFrame ? fineArtFramePrice : 0), basePrice: base, framePrice: withFrame ? fineArtFramePrice : 0 };
+  const framePrice = withFrame ? (fineArtFramePriceByFormat[format] || fineArtFramePrice) : 0;
+  return { price: base + framePrice, basePrice: base, framePrice };
 }
 
 export const fineArtImages = [

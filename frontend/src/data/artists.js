@@ -8,11 +8,13 @@ import { thumb, img } from '../utils/paths';
  *   - maxFormat: 'a3' = max A3, A3+ et A2 grises
  *   - maxFormat: 'a4' = seulement A4
  */
+export const framePriceByFormat = { postcard: 20, a4: 20, a3: 30, a3plus: 35, a2: 45 };
+
 export function getArtistPrintPrice(pricing, tier, format, withFrame) {
   const prices = tier === 'museum' ? pricing.museum : pricing.studio;
   const base = prices[format];
   if (base == null) return null;
-  const framePrice = withFrame ? (pricing.framePrice || 30) : 0;
+  const framePrice = withFrame ? (framePriceByFormat[format] || 30) : 0;
   return { price: base + framePrice, basePrice: base, framePrice };
 }
 

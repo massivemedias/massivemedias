@@ -5,7 +5,7 @@ import { useCart } from '../../contexts/CartContext';
 import { useLang } from '../../i18n/LanguageContext';
 import { useUserRole } from '../../contexts/UserRoleContext';
 import {
-  getArtistPrintPrice, artistPrinterTiers, artistFormats, isFormatAvailable,
+  getArtistPrintPrice, artistPrinterTiers, artistFormats, isFormatAvailable, framePriceByFormat,
 } from '../../data/artists';
 
 function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {} }) {
@@ -278,7 +278,7 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {} }) {
                 {tx({ fr: 'Ajouter un cadre', en: 'Add a frame', es: 'Agregar un marco' })}
               </span>
             </div>
-            <span className="text-accent font-semibold text-sm">+{artist.pricing.framePrice}$</span>
+            <span className="text-accent font-semibold text-sm">+{framePriceByFormat[format] || 30}$</span>
           </label>
 
           {withFrame && (
