@@ -23,10 +23,10 @@ function FramePreview({ image, withFrame, frameColor, format, formats, tx, isLan
   const w = useLandscape ? Math.max(fmtW, fmtH) : Math.min(fmtW, fmtH);
   const h = useLandscape ? Math.min(fmtW, fmtH) : Math.max(fmtW, fmtH);
 
-  // Taille du preview proportionnelle mais compacte (+10px)
+  // Taille du preview proportionnelle
   const maxDim = Math.max(fmtW, fmtH);
-  const scaleFactor = 230 / 24; // A2 = 230px max
-  const previewMaxW = Math.max(130, Math.round(maxDim * scaleFactor));
+  const scaleFactor = 270 / 24; // A2 = 270px max
+  const previewMaxW = Math.max(150, Math.round(maxDim * scaleFactor));
 
   // Epaisseur du cadre proportionnelle
   const frameThickness = withFrame ? Math.max(8, Math.round(previewMaxW * 0.04)) : 0;
