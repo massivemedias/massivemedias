@@ -175,7 +175,7 @@ function AdminNotes({ embedded = false }) {
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0 flex-1">
-                    <p className={`font-medium truncate text-xs ${activeId === n.id ? 'text-accent' : 'text-heading'}`}>
+                    <p className={`font-normal truncate text-sm ${activeId === n.id ? 'text-accent' : 'text-heading'}`} style={{ fontFamily: "-apple-system, 'SF Pro Display', 'Helvetica Neue', sans-serif" }}>
                       {n.title || tx({ fr: 'Sans titre', en: 'Untitled', es: 'Sin titulo' })}
                     </p>
                   </div>
@@ -216,7 +216,8 @@ function AdminNotes({ embedded = false }) {
                 value={activeNote.title}
                 onChange={(e) => updateNote(activeId, { title: e.target.value })}
                 placeholder={tx({ fr: 'Titre de la note...', en: 'Note title...', es: 'Titulo de la nota...' })}
-                className="w-full px-4 py-3 bg-transparent text-heading text-lg font-heading font-bold placeholder:text-grey-muted/50 focus:outline-none"
+                className="w-full px-4 py-3 bg-transparent text-heading text-xl font-normal placeholder:text-grey-muted/50 focus:outline-none"
+                style={{ fontFamily: "-apple-system, 'SF Pro Display', 'Helvetica Neue', sans-serif" }}
               />
 
               {/* Toolbar WYSIWYG */}
@@ -227,6 +228,7 @@ function AdminNotes({ embedded = false }) {
                 ref={editorRef}
                 contentEditable
                 onInput={handleBodyChange}
+                style={{ fontFamily: "-apple-system, 'SF Pro Display', 'Helvetica Neue', sans-serif" }}
                 className="flex-1 p-4 text-body text-sm leading-relaxed focus:outline-none overflow-y-auto prose-invert prose-sm max-w-none
                   [&_h3]:text-heading [&_h3]:font-heading [&_h3]:font-bold [&_h3]:text-base [&_h3]:mt-3 [&_h3]:mb-1
                   [&_ul]:list-disc [&_ul]:ml-4 [&_ol]:list-decimal [&_ol]:ml-4
