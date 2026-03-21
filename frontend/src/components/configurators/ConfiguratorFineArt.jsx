@@ -347,13 +347,6 @@ function ConfiguratorFineArt() {
           </div>
         )}
 
-        <p className="text-grey-muted text-xs">
-          {tx({
-            fr: 'Soft proofing inclus - validation des couleurs avant impression.',
-            en: 'Soft proofing included - color validation before printing.',
-            es: 'Soft proofing incluido - validacion de colores antes de imprimir.',
-          })}
-        </p>
       </div>
     </div>
   );
