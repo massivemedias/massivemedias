@@ -204,8 +204,8 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {} }) {
               const isAvailable = hasPricing && fmtAllowed;
               // Taille proportionnelle: le plus grand (A2=24") = 80px de hauteur
               const scale = 80 / 24;
-              const rectW = Math.max(20, Math.round(f.w * scale));
-              const rectH = Math.max(28, Math.round(f.h * scale));
+              const rectW = Math.max(28, Math.round(f.w * scale));
+              const rectH = Math.max(40, Math.round(f.h * scale));
               const formatDesc = lang === 'fr' ? f.descFr : f.descEn;
               return (
                 <button

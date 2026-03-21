@@ -110,8 +110,8 @@ function ConfiguratorFineArt() {
             const price = tier === 'museum' ? f.museumPrice : f.studioPrice;
             const isAvailable = price != null;
             const scale = 4.5;
-            const rectH = Math.round((f.h || 11) * scale);
-            const rectW = Math.round((f.w || 8.5) * scale);
+            const rectH = Math.max(40, Math.round((f.h || 11) * scale));
+            const rectW = Math.max(28, Math.round((f.w || 8.5) * scale));
             return (
               <button
                 key={f.id}
