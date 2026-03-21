@@ -267,10 +267,10 @@ function ConfiguratorFineArt() {
                     }`}
                     style={{ width: `${rectW}px`, height: `${rectH}px` }}
                   />
-                  <span className={`text-[10px] font-bold leading-tight ${format === f.id ? 'text-accent' : 'text-heading'}`}>
+                  <span className={`text-xs font-bold leading-tight ${format === f.id ? 'text-accent' : 'text-heading'}`}>
                     {f.label}
                   </span>
-                  <span className={`text-[10px] ${format === f.id ? 'text-accent' : 'text-grey-muted'}`}>
+                  <span className={`text-xs ${format === f.id ? 'text-accent' : 'text-grey-muted'}`}>
                     {isAvailable ? `${price}$` : 'N/A'}
                   </span>
                 </button>
@@ -321,18 +321,18 @@ function ConfiguratorFineArt() {
           className="w-full rounded-lg bg-white/5 px-3 py-2.5 text-sm text-heading placeholder:text-grey-muted/40 focus:bg-white/8 focus:outline-none transition-colors resize-none"
         />
 
-        {/* Prix + bouton panier */}
+        {/* Prix + bouton panier - aligne a droite */}
         {priceInfo && (
-          <div className="flex items-center gap-4">
-            <div className="flex-shrink-0">
+          <div className="flex items-center justify-end gap-3">
+            <div className="flex-shrink-0 text-right">
               <span className="text-xl font-heading font-bold text-heading">{priceInfo.price}$</span>
               {withFrame && (
-                <span className="text-grey-muted text-[10px] ml-1">
+                <span className="text-grey-muted text-xs ml-1">
                   ({priceInfo.basePrice}+{priceInfo.framePrice})
                 </span>
               )}
             </div>
-            <button onClick={handleAddToCart} className="btn-primary justify-center text-xs py-2 px-5">
+            <button onClick={handleAddToCart} className="btn-primary justify-center text-sm py-2 px-5">
               {added ? (
                 <><Check size={14} className="mr-1" />{tx({ fr: 'Ajoute!', en: 'Added!', es: 'Agregado!' })}</>
               ) : (
