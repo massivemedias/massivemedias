@@ -62,7 +62,7 @@ We also print flyers, postcards and business cards - everything you need to prom
           ],
         },
         {
-          subtitle: 'Flyers & Postcards - Standard Paper (A6 / 4"×6")',
+          subtitle: 'Flyers & Distribution Posters (A6 / 4"×6")',
           headers: ['Quantity', 'Total Price', 'Price/unit'],
           rows: [
             ['50', '$40', '$0.80'],

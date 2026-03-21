@@ -62,7 +62,7 @@ Nous imprimons aussi des flyers, cartes postales et cartes d'affaires - tout ce 
           ],
         },
         {
-          subtitle: 'Flyers & Cartes postales - Papier ordinaire (A6 / 4"x6")',
+          subtitle: 'Flyers et affiches de distribution (A6 / 4"x6")',
           headers: ['Quantité', 'Prix total', 'Prix/unité'],
           rows: [
             ['50', '40$', '0,80$'],
