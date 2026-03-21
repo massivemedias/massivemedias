@@ -179,6 +179,15 @@ function ArtisteDetail({ subdomainSlug }) {
     return tx({ fr: item.titleFr, en: item.titleEn, es: item.titleEs || item.titleEn });
   };
 
+  // Liens sociaux : localStorage > artists.js
+  const artistSocials = useMemo(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(`massive-socials-${slug}`) || '{}');
+      if (Object.keys(saved).length > 0) return { ...artist?.socials, ...saved };
+    } catch {}
+    return artist?.socials || {};
+  }, [slug, artist]);
+
   const handleSelectPrint = (print) => {
     setSelectedPrint(print);
     setTimeout(() => {
@@ -392,38 +401,38 @@ function ArtisteDetail({ subdomainSlug }) {
                 <p className="text-grey-light text-sm leading-relaxed whitespace-pre-line mb-4">{bio}</p>
                 {artist.socials && (
                   <div className="flex flex-wrap gap-2 mt-4">
-                    {artist.socials.instagram && (
-                      <a href={artist.socials.instagram} target="_blank" rel="noopener noreferrer" className="btn-outline !py-1.5 !px-3 text-xs">
+                    {artistSocials.instagram && (
+                      <a href={artistSocials.instagram} target="_blank" rel="noopener noreferrer" className="btn-outline !py-1.5 !px-3 text-xs">
                         Instagram <ExternalLink size={12} className="ml-1" />
                       </a>
                     )}
-                    {artist.socials.youtube && (
-                      <a href={artist.socials.youtube} target="_blank" rel="noopener noreferrer" className="btn-outline !py-1.5 !px-3 text-xs">
+                    {artistSocials.youtube && (
+                      <a href={artistSocials.youtube} target="_blank" rel="noopener noreferrer" className="btn-outline !py-1.5 !px-3 text-xs">
                         YouTube <ExternalLink size={12} className="ml-1" />
                       </a>
                     )}
-                    {artist.socials.tiktok && (
-                      <a href={artist.socials.tiktok} target="_blank" rel="noopener noreferrer" className="btn-outline !py-1.5 !px-3 text-xs">
+                    {artistSocials.tiktok && (
+                      <a href={artistSocials.tiktok} target="_blank" rel="noopener noreferrer" className="btn-outline !py-1.5 !px-3 text-xs">
                         TikTok <ExternalLink size={12} className="ml-1" />
                       </a>
                     )}
-                    {artist.socials.facebook && (
-                      <a href={artist.socials.facebook} target="_blank" rel="noopener noreferrer" className="btn-outline !py-1.5 !px-3 text-xs">
+                    {artistSocials.facebook && (
+                      <a href={artistSocials.facebook} target="_blank" rel="noopener noreferrer" className="btn-outline !py-1.5 !px-3 text-xs">
                         Facebook <ExternalLink size={12} className="ml-1" />
                       </a>
                     )}
-                    {artist.socials.gallea && (
-                      <a href={artist.socials.gallea} target="_blank" rel="noopener noreferrer" className="btn-outline !py-1.5 !px-3 text-xs">
+                    {artistSocials.gallea && (
+                      <a href={artistSocials.gallea} target="_blank" rel="noopener noreferrer" className="btn-outline !py-1.5 !px-3 text-xs">
                         Gallea <ExternalLink size={12} className="ml-1" />
                       </a>
                     )}
-                    {artist.socials.etsy && (
-                      <a href={artist.socials.etsy} target="_blank" rel="noopener noreferrer" className="btn-outline !py-1.5 !px-3 text-xs">
+                    {artistSocials.etsy && (
+                      <a href={artistSocials.etsy} target="_blank" rel="noopener noreferrer" className="btn-outline !py-1.5 !px-3 text-xs">
                         Etsy <ExternalLink size={12} className="ml-1" />
                       </a>
                     )}
-                    {artist.socials.website && (
-                      <a href={artist.socials.website} target="_blank" rel="noopener noreferrer" className="btn-outline !py-1.5 !px-3 text-xs">
+                    {artistSocials.website && (
+                      <a href={artistSocials.website} target="_blank" rel="noopener noreferrer" className="btn-outline !py-1.5 !px-3 text-xs">
                         {tx({ fr: 'Site web', en: 'Website', es: 'Sitio web' })} <ExternalLink size={12} className="ml-1" />
                       </a>
                     )}

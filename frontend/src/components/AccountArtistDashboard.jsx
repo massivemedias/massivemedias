@@ -122,11 +122,15 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
     });
   }, [user, artist, lang]);
 
-  // Pre-remplir les liens sociaux depuis le CMS puis local
+  // Pre-remplir les liens sociaux : localStorage > CMS > local
   useEffect(() => {
-    const socials = cmsArtist?.socials && Object.keys(cmsArtist.socials).length > 0
-      ? cmsArtist.socials
-      : artist?.socials || {};
+    let saved = {};
+    try { saved = JSON.parse(localStorage.getItem(`massive-socials-${artistSlug}`) || '{}'); } catch {}
+    const socials = Object.keys(saved).length > 0
+      ? saved
+      : cmsArtist?.socials && Object.keys(cmsArtist.socials).length > 0
+        ? cmsArtist.socials
+        : artist?.socials || {};
     if (Object.keys(socials).length > 0) {
       setImgSocials(prev => ({
         instagram: socials.instagram || prev.instagram || '',
@@ -137,7 +141,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
         other: socials.other || socials.gallea || socials.email || prev.other || '',
       }));
     }
-  }, [cmsArtist, artist]);
+  }, [cmsArtist, artist, artistSlug]);
 
   // Fetch messages + withdrawals
   useEffect(() => {
@@ -948,6 +952,8 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
               try {
                 const socials = {};
                 Object.entries(imgSocials).forEach(([k, v]) => { if (v.trim()) socials[k] = v.trim(); });
+                // Sauvegarder en localStorage pour que la page publique les lise
+                try { localStorage.setItem(`massive-socials-${artistSlug}`, JSON.stringify(socials)); } catch {}
                 await createEditRequest({
                   artistSlug,
                   artistName: artistProfileForm.nomArtiste || artistSlug,
