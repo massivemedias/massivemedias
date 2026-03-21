@@ -607,11 +607,11 @@ function ArtisteDetail({ subdomainSlug }) {
               {/* Preview avec fleches navigation */}
               <div className="relative">
                 <div
-                  className={`relative rounded-2xl overflow-hidden ${isLandscape ? 'aspect-[3/2]' : 'aspect-[2/3]'} card-shadow cursor-pointer group`}
+                  className={`relative rounded-2xl overflow-hidden watermark ${isLandscape ? 'aspect-[3/2]' : 'aspect-[2/3]'} card-shadow cursor-pointer group`}
                   onClick={() => setLightbox(artist.prints.findIndex(p => p.id === selectedPrint.id))}
                 >
                   <img
-                    src={selectedPrint.image}
+                    src={selectedPrint.fullImage || toFull(selectedPrint.image)}
                     alt={tx({ fr: selectedPrint.titleFr, en: selectedPrint.titleEn, es: selectedPrint.titleEs || selectedPrint.titleEn })}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     onLoad={(e) => setIsLandscape(e.target.naturalWidth > e.target.naturalHeight)}
