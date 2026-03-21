@@ -8,27 +8,9 @@ export function ServicePagesProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchServicePages() {
-      try {
-        const { data } = await api.get('/service-pages', {
-          params: {
-            'populate[0]': 'heroImage',
-            'populate[1]': 'gallery',
-            'populate[2]': 'seo',
-            'populate[3]': 'webProjectImages',
-            'filters[active][$eq]': true,
-            'sort': 'sortOrder:asc',
-            'pagination[pageSize]': 50,
-          },
-        });
-        setServicePages(data.data || []);
-      } catch (err) {
-        console.warn('CMS service pages unavailable:', err.message);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchServicePages();
+    // CMS services DESACTIVE - les donnees locales (services.js) sont la source de verite.
+    // Quand le CMS sera nettoye et fiable, reactiver ici.
+    setLoading(false);
   }, []);
 
   return (

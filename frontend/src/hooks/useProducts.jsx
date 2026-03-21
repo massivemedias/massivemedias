@@ -8,24 +8,10 @@ export function ProductsProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchProducts() {
-      try {
-        const { data } = await api.get('/products', {
-          params: {
-            'populate': 'images',
-            'filters[active][$eq]': true,
-            'sort': 'sortOrder:asc',
-            'pagination[pageSize]': 100,
-          },
-        });
-        setProducts(data.data || []);
-      } catch (err) {
-        console.warn('CMS products unavailable:', err.message);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchProducts();
+    // CMS produits DESACTIVE - les donnees locales (products.js, services.js) sont la source de verite.
+    // Le CMS overridait les prix et descriptions avec des donnees obsoletes.
+    // Quand le CMS sera nettoye et fiable, reactiver ici.
+    setLoading(false);
   }, []);
 
   return (

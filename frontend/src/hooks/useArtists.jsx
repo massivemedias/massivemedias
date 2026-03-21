@@ -8,26 +8,10 @@ export function ArtistsProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchArtists() {
-      try {
-        const { data } = await api.get('/artists', {
-          params: {
-            'populate[0]': 'avatar',
-            'populate[1]': 'heroImage',
-            'populate[2]': 'printImages',
-            'filters[active][$eq]': true,
-            'sort': 'sortOrder:asc',
-            'pagination[pageSize]': 50,
-          },
-        });
-        setArtists(data.data || []);
-      } catch (err) {
-        console.warn('CMS artists unavailable:', err.message);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchArtists();
+    // CMS artistes DESACTIVE - les donnees locales (artists.js) sont la source de verite.
+    // Le CMS overridait les prix, les prints, les bios avec des donnees obsoletes.
+    // Quand le CMS sera nettoye et fiable, reactiver ici.
+    setLoading(false);
   }, []);
 
   return (
