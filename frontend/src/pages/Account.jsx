@@ -772,9 +772,10 @@ function Account() {
             <h2 className="text-xl font-heading font-bold text-heading">{getAdminSectionTitle()}</h2>
             <button
               onClick={() => setAdminMobileOpen(!adminMobileOpen)}
-              className="p-2 rounded-lg bg-glass text-heading"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg bg-glass text-heading text-sm"
             >
-              {adminMobileOpen ? <X size={20} /> : <Menu size={20} />}
+              <span className="text-grey-muted text-xs font-medium">Menu Admin</span>
+              {adminMobileOpen ? <X size={18} /> : <Menu size={18} />}
             </button>
           </div>
 
@@ -979,9 +980,10 @@ function Account() {
             <h2 className="text-xl font-heading font-bold text-heading">{getArtistSectionTitle()}</h2>
             <button
               onClick={() => setArtistMobileOpen(!artistMobileOpen)}
-              className="p-2 rounded-lg bg-glass text-heading"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg bg-glass text-heading text-sm"
             >
-              {artistMobileOpen ? <X size={20} /> : <Menu size={20} />}
+              <span className="text-grey-muted text-xs font-medium">Menu Artiste</span>
+              {artistMobileOpen ? <X size={18} /> : <Menu size={18} />}
             </button>
           </div>
 
