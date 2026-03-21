@@ -76,14 +76,16 @@ function AdminDashboard() {
   useEffect(() => {
     let cancelled = false;
     async function fetchAll() {
+      const timeout = (ms) => new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), ms));
+      const withTimeout = (p) => Promise.race([p, timeout(8000)]);
       try {
         const [ordersRes, messagesRes, inventoryRes, expensesRes, usersRes, analyticsRes] = await Promise.allSettled([
-          getOrders(),
-          getContactSubmissions(),
-          api.get('/inventory-items/dashboard'),
-          getExpenses(),
-          api.get('/user-roles'),
-          getAnalytics(3),
+          withTimeout(getOrders()),
+          withTimeout(getContactSubmissions()),
+          withTimeout(api.get('/inventory-items/dashboard')),
+          withTimeout(getExpenses()),
+          withTimeout(api.get('/user-roles')),
+          withTimeout(getAnalytics(3)),
         ]);
 
         if (cancelled) return;
