@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense } from 'react';
+import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, NavLink, useSearchParams } from 'react-router-dom';
 import {
@@ -118,11 +118,17 @@ function Account() {
   const validTabs = ['profile', 'address', 'security', 'overview', 'orders', 'artist', 'dashboard', 'profil-artiste', 'contrat', 'tarifs', 'retrait', 'ventes'];
   const initialTab = (tabFromUrl && validTabs.includes(tabFromUrl)) ? tabFromUrl : (isAdmin ? 'profile' : isArtist ? 'dashboard' : 'overview');
   const [activeTab, setActiveTab] = useState(initialTab);
+  const userChangedTab = useRef(false);
 
-  // Reset tab when role loads (artist may start with 'overview' before role resolves)
-  const artistTabs = ['dashboard', 'profil-artiste', 'contrat', 'tarifs', 'retrait', 'ventes'];
+  // Wrapper pour tracker quand l'utilisateur change de tab manuellement
+  const handleSetTab = (tab) => {
+    userChangedTab.current = true;
+    setActiveTab(tab);
+  };
+
+  // Reset tab SEULEMENT au premier chargement du role, PAS si l'user a deja clique
   useEffect(() => {
-    if (isArtist && !tabFromUrl && !artistTabs.includes(activeTab) && (activeTab === 'overview' || activeTab === 'profile')) {
+    if (isArtist && !tabFromUrl && !userChangedTab.current && (activeTab === 'overview' || activeTab === 'profile')) {
       setActiveTab('dashboard');
     }
   }, [isArtist]);
@@ -779,7 +785,7 @@ function Account() {
                 return (
                   <button
                     key={item.id}
-                    onClick={() => { setActiveTab(item.id); setAdminMobileOpen(false); }}
+                    onClick={() => { handleSetTab(item.id); setAdminMobileOpen(false); }}
                     className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
                       isActive ? 'bg-accent text-white' : 'bg-glass text-grey-muted hover:text-heading'
                     }`}
@@ -826,7 +832,7 @@ function Account() {
                   return (
                     <button
                       key={item.id}
-                      onClick={() => setActiveTab(item.id)}
+                      onClick={() => handleSetTab(item.id)}
                       className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
                         isActive
                           ? 'bg-accent/20 text-accent'
@@ -981,7 +987,7 @@ function Account() {
             >
               {/* Mon compte en premier */}
               <button
-                onClick={() => { setActiveTab('orders'); setArtistMobileOpen(false); }}
+                onClick={() => { handleSetTab('orders'); setArtistMobileOpen(false); }}
                 className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
                   activeTab === 'orders' ? 'bg-accent text-white' : 'bg-glass text-grey-muted hover:text-heading'
                 }`}
@@ -995,7 +1001,7 @@ function Account() {
                 return (
                   <button
                     key={item.id}
-                    onClick={() => { setActiveTab(item.id); setArtistMobileOpen(false); }}
+                    onClick={() => { handleSetTab(item.id); setArtistMobileOpen(false); }}
                     className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
                       isActive ? 'bg-accent text-white' : 'bg-glass text-grey-muted hover:text-heading'
                     }`}
@@ -1013,7 +1019,7 @@ function Account() {
                 return (
                   <button
                     key={item.id}
-                    onClick={() => { setActiveTab(item.id); setArtistMobileOpen(false); }}
+                    onClick={() => { handleSetTab(item.id); setArtistMobileOpen(false); }}
                     className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
                       isActive ? 'bg-accent text-white' : 'bg-glass text-grey-muted hover:text-heading'
                     }`}
@@ -1035,7 +1041,7 @@ function Account() {
                   {tx({ fr: 'Mon compte', en: 'My account', es: 'Mi cuenta' })}
                 </h2>
                 <button
-                  onClick={() => setActiveTab('orders')}
+                  onClick={() => handleSetTab('orders')}
                   className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
                     activeTab === 'orders'
                       ? 'bg-accent/20 text-accent'
@@ -1054,7 +1060,7 @@ function Account() {
                   return (
                     <button
                       key={item.id}
-                      onClick={() => setActiveTab(item.id)}
+                      onClick={() => handleSetTab(item.id)}
                       className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
                         isActive
                           ? 'bg-accent/20 text-accent'
@@ -1079,7 +1085,7 @@ function Account() {
                   return (
                     <button
                       key={item.id}
-                      onClick={() => setActiveTab(item.id)}
+                      onClick={() => handleSetTab(item.id)}
                       className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
                         isActive
                           ? 'bg-accent/20 text-accent'
@@ -1192,7 +1198,7 @@ function Account() {
               {tabs.map(tab => (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
+                  onClick={() => handleSetTab(tab.id)}
                   className={`flex items-center gap-2 px-4 py-3 text-sm font-medium whitespace-nowrap transition-all border-b-2 -mb-px cursor-pointer ${
                     activeTab === tab.id
                       ? 'border-accent text-accent'
@@ -1297,7 +1303,7 @@ function Account() {
                         </Link>
                         {orders.length > 0 ? (
                           <button
-                            onClick={() => setActiveTab('orders')}
+                            onClick={() => handleSetTab('orders')}
                             className="flex items-center gap-3 p-4 rounded-xl bg-blue-500/5 hover:bg-blue-500/10 transition-colors group text-left"
                           >
                             <RotateCcw size={20} className="text-blue-400" />
@@ -1384,7 +1390,7 @@ function Account() {
                           </h3>
                           {orders.length > 0 && (
                             <button
-                              onClick={() => setActiveTab('orders')}
+                              onClick={() => handleSetTab('orders')}
                               className="text-accent text-xs font-medium hover:underline"
                             >
                               {tx({ fr: 'Voir tout', en: 'View all', es: 'Ver todo' })}
@@ -1445,7 +1451,7 @@ function Account() {
                           </p>
                         </div>
                         <button
-                          onClick={() => setActiveTab('profile')}
+                          onClick={() => handleSetTab('profile')}
                           className="text-accent text-sm font-medium hover:underline flex-shrink-0 flex items-center gap-1"
                         >
                           {tx({ fr: 'Completer', en: 'Complete', es: 'Completar' })}
