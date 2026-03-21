@@ -119,6 +119,7 @@ function Account() {
   const initialTab = (tabFromUrl && validTabs.includes(tabFromUrl)) ? tabFromUrl : (isAdmin ? 'profile' : isArtist ? 'dashboard' : 'overview');
   const [activeTab, setActiveTab] = useState(initialTab);
   const userChangedTab = useRef(false);
+  const roleApplied = useRef(false);
 
   // Wrapper pour tracker quand l'utilisateur change de tab manuellement
   const handleSetTab = (tab) => {
@@ -126,9 +127,11 @@ function Account() {
     setActiveTab(tab);
   };
 
-  // Reset tab SEULEMENT au premier chargement du role, PAS si l'user a deja clique
+  // Reset tab UNE SEULE FOIS au premier chargement du role
   useEffect(() => {
-    if (isArtist && !tabFromUrl && !userChangedTab.current && (activeTab === 'overview' || activeTab === 'profile')) {
+    if (roleApplied.current) return; // Deja applique, on ne reset plus jamais
+    if (isArtist && !tabFromUrl) {
+      roleApplied.current = true;
       setActiveTab('dashboard');
     }
   }, [isArtist]);
