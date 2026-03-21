@@ -1,5 +1,6 @@
-import { createContext, useContext, useState, useCallback, useMemo } from 'react';
+import { createContext, useContext, useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { trackAddToCart, trackRemoveFromCart } from '../utils/analytics';
+import { useAuth } from './AuthContext';
 
 const CartContext = createContext();
 
@@ -12,7 +13,7 @@ function loadCart() {
   }
 }
 
-function saveCart(items) {
+function saveCartLocal(items) {
   try { localStorage.setItem('massive-cart', JSON.stringify(items)); } catch (e) {
     console.warn('Erreur sauvegarde panier localStorage:', e);
   }
@@ -20,6 +21,42 @@ function saveCart(items) {
 
 export function CartProvider({ children }) {
   const [items, setItems] = useState(loadCart);
+  const { user, updateProfile } = useAuth();
+  const syncedRef = useRef(false);
+  const savingRef = useRef(false);
+
+  // A la connexion : restaurer le panier depuis Supabase si le panier local est vide
+  useEffect(() => {
+    if (!user || syncedRef.current) return;
+    syncedRef.current = true;
+    const meta = user.user_metadata || {};
+    const savedCart = meta.cart_items || [];
+    if (savedCart.length > 0 && items.length === 0) {
+      setItems(savedCart);
+      saveCartLocal(savedCart);
+    }
+  }, [user]);
+
+  // Sauvegarder le panier dans Supabase a chaque changement (si connecte)
+  const saveToSupabase = useCallback(async (cartItems) => {
+    if (!user || savingRef.current) return;
+    savingRef.current = true;
+    try {
+      await updateProfile({ cart_items: cartItems });
+    } catch {} finally {
+      savingRef.current = false;
+    }
+  }, [user, updateProfile]);
+
+  // Debounce la sauvegarde Supabase (pas a chaque clic)
+  const debounceRef = useRef(null);
+  const saveCart = useCallback((cartItems) => {
+    saveCartLocal(cartItems);
+    if (user) {
+      clearTimeout(debounceRef.current);
+      debounceRef.current = setTimeout(() => saveToSupabase(cartItems), 2000);
+    }
+  }, [user, saveToSupabase]);
 
   const addToCart = useCallback((item) => {
     setItems(prev => {
@@ -28,7 +65,7 @@ export function CartProvider({ children }) {
       return updated;
     });
     trackAddToCart(item);
-  }, []);
+  }, [saveCart]);
 
   const removeFromCart = useCallback((index) => {
     setItems(prev => {
@@ -38,7 +75,7 @@ export function CartProvider({ children }) {
       saveCart(updated);
       return updated;
     });
-  }, []);
+  }, [saveCart]);
 
   const updateQuantity = useCallback((index, quantity, unitPrice) => {
     setItems(prev => {
@@ -48,12 +85,12 @@ export function CartProvider({ children }) {
       saveCart(updated);
       return updated;
     });
-  }, []);
+  }, [saveCart]);
 
   const clearCart = useCallback(() => {
     setItems([]);
     saveCart([]);
-  }, []);
+  }, [saveCart]);
 
   const cartCount = items.length;
   const cartTotal = items.reduce((sum, item) => sum + item.totalPrice, 0);
