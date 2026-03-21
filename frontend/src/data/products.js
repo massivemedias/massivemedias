@@ -22,25 +22,22 @@ export const stickerSizes = [
   { id: '4in', label: '4"' },
 ];
 
-// Prix Standard (Mat/Brillant). Laminé Pro et Holographique ont leurs propres prix.
-// Standard (Matte / Glossy)
-// Prix alignes sur StickerMule (legèrement en dessous)
-// SM ref: 50=$75, 100=$90, 200=$118, 300=$142, 500=$187
+// Prix Standard (Matte / Brillant) - alignes sur le tableau services.js
 export const stickerPriceTiers = [
-  { qty: 25, price: 45, unitPrice: 1.80 },
-  { qty: 50, price: 69, unitPrice: 1.38 },
-  { qty: 100, price: 85, unitPrice: 0.85 },
-  { qty: 250, price: 125, unitPrice: 0.50 },
-  { qty: 500, price: 179, unitPrice: 0.358 },
+  { qty: 25, price: 30, unitPrice: 1.20 },
+  { qty: 50, price: 45, unitPrice: 0.90 },
+  { qty: 100, price: 75, unitPrice: 0.75 },
+  { qty: 250, price: 150, unitPrice: 0.60 },
+  { qty: 500, price: 250, unitPrice: 0.50 },
 ];
 
-// Fx (Holographique, Verre Brise, Etoiles) - premium ~20%
+// Fx (Holo, Verre Brise, Etoiles) - alignes sur le tableau services.js
 export const holographicPriceTiers = [
-  { qty: 25, price: 55, unitPrice: 2.20 },
-  { qty: 50, price: 85, unitPrice: 1.70 },
-  { qty: 100, price: 105, unitPrice: 1.05 },
-  { qty: 250, price: 155, unitPrice: 0.62 },
-  { qty: 500, price: 219, unitPrice: 0.438 },
+  { qty: 25, price: 35, unitPrice: 1.40 },
+  { qty: 50, price: 55, unitPrice: 1.10 },
+  { qty: 100, price: 90, unitPrice: 0.90 },
+  { qty: 250, price: 175, unitPrice: 0.70 },
+  { qty: 500, price: 300, unitPrice: 0.60 },
 ];
 
 // Die-cut utilise les mêmes prix
