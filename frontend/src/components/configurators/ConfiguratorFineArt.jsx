@@ -166,16 +166,40 @@ function ConfiguratorFineArt() {
       {/* ========== COLONNE GAUCHE : Preview + Upload ========== */}
       <div className="md:w-[35%] lg:w-[30%] flex-shrink-0">
         <div className="md:sticky md:top-28 space-y-3">
-          {/* Preview cadre */}
-          <FramePreview
-            image={previewImage}
-            withFrame={withFrame}
-            frameColor={frameColor}
-            format={format}
-            formats={fineArtFormats}
-            tx={tx}
-            isLandscape={isLandscape}
+          {/* Upload au-dessus du cadre */}
+          <FileUpload
+            files={uploadedFiles}
+            onFilesChange={setUploadedFiles}
+            label={tx({ fr: 'Votre fichier', en: 'Your file', es: 'Tu archivo' })}
+            compact
+            hidePreview
           />
+          {/* Preview cadre - swipeable sur mobile */}
+          <div
+            onTouchStart={(e) => {
+              if (imageFiles.length <= 1) return;
+              e.currentTarget._touchX = e.touches[0].clientX;
+            }}
+            onTouchEnd={(e) => {
+              if (imageFiles.length <= 1 || !e.currentTarget._touchX) return;
+              const diff = e.currentTarget._touchX - e.changedTouches[0].clientX;
+              if (Math.abs(diff) > 40) {
+                const dir = diff > 0 ? 1 : -1;
+                setActiveImageIdx(prev => (prev + dir + imageFiles.length) % imageFiles.length);
+              }
+              e.currentTarget._touchX = null;
+            }}
+          >
+            <FramePreview
+              image={previewImage}
+              withFrame={withFrame}
+              frameColor={frameColor}
+              format={format}
+              formats={fineArtFormats}
+              tx={tx}
+              isLandscape={isLandscape}
+            />
+          </div>
           {/* Bullets navigation entre images */}
           {imageFiles.length > 1 && (
             <div className="flex items-center justify-center gap-2">
@@ -183,7 +207,7 @@ function ConfiguratorFineArt() {
                 <button
                   key={i}
                   onClick={() => setActiveImageIdx(i)}
-                  className={`w-2 h-2 rounded-full transition-all ${
+                  className={`w-2.5 h-2.5 rounded-full transition-all ${
                     i === activeImageIdx ? 'bg-accent scale-125' : 'bg-white/20 hover:bg-white/40'
                   }`}
                 />
@@ -194,18 +218,10 @@ function ConfiguratorFineArt() {
           <div className="text-center">
             <span className="text-grey-muted text-[10px]">
               {formatLabel?.label} · {tier === 'museum'
-                ? tx({ fr: 'Musee', en: 'Museum', es: 'Museo' })
+                ? tx({ fr: 'Musée', en: 'Museum', es: 'Museo' })
                 : tx({ fr: 'Studio', en: 'Studio', es: 'Studio' })}
             </span>
           </div>
-          {/* Upload sous le cadre */}
-          <FileUpload
-            files={uploadedFiles}
-            onFilesChange={setUploadedFiles}
-            label={tx({ fr: 'Votre fichier', en: 'Your file', es: 'Tu archivo' })}
-            compact
-            hidePreview
-          />
         </div>
       </div>
 
