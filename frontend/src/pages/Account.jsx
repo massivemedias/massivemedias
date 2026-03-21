@@ -120,8 +120,9 @@ function Account() {
   const [activeTab, setActiveTab] = useState(initialTab);
 
   // Reset tab when role loads (artist may start with 'overview' before role resolves)
+  const artistTabs = ['dashboard', 'profil-artiste', 'contrat', 'tarifs', 'retrait', 'ventes'];
   useEffect(() => {
-    if (isArtist && !tabFromUrl && (activeTab === 'overview' || activeTab === 'profile')) {
+    if (isArtist && !tabFromUrl && !artistTabs.includes(activeTab) && (activeTab === 'overview' || activeTab === 'profile')) {
       setActiveTab('dashboard');
     }
   }, [isArtist]);
