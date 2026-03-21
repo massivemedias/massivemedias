@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingCart, Check, Frame, Upload, ImageIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../../contexts/CartContext';
@@ -10,7 +11,7 @@ import {
   fineArtFramePriceByFormat, getFineArtPrice as defaultGetPrice, fineArtImages,
 } from '../../data/products';
 
-function FramePreview({ image, withFrame, frameColor, format, formats, tx, isLandscape }) {
+function FramePreview({ image, withFrame, frameColor, format, formats, tx, isLandscape, onClickImage }) {
   const fmt = formats.find(f => f.id === format);
   const fmtW = fmt?.w || 8.5;
   const fmtH = fmt?.h || 11;
@@ -29,8 +30,8 @@ function FramePreview({ image, withFrame, frameColor, format, formats, tx, isLan
 
   // Taille du preview proportionnelle
   const maxDim = Math.max(fmtW, fmtH);
-  const scaleFactor = 270 / 24; // A2 = 270px max
-  const previewMaxW = Math.max(150, Math.round(maxDim * scaleFactor));
+  const scaleFactor = 320 / 24; // A2 = 320px max
+  const previewMaxW = Math.max(180, Math.round(maxDim * scaleFactor));
 
   // Epaisseur du cadre proportionnelle
   // A6: cadre plus fin (cadre photo), passe-partout plus epais (espace 5x7 -> 4x6)
@@ -40,7 +41,8 @@ function FramePreview({ image, withFrame, frameColor, format, formats, tx, isLan
   return (
     <div className="flex items-center justify-center p-2">
       <div
-        className="relative transition-all duration-500 ease-out"
+        className={`relative transition-all duration-500 ease-out ${image && onClickImage ? 'cursor-zoom-in' : ''}`}
+        onClick={image && onClickImage ? onClickImage : undefined}
         style={{
           aspectRatio: withFrame ? `${frameW}/${frameH}` : `${w}/${h}`,
           width: '100%',
@@ -102,6 +104,7 @@ function ConfiguratorFineArt() {
   const [added, setAdded] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [notes, setNotes] = useState('');
+  const [lightboxOpen, setLightboxOpen] = useState(false);
 
   const getFineArtPrice = pd?.formats
     ? (t, f, frame) => {
@@ -198,6 +201,7 @@ function ConfiguratorFineArt() {
               formats={fineArtFormats}
               tx={tx}
               isLandscape={isLandscape}
+              onClickImage={() => previewImage && setLightboxOpen(true)}
             />
           </div>
           {/* Bullets navigation + cadre toggles */}
@@ -408,6 +412,34 @@ function ConfiguratorFineArt() {
         )}
 
       </div>
+
+      {/* Lightbox image */}
+      <AnimatePresence>
+        {lightboxOpen && previewImage && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[9999] bg-black/90 flex items-center justify-center cursor-zoom-out"
+            onClick={() => setLightboxOpen(false)}
+          >
+            <motion.img
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              src={previewImage}
+              alt="Preview"
+              className="max-w-[90vw] max-h-[90vh] object-contain rounded-lg"
+            />
+            <button
+              onClick={() => setLightboxOpen(false)}
+              className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white text-xl transition-colors"
+            >
+              &times;
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
