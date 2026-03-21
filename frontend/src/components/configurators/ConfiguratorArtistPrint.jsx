@@ -213,14 +213,18 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {} }) {
                   disabled={!isAvailable}
                   className={`flex flex-col items-center gap-1.5 transition-all ${!isAvailable ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer'}`}
                 >
-                  {/* Rectangle proportionnel */}
+                  {/* Rectangle proportionnel avec label */}
                   <div
-                    className={`rounded-sm transition-all ${format === f.id
+                    className={`rounded-sm transition-all flex items-center justify-center ${format === f.id
                       ? 'ring-2 ring-accent bg-accent/20'
                       : 'bg-white/10 hover:bg-white/15'
                     }`}
                     style={{ width: `${rectW}px`, height: `${rectH}px` }}
-                  />
+                  >
+                    <span className={`font-bold leading-none ${format === f.id ? 'text-accent' : 'text-white/40'}`} style={{ fontSize: `${Math.max(8, Math.min(14, rectH / 4))}px` }}>
+                      {f.short}
+                    </span>
+                  </div>
                   <div className="text-center">
                     <div className={`font-medium leading-tight ${format === f.id ? 'text-accent' : 'text-heading'}`} style={{ fontSize: '10px' }}>
                       {f.w}×{f.h}"

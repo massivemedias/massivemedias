@@ -22,11 +22,11 @@ export const artistPrinterTiers = [
 ];
 
 export const artistFormats = [
-  { id: 'postcard', label: 'Carte postale (4×6")', rank: -1, w: 4, h: 6 },
-  { id: 'a4', label: 'A4 (8.5×11")', rank: 0, w: 8.5, h: 11 },
-  { id: 'a3', label: 'A3 (11×17")', rank: 1, w: 11, h: 17 },
-  { id: 'a3plus', label: 'A3+ (13×19")', rank: 2, w: 13, h: 19 },
-  { id: 'a2', label: 'A2 (18×24")', rank: 3, w: 18, h: 24 },
+  { id: 'postcard', label: 'Carte postale (4×6")', short: 'A6', rank: -1, w: 4, h: 6 },
+  { id: 'a4', label: 'A4 (8.5×11")', short: 'A4', rank: 0, w: 8.5, h: 11 },
+  { id: 'a3', label: 'A3 (11×17")', short: 'A3', rank: 1, w: 11, h: 17 },
+  { id: 'a3plus', label: 'A3+ (13×19")', short: 'A3+', rank: 2, w: 13, h: 19 },
+  { id: 'a2', label: 'A2 (18×24")', short: 'A2', rank: 3, w: 18, h: 24 },
 ];
 
 // Verifie si un format est disponible pour un print selon maxFormat
