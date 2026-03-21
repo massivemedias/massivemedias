@@ -640,7 +640,7 @@ function ServiceDetail() {
                   <div className="p-4 space-y-2">
                     {card.tiers.map((tier, ti) => (
                       <div key={ti} className="flex items-center justify-between">
-                        <span className="text-grey-muted text-sm">{tier.qty} {tier.qty === '1' ? 'unité' : 'unités'}</span>
+                        <span className="text-grey-muted text-sm">{tier.qty} {tx({ fr: tier.qty === '1' ? 'unite' : 'unites', en: tier.qty === '1' ? 'unit' : 'units', es: tier.qty === '1' ? 'unidad' : 'unidades' })}</span>
                         <span className="text-heading font-bold text-sm">{tier.price}<span className="text-grey-muted font-normal text-xs">/u</span></span>
                       </div>
                     ))}
