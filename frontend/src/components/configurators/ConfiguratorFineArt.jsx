@@ -413,32 +413,68 @@ function ConfiguratorFineArt() {
 
       </div>
 
-      {/* Lightbox image */}
+      {/* Lightbox avec cadre/bordures */}
       <AnimatePresence>
-        {lightboxOpen && previewImage && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[9999] bg-black/90 flex items-center justify-center cursor-zoom-out"
-            onClick={() => setLightboxOpen(false)}
-          >
-            <motion.img
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.8, opacity: 0 }}
-              src={previewImage}
-              alt="Preview"
-              className="max-w-[90vw] max-h-[90vh] object-contain rounded-lg"
-            />
-            <button
+        {lightboxOpen && previewImage && (() => {
+          const fmt = fineArtFormats.find(f => f.id === format);
+          const fW = fmt?.w || 8.5;
+          const fH = fmt?.h || 11;
+          const lbLandscape = isLandscape;
+          const imgW = lbLandscape ? Math.max(fW, fH) : Math.min(fW, fH);
+          const imgH = lbLandscape ? Math.min(fW, fH) : Math.max(fW, fH);
+          const borderPx = withFrame ? 16 : 0;
+          const matPx = withFrame ? 24 : 12; // 12px = demi-pouce blanc sans cadre
+          return (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[9999] bg-black/90 flex items-center justify-center cursor-zoom-out"
               onClick={() => setLightboxOpen(false)}
-              className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white text-xl transition-colors"
             >
-              &times;
-            </button>
-          </motion.div>
-        )}
+              <motion.div
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.8, opacity: 0 }}
+                className="relative"
+                style={{
+                  aspectRatio: `${imgW}/${imgH}`,
+                  maxWidth: '80vw',
+                  maxHeight: '85vh',
+                  width: lbLandscape ? '70vw' : '50vw',
+                }}
+                onClick={e => e.stopPropagation()}
+              >
+                <div
+                  className="w-full h-full"
+                  style={{
+                    border: withFrame ? `${borderPx}px solid ${frameColor === 'white' ? '#e5e5e5' : '#1a1a1a'}` : 'none',
+                    padding: `${matPx}px`,
+                    background: '#ffffff',
+                    boxShadow: '0 12px 60px rgba(0,0,0,0.5)',
+                  }}
+                >
+                  <img
+                    src={previewImage}
+                    alt="Preview"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                {/* Info format sous le cadre */}
+                <p className="text-center text-white/60 text-sm mt-3">
+                  {fmt?.label} · {tier === 'museum' ? tx({ fr: 'Musée', en: 'Museum', es: 'Museo' }) : 'Studio'}
+                  {withFrame && ` · ${tx({ fr: 'Cadre', en: 'Frame', es: 'Marco' })} ${frameColor === 'white' ? tx({ fr: 'blanc', en: 'white', es: 'blanco' }) : tx({ fr: 'noir', en: 'black', es: 'negro' })}`}
+                </p>
+              </motion.div>
+              <button
+                onClick={() => setLightboxOpen(false)}
+                className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white text-xl transition-colors"
+              >
+                &times;
+              </button>
+            </motion.div>
+          );
+        })()}
       </AnimatePresence>
     </div>
   );
