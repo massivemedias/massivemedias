@@ -201,6 +201,8 @@ function Account() {
 
   // Menu items pour le sidebar admin
   const ADMIN_NAV_ITEMS = [
+    { to: '/admin/dashboard', icon: BarChart3, fr: 'Dashboard', en: 'Dashboard', es: 'Dashboard' },
+    { to: '/admin/notes', icon: FileText, fr: 'Notes', en: 'Notes', es: 'Notas' },
     { to: '/admin/commandes', icon: ShoppingBag, fr: 'Commandes', en: 'Orders', es: 'Pedidos' },
     { to: '/admin/factures', icon: FileText, fr: 'Factures', en: 'Invoices', es: 'Facturas' },
     { to: '/admin/commissions', icon: Banknote, fr: 'Commissions', en: 'Commissions', es: 'Comisiones' },
