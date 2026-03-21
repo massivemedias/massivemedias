@@ -240,32 +240,34 @@ function ConfiguratorFineArt() {
           <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2">
             Format
           </label>
-          <div className="flex items-end gap-2 md:gap-3 justify-center">
+          <div className="grid grid-cols-5 gap-1.5">
             {fineArtFormats.map(f => {
               const price = tier === 'museum' ? f.museumPrice : f.studioPrice;
               const isAvailable = price != null;
-              const scale = 4;
-              const rectH = Math.max(36, Math.round((f.h || 11) * scale));
-              const rectW = Math.max(24, Math.round((f.w || 8.5) * scale));
+              const scale = 2.8;
+              const rectH = Math.max(24, Math.round((f.h || 11) * scale));
+              const rectW = Math.max(16, Math.round((f.w || 8.5) * scale));
               return (
                 <button
                   key={f.id}
                   onClick={() => isAvailable && setFormat(f.id)}
                   disabled={!isAvailable}
                   title={f.typeName || f.label}
-                  className={`group flex flex-col items-center transition-all ${
-                    !isAvailable ? 'opacity-25 cursor-not-allowed' : 'cursor-pointer'
+                  className={`flex flex-col items-center justify-center py-2.5 px-1 rounded-lg transition-all border-2 ${
+                    !isAvailable
+                      ? 'opacity-25 cursor-not-allowed border-transparent bg-white/3'
+                      : format === f.id
+                      ? 'border-accent bg-accent/10'
+                      : 'border-transparent bg-white/5 hover:bg-white/8 hover:border-grey-muted/20'
                   }`}
                 >
                   <div
-                    className={`rounded-sm transition-all duration-200 mb-1.5 ${
-                      format === f.id
-                        ? 'bg-accent/30 ring-2 ring-accent'
-                        : 'bg-white/8 hover:bg-white/12'
+                    className={`rounded-[2px] mb-1.5 ${
+                      format === f.id ? 'bg-accent/40' : 'bg-white/10'
                     }`}
                     style={{ width: `${rectW}px`, height: `${rectH}px` }}
                   />
-                  <span className={`text-[10px] font-bold ${format === f.id ? 'text-accent' : 'text-heading'}`}>
+                  <span className={`text-[10px] font-bold leading-tight ${format === f.id ? 'text-accent' : 'text-heading'}`}>
                     {f.label}
                   </span>
                   <span className={`text-[10px] ${format === f.id ? 'text-accent' : 'text-grey-muted'}`}>
