@@ -79,7 +79,7 @@ function formatSize(bytes) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-function FileUpload({ files = [], onFilesChange, label, maxFiles = 5, compact = false, uploadFn }) {
+function FileUpload({ files = [], onFilesChange, label, maxFiles = 5, compact = false, uploadFn, hidePreview = false }) {
   const { tx } = useLang();
   const inputRef = useRef(null);
   const [uploading, setUploading] = useState(false);
@@ -195,11 +195,11 @@ function FileUpload({ files = [], onFilesChange, label, maxFiles = 5, compact = 
             )}
           </div>
         ) : (
-          /* Has files: show previews */
+          /* Has files: show previews or just names */
           <div className="space-y-2">
             {files.map((file, i) => (
               <div key={file.id || i} className="relative group">
-                {isImage(file.mime) && file.url ? (
+                {isImage(file.mime) && file.url && !hidePreview ? (
                   <div className="rounded-lg overflow-hidden bg-glass">
                     <img
                       src={file.url}

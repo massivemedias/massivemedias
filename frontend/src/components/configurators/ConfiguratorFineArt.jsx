@@ -108,16 +108,19 @@ function ConfiguratorFineArt() {
   const tierLabel = fineArtPrinterTiers.find(t => t.id === tier);
   const formatLabel = fineArtFormats.find(f => f.id === format);
 
-  // Detection paysage/portrait de l'image uploadee
+  // Images uploadees (filtrer que les images)
+  const imageFiles = useMemo(() => uploadedFiles.filter(f => f.mime?.startsWith('image/')), [uploadedFiles]);
+  const [activeImageIdx, setActiveImageIdx] = useState(0);
   const [isLandscape, setIsLandscape] = useState(false);
 
-  // Image preview : premiere image uploadee
-  const previewImage = useMemo(() => {
-    const img = uploadedFiles.find(f => f.mime?.startsWith('image/'));
-    return img?.url || null;
-  }, [uploadedFiles]);
+  // Reset index si les fichiers changent
+  useEffect(() => {
+    if (activeImageIdx >= imageFiles.length) setActiveImageIdx(Math.max(0, imageFiles.length - 1));
+  }, [imageFiles.length]);
 
-  // Detecter orientation de l'image uploadee
+  const previewImage = imageFiles[activeImageIdx]?.url || null;
+
+  // Detecter orientation de l'image active
   useEffect(() => {
     if (!previewImage) { setIsLandscape(false); return; }
     const img = new Image();
@@ -161,6 +164,7 @@ function ConfiguratorFineArt() {
             onFilesChange={setUploadedFiles}
             label={tx({ fr: 'Votre fichier', en: 'Your file', es: 'Tu archivo' })}
             compact
+            hidePreview
           />
         </div>
 
@@ -175,6 +179,20 @@ function ConfiguratorFineArt() {
             tx={tx}
             isLandscape={isLandscape}
           />
+          {/* Bullets navigation entre images */}
+          {imageFiles.length > 1 && (
+            <div className="flex items-center justify-center gap-2 mt-3">
+              {imageFiles.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setActiveImageIdx(i)}
+                  className={`w-2.5 h-2.5 rounded-full transition-all ${
+                    i === activeImageIdx ? 'bg-accent scale-125' : 'bg-white/20 hover:bg-white/40'
+                  }`}
+                />
+              ))}
+            </div>
+          )}
           {/* Info format sous le preview */}
           <div className="text-center mt-2">
             <span className="text-grey-muted text-xs">
@@ -317,6 +335,7 @@ function ConfiguratorFineArt() {
             onFilesChange={setUploadedFiles}
             label={tx({ fr: 'Votre fichier', en: 'Your file', es: 'Tu archivo' })}
             compact
+            hidePreview
           />
         </div>
 
