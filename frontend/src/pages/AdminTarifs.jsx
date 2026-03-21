@@ -488,7 +488,7 @@ function AdminTarifs() {
                     <p>- {tx({ fr: 'Materiaux + assemblage', en: 'Materials + assembly', es: 'Materiales + ensamblaje' })}</p>
                   </div>
                 </div>
-                <div className="bg-purple-500/15 rounded-xl p-4 text-center shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)]">
+                <div className="bg-purple-500/15 rounded-xl p-4 text-center">
                   <div className="text-3xl font-bold text-purple-400">40$</div>
                   <div className="text-xs text-purple-400 font-bold mt-1 uppercase tracking-wider">{tx({ fr: 'Artiste - Profit net', en: 'Artist - Net profit', es: 'Artista - Ganancia neta' })}</div>
                   <div className="text-[11px] text-grey-muted mt-3 text-left space-y-1">

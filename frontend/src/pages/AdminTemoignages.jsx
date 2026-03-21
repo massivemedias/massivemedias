@@ -213,7 +213,7 @@ function AdminTemoignages() {
                     onChange={(e) => setGenName(e.target.value)}
                     placeholder={tx({ fr: 'Nom du client', en: 'Client name', es: 'Nombre del cliente' })}
                     required
-                    className="flex-1 px-4 py-2.5 rounded-lg bg-transparent shadow-[inset_0_1px_3px_rgba(0,0,0,0.3)] text-heading text-sm placeholder:text-grey-muted/50 focus:shadow-[inset_0_1px_4px_rgba(255,82,160,0.3)] focus:outline-none"
+                    className="flex-1 px-4 py-2.5 rounded-lg bg-transparent text-heading text-sm placeholder:text-grey-muted/50 focus:shadow-[inset_0_1px_4px_rgba(255,82,160,0.3)] focus:outline-none"
                   />
                   <input
                     type="email"
@@ -221,7 +221,7 @@ function AdminTemoignages() {
                     onChange={(e) => setGenEmail(e.target.value)}
                     placeholder={tx({ fr: 'Email du client', en: 'Client email', es: 'Email del cliente' })}
                     required
-                    className="flex-1 px-4 py-2.5 rounded-lg bg-transparent shadow-[inset_0_1px_3px_rgba(0,0,0,0.3)] text-heading text-sm placeholder:text-grey-muted/50 focus:shadow-[inset_0_1px_4px_rgba(255,82,160,0.3)] focus:outline-none"
+                    className="flex-1 px-4 py-2.5 rounded-lg bg-transparent text-heading text-sm placeholder:text-grey-muted/50 focus:shadow-[inset_0_1px_4px_rgba(255,82,160,0.3)] focus:outline-none"
                   />
                   <button
                     type="submit"
@@ -242,7 +242,7 @@ function AdminTemoignages() {
                       type="text"
                       value={generatedLink}
                       readOnly
-                      className="flex-1 px-4 py-2.5 rounded-lg bg-transparent shadow-[inset_0_1px_3px_rgba(0,0,0,0.3)] text-heading text-sm font-mono"
+                      className="flex-1 px-4 py-2.5 rounded-lg bg-transparent text-heading text-sm font-mono"
                     />
                     <button
                       onClick={handleCopy}

@@ -143,7 +143,7 @@ function AdminNotes({ embedded = false }) {
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 placeholder={tx({ fr: 'Rechercher...', en: 'Search...', es: 'Buscar...' })}
-                className="w-full pl-8 pr-3 py-2 rounded-lg bg-black/20 shadow-[inset_0_1px_4px_rgba(0,0,0,0.3)] text-heading text-sm placeholder:text-grey-muted focus:outline-none"
+                className="w-full pl-8 pr-3 py-2 rounded-lg bg-black/20 text-heading text-sm placeholder:text-grey-muted focus:outline-none"
               />
             </div>
             <button
@@ -169,7 +169,7 @@ function AdminNotes({ embedded = false }) {
                 onClick={() => setActiveId(n.id)}
                 className={`w-full text-left p-3 rounded-lg transition-all text-sm group ${
                   activeId === n.id
-                    ? 'bg-accent/15 shadow-[inset_0_0_0_1px_rgba(255,82,160,0.25)]'
+                    ? 'bg-accent/15'
                     : 'bg-black/10 hover:bg-black/20'
                 }`}
               >
@@ -195,7 +195,7 @@ function AdminNotes({ embedded = false }) {
         {/* Editeur */}
         <div className="flex-1 min-w-0">
           {activeNote ? (
-            <div className="rounded-xl bg-black/10 shadow-[inset_0_1px_6px_rgba(0,0,0,0.25)] overflow-hidden flex flex-col h-full min-h-[450px]">
+            <div className="rounded-xl bg-black/10 overflow-hidden flex flex-col h-full min-h-[450px]">
               {/* Bouton retour mobile */}
               <div className="lg:hidden flex items-center gap-2 p-2 bg-black/10">
                 <button

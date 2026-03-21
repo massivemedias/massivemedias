@@ -943,7 +943,7 @@ function AdminDepenses() {
                               {/* Receipt image */}
                               {item.receiptUrl && (
                                 <a href={item.receiptUrl} target="_blank" rel="noopener noreferrer" className="block">
-                                  <img src={item.receiptUrl} alt="Recu" className="max-h-48 rounded-lg shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)] object-contain" />
+                                  <img src={item.receiptUrl} alt="Recu" className="max-h-48 rounded-lg object-contain" />
                                 </a>
                               )}
 

@@ -7,8 +7,9 @@ import {
   Loader2, ArrowRight, StickyNote, Clock, CheckCircle, Truck,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
-import { getOrders, getContactSubmissions, getExpenses } from '../services/adminService';
+import { getOrders, getContactSubmissions, getExpenses, getAnalytics } from '../services/adminService';
 import api from '../services/api';
+import { UserPlus, Eye } from 'lucide-react';
 const NOTES_KEY = 'massive-admin-notes';
 
 function DashboardNotes() {
@@ -46,7 +47,7 @@ function DashboardNotes() {
 
 function StatCard({ icon: Icon, label, value, color, to }) {
   const content = (
-    <div className="flex items-center gap-3 p-4 rounded-xl bg-black/20 shadow-[inset_0_1px_4px_rgba(0,0,0,0.2)] hover:bg-black/25 transition-all group">
+    <div className="flex items-center gap-3 p-4 rounded-xl bg-black/20 hover:bg-black/25 transition-all group">
       <div className={`p-2.5 rounded-lg ${color}`}>
         <Icon size={20} />
       </div>
@@ -68,17 +69,21 @@ function AdminDashboard() {
     messages: 0, unreadMessages: 0,
     inventoryLow: 0,
     expenses: 0,
+    newUsers3d: 0,
+    visitorsToday: '-',
   });
 
   useEffect(() => {
     let cancelled = false;
     async function fetchAll() {
       try {
-        const [ordersRes, messagesRes, inventoryRes, expensesRes] = await Promise.allSettled([
+        const [ordersRes, messagesRes, inventoryRes, expensesRes, usersRes, analyticsRes] = await Promise.allSettled([
           getOrders(),
           getContactSubmissions(),
           api.get('/inventory-items/dashboard'),
           getExpenses(),
+          api.get('/user-roles'),
+          getAnalytics(3),
         ]);
 
         if (cancelled) return;
@@ -93,6 +98,11 @@ function AdminDashboard() {
         const shipped = orders.filter(o => o.status === 'shipped').length;
         const unread = messages.filter(m => m.status === 'new' || m.status === 'unread').length;
         const lowStock = inventory.filter(i => i.quantity !== undefined && i.quantity <= (i.lowStockThreshold || 5)).length;
+        const users = usersRes.status === 'fulfilled' ? (usersRes.value?.data || []) : [];
+        const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
+        const newUsers3d = users.filter(u => new Date(u.createdAt) >= threeDaysAgo).length;
+        const analytics = analyticsRes.status === 'fulfilled' ? (analyticsRes.value?.data || {}) : {};
+        const visitorsToday = analytics.visitorsToday ?? analytics.uniqueVisitors ?? '-';
         const monthExpenses = expenses
           .filter(e => {
             const d = new Date(e.date || e.createdAt);
@@ -110,6 +120,8 @@ function AdminDashboard() {
           unreadMessages: unread,
           inventoryLow: lowStock,
           expenses: monthExpenses,
+          newUsers3d,
+          visitorsToday,
         });
       } catch (err) {
         console.error('Dashboard fetch error:', err);
@@ -132,7 +144,7 @@ function AdminDashboard() {
   return (
     <div className="space-y-6">
       {/* Stats rapides */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
         <StatCard
           icon={Clock}
           label={tx({ fr: 'En attente', en: 'Pending', es: 'Pendientes' })}
@@ -156,10 +168,24 @@ function AdminDashboard() {
         />
         <StatCard
           icon={MessageSquare}
-          label={tx({ fr: 'Messages non lus', en: 'Unread messages', es: 'Mensajes no leidos' })}
+          label={tx({ fr: 'Messages non lus', en: 'Unread', es: 'No leidos' })}
           value={stats.unreadMessages}
           color={stats.unreadMessages > 0 ? 'bg-red-500/15 text-red-400' : 'bg-white/5 text-grey-muted'}
           to="/admin/messages"
+        />
+        <StatCard
+          icon={UserPlus}
+          label={tx({ fr: 'Nouveaux (3j)', en: 'New users (3d)', es: 'Nuevos (3d)' })}
+          value={stats.newUsers3d}
+          color={stats.newUsers3d > 0 ? 'bg-purple-500/15 text-purple-400' : 'bg-white/5 text-grey-muted'}
+          to="/admin/utilisateurs"
+        />
+        <StatCard
+          icon={Eye}
+          label={tx({ fr: 'Visiteurs aujourd\'hui', en: 'Visitors today', es: 'Visitantes hoy' })}
+          value={stats.visitorsToday}
+          color="bg-cyan-500/15 text-cyan-400"
+          to="/admin/stats"
         />
       </div>
 
@@ -175,7 +201,7 @@ function AdminDashboard() {
           <Link
             key={item.to}
             to={item.to}
-            className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-black/10 shadow-[inset_0_1px_4px_rgba(0,0,0,0.15)] hover:bg-black/20 transition-all text-center group"
+            className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-black/10 hover:bg-black/20 transition-all text-center group"
           >
             <item.icon size={20} className="text-grey-muted group-hover:text-accent transition-colors" />
             <span className="text-xs text-heading font-medium">{item.label}</span>

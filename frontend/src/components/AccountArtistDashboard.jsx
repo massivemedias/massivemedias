@@ -362,7 +362,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
           className={`fixed top-4 right-4 z-50 p-4 rounded-lg text-sm flex items-center gap-2 shadow-lg ${
-            toast ? 'bg-red-500/10 shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)] text-red-400' : 'bg-green-500/10 shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)] text-green-400'
+            toast ? 'bg-red-500/10 text-red-400' : 'bg-green-500/10 text-green-400'
           }`}
         >
           <Check size={16} />
@@ -754,7 +754,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mb-4 p-3 rounded-lg bg-green-500/10 shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)] text-green-400 text-sm flex items-center gap-2"
+              className="mb-4 p-3 rounded-lg bg-green-500/10 text-green-400 text-sm flex items-center gap-2"
             >
               <Check size={16} />
               {artistProfileMsg}
@@ -1004,7 +1004,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
           </div>
 
           {hasPendingWithdrawal && (
-            <div className="rounded-lg bg-yellow-500/10 shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)] p-3 mb-4 flex items-center gap-2">
+            <div className="rounded-lg bg-yellow-500/10 p-3 mb-4 flex items-center gap-2">
               <Clock size={14} className="text-yellow-400 flex-shrink-0" />
               <p className="text-yellow-400 text-xs">
                 {tx({

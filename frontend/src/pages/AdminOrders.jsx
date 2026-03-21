@@ -214,7 +214,7 @@ function AdminOrders() {
     <div className="space-y-6">
       {/* Error toast */}
       {opError && (
-        <div className="p-3 rounded-lg bg-red-500/10 shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)] text-red-400 text-sm">
+        <div className="p-3 rounded-lg bg-red-500/10 text-red-400 text-sm">
           {opError}
         </div>
       )}
@@ -459,7 +459,7 @@ function AdminOrders() {
                                     <div className="flex items-start gap-4">
                                       {/* Image produit - plus grande */}
                                       {item.image && (
-                                        <img src={item.image} alt="" className="w-16 h-16 rounded-lg object-cover flex-shrink-0 shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)]" />
+                                        <img src={item.image} alt="" className="w-16 h-16 rounded-lg object-cover flex-shrink-0" />
                                       )}
                                       <div className="flex-1 min-w-0">
                                         <div className="flex justify-between items-start gap-2">

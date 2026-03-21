@@ -747,7 +747,7 @@ function Account() {
                   )}
                 </p>
               </div>
-              <button onClick={signOut} className="flex items-center gap-2 px-4 py-2 rounded-lg shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)] bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all text-sm font-semibold flex-shrink-0">
+              <button onClick={signOut} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all text-sm font-semibold flex-shrink-0">
                 <LogOut size={16} />
                 <span className="hidden sm:inline">{tx({ fr: 'Déconnexion', en: 'Sign out', es: 'Cerrar sesion' })}</span>
               </button>
@@ -878,7 +878,7 @@ function Account() {
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
-                    className="mb-4 p-3 rounded-lg bg-green-500/10 shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)] text-green-400 text-sm flex items-center gap-2"
+                    className="mb-4 p-3 rounded-lg bg-green-500/10 text-green-400 text-sm flex items-center gap-2"
                   >
                     <Check size={16} />
                     {saveMsg}
@@ -953,7 +953,7 @@ function Account() {
                   </p>
                 )}
               </div>
-              <button onClick={signOut} className="flex items-center gap-2 px-3 py-1.5 rounded-lg shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)] bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all text-xs font-semibold flex-shrink-0">
+              <button onClick={signOut} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all text-xs font-semibold flex-shrink-0">
                 <LogOut size={14} />
                 <span className="hidden sm:inline">{tx({ fr: 'Déconnexion', en: 'Sign out', es: 'Cerrar sesion' })}</span>
               </button>
@@ -1106,7 +1106,7 @@ function Account() {
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
-                    className="mb-4 p-3 rounded-lg bg-green-500/10 shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)] text-green-400 text-sm flex items-center gap-2"
+                    className="mb-4 p-3 rounded-lg bg-green-500/10 text-green-400 text-sm flex items-center gap-2"
                   >
                     <Check size={16} />
                     {saveMsg}
@@ -1180,7 +1180,7 @@ function Account() {
                   )}
                 </p>
               </div>
-              <button onClick={signOut} className="flex items-center gap-2 px-4 py-2 rounded-lg shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)] bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all text-sm font-semibold flex-shrink-0">
+              <button onClick={signOut} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all text-sm font-semibold flex-shrink-0">
                 <LogOut size={16} />
                 <span className="hidden sm:inline">{tx({ fr: 'Déconnexion', en: 'Sign out', es: 'Cerrar sesion' })}</span>
               </button>
@@ -1214,7 +1214,7 @@ function Account() {
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
-                  className="mb-4 p-3 rounded-lg bg-green-500/10 shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)] text-green-400 text-sm flex items-center gap-2"
+                  className="mb-4 p-3 rounded-lg bg-green-500/10 text-green-400 text-sm flex items-center gap-2"
                 >
                   <Check size={16} />
                   {saveMsg}
@@ -1285,7 +1285,7 @@ function Account() {
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <Link
                           to="/boutique"
-                          className="flex items-center gap-3 p-4 rounded-xl bg-accent/5 shadow-[inset_0_1px_2px_rgba(0,0,0,0.15)] hover:bg-accent/10 transition-colors group"
+                          className="flex items-center gap-3 p-4 rounded-xl bg-accent/5 hover:bg-accent/10 transition-colors group"
                         >
                           <ShoppingBag size={20} className="text-accent" />
                           <div className="flex-grow">
@@ -1297,7 +1297,7 @@ function Account() {
                         {orders.length > 0 ? (
                           <button
                             onClick={() => setActiveTab('orders')}
-                            className="flex items-center gap-3 p-4 rounded-xl bg-blue-500/5 shadow-[inset_0_1px_2px_rgba(0,0,0,0.15)] hover:bg-blue-500/10 transition-colors group text-left"
+                            className="flex items-center gap-3 p-4 rounded-xl bg-blue-500/5 hover:bg-blue-500/10 transition-colors group text-left"
                           >
                             <RotateCcw size={20} className="text-blue-400" />
                             <div className="flex-grow">
@@ -1309,7 +1309,7 @@ function Account() {
                         ) : (
                           <Link
                             to="/boutique/stickers"
-                            className="flex items-center gap-3 p-4 rounded-xl bg-purple-500/5 shadow-[inset_0_1px_2px_rgba(0,0,0,0.15)] hover:bg-purple-500/10 transition-colors group"
+                            className="flex items-center gap-3 p-4 rounded-xl bg-purple-500/5 hover:bg-purple-500/10 transition-colors group"
                           >
                             <Heart size={20} className="text-purple-400" />
                             <div className="flex-grow">
@@ -1321,7 +1321,7 @@ function Account() {
                         )}
                         <Link
                           to="/contact"
-                          className="flex items-center gap-3 p-4 rounded-xl bg-green-500/5 shadow-[inset_0_1px_2px_rgba(0,0,0,0.15)] hover:bg-green-500/10 transition-colors group"
+                          className="flex items-center gap-3 p-4 rounded-xl bg-green-500/5 hover:bg-green-500/10 transition-colors group"
                         >
                           <MessageCircle size={20} className="text-green-400" />
                           <div className="flex-grow">
@@ -1359,7 +1359,7 @@ function Account() {
                         </p>
                         <button
                           onClick={handleCopyReferral}
-                          className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg bg-accent/10 shadow-[inset_0_1px_2px_rgba(0,0,0,0.15)] text-accent text-sm font-medium hover:bg-accent/20 transition-colors"
+                          className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg bg-accent/10 text-accent text-sm font-medium hover:bg-accent/20 transition-colors"
                         >
                           {refCopied ? (
                             <>
@@ -1427,7 +1427,7 @@ function Account() {
 
                     {/* Profile completion prompt */}
                     {(!meta.full_name || !meta.phone || !meta.address) && (
-                      <div className="rounded-xl shadow-[inset_0_1px_2px_rgba(0,0,0,0.15)] bg-accent/5 p-5 flex items-center gap-4">
+                      <div className="rounded-xl bg-accent/5 p-5 flex items-center gap-4">
                         <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0">
                           <User size={18} className="text-accent" />
                         </div>
