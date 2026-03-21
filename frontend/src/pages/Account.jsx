@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link, NavLink, useSearchParams } from 'react-router-dom';
+import { Link, NavLink, useSearchParams, useNavigate } from 'react-router-dom';
 import {
   User, Mail, Phone, MapPin, Building2, Package, LogOut, Loader2, Check, Lock,
   Eye, EyeOff, ChevronDown, ChevronUp, Shield, Pencil, Save, ShoppingBag,
   ArrowRight, Gift, Copy, Heart, Clock, RotateCcw, MessageCircle, Download,
-  Palette, Settings, Menu, X, Banknote, Receipt, BarChart3, DollarSign, Users, ScrollText, ImagePlus, FileText,
+  Palette, Settings, Menu, X, Banknote, Receipt, BarChart3, DollarSign, Users, ScrollText, ImagePlus, FileText, ExternalLink,
 } from 'lucide-react';
 import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
@@ -112,6 +112,7 @@ function Account() {
   const { user, signOut, updateProfile, updatePassword, loading: authLoading } = useAuth();
   const { role: userRole, isAdmin, isArtist, artistSlug, loading: roleLoading } = useUserRole();
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const meta = user?.user_metadata || {};
 
   const tabFromUrl = searchParams.get('tab');
@@ -925,7 +926,7 @@ function Account() {
   // ============================================================
   const ARTIST_SIDEBAR_ITEMS = isArtist ? [
     { id: 'dashboard', label: tx({ fr: 'Tableau de bord', en: 'Dashboard', es: 'Panel' }), icon: Palette },
-    { id: 'profil-artiste', label: tx({ fr: 'Page Artiste', en: 'Artist Page', es: 'Pagina Artista' }), icon: User },
+    { id: 'profil-artiste', label: tx({ fr: 'Page Artiste', en: 'Artist Page', es: 'Pagina Artista' }), icon: User, href: `/artistes/${artistSlug}` },
     { id: 'contrat', label: tx({ fr: 'Contrat', en: 'Contract', es: 'Contrato' }), icon: ScrollText },
     { id: 'tarifs', label: tx({ fr: 'Tarifs Massive', en: 'Massive Pricing', es: 'Precios Massive' }), icon: Receipt },
     { id: 'ventes', label: tx({ fr: 'Mes ventes', en: 'My sales', es: 'Mis ventas' }), icon: BarChart3 },
@@ -960,7 +961,7 @@ function Account() {
                 </div>
               )}
               <div className="flex-grow min-w-0">
-                <p className="text-sm text-heading font-bold">{meta.full_name || user?.email?.split('@')[0] || ''}</p>
+                <h1 className="text-sm lg:text-lg text-heading font-heading font-bold">{meta.full_name || user?.email?.split('@')[0] || ''}</h1>
                 <p className="text-xs text-grey-muted/60">
                   {user?.email}
                   {memberSince && (
@@ -1025,6 +1026,19 @@ function Account() {
               {ARTIST_SIDEBAR_ITEMS.map((item) => {
                 const Icon = item.icon;
                 const isActive = activeTab === item.id;
+                if (item.href) {
+                  return (
+                    <Link
+                      key={item.id}
+                      to={item.href}
+                      className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all bg-glass text-grey-muted hover:text-heading`}
+                    >
+                      <Icon size={14} />
+                      {item.label}
+                      <ExternalLink size={10} className="ml-auto opacity-50" />
+                    </Link>
+                  );
+                }
                 return (
                   <button
                     key={item.id}
@@ -1091,6 +1105,19 @@ function Account() {
                 {ARTIST_SIDEBAR_ITEMS.map((item) => {
                   const Icon = item.icon;
                   const isActive = activeTab === item.id;
+                  if (item.href) {
+                    return (
+                      <Link
+                        key={item.id}
+                        to={item.href}
+                        className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 text-grey-muted hover:text-heading hover:bg-glass"
+                      >
+                        <Icon size={16} />
+                        {item.label}
+                        <ExternalLink size={12} className="ml-auto opacity-40" />
+                      </Link>
+                    );
+                  }
                   return (
                     <button
                       key={item.id}

@@ -360,9 +360,9 @@ function ArtistGalleryManager() {
 
               {/* Badge piece unique */}
               {isUnique && (
-                <div className="absolute top-1.5 left-1.5 px-2 py-0.5 rounded-full bg-accent/90 text-white text-[9px] font-bold uppercase flex items-center gap-1">
-                  <Gem size={9} />
-                  Unique{item.customPrice ? ` - ${item.customPrice}$` : ''}
+                <div className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded-full bg-accent/90 text-white text-[8px] font-bold uppercase flex items-center gap-0.5 whitespace-nowrap z-10" title={item.customPrice ? `Unique - ${item.customPrice}$` : 'Unique'}>
+                  <Gem size={8} />
+                  Unique
                 </div>
               )}
 

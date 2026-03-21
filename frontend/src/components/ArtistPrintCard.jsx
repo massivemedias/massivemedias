@@ -39,13 +39,13 @@ function ArtistPrintCard({ print, minPrice, pricing, selected, onClick, onZoom }
           loading="lazy"
         />
         {print.unique && (
-          <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-accent text-white text-[10px] font-bold uppercase tracking-wider">
-            {tx({ fr: 'Pièce unique', en: 'One of a kind', es: 'Pieza única' })}
+          <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-accent text-white text-[9px] font-bold uppercase tracking-wider whitespace-nowrap z-10">
+            {tx({ fr: 'Unique', en: 'Unique', es: 'Única' })}
           </div>
         )}
         {print.limited && !print.unique && (
-          <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-accent text-white text-[10px] font-bold uppercase tracking-wider">
-            {tx({ fr: 'Édition limitée', en: 'Limited Edition', es: 'Edición limitada' })}
+          <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-accent text-white text-[9px] font-bold uppercase tracking-wider whitespace-nowrap z-10">
+            {tx({ fr: 'Édition limitée', en: 'Limited', es: 'Limitada' })}
           </div>
         )}
         {onZoom && (
