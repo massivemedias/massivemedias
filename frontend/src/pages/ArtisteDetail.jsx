@@ -399,7 +399,7 @@ function ArtisteDetail({ subdomainSlug }) {
                   {tx({ fr: 'L\'artiste', en: 'The Artist', es: 'El artista' })}
                 </h3>
                 <p className="text-grey-light text-sm leading-relaxed whitespace-pre-line mb-4">{bio}</p>
-                {artist.socials && (
+                {(artistSocials && Object.values(artistSocials).some(v => v)) && (
                   <div className="flex flex-wrap gap-2 mt-4">
                     {artistSocials.instagram && (
                       <a href={artistSocials.instagram} target="_blank" rel="noopener noreferrer" className="btn-outline !py-1.5 !px-3 text-xs">
