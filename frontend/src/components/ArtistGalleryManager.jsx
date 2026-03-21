@@ -292,6 +292,8 @@ function ArtistGalleryManager() {
     }
   };
 
+  const [selectedItemId, setSelectedItemId] = useState(null);
+
   // Rendu d'une grille d'images
   const renderGalleryGrid = (items, category) => {
     if (!items || items.length === 0) return (
@@ -300,187 +302,215 @@ function ArtistGalleryManager() {
       </div>
     );
 
+    // Trier: portraits d'abord, paysages ensuite
+    const sorted = [...items];
+    const selectedItem = items.find(i => i.id === selectedItemId);
+
     return (
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-        {items.map((item) => {
+      <>
+      <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-2">
+        {sorted.map((item) => {
           const isPendingRemoval = pendingRemovalIds.includes(item.id);
           const isPendingUnique = pendingUniqueIds.includes(item.id);
           const thumbSrc = resolveThumb(item);
           const title = item[`title${lang === 'fr' ? 'Fr' : lang === 'en' ? 'En' : 'Es'}`] || item.titleFr || item.title || '';
           const isUnique = item.unique;
-          const showUniqueForm = uniqueFormId === item.id;
+          const isSelected = selectedItemId === item.id;
 
           return (
             <div
               key={item.id}
-              className={`relative group rounded-xl overflow-hidden aspect-square ${
+              onClick={() => setSelectedItemId(isSelected ? null : item.id)}
+              className={`relative group rounded-lg overflow-hidden cursor-pointer transition-all ${
                 isPendingRemoval ? 'opacity-40' : ''
-              }`}
+              } ${isSelected ? 'ring-2 ring-accent' : 'hover:ring-1 hover:ring-white/20'}`}
             >
               {thumbSrc ? (
                 <img
                   src={thumbSrc}
                   alt={title}
-                  className={`w-full h-full ${category === 'stickers' ? 'object-contain p-2' : 'object-cover'}`}
+                  className={`w-full ${category === 'stickers' ? 'object-contain p-1 aspect-square' : 'object-cover'}`}
+                  style={category !== 'stickers' ? { aspectRatio: 'auto' } : undefined}
                   loading="lazy"
                 />
               ) : (
-                <div className="w-full h-full bg-glass flex items-center justify-center">
-                  <ImagePlus size={24} className="text-grey-muted/30" />
+                <div className="w-full aspect-[2/3] bg-glass flex items-center justify-center">
+                  <ImagePlus size={20} className="text-grey-muted/30" />
                 </div>
               )}
 
               {/* Badge piece unique */}
               {isUnique && (
-                <div className="absolute top-2 left-2 px-1.5 py-0.5 rounded-full bg-accent/90 text-white text-[8px] font-bold uppercase tracking-wider flex items-center gap-0.5">
-                  <Gem size={8} />
-                  {tx({ fr: 'Unique', en: 'Unique', es: 'Unica' })}
-                  {item.customPrice ? ` ${item.customPrice}$` : ''}
+                <div className="absolute top-1 left-1 px-1 py-0.5 rounded-full bg-accent/90 text-white text-[7px] font-bold uppercase flex items-center gap-0.5">
+                  <Gem size={7} />
+                  {item.customPrice ? `${item.customPrice}$` : 'U'}
                 </div>
               )}
 
-              {/* Badge pending unique */}
+              {/* Badge pending */}
               {isPendingUnique && !isUnique && (
-                <div className="absolute top-2 left-2 px-1.5 py-0.5 rounded-full bg-yellow-500/80 text-white text-[8px] font-bold uppercase tracking-wider flex items-center gap-0.5">
-                  <Clock size={8} />
-                  {tx({ fr: 'Unique en attente', en: 'Pending unique', es: 'Unica pendiente' })}
+                <div className="absolute top-1 left-1 px-1 py-0.5 rounded-full bg-yellow-500/80 text-white text-[7px] font-bold flex items-center gap-0.5">
+                  <Clock size={7} />
                 </div>
               )}
 
-              {/* Overlay avec titre (editable) */}
-              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2 pt-6">
-                {renamingId === item.id ? (
-                  <form onSubmit={(e) => { e.preventDefault(); handleRename(item.id, category); }} className="flex gap-1">
-                    <input
-                      value={renameValue}
-                      onChange={(e) => setRenameValue(e.target.value)}
-                      className="flex-1 bg-black/50 text-white text-[10px] px-1.5 py-0.5 rounded border border-white/30 focus:outline-none focus:border-accent"
-                      autoFocus
-                      onBlur={() => setTimeout(() => setRenamingId(null), 200)}
-                    />
-                    <button type="submit" className="text-green-400 hover:text-green-300"><Check size={12} /></button>
-                  </form>
-                ) : (
-                  <p className="text-white text-[10px] truncate cursor-pointer hover:text-accent transition-colors"
-                    onClick={(e) => { e.stopPropagation(); setRenamingId(item.id); setRenameValue(title || ''); }}>
-                    {title || item.id} <Pencil size={8} className="inline ml-0.5 opacity-50" />
-                  </p>
-                )}
+              {/* Titre en bas */}
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-1.5 py-1 pt-4">
+                <p className="text-white text-[9px] truncate">{title || item.id}</p>
               </div>
-
-              {/* Formulaire piece unique (overlay) */}
-              {showUniqueForm && (() => {
-                const minPrice = getMinPrice(uniqueFormat);
-                const currentPrice = parseFloat(uniquePrice) || 0;
-                const isValid = currentPrice >= minPrice;
-                return (
-                <div className="absolute inset-0 bg-black/90 flex flex-col items-center justify-center p-3 z-10" onClick={(e) => e.stopPropagation()}>
-                  <Gem size={18} className="text-accent mb-1.5" />
-                  <p className="text-white text-[10px] text-center mb-2 font-medium">
-                    {tx({ fr: 'Piece unique', en: 'Unique piece', es: 'Pieza unica' })}
-                  </p>
-
-                  {/* Format selector */}
-                  <div className="flex gap-1 mb-2 flex-wrap justify-center">
-                    {artistFormats.map(f => (
-                      <button
-                        key={f.id}
-                        onClick={() => setUniqueFormat(f.id)}
-                        className={`px-1.5 py-0.5 rounded text-[9px] font-semibold transition-all ${
-                          uniqueFormat === f.id
-                            ? 'bg-accent text-white'
-                            : 'bg-white/10 text-white/60 hover:bg-white/20'
-                        }`}
-                      >
-                        {f.short}
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* Prix */}
-                  <div className="flex items-center gap-1 mb-1">
-                    <input
-                      type="number"
-                      min={minPrice}
-                      value={uniquePrice}
-                      onChange={(e) => setUniquePrice(e.target.value)}
-                      className={`w-20 bg-black/50 text-white text-sm px-2 py-1.5 rounded border ${isValid || !uniquePrice ? 'border-accent/50 focus:border-accent' : 'border-red-500'} focus:outline-none text-center`}
-                      placeholder={`${minPrice}`}
-                      autoFocus
-                    />
-                    <span className="text-white text-sm font-bold">$</span>
-                  </div>
-                  <p className="text-grey-muted text-[9px] mb-2">
-                    {tx({ fr: `Min. ${minPrice}$ (prix de base ${artistFormats.find(f => f.id === uniqueFormat)?.short})`, en: `Min. $${minPrice} (${artistFormats.find(f => f.id === uniqueFormat)?.short} base price)`, es: `Min. $${minPrice} (precio base ${artistFormats.find(f => f.id === uniqueFormat)?.short})` })}
-                  </p>
-
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleMarkUnique(item.id, category, title)}
-                      disabled={uniqueSending || !isValid || !uniquePrice}
-                      className="px-3 py-1.5 rounded-lg bg-accent text-white text-[10px] font-semibold hover:bg-accent/80 disabled:opacity-50 flex items-center gap-1"
-                    >
-                      {uniqueSending ? <Loader2 size={10} className="animate-spin" /> : <Send size={10} />}
-                      {tx({ fr: 'Demander validation', en: 'Request approval', es: 'Solicitar aprobacion' })}
-                    </button>
-                    <button
-                      onClick={() => { setUniqueFormId(null); setUniquePrice(''); }}
-                      className="px-3 py-1.5 rounded-lg bg-white/10 text-white text-[10px] font-semibold hover:bg-white/20"
-                    >
-                      <X size={10} />
-                    </button>
-                  </div>
-                </div>
-                );
-              })()}
-
-              {/* Badge pending removal */}
-              {isPendingRemoval && (
-                <div className="absolute inset-0 flex items-center justify-center bg-red-500/20">
-                  <div className="bg-red-500/80 rounded-full p-2">
-                    <Clock size={16} className="text-white" />
-                  </div>
-                </div>
-              )}
-
-              {/* Boutons d'action (toujours visibles sur mobile, hover sur desktop) */}
-              {!isPendingRemoval && !showUniqueForm && (
-                <div className="absolute top-2 right-2 flex flex-col gap-1 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-                  {/* Bouton supprimer */}
-                  <button
-                    onClick={(e) => { e.stopPropagation(); handleRemove(item.id, category); }}
-                    disabled={removingId === item.id}
-                    className="p-1.5 rounded-full bg-red-500/80 text-white hover:bg-red-500 disabled:opacity-50"
-                    title={tx({ fr: 'Demander la suppression', en: 'Request removal', es: 'Solicitar eliminacion' })}
-                  >
-                    {removingId === item.id ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
-                  </button>
-                  {/* Bouton piece unique */}
-                  {!isUnique && !isPendingUnique && category === 'prints' && (
-                    <button
-                      onClick={(e) => { e.stopPropagation(); setUniqueFormId(item.id); setUniquePrice(''); }}
-                      className="p-1.5 rounded-full bg-accent/80 text-white hover:bg-accent"
-                      title={tx({ fr: 'Designer comme piece unique', en: 'Mark as unique piece', es: 'Marcar como pieza unica' })}
-                    >
-                      <Gem size={12} />
-                    </button>
-                  )}
-                  {/* Bouton retirer unique */}
-                  {isUnique && !isPendingUnique && (
-                    <button
-                      onClick={(e) => { e.stopPropagation(); handleUnmarkUnique(item.id, category, title); }}
-                      className="p-1.5 rounded-full bg-yellow-500/80 text-white hover:bg-yellow-500"
-                      title={tx({ fr: 'Retirer le statut piece unique', en: 'Remove unique status', es: 'Quitar estado de pieza unica' })}
-                    >
-                      <X size={12} />
-                    </button>
-                  )}
-                </div>
-              )}
             </div>
           );
         })}
       </div>
+
+      {/* Panneau de detail quand on selectionne un item */}
+      {selectedItem && (
+        <div className="mt-3 p-4 rounded-xl bg-black/20 space-y-3">
+          <div className="flex items-start gap-4">
+            <img
+              src={resolveThumb(selectedItem) || ''}
+              alt=""
+              className={`rounded-lg flex-shrink-0 ${category === 'stickers' ? 'w-16 h-16 object-contain' : 'w-20 h-28 object-cover'}`}
+            />
+            <div className="flex-1 min-w-0">
+              {/* Nom editable */}
+              <label className="text-grey-muted text-[10px] uppercase tracking-wider mb-1 block">
+                {tx({ fr: 'Nom', en: 'Name', es: 'Nombre' })}
+              </label>
+              {renamingId === selectedItem.id ? (
+                <form onSubmit={(e) => { e.preventDefault(); handleRename(selectedItem.id, category); }} className="flex gap-1.5 mb-2">
+                  <input
+                    value={renameValue}
+                    onChange={(e) => setRenameValue(e.target.value)}
+                    className="flex-1 bg-black/40 text-heading text-sm px-2.5 py-1.5 rounded-lg border border-white/20 focus:outline-none focus:border-accent"
+                    autoFocus
+                  />
+                  <button type="submit" className="px-2 py-1.5 rounded-lg bg-green-500/20 text-green-400 hover:bg-green-500/30"><Check size={14} /></button>
+                  <button type="button" onClick={() => setRenamingId(null)} className="px-2 py-1.5 rounded-lg bg-white/10 text-grey-muted hover:bg-white/20"><X size={14} /></button>
+                </form>
+              ) : (
+                <p
+                  className="text-heading text-sm font-medium cursor-pointer hover:text-accent transition-colors flex items-center gap-1.5 mb-2"
+                  onClick={() => { setRenamingId(selectedItem.id); setRenameValue(selectedItem[`title${lang === 'fr' ? 'Fr' : 'En'}`] || selectedItem.titleFr || ''); }}
+                >
+                  {selectedItem[`title${lang === 'fr' ? 'Fr' : lang === 'en' ? 'En' : 'Es'}`] || selectedItem.titleFr || selectedItem.id}
+                  <Pencil size={12} className="text-grey-muted" />
+                </p>
+              )}
+
+              {/* Status unique */}
+              {selectedItem.unique ? (
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-accent/20 text-accent text-[10px] font-bold">
+                    <Gem size={10} />
+                    {tx({ fr: 'Piece unique', en: 'Unique piece', es: 'Pieza unica' })}
+                    {selectedItem.customPrice ? ` - ${selectedItem.customPrice}$` : ''}
+                  </span>
+                  <button
+                    onClick={() => handleUnmarkUnique(selectedItem.id, category, selectedItem.titleFr || selectedItem.id)}
+                    className="text-grey-muted text-[10px] hover:text-red-400 transition-colors"
+                  >
+                    {tx({ fr: 'Retirer', en: 'Remove', es: 'Quitar' })}
+                  </button>
+                </div>
+              ) : pendingUniqueIds.includes(selectedItem.id) ? (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-yellow-500/20 text-yellow-400 text-[10px] font-bold mb-2">
+                  <Clock size={10} />
+                  {tx({ fr: 'Validation en attente', en: 'Pending approval', es: 'Aprobacion pendiente' })}
+                </span>
+              ) : (
+                /* Formulaire piece unique inline */
+                <div className="space-y-2">
+                  <button
+                    onClick={() => { setUniqueFormId(uniqueFormId === selectedItem.id ? null : selectedItem.id); setUniquePrice(''); }}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-accent/10 text-accent text-[11px] font-semibold hover:bg-accent/20 transition-colors"
+                  >
+                    <Gem size={12} />
+                    {tx({ fr: 'Marquer comme piece unique', en: 'Mark as unique piece', es: 'Marcar como pieza unica' })}
+                  </button>
+
+                  {uniqueFormId === selectedItem.id && (() => {
+                    const minPrice = getMinPrice(uniqueFormat);
+                    const currentPrice = parseFloat(uniquePrice) || 0;
+                    const isValid = currentPrice >= minPrice;
+                    return (
+                      <div className="flex flex-wrap items-end gap-2 p-3 rounded-lg bg-black/30">
+                        {/* Format */}
+                        <div>
+                          <p className="text-grey-muted text-[9px] uppercase mb-1">Format</p>
+                          <div className="flex gap-1">
+                            {artistFormats.map(f => (
+                              <button
+                                key={f.id}
+                                onClick={() => setUniqueFormat(f.id)}
+                                className={`px-1.5 py-0.5 rounded text-[10px] font-semibold ${uniqueFormat === f.id ? 'bg-accent text-white' : 'bg-white/10 text-white/60 hover:bg-white/20'}`}
+                              >
+                                {f.short}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                        {/* Prix */}
+                        <div>
+                          <p className="text-grey-muted text-[9px] uppercase mb-1">{tx({ fr: `Prix (min ${minPrice}$)`, en: `Price (min $${minPrice})`, es: `Precio (min $${minPrice})` })}</p>
+                          <div className="flex items-center gap-1">
+                            <input
+                              type="number"
+                              min={minPrice}
+                              value={uniquePrice}
+                              onChange={(e) => setUniquePrice(e.target.value)}
+                              className={`w-20 bg-black/50 text-white text-sm px-2 py-1 rounded border ${isValid || !uniquePrice ? 'border-accent/50' : 'border-red-500'} focus:outline-none focus:border-accent text-center`}
+                              placeholder={`${minPrice}`}
+                              autoFocus
+                            />
+                            <span className="text-white text-sm font-bold">$</span>
+                          </div>
+                        </div>
+                        {/* Boutons */}
+                        <button
+                          onClick={() => handleMarkUnique(selectedItem.id, category, selectedItem.titleFr || selectedItem.id)}
+                          disabled={uniqueSending || !isValid || !uniquePrice}
+                          className="px-3 py-1.5 rounded-lg bg-accent text-white text-[11px] font-semibold hover:bg-accent/80 disabled:opacity-50 flex items-center gap-1"
+                        >
+                          {uniqueSending ? <Loader2 size={12} className="animate-spin" /> : <Send size={12} />}
+                          {tx({ fr: 'Valider', en: 'Submit', es: 'Enviar' })}
+                        </button>
+                        <button
+                          onClick={() => { setUniqueFormId(null); setUniquePrice(''); }}
+                          className="px-2 py-1.5 rounded-lg bg-white/10 text-grey-muted hover:bg-white/20"
+                        >
+                          <X size={12} />
+                        </button>
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="flex gap-2 pt-1">
+            {!pendingRemovalIds.includes(selectedItem.id) && (
+              <button
+                onClick={() => { handleRemove(selectedItem.id, category); setSelectedItemId(null); }}
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-red-500/10 text-red-400 text-[11px] font-medium hover:bg-red-500/20 transition-colors"
+              >
+                <Trash2 size={12} />
+                {tx({ fr: 'Demander suppression', en: 'Request removal', es: 'Solicitar eliminacion' })}
+              </button>
+            )}
+            <button
+              onClick={() => setSelectedItemId(null)}
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-white/5 text-grey-muted text-[11px] font-medium hover:bg-white/10 transition-colors ml-auto"
+            >
+              <X size={12} />
+              {tx({ fr: 'Fermer', en: 'Close', es: 'Cerrar' })}
+            </button>
+          </div>
+        </div>
+      )}
+      </>
     );
   };
 
