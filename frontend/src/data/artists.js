@@ -22,10 +22,11 @@ export const artistPrinterTiers = [
 ];
 
 export const artistFormats = [
-  { id: 'a4', label: 'A4 (8.5×11")', rank: 0 },
-  { id: 'a3', label: 'A3 (11×17")', rank: 1 },
-  { id: 'a3plus', label: 'A3+ (13×19")', rank: 2 },
-  { id: 'a2', label: 'A2 (18×24")', rank: 3 },
+  { id: 'postcard', label: 'Carte postale (4×6")', rank: -1, w: 4, h: 6 },
+  { id: 'a4', label: 'A4 (8.5×11")', rank: 0, w: 8.5, h: 11 },
+  { id: 'a3', label: 'A3 (11×17")', rank: 1, w: 11, h: 17 },
+  { id: 'a3plus', label: 'A3+ (13×19")', rank: 2, w: 13, h: 19 },
+  { id: 'a2', label: 'A2 (18×24")', rank: 3, w: 18, h: 24 },
 ];
 
 // Verifie si un format est disponible pour un print selon maxFormat
@@ -76,8 +77,8 @@ const artistsData = {
       { id: 'adrift-014', titleFr: 'Print 14', titleEn: 'Print 14', titleEs: 'Print 14', image: thumb('/images/prints/Adrift16.webp'), fullImage: img('/images/prints/Adrift16.webp'), limited: false },
     ],
     pricing: {
-      studio: { a4: 35, a3: 50, a3plus: 65, a2: 85 },
-      museum: { a4: 75, a3: 120, a3plus: 160, a2: 190 },
+      studio: { postcard: 15, a4: 35, a3: 50, a3plus: 65, a2: 85 },
+      museum: { postcard: 25, a4: 75, a3: 120, a3plus: 160, a2: 190 },
       framePrice: 30,
     },
   },
@@ -104,8 +105,8 @@ const artistsData = {
       { id: 'gemini-004', titleFr: 'Affiche 2', titleEn: 'Poster 2', titleEs: 'Afiche 2', image: thumb('/images/prints/Gemini4.webp'), fullImage: img('/images/prints/Gemini4.webp'), limited: false, unique: true, fixedFormat: 'a2', fixedTier: 'studio', noFrame: true },
     ],
     pricing: {
-      studio: { a4: 35, a3: 50, a3plus: 65, a2: 85 },
-      museum: { a4: 75, a3: 120, a3plus: 160, a2: 190 },
+      studio: { postcard: 15, a4: 35, a3: 50, a3plus: 65, a2: 85 },
+      museum: { postcard: 25, a4: 75, a3: 120, a3plus: 160, a2: 190 },
       framePrice: 30,
     },
   },
@@ -128,8 +129,8 @@ const artistsData = {
       { id: 'mok-001', titleFr: 'Metro Montreal', titleEn: 'Montreal Metro', titleEs: 'Metro Montreal', image: thumb('/images/prints/Mok1.webp'), fullImage: img('/images/prints/Mok1.webp'), limited: false },
     ],
     pricing: {
-      studio: { a4: 35, a3: 50, a3plus: 65, a2: 85 },
-      museum: { a4: 75, a3: 120, a3plus: 160, a2: 190 },
+      studio: { postcard: 15, a4: 35, a3: 50, a3plus: 65, a2: 85 },
+      museum: { postcard: 25, a4: 75, a3: 120, a3plus: 160, a2: 190 },
       framePrice: 30,
     },
   },
@@ -171,8 +172,8 @@ const artistsData = {
       { id: 'qd-020', titleFr: 'Photo 20', titleEn: 'Photo 20', titleEs: 'Foto 20', image: thumb('/images/prints/QuentinDelobel20.webp'), fullImage: img('/images/prints/QuentinDelobel20.webp'), limited: false },
     ],
     pricing: {
-      studio: { a4: 35, a3: 50, a3plus: 65, a2: 85 },
-      museum: { a4: 75, a3: 120, a3plus: 160, a2: 190 },
+      studio: { postcard: 15, a4: 35, a3: 50, a3plus: 65, a2: 85 },
+      museum: { postcard: 25, a4: 75, a3: 120, a3plus: 160, a2: 190 },
       framePrice: 30,
     },
     socials: {
@@ -218,8 +219,8 @@ const artistsData = {
       { id: 'nopixl-016', titleFr: 'Plongeurs', titleEn: 'Divers', titleEs: 'Buzos', image: thumb('/images/prints/NoPixl16.webp'), fullImage: img('/images/prints/NoPixl16.webp'), limited: false },
     ],
     pricing: {
-      studio: { a4: 35, a3: 50, a3plus: 65, a2: 85 },
-      museum: { a4: 75, a3: 120, a3plus: 160, a2: 190 },
+      studio: { postcard: 15, a4: 35, a3: 50, a3plus: 65, a2: 85 },
+      museum: { postcard: 25, a4: 75, a3: 120, a3plus: 160, a2: 190 },
       framePrice: 30,
     },
   },
@@ -281,8 +282,8 @@ const artistsData = {
       { id: 'psyqu33n-022', titleFr: 'Vampire', titleEn: 'Vampire', titleEs: 'Vampiro', image: thumb('/images/prints/Psyqu33n22.webp'), fullImage: img('/images/prints/Psyqu33n22.webp'), limited: false },
     ],
     pricing: {
-      studio: { a4: 35, a3: 50, a3plus: 65, a2: 85 },
-      museum: { a4: 75, a3: 120, a3plus: 160, a2: 190 },
+      studio: { postcard: 15, a4: 35, a3: 50, a3plus: 65, a2: 85 },
+      museum: { postcard: 25, a4: 75, a3: 120, a3plus: 160, a2: 190 },
       framePrice: 30,
     },
   },
@@ -321,8 +322,8 @@ const artistsData = {
       { id: 'cr-013', titleFr: 'Sans titre VII', titleEn: 'Untitled VII', titleEs: 'Sin titulo VII', image: thumb('/images/prints/CorneliaRose13.webp'), fullImage: img('/images/prints/CorneliaRose13.webp'), limited: false },
     ],
     pricing: {
-      studio: { a4: 35, a3: 50, a3plus: 65, a2: 85 },
-      museum: { a4: 75, a3: 120, a3plus: 160, a2: 190 },
+      studio: { postcard: 15, a4: 35, a3: 50, a3plus: 65, a2: 85 },
+      museum: { postcard: 25, a4: 75, a3: 120, a3plus: 160, a2: 190 },
       framePrice: 30,
     },
   },

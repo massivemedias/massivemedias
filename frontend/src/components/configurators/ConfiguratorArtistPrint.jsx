@@ -196,36 +196,39 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {} }) {
           <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2.5">
             Format
           </label>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="flex flex-wrap items-end gap-2 justify-center">
             {artistFormats.map(f => {
               const price = getFormatPrice(f.id);
               const hasPricing = price != null;
               const fmtAllowed = isFormatAvailable(f.id, maxFormat);
               const isAvailable = hasPricing && fmtAllowed;
+              // Taille proportionnelle: le plus grand (A2=24") = 80px de hauteur
+              const scale = 80 / 24;
+              const rectW = Math.round(f.w * scale);
+              const rectH = Math.round(f.h * scale);
               return (
                 <button
                   key={f.id}
                   onClick={() => { if (isAvailable) { setFormat(f.id); if (f.id === 'a2') setWithFrame(false); } }}
                   disabled={!isAvailable}
-                  className={`relative block w-full text-center py-3.5 px-3 rounded-lg text-xs font-medium transition-all border-2 ${!isAvailable
-                    ? 'opacity-40 cursor-not-allowed border-transparent option-default'
-                    : format === f.id
-                      ? 'border-accent option-selected'
-                      : 'border-transparent hover:border-grey-muted/30 option-default'
-                  }`}
+                  className={`flex flex-col items-center gap-1.5 transition-all ${!isAvailable ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer'}`}
                 >
-                  <div className="text-heading font-bold text-sm">{f.label}</div>
-                  {!fmtAllowed ? (
-                    <div className="text-grey-muted mt-0.5 text-[10px] leading-tight">
-                      {tx({
-                        fr: 'Non disponible',
-                        en: 'Not available',
-                        es: 'No disponible',
-                      })}
+                  {/* Rectangle proportionnel */}
+                  <div
+                    className={`rounded-sm transition-all ${format === f.id
+                      ? 'ring-2 ring-accent bg-accent/20'
+                      : 'bg-white/10 hover:bg-white/15'
+                    }`}
+                    style={{ width: `${rectW}px`, height: `${rectH}px` }}
+                  />
+                  <div className="text-center">
+                    <div className={`font-medium leading-tight ${format === f.id ? 'text-accent' : 'text-heading'}`} style={{ fontSize: '10px' }}>
+                      {f.w}×{f.h}"
                     </div>
-                  ) : (
-                    <div className="text-grey-muted mt-0.5">{hasPricing ? `${price}$` : 'N/A'}</div>
-                  )}
+                    <div className="text-grey-muted leading-tight" style={{ fontSize: '9px' }}>
+                      {!fmtAllowed ? 'N/A' : hasPricing ? `${price}$` : 'N/A'}
+                    </div>
+                  </div>
                 </button>
               );
             })}
