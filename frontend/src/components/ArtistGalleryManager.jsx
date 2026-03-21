@@ -7,7 +7,7 @@ import {
 import { useLang } from '../i18n/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useUserRole } from '../contexts/UserRoleContext';
-import { createEditRequest, getMyEditRequests } from '../services/artistService';
+import { createEditRequest, getMyEditRequests, sendArtistMessage } from '../services/artistService';
 import { uploadArtistFile } from '../services/api';
 import FileUpload from './FileUpload';
 import artistsData, { artistFormats, framePriceByFormat } from '../data/artists';
@@ -158,23 +158,32 @@ function ArtistGalleryManager() {
     }
   };
 
-  // Renommer un item
+  // Renommer un item (sauvegarde locale + message admin)
   const handleRename = async (itemId, category) => {
     if (!renameValue.trim()) { setRenamingId(null); return; }
     try {
-      const res = await createEditRequest({
-        artistSlug, artistName, email,
-        requestType: 'rename-item',
-        changeData: { itemId, newTitle: renameValue.trim(), field: category },
-      });
-      const newReq = res.data?.data;
-      if (newReq) setEditRequests(prev => [newReq, ...prev]);
+      // Sauvegarder en localStorage pour persistence locale
+      const key = `massive-rename-${artistSlug}`;
+      const saved = JSON.parse(localStorage.getItem(key) || '{}');
+      saved[itemId] = renameValue.trim();
+      localStorage.setItem(key, JSON.stringify(saved));
+
+      // Envoyer un message admin pour que le code soit mis a jour
+      await sendArtistMessage({
+        artistSlug,
+        artistName: artistName || artistSlug,
+        email,
+        subject: `Renommage: ${itemId}`,
+        message: `L'artiste souhaite renommer "${itemId}" en "${renameValue.trim()}" (categorie: ${category})`,
+        category: 'other',
+      }).catch(() => {}); // pas grave si le message echoue
+
       setRenamingId(null);
       setRenameValue('');
       setSuccess(tx({
-        fr: `Demande de renommage envoyee: "${renameValue.trim()}"`,
-        en: `Rename request sent: "${renameValue.trim()}"`,
-        es: `Solicitud de renombrar enviada: "${renameValue.trim()}"`,
+        fr: `Renomme: "${renameValue.trim()}"`,
+        en: `Renamed: "${renameValue.trim()}"`,
+        es: `Renombrado: "${renameValue.trim()}"`,
       }));
       setTimeout(() => setSuccess(''), 4000);
     } catch {
@@ -294,6 +303,16 @@ function ArtistGalleryManager() {
 
   const [selectedItemId, setSelectedItemId] = useState(null);
 
+  // Renommages locaux
+  const localRenames = useMemo(() => {
+    try { return JSON.parse(localStorage.getItem(`massive-rename-${artistSlug}`) || '{}'); } catch { return {}; }
+  }, [artistSlug, renamingId]); // re-read quand on finit un renommage
+
+  const getTitle = (item) => {
+    if (localRenames[item.id]) return localRenames[item.id];
+    return item[`title${lang === 'fr' ? 'Fr' : lang === 'en' ? 'En' : 'Es'}`] || item.titleFr || item.title || '';
+  };
+
   // Rendu d'une grille d'images
   const renderGalleryGrid = (items, category) => {
     if (!items || items.length === 0) return (
@@ -313,7 +332,7 @@ function ArtistGalleryManager() {
           const isPendingRemoval = pendingRemovalIds.includes(item.id);
           const isPendingUnique = pendingUniqueIds.includes(item.id);
           const thumbSrc = resolveThumb(item);
-          const title = item[`title${lang === 'fr' ? 'Fr' : lang === 'en' ? 'En' : 'Es'}`] || item.titleFr || item.title || '';
+          const title = getTitle(item);
           const isUnique = item.unique;
           const isSelected = selectedItemId === item.id;
 
@@ -523,10 +542,23 @@ function ArtistGalleryManager() {
     <div className="space-y-6">
       {/* Section: Galerie actuelle */}
       <div className="rounded-2xl p-5 md:p-8 card-bg card-shadow">
-        <h3 className="text-heading font-heading font-bold text-lg flex items-center gap-2 mb-6">
+        <h3 className="text-heading font-heading font-bold text-lg flex items-center gap-2 mb-4">
           <Eye size={20} className="text-accent" />
           {tx({ fr: 'Ma galerie', en: 'My gallery', es: 'Mi galeria' })}
         </h3>
+
+        {/* Messages galerie */}
+        {error && (
+          <div className="mb-4 p-3 rounded-lg bg-red-500/10 text-red-400 text-sm flex items-center gap-2">
+            <AlertCircle size={16} /> {error}
+            <button onClick={() => setError('')} className="ml-auto text-red-400/60 hover:text-red-400"><X size={14} /></button>
+          </div>
+        )}
+        {success && (
+          <div className="mb-4 p-3 rounded-lg bg-green-500/10 text-green-400 text-sm flex items-center gap-2">
+            <Check size={16} /> {success}
+          </div>
+        )}
 
         {/* Prints */}
         <div className="mb-6">
