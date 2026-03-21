@@ -392,7 +392,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
             { value: loading ? '-' : formatMoney(balance), label: tx({ fr: 'Solde dispo', en: 'Balance', es: 'Saldo' }), color: balance > 0 ? 'text-accent' : 'text-grey-muted', tooltip: tx({ fr: 'Montant disponible que tu peux demander en retrait', en: 'Available amount you can request as a withdrawal', es: 'Monto disponible que puedes solicitar como retiro' }) },
             { value: loading ? '-' : orderCount, label: tx({ fr: 'Ventes', en: 'Sales', es: 'Ventas' }), color: 'text-purple-400', tooltip: tx({ fr: 'Nombre total de commandes contenant tes prints', en: 'Total number of orders containing your prints', es: 'Numero total de pedidos que contienen tus prints' }) },
           ].map((s, i) => (
-            <div key={i} className="text-center py-4 px-3 rounded-xl card-bg card-shadow relative group cursor-default">
+            <div key={i} className="text-center py-4 px-3 rounded-xl card-bg relative group cursor-default">
               <p className={`text-xl font-bold ${s.color}`}>{s.value}</p>
               <p className="text-[10px] text-grey-muted uppercase tracking-wider mt-1">{s.label}</p>
               <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 rounded-lg bg-[#1a1a2e] text-grey-light text-xs whitespace-normal max-w-[200px] text-center opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 shadow-lg z-20 hidden md:block">
@@ -403,7 +403,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
         </div>
 
         {/* Actions rapides artiste */}
-        <div className="rounded-2xl p-5 md:p-6 card-bg card-shadow">
+        <div className="rounded-2xl p-5 md:p-6 card-bg">
           <h4 className="text-heading font-heading font-bold text-base md:text-lg mb-4 flex items-center gap-2">
             <Palette size={20} className="text-accent" />
             {tx({ fr: 'Actions rapides', en: 'Quick actions', es: 'Acciones rapidas' })}
@@ -443,7 +443,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
         </div>
 
         {/* Rappels-cles du contrat */}
-        <div className="rounded-2xl p-5 md:p-8 card-bg card-shadow">
+        <div className="rounded-2xl p-5 md:p-8 card-bg">
           <h4 className="text-heading font-heading font-bold text-lg md:text-xl mb-5 flex items-center gap-2">
             <ScrollText size={22} className="text-accent" />
             {tx({ fr: 'Points-cles de ton contrat', en: 'Key contract points', es: 'Puntos clave de tu contrato' })}
@@ -571,7 +571,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
         </div>
 
         {/* FAQ */}
-        <div className="rounded-2xl p-5 md:p-8 card-bg card-shadow">
+        <div className="rounded-2xl p-5 md:p-8 card-bg">
           <h4 className="text-heading font-heading font-bold text-lg md:text-xl mb-5 flex items-center gap-2">
             <HelpCircle size={22} className="text-accent" />
             {tx({ fr: 'Questions fréquentes', en: 'Frequently asked questions', es: 'Preguntas frecuentes' })}
@@ -599,7 +599,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
     const contractText = lang === 'en' ? ARTIST_CONTRACT_TEXT_EN : lang === 'es' ? ARTIST_CONTRACT_TEXT_ES : ARTIST_CONTRACT_TEXT;
     return (
       <div className="space-y-6">
-        <div className="rounded-2xl p-5 md:p-8 card-bg card-shadow">
+        <div className="rounded-2xl p-5 md:p-8 card-bg">
           <div className="flex items-center justify-between mb-6">
             <div>
               <h3 className="text-heading font-heading font-bold text-lg flex items-center gap-2">
@@ -633,7 +633,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
   if (section === 'tarifs') {
     return (
       <div className="space-y-6">
-        <div className="rounded-2xl p-5 md:p-8 card-bg card-shadow">
+        <div className="rounded-2xl p-5 md:p-8 card-bg">
           <h3 className="text-heading font-heading font-bold text-lg mb-2 flex items-center gap-2">
             <FileText size={20} className="text-accent" />
             {tx({ fr: 'Grille tarifaire', en: 'Pricing grid', es: 'Grilla de precios' })}
@@ -711,7 +711,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
 
         {/* Notes copies perso + festivals */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="p-5 rounded-2xl bg-black/20 shadow-lg card-shadow">
+          <div className="p-5 rounded-2xl bg-black/20 shadow-none">
             <p className="text-yellow-400 text-sm font-bold mb-2">
               {tx({ fr: 'Copies personnelles', en: 'Personal copies', es: 'Copias personales' })}
             </p>
@@ -723,7 +723,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
               })}
             </p>
           </div>
-          <div className="p-5 rounded-2xl bg-black/20 shadow-lg card-shadow">
+          <div className="p-5 rounded-2xl bg-black/20 shadow-none">
             <p className="text-purple-400 text-sm font-bold mb-2">
               {tx({ fr: 'Festivals, galeries et boutiques', en: 'Festivals, galleries and shops', es: 'Festivales, galerias y tiendas' })}
             </p>
@@ -751,7 +751,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
         {toastElement}
 
         {/* Profil artiste */}
-        <div className="rounded-2xl p-5 md:p-8 card-bg card-shadow">
+        <div className="rounded-2xl p-5 md:p-8 card-bg">
           <h3 className="text-heading font-heading font-bold text-lg flex items-center gap-2 mb-6">
             <Palette size={20} className="text-accent" />
             {tx({ fr: 'Page Artiste', en: 'Artist Page', es: 'Pagina Artista' })}
@@ -908,7 +908,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
         </div>
 
         {/* Liens sociaux */}
-        <div className="rounded-2xl p-5 md:p-8 card-bg card-shadow">
+        <div className="rounded-2xl p-5 md:p-8 card-bg">
           <h3 className="text-heading font-heading font-bold text-lg flex items-center gap-2 mb-4">
             <Link2 size={20} className="text-accent" />
             {tx({ fr: 'Liens sociaux', en: 'Social links', es: 'Enlaces sociales' })}
@@ -990,7 +990,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
     return (
       <div className="space-y-6">
         {toastElement}
-        <div className="rounded-2xl p-5 md:p-8 card-bg card-shadow">
+        <div className="rounded-2xl p-5 md:p-8 card-bg">
           <div className="flex items-center justify-between mb-6">
             <div>
               <h3 className="text-heading font-heading font-bold text-lg flex items-center gap-2">
@@ -1145,7 +1145,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
   if (section === 'ventes') {
     return (
       <div className="space-y-6">
-        <div className="rounded-2xl p-5 md:p-8 card-bg card-shadow">
+        <div className="rounded-2xl p-5 md:p-8 card-bg">
           <h3 className="text-heading font-heading font-bold text-lg mb-6 flex items-center gap-2">
             <Clock size={20} className="text-accent" />
             {tx({ fr: 'Historique des ventes', en: 'Sales history', es: 'Historial de ventas' })}

@@ -541,7 +541,7 @@ function ArtistGalleryManager() {
   return (
     <div className="space-y-6">
       {/* Section: Galerie actuelle */}
-      <div className="rounded-2xl p-5 md:p-8 card-bg card-shadow">
+      <div className="rounded-2xl p-5 md:p-8 card-bg">
         <h3 className="text-heading font-heading font-bold text-lg flex items-center gap-2 mb-4">
           <Eye size={20} className="text-accent" />
           {tx({ fr: 'Ma galerie', en: 'My gallery', es: 'Mi galeria' })}
@@ -622,7 +622,7 @@ function ArtistGalleryManager() {
       </div>
 
       {/* Section: Ajouter des images */}
-      <div className="rounded-2xl p-5 md:p-8 card-bg card-shadow">
+      <div className="rounded-2xl p-5 md:p-8 card-bg">
         <h3 className="text-heading font-heading font-bold text-lg flex items-center gap-2 mb-2">
           <ImagePlus size={20} className="text-accent" />
           {tx({ fr: 'Ajouter des images', en: 'Add images', es: 'Agregar imagenes' })}
@@ -731,7 +731,7 @@ function ArtistGalleryManager() {
       </div>
 
       {/* Section: Historique des demandes */}
-      <div className="rounded-2xl p-5 md:p-8 card-bg card-shadow">
+      <div className="rounded-2xl p-5 md:p-8 card-bg">
         <button
           onClick={() => setShowHistory(!showHistory)}
           className="w-full flex items-center justify-between text-heading font-heading font-bold text-base"

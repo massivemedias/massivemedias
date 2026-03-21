@@ -358,7 +358,7 @@ function Account() {
 
   // --- Contenu partage: Profile, Address, Security ---
   const renderProfileContent = () => (
-    <form onSubmit={handleProfileSave} className="rounded-2xl p-6 md:p-10 card-bg card-shadow">
+    <form onSubmit={handleProfileSave} className="rounded-2xl p-6 md:p-10 card-bg">
       <h3 className="text-heading font-semibold text-lg mb-6 flex items-center gap-2">
         <User size={20} className="text-accent" />
         {tx({ fr: 'Informations personnelles', en: 'Personal information', es: 'Informacion personal' })}
@@ -413,7 +413,7 @@ function Account() {
   );
 
   const renderAddressContent = () => (
-    <form onSubmit={handleAddressSave} className="rounded-2xl p-6 md:p-10 card-bg card-shadow">
+    <form onSubmit={handleAddressSave} className="rounded-2xl p-6 md:p-10 card-bg">
       <h3 className="text-heading font-semibold text-lg mb-6 flex items-center gap-2">
         <MapPin size={20} className="text-accent" />
         {tx({ fr: 'Adresse de livraison', en: 'Shipping address', es: 'Direccion de envio' })}
@@ -489,7 +489,7 @@ function Account() {
   );
 
   const renderSecurityContent = () => (
-    <div className="rounded-2xl p-6 md:p-10 card-bg card-shadow">
+    <div className="rounded-2xl p-6 md:p-10 card-bg">
       <div className="mb-8">
         <h3 className="text-heading font-semibold text-lg mb-4 flex items-center gap-2">
           <Lock size={20} className="text-accent" />
@@ -601,7 +601,7 @@ function Account() {
   );
 
   const renderOrdersContent = () => (
-    <div className="rounded-2xl p-6 md:p-8 card-bg card-shadow">
+    <div className="rounded-2xl p-6 md:p-8 card-bg">
       <h3 className="text-heading font-semibold mb-6 flex items-center gap-2">
         <Package size={18} className="text-accent" />
         {tx({ fr: 'Historique des commandes', en: 'Order history', es: 'Historial de pedidos' })}
@@ -1278,7 +1278,7 @@ function Account() {
                           bgColor: 'bg-accent/10',
                         },
                       ].map((stat, i) => (
-                        <div key={i} className="rounded-xl p-4 card-bg card-shadow text-center">
+                        <div key={i} className="rounded-xl p-4 card-bg text-center">
                           <div className={`inline-flex items-center justify-center w-10 h-10 rounded-full ${stat.bgColor} mb-2`}>
                             <stat.icon size={18} className={stat.color} />
                           </div>
@@ -1289,7 +1289,7 @@ function Account() {
                     </div>
 
                     {/* Quick actions */}
-                    <div className="rounded-2xl p-6 card-bg card-shadow">
+                    <div className="rounded-2xl p-6 card-bg">
                       <h3 className="text-heading font-semibold text-sm mb-4">
                         {tx({ fr: 'Actions rapides', en: 'Quick actions', es: 'Acciones rapidas' })}
                       </h3>
@@ -1347,7 +1347,7 @@ function Account() {
                     {/* Referral + Recent orders side by side */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {/* Referral card */}
-                      <div className="rounded-2xl p-6 card-bg card-shadow">
+                      <div className="rounded-2xl p-6 card-bg">
                         <div className="flex items-center gap-3 mb-3">
                           <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center">
                             <Gift size={18} className="text-accent" />
@@ -1387,7 +1387,7 @@ function Account() {
                       </div>
 
                       {/* Recent orders mini */}
-                      <div className="rounded-2xl p-6 card-bg card-shadow">
+                      <div className="rounded-2xl p-6 card-bg">
                         <div className="flex items-center justify-between mb-3">
                           <h3 className="text-heading font-semibold text-sm">
                             {tx({ fr: 'Commandes recentes', en: 'Recent orders', es: 'Pedidos recientes' })}

@@ -213,7 +213,7 @@ function AdminDashboard() {
       {/* Notes + Activite recente */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Notes - titres seulement */}
-        <div className="rounded-2xl p-4 md:p-5 card-bg card-shadow">
+        <div className="rounded-2xl p-4 md:p-5 card-bg">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-heading font-heading font-bold text-base flex items-center gap-2">
               <StickyNote size={18} className="text-accent" />
@@ -228,7 +228,7 @@ function AdminDashboard() {
         </div>
 
         {/* Activite recente */}
-        <div className="rounded-2xl p-4 md:p-5 card-bg card-shadow">
+        <div className="rounded-2xl p-4 md:p-5 card-bg">
           <h3 className="text-heading font-heading font-bold text-base flex items-center gap-2 mb-3">
             <Clock size={18} className="text-accent" />
             {tx({ fr: 'Activite recente', en: 'Recent activity', es: 'Actividad reciente' })}
