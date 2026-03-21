@@ -122,26 +122,23 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
     });
   }, [user, artist, lang]);
 
-  // Pre-remplir les liens sociaux : localStorage > CMS > local
+  // Pre-remplir les liens sociaux : Supabase user_metadata > artists.js
   useEffect(() => {
-    let saved = {};
-    try { saved = JSON.parse(localStorage.getItem(`massive-socials-${artistSlug}`) || '{}'); } catch {}
+    if (!user) return;
+    const meta = user.user_metadata || {};
+    const saved = meta.artist_socials || {};
     const socials = Object.keys(saved).length > 0
       ? saved
-      : cmsArtist?.socials && Object.keys(cmsArtist.socials).length > 0
-        ? cmsArtist.socials
-        : artist?.socials || {};
-    if (Object.keys(socials).length > 0) {
-      setImgSocials(prev => ({
-        instagram: socials.instagram || prev.instagram || '',
-        website: socials.website || prev.website || '',
-        facebook: socials.facebook || prev.facebook || '',
-        tiktok: socials.tiktok || prev.tiktok || '',
-        youtube: socials.youtube || prev.youtube || '',
-        other: socials.other || socials.gallea || socials.email || prev.other || '',
-      }));
-    }
-  }, [cmsArtist, artist, artistSlug]);
+      : artist?.socials || {};
+    setImgSocials(prev => ({
+      instagram: socials.instagram || prev.instagram || '',
+      website: socials.website || prev.website || '',
+      facebook: socials.facebook || prev.facebook || '',
+      tiktok: socials.tiktok || prev.tiktok || '',
+      youtube: socials.youtube || prev.youtube || '',
+      other: socials.other || socials.gallea || socials.email || prev.other || '',
+    }));
+  }, [user, artist]);
 
   // Fetch messages + withdrawals
   useEffect(() => {
@@ -952,15 +949,9 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
               try {
                 const socials = {};
                 Object.entries(imgSocials).forEach(([k, v]) => { if (v.trim()) socials[k] = v.trim(); });
-                // Sauvegarder en localStorage pour que la page publique les lise
-                try { localStorage.setItem(`massive-socials-${artistSlug}`, JSON.stringify(socials)); } catch {}
-                await createEditRequest({
-                  artistSlug,
-                  artistName: artistProfileForm.nomArtiste || artistSlug,
-                  email,
-                  requestType: 'update-socials',
-                  changeData: { socials },
-                });
+                // Sauvegarder dans Supabase user_metadata (persistant, multi-appareil)
+                const { error } = await updateProfile({ artist_socials: socials });
+                if (error) throw error;
                 setSocialsSaved(true);
                 setTimeout(() => setSocialsSaved(false), 3000);
               } catch {

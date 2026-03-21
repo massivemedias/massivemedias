@@ -29,7 +29,7 @@ const STATUS_BADGE = {
 
 function ArtistGalleryManager() {
   const { tx, lang } = useLang();
-  const { user } = useAuth();
+  const { user, updateProfile } = useAuth();
   const { artistSlug } = useUserRole();
   const { artists: cmsArtists } = useArtists();
 
@@ -162,11 +162,11 @@ function ArtistGalleryManager() {
   const handleRename = async (itemId, category) => {
     if (!renameValue.trim()) { setRenamingId(null); return; }
     try {
-      // Sauvegarder en localStorage pour persistence locale
-      const key = `massive-rename-${artistSlug}`;
-      const saved = JSON.parse(localStorage.getItem(key) || '{}');
+      // Sauvegarder dans Supabase user_metadata (persistant, multi-appareil)
+      const meta = user?.user_metadata || {};
+      const saved = meta.artist_renames || {};
       saved[itemId] = renameValue.trim();
-      localStorage.setItem(key, JSON.stringify(saved));
+      await updateProfile({ artist_renames: saved });
 
       // Envoyer un message admin pour que le code soit mis à jour
       await sendArtistMessage({
@@ -303,10 +303,10 @@ function ArtistGalleryManager() {
 
   const [selectedItemId, setSelectedItemId] = useState(null);
 
-  // Renommages locaux
+  // Renommages depuis Supabase user_metadata
   const localRenames = useMemo(() => {
-    try { return JSON.parse(localStorage.getItem(`massive-rename-${artistSlug}`) || '{}'); } catch { return {}; }
-  }, [artistSlug, renamingId]); // re-read quand on finit un renommage
+    return user?.user_metadata?.artist_renames || {};
+  }, [user, renamingId]); // re-read quand on finit un renommage
 
   const getTitle = (item) => {
     if (localRenames[item.id]) return localRenames[item.id];

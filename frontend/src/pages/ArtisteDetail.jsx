@@ -12,6 +12,7 @@ import { useArtists } from '../hooks/useArtists';
 import { mediaUrl } from '../utils/cms';
 import artistsData from '../data/artists';
 import { toFull } from '../utils/paths';
+import { useAuth } from '../contexts/AuthContext';
 
 function buildArtistFromCMS(cms) {
   if (!cms) return null;
@@ -39,6 +40,7 @@ function ArtisteDetail({ subdomainSlug }) {
   const { lang, tx } = useLang();
   const { theme } = useTheme();
   const { artists: cmsArtists } = useArtists();
+  const { user } = useAuth();
 
   const artist = useMemo(() => {
     const local = artistsData[slug] || null;
@@ -170,23 +172,24 @@ function ArtisteDetail({ subdomainSlug }) {
   const bio = tx({ fr: artist.bio.fr, en: artist.bio.en, es: artist.bio.es || artist.bio.en });
   const minPrice = Math.min(...Object.values(artist.pricing.studio).filter(v => v != null));
 
-  // Renommages locaux (depuis le panneau artiste)
+  // Renommages depuis Supabase user_metadata (si artiste connecte)
   const localRenames = useMemo(() => {
-    try { return JSON.parse(localStorage.getItem(`massive-rename-${slug}`) || '{}'); } catch { return {}; }
-  }, [slug]);
+    return user?.user_metadata?.artist_renames || {};
+  }, [user]);
   const getItemTitle = (item) => {
     if (localRenames[item.id]) return localRenames[item.id];
     return tx({ fr: item.titleFr, en: item.titleEn, es: item.titleEs || item.titleEn });
   };
 
-  // Liens sociaux : localStorage > artists.js
+  // Liens sociaux : Supabase user_metadata (si artiste connecte) > artists.js
   const artistSocials = useMemo(() => {
-    try {
-      const saved = JSON.parse(localStorage.getItem(`massive-socials-${slug}`) || '{}');
-      if (Object.keys(saved).length > 0) return { ...artist?.socials, ...saved };
-    } catch {}
+    // Si l'artiste connecte visite sa propre page, lire ses socials depuis Supabase
+    const meta = user?.user_metadata;
+    if (meta?.artist_socials && Object.keys(meta.artist_socials).length > 0) {
+      return { ...artist?.socials, ...meta.artist_socials };
+    }
     return artist?.socials || {};
-  }, [slug, artist]);
+  }, [user, artist]);
 
   const handleSelectPrint = (print) => {
     setSelectedPrint(print);
