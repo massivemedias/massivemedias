@@ -10,7 +10,7 @@ import { useUserRole } from '../contexts/UserRoleContext';
 import { createEditRequest, getMyEditRequests } from '../services/artistService';
 import { uploadArtistFile } from '../services/api';
 import FileUpload from './FileUpload';
-import artistsData from '../data/artists';
+import artistsData, { artistFormats, framePriceByFormat } from '../data/artists';
 import { useArtists } from '../hooks/useArtists';
 import { thumb, img } from '../utils/paths';
 import { mediaUrl } from '../utils/cms';
@@ -47,6 +47,7 @@ function ArtistGalleryManager() {
   const [renameValue, setRenameValue] = useState('');
   const [uniqueFormId, setUniqueFormId] = useState(null);
   const [uniquePrice, setUniquePrice] = useState('');
+  const [uniqueFormat, setUniqueFormat] = useState('a3plus');
   const [uniqueSending, setUniqueSending] = useState(false);
 
   const email = user?.email || '';
@@ -181,19 +182,28 @@ function ArtistGalleryManager() {
     }
   };
 
+  // Prix minimum pour piece unique = prix studio du format choisi
+  const getMinPrice = (format) => {
+    const artistData = artistsData[artistSlug];
+    if (artistData?.pricing?.studio?.[format] != null) return artistData.pricing.studio[format];
+    return 35; // fallback A4
+  };
+
   // Marquer comme piece unique
   const handleMarkUnique = async (itemId, category, itemTitle) => {
     const price = parseFloat(uniquePrice);
-    if (!price || price <= 0) {
-      setError(tx({ fr: 'Entre un prix valide.', en: 'Enter a valid price.', es: 'Ingresa un precio valido.' }));
+    const minPrice = getMinPrice(uniqueFormat);
+    if (!price || price < minPrice) {
+      setError(tx({ fr: `Le prix minimum est ${minPrice}$ pour ce format.`, en: `Minimum price is $${minPrice} for this format.`, es: `El precio minimo es $${minPrice} para este formato.` }));
       return;
     }
     setUniqueSending(true);
     try {
+      const formatLabel = artistFormats.find(f => f.id === uniqueFormat)?.label || uniqueFormat;
       const res = await createEditRequest({
         artistSlug, artistName, email,
         requestType: 'mark-unique',
-        changeData: { itemId, category, customPrice: price, itemTitle },
+        changeData: { itemId, category, customPrice: price, fixedFormat: uniqueFormat, formatLabel, itemTitle },
       });
       const newReq = res.data?.data;
       if (newReq) setEditRequests(prev => [newReq, ...prev]);
@@ -359,32 +369,59 @@ function ArtistGalleryManager() {
               </div>
 
               {/* Formulaire piece unique (overlay) */}
-              {showUniqueForm && (
-                <div className="absolute inset-0 bg-black/80 flex flex-col items-center justify-center p-3 z-10" onClick={(e) => e.stopPropagation()}>
-                  <Gem size={20} className="text-accent mb-2" />
+              {showUniqueForm && (() => {
+                const minPrice = getMinPrice(uniqueFormat);
+                const currentPrice = parseFloat(uniquePrice) || 0;
+                const isValid = currentPrice >= minPrice;
+                return (
+                <div className="absolute inset-0 bg-black/90 flex flex-col items-center justify-center p-3 z-10" onClick={(e) => e.stopPropagation()}>
+                  <Gem size={18} className="text-accent mb-1.5" />
                   <p className="text-white text-[10px] text-center mb-2 font-medium">
-                    {tx({ fr: 'Prix de la piece unique', en: 'Unique piece price', es: 'Precio de la pieza unica' })}
+                    {tx({ fr: 'Piece unique', en: 'Unique piece', es: 'Pieza unica' })}
                   </p>
-                  <div className="flex items-center gap-1 mb-3">
+
+                  {/* Format selector */}
+                  <div className="flex gap-1 mb-2 flex-wrap justify-center">
+                    {artistFormats.map(f => (
+                      <button
+                        key={f.id}
+                        onClick={() => setUniqueFormat(f.id)}
+                        className={`px-1.5 py-0.5 rounded text-[9px] font-semibold transition-all ${
+                          uniqueFormat === f.id
+                            ? 'bg-accent text-white'
+                            : 'bg-white/10 text-white/60 hover:bg-white/20'
+                        }`}
+                      >
+                        {f.short}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Prix */}
+                  <div className="flex items-center gap-1 mb-1">
                     <input
                       type="number"
-                      min="1"
+                      min={minPrice}
                       value={uniquePrice}
                       onChange={(e) => setUniquePrice(e.target.value)}
-                      className="w-20 bg-black/50 text-white text-sm px-2 py-1.5 rounded border border-accent/50 focus:outline-none focus:border-accent text-center"
-                      placeholder="150"
+                      className={`w-20 bg-black/50 text-white text-sm px-2 py-1.5 rounded border ${isValid || !uniquePrice ? 'border-accent/50 focus:border-accent' : 'border-red-500'} focus:outline-none text-center`}
+                      placeholder={`${minPrice}`}
                       autoFocus
                     />
                     <span className="text-white text-sm font-bold">$</span>
                   </div>
+                  <p className="text-grey-muted text-[9px] mb-2">
+                    {tx({ fr: `Min. ${minPrice}$ (prix de base ${artistFormats.find(f => f.id === uniqueFormat)?.short})`, en: `Min. $${minPrice} (${artistFormats.find(f => f.id === uniqueFormat)?.short} base price)`, es: `Min. $${minPrice} (precio base ${artistFormats.find(f => f.id === uniqueFormat)?.short})` })}
+                  </p>
+
                   <div className="flex gap-2">
                     <button
                       onClick={() => handleMarkUnique(item.id, category, title)}
-                      disabled={uniqueSending}
+                      disabled={uniqueSending || !isValid || !uniquePrice}
                       className="px-3 py-1.5 rounded-lg bg-accent text-white text-[10px] font-semibold hover:bg-accent/80 disabled:opacity-50 flex items-center gap-1"
                     >
-                      {uniqueSending ? <Loader2 size={10} className="animate-spin" /> : <Check size={10} />}
-                      {tx({ fr: 'Envoyer', en: 'Submit', es: 'Enviar' })}
+                      {uniqueSending ? <Loader2 size={10} className="animate-spin" /> : <Send size={10} />}
+                      {tx({ fr: 'Demander validation', en: 'Request approval', es: 'Solicitar aprobacion' })}
                     </button>
                     <button
                       onClick={() => { setUniqueFormId(null); setUniquePrice(''); }}
@@ -394,7 +431,8 @@ function ArtistGalleryManager() {
                     </button>
                   </div>
                 </div>
-              )}
+                );
+              })()}
 
               {/* Badge pending removal */}
               {isPendingRemoval && (
