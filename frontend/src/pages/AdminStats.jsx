@@ -15,12 +15,12 @@ import { useLang } from '../i18n/LanguageContext';
 import { getOrderStats, getAnalytics } from '../services/adminService';
 
 const CATEGORY_LABELS = {
-  materials: { fr: 'Materiaux', en: 'Materials', es: 'Materiales' },
-  shipping: { fr: 'Expedition', en: 'Shipping', es: 'Envio' },
+  materials: { fr: 'Matériaux', en: 'Materials', es: 'Materiales' },
+  shipping: { fr: 'Expédition', en: 'Shipping', es: 'Envio' },
   software: { fr: 'Logiciel', en: 'Software', es: 'Software' },
   marketing: { fr: 'Marketing', en: 'Marketing', es: 'Marketing' },
   rent: { fr: 'Loyer', en: 'Rent', es: 'Alquiler' },
-  equipment: { fr: 'Equipement', en: 'Equipment', es: 'Equipo' },
+  equipment: { fr: 'Équipement', en: 'Equipment', es: 'Equipo' },
   taxes: { fr: 'Taxes', en: 'Taxes', es: 'Impuestos' },
   other: { fr: 'Autre', en: 'Other', es: 'Otro' },
 };
@@ -112,7 +112,7 @@ function AdminStats() {
 
   const summaryCards = [
     { label: tx({ fr: 'Revenus totaux', en: 'Total revenue', es: 'Ingresos totales' }), value: `${(stats.revenue?.totalDollars || 0).toFixed(2)}$`, icon: DollarSign, accent: 'text-green-400' },
-    { label: tx({ fr: 'Depenses totales', en: 'Total expenses', es: 'Total gastos' }), value: `${(stats.expenses?.total || 0).toFixed(2)}$`, icon: Receipt, accent: 'text-red-400' },
+    { label: tx({ fr: 'Dépenses totales', en: 'Total expenses', es: 'Total gastos' }), value: `${(stats.expenses?.total || 0).toFixed(2)}$`, icon: Receipt, accent: 'text-red-400' },
     { label: tx({ fr: 'Profit brut', en: 'Gross profit', es: 'Ganancia bruta' }), value: `${(stats.profit?.gross || 0).toFixed(2)}$`, icon: TrendingUp, accent: stats.profit?.gross >= 0 ? 'text-green-400' : 'text-red-400' },
     { label: tx({ fr: 'Commandes', en: 'Orders', es: 'Pedidos' }), value: stats.orderStats?.total || 0, icon: ShoppingBag, accent: 'text-accent' },
   ];
@@ -139,12 +139,12 @@ function AdminStats() {
 
   const statusConfig = {
     pending:    { color: colors.yellow,  label: tx({ fr: 'En attente', en: 'Pending', es: 'Pendiente' }) },
-    paid:       { color: colors.green,   label: tx({ fr: 'Paye', en: 'Paid', es: 'Pagado' }) },
+    paid:       { color: colors.green,   label: tx({ fr: 'Payé', en: 'Paid', es: 'Pagado' }) },
     processing: { color: colors.blue,    label: tx({ fr: 'En production', en: 'Processing', es: 'En proceso' }) },
-    shipped:    { color: colors.purple,  label: tx({ fr: 'Expedie', en: 'Shipped', es: 'Enviado' }) },
-    delivered:  { color: colors.emerald, label: tx({ fr: 'Livre', en: 'Delivered', es: 'Entregado' }) },
-    cancelled:  { color: colors.red,     label: tx({ fr: 'Annule', en: 'Cancelled', es: 'Cancelado' }) },
-    refunded:   { color: colors.gray,    label: tx({ fr: 'Rembourse', en: 'Refunded', es: 'Reembolsado' }) },
+    shipped:    { color: colors.purple,  label: tx({ fr: 'Expédié', en: 'Shipped', es: 'Enviado' }) },
+    delivered:  { color: colors.emerald, label: tx({ fr: 'Livré', en: 'Delivered', es: 'Entregado' }) },
+    cancelled:  { color: colors.red,     label: tx({ fr: 'Annulé', en: 'Cancelled', es: 'Cancelado' }) },
+    refunded:   { color: colors.gray,    label: tx({ fr: 'Remboursé', en: 'Refunded', es: 'Reembolsado' }) },
   };
 
   const statusData = Object.entries(byStatus)
@@ -192,7 +192,7 @@ function AdminStats() {
           ) : analyticsError ? (
             <div className="rounded-xl bg-glass p-8 text-center">
               <Activity size={32} className="mx-auto mb-3 text-grey-muted" />
-              <p className="text-heading font-semibold mb-2">{tx({ fr: 'Analytics non configure', en: 'Analytics not configured', es: 'Analytics no configurado' })}</p>
+              <p className="text-heading font-semibold mb-2">{tx({ fr: 'Analytics non configuré', en: 'Analytics not configured', es: 'Analytics no configurado' })}</p>
               <p className="text-grey-muted text-sm mb-4">{analyticsError}</p>
               <p className="text-grey-muted text-xs mb-4">
                 {tx({
@@ -271,7 +271,7 @@ function AdminStats() {
                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="rounded-xl card-bg shadow-lg shadow-black/20 p-5">
                   <h3 className="text-sm font-heading font-bold text-heading mb-4 flex items-center gap-2">
                     <Eye size={16} className="text-cyan-400" />
-                    {tx({ fr: 'Pages les plus visitees', en: 'Most visited pages', es: 'Paginas mas visitadas' })}
+                    {tx({ fr: 'Pages les plus visitées', en: 'Most visited pages', es: 'Paginas mas visitadas' })}
                   </h3>
                   <div className="space-y-2 max-h-[300px] overflow-y-auto">
                     {(analytics.pages || []).map((page, i) => {
@@ -380,10 +380,10 @@ function AdminStats() {
                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }} className="rounded-xl card-bg shadow-lg shadow-black/20 p-5">
                   <h3 className="text-sm font-heading font-bold text-heading mb-4 flex items-center gap-2">
                     <Users size={16} className="text-emerald-400" />
-                    {tx({ fr: 'Age des visiteurs', en: 'Visitor age', es: 'Edad de visitantes' })}
+                    {tx({ fr: 'Âge des visiteurs', en: 'Visitor age', es: 'Edad de visitantes' })}
                   </h3>
                   {(analytics.ageGroups || []).length === 0 ? (
-                    <p className="text-grey-muted text-xs">{tx({ fr: 'Donnees insuffisantes', en: 'Insufficient data', es: 'Datos insuficientes' })}</p>
+                    <p className="text-grey-muted text-xs">{tx({ fr: 'Données insuffisantes', en: 'Insufficient data', es: 'Datos insuficientes' })}</p>
                   ) : (
                     <ResponsiveContainer width="100%" height={180}>
                       <BarChart data={analytics.ageGroups} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
@@ -443,15 +443,15 @@ function AdminStats() {
               '',
               'Sommaire',
               `Revenus totaux,${(stats.revenue?.totalDollars || 0).toFixed(2)}`,
-              `Depenses totales,${(stats.expenses?.total || 0).toFixed(2)}`,
+              `Dépenses totales,${(stats.expenses?.total || 0).toFixed(2)}`,
               `Profit brut,${(stats.profit?.gross || 0).toFixed(2)}`,
               `Commandes,${stats.orderStats?.total || 0}`,
               '',
               'Taxes',
               ',TPS (5%),TVQ (9.975%)',
-              `Percue,${(stats.taxes?.tpsCollected || 0).toFixed(2)},${(stats.taxes?.tvqCollected || 0).toFixed(2)}`,
-              `Payee,${(stats.taxes?.tpsPaid || 0).toFixed(2)},${(stats.taxes?.tvqPaid || 0).toFixed(2)}`,
-              `A remettre,${(stats.taxes?.tpsNet || 0).toFixed(2)},${(stats.taxes?.tvqNet || 0).toFixed(2)}`,
+              `Perçue,${(stats.taxes?.tpsCollected || 0).toFixed(2)},${(stats.taxes?.tvqCollected || 0).toFixed(2)}`,
+              `Payée,${(stats.taxes?.tpsPaid || 0).toFixed(2)},${(stats.taxes?.tvqPaid || 0).toFixed(2)}`,
+              `À remettre,${(stats.taxes?.tpsNet || 0).toFixed(2)},${(stats.taxes?.tvqNet || 0).toFixed(2)}`,
               '',
               'Revenus mensuels',
               'Mois,Revenus ($),Commandes',
@@ -486,7 +486,7 @@ function AdminStats() {
             {tx({ fr: 'Revenus mensuels', en: 'Monthly revenue', es: 'Ingresos mensuales' })}
           </h3>
           {monthlyRev.length === 0 ? (
-            <p className="text-grey-muted text-sm">{tx({ fr: 'Aucune donnee', en: 'No data', es: 'Sin datos' })}</p>
+            <p className="text-grey-muted text-sm">{tx({ fr: 'Aucune donnée', en: 'No data', es: 'Sin datos' })}</p>
           ) : (
             <ResponsiveContainer width="100%" height={220}>
               <AreaChart data={monthlyRev} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
@@ -523,7 +523,7 @@ function AdminStats() {
             {tx({ fr: 'Dépenses par catégorie', en: 'Expenses by category', es: 'Gastos por categoria' })}
           </h3>
           {expenseData.length === 0 ? (
-            <p className="text-grey-muted text-sm">{tx({ fr: 'Aucune donnee', en: 'No data', es: 'Sin datos' })}</p>
+            <p className="text-grey-muted text-sm">{tx({ fr: 'Aucune donnée', en: 'No data', es: 'Sin datos' })}</p>
           ) : (
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={expenseData} layout="vertical" margin={{ top: 0, right: 5, left: 0, bottom: 0 }}>
@@ -590,17 +590,17 @@ function AdminStats() {
               <span className="text-grey-muted text-xs text-center">TVQ (9.975%)</span>
             </div>
             <div className="grid grid-cols-3 gap-2 text-sm">
-              <span className="text-grey-muted text-xs">{tx({ fr: 'Percue', en: 'Collected', es: 'Cobrado' })}</span>
+              <span className="text-grey-muted text-xs">{tx({ fr: 'Perçue', en: 'Collected', es: 'Cobrado' })}</span>
               <span className="text-heading text-center font-semibold">{(stats.taxes?.tpsCollected || 0).toFixed(2)}$</span>
               <span className="text-heading text-center font-semibold">{(stats.taxes?.tvqCollected || 0).toFixed(2)}$</span>
             </div>
             <div className="grid grid-cols-3 gap-2 text-sm">
-              <span className="text-grey-muted text-xs">{tx({ fr: 'Payee', en: 'Paid', es: 'Pagado' })}</span>
+              <span className="text-grey-muted text-xs">{tx({ fr: 'Payée', en: 'Paid', es: 'Pagado' })}</span>
               <span className="text-heading text-center">{(stats.taxes?.tpsPaid || 0).toFixed(2)}$</span>
               <span className="text-heading text-center">{(stats.taxes?.tvqPaid || 0).toFixed(2)}$</span>
             </div>
             <div className="grid grid-cols-3 gap-2 text-sm shadow-[0_-1px_0_rgba(255,255,255,0.04)] pt-2">
-              <span className="text-heading font-semibold text-xs">{tx({ fr: 'A remettre', en: 'Net owed', es: 'A remitir' })}</span>
+              <span className="text-heading font-semibold text-xs">{tx({ fr: 'À remettre', en: 'Net owed', es: 'A remitir' })}</span>
               <span className={`text-center font-bold ${(stats.taxes?.tpsNet || 0) >= 0 ? 'text-red-400' : 'text-green-400'}`}>{(stats.taxes?.tpsNet || 0).toFixed(2)}$</span>
               <span className={`text-center font-bold ${(stats.taxes?.tvqNet || 0) >= 0 ? 'text-red-400' : 'text-green-400'}`}>{(stats.taxes?.tvqNet || 0).toFixed(2)}$</span>
             </div>
@@ -656,7 +656,7 @@ function AdminStats() {
             {tx({ fr: 'Top 10 clients', en: 'Top 10 clients', es: 'Top 10 clientes' })}
           </h3>
           {(stats.topClients || []).length === 0 ? (
-            <p className="text-grey-muted text-sm">{tx({ fr: 'Aucune donnee', en: 'No data', es: 'Sin datos' })}</p>
+            <p className="text-grey-muted text-sm">{tx({ fr: 'Aucune donnée', en: 'No data', es: 'Sin datos' })}</p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               {(stats.topClients || []).map((client, i) => (

@@ -144,7 +144,7 @@ export function generateInvoicePDF(order, type = 'invoice') {
   doc.setFontSize(9);
   doc.setTextColor(...greyText);
   const details = [
-    ['Paiement', isReceipt ? 'Confirme' : 'Stripe'],
+    ['Paiement', isReceipt ? 'Confirmé' : 'Stripe'],
     ['Devise', (order.currency || 'cad').toUpperCase()],
     ['NEQ', COMPANY.neq],
     ['TPS', COMPANY.tps],

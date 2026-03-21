@@ -95,8 +95,8 @@ function AdminCommissions() {
         {[
           { label: tx({ fr: 'Ventes artistes', en: 'Artist sales', es: 'Ventas artistas' }), value: dollars(totalSales), icon: TrendingUp, accent: 'text-accent' },
           { label: tx({ fr: 'Commissions dues', en: 'Commissions due', es: 'Comisiones debidas' }), value: dollars(totalCommission), icon: DollarSign, accent: 'text-blue-400' },
-          { label: tx({ fr: 'Total verse', en: 'Total paid', es: 'Total pagado' }), value: dollars(totalPaid), icon: CheckCircle, accent: 'text-green-400' },
-          { label: tx({ fr: 'Solde a payer', en: 'Balance owing', es: 'Saldo a pagar' }), value: dollars(totalBalance), icon: Banknote, accent: totalBalance > 0 ? 'text-orange-400' : 'text-grey-muted' },
+          { label: tx({ fr: 'Total versé', en: 'Total paid', es: 'Total pagado' }), value: dollars(totalPaid), icon: CheckCircle, accent: 'text-green-400' },
+          { label: tx({ fr: 'Solde à payer', en: 'Balance owing', es: 'Saldo a pagar' }), value: dollars(totalBalance), icon: Banknote, accent: totalBalance > 0 ? 'text-orange-400' : 'text-grey-muted' },
         ].map((card, i) => {
           const Icon = card.icon;
           return (
@@ -154,7 +154,7 @@ function AdminCommissions() {
                       <p className="text-blue-400 font-medium">{dollars(artist.totalCommission)}</p>
                     </div>
                     <div className="text-center">
-                      <p className="text-grey-muted text-[10px] uppercase">{tx({ fr: 'Verse', en: 'Paid', es: 'Pagado' })}</p>
+                      <p className="text-grey-muted text-[10px] uppercase">{tx({ fr: 'Versé', en: 'Paid', es: 'Pagado' })}</p>
                       <p className="text-green-400 font-medium">{dollars(artist.totalPaid)}</p>
                     </div>
                     <div className="text-center">
@@ -189,7 +189,7 @@ function AdminCommissions() {
                         {/* Orders table */}
                         <div>
                           <h4 className="text-xs font-semibold text-grey-muted uppercase tracking-wider mb-3">
-                            {tx({ fr: 'Detail des ventes', en: 'Sales detail', es: 'Detalle de ventas' })}
+                            {tx({ fr: 'Détail des ventes', en: 'Sales detail', es: 'Detalle de ventas' })}
                           </h4>
                           <div className="overflow-x-auto">
                             <table className="w-full text-xs">
@@ -257,7 +257,7 @@ function AdminCommissions() {
                         <div className="flex items-center justify-between p-3 rounded-lg bg-glass bg-white/5">
                           <div className="flex items-center gap-6 text-sm">
                             <span className="text-grey-muted">{tx({ fr: 'Commission totale', en: 'Total commission', es: 'Comision total' })}: <span className="text-blue-400 font-medium">{dollars(artist.totalCommission)}</span></span>
-                            <span className="text-grey-muted">{tx({ fr: 'Verse', en: 'Paid', es: 'Pagado' })}: <span className="text-green-400 font-medium">{dollars(artist.totalPaid)}</span></span>
+                            <span className="text-grey-muted">{tx({ fr: 'Versé', en: 'Paid', es: 'Pagado' })}: <span className="text-green-400 font-medium">{dollars(artist.totalPaid)}</span></span>
                             <span className={`font-bold text-lg ${artist.balance > 0 ? 'text-orange-400' : 'text-green-400'}`}>
                               {tx({ fr: 'Solde', en: 'Balance', es: 'Saldo' })}: {dollars(artist.balance)}
                             </span>

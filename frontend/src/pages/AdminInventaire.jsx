@@ -100,7 +100,7 @@ function AdminInventaire() {
   return (
     <div>
       <p className="text-grey-muted mb-6">
-        {tx({ fr: 'Gestion du stock en temps reel', en: 'Real-time stock management', es: 'Gestion de stock en tiempo real' })}
+        {tx({ fr: 'Gestion du stock en temps réel', en: 'Real-time stock management', es: 'Gestion de stock en tiempo real' })}
       </p>
 
       {error && (

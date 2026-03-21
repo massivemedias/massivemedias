@@ -198,7 +198,7 @@ const translations = {
       space: {
         location: 'Mile-End, Montréal',
         title: "L'espace Age of Union",
-        description: "On opere depuis l'espace Age of Union, au 7049 rue Saint-Urbain dans le Mile-End. Pick-up disponible sur rendez-vous.",
+        description: "On opère depuis l'espace Age of Union, au 7049 rue Saint-Urbain dans le Mile-End. Pick-up disponible sur rendez-vous.",
       },
       universe: {
         title: "Aussi dans l'univers Massive",

@@ -46,7 +46,7 @@ function Temoignage() {
               })}
             </p>
             <Link to="/" className="btn-primary inline-flex items-center gap-2">
-              {tx({ fr: 'Retour a l\'accueil', en: 'Back to home', es: 'Volver al inicio' })}
+              {tx({ fr: 'Retour à l\'accueil', en: 'Back to home', es: 'Volver al inicio' })}
             </Link>
           </motion.div>
         </div>
@@ -98,7 +98,7 @@ function Temoignage() {
             </div>
 
             <Link to="/" className="btn-primary inline-flex items-center gap-2">
-              {tx({ fr: 'Retour a l\'accueil', en: 'Back to home', es: 'Volver al inicio' })}
+              {tx({ fr: 'Retour à l\'accueil', en: 'Back to home', es: 'Volver al inicio' })}
             </Link>
           </motion.div>
         </div>

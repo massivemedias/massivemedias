@@ -88,7 +88,7 @@ const ARTIST_MSG_FLOW = {
 
 // Category labels for artist messages
 const CATEGORY_LABELS = {
-  'new-images': { fr: 'Depot images', en: 'Image deposit', es: 'Deposito imagenes' },
+  'new-images': { fr: 'Dépôt images', en: 'Image deposit', es: 'Deposito imagenes' },
   'question': { fr: 'Question', en: 'Question', es: 'Pregunta' },
   'withdrawal': { fr: 'Retrait', en: 'Withdrawal', es: 'Retiro' },
   'update-profile': { fr: 'Profil', en: 'Profile', es: 'Perfil' },
@@ -571,7 +571,7 @@ function AdminMessages() {
                                     <button onClick={() => { setReplyingTo(null); setReplyText(''); }} className="text-grey-muted hover:text-heading"><X size={14} /></button>
                                   </div>
                                   <textarea value={replyText} onChange={(e) => setReplyText(e.target.value)} rows={4} autoFocus
-                                    placeholder={tx({ fr: 'Ecrire votre reponse...', en: 'Write your reply...', es: 'Escribir su respuesta...' })}
+                                    placeholder={tx({ fr: 'Écrire votre réponse...', en: 'Write your reply...', es: 'Escribir su respuesta...' })}
                                     className="input-field text-sm w-full resize-none" />
                                   <div className="flex items-center justify-between">
                                     <span className="text-[11px] text-grey-muted">{tx({ fr: 'Visible dans le panneau artiste', en: 'Visible in artist panel', es: 'Visible en panel artista' })}</span>
@@ -636,12 +636,12 @@ function AdminMessages() {
                                     onChange={(e) => setReplyText(e.target.value)}
                                     rows={4}
                                     autoFocus
-                                    placeholder={tx({ fr: 'Ecrire votre reponse...', en: 'Write your reply...', es: 'Escribir su respuesta...' })}
+                                    placeholder={tx({ fr: 'Écrire votre réponse...', en: 'Write your reply...', es: 'Escribir su respuesta...' })}
                                     className="input-field text-sm w-full resize-none"
                                   />
                                   <div className="flex items-center justify-between">
                                     <span className="text-[11px] text-grey-muted">
-                                      {tx({ fr: `L'email sera envoye a ${item._email}`, en: `Email will be sent to ${item._email}`, es: `El email sera enviado a ${item._email}` })}
+                                      {tx({ fr: `L'email sera envoyé à ${item._email}`, en: `Email will be sent to ${item._email}`, es: `El email sera enviado a ${item._email}` })}
                                     </span>
                                     <button
                                       onClick={() => handleReply(item)}

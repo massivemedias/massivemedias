@@ -282,12 +282,12 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
         artistSlug,
         artistName: artist?.name || artistSlug,
         email,
-        subject: tx({ fr: 'Depot de nouvelles images', en: 'New image deposit', es: 'Deposito de nuevas imagenes' }),
+        subject: tx({ fr: 'Dépôt de nouvelles images', en: 'New image deposit', es: 'Deposito de nuevas imagenes' }),
         message: fullMessage,
         category: 'new-images',
         attachments: imgFiles.map(f => ({ name: f.name, url: f.url, size: f.size, mime: f.mime })),
       });
-      setImgSuccess(tx({ fr: 'Images envoyees avec succes!', en: 'Images sent successfully!', es: 'Imagenes enviadas con exito!' }));
+      setImgSuccess(tx({ fr: 'Images envoyées avec succès!', en: 'Images sent successfully!', es: 'Imagenes enviadas con exito!' }));
       setImgFiles([]);
       setImgNote('');
       setImgSocials({ instagram: '', website: '', facebook: '', tiktok: '', youtube: '', other: '' });
@@ -327,7 +327,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
         amount,
         notes: wdNotes,
       });
-      setWdSuccess(tx({ fr: 'Demande de retrait envoyee!', en: 'Withdrawal request sent!', es: 'Solicitud de retiro enviada!' }));
+      setWdSuccess(tx({ fr: 'Demande de retrait envoyée!', en: 'Withdrawal request sent!', es: 'Solicitud de retiro enviada!' }));
       setShowWdForm(false);
       setWdAmount('');
       setWdNotes('');
@@ -478,11 +478,11 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
             <div className="p-5 md:p-6 rounded-xl bg-gradient-to-br from-purple-900/40 to-pink-900/20 shadow-lg md:col-span-2">
               <p className="text-pink-400 text-sm md:text-base font-bold mb-3 flex items-center gap-2">
                 <Gem size={18} />
-                {tx({ fr: 'Pieces uniques - Edition unique', en: 'Unique pieces - Single edition', es: 'Piezas unicas - Edicion unica' })}
+                {tx({ fr: 'Pièces uniques - Édition unique', en: 'Unique pieces - Single edition', es: 'Piezas unicas - Edicion unica' })}
               </p>
               <p className="text-grey-light text-xs md:text-sm leading-relaxed mb-3">
                 {tx({
-                  fr: 'Tu peux designer certains de tes produits comme "piece unique" - prints, merch, textile, stickers ou tout autre medium. Un seul exemplaire sera produit. Une fois vendue, la piece disparait definitivement. Le prix est fixe par toi en accord avec Massive.',
+                  fr: 'Tu peux désigner certains de tes produits comme "pièce unique" - prints, merch, textile, stickers ou tout autre medium. Un seul exemplaire sera produit. Une fois vendue, la pièce disparaît définitivement. Le prix est fixé par toi en accord avec Massive.',
                   en: 'You can designate any of your products as a "unique piece" - prints, merch, textiles, stickers or any other medium. Only one copy will ever be produced. Once sold, it permanently disappears. Pricing is set by you in agreement with Massive.',
                   es: 'Puedes designar cualquiera de tus productos como "pieza unica" - prints, merch, textil, stickers o cualquier otro medio. Solo una copia sera producida. Una vez vendida, desaparece definitivamente. El precio es fijado por ti en acuerdo con Massive.',
                 })}
@@ -494,18 +494,18 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
                 </div>
                 <div className="flex items-center gap-2 p-2 rounded-lg bg-black/20">
                   <span className="text-pink-400 font-bold">$</span>
-                  <span className="text-grey-light">{tx({ fr: 'Prix fixe par l\'artiste', en: 'Price set by artist', es: 'Precio fijado por el artista' })}</span>
+                  <span className="text-grey-light">{tx({ fr: 'Prix fixé par l\'artiste', en: 'Price set by artist', es: 'Precio fijado por el artista' })}</span>
                 </div>
                 <div className="flex items-center gap-2 p-2 rounded-lg bg-black/20">
                   <span className="text-pink-400 font-bold">&times;</span>
-                  <span className="text-grey-light">{tx({ fr: 'Retiree apres vente', en: 'Removed after sale', es: 'Retirada tras venta' })}</span>
+                  <span className="text-grey-light">{tx({ fr: 'Retirée après vente', en: 'Removed after sale', es: 'Retirada tras venta' })}</span>
                 </div>
               </div>
             </div>
             <div className="p-5 md:p-6 rounded-xl bg-black/20 shadow-lg">
               <p className="text-yellow-400 text-sm md:text-base font-bold mb-2 flex items-center gap-2">
                 <CheckCircle size={16} />
-                {tx({ fr: 'Zero production sans accord', en: 'No production without approval', es: 'Sin produccion sin aprobacion' })}
+                {tx({ fr: 'Zéro production sans accord', en: 'No production without approval', es: 'Sin produccion sin aprobacion' })}
               </p>
               <p className="text-grey-light text-xs md:text-sm leading-relaxed">
                 {tx({

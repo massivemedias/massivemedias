@@ -213,7 +213,7 @@ function Login() {
     {
       icon: ShoppingBag,
       title: tx({ fr: 'Suivi de commandes', en: 'Order tracking', es: 'Seguimiento de pedidos' }),
-      desc: tx({ fr: 'Suis tes commandes en temps reel', en: 'Track your orders in real time', es: 'Sigue tus pedidos en tiempo real' }),
+      desc: tx({ fr: 'Suis tes commandes en temps réel', en: 'Track your orders in real time', es: 'Sigue tus pedidos en tiempo real' }),
     },
     {
       icon: Heart,
@@ -258,7 +258,7 @@ function Login() {
                 <div className="text-center py-6">
                   <CheckCircle size={48} className="text-green-400 mx-auto mb-4" />
                   <div className="text-green-400 mb-4">
-                    {tx({ fr: 'Mot de passe mis a jour avec succes!', en: 'Password updated successfully!', es: 'Contrasena actualizada con exito!' })}
+                    {tx({ fr: 'Mot de passe mis à jour avec succès!', en: 'Password updated successfully!', es: 'Contrasena actualizada con exito!' })}
                   </div>
                   <p className="text-grey-muted text-sm">
                     {tx({ fr: 'Redirection en cours...', en: 'Redirecting...', es: 'Redirigiendo...' })}
@@ -356,7 +356,7 @@ function Login() {
                         onClick={() => { setMode('register'); setError(''); setOtpCode(''); }}
                         className="block w-full text-center text-sm text-grey-muted hover:text-accent transition-colors"
                       >
-                        {tx({ fr: 'Retour a l\'inscription', en: 'Back to registration', es: 'Volver al registro' })}
+                        {tx({ fr: 'Retour à l\'inscription', en: 'Back to registration', es: 'Volver al registro' })}
                       </button>
                     </>
                   )}
@@ -497,7 +497,7 @@ function Login() {
                     ) : (
                       <>
                         {mode === 'update-password'
-                          ? tx({ fr: 'Mettre a jour', en: 'Update password', es: 'Actualizar contrasena' })
+                          ? tx({ fr: 'Mettre à jour', en: 'Update password', es: 'Actualizar contrasena' })
                           : mode === 'forgot'
                             ? t('auth.sendReset')
                             : mode === 'register'

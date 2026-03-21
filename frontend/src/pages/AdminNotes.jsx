@@ -244,7 +244,7 @@ function AdminNotes({ embedded = false }) {
             <div className="flex items-center justify-center h-full min-h-[300px] text-grey-muted">
               <div className="text-center">
                 <StickyNote size={48} className="mx-auto mb-3 opacity-30" />
-                <p className="text-sm">{tx({ fr: 'Selectionne ou cree une note', en: 'Select or create a note', es: 'Selecciona o crea una nota' })}</p>
+                <p className="text-sm">{tx({ fr: 'Sélectionne ou crée une note', en: 'Select or create a note', es: 'Selecciona o crea una nota' })}</p>
                 <button onClick={addNote} className="mt-3 text-accent text-sm hover:underline">
                   + {tx({ fr: 'Nouvelle note', en: 'New note', es: 'Nueva nota' })}
                 </button>

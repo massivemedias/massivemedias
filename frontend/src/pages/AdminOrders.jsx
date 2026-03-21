@@ -13,12 +13,12 @@ import { generateInvoicePDF } from '../utils/generateInvoice';
 
 const ORDER_STATUS = {
   pending:    { fr: 'En attente',    en: 'Pending',    es: 'Pendiente',    color: 'bg-yellow-500/20 text-yellow-400', icon: Clock },
-  paid:       { fr: 'Paye',          en: 'Paid',       es: 'Pagado',       color: 'bg-green-500/20 text-green-400', icon: CreditCard },
+  paid:       { fr: 'Payé',          en: 'Paid',       es: 'Pagado',       color: 'bg-green-500/20 text-green-400', icon: CreditCard },
   processing: { fr: 'En production', en: 'Processing', es: 'En proceso',   color: 'bg-blue-500/20 text-blue-400', icon: Package },
-  shipped:    { fr: 'Expedie',       en: 'Shipped',    es: 'Enviado',      color: 'bg-purple-500/20 text-purple-400', icon: Truck },
-  delivered:  { fr: 'Livre',         en: 'Delivered',  es: 'Entregado',    color: 'bg-emerald-500/20 text-emerald-400', icon: CheckCircle },
-  cancelled:  { fr: 'Annule',        en: 'Cancelled',  es: 'Cancelado',    color: 'bg-red-500/20 text-red-400', icon: XCircle },
-  refunded:   { fr: 'Rembourse',     en: 'Refunded',   es: 'Reembolsado',  color: 'bg-gray-500/20 text-gray-400', icon: RotateCcw },
+  shipped:    { fr: 'Expédié',       en: 'Shipped',    es: 'Enviado',      color: 'bg-purple-500/20 text-purple-400', icon: Truck },
+  delivered:  { fr: 'Livré',         en: 'Delivered',  es: 'Entregado',    color: 'bg-emerald-500/20 text-emerald-400', icon: CheckCircle },
+  cancelled:  { fr: 'Annulé',        en: 'Cancelled',  es: 'Cancelado',    color: 'bg-red-500/20 text-red-400', icon: XCircle },
+  refunded:   { fr: 'Remboursé',     en: 'Refunded',   es: 'Reembolsado',  color: 'bg-gray-500/20 text-gray-400', icon: RotateCcw },
 };
 
 const STATUS_FLOW = {
@@ -31,7 +31,7 @@ const STATUS_FLOW = {
   refunded: [],
 };
 
-// Montants stockes en cents dans Strapi - afficher en dollars
+// Montants stockés en cents dans Strapi - afficher en dollars
 const dollars = (v) => `${((v || 0) / 100).toFixed(2)}$`;
 
 function AdminOrders() {
@@ -195,13 +195,13 @@ function AdminOrders() {
       accent: 'text-green-400',
     },
     {
-      label: tx({ fr: 'A traiter', en: 'To process', es: 'Por procesar' }),
+      label: tx({ fr: 'À traiter', en: 'To process', es: 'Por procesar' }),
       value: stats?.orderStats?.byStatus ? (stats.orderStats.byStatus.paid || 0) + (stats.orderStats.byStatus.pending || 0) : 0,
       icon: Clock,
       accent: 'text-yellow-400',
     },
     {
-      label: tx({ fr: 'A expedier', en: 'To ship', es: 'Por enviar' }),
+      label: tx({ fr: 'À expédier', en: 'To ship', es: 'Por enviar' }),
       value: stats?.orderStats?.byStatus?.processing || 0,
       icon: Truck,
       accent: 'text-blue-400',
@@ -280,7 +280,7 @@ function AdminOrders() {
         </div>
       ) : orders.length === 0 ? (
         <div className="text-center py-20 text-grey-muted">
-          {tx({ fr: 'Aucune commande trouvee', en: 'No orders found', es: 'No se encontraron pedidos' })}
+          {tx({ fr: 'Aucune commande trouvée', en: 'No orders found', es: 'No se encontraron pedidos' })}
         </div>
       ) : (
         <div className="rounded-xl card-bg shadow-lg shadow-black/20 overflow-hidden">
@@ -392,7 +392,7 @@ function AdminOrders() {
                               )}
                             </div>
                             <div className="space-y-1">
-                              <h4 className="text-xs font-semibold text-grey-muted uppercase tracking-wider">{tx({ fr: 'Reference', en: 'Reference', es: 'Referencia' })}</h4>
+                              <h4 className="text-xs font-semibold text-grey-muted uppercase tracking-wider">{tx({ fr: 'Référence', en: 'Reference', es: 'Referencia' })}</h4>
                               <p className="text-xs text-grey-muted flex items-center gap-1.5 font-mono">
                                 <Hash size={11} />
                                 {order.stripePaymentIntentId || '-'}
@@ -416,7 +416,7 @@ function AdminOrders() {
                                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-green-500/20 text-green-400 hover:bg-green-500/30 transition-colors"
                                 >
                                   <Receipt size={12} />
-                                  {tx({ fr: 'Recu', en: 'Receipt', es: 'Recibo' })}
+                                  {tx({ fr: 'Reçu', en: 'Receipt', es: 'Recibo' })}
                                 </button>
                               </div>
                             </div>
@@ -449,7 +449,7 @@ function AdminOrders() {
                           {/* Items - avec images bien visibles */}
                           <div>
                             <h4 className="text-xs font-semibold text-grey-muted uppercase tracking-wider mb-3">
-                              {tx({ fr: 'Articles commandes', en: 'Ordered items', es: 'Articulos pedidos' })} ({items.length})
+                              {tx({ fr: 'Articles commandés', en: 'Ordered items', es: 'Articulos pedidos' })} ({items.length})
                             </h4>
                             <div className="space-y-3">
                               {items.map((item, idx) => {
@@ -534,7 +534,7 @@ function AdminOrders() {
                             {/* Financial - clair et lisible */}
                             <div className="rounded-lg bg-glass p-4">
                               <h4 className="text-xs font-semibold text-grey-muted uppercase tracking-wider mb-3">
-                                {tx({ fr: 'Detail financier', en: 'Financial detail', es: 'Detalle financiero' })}
+                                {tx({ fr: 'Détail financier', en: 'Financial detail', es: 'Detalle financiero' })}
                               </h4>
                               <div className="space-y-2 text-sm">
                                 <div className="flex justify-between">
@@ -586,7 +586,7 @@ function AdminOrders() {
                                 <p className="text-sm text-grey-muted">{tx({ fr: 'Aucune adresse', en: 'No address', es: 'Sin direccion' })}</p>
                               )}
                               <div className="mt-3 flex items-center gap-2">
-                                <span className="text-xs text-grey-muted">{tx({ fr: 'Design pret', en: 'Design ready', es: 'Diseno listo' })}:</span>
+                                <span className="text-xs text-grey-muted">{tx({ fr: 'Design prêt', en: 'Design ready', es: 'Diseno listo' })}:</span>
                                 <span className={`text-xs font-semibold px-2 py-0.5 rounded ${order.designReady ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'}`}>
                                   {order.designReady ? tx({ fr: 'Oui', en: 'Yes', es: 'Si' }) : tx({ fr: 'Non', en: 'No', es: 'No' })}
                                 </span>
@@ -641,7 +641,7 @@ function AdminOrders() {
                                     type="text"
                                     value={trackingInputs[order.documentId] || ''}
                                     onChange={(e) => setTrackingInputs(prev => ({ ...prev, [order.documentId]: e.target.value }))}
-                                    placeholder={tx({ fr: 'Numero de suivi...', en: 'Tracking number...', es: 'Numero de seguimiento...' })}
+                                    placeholder={tx({ fr: 'Numéro de suivi...', en: 'Tracking number...', es: 'Numero de seguimiento...' })}
                                     className="input-field text-sm py-2 flex-1 font-mono"
                                   />
                                   <button

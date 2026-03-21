@@ -27,10 +27,10 @@ const PROVINCES_CA = [
   { code: 'AB', fr: 'Alberta', en: 'Alberta' },
   { code: 'MB', fr: 'Manitoba', en: 'Manitoba' },
   { code: 'SK', fr: 'Saskatchewan', en: 'Saskatchewan' },
-  { code: 'NS', fr: 'Nouvelle-Ecosse', en: 'Nova Scotia' },
+  { code: 'NS', fr: 'Nouvelle-Écosse', en: 'Nova Scotia' },
   { code: 'NB', fr: 'Nouveau-Brunswick', en: 'New Brunswick' },
   { code: 'NL', fr: 'Terre-Neuve-et-Labrador', en: 'Newfoundland and Labrador' },
-  { code: 'PE', fr: 'Ile-du-Prince-Edouard', en: 'Prince Edward Island' },
+  { code: 'PE', fr: 'Île-du-Prince-Édouard', en: 'Prince Edward Island' },
   { code: 'NT', fr: 'Territoires du Nord-Ouest', en: 'Northwest Territories' },
   { code: 'YT', fr: 'Yukon', en: 'Yukon' },
   { code: 'NU', fr: 'Nunavut', en: 'Nunavut' },
@@ -38,7 +38,7 @@ const PROVINCES_CA = [
 
 const COUNTRIES = [
   { code: 'Canada', fr: 'Canada', en: 'Canada' },
-  { code: 'US', fr: 'Etats-Unis', en: 'United States' },
+  { code: 'US', fr: 'États-Unis', en: 'United States' },
 ];
 
 const STATUS_COLORS = {
@@ -283,12 +283,12 @@ function Account() {
   const getStatusLabel = (status) => {
     const labels = {
       pending: tx({ fr: 'En attente', en: 'Pending', es: 'Pendiente' }),
-      paid: tx({ fr: 'Paye', en: 'Paid', es: 'Pagado' }),
+      paid: tx({ fr: 'Payé', en: 'Paid', es: 'Pagado' }),
       processing: tx({ fr: 'En traitement', en: 'Processing', es: 'En proceso' }),
-      shipped: tx({ fr: 'Expedie', en: 'Shipped', es: 'Enviado' }),
-      delivered: tx({ fr: 'Livre', en: 'Delivered', es: 'Entregado' }),
-      cancelled: tx({ fr: 'Annule', en: 'Cancelled', es: 'Cancelado' }),
-      refunded: tx({ fr: 'Rembourse', en: 'Refunded', es: 'Reembolsado' }),
+      shipped: tx({ fr: 'Expédié', en: 'Shipped', es: 'Enviado' }),
+      delivered: tx({ fr: 'Livré', en: 'Delivered', es: 'Entregado' }),
+      cancelled: tx({ fr: 'Annulé', en: 'Cancelled', es: 'Cancelado' }),
+      refunded: tx({ fr: 'Remboursé', en: 'Refunded', es: 'Reembolsado' }),
     };
     return labels[status] || status;
   };
@@ -301,7 +301,7 @@ function Account() {
     if (error) {
       setSaveMsg(tx({ fr: 'Erreur lors de la sauvegarde.', en: 'Error saving.', es: 'Error al guardar.' }));
     } else {
-      setSaveMsg(tx({ fr: 'Profil sauvegarde!', en: 'Profile saved!', es: 'Perfil guardado!' }));
+      setSaveMsg(tx({ fr: 'Profil sauvegardé!', en: 'Profile saved!', es: 'Perfil guardado!' }));
     }
     setTimeout(() => setSaveMsg(''), 3000);
   };
@@ -314,7 +314,7 @@ function Account() {
     if (error) {
       setSaveMsg(tx({ fr: 'Erreur lors de la sauvegarde.', en: 'Error saving.', es: 'Error al guardar.' }));
     } else {
-      setSaveMsg(tx({ fr: 'Adresse sauvegardee!', en: 'Address saved!', es: 'Direccion guardada!' }));
+      setSaveMsg(tx({ fr: 'Adresse sauvegardée!', en: 'Address saved!', es: 'Direccion guardada!' }));
     }
     setTimeout(() => setSaveMsg(''), 3000);
   };
@@ -374,7 +374,7 @@ function Account() {
         />
         <FormInput
           icon={Phone}
-          label={tx({ fr: 'Telephone', en: 'Phone', es: 'Telefono' })}
+          label={tx({ fr: 'Téléphone', en: 'Phone', es: 'Telefono' })}
           value={profileForm.phone}
           type="tel"
           placeholder="514-xxx-xxxx"
@@ -451,14 +451,14 @@ function Account() {
         />
         <FormSelect
           icon={MapPin}
-          label={tx({ fr: 'Province / Etat', en: 'Province / State', es: 'Provincia / Estado' })}
+          label={tx({ fr: 'Province / État', en: 'Province / State', es: 'Provincia / Estado' })}
           value={addressForm.province}
           onChange={v => setAddressForm(a => ({ ...a, province: v }))}
           autoComplete="address-level1"
           options={
             addressForm.country === 'Canada'
-              ? [{ value: '', label: tx({ fr: 'Selectionner...', en: 'Select...', es: 'Seleccionar...' }) }, ...PROVINCES_CA.map(p => ({ value: p.code, label: lang === 'en' ? p.en : p.fr }))]
-              : [{ value: '', label: tx({ fr: 'Selectionner...', en: 'Select...', es: 'Seleccionar...' }) }, { value: addressForm.province, label: addressForm.province || '...' }]
+              ? [{ value: '', label: tx({ fr: 'Sélectionner...', en: 'Select...', es: 'Seleccionar...' }) }, ...PROVINCES_CA.map(p => ({ value: p.code, label: lang === 'en' ? p.en : p.fr }))]
+              : [{ value: '', label: tx({ fr: 'Sélectionner...', en: 'Select...', es: 'Seleccionar...' }) }, { value: addressForm.province, label: addressForm.province || '...' }]
           }
         />
         <FormInput
@@ -537,7 +537,7 @@ function Account() {
             {pwdError && <p className="text-red-400 text-xs">{pwdError}</p>}
             {pwdSuccess && (
               <p className="text-green-400 text-xs flex items-center gap-1">
-                <Check size={14} /> {tx({ fr: 'Mot de passe mis a jour!', en: 'Password updated!', es: 'Contrasena actualizada!' })}
+                <Check size={14} /> {tx({ fr: 'Mot de passe mis à jour!', en: 'Password updated!', es: 'Contrasena actualizada!' })}
               </p>
             )}
             <div className="flex gap-3 pt-1">
@@ -594,7 +594,7 @@ function Account() {
           className="text-sm text-red-400 hover:text-red-300 font-medium flex items-center gap-2 transition-colors"
         >
           <LogOut size={14} />
-          {tx({ fr: 'Se deconnecter', en: 'Sign out', es: 'Cerrar sesion' })}
+          {tx({ fr: 'Se déconnecter', en: 'Sign out', es: 'Cerrar sesion' })}
         </button>
       </div>
     </div>
@@ -618,11 +618,11 @@ function Account() {
           <Package size={48} className="text-grey-muted/20 mx-auto mb-4" />
           <p className="text-heading font-medium mb-1">{t('account.noOrders')}</p>
           <p className="text-grey-muted text-sm mb-4">
-            {tx({ fr: 'Tes commandes apparaitront ici.', en: 'Your orders will appear here.', es: 'Tus pedidos apareceran aqui.' })}
+            {tx({ fr: 'Tes commandes apparaîtront ici.', en: 'Your orders will appear here.', es: 'Tus pedidos apareceran aqui.' })}
           </p>
           <Link to="/boutique" className="btn-primary text-sm py-2.5 px-6 inline-flex items-center gap-2">
             <ShoppingBag size={16} />
-            {tx({ fr: 'Decouvrir la boutique', en: 'Browse the shop', es: 'Descubrir la tienda' })}
+            {tx({ fr: 'Découvrir la boutique', en: 'Browse the shop', es: 'Descubrir la tienda' })}
           </Link>
         </div>
       ) : (
@@ -681,7 +681,7 @@ function Account() {
                     )}
                     <div className="mt-3 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-grey-muted">
                       {order.designReady !== undefined && (
-                        <span>{tx({ fr: 'Design pret', en: 'Design ready', es: 'Diseno listo' })}: {order.designReady ? tx({ fr: 'Oui', en: 'Yes', es: 'Si' }) : tx({ fr: 'Non', en: 'No', es: 'No' })}</span>
+                        <span>{tx({ fr: 'Design prêt', en: 'Design ready', es: 'Diseno listo' })}: {order.designReady ? tx({ fr: 'Oui', en: 'Yes', es: 'Si' }) : tx({ fr: 'Non', en: 'No', es: 'No' })}</span>
                       )}
                       <span>{tx({ fr: 'Devise', en: 'Currency', es: 'Moneda' })}: {(order.currency || 'cad').toUpperCase()}</span>
                       <button
@@ -696,7 +696,7 @@ function Account() {
                         className="ml-auto flex items-center gap-1.5 text-accent font-medium hover:underline"
                       >
                         <RotateCcw size={12} />
-                        {tx({ fr: 'Commander a nouveau', en: 'Order again', es: 'Ordenar de nuevo' })}
+                        {tx({ fr: 'Commander à nouveau', en: 'Order again', es: 'Ordenar de nuevo' })}
                       </Link>
                     </div>
                   </motion.div>

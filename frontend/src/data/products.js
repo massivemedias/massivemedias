@@ -1,18 +1,18 @@
 import { img } from '../utils/paths';
 
 export const stickerFinishes = [
-  { id: 'matte', labelFr: 'Vinyle Matte', labelEn: 'Matte Vinyl', labelEs: 'Vinilo Mate', descFr: 'Toucher veloute, sans reflet', descEn: 'Smooth feel, glare-free', descEs: 'Tacto aterciopelado, sin reflejos' },
-  { id: 'glossy', labelFr: 'Vinyle Glossy', labelEn: 'Glossy Vinyl', labelEs: 'Vinilo Brillante', descFr: 'Brillant, couleurs eclatantes', descEn: 'Shiny, vibrant colors', descEs: 'Brillante, colores vibrantes' },
+  { id: 'matte', labelFr: 'Vinyle Matte', labelEn: 'Matte Vinyl', labelEs: 'Vinilo Mate', descFr: 'Toucher velouté, sans reflet', descEn: 'Smooth feel, glare-free', descEs: 'Tacto aterciopelado, sin reflejos' },
+  { id: 'glossy', labelFr: 'Vinyle Glossy', labelEn: 'Glossy Vinyl', labelEs: 'Vinilo Brillante', descFr: 'Brillant, couleurs éclatantes', descEn: 'Shiny, vibrant colors', descEs: 'Brillante, colores vibrantes' },
   { id: 'holographic', labelFr: 'Holographique', labelEn: 'Holographic', labelEs: 'Holográfico', descFr: 'Reflets arc-en-ciel, effet wow', descEn: 'Rainbow reflections, wow effect', descEs: 'Reflejos arcoíris, efecto wow' },
-  { id: 'broken-glass', labelFr: 'Verre Brise', labelEn: 'Broken Glass', labelEs: 'Vidrio Roto', descFr: 'Eclats cristallins, reflets prismatiques', descEn: 'Crystal shards, prismatic reflections', descEs: 'Fragmentos cristalinos, reflejos prismáticos' },
-  { id: 'stars', labelFr: 'Etoiles', labelEn: 'Stars', labelEs: 'Estrellas', descFr: 'Motif etoiles scintillantes', descEn: 'Sparkling star pattern', descEs: 'Patrón de estrellas centelleantes' },
+  { id: 'broken-glass', labelFr: 'Verre Brisé', labelEn: 'Broken Glass', labelEs: 'Vidrio Roto', descFr: 'Éclats cristallins, reflets prismatiques', descEn: 'Crystal shards, prismatic reflections', descEs: 'Fragmentos cristalinos, reflejos prismáticos' },
+  { id: 'stars', labelFr: 'Étoiles', labelEn: 'Stars', labelEs: 'Estrellas', descFr: 'Motif étoiles scintillantes', descEn: 'Sparkling star pattern', descEs: 'Patrón de estrellas centelleantes' },
 ];
 
 export const stickerShapes = [
   { id: 'round', labelFr: 'Rond', labelEn: 'Round', labelEs: 'Redondo', descFr: 'Classique et polyvalent', descEn: 'Classic and versatile', descEs: 'Clásico y versátil' },
-  { id: 'square', labelFr: 'Carré', labelEn: 'Square', labelEs: 'Cuadrado', descFr: 'Moderne et structure', descEn: 'Modern and structured', descEs: 'Moderno y estructurado' },
-  { id: 'rectangle', labelFr: 'Rectangle', labelEn: 'Rectangle', labelEs: 'Rectángulo', descFr: 'Ideal pour etiquettes', descEn: 'Ideal for labels', descEs: 'Ideal para etiquetas' },
-  { id: 'diecut', labelFr: 'Die-cut (custom)', labelEn: 'Die-cut (custom)', labelEs: 'Die-cut (personalizado)', descFr: 'Decoupe a ta forme', descEn: 'Cut to your shape', descEs: 'Cortado a tu forma' },
+  { id: 'square', labelFr: 'Carré', labelEn: 'Square', labelEs: 'Cuadrado', descFr: 'Moderne et structuré', descEn: 'Modern and structured', descEs: 'Moderno y estructurado' },
+  { id: 'rectangle', labelFr: 'Rectangle', labelEn: 'Rectangle', labelEs: 'Rectángulo', descFr: 'Idéal pour étiquettes', descEn: 'Ideal for labels', descEs: 'Ideal para etiquetas' },
+  { id: 'diecut', labelFr: 'Die-cut (custom)', labelEn: 'Die-cut (custom)', labelEs: 'Die-cut (personalizado)', descFr: 'Découpe à ta forme', descEn: 'Cut to your shape', descEs: 'Cortado a tu forma' },
 ];
 
 export const stickerSizes = [
@@ -22,7 +22,7 @@ export const stickerSizes = [
   { id: '4in', label: '4"' },
 ];
 
-// Prix Standard (Matte / Brillant) - alignes sur le tableau services.js
+// Prix Standard (Matte / Brillant) - alignés sur le tableau services.js
 export const stickerPriceTiers = [
   { qty: 25, price: 30, unitPrice: 1.20 },
   { qty: 50, price: 45, unitPrice: 0.90 },
@@ -31,7 +31,7 @@ export const stickerPriceTiers = [
   { qty: 500, price: 250, unitPrice: 0.50 },
 ];
 
-// Fx (Holo, Verre Brise, Etoiles) - alignes sur le tableau services.js
+// Fx (Holo, Verre Brisé, Étoiles) - alignes sur le tableau services.js
 export const holographicPriceTiers = [
   { qty: 25, price: 35, unitPrice: 1.40 },
   { qty: 50, price: 55, unitPrice: 1.10 },
@@ -82,12 +82,12 @@ export const stickerImages = [
 export const stickerHighlights = {
   fr: [
     'Découpe de précision professionnelle',
-    'Vinyle matte, lustre, holographique, transparent, verre brise, etoiles',
+    'Vinyle matte, lustre, holographique, transparent, verre brisé, étoiles',
     'Découpe contour à la forme exacte du design',
     'Lamination incluse - résistant eau, UV, rayures',
     'Design graphique inclus dans le prix',
     'Livraison locale disponible',
-    'Production locale Montreal',
+    'Production locale Montréal',
   ],
   en: [
     'Professional precision cutting',
@@ -112,7 +112,7 @@ export const stickerHighlights = {
 export const stickerFaq = {
   fr: [
     { q: 'Quels fichiers dois-je fournir?', a: 'Idéalement un fichier vectoriel (AI, SVG, PDF) ou un PNG haute résolution (300 DPI minimum) avec fond transparent. Si vous n\'avez pas de fichier prêt, notre service de design graphique est inclus dans le prix.' },
-    { q: 'Quel est le délai de production?', a: 'Le délai de production varie selon la complexité et la quantité. Contactez-nous pour un estime. Nous vous confirmerons le délai exact lors de la validation de votre commande.' },
+    { q: 'Quel est le délai de production?', a: 'Le délai de production varie selon la complexité et la quantité. Contactez-nous pour un estimé. Nous vous confirmerons le délai exact lors de la validation de votre commande.' },
     { q: 'Peut-on commander une forme totalement custom?', a: 'Oui! L\'option die-cut permet de découper vos stickers selon n\'importe quelle forme. Le contour suit exactement votre design.' },
     { q: 'Quelle est la qualité du vinyle?', a: 'Nous utilisons du vinyle professionnel avec lamination intégrée. Résistant à l\'eau, aux UV et aux rayures. Durée de vie extérieure de 3-5 ans.' },
     { q: 'La livraison est-elle disponible?', a: 'Livraison locale gratuite à Montréal (Mile-End et environs). Envoi postal disponible partout au Canada.' },
@@ -214,10 +214,10 @@ export const fineArtFaq = {
 // =============================================
 
 export const sublimationProducts = [
-  { id: 'tshirt', labelFr: 'T-shirt', labelEn: 'T-shirt', labelEs: 'Camiseta', descFr: 'Leger et confortable, all-over', descEn: 'Light and comfortable, all-over', descEs: 'Ligera y cómoda, all-over' },
-  { id: 'crewneck', labelFr: 'Crewneck', labelEn: 'Crewneck', labelEs: 'Crewneck', descFr: 'Style decontracte, coton epais', descEn: 'Casual style, thick cotton', descEs: 'Estilo casual, algodón grueso' },
+  { id: 'tshirt', labelFr: 'T-shirt', labelEn: 'T-shirt', labelEs: 'Camiseta', descFr: 'Léger et confortable, all-over', descEn: 'Light and comfortable, all-over', descEs: 'Ligera y cómoda, all-over' },
+  { id: 'crewneck', labelFr: 'Crewneck', labelEn: 'Crewneck', labelEs: 'Crewneck', descFr: 'Style décontracté, coton épais', descEn: 'Casual style, thick cotton', descEs: 'Estilo casual, algodón grueso' },
   { id: 'hoodie', labelFr: 'Hoodie', labelEn: 'Hoodie', labelEs: 'Hoodie', descFr: 'Chaleureux et streetwear', descEn: 'Warm and streetwear', descEs: 'Cálido y streetwear' },
-  { id: 'totebag', labelFr: 'Tote Bag', labelEn: 'Tote Bag', labelEs: 'Tote Bag', descFr: 'Pratique et ecologique', descEn: 'Practical and eco-friendly', descEs: 'Práctico y ecológico' },
+  { id: 'totebag', labelFr: 'Tote Bag', labelEn: 'Tote Bag', labelEs: 'Tote Bag', descFr: 'Pratique et écologique', descEn: 'Practical and eco-friendly', descEs: 'Práctico y ecológico' },
   { id: 'bag', labelFr: 'Sac banane', labelEn: 'Fanny Pack', labelEs: 'Riñonera', descFr: 'Compact et tendance', descEn: 'Compact and trendy', descEs: 'Compacta y de moda' },
   { id: 'mug', labelFr: 'Mug', labelEn: 'Mug', labelEs: 'Taza', descFr: 'Classique 11oz ou 15oz', descEn: 'Classic 11oz or 15oz', descEs: 'Clásica 11oz o 15oz' },
   { id: 'tumbler', labelFr: 'Tumbler', labelEn: 'Tumbler', labelEs: 'Tumbler', descFr: 'Bouteille isotherme', descEn: 'Insulated bottle', descEs: 'Botella térmica' },

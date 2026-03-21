@@ -65,7 +65,7 @@ function Artistes() {
       <SEO
         title={tx({ fr: 'Artistes - Tirages Fine Art | Massive', en: 'Artists - Fine Art Prints | Massive', es: 'Artistas - Impresiones Fine Art | Massive' })}
         description={tx({
-          fr: 'Decouvrez les artistes de Massive Medias. Tirages fine art professionnels sur papiers haut de gamme, qualite galerie et musee. Explorez leurs oeuvres et commandez en ligne depuis Montreal.',
+          fr: 'Découvrez les artistes de Massive Medias. Tirages fine art professionnels sur papiers haut de gamme, qualité galerie et musée. Explorez leurs oeuvres et commandez en ligne depuis Montréal.',
           en: 'Discover Massive artists. Professional fine art prints, gallery quality. Montreal.',
           es: 'Descubre los artistas de Massive. Impresiones fine art profesionales, calidad galeria. Montreal.',
         })}
@@ -101,7 +101,7 @@ function Artistes() {
 
             <p className="text-lg md:text-xl text-grey-light max-w-xl">
               {tx({
-                fr: "Tirages fine art d'artistes selectionnes. Qualite galerie.",
+                fr: "Tirages fine art d'artistes sélectionnés. Qualité galerie.",
                 en: 'Fine art prints from selected artists. Gallery quality.',
                 es: 'Impresiones fine art de artistas seleccionados. Calidad galeria.',
               })}
@@ -201,7 +201,7 @@ function Artistes() {
           </h2>
           <p className="text-grey-light text-lg mb-8 max-w-2xl mx-auto">
             {tx({
-              fr: 'Rejoins notre plateforme. On s\'occupe de tout : site web dedie, impression pro, packaging et shipping. Tu fournis tes fichiers, tu fixes ta marge, et tu recois ton argent. Zero mal de tete.',
+              fr: 'Rejoins notre plateforme. On s\'occupe de tout : site web dédié, impression pro, packaging et shipping. Tu fournis tes fichiers, tu fixes ta marge, et tu reçois ton argent. Zéro mal de tête.',
               en: 'Join our platform. We handle everything: dedicated website, professional printing, packaging and shipping. You provide your files, set your margin, and get paid. Zero headaches.',
               es: 'Unete a nuestra plataforma. Nos encargamos de todo: sitio web dedicado, impresion profesional, empaque y envio. Tu provees tus archivos, fijas tu margen y recibes tu dinero. Cero dolores de cabeza.',
             })}

@@ -84,7 +84,7 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {} }) {
         productId: `artist-print-${artist.slug}-${selectedPrint.id}`,
         productName: `${artist.name} - ${printTitle}`,
         finish: isUnique
-          ? tx({ fr: 'Piece unique', en: 'One of a kind', es: 'Pieza unica' })
+          ? tx({ fr: 'Pièce unique', en: 'One of a kind', es: 'Pieza unica' })
           : tx({ fr: tierLabel?.labelFr, en: tierLabel?.labelEn, es: tierLabel?.labelEn }),
         shape: withFrame
           ? tx({
@@ -93,7 +93,7 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {} }) {
               es: `Marco ${frameColor === 'black' ? 'negro' : 'blanco'}`,
             })
           : null,
-        size: isUnique ? tx({ fr: 'Piece unique', en: 'Unique piece', es: 'Pieza unica' }) : formatLabel?.label,
+        size: isUnique ? tx({ fr: 'Pièce unique', en: 'Unique piece', es: 'Pieza unica' }) : formatLabel?.label,
         quantity: 1,
         unitPrice: effectivePrice,
         totalPrice: effectivePrice,
@@ -142,12 +142,12 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {} }) {
           <p className="text-heading font-medium">
             {customPrice
               ? tx({
-                  fr: `Cette oeuvre est une piece unique. Un seul exemplaire sera produit.`,
+                  fr: `Cette oeuvre est une pièce unique. Un seul exemplaire sera produit.`,
                   en: `This artwork is one of a kind. Only one copy will be produced.`,
                   es: `Esta obra es una pieza unica. Solo se producira una copia.`,
                 })
               : tx({
-                  fr: `Cette oeuvre est une piece unique - Format ${(fixedFormat || '').toUpperCase()}, serie studio, sans cadre.`,
+                  fr: `Cette oeuvre est une pièce unique - Format ${(fixedFormat || '').toUpperCase()}, série studio, sans cadre.`,
                   en: `This artwork is one of a kind - ${(fixedFormat || '').toUpperCase()} format, studio series, unframed.`,
                   es: `Esta obra es una pieza unica - Formato ${(fixedFormat || '').toUpperCase()}, serie estudio, sin marco.`,
                 })
@@ -355,7 +355,7 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {} }) {
           <div className="flex items-center gap-2 mt-2">
             <span className="text-grey-muted text-xs">
               {tx({
-                fr: 'Piece unique - prix fixe par l\'artiste. Certificat d\'authenticite inclus.',
+                fr: 'Pièce unique - prix fixé par l\'artiste. Certificat d\'authenticité inclus.',
                 en: 'Unique piece - price set by the artist. Certificate of authenticity included.',
                 es: 'Pieza unica - precio fijado por el artista. Certificado de autenticidad incluido.',
               })}
@@ -368,7 +368,7 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {} }) {
             <div className="p-5 rounded-xl highlight-bordered text-center">
               <span className="text-grey-muted text-sm">
                 {tx({
-                  fr: 'Ce format n\'est pas disponible dans cette serie.',
+                  fr: 'Ce format n\'est pas disponible dans cette série.',
                   en: 'This format is not available in this series.',
                   es: 'Este formato no esta disponible en esta serie.',
                 })}
@@ -393,8 +393,8 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {} }) {
               <div className="flex items-center gap-2 mt-2">
                 <span className="text-grey-muted text-xs">
                   {tier === 'museum'
-                    ? tx({ fr: 'Qualite musee - 12 encres pigmentees, conservation 100+ ans', en: 'Museum quality - 12 pigmented inks, 100+ year archival', es: 'Calidad museo - 12 tintas pigmentadas, conservacion 100+ anos' })
-                    : tx({ fr: 'Qualite studio - impression professionnelle pigmentee', en: 'Studio quality - professional pigmented printing', es: 'Calidad estudio - impresion profesional pigmentada' })}
+                    ? tx({ fr: 'Qualité musée - 12 encres pigmentées, conservation 100+ ans', en: 'Museum quality - 12 pigmented inks, 100+ year archival', es: 'Calidad museo - 12 tintas pigmentadas, conservacion 100+ anos' })
+                    : tx({ fr: 'Qualité studio - impression professionnelle pigmentée', en: 'Studio quality - professional pigmented printing', es: 'Calidad estudio - impresion profesional pigmentada' })}
                 </span>
               </div>
             </div>

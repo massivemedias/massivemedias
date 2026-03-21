@@ -600,7 +600,7 @@ export const ARTIST_CONTRACT_TEXT = `
 <h4>1. FOIRE AUX QUESTIONS (FAQ)</h4>
 
 <p><strong>Est-ce que je peux commander des prints de mes oeuvres pour moi?</strong></p>
-<p>Oui. Tu peux commander des copies personnelles de tes impressions avec un rabais de 30% sur le prix client. Ces copies sont reservees a un usage personnel, portfolio ou exposition. La revente de prints obtenus a prix reduit est strictement interdite (voir article 6.4).</p>
+<p>Oui. Tu peux commander des copies personnelles de tes impressions avec un rabais de 30% sur le prix client. Ces copies sont réservées à un usage personnel, portfolio ou exposition. La revente de prints obtenus à prix réduit est strictement interdite (voir article 6.4).</p>
 
 <p><strong>Et les stickers - est-ce que j'ai un rabais?</strong></p>
 <p>Non. Les stickers sont des produits de distribution par nature. Le prix régulier de vente s'applique pour tout le monde, incluant l'Artiste, que ce soit pour usage personnel, événements ou points de vente (voir article 6.4).</p>
@@ -641,8 +641,8 @@ export const ARTIST_CONTRACT_TEXT = `
 <p><strong>Les prix sont-ils les memes pour tous les artistes?</strong></p>
 <p>Oui. La grille tarifaire est uniforme et identique pour tous les artistes partenaires - mêmes prix, mêmes coûts de production, mêmes marges. Aucun traitement préférentiel pour personne (voir article 2).</p>
 
-<p><strong>C'est quoi une piece unique?</strong></p>
-<p>Une piece unique est un article unique - un seul exemplaire est produit. Cela s'applique a tout type de produit : prints, merch, textile, stickers ou tout autre medium. Une fois vendue, la piece ne peut pas etre reproduite. Le prix est fixe par l'artiste en accord avec Massive Medias (voir article 2).</p>
+<p><strong>C'est quoi une pièce unique?</strong></p>
+<p>Une pièce unique est un article unique - un seul exemplaire est produit. Cela s'applique à tout type de produit : prints, merch, textile, stickers ou tout autre medium. Une fois vendue, la pièce ne peut pas être reproduite. Le prix est fixé par l'artiste en accord avec Massive Medias (voir article 2).</p>
 
 <h4>2. GRILLE TARIFAIRE</h4>
 
@@ -720,14 +720,14 @@ export const ARTIST_CONTRACT_TEXT = `
 <p style="font-size:0.85em;opacity:0.8;"><em>Note : Le format A2 (18x24") est imprimé en qualité musée uniquement (12 encres pigmentées). Pas de cadre disponible pour ce format.</em></p>
 
 <p><strong>Copies personnelles :</strong></p>
-<p>Prints : tu beneficies d'un rabais de 30% sur le prix client pour tes propres copies, pour usage personnel, portfolio ou expos uniquement. La revente de prints obtenus a prix reduit est strictement interdite.</p>
+<p>Prints : tu bénéficies d'un rabais de 30% sur le prix client pour tes propres copies, pour usage personnel, portfolio ou expos uniquement. La revente de prints obtenus à prix réduit est strictement interdite.</p>
 <p>Stickers : prix régulier pour tout le monde, sans exception - c'est un produit de distribution.</p>
 
 <p><strong>Tarification uniforme :</strong></p>
 <p>La grille tarifaire ci-dessus s'applique de manière identique à tous les artistes partenaires, sans exception. Que ce soit pour les prints, stickers, merch ou tout autre produit, chaque artiste bénéficie des mêmes prix, des mêmes coûts de production et des mêmes marges. Il n'y a aucun tarif préférentiel pour aucun artiste.</p>
 
-<p><strong>Pieces uniques (edition unique) :</strong></p>
-<p>Certaines oeuvres peuvent etre designees comme <strong>pieces uniques</strong> - un seul exemplaire produit, ce qui en fait de veritables pieces de collection. Cela s'applique a tout type de produit : prints, merch, textile, stickers ou tout autre medium. Le caractere unique de la piece doit etre clairement indique sur la fiche produit. Une fois vendue, une piece unique ne peut pas etre reproduite. Le prix est fixe par l'artiste en accord avec Massive Medias.</p>
+<p><strong>Pièces uniques (édition unique) :</strong></p>
+<p>Certaines oeuvres peuvent être désignées comme <strong>pièces uniques</strong> - un seul exemplaire produit, ce qui en fait de véritables pièces de collection. Cela s'applique à tout type de produit : prints, merch, textile, stickers ou tout autre medium. Le caractère unique de la pièce doit être clairement indiqué sur la fiche produit. Une fois vendue, une pièce unique ne peut pas être reproduite. Le prix est fixé par l'artiste en accord avec Massive Medias.</p>
 
 <h4>3. IDENTIFICATION DES PARTIES</h4>
 
@@ -793,7 +793,7 @@ export const ARTIST_CONTRACT_TEXT = `
 <p>Les versements à l'Artiste sont effectués mensuellement par virement Interac, à condition que le montant dépasse 25 $ CAD. Les montants inférieurs à ce seuil sont reportés au mois suivant.</p>
 
 <p><strong>7.4 Copies personnelles de l'Artiste</strong></p>
-<p>L'Artiste peut commander des copies personnelles de ses <strong>impressions (prints)</strong> avec un rabais de 30% sur le prix client. Ces copies sont strictement reservees a un usage personnel, portfolio ou exposition. La revente ou distribution de prints obtenus a prix reduit est strictement interdite.</p>
+<p>L'Artiste peut commander des copies personnelles de ses <strong>impressions (prints)</strong> avec un rabais de 30% sur le prix client. Ces copies sont strictement réservées à un usage personnel, portfolio ou exposition. La revente ou distribution de prints obtenus à prix réduit est strictement interdite.</p>
 <p>Les <strong>stickers</strong> sont des produits de distribution par nature. Que l'Artiste les commande pour lui-même ou qu'un client les achète, que ce soit pour usage personnel, pour un événement ou pour un point de vente, les prix réguliers de vente s'appliquent. Il n'existe pas de tarif préférentiel pour les commandes personnelles de stickers.</p>
 <p>La violation de cette clause constitue un manquement au contrat et peut entraîner la résiliation immédiate du partenariat.</p>
 
@@ -891,7 +891,7 @@ export const ARTIST_CONTRACT_TEXT = `
 // FAQ structuree pour affichage en accordeon hors contrat
 export const ARTIST_FAQ = {
   fr: [
-    { q: "Est-ce que je peux commander des prints de mes oeuvres pour moi?", a: "Oui! Tu beneficies d'un rabais de 30% sur le prix client pour tes copies personnelles. Par exemple, un print Musee A3 a 120$ te revient a 84$. Les frais de livraison s'appliquent normalement, ou tu peux ramasser gratuitement au studio Mile-End. Ces copies sont reservees a un usage personnel, portfolio ou exposition - la revente de prints obtenus a prix reduit est strictement interdite." },
+    { q: "Est-ce que je peux commander des prints de mes oeuvres pour moi?", a: "Oui! Tu bénéficies d'un rabais de 30% sur le prix client pour tes copies personnelles. Par exemple, un print Musée A3 à 120$ te revient à 84$. Les frais de livraison s'appliquent normalement, ou tu peux ramasser gratuitement au studio Mile-End. Ces copies sont réservées à un usage personnel, portfolio ou exposition - la revente de prints obtenus à prix réduit est strictement interdite." },
     { q: "Et les stickers - est-ce que j'ai un rabais?", a: "Non. Les stickers sont des produits de distribution par nature. Le prix régulier de vente s'applique pour tout le monde, incluant l'Artiste, que ce soit pour usage personnel, événements ou points de vente." },
     { q: "Comment fonctionne le partage des revenus?", a: "Pour chaque vente, les coûts de production sont déduits en premier (matériaux, consommables, emballage, amortissement équipement). Le profit net restant est partagé selon le split convenu entre toi et Massive Medias. Par exemple, avec un ratio 50/50 sur un print vendu 35$ avec 12$ de coûts de production, chaque partie reçoit 11,50$." },
     { q: "Je veux vendre des prints à un festival. Comment ça marche?", a: "Tu peux commander des prints en volume au prix de vente régulier (prix client). Massive Medias les produit, et tu es libre de les revendre au prix que tu veux sur place. Tout profit supplémentaire au-dessus du prix d'achat est 100% à toi." },
@@ -906,7 +906,7 @@ export const ARTIST_FAQ = {
     { q: "Est-ce que mes fichiers haute résolution sont en sécurité?", a: "Oui. Tes fichiers sources sont utilisés exclusivement pour l'impression physique. Ils ne sont jamais partagés avec des tiers ni publiés en ligne en haute résolution. Seules des versions basse résolution (72 DPI max) avec filigrane sont utilisées sur le site web." },
     { q: "Et pour l'encadrement?", a: "L'encadrement n'est pas inclus dans l'offre standard. Un cadre (noir ou blanc) peut être ajouté pour 30$ (formats jusqu'à A3+). Ça peut se discuter au cas par cas." },
     { q: "Les prix sont-ils les mêmes pour tous les artistes?", a: "Oui. La grille tarifaire est uniforme et identique pour tous les artistes partenaires - mêmes prix, mêmes coûts de production, mêmes marges. Aucun traitement préférentiel pour personne." },
-    { q: "C'est quoi une piece unique?", a: "Une piece unique est un article dont un seul exemplaire est produit. Ca s'applique a tout : prints, merch, textile, stickers ou tout autre medium. Une fois vendue, elle ne peut pas etre reproduite. Le prix est fixe par l'artiste en accord avec Massive Medias." },
+    { q: "C'est quoi une pièce unique?", a: "Une pièce unique est un article dont un seul exemplaire est produit. Ça s'applique à tout : prints, merch, textile, stickers ou tout autre medium. Une fois vendue, elle ne peut pas être reproduite. Le prix est fixé par l'artiste en accord avec Massive Medias." },
   ],
   en: [
     { q: "Can I order prints of my own works for myself?", a: "Yes! You get a 30% discount on the client price for personal copies. For example, a Museum A3 print at 120$ costs you 84$. Shipping fees apply, or free pickup at our Mile-End studio. These copies are for personal use, portfolio or exhibition only - resale of discounted prints is strictly prohibited." },

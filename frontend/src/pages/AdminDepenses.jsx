@@ -259,7 +259,7 @@ function AdminDepenses() {
 
       const created = inventoryItems.length;
       setImportSuccess(tx({
-        fr: `Import reussi! ${created} item(s) ajoute(s) a l'inventaire + 1 depense de ${expenseData.amount}$ creee.`,
+        fr: `Import réussi! ${created} item(s) ajouté(s) à l'inventaire + 1 dépense de ${expenseData.amount}$ créée.`,
         en: `Import successful! ${created} item(s) added to inventory + 1 expense of $${expenseData.amount} created.`,
         es: `Importacion exitosa! ${created} item(s) agregado(s) al inventario + 1 gasto de $${expenseData.amount} creado.`,
       }));
@@ -546,7 +546,7 @@ function AdminDepenses() {
               downloadCSV(`massive-depenses-${new Date().toISOString().slice(0, 10)}.csv`, lines.join('\n'));
             }}
             className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-green-500/20 text-green-400 text-sm font-semibold hover:bg-green-500/30 transition-colors whitespace-nowrap"
-            title={tx({ fr: 'Exporter depenses CSV', en: 'Export expenses CSV', es: 'Exportar gastos CSV' })}
+            title={tx({ fr: 'Exporter dépenses CSV', en: 'Export expenses CSV', es: 'Exportar gastos CSV' })}
           >
             <Download size={16} />
           </button>
@@ -642,7 +642,7 @@ function AdminDepenses() {
                       <input type="text" value={invoiceData.invoiceNumber} onChange={(e) => setInvoiceData(prev => ({ ...prev, invoiceNumber: e.target.value }))} className="input-field text-sm mt-1" />
                     </div>
                     <div>
-                      <label className="text-[10px] text-grey-muted uppercase tracking-wider">{tx({ fr: 'Categorie depense', en: 'Expense category', es: 'Categoria gasto' })}</label>
+                      <label className="text-[10px] text-grey-muted uppercase tracking-wider">{tx({ fr: 'Catégorie dépense', en: 'Expense category', es: 'Categoria gasto' })}</label>
                       <select value={invoiceData.expenseCategory} onChange={(e) => setInvoiceData(prev => ({ ...prev, expenseCategory: e.target.value }))} className="input-field text-sm mt-1">
                         {Object.entries(CATEGORY_LABELS).map(([k, v]) => <option key={k} value={k}>{tx(v)}</option>)}
                       </select>
@@ -662,7 +662,7 @@ function AdminDepenses() {
 
                     {invoiceData.lineItems.length === 0 ? (
                       <div className="text-center py-6 text-grey-muted text-sm">
-                        {tx({ fr: 'Aucun article detecte. Ajoutez-en manuellement.', en: 'No items detected. Add manually.', es: 'Ningun articulo detectado. Agregue manualmente.' })}
+                        {tx({ fr: 'Aucun article détecté. Ajoutez-en manuellement.', en: 'No items detected. Add manually.', es: 'Ningun articulo detectado. Agregue manualmente.' })}
                       </div>
                     ) : (
                       <div className="space-y-2">
@@ -687,7 +687,7 @@ function AdminDepenses() {
                                 ))}
                               </select>
                               <button onClick={() => updateInvoiceItem(i, 'addToInventory', !lineItem.addToInventory)}
-                                title={lineItem.addToInventory ? tx({ fr: 'Ajouter a l\'inventaire', en: 'Add to inventory', es: 'Agregar al inventario' }) : tx({ fr: 'Exclure de l\'inventaire', en: 'Exclude from inventory', es: 'Excluir del inventario' })}
+                                title={lineItem.addToInventory ? tx({ fr: 'Ajouter à l\'inventaire', en: 'Add to inventory', es: 'Agregar al inventario' }) : tx({ fr: 'Exclure de l\'inventaire', en: 'Exclude from inventory', es: 'Excluir del inventario' })}
                                 className={`p-1.5 rounded-lg transition-colors ${lineItem.addToInventory ? 'bg-green-500/20 text-green-400' : 'bg-glass text-grey-muted'}`}>
                                 <Package size={14} />
                               </button>
@@ -738,7 +738,7 @@ function AdminDepenses() {
                       className="flex items-center gap-1.5 px-5 py-2 rounded-lg bg-accent text-white text-sm font-semibold hover:bg-accent/80 transition-colors disabled:opacity-50 ml-auto">
                       {importing ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
                       {tx({
-                        fr: `Importer ${invoiceData.lineItems.filter(i => i.addToInventory).length} item(s) + depense`,
+                        fr: `Importer ${invoiceData.lineItems.filter(i => i.addToInventory).length} item(s) + dépense`,
                         en: `Import ${invoiceData.lineItems.filter(i => i.addToInventory).length} item(s) + expense`,
                         es: `Importar ${invoiceData.lineItems.filter(i => i.addToInventory).length} item(s) + gasto`,
                       })}
@@ -812,7 +812,7 @@ function AdminDepenses() {
       {loading ? (
         <div className="flex items-center justify-center py-20"><Loader2 size={32} className="animate-spin text-accent" /></div>
       ) : items.length === 0 ? (
-        <div className="text-center py-20 text-grey-muted">{tx({ fr: 'Aucune depense', en: 'No expenses', es: 'Sin gastos' })}</div>
+        <div className="text-center py-20 text-grey-muted">{tx({ fr: 'Aucune dépense', en: 'No expenses', es: 'Sin gastos' })}</div>
       ) : (
         <div className="rounded-xl card-bg shadow-lg shadow-black/20 overflow-hidden">
           {/* Desktop header */}
@@ -820,7 +820,7 @@ function AdminDepenses() {
             <span>Date</span>
             <span>Description</span>
             <span>{tx({ fr: 'Fournisseur', en: 'Vendor', es: 'Proveedor' })}</span>
-            <span>{tx({ fr: 'Categorie', en: 'Category', es: 'Categoria' })}</span>
+            <span>{tx({ fr: 'Catégorie', en: 'Category', es: 'Categoria' })}</span>
             <span>{tx({ fr: 'Montant', en: 'Amount', es: 'Monto' })}</span>
             <span>TPS</span>
             <span>TVQ</span>

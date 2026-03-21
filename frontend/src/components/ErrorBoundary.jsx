@@ -76,7 +76,7 @@ class ErrorBoundaryInner extends Component {
               Maintenance en cours
             </h1>
             <p className="text-grey-light mb-2 text-lg">
-              Nous effectuons une mise a jour pour ameliorer votre experience.
+              Nous effectuons une mise à jour pour améliorer votre expérience.
             </p>
             <p className="text-grey-light/70 mb-8">
               Le site revient dans quelques minutes. Merci de votre patience!

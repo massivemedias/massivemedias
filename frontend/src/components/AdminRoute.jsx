@@ -42,7 +42,7 @@ function AdminRoute({ children }) {
             })}
           </p>
           <a href="/" className="btn-primary inline-block">
-            {tx({ fr: 'Retour a l\'accueil', en: 'Back to home', es: 'Volver al inicio' })}
+            {tx({ fr: 'Retour à l\'accueil', en: 'Back to home', es: 'Volver al inicio' })}
           </a>
         </div>
       </div>

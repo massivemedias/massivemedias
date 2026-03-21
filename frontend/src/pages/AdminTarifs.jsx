@@ -7,7 +7,7 @@ import autoTable from 'jspdf-autotable';
 import artistsData, { artistPrinterTiers, artistFormats } from '../data/artists';
 
 // =============================================
-// DONNEES TARIFS
+// DONNÉES TARIFS
 // =============================================
 
 const SERVICE_PRICES = [
@@ -145,7 +145,7 @@ function AdminTarifs() {
     lines.push('');
     lines.push(tx({ fr: 'PACKS STICKERS (design inclus)', en: 'STICKER PACKS (design included)', es: 'PACKS STICKERS (diseno incluido)' }));
     lines.push('-'.repeat(55));
-    lines.push(`${tx({ fr: 'Quantite', en: 'Quantity', es: 'Cantidad' })} | Standard (Matte/Glossy) | FX (Holo/Broken Glass)`);
+    lines.push(`${tx({ fr: 'Quantité', en: 'Quantity', es: 'Cantidad' })} | Standard (Matte/Glossy) | FX (Holo/Broken Glass)`);
     STICKER_STANDARD.forEach((s, i) => {
       const h = STICKER_HOLO[i];
       lines.push(`${(s.qty + ' stickers').padEnd(13)}| ${(s.price + '$ (' + s.unit.toFixed(2) + '$/u)').padEnd(24)}| ${h.price}$ (${h.unit.toFixed(2)}$/u)`);
@@ -153,7 +153,7 @@ function AdminTarifs() {
     lines.push('');
     lines.push(tx({ fr: 'TA COMMISSION PAR VENTE (PRINTS)', en: 'YOUR COMMISSION PER SALE (PRINTS)', es: 'TU COMISION POR VENTA (PRINTS)' }));
     lines.push('-'.repeat(55));
-    lines.push(`Format           | Studio      | ${tx({ fr: 'Musee', en: 'Museum', es: 'Museo' })}`);
+    lines.push(`Format           | Studio      | ${tx({ fr: 'Musée', en: 'Museum', es: 'Museo' })}`);
     ARTIST_PRICES.forEach((p, i) => {
       const sp = SERVICE_PRICES[i];
       const studioProfit = p.studio && sp.studio ? p.studio - sp.studio : null;
@@ -290,7 +290,7 @@ function AdminTarifs() {
       if (y > 220) { doc.addPage(); y = 20; }
       sectionTitle(tx({ fr: 'Packs stickers artiste (design inclus)', en: 'Artist sticker packs (design included)', es: 'Packs stickers artista (diseno incluido)' }));
       addTable(
-        [tx({ fr: 'Quantite', en: 'Quantity', es: 'Cantidad' }), 'Standard', '$/unit', 'FX (Holo)', '$/unit'],
+        [tx({ fr: 'Quantité', en: 'Quantity', es: 'Cantidad' }), 'Standard', '$/unit', 'FX (Holo)', '$/unit'],
         STICKER_STANDARD.map((s, i) => {
           const h = STICKER_HOLO[i];
           return [`${s.qty}`, `${s.price}$`, `${s.unit.toFixed(2)}$`, `${h.price}$`, `${h.unit.toFixed(2)}$`];
@@ -301,7 +301,7 @@ function AdminTarifs() {
       if (y > 220) { doc.addPage(); y = 20; }
       sectionTitle(tx({ fr: 'Ta commission par vente (prints)', en: 'Your commission per sale (prints)', es: 'Tu comision por venta (prints)' }));
       addTable(
-        ['Format', 'Studio', tx({ fr: 'Musee', en: 'Museum', es: 'Museo' })],
+        ['Format', 'Studio', tx({ fr: 'Musée', en: 'Museum', es: 'Museo' })],
         ARTIST_PRICES.map((p, i) => {
           const sp = SERVICE_PRICES[i];
           const studioProfit = p.studio && sp.studio ? p.studio - sp.studio : null;
@@ -315,8 +315,8 @@ function AdminTarifs() {
       sectionTitle(tx({ fr: 'Comparaison concurrence (2025-2026)', en: 'Competition comparison (2025-2026)', es: 'Comparacion competencia (2025-2026)' }));
 
       const competitorRows = [
-        ['Society6', '~4$', tx({ fr: 'Impression a la demande', en: 'Print on demand', es: 'Impresion bajo demanda' }), tx({ fr: '5-10% marge. Pas de controle des prix.', en: '5-10% margin. No price control.', es: '5-10% margen. Sin control de precios.' })],
-        ['Redbubble', '~2-3$', tx({ fr: 'Impression a la demande', en: 'Print on demand', es: 'Impresion bajo demanda' }), tx({ fr: 'Frais 50% sur markup.', en: '50% markup fee.', es: 'Tarifa 50% sobre margen.' })],
+        ['Society6', '~4$', tx({ fr: 'Impression à la demande', en: 'Print on demand', es: 'Impresion bajo demanda' }), tx({ fr: '5-10% marge. Pas de contrôle des prix.', en: '5-10% margin. No price control.', es: '5-10% margen. Sin control de precios.' })],
+        ['Redbubble', '~2-3$', tx({ fr: 'Impression à la demande', en: 'Print on demand', es: 'Impresion bajo demanda' }), tx({ fr: 'Frais 50% sur markup.', en: '50% markup fee.', es: 'Tarifa 50% sobre margen.' })],
         ['Printify', '~20-25$', tx({ fr: 'Variable (dropship)', en: 'Variable (dropship)', es: 'Variable (dropship)' }), tx({ fr: 'Tu geres tout (boutique, marketing, livraison)', en: 'You manage everything (store, marketing, shipping)', es: 'Gestionas todo (tienda, marketing, envio)' })],
         ['INPRNT', '~18$', tx({ fr: 'Giclee 8 encres', en: 'Giclee 8 inks', es: 'Giclee 8 tintas' }), tx({ fr: 'Sur invitation seulement', en: 'Invite only', es: 'Solo invitacion' })],
         ['Massive Medias', '40-50$', tx({ fr: '12 encres musée', en: '12 inks museum', es: '12 tintas museo' }), tx({ fr: 'Zéro gestion. Qualité supérieure.', en: 'Zero management. Superior quality.', es: 'Cero gestion. Calidad superior.' })],
@@ -351,7 +351,7 @@ function AdminTarifs() {
       doc.setFontSize(9);
       doc.setFont('helvetica', 'bold');
       doc.text(tx({
-        fr: "L'artiste et Massive font le meme profit reel, mais l'artiste n'a rien a faire.",
+        fr: "L'artiste et Massive font le même profit réel, mais l'artiste n'a rien à faire.",
         en: 'The artist and Massive make the same real profit, but the artist has nothing to do.',
         es: 'El artista y Massive ganan lo mismo, pero el artista no hace nada.',
       }), margin + 4, y + 7, { maxWidth: contentW - 8 });
@@ -381,7 +381,7 @@ function AdminTarifs() {
     noFrame: tx({ fr: 'Sans frame', en: 'No frame', es: 'Sin marco' }),
     withFrame: tx({ fr: 'Avec frame', en: 'With frame', es: 'Con marco' }),
     frame: tx({ fr: 'Frame', en: 'Frame', es: 'Marco' }),
-    qty: tx({ fr: 'Quantite', en: 'Quantity', es: 'Cantidad' }),
+    qty: tx({ fr: 'Quantité', en: 'Quantity', es: 'Cantidad' }),
     price: tx({ fr: 'Prix', en: 'Price', es: 'Precio' }),
     unit: '$/unit',
     notes: 'Notes',
@@ -423,10 +423,10 @@ function AdminTarifs() {
   ];
 
   const COMPETITORS = [
-    { name: 'Society6', artistProfit: '~4$', quality: tx({ fr: 'Impression a la demande', en: 'Print on demand', es: 'Impresion bajo demanda' }), notes: tx({ fr: "5-10% depuis mars 2025. L'artiste ne controle meme plus ses prix.", en: '5-10% since March 2025. The artist no longer controls their prices.', es: '5-10% desde marzo 2025. El artista ya no controla sus precios.' }), highlight: false },
-    { name: 'Redbubble', artistProfit: '~2-3$', quality: tx({ fr: 'Impression a la demande', en: 'Print on demand', es: 'Impresion bajo demanda' }), notes: tx({ fr: 'Frais plateforme 50% sur le markup depuis sept. 2025. Net ~2-3$ par vente.', en: 'Platform fee 50% on markup since Sept. 2025. Net ~2-3$ per sale.', es: 'Tarifa de plataforma 50% sobre el margen desde sept. 2025. Neto ~2-3$ por venta.' }), highlight: false },
-    { name: 'Printify', artistProfit: '~20-25$', quality: tx({ fr: 'Variable (dropship)', en: 'Variable (dropship)', es: 'Variable (dropship)' }), notes: tx({ fr: 'Cout base ~10-12$ USD. MAIS: tu geres ta boutique, marketing, service client, livraison.', en: 'Base cost ~10-12$ USD. BUT: you manage your store, marketing, customer service, shipping.', es: 'Costo base ~10-12$ USD. PERO: gestionas tu tienda, marketing, servicio al cliente, envio.' }), highlight: 'printify' },
-    { name: 'Printful', artistProfit: '~20$', quality: tx({ fr: 'Giclee 8 encres', en: 'Giclee 8 inks', es: 'Giclee 8 tintas' }), notes: tx({ fr: 'Cout base ~16$+ USD. Meme modele que Printify, tu geres tout.', en: 'Base cost ~16$+ USD. Same model as Printify, you manage everything.', es: 'Costo base ~16$+ USD. Mismo modelo que Printify, gestionas todo.' }), highlight: false },
+    { name: 'Society6', artistProfit: '~4$', quality: tx({ fr: 'Impression à la demande', en: 'Print on demand', es: 'Impresion bajo demanda' }), notes: tx({ fr: "5-10% depuis mars 2025. L'artiste ne contrôle même plus ses prix.", en: '5-10% since March 2025. The artist no longer controls their prices.', es: '5-10% desde marzo 2025. El artista ya no controla sus precios.' }), highlight: false },
+    { name: 'Redbubble', artistProfit: '~2-3$', quality: tx({ fr: 'Impression à la demande', en: 'Print on demand', es: 'Impresion bajo demanda' }), notes: tx({ fr: 'Frais plateforme 50% sur le markup depuis sept. 2025. Net ~2-3$ par vente.', en: 'Platform fee 50% on markup since Sept. 2025. Net ~2-3$ per sale.', es: 'Tarifa de plataforma 50% sobre el margen desde sept. 2025. Neto ~2-3$ por venta.' }), highlight: false },
+    { name: 'Printify', artistProfit: '~20-25$', quality: tx({ fr: 'Variable (dropship)', en: 'Variable (dropship)', es: 'Variable (dropship)' }), notes: tx({ fr: 'Coût base ~10-12$ USD. MAIS: tu gères ta boutique, marketing, service client, livraison.', en: 'Base cost ~10-12$ USD. BUT: you manage your store, marketing, customer service, shipping.', es: 'Costo base ~10-12$ USD. PERO: gestionas tu tienda, marketing, servicio al cliente, envio.' }), highlight: 'printify' },
+    { name: 'Printful', artistProfit: '~20$', quality: tx({ fr: 'Giclee 8 encres', en: 'Giclee 8 inks', es: 'Giclee 8 tintas' }), notes: tx({ fr: 'Coût base ~16$+ USD. Même modèle que Printify, tu gères tout.', en: 'Base cost ~16$+ USD. Same model as Printify, you manage everything.', es: 'Costo base ~16$+ USD. Mismo modelo que Printify, gestionas todo.' }), highlight: false },
     { name: 'INPRNT', artistProfit: '~18$', quality: tx({ fr: "Giclee d'archives (8 encres)", en: 'Archival giclee (8 inks)', es: 'Giclee de archivo (8 tintas)' }), notes: tx({ fr: "Meilleure qualité en impression à la demande. Sur invitation. Print ~36$, artiste garde 18$.", en: 'Best print-on-demand quality. Invite-only. Print ~36$, artist keeps 18$.', es: 'Mejor calidad en impresion bajo demanda. Solo invitacion. Print ~36$, artista queda 18$.' }), highlight: false },
     { name: 'Fine Art America', artistProfit: '~10-25$', quality: tx({ fr: "Giclee d'archives", en: 'Archival giclee', es: 'Giclee de archivo' }), notes: tx({ fr: 'Prix de base fixe + ton markup. Qualité correcte.', en: 'Fixed base price + your markup. Decent quality.', es: 'Precio base fijo + tu margen. Calidad correcta.' }), highlight: false },
     { name: 'Massive Medias', artistProfit: '40-50$', quality: tx({ fr: '12 encres pigmentées, musée', en: '12 pigmented inks, museum', es: '12 tintas pigmentadas, museo' }), notes: tx({ fr: "Impression locale fine art. Zéro gestion pour l'artiste. Qualité supérieure à toute impression à la demande.", en: 'Local fine art printing. Zero management for the artist. Quality superior to all print-on-demand.', es: 'Impresion local fine art. Cero gestion para el artista. Calidad superior a toda impresion bajo demanda.' }), highlight: 'massive' },
@@ -464,7 +464,7 @@ function AdminTarifs() {
             <div className="space-y-4">
               <div className="bg-purple-500/5 rounded-lg p-4">
                 <p className="text-sm text-heading font-medium leading-relaxed">
-                  <span className="text-accent font-bold">{tx({ fr: 'Exemple', en: 'Example', es: 'Ejemplo' })} :</span> {tx({ fr: 'Le client achete un print qualite musee avec frame. Il paie', en: 'The client buys a museum quality print with frame. They pay', es: 'El cliente compra un print calidad museo con marco. Paga' })} <span className="text-heading font-bold text-lg">105$</span> <span className="text-grey-muted">(+ {tx({ fr: 'taxes', en: 'taxes', es: 'impuestos' })})</span>. {tx({ fr: "Ou va l'argent?", en: 'Where does the money go?', es: 'A donde va el dinero?' })}
+                  <span className="text-accent font-bold">{tx({ fr: 'Exemple', en: 'Example', es: 'Ejemplo' })} :</span> {tx({ fr: 'Le client achète un print qualité musée avec frame. Il paie', en: 'The client buys a museum quality print with frame. They pay', es: 'El cliente compra un print calidad museo con marco. Paga' })} <span className="text-heading font-bold text-lg">105$</span> <span className="text-grey-muted">(+ {tx({ fr: 'taxes', en: 'taxes', es: 'impuestos' })})</span>. {tx({ fr: "Où va l'argent?", en: 'Where does the money go?', es: 'A donde va el dinero?' })}
                 </p>
               </div>
 
@@ -485,7 +485,7 @@ function AdminTarifs() {
                   <div className="text-xs text-green-400 font-bold mt-1 uppercase tracking-wider">Massive - Frame</div>
                   <div className="text-[11px] text-grey-muted mt-3 text-left space-y-1">
                     <p>- {tx({ fr: 'Cadre noir ou blanc', en: 'Black or white frame', es: 'Marco negro o blanco' })}</p>
-                    <p>- {tx({ fr: 'Materiaux + assemblage', en: 'Materials + assembly', es: 'Materiales + ensamblaje' })}</p>
+                    <p>- {tx({ fr: 'Matériaux + assemblage', en: 'Materials + assembly', es: 'Materiales + ensamblaje' })}</p>
                   </div>
                 </div>
                 <div className="bg-purple-500/15 rounded-xl p-4 text-center">
@@ -493,9 +493,9 @@ function AdminTarifs() {
                   <div className="text-xs text-purple-400 font-bold mt-1 uppercase tracking-wider">{tx({ fr: 'Artiste - Profit net', en: 'Artist - Net profit', es: 'Artista - Ganancia neta' })}</div>
                   <div className="text-[11px] text-grey-muted mt-3 text-left space-y-1">
                     <p>- {tx({ fr: 'Fournit son fichier image', en: 'Provides their image file', es: 'Proporciona su archivo de imagen' })}</p>
-                    <p>- {tx({ fr: 'Zero gestion', en: 'Zero management', es: 'Cero gestion' })}</p>
-                    <p>- {tx({ fr: 'Zero frais', en: 'Zero fees', es: 'Cero costos' })}</p>
-                    <p>- {tx({ fr: 'Pas de boutique a gerer', en: 'No store to manage', es: 'Sin tienda que gestionar' })}</p>
+                    <p>- {tx({ fr: 'Zéro gestion', en: 'Zero management', es: 'Cero gestion' })}</p>
+                    <p>- {tx({ fr: 'Zéro frais', en: 'Zero fees', es: 'Cero costos' })}</p>
+                    <p>- {tx({ fr: 'Pas de boutique à gérer', en: 'No store to manage', es: 'Sin tienda que gestionar' })}</p>
                     <p>- {tx({ fr: 'Pas de livraison', en: 'No shipping', es: 'Sin envio' })}</p>
                   </div>
                 </div>
@@ -507,9 +507,9 @@ function AdminTarifs() {
 
               <div className="bg-accent/10 rounded-lg p-4 text-sm text-grey-muted space-y-2">
                 <p className="font-semibold text-heading text-base">{tx({ fr: "Pourquoi c'est juste?", en: 'Why is it fair?', es: 'Por que es justo?' })}</p>
-                <p>{tx({ fr: "L'artiste recoit", en: 'The artist receives', es: 'El artista recibe' })} <span className="text-purple-400 font-semibold">{tx({ fr: '40$ de profit net', en: '40$ net profit', es: '40$ de ganancia neta' })}</span> {tx({ fr: "pour un upload de fichier. Aucune gestion, aucun frais, aucune boutique a maintenir.", en: 'for a file upload. No management, no fees, no store to maintain.', es: 'por subir un archivo. Sin gestion, sin costos, sin tienda que mantener.' })}</p>
-                <p>{tx({ fr: "Massive recoit 65$ mais doit couvrir: papier d'archives, 12 encres pigmentees, calibration, cadre, main d'oeuvre, local. Le vrai profit Massive apres couts materiaux est d'environ 30-40$.", en: 'Massive receives 65$ but must cover: archival paper, 12 pigmented inks, calibration, frame, labor, studio. The real Massive profit after material costs is about 30-40$.', es: 'Massive recibe 65$ pero debe cubrir: papel de archivo, 12 tintas pigmentadas, calibracion, marco, mano de obra, local. La ganancia real de Massive despues de costos de materiales es de aproximadamente 30-40$.' })}</p>
-                <p className="font-bold text-accent text-base mt-2">{tx({ fr: "L'artiste et Massive font a peu pres le meme profit reel, mais l'artiste n'a rien a faire.", en: 'The artist and Massive make roughly the same real profit, but the artist has nothing to do.', es: 'El artista y Massive obtienen aproximadamente la misma ganancia real, pero el artista no tiene nada que hacer.' })}</p>
+                <p>{tx({ fr: "L'artiste reçoit", en: 'The artist receives', es: 'El artista recibe' })} <span className="text-purple-400 font-semibold">{tx({ fr: '40$ de profit net', en: '40$ net profit', es: '40$ de ganancia neta' })}</span> {tx({ fr: "pour un upload de fichier. Aucune gestion, aucun frais, aucune boutique à maintenir.", en: 'for a file upload. No management, no fees, no store to maintain.', es: 'por subir un archivo. Sin gestion, sin costos, sin tienda que mantener.' })}</p>
+                <p>{tx({ fr: "Massive recoit 65$ mais doit couvrir: papier d'archives, 12 encres pigmentées, calibration, cadre, main d'oeuvre, local. Le vrai profit Massive après coûts matériaux est d'environ 30-40$.", en: 'Massive receives 65$ but must cover: archival paper, 12 pigmented inks, calibration, frame, labor, studio. The real Massive profit after material costs is about 30-40$.', es: 'Massive recibe 65$ pero debe cubrir: papel de archivo, 12 tintas pigmentadas, calibracion, marco, mano de obra, local. La ganancia real de Massive despues de costos de materiales es de aproximadamente 30-40$.' })}</p>
+                <p className="font-bold text-accent text-base mt-2">{tx({ fr: "L'artiste et Massive font à peu près le même profit réel, mais l'artiste n'a rien à faire.", en: 'The artist and Massive make roughly the same real profit, but the artist has nothing to do.', es: 'El artista y Massive obtienen aproximadamente la misma ganancia real, pero el artista no tiene nada que hacer.' })}</p>
               </div>
             </div>
           </motion.div>
@@ -626,7 +626,7 @@ function AdminTarifs() {
               { label: tx({ fr: 'Plateforme', en: 'Platform', es: 'Plataforma' }) },
               { label: tx({ fr: 'Artiste garde', en: 'Artist keeps', es: 'Artista conserva' }) },
               { label: tx({ fr: 'Qualité', en: 'Quality', es: 'Calidad' }) },
-              { label: tx({ fr: "Ce que l'artiste doit gerer", en: 'What the artist must manage', es: 'Lo que el artista debe gestionar' }) },
+              { label: tx({ fr: "Ce que l'artiste doit gérer", en: 'What the artist must manage', es: 'Lo que el artista debe gestionar' }) },
             ]}>
               {COMPETITORS.map((c, i) => (
                 <tr key={i} className={`shadow-[0_1px_0_rgba(255,255,255,0.04)] transition-colors ${c.highlight === 'massive' ? 'bg-accent/10' : c.highlight === 'printify' ? 'bg-orange-500/5' : 'hover:bg-accent/5'}`}>
@@ -646,17 +646,17 @@ function AdminTarifs() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">
                 <div className="space-y-1">
                   <p className="font-semibold text-orange-400">{tx({ fr: "Printify - l'artiste doit:", en: 'Printify - the artist must:', es: 'Printify - el artista debe:' })}</p>
-                  <p className="text-grey-muted">- {tx({ fr: 'Creer et payer sa boutique (Etsy ~6.5% frais, Shopify ~39$/mois)', en: 'Create and pay for their store (Etsy ~6.5% fees, Shopify ~39$/mo)', es: 'Crear y pagar su tienda (Etsy ~6.5% tarifas, Shopify ~39$/mes)' })}</p>
-                  <p className="text-grey-muted">- {tx({ fr: 'Gerer le service client et les retours', en: 'Manage customer service and returns', es: 'Gestionar servicio al cliente y devoluciones' })}</p>
-                  <p className="text-grey-muted">- {tx({ fr: 'Payer pour la publicite / marketing', en: 'Pay for advertising / marketing', es: 'Pagar por publicidad / marketing' })}</p>
+                  <p className="text-grey-muted">- {tx({ fr: 'Créer et payer sa boutique (Etsy ~6.5% frais, Shopify ~39$/mois)', en: 'Create and pay for their store (Etsy ~6.5% fees, Shopify ~39$/mo)', es: 'Crear y pagar su tienda (Etsy ~6.5% tarifas, Shopify ~39$/mes)' })}</p>
+                  <p className="text-grey-muted">- {tx({ fr: 'Gérer le service client et les retours', en: 'Manage customer service and returns', es: 'Gestionar servicio al cliente y devoluciones' })}</p>
+                  <p className="text-grey-muted">- {tx({ fr: 'Payer pour la publicité / marketing', en: 'Pay for advertising / marketing', es: 'Pagar por publicidad / marketing' })}</p>
                   <p className="text-grey-muted">- {tx({ fr: 'Accepter une qualité variable (dropshipping, 4-8 encres, papier 170-200 gsm)', en: 'Accept variable quality (dropshipping, 4-8 inks, 170-200 gsm paper)', es: 'Aceptar calidad variable (dropshipping, 4-8 tintas, papel 170-200 gsm)' })}</p>
-                  <p className="text-grey-muted">- {tx({ fr: 'Cout base en USD (~10-12$ USD = ~14-16$ CAD)', en: 'Base cost in USD (~10-12$ USD = ~14-16$ CAD)', es: 'Costo base en USD (~10-12$ USD = ~14-16$ CAD)' })}</p>
+                  <p className="text-grey-muted">- {tx({ fr: 'Coût base en USD (~10-12$ USD = ~14-16$ CAD)', en: 'Base cost in USD (~10-12$ USD = ~14-16$ CAD)', es: 'Costo base en USD (~10-12$ USD = ~14-16$ CAD)' })}</p>
                 </div>
                 <div className="space-y-1">
                   <p className="font-semibold text-accent">{tx({ fr: "Massive - l'artiste doit:", en: 'Massive - the artist must:', es: 'Massive - el artista debe:' })}</p>
                   <p className="text-grey-muted">- {tx({ fr: "Fournir son fichier. C'est tout.", en: "Provide their file. That's it.", es: 'Proporcionar su archivo. Eso es todo.' })}</p>
                   <p className="text-grey-muted">- {tx({ fr: 'Zero frais de boutique (page artiste gratuite sur massivemedias.com)', en: 'Zero store fees (free artist page on massivemedias.com)', es: 'Cero costos de tienda (pagina de artista gratuita en massivemedias.com)' })}</p>
-                  <p className="text-grey-muted">- {tx({ fr: 'Zero gestion, zero service client', en: 'Zero management, zero customer service', es: 'Cero gestion, cero servicio al cliente' })}</p>
+                  <p className="text-grey-muted">- {tx({ fr: 'Zéro gestion, zéro service client', en: 'Zero management, zero customer service', es: 'Cero gestion, cero servicio al cliente' })}</p>
                   <p className="text-grey-muted">- {tx({ fr: "Qualité musée garantie (12 encres pigmentées, papier d'archives)", en: 'Guaranteed museum quality (12 pigmented inks, archival paper)', es: 'Calidad museo garantizada (12 tintas pigmentadas, papel de archivo)' })}</p>
                   <p className="text-grey-muted">- {tx({ fr: 'Impression locale à Montréal, pick-up Mile-End', en: 'Local printing in Montreal, pick-up Mile-End', es: 'Impresion local en Montreal, recoger en Mile-End' })}</p>
                 </div>

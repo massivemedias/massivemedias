@@ -48,11 +48,11 @@ Nous imprimons aussi des flyers, cartes postales et cartes d'affaires - tout ce 
     },
     pricing: {
       title: 'Tarifs Prints',
-      note: 'Serie Studio : bonne qualite pour tout · Serie Musee : qualite superieure pour la photographie et les tirages galerie · Cadre : 20$ (A6/A4), 30$ (A3), 35$ (A3+), 45$ (A2)',
+      note: 'Série Studio : bonne qualité pour tout · Série Musée : qualité supérieure pour la photographie et les tirages galerie · Cadre : 20$ (A6/A4), 30$ (A3), 35$ (A3+), 45$ (A2)',
       tables: [
         {
           subtitle: 'Impression Fine Art',
-          headers: ['Format', 'Studio (4 pigments)', 'Musee (12 pigments)'],
+          headers: ['Format', 'Studio (4 pigments)', 'Musée (12 pigments)'],
           rows: [
             ['A6 (4x6")', '15$', '30$'],
             ['A4 (8.5x11")', '20$', '40$'],
@@ -98,7 +98,7 @@ Nous imprimons aussi des flyers, cartes postales et cartes d'affaires - tout ce 
       { q: 'Quelle est la différence entre Série Studio et Série Musée?', a: 'La Série Studio utilise une imprimante 4 encres pigmentées, excellente pour décoration et cadeaux. La Série Musée utilise une imprimante 12 encres pigmentées pour une fidélité galerie et une longévité de 100+ ans.' },
       { q: 'Quel format de fichier dois-je fournir?', a: 'Idéalement un fichier haute résolution (300 DPI minimum) en TIFF, PNG ou JPEG. On peut aussi travailler à partir de fichiers PSD ou PDF.' },
       { q: 'Offrez-vous l\'encadrement?', a: 'Oui, on propose l\'encadrement sur demande. 20$ pour A6 et A4, 30$ pour A3, 35$ pour A3+ et 45$ pour A2. Cadres noirs ou blancs disponibles.' },
-      { q: 'Quel est le délai de production?', a: 'Le délai varie selon le type de tirage et la quantité. Contactez-nous pour un estime.' },
+      { q: 'Quel est le délai de production?', a: 'Le délai varie selon le type de tirage et la quantité. Contactez-nous pour un estimé.' },
       { q: 'Peut-on récupérer sur place?', a: 'Oui! Pick-up gratuit au Mile-End. On offre aussi la livraison locale à Montréal.' },
     ],
     seo: {
@@ -124,7 +124,7 @@ Découpés à la forme exacte de ton design avec notre équipement de découpe p
       'Lamination incluse - résistant eau, UV, rayures',
       'Création graphique du sticker incluse dans le prix',
       'Livraison locale disponible',
-      'Production locale Montreal',
+      'Production locale Montréal',
     ],
     process: [
       { step: 1, title: 'Brief créatif', desc: 'Dis-nous ce que tu veux - logo, illustration, texte, forme custom' },
@@ -322,11 +322,11 @@ Nous travaillons avec Adobe Illustrator, Figma et Photoshop pour créer des visu
       'Adobe InDesign',
       'Figma',
       'UX / UI Design',
-      'Colorimetrie',
+      'Colorimétrie',
       'Typographie',
       'Design vectoriel',
       'Retouche photo',
-      'Identite visuelle',
+      'Identité visuelle',
     ],
     seo: {
       title: 'Design Graphique Montréal | Logos, Identité Visuelle & Affiches - Massive',
@@ -375,7 +375,7 @@ Nous travaillons avec Adobe Illustrator, Figma et Photoshop pour créer des visu
       note: 'Chaque projet inclut le SEO de base, le responsive et l\'optimisation performance.',
       tables: [
         {
-          subtitle: 'Creation de site (Webdesign + Code + SEO inclus)',
+          subtitle: 'Création de site (Webdesign + Code + SEO inclus)',
           headers: ['Service', 'Prix'],
           rows: [
             ['Landing page', '900$'],

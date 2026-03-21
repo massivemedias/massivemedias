@@ -68,7 +68,7 @@ function BoutiqueMerchTshirt() {
         <div className="relative z-10 section-container !py-0">
           <Link to="/boutique" className="inline-flex items-center gap-2 text-sm text-grey-muted hover:text-accent transition-colors mb-6">
             <ArrowLeft size={16} />
-            {tx({ fr: 'Retour a la boutique', en: 'Back to shop', es: 'Volver a la tienda' })}
+            {tx({ fr: 'Retour à la boutique', en: 'Back to shop', es: 'Volver a la tienda' })}
           </Link>
           <motion.div
             initial={{ opacity: 0, y: 20 }}

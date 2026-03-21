@@ -222,7 +222,7 @@ function Boutique() {
             className="inline-flex items-center gap-2 text-grey-muted hover:text-accent transition-colors mb-10 text-sm"
           >
             <ArrowLeft size={16} />
-            {tx({ fr: 'Retour a la boutique', en: 'Back to shop', es: 'Volver a la tienda' })}
+            {tx({ fr: 'Retour à la boutique', en: 'Back to shop', es: 'Volver a la tienda' })}
           </button>
           {orderedArtists.map((artist, ai) => {
             const hasPrints = artist.prints && artist.prints.length > 0;
@@ -1009,7 +1009,7 @@ function Boutique() {
                       </h2>
                       <p className="text-grey-light text-sm md:text-base mt-2 max-w-2xl">
                         {tx({
-                          fr: 'Rejoins le reseau Massive et vends tes prints en ligne. Zero frais, zero gestion - tu fournis ton art, on s\'occupe du reste.',
+                          fr: 'Rejoins le réseau Massive et vends tes prints en ligne. Zéro frais, zéro gestion - tu fournis ton art, on s\'occupe du reste.',
                           en: 'Join the Massive network and sell your prints online. Zero fees, zero management - you provide your art, we handle the rest.',
                           es: 'Unete a la red Massive y vende tus prints en linea. Cero costos, cero gestion - tu proporcionas tu arte, nosotros nos encargamos del resto.',
                         })}
@@ -1030,7 +1030,7 @@ function Boutique() {
               className="text-center p-12 rounded-2xl mb-8 cta-text-bordered"
             >
               <h2 className="text-3xl font-heading font-bold text-heading mb-4">
-                {tx({ fr: 'Un projet custom en tete?', en: 'Got a custom project in mind?', es: 'Tienes un proyecto personalizado en mente?' })}
+                {tx({ fr: 'Un projet custom en tête?', en: 'Got a custom project in mind?', es: 'Tienes un proyecto personalizado en mente?' })}
               </h2>
               <p className="text-grey-light text-lg mb-8 max-w-2xl mx-auto">
                 {tx({

@@ -235,7 +235,7 @@ function AdminTemoignages() {
                 <div className="space-y-3">
                   <p className="text-green-400 text-sm flex items-center gap-2">
                     <CheckCircle size={16} />
-                    {tx({ fr: 'Lien genere! Copiez-le et envoyez-le au client.', en: 'Link generated! Copy it and send it to the client.', es: 'Enlace generado! Copielo y envieselo al cliente.' })}
+                    {tx({ fr: 'Lien généré! Copiez-le et envoyez-le au client.', en: 'Link generated! Copy it and send it to the client.', es: 'Enlace generado! Copielo y envieselo al cliente.' })}
                   </p>
                   <div className="flex items-center gap-2">
                     <input

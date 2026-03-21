@@ -653,7 +653,7 @@ function AdminUtilisateurs() {
                               </div>
                               {user.referredBy && (
                                 <div className="flex justify-between items-center">
-                                  <span className="text-grey-muted flex items-center gap-1"><Gift size={12} className="text-yellow-400" /> {tx({ fr: 'Parraine par', en: 'Referred by', es: 'Referido por' })}</span>
+                                  <span className="text-grey-muted flex items-center gap-1"><Gift size={12} className="text-yellow-400" /> {tx({ fr: 'Parrainé par', en: 'Referred by', es: 'Referido por' })}</span>
                                   <span className="text-yellow-400 font-semibold text-sm">#{user.referredBy}</span>
                                 </div>
                               )}
@@ -763,7 +763,7 @@ function AdminUtilisateurs() {
                         <span className="text-xs text-grey-muted whitespace-nowrap">
                           {role === 'artist'
                             ? tx({ fr: 'Changer le profil artiste:', en: 'Change artist profile:', es: 'Cambiar perfil artista:' })
-                            : tx({ fr: 'Lier a l\'artiste:', en: 'Link to artist:', es: 'Vincular al artista:' })}
+                            : tx({ fr: 'Lier à l\'artiste:', en: 'Link to artist:', es: 'Vincular al artista:' })}
                         </span>
                         <select
                           value={selectedSlug}

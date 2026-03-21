@@ -267,7 +267,7 @@ function AdminDashboard() {
             {stats.pending === 0 && stats.processing === 0 && stats.shipped === 0 && stats.unreadMessages === 0 && stats.inventoryLow === 0 && (
               <div className="flex items-center gap-2 p-2">
                 <CheckCircle size={14} className="text-green-400" />
-                <span className="text-xs text-grey-muted">{tx({ fr: 'Tout est a jour!', en: 'All caught up!', es: 'Todo al dia!' })}</span>
+                <span className="text-xs text-grey-muted">{tx({ fr: 'Tout est à jour!', en: 'All caught up!', es: 'Todo al dia!' })}</span>
               </div>
             )}
           </div>

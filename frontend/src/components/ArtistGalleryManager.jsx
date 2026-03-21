@@ -149,7 +149,7 @@ function ArtistGalleryManager() {
       if (newReq) {
         setEditRequests(prev => [newReq, ...prev]);
       }
-      setSuccess(tx({ fr: 'Demande de suppression envoyee!', en: 'Removal request sent!', es: 'Solicitud de eliminacion enviada!' }));
+      setSuccess(tx({ fr: 'Demande de suppression envoyée!', en: 'Removal request sent!', es: 'Solicitud de eliminacion enviada!' }));
       setTimeout(() => setSuccess(''), 4000);
     } catch (err) {
       setError(tx({ fr: 'Erreur lors de la demande de suppression.', en: 'Error requesting removal.', es: 'Error al solicitar la eliminacion.' }));
@@ -168,7 +168,7 @@ function ArtistGalleryManager() {
       saved[itemId] = renameValue.trim();
       localStorage.setItem(key, JSON.stringify(saved));
 
-      // Envoyer un message admin pour que le code soit mis a jour
+      // Envoyer un message admin pour que le code soit mis à jour
       await sendArtistMessage({
         artistSlug,
         artistName: artistName || artistSlug,
@@ -219,7 +219,7 @@ function ArtistGalleryManager() {
       setUniqueFormId(null);
       setUniquePrice('');
       setSuccess(tx({
-        fr: `Demande de piece unique envoyee pour "${itemTitle}" a ${price}$`,
+        fr: `Demande de pièce unique envoyée pour "${itemTitle}" à ${price}$`,
         en: `Unique piece request sent for "${itemTitle}" at $${price}`,
         es: `Solicitud de pieza unica enviada para "${itemTitle}" a $${price}`,
       }));
@@ -422,7 +422,7 @@ function ArtistGalleryManager() {
                 <div className="flex items-center gap-2 mb-2">
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-accent/20 text-accent text-[10px] font-bold">
                     <Gem size={10} />
-                    {tx({ fr: 'Piece unique', en: 'Unique piece', es: 'Pieza unica' })}
+                    {tx({ fr: 'Pièce unique', en: 'Unique piece', es: 'Pieza unica' })}
                     {selectedItem.customPrice ? ` - ${selectedItem.customPrice}$` : ''}
                   </span>
                   <button
@@ -445,7 +445,7 @@ function ArtistGalleryManager() {
                     className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-accent/10 text-accent text-[11px] font-semibold hover:bg-accent/20 transition-colors"
                   >
                     <Gem size={12} />
-                    {tx({ fr: 'Marquer comme piece unique', en: 'Mark as unique piece', es: 'Marcar como pieza unica' })}
+                    {tx({ fr: 'Marquer comme pièce unique', en: 'Mark as unique piece', es: 'Marcar como pieza unica' })}
                   </button>
 
                   {uniqueFormId === selectedItem.id && (() => {
@@ -782,7 +782,7 @@ function ArtistGalleryManager() {
 
                     const getLabel = () => {
                       if (isRename) return `${tx({ fr: 'Renommage', en: 'Rename', es: 'Renombrar' })} - "${req.changeData?.newTitle || ''}"`;
-                      if (req.requestType === 'mark-unique') return `${tx({ fr: 'Piece unique', en: 'Unique piece', es: 'Pieza unica' })} - ${req.changeData?.itemTitle || ''} (${req.changeData?.customPrice || 0}$)`;
+                      if (req.requestType === 'mark-unique') return `${tx({ fr: 'Pièce unique', en: 'Unique piece', es: 'Pieza unica' })} - ${req.changeData?.itemTitle || ''} (${req.changeData?.customPrice || 0}$)`;
                       if (req.requestType === 'unmark-unique') return `${tx({ fr: 'Retrait unique', en: 'Remove unique', es: 'Quitar unica' })} - ${req.changeData?.itemTitle || ''}`;
                       if (isAdd) return `${tx({ fr: 'Ajout', en: 'Add', es: 'Agregar' })} - ${req.requestType?.replace('add-', '')} (${count})`;
                       return `${tx({ fr: 'Suppression', en: 'Remove', es: 'Eliminar' })} - ${req.requestType?.replace('remove-', '')} (${count})`;
