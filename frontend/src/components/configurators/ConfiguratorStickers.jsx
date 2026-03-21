@@ -91,6 +91,7 @@ function ConfiguratorStickers({ onFinishChange }) {
               src={previewImage}
               alt={tx({ fr: finishLabel?.labelFr, en: finishLabel?.labelEn, es: finishLabel?.labelEn })}
               className="w-20 h-20 md:w-full md:h-auto object-contain rounded-lg flex-shrink-0"
+              style={finish === 'glossy' ? { filter: 'brightness(0.85) saturate(0.9) contrast(0.95)' } : undefined}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
