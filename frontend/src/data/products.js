@@ -152,7 +152,7 @@ export const fineArtPrinterTiers = [
 ];
 
 export const fineArtFormats = [
-  { id: 'postcard', label: 'A6 (4×6")', studioPrice: 15, museumPrice: 30, w: 4, h: 6, typeName: 'A6' },
+  { id: 'postcard', label: 'A6 (4×6")', studioPrice: 15, museumPrice: 30, w: 4, h: 6, typeName: 'Carte postale' },
   { id: 'a4', label: 'A4 (8.5×11")', studioPrice: 20, museumPrice: 40, w: 8.5, h: 11, typeName: 'Affiche' },
   { id: 'a3', label: 'A3 (11×17")', studioPrice: 25, museumPrice: 55, w: 11, h: 17, typeName: 'Affiche' },
   { id: 'a3plus', label: 'A3+ (13×19")', studioPrice: 35, museumPrice: 95, w: 13, h: 19, typeName: 'Poster' },

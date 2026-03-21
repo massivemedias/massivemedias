@@ -270,6 +270,11 @@ function ConfiguratorFineArt() {
                   <span className={`text-xs font-bold leading-tight ${format === f.id ? 'text-accent' : 'text-heading'}`}>
                     {f.label}
                   </span>
+                  {f.typeName && (
+                    <span className={`text-[9px] ${format === f.id ? 'text-accent/60' : 'text-grey-muted/50'}`}>
+                      {f.typeName}
+                    </span>
+                  )}
                   <span className={`text-xs ${format === f.id ? 'text-accent' : 'text-grey-muted'}`}>
                     {isAvailable ? `${price}$` : 'N/A'}
                   </span>
