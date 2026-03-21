@@ -15,13 +15,17 @@ function FramePreview({ image, withFrame, frameColor, format, formats, tx, isLan
   const fmtW = fmt?.w || 8.5;
   const fmtH = fmt?.h || 11;
 
-  // A6 = carte postale = paysage par defaut, autres = portrait par defaut
-  // L'image uploadee peut overrider l'orientation
+  // Orientation: A6 = portrait par defaut (cadre photo 5x7), autres = portrait
+  // L'image uploadee peut forcer paysage
   const isPostcard = format === 'postcard';
-  const defaultLandscape = isPostcard; // carte postale = paysage par defaut
-  const useLandscape = image ? isLandscape : defaultLandscape;
+  const useLandscape = image ? isLandscape : false;
   const w = useLandscape ? Math.max(fmtW, fmtH) : Math.min(fmtW, fmtH);
   const h = useLandscape ? Math.min(fmtW, fmtH) : Math.max(fmtW, fmtH);
+
+  // A6 avec cadre = cadre photo 5x7" (image 4x6 dans cadre 5x7)
+  // Les autres = cadre ajuste au format du print
+  const frameW = isPostcard && withFrame ? (useLandscape ? 7 : 5) : w;
+  const frameH = isPostcard && withFrame ? (useLandscape ? 5 : 7) : h;
 
   // Taille du preview proportionnelle
   const maxDim = Math.max(fmtW, fmtH);
@@ -29,15 +33,16 @@ function FramePreview({ image, withFrame, frameColor, format, formats, tx, isLan
   const previewMaxW = Math.max(150, Math.round(maxDim * scaleFactor));
 
   // Epaisseur du cadre proportionnelle
-  const frameThickness = withFrame ? Math.max(8, Math.round(previewMaxW * 0.04)) : 0;
-  const matThickness = withFrame ? Math.max(12, Math.round(previewMaxW * 0.06)) : 0;
+  // A6: cadre plus fin (cadre photo), passe-partout plus epais (espace 5x7 -> 4x6)
+  const frameThickness = withFrame ? (isPostcard ? Math.max(6, Math.round(previewMaxW * 0.035)) : Math.max(8, Math.round(previewMaxW * 0.04))) : 0;
+  const matThickness = withFrame ? (isPostcard ? Math.max(16, Math.round(previewMaxW * 0.1)) : Math.max(12, Math.round(previewMaxW * 0.06))) : 0;
 
   return (
     <div className="flex items-center justify-center p-2">
       <div
         className="relative transition-all duration-500 ease-out"
         style={{
-          aspectRatio: `${w}/${h}`,
+          aspectRatio: withFrame ? `${frameW}/${frameH}` : `${w}/${h}`,
           width: '100%',
           maxWidth: `${previewMaxW}px`,
         }}
