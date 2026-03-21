@@ -9,7 +9,40 @@ import {
 import { useLang } from '../i18n/LanguageContext';
 import { getOrders, getContactSubmissions, getExpenses } from '../services/adminService';
 import api from '../services/api';
-import AdminNotes from './AdminNotes';
+const NOTES_KEY = 'massive-admin-notes';
+
+function DashboardNotes() {
+  const { tx } = useLang();
+  const notes = (() => {
+    try { return JSON.parse(localStorage.getItem(NOTES_KEY) || '[]'); } catch { return []; }
+  })();
+  const sorted = notes.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+
+  if (sorted.length === 0) {
+    return (
+      <div className="text-center py-6 text-grey-muted text-xs">
+        <StickyNote size={24} className="mx-auto mb-2 opacity-30" />
+        {tx({ fr: 'Aucune note', en: 'No notes', es: 'Sin notas' })}
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-0.5 max-h-[280px] overflow-y-auto scrollbar-thin">
+      {sorted.map(n => (
+        <Link
+          key={n.id}
+          to="/admin/notes"
+          className="block px-3 py-2 rounded-lg hover:bg-black/10 transition-colors"
+        >
+          <p className="text-xs text-heading truncate">
+            {n.title || tx({ fr: 'Sans titre', en: 'Untitled', es: 'Sin titulo' })}
+          </p>
+        </Link>
+      ))}
+    </div>
+  );
+}
 
 function StatCard({ icon: Icon, label, value, color, to }) {
   const content = (
@@ -151,19 +184,68 @@ function AdminDashboard() {
         ))}
       </div>
 
-      {/* Notes */}
-      <div className="rounded-2xl p-4 md:p-5 card-bg card-shadow">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-heading font-heading font-bold text-base flex items-center gap-2">
-            <StickyNote size={18} className="text-accent" />
-            {tx({ fr: 'Notes', en: 'Notes', es: 'Notas' })}
-          </h3>
-          <Link to="/admin/notes" className="text-xs text-accent hover:underline flex items-center gap-1">
-            {tx({ fr: 'Voir tout', en: 'View all', es: 'Ver todo' })}
-            <ArrowRight size={12} />
-          </Link>
+      {/* Notes + Activite recente */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Notes - titres seulement */}
+        <div className="rounded-2xl p-4 md:p-5 card-bg card-shadow">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-heading font-heading font-bold text-base flex items-center gap-2">
+              <StickyNote size={18} className="text-accent" />
+              {tx({ fr: 'Notes', en: 'Notes', es: 'Notas' })}
+            </h3>
+            <Link to="/admin/notes" className="text-xs text-accent hover:underline flex items-center gap-1">
+              {tx({ fr: 'Ouvrir', en: 'Open', es: 'Abrir' })}
+              <ArrowRight size={12} />
+            </Link>
+          </div>
+          <DashboardNotes />
         </div>
-        <AdminNotes embedded />
+
+        {/* Activite recente */}
+        <div className="rounded-2xl p-4 md:p-5 card-bg card-shadow">
+          <h3 className="text-heading font-heading font-bold text-base flex items-center gap-2 mb-3">
+            <Clock size={18} className="text-accent" />
+            {tx({ fr: 'Activite recente', en: 'Recent activity', es: 'Actividad reciente' })}
+          </h3>
+          <div className="space-y-2">
+            {stats.pending > 0 && (
+              <Link to="/admin/commandes" className="flex items-center gap-2 p-2 rounded-lg hover:bg-black/10 transition-colors">
+                <div className="w-2 h-2 rounded-full bg-yellow-400" />
+                <span className="text-xs text-heading">{stats.pending} {tx({ fr: 'commande(s) en attente', en: 'pending order(s)', es: 'pedido(s) pendiente(s)' })}</span>
+              </Link>
+            )}
+            {stats.processing > 0 && (
+              <Link to="/admin/commandes" className="flex items-center gap-2 p-2 rounded-lg hover:bg-black/10 transition-colors">
+                <div className="w-2 h-2 rounded-full bg-blue-400" />
+                <span className="text-xs text-heading">{stats.processing} {tx({ fr: 'en production', en: 'in production', es: 'en produccion' })}</span>
+              </Link>
+            )}
+            {stats.shipped > 0 && (
+              <Link to="/admin/commandes" className="flex items-center gap-2 p-2 rounded-lg hover:bg-black/10 transition-colors">
+                <div className="w-2 h-2 rounded-full bg-green-400" />
+                <span className="text-xs text-heading">{stats.shipped} {tx({ fr: 'expediee(s)', en: 'shipped', es: 'enviado(s)' })}</span>
+              </Link>
+            )}
+            {stats.unreadMessages > 0 && (
+              <Link to="/admin/messages" className="flex items-center gap-2 p-2 rounded-lg hover:bg-black/10 transition-colors">
+                <div className="w-2 h-2 rounded-full bg-red-400" />
+                <span className="text-xs text-heading">{stats.unreadMessages} {tx({ fr: 'message(s) non lu(s)', en: 'unread message(s)', es: 'mensaje(s) no leido(s)' })}</span>
+              </Link>
+            )}
+            {stats.inventoryLow > 0 && (
+              <Link to="/admin/inventaire" className="flex items-center gap-2 p-2 rounded-lg hover:bg-black/10 transition-colors">
+                <div className="w-2 h-2 rounded-full bg-orange-400" />
+                <span className="text-xs text-heading">{stats.inventoryLow} {tx({ fr: 'article(s) stock bas', en: 'low stock item(s)', es: 'articulo(s) stock bajo' })}</span>
+              </Link>
+            )}
+            {stats.pending === 0 && stats.processing === 0 && stats.shipped === 0 && stats.unreadMessages === 0 && stats.inventoryLow === 0 && (
+              <div className="flex items-center gap-2 p-2">
+                <CheckCircle size={14} className="text-green-400" />
+                <span className="text-xs text-grey-muted">{tx({ fr: 'Tout est a jour!', en: 'All caught up!', es: 'Todo al dia!' })}</span>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
