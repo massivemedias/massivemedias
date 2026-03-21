@@ -104,6 +104,11 @@ function ConfiguratorStickers({ onFinishChange }) {
             <span className="block text-grey-muted text-xs mt-0.5">
               {sizeLabel} · {tx({ fr: shapeLabel?.labelFr, en: shapeLabel?.labelEn, es: shapeLabel?.labelEn })}
             </span>
+            {(finish === 'holographic' || finish === 'broken-glass' || finish === 'stars') && (
+              <span className="block text-grey-muted/60 text-[10px] mt-1.5 italic">
+                {tx({ fr: '* Image exageree pour illustrer l\'effet', en: '* Image exaggerated to illustrate the effect', es: '* Imagen exagerada para ilustrar el efecto' })}
+              </span>
+            )}
           </div>
         </div>
 
@@ -119,6 +124,7 @@ function ConfiguratorStickers({ onFinishChange }) {
                 <button
                   key={f.id}
                   onClick={() => { setFinish(f.id); onFinishChange?.(f.id); }}
+                  title={['holographic', 'broken-glass', 'stars'].includes(f.id) ? tx({ fr: 'Effet Fx - image exageree pour illustrer', en: 'Fx effect - image exaggerated to illustrate', es: 'Efecto Fx - imagen exagerada para ilustrar' }) : ''}
                   className={`flex flex-col items-center justify-center py-2 px-2 md:min-w-[4.5rem] md:py-2.5 md:px-3 rounded-lg text-xs font-medium transition-all border-2 ${finish === f.id
                     ? 'border-accent option-selected'
                     : 'border-transparent hover:border-grey-muted/30 option-default'
