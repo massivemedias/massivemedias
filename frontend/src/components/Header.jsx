@@ -364,18 +364,21 @@ function Header() {
                     <ChevronRight size={14} className="ml-auto text-white/60 group-hover:text-white transition-opacity" />
                   </Link>
                 )}
-              </div>
 
-              {/* Contact CTA - pinned bottom */}
-              <div className="px-4 pt-3 pb-8 flex-shrink-0 border-t mobile-drawer-border">
-                <Link
-                  to="/contact"
-                  className="btn-primary w-full text-center py-3 font-bold flex items-center justify-center gap-2 text-[15px]"
-                  onClick={close}
-                >
-                  <Phone size={17} />
-                  {t('nav.contact')}
-                </Link>
+                {/* Contact CTA */}
+                <div className="mt-3 pt-3 border-t mobile-drawer-border">
+                  <Link
+                    to="/contact"
+                    className="btn-primary w-full text-center py-3 font-bold flex items-center justify-center gap-2 text-[15px]"
+                    onClick={close}
+                  >
+                    <Phone size={17} />
+                    {t('nav.contact')}
+                  </Link>
+                </div>
+
+                {/* Espace en bas pour safe area iOS */}
+                <div className="h-6" />
               </div>
             </motion.div>
           </>
