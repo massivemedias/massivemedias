@@ -1170,7 +1170,7 @@ function Account() {
               })()}
               <div className="flex-grow min-w-0">
                 <h1 className="text-lg font-heading font-bold text-heading">
-                  {tx({ fr: 'Bonjour', en: 'Hello', es: 'Hola' })} 👋
+                  {meta.full_name || user?.email?.split('@')[0] || tx({ fr: 'Bonjour', en: 'Hello', es: 'Hola' })} 👋
                 </h1>
                 <p className="text-grey-muted text-sm mt-0.5">
                   {user?.email}
