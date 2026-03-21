@@ -15,14 +15,18 @@ function FramePreview({ image, withFrame, frameColor, format, formats, tx, isLan
   const fmtW = fmt?.w || 8.5;
   const fmtH = fmt?.h || 11;
 
-  // Si l'image est paysage, inverser w/h du format
-  const w = isLandscape ? Math.max(fmtW, fmtH) : Math.min(fmtW, fmtH);
-  const h = isLandscape ? Math.min(fmtW, fmtH) : Math.max(fmtW, fmtH);
+  // A6 = carte postale = paysage par defaut, autres = portrait par defaut
+  // L'image uploadee peut overrider l'orientation
+  const isPostcard = format === 'postcard';
+  const defaultLandscape = isPostcard; // carte postale = paysage par defaut
+  const useLandscape = image ? isLandscape : defaultLandscape;
+  const w = useLandscape ? Math.max(fmtW, fmtH) : Math.min(fmtW, fmtH);
+  const h = useLandscape ? Math.min(fmtW, fmtH) : Math.max(fmtW, fmtH);
 
-  // Taille du preview proportionnelle mais compacte
+  // Taille du preview proportionnelle mais compacte (+10px)
   const maxDim = Math.max(fmtW, fmtH);
-  const scaleFactor = 220 / 24; // A2 = 220px max (compact)
-  const previewMaxW = Math.max(120, Math.round(maxDim * scaleFactor));
+  const scaleFactor = 230 / 24; // A2 = 230px max
+  const previewMaxW = Math.max(130, Math.round(maxDim * scaleFactor));
 
   // Epaisseur du cadre proportionnelle
   const frameThickness = withFrame ? Math.max(8, Math.round(previewMaxW * 0.04)) : 0;
