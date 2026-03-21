@@ -54,7 +54,7 @@ We also print flyers, postcards and business cards - everything you need to prom
           subtitle: 'Fine Art Printing',
           headers: ['Format', 'Studio (4 pigments)', 'Museum (12 pigments)'],
           rows: [
-            ['Postcard (4×6")', '$15', '$25'],
+            ['A6 (4×6")', '$15', '$25'],
             ['A4 (8.5x11")', '$20', '$40'],
             ['A3 (11x17")', '$25', '$55'],
             ['A3+ (13x19")', '$35', '$95'],
