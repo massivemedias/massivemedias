@@ -7,7 +7,7 @@ import { useProduct } from '../../hooks/useProducts';
 import FileUpload from '../FileUpload';
 import {
   fineArtPrinterTiers as defaultTiers, fineArtFormats as defaultFormats, fineArtFramePrice as defaultFramePrice,
-  getFineArtPrice as defaultGetPrice, fineArtImages,
+  fineArtFramePriceByFormat, getFineArtPrice as defaultGetPrice, fineArtImages,
 } from '../../data/products';
 
 function ConfiguratorFineArt() {
@@ -162,7 +162,7 @@ function ConfiguratorFineArt() {
               {tx({ fr: 'Ajouter un cadre', en: 'Add a frame', es: 'Agregar un marco' })}
             </span>
           </div>
-          <span className="text-accent font-semibold text-sm">+{fineArtFramePrice}$</span>
+          <span className="text-accent font-semibold text-sm">+{fineArtFramePriceByFormat[format] || fineArtFramePrice}$</span>
         </label>
 
         {withFrame && (
