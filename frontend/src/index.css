@@ -489,29 +489,32 @@ select.input-field option {
   width: 100%;
   border-collapse: collapse;
   table-layout: auto;
+  max-width: 100%;
 }
 
 .price-table th {
-  padding: 0.5rem 0.4rem;
+  padding: 0.35rem 0.25rem;
   text-align: left;
   font-weight: 600;
-  font-size: 0.75rem;
+  font-size: 0.65rem;
   border-bottom: 2px solid #D9CCE8;
   background: var(--bg-table-head);
   color: var(--color-heading);
-  white-space: nowrap;
+  white-space: normal;
+  word-break: break-word;
 }
 
 .price-table td {
-  padding: 0.5rem 0.4rem;
-  font-size: 0.8rem;
+  padding: 0.35rem 0.25rem;
+  font-size: 0.7rem;
   border-bottom: 1px solid var(--table-border);
   color: var(--color-grey-light);
+  word-break: break-word;
 }
 
 @media (min-width: 640px) {
-  .price-table th { padding: 0.5rem; font-size: 0.8rem; }
-  .price-table td { padding: 0.5rem; font-size: 0.85rem; }
+  .price-table th { padding: 0.5rem; font-size: 0.8rem; white-space: nowrap; word-break: normal; }
+  .price-table td { padding: 0.5rem; font-size: 0.85rem; word-break: normal; }
 }
 
 @media (min-width: 768px) {

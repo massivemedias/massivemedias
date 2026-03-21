@@ -592,7 +592,7 @@ function ServiceDetail() {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           viewport={{ once: true }}
-          className="mb-20 scroll-mt-24"
+          className="mb-20 scroll-mt-24 overflow-x-hidden"
         >
           <h2 className="text-3xl font-heading font-bold text-gradient mb-3 text-center">
             {service.pricing.title}
@@ -600,8 +600,8 @@ function ServiceDetail() {
           <p className="text-grey-muted text-center mb-8">{service.pricing.note}</p>
 
           {service.pricing.headers && (
-            <div className="rounded-xl overflow-hidden max-w-5xl mx-auto card-shadow overflow-x-auto">
-              <table className="price-table">
+            <div className="rounded-xl overflow-hidden max-w-5xl mx-auto card-shadow overflow-x-auto max-w-[100vw]">
+              <table className="price-table" style={{ minWidth: 0 }}>
                 <thead>
                   <tr>
                     {service.pricing.headers.map((header, i) => (
@@ -615,7 +615,7 @@ function ServiceDetail() {
                       {row.map((cell, j) => (
                         <td
                           key={j}
-                          className={j === 0 ? 'text-heading font-semibold' : j === 1 ? 'text-gradient font-bold whitespace-nowrap' : 'text-grey-muted whitespace-nowrap'}
+                          className={j === 0 ? 'text-heading font-semibold' : j === 1 ? 'text-gradient font-bold sm:whitespace-nowrap' : 'text-grey-muted sm:whitespace-nowrap'}
                         >
                           {service.pricing.headers[j]?.includes('Réf') || service.pricing.headers[j]?.includes('Ref') ? (
                             cell !== '-' ? <span className="line-through">{cell}</span> : cell
@@ -669,7 +669,7 @@ function ServiceDetail() {
                       {table.rows.map((row, i) => (
                         <tr key={i}>
                           {row.map((cell, j) => (
-                            <td key={j} className={`whitespace-nowrap ${j === 0 ? 'text-heading font-semibold' : j === 1 ? 'text-gradient font-bold' : 'text-grey-muted'}`}>
+                            <td key={j} className={`sm:whitespace-nowrap ${j === 0 ? 'text-heading font-semibold' : j === 1 ? 'text-gradient font-bold' : 'text-grey-muted'}`}>
                               {cell}
                             </td>
                           ))}

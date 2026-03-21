@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, useMemo, useEffect, useRef } from 'react';
+import { createContext, useContext, useState, useCallback, useMemo, useEffect } from 'react';
 import { applyTheme, brightnessToStep, THEME_COUNT } from '../utils/brightnessEngine';
 
 const ThemeContext = createContext();
@@ -32,20 +32,14 @@ export function ThemeProvider({ children }) {
     }
   });
 
-  const rafRef = useRef(null);
-
+  // Appliquer le theme de maniere synchrone pour eviter le flash de couleur
   useEffect(() => {
-    if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    rafRef.current = requestAnimationFrame(() => {
-      applyTheme(step);
-    });
-    return () => {
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    };
+    applyTheme(step);
   }, [step]);
 
   const setStep = useCallback((value) => {
     const clamped = Math.max(0, Math.min(THEME_COUNT - 1, Math.round(value)));
+    applyTheme(clamped); // Appliquer immediatement avant le re-render
     setStepState(clamped);
     try { localStorage.setItem(STORAGE_KEY, String(clamped)); } catch {}
   }, []);

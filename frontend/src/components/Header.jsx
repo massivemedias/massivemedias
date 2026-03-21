@@ -210,7 +210,7 @@ function Header() {
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-              className="lg:hidden fixed top-0 right-0 bottom-0 z-[60] w-[min(300px,85vw)] mobile-drawer flex flex-col"
+              className="lg:hidden fixed top-0 right-0 bottom-0 z-[60] w-[min(300px,85vw)] mobile-drawer flex flex-col h-[100dvh]"
               style={{ backgroundColor: 'var(--bg-body, #3D0079)' }}
             >
               {/* Drawer header row */}
@@ -228,7 +228,7 @@ function Header() {
               </div>
 
               {/* Scrollable links */}
-              <div className="flex-1 overflow-y-auto px-3 py-4 flex flex-col gap-0.5">
+              <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-3 py-4 flex flex-col gap-0.5">
                 {/* Services */}
                 <p className="mobile-drawer-label text-[10px] font-bold uppercase tracking-[0.14em] px-3 mb-1.5">
                   Services
@@ -378,7 +378,7 @@ function Header() {
                 </div>
 
                 {/* Espace en bas pour safe area iOS */}
-                <div className="h-6" />
+                <div className="h-20 flex-shrink-0" />
               </div>
             </motion.div>
           </>
