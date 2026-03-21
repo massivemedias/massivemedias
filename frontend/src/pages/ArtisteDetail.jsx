@@ -584,6 +584,7 @@ function ArtisteDetail({ subdomainSlug }) {
                 <ConfiguratorArtistSticker
                   artist={artist}
                   selectedSticker={selectedSticker}
+                  allStickers={artist.stickers || []}
                 />
               </div>
             </div>
