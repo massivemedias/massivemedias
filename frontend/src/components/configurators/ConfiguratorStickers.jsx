@@ -53,7 +53,7 @@ function ConfiguratorStickers({ onFinishChange }) {
     holographic: '/images/stickers/finish-holographic.webp',
     'broken-glass': '/images/stickers/finish-broken-glass.webp',
     stars: '/images/stickers/finish-stars.webp',
-    dots: '/images/stickers/finish-dots.webp',
+    dots: '/images/stickers/finish-dots-v2.webp',
   };
   const previewImage = finishImages[finish] || finishImages.matte;
 
