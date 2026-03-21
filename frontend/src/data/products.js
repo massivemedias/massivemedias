@@ -153,8 +153,8 @@ export const fineArtPrinterTiers = [
 
 export const fineArtFormats = [
   { id: 'postcard', label: '4×6"', studioPrice: 15, museumPrice: 25, w: 4, h: 6, typeName: 'Carte postale' },
-  { id: 'a4', label: 'A4 (8.5×11")', studioPrice: 20, museumPrice: 35, w: 8.5, h: 11, typeName: 'Affiche' },
-  { id: 'a3', label: 'A3 (11×17")', studioPrice: 25, museumPrice: 65, w: 11, h: 17, typeName: 'Affiche' },
+  { id: 'a4', label: 'A4 (8.5×11")', studioPrice: 20, museumPrice: 40, w: 8.5, h: 11, typeName: 'Affiche' },
+  { id: 'a3', label: 'A3 (11×17")', studioPrice: 25, museumPrice: 55, w: 11, h: 17, typeName: 'Affiche' },
   { id: 'a3plus', label: 'A3+ (13×19")', studioPrice: 35, museumPrice: 95, w: 13, h: 19, typeName: 'Poster' },
   { id: 'a2', label: 'A2 (18×24")', studioPrice: null, museumPrice: 110, w: 18, h: 24, typeName: 'Grand format' },
 ];
@@ -338,10 +338,10 @@ export const flyerSides = [
 
 export const flyerPriceTiers = [
   { qty: 50, price: 40, unitPrice: 0.80 },
-  { qty: 100, price: 65, unitPrice: 0.65 },
-  { qty: 150, price: 90, unitPrice: 0.60 },
-  { qty: 250, price: 130, unitPrice: 0.52 },
-  { qty: 500, price: 225, unitPrice: 0.45 },
+  { qty: 100, price: 70, unitPrice: 0.70 },
+  { qty: 150, price: 98, unitPrice: 0.65 },
+  { qty: 250, price: 138, unitPrice: 0.55 },
+  { qty: 500, price: 250, unitPrice: 0.50 },
 ];
 
 export function getFlyerPrice(side, qtyIndex) {
