@@ -248,6 +248,11 @@ button, [role="button"], a, label[class*="cursor"], select, input[type="checkbox
    Styles globaux
    ============================================= */
 
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
 body {
   margin: 0;
   padding: 0;
@@ -483,13 +488,14 @@ select.input-field option {
 .price-table {
   width: 100%;
   border-collapse: collapse;
+  table-layout: auto;
 }
 
 .price-table th {
-  padding: 0.5rem 0.5rem;
+  padding: 0.5rem 0.4rem;
   text-align: left;
   font-weight: 600;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   border-bottom: 2px solid #D9CCE8;
   background: var(--bg-table-head);
   color: var(--color-heading);
@@ -497,10 +503,15 @@ select.input-field option {
 }
 
 .price-table td {
-  padding: 0.5rem 0.5rem;
-  font-size: 0.85rem;
+  padding: 0.5rem 0.4rem;
+  font-size: 0.8rem;
   border-bottom: 1px solid var(--table-border);
   color: var(--color-grey-light);
+}
+
+@media (min-width: 640px) {
+  .price-table th { padding: 0.5rem; font-size: 0.8rem; }
+  .price-table td { padding: 0.5rem; font-size: 0.85rem; }
 }
 
 @media (min-width: 768px) {
