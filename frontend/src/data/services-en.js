@@ -20,7 +20,7 @@ We also print flyers, postcards and business cards - everything you need to prom
       'Premium professional fine art papers',
       'Professional calibration, custom ICC profiles',
       '100+ year conservation life',
-      'Flyers A6, A5, letter (8.5×11")',
+      'Flyers A6, A5, letter (8.5x11")',
       'Postcards and business cards',
       'Premium 300g+ paper, matte or glossy',
       'Free pick-up Mile-End, local delivery',
@@ -41,7 +41,7 @@ We also print flyers, postcards and business cards - everything you need to prom
         ['Inks', '4 pigment inks', '12 pigment inks'],
         ['Color gamut', 'Excellent', 'Ultra-wide (gallery grade)'],
         ['Longevity', '50+ years', '100+ years (archival)'],
-        ['Max paper size', 'A2 (18×24")', 'A1 (24×36")'],
+        ['Max paper size', 'A2 (18x24")', 'A1 (24x36")'],
         ['Best for', 'Decor, gifts, posters', 'Exhibitions, galleries, collectors'],
         ['ICC Profile', 'Standard', 'Custom per print'],
       ],
@@ -54,7 +54,7 @@ We also print flyers, postcards and business cards - everything you need to prom
           subtitle: 'Fine Art Printing',
           headers: ['Format', 'Studio (4 pigments)', 'Museum (12 pigments)'],
           rows: [
-            ['A6 (4×6")', '$15', '$30'],
+            ['A6 (4x6")', '$15', '$30'],
             ['A4 (8.5x11")', '$20', '$40'],
             ['A3 (11x17")', '$25', '$55'],
             ['A3+ (13x19")', '$35', '$95'],
@@ -62,7 +62,7 @@ We also print flyers, postcards and business cards - everything you need to prom
           ],
         },
         {
-          subtitle: 'Flyers & Distribution Posters (A6 / 4"×6")',
+          subtitle: 'Flyers & Distribution Posters (A6 / 4x6")',
           headers: ['Quantity', 'Total Price', 'Price/unit'],
           rows: [
             ['50', '$40', '$0.80'],

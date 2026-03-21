@@ -20,7 +20,7 @@ Nous imprimons aussi des flyers, cartes postales et cartes d'affaires - tout ce 
       'Papiers fine art professionnels premium',
       'Calibration professionnelle, profils ICC sur mesure',
       'Durée de conservation 100+ ans',
-      'Flyers A6, A5, lettre (8,5×11")',
+      'Flyers A6, A5, lettre (8.5x11")',
       'Cartes postales et cartes d\'affaires',
       'Papier premium 300g+ mat ou brillant',
       'Pick-up gratuit Mile-End, livraison locale',
@@ -41,7 +41,7 @@ Nous imprimons aussi des flyers, cartes postales et cartes d'affaires - tout ce 
         ['Encres', '4 couleurs pigmentées', '12 couleurs pigmentées'],
         ['Gamut couleur', 'Excellent', 'Ultra-large (galerie)'],
         ['Longévité', '50+ ans', '100+ ans (archival)'],
-        ['Papier max', 'A2 (18×24")', 'A1 (24×36")'],
+        ['Papier max', 'A2 (18x24")', 'A1 (24x36")'],
         ['Idéal pour', 'Décoration, cadeaux, affiches', 'Expositions, galeries, collectionneurs'],
         ['Profil ICC', 'Standard', 'Sur mesure par tirage'],
       ],
@@ -62,7 +62,7 @@ Nous imprimons aussi des flyers, cartes postales et cartes d'affaires - tout ce 
           ],
         },
         {
-          subtitle: 'Flyers et affiches de distribution (A6 / 4"x6")',
+          subtitle: 'Flyers et affiches de distribution (A6 / 4x6")',
           headers: ['Quantité', 'Prix total', 'Prix/unité'],
           rows: [
             ['50', '40$', '0,80$'],

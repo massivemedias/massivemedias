@@ -229,7 +229,7 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {} }) {
                   </div>
                   <div className="text-center">
                     <div className={`font-medium leading-tight ${format === f.id ? 'text-accent' : 'text-heading'}`} style={{ fontSize: '10px' }}>
-                      {f.w}×{f.h}"
+                      {f.w}x{f.h}"
                     </div>
                     <div className="text-grey-muted leading-tight" style={{ fontSize: '9px' }}>
                       {!fmtAllowed ? 'N/A' : hasPricing ? `${price}$` : 'N/A'}

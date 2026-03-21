@@ -152,11 +152,11 @@ export const fineArtPrinterTiers = [
 ];
 
 export const fineArtFormats = [
-  { id: 'postcard', label: 'A6 (4×6")', studioPrice: 15, museumPrice: 30, w: 4, h: 6, typeName: 'Carte postale' },
-  { id: 'a4', label: 'A4 (8.5×11")', studioPrice: 20, museumPrice: 40, w: 8.5, h: 11, typeName: 'Affiche' },
-  { id: 'a3', label: 'A3 (11×17")', studioPrice: 25, museumPrice: 55, w: 11, h: 17, typeName: 'Affiche' },
-  { id: 'a3plus', label: 'A3+ (13×19")', studioPrice: 35, museumPrice: 95, w: 13, h: 19, typeName: 'Poster' },
-  { id: 'a2', label: 'A2 (18×24")', studioPrice: null, museumPrice: 110, w: 18, h: 24, typeName: 'Grand format' },
+  { id: 'postcard', label: 'A6 (4x6")', studioPrice: 15, museumPrice: 30, w: 4, h: 6, typeName: 'Carte postale' },
+  { id: 'a4', label: 'A4 (8.5x11")', studioPrice: 20, museumPrice: 40, w: 8.5, h: 11, typeName: 'Affiche' },
+  { id: 'a3', label: 'A3 (11x17")', studioPrice: 25, museumPrice: 55, w: 11, h: 17, typeName: 'Affiche' },
+  { id: 'a3plus', label: 'A3+ (13x19")', studioPrice: 35, museumPrice: 95, w: 13, h: 19, typeName: 'Poster' },
+  { id: 'a2', label: 'A2 (18x24")', studioPrice: null, museumPrice: 110, w: 18, h: 24, typeName: 'Grand format' },
 ];
 
 export const fineArtFramePriceByFormat = { postcard: 20, a4: 20, a3: 30, a3plus: 35, a2: 45 };
@@ -366,7 +366,7 @@ export const flyerImages = [
 
 export const flyerFaq = {
   fr: [
-    { q: 'Quels formats proposez-vous?', a: 'Flyers A6 (4"×6"), A5, lettre (8,5×11"). Cartes postales et cartes d\'affaires. Formats personnalisés disponibles sur demande.' },
+    { q: 'Quels formats proposez-vous?', a: 'Flyers A6 (4x6"), A5, lettre (8.5x11"). Cartes postales et cartes d\'affaires. Formats personnalisés disponibles sur demande.' },
     { q: 'Quel papier utilisez-vous?', a: 'Papier premium 300g+ en finition matte ou brillante. Qualité professionnelle supérieure à l\'impression en ligne standard.' },
     { q: 'Offrez-vous l\'impression recto-verso?', a: 'Oui! L\'option recto-verso est disponible avec un supplément de 30%. Parfait pour les cartes d\'affaires et flyers avec plus d\'informations.' },
     { q: 'Quel est le délai de production?', a: 'Le délai varie selon la quantité. Service express disponible sur demande.' },
@@ -374,7 +374,7 @@ export const flyerFaq = {
     { q: 'La livraison est-elle disponible?', a: 'Pick-up gratuit au Mile-End. Livraison locale disponible à Montréal. Idéal pour les événements du Plateau et Mile-End.' },
   ],
   en: [
-    { q: 'What formats do you offer?', a: 'A6 (4"×6"), A5, letter (8.5×11") flyers. Postcards and business cards. Custom formats available on request.' },
+    { q: 'What formats do you offer?', a: 'A6 (4x6"), A5, letter (8.5x11") flyers. Postcards and business cards. Custom formats available on request.' },
     { q: 'What paper do you use?', a: 'Premium 300g+ paper in matte or glossy finish. Professional quality superior to standard online printing.' },
     { q: 'Do you offer double-sided printing?', a: 'Yes! Double-sided option is available with a 30% surcharge. Perfect for business cards and flyers with more information.' },
     { q: 'What is the production time?', a: 'Production time varies depending on quantity. Express service available on request.' },
@@ -382,7 +382,7 @@ export const flyerFaq = {
     { q: 'Is delivery available?', a: 'Free pick-up in Mile-End. Local delivery available in Montreal. Ideal for Plateau and Mile-End events.' },
   ],
   es: [
-    { q: '¿Qué formatos ofrecen?', a: 'Flyers A6 (4"x6"), A5, carta (8,5x11"). Postales y tarjetas de presentación. Formatos personalizados disponibles bajo pedido.' },
+    { q: '¿Qué formatos ofrecen?', a: 'Flyers A6 (4x6"), A5, carta (8.5x11"). Postales y tarjetas de presentación. Formatos personalizados disponibles bajo pedido.' },
     { q: '¿Qué papel utilizan?', a: 'Papel premium de 300g+ en acabado mate o brillante. Calidad profesional superior a la impresión en línea estándar.' },
     { q: '¿Ofrecen impresión a doble cara?', a: '¡Sí! La opción a doble cara está disponible con un suplemento del 30%. Perfecto para tarjetas de presentación y flyers con más información.' },
     { q: '¿Cuál es el plazo de producción?', a: 'El plazo varía según la cantidad. Servicio express disponible bajo pedido.' },

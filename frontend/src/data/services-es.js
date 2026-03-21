@@ -61,7 +61,7 @@ También imprimimos flyers, postales y tarjetas de presentación - todo lo que n
           ],
         },
         {
-          subtitle: 'Flyers y Postales (A6 / 4"x6")',
+          subtitle: 'Flyers y Postales (A6 / 4x6")',
           headers: ['Cantidad', 'Precio total', 'Precio/unidad'],
           rows: [
             ['50', '$40', '$0.80'],

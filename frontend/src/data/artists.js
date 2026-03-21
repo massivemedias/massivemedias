@@ -24,11 +24,11 @@ export const artistPrinterTiers = [
 ];
 
 export const artistFormats = [
-  { id: 'postcard', label: 'A6 (4×6")', short: 'A6', descFr: 'Format A6', descEn: 'A6 format', rank: -1, w: 4, h: 6 },
-  { id: 'a4', label: 'A4 (8.5×11")', short: 'A4', descFr: 'Format Lettre', descEn: 'Letter format', rank: 0, w: 8.5, h: 11 },
-  { id: 'a3', label: 'A3 (11×17")', short: 'A3', descFr: 'Format Tabloide', descEn: 'Tabloid format', rank: 1, w: 11, h: 17 },
-  { id: 'a3plus', label: 'A3+ (13×19")', short: 'A3+', descFr: 'Format Poster', descEn: 'Poster format', rank: 2, w: 13, h: 19 },
-  { id: 'a2', label: 'A2 (18×24")', short: 'A2', descFr: 'Grand Poster', descEn: 'Large Poster', rank: 3, w: 18, h: 24 },
+  { id: 'postcard', label: 'A6 (4x6")', short: 'A6', descFr: 'Format A6', descEn: 'A6 format', rank: -1, w: 4, h: 6 },
+  { id: 'a4', label: 'A4 (8.5x11")', short: 'A4', descFr: 'Format Lettre', descEn: 'Letter format', rank: 0, w: 8.5, h: 11 },
+  { id: 'a3', label: 'A3 (11x17")', short: 'A3', descFr: 'Format Tabloide', descEn: 'Tabloid format', rank: 1, w: 11, h: 17 },
+  { id: 'a3plus', label: 'A3+ (13x19")', short: 'A3+', descFr: 'Format Poster', descEn: 'Poster format', rank: 2, w: 13, h: 19 },
+  { id: 'a2', label: 'A2 (18x24")', short: 'A2', descFr: 'Grand Poster', descEn: 'Large Poster', rank: 3, w: 18, h: 24 },
 ];
 
 // Verifie si un format est disponible pour un print selon maxFormat

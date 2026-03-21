@@ -44,7 +44,7 @@ function ConfiguratorFlyers() {
       productName: tx({ fr: 'Flyers A6', en: 'A6 Flyers', es: 'Flyers A6' }),
       finish: tx({ fr: sideLabel?.labelFr, en: sideLabel?.labelEn, es: sideLabel?.labelEn }),
       shape: null,
-      size: 'A6 (4"x6")',
+      size: 'A6 (4x6")',
       quantity: priceInfo.qty,
       unitPrice: priceInfo.unitPrice,
       totalPrice: priceInfo.price,
