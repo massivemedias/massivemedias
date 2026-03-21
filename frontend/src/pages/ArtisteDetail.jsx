@@ -522,7 +522,7 @@ function ArtisteDetail({ subdomainSlug }) {
                   className="w-[calc(50%-0.5rem)] md:w-[calc(33.333%-0.667rem)] lg:w-[calc(25%-0.75rem)]"
                 >
                   <div
-                    className={`group relative rounded-2xl overflow-hidden card-shadow cursor-pointer transition-all duration-300 ${
+                    className={`group relative rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 ${
                       selectedSticker?.id === sticker.id
                         ? 'border border-accent shadow-lg shadow-accent/20'
                         : 'hover:shadow-lg'
@@ -575,7 +575,7 @@ function ArtisteDetail({ subdomainSlug }) {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-8 max-w-5xl mx-auto">
               {/* Preview */}
               <div
-                className="relative rounded-2xl overflow-hidden aspect-square card-shadow cursor-pointer group flex items-center justify-center p-6"
+                className="relative rounded-2xl overflow-hidden aspect-square cursor-pointer group flex items-center justify-center p-6"
                 onClick={() => setLightbox({ type: 'sticker', index: artist.stickers.findIndex(s => s.id === selectedSticker.id) })}
               >
                 <img
@@ -617,7 +617,7 @@ function ArtisteDetail({ subdomainSlug }) {
               {/* Preview avec fleches navigation */}
               <div className="relative">
                 <div
-                  className={`relative rounded-2xl overflow-hidden watermark ${isLandscape ? 'aspect-[3/2]' : 'aspect-[2/3]'} card-shadow cursor-pointer group`}
+                  className={`relative rounded-2xl overflow-hidden watermark ${isLandscape ? 'aspect-[3/2]' : 'aspect-[2/3]'} cursor-pointer group`}
                   onClick={() => setLightbox(artist.prints.findIndex(p => p.id === selectedPrint.id))}
                 >
                   <img
