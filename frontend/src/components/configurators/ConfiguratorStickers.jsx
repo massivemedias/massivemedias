@@ -126,18 +126,18 @@ function ConfiguratorStickers({ onFinishChange }) {
             <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2">
               {tx({ fr: 'Finition', en: 'Finish', es: 'Acabado' })}
             </label>
-            <div className="grid grid-cols-3 sm:grid-cols-6 md:flex md:flex-wrap gap-1.5 md:gap-2">
+            <div className="flex flex-wrap gap-1 md:gap-1.5">
               {stickerFinishes.map(f => (
                 <button
                   key={f.id}
                   onClick={() => { setFinish(f.id); onFinishChange?.(f.id); }}
                   title={['holographic', 'broken-glass', 'stars', 'dots'].includes(f.id) ? tx({ fr: 'Effet Fx - image exageree pour illustrer', en: 'Fx effect - image exaggerated to illustrate', es: 'Efecto Fx - imagen exagerada para ilustrar' }) : ''}
-                  className={`flex flex-col items-center justify-center py-2 px-2 md:min-w-[4.5rem] md:py-2.5 md:px-3 rounded-lg text-xs font-medium transition-all border-2 ${finish === f.id
+                  className={`flex flex-col items-center justify-center py-1.5 px-2 md:py-2 md:px-2.5 rounded-lg text-xs font-medium transition-all border-2 flex-1 min-w-0 ${finish === f.id
                     ? 'border-accent option-selected'
                     : 'border-transparent hover:border-grey-muted/30 option-default'
                   }`}
                 >
-                  <span className={`w-3.5 h-3.5 md:w-4 md:h-4 rounded-full mb-1 md:mb-1.5 border ${
+                  <span className={`w-3 h-3 md:w-3.5 md:h-3.5 rounded-full mb-1 border ${
                     f.id === 'matte' ? 'bg-gray-400 border-gray-400' :
                     f.id === 'glossy' ? 'bg-white border-gray-300 shadow-sm' :
                     f.id === 'broken-glass' ? 'bg-gradient-to-br from-cyan-200 via-white to-cyan-400 border-cyan-300' :
@@ -145,11 +145,8 @@ function ConfiguratorStickers({ onFinishChange }) {
                     f.id === 'dots' ? 'bg-gradient-to-br from-orange-200 via-rose-300 to-pink-400 border-rose-300' :
                     'bg-gradient-to-br from-pink-300 via-purple-300 to-cyan-300 border-transparent'
                   }`} />
-                  <span className="text-heading leading-tight text-center font-semibold text-[11px] md:text-xs">
+                  <span className="text-heading leading-tight text-center font-semibold text-[10px] md:text-[11px]">
                     {tx({ fr: f.labelFr.replace('Vinyle ', ''), en: f.labelEn.replace(' Vinyl', ''), es: f.labelEn.replace(' Vinyl', '') })}
-                  </span>
-                  <span className="text-grey-muted mt-0.5 text-[9px] md:text-[10px] hidden sm:block">
-                    {tx({ fr: f.descFr, en: f.descEn, es: f.descEn })}
                   </span>
                 </button>
               ))}
