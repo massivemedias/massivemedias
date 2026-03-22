@@ -5,6 +5,7 @@ import {
   BarChart3, Users, ShoppingBag, Percent, ExternalLink,
   Activity, ArrowUpRight, ArrowDownRight, Download,
   Globe, Monitor, Smartphone, Tablet, Clock, Eye, MousePointerClick,
+  MapPin, ArrowDown,
 } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
@@ -395,6 +396,69 @@ function AdminStats() {
                       </BarChart>
                     </ResponsiveContainer>
                   )}
+                </motion.div>
+              </div>
+
+              {/* Browsers + Cities + Landing pages */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Browsers */}
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="rounded-xl card-bg shadow-lg shadow-black/20 p-5">
+                  <h3 className="text-sm font-heading font-bold text-heading mb-4 flex items-center gap-2">
+                    <Globe size={16} className="text-orange-400" />
+                    {tx({ fr: 'Navigateurs', en: 'Browsers', es: 'Navegadores' })}
+                  </h3>
+                  <div className="space-y-2">
+                    {(analytics.browsers || []).map((b, i) => {
+                      const maxB = analytics.browsers?.[0]?.users || 1;
+                      return (
+                        <div key={i} className="relative">
+                          <div className="absolute inset-0 rounded-lg bg-orange-500/10" style={{ width: `${(b.users / maxB) * 100}%` }} />
+                          <div className="relative flex items-center justify-between px-3 py-1.5">
+                            <span className="text-xs text-heading">{b.browser}</span>
+                            <span className="text-xs text-heading font-semibold">{b.users}</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+
+                {/* Cities */}
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45 }} className="rounded-xl card-bg shadow-lg shadow-black/20 p-5">
+                  <h3 className="text-sm font-heading font-bold text-heading mb-4 flex items-center gap-2">
+                    <MapPin size={16} className="text-red-400" />
+                    {tx({ fr: 'Villes', en: 'Cities', es: 'Ciudades' })}
+                  </h3>
+                  <div className="space-y-2 max-h-[240px] overflow-y-auto scrollbar-thin">
+                    {(analytics.cities || []).filter(c => c.city !== '(not set)').map((c, i) => {
+                      const maxC = analytics.cities?.filter(x => x.city !== '(not set)')?.[0]?.users || 1;
+                      return (
+                        <div key={i} className="relative">
+                          <div className="absolute inset-0 rounded-lg bg-red-500/10" style={{ width: `${(c.users / maxC) * 100}%` }} />
+                          <div className="relative flex items-center justify-between px-3 py-1.5">
+                            <span className="text-xs text-heading">{c.city}</span>
+                            <span className="text-xs text-heading font-semibold">{c.users}</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+
+                {/* Landing pages */}
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="rounded-xl card-bg shadow-lg shadow-black/20 p-5">
+                  <h3 className="text-sm font-heading font-bold text-heading mb-4 flex items-center gap-2">
+                    <ArrowDown size={16} className="text-teal-400" />
+                    {tx({ fr: "Pages d'arrivee", en: 'Landing pages', es: 'Paginas de entrada' })}
+                  </h3>
+                  <div className="space-y-2 max-h-[240px] overflow-y-auto scrollbar-thin">
+                    {(analytics.landingPages || []).map((lp, i) => (
+                      <div key={i} className="flex items-center justify-between px-3 py-1.5 rounded-lg hover:bg-black/10 transition-colors">
+                        <span className="text-xs text-heading truncate max-w-[200px]" title={lp.page}>{lp.page}</span>
+                        <span className="text-xs text-heading font-semibold flex-shrink-0 ml-2">{lp.sessions} <span className="text-grey-muted">sess.</span></span>
+                      </div>
+                    ))}
+                  </div>
                 </motion.div>
               </div>
 

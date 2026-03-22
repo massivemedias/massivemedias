@@ -40,6 +40,9 @@ export default {
         devicesRes,
         dailyRes,
         ageRes,
+        browsersRes,
+        citiesRes,
+        landingPagesRes,
         realtimeRes,
       ] = await Promise.all([
         // Overview metrics
@@ -121,6 +124,36 @@ export default {
           orderBys: [{ dimension: { dimensionName: 'userAgeBracket' }, desc: false }],
         }),
 
+        // Browsers
+        analyticsClient.runReport({
+          property: `properties/${PROPERTY_ID}`,
+          dateRanges: [{ startDate, endDate: 'today' }],
+          dimensions: [{ name: 'browser' }],
+          metrics: [{ name: 'activeUsers' }, { name: 'sessions' }],
+          orderBys: [{ metric: { metricName: 'activeUsers' }, desc: true }],
+          limit: 10,
+        }),
+
+        // Cities
+        analyticsClient.runReport({
+          property: `properties/${PROPERTY_ID}`,
+          dateRanges: [{ startDate, endDate: 'today' }],
+          dimensions: [{ name: 'city' }],
+          metrics: [{ name: 'activeUsers' }, { name: 'sessions' }],
+          orderBys: [{ metric: { metricName: 'activeUsers' }, desc: true }],
+          limit: 15,
+        }),
+
+        // Landing pages (first page visited)
+        analyticsClient.runReport({
+          property: `properties/${PROPERTY_ID}`,
+          dateRanges: [{ startDate, endDate: 'today' }],
+          dimensions: [{ name: 'landingPagePlusQueryString' }],
+          metrics: [{ name: 'sessions' }, { name: 'activeUsers' }],
+          orderBys: [{ metric: { metricName: 'sessions' }, desc: true }],
+          limit: 10,
+        }),
+
         // Realtime - active users now
         analyticsClient.runRealtimeReport({
           property: `properties/${PROPERTY_ID}`,
@@ -188,6 +221,27 @@ export default {
         users: parseInt(row.metricValues?.[0]?.value || '0'),
       }));
 
+      // Parse browsers
+      const browsers = (browsersRes[0]?.rows || []).map(row => ({
+        browser: row.dimensionValues?.[0]?.value || '',
+        users: parseInt(row.metricValues?.[0]?.value || '0'),
+        sessions: parseInt(row.metricValues?.[1]?.value || '0'),
+      }));
+
+      // Parse cities
+      const cities = (citiesRes[0]?.rows || []).map(row => ({
+        city: row.dimensionValues?.[0]?.value || '',
+        users: parseInt(row.metricValues?.[0]?.value || '0'),
+        sessions: parseInt(row.metricValues?.[1]?.value || '0'),
+      }));
+
+      // Parse landing pages
+      const landingPages = (landingPagesRes[0]?.rows || []).map(row => ({
+        page: row.dimensionValues?.[0]?.value || '',
+        sessions: parseInt(row.metricValues?.[0]?.value || '0'),
+        users: parseInt(row.metricValues?.[1]?.value || '0'),
+      }));
+
       // Parse realtime
       const realtimeUsers = realtimeRes
         ? parseInt(realtimeRes[0]?.rows?.[0]?.metricValues?.[0]?.value || '0')
@@ -202,6 +256,9 @@ export default {
           devices,
           daily,
           ageGroups,
+          browsers,
+          cities,
+          landingPages,
           realtimeUsers,
           period: parseInt(period),
         },
