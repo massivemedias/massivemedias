@@ -28,7 +28,7 @@ export function getOrganizationSchema() {
       streetAddress: '7049 rue Saint-Urbain',
       addressLocality: 'Montréal',
       addressRegion: 'QC',
-      postalCode: 'H2S 3H5',
+      postalCode: 'H2R 2E6',
       addressCountry: 'CA',
     },
     contactPoint: {
@@ -63,7 +63,7 @@ export function getLocalBusinessSchema(lang) {
       streetAddress: '7049 rue Saint-Urbain',
       addressLocality: 'Montréal',
       addressRegion: 'QC',
-      postalCode: 'H2S 3H5',
+      postalCode: 'H2R 2E6',
       addressCountry: 'CA',
     },
     geo: {
@@ -145,6 +145,58 @@ export function getProductSchema({ name, description, price, currency = 'CAD', i
         '@type': 'Organization',
         name: 'Massive',
       },
+    },
+  };
+}
+
+export function getArtistSchema({ name, slug, description, image, prints = [] }) {
+  const schema = {
+    '@context': 'https://schema.org',
+    '@type': 'Person',
+    name,
+    url: `${SITE_URL}/artistes/${slug}`,
+    image: image ? (image.startsWith('http') ? image : `${SITE_URL}${image}`) : undefined,
+    description,
+    brand: { '@type': 'Brand', name: 'Massive' },
+  };
+
+  if (prints.length > 0) {
+    schema.makesOffer = prints.slice(0, 10).map(p => ({
+      '@type': 'Offer',
+      itemOffered: {
+        '@type': 'VisualArtwork',
+        name: p.title || p.titleEn || p.titleFr,
+        image: p.fullImage ? (p.fullImage.startsWith('http') ? p.fullImage : `${SITE_URL}${p.fullImage}`) : undefined,
+        artMedium: 'Fine Art Print',
+        creator: { '@type': 'Person', name },
+      },
+      priceCurrency: 'CAD',
+      price: p.unique ? (p.price || 85) : 15,
+      availability: 'https://schema.org/InStock',
+      seller: { '@type': 'Organization', name: 'Massive' },
+    }));
+  }
+
+  return schema;
+}
+
+export function getProductWithVariantsSchema({ name, description, url, image, lowPrice, highPrice, currency = 'CAD' }) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name,
+    description,
+    image: image ? (image.startsWith('http') ? image : `${SITE_URL}${image}`) : undefined,
+    url: `${SITE_URL}${url}`,
+    brand: { '@type': 'Brand', name: 'Massive' },
+    offers: {
+      '@type': 'AggregateOffer',
+      priceCurrency: currency,
+      lowPrice: lowPrice,
+      highPrice: highPrice,
+      offerCount: 5,
+      availability: 'https://schema.org/InStock',
+      seller: { '@type': 'Organization', name: 'Massive' },
     },
   };
 }

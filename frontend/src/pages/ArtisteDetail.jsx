@@ -3,6 +3,7 @@ import { useParams, Link, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, MessageSquare, ChevronDown, ChevronLeft, ChevronRight, CheckCircle, Image, ExternalLink, X, ZoomIn } from 'lucide-react';
 import SEO from '../components/SEO';
+import { getArtistSchema } from '../components/seo/schemas';
 import ArtistPrintCard from '../components/ArtistPrintCard';
 import ConfiguratorArtistPrint from '../components/configurators/ConfiguratorArtistPrint';
 import ConfiguratorArtistSticker from '../components/configurators/ConfiguratorArtistSticker';
@@ -298,6 +299,18 @@ function ArtisteDetail({ subdomainSlug }) {
           { name: tx({ fr: 'Artistes', en: 'Artists', es: 'Artistas' }), url: '/artistes' },
           { name: artist.name },
         ]}
+        jsonLd={[getArtistSchema({
+          name: artist.name,
+          slug: artist.slug,
+          description: bio.slice(0, 300),
+          image: `/images/og/og-${artist.slug}.jpg`,
+          prints: (artist.prints || []).map(p => ({
+            title: getItemTitle(p),
+            fullImage: p.fullImage || p.image,
+            unique: p.unique,
+            price: p.price,
+          })),
+        })]}
       />
 
       {/* ============ HERO ============ */}
