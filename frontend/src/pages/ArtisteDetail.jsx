@@ -641,29 +641,29 @@ function ArtisteDetail({ subdomainSlug }) {
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
                     <ZoomIn size={32} className="text-white md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 drop-shadow-lg" />
                   </div>
-                </div>
-                {/* Fleches gauche/droite */}
-                {artist.prints.length > 1 && (
-                  <>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); navigatePrint(-1); }}
-                      className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white transition-colors z-10"
-                      aria-label="Previous"
-                    >
-                      <ChevronLeft size={20} />
-                    </button>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); navigatePrint(1); }}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white transition-colors z-10"
-                      aria-label="Next"
-                    >
-                      <ChevronRight size={20} />
-                    </button>
-                  </>
-                )}
-                {/* Indicateur position */}
-                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/50 backdrop-blur-sm text-white text-xs px-3 py-1 rounded-full">
-                  {artist.prints.findIndex(p => p.id === selectedPrint.id) + 1} / {artist.prints.length}
+                  {/* Fleches gauche/droite - dans le conteneur image pour etre centrees */}
+                  {artist.prints.length > 1 && (
+                    <>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); navigatePrint(-1); }}
+                        className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white transition-colors z-10"
+                        aria-label="Previous"
+                      >
+                        <ChevronLeft size={20} />
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); navigatePrint(1); }}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white transition-colors z-10"
+                        aria-label="Next"
+                      >
+                        <ChevronRight size={20} />
+                      </button>
+                    </>
+                  )}
+                  {/* Indicateur position */}
+                  <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/50 backdrop-blur-sm text-white text-xs px-3 py-1 rounded-full">
+                    {artist.prints.findIndex(p => p.id === selectedPrint.id) + 1} / {artist.prints.length}
+                  </div>
                 </div>
               </div>
 
