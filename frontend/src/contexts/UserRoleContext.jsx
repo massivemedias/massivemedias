@@ -54,6 +54,7 @@ export function UserRoleProvider({ children }) {
 
   const role = isAdmin ? 'admin' : (roleData?.role || 'user');
   const artistSlug = roleData?.artistSlug || null;
+  const tatoueurSlug = roleData?.tatoueurSlug || null;
 
   const refreshRole = useCallback(async () => {
     if (!user?.email) return;
@@ -61,7 +62,7 @@ export function UserRoleProvider({ children }) {
       const { data } = await api.get('/user-roles/by-email', {
         params: { email: user.email },
       });
-      setRoleData(data.data || { role: 'user', artistSlug: null });
+      setRoleData(data.data || { role: 'user', artistSlug: null, tatoueurSlug: null });
     } catch {
       // ignore
     }
@@ -70,11 +71,13 @@ export function UserRoleProvider({ children }) {
   const value = useMemo(() => ({
     role,
     artistSlug,
+    tatoueurSlug,
     isAdmin,
     isArtist: role === 'artist',
+    isTatoueur: role === 'tatoueur',
     loading,
     refreshRole,
-  }), [role, artistSlug, isAdmin, loading, refreshRole]);
+  }), [role, artistSlug, tatoueurSlug, isAdmin, loading, refreshRole]);
 
   return (
     <UserRoleContext.Provider value={value}>
@@ -85,6 +88,6 @@ export function UserRoleProvider({ children }) {
 
 export function useUserRole() {
   const ctx = useContext(UserRoleContext);
-  if (!ctx) return { role: 'user', artistSlug: null, isAdmin: false, isArtist: false, loading: false, refreshRole: () => {} };
+  if (!ctx) return { role: 'user', artistSlug: null, tatoueurSlug: null, isAdmin: false, isArtist: false, isTatoueur: false, loading: false, refreshRole: () => {} };
   return ctx;
 }

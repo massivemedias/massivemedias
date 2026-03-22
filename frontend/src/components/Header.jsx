@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, ShoppingCart, LogIn, Printer, Sticker, Shirt, Globe, Monitor, Store, Info, Phone, ChevronRight, Bell } from 'lucide-react';
+import { Menu, X, ShoppingCart, LogIn, Printer, Sticker, Shirt, Globe, Monitor, Store, Info, Phone, ChevronRight, Bell, PenTool } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import MassiveLogo from './MassiveLogo';
 import { useLang } from '../i18n/LanguageContext';
@@ -103,6 +103,10 @@ function Header() {
                   {service.name}
                 </Link>
               ))}
+
+              <Link to="/tatoueurs" className={`transition-colors duration-200 font-bold text-sm whitespace-nowrap ${isActive('/tatoueurs') ? 'text-accent brightness-125' : 'nav-link'}`}>
+                {tx({ fr: 'Tatoueurs', en: 'Tattoo Artists' })}
+              </Link>
 
               <Link to="/boutique" className={`transition-colors duration-200 font-bold text-sm whitespace-nowrap ${isActive('/boutique') ? 'text-accent brightness-125' : ''}`} style={{ color: 'var(--logo-accent, #FFCC02)' }}>
                 {t('nav.boutique')}
@@ -260,6 +264,19 @@ function Header() {
                 })}
 
                 <div className="h-px mobile-drawer-sep mx-2 my-2.5" />
+
+                {/* Tatoueurs */}
+                <Link
+                  to="/tatoueurs"
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl mobile-drawer-item group transition-colors ${isActive('/tatoueurs') ? 'bg-accent/15 text-accent' : 'nav-link'}`}
+                  onClick={close}
+                >
+                  <span className="w-8 h-8 rounded-lg flex items-center justify-center mobile-icon-bg flex-shrink-0">
+                    <PenTool size={15} className="text-accent" />
+                  </span>
+                  <span className="font-bold text-[15px]">{tx({ fr: 'Tatoueurs', en: 'Tattoo Artists' })}</span>
+                  <ChevronRight size={14} className="ml-auto opacity-25 group-hover:opacity-50 transition-opacity" />
+                </Link>
 
                 {/* Boutique */}
                 <Link

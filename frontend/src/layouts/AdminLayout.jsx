@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import {
   ShoppingBag, Package, MessageSquare, Banknote,
   Users, Receipt, BarChart3, Menu, X, DollarSign,
-  Pencil, MapPin, Shield, Star, LayoutDashboard, StickyNote,
+  Pencil, MapPin, Shield, Star, LayoutDashboard, StickyNote, PenTool,
 } from 'lucide-react';
 import { useState } from 'react';
 import { useLang } from '../i18n/LanguageContext';
@@ -21,6 +21,7 @@ const NAV_ITEMS = [
   { to: '/admin/commissions', icon: Banknote, fr: 'Commissions', en: 'Commissions', es: 'Comisiones' },
   { to: '/admin/inventaire', icon: Package, fr: 'Inventaire', en: 'Inventory', es: 'Inventario' },
   { to: '/admin/messages', icon: MessageSquare, fr: 'Messages', en: 'Messages', es: 'Mensajes' },
+  { to: '/admin/tatoueurs', icon: PenTool, fr: 'Tatoueurs', en: 'Tattoo Artists', es: 'Tatuadores' },
   { to: '/admin/utilisateurs', icon: Users, fr: 'Utilisateurs', en: 'Users', es: 'Usuarios' },
   { to: '/admin/depenses', icon: Receipt, fr: 'Dépenses', en: 'Expenses', es: 'Gastos' },
   { to: '/admin/temoignages', icon: Star, fr: 'Témoignages', en: 'Testimonials', es: 'Testimonios' },

@@ -60,6 +60,17 @@
       "relation": "oneToMany",
       "target": "api::order.order",
       "mappedBy": "client"
+    },
+    "preferredStyles": {
+      "type": "json"
+    },
+    "savedFlashs": {
+      "type": "json"
+    },
+    "avatar": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["images"]
     }
   }
 }

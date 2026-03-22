@@ -13,6 +13,10 @@
 
 const SITE_URL = 'https://massivemedias.com';
 
+const TATOUEURS = {
+  'ginko-ink': { name: 'Ginko Ink', taglineFr: 'Tatouage fineline & botanique', taglineEn: 'Fineline & Botanical Tattoo' },
+};
+
 const ARTISTS = {
   'adrift': { name: 'Adrift', taglineFr: 'Art numerique & univers immersifs', taglineEn: 'Digital Art & Immersive Worlds' },
   'maudite-machine': { name: 'Maudite Machine', taglineFr: 'Musique electronique & culture visuelle', taglineEn: 'Electronic Music & Visual Culture' },
@@ -95,17 +99,27 @@ export default {
     const userAgent = request.headers.get('user-agent') || '';
     const subdomain = getSubdomain(url.hostname);
 
-    // Only intercept crawlers on artist subdomains
-    if (subdomain && ARTISTS[subdomain] && isCrawler(userAgent)) {
-      const html = buildOGPage(subdomain, ARTISTS[subdomain]);
+    // Only intercept crawlers on artist/tatoueur subdomains
+    const artistData = ARTISTS[subdomain] || null;
+    const tatoueurData = TATOUEURS[subdomain] || null;
+    const subdomainData = artistData || tatoueurData;
+
+    if (subdomain && subdomainData && isCrawler(userAgent)) {
+      const html = buildOGPage(subdomain, subdomainData);
       return new Response(html, {
         headers: { 'Content-Type': 'text/html; charset=utf-8' },
       });
     }
 
     // Artist subdomain for real users: redirect to main site artist page
-    if (subdomain && ARTISTS[subdomain]) {
+    if (subdomain && artistData) {
       const targetUrl = `${SITE_URL}/artistes/${subdomain}${url.pathname === '/' ? '' : url.pathname}${url.search}`;
+      return Response.redirect(targetUrl, 302);
+    }
+
+    // Tatoueur subdomain for real users: redirect to main site tatoueur page
+    if (subdomain && tatoueurData) {
+      const targetUrl = `${SITE_URL}/tatoueurs/${subdomain}${url.pathname === '/' ? '' : url.pathname}${url.search}`;
       return Response.redirect(targetUrl, 302);
     }
 

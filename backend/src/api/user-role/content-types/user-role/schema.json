@@ -18,7 +18,7 @@
     },
     "role": {
       "type": "enumeration",
-      "enum": ["user", "artist"],
+      "enum": ["user", "artist", "tatoueur"],
       "default": "user",
       "required": true
     },
@@ -29,6 +29,9 @@
       "type": "string"
     },
     "displayName": {
+      "type": "string"
+    },
+    "tatoueurSlug": {
       "type": "string"
     }
   }

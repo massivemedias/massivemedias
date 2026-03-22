@@ -17,6 +17,7 @@ import {
   ShoppingBag,
 } from 'lucide-react';
 import artistsData from '../data/artists';
+import tatoueursData from '../data/tatoueurs';
 import ServiceCard from '../components/ServiceCard';
 import Counter from '../components/Counter';
 import SEO from '../components/SEO';
@@ -522,6 +523,83 @@ function Home() {
           ))}
         </div>
       </section>
+
+      {/* ============ TATOUEURS EN VEDETTE ============ */}
+      {(() => {
+        const featuredTatoueurs = Object.values(tatoueursData).filter(t => t.featured);
+        if (featuredTatoueurs.length === 0) return null;
+        return (
+          <section className="section-container">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              viewport={{ once: true }}
+            >
+              <h2 className="text-3xl md:text-4xl font-heading font-bold text-heading mb-2">
+                {tx({ fr: 'Tatoueurs en vedette', en: 'Featured Tattoo Artists' })}
+              </h2>
+              <p className="text-grey-light mb-8 max-w-xl">
+                {tx({
+                  fr: 'Flashs originaux, pieces uniques, reservation en ligne.',
+                  en: 'Original flash designs, unique pieces, online booking.',
+                })}
+              </p>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {featuredTatoueurs.map((tatoueur) => {
+                  const flashCount = (tatoueur.flashs || []).filter(f => f.status === 'disponible').length;
+                  return (
+                    <Link
+                      key={tatoueur.slug}
+                      to={`/tatoueurs/${tatoueur.slug}`}
+                      className="group block bg-bg-card rounded-xl border border-white/5 hover:border-accent/20 overflow-hidden transition-all"
+                    >
+                      {tatoueur.heroImage || tatoueur.avatar ? (
+                        <div className="relative aspect-[16/9] overflow-hidden">
+                          <img
+                            src={tatoueur.heroImage || tatoueur.avatar}
+                            alt={tatoueur.name}
+                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                            loading="lazy"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                          {flashCount > 0 && (
+                            <span className="absolute top-3 right-3 bg-green-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                              {flashCount} flash{flashCount > 1 ? 's' : ''}
+                            </span>
+                          )}
+                        </div>
+                      ) : null}
+                      <div className="p-4">
+                        <h3 className="font-heading font-bold text-heading">{tatoueur.name}</h3>
+                        <div className="flex items-center gap-2 text-xs text-grey-muted mt-1">
+                          {tatoueur.studio && <span>{tatoueur.studio}</span>}
+                          {tatoueur.city && <span className="flex items-center gap-0.5"><MapPin size={10} />{tatoueur.city}</span>}
+                        </div>
+                        {tatoueur.styles && (
+                          <div className="flex flex-wrap gap-1 mt-2">
+                            {tatoueur.styles.slice(0, 3).map(s => (
+                              <span key={s} className="text-[10px] px-2 py-0.5 rounded-full bg-bg-elevated text-grey-light capitalize">{s}</span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+
+              <div className="text-center mt-8">
+                <Link to="/tatoueurs" className="btn-primary">
+                  {tx({ fr: 'Voir tous les tatoueurs', en: 'View all tattoo artists' })}
+                  <ArrowRight size={18} className="ml-2" />
+                </Link>
+              </div>
+            </motion.div>
+          </section>
+        );
+      })()}
 
       {/* ============ CTA FINAL ============ */}
       <section className="section-container">
