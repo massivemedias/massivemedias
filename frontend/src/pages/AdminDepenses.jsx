@@ -947,17 +947,19 @@ function AdminDepenses() {
                                     <Receipt size={16} /> {tx({ fr: 'Voir le recu (PDF)', en: 'View receipt (PDF)', es: 'Ver recibo (PDF)' })}
                                   </a>
                                 ) : (
-                                  <a href={item.receiptUrl} target="_blank" rel="noopener noreferrer" className="block">
-                                    <img
-                                      src={item.receiptUrl}
-                                      alt={tx({ fr: 'Recu', en: 'Receipt', es: 'Recibo' })}
-                                      className="max-h-48 rounded-lg object-contain"
-                                      onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling && (e.target.nextSibling.style.display = 'flex'); }}
-                                    />
+                                  <div>
+                                    <a href={item.receiptUrl} target="_blank" rel="noopener noreferrer" className="block">
+                                      <img
+                                        src={item.receiptUrl}
+                                        alt={tx({ fr: 'Recu', en: 'Receipt', es: 'Recibo' })}
+                                        className="max-h-48 rounded-lg object-contain"
+                                        onError={(e) => { e.target.parentElement.style.display = 'none'; e.target.parentElement.nextSibling && (e.target.parentElement.nextSibling.style.display = 'flex'); }}
+                                      />
+                                    </a>
                                     <a href={item.receiptUrl} target="_blank" rel="noopener noreferrer" className="hidden items-center gap-2 px-3 py-2 rounded-lg bg-black/20 hover:bg-black/30 text-accent text-sm transition-colors">
                                       <ExternalLink size={14} /> {tx({ fr: 'Voir le recu', en: 'View receipt', es: 'Ver recibo' })}
                                     </a>
-                                  </a>
+                                  </div>
                                 )
                               )}
 

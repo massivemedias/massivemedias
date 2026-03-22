@@ -39,8 +39,8 @@ function DashboardNotes() {
           <p className="text-xs text-heading truncate font-medium">
             {n.title || tx({ fr: 'Sans titre', en: 'Untitled', es: 'Sin titulo' })}
           </p>
-          {i === 0 && n.content && (
-            <p className="text-[10px] text-grey-muted mt-0.5 line-clamp-2">{n.content.replace(/<[^>]*>/g, '').slice(0, 120)}</p>
+          {i === 0 && n.body && (
+            <p className="text-[10px] text-grey-muted mt-0.5 line-clamp-2">{n.body.replace(/<[^>]*>/g, '').slice(0, 120)}</p>
           )}
         </Link>
       ))}
