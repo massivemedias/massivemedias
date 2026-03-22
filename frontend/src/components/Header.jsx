@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, ShoppingCart, LogIn, Printer, Sticker, Shirt, Globe, Monitor, Store, Info, Phone, ChevronRight, Bell } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import MassiveLogo from './MassiveLogo';
@@ -19,6 +19,8 @@ function Header() {
   const { cartCount } = useCart();
   const { user } = useAuth();
   const { isAdmin } = useUserRole();
+  const { pathname } = useLocation();
+  const isActive = (path) => pathname === path || pathname.startsWith(path + '/');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [adminMsgCount, setAdminMsgCount] = useState(0);
   const prevCountRef = useRef(0);
@@ -96,17 +98,17 @@ function Header() {
                 <Link
                   key={service.slug}
                   to={`/services/${service.slug}`}
-                  className="transition-colors duration-200 font-medium text-sm nav-link whitespace-nowrap"
+                  className={`transition-colors duration-200 font-medium text-sm whitespace-nowrap ${isActive(`/services/${service.slug}`) ? 'text-accent' : 'nav-link'}`}
                 >
                   {service.name}
                 </Link>
               ))}
 
-              <Link to="/boutique" className="transition-colors duration-200 font-bold text-sm whitespace-nowrap" style={{ color: 'var(--logo-accent, #FFCC02)' }}>
+              <Link to="/boutique" className={`transition-colors duration-200 font-bold text-sm whitespace-nowrap ${isActive('/boutique') ? 'text-accent brightness-125' : ''}`} style={{ color: 'var(--logo-accent, #FFCC02)' }}>
                 {t('nav.boutique')}
               </Link>
 
-              <Link to="/a-propos" className="transition-colors duration-200 font-medium text-sm nav-link whitespace-nowrap">
+              <Link to="/a-propos" className={`transition-colors duration-200 font-medium text-sm whitespace-nowrap ${isActive('/a-propos') ? 'text-accent' : 'nav-link'}`}>
                 {t('nav.aPropos')}
               </Link>
 
@@ -238,11 +240,12 @@ function Header() {
 
                 {services.map((service, i) => {
                   const Icon = SERVICE_ICONS[i];
+                  const active = isActive(`/services/${service.slug}`);
                   return (
                     <Link
                       key={service.slug}
                       to={`/services/${service.slug}`}
-                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl nav-link mobile-drawer-item group transition-colors"
+                      className={`flex items-center gap-3 px-3 py-2.5 rounded-xl mobile-drawer-item group transition-colors ${active ? 'bg-accent/15 text-accent' : 'nav-link'}`}
                       onClick={close}
                     >
                       {Icon && (
@@ -261,7 +264,7 @@ function Header() {
                 {/* Boutique */}
                 <Link
                   to="/boutique"
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl nav-link mobile-drawer-item group transition-colors"
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl mobile-drawer-item group transition-colors ${isActive('/boutique') ? 'bg-accent/15' : 'nav-link'}`}
                   onClick={close}
                 >
                   <span className="w-8 h-8 rounded-lg flex items-center justify-center mobile-icon-bg flex-shrink-0">
@@ -274,7 +277,7 @@ function Header() {
                 {/* A propos */}
                 <Link
                   to="/a-propos"
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl nav-link mobile-drawer-item group transition-colors"
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl mobile-drawer-item group transition-colors ${isActive('/a-propos') ? 'bg-accent/15 text-accent' : 'nav-link'}`}
                   onClick={close}
                 >
                   <span className="w-8 h-8 rounded-lg flex items-center justify-center mobile-icon-bg flex-shrink-0">
@@ -287,7 +290,7 @@ function Header() {
                 {/* Panier */}
                 <Link
                   to="/panier"
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl nav-link mobile-drawer-item group transition-colors"
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl mobile-drawer-item group transition-colors ${isActive('/panier') ? 'bg-accent/15 text-accent' : 'nav-link'}`}
                   onClick={close}
                 >
                   <span className="w-8 h-8 rounded-lg flex items-center justify-center mobile-icon-bg flex-shrink-0 relative">
@@ -325,7 +328,7 @@ function Header() {
                 {user ? (
                   <Link
                     to="/account"
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl nav-link mobile-drawer-item group transition-colors"
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-xl mobile-drawer-item group transition-colors ${isActive('/account') ? 'bg-accent/15 text-accent' : 'nav-link'}`}
                     onClick={close}
                   >
                     <span className="relative flex-shrink-0">
