@@ -10,6 +10,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useUserRole } from '../contexts/UserRoleContext';
 import { getContactSubmissions, getArtistSubmissions } from '../services/adminService';
 import { getArtistMessagesAdmin } from '../services/artistService';
+import { isServerDown } from '../services/api';
 
 const SERVICE_ICONS = [Printer, Sticker, Shirt, Globe, Monitor];
 
@@ -47,6 +48,7 @@ function Header() {
     if (!isAdmin) return;
     let cancelled = false;
     async function fetchCount() {
+      if (isServerDown()) return; // Skip si serveur down
       try {
         const [contactRes, artistRes, artistMsgRes] = await Promise.all([
           getContactSubmissions({ pageSize: 200 }),
@@ -70,7 +72,7 @@ function Header() {
       } catch { /* ignore */ }
     }
     fetchCount();
-    const interval = setInterval(fetchCount, 30000);
+    const interval = setInterval(fetchCount, 120000); // 2 min au lieu de 30s
     return () => { cancelled = true; clearInterval(interval); };
   }, [isAdmin, playNotifSound]);
 

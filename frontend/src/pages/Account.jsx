@@ -14,6 +14,7 @@ import { useUserRole } from '../contexts/UserRoleContext';
 import { getMyOrders } from '../services/orderService';
 import { getContactSubmissions, getArtistSubmissions } from '../services/adminService';
 import { getArtistMessagesAdmin } from '../services/artistService';
+import { isServerDown } from '../services/api';
 import { generateInvoicePDF } from '../utils/generateInvoice';
 import AddressAutocomplete from '../components/AddressAutocomplete';
 import artistsData from '../data/artists';
@@ -240,6 +241,7 @@ function Account() {
     if (!isAdmin) return;
     let cancelled = false;
     async function fetchNewCount() {
+      if (isServerDown()) return; // Skip si serveur down
       try {
         const [contactRes, artistRes, artistMsgRes] = await Promise.all([
           getContactSubmissions({ pageSize: 200 }),
@@ -256,7 +258,7 @@ function Account() {
       } catch { /* ignore */ }
     }
     fetchNewCount();
-    const interval = setInterval(fetchNewCount, 60000);
+    const interval = setInterval(fetchNewCount, 120000); // 2 min au lieu de 60s
     return () => { cancelled = true; clearInterval(interval); };
   }, [isAdmin]);
 
