@@ -292,7 +292,7 @@ function ArtisteDetail({ subdomainSlug }) {
       <SEO
         title={`${artist.name} - ${tagline} | Massive`}
         description={bio.slice(0, 160)}
-        ogImage={artist.prints?.[0]?.fullImage || artist.heroImage || artist.avatar}
+        ogImage={`/images/og/og-${artist.slug}.jpg`}
         breadcrumbs={[
           { name: tx({ fr: 'Accueil', en: 'Home', es: 'Inicio' }), url: '/' },
           { name: tx({ fr: 'Artistes', en: 'Artists', es: 'Artistas' }), url: '/artistes' },
