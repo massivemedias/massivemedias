@@ -34,6 +34,7 @@ const provinces = [
 // TPS (GST) 5% partout au Canada, TVQ (QST) 9.975% au Quebec seulement
 const TPS_RATE = 0.05;
 const TVQ_RATE = 0.09975;
+const ARTIST_DISCOUNT = 0.30;
 
 function calculateTaxes(subtotal, province) {
   const tps = +(subtotal * TPS_RATE).toFixed(2);
@@ -124,9 +125,15 @@ function Checkout() {
     if (error) setError('');
   };
 
+  // Rabais artiste 30% sur ses propres prints
+  const artistDiscountTotal = items
+    .filter(i => i.isArtistOwnPrint)
+    .reduce((sum, i) => sum + Math.round(i.totalPrice * ARTIST_DISCOUNT), 0);
+  const subtotal = cartTotal - artistDiscountTotal;
+
   const { shippingCost: shipping } = useMemo(() => calcShipping(formData.province, formData.codePostal, items), [formData.province, formData.codePostal, items]);
-  const taxes = useMemo(() => calculateTaxes(cartTotal, formData.province), [cartTotal, formData.province]);
-  const orderTotal = +(cartTotal + shipping + taxes.total).toFixed(2);
+  const taxes = useMemo(() => calculateTaxes(subtotal, formData.province), [subtotal, formData.province]);
+  const orderTotal = +(subtotal + shipping + taxes.total).toFixed(2);
 
   // Custom items need design question - ready-made boutique items don't
   const CUSTOM_PREFIXES = ['sticker-custom', 'sublimation-', 'fine-art-print', 'flyer-'];
@@ -157,7 +164,8 @@ function Checkout() {
           province: formData.province,
           postalCode: formData.codePostal,
         },
-        subtotal: cartTotal,
+        subtotal,
+        artistDiscount: artistDiscountTotal > 0 ? artistDiscountTotal : undefined,
         shipping,
         taxes,
         orderTotal,
@@ -472,7 +480,16 @@ function Checkout() {
                             </p>
                           )}
                         </div>
-                        <p className="text-heading font-semibold text-sm flex-shrink-0">{item.totalPrice}$</p>
+                        <div className="flex-shrink-0 text-right">
+                          {item.isArtistOwnPrint ? (
+                            <>
+                              <p className="text-grey-muted text-xs line-through">{item.totalPrice}$</p>
+                              <p className="text-green-400 font-semibold text-sm">{Math.round(item.totalPrice * (1 - ARTIST_DISCOUNT))}$</p>
+                            </>
+                          ) : (
+                            <p className="text-heading font-semibold text-sm">{item.totalPrice}$</p>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -480,8 +497,14 @@ function Checkout() {
                   <div className="border-t pt-4 card-border space-y-2">
                     <div className="flex justify-between items-center text-sm">
                       <span className="text-grey-muted">{tx({ fr: 'Sous-total', en: 'Subtotal', es: 'Subtotal' })}</span>
-                      <span className="text-heading">{cartTotal.toFixed(2)}$</span>
+                      <span className={`text-heading ${artistDiscountTotal > 0 ? 'line-through text-grey-muted' : ''}`}>{cartTotal.toFixed(2)}$</span>
                     </div>
+                    {artistDiscountTotal > 0 && (
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-green-400">{tx({ fr: 'Rabais artiste (-30%)', en: 'Artist discount (-30%)', es: 'Descuento artista (-30%)' })}</span>
+                        <span className="text-green-400">-{artistDiscountTotal.toFixed(2)}$</span>
+                      </div>
+                    )}
                     <div className="flex justify-between items-center text-sm">
                       <span className="text-grey-muted">{tx({ fr: 'Frais de livraison', en: 'Shipping', es: 'Envio' })}</span>
                       <span className="text-heading">
