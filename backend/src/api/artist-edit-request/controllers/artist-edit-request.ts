@@ -680,7 +680,7 @@ async function handleAddImages(strapi: any, artist: any, requestType: string, ch
 }
 
 async function handleMarkUnique(strapi: any, artist: any, changeData: any) {
-  const { itemId, customPrice, category } = changeData || {};
+  const { itemId, customPrice, fixedFormat, fixedTier, category } = changeData || {};
   if (!itemId) return;
 
   const fieldName = category === 'stickers' ? 'stickers' : category === 'merch' ? 'merch' : 'prints';
@@ -692,6 +692,9 @@ async function handleMarkUnique(strapi: any, artist: any, changeData: any) {
       ...items[idx],
       unique: true,
       customPrice: parseFloat(customPrice) || 0,
+      fixedFormat: fixedFormat || 'a2',
+      fixedTier: fixedTier || 'studio',
+      noFrame: true,
     };
 
     await strapi.documents('api::artist.artist').update({
