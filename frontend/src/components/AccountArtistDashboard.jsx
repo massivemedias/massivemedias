@@ -637,9 +637,9 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
           </h3>
           <p className="text-grey-muted text-xs mb-6">
             {tx({
-              fr: 'Prix affichés aux clients dans ta boutique. Ta marge = prix client - prix de production. Le cadre (30$) va entièrement à Massive. TPS + TVQ en sus.',
-              en: 'Prices shown to customers in your store. Your margin = client price - production price. Frame ($30) goes entirely to Massive. GST + QST extra.',
-              es: 'Precios mostrados a los clientes en tu tienda. Tu margen = precio cliente - precio produccion. El marco (30$) va completamente a Massive. Impuestos adicionales.',
+              fr: 'Prix affichés aux clients dans ta boutique. Ta marge = prix client - prix de production. Le cadre (20$-45$ selon format) va entièrement à Massive. TPS + TVQ en sus.',
+              en: 'Prices shown to customers in your store. Your margin = client price - production price. Frame ($20-$45 depending on format) goes entirely to Massive. GST + QST extra.',
+              es: 'Precios mostrados a los clientes en tu tienda. Tu margen = precio cliente - precio produccion. El marco (20$-45$ segun formato) va completamente a Massive. Impuestos adicionales.',
             })}
           </p>
           <div className="overflow-x-auto">

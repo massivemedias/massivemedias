@@ -25,7 +25,7 @@ function buildArtistFromCMS(cms) {
     avatar: mediaUrl(cms.avatar),
     heroImage: mediaUrl(cms.heroImage),
     socials: cms.socials || {},
-    pricing: cms.pricing || { studio: { a4: 35, a3: 50, a3plus: 65, a2: 85 }, museum: { a4: 75, a3: 120, a3plus: 160, a2: 225 }, framePrice: 30 },
+    pricing: cms.pricing || { studio: { a4: 35, a3: 50, a3plus: 65, a2: 85 }, museum: { a4: 75, a3: 120, a3plus: 160, a2: 225 }, framePriceByFormat: { postcard: 20, a4: 20, a3: 30, a3plus: 35, a2: 45 } },
     prints: (cms.prints || []).map((p, i) => ({
       ...p,
       image: cms.printImages?.[i] ? mediaUrl(cms.printImages[i]) : p.image || '',
@@ -629,7 +629,7 @@ function ArtisteDetail({ subdomainSlug }) {
               {/* Preview avec fleches navigation */}
               <div className="relative">
                 <div
-                  className={`relative rounded-2xl overflow-hidden watermark ${isLandscape ? 'aspect-[3/2]' : 'aspect-[2/3]'} cursor-pointer group`}
+                  className={`relative rounded-2xl overflow-hidden ${isLandscape ? 'aspect-[3/2]' : 'aspect-[2/3]'} cursor-pointer group`}
                   onClick={() => setLightbox(artist.prints.findIndex(p => p.id === selectedPrint.id))}
                 >
                   <img
@@ -912,7 +912,7 @@ function ArtisteDetail({ subdomainSlug }) {
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.9, opacity: 0 }}
                 transition={{ duration: 0.3 }}
-                className="relative watermark rounded-lg overflow-hidden"
+                className="relative watermark-light rounded-lg overflow-hidden"
                 onClick={(e) => e.stopPropagation()}
               >
                 <img

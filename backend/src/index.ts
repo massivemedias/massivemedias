@@ -274,7 +274,7 @@ const artistsSeedData = [
     pricing: {
       studio: { a4: 35, a3: 50, a3plus: 65, a2: 85 },
       museum: { a4: 75, a3: 120, a3plus: 160, a2: 225 },
-      framePrice: 20,
+      framePriceByFormat: { postcard: 20, a4: 20, a3: 30, a3plus: 35, a2: 45 },
     },
     prints: [
       { id: 'adrift-001', titleFr: 'Print I', titleEn: 'Print I', image: '/images/prints/Adrift1.webp', limited: false },
@@ -294,7 +294,7 @@ const artistsSeedData = [
     pricing: {
       studio: { a4: 35, a3: 50, a3plus: 65, a2: 85 },
       museum: { a4: 75, a3: 120, a3plus: 160, a2: 225 },
-      framePrice: 20,
+      framePriceByFormat: { postcard: 20, a4: 20, a3: 30, a3plus: 35, a2: 45 },
     },
     prints: [],
     sortOrder: 2,
@@ -311,7 +311,7 @@ const artistsSeedData = [
     pricing: {
       studio: { a4: 35, a3: 50, a3plus: 65, a2: 85 },
       museum: { a4: 75, a3: 120, a3plus: 160, a2: 225 },
-      framePrice: 20,
+      framePriceByFormat: { postcard: 20, a4: 20, a3: 30, a3plus: 35, a2: 45 },
     },
     prints: [
       { id: 'mok-001', titleFr: 'Metro Montreal', titleEn: 'Montreal Metro', image: '/images/prints/Mok1.webp', limited: false },
@@ -350,7 +350,7 @@ const artistsSeedData = [
     pricing: {
       studio: { a4: 35, a3: 50, a3plus: 65, a2: 85 },
       museum: { a4: 75, a3: 120, a3plus: 160, a2: 225 },
-      framePrice: 20,
+      framePriceByFormat: { postcard: 20, a4: 20, a3: 30, a3plus: 35, a2: 45 },
     },
     prints: [
       { id: 'psyqu33n-001', titleFr: "Accepter ses parts d'ombres et de lumiere", titleEn: 'Embracing Shadow and Light', image: '/images/prints/Psyqu33n1.webp', limited: false },
@@ -474,7 +474,7 @@ const productsSeedData = [
         { id: 'a3plus', label: 'A3+ (13x19")', studioPrice: 30, museumPrice: 95 },
         { id: 'a2', label: 'A2 (18x24")', studioPrice: 42, museumPrice: 125 },
       ],
-      framePrice: 30,
+      framePriceByFormat: { postcard: 20, a4: 20, a3: 30, a3plus: 35, a2: 45 },
     },
     highlightsFr: ['Imprimante professionnelle fine art - 12 encres pigmentees','Papiers fine art professionnels premium','Calibration professionnelle, profils ICC sur mesure','Duree de conservation 100+ ans','Pick-up gratuit Mile-End, livraison locale'],
     highlightsEn: ['Professional fine art printer - 12 pigmented inks','Premium professional fine art papers','Professional calibration, custom ICC profiles','100+ year conservation life','Free pick-up Mile-End, local delivery'],
@@ -482,7 +482,7 @@ const productsSeedData = [
       { q: 'Quelle est la difference entre Serie Studio et Serie Musee?', a: 'La Serie Studio utilise une imprimante 4 encres pigmentees, excellente pour tous les usages. La Serie Musee utilise une imprimante 12 encres pigmentees pour une qualite superieure.' },
       { q: 'Quels papiers utilisez-vous?', a: 'Papiers fine art professionnels premium : coton, alpha-cellulose, papiers d\'archives. Chaque papier est calibre avec un profil ICC sur mesure.' },
       { q: 'Quelle est la duree de conservation?', a: 'Nos tirages fine art ont une duree de conservation de 100+ ans grace aux encres pigmentees et papiers d\'archives.' },
-      { q: 'Puis-je faire encadrer mon tirage?', a: 'Oui! Nous offrons l\'option cadre noir ou blanc pour 30$ supplementaires.' },
+      { q: 'Puis-je faire encadrer mon tirage?', a: 'Oui! Nous offrons l\'option cadre noir ou blanc. 20$ pour A6 et A4, 30$ pour A3, 35$ pour A3+ et 45$ pour A2.' },
       { q: 'Quel fichier dois-je fournir?', a: 'Idealement un fichier haute resolution (300 DPI minimum). Nous effectuons un soft proofing avant impression.' },
       { q: 'La livraison est-elle disponible?', a: 'Pick-up gratuit au Mile-End. Livraison locale disponible a Montreal.' },
     ],
@@ -490,7 +490,7 @@ const productsSeedData = [
       { q: 'What is the difference between Studio and Museum Series?', a: 'The Studio Series uses a 4-color pigment printer, excellent for all uses. The Museum Series uses a 12-color pigment printer for superior quality.' },
       { q: 'What papers do you use?', a: 'Premium professional fine art papers: cotton, alpha-cellulose, archival papers. Each paper is calibrated with a custom ICC profile.' },
       { q: 'What is the conservation lifespan?', a: 'Our fine art prints have a 100+ year conservation life thanks to pigmented inks and archival papers.' },
-      { q: 'Can I get my print framed?', a: 'Yes! We offer a black or white frame option for an additional $30.' },
+      { q: 'Can I get my print framed?', a: 'Yes! We offer a black or white frame option. $20 for A6 and A4, $30 for A3, $35 for A3+ and $45 for A2.' },
       { q: 'What file should I provide?', a: 'Ideally a high-resolution file (300 DPI minimum). We perform soft proofing before printing.' },
       { q: 'Is delivery available?', a: 'Free pick-up in Mile-End. Local delivery available in Montreal.' },
     ],

@@ -455,11 +455,13 @@ function ConfiguratorFineArt() {
                     boxShadow: '0 12px 60px rgba(0,0,0,0.5)',
                   }}
                 >
-                  <img
-                    src={previewImage}
-                    alt="Preview"
-                    className="w-full h-full object-cover"
-                  />
+                  <div className="relative w-full h-full watermark-light">
+                    <img
+                      src={previewImage}
+                      alt="Preview"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
                 </div>
                 {/* Info format sous le cadre */}
                 <p className="text-center text-white/60 text-sm mt-3">
