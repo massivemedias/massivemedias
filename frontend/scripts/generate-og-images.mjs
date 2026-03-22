@@ -48,9 +48,10 @@ async function generateOGImage(artist) {
   const artworkPath = join(PUBLIC, artist.artwork);
   const avatarPath = join(PUBLIC, artist.avatar);
 
-  // Resize artwork to fill right side (600x630)
+  // Resize artwork to fill right side (wider for more visibility)
+  const artworkW = 850;
   const artwork = await sharp(artworkPath)
-    .resize(600, H, { fit: 'cover', position: 'center' })
+    .resize(artworkW, H, { fit: 'cover', position: 'center' })
     .toBuffer();
 
   // Create circular avatar (140x140)
@@ -76,18 +77,18 @@ async function generateOGImage(artist) {
     </svg>`
   );
 
-  // Dark gradient overlay for artwork (left fade)
+  // Dark gradient overlay for artwork (left fade - subtle to show artwork more)
   const gradientOverlay = Buffer.from(
-    `<svg width="600" height="${H}">
+    `<svg width="${artworkW}" height="${H}">
       <defs>
         <linearGradient id="g" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0" stop-color="${BG_COLOR}" stop-opacity="1"/>
-          <stop offset="0.4" stop-color="${BG_COLOR}" stop-opacity="0.85"/>
-          <stop offset="0.7" stop-color="${BG_COLOR}" stop-opacity="0.3"/>
-          <stop offset="1" stop-color="${BG_COLOR}" stop-opacity="0.1"/>
+          <stop offset="0" stop-color="${BG_COLOR}" stop-opacity="0.92"/>
+          <stop offset="0.35" stop-color="${BG_COLOR}" stop-opacity="0.6"/>
+          <stop offset="0.55" stop-color="${BG_COLOR}" stop-opacity="0.15"/>
+          <stop offset="1" stop-color="${BG_COLOR}" stop-opacity="0"/>
         </linearGradient>
       </defs>
-      <rect width="600" height="${H}" fill="url(#g)"/>
+      <rect width="${artworkW}" height="${H}" fill="url(#g)"/>
     </svg>`
   );
 
@@ -116,10 +117,10 @@ async function generateOGImage(artist) {
     create: { width: W, height: H, channels: 4, background: BG_COLOR },
   })
     .composite([
-      // Artwork on right
-      { input: artwork, left: 600, top: 0 },
+      // Artwork on right (starts earlier for more visibility)
+      { input: artwork, left: W - artworkW, top: 0 },
       // Gradient overlay on artwork
-      { input: gradientOverlay, left: 600, top: 0 },
+      { input: gradientOverlay, left: W - artworkW, top: 0 },
       // Logo top-left
       { input: Buffer.from(massiveLogo), left: 50, top: 40 },
       // Avatar ring
