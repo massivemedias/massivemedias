@@ -10,7 +10,7 @@ import { useLang } from '../i18n/LanguageContext';
 import { getOrders, getContactSubmissions, getExpenses, getAnalytics } from '../services/adminService';
 import api from '../services/api';
 import { UserPlus, Eye } from 'lucide-react';
-const NOTES_KEY = 'massive-admin-notes';
+const NOTES_KEY = 'mm-admin-notes';
 
 function DashboardNotes() {
   const { tx } = useLang();
@@ -30,15 +30,18 @@ function DashboardNotes() {
 
   return (
     <div className="space-y-0.5 max-h-[280px] overflow-y-auto scrollbar-thin">
-      {sorted.map(n => (
+      {sorted.slice(0, 5).map((n, i) => (
         <Link
           key={n.id}
           to="/admin/notes"
           className="block px-3 py-2 rounded-lg hover:bg-black/10 transition-colors"
         >
-          <p className="text-xs text-heading truncate">
+          <p className="text-xs text-heading truncate font-medium">
             {n.title || tx({ fr: 'Sans titre', en: 'Untitled', es: 'Sin titulo' })}
           </p>
+          {i === 0 && n.content && (
+            <p className="text-[10px] text-grey-muted mt-0.5 line-clamp-2">{n.content.replace(/<[^>]*>/g, '').slice(0, 120)}</p>
+          )}
         </Link>
       ))}
     </div>
