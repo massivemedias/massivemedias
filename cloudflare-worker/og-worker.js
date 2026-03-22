@@ -103,7 +103,14 @@ export default {
       });
     }
 
-    // Everyone else: pass through to origin
-    return fetch(request);
+    // Artist subdomain for real users: redirect to main site artist page
+    if (subdomain && ARTISTS[subdomain]) {
+      const targetUrl = `${SITE_URL}/artistes/${subdomain}${url.pathname === '/' ? '' : url.pathname}${url.search}`;
+      return Response.redirect(targetUrl, 302);
+    }
+
+    // Everything else: pass through to origin
+    url.hostname = 'massivemedias.com';
+    return fetch(url.toString(), { headers: request.headers });
   },
 };
