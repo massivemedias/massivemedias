@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { MapPin, Instagram, ExternalLink, ArrowRight, Palette, Calendar, Filter, X } from 'lucide-react';
+import { MapPin, Instagram, ExternalLink, ArrowRight, Palette, Calendar, Filter, X, MessageCircle } from 'lucide-react';
 import SEO from '../components/SEO';
 import FlashCard from '../components/FlashCard';
 import FlashLightbox from '../components/FlashLightbox';
@@ -598,6 +598,93 @@ function TatoueurDetail({ subdomainSlug }) {
           </div>
         </section>
       )}
+
+      {/* ========== COMMENT CA MARCHE ========== */}
+      <section className="py-16 md:py-20 bg-bg-elevated/30">
+        <div className="section-container">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-3xl md:text-4xl font-heading font-bold text-heading text-center mb-10">
+              {tx({ fr: 'Comment ca marche', en: 'How it works', es: 'Como funciona' })}
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {[
+                {
+                  num: '1',
+                  titleFr: 'Choisis ton flash', titleEn: 'Choose your flash', titleEs: 'Elige tu flash',
+                  descFr: 'Parcours la galerie et selectionne le design qui te plait. Chaque flash est une piece unique.',
+                  descEn: 'Browse the gallery and select the design you like. Each flash is a unique piece.',
+                  descEs: 'Navega por la galeria y selecciona el diseno que te guste. Cada flash es una pieza unica.',
+                },
+                {
+                  num: '2',
+                  titleFr: 'Reserve ta piece', titleEn: 'Reserve your piece', titleEs: 'Reserva tu pieza',
+                  descFr: 'Envoie un message avec l\'emplacement souhaite et tes disponibilites. Un depot de 40$ confirme ta reservation.',
+                  descEn: 'Send a message with your desired placement and availability. A $40 deposit confirms your reservation.',
+                  descEs: 'Envia un mensaje con la ubicacion deseada y tus disponibilidades. Un deposito de 40$ confirma tu reserva.',
+                },
+                {
+                  num: '3',
+                  titleFr: 'Rendez-vous tattoo', titleEn: 'Tattoo appointment', titleEs: 'Cita de tatuaje',
+                  descFr: 'L\'artiste confirme la date et l\'heure. Presente-toi au studio et repars avec ta piece unique.',
+                  descEn: 'The artist confirms the date and time. Show up at the studio and leave with your unique piece.',
+                  descEs: 'El artista confirma la fecha y hora. Presentate en el estudio y vete con tu pieza unica.',
+                },
+              ].map((step) => (
+                <div key={step.num} className="relative">
+                  <div className="absolute -top-3 left-4 w-8 h-8 rounded-full bg-accent text-white flex items-center justify-center text-sm font-bold z-10">
+                    {step.num}
+                  </div>
+                  <div className="bg-bg-card rounded-xl border border-white/5 p-6 pt-8 h-full">
+                    <h3 className="text-lg font-heading font-bold text-heading mb-2">
+                      {tx({ fr: step.titleFr, en: step.titleEn, es: step.titleEs })}
+                    </h3>
+                    <p className="text-grey-muted text-sm leading-relaxed">
+                      {tx({ fr: step.descFr, en: step.descEn, es: step.descEs })}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ========== CTA TATOUEUR ========== */}
+      <section className="py-16 md:py-20">
+        <div className="section-container text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            viewport={{ once: true }}
+            className="max-w-2xl mx-auto"
+          >
+            <h2 className="text-3xl md:text-4xl font-heading font-bold text-heading mb-4">
+              {tx({ fr: 'Tu es tatoueur? Rejoins la plateforme.', en: 'Are you a tattoo artist? Join the platform.', es: 'Eres tatuador? Unete a la plataforma.' })}
+            </h2>
+            <p className="text-grey-muted text-base md:text-lg mb-8 leading-relaxed">
+              {tx({
+                fr: "On s'occupe de tout : page web dediee, galerie de flashs, systeme de reservation et messagerie avec tes clients. Tu publies tes flashs, tu geres tes disponibilites, et tu recois tes reservations.",
+                en: "We take care of everything: dedicated web page, flash gallery, booking system and messaging with your clients. You publish your flashes, manage your availability, and receive your bookings.",
+                es: "Nos encargamos de todo: pagina web dedicada, galeria de flashs, sistema de reservas y mensajeria con tus clientes. Publicas tus flashs, gestionas tu disponibilidad y recibes tus reservas.",
+              })}
+            </p>
+            <Link
+              to="/contact?tab=tatoueur"
+              className="inline-flex items-center gap-3 px-8 py-4 bg-accent/15 border border-accent/30 text-accent font-heading font-bold text-lg rounded-full hover:bg-accent/25 transition-all hover:shadow-lg hover:shadow-accent/10"
+            >
+              <MessageCircle size={22} />
+              {tx({ fr: 'Contactez-nous', en: 'Contact us', es: 'Contactanos' })}
+              <ArrowRight size={18} />
+            </Link>
+          </motion.div>
+        </div>
+      </section>
 
       {/* ========== BACK LINK ========== */}
       <div className="section-container pb-20">
