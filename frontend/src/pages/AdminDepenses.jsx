@@ -239,7 +239,18 @@ function AdminDepenses() {
         }));
 
       const expenseData = {
-        description: `Facture ${invoiceData.invoiceNumber || ''} - ${invoiceData.vendor || ''}`.trim().replace(/\s*-\s*$/, ''),
+        description: (() => {
+          // Resume court: Facture NUM - Vendor - premier produit (tronque)
+          const parts = [`Facture ${invoiceData.invoiceNumber || ''}`, invoiceData.vendor].filter(Boolean);
+          const firstItem = invoiceData.lineItems?.[0]?.description;
+          if (firstItem) {
+            // Tronquer le nom du produit: garder les 2-3 premiers mots significatifs
+            const short = firstItem.split(/[\s,/-]+/).slice(0, 3).join(' ');
+            parts.push(short);
+          }
+          if (invoiceData.lineItems?.length > 1) parts.push(`+${invoiceData.lineItems.length - 1}`);
+          return parts.join(' - ').trim();
+        })(),
         amount: invoiceData.total || invoiceData.subtotal || 0,
         category: invoiceData.expenseCategory || 'materiel',
         date: invoiceData.date,
