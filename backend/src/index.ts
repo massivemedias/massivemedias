@@ -1012,11 +1012,8 @@ export default {
       console.error('[seed] Permissions/UserRoles error:', err.message);
     }
 
-    // Seed contenu si SEED_CONTENT=true OU si la base est vide
-    const existingContent = await strapi.documents('api::site-content.site-content').findFirst().catch(() => null);
-    const needsSeed = process.env.SEED_CONTENT === 'true' || !existingContent;
-    if (!needsSeed) return;
-    console.log('[seed] Base vide ou SEED_CONTENT=true, lancement du seed...');
+    // Seed contenu seulement si SEED_CONTENT=true (evite OOM sur Render free tier)
+    if (process.env.SEED_CONTENT !== 'true') return;
 
     console.log('[seed] Checking Site Content...');
 
