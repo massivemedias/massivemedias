@@ -416,6 +416,7 @@ function TatoueurDetail({ subdomainSlug }) {
                     flash={flash}
                     onClick={setSelectedFlash}
                     index={index}
+                    hidePrices={tatoueur.hidePrices}
                   />
                 ))}
               </div>
@@ -647,6 +648,7 @@ function TatoueurDetail({ subdomainSlug }) {
           tatoueurName={tatoueur.name}
           allFlashs={tatoueur.flashs || []}
           onNavigate={setSelectedFlash}
+          hidePrices={tatoueur.hidePrices}
         />
       )}
 

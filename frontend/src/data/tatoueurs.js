@@ -21,6 +21,7 @@ const tatoueurs = {
     },
     priceTattooMin: 150,
     hourlyRate: 120,
+    hidePrices: false,
     featured: true,
     flashs: [
       {

@@ -309,7 +309,7 @@ const artistsData = {
       website: 'https://www.corneliaroseart.com/',
     },
     avatar: img('/images/prints/CorneliaRoseAvatar.webp'),
-    heroImage: thumb('/images/prints/CorneliaRose1.webp'),
+    heroImage: thumb('/images/prints/CorneliaRose4.webp'),
     prints: [
       { id: 'cr-001', titleFr: 'Cornelia Rose Art', titleEn: 'Cornelia Rose Art', titleEs: 'Cornelia Rose Art', image: thumb('/images/prints/CorneliaRose1.webp'), fullImage: img('/images/prints/CorneliaRose1.webp'), limited: false },
       { id: 'cr-002', titleFr: 'Chrystaline Nectar', titleEn: 'Chrystaline Nectar', titleEs: 'Chrystaline Nectar', image: thumb('/images/prints/CorneliaRose2.webp'), fullImage: img('/images/prints/CorneliaRose2.webp'), limited: false },

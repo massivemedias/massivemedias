@@ -21,6 +21,7 @@ export default function TatoueurProfile({ tatoueur, setTatoueur }) {
     instagramHandle: tatoueur?.instagramHandle || '',
     priceTattooMin: tatoueur?.priceTattooMin || '',
     hourlyRate: tatoueur?.hourlyRate || '',
+    hidePrices: tatoueur?.hidePrices || false,
     styles: tatoueur?.styles || [],
     socials: tatoueur?.socials || {},
   });
@@ -121,13 +122,28 @@ export default function TatoueurProfile({ tatoueur, setTatoueur }) {
         {/* Pricing */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm text-grey-light mb-1">{tx({ fr: 'Prix minimum ($)', en: 'Minimum price ($)' })}</label>
+            <label className="block text-sm text-grey-light mb-1">{tx({ fr: 'Prix minimum ($)', en: 'Minimum price ($)', es: 'Precio minimo ($)' })}</label>
             <input type="number" value={form.priceTattooMin} onChange={(e) => setForm(f => ({ ...f, priceTattooMin: e.target.value }))} className="w-full bg-bg-elevated border border-white/10 rounded-lg px-3 py-2 text-heading text-sm focus:border-accent/50 focus:outline-none" />
           </div>
           <div>
-            <label className="block text-sm text-grey-light mb-1">{tx({ fr: 'Taux horaire ($)', en: 'Hourly rate ($)' })}</label>
+            <label className="block text-sm text-grey-light mb-1">{tx({ fr: 'Taux horaire ($)', en: 'Hourly rate ($)', es: 'Tarifa por hora ($)' })}</label>
             <input type="number" value={form.hourlyRate} onChange={(e) => setForm(f => ({ ...f, hourlyRate: e.target.value }))} className="w-full bg-bg-elevated border border-white/10 rounded-lg px-3 py-2 text-heading text-sm focus:border-accent/50 focus:outline-none" />
           </div>
+        </div>
+
+        {/* Hide prices toggle */}
+        <div className="flex items-center justify-between p-4 bg-bg-elevated rounded-xl">
+          <div>
+            <p className="text-sm text-heading font-medium">{tx({ fr: 'Masquer les prix aux clients', en: 'Hide prices from clients', es: 'Ocultar precios a los clientes' })}</p>
+            <p className="text-xs text-grey-muted mt-0.5">{tx({ fr: 'Les prix ne seront pas affiches sur votre page publique', en: 'Prices will not be shown on your public page', es: 'Los precios no se mostraran en su pagina publica' })}</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setForm(f => ({ ...f, hidePrices: !f.hidePrices }))}
+            className={`relative w-12 h-6 rounded-full transition-colors ${form.hidePrices ? 'bg-accent' : 'bg-white/10'}`}
+          >
+            <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${form.hidePrices ? 'translate-x-6' : 'translate-x-0.5'}`} />
+          </button>
         </div>
       </div>
     </div>

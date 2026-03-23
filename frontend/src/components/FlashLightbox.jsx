@@ -13,7 +13,7 @@ const SIZE_LABELS = {
   'tres-grand': { fr: 'Tres grand (35+ cm)', en: 'Extra large (14+ in)' },
 };
 
-export default function FlashLightbox({ flash, onClose, onReserve, tatoueurName, allFlashs = [], onNavigate }) {
+export default function FlashLightbox({ flash, onClose, onReserve, tatoueurName, allFlashs = [], onNavigate, hidePrices = false }) {
   const { lang, tx } = useLang();
   const { user } = useAuth();
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
@@ -178,7 +178,7 @@ export default function FlashLightbox({ flash, onClose, onReserve, tatoueurName,
             )}
 
             {/* Price */}
-            {flash.priceTattoo && (
+            {flash.priceTattoo && !hidePrices && (
               <div className="mb-6 p-4 bg-bg-elevated rounded-xl">
                 <div className="flex items-center justify-between">
                   <span className="text-grey-muted text-sm flex items-center gap-2">
@@ -250,7 +250,7 @@ export default function FlashLightbox({ flash, onClose, onReserve, tatoueurName,
                   className="w-full btn-secondary text-center py-3 text-base"
                 >
                   <Printer size={20} className="mr-2" />
-                  {tx({ fr: 'Acheter le print', en: 'Buy the print' })} - {flash.pricePrint}$
+                  {tx({ fr: 'Acheter le print', en: 'Buy the print' })}{!hidePrices ? ` - ${flash.pricePrint}$` : ''}
                 </button>
               )}
             </div>

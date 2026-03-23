@@ -34,7 +34,7 @@ const SIZE_LABELS = {
   'tres-grand': { fr: 'Tres grand', en: 'Extra large' },
 };
 
-export default function FlashCard({ flash, onClick, index = 0 }) {
+export default function FlashCard({ flash, onClick, index = 0, hidePrices = false }) {
   const { lang, tx } = useLang();
   const status = STATUS_CONFIG[flash.status] || STATUS_CONFIG.disponible;
   const StatusIcon = status.icon;
@@ -116,7 +116,7 @@ export default function FlashCard({ flash, onClick, index = 0 }) {
             )}
           </div>
 
-          {flash.priceTattoo && isAvailable && (
+          {flash.priceTattoo && isAvailable && !hidePrices && (
             <span className="font-bold text-accent text-sm">
               {flash.priceTattoo}$
             </span>
