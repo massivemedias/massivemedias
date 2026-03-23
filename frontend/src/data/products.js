@@ -175,7 +175,7 @@ export const fineArtImages = [
   img('/images/realisations/prints/FineArt1.webp'),
   img('/images/realisations/prints/FineArt4.webp'),
   img('/images/realisations/prints/FineArt6.webp'),
-  img('/images/realisations/prints/FineArt-Photo.webp'),
+  img('/images/realisations/prints/FineArt1.webp'),
   img('/images/realisations/prints/Prints7.webp'),
   img('/images/realisations/prints/Prints17.webp'),
   img('/images/realisations/prints/Prints18.webp'),
@@ -362,7 +362,7 @@ export const flyerImages = [
   img('/images/realisations/flyers/from_vision.webp'),
   img('/images/realisations/flyers/rituals.webp'),
   img('/images/realisations/prints/Prints24.webp'),
-  img('/images/realisations/prints/FineArt-Photo.webp'),
+  img('/images/realisations/prints/FineArt1.webp'),
 ];
 
 export const flyerFaq = {

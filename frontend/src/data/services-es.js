@@ -80,7 +80,7 @@ También imprimimos flyers, postales y tarjetas de presentación - todo lo que n
       thumb('/images/realisations/prints/FineArt1.webp'),
       thumb('/images/realisations/prints/FineArt4.webp'),
       thumb('/images/realisations/prints/FineArt6.webp'),
-      thumb('/images/realisations/prints/FineArt-Photo.webp'),
+      thumb('/images/realisations/prints/FineArt1.webp'),
       thumb('/images/realisations/prints/Prints7.webp'),
       thumb('/images/realisations/prints/Prints17.webp'),
       thumb('/images/realisations/prints/Prints18.webp'),
