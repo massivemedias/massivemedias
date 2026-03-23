@@ -1,7 +1,9 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, MapPin, Ruler, DollarSign, Printer, Lock, Check } from 'lucide-react';
+import { X, MapPin, Ruler, DollarSign, Printer, Lock, Check, LogIn } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useLang } from '../i18n/LanguageContext';
+import { useAuth } from '../contexts/AuthContext';
 import { mediaUrl } from '../utils/cms';
 
 const SIZE_LABELS = {
@@ -13,6 +15,8 @@ const SIZE_LABELS = {
 
 export default function FlashLightbox({ flash, onClose, onReserve, tatoueurName }) {
   const { lang, tx } = useLang();
+  const { user } = useAuth();
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
 
   useEffect(() => {
     const handleEsc = (e) => { if (e.key === 'Escape') onClose(); };
@@ -167,14 +171,44 @@ export default function FlashLightbox({ flash, onClose, onReserve, tatoueurName 
 
             {/* Actions */}
             <div className="space-y-3">
-              {isAvailable && (
+              {isAvailable && !showLoginPrompt && (
                 <button
-                  onClick={() => onReserve?.(flash)}
+                  onClick={() => {
+                    if (!user) {
+                      setShowLoginPrompt(true);
+                    } else {
+                      onReserve?.(flash);
+                    }
+                  }}
                   className="w-full btn-primary text-center py-3 text-base font-bold"
                 >
                   <Check size={20} className="mr-2" />
                   {tx({ fr: 'Reserver cette piece', en: 'Reserve this piece' })}
                 </button>
+              )}
+
+              {showLoginPrompt && (
+                <div className="rounded-xl bg-accent/10 border border-accent/30 p-4 text-center space-y-3">
+                  <LogIn size={24} className="mx-auto text-accent" />
+                  <p className="text-heading text-sm font-medium">
+                    {tx({ fr: 'Connectez-vous pour reserver ce flash', en: 'Sign in to reserve this flash' })}
+                  </p>
+                  <div className="flex gap-2">
+                    <Link
+                      to="/login"
+                      className="flex-1 btn-primary text-center py-2 text-sm font-bold"
+                      onClick={onClose}
+                    >
+                      {tx({ fr: 'Se connecter', en: 'Sign in' })}
+                    </Link>
+                    <button
+                      onClick={() => setShowLoginPrompt(false)}
+                      className="flex-1 btn-secondary text-center py-2 text-sm"
+                    >
+                      {tx({ fr: 'Annuler', en: 'Cancel' })}
+                    </button>
+                  </div>
+                </div>
               )}
 
               {flash.printAvailable && flash.pricePrint && (

@@ -6,6 +6,7 @@ import SEO from '../components/SEO';
 import FlashCard from '../components/FlashCard';
 import FlashLightbox from '../components/FlashLightbox';
 import ReservationForm from '../components/ReservationForm';
+import AvailabilityCalendar from '../components/AvailabilityCalendar';
 import { useLang } from '../i18n/LanguageContext';
 import { useTatoueurs } from '../hooks/useTatoueurs';
 import { mediaUrl } from '../utils/cms';
@@ -88,6 +89,7 @@ function buildTatoueurFromCMS(cms) {
       image: f.image ? mediaUrl(f.image) : null,
     })),
     realisationImages: (cms.realisationImages || []).map(img => mediaUrl(img)),
+    calendarSettings: cms.calendarSettings || null,
   };
 }
 
@@ -411,6 +413,32 @@ function TatoueurDetail({ subdomainSlug }) {
                 ))}
               </div>
             )}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ========== DISPONIBILITES ========== */}
+      <section className="py-12 md:py-16">
+        <div className="section-container">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            viewport={{ once: true }}
+          >
+            <div className="text-center mb-8">
+              <h2 className="text-3xl md:text-4xl font-heading font-bold text-heading mb-2 flex items-center justify-center gap-3">
+                <Calendar size={28} className="text-accent" />
+                {tx({ fr: 'Disponibilites', en: 'Availability' })}
+              </h2>
+              <p className="text-grey-muted text-sm">
+                {tx({ fr: 'Reservez un creneau', en: 'Book a slot' })}
+              </p>
+            </div>
+            <AvailabilityCalendar
+              calendarSettings={tatoueur.calendarSettings}
+              tatoueurName={tatoueur.name}
+            />
           </motion.div>
         </div>
       </section>
