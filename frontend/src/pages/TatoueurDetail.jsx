@@ -12,36 +12,43 @@ import { useTatoueurs } from '../hooks/useTatoueurs';
 import { mediaUrl } from '../utils/cms';
 import tatoueursData from '../data/tatoueurs';
 
-// Composant Instagram Feed - images en grille via thumbnails Instagram
+// Composant Instagram Feed - embeds compacts en grille
 function InstagramFeed({ handle, postShortcodes = [] }) {
+  useEffect(() => {
+    if (postShortcodes.length > 0) {
+      // Charger le script Instagram embed.js
+      const existing = document.querySelector('script[src*="instagram.com/embed.js"]');
+      if (!existing) {
+        const script = document.createElement('script');
+        script.src = 'https://www.instagram.com/embed.js';
+        script.async = true;
+        document.body.appendChild(script);
+      } else if (window.instgrm) {
+        setTimeout(() => window.instgrm?.Embeds?.process(), 500);
+      }
+    }
+  }, [postShortcodes]);
+
+  // Re-process quand les embeds sont rendus
+  useEffect(() => {
+    const timer = setTimeout(() => window.instgrm?.Embeds?.process(), 1000);
+    return () => clearTimeout(timer);
+  }, [postShortcodes]);
+
   if (!handle && postShortcodes.length === 0) return null;
 
   return (
     <div className="space-y-4">
       {postShortcodes.length > 0 && (
-        <div className="grid grid-cols-3 md:grid-cols-5 gap-1.5 md:gap-2">
-          {postShortcodes.map((code, i) => (
-            <motion.a
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 md:gap-3">
+          {postShortcodes.map((code) => (
+            <blockquote
               key={code}
-              href={`https://www.instagram.com/p/${code}/`}
-              target="_blank"
-              rel="noopener noreferrer"
-              initial={{ opacity: 0, scale: 0.95 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.3, delay: i * 0.03 }}
-              viewport={{ once: true }}
-              className="aspect-square rounded-lg overflow-hidden group relative bg-black/20"
-            >
-              <img
-                src={`https://www.instagram.com/p/${code}/media/?size=m`}
-                alt=""
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                loading="lazy"
-              />
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
-                <Instagram size={20} className="text-white opacity-0 group-hover:opacity-100 transition-opacity" />
-              </div>
-            </motion.a>
+              className="instagram-media"
+              data-instgrm-permalink={`https://www.instagram.com/p/${code}/`}
+              data-instgrm-version="14"
+              style={{ background: 'transparent', border: 0, borderRadius: '8px', margin: 0, maxWidth: '100%', minWidth: '100px', padding: 0, width: '100%' }}
+            />
           ))}
         </div>
       )}
