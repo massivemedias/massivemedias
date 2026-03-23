@@ -42,13 +42,14 @@ function InstagramFeed({ handle, postShortcodes = [] }) {
       {postShortcodes.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           {postShortcodes.map((code) => (
-            <blockquote
-              key={code}
-              className="instagram-media"
-              data-instgrm-permalink={`https://www.instagram.com/p/${code}/`}
-              data-instgrm-version="14"
-              style={{ background: 'transparent', border: 0, borderRadius: '8px', margin: 0, maxWidth: '100%', minWidth: '100px', padding: 0, width: '100%' }}
-            />
+            <div key={code} className="rounded-xl overflow-hidden" style={{ maxHeight: '420px' }}>
+              <blockquote
+                className="instagram-media"
+                data-instgrm-permalink={`https://www.instagram.com/p/${code}/`}
+                data-instgrm-version="14"
+                style={{ background: 'transparent', border: 0, borderRadius: 0, margin: 0, maxWidth: '100%', minWidth: '100px', padding: 0, width: '100%' }}
+              />
+            </div>
           ))}
         </div>
       )}
