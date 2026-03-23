@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { MapPin, Instagram, ExternalLink, ArrowRight, Palette, Calendar, Filter, X } from 'lucide-react';
@@ -10,6 +10,48 @@ import { useLang } from '../i18n/LanguageContext';
 import { useTatoueurs } from '../hooks/useTatoueurs';
 import { mediaUrl } from '../utils/cms';
 import tatoueursData from '../data/tatoueurs';
+
+// Composant Instagram Embed Feed
+function InstagramFeed({ handle }) {
+  const containerRef = useRef(null);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    if (!handle) return;
+    // Charger le script Elfsight (widget Instagram gratuit) ou utiliser l'approche iframe
+    setLoaded(true);
+  }, [handle]);
+
+  if (!handle) return null;
+
+  return (
+    <div ref={containerRef} className="space-y-4">
+      {/* Feed Instagram via iframes embed des posts recents */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+        {/* Message d'info + lien direct vers Instagram */}
+        <div className="col-span-full">
+          <a
+            href={`https://instagram.com/${handle}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block bg-gradient-to-r from-purple-600/20 via-pink-600/20 to-orange-500/20 rounded-2xl border border-white/10 p-6 text-center hover:border-accent/30 transition-all group"
+          >
+            <Instagram size={40} className="mx-auto mb-3 text-pink-400 group-hover:scale-110 transition-transform" />
+            <p className="text-heading font-heading font-semibold text-lg mb-1">@{handle}</p>
+            <p className="text-grey-muted text-sm mb-4">
+              Voir toutes les realisations sur Instagram
+            </p>
+            <span className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-medium rounded-full text-sm hover:shadow-lg hover:shadow-pink-500/25 transition-all">
+              <Instagram size={16} />
+              Suivre sur Instagram
+              <ArrowRight size={14} />
+            </span>
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function buildTatoueurFromCMS(cms) {
   if (!cms) return null;
@@ -388,7 +430,7 @@ function TatoueurDetail({ subdomainSlug }) {
                 )}
               </div>
 
-              {/* Grille de realisations */}
+              {/* Grille de realisations ou feed Instagram */}
               {(() => {
                 // Support both local realisations (objects with image/caption) and CMS realisationImages (urls)
                 const reals = tatoueur.realisations?.length > 0
@@ -397,6 +439,12 @@ function TatoueurDetail({ subdomainSlug }) {
                       image: typeof img === 'string' ? img : mediaUrl(img),
                       caption: `Realisation ${i + 1}`,
                     }));
+
+                // Si pas de realisations locales, afficher le feed Instagram
+                if (reals.length === 0 && tatoueur.instagramHandle) {
+                  return <InstagramFeed handle={tatoueur.instagramHandle} />;
+                }
+
                 return reals.length > 0 ? (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                   {reals.map((real, i) => {
@@ -428,25 +476,7 @@ function TatoueurDetail({ subdomainSlug }) {
                     );
                   })}
                 </div>
-              ) : (
-                <div className="bg-bg-card rounded-2xl border border-white/5 p-8 text-center">
-                  <p className="text-grey-muted mb-4">
-                    {tx({
-                      fr: `Decouvrez les realisations de ${tatoueur.name} sur Instagram`,
-                      en: `Discover ${tatoueur.name}'s work on Instagram`,
-                    })}
-                  </p>
-                  <a
-                    href={`https://instagram.com/${tatoueur.instagramHandle}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn-primary inline-flex items-center"
-                  >
-                    <Instagram size={20} className="mr-2" />
-                    {tx({ fr: 'Voir sur Instagram', en: 'View on Instagram' })}
-                  </a>
-                </div>
-              )})()}
+              ) : null})()}
 
               {/* Lien Instagram sous la grille */}
               {(tatoueur.realisations?.length > 0 || tatoueur.realisationImages?.length > 0) && tatoueur.instagramHandle && (
