@@ -11,8 +11,8 @@ const tatoueurs = {
     city: 'Montreal',
     instagramHandle: 'ginko.ink',
     styles: ['fineline', 'botanique', 'blackwork', 'minimaliste'],
-    bioFr: "Tatoueuse specialisee en fineline et motifs botaniques. Chaque piece est dessinee sur mesure, inspiree par la nature et les formes organiques. Basee a Montreal chez Ombre Claire Studio, Myriam cree des tatouages delicats et intemporels qui racontent une histoire unique.",
-    bioEn: "Tattoo artist specialized in fineline and botanical designs. Each piece is custom-drawn, inspired by nature and organic forms. Based in Montreal at Ombre Claire Studio, Myriam creates delicate and timeless tattoos that tell a unique story.",
+    bioFr: "Myriam cree des tatouages fineline ou se melent univers feeriques, personnages d'animation et motifs botaniques. Inspiree par la nature, le folklore et les mondes imaginaires, elle dessine des pieces uniques pleines de details et de poesie. Ses flashs voyagent entre sorcieres, creatures des bois et scenes d'aventure. Basee a Montreal, elle tatoue sur rendez-vous et par flash uniquement.",
+    bioEn: "Myriam creates fineline tattoos blending fairy-tale worlds, animated characters and botanical motifs. Inspired by nature, folklore and imaginary worlds, she draws unique pieces full of detail and poetry. Her flash designs travel between witches, woodland creatures and adventure scenes. Based in Montreal, she tattoos by appointment and flash only.",
     socials: {
       instagram: 'https://www.instagram.com/ginko.ink',
     },
