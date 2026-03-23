@@ -70,8 +70,9 @@ export default function FlashLightbox({ flash, onClose, onReserve, tatoueurName 
                 className="w-full h-full object-contain max-h-[50vh] md:max-h-[90vh]"
               />
             ) : (
-              <div className="w-full h-full min-h-[300px] bg-bg-elevated flex items-center justify-center">
-                <span className="text-grey-muted text-lg">Flash</span>
+              <div className="w-full h-full min-h-[300px] bg-gradient-to-br from-accent/10 via-bg-elevated to-bg-card flex flex-col items-center justify-center p-8">
+                <Ruler className="w-16 h-16 text-accent/20 mb-3" />
+                <span className="text-grey-muted text-sm">{title || 'Flash'}</span>
               </div>
             )}
 

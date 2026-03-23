@@ -360,6 +360,65 @@ function TatoueurDetail({ subdomainSlug }) {
         </div>
       </section>
 
+      {/* ========== REALISATIONS INSTAGRAM ========== */}
+      {tatoueur.instagramHandle && (
+        <section className="py-12 md:py-16">
+          <div className="section-container">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              viewport={{ once: true }}
+            >
+              <div className="flex items-center justify-between mb-8">
+                <h2 className="text-3xl md:text-4xl font-heading font-bold text-heading flex items-center gap-3">
+                  <Instagram size={28} className="text-accent" />
+                  {tx({ fr: 'Realisations', en: 'Portfolio' })}
+                </h2>
+                <a
+                  href={`https://instagram.com/${tatoueur.instagramHandle}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-grey-muted hover:text-accent transition-colors flex items-center gap-1"
+                >
+                  @{tatoueur.instagramHandle}
+                  <ArrowRight size={14} />
+                </a>
+              </div>
+
+              {/* Instagram embed via iframe */}
+              <div className="bg-bg-card rounded-2xl border border-white/5 overflow-hidden">
+                <div className="p-6 md:p-8 text-center">
+                  <p className="text-grey-light text-base mb-6">
+                    {tx({
+                      fr: `Decouvrez les realisations de ${tatoueur.name} sur Instagram`,
+                      en: `Discover ${tatoueur.name}'s work on Instagram`,
+                    })}
+                  </p>
+
+                  <a
+                    href={`https://instagram.com/${tatoueur.instagramHandle}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-primary inline-flex items-center"
+                  >
+                    <Instagram size={20} className="mr-2" />
+                    {tx({ fr: `Voir sur Instagram`, en: `View on Instagram` })}
+                  </a>
+
+                  <p className="text-xs text-grey-muted mt-4">
+                    {tx({
+                      fr: 'Les photos de tatouages realises sont sur le profil Instagram.',
+                      en: 'Completed tattoo photos are on the Instagram profile.',
+                    })}
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </section>
+      )}
+
       {/* ========== PRICING INFO ========== */}
       {(tatoueur.priceTattooMin || tatoueur.hourlyRate) && (
         <section className="py-12 md:py-16">

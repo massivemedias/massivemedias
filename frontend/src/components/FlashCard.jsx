@@ -65,8 +65,9 @@ export default function FlashCard({ flash, onClick, index = 0 }) {
             loading="lazy"
           />
         ) : (
-          <div className="w-full h-full bg-bg-elevated flex items-center justify-center">
-            <Palette className="w-12 h-12 text-grey-muted/30" />
+          <div className="w-full h-full bg-gradient-to-br from-accent/10 via-bg-elevated to-bg-card flex flex-col items-center justify-center p-4 text-center">
+            <Palette className="w-10 h-10 text-accent/30 mb-2" />
+            {title && <span className="text-xs text-grey-muted/60 font-medium line-clamp-2">{title}</span>}
           </div>
         )}
 
