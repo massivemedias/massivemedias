@@ -4,7 +4,7 @@ import {
   Users, UserCheck, Clock, Mail, Calendar, Search,
   Loader2, Shield, Palette, ChevronDown, ChevronUp, Check, X,
   DollarSign, ShoppingBag, Phone, Building2, MapPin, Trash2,
-  Eye, MousePointerClick, ArrowUpRight, ExternalLink, BarChart3, Gift, FileCheck, Receipt,
+  Eye, MousePointerClick, ArrowUpRight, ExternalLink, BarChart3, Gift, FileCheck, Receipt, PenTool,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import api from '../services/api';
@@ -149,6 +149,7 @@ function AdminUtilisateurs() {
     if (tab === 'buyers') return u.isBuyer;
     if (tab === 'visitors') return !u.isBuyer && getUserRole(u.email) === 'user';
     if (tab === 'artists') return getUserRole(u.email) === 'artist';
+    if (tab === 'tatoueurs') return getUserRole(u.email) === 'tatoueur';
     return true;
   }).sort((a, b) => {
     // Buyers first, then by date
@@ -161,6 +162,7 @@ function AdminUtilisateurs() {
   const totalBuyers = allUsers.filter(u => u.isBuyer).length;
   const totalVisitors = allUsers.filter(u => !u.isBuyer && getUserRole(u.email) === 'user').length;
   const artistCount = Object.values(roles).filter(r => r.role === 'artist').length;
+  const tatoueurCount = Object.values(roles).filter(r => r.role === 'tatoueur').length;
   const totalRevenue = allUsers.reduce((s, u) => s + (parseFloat(u.totalSpent) || 0), 0);
 
   const summaryCards = [
@@ -168,6 +170,7 @@ function AdminUtilisateurs() {
     { label: tx({ fr: 'Acheteurs', en: 'Buyers', es: 'Compradores' }), value: totalBuyers, icon: ShoppingBag, accent: 'text-green-400' },
     { label: tx({ fr: 'Sans achat', en: 'No purchase', es: 'Sin compra' }), value: totalVisitors, icon: Eye, accent: 'text-blue-400' },
     { label: tx({ fr: 'Artistes', en: 'Artists', es: 'Artistas' }), value: artistCount, icon: Palette, accent: 'text-red-400' },
+    { label: tx({ fr: 'Tatoueurs', en: 'Tattoo Artists', es: 'Tatuadores' }), value: tatoueurCount, icon: PenTool, accent: 'text-blue-400' },
   ];
 
   const tabs = [
@@ -175,6 +178,7 @@ function AdminUtilisateurs() {
     { key: 'buyers', label: tx({ fr: 'Acheteurs', en: 'Buyers', es: 'Compradores' }), count: totalBuyers },
     { key: 'visitors', label: tx({ fr: 'Sans achat', en: 'No purchase', es: 'Sin compra' }), count: totalVisitors },
     { key: 'artists', label: tx({ fr: 'Artistes', en: 'Artists', es: 'Artistas' }), count: artistCount },
+    { key: 'tatoueurs', label: tx({ fr: 'Tatoueurs', en: 'Tattoo Artists', es: 'Tatuadores' }), count: tatoueurCount },
   ];
 
   const handleSetArtist = async (user) => {
@@ -256,6 +260,7 @@ function AdminUtilisateurs() {
   const getRoleBadge = (role, artistSlug) => {
     if (role === 'admin') return { label: 'Admin', slug: null, className: 'bg-yellow-500/20 text-yellow-400' };
     if (role === 'artist') return { label: tx({ fr: 'Artiste', en: 'Artist', es: 'Artista' }), slug: artistSlug || '?', className: 'bg-red-500/20 text-red-400' };
+    if (role === 'tatoueur') return { label: tx({ fr: 'Tatoueur', en: 'Tattoo Artist', es: 'Tatuador' }), slug: artistSlug || '?', className: 'bg-blue-500/20 text-blue-400' };
     return null;
   };
 
@@ -338,6 +343,7 @@ function AdminUtilisateurs() {
       <div className="flex flex-wrap items-center gap-4 text-xs text-grey-muted">
         <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-yellow-500/20 border border-yellow-400"></span> Admin</span>
         <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-red-500/20 border border-red-400"></span> {tx({ fr: 'Artiste', en: 'Artist', es: 'Artista' })}</span>
+        <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-blue-500/20 border border-blue-400"></span> {tx({ fr: 'Tatoueur', en: 'Tattoo Artist', es: 'Tatuador' })}</span>
         <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-green-500/20 border border-green-400"></span> {tx({ fr: 'Acheteur', en: 'Buyer', es: 'Comprador' })}</span>
         <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-purple-500/20 border border-purple-400"></span> {tx({ fr: 'Utilisateur', en: 'User', es: 'Usuario' })}</span>
       </div>
