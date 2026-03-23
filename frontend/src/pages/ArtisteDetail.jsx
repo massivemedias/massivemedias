@@ -638,10 +638,10 @@ function ArtisteDetail({ subdomainSlug }) {
               {tx({ fr: 'Configurez votre tirage', en: 'Configure Your Print', es: 'Configura tu impresion' })}
             </h2>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-8 max-w-5xl mx-auto">
+            <div className={`${isLandscape ? 'flex flex-col max-w-5xl mx-auto gap-6' : 'grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-8 max-w-5xl mx-auto'}`}>
               {/* Preview avec fleches navigation */}
               <div className="relative flex items-center">
-                {/* Fleche gauche - exterieure */}
+                {/* Fleche gauche */}
                 {artist.prints.length > 1 && (
                   <button
                     onClick={(e) => { e.stopPropagation(); navigatePrint(-1); }}
@@ -652,7 +652,7 @@ function ArtisteDetail({ subdomainSlug }) {
                   </button>
                 )}
                 <div
-                  className={`relative rounded-2xl overflow-hidden ${isLandscape ? 'aspect-[3/2]' : 'aspect-[2/3]'} lg:max-h-[70vh] cursor-pointer group w-full`}
+                  className={`relative rounded-2xl overflow-hidden ${isLandscape ? 'aspect-[16/9] max-h-[60vh]' : 'aspect-[2/3] lg:max-h-[70vh]'} cursor-pointer group w-full`}
                   onClick={() => setLightbox(artist.prints.findIndex(p => p.id === selectedPrint.id))}
                 >
                   <img
@@ -669,7 +669,7 @@ function ArtisteDetail({ subdomainSlug }) {
                     {artist.prints.findIndex(p => p.id === selectedPrint.id) + 1} / {artist.prints.length}
                   </div>
                 </div>
-                {/* Fleche droite - exterieure */}
+                {/* Fleche droite */}
                 {artist.prints.length > 1 && (
                   <button
                     onClick={(e) => { e.stopPropagation(); navigatePrint(1); }}
