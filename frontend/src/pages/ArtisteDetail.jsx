@@ -638,7 +638,7 @@ function ArtisteDetail({ subdomainSlug }) {
               {tx({ fr: 'Configurez votre tirage', en: 'Configure Your Print', es: 'Configura tu impresion' })}
             </h2>
 
-            <div className={`${isLandscape ? 'flex flex-col max-w-5xl mx-auto gap-6' : 'grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-8 max-w-5xl mx-auto'}`}>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-8 max-w-5xl mx-auto">
               {/* Preview avec fleches navigation */}
               <div className="relative flex items-center">
                 {/* Fleche gauche */}
@@ -652,7 +652,7 @@ function ArtisteDetail({ subdomainSlug }) {
                   </button>
                 )}
                 <div
-                  className={`relative rounded-2xl overflow-hidden ${isLandscape ? 'aspect-[16/9] max-h-[60vh]' : 'aspect-[2/3] lg:max-h-[70vh]'} cursor-pointer group w-full`}
+                  className="relative rounded-2xl overflow-hidden aspect-[2/3] lg:max-h-[70vh] cursor-pointer group w-full"
                   onClick={() => setLightbox(artist.prints.findIndex(p => p.id === selectedPrint.id))}
                 >
                   <img
