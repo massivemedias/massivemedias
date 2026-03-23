@@ -1,0 +1,78 @@
+{
+    "kind": "collectionType",
+    "collectionName": "service_pages",
+    "info": {
+        "singularName": "service-page",
+        "pluralName": "service-pages",
+        "displayName": "Page Service",
+        "description": "Pages de services editables (Prints, Stickers, Merch, Design)"
+    },
+    "options": {
+        "draftAndPublish": true
+    },
+    "attributes": {
+        "slug": { "type": "string", "unique": true, "required": true },
+        "boutiqueSlug": { "type": "string" },
+        "iconName": { "type": "string" },
+        "titleFr": { "type": "string", "required": true },
+        "titleEn": { "type": "string", "required": true },
+        "titleEs": { "type": "string" },
+        "subtitleFr": { "type": "text" },
+        "subtitleEn": { "type": "text" },
+        "subtitleEs": { "type": "text" },
+        "heroImage": {
+            "type": "media",
+            "multiple": false,
+            "allowedTypes": ["images"]
+        },
+        "descriptionFr": { "type": "richtext" },
+        "descriptionEn": { "type": "richtext" },
+        "descriptionEs": { "type": "richtext" },
+        "highlightsFr": { "type": "json" },
+        "highlightsEn": { "type": "json" },
+        "highlightsEs": { "type": "json" },
+        "processFr": { "type": "json" },
+        "processEn": { "type": "json" },
+        "processEs": { "type": "json" },
+        "pricingFr": { "type": "json" },
+        "pricingEn": { "type": "json" },
+        "pricingEs": { "type": "json" },
+        "equipmentFr": { "type": "json" },
+        "equipmentEn": { "type": "json" },
+        "equipmentEs": { "type": "json" },
+        "faqFr": { "type": "json" },
+        "faqEn": { "type": "json" },
+        "faqEs": { "type": "json" },
+        "gallery": {
+            "type": "media",
+            "multiple": true,
+            "allowedTypes": ["images"]
+        },
+        "seo": {
+            "type": "component",
+            "component": "shared.seo-meta"
+        },
+        "comparisonFr": { "type": "json" },
+        "comparisonEn": { "type": "json" },
+        "comparisonEs": { "type": "json" },
+        "whatWeDeliverFr": { "type": "json" },
+        "whatWeDeliverEn": { "type": "json" },
+        "whatWeDeliverEs": { "type": "json" },
+        "webProjectsFr": { "type": "json" },
+        "webProjectsEn": { "type": "json" },
+        "webProjectsEs": { "type": "json" },
+        "webProjectImages": {
+            "type": "media",
+            "multiple": true,
+            "allowedTypes": ["images"]
+        },
+        "technologiesFr": { "type": "json" },
+        "technologiesEn": { "type": "json" },
+        "technologiesEs": { "type": "json" },
+        "teamFr": { "type": "json" },
+        "teamEn": { "type": "json" },
+        "teamEs": { "type": "json" },
+        "sortOrder": { "type": "integer", "default": 0 },
+        "active": { "type": "boolean", "default": true }
+    }
+}

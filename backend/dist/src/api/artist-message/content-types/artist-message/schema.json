@@ -1,0 +1,53 @@
+{
+    "kind": "collectionType",
+    "collectionName": "artist_messages",
+    "info": {
+        "singularName": "artist-message",
+        "pluralName": "artist-messages",
+        "displayName": "Artist Message",
+        "description": "Messages des artistes vers Massive"
+    },
+    "options": {
+        "draftAndPublish": false
+    },
+    "attributes": {
+        "artistSlug": {
+            "type": "string",
+            "required": true
+        },
+        "artistName": {
+            "type": "string"
+        },
+        "email": {
+            "type": "email",
+            "required": true
+        },
+        "subject": {
+            "type": "string",
+            "required": true
+        },
+        "message": {
+            "type": "text",
+            "required": true
+        },
+        "category": {
+            "type": "enumeration",
+            "enum": ["new-images", "question", "withdrawal", "update-profile", "edit-request", "other"],
+            "default": "other"
+        },
+        "status": {
+            "type": "enumeration",
+            "enum": ["new", "read", "replied", "archived"],
+            "default": "new"
+        },
+        "attachments": {
+            "type": "json"
+        },
+        "adminReply": {
+            "type": "text"
+        },
+        "repliedAt": {
+            "type": "datetime"
+        }
+    }
+}

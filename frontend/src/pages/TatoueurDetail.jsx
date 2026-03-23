@@ -40,9 +40,9 @@ function InstagramFeed({ handle, postShortcodes = [] }) {
   return (
     <div className="space-y-4">
       {postShortcodes.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
           {postShortcodes.map((code) => (
-            <div key={code} className="rounded-xl overflow-hidden" style={{ maxHeight: '290px' }}>
+            <div key={code} className="rounded-xl overflow-hidden" style={{ maxHeight: '420px' }}>
               <blockquote
                 className="instagram-media"
                 data-instgrm-permalink={`https://www.instagram.com/p/${code}/`}

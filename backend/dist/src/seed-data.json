@@ -1,0 +1,3682 @@
+{
+    "siteContentSeedData": {
+        "announcementFr": "",
+        "announcementEn": "",
+        "announcementActive": false,
+        "homeSeo": {
+            "titleFr": "Massive Medias - Studio de production créative, Montréal",
+            "titleEn": "Massive Medias - Creative Production Studio, Montreal",
+            "descriptionFr": "Impression fine art, stickers custom, sublimation, design graphique et développement web à Montréal. Service local depuis 2022.",
+            "descriptionEn": "Fine art printing, custom stickers, sublimation, graphic design and web development in Montreal. Local service since 2022."
+        },
+        "heroTaglineFr": "Create. Print. Repeat.",
+        "heroTaglineEn": "Create. Print. Repeat.",
+        "heroSubtitleFr": "Studio de production créative à Montréal",
+        "heroSubtitleEn": "Creative Production Studio in Montreal",
+        "heroServicesFr": "Prints · Stickers · Merch · Design",
+        "heroServicesEn": "Prints · Stickers · Merch · Design",
+        "heroCta1Fr": "Voir nos services",
+        "heroCta1En": "View Our Services",
+        "heroCta2Fr": "Demander une soumission",
+        "heroCta2En": "Request a Quote",
+        "servicesSectionTitleFr": "Tout sous un même toit.",
+        "servicesSectionTitleEn": "Everything Under One Roof.",
+        "servicesSectionSubtitleFr": "De l'idée à l'objet fini, on s'occupe de tout.",
+        "servicesSectionSubtitleEn": "From idea to finished product, we handle everything.",
+        "serviceCards": [
+            {
+                "titleFr": "Prints",
+                "titleEn": "Prints",
+                "descriptionFr": "Tirages fine art, posters, affiches, flyers et cartes d'affaires. Impression professionnelle grand format et rapide, locale.",
+                "descriptionEn": "Fine art prints, posters, flyers and business cards. Professional large format and fast local printing.",
+                "link": "/services/prints",
+                "iconName": "Printer"
+            },
+            {
+                "titleFr": "Stickers",
+                "titleEn": "Stickers",
+                "descriptionFr": "Die-cut sur mesure avec découpe de précision professionnelle. Matte, glossy, transparent, holographique basic ou premium.",
+                "descriptionEn": "Custom die-cut with professional precision cutting. Matte, glossy, clear, basic or premium holographic.",
+                "link": "/services/stickers",
+                "iconName": "Sticker"
+            },
+            {
+                "titleFr": "Merch",
+                "titleEn": "Merch",
+                "descriptionFr": "T-shirts, hoodies, mugs, thermos, tapis de souris, porte-clés et plus. Impression sublimation sur mesure.",
+                "descriptionEn": "T-shirts, hoodies, mugs, tumblers, mousepads, keychains and more. Custom sublimation printing.",
+                "link": "/services/merch",
+                "iconName": "Shirt"
+            },
+            {
+                "titleFr": "Design",
+                "titleEn": "Design",
+                "descriptionFr": "Logos, identités visuelles, affiches, packaging. Design graphique et création visuelle.",
+                "descriptionEn": "Logos, visual identities, posters, packaging. Graphic design and visual creation.",
+                "link": "/services/design",
+                "iconName": "Palette"
+            },
+            {
+                "titleFr": "Web & SEO",
+                "titleEn": "Web & SEO",
+                "descriptionFr": "Sites web, e-commerce, référencement naturel. Développement web moderne et optimisation SEO.",
+                "descriptionEn": "Websites, e-commerce, search engine optimization. Modern web development and SEO.",
+                "link": "/services/design",
+                "iconName": "Globe"
+            }
+        ],
+        "projectsSectionTitleFr": "Nos réalisations",
+        "projectsSectionTitleEn": "Our Work",
+        "projectsSectionSubtitleFr": "Quelques projets qui parlent d'eux-mêmes.",
+        "projectsSectionSubtitleEn": "A few projects that speak for themselves.",
+        "featuredProjects": [
+            {
+                "titleFr": "Tirages Fine Art",
+                "titleEn": "Fine Art Prints",
+                "categoryFr": "Impression",
+                "categoryEn": "Printing",
+                "link": "/boutique/fine-art"
+            },
+            {
+                "titleFr": "Stickers Holographiques",
+                "titleEn": "Holographic Stickers",
+                "categoryFr": "Stickers",
+                "categoryEn": "Stickers",
+                "link": "/boutique/stickers"
+            },
+            {
+                "titleFr": "T-shirts Sublimation",
+                "titleEn": "Sublimation T-Shirts",
+                "categoryFr": "Merch",
+                "categoryEn": "Merch",
+                "link": "/boutique/sublimation"
+            },
+            {
+                "titleFr": "Affiches Événement",
+                "titleEn": "Event Posters",
+                "categoryFr": "Impression",
+                "categoryEn": "Printing",
+                "link": "/boutique/flyers"
+            },
+            {
+                "titleFr": "Die-Cut Custom",
+                "titleEn": "Custom Die-Cut",
+                "categoryFr": "Stickers",
+                "categoryEn": "Stickers",
+                "link": "/boutique/stickers"
+            },
+            {
+                "titleFr": "Mugs & Accessoires",
+                "titleEn": "Mugs & Accessories",
+                "categoryFr": "Merch",
+                "categoryEn": "Merch",
+                "link": "/boutique/sublimation"
+            }
+        ],
+        "stats": [
+            {
+                "value": "2022",
+                "suffix": "",
+                "labelFr": "Depuis",
+                "labelEn": "Since",
+                "isCounter": true
+            },
+            {
+                "value": "150",
+                "suffix": "+",
+                "labelFr": "Projets livrés",
+                "labelEn": "Projects delivered",
+                "isCounter": true
+            },
+            {
+                "value": "100",
+                "suffix": "%",
+                "labelFr": "Local, Montréal",
+                "labelEn": "Local, Montreal",
+                "isCounter": true
+            },
+            {
+                "value": "24-48",
+                "suffix": "h",
+                "labelFr": "Délai standard",
+                "labelEn": "Standard turnaround",
+                "isCounter": false
+            }
+        ],
+        "advantagesTitleFr": "Pourquoi Massive?",
+        "advantagesTitleEn": "Why Massive?",
+        "advantages": [
+            {
+                "titleFr": "Livraison locale gratuite",
+                "titleEn": "Free Local Delivery",
+                "descriptionFr": "Basé dans le Mile-End à Montréal. Pick-up ou livraison locale, zéro frais de shipping, zéro délai postal.",
+                "descriptionEn": "Based in Mile-End, Montreal. Pick-up or local delivery, zero shipping fees, zero postal delays.",
+                "iconName": "Truck"
+            },
+            {
+                "titleFr": "Qualité professionnelle",
+                "titleEn": "Professional Quality",
+                "descriptionFr": "Équipement d'impression grand format, papiers fine art, découpe de précision. Du matériel pro pour des résultats pro.",
+                "descriptionEn": "Large format printing equipment, fine art papers, precision cutting. Pro gear for pro results.",
+                "iconName": "Award"
+            },
+            {
+                "titleFr": "Service personnalisé",
+                "titleEn": "Personalized Service",
+                "descriptionFr": "Un seul interlocuteur de A à Z. On comprend ton projet parce qu'on vient du même milieu créatif.",
+                "descriptionEn": "One point of contact from A to Z. We understand your project because we come from the same creative scene.",
+                "iconName": "Users"
+            },
+            {
+                "titleFr": "Solution complète",
+                "titleEn": "Complete Solution",
+                "descriptionFr": "Impression + design + web + merch. Pas besoin de courir entre 4 fournisseurs différents.",
+                "descriptionEn": "Printing + design + web + merch. No need to run between 4 different vendors.",
+                "iconName": "Zap"
+            },
+            {
+                "titleFr": "Prix compétitifs",
+                "titleEn": "Competitive Pricing",
+                "descriptionFr": "Fine art 20% sous la concurrence. Pas de frais cachés, pas de minimum excessif.",
+                "descriptionEn": "Fine art 20% below competition. No hidden fees, no excessive minimums.",
+                "iconName": "DollarSign"
+            },
+            {
+                "titleFr": "La scène, on connaît",
+                "titleEn": "We Know the Scene",
+                "descriptionFr": "Musiciens, photographes, artistes visuels, promoteurs d'événements - c'est notre monde depuis le jour 1.",
+                "descriptionEn": "Musicians, photographers, visual artists, event promoters - it's been our world since day 1.",
+                "iconName": "Music"
+            }
+        ],
+        "testimonialsTitleFr": "Ce que nos clients disent",
+        "testimonialsTitleEn": "What Our Clients Say",
+        "testimonials": [
+            {
+                "name": "Samuel L.",
+                "roleFr": "Photographe",
+                "roleEn": "Photographer",
+                "textFr": "Tirages fine art impeccables. La qualité des couleurs est fidèle à mes fichiers. Je recommande à tous les photographes de Montréal.",
+                "textEn": "Flawless fine art prints. Color quality is true to my files. I recommend to all Montreal photographers."
+            },
+            {
+                "name": "Marie-Ève D.",
+                "roleFr": "Promotrice d'événements",
+                "roleEn": "Event Promoter",
+                "textFr": "Stickers et affiches pour notre festival en 48h. Qualité et rapidité au rendez-vous. On revient chaque année!",
+                "textEn": "Stickers and posters for our festival in 48h. Quality and speed delivered. We come back every year!"
+            },
+            {
+                "name": "Julien P.",
+                "roleFr": "Musicien",
+                "roleEn": "Musician",
+                "textFr": "Du merch pour notre tournée: t-shirts, stickers, affiches. Tout était parfait et livré dans les temps. Le one-stop shop idéal.",
+                "textEn": "Merch for our tour: t-shirts, stickers, posters. Everything was perfect and delivered on time. The ideal one-stop shop."
+            }
+        ],
+        "ctaTitleFr": "Prêt à lancer ton projet?",
+        "ctaTitleEn": "Ready to Launch Your Project?",
+        "ctaSubtitleFr": "Dis-nous ce que tu as en tête. Soumission rapide, sans engagement.",
+        "ctaSubtitleEn": "Tell us what you have in mind. Quick quote, no commitment.",
+        "ctaButtonFr": "Demander une soumission",
+        "ctaButtonEn": "Request a Quote",
+        "aboutSeo": {
+            "titleFr": "À propos - Massive Medias",
+            "titleEn": "About - Massive Medias",
+            "descriptionFr": "Studio de production créative fondé en 2020 à Montréal. L'équipe, l'espace et notre histoire.",
+            "descriptionEn": "Creative production studio founded in 2020 in Montreal. The team, the space and our story."
+        },
+        "aboutHeroTitleFr": "À propos",
+        "aboutHeroTitleEn": "About",
+        "aboutHeroSubtitleFr": "Un studio créatif ancré dans le Mile-End, au cœur de la scène artistique montréalaise.",
+        "aboutHeroSubtitleEn": "A creative studio rooted in Mile-End, at the heart of Montreal's artistic scene.",
+        "aboutHistoryTitleFr": "L'histoire",
+        "aboutHistoryTitleEn": "Our Story",
+        "aboutTextFr": "Massive Medias est un studio de production créative actif depuis 2022 et établi dans le Mile-End, au cœur de l'écosystème artistique montréalais.\nL'entreprise offre quatre services intégrés destinés aux artistes visuels, photographes, musiciens et créateurs indépendants : impressions fine art, stickers personnalisés, design graphique et développement web.\nNotre philosophie : offrir un service local, personnalisé et de qualité professionnelle, sans les délais et les complications des services en ligne. Pas de shipping, pas d'attente. Pick-up au Mile-End ou livraison locale.",
+        "aboutTextEn": "Massive Medias is a creative production studio active since 2022 and based in Mile-End, at the heart of Montreal's artistic ecosystem.\nThe company offers four integrated services for visual artists, photographers, musicians and independent creators: fine art printing, custom stickers, graphic design and web development.\nOur philosophy: offer local, personalized, professional-quality service without the delays and complications of online services. No shipping, no waiting. Pick-up in Mile-End or local delivery.",
+        "aboutTimelineTitleFr": "Notre parcours",
+        "aboutTimelineTitleEn": "Our Journey",
+        "aboutTimeline": [
+            {
+                "year": "2022",
+                "eventFr": "Lancement de Massive Medias - creation de sites web, design graphique et direction artistique pour entreprises et createurs montrealais.",
+                "eventEn": "Launch of Massive Medias - web development, graphic design and art direction for Montreal businesses and creators."
+            },
+            {
+                "year": "2023",
+                "eventFr": "Projets d'envergure avec des clients majeurs dont La Presse. Demarrage d'un service de creation pour particuliers.",
+                "eventEn": "Major projects with key clients including La Presse. Launch of creation services for individuals."
+            },
+            {
+                "year": "2024",
+                "eventFr": "Acquisition d'equipements professionnels d'impression fine art, decoupe et sublimation textile. Le studio devient un one-stop shop creatif.",
+                "eventEn": "Acquisition of professional fine art printing, cutting and textile sublimation equipment. The studio becomes a creative one-stop shop."
+            },
+            {
+                "year": "2025",
+                "eventFr": "Enregistrement officiel au REQ. Recentrage sur quatre piliers: prints fine art, stickers custom, design graphique et developpement web.",
+                "eventEn": "Official registration with the REQ. Refocus on four pillars: fine art prints, custom stickers, graphic design and web development."
+            },
+            {
+                "year": "2026",
+                "eventFr": "Lancement du Merch-as-a-Service, de la boutique en ligne pour prints, stickers et produits sublimes, et mise en ligne du site massivemedias.com.",
+                "eventEn": "Launch of Merch-as-a-Service, online shop for prints, stickers and sublimation products, and launch of massivemedias.com."
+            }
+        ],
+        "aboutTeamTitleFr": "L'équipe",
+        "aboutTeamTitleEn": "The Team",
+        "aboutTeam": [
+            {
+                "name": "Michael \"Mika\" Sanchez",
+                "roleFr": "Fondateur",
+                "roleEn": "Founder",
+                "bioFr": "Fondateur de Massive Medias, Mika est aussi compositeur de musique électronique et producteur sous le nom Maudite Machine et fondateur du label VRSTL Records. Programmeur-analyste de formation, il combine expertise technique et connaissance intime de la scène créative montréalaise.",
+                "bioEn": "Founder of Massive Medias, Mika is also an electronic music composer and producer under the name Maudite Machine and founder of the label VRSTL Records. Trained as a programmer-analyst, he combines technical expertise with an intimate knowledge of the Montreal creative scene.",
+                "bio2Fr": "15+ années d'expérience en développement web et design graphique. Expertise en gestion de la couleur et calibration pour l'impression Fine Art.",
+                "bio2En": "15+ years of experience in web development and graphic design. Expertise in color management and calibration for Fine Art printing."
+            },
+            {
+                "name": "Christopher Gagnon",
+                "roleFr": "Partenaire Design",
+                "roleEn": "Design Partner",
+                "bioFr": "Infographiste diplômé avec près de 10 ans d'expérience. Spécialisé en identité visuelle, packaging et design web. Christopher apporte une expertise créative complète à chaque projet.",
+                "bioEn": "Graduate graphic designer with nearly 10 years of experience. Specialized in visual identity, packaging and web design. Christopher brings complete creative expertise to every project.",
+                "bio2Fr": "Portfolio : Soundwave Festival, Laboratoire Bio Stratège, ChromaPur, Nutramazonie, NextGen Football et plus encore.",
+                "bio2En": "Portfolio: Soundwave Festival, Laboratoire Bio Stratège, ChromaPur, Nutramazonie, NextGen Football and more."
+            }
+        ],
+        "aboutEquipmentTitleFr": "Notre équipement",
+        "aboutEquipmentTitleEn": "Our Equipment",
+        "aboutEquipment": [
+            {
+                "nameFr": "Imprimante fine art",
+                "nameEn": "Fine art printer",
+                "descFr": "Impression professionnelle 12 couleurs, jusqu'à 17\"",
+                "descEn": "Professional 12-color printing, up to 17\"",
+                "iconName": "Printer"
+            },
+            {
+                "nameFr": "Découpe professionnelle",
+                "nameEn": "Professional cutter",
+                "descFr": "Découpe stickers et vinyle de précision",
+                "descEn": "Precision sticker and vinyl cutting",
+                "iconName": "Scissors"
+            },
+            {
+                "nameFr": "Presse à chaud grand format",
+                "nameEn": "Large format heat press",
+                "descFr": "Sublimation textile grand format",
+                "descEn": "Large format textile sublimation",
+                "iconName": "Shirt"
+            },
+            {
+                "nameFr": "Presse à chaud compacte",
+                "nameEn": "Compact heat press",
+                "descFr": "Presse polyvalente pour objets et accessoires",
+                "descEn": "Versatile press for objects and accessories",
+                "iconName": "Shirt"
+            },
+            {
+                "nameFr": "Lamineuse",
+                "nameEn": "Laminator",
+                "descFr": "Lamination et finition professionnelle",
+                "descEn": "Professional lamination and finishing",
+                "iconName": "Monitor"
+            },
+            {
+                "nameFr": "Imprimante courante",
+                "nameEn": "Standard printer",
+                "descFr": "Impression courante et épreuves",
+                "descEn": "Everyday printing and proofs",
+                "iconName": "Printer"
+            },
+            {
+                "nameFr": "Station de travail",
+                "nameEn": "Workstation",
+                "descFr": "Production, design et développement",
+                "descEn": "Production, design and development",
+                "iconName": "Monitor"
+            }
+        ],
+        "aboutSpaceLocationFr": "Mile-End, Montréal",
+        "aboutSpaceLocationEn": "Mile-End, Montreal",
+        "aboutSpaceTitleFr": "L'espace Versatile",
+        "aboutSpaceTitleEn": "The Versatile Space",
+        "aboutSpaceDescriptionFr": "On opère depuis l'espace collaboratif Versatile, au 7049 rue Saint-Urbain dans le Mile-End. Un lieu de création partagé avec une quinzaine de créateurs : vidéastes, photographes, designers, artistes. Pick-up disponible sur rendez-vous.",
+        "aboutSpaceDescriptionEn": "We operate from the Versatile collaborative space, at 7049 Saint-Urbain Street in Mile-End. A shared creative space with about fifteen creators: videographers, photographers, designers, artists. Pick-up available by appointment.",
+        "aboutUniverseTitleFr": "Aussi dans l'univers Massive",
+        "aboutUniverseTitleEn": "Also in the Massive Universe",
+        "aboutUniverse": [
+            {
+                "titleFr": "Maudite Machine",
+                "titleEn": "Maudite Machine",
+                "descriptionFr": "Compositeur de musique électronique et producteur. Sets et productions dark disco / indie dance. Sorties sur plusieurs labels, performances lors d'événements majeurs au Canada.",
+                "descriptionEn": "Electronic music composer and producer. Dark disco / indie dance sets and productions. Releases on multiple labels, performances at major events across Canada.",
+                "url": "https://mauditemachine.com"
+            },
+            {
+                "titleFr": "VRSTL Records",
+                "titleEn": "VRSTL Records",
+                "descriptionFr": "Label canadien dédié à l'Indie Dance et la Dark Minimal. Direction artistique, gestion des sorties, distribution digitale et promotion.",
+                "descriptionEn": "Canadian label dedicated to Indie Dance and Dark Minimal. Art direction, release management, digital distribution and promotion.",
+                "url": "https://vrstl.com"
+            }
+        ],
+        "contactSeo": {
+            "titleFr": "Contact - Massive Medias",
+            "titleEn": "Contact - Massive Medias",
+            "descriptionFr": "Demande de soumission et contact. On te revient dans les 24h.",
+            "descriptionEn": "Quote request and contact. We'll get back to you within 24 hours."
+        },
+        "footerTaglineFr": "Create. Print. Repeat.",
+        "footerTaglineEn": "Create. Print. Repeat.",
+        "footerStudioDescFr": "Studio de production créative",
+        "footerStudioDescEn": "Creative production studio",
+        "footerLocationFr": "Montréal, QC",
+        "footerLocationEn": "Montreal, QC",
+        "contactEmail": "massivemedias@gmail.com",
+        "contactPhone": "",
+        "socialLinks": [
+            {
+                "platform": "instagram",
+                "url": "https://instagram.com/massivemedias",
+                "label": "Instagram"
+            },
+            {
+                "platform": "facebook",
+                "url": "https://facebook.com/massivemedias",
+                "label": "Facebook"
+            },
+            {
+                "platform": "whatsapp",
+                "url": "https://wa.me/15146531423",
+                "label": "WhatsApp"
+            }
+        ],
+        "newsletterFormEndpoint": "https://formspree.io/f/xzdardoe"
+    },
+    "servicePagesSeedData": [
+        {
+            "slug": "prints",
+            "boutiqueSlug": "fine-art",
+            "iconName": "Printer",
+            "titleFr": "Prints",
+            "titleEn": "Prints",
+            "subtitleFr": "Fine art, flyers, cartes - impression qualité pro",
+            "subtitleEn": "Fine art, flyers, cards - professional quality printing",
+            "descriptionFr": "Le Fine Art désigne des impressions photographiques ou artistiques réalisées sur des papiers d'archives haut de gamme (coton, alpha-cellulose) avec des encres pigmentées à haute longévité. Ces tirages respectent les standards des galeries d'art et musées, avec une durée de conservation pouvant dépasser 100 ans.\n\nChaque impression fait l'objet d'un calibrage colorimétrique rigoureux pour garantir une fidélité optimale aux intentions de l'artiste.\n\nNous imprimons aussi des flyers, cartes postales et cartes d'affaires - tout ce dont tu as besoin pour promouvoir ton événement, ton show ou ton projet. Impression locale rapide, qualité pro.",
+            "descriptionEn": "Fine Art refers to photographic or artistic prints made on high-end archival papers (cotton, alpha-cellulose) with pigmented inks for maximum longevity. These prints meet gallery and museum standards, with a conservation life exceeding 100 years.\n\nEach print undergoes rigorous color calibration to ensure optimal fidelity to the artist's intentions.\n\nWe also print flyers, postcards and business cards - everything you need to promote your event, show or project. Fast local printing, professional quality.",
+            "highlightsFr": [
+                "Imprimante professionnelle fine art - 12 encres pigmentées",
+                "Accès imprimante grand format pour tirages 24\" et plus",
+                "Papiers fine art professionnels premium",
+                "Calibration professionnelle, profils ICC sur mesure",
+                "Durée de conservation 100+ ans",
+                "Flyers A6, A5, lettre (8,5×11\")",
+                "Cartes postales et cartes d'affaires",
+                "Papier premium 300g+ mat ou brillant",
+                "Pick-up gratuit Mile-End, livraison locale"
+            ],
+            "highlightsEn": [
+                "Professional fine art printer - 12 pigmented inks",
+                "Large format printer access for 24\"+ prints",
+                "Premium professional fine art papers",
+                "Professional calibration, custom ICC profiles",
+                "100+ year conservation life",
+                "Flyers A6, A5, letter (8.5×11\")",
+                "Postcards and business cards",
+                "Premium 300g+ paper, matte or glossy",
+                "Free pick-up Mile-End, local delivery"
+            ],
+            "processFr": [
+                {
+                    "step": 1,
+                    "title": "Réception du fichier",
+                    "desc": "Envoi de ton fichier haute résolution (ou création graphique sur demande)"
+                },
+                {
+                    "step": 2,
+                    "title": "Analyse colorimétrique",
+                    "desc": "Calibration selon le papier choisi, profil ICC adapté"
+                },
+                {
+                    "step": 3,
+                    "title": "Soft proofing",
+                    "desc": "Prévisualisation numérique et validation avant impression"
+                },
+                {
+                    "step": 4,
+                    "title": "Impression",
+                    "desc": "Tirage sur imprimante professionnelle grand format avec profil ICC personnalisé"
+                },
+                {
+                    "step": 5,
+                    "title": "Séchage & contrôle",
+                    "desc": "Séchage 24h, contrôle qualité, lamination optionnelle"
+                },
+                {
+                    "step": 6,
+                    "title": "Finition",
+                    "desc": "Emballage protection ou encadrement selon ta commande"
+                }
+            ],
+            "processEn": [
+                {
+                    "step": 1,
+                    "title": "File reception",
+                    "desc": "Submit your high-resolution file (or graphic design on request)"
+                },
+                {
+                    "step": 2,
+                    "title": "Color analysis",
+                    "desc": "Calibration according to chosen paper, adapted ICC profile"
+                },
+                {
+                    "step": 3,
+                    "title": "Soft proofing",
+                    "desc": "Digital preview and validation before printing"
+                },
+                {
+                    "step": 4,
+                    "title": "Printing",
+                    "desc": "Print on professional large format printer with custom ICC profile"
+                },
+                {
+                    "step": 5,
+                    "title": "Drying & quality check",
+                    "desc": "24h drying, quality control, optional lamination"
+                },
+                {
+                    "step": 6,
+                    "title": "Finishing",
+                    "desc": "Protective packaging or framing per your order"
+                }
+            ],
+            "comparisonFr": {
+                "title": "Studio vs Musée : quelle série choisir?",
+                "headers": [
+                    "Critère",
+                    "Série Studio",
+                    "Série Musée"
+                ],
+                "rows": [
+                    [
+                        "Imprimante",
+                        "Imprimante 4 encres pigmentées",
+                        "Imprimante 12 encres pigmentées"
+                    ],
+                    [
+                        "Encres",
+                        "4 couleurs pigmentées",
+                        "12 couleurs pigmentées"
+                    ],
+                    [
+                        "Gamut couleur",
+                        "Excellent",
+                        "Ultra-large (galerie)"
+                    ],
+                    [
+                        "Longévité",
+                        "50+ ans",
+                        "100+ ans (archival)"
+                    ],
+                    [
+                        "Papier max",
+                        "A2 (18×24\")",
+                        "A1 (24×36\")"
+                    ],
+                    [
+                        "Idéal pour",
+                        "Décoration, cadeaux, affiches",
+                        "Expositions, galeries, collectionneurs"
+                    ],
+                    [
+                        "Profil ICC",
+                        "Standard",
+                        "Sur mesure par tirage"
+                    ]
+                ]
+            },
+            "comparisonEn": {
+                "title": "Studio vs Museum: Which Series to Choose?",
+                "headers": [
+                    "Criteria",
+                    "Studio Series",
+                    "Museum Series"
+                ],
+                "rows": [
+                    [
+                        "Printer",
+                        "4 pigmented ink printer",
+                        "12 pigmented ink printer"
+                    ],
+                    [
+                        "Inks",
+                        "4 pigment inks",
+                        "12 pigment inks"
+                    ],
+                    [
+                        "Color gamut",
+                        "Excellent",
+                        "Ultra-wide (gallery grade)"
+                    ],
+                    [
+                        "Longevity",
+                        "50+ years",
+                        "100+ years (archival)"
+                    ],
+                    [
+                        "Max paper size",
+                        "A2 (18×24\")",
+                        "A1 (24×36\")"
+                    ],
+                    [
+                        "Best for",
+                        "Decor, gifts, posters",
+                        "Exhibitions, galleries, collectors"
+                    ],
+                    [
+                        "ICC Profile",
+                        "Standard",
+                        "Custom per print"
+                    ]
+                ]
+            },
+            "pricingFr": {
+                "title": "Tarifs Prints",
+                "note": "Série Studio : bonne qualité pour tout · Série Musée : qualité supérieure pour la photographie et les tirages galerie · Ajouter 30$ pour un cadre noir ou blanc",
+                "tables": [
+                    {
+                        "subtitle": "Impression Fine Art",
+                        "headers": [
+                            "Format",
+                            "Série Studio (4 encres pigmentées)",
+                            "Série Musée (12 encres pigmentées)"
+                        ],
+                        "rows": [
+                            [
+                                "A4 (8.5×11\")",
+                                "16$",
+                                "35$"
+                            ],
+                            [
+                                "A3 (11×17\")",
+                                "22$",
+                                "65$"
+                            ],
+                            [
+                                "A3+ (13×19\")",
+                                "30$",
+                                "95$"
+                            ],
+                            [
+                                "A2 (18×24\")",
+                                "42$",
+                                "125$"
+                            ]
+                        ]
+                    },
+                    {
+                        "subtitle": "Flyers & Cartes Postales (A6 / 4\"×6\")",
+                        "headers": [
+                            "Quantité",
+                            "Prix total",
+                            "Prix/unité"
+                        ],
+                        "rows": [
+                            [
+                                "50",
+                                "40$",
+                                "0,80$"
+                            ],
+                            [
+                                "100",
+                                "65$",
+                                "0,65$"
+                            ],
+                            [
+                                "150",
+                                "90$",
+                                "0,60$"
+                            ],
+                            [
+                                "250",
+                                "130$",
+                                "0,52$"
+                            ],
+                            [
+                                "500",
+                                "225$",
+                                "0,45$"
+                            ]
+                        ]
+                    }
+                ]
+            },
+            "pricingEn": {
+                "title": "Prints Pricing",
+                "note": "Studio Series: great quality for everything · Museum Series: superior quality for photography and gallery prints · Add $30 for a black or white frame",
+                "tables": [
+                    {
+                        "subtitle": "Fine Art Printing",
+                        "headers": [
+                            "Format",
+                            "Studio Series (4 pigmented inks)",
+                            "Museum Series (12 pigmented inks)"
+                        ],
+                        "rows": [
+                            [
+                                "A4 (8.5×11\")",
+                                "$16",
+                                "$35"
+                            ],
+                            [
+                                "A3 (11×17\")",
+                                "$22",
+                                "$65"
+                            ],
+                            [
+                                "A3+ (13×19\")",
+                                "$30",
+                                "$95"
+                            ],
+                            [
+                                "A2 (18×24\")",
+                                "$42",
+                                "$125"
+                            ]
+                        ]
+                    },
+                    {
+                        "subtitle": "Flyers & Postcards (A6 / 4\"×6\")",
+                        "headers": [
+                            "Quantity",
+                            "Total Price",
+                            "Price/unit"
+                        ],
+                        "rows": [
+                            [
+                                "50",
+                                "$40",
+                                "$0.80"
+                            ],
+                            [
+                                "100",
+                                "$65",
+                                "$0.65"
+                            ],
+                            [
+                                "150",
+                                "$90",
+                                "$0.60"
+                            ],
+                            [
+                                "250",
+                                "$130",
+                                "$0.52"
+                            ],
+                            [
+                                "500",
+                                "$225",
+                                "$0.45"
+                            ]
+                        ]
+                    }
+                ]
+            },
+            "equipmentFr": [
+                {
+                    "name": "Imprimante fine art professionnelle",
+                    "desc": "Impression 12 couleurs, jusqu'à 17\" (A2+). Qualité musée."
+                },
+                {
+                    "name": "Imprimante grand format",
+                    "desc": "Grand format jusqu'à 24\" via partenariat. Expositions et tirages oversize."
+                },
+                {
+                    "name": "Lamineuse professionnelle",
+                    "desc": "Lamination et protection des tirages pour une durabilité maximale."
+                },
+                {
+                    "name": "3x Imprimantes jet d'encre",
+                    "desc": "Volume d'impression rapide pour les séries courantes."
+                },
+                {
+                    "name": "Découpeuse professionnelle",
+                    "desc": "Découpe de précision pour formats personnalisés."
+                }
+            ],
+            "equipmentEn": [
+                {
+                    "name": "Professional fine art printer",
+                    "desc": "12-color printing, up to 17\" (A2+). Museum quality."
+                },
+                {
+                    "name": "Large format printer",
+                    "desc": "Large format up to 24\" via partnership. Exhibitions and oversize prints."
+                },
+                {
+                    "name": "Professional laminator",
+                    "desc": "Lamination and print protection for maximum durability."
+                },
+                {
+                    "name": "3x Inkjet printers",
+                    "desc": "Fast volume printing for standard runs."
+                },
+                {
+                    "name": "Professional cutter",
+                    "desc": "Precision cutting for custom formats."
+                }
+            ],
+            "faqFr": [
+                {
+                    "q": "Quelle est la différence entre Série Studio et Série Musée?",
+                    "a": "La Série Studio offre une qualité excellente pour décoration et cadeaux avec 4 encres pigmentées. La Série Musée utilise 12 encres pigmentées pour une fidélité galerie et une longévité de 100+ ans."
+                },
+                {
+                    "q": "Quel format de fichier dois-je fournir?",
+                    "a": "Idéalement un fichier haute résolution (300 DPI minimum) en TIFF, PNG ou JPEG. On peut aussi travailler à partir de fichiers PSD ou PDF."
+                },
+                {
+                    "q": "Offrez-vous l'encadrement?",
+                    "a": "Oui, on propose l'encadrement sur demande à partir de 30$. Cadres noirs, blancs ou bois naturel disponibles."
+                },
+                {
+                    "q": "Quel est le délai de production?",
+                    "a": "Généralement 24 à 48 heures pour les tirages standards. Les commandes en volume ou grand format peuvent nécessiter 3 à 5 jours."
+                },
+                {
+                    "q": "Peut-on récupérer sur place?",
+                    "a": "Oui! Pick-up gratuit au Mile-End. On offre aussi la livraison locale à Montréal."
+                }
+            ],
+            "faqEn": [
+                {
+                    "q": "What is the difference between Studio and Museum Series?",
+                    "a": "The Studio Series offers excellent quality for decoration and gifts with 4 pigmented inks. The Museum Series uses 12 pigmented inks for gallery-grade fidelity and 100+ year longevity."
+                },
+                {
+                    "q": "What file format should I provide?",
+                    "a": "Ideally a high-resolution file (300 DPI minimum) in TIFF, PNG or JPEG. We can also work from PSD or PDF files."
+                },
+                {
+                    "q": "Do you offer framing?",
+                    "a": "Yes, we offer framing on request starting at $30. Black, white or natural wood frames available."
+                },
+                {
+                    "q": "What is the production time?",
+                    "a": "Generally 24 to 48 hours for standard prints. Volume orders or large format may require 3 to 5 days."
+                },
+                {
+                    "q": "Can I pick up in person?",
+                    "a": "Yes! Free pick-up in Mile-End. We also offer local delivery in Montreal."
+                }
+            ],
+            "seo": {
+                "titleFr": "Prints - Fine Art, Flyers & Cartes | Montréal - Massive Medias",
+                "titleEn": "Prints - Fine Art, Flyers & Cards | Montreal - Massive Medias",
+                "descriptionFr": "Tirages fine art qualité galerie, flyers, cartes postales et cartes d'affaires. Impression professionnelle locale à Montréal.",
+                "descriptionEn": "Gallery-quality fine art prints, flyers, postcards and business cards. Professional local printing in Montreal."
+            },
+            "sortOrder": 1,
+            "active": true
+        },
+        {
+            "slug": "stickers",
+            "boutiqueSlug": "stickers",
+            "iconName": "Sticker",
+            "titleFr": "Stickers",
+            "titleEn": "Stickers",
+            "subtitleFr": "Autocollants découpés sur mesure pour créateurs",
+            "subtitleEn": "Custom die-cut stickers for creators",
+            "descriptionFr": "Autocollants découpés sur mesure pour artistes, labels, événements et marques. Service complet incluant la création graphique du visuel si nécessaire.\n\nDécoupés à la forme exacte de ton design avec notre équipement de découpe professionnel, chaque sticker est fini avec une lamination pour résister à l'eau, aux UV et aux rayures.",
+            "descriptionEn": "Custom die-cut stickers for artists, labels, events and brands. Complete service including graphic design if needed.\n\nCut to the exact shape of your design with our professional cutting equipment, each sticker is finished with lamination for water, UV and scratch resistance.",
+            "highlightsFr": [
+                "Équipement de découpe de précision professionnel",
+                "Vinyle matte, glossy, transparent, holographique",
+                "Découpe contour à la forme exacte du design",
+                "Lamination incluse - résistant eau, UV, rayures",
+                "Création graphique du sticker incluse dans le prix",
+                "Livraison locale disponible",
+                "Délai rapide : 24-72h"
+            ],
+            "highlightsEn": [
+                "Professional precision cutting equipment",
+                "Matte, glossy, clear, holographic vinyl",
+                "Contour cut to the exact shape of the design",
+                "Lamination included - water, UV, scratch resistant",
+                "Sticker graphic design included in the price",
+                "Local delivery available",
+                "Fast turnaround: 24-72h"
+            ],
+            "processFr": [
+                {
+                    "step": 1,
+                    "title": "Brief créatif",
+                    "desc": "Dis-nous ce que tu veux - logo, illustration, texte, forme custom"
+                },
+                {
+                    "step": 2,
+                    "title": "Création graphique",
+                    "desc": "On crée ou adapte ton visuel pour la découpe (inclus dans le prix)"
+                },
+                {
+                    "step": 3,
+                    "title": "Validation",
+                    "desc": "Aperçu numérique pour validation avant production"
+                },
+                {
+                    "step": 4,
+                    "title": "Impression",
+                    "desc": "Impression haute qualité sur vinyle de ton choix"
+                },
+                {
+                    "step": 5,
+                    "title": "Lamination",
+                    "desc": "Couche protectrice pour durabilité maximale"
+                },
+                {
+                    "step": 6,
+                    "title": "Découpe & livraison",
+                    "desc": "Découpe de précision professionnelle et remise/livraison"
+                }
+            ],
+            "processEn": [
+                {
+                    "step": 1,
+                    "title": "Creative brief",
+                    "desc": "Tell us what you want - logo, illustration, text, custom shape"
+                },
+                {
+                    "step": 2,
+                    "title": "Graphic design",
+                    "desc": "We create or adapt your visual for cutting (included in price)"
+                },
+                {
+                    "step": 3,
+                    "title": "Validation",
+                    "desc": "Digital preview for validation before production"
+                },
+                {
+                    "step": 4,
+                    "title": "Printing",
+                    "desc": "High quality printing on your choice of vinyl"
+                },
+                {
+                    "step": 5,
+                    "title": "Lamination",
+                    "desc": "Protective layer for maximum durability"
+                },
+                {
+                    "step": 6,
+                    "title": "Cutting & delivery",
+                    "desc": "Professional precision cutting and pick-up/delivery"
+                }
+            ],
+            "pricingFr": {
+                "title": "Tarifs Stickers Custom (Die-Cut)",
+                "note": "Design graphique inclus dans tous les prix",
+                "tables": [
+                    {
+                        "subtitle": "Stickers custom die-cut",
+                        "headers": [
+                            "Qté",
+                            "Standard (Mat/Brillant)",
+                            "Laminé Pro (Ultra-Résistant)",
+                            "Holographique (Effets Spéciaux)"
+                        ],
+                        "rows": [
+                            [
+                                "25",
+                                "30$ (1,20$/u)",
+                                "35$ (1,40$/u)",
+                                "42$ (1,68$/u)"
+                            ],
+                            [
+                                "50",
+                                "45$ (0,90$/u)",
+                                "55$ (1,10$/u)",
+                                "65$ (1,30$/u)"
+                            ],
+                            [
+                                "100",
+                                "75$ (0,75$/u)",
+                                "95$ (0,95$/u)",
+                                "110$ (1,10$/u)"
+                            ],
+                            [
+                                "250",
+                                "150$ (0,60$/u)",
+                                "190$ (0,76$/u)",
+                                "220$ (0,88$/u)"
+                            ],
+                            [
+                                "500",
+                                "250$ (0,50$/u)",
+                                "325$ (0,65$/u)",
+                                "380$ (0,76$/u)"
+                            ]
+                        ]
+                    }
+                ]
+            },
+            "pricingEn": {
+                "title": "Custom Stickers Pricing (Die-Cut)",
+                "note": "Graphic design included in all prices",
+                "tables": [
+                    {
+                        "subtitle": "Custom die-cut stickers",
+                        "headers": [
+                            "Qty",
+                            "Standard (Matte/Glossy)",
+                            "Pro Laminated (Ultra-Resistant)",
+                            "Holographic (Special Effects)"
+                        ],
+                        "rows": [
+                            [
+                                "25",
+                                "$30 ($1.20/u)",
+                                "$35 ($1.40/u)",
+                                "$42 ($1.68/u)"
+                            ],
+                            [
+                                "50",
+                                "$45 ($0.90/u)",
+                                "$55 ($1.10/u)",
+                                "$65 ($1.30/u)"
+                            ],
+                            [
+                                "100",
+                                "$75 ($0.75/u)",
+                                "$95 ($0.95/u)",
+                                "$110 ($1.10/u)"
+                            ],
+                            [
+                                "250",
+                                "$150 ($0.60/u)",
+                                "$190 ($0.76/u)",
+                                "$220 ($0.88/u)"
+                            ],
+                            [
+                                "500",
+                                "$250 ($0.50/u)",
+                                "$325 ($0.65/u)",
+                                "$380 ($0.76/u)"
+                            ]
+                        ]
+                    }
+                ]
+            },
+            "equipmentFr": [
+                {
+                    "name": "Découpeuse professionnelle",
+                    "desc": "Découpe de précision jusqu'à 12\" de large. Contour, kiss-cut, die-cut."
+                },
+                {
+                    "name": "Lamineuse",
+                    "desc": "Lamination matte ou glossy pour protection eau/UV/rayures."
+                },
+                {
+                    "name": "Imprimante vinyle",
+                    "desc": "Impression vinyle haute qualité, couleurs vibrantes."
+                }
+            ],
+            "equipmentEn": [
+                {
+                    "name": "Professional cutter",
+                    "desc": "Precision cutting up to 12\" wide. Contour, kiss-cut, die-cut."
+                },
+                {
+                    "name": "Laminator",
+                    "desc": "Matte or glossy lamination for water/UV/scratch protection."
+                },
+                {
+                    "name": "Vinyl printer",
+                    "desc": "High quality vinyl printing, vibrant colors."
+                }
+            ],
+            "faqFr": [
+                {
+                    "q": "Quels types de finis sont disponibles?",
+                    "a": "On offre glossy (brillant), matte, holographique, transparent et prismatique. Chaque fini a ses avantages selon l'utilisation."
+                },
+                {
+                    "q": "Le design graphique est-il inclus?",
+                    "a": "Oui! La création ou adaptation de ton visuel pour la découpe est incluse dans le prix. Tu peux aussi fournir un fichier prêt."
+                },
+                {
+                    "q": "Quelle est la quantité minimum?",
+                    "a": "À partir de 10 stickers identiques. Plus la quantité augmente, plus le prix unitaire diminue."
+                },
+                {
+                    "q": "Les stickers sont-ils résistants à l'eau?",
+                    "a": "Oui, tous nos stickers sont laminés et résistants à l'eau, aux UV et aux rayures. Durabilité extérieure de 3 à 5 ans."
+                },
+                {
+                    "q": "Peut-on avoir une forme totalement custom?",
+                    "a": "Absolument! Nos stickers sont découpés sur mesure (die-cut) selon la forme exacte de ton design."
+                }
+            ],
+            "faqEn": [
+                {
+                    "q": "What finishes are available?",
+                    "a": "We offer glossy, matte, holographic, clear and prismatic. Each finish has its advantages depending on the use case."
+                },
+                {
+                    "q": "Is graphic design included?",
+                    "a": "Yes! Creating or adapting your visual for die-cutting is included in the price. You can also provide a print-ready file."
+                },
+                {
+                    "q": "What is the minimum quantity?",
+                    "a": "Starting from 10 identical stickers. The more you order, the lower the unit price."
+                },
+                {
+                    "q": "Are the stickers waterproof?",
+                    "a": "Yes, all our stickers are laminated and resistant to water, UV and scratches. Outdoor durability of 3 to 5 years."
+                },
+                {
+                    "q": "Can I get a fully custom shape?",
+                    "a": "Absolutely! Our stickers are die-cut to match the exact shape of your design."
+                }
+            ],
+            "seo": {
+                "titleFr": "Stickers Custom Montréal - Massive Medias",
+                "titleEn": "Custom Stickers Montreal - Massive Medias",
+                "descriptionFr": "Stickers die-cut personnalisés. Holographique, matte, glossy, transparent. Design inclus. Découpe pro. Montréal.",
+                "descriptionEn": "Custom die-cut stickers. Holographic, matte, glossy, clear. Design included. Pro cutting. Montreal."
+            },
+            "sortOrder": 2,
+            "active": true
+        },
+        {
+            "slug": "merch",
+            "boutiqueSlug": "sublimation",
+            "iconName": "Shirt",
+            "titleFr": "Merch",
+            "titleEn": "Merch",
+            "subtitleFr": "T-shirts, crewnecks, hoodies, sacs bananes, mugs - ton merch sur mesure",
+            "subtitleEn": "T-shirts, crewnecks, hoodies, fanny packs, mugs - your custom merch",
+            "descriptionFr": "Impression sublimation sur textile et objets. La sublimation produit des couleurs vibrantes et permanentes qui ne craquent pas, ne s'effacent pas et résistent au lavage.\n\nIdéal pour le merch d'artiste, les événements, les cadeaux corporatifs ou tout projet personnalisé. T-shirts, crewnecks, hoodies, sacs bananes avec ton logo, mugs, thermos et plus encore.",
+            "descriptionEn": "Sublimation printing on textiles and objects. Sublimation produces vibrant and permanent colors that don't crack, don't fade and are wash-resistant.\n\nIdeal for artist merch, events, corporate gifts or any custom project. T-shirts, crewnecks, hoodies, fanny packs with your logo, mugs, tumblers and more.",
+            "highlightsFr": [
+                "Presse à chaud grand format - textile",
+                "Presse à chaud compacte - objets et accessoires",
+                "Kit pincement gobelets - drinkware sublimation",
+                "Sacs bananes personnalisés avec ton logo",
+                "Impression permanente - ne craque pas, ne s'efface pas",
+                "Couleurs vibrantes, résistant au lavage",
+                "Petites et moyennes séries"
+            ],
+            "highlightsEn": [
+                "Large format heat press - textile",
+                "Compact heat press - objects and accessories",
+                "Tumbler pinch kit - drinkware sublimation",
+                "Custom fanny packs with your logo",
+                "Permanent printing - doesn't crack, doesn't fade",
+                "Vibrant colors, wash-resistant",
+                "Small and medium runs"
+            ],
+            "processFr": [
+                {
+                    "step": 1,
+                    "title": "Choix du produit",
+                    "desc": "T-shirt, crewneck, hoodie, sac banane, mug, thermos, tapis de souris, etc."
+                },
+                {
+                    "step": 2,
+                    "title": "Design",
+                    "desc": "Envoi de ton visuel ou création graphique sur demande"
+                },
+                {
+                    "step": 3,
+                    "title": "Validation",
+                    "desc": "Mockup numérique pour approbation avant production"
+                },
+                {
+                    "step": 4,
+                    "title": "Impression sublimation",
+                    "desc": "Impression du transfert sur papier sublimation spécialisé"
+                },
+                {
+                    "step": 5,
+                    "title": "Pressage",
+                    "desc": "Transfert à haute température et pression - couleurs permanentes"
+                },
+                {
+                    "step": 6,
+                    "title": "Contrôle & livraison",
+                    "desc": "Vérification qualité et remise/livraison"
+                }
+            ],
+            "processEn": [
+                {
+                    "step": 1,
+                    "title": "Product choice",
+                    "desc": "T-shirt, crewneck, hoodie, fanny pack, mug, tumbler, mousepad, etc."
+                },
+                {
+                    "step": 2,
+                    "title": "Design",
+                    "desc": "Send your visual or request graphic design"
+                },
+                {
+                    "step": 3,
+                    "title": "Validation",
+                    "desc": "Digital mockup for approval before production"
+                },
+                {
+                    "step": 4,
+                    "title": "Sublimation printing",
+                    "desc": "Transfer printing on specialized sublimation paper"
+                },
+                {
+                    "step": 5,
+                    "title": "Pressing",
+                    "desc": "High temperature and pressure transfer - permanent colors"
+                },
+                {
+                    "step": 6,
+                    "title": "Quality check & delivery",
+                    "desc": "Quality verification and pick-up/delivery"
+                }
+            ],
+            "pricingFr": {
+                "title": "Tarifs Merch Sublimation",
+                "note": "+100-150$ si création design graphique à faire",
+                "headers": [
+                    "Produit",
+                    "Quantité",
+                    "Prix/unité",
+                    "Prix total"
+                ],
+                "rows": [
+                    [
+                        "T-shirt (design fourni)",
+                        "1",
+                        "30$",
+                        "30$"
+                    ],
+                    [
+                        "T-shirt (design fourni)",
+                        "5",
+                        "25$",
+                        "125$"
+                    ],
+                    [
+                        "T-shirt (design fourni)",
+                        "10",
+                        "22$",
+                        "220$"
+                    ],
+                    [
+                        "T-shirt (design fourni)",
+                        "25+",
+                        "20$",
+                        "Sur soumission"
+                    ],
+                    [
+                        "Crewneck (design fourni)",
+                        "1",
+                        "45$",
+                        "45$"
+                    ],
+                    [
+                        "Crewneck (design fourni)",
+                        "5",
+                        "40$",
+                        "200$"
+                    ],
+                    [
+                        "Crewneck (design fourni)",
+                        "10",
+                        "35$",
+                        "350$"
+                    ],
+                    [
+                        "Hoodie (design fourni)",
+                        "1",
+                        "50$",
+                        "50$"
+                    ],
+                    [
+                        "Hoodie (design fourni)",
+                        "5",
+                        "45$",
+                        "225$"
+                    ],
+                    [
+                        "Hoodie (design fourni)",
+                        "10",
+                        "40$",
+                        "400$"
+                    ],
+                    [
+                        "Sac banane avec logo",
+                        "1",
+                        "80$",
+                        "80$"
+                    ],
+                    [
+                        "Sac banane avec logo",
+                        "5",
+                        "70$",
+                        "350$"
+                    ],
+                    [
+                        "Sac banane avec logo",
+                        "10",
+                        "60$",
+                        "600$"
+                    ]
+                ]
+            },
+            "pricingEn": {
+                "title": "Merch Sublimation Pricing",
+                "note": "+$100-150 if graphic design creation is needed",
+                "headers": [
+                    "Product",
+                    "Quantity",
+                    "Price/unit",
+                    "Total"
+                ],
+                "rows": [
+                    [
+                        "T-shirt (design provided)",
+                        "1",
+                        "$30",
+                        "$30"
+                    ],
+                    [
+                        "T-shirt (design provided)",
+                        "5",
+                        "$25",
+                        "$125"
+                    ],
+                    [
+                        "T-shirt (design provided)",
+                        "10",
+                        "$22",
+                        "$220"
+                    ],
+                    [
+                        "T-shirt (design provided)",
+                        "25+",
+                        "$20",
+                        "On quote"
+                    ],
+                    [
+                        "Crewneck (design provided)",
+                        "1",
+                        "$45",
+                        "$45"
+                    ],
+                    [
+                        "Crewneck (design provided)",
+                        "5",
+                        "$40",
+                        "$200"
+                    ],
+                    [
+                        "Crewneck (design provided)",
+                        "10",
+                        "$35",
+                        "$350"
+                    ],
+                    [
+                        "Hoodie (design provided)",
+                        "1",
+                        "$50",
+                        "$50"
+                    ],
+                    [
+                        "Hoodie (design provided)",
+                        "5",
+                        "$45",
+                        "$225"
+                    ],
+                    [
+                        "Hoodie (design provided)",
+                        "10",
+                        "$40",
+                        "$400"
+                    ],
+                    [
+                        "Fanny pack with logo",
+                        "1",
+                        "$80",
+                        "$80"
+                    ],
+                    [
+                        "Fanny pack with logo",
+                        "5",
+                        "$70",
+                        "$350"
+                    ],
+                    [
+                        "Fanny pack with logo",
+                        "10",
+                        "$60",
+                        "$600"
+                    ]
+                ]
+            },
+            "equipmentFr": [
+                {
+                    "name": "Presse à chaud grand format",
+                    "desc": "Presse à chaud grand format pour t-shirts, hoodies et textiles."
+                },
+                {
+                    "name": "Presse à chaud compacte",
+                    "desc": "Presse compacte polyvalente pour objets et accessoires."
+                },
+                {
+                    "name": "Kit pincement gobelets",
+                    "desc": "Sublimation sur gobelets, thermos et drinkware."
+                }
+            ],
+            "equipmentEn": [
+                {
+                    "name": "Large format heat press",
+                    "desc": "Large format heat press for t-shirts, hoodies and textiles."
+                },
+                {
+                    "name": "Compact heat press",
+                    "desc": "Compact versatile press for objects and accessories."
+                },
+                {
+                    "name": "Tumbler pinch kit",
+                    "desc": "Sublimation on tumblers, bottles and drinkware."
+                }
+            ],
+            "faqFr": [
+                {
+                    "q": "Qu'est-ce que la sublimation?",
+                    "a": "La sublimation est un procédé d'impression qui transfère l'encre directement dans la fibre du tissu via chaleur et pression. Les couleurs sont permanentes, ne craquent pas et ne se décollent pas au lavage."
+                },
+                {
+                    "q": "Peut-on imprimer sur n'importe quel tissu?",
+                    "a": "La sublimation fonctionne sur les tissus en polyester ou à forte teneur en polyester, et sur les substrats traités (mugs, thermos, etc.). Les t-shirts 100% coton nécessitent un traitement spécial."
+                },
+                {
+                    "q": "Quelle est la quantité minimum?",
+                    "a": "À partir d'une seule unité! Pas de minimum. Idéal pour les prototypes ou les petites séries."
+                },
+                {
+                    "q": "Le design est-il inclus?",
+                    "a": "L'adaptation de ton visuel pour la sublimation est incluse. Si tu n'as pas de design, on peut le créer moyennant des frais de design graphique."
+                },
+                {
+                    "q": "Quels produits peut-on sublimer?",
+                    "a": "T-shirts, crewnecks, hoodies, sacs bananes, mugs, thermos, tapis de souris, porte-clés, et plus. Les sacs bananes sont parfaits pour mettre ton logo dessus!"
+                }
+            ],
+            "faqEn": [
+                {
+                    "q": "What is sublimation?",
+                    "a": "Sublimation is a printing process that transfers ink directly into the fabric fiber through heat and pressure. Colors are permanent, won't crack or peel in the wash."
+                },
+                {
+                    "q": "Can you print on any fabric?",
+                    "a": "Sublimation works on polyester or high-polyester-content fabrics, and on coated substrates (mugs, tumblers, etc.). 100% cotton t-shirts require special treatment."
+                },
+                {
+                    "q": "What is the minimum order?",
+                    "a": "Starting from a single unit! No minimum. Perfect for prototypes or small runs."
+                },
+                {
+                    "q": "Is design included?",
+                    "a": "Adapting your visual for sublimation is included. If you don't have a design, we can create one for a graphic design fee."
+                },
+                {
+                    "q": "What products can be sublimated?",
+                    "a": "T-shirts, crewnecks, hoodies, fanny packs, mugs, tumblers, mousepads, keychains, and more. Fanny packs are perfect for putting your logo on!"
+                }
+            ],
+            "seo": {
+                "titleFr": "Merch & Sublimation Montréal - Massive Medias",
+                "titleEn": "Merch & Sublimation Montreal - Massive Medias",
+                "descriptionFr": "T-shirts, crewnecks, hoodies, sacs bananes, mugs en sublimation. Merch d'artiste sur mesure. Production locale Montréal.",
+                "descriptionEn": "T-shirts, crewnecks, hoodies, fanny packs, mugs in sublimation. Custom artist merch. Local production in Montreal."
+            },
+            "sortOrder": 3,
+            "active": true
+        },
+        {
+            "slug": "design",
+            "iconName": "Palette",
+            "titleFr": "Design",
+            "titleEn": "Design",
+            "subtitleFr": "Design graphique, web design, développement et référencement",
+            "subtitleEn": "Graphic design, web design, development and SEO",
+            "descriptionFr": "Service complet de design graphique, web design et développement. De la conception de logos à l'identité visuelle complète, en passant par les affiches d'événements, les pochettes d'album et le design d'icônes.\n\nSites web modernes, performants et optimisés SEO pour artistes, créateurs et petites entreprises. Du portfolio d'artiste à la boutique e-commerce complète.\n\n15+ années d'expérience en développement web. Le fondateur de Massive Medias est programmeur-analyste de formation. Nous travaillons avec Adobe Illustrator, Figma, Photoshop et les technologies web modernes.",
+            "descriptionEn": "Complete graphic design, web design and development service. From logo design to full visual identity, including event posters, album covers and icon design.\n\nModern, fast and SEO-optimized websites for artists, creators and small businesses. From artist portfolios to complete e-commerce stores.\n\n15+ years of web development experience. The founder of Massive Medias is a trained programmer-analyst. We work with Adobe Illustrator, Figma, Photoshop and modern web technologies.",
+            "highlightsFr": [
+                "Adobe Illustrator - Logos vectoriels et identités visuelles",
+                "Figma - Maquettes UI/UX et prototypage interactif",
+                "Adobe Photoshop - Retouche photo et compositing",
+                "Logos et identités visuelles complètes",
+                "Affiches, flyers et pochettes album",
+                "Web design sur mesure et responsive",
+                "Développement front-end et back-end complet",
+                "SEO technique et référencement naturel",
+                "Intégration CMS (WordPress, Strapi, Shopify)",
+                "Hébergement, domaine et maintenance"
+            ],
+            "highlightsEn": [
+                "Adobe Illustrator - Vector logos and visual identities",
+                "Figma - UI/UX mockups and interactive prototyping",
+                "Adobe Photoshop - Photo retouching and compositing",
+                "Logos and complete visual identities",
+                "Posters, flyers and album covers",
+                "Custom web design and responsive",
+                "Full front-end and back-end development",
+                "Technical SEO and organic search optimization",
+                "CMS integration (WordPress, Strapi, Shopify)",
+                "Hosting, domain and maintenance"
+            ],
+            "whatWeDeliverFr": [
+                {
+                    "title": "Web Design",
+                    "desc": "Maquettes UI/UX sur mesure, palette de couleurs, typographie et identité visuelle cohérente avec ta marque."
+                },
+                {
+                    "title": "Développement",
+                    "desc": "Code propre et maintenable avec React, Angular ou WordPress selon tes besoins."
+                },
+                {
+                    "title": "Responsive",
+                    "desc": "Design adaptatif parfait sur mobile, tablette et desktop. Mobile-first."
+                },
+                {
+                    "title": "SEO & Référencement",
+                    "desc": "Optimisation on-page, méta-tags, sitemap, schema markup, Google Analytics et Search Console."
+                },
+                {
+                    "title": "Performance",
+                    "desc": "Images optimisées WebP, lazy loading, minification, CDN. Score 90+ sur PageSpeed."
+                },
+                {
+                    "title": "Sécurité",
+                    "desc": "Certificat SSL, headers sécurisés, protection anti-spam, sauvegardes automatiques."
+                }
+            ],
+            "whatWeDeliverEn": [
+                {
+                    "title": "Web Design",
+                    "desc": "Custom UI/UX mockups, color palette, typography and visual identity aligned with your brand."
+                },
+                {
+                    "title": "Development",
+                    "desc": "Clean, maintainable code with React, Angular or WordPress depending on your needs."
+                },
+                {
+                    "title": "Responsive",
+                    "desc": "Perfectly adaptive design on mobile, tablet and desktop. Mobile-first approach."
+                },
+                {
+                    "title": "SEO & Ranking",
+                    "desc": "On-page optimization, meta tags, sitemap, schema markup, Google Analytics and Search Console."
+                },
+                {
+                    "title": "Performance",
+                    "desc": "Optimized WebP images, lazy loading, minification, CDN. 90+ PageSpeed score."
+                },
+                {
+                    "title": "Security",
+                    "desc": "SSL certificate, security headers, anti-spam protection, automatic backups."
+                }
+            ],
+            "processFr": [
+                {
+                    "step": 1,
+                    "title": "Brief créatif",
+                    "desc": "Discussion sur ta vision, tes références, ton public cible et tes objectifs"
+                },
+                {
+                    "step": 2,
+                    "title": "Recherche & moodboard",
+                    "desc": "Exploration visuelle, palette de couleurs, direction artistique, architecture du site"
+                },
+                {
+                    "step": 3,
+                    "title": "Création & design",
+                    "desc": "Design sur Illustrator/Figma - logos, maquettes, identité visuelle"
+                },
+                {
+                    "step": 4,
+                    "title": "Développement",
+                    "desc": "Code propre, technologies modernes, responsive, intégrations API"
+                },
+                {
+                    "step": 5,
+                    "title": "SEO & Optimisation",
+                    "desc": "Référencement, performances, accessibilité, tests multi-devices"
+                },
+                {
+                    "step": 6,
+                    "title": "Livraison & lancement",
+                    "desc": "Fichiers finaux, mise en ligne, formation CMS, suivi post-lancement"
+                }
+            ],
+            "processEn": [
+                {
+                    "step": 1,
+                    "title": "Creative brief",
+                    "desc": "Discussion about your vision, references, target audience and goals"
+                },
+                {
+                    "step": 2,
+                    "title": "Research & moodboard",
+                    "desc": "Visual exploration, color palette, artistic direction, site architecture"
+                },
+                {
+                    "step": 3,
+                    "title": "Creation & design",
+                    "desc": "Design on Illustrator/Figma - logos, mockups, visual identity"
+                },
+                {
+                    "step": 4,
+                    "title": "Development",
+                    "desc": "Clean code, modern technologies, responsive, API integrations"
+                },
+                {
+                    "step": 5,
+                    "title": "SEO & Optimization",
+                    "desc": "Search ranking, performance, accessibility, multi-device testing"
+                },
+                {
+                    "step": 6,
+                    "title": "Delivery & launch",
+                    "desc": "Final files, go-live, CMS training, post-launch monitoring"
+                }
+            ],
+            "pricingFr": {
+                "title": "Tarifs Design & Web",
+                "note": "Le design de stickers est inclus dans le prix de production des stickers.",
+                "tables": [
+                    {
+                        "subtitle": "Design Graphique",
+                        "headers": [
+                            "Service",
+                            "Prix",
+                            "Délai"
+                        ],
+                        "rows": [
+                            [
+                                "Création logo",
+                                "300$ - 600$",
+                                "5-10 jours"
+                            ],
+                            [
+                                "Identité visuelle complète",
+                                "800$ - 1 500$",
+                                "2-3 semaines"
+                            ],
+                            [
+                                "Affiche / flyer événement",
+                                "150$ - 300$",
+                                "3-5 jours"
+                            ],
+                            [
+                                "Pochette album / single",
+                                "200$ - 400$",
+                                "5-7 jours"
+                            ],
+                            [
+                                "Design d'icônes (set)",
+                                "200$ - 500$",
+                                "3-7 jours"
+                            ],
+                            [
+                                "Retouche photo (par image)",
+                                "15$ - 50$",
+                                "24-48h"
+                            ]
+                        ]
+                    },
+                    {
+                        "subtitle": "Développement Web & Référencement",
+                        "headers": [
+                            "Service",
+                            "Prix"
+                        ],
+                        "rows": [
+                            [
+                                "Landing page événement",
+                                "900$"
+                            ],
+                            [
+                                "Site vitrine artiste/label (5-10 pages)",
+                                "2 000$ - 3 500$"
+                            ],
+                            [
+                                "Site e-commerce simple",
+                                "4 000$ - 6 000$"
+                            ],
+                            [
+                                "Refonte site existant",
+                                "Sur soumission"
+                            ],
+                            [
+                                "Maintenance mensuelle",
+                                "100$ - 200$/mois"
+                            ],
+                            [
+                                "Taux horaire (Web, Design, Restauration)",
+                                "85$/h"
+                            ]
+                        ]
+                    }
+                ]
+            },
+            "pricingEn": {
+                "title": "Design & Web Pricing",
+                "note": "Sticker design is included in the sticker production price.",
+                "tables": [
+                    {
+                        "subtitle": "Graphic Design",
+                        "headers": [
+                            "Service",
+                            "Price",
+                            "Timeline"
+                        ],
+                        "rows": [
+                            [
+                                "Logo design",
+                                "$300 - $600",
+                                "5-10 days"
+                            ],
+                            [
+                                "Complete visual identity",
+                                "$800 - $1,500",
+                                "2-3 weeks"
+                            ],
+                            [
+                                "Event poster / flyer",
+                                "$150 - $300",
+                                "3-5 days"
+                            ],
+                            [
+                                "Album / single cover",
+                                "$200 - $400",
+                                "5-7 days"
+                            ],
+                            [
+                                "Icon set design",
+                                "$200 - $500",
+                                "3-7 days"
+                            ],
+                            [
+                                "Photo retouching (per image)",
+                                "$15 - $50",
+                                "24-48h"
+                            ]
+                        ]
+                    },
+                    {
+                        "subtitle": "Web Development & SEO",
+                        "headers": [
+                            "Service",
+                            "Price"
+                        ],
+                        "rows": [
+                            [
+                                "Event landing page",
+                                "$900"
+                            ],
+                            [
+                                "Artist/label showcase site (5-10 pages)",
+                                "$2,000 - $3,500"
+                            ],
+                            [
+                                "Simple e-commerce site",
+                                "$4,000 - $6,000"
+                            ],
+                            [
+                                "Existing site redesign",
+                                "On quote"
+                            ],
+                            [
+                                "Monthly maintenance",
+                                "$100 - $200/mo"
+                            ],
+                            [
+                                "Hourly rate (Web, Design, Restoration)",
+                                "$85/h"
+                            ]
+                        ]
+                    }
+                ]
+            },
+            "webProjectsFr": [
+                {
+                    "name": "Sonaa.ca",
+                    "desc": "Portail d'actualités technologiques avec agrégation de contenu automatisée",
+                    "url": "https://sonaa.ca",
+                    "tags": [
+                        "React",
+                        "API",
+                        "SEO"
+                    ]
+                },
+                {
+                    "name": "Recrutement SPVM",
+                    "desc": "Site de recrutement pour le Service de police de la Ville de Montréal",
+                    "url": "https://recrutementspvm.ca",
+                    "tags": [
+                        "WordPress",
+                        "UX",
+                        "Responsive"
+                    ]
+                },
+                {
+                    "name": "Maudite Machine",
+                    "desc": "Site d'artiste pour DJ et producteur de musique électronique",
+                    "url": "https://mauditemachine.com",
+                    "tags": [
+                        "React",
+                        "Animation",
+                        "Audio"
+                    ]
+                },
+                {
+                    "name": "SPVM",
+                    "desc": "Site officiel du Service de police de la Ville de Montréal",
+                    "url": "https://spvm.qc.ca",
+                    "tags": [
+                        "Angular",
+                        "CMS",
+                        "Accessibilité"
+                    ]
+                },
+                {
+                    "name": "Sarah Latulippe",
+                    "desc": "Portfolio de photographe professionnelle - corporatif, portrait et réseaux sociaux",
+                    "url": "https://sarahlatulippe.com",
+                    "tags": [
+                        "WordPress",
+                        "Portfolio",
+                        "SEO"
+                    ]
+                },
+                {
+                    "name": "La Presse",
+                    "desc": "Site du plus grand journal francophone d'Amérique du Nord",
+                    "url": "https://lapresse.ca",
+                    "tags": [
+                        "Angular",
+                        "Performance",
+                        "CMS"
+                    ]
+                },
+                {
+                    "name": "Générateur QR",
+                    "desc": "Application web de génération de codes QR et raccourcisseur de liens",
+                    "url": "https://main.d15strqjqfjba7.amplifyapp.com/",
+                    "tags": [
+                        "React",
+                        "AWS",
+                        "API"
+                    ]
+                },
+                {
+                    "name": "Boutique Maude",
+                    "desc": "Boutique en ligne de prêt-à-porter avec catalogue et paiement intégré",
+                    "url": "https://boutiquemaude.com",
+                    "tags": [
+                        "E-commerce",
+                        "Shopify",
+                        "SEO"
+                    ]
+                }
+            ],
+            "webProjectsEn": [
+                {
+                    "name": "Sonaa.ca",
+                    "desc": "Tech news portal with automated content aggregation",
+                    "url": "https://sonaa.ca",
+                    "tags": [
+                        "React",
+                        "API",
+                        "SEO"
+                    ]
+                },
+                {
+                    "name": "SPVM Recruitment",
+                    "desc": "Recruitment website for the Montreal Police Department",
+                    "url": "https://recrutementspvm.ca",
+                    "tags": [
+                        "WordPress",
+                        "UX",
+                        "Responsive"
+                    ]
+                },
+                {
+                    "name": "Maudite Machine",
+                    "desc": "Artist website for a DJ and electronic music producer",
+                    "url": "https://mauditemachine.com",
+                    "tags": [
+                        "React",
+                        "Animation",
+                        "Audio"
+                    ]
+                },
+                {
+                    "name": "SPVM",
+                    "desc": "Official website of the Montreal Police Department",
+                    "url": "https://spvm.qc.ca",
+                    "tags": [
+                        "Angular",
+                        "CMS",
+                        "Accessibility"
+                    ]
+                },
+                {
+                    "name": "Sarah Latulippe",
+                    "desc": "Professional photographer portfolio - corporate, portrait and social media",
+                    "url": "https://sarahlatulippe.com",
+                    "tags": [
+                        "WordPress",
+                        "Portfolio",
+                        "SEO"
+                    ]
+                },
+                {
+                    "name": "La Presse",
+                    "desc": "Largest French-language newspaper in North America",
+                    "url": "https://lapresse.ca",
+                    "tags": [
+                        "Angular",
+                        "Performance",
+                        "CMS"
+                    ]
+                },
+                {
+                    "name": "QR Generator",
+                    "desc": "QR code generator and link shortener web application",
+                    "url": "https://main.d15strqjqfjba7.amplifyapp.com/",
+                    "tags": [
+                        "React",
+                        "AWS",
+                        "API"
+                    ]
+                },
+                {
+                    "name": "Boutique Maude",
+                    "desc": "Fashion e-commerce store with integrated catalog and payments",
+                    "url": "https://boutiquemaude.com",
+                    "tags": [
+                        "E-commerce",
+                        "Shopify",
+                        "SEO"
+                    ]
+                }
+            ],
+            "technologiesFr": [
+                "React / Next.js",
+                "Angular",
+                "Node.js / Express",
+                "Strapi (CMS headless)",
+                "WordPress",
+                "Shopify",
+                "AWS (hébergement)",
+                "PostgreSQL / SQLite",
+                "Tailwind CSS",
+                "Framer Motion",
+                "Google Analytics",
+                "Search Console"
+            ],
+            "technologiesEn": [
+                "React / Next.js",
+                "Angular",
+                "Node.js / Express",
+                "Strapi (headless CMS)",
+                "WordPress",
+                "Shopify",
+                "AWS (hosting)",
+                "PostgreSQL / SQLite",
+                "Tailwind CSS",
+                "Framer Motion",
+                "Google Analytics",
+                "Search Console"
+            ],
+            "teamFr": {
+                "name": "Christopher Gagnon",
+                "role": "Infographiste partenaire",
+                "bio": "Diplômé en design graphique avec près de 10 ans d'expérience. Spécialisé en identité visuelle, packaging et design web.",
+                "portfolio": "Soundwave Festival, Laboratoire Bio Stratège, ChromaPur, Nutramazonie, NextGen Football, Belette Trois-Mille."
+            },
+            "teamEn": {
+                "name": "Christopher Gagnon",
+                "role": "Partner Graphic Designer",
+                "bio": "Graduate graphic designer with nearly 10 years of experience. Specialized in visual identity, packaging and web design.",
+                "portfolio": "Soundwave Festival, Laboratoire Bio Stratège, ChromaPur, Nutramazonie, NextGen Football, Belette Trois-Mille."
+            },
+            "faqFr": [
+                {
+                    "q": "Combien coûte un logo?",
+                    "a": "Les logos débutent à 150$ pour un concept simple. Une identité visuelle complète (logo + couleurs + typographie + déclinaisons) commence à 400$."
+                },
+                {
+                    "q": "Combien coûte un site web?",
+                    "a": "Les sites vitrines débutent à 900$. Les sites e-commerce ou avec fonctionnalités avancées sont sur devis selon la complexité du projet."
+                },
+                {
+                    "q": "Quel est le délai pour un site web?",
+                    "a": "Comptez 2 à 4 semaines pour un site vitrine, 4 à 8 semaines pour un e-commerce. Tout dépend de la complexité et de la rapidité des retours."
+                },
+                {
+                    "q": "Le SEO est-il inclus?",
+                    "a": "Oui! Chaque site inclut l'optimisation SEO de base : méta-tags, sitemap, schema markup, Google Analytics et Search Console."
+                },
+                {
+                    "q": "Offrez-vous la maintenance?",
+                    "a": "Oui, on offre des forfaits de maintenance mensuelle incluant mises à jour, sauvegardes, monitoring de performance et support technique."
+                }
+            ],
+            "faqEn": [
+                {
+                    "q": "How much does a logo cost?",
+                    "a": "Logos start at $150 for a simple concept. A complete visual identity (logo + colors + typography + variations) starts at $400."
+                },
+                {
+                    "q": "How much does a website cost?",
+                    "a": "Showcase websites start at $900. E-commerce or advanced features are quoted based on project complexity."
+                },
+                {
+                    "q": "What is the timeline for a website?",
+                    "a": "Expect 2 to 4 weeks for a showcase site, 4 to 8 weeks for e-commerce. It depends on complexity and feedback speed."
+                },
+                {
+                    "q": "Is SEO included?",
+                    "a": "Yes! Every website includes basic SEO optimization: meta tags, sitemap, schema markup, Google Analytics and Search Console."
+                },
+                {
+                    "q": "Do you offer maintenance?",
+                    "a": "Yes, we offer monthly maintenance packages including updates, backups, performance monitoring and technical support."
+                }
+            ],
+            "seo": {
+                "titleFr": "Design Graphique & Web Montréal - Massive Medias",
+                "titleEn": "Graphic Design & Web Montreal - Massive Medias",
+                "descriptionFr": "Logos, identités visuelles, sites web, e-commerce, SEO. Design graphique et développement web professionnel à Montréal.",
+                "descriptionEn": "Logos, visual identities, websites, e-commerce, SEO. Professional graphic design and web development in Montreal."
+            },
+            "sortOrder": 4,
+            "active": true
+        }
+    ],
+    "artistsSeedData": [
+        {
+            "slug": "adrift",
+            "name": "Adrift",
+            "taglineFr": "Art numerique & univers immersifs",
+            "taglineEn": "Digital Art & Immersive Worlds",
+            "bioFr": "Adrift explore les frontieres entre le reel et le virtuel a travers des compositions numeriques saisissantes. Son univers visuel puise dans la science-fiction, les textures organiques et les paysages oniriques pour creer des oeuvres qui transportent le spectateur dans des dimensions paralleles.",
+            "bioEn": "Adrift explores the boundaries between real and virtual through striking digital compositions. Their visual universe draws from science fiction, organic textures and dreamlike landscapes to create works that transport the viewer into parallel dimensions.",
+            "socials": {
+                "instagram": "https://instagram.com/alx.rouleau",
+                "youtube": "https://www.youtube.com/@adrift.vision",
+                "tiktok": "https://tiktok.com/@adriftvision",
+                "website": "https://www.adrift.vision"
+            },
+            "pricing": {
+                "studio": {
+                    "a4": 35,
+                    "a3": 50,
+                    "a3plus": 65,
+                    "a2": 85
+                },
+                "museum": {
+                    "a4": 75,
+                    "a3": 120,
+                    "a3plus": 160,
+                    "a2": 225
+                },
+                "framePriceByFormat": {
+                    "postcard": 20,
+                    "a4": 20,
+                    "a3": 30,
+                    "a3plus": 35,
+                    "a2": 45
+                }
+            },
+            "prints": [
+                {
+                    "id": "adrift-001",
+                    "titleFr": "Print I",
+                    "titleEn": "Print I",
+                    "image": "/images/prints/Adrift1.webp",
+                    "limited": false
+                },
+                {
+                    "id": "adrift-002",
+                    "titleFr": "Print II",
+                    "titleEn": "Print II",
+                    "image": "/images/prints/Adrift2.webp",
+                    "limited": false
+                }
+            ],
+            "sortOrder": 1,
+            "active": true
+        },
+        {
+            "slug": "maudite-machine",
+            "name": "Maudite Machine",
+            "taglineFr": "Musique electronique & culture visuelle",
+            "taglineEn": "Electronic Music & Visual Culture",
+            "bioFr": "Maudite Machine est un collectif audiovisuel montrealais qui fusionne musique electronique et art visuel. Leurs creations graphiques - affiches, pochettes et illustrations - capturent l'energie brute de la scene underground et la transforment en oeuvres visuelles percutantes.",
+            "bioEn": "Maudite Machine is a Montreal-based audiovisual collective that fuses electronic music and visual art. Their graphic creations - posters, album covers and illustrations - capture the raw energy of the underground scene and transform it into striking visual works.",
+            "socials": {},
+            "pricing": {
+                "studio": {
+                    "a4": 35,
+                    "a3": 50,
+                    "a3plus": 65,
+                    "a2": 85
+                },
+                "museum": {
+                    "a4": 75,
+                    "a3": 120,
+                    "a3plus": 160,
+                    "a2": 225
+                },
+                "framePriceByFormat": {
+                    "postcard": 20,
+                    "a4": 20,
+                    "a3": 30,
+                    "a3plus": 35,
+                    "a2": 45
+                }
+            },
+            "prints": [],
+            "sortOrder": 2,
+            "active": true
+        },
+        {
+            "slug": "mok",
+            "name": "Mok",
+            "taglineFr": "Photographie urbaine & lumiere",
+            "taglineEn": "Urban Photography & Light",
+            "bioFr": "Photographe montrealais avec un oeil unique pour la composition et la lumiere. Ses oeuvres capturent l'essence de la ville a travers des perspectives inattendues - architecture, reflets, textures urbaines. Chaque tirage est une invitation a voir Montreal autrement.",
+            "bioEn": "Montreal photographer with a unique eye for composition and light. His work captures the essence of the city through unexpected perspectives - architecture, reflections, urban textures. Each print is an invitation to see Montreal differently.",
+            "socials": {},
+            "pricing": {
+                "studio": {
+                    "a4": 35,
+                    "a3": 50,
+                    "a3plus": 65,
+                    "a2": 85
+                },
+                "museum": {
+                    "a4": 75,
+                    "a3": 120,
+                    "a3plus": 160,
+                    "a2": 225
+                },
+                "framePriceByFormat": {
+                    "postcard": 20,
+                    "a4": 20,
+                    "a3": 30,
+                    "a3plus": 35,
+                    "a2": 45
+                }
+            },
+            "prints": [
+                {
+                    "id": "mok-001",
+                    "titleFr": "Metro Montreal",
+                    "titleEn": "Montreal Metro",
+                    "image": "/images/prints/Mok1.webp",
+                    "limited": false
+                }
+            ],
+            "sortOrder": 3,
+            "active": true
+        },
+        {
+            "slug": "psyqu33n",
+            "name": "Psyqu33n",
+            "taglineFr": "Ombre & lumiere - art visionnaire",
+            "taglineEn": "Shadow & Light - Visionary Art",
+            "bioFr": "J'incarne l'ombre et la lumiere, la force et la douceur, le chaos et l'harmonie. Mon art est un espace d'expression libre, un pont entre les mondes, une invitation a l'introspection et a l'elevation. Je suis issue de deux mondes underground que tout oppose - le graffiti, instinctif, rapide, brut, et l'exploration de la psyche, plongeant dans les profondeurs de l'esprit, du sacre, du symbolique. Ensemble, ils composent un langage unique.",
+            "bioEn": "I embody both shadow and light, strength and softness, chaos and harmony. My art is a space of free expression, a bridge between worlds, an invitation to introspection and elevation. I come from two underground realms that seem to stand in opposition - graffiti, instinctive, fast, raw, and the exploration of the psyche, diving deep into the spirit, into the sacred and the symbolic. Together, they form a unique language.",
+            "demarcheFr": [
+                {
+                    "title": "Demarche artistique",
+                    "text": "Mon art est une exploration de la lumiere interieure, un voyage a travers les couches de l'etre pour reveler ce qui, souvent, reste cache. Il ne s'agit plus de fuir ou de se defendre, mais d'embrasser pleinement qui nous sommes. Mes figures, souvent feminines mais universelles dans leur essence, sont des guides. Elles incarnent la douceur, la force tranquille, la souverainete de l'ame."
+                },
+                {
+                    "title": "Les yeux ne mentent pas",
+                    "text": "Dans un monde sature de vitesse et d'apparences, mes oeuvres invitent a ralentir, a contempler, a ressentir. Les regards qu'elles portent ne figent pas : ils revelent. Ils sont des portails vers l'intime, des invitations a l'eveil interieur."
+                },
+                {
+                    "title": "Un modele pour chacun-e",
+                    "text": "A travers mes creations, je propose un chemin vers l'harmonie interieure. L'equilibre entre les polarites - energie masculine et feminine, action et contemplation, ombre et lumiere - est au coeur de ma demarche."
+                },
+                {
+                    "title": "L'importance de la lumiere",
+                    "text": "La lumiere est au coeur de mon travail - autant dans sa forme que dans son essence. Le jour, mes oeuvres revelent une histoire. La nuit, grace a l'usage de peintures fluorescentes, elles s'illuminent differemment, devoilant d'autres verites, d'autres dimensions."
+                },
+                {
+                    "title": "A propos du nom Psyqu33n",
+                    "text": "Psyqu33n symbolise une renaissance me permettant d'incarner pleinement qui je suis. C'est l'archetype de la souverainete interieure, l'affirmation de toutes mes facettes. Le 33, loin d'etre un simple chiffre, porte une vibration spirituelle profonde."
+                }
+            ],
+            "demarcheEn": [
+                {
+                    "title": "Artistic approach",
+                    "text": "My art is an exploration of inner light, a journey through layers of being to reveal what often remains hidden. It is no longer about fleeing or defending, but about fully embracing who we are. My figures, often feminine but universal in their essence, are guides. They embody gentleness, quiet strength, the sovereignty of the soul."
+                },
+                {
+                    "title": "Eyes never lie",
+                    "text": "In a world saturated with speed and appearances, my works invite you to slow down, contemplate, and feel. The gazes they carry do not freeze: they reveal. They are portals to the intimate, invitations to inner awakening."
+                },
+                {
+                    "title": "A model for everyone",
+                    "text": "Through my creations, I offer a path toward inner harmony. The balance between polarities - masculine and feminine energy, action and contemplation, shadow and light - is at the heart of my approach."
+                },
+                {
+                    "title": "The importance of light",
+                    "text": "Light is at the heart of my work - in both its form and its essence. By day, my works reveal a story. At night, through the use of fluorescent paints, they illuminate differently, unveiling other truths, other dimensions."
+                },
+                {
+                    "title": "About the name Psyqu33n",
+                    "text": "Psyqu33n symbolizes a rebirth - a return to my essence, allowing me to fully embody who I am. It represents the archetype of inner sovereignty, the affirmation of all my facets. The number 33 carries a deep spiritual vibration."
+                }
+            ],
+            "socials": {
+                "facebook": "https://www.facebook.com/HlyArtMtl",
+                "instagram": "https://www.instagram.com/Psyqueenmedusa/",
+                "gallea": "https://www.gallea.ca/fr/artistes/psyqu33n",
+                "website": "https://psyqu33n.com",
+                "email": "medusart@protonmail.com"
+            },
+            "pricing": {
+                "studio": {
+                    "a4": 35,
+                    "a3": 50,
+                    "a3plus": 65,
+                    "a2": 85
+                },
+                "museum": {
+                    "a4": 75,
+                    "a3": 120,
+                    "a3plus": 160,
+                    "a2": 225
+                },
+                "framePriceByFormat": {
+                    "postcard": 20,
+                    "a4": 20,
+                    "a3": 30,
+                    "a3plus": 35,
+                    "a2": 45
+                }
+            },
+            "prints": [
+                {
+                    "id": "psyqu33n-001",
+                    "titleFr": "Accepter ses parts d'ombres et de lumiere",
+                    "titleEn": "Embracing Shadow and Light",
+                    "image": "/images/prints/Psyqu33n1.webp",
+                    "limited": false
+                },
+                {
+                    "id": "psyqu33n-002",
+                    "titleFr": "Croire en quelque chose de plus grand",
+                    "titleEn": "Believing in Something Greater",
+                    "image": "/images/prints/Psyqu33n2.webp",
+                    "limited": false
+                },
+                {
+                    "id": "psyqu33n-003",
+                    "titleFr": "L'archetype de la reine - la force d'avancer",
+                    "titleEn": "The Queen Archetype - Strength to Move Forward",
+                    "image": "/images/prints/Psyqu33n3.webp",
+                    "limited": false
+                },
+                {
+                    "id": "psyqu33n-004",
+                    "titleFr": "La douleur derriere le masque",
+                    "titleEn": "The Pain Behind the Mask",
+                    "image": "/images/prints/Psyqu33n4.webp",
+                    "limited": false
+                },
+                {
+                    "id": "psyqu33n-005",
+                    "titleFr": "La purge - liberer les emotions stockees",
+                    "titleEn": "The Purge - Releasing Stored Emotions",
+                    "image": "/images/prints/Psyqu33n5.webp",
+                    "limited": false
+                },
+                {
+                    "id": "psyqu33n-006",
+                    "titleFr": "Le masque de la femme forte",
+                    "titleEn": "The Mask of the Strong Woman",
+                    "image": "/images/prints/Psyqu33n6.webp",
+                    "limited": false
+                },
+                {
+                    "id": "psyqu33n-007",
+                    "titleFr": "Le Vampire - Recalibrer ses relations",
+                    "titleEn": "The Vampire - Recalibrating Relationships",
+                    "image": "/images/prints/Psyqu33n7.webp",
+                    "limited": false
+                },
+                {
+                    "id": "psyqu33n-008",
+                    "titleFr": "Nefertiti",
+                    "titleEn": "Nefertiti",
+                    "image": "/images/prints/Psyqu33n8.webp",
+                    "limited": false
+                },
+                {
+                    "id": "psyqu33n-009",
+                    "titleFr": "Rabbit",
+                    "titleEn": "Rabbit",
+                    "image": "/images/prints/Psyqu33n9.webp",
+                    "limited": false
+                },
+                {
+                    "id": "psyqu33n-010",
+                    "titleFr": "Renard",
+                    "titleEn": "Fox",
+                    "image": "/images/prints/Psyqu33n10.webp",
+                    "limited": false
+                },
+                {
+                    "id": "psyqu33n-011",
+                    "titleFr": "The Rebirth",
+                    "titleEn": "The Rebirth",
+                    "image": "/images/prints/Psyqu33n11.webp",
+                    "limited": false
+                },
+                {
+                    "id": "psyqu33n-012",
+                    "titleFr": "Trouver le divin en soi",
+                    "titleEn": "Finding the Divine Within",
+                    "image": "/images/prints/Psyqu33n12.webp",
+                    "limited": false
+                },
+                {
+                    "id": "psyqu33n-013",
+                    "titleFr": "Trusting the Process",
+                    "titleEn": "Trusting the Process",
+                    "image": "/images/prints/Psyqu33n13.webp",
+                    "limited": false
+                },
+                {
+                    "id": "psyqu33n-014",
+                    "titleFr": "Angel",
+                    "titleEn": "Angel",
+                    "image": "/images/prints/Psyqu33n14.webp",
+                    "limited": false
+                },
+                {
+                    "id": "psyqu33n-015",
+                    "titleFr": "Cutie",
+                    "titleEn": "Cutie",
+                    "image": "/images/prints/Psyqu33n15.webp",
+                    "limited": false
+                },
+                {
+                    "id": "psyqu33n-016",
+                    "titleFr": "Harley",
+                    "titleEn": "Harley",
+                    "image": "/images/prints/Psyqu33n16.webp",
+                    "limited": false
+                },
+                {
+                    "id": "psyqu33n-017",
+                    "titleFr": "Mask",
+                    "titleEn": "Mask",
+                    "image": "/images/prints/Psyqu33n17.webp",
+                    "limited": false
+                },
+                {
+                    "id": "psyqu33n-018",
+                    "titleFr": "Metaverse",
+                    "titleEn": "Metaverse",
+                    "image": "/images/prints/Psyqu33n18.webp",
+                    "limited": false
+                },
+                {
+                    "id": "psyqu33n-019",
+                    "titleFr": "Psyborg",
+                    "titleEn": "Psyborg",
+                    "image": "/images/prints/Psyqu33n19.webp",
+                    "limited": false
+                },
+                {
+                    "id": "psyqu33n-020",
+                    "titleFr": "Queen d'Asie",
+                    "titleEn": "Queen of Asia",
+                    "image": "/images/prints/Psyqu33n20.webp",
+                    "limited": false
+                },
+                {
+                    "id": "psyqu33n-021",
+                    "titleFr": "Secret d'Egypte",
+                    "titleEn": "Secret of Egypt",
+                    "image": "/images/prints/Psyqu33n21.webp",
+                    "limited": false
+                },
+                {
+                    "id": "psyqu33n-022",
+                    "titleFr": "The Sun",
+                    "titleEn": "The Sun",
+                    "image": "/images/prints/Psyqu33n22.webp",
+                    "limited": false
+                },
+                {
+                    "id": "psyqu33n-023",
+                    "titleFr": "The Gaming Queen",
+                    "titleEn": "The Gaming Queen",
+                    "image": "/images/prints/Psyqu33n23.webp",
+                    "limited": false
+                },
+                {
+                    "id": "psyqu33n-024",
+                    "titleFr": "Vampire",
+                    "titleEn": "Vampire",
+                    "image": "/images/prints/Psyqu33n24.webp",
+                    "limited": false
+                }
+            ],
+            "sortOrder": 4,
+            "active": true
+        }
+    ],
+    "productsSeedData": [
+        {
+            "name": "Stickers",
+            "slug": "stickers",
+            "category": "stickers",
+            "nameFr": "Stickers Custom",
+            "nameEn": "Custom Stickers",
+            "descriptionFr": "Autocollants decoupes sur mesure pour artistes, labels, evenements et marques.",
+            "descriptionEn": "Custom die-cut stickers for artists, labels, events and brands.",
+            "pricingData": {
+                "finishes": [
+                    {
+                        "id": "matte",
+                        "labelFr": "Vinyle Matte",
+                        "labelEn": "Matte Vinyl",
+                        "descFr": "Toucher veloute, sans reflet",
+                        "descEn": "Smooth feel, glare-free"
+                    },
+                    {
+                        "id": "glossy",
+                        "labelFr": "Vinyle Glossy",
+                        "labelEn": "Glossy Vinyl",
+                        "descFr": "Brillant, couleurs eclatantes",
+                        "descEn": "Shiny, vibrant colors"
+                    },
+                    {
+                        "id": "holographic",
+                        "labelFr": "Holographique",
+                        "labelEn": "Holographic",
+                        "descFr": "Reflets arc-en-ciel, effet wow",
+                        "descEn": "Rainbow reflections, wow effect"
+                    },
+                    {
+                        "id": "broken-glass",
+                        "labelFr": "Verre Brise",
+                        "labelEn": "Broken Glass",
+                        "descFr": "Eclats cristallins, reflets prismatiques",
+                        "descEn": "Crystal shards, prismatic reflections"
+                    },
+                    {
+                        "id": "stars",
+                        "labelFr": "Etoiles",
+                        "labelEn": "Stars",
+                        "descFr": "Motif etoiles scintillantes",
+                        "descEn": "Sparkling star pattern"
+                    }
+                ],
+                "shapes": [
+                    {
+                        "id": "round",
+                        "labelFr": "Rond",
+                        "labelEn": "Round",
+                        "descFr": "Classique et polyvalent",
+                        "descEn": "Classic and versatile"
+                    },
+                    {
+                        "id": "square",
+                        "labelFr": "Carre",
+                        "labelEn": "Square",
+                        "descFr": "Moderne et structure",
+                        "descEn": "Modern and structured"
+                    },
+                    {
+                        "id": "rectangle",
+                        "labelFr": "Rectangle",
+                        "labelEn": "Rectangle",
+                        "descFr": "Ideal pour etiquettes",
+                        "descEn": "Ideal for labels"
+                    },
+                    {
+                        "id": "diecut",
+                        "labelFr": "Die-cut (custom)",
+                        "labelEn": "Die-cut (custom)",
+                        "descFr": "Decoupe a ta forme",
+                        "descEn": "Cut to your shape"
+                    }
+                ],
+                "sizes": [
+                    {
+                        "id": "2in",
+                        "label": "2\""
+                    },
+                    {
+                        "id": "2.5in",
+                        "label": "2.5\""
+                    },
+                    {
+                        "id": "3in",
+                        "label": "3\""
+                    },
+                    {
+                        "id": "4in",
+                        "label": "4\""
+                    }
+                ],
+                "tiers": {
+                    "standard": [
+                        {
+                            "qty": 25,
+                            "price": 30,
+                            "unitPrice": 1.2
+                        },
+                        {
+                            "qty": 50,
+                            "price": 45,
+                            "unitPrice": 0.9
+                        },
+                        {
+                            "qty": 100,
+                            "price": 75,
+                            "unitPrice": 0.75
+                        },
+                        {
+                            "qty": 250,
+                            "price": 150,
+                            "unitPrice": 0.6
+                        },
+                        {
+                            "qty": 500,
+                            "price": 250,
+                            "unitPrice": 0.5
+                        }
+                    ],
+                    "holographic": [
+                        {
+                            "qty": 25,
+                            "price": 42,
+                            "unitPrice": 1.68
+                        },
+                        {
+                            "qty": 50,
+                            "price": 65,
+                            "unitPrice": 1.3
+                        },
+                        {
+                            "qty": 100,
+                            "price": 110,
+                            "unitPrice": 1.1
+                        },
+                        {
+                            "qty": 250,
+                            "price": 220,
+                            "unitPrice": 0.88
+                        },
+                        {
+                            "qty": 500,
+                            "price": 380,
+                            "unitPrice": 0.76
+                        }
+                    ]
+                },
+                "designPrice": 0
+            },
+            "highlightsFr": [
+                "Decoupe de precision professionnelle",
+                "Vinyle matte, glossy, transparent, holographique",
+                "Decoupe contour a la forme exacte du design",
+                "Lamination incluse - resistant eau, UV, rayures",
+                "Design graphique inclus dans le prix",
+                "Livraison locale disponible",
+                "Delai rapide : 24-72h"
+            ],
+            "highlightsEn": [
+                "Professional precision cutting",
+                "Matte, glossy, clear, holographic vinyl",
+                "Contour cut to exact design shape",
+                "Lamination included - water, UV, scratch resistant",
+                "Graphic design included in price",
+                "Local delivery available",
+                "Fast turnaround: 24-72h"
+            ],
+            "faqFr": [
+                {
+                    "q": "Quels fichiers dois-je fournir?",
+                    "a": "Idealement un fichier vectoriel (AI, SVG, PDF) ou un PNG haute resolution (300 DPI minimum) avec fond transparent. Si vous n'avez pas de fichier pret, notre service de design graphique est inclus dans le prix."
+                },
+                {
+                    "q": "Quel est le delai de production?",
+                    "a": "Production en 24 a 72 heures selon la complexite et la quantite."
+                },
+                {
+                    "q": "Peut-on commander une forme totalement custom?",
+                    "a": "Oui! L'option die-cut permet de decouper vos stickers selon n'importe quelle forme."
+                },
+                {
+                    "q": "Quelle est la qualite du vinyle?",
+                    "a": "Vinyle professionnel avec lamination integree. Resistant a l'eau, aux UV et aux rayures. Duree de vie exterieure de 3-5 ans."
+                },
+                {
+                    "q": "La livraison est-elle disponible?",
+                    "a": "Livraison locale gratuite a Montreal (Mile-End et environs). Envoi postal disponible partout au Canada."
+                },
+                {
+                    "q": "Le design est vraiment inclus?",
+                    "a": "Oui, la creation ou l'adaptation graphique de votre sticker est incluse dans tous nos prix."
+                },
+                {
+                    "q": "Que se passe-t-il si je ne suis pas satisfait?",
+                    "a": "La promesse Massive : si le resultat ne correspond pas a ce qui a ete valide, on refait votre commande."
+                },
+                {
+                    "q": "Puis-je voir un proof avant impression?",
+                    "a": "Oui, nous envoyons toujours un proof numerique par courriel avant de lancer la production."
+                }
+            ],
+            "faqEn": [
+                {
+                    "q": "What files should I provide?",
+                    "a": "Ideally a vector file (AI, SVG, PDF) or high-resolution PNG (300 DPI minimum) with transparent background. If you don't have a ready file, our graphic design service is included in the price."
+                },
+                {
+                    "q": "What is the production time?",
+                    "a": "Production in 24 to 72 hours depending on complexity and quantity."
+                },
+                {
+                    "q": "Can I order a completely custom shape?",
+                    "a": "Yes! The die-cut option lets us cut your stickers in any shape."
+                },
+                {
+                    "q": "What is the vinyl quality?",
+                    "a": "Professional-grade vinyl with integrated lamination. Water, UV, and scratch resistant. Outdoor lifespan of 3-5 years."
+                },
+                {
+                    "q": "Is delivery available?",
+                    "a": "Free local delivery in Montreal (Mile-End area). Postal shipping available across Canada."
+                },
+                {
+                    "q": "Is design really included?",
+                    "a": "Yes, graphic creation or adaptation of your sticker is included in all our prices."
+                },
+                {
+                    "q": "What if I'm not satisfied?",
+                    "a": "The Massive Promise: if the result doesn't match what was validated, we redo your order."
+                },
+                {
+                    "q": "Can I see a proof before printing?",
+                    "a": "Yes, we always send a digital proof by email before starting production."
+                }
+            ],
+            "sortOrder": 1,
+            "active": true
+        },
+        {
+            "name": "Fine Art",
+            "slug": "fine-art",
+            "category": "fine-art",
+            "nameFr": "Impression Fine Art",
+            "nameEn": "Fine Art Printing",
+            "descriptionFr": "Tirages fine art sur papiers d'archives avec encres pigmentees. Qualite galerie.",
+            "descriptionEn": "Fine art prints on archival papers with pigmented inks. Gallery quality.",
+            "pricingData": {
+                "tiers": [
+                    {
+                        "id": "studio",
+                        "labelFr": "Serie Studio",
+                        "labelEn": "Studio Series",
+                        "desc": "4 encres pigmentees / 4 pigmented inks",
+                        "descFr": "Couleurs vibrantes, qualite pro",
+                        "descEn": "Vibrant colors, pro quality"
+                    },
+                    {
+                        "id": "museum",
+                        "labelFr": "Serie Musee",
+                        "labelEn": "Museum Series",
+                        "desc": "12 encres pigmentees / 12 pigmented inks",
+                        "descFr": "Fidelite museale, gamut etendu",
+                        "descEn": "Museum accuracy, extended gamut"
+                    }
+                ],
+                "formats": [
+                    {
+                        "id": "a4",
+                        "label": "A4 (8.5x11\")",
+                        "studioPrice": 16,
+                        "museumPrice": 35
+                    },
+                    {
+                        "id": "a3",
+                        "label": "A3 (11x17\")",
+                        "studioPrice": 22,
+                        "museumPrice": 65
+                    },
+                    {
+                        "id": "a3plus",
+                        "label": "A3+ (13x19\")",
+                        "studioPrice": 30,
+                        "museumPrice": 95
+                    },
+                    {
+                        "id": "a2",
+                        "label": "A2 (18x24\")",
+                        "studioPrice": 42,
+                        "museumPrice": 125
+                    }
+                ],
+                "framePriceByFormat": {
+                    "postcard": 20,
+                    "a4": 20,
+                    "a3": 30,
+                    "a3plus": 35,
+                    "a2": 45
+                }
+            },
+            "highlightsFr": [
+                "Imprimante professionnelle fine art - 12 encres pigmentees",
+                "Papiers fine art professionnels premium",
+                "Calibration professionnelle, profils ICC sur mesure",
+                "Duree de conservation 100+ ans",
+                "Pick-up gratuit Mile-End, livraison locale"
+            ],
+            "highlightsEn": [
+                "Professional fine art printer - 12 pigmented inks",
+                "Premium professional fine art papers",
+                "Professional calibration, custom ICC profiles",
+                "100+ year conservation life",
+                "Free pick-up Mile-End, local delivery"
+            ],
+            "faqFr": [
+                {
+                    "q": "Quelle est la difference entre Serie Studio et Serie Musee?",
+                    "a": "La Serie Studio utilise une imprimante 4 encres pigmentees, excellente pour tous les usages. La Serie Musee utilise une imprimante 12 encres pigmentees pour une qualite superieure."
+                },
+                {
+                    "q": "Quels papiers utilisez-vous?",
+                    "a": "Papiers fine art professionnels premium : coton, alpha-cellulose, papiers d'archives. Chaque papier est calibre avec un profil ICC sur mesure."
+                },
+                {
+                    "q": "Quelle est la duree de conservation?",
+                    "a": "Nos tirages fine art ont une duree de conservation de 100+ ans grace aux encres pigmentees et papiers d'archives."
+                },
+                {
+                    "q": "Puis-je faire encadrer mon tirage?",
+                    "a": "Oui! Nous offrons l'option cadre noir ou blanc. 20$ pour A6 et A4, 30$ pour A3, 35$ pour A3+ et 45$ pour A2."
+                },
+                {
+                    "q": "Quel fichier dois-je fournir?",
+                    "a": "Idealement un fichier haute resolution (300 DPI minimum). Nous effectuons un soft proofing avant impression."
+                },
+                {
+                    "q": "La livraison est-elle disponible?",
+                    "a": "Pick-up gratuit au Mile-End. Livraison locale disponible a Montreal."
+                }
+            ],
+            "faqEn": [
+                {
+                    "q": "What is the difference between Studio and Museum Series?",
+                    "a": "The Studio Series uses a 4-color pigment printer, excellent for all uses. The Museum Series uses a 12-color pigment printer for superior quality."
+                },
+                {
+                    "q": "What papers do you use?",
+                    "a": "Premium professional fine art papers: cotton, alpha-cellulose, archival papers. Each paper is calibrated with a custom ICC profile."
+                },
+                {
+                    "q": "What is the conservation lifespan?",
+                    "a": "Our fine art prints have a 100+ year conservation life thanks to pigmented inks and archival papers."
+                },
+                {
+                    "q": "Can I get my print framed?",
+                    "a": "Yes! We offer a black or white frame option. $20 for A6 and A4, $30 for A3, $35 for A3+ and $45 for A2."
+                },
+                {
+                    "q": "What file should I provide?",
+                    "a": "Ideally a high-resolution file (300 DPI minimum). We perform soft proofing before printing."
+                },
+                {
+                    "q": "Is delivery available?",
+                    "a": "Free pick-up in Mile-End. Local delivery available in Montreal."
+                }
+            ],
+            "sortOrder": 2,
+            "active": true
+        },
+        {
+            "name": "Sublimation",
+            "slug": "sublimation",
+            "category": "sublimation",
+            "nameFr": "Sublimation & Merch",
+            "nameEn": "Sublimation & Merch",
+            "descriptionFr": "Impression sublimation sur textile et objets. Couleurs permanentes.",
+            "descriptionEn": "Sublimation printing on textiles and objects. Permanent colors.",
+            "pricingData": {
+                "products": [
+                    {
+                        "id": "tshirt",
+                        "labelFr": "T-shirt",
+                        "labelEn": "T-shirt",
+                        "descFr": "Leger et confortable, all-over",
+                        "descEn": "Light and comfortable, all-over"
+                    },
+                    {
+                        "id": "crewneck",
+                        "labelFr": "Crewneck",
+                        "labelEn": "Crewneck",
+                        "descFr": "Style decontracte, coton epais",
+                        "descEn": "Casual style, thick cotton"
+                    },
+                    {
+                        "id": "hoodie",
+                        "labelFr": "Hoodie",
+                        "labelEn": "Hoodie",
+                        "descFr": "Chaleureux et streetwear",
+                        "descEn": "Warm and streetwear"
+                    },
+                    {
+                        "id": "totebag",
+                        "labelFr": "Tote Bag",
+                        "labelEn": "Tote Bag",
+                        "descFr": "Pratique et ecologique",
+                        "descEn": "Practical and eco-friendly"
+                    },
+                    {
+                        "id": "bag",
+                        "labelFr": "Sac banane",
+                        "labelEn": "Fanny Pack",
+                        "descFr": "Compact et tendance",
+                        "descEn": "Compact and trendy"
+                    }
+                ],
+                "priceTiers": {
+                    "tshirt": [
+                        {
+                            "qty": 1,
+                            "unitPrice": 35,
+                            "price": 35
+                        },
+                        {
+                            "qty": 5,
+                            "unitPrice": 30,
+                            "price": 150
+                        },
+                        {
+                            "qty": 10,
+                            "unitPrice": 27,
+                            "price": 270
+                        },
+                        {
+                            "qty": 25,
+                            "unitPrice": 22,
+                            "price": null,
+                            "surSoumission": true
+                        }
+                    ],
+                    "crewneck": [
+                        {
+                            "qty": 1,
+                            "unitPrice": 50,
+                            "price": 50
+                        },
+                        {
+                            "qty": 5,
+                            "unitPrice": 45,
+                            "price": 225
+                        },
+                        {
+                            "qty": 10,
+                            "unitPrice": 40,
+                            "price": 400
+                        },
+                        {
+                            "qty": 25,
+                            "unitPrice": 35,
+                            "price": null,
+                            "surSoumission": true
+                        }
+                    ],
+                    "hoodie": [
+                        {
+                            "qty": 1,
+                            "unitPrice": 65,
+                            "price": 65
+                        },
+                        {
+                            "qty": 5,
+                            "unitPrice": 60,
+                            "price": 300
+                        },
+                        {
+                            "qty": 10,
+                            "unitPrice": 50,
+                            "price": 500
+                        },
+                        {
+                            "qty": 25,
+                            "unitPrice": 45,
+                            "price": null,
+                            "surSoumission": true
+                        }
+                    ],
+                    "totebag": [
+                        {
+                            "qty": 1,
+                            "unitPrice": 15,
+                            "price": 15
+                        },
+                        {
+                            "qty": 10,
+                            "unitPrice": 12,
+                            "price": 120
+                        },
+                        {
+                            "qty": 25,
+                            "unitPrice": 10,
+                            "price": 250
+                        },
+                        {
+                            "qty": 50,
+                            "unitPrice": 8,
+                            "price": 400
+                        }
+                    ],
+                    "bag": [
+                        {
+                            "qty": 1,
+                            "unitPrice": 80,
+                            "price": 80
+                        },
+                        {
+                            "qty": 5,
+                            "unitPrice": 70,
+                            "price": 350
+                        },
+                        {
+                            "qty": 10,
+                            "unitPrice": 60,
+                            "price": 600
+                        }
+                    ]
+                },
+                "designPrice": 125
+            },
+            "highlightsFr": [
+                "Impression permanente dans la fibre",
+                "Couleurs vibrantes, resistant au lavage",
+                "T-shirts, hoodies, mugs et plus",
+                "Petites et moyennes series"
+            ],
+            "highlightsEn": [
+                "Permanent print into the fiber",
+                "Vibrant colors, wash resistant",
+                "T-shirts, hoodies, mugs and more",
+                "Small and medium runs"
+            ],
+            "faqFr": [
+                {
+                    "q": "Qu'est-ce que la sublimation?",
+                    "a": "La sublimation transfere l'encre directement dans la fibre du tissu a haute temperature. Impression permanente."
+                },
+                {
+                    "q": "Sur quels produits imprimez-vous?",
+                    "a": "T-shirts, crewnecks, hoodies, sacs bananes, mugs, thermos, tapis de souris et plus."
+                },
+                {
+                    "q": "Puis-je fournir mon propre design?",
+                    "a": "Oui! Si vous avez un design pret, le prix est celui affiche. Creation graphique en supplement."
+                },
+                {
+                    "q": "Quelle est la quantite minimale?",
+                    "a": "A partir d'une seule unite. Prix degressifs a partir de 5 et 10 unites."
+                },
+                {
+                    "q": "L'impression est-elle vraiment permanente?",
+                    "a": "Oui, la sublimation produit une impression permanente integree dans la fibre."
+                },
+                {
+                    "q": "Quel est le delai de production?",
+                    "a": "Generalement 3 a 5 jours ouvrables selon la quantite."
+                }
+            ],
+            "faqEn": [
+                {
+                    "q": "What is sublimation?",
+                    "a": "Sublimation transfers ink directly into the fabric fiber at high temperature. Permanent print."
+                },
+                {
+                    "q": "What products do you print on?",
+                    "a": "T-shirts, crewnecks, hoodies, fanny packs, mugs, tumblers, mousepads and more."
+                },
+                {
+                    "q": "Can I provide my own design?",
+                    "a": "Yes! If you have a ready design, the price shown applies. Graphic design at extra cost."
+                },
+                {
+                    "q": "What is the minimum quantity?",
+                    "a": "Starting from a single unit. Prices decrease at 5 and 10 units."
+                },
+                {
+                    "q": "Is the print really permanent?",
+                    "a": "Yes, sublimation produces a permanent print integrated into the fiber."
+                },
+                {
+                    "q": "What is the production time?",
+                    "a": "Generally 3 to 5 business days depending on quantity."
+                }
+            ],
+            "sortOrder": 3,
+            "active": true
+        },
+        {
+            "name": "Flyers",
+            "slug": "flyers",
+            "category": "flyers",
+            "nameFr": "Flyers & Cartes",
+            "nameEn": "Flyers & Cards",
+            "descriptionFr": "Flyers, cartes postales, cartes d'affaires. Impression rapide et locale.",
+            "descriptionEn": "Flyers, postcards, business cards. Fast local printing.",
+            "pricingData": {
+                "sides": [
+                    {
+                        "id": "recto",
+                        "labelFr": "Recto",
+                        "labelEn": "Single-sided",
+                        "multiplier": 1
+                    },
+                    {
+                        "id": "recto-verso",
+                        "labelFr": "Recto-verso",
+                        "labelEn": "Double-sided",
+                        "multiplier": 1.3
+                    }
+                ],
+                "priceTiers": [
+                    {
+                        "qty": 50,
+                        "price": 40,
+                        "unitPrice": 0.8
+                    },
+                    {
+                        "qty": 100,
+                        "price": 65,
+                        "unitPrice": 0.65
+                    },
+                    {
+                        "qty": 150,
+                        "price": 90,
+                        "unitPrice": 0.6
+                    },
+                    {
+                        "qty": 250,
+                        "price": 130,
+                        "unitPrice": 0.52
+                    },
+                    {
+                        "qty": 500,
+                        "price": 225,
+                        "unitPrice": 0.45
+                    }
+                ]
+            },
+            "highlightsFr": [
+                "Papier premium 300g+",
+                "Impression professionnelle",
+                "Delai express 24h",
+                "Pick-up gratuit Mile-End"
+            ],
+            "highlightsEn": [
+                "Premium 300g+ paper",
+                "Professional printing",
+                "24h express turnaround",
+                "Free pick-up Mile-End"
+            ],
+            "faqFr": [
+                {
+                    "q": "Quels formats proposez-vous?",
+                    "a": "Flyers A6 (4\"x6\"), A5, lettre (8,5x11\"). Cartes postales et cartes d'affaires."
+                },
+                {
+                    "q": "Quel papier utilisez-vous?",
+                    "a": "Papier premium 300g+ en finition matte ou brillante."
+                },
+                {
+                    "q": "Offrez-vous l'impression recto-verso?",
+                    "a": "Oui! L'option recto-verso est disponible avec un supplement de 30%."
+                },
+                {
+                    "q": "Quel est le delai de production?",
+                    "a": "Delai standard de 24 a 48 heures. Service express disponible le jour meme."
+                },
+                {
+                    "q": "Puis-je faire faire le design aussi?",
+                    "a": "Oui, notre service de design graphique est disponible en option."
+                },
+                {
+                    "q": "La livraison est-elle disponible?",
+                    "a": "Pick-up gratuit au Mile-End. Livraison locale disponible a Montreal."
+                }
+            ],
+            "faqEn": [
+                {
+                    "q": "What formats do you offer?",
+                    "a": "A6 (4\"x6\"), A5, letter (8.5x11\") flyers. Postcards and business cards."
+                },
+                {
+                    "q": "What paper do you use?",
+                    "a": "Premium 300g+ paper in matte or glossy finish."
+                },
+                {
+                    "q": "Do you offer double-sided printing?",
+                    "a": "Yes! Double-sided option is available with a 30% surcharge."
+                },
+                {
+                    "q": "What is the production time?",
+                    "a": "Standard turnaround of 24 to 48 hours. Same-day express service available."
+                },
+                {
+                    "q": "Can you design my flyers too?",
+                    "a": "Yes, our graphic design service is available as an option."
+                },
+                {
+                    "q": "Is delivery available?",
+                    "a": "Free pick-up in Mile-End. Local delivery available in Montreal."
+                }
+            ],
+            "sortOrder": 4,
+            "active": true
+        },
+        {
+            "name": "Design",
+            "slug": "design",
+            "category": "design",
+            "nameFr": "Design Graphique",
+            "nameEn": "Graphic Design",
+            "descriptionFr": "Logos, identites visuelles, affiches et creations digitales.",
+            "descriptionEn": "Logos, visual identities, posters and digital creations.",
+            "pricingData": {
+                "services": [
+                    {
+                        "id": "logo",
+                        "labelFr": "Creation logo",
+                        "labelEn": "Logo design",
+                        "priceRange": "300$ - 600$",
+                        "timelineFr": "5-10 jours",
+                        "timelineEn": "5-10 days"
+                    },
+                    {
+                        "id": "identity",
+                        "labelFr": "Identite visuelle complete",
+                        "labelEn": "Complete visual identity",
+                        "priceRange": "800$ - 1 500$",
+                        "timelineFr": "2-3 semaines",
+                        "timelineEn": "2-3 weeks"
+                    },
+                    {
+                        "id": "poster",
+                        "labelFr": "Affiche / flyer evenement",
+                        "labelEn": "Event poster / flyer",
+                        "priceRange": "150$ - 300$",
+                        "timelineFr": "3-5 jours",
+                        "timelineEn": "3-5 days"
+                    },
+                    {
+                        "id": "album",
+                        "labelFr": "Pochette album / single",
+                        "labelEn": "Album / single cover",
+                        "priceRange": "200$ - 400$",
+                        "timelineFr": "5-7 jours",
+                        "timelineEn": "5-7 days"
+                    },
+                    {
+                        "id": "icons",
+                        "labelFr": "Design d'icones (set)",
+                        "labelEn": "Icon set design",
+                        "priceRange": "200$ - 500$",
+                        "timelineFr": "3-7 jours",
+                        "timelineEn": "3-7 days"
+                    },
+                    {
+                        "id": "retouching",
+                        "labelFr": "Retouche photo (par image)",
+                        "labelEn": "Photo retouching (per image)",
+                        "priceRange": "15$ - 50$",
+                        "timelineFr": "24-48h",
+                        "timelineEn": "24-48h"
+                    }
+                ],
+                "hourlyRate": "85$/h"
+            },
+            "highlightsFr": [
+                "Adobe Illustrator & Figma",
+                "2 revisions incluses",
+                "Fichiers print + web",
+                "Livraison numerique"
+            ],
+            "highlightsEn": [
+                "Adobe Illustrator & Figma",
+                "2 revisions included",
+                "Print + web files",
+                "Digital delivery"
+            ],
+            "faqFr": [
+                {
+                    "q": "Qu'est-ce qui est inclus dans une creation de logo?",
+                    "a": "Recherche de references, exploration visuelle, creation vectorielle sur Illustrator, 2 rondes de revisions, et livraison des fichiers finaux."
+                },
+                {
+                    "q": "Quels outils utilisez-vous?",
+                    "a": "Adobe Illustrator, Figma, Photoshop, InDesign."
+                },
+                {
+                    "q": "Combien de revisions sont incluses?",
+                    "a": "2 rondes de revisions sont incluses dans tous nos forfaits."
+                },
+                {
+                    "q": "Le design de stickers est-il inclus?",
+                    "a": "Oui! La creation graphique de stickers est incluse dans le prix de production."
+                },
+                {
+                    "q": "Dans quels formats livrez-vous?",
+                    "a": "Package complet : AI, EPS, SVG, PNG, PDF. Versions print-ready et web."
+                },
+                {
+                    "q": "Travaillez-vous avec des artistes musicaux?",
+                    "a": "Oui! Pochettes d'album, affiches de concerts, logos d'artistes et identites visuelles."
+                }
+            ],
+            "faqEn": [
+                {
+                    "q": "What is included in a logo creation?",
+                    "a": "Reference research, visual exploration, vector creation on Illustrator, 2 rounds of revisions, and delivery of final files."
+                },
+                {
+                    "q": "What tools do you use?",
+                    "a": "Adobe Illustrator, Figma, Photoshop, InDesign."
+                },
+                {
+                    "q": "How many revisions are included?",
+                    "a": "2 rounds of revisions are included in all packages."
+                },
+                {
+                    "q": "Is sticker design included?",
+                    "a": "Yes! Sticker graphic design is included in the production price."
+                },
+                {
+                    "q": "What formats do you deliver in?",
+                    "a": "Complete package: AI, EPS, SVG, PNG, PDF. Print-ready and web versions."
+                },
+                {
+                    "q": "Do you work with music artists?",
+                    "a": "Yes! Album covers, concert posters, artist logos and visual identities."
+                }
+            ],
+            "sortOrder": 5,
+            "active": true
+        },
+        {
+            "name": "Web",
+            "slug": "web",
+            "category": "web",
+            "nameFr": "Developpement Web",
+            "nameEn": "Web Development",
+            "descriptionFr": "Sites vitrines, e-commerce et landing pages pour createurs.",
+            "descriptionEn": "Showcase sites, e-commerce and landing pages for creators.",
+            "pricingData": {
+                "services": [
+                    {
+                        "id": "landing",
+                        "labelFr": "Landing page evenement",
+                        "labelEn": "Event landing page",
+                        "price": "900$"
+                    },
+                    {
+                        "id": "showcase",
+                        "labelFr": "Site vitrine (5-10 pages)",
+                        "labelEn": "Showcase site (5-10 pages)",
+                        "price": "2 000$ - 3 500$"
+                    },
+                    {
+                        "id": "ecommerce",
+                        "labelFr": "Site e-commerce",
+                        "labelEn": "E-commerce site",
+                        "price": "4 000$ - 6 000$"
+                    },
+                    {
+                        "id": "redesign",
+                        "labelFr": "Refonte site existant",
+                        "labelEn": "Existing site redesign",
+                        "price": {
+                            "fr": "Sur soumission",
+                            "en": "On quote"
+                        }
+                    },
+                    {
+                        "id": "maintenance",
+                        "labelFr": "Maintenance mensuelle",
+                        "labelEn": "Monthly maintenance",
+                        "price": "100$ - 200$/mois"
+                    }
+                ],
+                "hourlyRate": "85$/h"
+            },
+            "highlightsFr": [
+                "15+ ans d'experience",
+                "SEO inclus",
+                "Mobile-first",
+                "Maintenance disponible"
+            ],
+            "highlightsEn": [
+                "15+ years experience",
+                "SEO included",
+                "Mobile-first",
+                "Maintenance available"
+            ],
+            "faqFr": [
+                {
+                    "q": "Quelles technologies utilisez-vous?",
+                    "a": "React/Next.js, Angular, Node.js, WordPress, Shopify, Strapi."
+                },
+                {
+                    "q": "Le site sera-t-il responsive?",
+                    "a": "Oui, tous nos sites sont mobile-first."
+                },
+                {
+                    "q": "Le SEO est-il inclus?",
+                    "a": "Oui, l'optimisation SEO technique est incluse."
+                },
+                {
+                    "q": "Combien de temps prend un projet?",
+                    "a": "Landing page ~2 semaines. Site vitrine 4-6 semaines. E-commerce 6-10 semaines."
+                },
+                {
+                    "q": "Offrez-vous la maintenance?",
+                    "a": "Oui, forfaits de maintenance mensuelle (100-200$/mois)."
+                },
+                {
+                    "q": "Puis-je voir des exemples?",
+                    "a": "Oui! Portfolio : SPVM, La Presse, Maudite Machine, et plusieurs sites locaux."
+                }
+            ],
+            "faqEn": [
+                {
+                    "q": "What technologies do you use?",
+                    "a": "React/Next.js, Angular, Node.js, WordPress, Shopify, Strapi."
+                },
+                {
+                    "q": "Will the site be responsive?",
+                    "a": "Yes, all our sites are mobile-first."
+                },
+                {
+                    "q": "Is SEO included?",
+                    "a": "Yes, technical SEO optimization is included."
+                },
+                {
+                    "q": "How long does a project take?",
+                    "a": "Landing page ~2 weeks. Showcase site 4-6 weeks. E-commerce 6-10 weeks."
+                },
+                {
+                    "q": "Do you offer maintenance?",
+                    "a": "Yes, monthly maintenance packages ($100-200/mo)."
+                },
+                {
+                    "q": "Can I see examples of your work?",
+                    "a": "Yes! Portfolio: SPVM, La Presse, Maudite Machine, and several local sites."
+                }
+            ],
+            "sortOrder": 6,
+            "active": true
+        },
+        {
+            "name": "Merch T-shirt",
+            "slug": "merch-tshirt",
+            "category": "merch-tshirt",
+            "nameFr": "T-shirt Custom",
+            "nameEn": "Custom T-shirt",
+            "descriptionFr": "T-shirts personnalises en sublimation.",
+            "descriptionEn": "Custom sublimation t-shirts.",
+            "pricingData": {
+                "base": 22,
+                "sizes": {
+                    "S": 22,
+                    "M": 22,
+                    "L": 22,
+                    "XL": 22,
+                    "2XL": 22,
+                    "3XL": 22
+                }
+            },
+            "sortOrder": 7,
+            "active": true
+        },
+        {
+            "name": "Merch Hoodie",
+            "slug": "merch-hoodie",
+            "category": "merch-hoodie",
+            "nameFr": "Hoodie Custom",
+            "nameEn": "Custom Hoodie",
+            "descriptionFr": "Hoodies personnalises en sublimation.",
+            "descriptionEn": "Custom sublimation hoodies.",
+            "pricingData": {
+                "base": 39,
+                "sizes": {
+                    "S": 39,
+                    "M": 39,
+                    "L": 39,
+                    "XL": 39,
+                    "2XL": 39,
+                    "3XL": 39
+                }
+            },
+            "sortOrder": 8,
+            "active": true
+        },
+        {
+            "name": "Merch Crewneck",
+            "slug": "merch-crewneck",
+            "category": "merch-crewneck",
+            "nameFr": "Crewneck Custom",
+            "nameEn": "Custom Crewneck",
+            "descriptionFr": "Crewnecks personnalises en sublimation.",
+            "descriptionEn": "Custom sublimation crewnecks.",
+            "pricingData": {
+                "base": 30,
+                "sizes": {
+                    "S": 30,
+                    "M": 30,
+                    "L": 30,
+                    "XL": 30,
+                    "2XL": 30,
+                    "3XL": 30
+                }
+            },
+            "sortOrder": 9,
+            "active": true
+        },
+        {
+            "name": "Merch Tote Bag",
+            "slug": "merch-totebag",
+            "category": "merch-totebag",
+            "nameFr": "Tote Bag Custom",
+            "nameEn": "Custom Tote Bag",
+            "descriptionFr": "Tote bags personnalises en sublimation.",
+            "descriptionEn": "Custom sublimation tote bags.",
+            "pricingData": {
+                "base": 15,
+                "sizes": {
+                    "OS": 15
+                }
+            },
+            "sortOrder": 10,
+            "active": true
+        },
+        {
+            "name": "T-Shirt Massive",
+            "slug": "pret-a-porter-tshirt",
+            "category": "pret-a-porter",
+            "nameFr": "T-Shirt",
+            "nameEn": "T-Shirt",
+            "descriptionFr": "Coton preshrunk, design exclusif. Tailles S a 3XL.",
+            "descriptionEn": "Preshrunk cotton, exclusive design. Sizes S to 3XL.",
+            "pricingData": {
+                "price": 35,
+                "sizes": [
+                    "S",
+                    "M",
+                    "L",
+                    "XL",
+                    "2XL",
+                    "3XL"
+                ]
+            },
+            "comingSoon": true,
+            "imageUrl": "/images/tshirts/orchid.webp",
+            "sortOrder": 20,
+            "active": true
+        },
+        {
+            "name": "Hoodie Massive",
+            "slug": "pret-a-porter-hoodie",
+            "category": "pret-a-porter",
+            "nameFr": "Hoodie",
+            "nameEn": "Hoodie",
+            "descriptionFr": "Molleton epais, design exclusif. Tailles S a 3XL.",
+            "descriptionEn": "Heavy fleece, exclusive design. Sizes S to 3XL.",
+            "pricingData": {
+                "price": 65,
+                "sizes": [
+                    "S",
+                    "M",
+                    "L",
+                    "XL",
+                    "2XL",
+                    "3XL"
+                ]
+            },
+            "comingSoon": true,
+            "imageUrl": "/images/hoodies/mint-green.webp",
+            "sortOrder": 21,
+            "active": true
+        },
+        {
+            "name": "Crewneck Massive",
+            "slug": "pret-a-porter-crewneck",
+            "category": "pret-a-porter",
+            "nameFr": "Crewneck",
+            "nameEn": "Crewneck",
+            "descriptionFr": "Molleton mi-poids, design exclusif. Tailles S a 3XL.",
+            "descriptionEn": "Midweight fleece, exclusive design. Sizes S to 3XL.",
+            "pricingData": {
+                "price": 55,
+                "sizes": [
+                    "S",
+                    "M",
+                    "L",
+                    "XL",
+                    "2XL",
+                    "3XL"
+                ]
+            },
+            "comingSoon": true,
+            "imageUrl": "/images/crewneck/light-pink.webp",
+            "sortOrder": 22,
+            "active": true
+        },
+        {
+            "name": "Pack Stickers Massive Medias",
+            "slug": "sticker-pack-massive",
+            "category": "sticker-pack",
+            "nameFr": "Massive Medias",
+            "nameEn": "Massive Medias",
+            "descriptionFr": "Pack de stickers vinyle die-cut",
+            "descriptionEn": "Die-cut vinyl sticker pack",
+            "pricingData": {
+                "tiers": [
+                    {
+                        "qty": 1,
+                        "label": "1 pack",
+                        "price": 35
+                    },
+                    {
+                        "qty": 5,
+                        "label": "5 packs",
+                        "price": 25
+                    },
+                    {
+                        "qty": 10,
+                        "label": "10 packs",
+                        "price": 20
+                    },
+                    {
+                        "qty": 25,
+                        "label": "25+ packs",
+                        "price": 15
+                    }
+                ]
+            },
+            "imageUrl": "/images/stickers/Stickers-massive.webp",
+            "sortOrder": 30,
+            "active": true
+        },
+        {
+            "name": "Pack Stickers Maudite Machine",
+            "slug": "sticker-pack-maudite",
+            "category": "sticker-pack",
+            "nameFr": "Maudite Machine",
+            "nameEn": "Maudite Machine",
+            "descriptionFr": "Pack de stickers vinyle die-cut",
+            "descriptionEn": "Die-cut vinyl sticker pack",
+            "pricingData": {
+                "tiers": [
+                    {
+                        "qty": 1,
+                        "label": "1 pack",
+                        "price": 35
+                    },
+                    {
+                        "qty": 5,
+                        "label": "5 packs",
+                        "price": 25
+                    },
+                    {
+                        "qty": 10,
+                        "label": "10 packs",
+                        "price": 20
+                    },
+                    {
+                        "qty": 25,
+                        "label": "25+ packs",
+                        "price": 15
+                    }
+                ]
+            },
+            "imageUrl": "/images/stickers/Stickers-Maudite-Machine.webp",
+            "sortOrder": 31,
+            "active": true
+        },
+        {
+            "name": "Pack Stickers Cosmovision",
+            "slug": "sticker-pack-cosmo",
+            "category": "sticker-pack",
+            "nameFr": "Cosmovision",
+            "nameEn": "Cosmovision",
+            "descriptionFr": "Pack de stickers vinyle die-cut",
+            "descriptionEn": "Die-cut vinyl sticker pack",
+            "pricingData": {
+                "tiers": [
+                    {
+                        "qty": 1,
+                        "label": "1 pack",
+                        "price": 35
+                    },
+                    {
+                        "qty": 5,
+                        "label": "5 packs",
+                        "price": 25
+                    },
+                    {
+                        "qty": 10,
+                        "label": "10 packs",
+                        "price": 20
+                    },
+                    {
+                        "qty": 25,
+                        "label": "25+ packs",
+                        "price": 15
+                    }
+                ]
+            },
+            "imageUrl": "/images/stickers/Stickers-Cosmovision.webp",
+            "sortOrder": 32,
+            "active": true
+        },
+        {
+            "name": "Pack Stickers Vrstl",
+            "slug": "sticker-pack-vrstl",
+            "category": "sticker-pack",
+            "nameFr": "Vrstl",
+            "nameEn": "Vrstl",
+            "descriptionFr": "Pack de stickers vinyle die-cut",
+            "descriptionEn": "Die-cut vinyl sticker pack",
+            "pricingData": {
+                "tiers": [
+                    {
+                        "qty": 1,
+                        "label": "1 pack",
+                        "price": 35
+                    },
+                    {
+                        "qty": 5,
+                        "label": "5 packs",
+                        "price": 25
+                    },
+                    {
+                        "qty": 10,
+                        "label": "10 packs",
+                        "price": 20
+                    },
+                    {
+                        "qty": 25,
+                        "label": "25+ packs",
+                        "price": 15
+                    }
+                ]
+            },
+            "imageUrl": "/images/stickers/Stickers-Vrstl.webp",
+            "sortOrder": 33,
+            "active": true
+        },
+        {
+            "name": "Pack Stickers Fusion State Rec",
+            "slug": "sticker-pack-fusion",
+            "category": "sticker-pack",
+            "nameFr": "Fusion State Rec",
+            "nameEn": "Fusion State Rec",
+            "descriptionFr": "Pack de stickers vinyle die-cut",
+            "descriptionEn": "Die-cut vinyl sticker pack",
+            "pricingData": {
+                "tiers": [
+                    {
+                        "qty": 1,
+                        "label": "1 pack",
+                        "price": 35
+                    },
+                    {
+                        "qty": 5,
+                        "label": "5 packs",
+                        "price": 25
+                    },
+                    {
+                        "qty": 10,
+                        "label": "10 packs",
+                        "price": 20
+                    },
+                    {
+                        "qty": 25,
+                        "label": "25+ packs",
+                        "price": 15
+                    }
+                ]
+            },
+            "imageUrl": "/images/stickers/Stickers-Fusion-State-Rec.webp",
+            "sortOrder": 34,
+            "active": true
+        }
+    ]
+}
