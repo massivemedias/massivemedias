@@ -430,6 +430,199 @@ export interface AdminUser extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiArtistEditRequestArtistEditRequest
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'artist_edit_requests';
+  info: {
+    description: 'Demandes de modification de contenu par les artistes';
+    displayName: 'Artist Edit Request';
+    pluralName: 'artist-edit-requests';
+    singularName: 'artist-edit-request';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    adminNotes: Schema.Attribute.Text;
+    artistName: Schema.Attribute.String;
+    artistSlug: Schema.Attribute.String & Schema.Attribute.Required;
+    changeData: Schema.Attribute.JSON & Schema.Attribute.Required;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    email: Schema.Attribute.Email & Schema.Attribute.Required;
+    linkedMessageId: Schema.Attribute.String;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::artist-edit-request.artist-edit-request'
+    > &
+      Schema.Attribute.Private;
+    processedAt: Schema.Attribute.DateTime;
+    publishedAt: Schema.Attribute.DateTime;
+    requestType: Schema.Attribute.Enumeration<
+      [
+        'add-prints',
+        'remove-prints',
+        'add-stickers',
+        'remove-stickers',
+        'add-merch',
+        'remove-merch',
+        'update-profile',
+        'update-bio',
+        'update-socials',
+        'update-avatar',
+      ]
+    > &
+      Schema.Attribute.Required;
+    status: Schema.Attribute.Enumeration<['pending', 'approved', 'rejected']> &
+      Schema.Attribute.DefaultTo<'pending'>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiArtistMessageArtistMessage
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'artist_messages';
+  info: {
+    description: 'Messages des artistes vers Massive';
+    displayName: 'Artist Message';
+    pluralName: 'artist-messages';
+    singularName: 'artist-message';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    adminReply: Schema.Attribute.Text;
+    artistName: Schema.Attribute.String;
+    artistSlug: Schema.Attribute.String & Schema.Attribute.Required;
+    attachments: Schema.Attribute.JSON;
+    category: Schema.Attribute.Enumeration<
+      [
+        'new-images',
+        'question',
+        'withdrawal',
+        'update-profile',
+        'edit-request',
+        'other',
+      ]
+    > &
+      Schema.Attribute.DefaultTo<'other'>;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    email: Schema.Attribute.Email & Schema.Attribute.Required;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::artist-message.artist-message'
+    > &
+      Schema.Attribute.Private;
+    message: Schema.Attribute.Text & Schema.Attribute.Required;
+    publishedAt: Schema.Attribute.DateTime;
+    repliedAt: Schema.Attribute.DateTime;
+    status: Schema.Attribute.Enumeration<
+      ['new', 'read', 'replied', 'archived']
+    > &
+      Schema.Attribute.DefaultTo<'new'>;
+    subject: Schema.Attribute.String & Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiArtistPaymentArtistPayment
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'artist_payments';
+  info: {
+    description: 'Paiements verses aux artistes';
+    displayName: 'Paiement artiste';
+    pluralName: 'artist-payments';
+    singularName: 'artist-payment';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    amount: Schema.Attribute.Decimal & Schema.Attribute.Required;
+    artist: Schema.Attribute.Relation<'manyToOne', 'api::artist.artist'>;
+    artistName: Schema.Attribute.String & Schema.Attribute.Required;
+    artistSlug: Schema.Attribute.String & Schema.Attribute.Required;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    date: Schema.Attribute.Date & Schema.Attribute.Required;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::artist-payment.artist-payment'
+    > &
+      Schema.Attribute.Private;
+    method: Schema.Attribute.Enumeration<
+      ['interac', 'cash', 'cheque', 'other']
+    > &
+      Schema.Attribute.DefaultTo<'interac'>;
+    notes: Schema.Attribute.Text;
+    period: Schema.Attribute.String;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiArtistSubmissionArtistSubmission
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'artist_submissions';
+  info: {
+    description: 'Soumissions de partenariat artiste';
+    displayName: 'Soumission Artiste';
+    pluralName: 'artist-submissions';
+    singularName: 'artist-submission';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    adresse: Schema.Attribute.Text & Schema.Attribute.Required;
+    bio: Schema.Attribute.Text;
+    contractAccepted: Schema.Attribute.Boolean &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<false>;
+    contractVersion: Schema.Attribute.String;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    email: Schema.Attribute.Email & Schema.Attribute.Required;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::artist-submission.artist-submission'
+    > &
+      Schema.Attribute.Private;
+    nomArtiste: Schema.Attribute.String;
+    nomLegal: Schema.Attribute.String & Schema.Attribute.Required;
+    notes: Schema.Attribute.Text;
+    photoProfilUrl: Schema.Attribute.String;
+    portfolioUrls: Schema.Attribute.JSON;
+    publishedAt: Schema.Attribute.DateTime;
+    status: Schema.Attribute.Enumeration<
+      ['new', 'reviewing', 'accepted', 'rejected', 'archived']
+    > &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'new'>;
+    telephone: Schema.Attribute.String & Schema.Attribute.Required;
+    tpsTvq: Schema.Attribute.String;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiArtistArtist extends Struct.CollectionTypeSchema {
   collectionName: 'artists';
   info: {
@@ -447,12 +640,14 @@ export interface ApiArtistArtist extends Struct.CollectionTypeSchema {
     bioEn: Schema.Attribute.Text;
     bioEs: Schema.Attribute.Text;
     bioFr: Schema.Attribute.Text;
+    commissionRate: Schema.Attribute.Decimal & Schema.Attribute.DefaultTo<0.5>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     demarcheEn: Schema.Attribute.JSON;
     demarcheEs: Schema.Attribute.JSON;
     demarcheFr: Schema.Attribute.JSON;
+    email: Schema.Attribute.Email;
     heroImage: Schema.Attribute.Media<'images'>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
@@ -464,6 +659,7 @@ export interface ApiArtistArtist extends Struct.CollectionTypeSchema {
     pricing: Schema.Attribute.JSON;
     printImages: Schema.Attribute.Media<'images', true>;
     prints: Schema.Attribute.JSON;
+    productionCosts: Schema.Attribute.JSON;
     publishedAt: Schema.Attribute.DateTime;
     slug: Schema.Attribute.String &
       Schema.Attribute.Required &
@@ -523,6 +719,49 @@ export interface ApiBoutiqueItemBoutiqueItem
   };
 }
 
+export interface ApiCalendarEventCalendarEvent
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'calendar_events';
+  info: {
+    description: 'Evenements du calendrier tatoueur';
+    displayName: 'Evenement Calendrier';
+    pluralName: 'calendar-events';
+    singularName: 'calendar-event';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    color: Schema.Attribute.String & Schema.Attribute.DefaultTo<'#FFCC02'>;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    endTime: Schema.Attribute.DateTime & Schema.Attribute.Required;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::calendar-event.calendar-event'
+    > &
+      Schema.Attribute.Private;
+    notes: Schema.Attribute.Text;
+    publishedAt: Schema.Attribute.DateTime;
+    reservation: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::reservation.reservation'
+    >;
+    startTime: Schema.Attribute.DateTime & Schema.Attribute.Required;
+    tatoueur: Schema.Attribute.Relation<'manyToOne', 'api::tatoueur.tatoueur'>;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
+    type: Schema.Attribute.Enumeration<
+      ['rendez-vous', 'flash-day', 'conge', 'personnel', 'bloque']
+    > &
+      Schema.Attribute.DefaultTo<'rendez-vous'>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiClientClient extends Struct.CollectionTypeSchema {
   collectionName: 'clients';
   info: {
@@ -535,6 +774,7 @@ export interface ApiClientClient extends Struct.CollectionTypeSchema {
     draftAndPublish: false;
   };
   attributes: {
+    avatar: Schema.Attribute.Media<'images'>;
     company: Schema.Attribute.String;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -556,7 +796,9 @@ export interface ApiClientClient extends Struct.CollectionTypeSchema {
     orderCount: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
     orders: Schema.Attribute.Relation<'oneToMany', 'api::order.order'>;
     phone: Schema.Attribute.String;
+    preferredStyles: Schema.Attribute.JSON;
     publishedAt: Schema.Attribute.DateTime;
+    savedFlashs: Schema.Attribute.JSON;
     supabaseUserId: Schema.Attribute.String;
     tags: Schema.Attribute.JSON;
     totalSpent: Schema.Attribute.Decimal & Schema.Attribute.DefaultTo<0>;
@@ -624,11 +866,11 @@ export interface ApiExpenseExpense extends Struct.CollectionTypeSchema {
     amount: Schema.Attribute.Decimal & Schema.Attribute.Required;
     category: Schema.Attribute.Enumeration<
       [
-        'materials',
+        'consommables',
+        'materiel',
         'shipping',
         'software',
         'marketing',
-        'rent',
         'equipment',
         'taxes',
         'other',
@@ -650,6 +892,7 @@ export interface ApiExpenseExpense extends Struct.CollectionTypeSchema {
     publishedAt: Schema.Attribute.DateTime;
     receipt: Schema.Attribute.Media<'images' | 'files'>;
     receiptNumber: Schema.Attribute.String;
+    receiptUrl: Schema.Attribute.String;
     taxDeductible: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     tpsAmount: Schema.Attribute.Decimal & Schema.Attribute.DefaultTo<0>;
     tvqAmount: Schema.Attribute.Decimal & Schema.Attribute.DefaultTo<0>;
@@ -657,6 +900,53 @@ export interface ApiExpenseExpense extends Struct.CollectionTypeSchema {
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     vendor: Schema.Attribute.String;
+  };
+}
+
+export interface ApiFlashFlash extends Struct.CollectionTypeSchema {
+  collectionName: 'flashs';
+  info: {
+    description: 'Dessins de tatouage (flashs)';
+    displayName: 'Flash Tattoo';
+    pluralName: 'flashs';
+    singularName: 'flash';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    approved: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    bodyPlacement: Schema.Attribute.String;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    descriptionEn: Schema.Attribute.Text;
+    descriptionFr: Schema.Attribute.Text;
+    image: Schema.Attribute.Media<'images'> & Schema.Attribute.Required;
+    isUnique: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<'oneToMany', 'api::flash.flash'> &
+      Schema.Attribute.Private;
+    pricePrint: Schema.Attribute.Integer;
+    priceTattoo: Schema.Attribute.Integer;
+    printAvailable: Schema.Attribute.Boolean &
+      Schema.Attribute.DefaultTo<false>;
+    publishedAt: Schema.Attribute.DateTime;
+    size: Schema.Attribute.Enumeration<
+      ['petit', 'moyen', 'grand', 'tres-grand']
+    > &
+      Schema.Attribute.DefaultTo<'moyen'>;
+    sortOrder: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    status: Schema.Attribute.Enumeration<['disponible', 'reserve', 'tatoue']> &
+      Schema.Attribute.DefaultTo<'disponible'>;
+    style: Schema.Attribute.String;
+    tatoueur: Schema.Attribute.Relation<'manyToOne', 'api::tatoueur.tatoueur'>;
+    titleEn: Schema.Attribute.String;
+    titleFr: Schema.Attribute.String;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    visible: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
   };
 }
 
@@ -705,6 +995,56 @@ export interface ApiInventoryItemInventoryItem
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     variant: Schema.Attribute.String;
+  };
+}
+
+export interface ApiInvoiceInvoice extends Struct.CollectionTypeSchema {
+  collectionName: 'invoices';
+  info: {
+    description: 'Factures clients (manuelles et automatiques)';
+    displayName: 'Facture';
+    pluralName: 'invoices';
+    singularName: 'invoice';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    customerAddress: Schema.Attribute.Text;
+    customerEmail: Schema.Attribute.Email;
+    customerName: Schema.Attribute.String & Schema.Attribute.Required;
+    customerPhone: Schema.Attribute.String;
+    date: Schema.Attribute.Date & Schema.Attribute.Required;
+    discountAmount: Schema.Attribute.Decimal;
+    discountPercent: Schema.Attribute.Decimal;
+    invoiceNumber: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    items: Schema.Attribute.JSON & Schema.Attribute.Required;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::invoice.invoice'
+    > &
+      Schema.Attribute.Private;
+    notes: Schema.Attribute.Text;
+    order: Schema.Attribute.Relation<'oneToOne', 'api::order.order'>;
+    paidAt: Schema.Attribute.DateTime;
+    publishedAt: Schema.Attribute.DateTime;
+    status: Schema.Attribute.Enumeration<
+      ['draft', 'sent', 'paid', 'cancelled']
+    > &
+      Schema.Attribute.DefaultTo<'draft'>;
+    subtotal: Schema.Attribute.Decimal & Schema.Attribute.Required;
+    total: Schema.Attribute.Decimal & Schema.Attribute.Required;
+    tps: Schema.Attribute.Decimal;
+    tvq: Schema.Attribute.Decimal;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
   };
 }
 
@@ -764,6 +1104,10 @@ export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
     draftAndPublish: false;
   };
   attributes: {
+    carrier: Schema.Attribute.Enumeration<
+      ['postes-canada', 'purolator', 'ups', 'autre']
+    > &
+      Schema.Attribute.DefaultTo<'postes-canada'>;
     client: Schema.Attribute.Relation<'manyToOne', 'api::client.client'>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -774,6 +1118,7 @@ export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
     customerPhone: Schema.Attribute.String;
     designReady: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
     files: Schema.Attribute.Media<'images' | 'files', true>;
+    invoiceNumber: Schema.Attribute.String & Schema.Attribute.Unique;
     items: Schema.Attribute.JSON & Schema.Attribute.Required;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<'oneToMany', 'api::order.order'> &
@@ -803,6 +1148,7 @@ export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
     total: Schema.Attribute.Integer & Schema.Attribute.Required;
     totalWeight: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
     tps: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    trackingNumber: Schema.Attribute.String;
     tvq: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -871,6 +1217,53 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
       Schema.Attribute.Required &
       Schema.Attribute.Unique;
     sortOrder: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiReservationReservation extends Struct.CollectionTypeSchema {
+  collectionName: 'reservations';
+  info: {
+    description: 'Reservations de flash pour tatouage';
+    displayName: 'Reservation Tattoo';
+    pluralName: 'reservations';
+    singularName: 'reservation';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    budget: Schema.Attribute.String;
+    client: Schema.Attribute.Relation<'manyToOne', 'api::client.client'>;
+    clientEmail: Schema.Attribute.Email & Schema.Attribute.Required;
+    clientName: Schema.Attribute.String & Schema.Attribute.Required;
+    clientPhone: Schema.Attribute.String;
+    confirmedDate: Schema.Attribute.DateTime;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    flash: Schema.Attribute.Relation<'manyToOne', 'api::flash.flash'>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::reservation.reservation'
+    > &
+      Schema.Attribute.Private;
+    messageDuClient: Schema.Attribute.Text;
+    notes: Schema.Attribute.Text;
+    placement: Schema.Attribute.String;
+    publishedAt: Schema.Attribute.DateTime;
+    referenceImages: Schema.Attribute.Media<'images', true>;
+    requestedDate: Schema.Attribute.Date;
+    size: Schema.Attribute.String;
+    status: Schema.Attribute.Enumeration<
+      ['demandee', 'confirmee', 'planifiee', 'realisee', 'annulee']
+    > &
+      Schema.Attribute.DefaultTo<'demandee'>;
+    supabaseUserId: Schema.Attribute.String;
+    tatoueur: Schema.Attribute.Relation<'manyToOne', 'api::tatoueur.tatoueur'>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -1137,6 +1530,238 @@ export interface ApiSiteContentSiteContent extends Struct.SingleTypeSchema {
     testimonialsTitleEn: Schema.Attribute.String;
     testimonialsTitleEs: Schema.Attribute.String;
     testimonialsTitleFr: Schema.Attribute.String;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiTatoueurTatoueur extends Struct.CollectionTypeSchema {
+  collectionName: 'tatoueurs';
+  info: {
+    description: 'Artistes tatoueurs partenaires';
+    displayName: 'Tatoueur';
+    pluralName: 'tatoueurs';
+    singularName: 'tatoueur';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    active: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    approved: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    avatar: Schema.Attribute.Media<'images'>;
+    bioEn: Schema.Attribute.Text;
+    bioFr: Schema.Attribute.Text;
+    calendarSettings: Schema.Attribute.JSON;
+    city: Schema.Attribute.String;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    discountRate: Schema.Attribute.Decimal & Schema.Attribute.DefaultTo<0.3>;
+    email: Schema.Attribute.Email;
+    featured: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    flashs: Schema.Attribute.Relation<'oneToMany', 'api::flash.flash'>;
+    heroImage: Schema.Attribute.Media<'images'>;
+    hourlyRate: Schema.Attribute.Integer;
+    instagramHandle: Schema.Attribute.String;
+    links: Schema.Attribute.JSON;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::tatoueur.tatoueur'
+    > &
+      Schema.Attribute.Private;
+    name: Schema.Attribute.String & Schema.Attribute.Required;
+    pageViews: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    priceTattooMin: Schema.Attribute.Integer;
+    publishedAt: Schema.Attribute.DateTime;
+    realisationImages: Schema.Attribute.Media<'images', true>;
+    slug: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    socials: Schema.Attribute.JSON;
+    sortOrder: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    studio: Schema.Attribute.String;
+    styles: Schema.Attribute.JSON;
+    supabaseUserId: Schema.Attribute.String;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiTattooMessageTattooMessage
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'tattoo_messages';
+  info: {
+    description: 'Messages entre clients et tatoueurs';
+    displayName: 'Message Tatoueur';
+    pluralName: 'tattoo-messages';
+    singularName: 'tattoo-message';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    attachments: Schema.Attribute.Media<'images', true>;
+    content: Schema.Attribute.Text & Schema.Attribute.Required;
+    conversationId: Schema.Attribute.String;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::tattoo-message.tattoo-message'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    readByRecipient: Schema.Attribute.Boolean &
+      Schema.Attribute.DefaultTo<false>;
+    relatedFlash: Schema.Attribute.Relation<'manyToOne', 'api::flash.flash'>;
+    relatedReservation: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::reservation.reservation'
+    >;
+    senderEmail: Schema.Attribute.Email & Schema.Attribute.Required;
+    senderName: Schema.Attribute.String & Schema.Attribute.Required;
+    senderType: Schema.Attribute.Enumeration<['client', 'tatoueur', 'admin']> &
+      Schema.Attribute.DefaultTo<'client'>;
+    status: Schema.Attribute.Enumeration<
+      ['new', 'read', 'replied', 'archived']
+    > &
+      Schema.Attribute.DefaultTo<'new'>;
+    supabaseUserId: Schema.Attribute.String;
+    tatoueur: Schema.Attribute.Relation<'manyToOne', 'api::tatoueur.tatoueur'>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiTestimonialTestimonial extends Struct.CollectionTypeSchema {
+  collectionName: 'testimonials';
+  info: {
+    description: 'Temoignages clients recus apres une commande';
+    displayName: 'Temoignage';
+    pluralName: 'testimonials';
+    singularName: 'testimonial';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    approved: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    client: Schema.Attribute.Relation<'manyToOne', 'api::client.client'>;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    email: Schema.Attribute.Email & Schema.Attribute.Required;
+    featured: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::testimonial.testimonial'
+    > &
+      Schema.Attribute.Private;
+    name: Schema.Attribute.String & Schema.Attribute.Required;
+    order: Schema.Attribute.Relation<'manyToOne', 'api::order.order'>;
+    publishedAt: Schema.Attribute.DateTime;
+    rating: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          max: 5;
+          min: 1;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<5>;
+    roleEn: Schema.Attribute.String;
+    roleFr: Schema.Attribute.String;
+    textEn: Schema.Attribute.Text;
+    textFr: Schema.Attribute.Text & Schema.Attribute.Required;
+    token: Schema.Attribute.String & Schema.Attribute.Unique;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiUserRoleUserRole extends Struct.CollectionTypeSchema {
+  collectionName: 'user_roles';
+  info: {
+    description: 'Gestion des roles utilisateurs (user, artist)';
+    displayName: 'User Role';
+    pluralName: 'user-roles';
+    singularName: 'user-role';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    artistSlug: Schema.Attribute.String;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    displayName: Schema.Attribute.String;
+    email: Schema.Attribute.Email &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::user-role.user-role'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    role: Schema.Attribute.Enumeration<['user', 'artist', 'tatoueur']> &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'user'>;
+    supabaseUserId: Schema.Attribute.String;
+    tatoueurSlug: Schema.Attribute.String;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiWithdrawalRequestWithdrawalRequest
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'withdrawal_requests';
+  info: {
+    description: 'Demandes de retrait PayPal des artistes';
+    displayName: 'Withdrawal Request';
+    pluralName: 'withdrawal-requests';
+    singularName: 'withdrawal-request';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    adminNotes: Schema.Attribute.Text;
+    amount: Schema.Attribute.Decimal & Schema.Attribute.Required;
+    artistName: Schema.Attribute.String;
+    artistSlug: Schema.Attribute.String & Schema.Attribute.Required;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    email: Schema.Attribute.Email & Schema.Attribute.Required;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::withdrawal-request.withdrawal-request'
+    > &
+      Schema.Attribute.Private;
+    notes: Schema.Attribute.Text;
+    paypalEmail: Schema.Attribute.Email & Schema.Attribute.Required;
+    paypalTransactionId: Schema.Attribute.String;
+    processedAt: Schema.Attribute.DateTime;
+    publishedAt: Schema.Attribute.DateTime;
+    status: Schema.Attribute.Enumeration<
+      ['pending', 'processing', 'completed', 'rejected']
+    > &
+      Schema.Attribute.DefaultTo<'pending'>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -1654,18 +2279,31 @@ declare module '@strapi/strapi' {
       'admin::transfer-token': AdminTransferToken;
       'admin::transfer-token-permission': AdminTransferTokenPermission;
       'admin::user': AdminUser;
+      'api::artist-edit-request.artist-edit-request': ApiArtistEditRequestArtistEditRequest;
+      'api::artist-message.artist-message': ApiArtistMessageArtistMessage;
+      'api::artist-payment.artist-payment': ApiArtistPaymentArtistPayment;
+      'api::artist-submission.artist-submission': ApiArtistSubmissionArtistSubmission;
       'api::artist.artist': ApiArtistArtist;
       'api::boutique-item.boutique-item': ApiBoutiqueItemBoutiqueItem;
+      'api::calendar-event.calendar-event': ApiCalendarEventCalendarEvent;
       'api::client.client': ApiClientClient;
       'api::contact-submission.contact-submission': ApiContactSubmissionContactSubmission;
       'api::expense.expense': ApiExpenseExpense;
+      'api::flash.flash': ApiFlashFlash;
       'api::inventory-item.inventory-item': ApiInventoryItemInventoryItem;
+      'api::invoice.invoice': ApiInvoiceInvoice;
       'api::news-article.news-article': ApiNewsArticleNewsArticle;
       'api::order.order': ApiOrderOrder;
       'api::product.product': ApiProductProduct;
+      'api::reservation.reservation': ApiReservationReservation;
       'api::service-package.service-package': ApiServicePackageServicePackage;
       'api::service-page.service-page': ApiServicePageServicePage;
       'api::site-content.site-content': ApiSiteContentSiteContent;
+      'api::tatoueur.tatoueur': ApiTatoueurTatoueur;
+      'api::tattoo-message.tattoo-message': ApiTattooMessageTattooMessage;
+      'api::testimonial.testimonial': ApiTestimonialTestimonial;
+      'api::user-role.user-role': ApiUserRoleUserRole;
+      'api::withdrawal-request.withdrawal-request': ApiWithdrawalRequestWithdrawalRequest;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;
       'plugin::i18n.locale': PluginI18NLocale;
