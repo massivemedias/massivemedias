@@ -12,14 +12,14 @@ const STATUS_CONFIG = {
     icon: Check,
   },
   reserve: {
-    labelFr: 'Reserve',
+    labelFr: 'Réservé',
     labelEn: 'Reserved',
     color: 'bg-amber-500',
     border: 'border-amber-500/30',
     icon: Lock,
   },
   tatoue: {
-    labelFr: 'Tatoue',
+    labelFr: 'Tatoué',
     labelEn: 'Tattooed',
     color: 'bg-gray-500',
     border: 'border-gray-500/30',

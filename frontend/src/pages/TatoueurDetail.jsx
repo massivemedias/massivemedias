@@ -349,9 +349,9 @@ function TatoueurDetail({ subdomainSlug }) {
                 {/* Status filter */}
                 {['disponible', 'reserve', 'tatoue'].map(status => {
                   const labels = {
-                    disponible: { fr: 'Disponibles', en: 'Available' },
-                    reserve: { fr: 'Reserves', en: 'Reserved' },
-                    tatoue: { fr: 'Tatoues', en: 'Tattooed' },
+                    disponible: { fr: 'Disponibles', en: 'Available', es: 'Disponibles' },
+                    reserve: { fr: 'Réservés', en: 'Reserved', es: 'Reservados' },
+                    tatoue: { fr: 'Tatoués', en: 'Tattooed', es: 'Tatuados' },
                   };
                   const colors = {
                     disponible: 'bg-green-500',

@@ -120,8 +120,8 @@ export default function FlashLightbox({ flash, onClose, onReserve, tatoueurName,
                 <span className="text-white font-heading font-bold text-lg uppercase tracking-widest px-6 py-3 rounded-full border border-white/30 backdrop-blur-sm flex items-center gap-2">
                   <Lock size={20} />
                   {flash.status === 'reserve'
-                    ? tx({ fr: 'Reserve', en: 'Reserved' })
-                    : tx({ fr: 'Piece tatouee', en: 'Tattooed piece' })
+                    ? tx({ fr: 'Réservé', en: 'Reserved' })
+                    : tx({ fr: 'Pièce tatouée', en: 'Tattooed piece' })
                   }
                 </span>
               </div>
