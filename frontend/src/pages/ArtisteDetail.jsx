@@ -638,9 +638,9 @@ function ArtisteDetail({ subdomainSlug }) {
               {tx({ fr: 'Configurez votre tirage', en: 'Configure Your Print', es: 'Configura tu impresion' })}
             </h2>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-8 max-w-5xl mx-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-8 max-w-5xl mx-auto items-start">
               {/* Preview avec fleches navigation */}
-              <div className="relative flex items-center">
+              <div className="relative flex items-center lg:sticky lg:top-24">
                 {/* Fleche gauche */}
                 {artist.prints.length > 1 && (
                   <button
