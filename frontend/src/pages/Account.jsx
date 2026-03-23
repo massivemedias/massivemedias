@@ -15,7 +15,8 @@ import { getMyOrders } from '../services/orderService';
 import { getContactSubmissions, getArtistSubmissions } from '../services/adminService';
 import { getArtistMessagesAdmin } from '../services/artistService';
 import { isServerDown } from '../services/api';
-import { generateInvoicePDF } from '../utils/generateInvoice';
+// Lazy import - jsPDF (~386KB) charge seulement au clic
+const loadGenerateInvoice = () => import('../utils/generateInvoice').then(m => m.generateInvoicePDF);
 import AddressAutocomplete from '../components/AddressAutocomplete';
 import artistsData from '../data/artists';
 
@@ -691,7 +692,7 @@ function Account() {
                       )}
                       <span>{tx({ fr: 'Devise', en: 'Currency', es: 'Moneda' })}: {(order.currency || 'cad').toUpperCase()}</span>
                       <button
-                        onClick={() => generateInvoicePDF(order, 'receipt')}
+                        onClick={async () => { const fn = await loadGenerateInvoice(); fn(order, 'receipt'); }}
                         className="flex items-center gap-1.5 text-accent font-medium hover:underline"
                       >
                         <Download size={12} />

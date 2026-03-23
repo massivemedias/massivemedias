@@ -8,6 +8,24 @@ const ADMIN_EMAILS = (import.meta.env.VITE_ADMIN_EMAILS || 'massivemedias@gmail.
 
 const UserRoleContext = createContext(null);
 
+const ROLE_CACHE_KEY = 'mm-user-role-cache';
+
+function getCachedRole(email) {
+  try {
+    const raw = localStorage.getItem(ROLE_CACHE_KEY);
+    if (!raw) return null;
+    const cached = JSON.parse(raw);
+    if (cached.email === email && Date.now() - cached.ts < 86400000) return cached.data;
+  } catch { /* ignore */ }
+  return null;
+}
+
+function setCachedRole(email, data) {
+  try {
+    localStorage.setItem(ROLE_CACHE_KEY, JSON.stringify({ email, data, ts: Date.now() }));
+  } catch { /* ignore */ }
+}
+
 export function UserRoleProvider({ children }) {
   const { user, loading: authLoading } = useAuth();
   const [roleData, setRoleData] = useState(null);
@@ -29,7 +47,15 @@ export function UserRoleProvider({ children }) {
     }
 
     let cancelled = false;
-    setFetched(false);
+
+    // Utiliser le cache localStorage pour un affichage instantane
+    const cached = getCachedRole(user.email);
+    if (cached) {
+      setRoleData(cached);
+      setFetched(true);
+    } else {
+      setFetched(false);
+    }
 
     async function fetchRole(attempt = 1) {
       try {
@@ -37,18 +63,20 @@ export function UserRoleProvider({ children }) {
           params: { email: user.email },
         });
         if (!cancelled) {
-          setRoleData(data.data || { role: 'user', artistSlug: null });
+          const rd = data.data || { role: 'user', artistSlug: null };
+          setRoleData(rd);
+          setCachedRole(user.email, rd);
           setFetched(true);
         }
       } catch {
         if (!cancelled) {
-          // Retry up to 3 times with increasing delay (server might be cold-starting)
+          // Retry up to 3 times with shorter delays (3s, 6s)
           if (attempt < 3) {
             setTimeout(() => {
               if (!cancelled) fetchRole(attempt + 1);
-            }, attempt * 10000); // 10s, 20s
-          } else {
-            // After all retries, fallback to user
+            }, attempt * 3000);
+          } else if (!cached) {
+            // After all retries and no cache, fallback to user
             setRoleData({ role: 'user', artistSlug: null });
             setFetched(true);
           }

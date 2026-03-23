@@ -81,6 +81,14 @@ function AdminNotes({ embedded = false }) {
   const titleRef = useRef(null);
   const saveTimeout = useRef(null);
 
+  // Auto-select first note on load
+  useEffect(() => {
+    if (!activeId && notes.length > 0) {
+      const sorted = [...notes].sort((a, b) => b.updatedAt - a.updatedAt);
+      setActiveId(sorted[0].id);
+    }
+  }, [notes.length]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const activeNote = notes.find(n => n.id === activeId) || null;
 
   // Sauvegarder a chaque changement
@@ -175,7 +183,7 @@ function AdminNotes({ embedded = false }) {
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0 flex-1">
-                    <p className={`font-normal truncate text-base ${activeId === n.id ? 'text-accent' : 'text-heading'}`} style={{ fontFamily: "-apple-system, 'SF Pro Display', 'Helvetica Neue', sans-serif" }}>
+                    <p className={`font-medium truncate text-lg ${activeId === n.id ? 'text-accent' : 'text-heading'}`} style={{ fontFamily: "-apple-system, 'SF Pro Display', 'Helvetica Neue', sans-serif" }}>
                       {n.title || tx({ fr: 'Sans titre', en: 'Untitled', es: 'Sin titulo' })}
                     </p>
                   </div>
