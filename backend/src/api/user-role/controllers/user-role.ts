@@ -50,6 +50,7 @@ export default factories.createCoreController('api::user-role.user-role', ({ str
           email: e.email,
           role: e.role,
           artistSlug: e.artistSlug,
+          tatoueurSlug: e.tatoueurSlug || null,
           displayName: e.displayName,
         },
       };
@@ -68,8 +69,8 @@ export default factories.createCoreController('api::user-role.user-role', ({ str
       return;
     }
 
-    if (!['user', 'artist'].includes(role)) {
-      ctx.throw(400, 'Role must be "user" or "artist"');
+    if (!['user', 'artist', 'tatoueur'].includes(role)) {
+      ctx.throw(400, 'Role must be "user", "artist" or "tatoueur"');
       return;
     }
 

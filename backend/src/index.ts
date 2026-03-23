@@ -1080,6 +1080,26 @@ export default {
         }
       }
 
+      // Seed User Roles (proteger contre les resets de schema)
+      console.log('[seed] Checking User Roles...');
+      const userRolesToSeed = [
+        { email: 'howdiy@gmail.com', role: 'artist', artistSlug: 'maudite-machine', displayName: 'Maudite Machine' },
+      ];
+      for (const ur of userRolesToSeed) {
+        const existing = await strapi.documents('api::user-role.user-role').findMany({
+          filters: { email: { $eqi: ur.email } },
+          limit: 1,
+        });
+        if (!existing || existing.length === 0) {
+          await strapi.documents('api::user-role.user-role').create({
+            data: ur as any,
+          });
+          console.log(`[seed] User role for "${ur.email}" created (${ur.role})!`);
+        } else {
+          console.log(`[seed] User role for "${ur.email}" already exists.`);
+        }
+      }
+
       console.log('[seed] Done!');
     } catch (err: any) {
       console.error('[seed] Error:', err.message);
