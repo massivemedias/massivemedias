@@ -1,13 +1,16 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Paintbrush } from 'lucide-react';
 import { useTheme } from '../i18n/ThemeContext';
-import { THEME_NAMES } from '../utils/brightnessEngine';
+import { THEME_NAMES, THEME_COLORS, THEME_ACCENTS } from '../utils/brightnessEngine';
 import { useLang } from '../i18n/LanguageContext';
 
 function BrightnessFader() {
   const { step, setStep } = useTheme();
   const { tx } = useLang();
+  const [open, setOpen] = useState(false);
   const [showTip, setShowTip] = useState(false);
+  const ref = useRef(null);
 
   useEffect(() => {
     const key = 'mm-theme-tip-seen';
@@ -27,21 +30,64 @@ function BrightnessFader() {
     }
   }, [showTip]);
 
+  // Fermer le dropdown au clic exterieur
+  useEffect(() => {
+    if (!open) return;
+    const handleClick = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [open]);
+
   return (
-    <div className="relative" style={{ overflow: 'visible' }}>
-      <select
-        value={step}
-        onChange={(e) => setStep(Number(e.target.value))}
-        className="theme-select"
+    <div className="relative" ref={ref} style={{ overflow: 'visible' }}>
+      {/* Icone palette */}
+      <button
+        onClick={() => { setOpen(!open); setShowTip(false); }}
+        className="p-2 rounded-lg hover:bg-white/10 transition-colors"
         aria-label="Theme"
       >
-        {THEME_NAMES.map((name, i) => (
-          <option key={i} value={i}>{name}</option>
-        ))}
-      </select>
+        <Paintbrush size={18} style={{ color: THEME_ACCENTS[step] }} />
+      </button>
 
+      {/* Dropdown */}
       <AnimatePresence>
-        {showTip && (
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: -8, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -8, scale: 0.9 }}
+            transition={{ duration: 0.15 }}
+            className="absolute right-0 mt-2 p-2 rounded-xl bg-bg-card border border-white/10 shadow-2xl shadow-black/50 backdrop-blur-xl"
+            style={{ zIndex: 9999, minWidth: '160px' }}
+          >
+            {THEME_NAMES.map((name, i) => (
+              <button
+                key={i}
+                onClick={() => { setStep(i); setOpen(false); }}
+                className={`w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                  step === i ? 'bg-white/10 text-heading font-medium' : 'text-grey-light hover:bg-white/5'
+                }`}
+              >
+                <span
+                  className="w-3 h-3 rounded-full flex-shrink-0 ring-1 ring-white/20"
+                  style={{ background: THEME_COLORS[i] }}
+                />
+                <span
+                  className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                  style={{ background: THEME_ACCENTS[i] }}
+                />
+                {name}
+              </button>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Tooltip */}
+      <AnimatePresence>
+        {showTip && !open && (
           <motion.div
             initial={{ opacity: 0, y: -6, scale: 0.85 }}
             animate={{
@@ -59,7 +105,7 @@ function BrightnessFader() {
             style={{ top: '100%', zIndex: 9999 }}
           >
             <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-accent rotate-45" />
-            {tx({ fr: 'Change le thème!', en: 'Try a theme!', es: 'Cambia el tema!' })}
+            {tx({ fr: 'Change le theme!', en: 'Try a theme!', es: 'Cambia el tema!' })}
           </motion.div>
         )}
       </AnimatePresence>
