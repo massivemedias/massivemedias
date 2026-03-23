@@ -40,7 +40,7 @@ function InstagramFeed({ handle, postShortcodes = [] }) {
   return (
     <div className="space-y-4">
       {postShortcodes.length > 0 && (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 md:gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           {postShortcodes.map((code) => (
             <blockquote
               key={code}
