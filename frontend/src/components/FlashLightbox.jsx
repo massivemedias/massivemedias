@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, MapPin, Ruler, DollarSign, Printer, Lock, Check, LogIn } from 'lucide-react';
+import { X, MapPin, Ruler, DollarSign, Printer, Lock, Check, LogIn, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useLang } from '../i18n/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -13,20 +13,31 @@ const SIZE_LABELS = {
   'tres-grand': { fr: 'Tres grand (35+ cm)', en: 'Extra large (14+ in)' },
 };
 
-export default function FlashLightbox({ flash, onClose, onReserve, tatoueurName }) {
+export default function FlashLightbox({ flash, onClose, onReserve, tatoueurName, allFlashs = [], onNavigate }) {
   const { lang, tx } = useLang();
   const { user } = useAuth();
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
 
+  const currentIndex = allFlashs.findIndex(f => f.id === flash?.id);
+  const hasPrev = currentIndex > 0;
+  const hasNext = currentIndex < allFlashs.length - 1;
+
+  const goPrev = () => { if (hasPrev && onNavigate) onNavigate(allFlashs[currentIndex - 1]); setShowLoginPrompt(false); };
+  const goNext = () => { if (hasNext && onNavigate) onNavigate(allFlashs[currentIndex + 1]); setShowLoginPrompt(false); };
+
   useEffect(() => {
-    const handleEsc = (e) => { if (e.key === 'Escape') onClose(); };
-    document.addEventListener('keydown', handleEsc);
+    const handleKey = (e) => {
+      if (e.key === 'Escape') onClose();
+      if (e.key === 'ArrowLeft') goPrev();
+      if (e.key === 'ArrowRight') goNext();
+    };
+    document.addEventListener('keydown', handleKey);
     document.body.style.overflow = 'hidden';
     return () => {
-      document.removeEventListener('keydown', handleEsc);
+      document.removeEventListener('keydown', handleKey);
       document.body.style.overflow = '';
     };
-  }, [onClose]);
+  }, [onClose, currentIndex]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!flash) return null;
 
@@ -67,6 +78,29 @@ export default function FlashLightbox({ flash, onClose, onReserve, tatoueurName 
 
           {/* Image */}
           <div className="md:w-1/2 relative bg-black flex items-center justify-center min-h-[300px] md:min-h-0">
+            {/* Navigation arrows */}
+            {hasPrev && (
+              <button
+                onClick={(e) => { e.stopPropagation(); goPrev(); }}
+                className="absolute left-2 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/80 transition-colors"
+              >
+                <ChevronLeft size={24} />
+              </button>
+            )}
+            {hasNext && (
+              <button
+                onClick={(e) => { e.stopPropagation(); goNext(); }}
+                className="absolute right-2 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/80 transition-colors"
+              >
+                <ChevronRight size={24} />
+              </button>
+            )}
+            {/* Counter */}
+            {allFlashs.length > 1 && (
+              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 bg-black/60 text-white text-xs px-3 py-1 rounded-full">
+                {currentIndex + 1} / {allFlashs.length}
+              </div>
+            )}
             {imageUrl ? (
               <img
                 src={imageUrl}

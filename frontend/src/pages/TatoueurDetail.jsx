@@ -645,6 +645,8 @@ function TatoueurDetail({ subdomainSlug }) {
           onClose={() => setSelectedFlash(null)}
           onReserve={handleReserve}
           tatoueurName={tatoueur.name}
+          allFlashs={tatoueur.flashs || []}
+          onNavigate={setSelectedFlash}
         />
       )}
 
