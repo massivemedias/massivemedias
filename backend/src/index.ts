@@ -1084,6 +1084,7 @@ export default {
       console.log('[seed] Checking User Roles...');
       const userRolesToSeed = [
         { email: 'howdiy@gmail.com', role: 'artist', artistSlug: 'maudite-machine', displayName: 'Maudite Machine' },
+        { email: 'medusart@protonmail.com', role: 'artist', artistSlug: 'psyqu33n', displayName: 'Psyqu33n' },
       ];
       for (const ur of userRolesToSeed) {
         const existing = await strapi.documents('api::user-role.user-role').findMany({
