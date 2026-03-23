@@ -11,46 +11,41 @@ import { useTatoueurs } from '../hooks/useTatoueurs';
 import { mediaUrl } from '../utils/cms';
 import tatoueursData from '../data/tatoueurs';
 
-// Embed Instagram individuel
-function InstagramEmbed({ shortcode }) {
-  const iframeRef = useRef(null);
-
-  return (
-    <div className="rounded-xl overflow-hidden bg-black/20">
-      <iframe
-        ref={iframeRef}
-        src={`https://www.instagram.com/p/${shortcode}/embed/captioned/`}
-        className="w-full border-0"
-        style={{ minHeight: '480px' }}
-        loading="lazy"
-        allowTransparency="true"
-        scrolling="no"
-        title={`Instagram post ${shortcode}`}
-      />
-    </div>
-  );
-}
-
-// Composant Instagram Feed - embeds officiels Instagram
+// Composant Instagram Feed - images directes via /media/ endpoint
 function InstagramFeed({ handle, postShortcodes = [] }) {
+  const [selectedImg, setSelectedImg] = useState(null);
+
   if (!handle && postShortcodes.length === 0) return null;
 
   return (
     <div className="space-y-4">
-      {postShortcodes.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {postShortcodes.length > 0 && (
+        <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
           {postShortcodes.map((code, i) => (
-            <motion.div
+            <motion.a
               key={code}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.08 }}
+              href={`https://www.instagram.com/p/${code}/`}
+              target="_blank"
+              rel="noopener noreferrer"
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.3, delay: i * 0.03 }}
+              viewport={{ once: true }}
+              className="aspect-square rounded-lg overflow-hidden group relative bg-white/5"
             >
-              <InstagramEmbed shortcode={code} />
-            </motion.div>
+              <img
+                src={`https://www.instagram.com/p/${code}/media/?size=l`}
+                alt={`Post ${i + 1}`}
+                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                loading="lazy"
+              />
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
+                <Instagram size={20} className="text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+              </div>
+            </motion.a>
           ))}
         </div>
-      ) : null}
+      )}
 
       {/* Lien vers Instagram */}
       {handle && (
@@ -405,7 +400,7 @@ function TatoueurDetail({ subdomainSlug }) {
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 md:gap-3">
                 {flashs.map((flash, index) => (
                   <FlashCard
                     key={flash.id || index}
