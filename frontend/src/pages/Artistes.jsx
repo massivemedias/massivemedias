@@ -1,22 +1,35 @@
-import { useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { useMemo, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRight, MessageSquare } from 'lucide-react';
+import { ArrowRight, MessageSquare, Camera, PenTool, Store, MapPin, Instagram } from 'lucide-react';
 import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
 import { useArtists } from '../hooks/useArtists';
+import { useTatoueurs } from '../hooks/useTatoueurs';
 import { mediaUrl } from '../utils/cms';
 import artistsData from '../data/artists';
+import tatoueursData from '../data/tatoueurs';
 
 function Artistes() {
   const { lang, tx } = useLang();
   const { artists: cmsArtists } = useArtists();
+  const { tatoueurs: cmsTatoueurs } = useTatoueurs();
+  const location = useLocation();
+
+  // Scroll to anchor on load
+  useEffect(() => {
+    if (location.hash) {
+      setTimeout(() => {
+        const el = document.getElementById(location.hash.slice(1));
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 300);
+    }
+  }, [location.hash]);
 
   const artists = useMemo(() => {
     const localList = Object.values(artistsData);
     if (!cmsArtists || cmsArtists.length === 0) return localList;
 
-    // Merge: CMS prioritaire, local en fallback
     const merged = localList.map(local => {
       const cms = cmsArtists.find(a => a.slug === local.slug);
       if (!cms) return local;
@@ -38,7 +51,6 @@ function Artistes() {
       };
     });
 
-    // Ajouter les artistes CMS-only (pas dans les donnees locales)
     const localSlugs = new Set(localList.map(a => a.slug));
     const cmsOnly = cmsArtists
       .filter(a => !localSlugs.has(a.slug))
@@ -60,22 +72,65 @@ function Artistes() {
     return [...merged, ...cmsOnly];
   }, [cmsArtists]);
 
+  const tatoueurs = useMemo(() => {
+    const localList = Object.values(tatoueursData);
+    if (!cmsTatoueurs || cmsTatoueurs.length === 0) return localList;
+
+    const merged = localList.map(local => {
+      const cms = cmsTatoueurs.find(t => t.slug === local.slug);
+      if (!cms) return local;
+      return {
+        ...local,
+        name: cms.name || local.name,
+        bioFr: cms.bioFr || local.bioFr,
+        bioEn: cms.bioEn || local.bioEn,
+        studio: cms.studio || local.studio,
+        city: cms.city || local.city,
+        styles: cms.styles || local.styles,
+        instagramHandle: cms.instagramHandle || local.instagramHandle,
+        avatar: cms.avatar ? mediaUrl(cms.avatar) : local.avatar,
+        heroImage: cms.heroImage ? mediaUrl(cms.heroImage) : local.heroImage,
+        priceTattooMin: cms.priceTattooMin || local.priceTattooMin,
+        flashs: local.flashs,
+      };
+    });
+
+    const localSlugs = new Set(localList.map(t => t.slug));
+    const cmsOnly = cmsTatoueurs
+      .filter(t => !localSlugs.has(t.slug))
+      .map(cms => ({
+        slug: cms.slug,
+        name: cms.name,
+        bioFr: cms.bioFr || '',
+        bioEn: cms.bioEn || '',
+        studio: cms.studio || '',
+        city: cms.city || '',
+        styles: cms.styles || [],
+        instagramHandle: cms.instagramHandle || '',
+        avatar: mediaUrl(cms.avatar),
+        heroImage: mediaUrl(cms.heroImage),
+        priceTattooMin: cms.priceTattooMin,
+        flashs: cms.flashs || [],
+      }));
+
+    return [...merged, ...cmsOnly];
+  }, [cmsTatoueurs]);
+
   return (
     <>
       <SEO
-        title={tx({ fr: 'Artistes - Tirages Fine Art | Massive', en: 'Artists - Fine Art Prints | Massive', es: 'Artistas - Impresiones Fine Art | Massive' })}
+        title={tx({ fr: 'Artistes - Photographes, Tatoueurs & Boutique | Massive', en: 'Artists - Photographers, Tattoo Artists & Shop | Massive' })}
         description={tx({
-          fr: 'Découvrez les artistes de Massive Medias. Tirages fine art professionnels sur papiers haut de gamme, qualité galerie et musée. Explorez leurs oeuvres et commandez en ligne depuis Montréal.',
-          en: 'Discover Massive artists. Professional fine art prints, gallery quality. Montreal.',
-          es: 'Descubre los artistas de Massive. Impresiones fine art profesionales, calidad galeria. Montreal.',
+          fr: 'Decouvrez les artistes de Massive Medias. Photographes, peintres, tatoueurs. Tirages fine art, flashs originaux, boutique en ligne. Montreal.',
+          en: 'Discover Massive Medias artists. Photographers, painters, tattoo artists. Fine art prints, original flash designs, online shop. Montreal.',
         })}
         breadcrumbs={[
-          { name: tx({ fr: 'Accueil', en: 'Home', es: 'Inicio' }), url: '/' },
-          { name: tx({ fr: 'Artistes', en: 'Artists', es: 'Artistas' }) },
+          { name: tx({ fr: 'Accueil', en: 'Home' }), url: '/' },
+          { name: tx({ fr: 'Artistes', en: 'Artists' }) },
         ]}
       />
 
-      {/* ============ HERO EDITORIAL ============ */}
+      {/* ============ HERO ============ */}
       <section className="pt-24 pb-6 md:pt-32 md:pb-10">
         <div className="section-container">
           <motion.div
@@ -85,110 +140,285 @@ function Artistes() {
           >
             <div className="flex items-center gap-2 mb-8 text-sm">
               <Link to="/" className="text-grey-muted hover:text-accent transition-colors">
-                {tx({ fr: 'Accueil', en: 'Home', es: 'Inicio' })}
+                {tx({ fr: 'Accueil', en: 'Home' })}
               </Link>
               <span className="text-grey-muted">/</span>
               <span className="text-accent">
-                {tx({ fr: 'Artistes', en: 'Artists', es: 'Artistas' })}
+                {tx({ fr: 'Artistes', en: 'Artists' })}
               </span>
             </div>
 
             <h1 className="text-5xl md:text-8xl font-heading font-bold text-heading tracking-tight leading-none mb-4">
-              {tx({ fr: 'Artistes', en: 'Artists', es: 'Artistas' })}
+              {tx({ fr: 'Nos artistes', en: 'Our Artists' })}
             </h1>
 
             <div className="w-16 h-1 bg-accent mb-6" />
 
-            <p className="text-lg md:text-xl text-grey-light max-w-xl">
+            <p className="text-lg md:text-xl text-grey-light max-w-xl mb-8">
               {tx({
-                fr: "Tirages fine art d'artistes sélectionnés. Qualité galerie.",
-                en: 'Fine art prints from selected artists. Gallery quality.',
-                es: 'Impresiones fine art de artistas seleccionados. Calidad galeria.',
+                fr: "Photographes, peintres, tatoueurs. Decouvrez les createurs de Massive Medias.",
+                en: 'Photographers, painters, tattoo artists. Discover the creators of Massive Medias.',
               })}
             </p>
+
+            {/* Quick nav */}
+            <div className="flex flex-wrap gap-3">
+              <a href="#photographes" className="flex items-center gap-2 text-sm px-4 py-2 rounded-full bg-bg-card border border-white/10 text-grey-light hover:text-accent hover:border-accent/30 transition-colors">
+                <Camera size={16} />
+                {tx({ fr: 'Photographes & Peintres', en: 'Photographers & Painters' })}
+              </a>
+              <a href="#tatoueurs" className="flex items-center gap-2 text-sm px-4 py-2 rounded-full bg-bg-card border border-white/10 text-grey-light hover:text-accent hover:border-accent/30 transition-colors">
+                <PenTool size={16} />
+                {tx({ fr: 'Tatoueurs', en: 'Tattoo Artists' })}
+              </a>
+              <a href="#boutique" className="flex items-center gap-2 text-sm px-4 py-2 rounded-full bg-bg-card border border-white/10 text-grey-light hover:text-accent hover:border-accent/30 transition-colors">
+                <Store size={16} />
+                {tx({ fr: 'Boutique Massive', en: 'Massive Shop' })}
+              </a>
+            </div>
           </motion.div>
         </div>
       </section>
 
-      {/* ============ EDITORIAL GRID ============ */}
-      <div className="section-container max-w-7xl mx-auto pb-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 mb-20">
-          {artists.map((artist, index) => {
-            const tagline = tx({ fr: artist.tagline.fr, en: artist.tagline.en, es: artist.tagline.es || artist.tagline.en });
+      {/* ============ SECTION PHOTOGRAPHES & PEINTRES ============ */}
+      <section id="photographes" className="scroll-mt-24">
+        <div className="section-container max-w-7xl mx-auto pb-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            viewport={{ once: true }}
+            className="flex items-center gap-3 mb-8"
+          >
+            <Camera size={28} className="text-accent" />
+            <h2 className="text-3xl md:text-4xl font-heading font-bold text-heading">
+              {tx({ fr: 'Photographes & Peintres', en: 'Photographers & Painters' })}
+            </h2>
+          </motion.div>
 
-            // Layout assignments based on position
-            const isFeatured = index === 0;
-            const isTallRight = index === 1;
-            const isWide = index === artists.length - 1 && artists.length >= 6;
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 mb-12">
+            {artists.map((artist, index) => {
+              const tagline = tx({ fr: artist.tagline.fr, en: artist.tagline.en, es: artist.tagline.es || artist.tagline.en });
 
-            // Grid classes
-            let gridClasses = '';
-            let aspectClasses = 'aspect-[3/4]';
+              const isFeatured = index === 0;
+              const isTallRight = index === 1;
+              const isWide = index === artists.length - 1 && artists.length >= 6;
 
-            if (isFeatured) {
-              gridClasses = 'md:col-span-2 md:row-span-2';
-              aspectClasses = 'aspect-[3/4] md:aspect-auto md:h-full min-h-[400px] md:min-h-0';
-            } else if (isTallRight) {
-              gridClasses = 'md:row-span-2';
-              aspectClasses = 'aspect-[3/4] md:aspect-auto md:h-full min-h-[400px] md:min-h-0';
-            } else if (isWide) {
-              gridClasses = 'md:col-span-2';
-              aspectClasses = 'aspect-[3/4] md:aspect-[16/9]';
-            }
+              let gridClasses = '';
+              let aspectClasses = 'aspect-[3/4]';
 
-            return (
-              <motion.div
-                key={artist.slug}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.08 }}
-                viewport={{ once: true, margin: '-50px' }}
-                className={gridClasses}
-              >
-                <Link
-                  to={`/artistes/${artist.slug}`}
-                  className={`group block relative overflow-hidden ${aspectClasses}`}
+              if (isFeatured) {
+                gridClasses = 'md:col-span-2 md:row-span-2';
+                aspectClasses = 'aspect-[3/4] md:aspect-auto md:h-full min-h-[400px] md:min-h-0';
+              } else if (isTallRight) {
+                gridClasses = 'md:row-span-2';
+                aspectClasses = 'aspect-[3/4] md:aspect-auto md:h-full min-h-[400px] md:min-h-0';
+              } else if (isWide) {
+                gridClasses = 'md:col-span-2';
+                aspectClasses = 'aspect-[3/4] md:aspect-[16/9]';
+              }
+
+              return (
+                <motion.div
+                  key={artist.slug}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.08 }}
+                  viewport={{ once: true, margin: '-50px' }}
+                  className={gridClasses}
                 >
-                  {/* Full-bleed image */}
-                  <img
-                    src={artist.heroImage || artist.avatar}
-                    alt={artist.name}
-                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                    loading={index < 2 ? 'eager' : 'lazy'}
-                  />
-
-                  {/* Gradient overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent group-hover:from-black/80 transition-all duration-500" />
-
-                  {/* Content - bottom aligned */}
-                  <div className="absolute inset-0 flex flex-col justify-end p-5 md:p-8">
-                    {/* Artist name */}
-                    <h2 className={`font-heading font-bold text-white leading-none mb-2 drop-shadow-lg ${
-                      isFeatured ? 'text-3xl md:text-6xl' : 'text-2xl md:text-3xl'
-                    }`}>
-                      {artist.name}
-                    </h2>
-
-                    {/* Tagline */}
-                    <p className="text-white/60 text-sm md:text-base leading-snug max-w-md line-clamp-2">
-                      {tagline}
-                    </p>
-
-                    {/* Artwork count + arrow - hover reveal */}
-                    <div className="flex items-center justify-between mt-3 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
-                      <span className="text-white/40 text-xs uppercase tracking-widest">
-                        {artist.prints?.length || 0} {tx({ fr: 'oeuvres', en: 'artworks', es: 'obras' })}
-                      </span>
-                      <ArrowRight size={18} className="text-accent" />
+                  <Link
+                    to={`/artistes/${artist.slug}`}
+                    className={`group block relative overflow-hidden ${aspectClasses}`}
+                  >
+                    <img
+                      src={artist.heroImage || artist.avatar}
+                      alt={artist.name}
+                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                      loading={index < 2 ? 'eager' : 'lazy'}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent group-hover:from-black/80 transition-all duration-500" />
+                    <div className="absolute inset-0 flex flex-col justify-end p-5 md:p-8">
+                      <h3 className={`font-heading font-bold text-white leading-none mb-2 drop-shadow-lg ${
+                        isFeatured ? 'text-3xl md:text-6xl' : 'text-2xl md:text-3xl'
+                      }`}>
+                        {artist.name}
+                      </h3>
+                      <p className="text-white/60 text-sm md:text-base leading-snug max-w-md line-clamp-2">
+                        {tagline}
+                      </p>
+                      <div className="flex items-center justify-between mt-3 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
+                        <span className="text-white/40 text-xs uppercase tracking-widest">
+                          {artist.prints?.length || 0} {tx({ fr: 'oeuvres', en: 'artworks' })}
+                        </span>
+                        <ArrowRight size={18} className="text-accent" />
+                      </div>
                     </div>
-                  </div>
-                </Link>
-              </motion.div>
-            );
-          })}
+                  </Link>
+                </motion.div>
+              );
+            })}
+          </div>
         </div>
+      </section>
 
-        {/* CTA */}
+      {/* ============ SECTION TATOUEURS ============ */}
+      <section id="tatoueurs" className="scroll-mt-24 py-12 md:py-16 bg-bg-elevated/30">
+        <div className="section-container max-w-7xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            viewport={{ once: true }}
+            className="flex items-center justify-between mb-8"
+          >
+            <div className="flex items-center gap-3">
+              <PenTool size={28} className="text-accent" />
+              <h2 className="text-3xl md:text-4xl font-heading font-bold text-heading">
+                {tx({ fr: 'Tatoueurs', en: 'Tattoo Artists' })}
+              </h2>
+            </div>
+            <Link to="/tatoueurs" className="text-sm text-grey-muted hover:text-accent transition-colors flex items-center gap-1">
+              {tx({ fr: 'Voir tout', en: 'View all' })}
+              <ArrowRight size={14} />
+            </Link>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-8">
+            {tatoueurs.map((tatoueur, index) => {
+              const bio = lang === 'en' ? (tatoueur.bioEn || tatoueur.bioFr) : (tatoueur.bioFr || tatoueur.bioEn);
+              const flashCount = (tatoueur.flashs || []).filter(f => f.status === 'disponible').length;
+
+              return (
+                <motion.div
+                  key={tatoueur.slug}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.08 }}
+                  viewport={{ once: true, margin: '-50px' }}
+                >
+                  <Link
+                    to={`/tatoueurs/${tatoueur.slug}`}
+                    className="group block relative overflow-hidden rounded-xl bg-bg-card border border-white/5 hover:border-accent/20 transition-all duration-300"
+                  >
+                    <div className="relative aspect-[16/10] overflow-hidden">
+                      {tatoueur.heroImage || tatoueur.avatar ? (
+                        <img
+                          src={tatoueur.heroImage || tatoueur.avatar}
+                          alt={tatoueur.name}
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-bg-elevated" />
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                      {flashCount > 0 && (
+                        <div className="absolute top-3 right-3 bg-green-500 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-lg">
+                          {flashCount} flash{flashCount > 1 ? 's' : ''} {tx({ fr: 'dispo', en: 'available' })}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="p-5">
+                      <div className="flex items-start gap-3 mb-3">
+                        {tatoueur.avatar && (
+                          <img src={tatoueur.avatar} alt={tatoueur.name} className="w-12 h-12 rounded-full object-cover border-2 border-accent/30 flex-shrink-0" />
+                        )}
+                        <div className="min-w-0">
+                          <h3 className="font-heading font-bold text-heading text-lg leading-tight">{tatoueur.name}</h3>
+                          <div className="flex items-center gap-1.5 text-grey-muted text-xs mt-0.5">
+                            {tatoueur.studio && <span>{tatoueur.studio}</span>}
+                            {tatoueur.studio && tatoueur.city && <span>-</span>}
+                            {tatoueur.city && <span className="flex items-center gap-0.5"><MapPin size={10} />{tatoueur.city}</span>}
+                          </div>
+                        </div>
+                      </div>
+
+                      {tatoueur.styles && tatoueur.styles.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5 mb-3">
+                          {tatoueur.styles.slice(0, 4).map(style => (
+                            <span key={style} className="text-[10px] px-2 py-0.5 rounded-full bg-bg-elevated text-grey-light capitalize">{style}</span>
+                          ))}
+                        </div>
+                      )}
+
+                      {bio && <p className="text-grey-muted text-xs line-clamp-2 mb-3">{bio}</p>}
+
+                      <div className="flex items-center justify-between pt-3 border-t border-white/5">
+                        {tatoueur.priceTattooMin && (
+                          <span className="text-xs text-grey-muted">
+                            {tx({ fr: 'A partir de', en: 'From' })} <span className="text-accent font-bold">{tatoueur.priceTattooMin}$</span>
+                          </span>
+                        )}
+                        <ArrowRight size={16} className="text-grey-muted group-hover:text-accent group-hover:translate-x-1 transition-all" />
+                      </div>
+                    </div>
+                  </Link>
+                </motion.div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* ============ SECTION BOUTIQUE MASSIVE ============ */}
+      <section id="boutique" className="scroll-mt-24 py-12 md:py-16">
+        <div className="section-container max-w-7xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            viewport={{ once: true }}
+          >
+            <div className="flex items-center gap-3 mb-8">
+              <Store size={28} className="text-accent" />
+              <h2 className="text-3xl md:text-4xl font-heading font-bold text-heading">
+                {tx({ fr: 'Boutique Massive', en: 'Massive Shop' })}
+              </h2>
+            </div>
+
+            <div className="relative overflow-hidden rounded-2xl border border-white/5 hover:border-accent/20 transition-all duration-300">
+              <div className="p-8 md:p-12 bg-gradient-to-br from-bg-card via-bg-card to-accent/5">
+                <div className="max-w-2xl">
+                  <h3 className="text-2xl md:text-3xl font-heading font-bold text-heading mb-4">
+                    {tx({ fr: 'Prints, Stickers & Merch', en: 'Prints, Stickers & Merch' })}
+                  </h3>
+                  <p className="text-grey-light text-base md:text-lg mb-6">
+                    {tx({
+                      fr: "Tirages fine art, stickers custom, t-shirts et hoodies. Tout est produit a Montreal avec des materiaux premium.",
+                      en: 'Fine art prints, custom stickers, t-shirts and hoodies. Everything is produced in Montreal with premium materials.',
+                    })}
+                  </p>
+
+                  <div className="flex flex-wrap gap-3 mb-8">
+                    <Link to="/boutique/fine-art" className="text-sm px-4 py-2 rounded-full bg-bg-elevated text-grey-light hover:text-accent hover:border-accent/30 border border-white/5 transition-colors">
+                      {tx({ fr: 'Fine Art', en: 'Fine Art' })}
+                    </Link>
+                    <Link to="/boutique/stickers" className="text-sm px-4 py-2 rounded-full bg-bg-elevated text-grey-light hover:text-accent hover:border-accent/30 border border-white/5 transition-colors">
+                      {tx({ fr: 'Stickers', en: 'Stickers' })}
+                    </Link>
+                    <Link to="/boutique/merch/tshirt" className="text-sm px-4 py-2 rounded-full bg-bg-elevated text-grey-light hover:text-accent hover:border-accent/30 border border-white/5 transition-colors">
+                      {tx({ fr: 'Merch', en: 'Merch' })}
+                    </Link>
+                    <Link to="/boutique/sublimation" className="text-sm px-4 py-2 rounded-full bg-bg-elevated text-grey-light hover:text-accent hover:border-accent/30 border border-white/5 transition-colors">
+                      {tx({ fr: 'Sublimation', en: 'Sublimation' })}
+                    </Link>
+                  </div>
+
+                  <Link to="/boutique" className="btn-primary inline-flex items-center">
+                    {tx({ fr: 'Explorer la boutique', en: 'Explore the shop' })}
+                    <ArrowRight size={18} className="ml-2" />
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ============ CTA ============ */}
+      <div className="section-container max-w-7xl mx-auto pb-8">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
@@ -197,18 +427,17 @@ function Artistes() {
           className="mb-20 p-12 rounded-2xl text-center border border-accent/30 transition-colors duration-300 cta-shadow"
         >
           <h2 className="text-3xl md:text-4xl font-heading font-bold text-heading mb-4">
-            {tx({ fr: 'Tu es artiste?', en: 'Are you an artist?', es: '\u00bfEres artista?' })}
+            {tx({ fr: 'Tu es artiste?', en: 'Are you an artist?' })}
           </h2>
           <p className="text-grey-light text-lg mb-8 max-w-2xl mx-auto">
             {tx({
-              fr: 'Rejoins notre plateforme. On s\'occupe de tout : site web dédié, impression pro, packaging et shipping. Tu fournis tes fichiers, tu fixes ta marge, et tu reçois ton argent. Zéro mal de tête.',
-              en: 'Join our platform. We handle everything: dedicated website, professional printing, packaging and shipping. You provide your files, set your margin, and get paid. Zero headaches.',
-              es: 'Unete a nuestra plataforma. Nos encargamos de todo: sitio web dedicado, impresion profesional, empaque y envio. Tu provees tus archivos, fijas tu margen y recibes tu dinero. Cero dolores de cabeza.',
+              fr: "Photographe, peintre, tatoueur - rejoins la plateforme Massive Medias. On s'occupe de tout.",
+              en: 'Photographer, painter, tattoo artist - join the Massive Medias platform. We handle everything.',
             })}
           </p>
           <Link to="/contact" className="btn-primary">
             <MessageSquare size={20} className="mr-2" />
-            {tx({ fr: 'Nous contacter', en: 'Contact us', es: 'Contactanos' })}
+            {tx({ fr: 'Nous contacter', en: 'Contact us' })}
             <ArrowRight className="ml-2" size={20} />
           </Link>
         </motion.div>
