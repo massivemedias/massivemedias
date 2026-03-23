@@ -11,104 +11,60 @@ import { useTatoueurs } from '../hooks/useTatoueurs';
 import { mediaUrl } from '../utils/cms';
 import tatoueursData from '../data/tatoueurs';
 
-// Composant Instagram Feed - fetch les posts via Cloudflare Worker proxy
-function InstagramFeed({ handle }) {
-  const [posts, setPosts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedImg, setSelectedImg] = useState(null);
+// Embed Instagram individuel
+function InstagramEmbed({ shortcode }) {
+  const iframeRef = useRef(null);
 
-  useEffect(() => {
-    if (!handle) return;
-    let cancelled = false;
+  return (
+    <div className="rounded-xl overflow-hidden bg-black/20">
+      <iframe
+        ref={iframeRef}
+        src={`https://www.instagram.com/p/${shortcode}/embed/captioned/`}
+        className="w-full border-0"
+        style={{ minHeight: '480px' }}
+        loading="lazy"
+        allowTransparency="true"
+        scrolling="no"
+        title={`Instagram post ${shortcode}`}
+      />
+    </div>
+  );
+}
 
-    async function fetchFeed() {
-      setLoading(true);
-      try {
-        // Fetch via notre Cloudflare Worker proxy
-        const resp = await fetch(`https://massivemedias.com/api/instagram/${handle}`);
-        if (resp.ok) {
-          const data = await resp.json();
-          if (!cancelled && data.posts?.length > 0) {
-            setPosts(data.posts);
-          }
-        }
-      } catch (err) {
-        console.warn('Instagram feed fetch failed:', err);
-      }
-      if (!cancelled) setLoading(false);
-    }
-
-    fetchFeed();
-    return () => { cancelled = true; };
-  }, [handle]);
-
-  if (!handle) return null;
+// Composant Instagram Feed - embeds officiels Instagram
+function InstagramFeed({ handle, postShortcodes = [] }) {
+  if (!handle && postShortcodes.length === 0) return null;
 
   return (
     <div className="space-y-4">
-      {/* Grille de photos Instagram */}
-      {loading ? (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="aspect-square rounded-xl bg-white/5 animate-pulse" />
-          ))}
-        </div>
-      ) : posts.length > 0 ? (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-          {posts.map((post, i) => (
+      {postShortcodes.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {postShortcodes.map((code, i) => (
             <motion.div
-              key={post.id || i}
+              key={code}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05 }}
-              className="aspect-square rounded-xl overflow-hidden cursor-pointer group relative"
-              onClick={() => setSelectedImg(post.image)}
+              transition={{ delay: i * 0.08 }}
             >
-              <img
-                src={post.image}
-                alt={post.caption || `Post ${i + 1}`}
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                loading="lazy"
-              />
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
-                <Instagram size={24} className="text-white opacity-0 group-hover:opacity-100 transition-opacity" />
-              </div>
+              <InstagramEmbed shortcode={code} />
             </motion.div>
           ))}
         </div>
       ) : null}
 
       {/* Lien vers Instagram */}
-      <div className="text-center pt-2">
-        <a
-          href={`https://instagram.com/${handle}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-medium rounded-full text-sm hover:shadow-lg hover:shadow-pink-500/25 transition-all"
-        >
-          <Instagram size={16} />
-          @{handle}
-          <ArrowRight size={14} />
-        </a>
-      </div>
-
-      {/* Lightbox */}
-      {selectedImg && (
-        <div
-          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4 cursor-pointer"
-          onClick={() => setSelectedImg(null)}
-        >
-          <img
-            src={selectedImg}
-            alt="Instagram post"
-            className="max-w-full max-h-[90vh] object-contain rounded-lg"
-          />
-          <button
-            className="absolute top-4 right-4 text-white/70 hover:text-white"
-            onClick={() => setSelectedImg(null)}
+      {handle && (
+        <div className="text-center pt-2">
+          <a
+            href={`https://instagram.com/${handle}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-medium rounded-full text-sm hover:shadow-lg hover:shadow-pink-500/25 transition-all"
           >
-            <X size={32} />
-          </button>
+            <Instagram size={16} />
+            @{handle}
+            <ArrowRight size={14} />
+          </a>
         </div>
       )}
     </div>
@@ -502,9 +458,9 @@ function TatoueurDetail({ subdomainSlug }) {
                       caption: `Realisation ${i + 1}`,
                     }));
 
-                // Si pas de realisations locales, afficher le feed Instagram
-                if (reals.length === 0 && tatoueur.instagramHandle) {
-                  return <InstagramFeed handle={tatoueur.instagramHandle} />;
+                // Si pas de realisations locales, afficher les embeds Instagram
+                if (reals.length === 0 && (tatoueur.instagramPosts?.length > 0 || tatoueur.instagramHandle)) {
+                  return <InstagramFeed handle={tatoueur.instagramHandle} postShortcodes={tatoueur.instagramPosts || []} />;
                 }
 
                 return reals.length > 0 ? (

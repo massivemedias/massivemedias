@@ -95,11 +95,19 @@ const tatoueurs = {
         isUnique: true,
       },
     ],
-    // Realisations - en attendant l'integration Instagram OAuth (Phase 5),
-    // on affiche un feed Instagram embed avec les vrais posts
+    // Posts Instagram (shortcodes) - affiches via embed officiel
+    instagramPosts: [
+      'C4quBypAZm3',
+      'DObxJhqD9wf',
+      'DJkNRL3pNL4',
+      'DWMsO-BD_is',
+      'DV9g1daD9_I',
+      'DV66hepD9_T',
+      'DV1vZ_oD4l8',
+      'DVwiowvkn4k',
+      'DVjwse1j13d',
+    ],
     realisations: [],
-    // On utilise le feed Instagram embed a la place
-    useInstagramEmbed: true,
   },
 };
 
