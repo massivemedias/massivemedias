@@ -238,19 +238,35 @@ function AdminDepenses() {
           notes: `Facture ${invoiceData.invoiceNumber || ''} - ${invoiceData.vendor || ''} - ${invoiceData.date}`,
         }));
 
-      const expenseData = {
-        description: (() => {
-          // Resume court: Facture NUM - Vendor - premier produit (tronque)
-          const parts = [`Facture ${invoiceData.invoiceNumber || ''}`, invoiceData.vendor].filter(Boolean);
-          const firstItem = invoiceData.lineItems?.[0]?.description;
-          if (firstItem) {
-            // Tronquer le nom du produit: garder les 2-3 premiers mots significatifs
-            const short = firstItem.split(/[\s,/-]+/).slice(0, 3).join(' ');
-            parts.push(short);
-          }
-          if (invoiceData.lineItems?.length > 1) parts.push(`+${invoiceData.lineItems.length - 1}`);
-          return parts.join(' - ').trim();
-        })(),
+      // Creer une depense PAR item (avec taxes au prorata)
+      const activeItems = invoiceData.lineItems.filter(i => i.description);
+      const itemsSubtotal = activeItems.reduce((s, i) => s + (i.total || 0), 0);
+      const totalTps = invoiceData.tps || 0;
+      const totalTvq = invoiceData.tvq || 0;
+
+      const expenses = activeItems.map(item => {
+        const ratio = itemsSubtotal > 0 ? (item.total || 0) / itemsSubtotal : 0;
+        const itemTps = Math.round(totalTps * ratio * 100) / 100;
+        const itemTvq = Math.round(totalTvq * ratio * 100) / 100;
+        const shortName = item.description.split(/[\s,/-]+/).slice(0, 4).join(' ');
+        return {
+          description: `${shortName} - ${invoiceData.vendor || ''}`.trim(),
+          amount: (item.total || 0) + itemTps + itemTvq,
+          category: invoiceData.expenseCategory || 'materiel',
+          date: invoiceData.date,
+          vendor: invoiceData.vendor || '',
+          receiptNumber: invoiceData.invoiceNumber || '',
+          receiptUrl: receiptUrl || '',
+          taxDeductible: true,
+          tpsAmount: itemTps,
+          tvqAmount: itemTvq,
+          notes: `Facture ${invoiceData.invoiceNumber || ''} - ${item.description}`,
+        };
+      });
+
+      // Si un seul item ou aucun, fallback a une depense unique
+      const expenseList = expenses.length > 0 ? expenses : [{
+        description: `Facture ${invoiceData.invoiceNumber || ''} - ${invoiceData.vendor || ''}`.trim(),
         amount: invoiceData.total || invoiceData.subtotal || 0,
         category: invoiceData.expenseCategory || 'materiel',
         date: invoiceData.date,
@@ -258,15 +274,18 @@ function AdminDepenses() {
         receiptNumber: invoiceData.invoiceNumber || '',
         receiptUrl: receiptUrl || '',
         taxDeductible: true,
-        tpsAmount: invoiceData.tps || 0,
-        tvqAmount: invoiceData.tvq || 0,
-        notes: `Import automatique - ${inventoryItems.length} item(s)`,
-      };
+        tpsAmount: totalTps,
+        tvqAmount: totalTvq,
+        notes: 'Import automatique',
+      }];
 
-      await api.post('/inventory-items/import-invoice', {
-        items: inventoryItems,
-        expense: expenseData,
-      });
+      // Envoyer chaque depense + inventaire
+      for (const expenseData of expenseList) {
+        await api.post('/inventory-items/import-invoice', {
+          items: inventoryItems.filter(inv => expenseData.notes.includes(inv.nameFr) || expenseList.length === 1),
+          expense: expenseData,
+        });
+      }
 
       const created = inventoryItems.length;
       setImportSuccess(tx({
