@@ -12,65 +12,22 @@ import { useTatoueurs } from '../hooks/useTatoueurs';
 import { mediaUrl } from '../utils/cms';
 import tatoueursData from '../data/tatoueurs';
 
-// Composant Instagram Feed - embeds compacts en grille
-function InstagramFeed({ handle, postShortcodes = [] }) {
-  useEffect(() => {
-    if (postShortcodes.length > 0) {
-      // Charger le script Instagram embed.js
-      const existing = document.querySelector('script[src*="instagram.com/embed.js"]');
-      if (!existing) {
-        const script = document.createElement('script');
-        script.src = 'https://www.instagram.com/embed.js';
-        script.async = true;
-        document.body.appendChild(script);
-      } else if (window.instgrm) {
-        setTimeout(() => window.instgrm?.Embeds?.process(), 500);
-      }
-    }
-  }, [postShortcodes]);
-
-  // Re-process quand les embeds sont rendus
-  useEffect(() => {
-    const timer = setTimeout(() => window.instgrm?.Embeds?.process(), 1000);
-    return () => clearTimeout(timer);
-  }, [postShortcodes]);
-
-  if (!handle && postShortcodes.length === 0) return null;
-
+// Composant grille realisations (images locales telechargees d'Instagram)
+function InstagramFeed({ handle }) {
+  // Ce composant est un fallback - les realisations sont maintenant dans tatoueurs.js
+  if (!handle) return null;
   return (
-    <div className="space-y-4">
-      {postShortcodes.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
-          {postShortcodes.map((code) => (
-            <div key={code} className="rounded-xl overflow-hidden bg-white" style={{ maxHeight: '380px' }}>
-              <div style={{ marginTop: '-56px' }}>
-                <blockquote
-                  className="instagram-media"
-                  data-instgrm-permalink={`https://www.instagram.com/p/${code}/`}
-                  data-instgrm-version="14"
-                  style={{ background: 'white', border: 0, borderRadius: 0, margin: 0, maxWidth: '100%', minWidth: '100px', padding: 0, width: '100%' }}
-                />
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Lien vers Instagram */}
-      {handle && (
-        <div className="text-center pt-2">
-          <a
-            href={`https://instagram.com/${handle}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-medium rounded-full text-sm hover:shadow-lg hover:shadow-pink-500/25 transition-all"
-          >
-            <Instagram size={16} />
-            @{handle}
-            <ArrowRight size={14} />
-          </a>
-        </div>
-      )}
+    <div className="text-center pt-2">
+      <a
+        href={`https://instagram.com/${handle}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-medium rounded-full text-sm hover:shadow-lg hover:shadow-pink-500/25 transition-all"
+      >
+        <Instagram size={16} />
+        @{handle}
+        <ArrowRight size={14} />
+      </a>
     </div>
   );
 }
@@ -473,33 +430,33 @@ function TatoueurDetail({ subdomainSlug }) {
                 }
 
                 return reals.length > 0 ? (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                <div className="grid grid-cols-3 md:grid-cols-5 gap-1.5 md:gap-2">
                   {reals.map((real, i) => {
                     const imgSrc = typeof real === 'string' ? real : (real.image || real);
-                    const caption = typeof real === 'string' ? null : real.caption;
+                    const permalink = typeof real === 'string' ? null : real.permalink;
                     return (
-                    <motion.div
+                    <motion.a
                       key={i}
+                      href={permalink || '#'}
+                      target={permalink ? '_blank' : undefined}
+                      rel={permalink ? 'noopener noreferrer' : undefined}
+                      onClick={(e) => { if (!permalink) { e.preventDefault(); setSelectedFlash({ image: imgSrc, status: 'tatoue' }); } }}
                       initial={{ opacity: 0, scale: 0.95 }}
                       whileInView={{ opacity: 1, scale: 1 }}
-                      transition={{ duration: 0.3, delay: i * 0.05 }}
+                      transition={{ duration: 0.3, delay: i * 0.02 }}
                       viewport={{ once: true }}
-                      className="group relative aspect-square rounded-lg overflow-hidden cursor-pointer"
-                      onClick={() => setSelectedFlash({ image: imgSrc, titleFr: caption, titleEn: caption, status: 'tatoue' })}
+                      className="group relative aspect-square rounded-lg overflow-hidden cursor-pointer border-2 border-white/20"
                     >
                       <img
                         src={imgSrc}
-                        alt={caption || `Realisation ${i + 1}`}
+                        alt={`Realisation ${i + 1}`}
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                         loading="lazy"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                      {caption && (
-                        <div className="absolute bottom-0 left-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                          <p className="text-white text-xs font-medium drop-shadow-lg">{caption}</p>
-                        </div>
-                      )}
-                    </motion.div>
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
+                        <Instagram size={20} className="text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </div>
+                    </motion.a>
                     );
                   })}
                 </div>
