@@ -1085,6 +1085,11 @@ export default {
       const userRolesToSeed = [
         { email: 'howdiy@gmail.com', role: 'artist', artistSlug: 'maudite-machine', displayName: 'Maudite Machine' },
         { email: 'medusart@protonmail.com', role: 'artist', artistSlug: 'psyqu33n', displayName: 'Psyqu33n' },
+        { email: 'jay-gagnon@hotmail.ca', role: 'artist', artistSlug: 'adrift', displayName: 'Adrift' },
+        { email: 'mokrane.ouzane@gmail.com', role: 'artist', artistSlug: 'mok', displayName: 'Mok' },
+        { email: 'qdelobel@gmail.com', role: 'artist', artistSlug: 'quentin-delobel', displayName: 'Quentin Delobel' },
+        { email: 'alx.rouleau@gmail.com', role: 'artist', artistSlug: 'no-pixl', displayName: 'No Pixl' },
+        { email: 'liah28@gmail.com', role: 'artist', artistSlug: 'cornelia-rose', displayName: 'Cornelia Rose' },
       ];
       for (const ur of userRolesToSeed) {
         const existing = await strapi.documents('api::user-role.user-role').findMany({
