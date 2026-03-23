@@ -82,7 +82,7 @@ class ErrorBoundaryInner extends Component {
               Le site revient dans quelques minutes. Merci de votre patience!
             </p>
 
-            {isDev && this.state.error && (
+            {this.state.error && (
               <div className="mb-6 p-4 rounded-lg bg-red-500/10 border border-red-500/30 text-left">
                 <p className="text-red-400 text-sm font-mono font-bold mb-1">{this.state.error.toString()}</p>
                 <p className="text-red-400/60 text-xs font-mono whitespace-pre-wrap max-h-40 overflow-auto">
