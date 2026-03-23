@@ -41,6 +41,7 @@ export const generateTestimonialLink = (data) => api.post('/testimonials/generat
 
 // --- Analytics ---
 export const getAnalytics = (period = 30) => api.get('/analytics/stats', { params: { period } });
+export const getArtistAnalytics = (slug, period = 30) => api.get(`/analytics/artist/${slug}`, { params: { period } });
 
 // --- Factures ---
 export const getInvoices = () => api.get('/invoices', { params: { sort: 'date:desc', pagination: { pageSize: 100 } } });

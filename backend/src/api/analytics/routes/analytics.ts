@@ -9,5 +9,14 @@ export default {
         policies: [],
       },
     },
+    {
+      method: 'GET',
+      path: '/analytics/artist/:slug',
+      handler: 'analytics.getArtistStats',
+      config: {
+        auth: false,
+        policies: [],
+      },
+    },
   ],
 };

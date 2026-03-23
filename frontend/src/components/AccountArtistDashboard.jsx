@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 
 const ArtistGalleryManager = lazy(() => import('./ArtistGalleryManager'));
+const ArtistStats = lazy(() => import('./ArtistStats'));
 import {
   DollarSign, Palette, Clock, CheckCircle,
   FileText, Loader2, AlertCircle, Package,
@@ -438,6 +439,11 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
             </a>
           </div>
         </div>
+
+        {/* Statistiques de la page artiste */}
+        <Suspense fallback={<div className="flex items-center gap-2 text-grey-muted py-8 justify-center"><Loader2 size={16} className="animate-spin" /></div>}>
+          <ArtistStats artistSlug={artistSlug} />
+        </Suspense>
 
         {/* Rappels-cles du contrat */}
         <div className="rounded-2xl p-5 md:p-8 card-bg">
