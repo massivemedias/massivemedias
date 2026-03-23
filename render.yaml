@@ -11,8 +11,8 @@ services:
     runtime: node
     region: oregon
     rootDir: backend
-    buildCommand: npm install && NODE_OPTIONS="--max-old-space-size=490" npm run build
-    startCommand: NODE_OPTIONS="--max-old-space-size=460" npm run start
+    buildCommand: npm install && NODE_OPTIONS="--max-old-space-size=460" npx strapi build --no-minify
+    startCommand: NODE_OPTIONS="--max-old-space-size=400 --gc-interval=50" npm run start
     envVars:
       - key: NODE_VERSION
         value: "20"
