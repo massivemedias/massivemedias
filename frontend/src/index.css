@@ -1109,3 +1109,11 @@ select.input-field option {
   color: var(--color-heading);
   font-weight: 600;
 }
+
+/* Instagram embeds: cacher les fleches de carousel et le footer */
+iframe.instagram-media-rendered {
+  border-radius: 12px !important;
+}
+iframe.instagram-media-rendered + * {
+  display: none !important;
+}
