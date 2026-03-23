@@ -54,7 +54,7 @@ const AdminLayout = lazyWithRetry(() => import('./layouts/AdminLayout'));
 const AdminOrders = lazyWithRetry(() => import('./pages/AdminOrders'));
 const AdminInventaire = lazyWithRetry(() => import('./pages/AdminInventaire'));
 const AdminMessages = lazyWithRetry(() => import('./pages/AdminMessages'));
-const AdminArtistes = lazyWithRetry(() => import('./pages/AdminArtistes'));
+// AdminArtistes removed - redirect to messages
 const AdminCommissions = lazyWithRetry(() => import('./pages/AdminCommissions'));
 const AdminTatoueurs = lazyWithRetry(() => import('./pages/AdminTatoueurs'));
 // AdminClients merged into AdminUtilisateurs - redirect in routes

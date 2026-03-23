@@ -361,7 +361,7 @@ function TatoueurDetail({ subdomainSlug }) {
       </section>
 
       {/* ========== REALISATIONS ========== */}
-      {(tatoueur.realisations?.length > 0 || tatoueur.instagramHandle) && (
+      {(tatoueur.realisations?.length > 0 || tatoueur.realisationImages?.length > 0 || tatoueur.instagramHandle) && (
         <section className="py-12 md:py-16">
           <div className="section-container">
             <motion.div
@@ -389,9 +389,20 @@ function TatoueurDetail({ subdomainSlug }) {
               </div>
 
               {/* Grille de realisations */}
-              {tatoueur.realisations?.length > 0 ? (
+              {(() => {
+                // Support both local realisations (objects with image/caption) and CMS realisationImages (urls)
+                const reals = tatoueur.realisations?.length > 0
+                  ? tatoueur.realisations
+                  : (tatoueur.realisationImages || []).map((img, i) => ({
+                      image: typeof img === 'string' ? img : mediaUrl(img),
+                      caption: `Realisation ${i + 1}`,
+                    }));
+                return reals.length > 0 ? (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                  {tatoueur.realisations.map((real, i) => (
+                  {reals.map((real, i) => {
+                    const imgSrc = typeof real === 'string' ? real : (real.image || real);
+                    const caption = typeof real === 'string' ? null : real.caption;
+                    return (
                     <motion.div
                       key={i}
                       initial={{ opacity: 0, scale: 0.95 }}
@@ -399,22 +410,23 @@ function TatoueurDetail({ subdomainSlug }) {
                       transition={{ duration: 0.3, delay: i * 0.05 }}
                       viewport={{ once: true }}
                       className="group relative aspect-square rounded-lg overflow-hidden cursor-pointer"
-                      onClick={() => setSelectedFlash({ image: real.image, titleFr: real.caption, titleEn: real.caption, status: 'tatoue' })}
+                      onClick={() => setSelectedFlash({ image: imgSrc, titleFr: caption, titleEn: caption, status: 'tatoue' })}
                     >
                       <img
-                        src={real.image}
-                        alt={real.caption || `Realisation ${i + 1}`}
+                        src={imgSrc}
+                        alt={caption || `Realisation ${i + 1}`}
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                         loading="lazy"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                      {real.caption && (
+                      {caption && (
                         <div className="absolute bottom-0 left-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                          <p className="text-white text-xs font-medium drop-shadow-lg">{real.caption}</p>
+                          <p className="text-white text-xs font-medium drop-shadow-lg">{caption}</p>
                         </div>
                       )}
                     </motion.div>
-                  ))}
+                    );
+                  })}
                 </div>
               ) : (
                 <div className="bg-bg-card rounded-2xl border border-white/5 p-8 text-center">
@@ -434,10 +446,10 @@ function TatoueurDetail({ subdomainSlug }) {
                     {tx({ fr: 'Voir sur Instagram', en: 'View on Instagram' })}
                   </a>
                 </div>
-              )}
+              )})()}
 
               {/* Lien Instagram sous la grille */}
-              {tatoueur.realisations?.length > 0 && tatoueur.instagramHandle && (
+              {(tatoueur.realisations?.length > 0 || tatoueur.realisationImages?.length > 0) && tatoueur.instagramHandle && (
                 <div className="text-center mt-6">
                   <a
                     href={`https://instagram.com/${tatoueur.instagramHandle}`}

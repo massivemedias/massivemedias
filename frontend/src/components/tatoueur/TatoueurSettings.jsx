@@ -2,17 +2,38 @@ import { useState } from 'react';
 import { Save, Bell, Eye, EyeOff, Lock } from 'lucide-react';
 import { useLang } from '../../i18n/LanguageContext';
 import { useAuth } from '../../contexts/AuthContext';
+import api from '../../services/api';
 
 export default function TatoueurSettings({ tatoueur }) {
   const { tx } = useLang();
   const { user } = useAuth();
-  const [notifications, setNotifications] = useState({
-    newReservation: true,
-    newMessage: true,
-    flashApproved: true,
-    reminderRdv: true,
-  });
+  const [saving, setSaving] = useState(false);
+  const [notifications, setNotifications] = useState(
+    tatoueur?.notificationSettings || {
+      newReservation: true,
+      newMessage: true,
+      flashApproved: true,
+      reminderRdv: true,
+    }
+  );
   const [profileVisible, setProfileVisible] = useState(tatoueur?.active !== false);
+
+  const saveSettings = async () => {
+    if (!tatoueur?.documentId) return;
+    setSaving(true);
+    try {
+      await api.put(`/tatoueurs/${tatoueur.documentId}`, {
+        data: {
+          active: profileVisible,
+          notificationSettings: notifications,
+        },
+      });
+    } catch (err) {
+      console.error('[Settings] Save error:', err);
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -88,6 +109,18 @@ export default function TatoueurSettings({ tatoueur }) {
             className="accent-accent"
           />
         </label>
+      </div>
+
+      {/* Save button */}
+      <div className="flex justify-end">
+        <button
+          onClick={saveSettings}
+          disabled={saving}
+          className="btn-primary !py-2.5 !px-6 text-sm flex items-center gap-2"
+        >
+          <Save size={16} />
+          {saving ? '...' : tx({ fr: 'Sauvegarder', en: 'Save' })}
+        </button>
       </div>
     </div>
   );

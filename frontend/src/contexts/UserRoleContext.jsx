@@ -31,20 +31,28 @@ export function UserRoleProvider({ children }) {
     let cancelled = false;
     setFetched(false);
 
-    async function fetchRole() {
+    async function fetchRole(attempt = 1) {
       try {
         const { data } = await api.get('/user-roles/by-email', {
           params: { email: user.email },
         });
         if (!cancelled) {
           setRoleData(data.data || { role: 'user', artistSlug: null });
+          setFetched(true);
         }
       } catch {
         if (!cancelled) {
-          setRoleData({ role: 'user', artistSlug: null });
+          // Retry up to 3 times with increasing delay (server might be cold-starting)
+          if (attempt < 3) {
+            setTimeout(() => {
+              if (!cancelled) fetchRole(attempt + 1);
+            }, attempt * 10000); // 10s, 20s
+          } else {
+            // After all retries, fallback to user
+            setRoleData({ role: 'user', artistSlug: null });
+            setFetched(true);
+          }
         }
-      } finally {
-        if (!cancelled) setFetched(true);
       }
     }
 

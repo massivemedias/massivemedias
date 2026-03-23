@@ -141,10 +141,40 @@ export default function TatoueurReservations({ tatoueur }) {
                   {/* Actions */}
                   {reservation.status === 'demandee' && (
                     <div className="flex items-center gap-2 flex-shrink-0">
-                      <button className="p-2 rounded-lg bg-green-500/10 text-green-500 hover:bg-green-500/20 transition-colors" title={tx({ fr: 'Accepter', en: 'Accept' })}>
+                      <button
+                        onClick={async () => {
+                          try {
+                            await api.put(`/reservations/${reservation.documentId}`, {
+                              data: { status: 'confirmee', confirmedDate: new Date().toISOString() },
+                            });
+                            setReservations(prev => prev.map(r =>
+                              r.documentId === reservation.documentId ? { ...r, status: 'confirmee' } : r
+                            ));
+                          } catch (err) {
+                            console.error('[Reservations] Accept error:', err);
+                          }
+                        }}
+                        className="p-2 rounded-lg bg-green-500/10 text-green-500 hover:bg-green-500/20 transition-colors"
+                        title={tx({ fr: 'Accepter', en: 'Accept' })}
+                      >
                         <Check size={16} />
                       </button>
-                      <button className="p-2 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-colors" title={tx({ fr: 'Refuser', en: 'Decline' })}>
+                      <button
+                        onClick={async () => {
+                          try {
+                            await api.put(`/reservations/${reservation.documentId}`, {
+                              data: { status: 'annulee' },
+                            });
+                            setReservations(prev => prev.map(r =>
+                              r.documentId === reservation.documentId ? { ...r, status: 'annulee' } : r
+                            ));
+                          } catch (err) {
+                            console.error('[Reservations] Decline error:', err);
+                          }
+                        }}
+                        className="p-2 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-colors"
+                        title={tx({ fr: 'Refuser', en: 'Decline' })}
+                      >
                         <X size={16} />
                       </button>
                     </div>

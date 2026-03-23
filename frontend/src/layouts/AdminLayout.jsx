@@ -2,7 +2,7 @@ import { Outlet, NavLink, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   ShoppingBag, Package, MessageSquare, Banknote,
-  Users, Receipt, BarChart3, Menu, X, DollarSign,
+  Users, Receipt, FileText, BarChart3, Menu, X, DollarSign,
   Pencil, MapPin, Shield, Star, LayoutDashboard, StickyNote, PenTool,
 } from 'lucide-react';
 import { useState } from 'react';
@@ -23,6 +23,7 @@ const NAV_ITEMS = [
   { to: '/admin/messages', icon: MessageSquare, fr: 'Messages', en: 'Messages', es: 'Mensajes' },
   { to: '/admin/tatoueurs', icon: PenTool, fr: 'Tatoueurs', en: 'Tattoo Artists', es: 'Tatuadores' },
   { to: '/admin/utilisateurs', icon: Users, fr: 'Utilisateurs', en: 'Users', es: 'Usuarios' },
+  { to: '/admin/factures', icon: FileText, fr: 'Factures', en: 'Invoices', es: 'Facturas' },
   { to: '/admin/depenses', icon: Receipt, fr: 'Dépenses', en: 'Expenses', es: 'Gastos' },
   { to: '/admin/temoignages', icon: Star, fr: 'Témoignages', en: 'Testimonials', es: 'Testimonios' },
   { to: '/admin/stats', icon: BarChart3, fr: 'Stats', en: 'Stats', es: 'Stats' },

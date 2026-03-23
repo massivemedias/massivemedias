@@ -3,12 +3,15 @@ import { motion } from 'framer-motion';
 import { Upload, Eye, EyeOff, X, Image, ExternalLink } from 'lucide-react';
 import { useLang } from '../../i18n/LanguageContext';
 import { mediaUrl } from '../../utils/cms';
+import api from '../../services/api';
 
 export default function TatoueurRealisations({ tatoueur, setTatoueur }) {
   const { tx } = useLang();
 
-  // Realisations sont stockees dans realisationImages (media multiple) sur le tatoueur
-  const images = tatoueur?.realisationImages || [];
+  // Support both realisationImages (CMS) and realisations (local data)
+  const realisationImages = tatoueur?.realisationImages || [];
+  const realisationsLocal = tatoueur?.realisations || [];
+  const images = realisationImages.length > 0 ? realisationImages : realisationsLocal.map(r => r.image || r);
   const [hiddenImages, setHiddenImages] = useState(new Set());
 
   const visibleCount = images.length - hiddenImages.size;
@@ -49,7 +52,38 @@ export default function TatoueurRealisations({ tatoueur, setTatoueur }) {
         <span className="text-xs text-grey-muted/50 block mt-1">
           JPG, PNG, WebP - max 10 MB
         </span>
-        <input type="file" accept="image/*" multiple className="hidden" />
+        <input
+          type="file"
+          accept="image/*"
+          multiple
+          className="hidden"
+          onChange={async (e) => {
+            const files = Array.from(e.target.files || []);
+            if (files.length === 0 || !tatoueur?.documentId) return;
+            try {
+              const form = new FormData();
+              files.forEach(f => form.append('files', f));
+              form.append('ref', 'api::tatoueur.tatoueur');
+              form.append('refId', tatoueur.documentId);
+              form.append('field', 'realisationImages');
+              await api.post('/upload', form, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+              });
+              // Refresh tatoueur data
+              const { data } = await api.get('/tatoueurs', {
+                params: {
+                  'filters[slug][$eq]': tatoueur?.slug,
+                  populate: '*',
+                },
+              });
+              if (data.data?.length > 0 && setTatoueur) {
+                setTatoueur(data.data[0]);
+              }
+            } catch (err) {
+              console.error('[Realisations] Upload error:', err);
+            }
+          }}
+        />
       </label>
 
       {/* Images grid */}

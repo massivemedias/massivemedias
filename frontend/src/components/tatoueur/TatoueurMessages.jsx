@@ -139,6 +139,28 @@ export default function TatoueurMessages({ tatoueur }) {
                     />
                     <button
                       disabled={!reply.trim()}
+                      onClick={async () => {
+                        if (!reply.trim()) return;
+                        try {
+                          const { data } = await api.post('/tattoo-messages', {
+                            data: {
+                              conversationId: selectedConvo,
+                              content: reply.trim(),
+                              senderType: 'tatoueur',
+                              senderName: tatoueur?.name || 'Tatoueur',
+                              senderEmail: tatoueur?.email || '',
+                              tatoueur: tatoueur?.documentId || null,
+                              status: 'sent',
+                            },
+                          });
+                          if (data.data) {
+                            setMessages(prev => [data.data, ...prev]);
+                          }
+                          setReply('');
+                        } catch (err) {
+                          console.error('[Messages] Send error:', err);
+                        }
+                      }}
                       className="btn-primary !py-2 !px-3"
                     >
                       <Send size={16} />

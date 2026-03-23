@@ -29,7 +29,7 @@ const TABS = [
   { key: 'parametres', icon: Settings, labelFr: 'Parametres', labelEn: 'Settings' },
 ];
 
-function DashboardOverview({ tatoueur, tx }) {
+function DashboardOverview({ tatoueur, tx, setTab }) {
   const flashs = tatoueur?.flashs || [];
   const disponibles = flashs.filter(f => f.status === 'disponible').length;
   const reserves = flashs.filter(f => f.status === 'reserve').length;
@@ -76,7 +76,7 @@ function DashboardOverview({ tatoueur, tx }) {
             <span className="text-sm text-heading">{tx({ fr: 'Voir ma page publique', en: 'View my public page' })}</span>
           </Link>
           <button
-            onClick={() => {/* TODO: open flash upload */}}
+            onClick={() => setTab('flashs')}
             className="flex items-center gap-3 p-3 rounded-lg bg-bg-elevated hover:bg-bg-elevated/80 transition-colors text-left"
           >
             <Palette size={18} className="text-accent" />
@@ -196,7 +196,7 @@ function TatoueurDashboard() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.2 }}
             >
-              {activeTab === 'dashboard' && <DashboardOverview tatoueur={tatoueur} tx={tx} />}
+              {activeTab === 'dashboard' && <DashboardOverview tatoueur={tatoueur} tx={tx} setTab={setTab} />}
               {activeTab === 'flashs' && <TatoueurFlashManager tatoueur={tatoueur} setTatoueur={setTatoueur} />}
               {activeTab === 'reservations' && <TatoueurReservations tatoueur={tatoueur} />}
               {activeTab === 'calendrier' && <TatoueurCalendar tatoueur={tatoueur} />}

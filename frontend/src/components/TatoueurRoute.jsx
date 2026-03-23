@@ -1,4 +1,4 @@
-import { Navigate } from 'react-router-dom';
+import { Navigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useUserRole } from '../contexts/UserRoleContext';
 import { useLang } from '../i18n/LanguageContext';
@@ -35,9 +35,9 @@ function TatoueurRoute({ children }) {
               en: "This page is reserved for Massive Medias partner tattoo artists.",
             })}
           </p>
-          <a href="/tatoueur/inscription" className="btn-primary inline-block">
+          <Link to="/tatoueur/inscription" className="btn-primary inline-block">
             {tx({ fr: "S'inscrire comme tatoueur", en: 'Sign up as a tattoo artist' })}
-          </a>
+          </Link>
         </div>
       </div>
     );

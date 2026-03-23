@@ -164,22 +164,85 @@ export default function TatoueurFlashManager({ tatoueur, setTatoueur }) {
   const flashs = tatoueur?.flashs || [];
 
   const handleSave = async (formData) => {
-    // In a real implementation, this would POST to Strapi
-    // For now, show a success message
-    setShowForm(false);
-    setEditingFlash(null);
-    alert(tx({
-      fr: 'Flash soumis pour approbation! L\'administrateur sera notifie.',
-      en: 'Flash submitted for approval! The administrator will be notified.',
-    }));
+    try {
+      const { imageFile, ...fields } = formData;
+
+      // Upload image first if present
+      let imageId = null;
+      if (imageFile) {
+        const form = new FormData();
+        form.append('files', imageFile);
+        const uploadRes = await api.post('/upload', form, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        if (uploadRes.data?.[0]?.id) {
+          imageId = uploadRes.data[0].id;
+        }
+      }
+
+      const payload = {
+        data: {
+          ...fields,
+          priceTattoo: fields.priceTattoo ? Number(fields.priceTattoo) : null,
+          pricePrint: fields.pricePrint ? Number(fields.pricePrint) : null,
+          status: 'disponible',
+          approved: false,
+          visible: true,
+          tatoueur: tatoueur?.documentId || null,
+          ...(imageId ? { image: imageId } : {}),
+        },
+      };
+
+      if (editingFlash?.documentId) {
+        await api.put(`/flashs/${editingFlash.documentId}`, payload);
+      } else {
+        await api.post('/flashs', payload);
+      }
+
+      // Refresh tatoueur data
+      const { data } = await api.get('/tatoueurs', {
+        params: {
+          'filters[slug][$eq]': tatoueur?.slug,
+          populate: '*',
+        },
+      });
+      if (data.data?.length > 0 && setTatoueur) {
+        setTatoueur(data.data[0]);
+      }
+
+      setShowForm(false);
+      setEditingFlash(null);
+    } catch (err) {
+      console.error('[FlashManager] Save error:', err);
+      alert(tx({
+        fr: 'Erreur lors de la sauvegarde. Reessaie.',
+        en: 'Error saving. Please try again.',
+      }));
+    }
   };
 
   const handleStatusChange = async (flash, newStatus) => {
-    // In a real implementation, this would PUT to Strapi
-    alert(tx({
-      fr: `Statut change: ${newStatus}`,
-      en: `Status changed: ${newStatus}`,
-    }));
+    try {
+      await api.put(`/flashs/${flash.documentId}`, {
+        data: { status: newStatus },
+      });
+      // Refresh tatoueur data
+      const { data } = await api.get('/tatoueurs', {
+        params: {
+          'filters[slug][$eq]': tatoueur?.slug,
+          populate: '*',
+        },
+      });
+      if (data.data?.length > 0 && setTatoueur) {
+        setTatoueur(data.data[0]);
+      }
+    } catch (err) {
+      console.error('[FlashManager] Status change error:', err);
+      alert(tx({
+        fr: 'Erreur lors du changement de statut.',
+        en: 'Error changing status.',
+      }));
+    }
   };
 
   return (
