@@ -11,44 +11,106 @@ import { useTatoueurs } from '../hooks/useTatoueurs';
 import { mediaUrl } from '../utils/cms';
 import tatoueursData from '../data/tatoueurs';
 
-// Composant Instagram Embed Feed
+// Composant Instagram Feed - fetch les posts via Cloudflare Worker proxy
 function InstagramFeed({ handle }) {
-  const containerRef = useRef(null);
-  const [loaded, setLoaded] = useState(false);
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedImg, setSelectedImg] = useState(null);
 
   useEffect(() => {
     if (!handle) return;
-    // Charger le script Elfsight (widget Instagram gratuit) ou utiliser l'approche iframe
-    setLoaded(true);
+    let cancelled = false;
+
+    async function fetchFeed() {
+      setLoading(true);
+      try {
+        // Fetch via notre Cloudflare Worker proxy
+        const resp = await fetch(`https://massivemedias.com/api/instagram/${handle}`);
+        if (resp.ok) {
+          const data = await resp.json();
+          if (!cancelled && data.posts?.length > 0) {
+            setPosts(data.posts);
+          }
+        }
+      } catch (err) {
+        console.warn('Instagram feed fetch failed:', err);
+      }
+      if (!cancelled) setLoading(false);
+    }
+
+    fetchFeed();
+    return () => { cancelled = true; };
   }, [handle]);
 
   if (!handle) return null;
 
   return (
-    <div ref={containerRef} className="space-y-4">
-      {/* Feed Instagram via iframes embed des posts recents */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-        {/* Message d'info + lien direct vers Instagram */}
-        <div className="col-span-full">
-          <a
-            href={`https://instagram.com/${handle}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="block bg-gradient-to-r from-purple-600/20 via-pink-600/20 to-orange-500/20 rounded-2xl border border-white/10 p-6 text-center hover:border-accent/30 transition-all group"
-          >
-            <Instagram size={40} className="mx-auto mb-3 text-pink-400 group-hover:scale-110 transition-transform" />
-            <p className="text-heading font-heading font-semibold text-lg mb-1">@{handle}</p>
-            <p className="text-grey-muted text-sm mb-4">
-              Voir toutes les realisations sur Instagram
-            </p>
-            <span className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-medium rounded-full text-sm hover:shadow-lg hover:shadow-pink-500/25 transition-all">
-              <Instagram size={16} />
-              Suivre sur Instagram
-              <ArrowRight size={14} />
-            </span>
-          </a>
+    <div className="space-y-4">
+      {/* Grille de photos Instagram */}
+      {loading ? (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className="aspect-square rounded-xl bg-white/5 animate-pulse" />
+          ))}
         </div>
+      ) : posts.length > 0 ? (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+          {posts.map((post, i) => (
+            <motion.div
+              key={post.id || i}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.05 }}
+              className="aspect-square rounded-xl overflow-hidden cursor-pointer group relative"
+              onClick={() => setSelectedImg(post.image)}
+            >
+              <img
+                src={post.image}
+                alt={post.caption || `Post ${i + 1}`}
+                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                loading="lazy"
+              />
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
+                <Instagram size={24} className="text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      ) : null}
+
+      {/* Lien vers Instagram */}
+      <div className="text-center pt-2">
+        <a
+          href={`https://instagram.com/${handle}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-medium rounded-full text-sm hover:shadow-lg hover:shadow-pink-500/25 transition-all"
+        >
+          <Instagram size={16} />
+          @{handle}
+          <ArrowRight size={14} />
+        </a>
       </div>
+
+      {/* Lightbox */}
+      {selectedImg && (
+        <div
+          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4 cursor-pointer"
+          onClick={() => setSelectedImg(null)}
+        >
+          <img
+            src={selectedImg}
+            alt="Instagram post"
+            className="max-w-full max-h-[90vh] object-contain rounded-lg"
+          />
+          <button
+            className="absolute top-4 right-4 text-white/70 hover:text-white"
+            onClick={() => setSelectedImg(null)}
+          >
+            <X size={32} />
+          </button>
+        </div>
+      )}
     </div>
   );
 }
