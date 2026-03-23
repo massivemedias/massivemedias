@@ -282,44 +282,89 @@ function extractLineItems(text) {
   const asins = [...text.matchAll(asinPattern)];
 
   if (asins.length > 0) {
-    // Format Amazon detecte - parser differemment
+    // Format Amazon detecte
     for (const asin of asins) {
       const asinIdx = text.indexOf(asin[0]);
-      // Remonter pour trouver la description (entre le precedent \n et l'ASIN)
-      const before = text.substring(Math.max(0, asinIdx - 500), asinIdx);
+
+      // === DESCRIPTION ===
+      // Chercher tout le texte entre le marqueur de debut (header du tableau ou item precedent) et l'ASIN
+      const before = text.substring(Math.max(0, asinIdx - 800), asinIdx);
       const descLines = before.split(/\n/).map(l => l.trim()).filter(Boolean);
-      // Collecter les lignes de description (peuvent etre sur plusieurs lignes)
+
+      // Collecter les lignes de description en remontant depuis l'ASIN
       let descParts = [];
       for (let i = descLines.length - 1; i >= 0; i--) {
         const line = descLines[i];
+        // Stop si on atteint un header, un separateur ou une ligne de meta-donnees
         if (skipPattern.test(line)) break;
-        if (/^\$/.test(line)) break;
         if (/^(Order|Shipment|Invoice|Billing|Delivery|Sold by|For questions)/i.test(line)) break;
         if (/^(Commande|Expédition|Facture|Adresse|Vendu par|Pour toute)/i.test(line)) break;
-        if (line.length > 5) descParts.unshift(line);
-        if (descParts.length >= 4) break;
+        if (/^(Item subtotal|Sous-total|Shipping charge|Frais d'exp)/i.test(line)) break;
+        // Skip lignes qui sont juste des prix (ex: "$0.00 $0.00 $415.09")
+        if (/^\$?\d+[.,]\d{2}(\s+\$?\d+[.,]\d{2})*$/.test(line)) break;
+        // Skip lignes qui sont juste un nombre (quantite sur une ligne seule)
+        if (/^\d{1,2}$/.test(line)) break;
+        if (line.length > 3) descParts.unshift(line);
+        if (descParts.length >= 6) break;
       }
-      // Prendre la description EN (avant le /) ou la description complete
+
       let desc = descParts.join(' ').trim();
-      // Si bilingue (EN / FR), garder juste la partie EN
+      // Si bilingue (EN / FR), garder juste la partie EN (avant le " / ")
       const slashIdx = desc.indexOf(' / ');
-      if (slashIdx > 15) desc = desc.substring(0, slashIdx).trim();
-      // Nettoyer
+      if (slashIdx > 10) desc = desc.substring(0, slashIdx).trim();
+      // Nettoyer les espaces multiples
       desc = desc.replace(/\s+/g, ' ').trim();
 
-      // Chercher les prix AUTOUR de l'ASIN (avant et apres, car les colonnes se melangent)
-      const context = text.substring(Math.max(0, asinIdx - 100), asinIdx + asin[0].length + 300);
-      const allPrices = [...context.matchAll(/\$\s*([\d,]+\.\d{2})/g)].map(m => parseFloat(m[1].replace(',', '')));
-      // Chercher la quantite (chiffre seul sur une ligne ou avant un prix)
-      const qtyMatch = context.match(/\b(\d{1,3})\s+\$[\d,]+\.\d{2}/);
-      const qty = qtyMatch ? parseInt(qtyMatch[1]) : 1;
+      // === PRIX ===
+      // Chercher la ligne de prix APRES l'ASIN (la ligne suivante contient souvent: qty unitPrice $0.00 $0.00 $0.00 subtotal)
+      const after = text.substring(asinIdx + asin[0].length, asinIdx + asin[0].length + 200);
+      const afterLines = after.split(/\n/).map(l => l.trim()).filter(Boolean);
 
-      // Le prix unitaire est le premier prix non-zero, le total est le dernier non-zero
-      const nonZeroPrices = allPrices.filter(p => p > 0);
-      if (desc && nonZeroPrices.length > 0) {
-        const unitPrice = nonZeroPrices[0];
-        const total = nonZeroPrices[nonZeroPrices.length - 1];
-        items.push({ description: desc, quantity: qty, unitPrice, total });
+      // Chercher dans les lignes apres l'ASIN: quantite + prix
+      let qty = 1;
+      let unitPrice = 0;
+      let total = 0;
+
+      for (const line of afterLines) {
+        // Pattern: "1 $415.09 $0.00 $0.00 $0.00 $415.09" (qty + prix + taxes + subtotal)
+        const fullLineMatch = line.match(/^(\d{1,3})\s+\$?([\d,]+\.\d{2})/);
+        if (fullLineMatch) {
+          qty = parseInt(fullLineMatch[1]);
+          unitPrice = parseFloat(fullLineMatch[2].replace(',', ''));
+          // Le dernier prix de la ligne est le subtotal
+          const allPricesInLine = [...line.matchAll(/\$?([\d,]+\.\d{2})/g)].map(m => parseFloat(m[1].replace(',', '')));
+          const nonZero = allPricesInLine.filter(p => p > 0);
+          total = nonZero.length > 0 ? nonZero[nonZero.length - 1] : unitPrice * qty;
+          break;
+        }
+      }
+
+      // Fallback: chercher les prix autour de l'ASIN si pas trouve apres
+      if (unitPrice === 0) {
+        const context = text.substring(Math.max(0, asinIdx - 100), asinIdx + asin[0].length + 300);
+        const allPrices = [...context.matchAll(/\$\s*([\d,]+\.\d{2})/g)].map(m => parseFloat(m[1].replace(',', '')));
+        const nonZeroPrices = allPrices.filter(p => p > 0);
+        if (nonZeroPrices.length > 0) {
+          unitPrice = nonZeroPrices[0];
+          total = nonZeroPrices[nonZeroPrices.length - 1];
+        }
+      }
+
+      if (desc && (unitPrice > 0 || total > 0)) {
+        items.push({ description: desc, quantity: qty, unitPrice: unitPrice || total, total: total || unitPrice });
+      }
+    }
+
+    // Aussi detecter les frais d'expedition comme item separe
+    const shippingMatch = text.match(/(?:Shipping charges?|Frais d'expédition)[^$]*\$?\s*([\d,]+\.\d{2})/i);
+    if (shippingMatch) {
+      const shippingCost = parseFloat(shippingMatch[1].replace(',', ''));
+      if (shippingCost > 0) {
+        // Chercher les taxes sur la ligne shipping
+        const shippingContext = text.substring(text.indexOf(shippingMatch[0]), text.indexOf(shippingMatch[0]) + 200);
+        const shippingPrices = [...shippingContext.matchAll(/\$?([\d,]+\.\d{2})/g)].map(m => parseFloat(m[1].replace(',', '')));
+        const shippingTotal = shippingPrices.filter(p => p > 0).pop() || shippingCost;
+        items.push({ description: 'Frais de livraison', quantity: 1, unitPrice: shippingCost, total: shippingTotal });
       }
     }
   }
