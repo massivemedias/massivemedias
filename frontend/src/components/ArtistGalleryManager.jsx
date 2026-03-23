@@ -56,7 +56,8 @@ function ArtistGalleryManager() {
   // CMS artist data (priority)
   const cmsArtist = useMemo(() => {
     if (!cmsArtists || !artistSlug) return null;
-    return cmsArtists.find(a => a.slug === artistSlug) || null;
+    const arr = Array.isArray(cmsArtists) ? cmsArtists : Object.values(cmsArtists);
+    return arr.find(a => a.slug === artistSlug) || null;
   }, [cmsArtists, artistSlug]);
 
   // Merge prints/stickers from CMS + local data (CMS prioritaire si non-vide)

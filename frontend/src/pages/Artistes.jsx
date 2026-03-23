@@ -28,10 +28,12 @@ function Artistes() {
 
   const artists = useMemo(() => {
     const localList = Object.values(artistsData);
-    if (!cmsArtists || cmsArtists.length === 0) return localList;
+    // cmsArtists peut etre null, un tableau, ou un objet {slug: data}
+    const cmsArray = !cmsArtists ? [] : Array.isArray(cmsArtists) ? cmsArtists : Object.values(cmsArtists);
+    if (cmsArray.length === 0) return localList;
 
     const merged = localList.map(local => {
-      const cms = cmsArtists.find(a => a.slug === local.slug);
+      const cms = cmsArray.find(a => a.slug === local.slug);
       if (!cms) return local;
       return {
         ...local,
@@ -52,7 +54,7 @@ function Artistes() {
     });
 
     const localSlugs = new Set(localList.map(a => a.slug));
-    const cmsOnly = cmsArtists
+    const cmsOnly = cmsArray
       .filter(a => !localSlugs.has(a.slug))
       .map(cms => ({
         slug: cms.slug,

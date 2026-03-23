@@ -149,7 +149,8 @@ function Boutique() {
     .map(slug => {
       const local = artistsData[slug];
       if (!local) return null;
-      const cms = cmsArtists?.find(a => a.slug === slug);
+      const cmsArr = !cmsArtists ? [] : Array.isArray(cmsArtists) ? cmsArtists : Object.values(cmsArtists);
+      const cms = cmsArr.find(a => a.slug === slug);
       return {
         ...local,
         slug,

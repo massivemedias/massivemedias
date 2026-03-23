@@ -45,7 +45,8 @@ function ArtisteDetail({ subdomainSlug }) {
 
   const artist = useMemo(() => {
     const local = artistsData[slug] || null;
-    const cmsArtist = cmsArtists?.find(a => a.slug === slug);
+    const cmsArr = !cmsArtists ? [] : Array.isArray(cmsArtists) ? cmsArtists : Object.values(cmsArtists);
+    const cmsArtist = cmsArr.find(a => a.slug === slug);
     if (!cmsArtist && !local) return null;
     if (!cmsArtist) return local;
     const cms = buildArtistFromCMS(cmsArtist);
