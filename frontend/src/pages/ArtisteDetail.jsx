@@ -659,7 +659,7 @@ function ArtisteDetail({ subdomainSlug }) {
                   <img
                     src={selectedPrint.fullImage || toFull(selectedPrint.image)}
                     alt={getItemTitle(selectedPrint)}
-                    className="max-w-full max-h-[70vh] object-contain transition-transform duration-500 group-hover:scale-105"
+                    className="max-w-full max-h-[70vh] object-contain"
                     onLoad={(e) => setIsLandscape(e.target.naturalWidth > e.target.naturalHeight)}
                   />
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
