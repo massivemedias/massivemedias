@@ -309,20 +309,15 @@ function TatoueurDetail({ subdomainSlug }) {
                 {bio}
               </p>
 
-              {/* Quick stats */}
-              <div className="grid grid-cols-3 gap-4 mt-8">
-                <div className="text-center p-4 bg-bg-card rounded-xl border border-white/5">
-                  <span className="block text-2xl font-heading font-bold text-green-500">{stats.disponible}</span>
-                  <span className="text-xs text-grey-muted">{tx({ fr: 'Disponibles', en: 'Available' })}</span>
-                </div>
-                <div className="text-center p-4 bg-bg-card rounded-xl border border-white/5">
-                  <span className="block text-2xl font-heading font-bold text-amber-500">{stats.reserve}</span>
-                  <span className="text-xs text-grey-muted">{tx({ fr: 'Reserves', en: 'Reserved' })}</span>
-                </div>
-                <div className="text-center p-4 bg-bg-card rounded-xl border border-white/5">
-                  <span className="block text-2xl font-heading font-bold text-grey-light">{stats.tatoue}</span>
-                  <span className="text-xs text-grey-muted">{tx({ fr: 'Tatoues', en: 'Tattooed' })}</span>
-                </div>
+              {/* Calendrier des disponibilites integre a la bio */}
+              <div className="mt-10">
+                <h3 className="text-xl font-heading font-bold text-heading mb-4 flex items-center gap-2">
+                  <Calendar size={20} className="text-accent" />
+                  {tx({ fr: 'Disponibilites', en: 'Availability', es: 'Disponibilidades' })}
+                </h3>
+                <AvailabilityCalendar
+                  calendarSettings={tatoueur.calendarSettings}
+                />
               </div>
             </motion.div>
           </div>
@@ -425,31 +420,7 @@ function TatoueurDetail({ subdomainSlug }) {
         </div>
       </section>
 
-      {/* ========== DISPONIBILITES ========== */}
-      <section className="py-12 md:py-16">
-        <div className="section-container">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            viewport={{ once: true }}
-          >
-            <div className="text-center mb-8">
-              <h2 className="text-3xl md:text-4xl font-heading font-bold text-heading mb-2 flex items-center justify-center gap-3">
-                <Calendar size={28} className="text-accent" />
-                {tx({ fr: 'Disponibilites', en: 'Availability' })}
-              </h2>
-              <p className="text-grey-muted text-sm">
-                {tx({ fr: 'Reservez un creneau', en: 'Book a slot' })}
-              </p>
-            </div>
-            <AvailabilityCalendar
-              calendarSettings={tatoueur.calendarSettings}
-              tatoueurName={tatoueur.name}
-            />
-          </motion.div>
-        </div>
-      </section>
+      {/* Disponibilites integrees dans la section Bio ci-dessus */}
 
       {/* ========== REALISATIONS ========== */}
       {(tatoueur.realisations?.length > 0 || tatoueur.realisationImages?.length > 0 || tatoueur.instagramHandle) && (
