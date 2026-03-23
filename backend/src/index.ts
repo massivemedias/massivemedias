@@ -933,8 +933,11 @@ export default {
       console.error('[bootstrap] Admin user creation error:', err.message);
     }
 
-    // Only seed if SEED_CONTENT env var is set
-    if (process.env.SEED_CONTENT !== 'true') return;
+    // Seed si SEED_CONTENT=true OU si la base est vide (recovery apres reset)
+    const existingContent = await strapi.documents('api::site-content.site-content').findFirst().catch(() => null);
+    const needsSeed = process.env.SEED_CONTENT === 'true' || !existingContent;
+    if (!needsSeed) return;
+    console.log('[seed] Base vide ou SEED_CONTENT=true, lancement du seed...');
 
     console.log('[seed] Checking Site Content...');
 
