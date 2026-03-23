@@ -12,45 +12,36 @@ import { useTatoueurs } from '../hooks/useTatoueurs';
 import { mediaUrl } from '../utils/cms';
 import tatoueursData from '../data/tatoueurs';
 
-// Embed Instagram officiel via le script embed.js
-function InstagramPost({ shortcode }) {
-  const ref = useRef(null);
-
-  useEffect(() => {
-    // Charger le script Instagram embed.js s'il n'est pas deja charge
-    if (!window.instgrm) {
-      const script = document.createElement('script');
-      script.src = 'https://www.instagram.com/embed.js';
-      script.async = true;
-      document.body.appendChild(script);
-      script.onload = () => window.instgrm?.Embeds?.process();
-    } else {
-      window.instgrm.Embeds.process();
-    }
-  }, [shortcode]);
-
-  return (
-    <blockquote
-      ref={ref}
-      className="instagram-media"
-      data-instgrm-captioned={false}
-      data-instgrm-permalink={`https://www.instagram.com/p/${shortcode}/`}
-      data-instgrm-version="14"
-      style={{ background: 'transparent', border: 0, borderRadius: '12px', margin: 0, maxWidth: '100%', minWidth: '200px', padding: 0, width: '100%' }}
-    />
-  );
-}
-
-// Composant Instagram Feed - embeds officiels
+// Composant Instagram Feed - images en grille via thumbnails Instagram
 function InstagramFeed({ handle, postShortcodes = [] }) {
   if (!handle && postShortcodes.length === 0) return null;
 
   return (
     <div className="space-y-4">
       {postShortcodes.length > 0 && (
-        <div className="grid grid-cols-3 lg:grid-cols-6 gap-2 md:gap-3">
-          {postShortcodes.map((code) => (
-            <InstagramPost key={code} shortcode={code} />
+        <div className="grid grid-cols-3 md:grid-cols-5 gap-1.5 md:gap-2">
+          {postShortcodes.map((code, i) => (
+            <motion.a
+              key={code}
+              href={`https://www.instagram.com/p/${code}/`}
+              target="_blank"
+              rel="noopener noreferrer"
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.3, delay: i * 0.03 }}
+              viewport={{ once: true }}
+              className="aspect-square rounded-lg overflow-hidden group relative bg-black/20"
+            >
+              <img
+                src={`https://www.instagram.com/p/${code}/media/?size=m`}
+                alt=""
+                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                loading="lazy"
+              />
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
+                <Instagram size={20} className="text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+              </div>
+            </motion.a>
           ))}
         </div>
       )}

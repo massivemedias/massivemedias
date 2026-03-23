@@ -129,17 +129,17 @@ export default function FlashLightbox({ flash, onClose, onReserve, tatoueurName,
           </div>
 
           {/* Details */}
-          <div className="md:w-1/2 p-6 md:p-8 overflow-y-auto">
+          <div className="md:w-1/2 p-6 md:p-10 overflow-y-auto">
             {/* Title */}
             {title && (
-              <h2 className="text-2xl md:text-3xl font-heading font-bold text-heading mb-2">
+              <h2 className="text-2xl md:text-4xl font-heading font-bold text-heading mb-3">
                 {title}
               </h2>
             )}
 
             {/* Artist */}
             {tatoueurName && (
-              <p className="text-grey-muted text-sm mb-4">
+              <p className="text-grey-muted text-sm md:text-base mb-5">
                 {tx({ fr: 'par', en: 'by' })} {tatoueurName}
               </p>
             )}
@@ -147,32 +147,32 @@ export default function FlashLightbox({ flash, onClose, onReserve, tatoueurName,
             {/* Tags */}
             <div className="flex flex-wrap gap-2 mb-6">
               {flash.style && (
-                <span className="bg-bg-elevated text-grey-light text-xs px-3 py-1.5 rounded-full capitalize">
+                <span className="bg-bg-elevated text-grey-light text-xs md:text-sm px-3 py-1.5 rounded-full capitalize">
                   {flash.style}
                 </span>
               )}
               {sizeLabel[lang] && (
-                <span className="bg-bg-elevated text-grey-light text-xs px-3 py-1.5 rounded-full flex items-center gap-1">
-                  <Ruler size={12} />
+                <span className="bg-bg-elevated text-grey-light text-xs md:text-sm px-3 py-1.5 rounded-full flex items-center gap-1.5">
+                  <Ruler size={14} />
                   {sizeLabel[lang]}
                 </span>
               )}
               {flash.bodyPlacement && (
-                <span className="bg-bg-elevated text-grey-light text-xs px-3 py-1.5 rounded-full flex items-center gap-1">
-                  <MapPin size={12} />
+                <span className="bg-bg-elevated text-grey-light text-xs md:text-sm px-3 py-1.5 rounded-full flex items-center gap-1.5">
+                  <MapPin size={14} />
                   {flash.bodyPlacement}
                 </span>
               )}
               {flash.isUnique && (
-                <span className="bg-accent/20 text-accent text-xs px-3 py-1.5 rounded-full font-bold">
-                  {tx({ fr: 'Piece unique', en: 'One of a kind' })}
+                <span className="bg-accent/20 text-accent text-xs md:text-sm px-3 py-1.5 rounded-full font-bold">
+                  {tx({ fr: 'Pièce unique', en: 'One of a kind' })}
                 </span>
               )}
             </div>
 
             {/* Description */}
             {description && (
-              <p className="text-grey-light text-sm leading-relaxed mb-6">
+              <p className="text-grey-light text-sm md:text-base leading-relaxed mb-6">
                 {description}
               </p>
             )}
