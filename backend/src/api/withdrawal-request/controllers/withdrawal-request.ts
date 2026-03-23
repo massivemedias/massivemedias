@@ -22,7 +22,7 @@ export default factories.createCoreController('api::withdrawal-request.withdrawa
         filters: {
           email: { $eqi: email },
           status: { $in: ['pending', 'processing'] },
-        },
+        } as any,
         limit: 1,
       });
 
@@ -40,7 +40,7 @@ export default factories.createCoreController('api::withdrawal-request.withdrawa
           amount,
           notes: notes || '',
           status: 'pending',
-        },
+        } as any,
       });
 
       ctx.body = {
@@ -68,7 +68,7 @@ export default factories.createCoreController('api::withdrawal-request.withdrawa
     try {
       const entries = await strapi.documents('api::withdrawal-request.withdrawal-request' as any).findMany({
         filters: { email: { $eqi: email as string } },
-        sort: { createdAt: 'desc' },
+        sort: { createdAt: 'desc' } as any,
         limit: 50,
       });
 
@@ -93,7 +93,7 @@ export default factories.createCoreController('api::withdrawal-request.withdrawa
   async adminList(ctx) {
     try {
       const entries = await strapi.documents('api::withdrawal-request.withdrawal-request' as any).findMany({
-        sort: { createdAt: 'desc' },
+        sort: { createdAt: 'desc' } as any,
         limit: 100,
       });
 

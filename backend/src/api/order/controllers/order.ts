@@ -653,9 +653,9 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
     const slugs = Object.keys(artistMap);
 
     // 2. Fetch completed orders
-    const validStatuses = ['paid', 'processing', 'shipped', 'delivered'];
+    const validStatuses = ['paid', 'processing', 'shipped', 'delivered'] as const;
     const orders = await strapi.documents('api::order.order').findMany({
-      filters: { status: { $in: validStatuses } },
+      filters: { status: { $in: validStatuses as any } },
       sort: 'createdAt:desc',
     });
 

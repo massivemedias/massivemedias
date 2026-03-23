@@ -21,12 +21,12 @@ export default factories.createCoreController('api::client.client', ({ strapi })
     const [items, allFiltered] = await Promise.all([
       strapi.documents('api::client.client').findMany({
         filters,
-        sort,
+        sort: sort as any,
         limit: pageSize,
         start: (page - 1) * pageSize,
-        populate: { orders: { sort: 'createdAt:desc', limit: 1 } },
+        populate: { orders: { sort: 'createdAt:desc', limit: 1 } } as any,
       }),
-      strapi.documents('api::client.client').findMany({ filters }),
+      strapi.documents('api::client.client').findMany({ filters } as any),
     ]);
 
     // Enrichir chaque client avec l'adresse du dernier order
@@ -72,7 +72,7 @@ export default factories.createCoreController('api::client.client', ({ strapi })
         ctx.body = { error: 'Erreur Supabase Auth' };
         return;
       }
-      const data = await res.json();
+      const data: any = await res.json();
       const users = (data.users || data || []).map((u: any) => {
         const meta = u.user_metadata || {};
         const profileAddress = meta.address ? {
@@ -101,7 +101,7 @@ export default factories.createCoreController('api::client.client', ({ strapi })
       });
       ctx.body = {
         data: users,
-        meta: { page, perPage, total: data.total || users.length },
+        meta: { page, perPage, total: (data as any).total || users.length },
       };
     } catch (err) {
       strapi.log.error('Supabase users fetch error:', err);
