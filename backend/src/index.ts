@@ -933,7 +933,86 @@ export default {
       console.error('[bootstrap] Admin user creation error:', err.message);
     }
 
-    // Seed si SEED_CONTENT=true OU si la base est vide (recovery apres reset)
+    // TOUJOURS verifier les permissions et user-roles (meme sans seed de contenu)
+    try {
+      // Permissions publiques
+      console.log('[seed] Checking public permissions...');
+      const publicRole = await strapi.db.query('plugin::users-permissions.role').findOne({
+        where: { type: 'public' },
+      });
+
+      if (publicRole) {
+        const permActions = [
+          'api::site-content.site-content.find',
+          'api::service-page.service-page.find',
+          'api::service-page.service-page.findOne',
+          'api::artist.artist.find',
+          'api::artist.artist.findOne',
+          'api::product.product.find',
+          'api::product.product.findOne',
+          'api::boutique-item.boutique-item.find',
+          'api::boutique-item.boutique-item.findOne',
+          'api::news-article.news-article.find',
+          'api::news-article.news-article.findOne',
+          'api::inventory-item.inventory-item.find',
+          'api::inventory-item.inventory-item.findOne',
+          'api::service-package.service-package.find',
+          'api::service-package.service-package.findOne',
+          'api::tatoueur.tatoueur.find',
+          'api::tatoueur.tatoueur.findOne',
+          'api::flash.flash.find',
+          'api::flash.flash.findOne',
+          'api::reservation.reservation.find',
+          'api::reservation.reservation.findOne',
+          'api::reservation.reservation.create',
+          'api::tattoo-message.tattoo-message.find',
+          'api::tattoo-message.tattoo-message.findOne',
+          'api::tattoo-message.tattoo-message.create',
+          'plugin::upload.content-api.upload',
+          'plugin::upload.content-api.find',
+        ];
+
+        for (const action of permActions) {
+          const existingPerm = await strapi.db.query('plugin::users-permissions.permission').findOne({
+            where: { action, role: publicRole.id },
+          });
+          if (!existingPerm) {
+            await strapi.db.query('plugin::users-permissions.permission').create({
+              data: { action, role: publicRole.id },
+            });
+            console.log(`[seed] Public permission for ${action} added!`);
+          }
+        }
+        console.log('[seed] Public permissions OK!');
+      }
+
+      // User Roles (proteger contre les resets de schema)
+      console.log('[seed] Checking User Roles...');
+      const userRolesToSeed = [
+        { email: 'howdiy@gmail.com', role: 'artist', artistSlug: 'maudite-machine', displayName: 'Maudite Machine' },
+        { email: 'medusart@protonmail.com', role: 'artist', artistSlug: 'psyqu33n', displayName: 'Psyqu33n' },
+        { email: 'jay-gagnon@hotmail.ca', role: 'artist', artistSlug: 'adrift', displayName: 'Adrift' },
+        { email: 'mokrane.ouzane@gmail.com', role: 'artist', artistSlug: 'mok', displayName: 'Mok' },
+        { email: 'qdelobel@gmail.com', role: 'artist', artistSlug: 'quentin-delobel', displayName: 'Quentin Delobel' },
+        { email: 'alx.rouleau@gmail.com', role: 'artist', artistSlug: 'no-pixl', displayName: 'No Pixl' },
+        { email: 'liah28@gmail.com', role: 'artist', artistSlug: 'cornelia-rose', displayName: 'Cornelia Rose' },
+      ];
+      for (const ur of userRolesToSeed) {
+        const existing = await strapi.documents('api::user-role.user-role').findMany({
+          filters: { email: { $eqi: ur.email } } as any,
+          limit: 1,
+        });
+        if (!existing || existing.length === 0) {
+          await strapi.documents('api::user-role.user-role').create({ data: ur as any });
+          console.log(`[seed] User role for "${ur.email}" created (${ur.role})!`);
+        }
+      }
+      console.log('[seed] User Roles OK!');
+    } catch (err: any) {
+      console.error('[seed] Permissions/UserRoles error:', err.message);
+    }
+
+    // Seed contenu si SEED_CONTENT=true OU si la base est vide
     const existingContent = await strapi.documents('api::site-content.site-content').findFirst().catch(() => null);
     const needsSeed = process.env.SEED_CONTENT === 'true' || !existingContent;
     if (!needsSeed) return;
@@ -1032,82 +1111,6 @@ export default {
         }
       }
       console.log(`[seed] All ${productsSeedData.length} Products seeded!`);
-
-      // Set public permissions
-      const publicRole = await strapi.db.query('plugin::users-permissions.role').findOne({
-        where: { type: 'public' },
-      });
-
-      if (publicRole) {
-        const permActions = [
-          'api::site-content.site-content.find',
-          'api::service-page.service-page.find',
-          'api::service-page.service-page.findOne',
-          'api::artist.artist.find',
-          'api::artist.artist.findOne',
-          'api::product.product.find',
-          'api::product.product.findOne',
-          'api::boutique-item.boutique-item.find',
-          'api::boutique-item.boutique-item.findOne',
-          'api::news-article.news-article.find',
-          'api::news-article.news-article.findOne',
-          'api::inventory-item.inventory-item.find',
-          'api::inventory-item.inventory-item.findOne',
-          'api::service-package.service-package.find',
-          'api::service-package.service-package.findOne',
-          'api::tatoueur.tatoueur.find',
-          'api::tatoueur.tatoueur.findOne',
-          'api::flash.flash.find',
-          'api::flash.flash.findOne',
-          'api::reservation.reservation.find',
-          'api::reservation.reservation.findOne',
-          'api::reservation.reservation.create',
-          'api::tattoo-message.tattoo-message.find',
-          'api::tattoo-message.tattoo-message.findOne',
-          'api::tattoo-message.tattoo-message.create',
-          'plugin::upload.content-api.upload',
-          'plugin::upload.content-api.find',
-        ];
-
-        for (const action of permActions) {
-          const existingPerm = await strapi.db.query('plugin::users-permissions.permission').findOne({
-            where: { action, role: publicRole.id },
-          });
-
-          if (!existingPerm) {
-            await strapi.db.query('plugin::users-permissions.permission').create({
-              data: { action, role: publicRole.id },
-            });
-            console.log(`[seed] Public permission for ${action} added!`);
-          }
-        }
-      }
-
-      // Seed User Roles (proteger contre les resets de schema)
-      console.log('[seed] Checking User Roles...');
-      const userRolesToSeed = [
-        { email: 'howdiy@gmail.com', role: 'artist', artistSlug: 'maudite-machine', displayName: 'Maudite Machine' },
-        { email: 'medusart@protonmail.com', role: 'artist', artistSlug: 'psyqu33n', displayName: 'Psyqu33n' },
-        { email: 'jay-gagnon@hotmail.ca', role: 'artist', artistSlug: 'adrift', displayName: 'Adrift' },
-        { email: 'mokrane.ouzane@gmail.com', role: 'artist', artistSlug: 'mok', displayName: 'Mok' },
-        { email: 'qdelobel@gmail.com', role: 'artist', artistSlug: 'quentin-delobel', displayName: 'Quentin Delobel' },
-        { email: 'alx.rouleau@gmail.com', role: 'artist', artistSlug: 'no-pixl', displayName: 'No Pixl' },
-        { email: 'liah28@gmail.com', role: 'artist', artistSlug: 'cornelia-rose', displayName: 'Cornelia Rose' },
-      ];
-      for (const ur of userRolesToSeed) {
-        const existing = await strapi.documents('api::user-role.user-role').findMany({
-          filters: { email: { $eqi: ur.email } },
-          limit: 1,
-        });
-        if (!existing || existing.length === 0) {
-          await strapi.documents('api::user-role.user-role').create({
-            data: ur as any,
-          });
-          console.log(`[seed] User role for "${ur.email}" created (${ur.role})!`);
-        } else {
-          console.log(`[seed] User role for "${ur.email}" already exists.`);
-        }
-      }
 
       console.log('[seed] Done!');
     } catch (err: any) {
