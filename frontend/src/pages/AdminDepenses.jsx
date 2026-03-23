@@ -279,19 +279,20 @@ function AdminDepenses() {
         notes: 'Import automatique',
       }];
 
-      // Envoyer chaque depense + inventaire
-      for (const expenseData of expenseList) {
+      // Envoyer: premier appel avec inventaire + premiere depense, puis les depenses supplementaires
+      for (let idx = 0; idx < expenseList.length; idx++) {
         await api.post('/inventory-items/import-invoice', {
-          items: inventoryItems.filter(inv => expenseData.notes.includes(inv.nameFr) || expenseList.length === 1),
-          expense: expenseData,
+          items: idx === 0 ? inventoryItems : [], // inventaire seulement sur le premier
+          expense: expenseList[idx],
         });
       }
 
       const created = inventoryItems.length;
+      const totalAmount = expenseList.reduce((s, e) => s + e.amount, 0).toFixed(2);
       setImportSuccess(tx({
-        fr: `Import réussi! ${created} item(s) ajouté(s) à l'inventaire + 1 dépense de ${expenseData.amount}$ créée.`,
-        en: `Import successful! ${created} item(s) added to inventory + 1 expense of $${expenseData.amount} created.`,
-        es: `Importacion exitosa! ${created} item(s) agregado(s) al inventario + 1 gasto de $${expenseData.amount} creado.`,
+        fr: `Import reussi! ${created} item(s) a l'inventaire + ${expenseList.length} depense(s) pour ${totalAmount}$ creee(s).`,
+        en: `Import successful! ${created} item(s) to inventory + ${expenseList.length} expense(s) for $${totalAmount} created.`,
+        es: `Importacion exitosa! ${created} item(s) al inventario + ${expenseList.length} gasto(s) por $${totalAmount} creado(s).`,
       }));
 
       setInvoiceData(null);
