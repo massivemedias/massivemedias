@@ -360,8 +360,8 @@ function TatoueurDetail({ subdomainSlug }) {
         </div>
       </section>
 
-      {/* ========== REALISATIONS INSTAGRAM ========== */}
-      {tatoueur.instagramHandle && (
+      {/* ========== REALISATIONS ========== */}
+      {(tatoueur.realisations?.length > 0 || tatoueur.instagramHandle) && (
         <section className="py-12 md:py-16">
           <div className="section-container">
             <motion.div
@@ -375,27 +375,55 @@ function TatoueurDetail({ subdomainSlug }) {
                   <Instagram size={28} className="text-accent" />
                   {tx({ fr: 'Realisations', en: 'Portfolio' })}
                 </h2>
-                <a
-                  href={`https://instagram.com/${tatoueur.instagramHandle}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-grey-muted hover:text-accent transition-colors flex items-center gap-1"
-                >
-                  @{tatoueur.instagramHandle}
-                  <ArrowRight size={14} />
-                </a>
+                {tatoueur.instagramHandle && (
+                  <a
+                    href={`https://instagram.com/${tatoueur.instagramHandle}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-grey-muted hover:text-accent transition-colors flex items-center gap-1"
+                  >
+                    @{tatoueur.instagramHandle}
+                    <ArrowRight size={14} />
+                  </a>
+                )}
               </div>
 
-              {/* Instagram embed via iframe */}
-              <div className="bg-bg-card rounded-2xl border border-white/5 overflow-hidden">
-                <div className="p-6 md:p-8 text-center">
-                  <p className="text-grey-light text-base mb-6">
+              {/* Grille de realisations */}
+              {tatoueur.realisations?.length > 0 ? (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                  {tatoueur.realisations.map((real, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      whileInView={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.3, delay: i * 0.05 }}
+                      viewport={{ once: true }}
+                      className="group relative aspect-square rounded-lg overflow-hidden cursor-pointer"
+                      onClick={() => setSelectedFlash({ image: real.image, titleFr: real.caption, titleEn: real.caption, status: 'tatoue' })}
+                    >
+                      <img
+                        src={real.image}
+                        alt={real.caption || `Realisation ${i + 1}`}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        loading="lazy"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      {real.caption && (
+                        <div className="absolute bottom-0 left-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                          <p className="text-white text-xs font-medium drop-shadow-lg">{real.caption}</p>
+                        </div>
+                      )}
+                    </motion.div>
+                  ))}
+                </div>
+              ) : (
+                <div className="bg-bg-card rounded-2xl border border-white/5 p-8 text-center">
+                  <p className="text-grey-muted mb-4">
                     {tx({
                       fr: `Decouvrez les realisations de ${tatoueur.name} sur Instagram`,
                       en: `Discover ${tatoueur.name}'s work on Instagram`,
                     })}
                   </p>
-
                   <a
                     href={`https://instagram.com/${tatoueur.instagramHandle}`}
                     target="_blank"
@@ -403,17 +431,25 @@ function TatoueurDetail({ subdomainSlug }) {
                     className="btn-primary inline-flex items-center"
                   >
                     <Instagram size={20} className="mr-2" />
-                    {tx({ fr: `Voir sur Instagram`, en: `View on Instagram` })}
+                    {tx({ fr: 'Voir sur Instagram', en: 'View on Instagram' })}
                   </a>
-
-                  <p className="text-xs text-grey-muted mt-4">
-                    {tx({
-                      fr: 'Les photos de tatouages realises sont sur le profil Instagram.',
-                      en: 'Completed tattoo photos are on the Instagram profile.',
-                    })}
-                  </p>
                 </div>
-              </div>
+              )}
+
+              {/* Lien Instagram sous la grille */}
+              {tatoueur.realisations?.length > 0 && tatoueur.instagramHandle && (
+                <div className="text-center mt-6">
+                  <a
+                    href={`https://instagram.com/${tatoueur.instagramHandle}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 text-sm text-grey-muted hover:text-accent transition-colors"
+                  >
+                    <Instagram size={16} />
+                    {tx({ fr: 'Voir plus sur Instagram', en: 'See more on Instagram' })}
+                  </a>
+                </div>
+              )}
             </motion.div>
           </div>
         </section>

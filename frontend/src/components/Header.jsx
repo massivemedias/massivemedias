@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, ShoppingCart, LogIn, Printer, Sticker, Shirt, Globe, Monitor, Store, Info, Phone, ChevronRight, ChevronDown, Bell, PenTool, Camera, Users } from 'lucide-react';
+import { Menu, X, ShoppingCart, LogIn, Printer, Sticker, Shirt, Globe, Monitor, Store, Info, Phone, ChevronRight, Bell, PenTool, Camera } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import MassiveLogo from './MassiveLogo';
 import { useLang } from '../i18n/LanguageContext';
@@ -104,51 +104,9 @@ function Header() {
                 </Link>
               ))}
 
-              {/* Mega-menu Artistes */}
-              <div className="relative group">
-                <Link
-                  to="/artistes"
-                  className={`transition-colors duration-200 font-bold text-sm whitespace-nowrap flex items-center gap-1 ${(isActive('/artistes') || isActive('/tatoueurs') || isActive('/boutique')) ? 'text-accent brightness-125' : ''}`}
-                  style={{ color: 'var(--logo-accent, #FFCC02)' }}
-                >
-                  {tx({ fr: 'Artistes', en: 'Artists' })}
-                  <ChevronDown size={14} className="opacity-50 group-hover:opacity-100 transition-opacity" />
-                </Link>
-
-                {/* Dropdown */}
-                <div className="absolute top-full left-1/2 -translate-x-1/2 pt-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-                  <div className="bg-bg-card border border-white/10 rounded-xl shadow-2xl shadow-black/40 p-3 min-w-[280px]">
-                    <Link to="/artistes#photographes" onClick={() => {}} className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-bg-elevated transition-colors group/item">
-                      <span className="w-8 h-8 rounded-lg flex items-center justify-center bg-accent/10 flex-shrink-0">
-                        <Camera size={16} className="text-accent" />
-                      </span>
-                      <div>
-                        <span className="text-sm font-bold text-heading block">{tx({ fr: 'Photographes & Peintres', en: 'Photographers & Painters' })}</span>
-                        <span className="text-[11px] text-grey-muted">{tx({ fr: 'Tirages fine art disponibles', en: 'Fine art prints available' })}</span>
-                      </div>
-                    </Link>
-                    <Link to="/tatoueurs" className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-bg-elevated transition-colors group/item">
-                      <span className="w-8 h-8 rounded-lg flex items-center justify-center bg-accent/10 flex-shrink-0">
-                        <PenTool size={16} className="text-accent" />
-                      </span>
-                      <div>
-                        <span className="text-sm font-bold text-heading block">{tx({ fr: 'Tatoueurs', en: 'Tattoo Artists' })}</span>
-                        <span className="text-[11px] text-grey-muted">{tx({ fr: 'Flashs et reservation en ligne', en: 'Flash designs & online booking' })}</span>
-                      </div>
-                    </Link>
-                    <div className="h-px bg-white/5 mx-2 my-1.5" />
-                    <Link to="/boutique" className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-bg-elevated transition-colors group/item">
-                      <span className="w-8 h-8 rounded-lg flex items-center justify-center bg-accent/10 flex-shrink-0">
-                        <Store size={16} className="text-accent" />
-                      </span>
-                      <div>
-                        <span className="text-sm font-bold text-heading block">{tx({ fr: 'Boutique Massive', en: 'Massive Shop' })}</span>
-                        <span className="text-[11px] text-grey-muted">{tx({ fr: 'Prints, stickers, merch', en: 'Prints, stickers, merch' })}</span>
-                      </div>
-                    </Link>
-                  </div>
-                </div>
-              </div>
+              <Link to="/artistes" className={`transition-colors duration-200 font-bold text-sm whitespace-nowrap ${(isActive('/artistes') || isActive('/tatoueurs') || isActive('/boutique')) ? 'text-accent brightness-125' : ''}`} style={{ color: 'var(--logo-accent, #FFCC02)' }}>
+                {tx({ fr: 'Artistes', en: 'Artists' })}
+              </Link>
 
               <Link to="/a-propos" className={`transition-colors duration-200 font-medium text-sm whitespace-nowrap ${isActive('/a-propos') ? 'text-accent' : 'nav-link'}`}>
                 {t('nav.aPropos')}
