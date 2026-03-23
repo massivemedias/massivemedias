@@ -8,6 +8,7 @@ import {
   UserCheck, Trash2,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
+import { useNotifications } from '../contexts/NotificationContext';
 import {
   getContactSubmissions, updateContactStatus, replyToContact, deleteContact,
   getArtistSubmissions, updateArtistStatus, deleteArtistSubmission,
@@ -112,6 +113,7 @@ const formatDate = (d) => {
 
 function AdminMessages() {
   const { tx } = useLang();
+  const { refreshNotifs } = useNotifications();
 
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -201,6 +203,7 @@ function AdminMessages() {
         await updateArtistStatus(item.documentId, newStatus);
       }
       setItems(prev => prev.map(i => i._uid === item._uid ? { ...i, status: newStatus } : i));
+      refreshNotifs();
     } catch { /* silent */ } finally { setUpdatingId(null); }
   };
 
@@ -218,6 +221,7 @@ function AdminMessages() {
       }
       setReplySuccess(item._uid);
       setReplyText('');
+      refreshNotifs();
       setTimeout(() => { setReplySuccess(null); setReplyingTo(null); }, 2000);
     } catch {
       setReplySuccess(false);

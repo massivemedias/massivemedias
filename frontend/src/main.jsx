@@ -5,6 +5,7 @@ import { ThemeProvider } from './i18n/ThemeContext'
 import { CartProvider } from './contexts/CartContext'
 import { AuthProvider } from './contexts/AuthContext'
 import { UserRoleProvider } from './contexts/UserRoleContext'
+import { NotificationProvider } from './contexts/NotificationContext'
 import { CookieProvider } from './contexts/CookieContext'
 import { SiteContentProvider } from './hooks/useSiteContent'
 import { ServicePagesProvider } from './hooks/useServicePages'
@@ -26,9 +27,11 @@ createRoot(document.getElementById('root')).render(
         <CookieProvider>
           <AuthProvider>
             <UserRoleProvider>
-              <CartProvider>
-                <App />
-              </CartProvider>
+              <NotificationProvider>
+                <CartProvider>
+                  <App />
+                </CartProvider>
+              </NotificationProvider>
             </UserRoleProvider>
           </AuthProvider>
         </CookieProvider>

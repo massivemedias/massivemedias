@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, ShoppingCart, LogIn, Printer, Sticker, Shirt, Globe, Monitor, Store, Info, Phone, ChevronRight, Bell, PenTool, Camera } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -8,9 +8,7 @@ import BrightnessFader from './BrightnessFader';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useUserRole } from '../contexts/UserRoleContext';
-import { getContactSubmissions, getArtistSubmissions } from '../services/adminService';
-import { getArtistMessagesAdmin } from '../services/artistService';
-import { isServerDown } from '../services/api';
+import { useNotifications } from '../contexts/NotificationContext';
 
 const SERVICE_ICONS = [Printer, Sticker, Shirt, Globe, Monitor];
 
@@ -19,64 +17,10 @@ function Header() {
   const { cartCount } = useCart();
   const { user } = useAuth();
   const { isAdmin } = useUserRole();
+  const { adminMsgCount } = useNotifications();
   const { pathname } = useLocation();
   const isActive = (path) => pathname === path || pathname.startsWith(path + '/');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [adminMsgCount, setAdminMsgCount] = useState(0);
-  const prevCountRef = useRef(0);
-
-  // Son de notification admin (Web Audio API - pas de fichier externe)
-  const playNotifSound = useCallback(() => {
-    try {
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
-      // Double beep sympathique
-      [0, 0.15].forEach((delay) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.type = 'sine';
-        osc.frequency.value = delay === 0 ? 880 : 1100;
-        gain.gain.setValueAtTime(0.3, ctx.currentTime + delay);
-        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + delay + 0.15);
-        osc.start(ctx.currentTime + delay);
-        osc.stop(ctx.currentTime + delay + 0.15);
-      });
-    } catch { /* Audio not supported */ }
-  }, []);
-
-  // Polling notifications admin
-  useEffect(() => {
-    if (!isAdmin) return;
-    let cancelled = false;
-    async function fetchCount() {
-      if (isServerDown()) return; // Skip si serveur down
-      try {
-        const [contactRes, artistRes, artistMsgRes] = await Promise.all([
-          getContactSubmissions({ pageSize: 200 }),
-          getArtistSubmissions({ pageSize: 200 }),
-          getArtistMessagesAdmin(),
-        ]);
-        const contacts = contactRes?.data?.data || [];
-        const artists = artistRes?.data?.data || [];
-        const artistMsgs = artistMsgRes?.data?.data || [];
-        const count = contacts.filter(c => (c.status || 'new') === 'new').length
-          + artists.filter(a => (a.status || 'new') === 'new').length
-          + artistMsgs.filter(m => (m.status || 'new') === 'new').length;
-        if (!cancelled) {
-          // Jouer le son si le count augmente (nouveau message)
-          if (count > prevCountRef.current) {
-            playNotifSound();
-          }
-          prevCountRef.current = count;
-          setAdminMsgCount(count);
-        }
-      } catch { /* ignore */ }
-    }
-    fetchCount();
-    const interval = setInterval(fetchCount, 120000); // 2 min au lieu de 30s
-    return () => { cancelled = true; clearInterval(interval); };
-  }, [isAdmin, playNotifSound]);
 
   const services = t('nav.servicesList');
   const close = () => setMobileMenuOpen(false);
