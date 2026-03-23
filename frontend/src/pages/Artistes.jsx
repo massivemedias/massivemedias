@@ -196,62 +196,41 @@ function Artistes() {
             </h2>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 mb-12">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 mb-12">
             {artists.map((artist, index) => {
               const tagline = tx({ fr: artist.tagline.fr, en: artist.tagline.en, es: artist.tagline.es || artist.tagline.en });
-
-              const isFeatured = index === 0;
-              const isTallRight = index === 1;
-              const isWide = index === artists.length - 1 && artists.length >= 6;
-
-              let gridClasses = '';
-              let aspectClasses = 'aspect-[3/4]';
-
-              if (isFeatured) {
-                gridClasses = 'md:col-span-2 md:row-span-2';
-                aspectClasses = 'aspect-[3/4] md:aspect-auto md:h-full min-h-[400px] md:min-h-0';
-              } else if (isTallRight) {
-                gridClasses = 'md:row-span-2';
-                aspectClasses = 'aspect-[3/4] md:aspect-auto md:h-full min-h-[400px] md:min-h-0';
-              } else if (isWide) {
-                gridClasses = 'md:col-span-2';
-                aspectClasses = 'aspect-[3/4] md:aspect-[16/9]';
-              }
 
               return (
                 <motion.div
                   key={artist.slug}
-                  initial={{ opacity: 0, y: 30 }}
+                  initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.08 }}
+                  transition={{ duration: 0.4, delay: index * 0.06 }}
                   viewport={{ once: true, margin: '-50px' }}
-                  className={gridClasses}
                 >
                   <Link
                     to={`/artistes/${artist.slug}`}
-                    className={`group block relative overflow-hidden ${aspectClasses}`}
+                    className="group block relative overflow-hidden rounded-xl aspect-[4/5]"
                   >
                     <img
                       src={artist.heroImage || artist.avatar}
                       alt={artist.name}
                       className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                      loading={index < 2 ? 'eager' : 'lazy'}
+                      loading={index < 4 ? 'eager' : 'lazy'}
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent group-hover:from-black/80 transition-all duration-500" />
-                    <div className="absolute inset-0 flex flex-col justify-end p-5 md:p-8">
-                      <h3 className={`font-heading font-bold text-white leading-none mb-2 drop-shadow-lg ${
-                        isFeatured ? 'text-3xl md:text-6xl' : 'text-2xl md:text-3xl'
-                      }`}>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent group-hover:from-black/90 transition-all duration-500" />
+                    <div className="absolute inset-0 flex flex-col justify-end p-4 md:p-5">
+                      <h3 className="font-heading font-bold text-white text-lg md:text-xl leading-tight mb-1 drop-shadow-lg">
                         {artist.name}
                       </h3>
-                      <p className="text-white/60 text-sm md:text-base leading-snug max-w-md line-clamp-2">
+                      <p className="text-white/50 text-xs md:text-sm leading-snug line-clamp-1">
                         {tagline}
                       </p>
-                      <div className="flex items-center justify-between mt-3 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
-                        <span className="text-white/40 text-xs uppercase tracking-widest">
+                      <div className="flex items-center justify-between mt-2 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
+                        <span className="text-white/40 text-[10px] uppercase tracking-widest">
                           {artist.prints?.length || 0} {tx({ fr: 'oeuvres', en: 'artworks' })}
                         </span>
-                        <ArrowRight size={18} className="text-accent" />
+                        <ArrowRight size={14} className="text-accent" />
                       </div>
                     </div>
                   </Link>
