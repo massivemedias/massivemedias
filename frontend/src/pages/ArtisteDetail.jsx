@@ -652,14 +652,14 @@ function ArtisteDetail({ subdomainSlug }) {
                   </button>
                 )}
                 <div
-                  className="relative rounded-2xl overflow-hidden cursor-pointer group w-full flex items-center justify-center bg-black/20"
+                  className="relative overflow-hidden cursor-pointer group w-full flex items-center justify-center"
                   style={{ minHeight: '400px' }}
                   onClick={() => setLightbox(artist.prints.findIndex(p => p.id === selectedPrint.id))}
                 >
                   <img
                     src={selectedPrint.fullImage || toFull(selectedPrint.image)}
                     alt={getItemTitle(selectedPrint)}
-                    className="max-w-full max-h-[70vh] object-contain transition-transform duration-500 group-hover:scale-105 rounded-lg"
+                    className="max-w-full max-h-[70vh] object-contain transition-transform duration-500 group-hover:scale-105"
                     onLoad={(e) => setIsLandscape(e.target.naturalWidth > e.target.naturalHeight)}
                   />
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
