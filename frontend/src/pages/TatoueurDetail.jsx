@@ -292,37 +292,43 @@ function TatoueurDetail({ subdomainSlug }) {
         </div>
       </section>
 
-      {/* ========== BIO ========== */}
-      {bio && (
-        <section className="py-12 md:py-16">
-          <div className="section-container max-w-3xl">
+      {/* ========== BIO + DISPONIBILITES ========== */}
+      <section className="py-12 md:py-16">
+        <div className="section-container">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
+            {/* Colonne gauche: A propos */}
+            {bio && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                viewport={{ once: true }}
+              >
+                <h2 className="text-2xl font-heading font-bold text-heading mb-6">
+                  {tx({ fr: 'A propos', en: 'About', es: 'Acerca de' })}
+                </h2>
+                <p className="text-grey-light leading-relaxed text-base md:text-lg">
+                  {bio}
+                </p>
+              </motion.div>
+            )}
+
+            {/* Colonne droite: Disponibilites */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
               viewport={{ once: true }}
             >
-              <h2 className="text-2xl font-heading font-bold text-heading mb-6">
-                {tx({ fr: 'A propos', en: 'About' })}
+              <h2 className="text-2xl font-heading font-bold text-heading mb-6 flex items-center gap-2">
+                <Calendar size={22} className="text-accent" />
+                {tx({ fr: 'Disponibilites', en: 'Availability', es: 'Disponibilidades' })}
               </h2>
-              <p className="text-grey-light leading-relaxed text-base md:text-lg">
-                {bio}
-              </p>
-
-              {/* Calendrier des disponibilites integre a la bio */}
-              <div className="mt-10">
-                <h3 className="text-xl font-heading font-bold text-heading mb-4 flex items-center gap-2">
-                  <Calendar size={20} className="text-accent" />
-                  {tx({ fr: 'Disponibilites', en: 'Availability', es: 'Disponibilidades' })}
-                </h3>
-                <AvailabilityCalendar
-                  calendarSettings={tatoueur.calendarSettings}
-                />
-              </div>
+              <AvailabilityCalendar calendarSettings={tatoueur.calendarSettings} />
             </motion.div>
           </div>
-        </section>
-      )}
+        </div>
+      </section>
 
       {/* ========== FLASHS ========== */}
       <section id="flashs" className="py-12 md:py-16 bg-bg-elevated/30">

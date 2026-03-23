@@ -231,6 +231,51 @@ export default function AvailabilityCalendar({ calendarSettings }) {
           )}
         </div>
       </div>
+      {/* Liste des prochaines dates dispo */}
+      {(() => {
+        const todayStr = new Date().toISOString().split('T')[0];
+        const upcoming = Object.entries(availableMap)
+          .filter(([date]) => date >= todayStr)
+          .sort(([a], [b]) => a.localeCompare(b))
+          .slice(0, 8);
+
+        if (upcoming.length === 0) return null;
+
+        return (
+          <div className="mt-4 bg-black/20 rounded-xl border border-white/5 overflow-hidden backdrop-blur-sm">
+            <div className="px-4 py-3 border-b border-white/5">
+              <h4 className="text-xs font-bold text-grey-muted uppercase tracking-wider">
+                {tx({ fr: 'Prochaines disponibilites', en: 'Upcoming availability', es: 'Proximas disponibilidades' })}
+              </h4>
+            </div>
+            <div className="divide-y divide-white/5">
+              {upcoming.map(([dateStr, slots]) => {
+                const d = new Date(dateStr + 'T12:00:00');
+                const dayName = daysLong[d.getDay()];
+                const day = d.getDate();
+                const mo = monthNames[d.getMonth()];
+                return (
+                  <div key={dateStr} className="px-4 py-2.5 flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0" />
+                      <span className="text-sm text-heading font-medium">
+                        {dayName} {day} {mo}
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap gap-1 justify-end">
+                      {slots.map((slot, i) => (
+                        <span key={i} className="text-[10px] text-green-400 bg-green-500/10 px-2 py-0.5 rounded-full font-medium">
+                          {slot}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })()}
     </motion.div>
   );
 }
