@@ -14,6 +14,8 @@ const tatoueurs = {
     bioFr: "Myriam cree des tatouages fineline ou se melent univers feeriques, personnages d'animation et motifs botaniques. Inspiree par la nature, le folklore et les mondes imaginaires, elle dessine des pieces uniques pleines de details et de poesie. Ses flashs voyagent entre sorcieres, creatures des bois et scenes d'aventure. Basee a Montreal, elle tatoue sur rendez-vous et par flash uniquement.",
     bioEn: "Myriam creates fineline tattoos blending fairy-tale worlds, animated characters and botanical motifs. Inspired by nature, folklore and imaginary worlds, she draws unique pieces full of detail and poetry. Her flash designs travel between witches, woodland creatures and adventure scenes. Based in Montreal, she tattoos by appointment and flash only.",
     bioEs: "Myriam crea tatuajes fineline donde se mezclan universos de cuentos de hadas, personajes de animacion y motivos botanicos. Inspirada por la naturaleza, el folclore y los mundos imaginarios, dibuja piezas unicas llenas de detalles y poesia. Sus flashs viajan entre brujas, criaturas del bosque y escenas de aventura. Con base en Montreal, tatua solo con cita previa y por flash.",
+    avatar: '/images/tatoueurs/ginko-ink/profil.png',
+    heroImage: '/images/tatoueurs/ginko-ink/hero.png',
     socials: {
       instagram: 'https://www.instagram.com/ginko.ink',
     },

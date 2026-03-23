@@ -5,17 +5,10 @@ import { useLang } from '../i18n/LanguageContext';
 
 const DAYS_FR = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
 const DAYS_EN = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-const DAYS_FULL_FR = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
-const DAYS_FULL_EN = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const MONTHS_FR = ['Janvier', 'Fevrier', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Aout', 'Septembre', 'Octobre', 'Novembre', 'Decembre'];
 const MONTHS_EN = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-
-const DEFAULT_SETTINGS = {
-  availableDays: [2, 3, 4, 5],
-  startTime: '10:00',
-  endTime: '18:00',
-  blockedDates: [],
-};
+const DAYS_LONG_FR = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+const DAYS_LONG_EN = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 function getDaysInMonth(year, month) {
   return new Date(year, month + 1, 0).getDate();
@@ -23,46 +16,79 @@ function getDaysInMonth(year, month) {
 
 function getFirstDayOfMonth(year, month) {
   const day = new Date(year, month, 1).getDay();
-  return day === 0 ? 6 : day - 1; // Monday = 0
+  return day === 0 ? 6 : day - 1;
 }
 
-function formatTime(timeStr) {
-  if (!timeStr) return '';
-  const [h, m] = timeStr.split(':');
-  return `${parseInt(h)}h${m && m !== '00' ? m : ''}`;
+function formatDateKey(year, month, day) {
+  return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 }
 
-export default function AvailabilityCalendar({ calendarSettings, tatoueurName }) {
+/**
+ * Calendrier public de disponibilites du tatoueur.
+ *
+ * calendarSettings.availableDates = [
+ *   { date: "2026-04-29", slots: ["13h"] },
+ *   { date: "2026-05-05", slots: ["11h", "15h", "18h"] },
+ * ]
+ *
+ * Fallback: si availableDays (ancien format) est present, on l'utilise aussi.
+ */
+export default function AvailabilityCalendar({ calendarSettings }) {
   const { lang, tx } = useLang();
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [selectedDay, setSelectedDay] = useState(null);
 
-  const settings = useMemo(() => ({
-    ...DEFAULT_SETTINGS,
-    ...(calendarSettings || {}),
-  }), [calendarSettings]);
-
+  const settings = calendarSettings || {};
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
   const daysInMonth = getDaysInMonth(year, month);
   const firstDay = getFirstDayOfMonth(year, month);
   const dayNames = lang === 'en' ? DAYS_EN : DAYS_FR;
-  const daysFullNames = lang === 'en' ? DAYS_FULL_EN : DAYS_FULL_FR;
   const monthNames = lang === 'en' ? MONTHS_EN : MONTHS_FR;
+  const daysLong = lang === 'en' ? DAYS_LONG_EN : DAYS_LONG_FR;
   const today = new Date();
 
-  const blockedSet = useMemo(() => new Set(settings.blockedDates || []), [settings.blockedDates]);
+  // Build a map of available dates -> slots
+  const availableMap = useMemo(() => {
+    const map = {};
+    // New format: specific dates with slots
+    if (settings.availableDates?.length > 0) {
+      for (const entry of settings.availableDates) {
+        map[entry.date] = entry.slots || [];
+      }
+    }
+    // Fallback: old format with availableDays (weekly recurring)
+    if (settings.availableDays?.length > 0 && !settings.availableDates?.length) {
+      const startTime = settings.startTime || '10:00';
+      const endTime = settings.endTime || '18:00';
+      const slots = [`${parseInt(startTime)}h-${parseInt(endTime)}h`];
+      // Generate dates for next 3 months
+      const start = new Date();
+      for (let i = 0; i < 90; i++) {
+        const d = new Date(start);
+        d.setDate(d.getDate() + i);
+        if (settings.availableDays.includes(d.getDay())) {
+          const key = formatDateKey(d.getFullYear(), d.getMonth(), d.getDate());
+          if (!settings.blockedDates?.includes(key)) {
+            map[key] = slots;
+          }
+        }
+      }
+    }
+    return map;
+  }, [settings]);
 
   const isAvailable = (day) => {
     if (!day) return false;
     const date = new Date(year, month, day);
-    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    // Past days are not available
     if (date < new Date(today.getFullYear(), today.getMonth(), today.getDate())) return false;
-    // Blocked dates
-    if (blockedSet.has(dateStr)) return false;
-    // Check day of week (0=Sunday, 1=Monday, etc.)
-    const dow = date.getDay();
-    return settings.availableDays.includes(dow);
+    const key = formatDateKey(year, month, day);
+    return !!availableMap[key];
+  };
+
+  const getSlots = (day) => {
+    const key = formatDateKey(year, month, day);
+    return availableMap[key] || [];
   };
 
   const isPast = (day) => {
@@ -74,48 +100,20 @@ export default function AvailabilityCalendar({ calendarSettings, tatoueurName })
     return day === today.getDate() && month === today.getMonth() && year === today.getFullYear();
   };
 
-  const prevMonth = () => setCurrentDate(new Date(year, month - 1, 1));
-  const nextMonth = () => setCurrentDate(new Date(year, month + 1, 1));
-
-  // Don't allow navigating to past months
+  const prevMonth = () => { setCurrentDate(new Date(year, month - 1, 1)); setSelectedDay(null); };
+  const nextMonth = () => { setCurrentDate(new Date(year, month + 1, 1)); setSelectedDay(null); };
   const canGoPrev = year > today.getFullYear() || (year === today.getFullYear() && month > today.getMonth());
 
-  // Build cells
   const cells = [];
   for (let i = 0; i < firstDay; i++) cells.push(null);
   for (let d = 1; d <= daysInMonth; d++) cells.push(d);
 
-  // Working hours summary
-  const workingDaysLabel = useMemo(() => {
-    const sorted = [...settings.availableDays].sort((a, b) => a - b);
-    if (sorted.length === 0) return tx({ fr: 'Aucun jour disponible', en: 'No available days' });
+  // Count available dates this month
+  const availableThisMonth = cells.filter(d => d && isAvailable(d)).length;
 
-    // Convert to Monday-first index for display grouping
-    const dayLabelsShort = lang === 'en'
-      ? ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-      : ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
-
-    // Group consecutive days
-    const groups = [];
-    let groupStart = sorted[0];
-    let groupEnd = sorted[0];
-
-    for (let i = 1; i < sorted.length; i++) {
-      if (sorted[i] === groupEnd + 1) {
-        groupEnd = sorted[i];
-      } else {
-        groups.push([groupStart, groupEnd]);
-        groupStart = sorted[i];
-        groupEnd = sorted[i];
-      }
-    }
-    groups.push([groupStart, groupEnd]);
-
-    return groups.map(([start, end]) => {
-      if (start === end) return dayLabelsShort[start];
-      return `${dayLabelsShort[start]}-${dayLabelsShort[end]}`;
-    }).join(', ');
-  }, [settings.availableDays, lang, tx]);
+  // Selected day info
+  const selectedDate = selectedDay ? new Date(year, month, selectedDay) : null;
+  const selectedSlots = selectedDay ? getSlots(selectedDay) : [];
 
   return (
     <motion.div
@@ -161,21 +159,25 @@ export default function AvailabilityCalendar({ calendarSettings, tatoueurName })
             const available = isAvailable(day);
             const past = isPast(day);
             const todayCell = isToday(day);
+            const selected = day === selectedDay;
 
             return (
               <div
                 key={i}
+                onClick={() => { if (day && available && !past) setSelectedDay(day === selectedDay ? null : day); }}
                 className={`relative flex flex-col items-center justify-center py-2 rounded-lg text-sm transition-colors ${
                   !day ? '' :
+                  selected ? 'bg-green-500/20 ring-1 ring-green-500/50 cursor-pointer' :
                   todayCell ? 'bg-accent/10 ring-1 ring-accent/30' :
                   past ? 'opacity-30' :
-                  available ? 'hover:bg-green-500/10' :
+                  available ? 'hover:bg-green-500/10 cursor-pointer' :
                   'opacity-40'
                 }`}
               >
                 {day && (
                   <>
                     <span className={`text-xs font-medium ${
+                      selected ? 'text-green-400 font-bold' :
                       todayCell ? 'text-accent font-bold' :
                       past ? 'text-grey-muted' :
                       available ? 'text-heading' :
@@ -193,24 +195,40 @@ export default function AvailabilityCalendar({ calendarSettings, tatoueurName })
           })}
         </div>
 
-        {/* Working hours */}
-        <div className="px-4 py-3 border-t border-white/5 flex items-center gap-2 text-xs text-grey-muted">
-          <Clock size={14} className="text-accent flex-shrink-0" />
-          <span>
-            {workingDaysLabel}: {formatTime(settings.startTime)}-{formatTime(settings.endTime)}
-          </span>
-        </div>
+        {/* Selected day slots */}
+        {selectedDay && selectedSlots.length > 0 && (
+          <div className="px-4 py-3 border-t border-white/5">
+            <div className="text-xs text-grey-muted mb-2">
+              {daysLong[selectedDate.getDay()]} {selectedDay} {monthNames[month]}
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {selectedSlots.map((slot, i) => (
+                <span key={i} className="flex items-center gap-1 bg-green-500/15 text-green-400 text-xs font-semibold px-3 py-1.5 rounded-full">
+                  <Clock size={12} />
+                  {slot}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
 
-        {/* Legend */}
-        <div className="px-4 pb-3 flex items-center gap-4 text-[10px] text-grey-muted">
-          <span className="flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
-            {tx({ fr: 'Disponible', en: 'Available' })}
-          </span>
-          <span className="flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-grey-muted/30" />
-            {tx({ fr: 'Indisponible', en: 'Unavailable' })}
-          </span>
+        {/* Summary */}
+        <div className="px-4 py-3 border-t border-white/5 flex items-center justify-between text-[10px] text-grey-muted">
+          <div className="flex items-center gap-4">
+            <span className="flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+              {tx({ fr: 'Disponible', en: 'Available', es: 'Disponible' })}
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-grey-muted/30" />
+              {tx({ fr: 'Indisponible', en: 'Unavailable', es: 'No disponible' })}
+            </span>
+          </div>
+          {availableThisMonth > 0 && (
+            <span className="text-green-400 font-semibold">
+              {availableThisMonth} {tx({ fr: 'dispo', en: 'avail.', es: 'disp.' })}
+            </span>
+          )}
         </div>
       </div>
     </motion.div>
