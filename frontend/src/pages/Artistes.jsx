@@ -261,7 +261,7 @@ function Artistes() {
 
             <div className="w-16 h-1 bg-accent mb-6" />
 
-            <p className="text-lg md:text-xl text-grey-light max-w-xl mb-8">
+            <p className="text-lg md:text-xl text-grey-light max-w-xl mb-2">
               {tx({
                 fr: "Photographes, peintres, tatoueurs. Decouvrez les createurs de Massive Medias.",
                 en: 'Photographers, painters, tattoo artists. Discover the creators of Massive Medias.',
@@ -269,17 +269,6 @@ function Artistes() {
               })}
             </p>
 
-            {/* Quick nav */}
-            <div className="flex flex-wrap gap-3">
-              <a href="#artistes" className="flex items-center gap-2 text-sm px-4 py-2 rounded-full bg-bg-card border border-white/10 text-grey-light hover:text-accent hover:border-accent/30 transition-colors">
-                <Camera size={16} />
-                {tx({ fr: 'Tous les artistes', en: 'All artists', es: 'Todos los artistas' })}
-              </a>
-              <a href="#boutique" className="flex items-center gap-2 text-sm px-4 py-2 rounded-full bg-bg-card border border-white/10 text-grey-light hover:text-accent hover:border-accent/30 transition-colors">
-                <Store size={16} />
-                {tx({ fr: 'Boutique Massive', en: 'Massive Shop', es: 'Tienda Massive' })}
-              </a>
-            </div>
           </motion.div>
         </div>
       </section>
