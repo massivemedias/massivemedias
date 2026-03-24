@@ -223,7 +223,7 @@ function TatoueurDetail({ subdomainSlug }) {
       <SEO
         title={`${tatoueur.name} - ${tx({ fr: 'Tatoueur', en: 'Tattoo Artist' })} | Massive`}
         description={bio ? bio.slice(0, 160) : `${tatoueur.name} - ${tx({ fr: 'Tatoueur partenaire Massive Medias', en: 'Massive Medias partner tattoo artist' })}`}
-        image={tatoueur.heroImage || tatoueur.avatar}
+        ogImage={tatoueur.heroImage || tatoueur.avatar}
         breadcrumbs={[
           { name: tx({ fr: 'Accueil', en: 'Home' }), url: '/' },
           { name: tx({ fr: 'Tatoueurs', en: 'Tattoo Artists' }), url: '/tatoueurs' },

@@ -1,10 +1,14 @@
 /**
  * Cloudflare Worker - OG Meta Tags pour sous-domaines artistes
  * + Proxy Instagram pour feeds tatoueurs
+ * + SEO meta injection pour toutes les pages du site principal
  *
  * Detecte les crawlers (Facebook, Twitter, etc.) sur les sous-domaines artistes
  * et retourne un HTML avec les bons meta OG (image, titre, description).
  * Les vrais users passent normalement vers le SPA.
+ *
+ * Pour le domaine principal, injecte les meta tags SEO page-specifiques
+ * dans le HTML via HTMLRewriter (streaming).
  *
  * Endpoint Instagram: /api/instagram/:handle
  * Retourne les posts publics d'un profil Instagram (cache 1h)
@@ -16,6 +20,7 @@
  */
 
 const SITE_URL = 'https://massivemedias.com';
+const DEFAULT_OG_IMAGE = 'https://massivemedias.com/og-image.jpg';
 
 const TATOUEURS = {
   'ginko-ink': { name: 'Ginko Ink', taglineFr: 'Tatouage fineline & botanique', taglineEn: 'Fineline & Botanical Tattoo' },
@@ -30,6 +35,265 @@ const ARTISTS = {
   'psyqu33n': { name: 'Psyqu33n', taglineFr: 'Ombre & lumiere - art visionnaire', taglineEn: 'Shadow & Light - Visionary Art' },
   'cornelia-rose': { name: 'Cornelia Rose', taglineFr: 'Art visionnaire & body painting', taglineEn: 'Visionary Art & Body Painting' },
 };
+
+// --- SEO Meta par route ---
+
+const ROUTE_META = {
+  '/': {
+    title: 'Massive Medias | Impression Fine Art, Stickers & Design - Montreal',
+    description: 'Studio de production creative a Montreal. Impression fine art, stickers die-cut, sublimation textile, design graphique. Production locale au Mile-End.',
+  },
+  '/artistes': {
+    title: 'Artistes | Massive Medias - Photographes, Peintres & Tatoueurs',
+    description: 'Decouvrez nos artistes partenaires. Photographes, peintres, artistes visuels et tatoueurs. Prints, stickers et merch disponibles.',
+  },
+  '/tatoueurs': {
+    title: 'Tatoueurs | Massive Medias - Flashs & Reservations Montreal',
+    description: 'Reservez un flash de tatouage unique aupres de nos tatoueurs partenaires a Montreal. Fineline, botanique, blackwork et plus.',
+  },
+  '/tatoueurs/ginko-ink': {
+    title: 'Ginko Ink | Tatoueuse Fineline Montreal - Flashs Disponibles',
+    description: 'Myriam Rivest, tatoueuse fineline a Montreal. Flashs botaniques, creatures feeriques et personnages. Reservez votre piece unique.',
+    ogImage: 'https://massivemedias.com/images/tatoueurs/ginko-ink/hero.webp',
+  },
+  '/boutique': {
+    title: 'Boutique | Massive Medias - Prints, Stickers & Merch',
+    description: 'Achetez des prints fine art, stickers die-cut, t-shirts et hoodies. Impression professionnelle, materiaux premium. Livraison rapide.',
+  },
+  '/services/prints': {
+    title: 'Impression Fine Art | Massive Medias - Tirages Premium Montreal',
+    description: "Service d'impression fine art professionnel. Papier Hahnemuhle, encres pigmentees 12 couleurs. Formats A6 a A2. Livraison 24-48h.",
+  },
+  '/services/stickers': {
+    title: 'Stickers Die-Cut | Massive Medias - Autocollants Premium',
+    description: 'Stickers die-cut impermeables avec finitions premium. Holographique, etoiles, glossy, matte. Commandez vos stickers personnalises.',
+  },
+  '/services/merch': {
+    title: 'Merch & Textile | Massive Medias - T-shirts, Hoodies & Plus',
+    description: 'Sublimation textile professionnelle. T-shirts, hoodies, crewnecks, tote bags. Impression all-over ou placement.',
+  },
+  '/services/design': {
+    title: 'Design Graphique | Massive Medias - Logos, Flyers & Pochettes',
+    description: "Service de design graphique professionnel. Logos, flyers evenementiels, pochettes d'album, identite visuelle. Montreal.",
+  },
+  '/services/web': {
+    title: 'Developpement Web | Massive Medias - Sites & Applications',
+    description: 'Developpement web professionnel. Sites vitrines, e-commerce, applications React. SEO, performance et design moderne.',
+  },
+  '/a-propos': {
+    title: 'A propos | Massive Medias - Studio Creatif Montreal Mile-End',
+    description: 'Massive Medias est un studio de production creative base au Mile-End a Montreal. Notre mission: rendre la creation accessible.',
+  },
+  '/contact': {
+    title: 'Contact | Massive Medias - Demandez un Devis',
+    description: 'Contactez Massive Medias pour vos projets d\'impression, design ou web. Studio au Mile-End, Montreal. Reponse rapide garantie.',
+  },
+};
+
+/**
+ * Retourne les meta pour un pathname donne.
+ * Gere les routes statiques, les pages artistes dynamiques, et null pour les routes inconnues.
+ */
+function getMetaForPath(pathname) {
+  // Normaliser: enlever le trailing slash (sauf pour /)
+  const path = pathname === '/' ? '/' : pathname.replace(/\/$/, '');
+
+  // Route statique exacte
+  if (ROUTE_META[path]) {
+    return {
+      ...ROUTE_META[path],
+      ogImage: ROUTE_META[path].ogImage || DEFAULT_OG_IMAGE,
+      canonicalUrl: `${SITE_URL}${path === '/' ? '' : path}`,
+    };
+  }
+
+  // Pages artistes dynamiques: /artistes/:slug
+  const artistMatch = path.match(/^\/artistes\/([a-z0-9-]+)$/);
+  if (artistMatch) {
+    const slug = artistMatch[1];
+    const artist = ARTISTS[slug];
+    const artistName = artist ? artist.name : slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    return {
+      title: `${artistName} | Massive Medias - Prints & Oeuvres`,
+      description: `Decouvrez les oeuvres de ${artistName} sur Massive Medias. Prints fine art disponibles en plusieurs formats.`,
+      ogImage: artist ? `${SITE_URL}/images/og/og-${slug}.jpg` : DEFAULT_OG_IMAGE,
+      canonicalUrl: `${SITE_URL}/artistes/${slug}`,
+    };
+  }
+
+  // Pages tatoueurs dynamiques: /tatoueurs/:slug (non listees dans ROUTE_META)
+  const tatoueurMatch = path.match(/^\/tatoueurs\/([a-z0-9-]+)$/);
+  if (tatoueurMatch) {
+    const slug = tatoueurMatch[1];
+    const tatoueur = TATOUEURS[slug];
+    // Si la route est dans ROUTE_META, on l'a deja gere plus haut
+    // Sinon, fallback generique
+    const tatoueurName = tatoueur ? tatoueur.name : slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    return {
+      title: `${tatoueurName} | Massive Medias - Flashs & Reservations`,
+      description: `Decouvrez les flashs de ${tatoueurName} sur Massive Medias. Reservez votre piece de tatouage unique a Montreal.`,
+      ogImage: DEFAULT_OG_IMAGE,
+      canonicalUrl: `${SITE_URL}/tatoueurs/${slug}`,
+    };
+  }
+
+  // Route inconnue - pas d'injection
+  return null;
+}
+
+// --- HTMLRewriter handlers ---
+
+class TitleRewriter {
+  constructor(title) {
+    this.title = title;
+  }
+
+  element(element) {
+    element.setInnerContent(this.title);
+  }
+}
+
+class MetaRewriter {
+  constructor(meta) {
+    this.meta = meta;
+  }
+
+  element(element) {
+    const name = element.getAttribute('name');
+    const property = element.getAttribute('property');
+
+    if (name === 'description') {
+      element.setAttribute('content', this.meta.description);
+    } else if (property === 'og:title') {
+      element.setAttribute('content', this.meta.title);
+    } else if (property === 'og:description') {
+      element.setAttribute('content', this.meta.description);
+    } else if (property === 'og:url') {
+      element.setAttribute('content', this.meta.canonicalUrl);
+    } else if (property === 'og:image') {
+      element.setAttribute('content', this.meta.ogImage);
+    }
+  }
+}
+
+class CanonicalRewriter {
+  constructor(canonicalUrl) {
+    this.canonicalUrl = canonicalUrl;
+  }
+
+  element(element) {
+    if (element.getAttribute('rel') === 'canonical') {
+      element.setAttribute('href', this.canonicalUrl);
+      this.found = true;
+    }
+  }
+}
+
+class HeadEndRewriter {
+  constructor(meta) {
+    this.meta = meta;
+  }
+
+  element(element) {
+    const tags = [];
+
+    // Injecter les meta manquantes qui n'existaient pas dans le HTML original
+    // og:url et canonical sont souvent absents du SPA build
+    if (!this.meta._hasOgUrl) {
+      tags.push(`<meta property="og:url" content="${this.meta.canonicalUrl}">`);
+    }
+    if (!this.meta._hasCanonical) {
+      tags.push(`<link rel="canonical" href="${this.meta.canonicalUrl}">`);
+    }
+    if (!this.meta._hasOgImage) {
+      tags.push(`<meta property="og:image" content="${this.meta.ogImage}">`);
+    }
+    if (!this.meta._hasOgTitle) {
+      tags.push(`<meta property="og:title" content="${this.meta.title}">`);
+    }
+    if (!this.meta._hasOgDescription) {
+      tags.push(`<meta property="og:description" content="${this.meta.description}">`);
+    }
+    if (!this.meta._hasDescription) {
+      tags.push(`<meta name="description" content="${this.meta.description}">`);
+    }
+
+    if (tags.length > 0) {
+      element.prepend(tags.join('\n'), { html: true });
+    }
+  }
+}
+
+/**
+ * Detecte quels meta tags existent deja dans le HTML pour eviter les doublons.
+ * On utilise un premier pass HTMLRewriter juste pour scanner.
+ */
+class MetaDetector {
+  constructor(meta) {
+    this.meta = meta;
+  }
+
+  element(element) {
+    const name = element.getAttribute('name');
+    const property = element.getAttribute('property');
+    const rel = element.getAttribute('rel');
+
+    if (name === 'description') this.meta._hasDescription = true;
+    if (property === 'og:title') this.meta._hasOgTitle = true;
+    if (property === 'og:description') this.meta._hasOgDescription = true;
+    if (property === 'og:url') this.meta._hasOgUrl = true;
+    if (property === 'og:image') this.meta._hasOgImage = true;
+    if (rel === 'canonical') this.meta._hasCanonical = true;
+  }
+}
+
+/**
+ * Applique HTMLRewriter pour injecter/remplacer les meta tags SEO.
+ */
+function injectMeta(response, meta) {
+  // Flags de detection - on presume que les tags n'existent pas,
+  // et les handlers les mettront a true s'ils les trouvent
+  meta._hasDescription = false;
+  meta._hasOgTitle = false;
+  meta._hasOgDescription = false;
+  meta._hasOgUrl = false;
+  meta._hasOgImage = false;
+  meta._hasCanonical = false;
+
+  return new HTMLRewriter()
+    // Scanner les meta/link existantes pour detecter ce qui est deja la
+    .on('meta', new MetaDetector(meta))
+    .on('link', new MetaDetector(meta))
+    // Remplacer le titre
+    .on('title', new TitleRewriter(meta.title))
+    // Remplacer les meta existantes
+    .on('meta[name="description"]', new MetaRewriter(meta))
+    .on('meta[property="og:title"]', new MetaRewriter(meta))
+    .on('meta[property="og:description"]', new MetaRewriter(meta))
+    .on('meta[property="og:url"]', new MetaRewriter(meta))
+    .on('meta[property="og:image"]', new MetaRewriter(meta))
+    // Remplacer le canonical existant
+    .on('link[rel="canonical"]', new CanonicalRewriter(meta.canonicalUrl))
+    // Injecter les tags manquants a la fin du <head>
+    .on('head', new HeadEndRewriter(meta))
+    .transform(response);
+}
+
+/**
+ * Determine si la requete est pour une page HTML (pas un asset statique).
+ */
+function isHtmlRequest(request, url) {
+  // Verifier le Accept header
+  const accept = request.headers.get('Accept') || '';
+  if (!accept.includes('text/html')) return false;
+
+  // Exclure les fichiers statiques par extension
+  const path = url.pathname;
+  const staticExtensions = /\.(js|css|png|jpg|jpeg|gif|svg|webp|ico|woff|woff2|ttf|eot|json|xml|txt|map|mp4|webm|pdf)$/i;
+  if (staticExtensions.test(path)) return false;
+
+  return true;
+}
 
 // User agents des crawlers qui lisent les meta OG
 const CRAWLER_PATTERNS = [
@@ -243,8 +507,24 @@ export default {
       return Response.redirect(targetUrl, 302);
     }
 
-    // Everything else: pass through to origin
-    url.hostname = 'massivemedias.com';
-    return fetch(url.toString(), { headers: request.headers });
+    // --- Main domain: fetch from origin and inject SEO meta ---
+    const originUrl = new URL(url.toString());
+    originUrl.hostname = 'massivemedias.github.io';
+
+    const originResponse = await fetch(originUrl.toString(), {
+      headers: request.headers,
+    });
+
+    // Only inject meta on HTML pages
+    if (isHtmlRequest(request, url)) {
+      const meta = getMetaForPath(url.pathname);
+      if (meta) {
+        // Clone response so we can modify it
+        const response = new Response(originResponse.body, originResponse);
+        return injectMeta(response, meta);
+      }
+    }
+
+    return originResponse;
   },
 };

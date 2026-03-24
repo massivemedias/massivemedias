@@ -59,10 +59,6 @@ export default function SEO({
       {!noindex && <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />}
 
       <link rel="canonical" href={canonicalUrl} />
-      <link rel="alternate" hreflang="fr" href={canonicalUrl} />
-      <link rel="alternate" hreflang="en" href={canonicalUrl} />
-      <link rel="alternate" hreflang="es" href={canonicalUrl} />
-      <link rel="alternate" hreflang="x-default" href={canonicalUrl} />
 
       {/* Geo-targeting */}
       <meta name="geo.region" content="CA-QC" />
