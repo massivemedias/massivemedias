@@ -58,7 +58,7 @@ exports.default = strapi_1.factories.createCoreController('api::user-role.user-r
     // PUT /user-roles/set - Definir le role d'un user
     // Body: { email, role, artistSlug?, supabaseUserId?, displayName? }
     async setRole(ctx) {
-        const { email, role, artistSlug, supabaseUserId, displayName } = ctx.request.body;
+        const { email, role, artistSlug, tatoueurSlug, supabaseUserId, displayName } = ctx.request.body;
         if (!email || !role) {
             ctx.throw(400, 'Email and role required');
             return;
@@ -81,6 +81,7 @@ exports.default = strapi_1.factories.createCoreController('api::user-role.user-r
                     data: {
                         role,
                         artistSlug: artistSlug || null,
+                        tatoueurSlug: tatoueurSlug || null,
                         supabaseUserId: supabaseUserId || existing[0].supabaseUserId,
                         displayName: displayName || existing[0].displayName,
                     },
@@ -93,6 +94,7 @@ exports.default = strapi_1.factories.createCoreController('api::user-role.user-r
                         email: email.toLowerCase().trim(),
                         role,
                         artistSlug: artistSlug || null,
+                        tatoueurSlug: tatoueurSlug || null,
                         supabaseUserId: supabaseUserId || null,
                         displayName: displayName || null,
                     },
@@ -104,6 +106,7 @@ exports.default = strapi_1.factories.createCoreController('api::user-role.user-r
                     email: entry.email,
                     role: entry.role,
                     artistSlug: entry.artistSlug,
+                    tatoueurSlug: entry.tatoueurSlug,
                 },
             };
         }

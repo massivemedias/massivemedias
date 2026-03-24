@@ -62,7 +62,7 @@ export default factories.createCoreController('api::user-role.user-role', ({ str
   // PUT /user-roles/set - Definir le role d'un user
   // Body: { email, role, artistSlug?, supabaseUserId?, displayName? }
   async setRole(ctx) {
-    const { email, role, artistSlug, supabaseUserId, displayName } = ctx.request.body as any;
+    const { email, role, artistSlug, tatoueurSlug, supabaseUserId, displayName } = ctx.request.body as any;
 
     if (!email || !role) {
       ctx.throw(400, 'Email and role required');
@@ -90,6 +90,7 @@ export default factories.createCoreController('api::user-role.user-role', ({ str
           data: {
             role,
             artistSlug: artistSlug || null,
+            tatoueurSlug: tatoueurSlug || null,
             supabaseUserId: supabaseUserId || existing[0].supabaseUserId,
             displayName: displayName || existing[0].displayName,
           },
@@ -101,6 +102,7 @@ export default factories.createCoreController('api::user-role.user-role', ({ str
             email: email.toLowerCase().trim(),
             role,
             artistSlug: artistSlug || null,
+            tatoueurSlug: tatoueurSlug || null,
             supabaseUserId: supabaseUserId || null,
             displayName: displayName || null,
           },
@@ -113,6 +115,7 @@ export default factories.createCoreController('api::user-role.user-role', ({ str
           email: entry.email,
           role: entry.role,
           artistSlug: entry.artistSlug,
+          tatoueurSlug: entry.tatoueurSlug,
         },
       };
     } catch (err: any) {
