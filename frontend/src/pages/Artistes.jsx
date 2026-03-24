@@ -181,7 +181,7 @@ function Artistes() {
       {/* ============ TOUS LES ARTISTES (melanges) ============ */}
       <section id="artistes" className="scroll-mt-24">
         <div className="section-container max-w-7xl mx-auto pb-8">
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 mb-12">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4 mb-12">
             {(() => {
               // Fusionner artistes + tatoueurs dans une seule liste
               const allCreators = [
