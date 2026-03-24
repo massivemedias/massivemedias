@@ -55,7 +55,10 @@ export default function ArtistStats({ artistSlug }) {
   const [period, setPeriod] = useState(30);
 
   useEffect(() => {
-    if (!artistSlug) return;
+    if (!artistSlug) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     setError('');
     getArtistAnalytics(artistSlug, period)
