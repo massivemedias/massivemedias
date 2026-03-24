@@ -217,7 +217,7 @@ export default function FlashLightbox({ flash, onClose, onReserve, tatoueurName,
                   className="w-full btn-primary text-center py-3 text-base font-bold"
                 >
                   <Check size={20} className="mr-2" />
-                  {tx({ fr: 'Reserver cette piece', en: 'Reserve this piece' })}
+                  {tx({ fr: 'Réserver cette pièce', en: 'Reserve this piece' })}
                 </button>
               )}
 

@@ -5,11 +5,11 @@ import { useLang } from '../../i18n/LanguageContext';
 import api from '../../services/api';
 
 const STATUS_CONFIG = {
-  demandee: { labelFr: 'Demandee', labelEn: 'Requested', color: 'bg-blue-500', textColor: 'text-blue-500' },
-  confirmee: { labelFr: 'Confirmee', labelEn: 'Confirmed', color: 'bg-green-500', textColor: 'text-green-500' },
-  planifiee: { labelFr: 'Planifiee', labelEn: 'Scheduled', color: 'bg-accent', textColor: 'text-accent' },
-  realisee: { labelFr: 'Realisee', labelEn: 'Completed', color: 'bg-gray-500', textColor: 'text-gray-400' },
-  annulee: { labelFr: 'Annulee', labelEn: 'Cancelled', color: 'bg-red-500', textColor: 'text-red-500' },
+  demandee: { labelFr: 'Demandée', labelEn: 'Requested', color: 'bg-blue-500', textColor: 'text-blue-500' },
+  confirmee: { labelFr: 'Confirmée', labelEn: 'Confirmed', color: 'bg-green-500', textColor: 'text-green-500' },
+  planifiee: { labelFr: 'Planifiée', labelEn: 'Scheduled', color: 'bg-accent', textColor: 'text-accent' },
+  realisee: { labelFr: 'Réalisée', labelEn: 'Completed', color: 'bg-gray-500', textColor: 'text-gray-400' },
+  annulee: { labelFr: 'Annulée', labelEn: 'Cancelled', color: 'bg-red-500', textColor: 'text-red-500' },
 };
 
 export default function TatoueurReservations({ tatoueur }) {

@@ -11,7 +11,7 @@ import { getCommissions, createArtistPayment } from '../services/adminService';
 const METHOD_LABELS = {
   interac: { fr: 'Interac e-Transfer', en: 'Interac e-Transfer', es: 'Interac e-Transfer' },
   cash: { fr: 'Comptant', en: 'Cash', es: 'Efectivo' },
-  cheque: { fr: 'Cheque', en: 'Cheque', es: 'Cheque' },
+  cheque: { fr: 'Chèque', en: 'Cheque', es: 'Cheque' },
   other: { fr: 'Autre', en: 'Other', es: 'Otro' },
 };
 

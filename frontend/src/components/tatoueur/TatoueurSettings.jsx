@@ -38,7 +38,7 @@ export default function TatoueurSettings({ tatoueur }) {
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-heading font-bold text-heading">
-        {tx({ fr: 'Parametres', en: 'Settings' })}
+        {tx({ fr: 'Paramètres', en: 'Settings' })}
       </h2>
 
       {/* Account */}

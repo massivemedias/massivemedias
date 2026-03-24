@@ -280,7 +280,7 @@ function TatoueurDetail({ subdomainSlug }) {
             >
               <h2 className="text-2xl font-heading font-bold text-heading mb-6 flex items-center gap-2">
                 <Calendar size={22} className="text-accent" />
-                {tx({ fr: 'Disponibilites', en: 'Availability', es: 'Disponibilidades' })}
+                {tx({ fr: 'Disponibilités', en: 'Availability', es: 'Disponibilidades' })}
               </h2>
               <AvailabilityCalendar calendarSettings={tatoueur.calendarSettings} />
             </motion.div>
@@ -399,7 +399,7 @@ function TatoueurDetail({ subdomainSlug }) {
               <div className="flex items-center justify-between mb-8">
                 <h2 className="text-3xl md:text-4xl font-heading font-bold text-heading flex items-center gap-3">
                   <Instagram size={28} className="text-accent" />
-                  {tx({ fr: 'Realisations', en: 'Portfolio' })}
+                  {tx({ fr: 'Réalisations', en: 'Portfolio' })}
                 </h2>
                 {tatoueur.instagramHandle && (
                   <a
@@ -573,28 +573,28 @@ function TatoueurDetail({ subdomainSlug }) {
             viewport={{ once: true }}
           >
             <h2 className="text-3xl md:text-4xl font-heading font-bold text-heading text-center mb-10">
-              {tx({ fr: 'Comment ca marche', en: 'How it works', es: 'Como funciona' })}
+              {tx({ fr: 'Comment ça marche', en: 'How it works', es: 'Como funciona' })}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {[
                 {
                   num: '1',
                   titleFr: 'Choisis ton flash', titleEn: 'Choose your flash', titleEs: 'Elige tu flash',
-                  descFr: 'Parcours la galerie et selectionne le design qui te plait. Chaque flash est une piece unique.',
+                  descFr: 'Parcours la galerie et sélectionne le design qui te plait. Chaque flash est une pièce unique.',
                   descEn: 'Browse the gallery and select the design you like. Each flash is a unique piece.',
                   descEs: 'Navega por la galeria y selecciona el diseno que te guste. Cada flash es una pieza unica.',
                 },
                 {
                   num: '2',
-                  titleFr: 'Reserve ta piece', titleEn: 'Reserve your piece', titleEs: 'Reserva tu pieza',
-                  descFr: 'Envoie un message avec l\'emplacement souhaite et tes disponibilites. Un depot de 40$ confirme ta reservation.',
+                  titleFr: 'Réserve ta pièce', titleEn: 'Reserve your piece', titleEs: 'Reserva tu pieza',
+                  descFr: 'Envoie un message avec l\'emplacement souhaité et tes disponibilités. Un dépôt de 40$ confirme ta réservation.',
                   descEn: 'Send a message with your desired placement and availability. A $40 deposit confirms your reservation.',
                   descEs: 'Envia un mensaje con la ubicacion deseada y tus disponibilidades. Un deposito de 40$ confirma tu reserva.',
                 },
                 {
                   num: '3',
                   titleFr: 'Rendez-vous tattoo', titleEn: 'Tattoo appointment', titleEs: 'Cita de tatuaje',
-                  descFr: 'L\'artiste confirme la date et l\'heure. Presente-toi au studio et repars avec ta piece unique.',
+                  descFr: 'L\'artiste confirme la date et l\'heure. Présente-toi au studio et repars avec ta pièce unique.',
                   descEn: 'The artist confirms the date and time. Show up at the studio and leave with your unique piece.',
                   descEs: 'El artista confirma la fecha y hora. Presentate en el estudio y vete con tu pieza unica.',
                 },

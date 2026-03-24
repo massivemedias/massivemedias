@@ -22,11 +22,11 @@ const TABS = [
   { key: 'flashs', icon: Palette, labelFr: 'Mes flashs', labelEn: 'My Flash Designs' },
   { key: 'reservations', icon: BookOpen, labelFr: 'Rendez-vous', labelEn: 'Appointments' },
   { key: 'calendrier', icon: CalendarDays, labelFr: 'Calendrier', labelEn: 'Calendar' },
-  { key: 'realisations', icon: Image, labelFr: 'Realisations', labelEn: 'My Work' },
+  { key: 'realisations', icon: Image, labelFr: 'Réalisations', labelEn: 'My Work' },
   { key: 'messages', icon: MessageSquare, labelFr: 'Messages', labelEn: 'Messages' },
   { key: 'boutique', icon: ShoppingBag, labelFr: 'Boutique', labelEn: 'Shop' },
   { key: 'profil', icon: User, labelFr: 'Mon profil', labelEn: 'My Profile' },
-  { key: 'parametres', icon: Settings, labelFr: 'Parametres', labelEn: 'Settings' },
+  { key: 'parametres', icon: Settings, labelFr: 'Paramètres', labelEn: 'Settings' },
 ];
 
 function DashboardOverview({ tatoueur, tx, setTab }) {
@@ -49,11 +49,11 @@ function DashboardOverview({ tatoueur, tx, setTab }) {
         </div>
         <div className="bg-bg-card rounded-xl p-5 border border-white/5">
           <div className="text-3xl font-heading font-bold text-amber-500">{reserves}</div>
-          <div className="text-xs text-grey-muted mt-1">{tx({ fr: 'Reserves', en: 'Reserved' })}</div>
+          <div className="text-xs text-grey-muted mt-1">{tx({ fr: 'Réservés', en: 'Reserved' })}</div>
         </div>
         <div className="bg-bg-card rounded-xl p-5 border border-white/5">
           <div className="text-3xl font-heading font-bold text-grey-light">{tatoues}</div>
-          <div className="text-xs text-grey-muted mt-1">{tx({ fr: 'Tatoues', en: 'Tattooed' })}</div>
+          <div className="text-xs text-grey-muted mt-1">{tx({ fr: 'Tatoués', en: 'Tattooed' })}</div>
         </div>
         <div className="bg-bg-card rounded-xl p-5 border border-white/5">
           <div className="text-3xl font-heading font-bold text-accent">{tatoueur?.pageViews || 0}</div>

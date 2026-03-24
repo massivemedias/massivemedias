@@ -90,7 +90,7 @@ export default function FlashCard({ flash, onClick, index = 0, hidePrices = fals
         {flash.isUnique && isAvailable && (
           <div className="absolute top-2 left-2 md:top-3 md:left-3 bg-accent text-black text-[10px] md:text-xs font-bold px-1.5 md:px-2.5 py-0.5 md:py-1 rounded-full shadow-lg">
             <span className="sm:hidden">{tx({ fr: 'Unique', en: 'Unique' })}</span>
-            <span className="hidden sm:inline">{tx({ fr: 'Piece unique', en: 'One of a kind' })}</span>
+            <span className="hidden sm:inline">{tx({ fr: 'Pièce unique', en: 'One of a kind' })}</span>
           </div>
         )}
       </div>

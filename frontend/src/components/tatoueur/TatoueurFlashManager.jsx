@@ -139,7 +139,7 @@ function FlashForm({ flash, onSave, onCancel, tx }) {
         </label>
         <label className="flex items-center gap-2 cursor-pointer">
           <input type="checkbox" checked={form.isUnique} onChange={(e) => setForm(f => ({ ...f, isUnique: e.target.checked }))} className="accent-accent" />
-          <span className="text-sm text-grey-light">{tx({ fr: 'Piece unique (un seul tatouage)', en: 'One of a kind (single tattoo)' })}</span>
+          <span className="text-sm text-grey-light">{tx({ fr: 'Pièce unique (un seul tatouage)', en: 'One of a kind (single tattoo)' })}</span>
         </label>
       </div>
 

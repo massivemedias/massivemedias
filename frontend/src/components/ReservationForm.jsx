@@ -91,7 +91,7 @@ export default function ReservationForm({ flash, tatoueur, onClose, onSuccess })
           <div className="p-6 border-b border-white/5 flex items-center justify-between">
             <div>
               <h2 className="text-xl font-heading font-bold text-heading">
-                {tx({ fr: 'Reserver ce flash', en: 'Reserve this flash' })}
+                {tx({ fr: 'Réserver ce flash', en: 'Reserve this flash' })}
               </h2>
               {flashTitle && (
                 <p className="text-sm text-grey-muted mt-0.5">
