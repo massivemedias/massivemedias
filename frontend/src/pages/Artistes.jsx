@@ -287,7 +287,7 @@ function Artistes() {
                     transition={{ duration: 0.4, delay: i * 0.05 }}
                     viewport={{ once: true }}
                   >
-                    <Link to={`/artistes/${work.artistSlug}`} className="group relative block rounded-lg overflow-hidden aspect-square">
+                    <Link to={`/artistes/${work.artistSlug}?print=${work.id}`} className="group relative block rounded-lg overflow-hidden aspect-square">
                       <img
                         src={work.image}
                         alt={work.titleFr || work.titleEn || ''}
