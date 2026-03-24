@@ -271,26 +271,9 @@ function Artistes() {
       <section id="artistes" className="scroll-mt-24">
         <div className="section-container max-w-7xl mx-auto pb-8">
 
-          {/* Toolbar: filters + view mode */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-            {/* Filter pills */}
-            <div className="flex flex-wrap items-center gap-2">
-              {FILTER_OPTIONS.map(opt => (
-                <button
-                  key={opt.key}
-                  onClick={() => setFilter(opt.key)}
-                  className={`text-sm px-4 py-1.5 rounded-full border transition-all duration-200 ${
-                    filter === opt.key
-                      ? 'bg-accent text-white border-accent shadow-lg shadow-accent/20'
-                      : 'bg-transparent text-grey-light border-white/10 hover:border-accent/30 hover:text-accent'
-                  }`}
-                >
-                  {tx(opt)}
-                </button>
-              ))}
-            </div>
-
-            {/* View mode buttons */}
+          {/* Toolbar: view mode + filters */}
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-8">
+            {/* View mode buttons - a gauche */}
             <div className="flex items-center gap-1 bg-bg-card rounded-lg p-1 border border-white/5">
               {viewModes.map(vm => {
                 const Icon = vm.icon;
@@ -309,6 +292,23 @@ function Artistes() {
                   </button>
                 );
               })}
+            </div>
+
+            {/* Filter pills */}
+            <div className="flex flex-wrap items-center gap-2">
+              {FILTER_OPTIONS.map(opt => (
+                <button
+                  key={opt.key}
+                  onClick={() => setFilter(opt.key)}
+                  className={`text-sm px-4 py-1.5 rounded-full border transition-all duration-200 ${
+                    filter === opt.key
+                      ? 'bg-accent text-white border-accent shadow-lg shadow-accent/20'
+                      : 'bg-transparent text-grey-light border-white/10 hover:border-accent/30 hover:text-accent'
+                  }`}
+                >
+                  {tx(opt)}
+                </button>
+              ))}
             </div>
           </div>
 
