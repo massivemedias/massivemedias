@@ -339,13 +339,16 @@ function Artistes() {
             <div className="relative overflow-hidden rounded-2xl border border-white/5 hover:border-accent/20 transition-all duration-300">
               <div className="p-8 md:p-12 bg-gradient-to-br from-bg-card via-bg-card to-accent/5">
                 <div className="max-w-2xl">
-                  <h3 className="text-2xl md:text-3xl font-heading font-bold text-heading mb-4">
-                    {tx({ fr: 'Prints, Stickers & Merch', en: 'Prints, Stickers & Merch' })}
+                  <h3 className="text-2xl md:text-3xl font-heading font-bold text-heading mb-2">
+                    {tx({ fr: 'Merch Massive - Bientot disponible!', en: 'Massive Merch - Coming Soon!' })}
                   </h3>
+                  <p className="text-accent text-sm font-semibold mb-4">
+                    {tx({ fr: 'Tres prochainement', en: 'Very soon' })}
+                  </p>
                   <p className="text-grey-light text-base md:text-lg mb-6">
                     {tx({
-                      fr: "Tirages fine art, stickers custom, t-shirts et hoodies. Tout est produit a Montreal avec des materiaux premium.",
-                      en: 'Fine art prints, custom stickers, t-shirts and hoodies. Everything is produced in Montreal with premium materials.',
+                      fr: "Prints personnalises, stickers exclusifs, t-shirts, hoodies et plus - tout designe par Massive Medias et produit a Montreal. Notre collection arrive tres bientot!",
+                      en: 'Custom prints, exclusive stickers, t-shirts, hoodies and more - all designed by Massive Medias and produced in Montreal. Our collection is coming very soon!',
                     })}
                   </p>
 
