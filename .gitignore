@@ -54,3 +54,10 @@ backend/.strapi/
 backend/build/
 backend/*.db
 backend/*.db-*
+
+# Scripts et outils temporaires
+seed_strapi.py
+cloudflare-worker/.wrangler/
+
+# Images originales (garder seulement les WebP dans frontend/public)
+images/
