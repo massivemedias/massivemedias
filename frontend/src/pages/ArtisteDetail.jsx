@@ -658,7 +658,7 @@ function ArtisteDetail({ subdomainSlug }) {
                     className="max-w-full max-h-[70vh] object-contain"
                     onLoad={(e) => setIsLandscape(e.target.naturalWidth > e.target.naturalHeight)}
                   />
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                     <ZoomIn size={32} className="text-white md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 drop-shadow-lg" />
                   </div>
                   {/* Indicateur position */}
