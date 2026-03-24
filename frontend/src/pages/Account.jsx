@@ -1199,14 +1199,14 @@ function Account() {
   // ============================================================
   const TATOUEUR_SIDEBAR_ITEMS = isTatoueur ? [
     { id: 'dashboard-tatoueur', label: tx({ fr: 'Tableau de bord', en: 'Dashboard', es: 'Panel' }), icon: LayoutDashboard },
-    { id: 'flashs', label: tx({ fr: 'Mes flashs', en: 'My Flash Designs', es: 'Mis flashs' }), icon: Palette },
-    { id: 'reservations', label: tx({ fr: 'Rendez-vous', en: 'Appointments', es: 'Citas' }), icon: BookOpen },
-    { id: 'calendrier', label: tx({ fr: 'Calendrier', en: 'Calendar', es: 'Calendario' }), icon: CalendarDays },
-    { id: 'realisations', label: tx({ fr: 'Realisations', en: 'My Work', es: 'Mis trabajos' }), icon: Image },
-    { id: 'messages', label: tx({ fr: 'Messages', en: 'Messages', es: 'Mensajes' }), icon: MessageSquare },
-    { id: 'boutique-tatoueur', label: tx({ fr: 'Boutique', en: 'Shop', es: 'Tienda' }), icon: ShoppingBag },
     { id: 'profil-tatoueur', label: tx({ fr: 'Ma page', en: 'My Page', es: 'Mi pagina' }), icon: Palette },
-    { id: 'parametres', label: tx({ fr: 'Parametres', en: 'Settings', es: 'Ajustes' }), icon: Settings },
+    { id: 'flashs', label: tx({ fr: 'Mes flashs', en: 'My Flash Designs', es: 'Mis flashs' }), icon: Palette },
+    { id: 'calendrier', label: tx({ fr: 'Calendrier', en: 'Calendar', es: 'Calendario' }), icon: CalendarDays },
+    { id: 'reservations', label: tx({ fr: 'Rendez-vous', en: 'Appointments', es: 'Citas' }), icon: BookOpen },
+    { id: 'messages', label: tx({ fr: 'Messages', en: 'Messages', es: 'Mensajes' }), icon: MessageSquare },
+    { id: 'realisations', label: tx({ fr: 'Réalisations', en: 'My Work', es: 'Mis trabajos' }), icon: Image },
+    { id: 'boutique-tatoueur', label: tx({ fr: 'Boutique', en: 'Shop', es: 'Tienda' }), icon: ShoppingBag },
+    { id: 'parametres', label: tx({ fr: 'Paramètres', en: 'Settings', es: 'Ajustes' }), icon: Settings },
   ] : [];
 
   const tatoueurValidTabs = ['dashboard-tatoueur', 'flashs', 'reservations', 'calendrier', 'realisations', 'messages', 'boutique-tatoueur', 'profil-tatoueur', 'parametres', 'profile', 'address', 'security', 'orders'];
