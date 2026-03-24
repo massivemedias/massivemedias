@@ -382,59 +382,17 @@ function TatoueurDetail({ subdomainSlug }) {
                 {tx({ fr: 'Flashs disponibles', en: 'Available Flash Designs' })}
               </h2>
 
-              {/* Filters */}
-              <div className="flex flex-wrap gap-2">
-                {/* Status filter */}
-                {['disponible', 'reserve', 'tatoue'].map(status => {
-                  const labels = {
-                    disponible: { fr: 'Disponibles', en: 'Available', es: 'Disponibles' },
-                    reserve: { fr: 'Réservés', en: 'Reserved', es: 'Reservados' },
-                    tatoue: { fr: 'Tatoués', en: 'Tattooed', es: 'Tatuados' },
-                  };
-                  const colors = {
-                    disponible: 'bg-green-500',
-                    reserve: 'bg-amber-500',
-                    tatoue: 'bg-gray-500',
-                  };
-                  return (
-                    <button
-                      key={status}
-                      onClick={() => setActiveStatus(activeStatus === status ? null : status)}
-                      className={`text-xs px-3 py-1.5 rounded-full transition-colors flex items-center gap-1.5 ${
-                        activeStatus === status
-                          ? 'bg-accent text-black font-bold'
-                          : 'bg-bg-card text-grey-light hover:text-accent border border-white/5'
-                      }`}
-                    >
-                      <span className={`w-2 h-2 rounded-full ${colors[status]}`} />
-                      {tx(labels[status])}
-                    </button>
-                  );
-                })}
-
-                {/* Style filter */}
-                {flashStyles.length > 1 && flashStyles.map(style => (
-                  <button
-                    key={style}
-                    onClick={() => setActiveStyle(activeStyle === style ? null : style)}
-                    className={`text-xs px-3 py-1.5 rounded-full capitalize transition-colors ${
-                      activeStyle === style
-                        ? 'bg-accent text-black font-bold'
-                        : 'bg-bg-card text-grey-light hover:text-accent border border-white/5'
-                    }`}
-                  >
-                    {style}
-                  </button>
-                ))}
-
-                {(activeStyle || activeStatus) && (
-                  <button
-                    onClick={() => { setActiveStyle(null); setActiveStatus(null); }}
-                    className="text-xs px-3 py-1.5 rounded-full bg-red-500/20 text-red-400 flex items-center gap-1"
-                  >
-                    <X size={12} />
-                    {tx({ fr: 'Reinitialiser', en: 'Reset' })}
-                  </button>
+              {/* Stats rapides */}
+              <div className="flex items-center gap-3 text-xs text-grey-muted">
+                <span className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-green-500" />
+                  {stats.disponible} {tx({ fr: 'disponibles', en: 'available' })}
+                </span>
+                {stats.reserve > 0 && (
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-amber-500" />
+                    {stats.reserve} {tx({ fr: 'réservés', en: 'reserved' })}
+                  </span>
                 )}
               </div>
             </div>
