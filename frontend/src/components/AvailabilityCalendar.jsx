@@ -275,7 +275,7 @@ export default function AvailabilityCalendar({ calendarSettings }) {
                 {tx({ fr: 'Aucune disponibilite programmee', en: 'No availability scheduled', es: 'Sin disponibilidades programadas' })}
               </div>
             ) : (
-              <div className="divide-y divide-white/5">
+              <div className="divide-y divide-white/5 max-h-[320px] overflow-y-auto scrollbar-thin">
                 {upcoming.map(([dateStr, slots]) => {
                   const d = new Date(dateStr + 'T12:00:00');
                   const dayName = daysLong[d.getDay()];
