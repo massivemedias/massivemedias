@@ -58,26 +58,21 @@ function ArtisteDetail({ subdomainSlug }) {
       tagline: { fr: cms.tagline.fr || local.tagline.fr, en: cms.tagline.en || local.tagline.en, es: local.tagline.es || local.tagline.en },
       bio: { fr: cms.bio.fr || local.bio.fr, en: cms.bio.en || local.bio.en, es: local.bio.es || local.bio.en },
       demarche: cms.demarche || local.demarche || null,
-      socials: Object.keys(cms.socials || {}).length > 0 ? cms.socials : local.socials,
-      prints: cms.prints && cms.prints.length > 0
-        ? cms.prints.map(cp => {
-            // Merger avec le local par id (images, titres, flags)
-            if (local.prints) {
-              const localPrint = local.prints.find(lp => lp.id === cp.id);
-              if (localPrint) {
-                return {
-                  ...localPrint,
-                  ...cp,
-                  image: cp.image || localPrint.image,
-                  fullImage: cp.fullImage || localPrint.fullImage,
-                  titleFr: localPrint.titleFr || cp.titleFr,
-                  titleEn: localPrint.titleEn || cp.titleEn,
-                };
-              }
-            }
-            return cp;
-          })
-        : local.prints,
+      socials: { ...(local.socials || {}), ...(cms.socials || {}) },
+      prints: (() => {
+        const localPrints = local.prints || [];
+        const cmsPrints = (cms.prints || []).map(cp => {
+          const localPrint = localPrints.find(lp => lp.id === cp.id);
+          if (localPrint) {
+            return { ...localPrint, ...cp, image: cp.image || localPrint.image, fullImage: cp.fullImage || localPrint.fullImage, titleFr: localPrint.titleFr || cp.titleFr, titleEn: localPrint.titleEn || cp.titleEn };
+          }
+          return cp;
+        });
+        // Ajouter les prints locaux qui ne sont pas dans le CMS
+        const cmsIds = cmsPrints.map(p => p.id);
+        const localOnly = localPrints.filter(lp => !cmsIds.includes(lp.id));
+        return [...localOnly, ...cmsPrints];
+      })(),
       stickers: local.stickers || [],
       pricing: cms.pricing || local.pricing,
       avatar: (cms.socials?.avatarUrl) || (cms.avatar && !cms.avatar.includes('undefined') ? cms.avatar : null) || local.avatar,
