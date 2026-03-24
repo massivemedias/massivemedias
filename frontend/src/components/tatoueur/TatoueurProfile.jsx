@@ -40,8 +40,8 @@ export default function TatoueurProfile({ tatoueur, setTatoueur }) {
     hidePrices: tatoueur?.hidePrices || false,
     styles: tatoueur?.styles || [],
     socials: tatoueur?.socials || {},
-    avatarUrl: tatoueur?.avatarUrl || '',
-    heroUrl: tatoueur?.heroUrl || '',
+    avatarUrl: tatoueur?.avatarUrl || tatoueur?.avatar || '',
+    heroUrl: tatoueur?.heroUrl || tatoueur?.heroImage || '',
   });
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -171,11 +171,8 @@ export default function TatoueurProfile({ tatoueur, setTatoueur }) {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-heading font-bold text-heading">
-          {tx({ fr: 'Ma page', en: 'My Page', es: 'Mi pagina' })}
-        </h2>
+      {/* Save button only - no duplicate title */}
+      <div className="flex items-center justify-end">
         <button onClick={handleSave} disabled={saving} className="btn-primary !py-2 !px-5 text-sm flex items-center gap-2">
           <Save size={16} />
           {saving ? '...' : saved ? tx({ fr: 'Sauvegarde!', en: 'Saved!', es: 'Guardado!' }) : tx({ fr: 'Sauvegarder', en: 'Save', es: 'Guardar' })}
