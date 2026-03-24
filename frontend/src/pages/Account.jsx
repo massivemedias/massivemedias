@@ -1205,7 +1205,7 @@ function Account() {
     { id: 'realisations', label: tx({ fr: 'Realisations', en: 'My Work', es: 'Mis trabajos' }), icon: Image },
     { id: 'messages', label: tx({ fr: 'Messages', en: 'Messages', es: 'Mensajes' }), icon: MessageSquare },
     { id: 'boutique-tatoueur', label: tx({ fr: 'Boutique', en: 'Shop', es: 'Tienda' }), icon: ShoppingBag },
-    { id: 'profil-tatoueur', label: tx({ fr: 'Mon profil', en: 'My Profile', es: 'Mi perfil' }), icon: User, href: `/tatoueurs/${tatoueurSlug}` },
+    { id: 'profil-tatoueur', label: tx({ fr: 'Ma page', en: 'My Page', es: 'Mi pagina' }), icon: Palette },
     { id: 'parametres', label: tx({ fr: 'Parametres', en: 'Settings', es: 'Ajustes' }), icon: Settings },
   ] : [];
 
