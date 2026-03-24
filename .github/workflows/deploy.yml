@@ -47,6 +47,9 @@ jobs:
       - name: Generate SPA route files (SEO - avoid 404 on direct URL access)
         run: bash frontend/scripts/generate-spa-routes.sh
 
+      - name: SEO pre-render (inject unique meta tags per route)
+        run: node frontend/scripts/seo-prerender.js
+
       - name: Copy CNAME to dist
         run: cp CNAME frontend/dist/CNAME
 
