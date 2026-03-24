@@ -221,16 +221,26 @@ function Artistes() {
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent group-hover:from-black/90 transition-all duration-500" />
 
-                      {/* Badge tatoueur */}
+                      {/* Avatar rond en haut a gauche */}
+                      {creator.avatar && (
+                        <div className="absolute top-3 left-3 z-10 flex items-center gap-2">
+                          <img
+                            src={creator.avatar}
+                            alt={creator.name}
+                            className="w-9 h-9 md:w-10 md:h-10 rounded-full object-cover border-2 border-white/30 shadow-lg"
+                          />
+                          {isTatoueur && (
+                            <span className="bg-accent/80 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow-lg flex items-center gap-0.5">
+                              <PenTool size={8} />
+                              Tattoo
+                            </span>
+                          )}
+                        </div>
+                      )}
+                      {/* Badge flashs tatoueur */}
                       {isTatoueur && flashCount > 0 && (
                         <div className="absolute top-3 right-3 bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg">
                           {flashCount} flash{flashCount > 1 ? 's' : ''}
-                        </div>
-                      )}
-                      {isTatoueur && (
-                        <div className="absolute top-3 left-3 bg-accent/80 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg flex items-center gap-1">
-                          <PenTool size={10} />
-                          Tattoo
                         </div>
                       )}
 
