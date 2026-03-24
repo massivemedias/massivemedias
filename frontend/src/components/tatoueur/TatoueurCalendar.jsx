@@ -34,7 +34,18 @@ function CalendarSettingsPanel({ tatoueur, tx, lang }) {
   const [saved, setSaved] = useState(false);
 
   const initial = tatoueur?.calendarSettings || {};
-  const [availableDates, setAvailableDates] = useState(initial.availableDates || []);
+  // Charger depuis localStorage comme fallback
+  const localCalendar = (() => {
+    try {
+      const slug = tatoueur?.slug;
+      if (!slug) return null;
+      const raw = localStorage.getItem(`mm-tatoueur-calendar-${slug}`);
+      return raw ? JSON.parse(raw) : null;
+    } catch { return null; }
+  })();
+  const [availableDates, setAvailableDates] = useState(
+    initial.availableDates?.length > 0 ? initial.availableDates : (localCalendar?.availableDates || [])
+  );
   const [newDate, setNewDate] = useState('');
   const [newSlots, setNewSlots] = useState([]);
 
@@ -73,18 +84,32 @@ function CalendarSettingsPanel({ tatoueur, tx, lang }) {
   };
 
   const handleSave = async () => {
-    if (!tatoueur?.documentId) return;
     setSaving(true);
     try {
-      await api.put(`/tatoueurs/${tatoueur.documentId}`, {
-        data: {
-          calendarSettings: { availableDates },
-        },
-      });
+      // Sauvegarder dans le CMS si documentId disponible
+      if (tatoueur?.documentId) {
+        await api.put(`/tatoueurs/${tatoueur.documentId}`, {
+          data: {
+            calendarSettings: { availableDates },
+          },
+        });
+      }
+      // Toujours sauvegarder en local aussi (fallback)
+      const slug = tatoueur?.slug;
+      if (slug) {
+        localStorage.setItem(`mm-tatoueur-calendar-${slug}`, JSON.stringify({ availableDates }));
+      }
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } catch (err) {
-      console.error('[CalendarSettings] Erreur:', err.message);
+      console.error('[CalendarSettings] Erreur CMS:', err.message);
+      // Sauvegarder en local meme si CMS echoue
+      const slug = tatoueur?.slug;
+      if (slug) {
+        localStorage.setItem(`mm-tatoueur-calendar-${slug}`, JSON.stringify({ availableDates }));
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2000);
+      }
     } finally {
       setSaving(false);
     }
