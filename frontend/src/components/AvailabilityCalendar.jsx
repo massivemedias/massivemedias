@@ -35,11 +35,24 @@ function formatDateKey(year, month, day) {
  */
 export default function AvailabilityCalendar({ calendarSettings }) {
   const { lang, tx } = useLang();
-  const [currentDate, setCurrentDate] = useState(new Date());
-  const [selectedDay, setSelectedDay] = useState(null);
-  const [view, setView] = useState('calendar'); // 'calendar' | 'list'
-
   const settings = calendarSettings || {};
+
+  // Demarrer au premier mois avec des dispos (pas le mois courant s'il n'y a rien)
+  const [currentDate, setCurrentDate] = useState(() => {
+    if (settings.availableDates?.length > 0) {
+      const todayStr = new Date().toISOString().split('T')[0];
+      const firstFuture = settings.availableDates
+        .filter(d => d.date >= todayStr)
+        .sort((a, b) => a.date.localeCompare(b.date))[0];
+      if (firstFuture) {
+        const d = new Date(firstFuture.date + 'T12:00:00');
+        return new Date(d.getFullYear(), d.getMonth(), 1);
+      }
+    }
+    return new Date();
+  });
+  const [selectedDay, setSelectedDay] = useState(null);
+  const [view, setView] = useState('list'); // 'calendar' | 'list' - liste par defaut
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
   const daysInMonth = getDaysInMonth(year, month);
