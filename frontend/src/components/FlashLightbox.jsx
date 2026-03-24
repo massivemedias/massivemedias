@@ -53,7 +53,7 @@ export default function FlashLightbox({ flash, onClose, onReserve, tatoueurName,
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8"
+        className="fixed inset-0 z-50 flex items-center justify-center p-2 md:p-8"
         onClick={onClose}
       >
         {/* Backdrop */}
@@ -65,7 +65,7 @@ export default function FlashLightbox({ flash, onClose, onReserve, tatoueurName,
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
           transition={{ duration: 0.3 }}
-          className="relative z-10 bg-bg-card rounded-2xl overflow-hidden max-w-4xl w-full max-h-[90vh] flex flex-col md:flex-row shadow-2xl"
+          className="relative z-10 bg-bg-card rounded-2xl overflow-hidden max-w-4xl w-full max-h-[95vh] md:max-h-[90vh] flex flex-col md:flex-row shadow-2xl overflow-y-auto md:overflow-y-hidden"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Close button */}
@@ -77,7 +77,7 @@ export default function FlashLightbox({ flash, onClose, onReserve, tatoueurName,
           </button>
 
           {/* Image */}
-          <div className="md:w-1/2 relative bg-black flex items-center justify-center min-h-[300px] md:min-h-0">
+          <div className="md:w-1/2 relative bg-black flex items-center justify-center min-h-[200px] max-h-[40vh] md:max-h-none md:min-h-0 flex-shrink-0">
             {/* Navigation arrows */}
             {hasPrev && (
               <button
@@ -129,23 +129,23 @@ export default function FlashLightbox({ flash, onClose, onReserve, tatoueurName,
           </div>
 
           {/* Details */}
-          <div className="md:w-1/2 p-6 md:p-10 overflow-y-auto">
+          <div className="md:w-1/2 p-4 md:p-10 overflow-y-auto flex-1">
             {/* Title */}
             {title && (
-              <h2 className="text-2xl md:text-4xl font-heading font-bold text-heading mb-3">
+              <h2 className="text-xl md:text-4xl font-heading font-bold text-heading mb-1 md:mb-3">
                 {title}
               </h2>
             )}
 
             {/* Artist */}
             {tatoueurName && (
-              <p className="text-grey-muted text-sm md:text-base mb-5">
+              <p className="text-grey-muted text-xs md:text-base mb-3 md:mb-5">
                 {tx({ fr: 'par', en: 'by' })} {tatoueurName}
               </p>
             )}
 
             {/* Tags */}
-            <div className="flex flex-wrap gap-2 mb-6">
+            <div className="flex flex-wrap gap-1.5 md:gap-2 mb-3 md:mb-6">
               {flash.style && (
                 <span className="bg-bg-elevated text-grey-light text-xs md:text-sm px-3 py-1.5 rounded-full capitalize">
                   {flash.style}
