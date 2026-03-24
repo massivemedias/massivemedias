@@ -1,18 +1,98 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { MapPin, Instagram, ExternalLink, ArrowRight, Palette, Calendar, Filter, X, MessageCircle } from 'lucide-react';
+import { MapPin, Instagram, ExternalLink, ArrowRight, Palette, Calendar, Filter, X, MessageCircle, Send, LogIn } from 'lucide-react';
 import SEO from '../components/SEO';
 import FlashCard from '../components/FlashCard';
 import FlashLightbox from '../components/FlashLightbox';
 import ReservationForm from '../components/ReservationForm';
 import AvailabilityCalendar from '../components/AvailabilityCalendar';
 import { useLang } from '../i18n/LanguageContext';
+import { useAuth } from '../contexts/AuthContext';
+import api from '../services/api';
 import { useTatoueurs } from '../hooks/useTatoueurs';
 import { mediaUrl } from '../utils/cms';
 import tatoueursData from '../data/tatoueurs';
 
 // Composant grille realisations (images locales telechargees d'Instagram)
+function ContactTatoueurForm({ tatoueur, tx }) {
+  const { user } = useAuth();
+  const [message, setMessage] = useState('');
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
+
+  const handleSend = async () => {
+    if (!message.trim() || !user) return;
+    setSending(true);
+    try {
+      await api.post('/tattoo-messages/send', {
+        tatoueurSlug: tatoueur.slug,
+        senderEmail: user.email,
+        senderName: user.user_metadata?.full_name || user.email.split('@')[0],
+        content: message.trim(),
+        sender: 'client',
+      });
+      setSent(true);
+      setMessage('');
+    } catch (err) {
+      console.error('Erreur envoi message:', err);
+    } finally {
+      setSending(false);
+    }
+  };
+
+  if (sent) {
+    return (
+      <div className="mt-6 p-4 bg-green-500/10 border border-green-500/20 rounded-xl text-center">
+        <MessageCircle size={24} className="mx-auto mb-2 text-green-400" />
+        <p className="text-green-400 text-sm font-medium">
+          {tx({ fr: 'Message envoyé!', en: 'Message sent!' })}
+        </p>
+        <p className="text-grey-muted text-xs mt-1">
+          {tx({ fr: `${tatoueur.name} vous répondra bientôt.`, en: `${tatoueur.name} will reply soon.` })}
+        </p>
+        <button onClick={() => setSent(false)} className="text-accent text-xs mt-3 hover:underline">
+          {tx({ fr: 'Envoyer un autre message', en: 'Send another message' })}
+        </button>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="mt-6">
+        <Link to="/login" className="btn-primary w-full text-center">
+          <LogIn size={18} className="mr-2" />
+          {tx({ fr: 'Connectez-vous pour écrire', en: 'Sign in to write' })}
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-6 space-y-3">
+      <textarea
+        value={message}
+        onChange={e => setMessage(e.target.value)}
+        rows={3}
+        placeholder={tx({
+          fr: `Écrivez à ${tatoueur.name}...`,
+          en: `Write to ${tatoueur.name}...`,
+        })}
+        className="w-full rounded-xl bg-black/20 border border-white/10 px-4 py-3 text-sm text-heading placeholder:text-grey-muted/50 focus:border-accent focus:outline-none resize-none"
+      />
+      <button
+        onClick={handleSend}
+        disabled={!message.trim() || sending}
+        className="btn-primary w-full text-center disabled:opacity-50"
+      >
+        <Send size={18} className="mr-2" />
+        {sending ? '...' : tx({ fr: 'Envoyer le message', en: 'Send message' })}
+      </button>
+    </div>
+  );
+}
+
 function InstagramFeed({ handle }) {
   // Ce composant est un fallback - les realisations sont maintenant dans tatoueurs.js
   if (!handle) return null;
@@ -519,23 +599,7 @@ function TatoueurDetail({ subdomainSlug }) {
                 })}
               </p>
 
-              <div className="mt-6">
-                {tatoueur.instagramHandle ? (
-                  <a
-                    href={`https://instagram.com/${tatoueur.instagramHandle}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn-primary w-full text-center"
-                  >
-                    <Instagram size={20} className="mr-2" />
-                    {tx({ fr: 'Contacter sur Instagram', en: 'Contact on Instagram' })}
-                  </a>
-                ) : (
-                  <Link to="/contact" className="btn-primary w-full text-center">
-                    {tx({ fr: 'Nous contacter', en: 'Contact us' })}
-                  </Link>
-                )}
-              </div>
+              <ContactTatoueurForm tatoueur={tatoueur} tx={tx} />
             </motion.div>
           </div>
         </section>
