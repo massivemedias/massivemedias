@@ -1,7 +1,7 @@
-import { useMemo, useEffect } from 'react';
+import { useMemo, useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { ArrowRight, MessageSquare, Camera, PenTool, Store, MapPin, Instagram } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowRight, MessageSquare, Camera, PenTool, Store, LayoutGrid, Grid3x3, List, ChevronDown, Paintbrush, Aperture } from 'lucide-react';
 import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
 import { useArtists } from '../hooks/useArtists';
@@ -10,11 +10,40 @@ import { mediaUrl } from '../utils/cms';
 import artistsData from '../data/artists';
 import tatoueursData from '../data/tatoueurs';
 
+// Type map for each artist slug
+const ARTIST_TYPES = {
+  'adrift': 'peintre',
+  'maudite-machine': 'peintre',
+  'mok': 'photographe',
+  'psyqu33n': 'peintre',
+  'quentin-delobel': 'photographe',
+  'no-pixl': 'photographe',
+  'cornelia-rose': 'peintre',
+  'ginko-ink': 'tatoueur',
+};
+
+const TYPE_LABELS = {
+  photographe: { fr: 'Photographe', en: 'Photographer', es: 'Fotógrafo' },
+  peintre: { fr: 'Peintre', en: 'Painter', es: 'Pintor' },
+  tatoueur: { fr: 'Tatoueur', en: 'Tattoo Artist', es: 'Tatuador' },
+};
+
+const FILTER_OPTIONS = [
+  { key: 'all', fr: 'Tous', en: 'All', es: 'Todos' },
+  { key: 'photographe', fr: 'Photographes', en: 'Photographers', es: 'Fotógrafos' },
+  { key: 'peintre', fr: 'Peintres', en: 'Painters', es: 'Pintores' },
+  { key: 'tatoueur', fr: 'Tatoueurs', en: 'Tattoo Artists', es: 'Tatuadores' },
+];
+
 function Artistes() {
   const { lang, tx } = useLang();
   const { artists: cmsArtists } = useArtists();
   const { tatoueurs: cmsTatoueurs } = useTatoueurs();
   const location = useLocation();
+
+  const [viewMode, setViewMode] = useState('large'); // 'large' | 'small' | 'list'
+  const [filter, setFilter] = useState('all');
+  const [expandedSlug, setExpandedSlug] = useState(null);
 
   // Scroll to anchor on load
   useEffect(() => {
@@ -28,7 +57,6 @@ function Artistes() {
 
   const artists = useMemo(() => {
     const localList = Object.values(artistsData);
-    // cmsArtists peut etre null, un tableau, ou un objet {slug: data}
     const cmsArray = !cmsArtists ? [] : Array.isArray(cmsArtists) ? cmsArtists : Object.values(cmsArtists);
     if (cmsArray.length === 0) return localList;
 
@@ -118,17 +146,94 @@ function Artistes() {
     return [...merged, ...cmsOnly];
   }, [cmsTatoueurs]);
 
+  // Merge all creators into a single list with unified shape
+  const allCreators = useMemo(() => {
+    const fromArtists = artists.map(a => ({
+      slug: a.slug,
+      name: a.name,
+      avatar: a.avatar,
+      heroImage: a.heroImage,
+      tagline: a.tagline,
+      bio: a.bio,
+      link: `/artistes/${a.slug}`,
+      type: ARTIST_TYPES[a.slug] || 'peintre',
+      prints: a.prints || [],
+      flashs: [],
+      isTatoueur: false,
+      studio: null,
+      city: null,
+    }));
+
+    const fromTatoueurs = tatoueurs.map(t => ({
+      slug: t.slug,
+      name: t.name,
+      avatar: t.avatar,
+      heroImage: t.heroImage || t.avatar,
+      tagline: {
+        fr: t.studio ? `${t.studio} - ${t.city || ''}` : (t.bioFr || '').slice(0, 60),
+        en: t.studio ? `${t.studio} - ${t.city || ''}` : (t.bioEn || '').slice(0, 60),
+        es: t.studio ? `${t.studio} - ${t.city || ''}` : (t.bioEs || t.bioEn || '').slice(0, 60),
+      },
+      bio: {
+        fr: t.bioFr || '',
+        en: t.bioEn || '',
+        es: t.bioEs || t.bioEn || '',
+      },
+      link: `/tatoueurs/${t.slug}`,
+      type: 'tatoueur',
+      prints: [],
+      flashs: t.flashs || [],
+      isTatoueur: true,
+      studio: t.studio,
+      city: t.city,
+    }));
+
+    return [...fromArtists, ...fromTatoueurs];
+  }, [artists, tatoueurs]);
+
+  const filteredCreators = useMemo(() => {
+    if (filter === 'all') return allCreators;
+    return allCreators.filter(c => c.type === filter);
+  }, [allCreators, filter]);
+
+  const viewModes = [
+    { key: 'large', icon: LayoutGrid, label: tx({ fr: 'Grande grille', en: 'Large grid', es: 'Grilla grande' }) },
+    { key: 'small', icon: Grid3x3, label: tx({ fr: 'Petite grille', en: 'Small grid', es: 'Grilla pequena' }) },
+    { key: 'list', icon: List, label: tx({ fr: 'Liste', en: 'List', es: 'Lista' }) },
+  ];
+
+  const getTypeBadge = (type) => {
+    const label = TYPE_LABELS[type] || TYPE_LABELS.peintre;
+    const colors = {
+      photographe: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
+      peintre: 'bg-purple-500/20 text-purple-300 border-purple-500/30',
+      tatoueur: 'bg-accent/20 text-accent border-accent/30',
+    };
+    const icons = {
+      photographe: <Aperture size={10} />,
+      peintre: <Paintbrush size={10} />,
+      tatoueur: <PenTool size={10} />,
+    };
+    return (
+      <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border ${colors[type] || colors.peintre}`}>
+        {icons[type]}
+        {tx(label)}
+      </span>
+    );
+  };
+
   return (
     <>
       <SEO
-        title={tx({ fr: 'Artistes - Photographes, Tatoueurs & Boutique | Massive', en: 'Artists - Photographers, Tattoo Artists & Shop | Massive' })}
+        title={tx({ fr: 'Artistes - Photographes, Tatoueurs & Boutique | Massive', en: 'Artists - Photographers, Tattoo Artists & Shop | Massive', es: 'Artistas - Fotógrafos, Tatuadores & Tienda | Massive' })}
         description={tx({
           fr: 'Decouvrez les artistes de Massive Medias. Photographes, peintres, tatoueurs. Tirages fine art, flashs originaux, boutique en ligne. Montreal.',
           en: 'Discover Massive Medias artists. Photographers, painters, tattoo artists. Fine art prints, original flash designs, online shop. Montreal.',
+          es: 'Descubre los artistas de Massive Medias. Fotógrafos, pintores, tatuadores. Impresiones fine art, flashs originales, tienda en línea. Montreal.',
         })}
         breadcrumbs={[
-          { name: tx({ fr: 'Accueil', en: 'Home' }), url: '/' },
-          { name: tx({ fr: 'Artistes', en: 'Artists' }) },
+          { name: tx({ fr: 'Accueil', en: 'Home', es: 'Inicio' }), url: '/' },
+          { name: tx({ fr: 'Artistes', en: 'Artists', es: 'Artistas' }) },
         ]}
       />
 
@@ -142,16 +247,16 @@ function Artistes() {
           >
             <div className="flex items-center gap-2 mb-8 text-sm">
               <Link to="/" className="text-grey-muted hover:text-accent transition-colors">
-                {tx({ fr: 'Accueil', en: 'Home' })}
+                {tx({ fr: 'Accueil', en: 'Home', es: 'Inicio' })}
               </Link>
               <span className="text-grey-muted">/</span>
               <span className="text-accent">
-                {tx({ fr: 'Artistes', en: 'Artists' })}
+                {tx({ fr: 'Artistes', en: 'Artists', es: 'Artistas' })}
               </span>
             </div>
 
             <h1 className="text-5xl md:text-8xl font-heading font-bold text-heading tracking-tight leading-none mb-4">
-              {tx({ fr: 'Massive Artistes', en: 'Massive Artists' })}
+              {tx({ fr: 'Artistes', en: 'Artists', es: 'Artistas' })}
             </h1>
 
             <div className="w-16 h-1 bg-accent mb-6" />
@@ -160,6 +265,7 @@ function Artistes() {
               {tx({
                 fr: "Photographes, peintres, tatoueurs. Decouvrez les createurs de Massive Medias.",
                 en: 'Photographers, painters, tattoo artists. Discover the creators of Massive Medias.',
+                es: 'Fotógrafos, pintores, tatuadores. Descubre los creadores de Massive Medias.',
               })}
             </p>
 
@@ -167,11 +273,11 @@ function Artistes() {
             <div className="flex flex-wrap gap-3">
               <a href="#artistes" className="flex items-center gap-2 text-sm px-4 py-2 rounded-full bg-bg-card border border-white/10 text-grey-light hover:text-accent hover:border-accent/30 transition-colors">
                 <Camera size={16} />
-                {tx({ fr: 'Tous les artistes', en: 'All artists' })}
+                {tx({ fr: 'Tous les artistes', en: 'All artists', es: 'Todos los artistas' })}
               </a>
               <a href="#boutique" className="flex items-center gap-2 text-sm px-4 py-2 rounded-full bg-bg-card border border-white/10 text-grey-light hover:text-accent hover:border-accent/30 transition-colors">
                 <Store size={16} />
-                {tx({ fr: 'Boutique Massive', en: 'Massive Shop' })}
+                {tx({ fr: 'Boutique Massive', en: 'Massive Shop', es: 'Tienda Massive' })}
               </a>
             </div>
           </motion.div>
@@ -181,25 +287,54 @@ function Artistes() {
       {/* ============ TOUS LES ARTISTES (melanges) ============ */}
       <section id="artistes" className="scroll-mt-24">
         <div className="section-container max-w-7xl mx-auto pb-8">
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4 mb-12">
-            {(() => {
-              // Fusionner artistes + tatoueurs dans une seule liste
-              const allCreators = [
-                ...artists.map(a => ({ ...a, type: 'artist', link: `/artistes/${a.slug}` })),
-                ...tatoueurs.map(t => ({
-                  ...t,
-                  type: 'tatoueur',
-                  link: `/tatoueurs/${t.slug}`,
-                  tagline: { fr: t.studio ? `${t.studio} - ${t.city || ''}` : (t.bioFr || '').slice(0, 60), en: t.studio ? `${t.studio} - ${t.city || ''}` : (t.bioEn || '').slice(0, 60) },
-                  heroImage: t.heroImage || t.avatar,
-                  prints: t.flashs || [],
-                })),
-              ];
 
-              return allCreators.map((creator, index) => {
-                const tagline = tx({ fr: creator.tagline?.fr || '', en: creator.tagline?.en || '' });
-                const isTatoueur = creator.type === 'tatoueur';
-                const flashCount = isTatoueur ? (creator.flashs || []).filter(f => f.status === 'disponible').length : 0;
+          {/* Toolbar: filters + view mode */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+            {/* Filter pills */}
+            <div className="flex flex-wrap items-center gap-2">
+              {FILTER_OPTIONS.map(opt => (
+                <button
+                  key={opt.key}
+                  onClick={() => setFilter(opt.key)}
+                  className={`text-sm px-4 py-1.5 rounded-full border transition-all duration-200 ${
+                    filter === opt.key
+                      ? 'bg-accent text-white border-accent shadow-lg shadow-accent/20'
+                      : 'bg-transparent text-grey-light border-white/10 hover:border-accent/30 hover:text-accent'
+                  }`}
+                >
+                  {tx(opt)}
+                </button>
+              ))}
+            </div>
+
+            {/* View mode buttons */}
+            <div className="flex items-center gap-1 bg-bg-card rounded-lg p-1 border border-white/5">
+              {viewModes.map(vm => {
+                const Icon = vm.icon;
+                return (
+                  <button
+                    key={vm.key}
+                    onClick={() => setViewMode(vm.key)}
+                    title={vm.label}
+                    className={`p-2 rounded-md transition-all duration-200 ${
+                      viewMode === vm.key
+                        ? 'bg-accent text-white shadow-lg shadow-accent/20'
+                        : 'text-grey-muted hover:text-accent'
+                    }`}
+                  >
+                    <Icon size={18} />
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* ---- LARGE GRID VIEW ---- */}
+          {viewMode === 'large' && (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 mb-12">
+              {filteredCreators.map((creator, index) => {
+                const tagline = tx({ fr: creator.tagline?.fr || '', en: creator.tagline?.en || '', es: creator.tagline?.es || '' });
+                const flashCount = creator.isTatoueur ? (creator.flashs || []).filter(f => f.status === 'disponible').length : 0;
 
                 return (
                   <motion.div
@@ -229,17 +364,17 @@ function Artistes() {
                             alt={creator.name}
                             className="w-9 h-9 md:w-10 md:h-10 rounded-full object-cover border-2 border-white/30 shadow-lg"
                           />
-                          {isTatoueur && (
-                            <span className="bg-accent/80 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow-lg flex items-center gap-0.5">
-                              <PenTool size={8} />
-                              Tattoo
-                            </span>
-                          )}
                         </div>
                       )}
+
+                      {/* Type badge top right */}
+                      <div className="absolute top-3 right-3 z-10">
+                        {getTypeBadge(creator.type)}
+                      </div>
+
                       {/* Badge flashs tatoueur */}
-                      {isTatoueur && flashCount > 0 && (
-                        <div className="absolute top-3 right-3 bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg">
+                      {creator.isTatoueur && flashCount > 0 && (
+                        <div className="absolute top-12 right-3 bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg">
                           {flashCount} flash{flashCount > 1 ? 's' : ''}
                         </div>
                       )}
@@ -253,9 +388,9 @@ function Artistes() {
                         </p>
                         <div className="flex items-center justify-between mt-2 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
                           <span className="text-white/40 text-[10px] uppercase tracking-widest">
-                            {isTatoueur
-                              ? `${flashCount} ${tx({ fr: 'flashs', en: 'flash designs' })}`
-                              : `${creator.prints?.length || 0} ${tx({ fr: 'oeuvres', en: 'artworks' })}`
+                            {creator.isTatoueur
+                              ? `${flashCount} ${tx({ fr: 'flashs', en: 'flash designs', es: 'flashs' })}`
+                              : `${creator.prints?.length || 0} ${tx({ fr: 'oeuvres', en: 'artworks', es: 'obras' })}`
                             }
                           </span>
                           <ArrowRight size={14} className="text-accent" />
@@ -264,9 +399,166 @@ function Artistes() {
                     </Link>
                   </motion.div>
                 );
-              });
-            })()}
-          </div>
+              })}
+            </div>
+          )}
+
+          {/* ---- SMALL GRID VIEW ---- */}
+          {viewMode === 'small' && (
+            <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 md:gap-3 mb-12">
+              {filteredCreators.map((creator, index) => (
+                <motion.div
+                  key={creator.slug}
+                  initial={{ opacity: 0, y: 15 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: index * 0.04 }}
+                  viewport={{ once: true, margin: '-30px' }}
+                >
+                  <Link
+                    to={creator.link}
+                    className="group block relative overflow-hidden rounded-lg aspect-square"
+                  >
+                    <img
+                      src={creator.heroImage || creator.avatar}
+                      alt={creator.name}
+                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-110"
+                      loading={index < 6 ? 'eager' : 'lazy'}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
+
+                    {/* Type badge */}
+                    <div className="absolute top-2 right-2 z-10">
+                      {getTypeBadge(creator.type)}
+                    </div>
+
+                    <div className="absolute bottom-0 left-0 right-0 p-2.5">
+                      <h3 className="font-heading font-bold text-white text-sm leading-tight drop-shadow-lg">
+                        {creator.name}
+                      </h3>
+                    </div>
+                  </Link>
+                </motion.div>
+              ))}
+            </div>
+          )}
+
+          {/* ---- ACCORDION LIST VIEW ---- */}
+          {viewMode === 'list' && (
+            <div className="flex flex-col gap-2 mb-12">
+              {filteredCreators.map((creator, index) => {
+                const isExpanded = expandedSlug === creator.slug;
+                const bio = tx({ fr: creator.bio?.fr || '', en: creator.bio?.en || '', es: creator.bio?.es || '' });
+                const flashCount = creator.isTatoueur ? (creator.flashs || []).filter(f => f.status === 'disponible').length : 0;
+                const printsCount = creator.prints?.length || 0;
+
+                return (
+                  <motion.div
+                    key={creator.slug}
+                    initial={{ opacity: 0, y: 10 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: index * 0.04 }}
+                    viewport={{ once: true, margin: '-20px' }}
+                    className="bg-bg-card border border-white/5 rounded-xl overflow-hidden"
+                  >
+                    {/* Accordion header */}
+                    <button
+                      onClick={() => setExpandedSlug(isExpanded ? null : creator.slug)}
+                      className="w-full flex items-center justify-between px-5 py-4 md:px-6 md:py-5 text-left hover:bg-white/[0.02] transition-colors"
+                    >
+                      <div className="flex items-center gap-4">
+                        {creator.avatar && (
+                          <img
+                            src={creator.avatar}
+                            alt={creator.name}
+                            className="w-10 h-10 md:w-12 md:h-12 rounded-full object-cover border-2 border-white/10 shrink-0"
+                          />
+                        )}
+                        <div className="flex items-center gap-3 flex-wrap">
+                          <h3 className="text-2xl md:text-3xl font-heading font-bold text-heading">
+                            {creator.name}
+                          </h3>
+                          {getTypeBadge(creator.type)}
+                        </div>
+                      </div>
+                      <motion.div
+                        animate={{ rotate: isExpanded ? 180 : 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="text-grey-muted shrink-0 ml-4"
+                      >
+                        <ChevronDown size={22} />
+                      </motion.div>
+                    </button>
+
+                    {/* Accordion content */}
+                    <AnimatePresence initial={false}>
+                      {isExpanded && (
+                        <motion.div
+                          key="content"
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+                          className="overflow-hidden"
+                        >
+                          <div className="px-5 pb-5 md:px-6 md:pb-6 border-t border-white/5 pt-5">
+                            <div className="flex flex-col md:flex-row gap-6">
+                              {/* Profile photo */}
+                              <div className="shrink-0">
+                                <img
+                                  src={creator.heroImage || creator.avatar}
+                                  alt={creator.name}
+                                  className="w-28 h-28 md:w-36 md:h-36 rounded-xl object-cover border border-white/10"
+                                />
+                              </div>
+
+                              {/* Info */}
+                              <div className="flex-1 min-w-0">
+                                {bio && (
+                                  <p className="text-grey-light text-sm md:text-base leading-relaxed mb-4 line-clamp-4">
+                                    {bio}
+                                  </p>
+                                )}
+
+                                <div className="flex flex-wrap items-center gap-3 mb-5">
+                                  {getTypeBadge(creator.type)}
+
+                                  {!creator.isTatoueur && printsCount > 0 && (
+                                    <span className="text-grey-muted text-xs">
+                                      {printsCount} {tx({ fr: 'oeuvres disponibles', en: 'artworks available', es: 'obras disponibles' })}
+                                    </span>
+                                  )}
+
+                                  {creator.isTatoueur && flashCount > 0 && (
+                                    <span className="text-grey-muted text-xs">
+                                      {flashCount} flash{flashCount > 1 ? 's' : ''} {tx({ fr: 'disponibles', en: 'available', es: 'disponibles' })}
+                                    </span>
+                                  )}
+
+                                  {creator.studio && (
+                                    <span className="text-grey-muted text-xs">
+                                      {creator.studio}{creator.city ? ` - ${creator.city}` : ''}
+                                    </span>
+                                  )}
+                                </div>
+
+                                <Link
+                                  to={creator.link}
+                                  className="inline-flex items-center gap-2 text-sm font-semibold text-accent hover:text-white transition-colors"
+                                >
+                                  {tx({ fr: 'Voir le profil', en: 'View profile', es: 'Ver perfil' })}
+                                  <ArrowRight size={16} />
+                                </Link>
+                              </div>
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </section>
 
@@ -332,7 +624,7 @@ function Artistes() {
             <div className="flex items-center gap-3 mb-8">
               <Store size={28} className="text-accent" />
               <h2 className="text-3xl md:text-4xl font-heading font-bold text-heading">
-                {tx({ fr: 'Boutique Massive', en: 'Massive Shop' })}
+                {tx({ fr: 'Boutique Massive', en: 'Massive Shop', es: 'Tienda Massive' })}
               </h2>
             </div>
 
@@ -340,35 +632,36 @@ function Artistes() {
               <div className="p-8 md:p-12 bg-gradient-to-br from-bg-card via-bg-card to-accent/5">
                 <div className="max-w-2xl">
                   <h3 className="text-2xl md:text-3xl font-heading font-bold text-heading mb-2">
-                    {tx({ fr: 'Merch Massive - Bientot disponible!', en: 'Massive Merch - Coming Soon!' })}
+                    {tx({ fr: 'Merch Massive - Bientot disponible!', en: 'Massive Merch - Coming Soon!', es: 'Merch Massive - Muy pronto!' })}
                   </h3>
                   <p className="text-accent text-sm font-semibold mb-4">
-                    {tx({ fr: 'Tres prochainement', en: 'Very soon' })}
+                    {tx({ fr: 'Tres prochainement', en: 'Very soon', es: 'Muy pronto' })}
                   </p>
                   <p className="text-grey-light text-base md:text-lg mb-6">
                     {tx({
                       fr: "Prints personnalises, stickers exclusifs, t-shirts, hoodies et plus - tout designe par Massive Medias et produit a Montreal. Notre collection arrive tres bientot!",
                       en: 'Custom prints, exclusive stickers, t-shirts, hoodies and more - all designed by Massive Medias and produced in Montreal. Our collection is coming very soon!',
+                      es: 'Impresiones personalizadas, stickers exclusivos, camisetas, hoodies y más - todo diseñado por Massive Medias y producido en Montreal. Nuestra colección llega muy pronto!',
                     })}
                   </p>
 
                   <div className="flex flex-wrap gap-3 mb-8">
                     <Link to="/boutique/fine-art" className="text-sm px-4 py-2 rounded-full bg-bg-elevated text-grey-light hover:text-accent hover:border-accent/30 border border-white/5 transition-colors">
-                      {tx({ fr: 'Fine Art', en: 'Fine Art' })}
+                      {tx({ fr: 'Fine Art', en: 'Fine Art', es: 'Fine Art' })}
                     </Link>
                     <Link to="/boutique/stickers" className="text-sm px-4 py-2 rounded-full bg-bg-elevated text-grey-light hover:text-accent hover:border-accent/30 border border-white/5 transition-colors">
-                      {tx({ fr: 'Stickers', en: 'Stickers' })}
+                      {tx({ fr: 'Stickers', en: 'Stickers', es: 'Stickers' })}
                     </Link>
                     <Link to="/boutique/merch/tshirt" className="text-sm px-4 py-2 rounded-full bg-bg-elevated text-grey-light hover:text-accent hover:border-accent/30 border border-white/5 transition-colors">
-                      {tx({ fr: 'Merch', en: 'Merch' })}
+                      {tx({ fr: 'Merch', en: 'Merch', es: 'Merch' })}
                     </Link>
                     <Link to="/boutique/sublimation" className="text-sm px-4 py-2 rounded-full bg-bg-elevated text-grey-light hover:text-accent hover:border-accent/30 border border-white/5 transition-colors">
-                      {tx({ fr: 'Sublimation', en: 'Sublimation' })}
+                      {tx({ fr: 'Sublimation', en: 'Sublimation', es: 'Sublimación' })}
                     </Link>
                   </div>
 
                   <Link to="/boutique" className="btn-primary inline-flex items-center">
-                    {tx({ fr: 'Explorer la boutique', en: 'Explore the shop' })}
+                    {tx({ fr: 'Explorer la boutique', en: 'Explore the shop', es: 'Explorar la tienda' })}
                     <ArrowRight size={18} className="ml-2" />
                   </Link>
                 </div>
@@ -388,17 +681,18 @@ function Artistes() {
           className="mb-20 p-12 rounded-2xl text-center border border-accent/30 transition-colors duration-300 cta-shadow"
         >
           <h2 className="text-3xl md:text-4xl font-heading font-bold text-heading mb-4">
-            {tx({ fr: 'Tu es artiste?', en: 'Are you an artist?' })}
+            {tx({ fr: 'Tu es artiste?', en: 'Are you an artist?', es: 'Eres artista?' })}
           </h2>
           <p className="text-grey-light text-lg mb-8 max-w-2xl mx-auto">
             {tx({
               fr: "Photographe, peintre, tatoueur - rejoins la plateforme Massive Medias. On s'occupe de tout.",
               en: 'Photographer, painter, tattoo artist - join the Massive Medias platform. We handle everything.',
+              es: 'Fotógrafo, pintor, tatuador - únete a la plataforma Massive Medias. Nos encargamos de todo.',
             })}
           </p>
           <Link to="/contact" className="btn-primary">
             <MessageSquare size={20} className="mr-2" />
-            {tx({ fr: 'Nous contacter', en: 'Contact us' })}
+            {tx({ fr: 'Nous contacter', en: 'Contact us', es: 'Contáctanos' })}
             <ArrowRight className="ml-2" size={20} />
           </Link>
         </motion.div>
