@@ -62,25 +62,35 @@ function BrightnessFader() {
             className="absolute right-0 mt-2 p-2 rounded-xl bg-bg-card border border-white/10 shadow-2xl shadow-black/50 backdrop-blur-xl"
             style={{ zIndex: 9999, minWidth: '160px' }}
           >
-            {THEME_NAMES.map((name, i) => (
-              <button
-                key={i}
-                onClick={() => { setStep(i); setOpen(false); }}
-                className={`w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-sm transition-colors ${
-                  step === i ? 'bg-white/10 text-heading font-medium' : 'text-grey-light hover:bg-white/5'
-                }`}
-              >
-                <span
-                  className="w-3 h-3 rounded-full flex-shrink-0 ring-1 ring-white/20"
-                  style={{ background: THEME_COLORS[i] }}
-                />
-                <span
-                  className="w-1.5 h-1.5 rounded-full flex-shrink-0"
-                  style={{ background: THEME_ACCENTS[i] }}
-                />
-                {name}
-              </button>
-            ))}
+            {THEME_NAMES.map((name, i) => {
+              const isSelected = step === i;
+              return (
+                <button
+                  key={i}
+                  onClick={() => { setStep(i); setOpen(false); }}
+                  className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-all ${
+                    isSelected ? 'font-semibold ring-1' : 'hover:opacity-90'
+                  }`}
+                  style={{
+                    background: isSelected ? THEME_COLORS[i] : 'transparent',
+                    color: isSelected ? THEME_ACCENTS[i] : undefined,
+                    ringColor: isSelected ? THEME_ACCENTS[i] : undefined,
+                    borderColor: isSelected ? THEME_ACCENTS[i] : undefined,
+                    boxShadow: isSelected ? `inset 0 0 0 1px ${THEME_ACCENTS[i]}40` : undefined,
+                  }}
+                >
+                  <span
+                    className="w-4 h-4 rounded-full flex-shrink-0 ring-1 ring-white/20"
+                    style={{ background: THEME_COLORS[i] }}
+                  />
+                  <span
+                    className="w-2 h-2 rounded-full flex-shrink-0"
+                    style={{ background: THEME_ACCENTS[i] }}
+                  />
+                  <span className={isSelected ? '' : 'text-grey-light'}>{name}</span>
+                </button>
+              );
+            })}
           </motion.div>
         )}
       </AnimatePresence>

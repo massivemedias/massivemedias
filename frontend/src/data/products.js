@@ -400,8 +400,7 @@ export const designServices = [
   { id: 'logo', labelFr: 'Création logo', labelEn: 'Logo design', labelEs: 'Creación de logo', priceRange: '300$ - 600$', timelineFr: '5-10 jours', timelineEn: '5-10 days', timelineEs: '5-10 días' },
   { id: 'identity', labelFr: 'Identité visuelle complète', labelEn: 'Complete visual identity', labelEs: 'Identidad visual completa', priceRange: '800$ - 1 500$', timelineFr: '2-3 semaines', timelineEn: '2-3 weeks', timelineEs: '2-3 semanas' },
   { id: 'poster', labelFr: 'Affiche / flyer événement', labelEn: 'Event poster / flyer', labelEs: 'Afiche / flyer de evento', priceRange: '150$ - 300$', timelineFr: '3-5 jours', timelineEn: '3-5 days', timelineEs: '3-5 días' },
-  { id: 'album', labelFr: 'Pochette album / single', labelEn: 'Album / single cover', labelEs: 'Portada de álbum / single', priceRange: '200$ - 400$', timelineFr: '5-7 jours', timelineEn: '5-7 days', timelineEs: '5-7 días' },
-  { id: 'icons', labelFr: 'Design d\'icônes (set)', labelEn: 'Icon set design', labelEs: 'Set de íconos', priceRange: '200$ - 500$', timelineFr: '3-7 jours', timelineEn: '3-7 days', timelineEs: '3-7 días' },
+  { id: 'album', labelFr: 'Pochette album / single', labelEn: 'Album / single cover', labelEs: 'Portada de álbum / single', priceRange: '150$ - 350$', timelineFr: '5-7 jours', timelineEn: '5-7 days', timelineEs: '5-7 días' },
   { id: 'retouching', labelFr: 'Retouche photo (par image)', labelEn: 'Photo retouching (per image)', labelEs: 'Retoque fotográfico (por imagen)', priceRange: '15$ - 50$', timelineFr: 'Variable', timelineEn: 'Variable', timelineEs: 'Variable' },
 ];
 
