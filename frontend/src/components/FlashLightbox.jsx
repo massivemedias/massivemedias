@@ -65,7 +65,8 @@ export default function FlashLightbox({ flash, onClose, onReserve, tatoueurName,
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
           transition={{ duration: 0.3 }}
-          className="relative z-10 bg-bg-card rounded-2xl overflow-hidden max-w-4xl w-full max-h-[95vh] md:max-h-[90vh] flex flex-col md:flex-row shadow-2xl overflow-y-auto md:overflow-y-hidden"
+          className="relative z-10 rounded-2xl overflow-hidden max-w-4xl w-full max-h-[95vh] md:max-h-[90vh] flex flex-col md:flex-row shadow-2xl overflow-y-auto md:overflow-y-hidden"
+          style={{ backgroundColor: 'var(--bg-card, #1a1a2e)' }}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Close button */}
@@ -129,7 +130,7 @@ export default function FlashLightbox({ flash, onClose, onReserve, tatoueurName,
           </div>
 
           {/* Details */}
-          <div className="md:w-1/2 p-4 md:p-10 overflow-y-auto flex-1">
+          <div className="md:w-1/2 p-4 md:p-10 overflow-y-auto flex-1" style={{ backgroundColor: 'var(--bg-card, #1a1a2e)' }}>
             {/* Title */}
             {title && (
               <h2 className="text-xl md:text-4xl font-heading font-bold text-heading mb-1 md:mb-3">
