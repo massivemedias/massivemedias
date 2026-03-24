@@ -59,8 +59,8 @@ function BrightnessFader() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.9 }}
             transition={{ duration: 0.15 }}
-            className="absolute right-0 mt-2 p-2 rounded-xl bg-bg-card border border-white/10 shadow-2xl shadow-black/50 backdrop-blur-xl"
-            style={{ zIndex: 9999, minWidth: '160px' }}
+            className="absolute right-0 mt-2 p-2 rounded-xl border border-white/10 shadow-2xl shadow-black/50"
+            style={{ zIndex: 9999, minWidth: '160px', backgroundColor: 'var(--bg-card, #1a1a2e)' }}
           >
             {THEME_NAMES.map((name, i) => {
               const isSelected = step === i;
