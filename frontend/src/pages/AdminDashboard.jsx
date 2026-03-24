@@ -34,13 +34,13 @@ function DashboardNotes() {
         <Link
           key={n.id}
           to="/admin/notes"
-          className="block px-3 py-2 rounded-lg hover:bg-black/10 transition-colors"
+          className="block px-3 py-2.5 rounded-lg hover:bg-black/10 transition-colors"
         >
-          <p className="text-xs text-heading truncate font-medium">
+          <p className="text-sm text-heading truncate font-medium">
             {n.title || tx({ fr: 'Sans titre', en: 'Untitled', es: 'Sin titulo' })}
           </p>
           {i === 0 && n.body && (
-            <p className="text-[10px] text-grey-muted mt-0.5 line-clamp-2">{n.body.replace(/<[^>]*>/g, '').slice(0, 120)}</p>
+            <p className="text-xs text-grey-muted mt-1 line-clamp-2">{n.body.replace(/<[^>]*>/g, '').slice(0, 120)}</p>
           )}
         </Link>
       ))}
