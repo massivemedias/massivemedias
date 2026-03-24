@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import {
   ShoppingBag, Package, MessageSquare, Users, Receipt,
   BarChart3, DollarSign, Banknote, Star, AlertCircle,
-  Loader2, ArrowRight, StickyNote, Clock, CheckCircle, Truck,
+  Loader2, ArrowRight, StickyNote, Clock, CheckCircle, Truck, Activity,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import { getOrders, getContactSubmissions, getExpenses, getAnalytics } from '../services/adminService';
@@ -277,6 +277,79 @@ function AdminDashboard() {
             )}
           </div>
         </div>
+      </div>
+
+      {/* Systeme - widget compact */}
+      <SystemStatusWidget tx={tx} />
+    </div>
+  );
+}
+
+function SystemStatusWidget({ tx }) {
+  const [services, setServices] = useState([]);
+  const [checking, setChecking] = useState(true);
+
+  useEffect(() => {
+    checkServices();
+    const interval = setInterval(checkServices, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
+  async function checkServices() {
+    setChecking(true);
+    const results = [];
+
+    // Strapi API
+    try {
+      const start = Date.now();
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'https://massivemedias-api.onrender.com/api'}/artists?pagination[pageSize]=1`, { signal: AbortSignal.timeout(8000) });
+      results.push({ name: 'Strapi', ok: res.ok, ms: Date.now() - start });
+    } catch {
+      results.push({ name: 'Strapi', ok: false, ms: 0 });
+    }
+
+    // GitHub Pages
+    try {
+      const start = Date.now();
+      await fetch('https://massivemedias.com/', { mode: 'no-cors', signal: AbortSignal.timeout(5000) });
+      results.push({ name: 'Frontend', ok: true, ms: Date.now() - start });
+    } catch {
+      results.push({ name: 'Frontend', ok: false, ms: 0 });
+    }
+
+    // Supabase
+    results.push({ name: 'Auth', ok: !!import.meta.env.VITE_SUPABASE_URL });
+    // Stripe
+    results.push({ name: 'Stripe', ok: !!import.meta.env.VITE_STRIPE_PUBLIC_KEY });
+
+    setServices(results);
+    setChecking(false);
+  }
+
+  const allOk = services.length > 0 && services.every(s => s.ok);
+
+  return (
+    <div className="rounded-2xl p-4 md:p-5 card-bg">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-heading font-heading font-bold text-base flex items-center gap-2">
+          <Activity size={18} className={allOk ? 'text-green-400' : 'text-red-400'} />
+          {tx({ fr: 'Systemes', en: 'Systems', es: 'Sistemas' })}
+        </h3>
+        <div className="flex items-center gap-2">
+          {checking && <Loader2 size={12} className="animate-spin text-grey-muted" />}
+          <span className={`text-xs font-bold ${allOk ? 'text-green-400' : 'text-red-400'}`}>
+            {services.filter(s => s.ok).length}/{services.length} OK
+          </span>
+        </div>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {services.map(s => (
+          <div key={s.name} className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/20 text-xs">
+            <span className={`w-1.5 h-1.5 rounded-full ${s.ok ? 'bg-green-500' : 'bg-red-500'}`} />
+            <span className="text-grey-light">{s.name}</span>
+            {s.ms > 0 && <span className="text-grey-muted">{s.ms}ms</span>}
+          </div>
+        ))}
       </div>
     </div>
   );
