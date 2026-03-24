@@ -217,7 +217,7 @@ function AdminDepenses() {
   const addInvoiceItem = () => {
     setInvoiceData(prev => ({
       ...prev,
-      lineItems: [...prev.lineItems, { description: '', quantity: 1, unitPrice: 0, total: 0, category: 'other', addToInventory: true }],
+      lineItems: [...prev.lineItems, { description: '', quantity: 1, unitPrice: 0, total: 0, category: 'other', addToInventory: false }],
     }));
   };
 

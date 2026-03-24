@@ -432,7 +432,7 @@ function extractLineItems(text) {
   return items.map(item => ({
     ...item,
     category: guessCategory(item.description),
-    addToInventory: true,
+    addToInventory: false,
   }));
 }
 
