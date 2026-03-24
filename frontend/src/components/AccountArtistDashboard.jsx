@@ -81,7 +81,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
 
   const artist = artistsData[artistSlug] || null;
   const { artists: cmsArtists } = useArtists();
-  const cmsArtist = cmsArtists?.find(a => a.slug === artistSlug) || null;
+  const cmsArtist = (Array.isArray(cmsArtists) ? cmsArtists : []).find(a => a.slug === artistSlug) || null;
   const email = user?.email || '';
 
   useEffect(() => {
