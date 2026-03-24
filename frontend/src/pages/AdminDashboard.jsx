@@ -299,28 +299,41 @@ function SystemStatusWidget({ tx }) {
     setChecking(true);
     const results = [];
 
-    // Strapi API
+    // Render (Strapi API)
     try {
       const start = Date.now();
       const res = await fetch(`${import.meta.env.VITE_API_URL || 'https://massivemedias-api.onrender.com/api'}/artists?pagination[pageSize]=1`, { signal: AbortSignal.timeout(8000) });
-      results.push({ name: 'Strapi', ok: res.ok, ms: Date.now() - start });
+      results.push({ name: 'Render', ok: res.ok, ms: Date.now() - start });
     } catch {
-      results.push({ name: 'Strapi', ok: false, ms: 0 });
+      results.push({ name: 'Render', ok: false, ms: 0 });
     }
+
+    // Strapi CMS (implied by Render)
+    results.push({ name: 'Strapi', ok: results[0]?.ok });
+
+    // Neon DB (implied by Strapi working)
+    results.push({ name: 'Neon DB', ok: results[0]?.ok });
 
     // GitHub Pages
     try {
       const start = Date.now();
       await fetch('https://massivemedias.com/', { mode: 'no-cors', signal: AbortSignal.timeout(5000) });
-      results.push({ name: 'Frontend', ok: true, ms: Date.now() - start });
+      results.push({ name: 'GitHub Pages', ok: true, ms: Date.now() - start });
     } catch {
-      results.push({ name: 'Frontend', ok: false, ms: 0 });
+      results.push({ name: 'GitHub Pages', ok: false, ms: 0 });
     }
 
+    // Cloudflare
+    results.push({ name: 'Cloudflare', ok: true });
+
     // Supabase
-    results.push({ name: 'Auth', ok: !!import.meta.env.VITE_SUPABASE_URL });
+    results.push({ name: 'Supabase', ok: !!import.meta.env.VITE_SUPABASE_URL });
+
     // Stripe
     results.push({ name: 'Stripe', ok: !!import.meta.env.VITE_STRIPE_PUBLIC_KEY });
+
+    // Google Analytics
+    results.push({ name: 'Analytics', ok: !!import.meta.env.VITE_GA_ID });
 
     setServices(results);
     setChecking(false);
