@@ -6,6 +6,7 @@ import {
   Eye, EyeOff, ChevronDown, ChevronUp, Shield, Pencil, Save, ShoppingBag,
   ArrowRight, Gift, Copy, Heart, Clock, RotateCcw, MessageCircle, Download,
   Palette, Settings, Menu, X, Banknote, Receipt, BarChart3, DollarSign, Users, ScrollText, ImagePlus, FileText, ExternalLink,
+  LayoutDashboard, BookOpen, CalendarDays, Image, MessageSquare,
 } from 'lucide-react';
 import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
@@ -21,6 +22,7 @@ import AddressAutocomplete from '../components/AddressAutocomplete';
 import artistsData from '../data/artists';
 
 const AccountArtistDashboard = lazy(() => import('../components/AccountArtistDashboard'));
+const AccountTatoueurDashboard = lazy(() => import('../components/AccountTatoueurDashboard'));
 
 const PROVINCES_CA = [
   { code: 'QC', fr: 'Quebec', en: 'Quebec' },
@@ -112,14 +114,15 @@ function getMemberSince(createdAt, lang) {
 function Account() {
   const { t, lang, tx } = useLang();
   const { user, signOut, updateProfile, updatePassword, loading: authLoading } = useAuth();
-  const { role: userRole, isAdmin, isArtist, artistSlug, loading: roleLoading } = useUserRole();
+  const { role: userRole, isAdmin, isArtist, artistSlug, isTatoueur, tatoueurSlug, loading: roleLoading } = useUserRole();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const meta = user?.user_metadata || {};
 
   const tabFromUrl = searchParams.get('tab');
-  const validTabs = ['profile', 'address', 'security', 'overview', 'orders', 'artist', 'dashboard', 'profil-artiste', 'contrat', 'tarifs', 'retrait', 'ventes'];
-  const initialTab = (tabFromUrl && validTabs.includes(tabFromUrl)) ? tabFromUrl : (isAdmin ? 'profile' : isArtist ? 'dashboard' : 'overview');
+  const validTabs = ['profile', 'address', 'security', 'overview', 'orders', 'artist', 'dashboard', 'profil-artiste', 'contrat', 'tarifs', 'retrait', 'ventes',
+    'dashboard-tatoueur', 'flashs', 'reservations', 'calendrier', 'realisations', 'messages', 'boutique-tatoueur', 'profil-tatoueur', 'parametres'];
+  const initialTab = (tabFromUrl && validTabs.includes(tabFromUrl)) ? tabFromUrl : (isAdmin ? 'profile' : isArtist ? 'dashboard' : isTatoueur ? 'dashboard-tatoueur' : 'overview');
   const [activeTab, setActiveTab] = useState(initialTab);
   const userChangedTab = useRef(false);
   const roleApplied = useRef(false);
@@ -136,8 +139,11 @@ function Account() {
     if (isArtist && !tabFromUrl) {
       roleApplied.current = true;
       setActiveTab('dashboard');
+    } else if (isTatoueur && !tabFromUrl) {
+      roleApplied.current = true;
+      setActiveTab('dashboard-tatoueur');
     }
-  }, [isArtist]);
+  }, [isArtist, isTatoueur]);
 
   // Sync tab when URL query changes (e.g. from admin sidebar links)
   useEffect(() => {
@@ -185,6 +191,7 @@ function Account() {
   // Referral copy
   const [refCopied, setRefCopied] = useState(false);
   const [artistMobileOpen, setArtistMobileOpen] = useState(false);
+  const [tatoueurMobileOpen, setTatoueurMobileOpen] = useState(false);
 
   // Sync forms when user metadata changes
   useEffect(() => {
@@ -1172,6 +1179,267 @@ function Account() {
                   {['dashboard', 'profil-artiste', 'contrat', 'tarifs', 'retrait', 'ventes'].includes(activeTab) && (
                     <Suspense fallback={<div className="flex items-center gap-2 text-grey-muted py-8 justify-center"><Loader2 size={16} className="animate-spin" /></div>}>
                       <AccountArtistDashboard section={activeTab} />
+                    </Suspense>
+                  )}
+                  {activeTab === 'profile' && renderProfileContent()}
+                  {activeTab === 'address' && renderAddressContent()}
+                  {activeTab === 'security' && renderSecurityContent()}
+                  {activeTab === 'orders' && renderOrdersContent()}
+                </motion.div>
+              </AnimatePresence>
+            </main>
+          </div>
+        </section>
+      </>
+    );
+  }
+
+  // ============================================================
+  // TATOUEUR LAYOUT - sidebar style like artist
+  // ============================================================
+  const TATOUEUR_SIDEBAR_ITEMS = isTatoueur ? [
+    { id: 'dashboard-tatoueur', label: tx({ fr: 'Tableau de bord', en: 'Dashboard', es: 'Panel' }), icon: LayoutDashboard },
+    { id: 'flashs', label: tx({ fr: 'Mes flashs', en: 'My Flash Designs', es: 'Mis flashs' }), icon: Palette },
+    { id: 'reservations', label: tx({ fr: 'Rendez-vous', en: 'Appointments', es: 'Citas' }), icon: BookOpen },
+    { id: 'calendrier', label: tx({ fr: 'Calendrier', en: 'Calendar', es: 'Calendario' }), icon: CalendarDays },
+    { id: 'realisations', label: tx({ fr: 'Realisations', en: 'My Work', es: 'Mis trabajos' }), icon: Image },
+    { id: 'messages', label: tx({ fr: 'Messages', en: 'Messages', es: 'Mensajes' }), icon: MessageSquare },
+    { id: 'boutique-tatoueur', label: tx({ fr: 'Boutique', en: 'Shop', es: 'Tienda' }), icon: ShoppingBag },
+    { id: 'profil-tatoueur', label: tx({ fr: 'Mon profil', en: 'My Profile', es: 'Mi perfil' }), icon: User, href: `/tatoueurs/${tatoueurSlug}` },
+    { id: 'parametres', label: tx({ fr: 'Parametres', en: 'Settings', es: 'Ajustes' }), icon: Settings },
+  ] : [];
+
+  const tatoueurValidTabs = ['dashboard-tatoueur', 'flashs', 'reservations', 'calendrier', 'realisations', 'messages', 'boutique-tatoueur', 'profil-tatoueur', 'parametres', 'profile', 'address', 'security', 'orders'];
+
+  const getTatoueurSectionTitle = () => {
+    const tatoueurItem = TATOUEUR_SIDEBAR_ITEMS.find(i => i.id === activeTab);
+    if (tatoueurItem) return tatoueurItem.label;
+    const accountItem = ACCOUNT_SIDEBAR_ITEMS.find(i => i.id === activeTab);
+    if (accountItem) return accountItem.label;
+    if (activeTab === 'orders') return tx({ fr: 'Commandes', en: 'Orders', es: 'Pedidos' });
+    return tx({ fr: 'Tableau de bord', en: 'Dashboard', es: 'Panel' });
+  };
+
+  if (isTatoueur) {
+    return (
+      <>
+        <SEO title={`${t('account.title')} - Massive`} description="" noindex />
+        <section className="section-container pt-28 pb-20 min-h-screen">
+          {/* Header */}
+          <div className="max-w-7xl mx-auto mb-6">
+            <div className="flex items-center gap-4">
+              <div className="w-11 h-11 rounded-full bg-accent/20 border-2 border-accent/40 flex items-center justify-center flex-shrink-0">
+                <span className="text-sm font-bold text-accent">{initials}</span>
+              </div>
+              <div className="flex-grow min-w-0">
+                <h1 className="text-sm lg:text-lg text-heading font-heading font-bold">{meta.full_name || user?.email?.split('@')[0] || ''}</h1>
+                <p className="text-xs text-grey-muted/60">
+                  {user?.email}
+                  {memberSince && (
+                    <span className="ml-2">- {tx({ fr: 'Membre depuis', en: 'Member since', es: 'Miembro desde' })} {memberSince}</span>
+                  )}
+                </p>
+              </div>
+              <button onClick={signOut} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all text-xs font-semibold flex-shrink-0">
+                <LogOut size={14} />
+                <span className="hidden sm:inline">{tx({ fr: 'Deconnexion', en: 'Sign out', es: 'Cerrar sesion' })}</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Mobile header */}
+          <div className="lg:hidden flex items-center justify-between mb-4 max-w-7xl mx-auto">
+            <h2 className="text-xl font-heading font-bold text-heading">{getTatoueurSectionTitle()}</h2>
+            <button
+              onClick={() => setTatoueurMobileOpen(!tatoueurMobileOpen)}
+              className="flex items-center gap-2 px-3 py-2 rounded-lg bg-glass text-heading text-sm"
+            >
+              <span className="text-grey-muted text-xs font-medium">Menu Tatoueur</span>
+              {tatoueurMobileOpen ? <X size={18} /> : <Menu size={18} />}
+            </button>
+          </div>
+
+          {/* Mobile nav */}
+          {tatoueurMobileOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="lg:hidden flex flex-wrap gap-2 mb-6 max-w-7xl mx-auto"
+            >
+              {/* Mon compte en premier */}
+              <button
+                onClick={() => { handleSetTab('orders'); setTatoueurMobileOpen(false); }}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
+                  activeTab === 'orders' ? 'bg-accent text-white' : 'bg-glass text-grey-muted hover:text-heading'
+                }`}
+              >
+                <ShoppingBag size={14} />
+                {tx({ fr: 'Commandes', en: 'Orders', es: 'Pedidos' })}
+              </button>
+              {ACCOUNT_SIDEBAR_ITEMS.map((item) => {
+                const Icon = item.icon;
+                const isActive = activeTab === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => { handleSetTab(item.id); setTatoueurMobileOpen(false); }}
+                    className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
+                      isActive ? 'bg-accent text-white' : 'bg-glass text-grey-muted hover:text-heading'
+                    }`}
+                  >
+                    <Icon size={14} />
+                    {item.label}
+                  </button>
+                );
+              })}
+              <div className="w-full shadow-[0_-1px_0_rgba(255,255,255,0.04)] mt-1 pt-2" />
+              {/* Tatoueur */}
+              {TATOUEUR_SIDEBAR_ITEMS.map((item) => {
+                const Icon = item.icon;
+                const isActive = activeTab === item.id;
+                if (item.href) {
+                  return (
+                    <Link
+                      key={item.id}
+                      to={item.href}
+                      className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all bg-glass text-grey-muted hover:text-heading"
+                    >
+                      <Icon size={14} />
+                      {item.label}
+                      <ExternalLink size={10} className="ml-auto opacity-50" />
+                    </Link>
+                  );
+                }
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => { handleSetTab(item.id); setTatoueurMobileOpen(false); }}
+                    className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
+                      isActive ? 'bg-accent text-white' : 'bg-glass text-grey-muted hover:text-heading'
+                    }`}
+                  >
+                    <Icon size={14} />
+                    {item.label}
+                  </button>
+                );
+              })}
+            </motion.div>
+          )}
+
+          <div className="flex gap-6 max-w-7xl mx-auto">
+            {/* Sidebar desktop */}
+            <aside className="hidden lg:block w-52 flex-shrink-0">
+              <div className="sticky top-28 rounded-xl bg-glass p-3 space-y-1">
+                {/* Mon compte EN PREMIER */}
+                <h2 className="text-xs font-semibold text-grey-muted uppercase tracking-wider px-3 py-2">
+                  {tx({ fr: 'Mon compte', en: 'My account', es: 'Mi cuenta' })}
+                </h2>
+                <button
+                  onClick={() => handleSetTab('orders')}
+                  className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    activeTab === 'orders'
+                      ? 'bg-accent/20 text-accent'
+                      : 'text-grey-muted hover:text-heading hover:bg-glass'
+                  }`}
+                >
+                  <ShoppingBag size={16} />
+                  {tx({ fr: 'Commandes', en: 'Orders', es: 'Pedidos' })}
+                  {orders.length > 0 && (
+                    <span className="text-[10px] bg-accent/20 text-accent rounded-full px-1.5 py-0.5 font-bold ml-auto">{orders.length}</span>
+                  )}
+                </button>
+                {ACCOUNT_SIDEBAR_ITEMS.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = activeTab === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => handleSetTab(item.id)}
+                      className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                        isActive
+                          ? 'bg-accent/20 text-accent'
+                          : 'text-grey-muted hover:text-heading hover:bg-glass'
+                      }`}
+                    >
+                      <Icon size={16} />
+                      {item.label}
+                    </button>
+                  );
+                })}
+
+                <div className="shadow-[0_-1px_0_rgba(255,255,255,0.04)] my-2" />
+
+                {/* Tatoueur EN SECOND */}
+                <h2 className="text-xs font-semibold text-grey-muted uppercase tracking-wider px-3 py-2">
+                  {tx({ fr: 'Tatoueur', en: 'Tattoo Artist', es: 'Tatuador' })}
+                </h2>
+                {TATOUEUR_SIDEBAR_ITEMS.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = activeTab === item.id;
+                  if (item.href) {
+                    return (
+                      <Link
+                        key={item.id}
+                        to={item.href}
+                        className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 text-grey-muted hover:text-heading hover:bg-glass"
+                      >
+                        <Icon size={16} />
+                        {item.label}
+                        <ExternalLink size={12} className="ml-auto opacity-40" />
+                      </Link>
+                    );
+                  }
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => handleSetTab(item.id)}
+                      className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                        isActive
+                          ? 'bg-accent/20 text-accent'
+                          : 'text-grey-muted hover:text-heading hover:bg-glass'
+                      }`}
+                    >
+                      <Icon size={16} />
+                      {item.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </aside>
+
+            {/* Main content */}
+            <main className="flex-1 min-w-0">
+              <h2 className="hidden lg:block text-3xl font-heading font-bold text-heading mb-6">
+                {getTatoueurSectionTitle()}
+              </h2>
+
+              {/* Save feedback */}
+              <AnimatePresence>
+                {saveMsg && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="mb-4 p-3 rounded-lg bg-green-500/10 text-green-400 text-sm flex items-center gap-2"
+                  >
+                    <Check size={16} />
+                    {saveMsg}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={activeTab}
+                  initial={{ opacity: 0, x: 10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -10 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  {/* Tatoueur sections */}
+                  {['dashboard-tatoueur', 'flashs', 'reservations', 'calendrier', 'realisations', 'messages', 'boutique-tatoueur', 'profil-tatoueur', 'parametres'].includes(activeTab) && (
+                    <Suspense fallback={<div className="flex items-center gap-2 text-grey-muted py-8 justify-center"><Loader2 size={16} className="animate-spin" /></div>}>
+                      <AccountTatoueurDashboard section={activeTab} onNavigate={handleSetTab} />
                     </Suspense>
                   )}
                   {activeTab === 'profile' && renderProfileContent()}
