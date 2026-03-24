@@ -12,7 +12,7 @@ import tatoueursData from '../data/tatoueurs';
 
 // Type map for each artist slug
 const ARTIST_TYPES = {
-  'adrift': 'peintre',
+  'adrift': 'photographe',
   'maudite-machine': 'peintre',
   'mok': 'photographe',
   'psyqu33n': 'peintre',
@@ -209,14 +209,8 @@ function Artistes() {
       peintre: 'bg-purple-500/20 text-purple-300 border-purple-500/30',
       tatoueur: 'bg-accent/20 text-accent border-accent/30',
     };
-    const icons = {
-      photographe: <Aperture size={10} />,
-      peintre: <Paintbrush size={10} />,
-      tatoueur: <PenTool size={10} />,
-    };
     return (
-      <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border ${colors[type] || colors.peintre}`}>
-        {icons[type]}
+      <span className={`inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full border ${colors[type] || colors.peintre}`}>
         {tx(label)}
       </span>
     );
@@ -351,7 +345,7 @@ function Artistes() {
                           <img
                             src={creator.avatar}
                             alt={creator.name}
-                            className="w-9 h-9 md:w-10 md:h-10 rounded-full object-cover border-2 border-white/30 shadow-lg"
+                            className="w-9 h-9 md:w-10 md:h-10 rounded-full object-cover shadow-lg shadow-black/40"
                           />
                         </div>
                       )}
@@ -459,7 +453,7 @@ function Artistes() {
                           <img
                             src={creator.avatar}
                             alt={creator.name}
-                            className="w-10 h-10 md:w-12 md:h-12 rounded-full object-cover border-2 border-white/10 shrink-0"
+                            className="w-10 h-10 md:w-12 md:h-12 rounded-full object-cover shadow-lg shadow-black/40 shrink-0"
                           />
                         )}
                         <div className="flex items-center gap-3 flex-wrap">
