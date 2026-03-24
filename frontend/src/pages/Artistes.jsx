@@ -151,7 +151,7 @@ function Artistes() {
             </div>
 
             <h1 className="text-5xl md:text-8xl font-heading font-bold text-heading tracking-tight leading-none mb-4">
-              {tx({ fr: 'Nos artistes', en: 'Our Artists' })}
+              {tx({ fr: 'Massive Artistes', en: 'Massive Artists' })}
             </h1>
 
             <div className="w-16 h-1 bg-accent mb-6" />

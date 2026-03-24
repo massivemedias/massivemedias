@@ -413,7 +413,7 @@ function Boutique() {
                 transition={{ duration: 0.5 }}
               >
                 <h2 className="text-2xl md:text-3xl font-heading font-bold text-heading mb-8">
-                  {tx({ fr: 'Nos artistes', en: 'Our artists', es: 'Nuestros artistas' })}
+                  {tx({ fr: 'Massive Artistes', en: 'Massive Artists', es: 'Massive Artistas' })}
                 </h2>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">

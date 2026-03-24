@@ -280,7 +280,7 @@ function Home() {
           className="text-center mb-12"
         >
           <h2 className="text-5xl md:text-6xl font-heading font-bold text-heading mb-4 hero-title">
-            {tx({ fr: 'Nos artistes', en: 'Our artists', es: 'Nuestros artistas' })}
+            {tx({ fr: 'Massive Artistes', en: 'Massive Artists', es: 'Massive Artistas' })}
           </h2>
           <p className="text-xl text-grey-light max-w-2xl mx-auto">
             {tx({ fr: 'Prints fine art disponibles en boutique - oeuvres originales imprimées sur commande', en: 'Fine art prints available in our shop - original works printed on demand', es: 'Prints fine art disponibles en tienda - obras originales impresas a pedido' })}
