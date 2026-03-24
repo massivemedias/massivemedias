@@ -207,7 +207,7 @@ function Artistes() {
     const colors = {
       photographe: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
       peintre: 'bg-purple-500/20 text-purple-300 border-purple-500/30',
-      tatoueur: 'bg-accent/20 text-accent border-accent/30',
+      tatoueur: 'bg-pink-600/20 text-pink-400 border-pink-500/30',
     };
     return (
       <span className={`inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full border ${colors[type] || colors.peintre}`}>
