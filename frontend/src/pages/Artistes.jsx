@@ -165,13 +165,9 @@ function Artistes() {
 
             {/* Quick nav */}
             <div className="flex flex-wrap gap-3">
-              <a href="#photographes" className="flex items-center gap-2 text-sm px-4 py-2 rounded-full bg-bg-card border border-white/10 text-grey-light hover:text-accent hover:border-accent/30 transition-colors">
+              <a href="#artistes" className="flex items-center gap-2 text-sm px-4 py-2 rounded-full bg-bg-card border border-white/10 text-grey-light hover:text-accent hover:border-accent/30 transition-colors">
                 <Camera size={16} />
-                {tx({ fr: 'Photographes & Peintres', en: 'Photographers & Painters' })}
-              </a>
-              <a href="#tatoueurs" className="flex items-center gap-2 text-sm px-4 py-2 rounded-full bg-bg-card border border-white/10 text-grey-light hover:text-accent hover:border-accent/30 transition-colors">
-                <PenTool size={16} />
-                {tx({ fr: 'Tatoueurs', en: 'Tattoo Artists' })}
+                {tx({ fr: 'Tous les artistes', en: 'All artists' })}
               </a>
               <a href="#boutique" className="flex items-center gap-2 text-sm px-4 py-2 rounded-full bg-bg-card border border-white/10 text-grey-light hover:text-accent hover:border-accent/30 transition-colors">
                 <Store size={16} />
@@ -182,163 +178,84 @@ function Artistes() {
         </div>
       </section>
 
-      {/* ============ SECTION PHOTOGRAPHES & PEINTRES ============ */}
-      <section id="photographes" className="scroll-mt-24">
+      {/* ============ TOUS LES ARTISTES (melanges) ============ */}
+      <section id="artistes" className="scroll-mt-24">
         <div className="section-container max-w-7xl mx-auto pb-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            viewport={{ once: true }}
-            className="flex items-center gap-3 mb-8"
-          >
-            <Camera size={28} className="text-accent" />
-            <h2 className="text-3xl md:text-4xl font-heading font-bold text-heading">
-              {tx({ fr: 'Photographes & Peintres', en: 'Photographers & Painters' })}
-            </h2>
-          </motion.div>
-
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 mb-12">
-            {artists.map((artist, index) => {
-              const tagline = tx({ fr: artist.tagline.fr, en: artist.tagline.en, es: artist.tagline.es || artist.tagline.en });
+            {(() => {
+              // Fusionner artistes + tatoueurs dans une seule liste
+              const allCreators = [
+                ...artists.map(a => ({ ...a, type: 'artist', link: `/artistes/${a.slug}` })),
+                ...tatoueurs.map(t => ({
+                  ...t,
+                  type: 'tatoueur',
+                  link: `/tatoueurs/${t.slug}`,
+                  tagline: { fr: t.studio ? `${t.studio} - ${t.city || ''}` : (t.bioFr || '').slice(0, 60), en: t.studio ? `${t.studio} - ${t.city || ''}` : (t.bioEn || '').slice(0, 60) },
+                  heroImage: t.heroImage || t.avatar,
+                  prints: t.flashs || [],
+                })),
+              ];
 
-              return (
-                <motion.div
-                  key={artist.slug}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: index * 0.06 }}
-                  viewport={{ once: true, margin: '-50px' }}
-                >
-                  <Link
-                    to={`/artistes/${artist.slug}`}
-                    className="group block relative overflow-hidden rounded-xl aspect-[4/5]"
+              return allCreators.map((creator, index) => {
+                const tagline = tx({ fr: creator.tagline?.fr || '', en: creator.tagline?.en || '' });
+                const isTatoueur = creator.type === 'tatoueur';
+                const flashCount = isTatoueur ? (creator.flashs || []).filter(f => f.status === 'disponible').length : 0;
+
+                return (
+                  <motion.div
+                    key={creator.slug}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: index * 0.06 }}
+                    viewport={{ once: true, margin: '-50px' }}
                   >
-                    <img
-                      src={artist.heroImage || artist.avatar}
-                      alt={artist.name}
-                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                      loading={index < 4 ? 'eager' : 'lazy'}
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent group-hover:from-black/90 transition-all duration-500" />
-                    <div className="absolute inset-0 flex flex-col justify-end p-4 md:p-5">
-                      <h3 className="font-heading font-bold text-white text-lg md:text-xl leading-tight mb-1 drop-shadow-lg">
-                        {artist.name}
-                      </h3>
-                      <p className="text-white/50 text-xs md:text-sm leading-snug line-clamp-1">
-                        {tagline}
-                      </p>
-                      <div className="flex items-center justify-between mt-2 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
-                        <span className="text-white/40 text-[10px] uppercase tracking-widest">
-                          {artist.prints?.length || 0} {tx({ fr: 'oeuvres', en: 'artworks' })}
-                        </span>
-                        <ArrowRight size={14} className="text-accent" />
-                      </div>
-                    </div>
-                  </Link>
-                </motion.div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
+                    <Link
+                      to={creator.link}
+                      className="group block relative overflow-hidden rounded-xl aspect-[4/5]"
+                    >
+                      <img
+                        src={creator.heroImage || creator.avatar}
+                        alt={creator.name}
+                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                        loading={index < 4 ? 'eager' : 'lazy'}
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent group-hover:from-black/90 transition-all duration-500" />
 
-      {/* ============ SECTION TATOUEURS ============ */}
-      <section id="tatoueurs" className="scroll-mt-24 py-12 md:py-16 bg-bg-elevated/30">
-        <div className="section-container max-w-7xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            viewport={{ once: true }}
-            className="flex items-center justify-between mb-8"
-          >
-            <div className="flex items-center gap-3">
-              <PenTool size={28} className="text-accent" />
-              <h2 className="text-3xl md:text-4xl font-heading font-bold text-heading">
-                {tx({ fr: 'Tatoueurs', en: 'Tattoo Artists' })}
-              </h2>
-            </div>
-            <Link to="/tatoueurs" className="text-sm text-grey-muted hover:text-accent transition-colors flex items-center gap-1">
-              {tx({ fr: 'Voir tout', en: 'View all' })}
-              <ArrowRight size={14} />
-            </Link>
-          </motion.div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-8">
-            {tatoueurs.map((tatoueur, index) => {
-              const bio = lang === 'en' ? (tatoueur.bioEn || tatoueur.bioFr) : (tatoueur.bioFr || tatoueur.bioEn);
-              const flashCount = (tatoueur.flashs || []).filter(f => f.status === 'disponible').length;
-
-              return (
-                <motion.div
-                  key={tatoueur.slug}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.08 }}
-                  viewport={{ once: true, margin: '-50px' }}
-                >
-                  <Link
-                    to={`/tatoueurs/${tatoueur.slug}`}
-                    className="group block relative overflow-hidden rounded-xl bg-bg-card border border-white/5 hover:border-accent/20 transition-all duration-300"
-                  >
-                    <div className="relative aspect-[16/10] overflow-hidden">
-                      {tatoueur.heroImage || tatoueur.avatar ? (
-                        <img
-                          src={tatoueur.heroImage || tatoueur.avatar}
-                          alt={tatoueur.name}
-                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                          loading="lazy"
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-bg-elevated" />
-                      )}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                      {flashCount > 0 && (
-                        <div className="absolute top-3 right-3 bg-green-500 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-lg">
-                          {flashCount} flash{flashCount > 1 ? 's' : ''} {tx({ fr: 'dispo', en: 'available' })}
+                      {/* Badge tatoueur */}
+                      {isTatoueur && flashCount > 0 && (
+                        <div className="absolute top-3 right-3 bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg">
+                          {flashCount} flash{flashCount > 1 ? 's' : ''}
                         </div>
                       )}
-                    </div>
-
-                    <div className="p-5">
-                      <div className="flex items-start gap-3 mb-3">
-                        {tatoueur.avatar && (
-                          <img src={tatoueur.avatar} alt={tatoueur.name} className="w-12 h-12 rounded-full object-cover border-2 border-accent/30 flex-shrink-0" />
-                        )}
-                        <div className="min-w-0">
-                          <h3 className="font-heading font-bold text-heading text-lg leading-tight">{tatoueur.name}</h3>
-                          <div className="flex items-center gap-1.5 text-grey-muted text-xs mt-0.5">
-                            {tatoueur.studio && <span>{tatoueur.studio}</span>}
-                            {tatoueur.studio && tatoueur.city && <span>-</span>}
-                            {tatoueur.city && <span className="flex items-center gap-0.5"><MapPin size={10} />{tatoueur.city}</span>}
-                          </div>
-                        </div>
-                      </div>
-
-                      {tatoueur.styles && tatoueur.styles.length > 0 && (
-                        <div className="flex flex-wrap gap-1.5 mb-3">
-                          {tatoueur.styles.slice(0, 4).map(style => (
-                            <span key={style} className="text-[10px] px-2 py-0.5 rounded-full bg-bg-elevated text-grey-light capitalize">{style}</span>
-                          ))}
+                      {isTatoueur && (
+                        <div className="absolute top-3 left-3 bg-accent/80 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg flex items-center gap-1">
+                          <PenTool size={10} />
+                          Tattoo
                         </div>
                       )}
 
-                      {bio && <p className="text-grey-muted text-xs line-clamp-2 mb-3">{bio}</p>}
-
-                      <div className="flex items-center justify-between pt-3 border-t border-white/5">
-                        {tatoueur.priceTattooMin && (
-                          <span className="text-xs text-grey-muted">
-                            {tx({ fr: 'A partir de', en: 'From' })} <span className="text-accent font-bold">{tatoueur.priceTattooMin}$</span>
+                      <div className="absolute inset-0 flex flex-col justify-end p-4 md:p-5">
+                        <h3 className="font-heading font-bold text-white text-lg md:text-xl leading-tight mb-1 drop-shadow-lg">
+                          {creator.name}
+                        </h3>
+                        <p className="text-white/50 text-xs md:text-sm leading-snug line-clamp-1">
+                          {tagline}
+                        </p>
+                        <div className="flex items-center justify-between mt-2 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
+                          <span className="text-white/40 text-[10px] uppercase tracking-widest">
+                            {isTatoueur
+                              ? `${flashCount} ${tx({ fr: 'flashs', en: 'flash designs' })}`
+                              : `${creator.prints?.length || 0} ${tx({ fr: 'oeuvres', en: 'artworks' })}`
+                            }
                           </span>
-                        )}
-                        <ArrowRight size={16} className="text-grey-muted group-hover:text-accent group-hover:translate-x-1 transition-all" />
+                          <ArrowRight size={14} className="text-accent" />
+                        </div>
                       </div>
-                    </div>
-                  </Link>
-                </motion.div>
-              );
-            })}
+                    </Link>
+                  </motion.div>
+                );
+              });
+            })()}
           </div>
         </div>
       </section>
