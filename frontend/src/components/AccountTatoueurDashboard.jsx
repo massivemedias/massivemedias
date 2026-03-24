@@ -6,6 +6,7 @@ import {
 import { useLang } from '../i18n/LanguageContext';
 import { useUserRole } from '../contexts/UserRoleContext';
 import api from '../services/api';
+import tatoueursData from '../data/tatoueurs';
 
 const TatoueurFlashManager = lazy(() => import('./tatoueur/TatoueurFlashManager'));
 const TatoueurReservations = lazy(() => import('./tatoueur/TatoueurReservations'));
@@ -24,10 +25,6 @@ function DashboardOverview({ tatoueur, tx, onNavigate }) {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-heading font-bold text-heading">
-        {tx({ fr: `Bienvenue, ${tatoueur?.name || 'Tatoueur'}`, en: `Welcome, ${tatoueur?.name || 'Artist'}` })}
-      </h2>
-
       {/* Stats cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-bg-card rounded-xl p-5 border border-white/5">
@@ -107,17 +104,41 @@ function AccountTatoueurDashboard({ section = 'dashboard-tatoueur', onNavigate }
           setLoading(false);
           return;
         }
-        const { data } = await api.get('/tatoueurs', {
-          params: {
-            'filters[slug][$eq]': slug,
-            populate: '*',
-          },
-        });
-        if (data.data?.length > 0) {
-          setTatoueur(data.data[0]);
+
+        // Donnees locales en priorite (toujours disponibles)
+        const local = tatoueursData[slug] || null;
+
+        // Essayer le CMS en complement
+        let cms = null;
+        try {
+          const { data } = await api.get('/tatoueurs', {
+            params: {
+              'filters[slug][$eq]': slug,
+              populate: '*',
+            },
+          });
+          if (data.data?.length > 0) {
+            cms = data.data[0];
+          }
+        } catch {
+          // CMS indisponible, on utilise les donnees locales
         }
+
+        // Merger: CMS prioritaire sur local, mais local comme fallback
+        const merged = {
+          ...local,
+          ...(cms || {}),
+          flashs: cms?.flashs?.length > 0 ? cms.flashs : (local?.flashs || []),
+          realisations: cms?.realisations?.length > 0 ? cms.realisations : (local?.realisations || []),
+          calendarSettings: cms?.calendarSettings || local?.calendarSettings || {},
+          slug,
+        };
+        setTatoueur(merged);
       } catch (err) {
         console.warn('[AccountTatoueurDashboard] Erreur fetch:', err.message);
+        // Fallback donnees locales
+        const local = tatoueursData[tatoueurSlug];
+        if (local) setTatoueur({ ...local, slug: tatoueurSlug });
       } finally {
         setLoading(false);
       }
