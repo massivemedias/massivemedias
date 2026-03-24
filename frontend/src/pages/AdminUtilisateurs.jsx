@@ -11,8 +11,10 @@ import api from '../services/api';
 import { getClients, getArtistSubmissions } from '../services/adminService';
 import { getUserRoles, setUserRole } from '../services/userRoleService';
 import artistsData from '../data/artists';
+import tatoueursData from '../data/tatoueurs';
 
 const ARTIST_SLUGS = Object.keys(artistsData);
+const TATOUEUR_SLUGS = Object.keys(tatoueursData);
 const GA_PROPERTY_ID = '525792501';
 
 function AdminUtilisateurs() {
@@ -205,16 +207,38 @@ function AdminUtilisateurs() {
       return;
     }
 
-    const slug = selectedSlug === '__new__' ? customSlug.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-') : selectedSlug;
+    let role = 'artist';
+    let slug = selectedSlug;
+
+    if (selectedSlug === '__new__') {
+      slug = customSlug.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-');
+    } else if (selectedSlug.startsWith('tatoueur:')) {
+      role = 'tatoueur';
+      slug = selectedSlug.replace('tatoueur:', '');
+    } else if (selectedSlug.startsWith('artist:')) {
+      role = 'artist';
+      slug = selectedSlug.replace('artist:', '');
+    }
+
     if (!slug) return;
     setSaving(email);
     try {
-      await setUserRole(email, 'artist', slug, user.id, user.fullName);
-      setRoles(prev => ({ ...prev, [email]: { role: 'artist', artistSlug: slug, email } }));
+      const slugField = role === 'tatoueur' ? slug : slug;
+      await setUserRole(email, role, slugField, user.id, user.fullName);
+      setRoles(prev => ({
+        ...prev,
+        [email]: {
+          role,
+          artistSlug: role === 'artist' ? slug : null,
+          tatoueurSlug: role === 'tatoueur' ? slug : null,
+          email,
+        },
+      }));
       setEditingUser(null);
       setSelectedSlug('');
       setCustomSlug('');
-      setToast(tx({ fr: `${user.fullName || email} est maintenant artiste (${slug})`, en: `${user.fullName || email} is now an artist (${slug})`, es: `${user.fullName || email} ahora es artista (${slug})` }));
+      const roleLabel = role === 'tatoueur' ? tx({ fr: 'tatoueur', en: 'tattoo artist', es: 'tatuador' }) : tx({ fr: 'artiste', en: 'artist', es: 'artista' });
+      setToast(tx({ fr: `${user.fullName || email} est maintenant ${roleLabel} (${slug})`, en: `${user.fullName || email} is now ${roleLabel} (${slug})`, es: `${user.fullName || email} ahora es ${roleLabel} (${slug})` }));
       setTimeout(() => setToast(''), 3000);
     } catch {
       setToast(tx({ fr: 'Erreur lors de la mise a jour', en: 'Error updating role', es: 'Error al actualizar' }));
@@ -712,7 +736,7 @@ function AdminUtilisateurs() {
                                 className="px-3 py-1.5 rounded-lg bg-accent/10 text-accent text-xs font-semibold hover:bg-accent/20 transition-colors flex items-center gap-1.5"
                               >
                                 <Palette size={12} />
-                                {tx({ fr: 'Assigner comme artiste', en: 'Assign as artist', es: 'Asignar como artista' })}
+                                {tx({ fr: 'Assigner un rôle', en: 'Assign role', es: 'Asignar rol' })}
                               </button>
                             )}
 
@@ -767,9 +791,9 @@ function AdminUtilisateurs() {
                     >
                       <div className="px-4 py-3 flex flex-wrap items-center gap-3 bg-accent/5 shadow-[0_-1px_0_rgba(255,255,255,0.04)]">
                         <span className="text-xs text-grey-muted whitespace-nowrap">
-                          {role === 'artist'
-                            ? tx({ fr: 'Changer le profil artiste:', en: 'Change artist profile:', es: 'Cambiar perfil artista:' })
-                            : tx({ fr: 'Lier à l\'artiste:', en: 'Link to artist:', es: 'Vincular al artista:' })}
+                          {role === 'artist' || role === 'tatoueur'
+                            ? tx({ fr: 'Changer le rôle:', en: 'Change role:', es: 'Cambiar rol:' })
+                            : tx({ fr: 'Assigner un rôle:', en: 'Assign a role:', es: 'Asignar un rol:' })}
                         </span>
                         <select
                           value={selectedSlug}
@@ -777,15 +801,24 @@ function AdminUtilisateurs() {
                           className="input-field text-sm py-1.5 px-3 max-w-xs"
                         >
                           <option value="">{tx({ fr: '-- Choisir --', en: '-- Choose --', es: '-- Elegir --' })}</option>
-                          {role === 'artist' && (
-                            <option value="__downgrade__">{tx({ fr: 'Utilisateur normal (retirer artiste)', en: 'Normal user (remove artist)', es: 'Usuario normal (quitar artista)' })}</option>
+                          {(role === 'artist' || role === 'tatoueur') && (
+                            <option value="__downgrade__">{tx({ fr: 'Retirer le rôle (utilisateur normal)', en: 'Remove role (normal user)', es: 'Quitar rol (usuario normal)' })}</option>
                           )}
-                          <option value="__new__">{tx({ fr: '+ Nouvel artiste (slug personnalisé)', en: '+ New artist (custom slug)', es: '+ Nuevo artista (slug personalizado)' })}</option>
-                          {ARTIST_SLUGS.map(slug => (
-                            <option key={slug} value={slug}>
-                              {artistsData[slug]?.name || slug}
-                            </option>
-                          ))}
+                          <option value="__new__">{tx({ fr: '+ Nouveau (slug personnalisé)', en: '+ New (custom slug)', es: '+ Nuevo (slug personalizado)' })}</option>
+                          <optgroup label={tx({ fr: 'Artistes', en: 'Artists', es: 'Artistas' })}>
+                            {ARTIST_SLUGS.map(slug => (
+                              <option key={`artist-${slug}`} value={`artist:${slug}`}>
+                                {artistsData[slug]?.name || slug}
+                              </option>
+                            ))}
+                          </optgroup>
+                          <optgroup label={tx({ fr: 'Tatoueurs', en: 'Tattoo Artists', es: 'Tatuadores' })}>
+                            {TATOUEUR_SLUGS.map(slug => (
+                              <option key={`tatoueur-${slug}`} value={`tatoueur:${slug}`}>
+                                {tatoueursData[slug]?.name || slug}
+                              </option>
+                            ))}
+                          </optgroup>
                         </select>
                         {selectedSlug === '__new__' && (
                           <input

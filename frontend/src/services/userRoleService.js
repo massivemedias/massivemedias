@@ -7,8 +7,12 @@ export const getUserRoles = () => api.get('/user-roles/list');
 export const getUserRoleByEmail = (email) => api.get('/user-roles/by-email', { params: { email } });
 
 // Definir le role d'un user
-export const setUserRole = (email, role, artistSlug, supabaseUserId, displayName) =>
-  api.put('/user-roles/set', { email, role, artistSlug, supabaseUserId, displayName });
+export const setUserRole = (email, role, slug, supabaseUserId, displayName) =>
+  api.put('/user-roles/set', {
+    email, role, supabaseUserId, displayName,
+    artistSlug: role === 'artist' ? slug : null,
+    tatoueurSlug: role === 'tatoueur' ? slug : null,
+  });
 
 // Supprimer un role (remet en user)
 export const deleteUserRole = (documentId) => api.delete(`/user-roles/${documentId}`);
