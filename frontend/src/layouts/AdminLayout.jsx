@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import {
   ShoppingBag, Package, MessageSquare, Banknote,
   Users, Receipt, FileText, BarChart3, Menu, X, DollarSign,
-  Pencil, MapPin, Shield, Star, LayoutDashboard, StickyNote, PenTool,
+  Pencil, MapPin, Shield, Star, LayoutDashboard, StickyNote, PenTool, Activity,
 } from 'lucide-react';
 import { useState } from 'react';
 import { useLang } from '../i18n/LanguageContext';
@@ -28,6 +28,7 @@ const NAV_ITEMS = [
   { to: '/admin/temoignages', icon: Star, fr: 'Témoignages', en: 'Testimonials', es: 'Testimonios' },
   { to: '/admin/stats', icon: BarChart3, fr: 'Stats', en: 'Stats', es: 'Stats' },
   { to: '/admin/tarifs', icon: DollarSign, fr: 'Tarifs', en: 'Pricing', es: 'Precios' },
+  { to: '/admin/systeme', icon: Activity, fr: 'Systeme', en: 'System', es: 'Sistema' },
 ];
 
 function AdminLayout() {
