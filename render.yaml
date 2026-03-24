@@ -1,8 +1,5 @@
-databases:
-  - name: massivemedias-db
-    plan: free
-    databaseName: massivemedias
-    user: massivemedias
+# DB sur Neon (free tier permanent)
+# DATABASE_URL configure dans le dashboard Render
 
 services:
   - type: web
@@ -21,9 +18,7 @@ services:
       - key: DATABASE_CLIENT
         value: postgres
       - key: DATABASE_URL
-        fromDatabase:
-          name: massivemedias-db
-          property: connectionString
+        sync: false
       - key: DATABASE_SSL
         value: "true"
       - key: DATABASE_SSL_REJECT_UNAUTHORIZED
