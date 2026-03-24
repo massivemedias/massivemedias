@@ -28,7 +28,6 @@ const NAV_ITEMS = [
   { to: '/admin/temoignages', icon: Star, fr: 'Témoignages', en: 'Testimonials', es: 'Testimonios' },
   { to: '/admin/stats', icon: BarChart3, fr: 'Stats', en: 'Stats', es: 'Stats' },
   { to: '/admin/tarifs', icon: DollarSign, fr: 'Tarifs', en: 'Pricing', es: 'Precios' },
-  { to: '/admin/systeme', icon: Activity, fr: 'Systeme', en: 'System', es: 'Sistema' },
 ];
 
 function AdminLayout() {
