@@ -251,7 +251,7 @@ function TatoueurDetail({ subdomainSlug }) {
       </section>
 
       {/* ========== BIO + DISPONIBILITES ========== */}
-      <section className="py-12 md:py-16">
+      <section className="py-8 md:py-10">
         <div className="section-container">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
             {/* Colonne gauche: A propos */}
@@ -289,7 +289,7 @@ function TatoueurDetail({ subdomainSlug }) {
       </section>
 
       {/* ========== FLASHS ========== */}
-      <section id="flashs" className="py-12 md:py-16 bg-bg-elevated/30">
+      <section id="flashs" className="py-8 md:py-10 bg-bg-elevated/30">
         <div className="section-container">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
