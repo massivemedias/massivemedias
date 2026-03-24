@@ -81,15 +81,16 @@ export default function FlashCard({ flash, onClick, index = 0, hidePrices = fals
         )}
 
         {/* Status badge */}
-        <div className={`absolute top-3 right-3 ${status.color} text-white text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1 shadow-lg`}>
-          <StatusIcon size={12} />
-          {tx({ fr: status.labelFr, en: status.labelEn })}
+        <div className={`absolute top-2 right-2 md:top-3 md:right-3 ${status.color} text-white text-[10px] md:text-xs font-bold px-1.5 md:px-2.5 py-0.5 md:py-1 rounded-full flex items-center gap-0.5 md:gap-1 shadow-lg`}>
+          <StatusIcon size={10} className="md:w-3 md:h-3" />
+          <span className="hidden sm:inline">{tx({ fr: status.labelFr, en: status.labelEn })}</span>
         </div>
 
         {/* Unique badge */}
         {flash.isUnique && isAvailable && (
-          <div className="absolute top-3 left-3 bg-accent text-black text-xs font-bold px-2.5 py-1 rounded-full shadow-lg">
-            {tx({ fr: 'Piece unique', en: 'One of a kind' })}
+          <div className="absolute top-2 left-2 md:top-3 md:left-3 bg-accent text-black text-[10px] md:text-xs font-bold px-1.5 md:px-2.5 py-0.5 md:py-1 rounded-full shadow-lg">
+            <span className="sm:hidden">{tx({ fr: 'Unique', en: 'Unique' })}</span>
+            <span className="hidden sm:inline">{tx({ fr: 'Piece unique', en: 'One of a kind' })}</span>
           </div>
         )}
       </div>
