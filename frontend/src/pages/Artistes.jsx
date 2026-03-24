@@ -232,14 +232,14 @@ function Artistes() {
       />
 
       {/* ============ HERO ============ */}
-      <section className="pt-24 pb-6 md:pt-32 md:pb-10">
+      <section className="pt-24 pb-2 md:pt-28 md:pb-2">
         <div className="section-container">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <div className="flex items-center gap-2 mb-8 text-sm">
+            <div className="flex items-center gap-2 mb-4 text-sm">
               <Link to="/" className="text-grey-muted hover:text-accent transition-colors">
                 {tx({ fr: 'Accueil', en: 'Home', es: 'Inicio' })}
               </Link>
