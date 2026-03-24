@@ -478,7 +478,7 @@ function ArtisteDetail({ subdomainSlug }) {
 
             {/* Oeuvres - prend 2/3 en desktop, a droite */}
             <div className="lg:w-2/3 order-1 lg:order-2">
-              <div className="flex flex-wrap justify-center gap-4">
+              <div className="flex flex-wrap gap-4">
                 {artist.prints.map((print, index) => (
                   <motion.div
                     key={print.id}
