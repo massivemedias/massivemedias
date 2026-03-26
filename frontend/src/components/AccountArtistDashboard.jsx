@@ -35,6 +35,10 @@ const ARTIST_DISCOUNT_PRICES = {
   museum: { postcard: Math.floor(25 * (1 - ARTIST_DISCOUNT)), a4: Math.floor(75 * (1 - ARTIST_DISCOUNT)), a3: Math.floor(120 * (1 - ARTIST_DISCOUNT)), a3plus: Math.floor(160 * (1 - ARTIST_DISCOUNT)), a2: Math.floor(190 * (1 - ARTIST_DISCOUNT)) },
 };
 const FRAME_PRICES = { postcard: 20, a4: 20, a3: 30, a3plus: 35, a2: 45 };
+const PRODUCTION_COSTS = {
+  studio: { postcard: 5, a4: 12, a3: 16, a3plus: 20, a2: 28 },
+  museum: { postcard: 10, a4: 25, a3: 38, a3plus: 48, a2: 65 },
+};
 
 
 function AccountArtistDashboard({ section = 'dashboard' }) {
@@ -700,9 +704,9 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
           </h3>
           <p className="text-grey-muted text-xs mb-6">
             {tx({
-              fr: 'Prix affichés aux clients dans ta boutique. Ta marge = prix client - prix de production. Le cadre (20$-45$ selon format) va entièrement à Massive. TPS + TVQ en sus.',
-              en: 'Prices shown to customers in your store. Your margin = client price - production price. Frame ($20-$45 depending on format) goes entirely to Massive. GST + QST extra.',
-              es: 'Precios mostrados a los clientes en tu tienda. Tu margen = precio cliente - precio produccion. El marco (20$-45$ segun formato) va completamente a Massive. Impuestos adicionales.',
+              fr: 'Quand un client achete ton oeuvre, ta commission = 50% du profit net (prix de vente - couts de production). Quand tu achetes pour toi, tu as un rabais de 30% sur le prix client. TPS + TVQ en sus.',
+              en: 'When a client buys your work, your commission = 50% of net profit (sale price - production costs). When you buy for yourself, you get 30% off client price. GST + QST extra.',
+              es: 'Cuando un cliente compra tu obra, tu comision = 50% del beneficio neto (precio de venta - costos de produccion). Cuando compras para ti, tienes 30% de descuento. Impuestos adicionales.',
             })}
           </p>
           <div className="overflow-x-auto">
@@ -711,39 +715,43 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
                 <tr className="text-grey-muted text-[10px] sm:text-xs uppercase tracking-wider shadow-[0_1px_0_rgba(255,255,255,0.04)]">
                   <th className="text-left py-2 pr-1 sm:pr-3">{tx({ fr: 'Format', en: 'Format', es: 'Formato' })}</th>
                   <th className="text-right py-2 px-1 sm:px-2">{tx({ fr: 'Prix client', en: 'Client price', es: 'Precio cliente' })}</th>
-                  <th className="text-right py-2 px-1 sm:px-2 text-accent">{tx({ fr: 'Prix artiste', en: 'Artist price', es: 'Precio artista' })}</th>
-                  <th className="text-right py-2 px-1 sm:px-2 text-yellow-400">{tx({ fr: 'Rabais', en: 'Discount', es: 'Descuento' })}</th>
-                  <th className="text-right py-2 px-1 sm:px-2 text-green-400">{tx({ fr: 'Ta marge', en: 'Your margin', es: 'Tu margen' })}</th>
+                  <th className="text-right py-2 px-1 sm:px-2 text-grey-muted">{tx({ fr: 'Production', en: 'Production', es: 'Produccion' })}</th>
+                  <th className="text-right py-2 px-1 sm:px-2 text-green-400">{tx({ fr: 'Ta commission (50%)', en: 'Your commission (50%)', es: 'Tu comision (50%)' })}</th>
+                  <th className="text-right py-2 px-1 sm:px-2 text-accent">{tx({ fr: 'Ton prix (-30%)', en: 'Your price (-30%)', es: 'Tu precio (-30%)' })}</th>
                 </tr>
               </thead>
               <tbody>
                 <tr className="shadow-[0_1px_0_rgba(255,255,255,0.03)]"><td colSpan="5" className="pt-3 pb-1 text-accent font-semibold text-xs">{tx({ fr: 'Série Studio (4 encres pigmentées)', en: 'Studio Series (4 pigment inks)', es: 'Serie Studio (4 tintas pigmentadas)' })}</td></tr>
                 {[{ format: 'A6 (4x6")', key: 'postcard' }, { format: 'A4 (8.5x11")', key: 'a4' }, { format: 'A3 (11x17")', key: 'a3' }, { format: 'A3+ (13x19")', key: 'a3plus' }, { format: 'A2 (18x24")', key: 'a2' }].map(({ format, key }) => {
                   const clientPrice = CLIENT_PRICES.studio[key];
+                  const prodCost = PRODUCTION_COSTS.studio[key] || 0;
+                  const netProfit = clientPrice - prodCost;
+                  const commission = Math.round(netProfit * 0.5);
                   const artistPrice = ARTIST_DISCOUNT_PRICES.studio[key];
-                  const discount = 30;
                   return (
                     <tr key={`s-${key}`} className="shadow-[0_1px_0_rgba(255,255,255,0.03)] hover:bg-accent/5 transition-colors">
                       <td className="py-2 pr-1 sm:pr-3 text-heading text-xs sm:text-sm">{format}</td>
                       <td className="py-2 px-1 sm:px-2 text-right text-heading text-xs sm:text-sm">{clientPrice}$</td>
-                      <td className="py-2 px-1 sm:px-2 text-right text-accent font-semibold text-xs sm:text-sm">{artistPrice}$</td>
-                      <td className="py-2 px-1 sm:px-2 text-right text-yellow-400 text-xs sm:text-sm">-{discount}%</td>
-                      <td className="py-2 px-1 sm:px-2 text-right text-green-400 font-semibold text-xs sm:text-sm">{clientPrice - artistPrice}$</td>
+                      <td className="py-2 px-1 sm:px-2 text-right text-grey-muted text-xs sm:text-sm">{prodCost}$</td>
+                      <td className="py-2 px-1 sm:px-2 text-right text-green-400 font-semibold text-xs sm:text-sm">{commission}$</td>
+                      <td className="py-2 px-1 sm:px-2 text-right text-accent text-xs sm:text-sm">{artistPrice}$</td>
                     </tr>
                   );
                 })}
                 <tr className="shadow-[0_1px_0_rgba(255,255,255,0.03)]"><td colSpan="5" className="pt-4 pb-1 text-accent font-semibold text-xs">{tx({ fr: 'Série Musée (12 encres pigmentées)', en: 'Museum Series (12 pigment inks)', es: 'Serie Museo (12 tintas pigmentadas)' })}</td></tr>
                 {[{ format: 'A6 (4x6")', key: 'postcard' }, { format: 'A4 (8.5x11")', key: 'a4' }, { format: 'A3 (11x17")', key: 'a3' }, { format: 'A3+ (13x19")', key: 'a3plus' }, { format: 'A2 (18x24")', key: 'a2' }].map(({ format, key }) => {
                   const clientPrice = CLIENT_PRICES.museum[key];
+                  const prodCost = PRODUCTION_COSTS.museum[key] || 0;
+                  const netProfit = clientPrice - prodCost;
+                  const commission = Math.round(netProfit * 0.5);
                   const artistPrice = ARTIST_DISCOUNT_PRICES.museum[key];
-                  const discount = 30;
                   return (
                     <tr key={`m-${key}`} className="shadow-[0_1px_0_rgba(255,255,255,0.03)] hover:bg-accent/5 transition-colors">
                       <td className="py-2 pr-1 sm:pr-3 text-heading text-xs sm:text-sm">{format}</td>
                       <td className="py-2 px-1 sm:px-2 text-right text-heading text-xs sm:text-sm">{clientPrice}$</td>
-                      <td className="py-2 px-1 sm:px-2 text-right text-accent font-semibold text-xs sm:text-sm">{artistPrice}$</td>
-                      <td className="py-2 px-1 sm:px-2 text-right text-yellow-400 text-xs sm:text-sm">-{discount}%</td>
-                      <td className="py-2 px-1 sm:px-2 text-right text-green-400 font-semibold text-xs sm:text-sm">{clientPrice - artistPrice}$</td>
+                      <td className="py-2 px-1 sm:px-2 text-right text-grey-muted text-xs sm:text-sm">{prodCost}$</td>
+                      <td className="py-2 px-1 sm:px-2 text-right text-green-400 font-semibold text-xs sm:text-sm">{commission}$</td>
+                      <td className="py-2 px-1 sm:px-2 text-right text-accent text-xs sm:text-sm">{artistPrice}$</td>
                     </tr>
                   );
                 })}
