@@ -756,7 +756,7 @@ function Account() {
           <div className="max-w-7xl mx-auto mb-6">
             <div className="flex items-center gap-5">
               <div className="w-14 h-14 rounded-full bg-accent/20 border-2 border-accent/40 flex items-center justify-center flex-shrink-0">
-                <span className="text-lg font-bold text-accent">{initials}</span>
+                <Settings size={24} className="text-accent" />
               </div>
               <div className="flex-grow min-w-0">
                 <h1 className="text-2xl md:text-3xl font-heading font-bold text-heading">
