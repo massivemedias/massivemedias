@@ -367,7 +367,15 @@ function ArtistGalleryManager() {
                 </div>
               )}
 
-              {/* Badge pending */}
+              {/* Badge suppression demandee */}
+              {isPendingRemoval && (
+                <div className="absolute inset-0 bg-red-900/50 flex flex-col items-center justify-center z-10">
+                  <Trash2 size={20} className="text-red-300 mb-1" />
+                  <span className="text-red-200 text-[8px] font-bold uppercase tracking-wider">En attente</span>
+                </div>
+              )}
+
+              {/* Badge pending unique */}
               {isPendingUnique && !isUnique && (
                 <div className="absolute top-1 left-1 px-1 py-0.5 rounded-full bg-yellow-500/80 text-white text-[7px] font-bold flex items-center gap-0.5">
                   <Clock size={7} />
