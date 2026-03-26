@@ -51,19 +51,28 @@ function ArtisteDetail({ subdomainSlug }) {
     if (!cmsArtist) return local;
     const cms = buildArtistFromCMS(cmsArtist);
     if (!local) return cms;
-    // CMS prioritaire, local en fallback (pas de fusion, un ou l'autre)
+    // Local = base, CMS = override pour les champs simples, ajout pour les listes
+    const mergeList = (cmsList, localList) => {
+      const cms2 = Array.isArray(cmsList) ? cmsList : [];
+      const local2 = Array.isArray(localList) ? localList : [];
+      if (cms2.length === 0) return local2;
+      if (local2.length === 0) return cms2;
+      const localIds = new Set(local2.map(p => p.id));
+      const newFromCms = cms2.filter(p => !localIds.has(p.id));
+      return [...local2, ...newFromCms];
+    };
     return {
       ...local,
       ...cms,
       tagline: (cms.tagline.fr || cms.tagline.en) ? cms.tagline : local.tagline,
       bio: (cms.bio.fr || cms.bio.en) ? cms.bio : local.bio,
       demarche: cms.demarche || local.demarche || null,
-      socials: Object.keys(cms.socials || {}).length > 0 ? cms.socials : (local.socials || {}),
-      prints: cms.prints?.length > 0 ? cms.prints : (local.prints || []),
-      stickers: cms.stickers?.length > 0 ? cms.stickers : (local.stickers || []),
-      merch: cms.merch?.length > 0 ? cms.merch : (local.merch || []),
+      socials: { ...(local.socials || {}), ...(cms.socials || {}) },
+      prints: mergeList(cms.prints, local.prints),
+      stickers: mergeList(cms.stickers, local.stickers),
+      merch: mergeList(cms.merch, local.merch),
       pricing: cms.pricing || local.pricing,
-      avatar: (cms.avatar && !cms.avatar.includes('undefined')) ? cms.avatar : local.avatar,
+      avatar: (cms.socials?.avatarUrl) || (cms.avatar && !cms.avatar.includes('undefined') ? cms.avatar : null) || local.avatar,
       heroImage: (cms.heroImage && !cms.heroImage.includes('undefined')) ? cms.heroImage : local.heroImage,
     };
   }, [cmsArtists, slug]);
