@@ -1,6 +1,6 @@
 import api from './api';
 
-export async function createPaymentIntent({ items, customerEmail, customerName, customerPhone, shippingAddress, subtotal, shipping, taxes, orderTotal, designReady, notes, supabaseUserId }) {
+export async function createPaymentIntent({ items, customerEmail, customerName, customerPhone, shippingAddress, subtotal, artistDiscount, promoCode, promoDiscountPercent, shipping, taxes, orderTotal, designReady, notes, supabaseUserId }) {
   const { data } = await api.post('/orders/create-payment-intent', {
     items,
     customerEmail,
@@ -8,6 +8,9 @@ export async function createPaymentIntent({ items, customerEmail, customerName, 
     customerPhone,
     shippingAddress,
     subtotal,
+    artistDiscount,
+    promoCode,
+    promoDiscountPercent,
     shipping,
     taxes,
     orderTotal,
@@ -15,6 +18,11 @@ export async function createPaymentIntent({ items, customerEmail, customerName, 
     notes,
     supabaseUserId,
   });
+  return data;
+}
+
+export async function validatePromoCode(code) {
+  const { data } = await api.post('/promo-codes/validate', { code });
   return data;
 }
 

@@ -44,7 +44,7 @@ function calculateTaxes(subtotal, province) {
 
 function Checkout() {
   const { t, lang, tx } = useLang();
-  const { items, cartTotal } = useCart();
+  const { items, cartTotal, promoCode, discountPercent, discountAmount } = useCart();
   const { user, session } = useAuth();
   const { step: themeStep } = useTheme();
   const navigate = useNavigate();
@@ -129,7 +129,9 @@ function Checkout() {
   const artistDiscountTotal = items
     .filter(i => i.isArtistOwnPrint)
     .reduce((sum, i) => sum + Math.round(i.totalPrice * ARTIST_DISCOUNT), 0);
-  const subtotal = cartTotal - artistDiscountTotal;
+  // Promo code discount applied on full cart total
+  const promoDiscount = discountAmount || 0;
+  const subtotal = cartTotal - artistDiscountTotal - promoDiscount;
 
   const { shippingCost: shipping } = useMemo(() => calcShipping(formData.province, formData.codePostal, items), [formData.province, formData.codePostal, items]);
   const taxes = useMemo(() => calculateTaxes(subtotal, formData.province), [subtotal, formData.province]);
@@ -166,6 +168,8 @@ function Checkout() {
         },
         subtotal,
         artistDiscount: artistDiscountTotal > 0 ? artistDiscountTotal : undefined,
+        promoCode: promoCode || undefined,
+        promoDiscountPercent: discountPercent || undefined,
         shipping,
         taxes,
         orderTotal,
@@ -497,12 +501,20 @@ function Checkout() {
                   <div className="border-t pt-4 card-border space-y-2">
                     <div className="flex justify-between items-center text-sm">
                       <span className="text-grey-muted">{tx({ fr: 'Sous-total', en: 'Subtotal', es: 'Subtotal' })}</span>
-                      <span className={`text-heading ${artistDiscountTotal > 0 ? 'line-through text-grey-muted' : ''}`}>{cartTotal.toFixed(2)}$</span>
+                      <span className={`text-heading ${(artistDiscountTotal > 0 || promoDiscount > 0) ? 'line-through text-grey-muted' : ''}`}>{cartTotal.toFixed(2)}$</span>
                     </div>
                     {artistDiscountTotal > 0 && (
                       <div className="flex justify-between items-center text-sm">
                         <span className="text-green-400">{tx({ fr: 'Rabais artiste (-30%)', en: 'Artist discount (-30%)', es: 'Descuento artista (-30%)' })}</span>
                         <span className="text-green-400">-{artistDiscountTotal.toFixed(2)}$</span>
+                      </div>
+                    )}
+                    {promoDiscount > 0 && (
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-green-400">
+                          {tx({ fr: 'Rabais', en: 'Discount', es: 'Descuento' })} ({promoCode}, -{discountPercent}%)
+                        </span>
+                        <span className="text-green-400">-{promoDiscount.toFixed(2)}$</span>
                       </div>
                     )}
                     <div className="flex justify-between items-center text-sm">

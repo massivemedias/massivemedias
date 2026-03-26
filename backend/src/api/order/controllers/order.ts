@@ -31,7 +31,7 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
   },
 
   async createPaymentIntent(ctx) {
-    const { items, customerEmail, customerName, customerPhone, shippingAddress, shipping: clientShipping, taxes: clientTaxes, orderTotal: clientOrderTotal, designReady, notes, supabaseUserId } = ctx.request.body as any;
+    const { items, customerEmail, customerName, customerPhone, shippingAddress, shipping: clientShipping, taxes: clientTaxes, orderTotal: clientOrderTotal, promoCode, promoDiscountPercent, designReady, notes, supabaseUserId } = ctx.request.body as any;
 
     // Validate
     if (!items || !Array.isArray(items) || items.length === 0) {
@@ -42,7 +42,22 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
     }
 
     // Recalculate total server-side (never trust client-side totals)
-    const subtotal = items.reduce((sum: number, item: any) => sum + (item.totalPrice || 0), 0);
+    let subtotal = items.reduce((sum: number, item: any) => sum + (item.totalPrice || 0), 0);
+
+    // Validate and apply promo code server-side (never trust client discount)
+    const PROMO_CODES: Record<string, { discountPercent: number; label: string }> = {
+      'MASSIVE6327': { discountPercent: 15, label: 'Promo Massive 15%' },
+    };
+    let promoDiscount = 0;
+    let appliedPromoCode = '';
+    if (promoCode && typeof promoCode === 'string') {
+      const promo = PROMO_CODES[promoCode.toUpperCase().trim()];
+      if (promo) {
+        promoDiscount = Math.round(subtotal * promo.discountPercent / 100);
+        appliedPromoCode = promoCode.toUpperCase().trim();
+        subtotal = subtotal - promoDiscount;
+      }
+    }
 
     // Recalculate shipping server-side (par poids)
     const province = shippingAddress?.province || 'QC';
@@ -102,6 +117,8 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
           designReady: designReady !== false ? 'oui' : 'non',
           notes: (notes || '').slice(0, 500),
           supabaseUserId: supabaseUserId || '',
+          promoCode: appliedPromoCode || '',
+          promoDiscount: promoDiscount > 0 ? promoDiscount.toFixed(2) : '',
         },
       });
 
@@ -155,6 +172,8 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
         designReady: designReady !== false,
         notes: notes || '',
         shippingAddress: shippingAddress || null,
+        promoCode: appliedPromoCode || null,
+        promoDiscount: promoDiscount > 0 ? Math.round(promoDiscount * 100) : 0,
       };
 
       // Link client relation using Strapi v5 connect syntax

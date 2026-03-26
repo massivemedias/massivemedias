@@ -19,11 +19,35 @@ function saveCartLocal(items) {
   }
 }
 
+function loadPromo() {
+  try {
+    const saved = localStorage.getItem('massive-promo');
+    return saved ? JSON.parse(saved) : null;
+  } catch {
+    return null;
+  }
+}
+
+function savePromoLocal(promo) {
+  try {
+    if (promo) {
+      localStorage.setItem('massive-promo', JSON.stringify(promo));
+    } else {
+      localStorage.removeItem('massive-promo');
+    }
+  } catch {}
+}
+
 export function CartProvider({ children }) {
   const [items, setItems] = useState(loadCart);
   const { user, updateProfile } = useAuth();
   const syncedRef = useRef(false);
   const savingRef = useRef(false);
+
+  // Promo code state (initialise une seule fois depuis localStorage)
+  const [promoCode, setPromoCode] = useState(() => loadPromo()?.code || '');
+  const [discountPercent, setDiscountPercent] = useState(() => loadPromo()?.percent || 0);
+  const [promoLabel, setPromoLabel] = useState(() => loadPromo()?.label || '');
 
   // A la connexion : restaurer le panier depuis Supabase si le panier local est vide
   useEffect(() => {
@@ -90,14 +114,36 @@ export function CartProvider({ children }) {
   const clearCart = useCallback(() => {
     setItems([]);
     saveCart([]);
+    setPromoCode('');
+    setDiscountPercent(0);
+    setPromoLabel('');
+    savePromoLocal(null);
   }, [saveCart]);
+
+  const applyPromoCode = useCallback((code, percent, label) => {
+    setPromoCode(code);
+    setDiscountPercent(percent);
+    setPromoLabel(label || '');
+    savePromoLocal({ code, percent, label });
+  }, []);
+
+  const removePromoCode = useCallback(() => {
+    setPromoCode('');
+    setDiscountPercent(0);
+    setPromoLabel('');
+    savePromoLocal(null);
+  }, []);
 
   const cartCount = items.length;
   const cartTotal = items.reduce((sum, item) => sum + item.totalPrice, 0);
+  const discountAmount = discountPercent > 0 ? Math.round(cartTotal * discountPercent / 100) : 0;
 
   const value = useMemo(() => ({
-    items, addToCart, removeFromCart, updateQuantity, clearCart, cartCount, cartTotal
-  }), [items, addToCart, removeFromCart, updateQuantity, clearCart, cartCount, cartTotal]);
+    items, addToCart, removeFromCart, updateQuantity, clearCart, cartCount, cartTotal,
+    promoCode, discountPercent, discountAmount, promoLabel,
+    applyPromoCode, removePromoCode,
+  }), [items, addToCart, removeFromCart, updateQuantity, clearCart, cartCount, cartTotal,
+    promoCode, discountPercent, discountAmount, promoLabel, applyPromoCode, removePromoCode]);
 
   return (
     <CartContext.Provider value={value}>
