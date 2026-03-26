@@ -60,7 +60,7 @@ function BrightnessFader() {
             exit={{ opacity: 0, y: -8, scale: 0.9 }}
             transition={{ duration: 0.15 }}
             className="absolute right-0 mt-2 p-2 rounded-xl border border-white/10 shadow-2xl shadow-black/50"
-            style={{ zIndex: 9999, minWidth: '160px', backgroundColor: 'var(--bg-card, #1a1a2e)' }}
+            style={{ zIndex: 9999, minWidth: '160px', backgroundColor: THEME_COLORS[step] }}
           >
             {THEME_NAMES.map((name, i) => {
               const isSelected = step === i;
@@ -80,11 +80,7 @@ function BrightnessFader() {
                   }}
                 >
                   <span
-                    className="w-4 h-4 rounded-full flex-shrink-0 ring-1 ring-white/20"
-                    style={{ background: THEME_COLORS[i] }}
-                  />
-                  <span
-                    className="w-2 h-2 rounded-full flex-shrink-0"
+                    className="w-2.5 h-2.5 rounded-full flex-shrink-0"
                     style={{ background: THEME_ACCENTS[i] }}
                   />
                   <span className={isSelected ? '' : 'text-grey-light'}>{name}</span>
