@@ -309,8 +309,8 @@ const PALETTE_9 = {
 // 10 - Acajou (bois riche et classe)
 const PALETTE_10 = darkPalette(
   '#2C1810', '#1A0E08', '#0E0604',
-  '#C4725A', '#E8A88C', '#1A0E08',
-  '#E8D0C0', '#C4725A'
+  '#C4725A', '#A85A42', '#1A0E08',
+  '#E8D0C0', '#A85A42'
 );
 
 const PALETTES = [PALETTE_0, PALETTE_1, PALETTE_2, PALETTE_3, PALETTE_4, PALETTE_5, PALETTE_10, PALETTE_6, PALETTE_7, PALETTE_8, PALETTE_9];
