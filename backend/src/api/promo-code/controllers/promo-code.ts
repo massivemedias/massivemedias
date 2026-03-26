@@ -7,7 +7,7 @@
  */
 
 const PROMO_CODES: Record<string, { discountPercent: number; label: string }> = {
-  'MASSIVE6327': { discountPercent: 15, label: 'Promo Massive 15%' },
+  'MASSIVE6327': { discountPercent: 20, label: 'Promo Massive 20%' },
 };
 
 export default {

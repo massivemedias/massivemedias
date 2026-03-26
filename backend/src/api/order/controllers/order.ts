@@ -46,7 +46,7 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
 
     // Validate and apply promo code server-side (never trust client discount)
     const PROMO_CODES: Record<string, { discountPercent: number; label: string }> = {
-      'MASSIVE6327': { discountPercent: 15, label: 'Promo Massive 15%' },
+      'MASSIVE6327': { discountPercent: 20, label: 'Promo Massive 20%' },
     };
     let promoDiscount = 0;
     let appliedPromoCode = '';
