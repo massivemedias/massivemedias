@@ -1,75 +1,262 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
-import { motion, useMotionValue, useTransform, useSpring } from 'framer-motion';
+import { motion, useMotionValue, useTransform, useSpring, AnimatePresence } from 'framer-motion';
 
 // ---------------------------------------------------------------------------
 // StickerPreview3D
-// Realistic sticker stack preview using actual finish texture photos as
-// overlays (mix-blend-mode) on top of the customer's uploaded design.
+// Shows a fanned-out stack of 3-4 stickers with the customer's uploaded
+// design (or a placeholder gradient). The top sticker is the "hero" and
+// finish effects (holographic, glossy, etc.) are applied as CSS overlays.
 // Mouse-move parallax on desktop, gentle idle animation on mobile.
 // ---------------------------------------------------------------------------
-
-// -- Finish texture image paths ----------------------------------------------
-const FINISH_TEXTURES = {
-  matte: null, // no overlay for matte
-  glossy: '/images/stickers/finish-glossy.webp',
-  holographic: '/images/stickers/finish-holographic.webp',
-  'broken-glass': '/images/stickers/finish-broken-glass.webp',
-  stars: '/images/stickers/finish-stars.webp',
-  dots: '/images/stickers/finish-dots.webp',
-};
-
-// Blend mode per finish - tuned for best visual result
-const FINISH_BLEND = {
-  glossy: 'soft-light',
-  holographic: 'overlay',
-  'broken-glass': 'screen',
-  stars: 'screen',
-  dots: 'overlay',
-};
-
-// How much the overlay shifts relative to mouse (higher = more holographic shift)
-const FINISH_SHIFT_INTENSITY = {
-  glossy: 15,
-  holographic: 40,
-  'broken-glass': 35,
-  stars: 25,
-  dots: 20,
-};
-
-// Overlay opacity per finish
-const FINISH_OPACITY = {
-  glossy: 0.6,
-  holographic: 0.75,
-  'broken-glass': 0.7,
-  stars: 0.7,
-  dots: 0.65,
-};
 
 // -- Shape clip-paths & styles -----------------------------------------------
 const SHAPE_STYLES = {
   round: {
+    clipPath: 'circle(50% at 50% 50%)',
     borderRadius: '50%',
     aspectRatio: '1 / 1',
   },
   square: {
+    clipPath: 'none',
     borderRadius: '8%',
     aspectRatio: '1 / 1',
   },
   rectangle: {
+    clipPath: 'none',
     borderRadius: '6%',
     aspectRatio: '3 / 2',
   },
   diecut: {
+    clipPath: 'none',
     borderRadius: '4px',
     aspectRatio: '1 / 1',
+    border: '2px dashed rgba(255,255,255,0.25)',
   },
 };
 
 // -- Stack layout for background stickers ------------------------------------
 const STACK_CARDS = [
-  { rotate: -7, x: -14, y: 10, scale: 0.91, zIndex: 1, curlCorner: 'bottom-right' },
-  { rotate: 5, x: 12, y: 7, scale: 0.93, zIndex: 2, curlCorner: 'bottom-left' },
+  { rotate: -6, x: -12, y: 8, scale: 0.92, zIndex: 1 },
+  { rotate: 4.5, x: 10, y: 6, scale: 0.94, zIndex: 2 },
+  { rotate: -2, x: -4, y: 3, scale: 0.97, zIndex: 3 },
 ];
+
+// -- Finish overlay components -----------------------------------------------
+
+function MatteOverlay() {
+  // Matte: very subtle desaturation, no shine
+  return (
+    <div
+      className="absolute inset-0 pointer-events-none"
+      style={{
+        background: 'linear-gradient(135deg, rgba(0,0,0,0.04) 0%, transparent 100%)',
+        mixBlendMode: 'multiply',
+      }}
+    />
+  );
+}
+
+function GlossyOverlay({ mouseX }) {
+  // Glossy: a white shine sweep that follows mouse X
+  const sweepX = useTransform(mouseX, [0, 1], [-80, 180]);
+  const sweepPct = useSpring(sweepX, { stiffness: 200, damping: 30 });
+
+  return (
+    <motion.div
+      className="absolute inset-0 pointer-events-none"
+      style={{
+        background: useTransform(
+          sweepPct,
+          (v) =>
+            `linear-gradient(${105}deg, transparent ${v - 40}%, rgba(255,255,255,0.35) ${v}%, rgba(255,255,255,0.08) ${v + 20}%, transparent ${v + 50}%)`
+        ),
+        mixBlendMode: 'overlay',
+      }}
+    />
+  );
+}
+
+function HolographicOverlay({ mouseX, mouseY }) {
+  // Animated rainbow gradient that shifts with mouse
+  const hueShift = useTransform(mouseX, [0, 1], [0, 360]);
+  const angle = useTransform(mouseY, [0, 1], [120, 240]);
+  const springHue = useSpring(hueShift, { stiffness: 120, damping: 25 });
+  const springAngle = useSpring(angle, { stiffness: 120, damping: 25 });
+
+  return (
+    <motion.div
+      className="absolute inset-0 pointer-events-none"
+      style={{
+        background: useTransform(
+          [springHue, springAngle],
+          ([h, a]) =>
+            `linear-gradient(${a}deg,
+              hsla(${h}, 100%, 70%, 0.35),
+              hsla(${(h + 60) % 360}, 100%, 65%, 0.3),
+              hsla(${(h + 120) % 360}, 100%, 70%, 0.35),
+              hsla(${(h + 180) % 360}, 100%, 65%, 0.3),
+              hsla(${(h + 240) % 360}, 100%, 70%, 0.35),
+              hsla(${(h + 300) % 360}, 100%, 65%, 0.3))`
+        ),
+        mixBlendMode: 'color-dodge',
+        opacity: 0.7,
+      }}
+    />
+  );
+}
+
+function BrokenGlassOverlay({ mouseX, mouseY }) {
+  // Prismatic refraction - sharp angled gradients
+  const shift = useTransform(mouseX, [0, 1], [0, 100]);
+  const springShift = useSpring(shift, { stiffness: 150, damping: 25 });
+
+  return (
+    <motion.div
+      className="absolute inset-0 pointer-events-none overflow-hidden"
+      style={{
+        background: useTransform(
+          springShift,
+          (s) =>
+            `conic-gradient(from ${s * 3.6}deg at 30% 40%,
+              rgba(0,255,255,0.3) 0deg, transparent 30deg,
+              rgba(255,0,255,0.25) 60deg, transparent 90deg,
+              rgba(255,255,0,0.3) 120deg, transparent 150deg,
+              rgba(0,255,128,0.25) 180deg, transparent 210deg,
+              rgba(128,0,255,0.3) 240deg, transparent 270deg,
+              rgba(255,128,0,0.25) 300deg, transparent 330deg,
+              rgba(0,255,255,0.3) 360deg),
+            conic-gradient(from ${180 + s * 3.6}deg at 70% 60%,
+              rgba(255,0,128,0.2) 0deg, transparent 45deg,
+              rgba(0,128,255,0.2) 90deg, transparent 135deg,
+              rgba(255,255,0,0.2) 180deg, transparent 225deg,
+              rgba(0,255,255,0.2) 270deg, transparent 315deg,
+              rgba(255,0,128,0.2) 360deg)`
+        ),
+        mixBlendMode: 'screen',
+        opacity: 0.8,
+      }}
+    />
+  );
+}
+
+function StarsOverlay() {
+  // Animated gold sparkle overlay
+  const stars = useMemo(() => {
+    const arr = [];
+    for (let i = 0; i < 20; i++) {
+      arr.push({
+        id: i,
+        x: Math.random() * 100,
+        y: Math.random() * 100,
+        size: 3 + Math.random() * 6,
+        delay: Math.random() * 2,
+        duration: 1.2 + Math.random() * 1.5,
+      });
+    }
+    return arr;
+  }, []);
+
+  return (
+    <div className="absolute inset-0 pointer-events-none overflow-hidden">
+      {stars.map((star) => (
+        <motion.div
+          key={star.id}
+          className="absolute"
+          style={{
+            left: `${star.x}%`,
+            top: `${star.y}%`,
+            width: star.size,
+            height: star.size,
+          }}
+          animate={{
+            opacity: [0, 1, 0],
+            scale: [0.5, 1.2, 0.5],
+            rotate: [0, 180],
+          }}
+          transition={{
+            duration: star.duration,
+            delay: star.delay,
+            repeat: Infinity,
+            ease: 'easeInOut',
+          }}
+        >
+          {/* 4-point star shape */}
+          <svg viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M5 0L6 4L10 5L6 6L5 10L4 6L0 5L4 4Z"
+              fill="rgba(255,215,0,0.8)"
+            />
+          </svg>
+        </motion.div>
+      ))}
+      {/* Golden sheen base */}
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          background: 'radial-gradient(ellipse at 40% 30%, rgba(255,215,0,0.15), transparent 70%)',
+          mixBlendMode: 'overlay',
+        }}
+      />
+    </div>
+  );
+}
+
+function DotsOverlay({ mouseX }) {
+  // Animated polka-dot shimmer
+  const offset = useTransform(mouseX, [0, 1], [0, 20]);
+  const springOffset = useSpring(offset, { stiffness: 100, damping: 20 });
+
+  return (
+    <motion.div
+      className="absolute inset-0 pointer-events-none"
+      style={{
+        backgroundImage: useTransform(
+          springOffset,
+          (o) =>
+            `radial-gradient(circle 4px at ${10 + o}px ${10 + o}px, rgba(255,255,255,0.35) 2px, transparent 2px)`
+        ),
+        backgroundSize: '18px 18px',
+        mixBlendMode: 'overlay',
+        opacity: 0.7,
+      }}
+    >
+      {/* Second layer offset for richer pattern */}
+      <motion.div
+        className="absolute inset-0"
+        style={{
+          backgroundImage: useTransform(
+            springOffset,
+            (o) =>
+              `radial-gradient(circle 3px at ${19 - o * 0.5}px ${19 - o * 0.5}px, rgba(255,180,220,0.3) 1.5px, transparent 1.5px)`
+          ),
+          backgroundSize: '18px 18px',
+          mixBlendMode: 'screen',
+        }}
+      />
+    </motion.div>
+  );
+}
+
+// -- Finish overlay router ---------------------------------------------------
+function FinishOverlay({ finish, mouseX, mouseY }) {
+  switch (finish) {
+    case 'glossy':
+    case 'lustre':
+      return <GlossyOverlay mouseX={mouseX} />;
+    case 'holographic':
+      return <HolographicOverlay mouseX={mouseX} mouseY={mouseY} />;
+    case 'broken-glass':
+      return <BrokenGlassOverlay mouseX={mouseX} mouseY={mouseY} />;
+    case 'stars':
+      return <StarsOverlay />;
+    case 'dots':
+      return <DotsOverlay mouseX={mouseX} />;
+    case 'matte':
+    default:
+      return <MatteOverlay />;
+  }
+}
 
 // -- Image source helper (File/Blob or URL) ----------------------------------
 function useImageSrc(image) {
@@ -84,6 +271,7 @@ function useImageSrc(image) {
       setSrc(image);
       return;
     }
+    // File or Blob
     const url = URL.createObjectURL(image);
     setSrc(url);
     return () => URL.revokeObjectURL(url);
@@ -93,12 +281,13 @@ function useImageSrc(image) {
 }
 
 // -- Placeholder when no image -----------------------------------------------
-function Placeholder() {
+function Placeholder({ shapeStyle }) {
   return (
     <div
       className="w-full h-full flex items-center justify-center"
       style={{
         background: 'linear-gradient(135deg, var(--color-accent, #6366f1) 0%, var(--color-accent-muted, #a855f7) 50%, var(--color-accent, #6366f1) 100%)',
+        ...shapeStyle,
       }}
     >
       <span className="text-white/80 text-xs md:text-sm font-medium text-center px-4 drop-shadow-sm select-none">
@@ -108,111 +297,11 @@ function Placeholder() {
   );
 }
 
-// -- Finish texture overlay using real photos --------------------------------
-function FinishTextureOverlay({ finish, mouseX, mouseY }) {
-  const textureSrc = FINISH_TEXTURES[finish];
-  if (!textureSrc) return null;
-
-  const shiftIntensity = FINISH_SHIFT_INTENSITY[finish] || 20;
-  const blendMode = FINISH_BLEND[finish] || 'overlay';
-  const opacity = FINISH_OPACITY[finish] || 0.7;
-
-  // Shift the overlay position based on mouse to simulate holographic tilt
-  const translateX = useTransform(mouseX, [0, 1], [-shiftIntensity, shiftIntensity]);
-  const translateY = useTransform(mouseY, [0, 1], [-shiftIntensity * 0.6, shiftIntensity * 0.6]);
-  const springX = useSpring(translateX, { stiffness: 120, damping: 25 });
-  const springY = useSpring(translateY, { stiffness: 120, damping: 25 });
-
-  return (
-    <motion.div
-      className="absolute pointer-events-none"
-      style={{
-        // Oversize the overlay so shifts don't reveal edges
-        inset: `-${shiftIntensity + 10}px`,
-        x: springX,
-        y: springY,
-        mixBlendMode: blendMode,
-        opacity,
-      }}
-    >
-      <img
-        src={textureSrc}
-        alt=""
-        draggable={false}
-        className="w-full h-full object-cover"
-        style={{ display: 'block' }}
-      />
-    </motion.div>
-  );
-}
-
-// -- Glossy highlight curve (top-left specular reflection) --------------------
-function GlossyHighlight({ mouseX, mouseY, finish }) {
-  // Only show on finishes that have shine
-  if (finish === 'matte') return null;
-
-  const highlightX = useTransform(mouseX, [0, 1], [15, 55]);
-  const highlightY = useTransform(mouseY, [0, 1], [10, 40]);
-  const springHX = useSpring(highlightX, { stiffness: 100, damping: 20 });
-  const springHY = useSpring(highlightY, { stiffness: 100, damping: 20 });
-
-  return (
-    <motion.div
-      className="absolute inset-0 pointer-events-none"
-      style={{
-        background: useTransform(
-          [springHX, springHY],
-          ([hx, hy]) =>
-            `radial-gradient(ellipse 60% 50% at ${hx}% ${hy}%, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.08) 30%, transparent 70%)`
-        ),
-        mixBlendMode: 'overlay',
-      }}
-    />
-  );
-}
-
-// -- Corner curl effect (CSS gradient simulation) ----------------------------
-function CornerCurl({ corner = 'bottom-right', shape }) {
-  if (shape === 'round') return null;
-
-  const positions = {
-    'bottom-right': { bottom: 0, right: 0, transform: 'none' },
-    'bottom-left': { bottom: 0, left: 0, transform: 'scaleX(-1)' },
-    'top-right': { top: 0, right: 0, transform: 'scaleY(-1)' },
-  };
-
-  const pos = positions[corner] || positions['bottom-right'];
-
-  return (
-    <div
-      className="absolute pointer-events-none"
-      style={{
-        width: '18%',
-        height: '18%',
-        ...pos,
-        background: `linear-gradient(225deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.06) 30%, transparent 50%)`,
-        borderRadius: 'inherit',
-        zIndex: 3,
-      }}
-    />
-  );
-}
-
 // -- Single sticker card (used for hero and stack) ---------------------------
-function StickerCard({
-  imageSrc,
-  finish,
-  shape,
-  isHero,
-  mouseX,
-  mouseY,
-  curlCorner = 'bottom-right',
-  style,
-  className = '',
-}) {
+function StickerCard({ imageSrc, finish, shape, isHero, mouseX, mouseY, style, className = '' }) {
   const shapeStyle = SHAPE_STYLES[shape] || SHAPE_STYLES.round;
   const filterStyle = finish === 'matte'
-    ? { filter: 'saturate(0.92) brightness(0.97)' }
+    ? { filter: 'saturate(0.9) brightness(0.97)' }
     : {};
 
   return (
@@ -224,26 +313,24 @@ function StickerCard({
         height: '100%',
       }}
     >
-      {/* Vinyl sticker body with thickness */}
+      {/* Shadow layer */}
+      <div
+        className="absolute inset-0"
+        style={{
+          ...shapeStyle,
+          clipPath: shapeStyle.clipPath !== 'none' ? shapeStyle.clipPath : undefined,
+          boxShadow: isHero
+            ? '0 8px 32px rgba(0,0,0,0.25), 0 2px 8px rgba(0,0,0,0.15)'
+            : '0 4px 16px rgba(0,0,0,0.2), 0 1px 4px rgba(0,0,0,0.1)',
+        }}
+      />
+
+      {/* Sticker body */}
       <div
         className="relative w-full h-full overflow-hidden"
         style={{
           ...shapeStyle,
-          // Vinyl border - slightly lighter edge for thickness illusion
-          boxShadow: isHero
-            ? `
-              0 0 0 2.5px rgba(220,220,220,0.25),
-              0 0 0 3.5px rgba(180,180,180,0.12),
-              0 1px 1px 3px rgba(0,0,0,0.15),
-              0 6px 20px rgba(0,0,0,0.25),
-              0 12px 40px rgba(0,0,0,0.18)
-            `
-            : `
-              0 0 0 2px rgba(220,220,220,0.18),
-              0 0 0 3px rgba(180,180,180,0.08),
-              0 3px 12px rgba(0,0,0,0.2),
-              0 6px 24px rgba(0,0,0,0.12)
-            `,
+          clipPath: shapeStyle.clipPath !== 'none' ? shapeStyle.clipPath : undefined,
         }}
       >
         {/* Image or placeholder */}
@@ -256,35 +343,21 @@ function StickerCard({
             draggable={false}
           />
         ) : (
-          <Placeholder />
+          <Placeholder shapeStyle={{}} />
         )}
 
-        {/* Real finish texture overlay (hero only) */}
-        {isHero && (
-          <FinishTextureOverlay finish={finish} mouseX={mouseX} mouseY={mouseY} />
-        )}
+        {/* Finish effect overlay */}
+        {isHero && <FinishOverlay finish={finish} mouseX={mouseX} mouseY={mouseY} />}
 
-        {/* Glossy specular highlight (hero only) */}
-        {isHero && (
-          <GlossyHighlight mouseX={mouseX} mouseY={mouseY} finish={finish} />
-        )}
-
-        {/* Vinyl inner edge highlight */}
+        {/* Subtle white border for vinyl sticker look */}
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
-            borderRadius: shapeStyle.borderRadius,
-            boxShadow: `
-              inset 0 1px 0 rgba(255,255,255,0.12),
-              inset 0 -1px 0 rgba(0,0,0,0.08),
-              inset 1px 0 0 rgba(255,255,255,0.06),
-              inset -1px 0 0 rgba(255,255,255,0.06)
-            `,
+            ...shapeStyle,
+            clipPath: shapeStyle.clipPath !== 'none' ? shapeStyle.clipPath : undefined,
+            boxShadow: 'inset 0 0 0 3px rgba(255,255,255,0.15)',
           }}
         />
-
-        {/* Corner curl */}
-        {!isHero && <CornerCurl corner={curlCorner} shape={shape} />}
       </div>
     </div>
   );
@@ -302,17 +375,18 @@ export default function StickerPreview3D({
   const containerRef = useRef(null);
   const isMobile = useRef(false);
 
+  // Check mobile on mount
   useEffect(() => {
     isMobile.current = window.matchMedia('(max-width: 768px)').matches;
   }, []);
 
-  // Mouse position as 0-1 values
+  // Mouse position as 0-1 values relative to the container
   const rawMouseX = useMotionValue(0.5);
   const rawMouseY = useMotionValue(0.5);
   const mouseX = useSpring(rawMouseX, { stiffness: 150, damping: 20 });
   const mouseY = useSpring(rawMouseY, { stiffness: 150, damping: 20 });
 
-  // 3D tilt rotation from mouse
+  // 3D rotation from mouse (desktop only)
   const rotateX = useTransform(mouseY, [0, 1], [8, -8]);
   const rotateY = useTransform(mouseX, [0, 1], [-8, 8]);
 
@@ -330,6 +404,8 @@ export default function StickerPreview3D({
   }, [rawMouseX, rawMouseY]);
 
   const imageSrc = useImageSrc(image);
+
+  // Determine aspect ratio class based on shape
   const containerAspect = shape === 'rectangle' ? 'aspect-[3/2]' : 'aspect-square';
 
   return (
@@ -339,16 +415,6 @@ export default function StickerPreview3D({
       onMouseLeave={handleMouseLeave}
       className="relative w-full max-w-[250px] md:max-w-[380px] mx-auto select-none"
     >
-      {/* Surface/table shadow beneath the stack */}
-      <div
-        className="absolute inset-x-4 bottom-0 h-6 md:h-8 z-0"
-        style={{
-          background: 'radial-gradient(ellipse 80% 100% at 50% 100%, rgba(0,0,0,0.3) 0%, transparent 70%)',
-          filter: 'blur(8px)',
-          transform: 'translateY(50%)',
-        }}
-      />
-
       {/* 3D perspective wrapper */}
       <motion.div
         className={`relative ${containerAspect} w-full`}
@@ -357,7 +423,7 @@ export default function StickerPreview3D({
           transformStyle: 'preserve-3d',
         }}
       >
-        {/* Idle float + mouse tilt */}
+        {/* Idle float animation (works on mobile too) */}
         <motion.div
           className="relative w-full h-full"
           style={{
@@ -381,16 +447,11 @@ export default function StickerPreview3D({
               className="absolute inset-0"
               style={{
                 zIndex: card.zIndex,
+                transform: `rotate(${card.rotate}deg) translateX(${card.x}px) translateY(${card.y}px) scale(${card.scale})`,
               }}
-              initial={{ opacity: 0, scale: 0.85, rotate: 0, x: 0, y: 0 }}
-              animate={{
-                opacity: 0.65,
-                scale: card.scale,
-                rotate: card.rotate,
-                x: card.x,
-                y: card.y,
-              }}
-              transition={{ delay: 0.12 * (i + 1), duration: 0.5, ease: 'easeOut' }}
+              initial={{ opacity: 0, scale: 0.8, rotate: 0 }}
+              animate={{ opacity: 0.7, scale: card.scale, rotate: card.rotate }}
+              transition={{ delay: 0.1 * (i + 1), duration: 0.5, ease: 'easeOut' }}
             >
               <StickerCard
                 imageSrc={imageSrc}
@@ -399,7 +460,6 @@ export default function StickerPreview3D({
                 isHero={false}
                 mouseX={mouseX}
                 mouseY={mouseY}
-                curlCorner={card.curlCorner}
                 style={{}}
               />
             </motion.div>
