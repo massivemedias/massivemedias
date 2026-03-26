@@ -60,21 +60,20 @@ function ArtistGalleryManager() {
     return arr.find(a => a.slug === artistSlug) || null;
   }, [cmsArtists, artistSlug]);
 
-  // Merge prints/stickers from CMS + local data (CMS prioritaire si non-vide)
-  const artistPrints = useMemo(() => {
-    if (cmsArtist?.prints && Array.isArray(cmsArtist.prints) && cmsArtist.prints.length > 0) return cmsArtist.prints;
-    return localArtist?.prints || [];
-  }, [cmsArtist, localArtist]);
+  // Merge prints/stickers from CMS + local data (fusion, pas ecrasement)
+  const mergeItems = (cmsItems, localItems) => {
+    const cms = Array.isArray(cmsItems) ? cmsItems : [];
+    const local = Array.isArray(localItems) ? localItems : [];
+    if (cms.length === 0) return local;
+    if (local.length === 0) return cms;
+    const cmsIds = cms.map(p => p.id);
+    const localOnly = local.filter(lp => !cmsIds.includes(lp.id));
+    return [...localOnly, ...cms];
+  };
 
-  const artistStickers = useMemo(() => {
-    if (cmsArtist?.stickers && Array.isArray(cmsArtist.stickers) && cmsArtist.stickers.length > 0) return cmsArtist.stickers;
-    return localArtist?.stickers || [];
-  }, [cmsArtist, localArtist]);
-
-  const artistMerch = useMemo(() => {
-    if (cmsArtist?.merch && Array.isArray(cmsArtist.merch) && cmsArtist.merch.length > 0) return cmsArtist.merch;
-    return localArtist?.merch || [];
-  }, [cmsArtist, localArtist]);
+  const artistPrints = useMemo(() => mergeItems(cmsArtist?.prints, localArtist?.prints), [cmsArtist, localArtist]);
+  const artistStickers = useMemo(() => mergeItems(cmsArtist?.stickers, localArtist?.stickers), [cmsArtist, localArtist]);
+  const artistMerch = useMemo(() => mergeItems(cmsArtist?.merch, localArtist?.merch), [cmsArtist, localArtist]);
 
   const artistName = cmsArtist?.name || localArtist?.name || artistSlug || '';
 
