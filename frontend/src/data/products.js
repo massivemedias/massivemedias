@@ -26,19 +26,19 @@ export const stickerSizes = [
 // Prix Standard (Matte / Brillant) - alignés sur le tableau services.js
 export const stickerPriceTiers = [
   { qty: 25, price: 30, unitPrice: 1.20 },
-  { qty: 50, price: 45, unitPrice: 0.90 },
-  { qty: 100, price: 75, unitPrice: 0.75 },
-  { qty: 250, price: 150, unitPrice: 0.60 },
-  { qty: 500, price: 250, unitPrice: 0.50 },
+  { qty: 50, price: 47.50, unitPrice: 0.95 },
+  { qty: 100, price: 85, unitPrice: 0.85 },
+  { qty: 250, price: 200, unitPrice: 0.80 },
+  { qty: 500, price: 375, unitPrice: 0.75 },
 ];
 
 // Fx (Holo, Verre Brisé, Étoiles) - alignes sur le tableau services.js
 export const holographicPriceTiers = [
   { qty: 25, price: 35, unitPrice: 1.40 },
-  { qty: 50, price: 55, unitPrice: 1.10 },
-  { qty: 100, price: 90, unitPrice: 0.90 },
-  { qty: 250, price: 175, unitPrice: 0.70 },
-  { qty: 500, price: 300, unitPrice: 0.60 },
+  { qty: 50, price: 57.50, unitPrice: 1.15 },
+  { qty: 100, price: 100, unitPrice: 1.00 },
+  { qty: 250, price: 225, unitPrice: 0.90 },
+  { qty: 500, price: 425, unitPrice: 0.85 },
 ];
 
 // Die-cut utilise les mêmes prix

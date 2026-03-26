@@ -28,18 +28,18 @@ const ARTIST_PRICES = [
 
 const STICKER_STANDARD = [
   { qty: 25, price: 30, unit: 1.20 },
-  { qty: 50, price: 45, unit: 0.90 },
-  { qty: 100, price: 75, unit: 0.75 },
-  { qty: 250, price: 150, unit: 0.60 },
-  { qty: 500, price: 250, unit: 0.50 },
+  { qty: 50, price: 47.50, unit: 0.95 },
+  { qty: 100, price: 85, unit: 0.85 },
+  { qty: 250, price: 200, unit: 0.80 },
+  { qty: 500, price: 375, unit: 0.75 },
 ];
 
 const STICKER_FX = [
   { qty: 25, price: 35, unit: 1.40 },
-  { qty: 50, price: 55, unit: 1.10 },
-  { qty: 100, price: 90, unit: 0.90 },
-  { qty: 250, price: 175, unit: 0.70 },
-  { qty: 500, price: 300, unit: 0.60 },
+  { qty: 50, price: 57.50, unit: 1.15 },
+  { qty: 100, price: 100, unit: 1.00 },
+  { qty: 250, price: 225, unit: 0.90 },
+  { qty: 500, price: 425, unit: 0.85 },
 ];
 
 const FLYERS = [
