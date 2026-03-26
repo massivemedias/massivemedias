@@ -166,15 +166,15 @@
     <script>
       (function() {
         try {
-          var colors = ['#3D0079','#0C1E3A','#0D3040','#0B2818','#2E0A1A','#2A1A10','#1A1A28','#2D3748','#E8E0D8','#FFFFFF'];
+          var colors = ['#3D0079','#0C1E3A','#0D3040','#0B2818','#2E0A1A','#2A1A10','#2C1810','#1A1A28','#2D3748','#E8E0D8','#FFFFFF'];
           var s = localStorage.getItem('massive-theme-step');
           var step = s !== null ? Number(s) : 0;
-          if (isNaN(step) || step < 0 || step > 9) step = 0;
+          if (isNaN(step) || step < 0 || step > 10) step = 0;
           if (s === null) {
             var b = localStorage.getItem('massive-brightness');
             if (b !== null) step = Math.round((Number(b) / 100) * 9);
           }
-          if (step <= 7) document.documentElement.setAttribute('data-theme', 'vibrant');
+          if (step <= 8) document.documentElement.setAttribute('data-theme', 'vibrant');
           else document.documentElement.removeAttribute('data-theme');
           var meta = document.querySelector('meta[name="theme-color"]');
           if (meta) meta.setAttribute('content', colors[step]);

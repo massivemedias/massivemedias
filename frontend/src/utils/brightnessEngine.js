@@ -306,24 +306,31 @@ const PALETTE_9 = {
 // Exports
 // ============================================================
 
-const PALETTES = [PALETTE_0, PALETTE_1, PALETTE_2, PALETTE_3, PALETTE_4, PALETTE_5, PALETTE_6, PALETTE_7, PALETTE_8, PALETTE_9];
+// 10 - Acajou (bois riche et classe)
+const PALETTE_10 = darkPalette(
+  '#2C1810', '#1A0E08', '#0E0604',
+  '#C4725A', '#E8A88C', '#1A0E08',
+  '#E8D0C0', '#C4725A'
+);
+
+const PALETTES = [PALETTE_0, PALETTE_1, PALETTE_2, PALETTE_3, PALETTE_4, PALETTE_5, PALETTE_10, PALETTE_6, PALETTE_7, PALETTE_8, PALETTE_9];
 
 export const THEME_COUNT = PALETTES.length;
 
 export const THEME_NAMES = [
   'Massive', 'Midnight', 'Ocean', 'Forest', 'Rosé',
-  'Espresso', 'Ember', 'Slate', 'Crème', 'Light'
+  'Espresso', 'Acajou', 'Ember', 'Slate', 'Crème', 'Light'
 ];
 
 export const THEME_COLORS = [
   '#3D0079', '#0C1E3A', '#0D3040', '#0B2818', '#2E0A1A',
-  '#2A1A10', '#1A1A28', '#2D3748', '#E8E0D8', '#FFFFFF'
+  '#2A1A10', '#2C1810', '#1A1A28', '#2D3748', '#E8E0D8', '#FFFFFF'
 ];
 
-// Couleur accent par thème (pour le slider dots)
+// Couleur accent par theme (pour le slider dots)
 export const THEME_ACCENTS = [
   '#FF52A0', '#3B9FFF', '#00BCD4', '#00CC88', '#FF4080',
-  '#D4A574', '#FF6B35', '#38B2AC', '#9B30FF', '#A600FF'
+  '#D4A574', '#C4725A', '#FF6B35', '#38B2AC', '#9B30FF', '#A600FF'
 ];
 
 const ALL_PROPS = Object.keys(PALETTE_0);
