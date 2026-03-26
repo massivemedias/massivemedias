@@ -127,18 +127,18 @@ function ConfiguratorStickers({ onFinishChange }) {
             <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2">
               {tx({ fr: 'Finition', en: 'Finish', es: 'Acabado' })}
             </label>
-            <div className="flex flex-wrap gap-1 md:gap-1.5">
+            <div className="grid grid-cols-3 md:flex md:flex-wrap gap-1.5 md:gap-1.5">
               {stickerFinishes.map(f => (
                 <button
                   key={f.id}
                   onClick={() => { setFinish(f.id); onFinishChange?.(f.id); }}
                   title={['holographic', 'broken-glass', 'stars', 'dots'].includes(f.id) ? tx({ fr: 'Effet Fx - image exageree pour illustrer', en: 'Fx effect - image exaggerated to illustrate', es: 'Efecto Fx - imagen exagerada para ilustrar' }) : ''}
-                  className={`flex flex-col items-center justify-center py-1.5 px-2 md:py-2 md:px-2.5 rounded-lg text-xs font-medium transition-all border-2 flex-1 min-w-0 ${finish === f.id
+                  className={`flex flex-col items-center justify-center py-2 px-1.5 md:py-2 md:px-2.5 rounded-lg text-xs font-medium transition-all border-2 ${finish === f.id
                     ? 'border-accent option-selected'
                     : 'border-transparent hover:border-grey-muted/30 option-default'
                   }`}
                 >
-                  <span className={`w-3 h-3 md:w-3.5 md:h-3.5 rounded-full mb-1 border ${
+                  <span className={`w-4 h-4 md:w-3.5 md:h-3.5 rounded-full mb-1.5 border ${
                     f.id === 'matte' ? 'bg-gray-400 border-gray-400' :
                     f.id === 'glossy' ? 'bg-white border-gray-300 shadow-sm' :
                     f.id === 'broken-glass' ? 'bg-gradient-to-br from-cyan-200 via-white to-cyan-400 border-cyan-300' :
