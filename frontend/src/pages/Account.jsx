@@ -225,7 +225,7 @@ function Account() {
   ];
 
   const ACCOUNT_SIDEBAR_ITEMS = [
-    { id: 'profile', label: tx({ fr: 'Profil', en: 'Profile', es: 'Perfil' }), icon: Pencil },
+    { id: 'profile', label: tx({ fr: 'Profil', en: 'Profile', es: 'Perfil' }), icon: User },
     { id: 'address', label: tx({ fr: 'Adresse', en: 'Address', es: 'Direccion' }), icon: MapPin },
     { id: 'security', label: tx({ fr: 'Sécurité', en: 'Security', es: 'Seguridad' }), icon: Shield },
   ];
@@ -233,7 +233,7 @@ function Account() {
   const baseTabs = [
     { id: 'overview', label: tx({ fr: 'Tableau de bord', en: 'Dashboard', es: 'Panel' }), icon: User },
     { id: 'orders', label: tx({ fr: 'Commandes', en: 'Orders', es: 'Pedidos' }), icon: Package },
-    { id: 'profile', label: tx({ fr: 'Profil', en: 'Profile', es: 'Perfil' }), icon: Pencil },
+    { id: 'profile', label: tx({ fr: 'Profil', en: 'Profile', es: 'Perfil' }), icon: User },
     { id: 'address', label: tx({ fr: 'Adresse', en: 'Address', es: 'Direccion' }), icon: MapPin },
     { id: 'security', label: tx({ fr: 'Sécurité', en: 'Security', es: 'Seguridad' }), icon: Shield },
   ];
@@ -936,7 +936,7 @@ function Account() {
   // ============================================================
   const ARTIST_SIDEBAR_ITEMS = isArtist ? [
     { id: 'dashboard', label: tx({ fr: 'Tableau de bord', en: 'Dashboard', es: 'Panel' }), icon: Palette },
-    { id: 'profil-artiste', label: tx({ fr: 'Page Artiste', en: 'Artist Page', es: 'Pagina Artista' }), icon: User },
+    { id: 'profil-artiste', label: tx({ fr: 'Page Artiste', en: 'Artist Page', es: 'Pagina Artista' }), icon: Pencil },
     { id: 'contrat', label: tx({ fr: 'Contrat', en: 'Contract', es: 'Contrato' }), icon: ScrollText },
     { id: 'tarifs', label: tx({ fr: 'Tarifs Massive', en: 'Massive Pricing', es: 'Precios Massive' }), icon: Receipt },
     { id: 'ventes', label: tx({ fr: 'Mes ventes', en: 'My sales', es: 'Mis ventas' }), icon: BarChart3 },
@@ -1199,7 +1199,7 @@ function Account() {
   // ============================================================
   const TATOUEUR_SIDEBAR_ITEMS = isTatoueur ? [
     { id: 'dashboard-tatoueur', label: tx({ fr: 'Tableau de bord', en: 'Dashboard', es: 'Panel' }), icon: LayoutDashboard },
-    { id: 'profil-tatoueur', label: tx({ fr: 'Ma page', en: 'My Page', es: 'Mi pagina' }), icon: Palette },
+    { id: 'profil-tatoueur', label: tx({ fr: 'Ma page', en: 'My Page', es: 'Mi pagina' }), icon: Pencil },
     { id: 'flashs', label: tx({ fr: 'Mes flashs', en: 'My Flash Designs', es: 'Mis flashs' }), icon: Palette },
     { id: 'calendrier', label: tx({ fr: 'Calendrier', en: 'Calendar', es: 'Calendario' }), icon: CalendarDays },
     { id: 'reservations', label: tx({ fr: 'Rendez-vous', en: 'Appointments', es: 'Citas' }), icon: BookOpen },
