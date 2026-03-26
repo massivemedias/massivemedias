@@ -22,6 +22,7 @@ import { useArtists } from '../hooks/useArtists';
 import { ARTIST_CONTRACT_TEXT, ARTIST_CONTRACT_TEXT_EN, ARTIST_CONTRACT_TEXT_ES, ARTIST_CONTRACT_VERSION, ARTIST_FAQ } from '../data/artistContract';
 import { HelpCircle } from 'lucide-react';
 import { generateContractPDF } from '../utils/generateContractPDF';
+import { supabase } from '../lib/supabase';
 
 // Prix client et prix artiste (rabais 30% sur prix client)
 const ARTIST_DISCOUNT = 0.30;
@@ -600,6 +601,23 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
   // ===========================
   if (section === 'contrat') {
     const contractText = lang === 'en' ? ARTIST_CONTRACT_TEXT_EN : lang === 'es' ? ARTIST_CONTRACT_TEXT_ES : ARTIST_CONTRACT_TEXT;
+    const isSigned = user?.user_metadata?.contractSigned === true;
+    const signedAt = user?.user_metadata?.contractSignedAt;
+    const signedVersion = user?.user_metadata?.contractVersion;
+
+    const handleSignContract = async () => {
+      try {
+        const { error } = await supabase.auth.updateUser({
+          data: {
+            contractSigned: true,
+            contractSignedAt: new Date().toISOString(),
+            contractVersion: ARTIST_CONTRACT_VERSION,
+          },
+        });
+        if (!error) window.location.reload();
+      } catch { /* ignore */ }
+    };
+
     return (
       <div className="space-y-6">
         <div className="rounded-2xl p-5 md:p-8 card-bg">
@@ -625,6 +643,49 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
             className="contract-content prose prose-invert prose-sm max-w-none max-h-[70vh] overflow-y-auto rounded-xl bg-glass p-5 md:p-6 text-grey-light text-sm md:text-base leading-relaxed"
             dangerouslySetInnerHTML={{ __html: contractText }}
           />
+
+          {/* Signature du contrat */}
+          <div className="mt-6 rounded-xl p-5 border border-white/10">
+            {isSigned ? (
+              <div className="flex items-center gap-3">
+                <CheckCircle size={24} className="text-green-400 flex-shrink-0" />
+                <div>
+                  <p className="text-green-400 font-semibold">
+                    {tx({ fr: 'Contrat accepte', en: 'Contract accepted', es: 'Contrato aceptado' })}
+                  </p>
+                  <p className="text-grey-muted text-sm">
+                    {tx({ fr: 'Signe le', en: 'Signed on', es: 'Firmado el' })}{' '}
+                    {signedAt ? new Date(signedAt).toLocaleDateString(lang === 'en' ? 'en-CA' : lang === 'es' ? 'es-MX' : 'fr-CA', { year: 'numeric', month: 'long', day: 'numeric' }) : ''}
+                    {signedVersion ? ` (v${signedVersion})` : ''}
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <p className="text-grey-light text-sm">
+                  {tx({
+                    fr: 'En cochant cette case, tu confirmes avoir lu et accepte les termes du contrat de partenariat Massive Medias ci-dessus.',
+                    en: 'By checking this box, you confirm that you have read and accepted the terms of the Massive Medias partnership agreement above.',
+                    es: 'Al marcar esta casilla, confirmas haber leido y aceptado los terminos del contrato de asociacion de Massive Medias anterior.',
+                  })}
+                </p>
+                <button
+                  onClick={handleSignContract}
+                  className="flex items-center gap-3 px-5 py-3 rounded-xl bg-accent/10 border border-accent/30 hover:bg-accent/20 transition-colors group"
+                >
+                  <div className="w-5 h-5 rounded border-2 border-accent/50 group-hover:border-accent flex items-center justify-center">
+                  </div>
+                  <span className="text-heading font-medium">
+                    {tx({
+                      fr: 'J\'accepte les termes du contrat',
+                      en: 'I accept the contract terms',
+                      es: 'Acepto los terminos del contrato',
+                    })}
+                  </span>
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     );
