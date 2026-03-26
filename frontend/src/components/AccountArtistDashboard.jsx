@@ -15,7 +15,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useUserRole } from '../contexts/UserRoleContext';
 import { getCommissions } from '../services/adminService';
 import { sendArtistMessage, getMyMessages, createWithdrawal, getMyWithdrawals, createEditRequest } from '../services/artistService';
-import { uploadArtistFile } from '../services/api';
+import api, { uploadArtistFile } from '../services/api';
 import FileUpload from './FileUpload';
 import artistsData from '../data/artists';
 import { useArtists } from '../hooks/useArtists';
@@ -1023,6 +1023,12 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
                 // Sauvegarder dans Supabase user_metadata (persistant, multi-appareil)
                 const { error } = await updateProfile({ artist_socials: socials });
                 if (error) throw error;
+                // Aussi sauvegarder dans le CMS Strapi pour la page publique
+                if (cmsArtist?.documentId) {
+                  try {
+                    await api.put(`/artists/${cmsArtist.documentId}`, { data: { socials } });
+                  } catch { /* ignore si CMS indisponible */ }
+                }
                 setSocialsSaved(true);
                 setTimeout(() => setSocialsSaved(false), 3000);
               } catch {
