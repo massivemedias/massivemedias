@@ -308,7 +308,7 @@ const PALETTE_9 = {
 
 // 10 - Acajou (bois riche et classe)
 const PALETTE_10 = darkPalette(
-  '#2C1810', '#1A0E08', '#0E0604',
+  '#1E100A', '#120804', '#080402',
   '#C4725A', '#A85A42', '#1A0E08',
   '#D4956A', '#A85A42'
 );
@@ -324,7 +324,7 @@ export const THEME_NAMES = [
 
 export const THEME_COLORS = [
   '#3D0079', '#0C1E3A', '#0D3040', '#0B2818', '#2E0A1A',
-  '#2A1A10', '#2C1810', '#1A1A28', '#2D3748', '#E8E0D8', '#FFFFFF'
+  '#2A1A10', '#1E100A', '#1A1A28', '#2D3748', '#E8E0D8', '#FFFFFF'
 ];
 
 // Couleur accent par theme (pour le slider dots)
