@@ -36,6 +36,7 @@
         "socials": { "type": "json" },
         "pricing": { "type": "json" },
         "prints": { "type": "json" },
+        "stickers": { "type": "json" },
         "printImages": {
             "type": "media",
             "multiple": true,
