@@ -270,13 +270,7 @@ function Panier() {
             {tx({ fr: 'Continuer mes achats', en: 'Continue shopping', es: 'Seguir comprando' })}
           </Link>
           <button
-            onClick={() => {
-              if (!session) {
-                navigate('/login?redirect=/checkout');
-              } else {
-                navigate('/checkout');
-              }
-            }}
+            onClick={() => navigate('/checkout')}
             className="btn-primary flex-1 justify-center"
           >
             {tx({ fr: 'Passer au paiement', en: 'Proceed to checkout', es: 'Proceder al pago' })}

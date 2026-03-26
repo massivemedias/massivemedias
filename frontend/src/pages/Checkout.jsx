@@ -49,34 +49,7 @@ function Checkout() {
   const { step: themeStep } = useTheme();
   const navigate = useNavigate();
 
-  // Rediriger vers login si pas connecte
-  useEffect(() => {
-    if (!user) {
-      navigate('/login?redirect=/checkout', { replace: true });
-    }
-  }, [user, navigate]);
-
-  // Afficher un message pendant la redirection
-  if (!user) {
-    return (
-      <section className="section-container pt-32 pb-20 text-center">
-        <p className="text-heading text-lg">
-          {tx({
-            fr: 'Connexion requise pour passer une commande.',
-            en: 'Login required to place an order.',
-            es: 'Inicio de sesion requerido para realizar un pedido.',
-          })}
-        </p>
-        <p className="text-grey-muted text-sm mt-2">
-          {tx({
-            fr: 'Redirection vers la page de connexion...',
-            en: 'Redirecting to login page...',
-            es: 'Redirigiendo a la pagina de inicio de sesion...',
-          })}
-        </p>
-      </section>
-    );
-  }
+  // Guest checkout supporte - pas de redirection vers login
 
   const [step, setStep] = useState('info'); // 'info' | 'payment'
   const [clientSecret, setClientSecret] = useState('');
