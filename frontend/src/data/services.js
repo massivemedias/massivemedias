@@ -22,7 +22,7 @@ Nous imprimons aussi des flyers, cartes postales et cartes d'affaires - tout ce 
       'Durée de conservation 100+ ans',
       'Flyers A6, A5, lettre (8.5x11")',
       'Cartes postales et cartes d\'affaires',
-      'Papier premium 300g+ mat ou brillant',
+      'Papier premium 300g+ mat ou lustré',
       'Pick-up gratuit Mile-End, livraison locale',
     ],
     process: [
@@ -139,7 +139,7 @@ Découpés à la forme exacte de ton design avec notre équipement de découpe p
       note: 'Design graphique inclus dans tous les prix',
       tables: [
         {
-          subtitle: 'Standard (Matte / Brillant)',
+          subtitle: 'Standard (Matte / Lustre)',
           headers: ['Qté', 'Prix', 'Prix/u'],
           rows: [
             ['25', '30$', '1,20$/u'],

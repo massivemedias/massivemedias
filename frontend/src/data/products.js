@@ -23,7 +23,7 @@ export const stickerSizes = [
   { id: '4in', label: '4"' },
 ];
 
-// Prix Standard (Matte / Brillant) - alignés sur le tableau services.js
+// Prix Standard (Matte / Lustre) - alignés sur le tableau services.js
 export const stickerPriceTiers = [
   { qty: 25, price: 30, unitPrice: 1.20 },
   { qty: 50, price: 47.50, unitPrice: 0.95 },
@@ -368,7 +368,7 @@ export const flyerImages = [
 export const flyerFaq = {
   fr: [
     { q: 'Quels formats proposez-vous?', a: 'Flyers A6 (4x6"), A5, lettre (8.5x11"). Cartes postales et cartes d\'affaires. Formats personnalisés disponibles sur demande.' },
-    { q: 'Quel papier utilisez-vous?', a: 'Papier premium 300g+ en finition matte ou brillante. Qualité professionnelle supérieure à l\'impression en ligne standard.' },
+    { q: 'Quel papier utilisez-vous?', a: 'Papier premium 300g+ en finition matte ou lustrée. Qualité professionnelle supérieure à l\'impression en ligne standard.' },
     { q: 'Offrez-vous l\'impression recto-verso?', a: 'Oui! L\'option recto-verso est disponible avec un supplément de 30%. Parfait pour les cartes d\'affaires et flyers avec plus d\'informations.' },
     { q: 'Quel est le délai de production?', a: 'Le délai varie selon la quantité. Service express disponible sur demande.' },
     { q: 'Puis-je faire faire le design aussi?', a: 'Oui, notre service de design graphique est disponible en option. Contactez-nous pour un devis incluant la création graphique.' },

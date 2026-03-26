@@ -17,7 +17,7 @@ function BoutiqueFlyers() {
   ];
 
   const features = [
-    { icon: FileText, fr: 'Papier premium', en: 'Premium paper', es: 'Papel premium', descFr: 'Papier 300g+ en finition matte ou brillante. Qualit\u00e9 sup\u00e9rieure \u00e0 l\'impression en ligne standard.', descEn: 'Premium 300g+ paper in matte or glossy finish. Quality superior to standard online printing.', descEs: 'Papel 300g+ en acabado mate o brillante. Calidad superior a la impresi\u00f3n en l\u00ednea est\u00e1ndar.' },
+    { icon: FileText, fr: 'Papier premium', en: 'Premium paper', es: 'Papel premium', descFr: 'Papier 300g+ en finition matte ou lustrée. Qualit\u00e9 sup\u00e9rieure \u00e0 l\'impression en ligne standard.', descEn: 'Premium 300g+ paper in matte or glossy finish. Quality superior to standard online printing.', descEs: 'Papel 300g+ en acabado mate o brillante. Calidad superior a la impresi\u00f3n en l\u00ednea est\u00e1ndar.' },
     { icon: Shield, fr: 'Impression pro', en: 'Pro printing', es: 'Impresi\u00f3n profesional', descFr: 'Imprimante professionnelle 12 couleurs pigment\u00e9es. Couleurs vibrantes et pr\u00e9cises m\u00eame pour les flyers.', descEn: 'Professional 12-color pigmented printer. Vibrant and precise colors even for flyers.', descEs: 'Impresora profesional de 12 colores pigmentados. Colores vibrantes y precisos incluso para flyers.' },
     { icon: Sparkles, fr: 'Service rapide', en: 'Fast service', es: 'Servicio r\u00e1pido', descFr: 'Production locale Mile-End. Service express disponible sur demande.', descEn: 'Local production Mile-End. Express service available on request.', descEs: 'Producción local Mile-End. Servicio express disponible bajo pedido.' },
   ];

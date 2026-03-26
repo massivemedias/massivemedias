@@ -752,7 +752,7 @@ export const ARTIST_CONTRACT_TEXT = `
 <p>Les produits couverts peuvent inclure, sans s'y limiter :</p>
 <ul>
   <li>Impressions fine art sur papier mat, lustré ou coton (formats variés selon approbation)</li>
-  <li>Stickers découpés sur mesure (vinyle mat, brillant, holographique ou transparent)</li>
+  <li>Stickers découpés sur mesure (vinyle mat, lustré, holographique ou transparent)</li>
   <li>Vêtements imprimés par sublimation ou transfert direct sur textile (t-shirts, hoodies)</li>
   <li>Articles sublimés (mugs, thermos, tapis de souris, etc.)</li>
   <li>Tout autre produit convenu par écrit entre les parties</li>

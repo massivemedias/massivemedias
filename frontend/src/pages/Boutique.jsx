@@ -649,7 +649,7 @@ function Boutique() {
                       { fr: 'Vinyle premium', en: 'Premium vinyl', es: 'Vinilo premium' },
                       { fr: 'Decoupe die-cut', en: 'Die-cut', es: 'Troquelado' },
                       { fr: 'Resistant UV et eau', en: 'UV & waterproof', es: 'Resistente UV y agua' },
-                      { fr: 'Finition brillante', en: 'Glossy finish', es: 'Acabado brillante' },
+                      { fr: 'Finition lustrée', en: 'Glossy finish', es: 'Acabado brillante' },
                     ];
 
                     return (
