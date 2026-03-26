@@ -399,7 +399,7 @@ Nous travaillons avec Adobe Illustrator, Figma et Photoshop pour créer des visu
           subtitle: 'Référencement SEO & Sécurité',
           headers: ['Service', 'Prix'],
           rows: [
-            ['Audit SEO complet + optimisation', '400$ + taxes'],
+            ['Audit SEO complet + optimisation (par site)', '600$ + taxes'],
             ['Meta tags, titres, descriptions optimisés', 'Inclus'],
             ['Sitemap.xml, robots.txt, structure headings', 'Inclus'],
             ['Optimisation images (alt tags, compression WebP)', 'Inclus'],
@@ -407,6 +407,7 @@ Nous travaillons avec Adobe Illustrator, Figma et Photoshop pour créer des visu
             ['SEO local (Google Business Profile)', 'Inclus'],
             ['Audit sécurité (SSL, headers, anti-spam)', 'Inclus'],
             ['Rapport de performance + recommandations', 'Inclus'],
+            ['Suivi SEO mensuel (optionnel)', '150$/mois'],
           ],
         },
       ],

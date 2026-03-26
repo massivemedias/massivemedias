@@ -399,7 +399,7 @@ We work with Adobe Illustrator, Figma and Photoshop to create impactful visuals 
           subtitle: 'SEO & Security Audit',
           headers: ['Service', 'Price'],
           rows: [
-            ['Complete SEO audit + optimization', '$400 + tax'],
+            ['Complete SEO audit + optimization (per site)', '$600 + tax'],
             ['Optimized meta tags, titles, descriptions', 'Included'],
             ['Sitemap.xml, robots.txt, heading structure', 'Included'],
             ['Image optimization (alt tags, WebP compression)', 'Included'],
@@ -407,6 +407,7 @@ We work with Adobe Illustrator, Figma and Photoshop to create impactful visuals 
             ['Local SEO (Google Business Profile)', 'Included'],
             ['Security audit (SSL, headers, anti-spam)', 'Included'],
             ['Performance report + recommendations', 'Included'],
+            ['Monthly SEO monitoring (optional)', '$150/mo'],
           ],
         },
       ],
