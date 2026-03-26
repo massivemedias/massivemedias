@@ -23,7 +23,7 @@ export const stickerSizes = [
   { id: '4in', label: '4"' },
 ];
 
-// Prix Standard (Matte / Lustre) - alignés sur le tableau services.js
+// Prix Standard (Matte / Lustré) - alignés sur le tableau services.js
 export const stickerPriceTiers = [
   { qty: 25, price: 30, unitPrice: 1.20 },
   { qty: 50, price: 47.50, unitPrice: 0.95 },
@@ -83,7 +83,7 @@ export const stickerImages = [
 export const stickerHighlights = {
   fr: [
     'Découpe de précision professionnelle',
-    'Vinyle matte, lustre, holographique, transparent, verre brisé, étoiles',
+    'Vinyle matte, lustré, holographique, transparent, verre brisé, étoiles',
     'Découpe contour à la forme exacte du design',
     'Lamination incluse - résistant eau, UV, rayures',
     'Design graphique inclus dans le prix',

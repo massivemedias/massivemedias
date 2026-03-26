@@ -147,7 +147,7 @@ function AdminTarifs() {
     lines.push('');
     lines.push(tx({ fr: 'PACKS STICKERS (design inclus)', en: 'STICKER PACKS (design included)', es: 'PACKS STICKERS (diseno incluido)' }));
     lines.push('-'.repeat(55));
-    lines.push(`${tx({ fr: 'Quantité', en: 'Quantity', es: 'Cantidad' })} | Standard (Matte/Lustre) | FX (Holo/Broken Glass)`);
+    lines.push(`${tx({ fr: 'Quantité', en: 'Quantity', es: 'Cantidad' })} | Standard (Matte/Lustré) | FX (Holo/Broken Glass)`);
     STICKER_STANDARD.forEach((s, i) => {
       const h = STICKER_FX[i];
       lines.push(`${(s.qty + ' stickers').padEnd(13)}| ${(s.price + '$ (' + s.unit.toFixed(2) + '$/u)').padEnd(24)}| ${h.price}$ (${h.unit.toFixed(2)}$/u)`);
@@ -579,7 +579,7 @@ function AdminTarifs() {
             subtitle={tx({ fr: 'Prix pour les artistes qui veulent vendre des stickers (design inclus)', en: 'Prices for artists who want to sell stickers (design included)', es: 'Precios para artistas que quieren vender stickers (diseno incluido)' })}>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <div>
-                <h4 className="text-xs font-semibold text-heading mb-2 uppercase tracking-wider">Standard (Matte / Lustre / Die-cut)</h4>
+                <h4 className="text-xs font-semibold text-heading mb-2 uppercase tracking-wider">Standard (Matte / Lustré / Die-cut)</h4>
                 <DataTable headers={[{ label: L.qty }, { label: L.price }, { label: L.unit }]}>
                   {STICKER_STANDARD.map((s, i) => (
                     <tr key={i} className="shadow-[0_1px_0_rgba(255,255,255,0.04)] hover:bg-accent/5 transition-colors">
@@ -700,7 +700,7 @@ function AdminTarifs() {
           <SectionCard icon={Sticker} iconColor="text-pink-400" title="Stickers" subtitle={tx({ fr: 'Design inclus dans le prix', en: 'Design included in price', es: 'Diseno incluido en el precio' })} delay={0.05}>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <div>
-                <h4 className="text-xs font-semibold text-heading mb-2 uppercase tracking-wider">Standard (Matte / Lustre / Die-cut)</h4>
+                <h4 className="text-xs font-semibold text-heading mb-2 uppercase tracking-wider">Standard (Matte / Lustré / Die-cut)</h4>
                 <DataTable headers={[{ label: L.qty }, { label: L.price }, { label: L.unit }]}>
                   {STICKER_STANDARD.map((s, i) => (
                     <tr key={i} className="shadow-[0_1px_0_rgba(255,255,255,0.04)] hover:bg-accent/5 transition-colors">

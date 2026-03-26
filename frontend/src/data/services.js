@@ -139,7 +139,7 @@ Découpés à la forme exacte de ton design avec notre équipement de découpe p
       note: 'Design graphique inclus dans tous les prix',
       tables: [
         {
-          subtitle: 'Standard (Matte / Lustre)',
+          subtitle: 'Standard (Matte / Lustré)',
           headers: ['Qté', 'Prix', 'Prix/u'],
           rows: [
             ['25', '30$', '1,20$/u'],

@@ -159,7 +159,7 @@ export const ARTIST_CONTRACT_TEXT_EN = `
 <p>This agreement defines the terms of collaboration between Massive Medias and the Artist for the production, sale and distribution of physical derivative products based on the Artist's original works.</p>
 <p>Covered products may include, but are not limited to:</p>
 <ul>
-  <li>Fine art prints on matte, lustre or cotton paper (various formats subject to approval)</li>
+  <li>Fine art prints on matte, lustré or cotton paper (various formats subject to approval)</li>
   <li>Custom die-cut stickers (matte, glossy, holographic or transparent vinyl)</li>
   <li>Sublimation or direct-to-garment printed clothing (t-shirts, hoodies)</li>
   <li>Sublimated items (mugs, tumblers, mousepads, etc.)</li>
@@ -455,7 +455,7 @@ export const ARTIST_CONTRACT_TEXT_ES = `
 <p>El presente acuerdo define las condiciones de colaboracion entre Massive Medias y el Artista para la produccion, venta y distribucion de productos derivados fisicos basados en las obras originales del Artista.</p>
 <p>Los productos cubiertos pueden incluir, sin limitarse a:</p>
 <ul>
-  <li>Impresiones fine art en papel mate, lustre o algodon (formatos variados segun aprobacion)</li>
+  <li>Impresiones fine art en papel mate, lustré o algodon (formatos variados segun aprobacion)</li>
   <li>Stickers cortados a medida (vinilo mate, brillante, holografico o transparente)</li>
   <li>Ropa impresa por sublimacion o transferencia directa (camisetas, hoodies)</li>
   <li>Articulos sublimados (tazas, termos, alfombrillas, etc.)</li>
