@@ -60,15 +60,11 @@ function ArtistGalleryManager() {
     return arr.find(a => a.slug === artistSlug) || null;
   }, [cmsArtists, artistSlug]);
 
-  // Merge prints/stickers from CMS + local data (fusion, pas ecrasement)
+  // CMS prioritaire, local en fallback (pas de fusion)
   const mergeItems = (cmsItems, localItems) => {
     const cms = Array.isArray(cmsItems) ? cmsItems : [];
     const local = Array.isArray(localItems) ? localItems : [];
-    if (cms.length === 0) return local;
-    if (local.length === 0) return cms;
-    const cmsIds = cms.map(p => p.id);
-    const localOnly = local.filter(lp => !cmsIds.includes(lp.id));
-    return [...localOnly, ...cms];
+    return cms.length > 0 ? cms : local;
   };
 
   const artistPrints = useMemo(() => mergeItems(cmsArtist?.prints, localArtist?.prints), [cmsArtist, localArtist]);

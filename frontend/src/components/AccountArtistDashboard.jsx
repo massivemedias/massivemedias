@@ -422,10 +422,6 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
               <BarChart3 size={22} className="text-green-400 group-hover:scale-110 transition-transform" />
               <p className="text-heading text-sm font-semibold">{tx({ fr: 'Ventes', en: 'Sales', es: 'Ventas' })}</p>
             </Link>
-            <Link to="/account?tab=retrait" className="flex flex-col items-center gap-2 p-4 md:p-5 rounded-xl bg-black/20 shadow-lg hover:bg-black/30 transition-all group text-center">
-              <Banknote size={22} className="text-yellow-400 group-hover:scale-110 transition-transform" />
-              <p className="text-heading text-sm font-semibold">{tx({ fr: 'Retrait', en: 'Withdraw', es: 'Retiro' })}</p>
-            </Link>
             <Link to="/account?tab=tarifs" className="flex flex-col items-center gap-2 p-4 md:p-5 rounded-xl bg-black/20 shadow-lg hover:bg-black/30 transition-all group text-center">
               <Receipt size={22} className="text-blue-400 group-hover:scale-110 transition-transform" />
               <p className="text-heading text-sm font-semibold">{tx({ fr: 'Tarifs', en: 'Pricing', es: 'Precios' })}</p>
@@ -1042,12 +1038,65 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
   }
 
   // ===========================
-  // SECTION: RETRAIT PAYPAL
+  // SECTION: VENTES (+ retrait integre)
   // ===========================
-  if (section === 'retrait') {
+  if (section === 'ventes') {
     return (
       <div className="space-y-6">
         {toastElement}
+        <div className="rounded-2xl p-5 md:p-8 card-bg">
+          <h3 className="text-heading font-heading font-bold text-lg mb-6 flex items-center gap-2">
+            <Clock size={20} className="text-accent" />
+            {tx({ fr: 'Historique des ventes', en: 'Sales history', es: 'Historial de ventas' })}
+          </h3>
+
+          {/* Mini stats en haut */}
+          <div className="grid grid-cols-3 gap-3 mb-6">
+            <div className="text-center py-3 px-2 rounded-xl card-bg">
+              <p className="text-lg font-bold text-green-400">{loading ? '-' : formatMoney(totalEarned)}</p>
+              <p className="text-[10px] text-grey-muted uppercase tracking-wider">{tx({ fr: 'Gains totaux', en: 'Total earnings', es: 'Ganancias totales' })}</p>
+            </div>
+            <div className="text-center py-3 px-2 rounded-xl card-bg">
+              <p className="text-lg font-bold text-blue-400">{loading ? '-' : formatMoney(totalPaid)}</p>
+              <p className="text-[10px] text-grey-muted uppercase tracking-wider">{tx({ fr: 'Déjà payé', en: 'Already paid', es: 'Ya pagado' })}</p>
+            </div>
+            <div className="text-center py-3 px-2 rounded-xl card-bg">
+              <p className="text-lg font-bold text-purple-400">{loading ? '-' : orderCount}</p>
+              <p className="text-[10px] text-grey-muted uppercase tracking-wider">{tx({ fr: 'Ventes', en: 'Sales', es: 'Ventas' })}</p>
+            </div>
+          </div>
+
+          {loading ? (
+            <div className="flex items-center gap-2 text-grey-muted py-8 justify-center"><Loader2 size={16} className="animate-spin" /></div>
+          ) : error ? (
+            <div className="flex items-center gap-2 text-yellow-400 py-4"><AlertCircle size={16} /><span className="text-sm">{tx({ fr: 'Impossible de charger les ventes', en: 'Unable to load sales', es: 'No se pueden cargar las ventas' })}</span></div>
+          ) : commissions.length === 0 ? (
+            <div className="text-center py-8">
+              <Package size={32} className="text-grey-muted/20 mx-auto mb-2" />
+              <p className="text-grey-muted text-sm">{tx({ fr: 'Aucune vente pour le moment', en: 'No sales yet', es: 'Sin ventas por el momento' })}</p>
+              <p className="text-grey-muted/60 text-xs mt-1">{tx({ fr: 'Les ventes de tes prints apparaitront ici automatiquement.', en: 'Sales of your prints will appear here automatically.', es: 'Las ventas de tus prints apareceran aqui automaticamente.' })}</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {commissions.map((c, i) => (
+                <div key={c.documentId || i} className="flex items-center justify-between py-3 shadow-[0_1px_0_rgba(255,255,255,0.03)] last:shadow-none">
+                  <div>
+                    <p className="text-heading text-sm font-medium">{c.customerName || c.customerEmail || 'Client'}</p>
+                    <p className="text-grey-muted text-xs">{c.createdAt ? new Date(c.createdAt).toLocaleDateString('fr-CA') : '-'}{c.items && ` - ${c.items.length} article${c.items.length > 1 ? 's' : ''}`}</p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${c.paid || c.status === 'paid' ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'}`}>
+                      {c.paid || c.status === 'paid' ? tx({ fr: 'Paye', en: 'Paid', es: 'Pagado' }) : tx({ fr: 'En attente', en: 'Pending', es: 'Pendiente' })}
+                    </span>
+                    <span className="text-green-400 font-bold text-sm">+{formatMoney(c.artistEarning || c.commission || 0)}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Retrait PayPal */}
         <div className="rounded-2xl p-5 md:p-8 card-bg">
           <div className="flex items-center justify-between mb-6">
             <div>
@@ -1191,67 +1240,6 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
             </div>
           ) : (
             <div className="flex items-center gap-2 text-grey-muted py-8 justify-center"><Loader2 size={16} className="animate-spin" /></div>
-          )}
-        </div>
-      </div>
-    );
-  }
-
-  // ===========================
-  // SECTION: VENTES
-  // ===========================
-  if (section === 'ventes') {
-    return (
-      <div className="space-y-6">
-        <div className="rounded-2xl p-5 md:p-8 card-bg">
-          <h3 className="text-heading font-heading font-bold text-lg mb-6 flex items-center gap-2">
-            <Clock size={20} className="text-accent" />
-            {tx({ fr: 'Historique des ventes', en: 'Sales history', es: 'Historial de ventas' })}
-          </h3>
-
-          {/* Mini stats en haut */}
-          <div className="grid grid-cols-3 gap-3 mb-6">
-            <div className="text-center py-3 px-2 rounded-xl card-bg">
-              <p className="text-lg font-bold text-green-400">{loading ? '-' : formatMoney(totalEarned)}</p>
-              <p className="text-[10px] text-grey-muted uppercase tracking-wider">{tx({ fr: 'Gains totaux', en: 'Total earnings', es: 'Ganancias totales' })}</p>
-            </div>
-            <div className="text-center py-3 px-2 rounded-xl card-bg">
-              <p className="text-lg font-bold text-blue-400">{loading ? '-' : formatMoney(totalPaid)}</p>
-              <p className="text-[10px] text-grey-muted uppercase tracking-wider">{tx({ fr: 'Déjà payé', en: 'Already paid', es: 'Ya pagado' })}</p>
-            </div>
-            <div className="text-center py-3 px-2 rounded-xl card-bg">
-              <p className="text-lg font-bold text-purple-400">{loading ? '-' : orderCount}</p>
-              <p className="text-[10px] text-grey-muted uppercase tracking-wider">{tx({ fr: 'Ventes', en: 'Sales', es: 'Ventas' })}</p>
-            </div>
-          </div>
-
-          {loading ? (
-            <div className="flex items-center gap-2 text-grey-muted py-8 justify-center"><Loader2 size={16} className="animate-spin" /></div>
-          ) : error ? (
-            <div className="flex items-center gap-2 text-yellow-400 py-4"><AlertCircle size={16} /><span className="text-sm">{tx({ fr: 'Impossible de charger les ventes', en: 'Unable to load sales', es: 'No se pueden cargar las ventas' })}</span></div>
-          ) : commissions.length === 0 ? (
-            <div className="text-center py-8">
-              <Package size={32} className="text-grey-muted/20 mx-auto mb-2" />
-              <p className="text-grey-muted text-sm">{tx({ fr: 'Aucune vente pour le moment', en: 'No sales yet', es: 'Sin ventas por el momento' })}</p>
-              <p className="text-grey-muted/60 text-xs mt-1">{tx({ fr: 'Les ventes de tes prints apparaitront ici automatiquement.', en: 'Sales of your prints will appear here automatically.', es: 'Las ventas de tus prints apareceran aqui automaticamente.' })}</p>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {commissions.map((c, i) => (
-                <div key={c.documentId || i} className="flex items-center justify-between py-3 shadow-[0_1px_0_rgba(255,255,255,0.03)] last:shadow-none">
-                  <div>
-                    <p className="text-heading text-sm font-medium">{c.customerName || c.customerEmail || 'Client'}</p>
-                    <p className="text-grey-muted text-xs">{c.createdAt ? new Date(c.createdAt).toLocaleDateString('fr-CA') : '-'}{c.items && ` - ${c.items.length} article${c.items.length > 1 ? 's' : ''}`}</p>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${c.paid || c.status === 'paid' ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'}`}>
-                      {c.paid || c.status === 'paid' ? tx({ fr: 'Paye', en: 'Paid', es: 'Pagado' }) : tx({ fr: 'En attente', en: 'Pending', es: 'Pendiente' })}
-                    </span>
-                    <span className="text-green-400 font-bold text-sm">+{formatMoney(c.artistEarning || c.commission || 0)}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
           )}
         </div>
       </div>

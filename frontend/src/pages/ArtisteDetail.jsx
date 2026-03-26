@@ -51,32 +51,20 @@ function ArtisteDetail({ subdomainSlug }) {
     if (!cmsArtist) return local;
     const cms = buildArtistFromCMS(cmsArtist);
     if (!local) return cms;
-    // CMS prioritaire, local en fallback
+    // CMS prioritaire, local en fallback (pas de fusion, un ou l'autre)
     return {
       ...local,
       ...cms,
-      tagline: { fr: cms.tagline.fr || local.tagline.fr, en: cms.tagline.en || local.tagline.en, es: local.tagline.es || local.tagline.en },
-      bio: { fr: cms.bio.fr || local.bio.fr, en: cms.bio.en || local.bio.en, es: local.bio.es || local.bio.en },
+      tagline: (cms.tagline.fr || cms.tagline.en) ? cms.tagline : local.tagline,
+      bio: (cms.bio.fr || cms.bio.en) ? cms.bio : local.bio,
       demarche: cms.demarche || local.demarche || null,
-      socials: { ...(local.socials || {}), ...(cms.socials || {}) },
-      prints: (() => {
-        const localPrints = local.prints || [];
-        const cmsPrints = (cms.prints || []).map(cp => {
-          const localPrint = localPrints.find(lp => lp.id === cp.id);
-          if (localPrint) {
-            return { ...localPrint, ...cp, image: cp.image || localPrint.image, fullImage: cp.fullImage || localPrint.fullImage, titleFr: localPrint.titleFr || cp.titleFr, titleEn: localPrint.titleEn || cp.titleEn };
-          }
-          return cp;
-        });
-        // Ajouter les prints locaux qui ne sont pas dans le CMS
-        const cmsIds = cmsPrints.map(p => p.id);
-        const localOnly = localPrints.filter(lp => !cmsIds.includes(lp.id));
-        return [...localOnly, ...cmsPrints];
-      })(),
-      stickers: local.stickers || [],
+      socials: Object.keys(cms.socials || {}).length > 0 ? cms.socials : (local.socials || {}),
+      prints: cms.prints?.length > 0 ? cms.prints : (local.prints || []),
+      stickers: cms.stickers?.length > 0 ? cms.stickers : (local.stickers || []),
+      merch: cms.merch?.length > 0 ? cms.merch : (local.merch || []),
       pricing: cms.pricing || local.pricing,
-      avatar: (cms.socials?.avatarUrl) || (cms.avatar && !cms.avatar.includes('undefined') ? cms.avatar : null) || local.avatar,
-      heroImage: cms.heroImage && !cms.heroImage.includes('undefined') ? cms.heroImage : local.heroImage,
+      avatar: (cms.avatar && !cms.avatar.includes('undefined')) ? cms.avatar : local.avatar,
+      heroImage: (cms.heroImage && !cms.heroImage.includes('undefined')) ? cms.heroImage : local.heroImage,
     };
   }, [cmsArtists, slug]);
   const [selectedPrint, setSelectedPrint] = useState(null);
