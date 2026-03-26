@@ -95,6 +95,13 @@
             "type": "string",
             "unique": true
         },
+        "promoCode": {
+            "type": "string"
+        },
+        "promoDiscount": {
+            "type": "integer",
+            "default": 0
+        },
         "client": {
             "type": "relation",
             "relation": "manyToOne",

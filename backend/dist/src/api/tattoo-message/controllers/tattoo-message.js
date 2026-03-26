@@ -4,21 +4,30 @@ const strapi_1 = require("@strapi/strapi");
 const email_1 = require("../../../utils/email");
 exports.default = strapi_1.factories.createCoreController('api::tattoo-message.tattoo-message', ({ strapi }) => ({
     async send(ctx) {
-        const { tatoueurDocumentId, senderName, senderEmail, senderType, content, conversationId, flashDocumentId, reservationDocumentId, supabaseUserId, } = ctx.request.body;
-        if (!senderName || !senderEmail || !content || !tatoueurDocumentId) {
-            return ctx.badRequest('senderName, senderEmail, content et tatoueurDocumentId sont requis');
+        const { tatoueurDocumentId, tatoueurSlug, senderName, senderEmail, senderType, content, conversationId, flashDocumentId, reservationDocumentId, supabaseUserId, } = ctx.request.body;
+        if (!senderName || !senderEmail || !content || (!tatoueurDocumentId && !tatoueurSlug)) {
+            return ctx.badRequest('senderName, senderEmail, content et tatoueurDocumentId ou tatoueurSlug sont requis');
         }
         const validSenderTypes = ['client', 'tatoueur', 'admin'];
         if (senderType && !validSenderTypes.includes(senderType)) {
             return ctx.badRequest('senderType invalide. Valeurs acceptees: ' + validSenderTypes.join(', '));
         }
-        // Recuperer le tatoueur
-        const tatoueur = await strapi.documents('api::tatoueur.tatoueur').findFirst({
-            filters: { documentId: tatoueurDocumentId },
-        });
-        if (!tatoueur) {
-            return ctx.notFound('Tatoueur introuvable');
+        // Recuperer le tatoueur par documentId ou slug
+        let tatoueur = null;
+        if (tatoueurDocumentId) {
+            tatoueur = await strapi.documents('api::tatoueur.tatoueur').findFirst({
+                filters: { documentId: tatoueurDocumentId },
+            });
         }
+        else if (tatoueurSlug) {
+            const results = await strapi.documents('api::tatoueur.tatoueur').findMany({
+                filters: { slug: tatoueurSlug },
+                limit: 1,
+            });
+            tatoueur = (results === null || results === void 0 ? void 0 : results[0]) || null;
+        }
+        // Si pas dans le CMS, on cree quand meme le message (tatoueur local)
+        // Le message sera visible quand le tatoueur sera cree dans le CMS
         // Recuperer le flash si fourni
         let flash = null;
         if (flashDocumentId) {

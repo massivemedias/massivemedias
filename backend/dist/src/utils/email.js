@@ -137,6 +137,7 @@ function buildOrderConfirmationHtml(data) {
         <td style="padding:4px 12px;color:#a0a0b8;font-size:14px;">Sous-total</td>
         <td style="padding:4px 12px;text-align:right;color:#e4e4f0;font-size:14px;">${formatPrice(data.subtotal)}$</td>
       </tr>
+      ${data.promoCode && data.promoDiscount ? '<tr><td style="padding:4px 12px;color:#4ade80;font-size:14px;">Code promo : ' + data.promoCode + '</td><td style="padding:4px 12px;text-align:right;color:#4ade80;font-size:14px;font-weight:600;">-' + formatPrice(data.promoDiscount) + '$</td></tr>' : ''}
       <tr>
         <td style="padding:4px 12px;color:#a0a0b8;font-size:14px;">Livraison</td>
         <td style="padding:4px 12px;text-align:right;color:#e4e4f0;font-size:14px;">${data.shipping === 0 ? 'Gratuit' : formatPrice(data.shipping) + '$'}</td>
@@ -176,9 +177,18 @@ function buildOrderConfirmationHtml(data) {
     <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:16px;">
       <tr><td style="padding:16px;background:rgba(255,82,160,0.06);border-radius:8px;border:1px solid rgba(255,82,160,0.15);">
         <p style="margin:0;color:#e4e4f0;font-size:14px;line-height:1.6;">
-          &#128666; Votre commande sera trait\u00e9e dans un d\u00e9lai de 3 \u00e0 5 jours ouvrables.
-          Vous recevrez un courriel de confirmation lors de l'exp\u00e9dition.
+          &#128666; Votre commande sera traitee dans un delai de 3 a 5 jours ouvrables.
+          Vous recevrez un courriel de confirmation lors de l'expedition.
           Pour toute question : <a href="mailto:massivemedias@gmail.com" style="color:#FF52A0;text-decoration:none;">massivemedias@gmail.com</a>
+        </p>
+      </td></tr>
+    </table>
+
+    <!-- Invoice notice -->
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:12px;">
+      <tr><td style="padding:16px;background:rgba(139,92,246,0.06);border-radius:8px;border:1px solid rgba(139,92,246,0.15);">
+        <p style="margin:0;color:#e4e4f0;font-size:14px;line-height:1.6;">
+          ${data.supabaseUserId ? '&#128196; Votre facture est disponible dans votre compte sous <a href="https://massivemedias.com/account?tab=commandes" style="color:#FF52A0;text-decoration:none;font-weight:600;">Mes commandes</a>.' : '&#128196; Creez un compte sur <a href="https://massivemedias.com/account" style="color:#FF52A0;text-decoration:none;font-weight:600;">massivemedias.com</a> pour acceder a vos factures et suivre vos commandes.'}
         </p>
       </td></tr>
     </table>
@@ -520,10 +530,17 @@ function buildNewOrderNotificationHtml(data) {
         <td style="padding:8px 14px;border-bottom:1px solid #2a2a4a;color:#FF52A0;font-size:14px;font-weight:700;font-family:monospace;">${data.orderRef}</td>
       </tr>
       <tr>
-        <td style="padding:8px 14px;color:#a0a0b8;font-size:13px;">Date</td>
-        <td style="padding:8px 14px;color:#e4e4f0;font-size:14px;">${date}</td>
+        <td style="padding:8px 14px;border-bottom:1px solid #2a2a4a;color:#a0a0b8;font-size:13px;">Date</td>
+        <td style="padding:8px 14px;border-bottom:1px solid #2a2a4a;color:#e4e4f0;font-size:14px;">${date}</td>
       </tr>
+      <tr>
+        <td style="padding:8px 14px;border-bottom:1px solid #2a2a4a;color:#a0a0b8;font-size:13px;">Design pret</td>
+        <td style="padding:8px 14px;border-bottom:1px solid #2a2a4a;color:${data.designReady ? '#4ade80' : '#f59e0b'};font-size:14px;font-weight:600;">${data.designReady ? 'Oui' : 'Non - design a faire'}</td>
+      </tr>
+      ${data.notes ? '<tr><td style="padding:8px 14px;border-bottom:1px solid #2a2a4a;color:#a0a0b8;font-size:13px;">Notes client</td><td style="padding:8px 14px;border-bottom:1px solid #2a2a4a;color:#e4e4f0;font-size:14px;">' + data.notes + '</td></tr>' : ''}
     </table>
+
+    ${data.uploadedFiles && data.uploadedFiles.length > 0 ? '<table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:16px;"><tr><td style="padding:16px;background:rgba(139,92,246,0.08);border-radius:8px;border:1px solid rgba(139,92,246,0.15);"><p style="margin:0 0 8px;color:#a0a0b8;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Fichiers envoyes par le client</p>' + data.uploadedFiles.map((f) => '<p style="margin:4px 0;"><a href="' + f.url + '" style="color:#FF52A0;text-decoration:none;font-size:14px;">&#128206; ' + f.name + '</a></p>').join('') + '</td></tr></table>' : ''}
 
     <!-- Items table -->
     <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin-bottom:16px;">
@@ -541,6 +558,7 @@ function buildNewOrderNotificationHtml(data) {
         <td style="padding:4px 12px;color:#a0a0b8;font-size:13px;">Sous-total</td>
         <td style="padding:4px 12px;text-align:right;color:#e4e4f0;font-size:13px;">${formatPrice(data.subtotal)}$</td>
       </tr>
+      ${data.promoCode && data.promoDiscount ? '<tr><td style="padding:4px 12px;color:#4ade80;font-size:13px;">Code promo : ' + data.promoCode + '</td><td style="padding:4px 12px;text-align:right;color:#4ade80;font-size:13px;font-weight:600;">-' + formatPrice(data.promoDiscount) + '$</td></tr>' : ''}
       <tr>
         <td style="padding:4px 12px;color:#a0a0b8;font-size:13px;">Livraison</td>
         <td style="padding:4px 12px;text-align:right;color:#e4e4f0;font-size:13px;">${data.shipping === 0 ? 'Gratuit' : formatPrice(data.shipping) + '$'}</td>
@@ -549,10 +567,7 @@ function buildNewOrderNotificationHtml(data) {
         <td style="padding:4px 12px;color:#a0a0b8;font-size:13px;">TPS</td>
         <td style="padding:4px 12px;text-align:right;color:#e4e4f0;font-size:13px;">${formatPrice(data.tps)}$</td>
       </tr>
-      ${data.tvq > 0 ? `<tr>
-        <td style="padding:4px 12px;color:#a0a0b8;font-size:13px;">TVQ</td>
-        <td style="padding:4px 12px;text-align:right;color:#e4e4f0;font-size:13px;">${formatPrice(data.tvq)}$</td>
-      </tr>` : ''}
+      ${data.tvq > 0 ? '<tr><td style="padding:4px 12px;color:#a0a0b8;font-size:13px;">TVQ</td><td style="padding:4px 12px;text-align:right;color:#e4e4f0;font-size:13px;">' + formatPrice(data.tvq) + '$</td></tr>' : ''}
       <tr>
         <td colspan="2" style="padding:6px 12px 0;"><div style="border-top:2px solid #FF52A0;"></div></td>
       </tr>
@@ -607,6 +622,10 @@ function buildTrackingEmailHtml(data) {
         : data.carrier === 'purolator' ? 'Purolator'
             : data.carrier === 'ups' ? 'UPS'
                 : 'Postes Canada';
+    const deliveryEstimate = data.carrier === 'postes-canada' ? '3-7 jours ouvrables'
+        : data.carrier === 'purolator' ? '1-3 jours ouvrables'
+            : data.carrier === 'ups' ? '2-5 jours ouvrables'
+                : '5-10 jours ouvrables';
     const content = `
     <h2 style="color:#e4e4f0;margin:0 0 8px;font-size:22px;">&#128230; Votre colis est en route !</h2>
     <p style="color:#a0a0b8;margin:0 0 24px;font-size:15px;line-height:1.5;">
@@ -624,6 +643,10 @@ function buildTrackingEmailHtml(data) {
           <tr>
             <td style="padding:8px 0;color:#a0a0b8;font-size:13px;">Numero de suivi</td>
             <td style="padding:8px 0;text-align:right;color:#FF52A0;font-size:14px;font-weight:700;font-family:monospace;">${data.trackingNumber}</td>
+          </tr>
+          <tr>
+            <td style="padding:8px 0;color:#a0a0b8;font-size:13px;">Delai estime</td>
+            <td style="padding:8px 0;text-align:right;color:#e4e4f0;font-size:14px;font-weight:600;">${deliveryEstimate}</td>
           </tr>
         </table>
       </td></tr>

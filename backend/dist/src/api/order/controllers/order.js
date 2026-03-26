@@ -29,7 +29,7 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
         ctx.body = uploadedFiles;
     },
     async createPaymentIntent(ctx) {
-        const { items, customerEmail, customerName, customerPhone, shippingAddress, shipping: clientShipping, taxes: clientTaxes, orderTotal: clientOrderTotal, designReady, notes, supabaseUserId } = ctx.request.body;
+        const { items, customerEmail, customerName, customerPhone, shippingAddress, shipping: clientShipping, taxes: clientTaxes, orderTotal: clientOrderTotal, promoCode, promoDiscountPercent, designReady, notes, supabaseUserId } = ctx.request.body;
         // Validate
         if (!items || !Array.isArray(items) || items.length === 0) {
             return ctx.badRequest('Cart is empty');
@@ -38,7 +38,21 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
             return ctx.badRequest('Customer email and name are required');
         }
         // Recalculate total server-side (never trust client-side totals)
-        const subtotal = items.reduce((sum, item) => sum + (item.totalPrice || 0), 0);
+        let subtotal = items.reduce((sum, item) => sum + (item.totalPrice || 0), 0);
+        // Validate and apply promo code server-side (never trust client discount)
+        const PROMO_CODES = {
+            'MASSIVE6327': { discountPercent: 20, label: 'Promo Massive 20%' },
+        };
+        let promoDiscount = 0;
+        let appliedPromoCode = '';
+        if (promoCode && typeof promoCode === 'string') {
+            const promo = PROMO_CODES[promoCode.toUpperCase().trim()];
+            if (promo) {
+                promoDiscount = Math.round(subtotal * promo.discountPercent / 100);
+                appliedPromoCode = promoCode.toUpperCase().trim();
+                subtotal = subtotal - promoDiscount;
+            }
+        }
         // Recalculate shipping server-side (par poids)
         const province = (shippingAddress === null || shippingAddress === void 0 ? void 0 : shippingAddress.province) || 'QC';
         const postalCode = (shippingAddress === null || shippingAddress === void 0 ? void 0 : shippingAddress.postalCode) || '';
@@ -93,6 +107,8 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
                     designReady: designReady !== false ? 'oui' : 'non',
                     notes: (notes || '').slice(0, 500),
                     supabaseUserId: supabaseUserId || '',
+                    promoCode: appliedPromoCode || '',
+                    promoDiscount: promoDiscount > 0 ? promoDiscount.toFixed(2) : '',
                 },
             });
             // Find or create Client record
@@ -144,6 +160,8 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
                 designReady: designReady !== false,
                 notes: notes || '',
                 shippingAddress: shippingAddress || null,
+                promoCode: appliedPromoCode || null,
+                promoDiscount: promoDiscount > 0 ? Math.round(promoDiscount * 100) : 0,
             };
             // Link client relation using Strapi v5 connect syntax
             if (client) {
@@ -248,6 +266,9 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
                         tvq: order.tvq || 0,
                         total: order.total || 0,
                         shippingAddress: order.shippingAddress || null,
+                        promoCode: order.promoCode || undefined,
+                        promoDiscount: order.promoDiscount || undefined,
+                        supabaseUserId: order.supabaseUserId || undefined,
                     });
                     strapi.log.info(`Email de confirmation envoye a ${order.customerEmail}`);
                 }
@@ -258,6 +279,17 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
                 try {
                     const orderItems2 = Array.isArray(order.items) ? order.items : [];
                     const orderRef2 = paymentIntent.id.slice(-8).toUpperCase();
+                    // Collecter tous les fichiers uploades de tous les items
+                    const allUploadedFiles = [];
+                    for (const item of orderItems2) {
+                        if (Array.isArray(item.uploadedFiles)) {
+                            for (const f of item.uploadedFiles) {
+                                if (f && (f.url || f.name)) {
+                                    allUploadedFiles.push({ name: f.name || f.url || 'Fichier', url: f.url || '' });
+                                }
+                            }
+                        }
+                    }
                     await (0, email_1.sendNewOrderNotificationEmail)({
                         orderRef: orderRef2,
                         customerName: order.customerName,
@@ -275,6 +307,11 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
                         tvq: order.tvq || 0,
                         total: order.total || 0,
                         shippingAddress: order.shippingAddress || null,
+                        uploadedFiles: allUploadedFiles.length > 0 ? allUploadedFiles : undefined,
+                        notes: order.notes || undefined,
+                        designReady: order.designReady !== false,
+                        promoCode: order.promoCode || undefined,
+                        promoDiscount: order.promoDiscount || undefined,
                     });
                     strapi.log.info(`Notification vente admin envoyee pour commande ${orderRef2}`);
                 }
