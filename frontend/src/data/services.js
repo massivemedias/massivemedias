@@ -395,6 +395,20 @@ Nous travaillons avec Adobe Illustrator, Figma et Photoshop pour créer des visu
             ['E-commerce / multi-pages (10+)', '1 500$ - 2 000$'],
           ],
         },
+        {
+          subtitle: 'Référencement SEO & Sécurité',
+          headers: ['Service', 'Prix'],
+          rows: [
+            ['Audit SEO complet + optimisation', '400$ + taxes'],
+            ['Meta tags, titres, descriptions optimisés', 'Inclus'],
+            ['Sitemap.xml, robots.txt, structure headings', 'Inclus'],
+            ['Optimisation images (alt tags, compression WebP)', 'Inclus'],
+            ['Google Search Console + indexation', 'Inclus'],
+            ['SEO local (Google Business Profile)', 'Inclus'],
+            ['Audit sécurité (SSL, headers, anti-spam)', 'Inclus'],
+            ['Rapport de performance + recommandations', 'Inclus'],
+          ],
+        },
       ],
     },
     webProjects: [

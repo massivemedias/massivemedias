@@ -395,6 +395,20 @@ Más de 15 años de experiencia en desarrollo web. El fundador de Massive es pro
             ['E-commerce / multi-paginas (10+)', '$1,500 - $2,000'],
           ],
         },
+        {
+          subtitle: 'Auditoría SEO y Seguridad',
+          headers: ['Servicio', 'Precio'],
+          rows: [
+            ['Auditoría SEO completa + optimización', '$400 + impuestos'],
+            ['Meta tags, títulos, descripciones optimizados', 'Incluido'],
+            ['Sitemap.xml, robots.txt, estructura de headings', 'Incluido'],
+            ['Optimización de imágenes (alt tags, compresión WebP)', 'Incluido'],
+            ['Google Search Console + indexación', 'Incluido'],
+            ['SEO local (Google Business Profile)', 'Incluido'],
+            ['Auditoría de seguridad (SSL, headers, anti-spam)', 'Incluido'],
+            ['Informe de rendimiento + recomendaciones', 'Incluido'],
+          ],
+        },
       ],
     },
     webProjects: [

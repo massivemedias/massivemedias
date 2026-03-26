@@ -395,6 +395,20 @@ We work with Adobe Illustrator, Figma and Photoshop to create impactful visuals 
             ['E-commerce / multi-page (10+)', '$1,500 - $2,000'],
           ],
         },
+        {
+          subtitle: 'SEO & Security Audit',
+          headers: ['Service', 'Price'],
+          rows: [
+            ['Complete SEO audit + optimization', '$400 + tax'],
+            ['Optimized meta tags, titles, descriptions', 'Included'],
+            ['Sitemap.xml, robots.txt, heading structure', 'Included'],
+            ['Image optimization (alt tags, WebP compression)', 'Included'],
+            ['Google Search Console + indexation', 'Included'],
+            ['Local SEO (Google Business Profile)', 'Included'],
+            ['Security audit (SSL, headers, anti-spam)', 'Included'],
+            ['Performance report + recommendations', 'Included'],
+          ],
+        },
       ],
     },
     webProjects: [
