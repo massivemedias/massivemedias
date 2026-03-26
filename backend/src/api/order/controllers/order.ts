@@ -289,6 +289,9 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
             tvq: order.tvq || 0,
             total: order.total || 0,
             shippingAddress: order.shippingAddress || null,
+            promoCode: order.promoCode || undefined,
+            promoDiscount: order.promoDiscount || undefined,
+            supabaseUserId: order.supabaseUserId || undefined,
           });
           strapi.log.info(`Email de confirmation envoye a ${order.customerEmail}`);
         } catch (emailErr) {
@@ -299,6 +302,19 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
         try {
           const orderItems2: any[] = Array.isArray(order.items) ? order.items : [];
           const orderRef2 = paymentIntent.id.slice(-8).toUpperCase();
+
+          // Collecter tous les fichiers uploades de tous les items
+          const allUploadedFiles: { name: string; url: string }[] = [];
+          for (const item of orderItems2) {
+            if (Array.isArray(item.uploadedFiles)) {
+              for (const f of item.uploadedFiles) {
+                if (f && (f.url || f.name)) {
+                  allUploadedFiles.push({ name: f.name || f.url || 'Fichier', url: f.url || '' });
+                }
+              }
+            }
+          }
+
           await sendNewOrderNotificationEmail({
             orderRef: orderRef2,
             customerName: order.customerName,
@@ -316,6 +332,11 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
             tvq: order.tvq || 0,
             total: order.total || 0,
             shippingAddress: order.shippingAddress || null,
+            uploadedFiles: allUploadedFiles.length > 0 ? allUploadedFiles : undefined,
+            notes: order.notes || undefined,
+            designReady: order.designReady !== false,
+            promoCode: order.promoCode || undefined,
+            promoDiscount: order.promoDiscount || undefined,
           });
           strapi.log.info(`Notification vente admin envoyee pour commande ${orderRef2}`);
         } catch (adminEmailErr) {
