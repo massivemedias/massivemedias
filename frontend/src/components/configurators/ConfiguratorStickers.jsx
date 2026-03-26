@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { ShoppingCart, Check, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../../contexts/CartContext';
 import { useLang } from '../../i18n/LanguageContext';
 import { useProduct } from '../../hooks/useProducts';
 import FileUpload from '../FileUpload';
+import StickerPreview3D from '../StickerPreview3D';
 import {
   stickerFinishes as defaultFinishes, stickerShapes as defaultShapes, stickerSizes as defaultSizes,
   stickerPriceTiers as defaultTiers, getStickerPrice as defaultGetPrice, stickerImages,
@@ -46,18 +46,6 @@ function ConfiguratorStickers({ onFinishChange }) {
   const shapeLabel = stickerShapes.find(s => s.id === shape);
   const sizeLabel = stickerSizes.find(s => s.id === size)?.label;
 
-  // Preview image per finish type - cache bust avec build ID
-  const v = import.meta.env.VITE_BUILD_TIME ? `?v=${import.meta.env.VITE_BUILD_TIME}` : '';
-  const finishImages = {
-    matte: `/images/stickers/finish-matte.webp${v}`,
-    glossy: `/images/stickers/finish-glossy.webp${v}`,
-    holographic: `/images/stickers/finish-holographic.webp${v}`,
-    'broken-glass': `/images/stickers/finish-broken-glass.webp${v}`,
-    stars: `/images/stickers/finish-stars.webp${v}`,
-    dots: `/images/stickers/finish-dots-v2.webp${v}`,
-  };
-  const previewImage = finishImages[finish] || finishImages.matte;
-
   const handleAddToCart = () => {
     addToCart({
       productId: 'sticker-custom',
@@ -85,27 +73,15 @@ function ConfiguratorStickers({ onFinishChange }) {
     <>
       {/* Desktop: two-column layout / Mobile: compact stacked */}
       <div className="flex flex-col md:flex-row gap-4 md:gap-6 mb-4 md:mb-6">
-        {/* Preview: horizontal strip on mobile, sidebar on desktop */}
-        <div className="flex md:flex-col items-center gap-3 md:gap-0 md:w-56 rounded-xl card-bg-bordered p-3 md:p-4 overflow-hidden md:self-start">
-          <AnimatePresence mode="wait">
-            <motion.img
-              key={finish}
-              src={previewImage}
-              alt={tx({ fr: finishLabel?.labelFr, en: finishLabel?.labelEn, es: finishLabel?.labelEn })}
-              className="w-20 h-20 md:w-full md:h-auto object-contain rounded-lg flex-shrink-0"
-              style={
-                finish === 'glossy' ? { filter: 'brightness(0.92) saturate(0.95)' } :
-                finish === 'stars' ? { filter: 'brightness(0.9) saturate(0.85)' } :
-                finish === 'dots' ? { filter: 'brightness(0.9) saturate(0.85)' } :
-                undefined
-              }
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-            />
-          </AnimatePresence>
-          <div className="text-left md:text-center md:mt-3">
+        {/* Preview: 3D sticker mockup */}
+        <div className="flex flex-col items-center gap-2 md:gap-3 md:w-64 rounded-xl card-bg-bordered p-3 md:p-4 overflow-hidden md:self-start">
+          <StickerPreview3D
+            image={uploadedFiles[0]?.url || null}
+            finish={finish}
+            shape={shape}
+            size={sizeLabel}
+          />
+          <div className="text-center mt-2">
             <span className="text-heading text-sm font-semibold">
               {tx({ fr: finishLabel?.labelFr, en: finishLabel?.labelEn, es: finishLabel?.labelEn })}
             </span>
@@ -114,7 +90,7 @@ function ConfiguratorStickers({ onFinishChange }) {
             </span>
             {(finish === 'holographic' || finish === 'broken-glass' || finish === 'stars' || finish === 'dots') && (
               <span className="block text-grey-muted/60 text-[10px] mt-1.5 italic">
-                {tx({ fr: '* Image exageree pour illustrer l\'effet', en: '* Image exaggerated to illustrate the effect', es: '* Imagen exagerada para ilustrar el efecto' })}
+                {tx({ fr: '* Effet simule en CSS', en: '* CSS-simulated effect', es: '* Efecto simulado en CSS' })}
               </span>
             )}
           </div>
