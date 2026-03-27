@@ -60,9 +60,9 @@ function ArtistPrintCard({ print, minPrice, pricing, selected, onClick, onZoom }
           <div className="absolute inset-0 bg-accent/10 border-2 border-accent rounded-t-xl" />
         )}
       </div>
-      <div className="p-4">
-        <h3 className="text-heading font-heading font-bold text-sm">{title}</h3>
-        <p className="text-grey-muted text-xs mt-1">
+      <div className="p-3">
+        <h3 className="text-heading font-heading font-bold text-sm truncate">{title}</h3>
+        <p className="text-grey-muted text-xs mt-0.5">
           {fixedPrice != null
             ? `${fixedPrice}$`
             : tx({ fr: `A partir de ${minPrice}$`, en: `Starting at $${minPrice}`, es: `Desde $${minPrice}` })
