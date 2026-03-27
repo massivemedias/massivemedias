@@ -21,6 +21,8 @@ function ConfiguratorArtistSticker({ artist, selectedSticker, allStickers = [] }
   const [size, setSize] = useState('3in');
   const [added, setAdded] = useState(false);
   const [notes, setNotes] = useState('');
+  const [selectedTier, setSelectedTier] = useState(25);
+  const [previewSticker, setPreviewSticker] = useState(null);
   // Pack: { stickerId: qty } ex: { 'psyqu33n-stk-001': 3, 'psyqu33n-stk-002': 5 }
   const [pack, setPack] = useState({});
 
@@ -42,15 +44,11 @@ function ConfiguratorArtistSticker({ artist, selectedSticker, allStickers = [] }
 
   const totalQty = useMemo(() => Object.values(pack).reduce((s, q) => s + q, 0), [pack]);
 
-  // Trouver le tier actuel en fonction du total
-  const currentTier = useMemo(() => {
-    const tier = PACK_TIERS.find(t => t >= totalQty) || PACK_TIERS[PACK_TIERS.length - 1];
-    return tier;
-  }, [totalQty]);
-
+  const currentTier = selectedTier;
   const isSpecialFinish = finish === 'holographic' || finish === 'broken-glass' || finish === 'stars';
-  const priceInfo = defaultGetPrice(finish, shape, currentTier);
-  const packComplete = totalQty >= 25;
+  const priceInfo = totalQty > 0 ? defaultGetPrice(finish, shape, currentTier) : null;
+  const packComplete = totalQty === currentTier;
+  const canAddMore = totalQty < currentTier;
 
   const updateStickerQty = (id, delta) => {
     setPack(prev => {
@@ -127,7 +125,7 @@ function ConfiguratorArtistSticker({ artist, selectedSticker, allStickers = [] }
     }
   };
 
-  const remaining = Math.max(0, 25 - totalQty);
+  const remaining = Math.max(0, currentTier - totalQty);
 
   return (
     <div className="space-y-4">
@@ -155,6 +153,54 @@ function ConfiguratorArtistSticker({ artist, selectedSticker, allStickers = [] }
         </div>
       </div>
 
+      {/* Tier selector - toujours visible */}
+      <div className="grid grid-cols-5 gap-1.5">
+        {PACK_TIERS.map(tier => {
+          const p = defaultGetPrice(finish, shape, tier);
+          const isActive = tier === selectedTier;
+          return (
+            <button
+              key={tier}
+              onClick={() => {
+                setSelectedTier(tier);
+                // Si le pack depasse le nouveau tier, tronquer
+                if (totalQty > tier) {
+                  const newPack = { ...pack };
+                  let excess = totalQty - tier;
+                  const ids = Object.keys(newPack);
+                  for (let i = ids.length - 1; i >= 0 && excess > 0; i--) {
+                    const reduce = Math.min(newPack[ids[i]], excess);
+                    newPack[ids[i]] -= reduce;
+                    excess -= reduce;
+                    if (newPack[ids[i]] <= 0) delete newPack[ids[i]];
+                  }
+                  setPack(newPack);
+                }
+              }}
+              className={`flex flex-col items-center py-2 rounded-lg text-xs transition-all border-2 ${
+                isActive
+                  ? 'border-accent option-selected'
+                  : 'border-transparent hover:border-grey-muted/30 option-default'
+              }`}
+            >
+              <span className="text-heading font-bold text-sm">{tier}</span>
+              <span className="text-grey-muted text-[10px]">{p ? `${p.price}$` : ''}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Apercu du sticker selectionne */}
+      {previewSticker && (
+        <div className="flex items-center gap-4 p-3 rounded-xl bg-black/20">
+          <img src={previewSticker.image} alt="" className="w-28 h-28 object-contain" />
+          <div>
+            <p className="text-heading font-bold text-sm">{tx({ fr: previewSticker.titleFr, en: previewSticker.titleEn, es: previewSticker.titleEs || previewSticker.titleEn })}</p>
+            <p className="text-grey-muted text-xs mt-1">{tx({ fr: 'Cliquez + pour ajouter au pack', en: 'Click + to add to pack', es: 'Haz clic + para agregar' })}</p>
+          </div>
+        </div>
+      )}
+
       {/* Sticker grid with qty selectors */}
       <div className="space-y-1 max-h-[320px] overflow-y-auto scrollbar-thin pr-1">
         {stickers.map(s => {
@@ -166,23 +212,13 @@ function ConfiguratorArtistSticker({ artist, selectedSticker, allStickers = [] }
               key={s.id}
               className={`flex items-center gap-3 p-2.5 rounded-lg transition-all ${isSelected ? 'bg-accent/10' : 'bg-white/3 hover:bg-white/5'}`}
             >
-              <div className="relative group flex-shrink-0">
+              <div className="flex-shrink-0">
                 <img
                   src={s.image}
                   alt={title}
-                  className="w-14 h-14 rounded-lg object-contain cursor-pointer"
+                  className={`w-14 h-14 rounded-lg object-contain cursor-pointer transition-all ${previewSticker?.id === s.id ? 'ring-2 ring-accent' : 'hover:ring-1 hover:ring-white/30'}`}
+                  onClick={() => setPreviewSticker(s)}
                 />
-                {/* Zoom popup au survol (desktop) / tap (mobile) */}
-                <div className="hidden group-hover:block absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 pointer-events-none">
-                  <div className="bg-bg-card rounded-xl shadow-2xl shadow-black/50 p-2 border border-white/10">
-                    <img
-                      src={s.image}
-                      alt={title}
-                      className="w-40 h-40 object-contain"
-                    />
-                    <p className="text-center text-[10px] text-grey-muted mt-1 truncate max-w-[160px]">{title}</p>
-                  </div>
-                </div>
               </div>
               <span className={`flex-1 text-sm font-medium truncate ${isSelected ? 'text-heading' : 'text-grey-muted'}`}>
                 {title}
@@ -200,7 +236,8 @@ function ConfiguratorArtistSticker({ artist, selectedSticker, allStickers = [] }
                 </span>
                 <button
                   onClick={() => updateStickerQty(s.id, 1)}
-                  className="w-6 h-6 rounded-full flex items-center justify-center text-heading bg-white/10 hover:bg-white/20 transition-colors"
+                  disabled={!canAddMore}
+                  className="w-6 h-6 rounded-full flex items-center justify-center text-heading bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                 >
                   <Plus size={12} />
                 </button>
@@ -215,9 +252,14 @@ function ConfiguratorArtistSticker({ artist, selectedSticker, allStickers = [] }
         <span className={`text-sm font-bold ${packComplete ? 'text-green-400' : 'text-heading'}`}>
           {totalQty} stickers
         </span>
-        {!packComplete && (
+        {!packComplete && totalQty > 0 && (
           <span className="text-grey-muted text-xs ml-2">
-            ({tx({ fr: `encore ${remaining} pour completer`, en: `${remaining} more to complete`, es: `${remaining} mas para completar` })})
+            ({tx({ fr: `encore ${remaining} pour completer le pack de ${currentTier}`, en: `${remaining} more to complete the ${currentTier}-pack`, es: `${remaining} mas para completar el pack de ${currentTier}` })})
+          </span>
+        )}
+        {totalQty === 0 && (
+          <span className="text-grey-muted text-xs ml-2">
+            ({tx({ fr: `Selectionnez des stickers (pack de ${currentTier})`, en: `Select stickers (${currentTier}-pack)`, es: `Seleccione stickers (pack de ${currentTier})` })})
           </span>
         )}
         {packComplete && (
@@ -227,47 +269,6 @@ function ConfiguratorArtistSticker({ artist, selectedSticker, allStickers = [] }
         )}
       </div>
 
-      {/* Tier selector - only show when pack has items */}
-      {totalQty > 0 && (
-        <div className="grid grid-cols-5 gap-1.5">
-          {PACK_TIERS.map(tier => {
-            const p = defaultGetPrice(finish, shape, tier);
-            const isActive = tier === currentTier;
-            const isTooLow = tier < totalQty;
-            return (
-              <button
-                key={tier}
-                onClick={() => {
-                  // Adjust pack to match this tier
-                  if (tier > totalQty) {
-                    // Need more stickers - add randomly
-                    const diff = tier - totalQty;
-                    const newPack = { ...pack };
-                    let added = 0;
-                    while (added < diff) {
-                      const s = stickers[added % stickers.length];
-                      newPack[s.id] = (newPack[s.id] || 0) + 1;
-                      added++;
-                    }
-                    setPack(newPack);
-                  }
-                }}
-                disabled={isTooLow}
-                className={`flex flex-col items-center py-2 rounded-lg text-xs transition-all border-2 ${
-                  isActive
-                    ? 'border-accent option-selected'
-                    : isTooLow
-                      ? 'border-transparent opacity-30 cursor-not-allowed option-default'
-                      : 'border-transparent hover:border-grey-muted/30 option-default'
-                }`}
-              >
-                <span className="text-heading font-bold text-sm">{tier}</span>
-                <span className="text-grey-muted text-[10px]">{p ? `${p.price}$` : ''}</span>
-              </button>
-            );
-          })}
-        </div>
-      )}
 
       {/* Finish selector */}
       <div>
