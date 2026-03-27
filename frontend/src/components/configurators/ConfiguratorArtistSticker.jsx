@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { ShoppingCart, Check, Sparkles, Shuffle, RotateCcw, Plus, Minus } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../../contexts/CartContext';
@@ -164,14 +164,27 @@ function ConfiguratorArtistSticker({ artist, selectedSticker, allStickers = [] }
           return (
             <div
               key={s.id}
-              className={`flex items-center gap-3 p-2 rounded-lg transition-all ${isSelected ? 'bg-accent/10' : 'bg-white/3 hover:bg-white/5'}`}
+              className={`flex items-center gap-3 p-2.5 rounded-lg transition-all ${isSelected ? 'bg-accent/10' : 'bg-white/3 hover:bg-white/5'}`}
             >
-              <img
-                src={s.image}
-                alt={title}
-                className="w-10 h-10 rounded-md object-contain flex-shrink-0"
-              />
-              <span className={`flex-1 text-xs font-medium truncate ${isSelected ? 'text-heading' : 'text-grey-muted'}`}>
+              <div className="relative group flex-shrink-0">
+                <img
+                  src={s.image}
+                  alt={title}
+                  className="w-14 h-14 rounded-lg object-contain cursor-pointer"
+                />
+                {/* Zoom popup au survol (desktop) / tap (mobile) */}
+                <div className="hidden group-hover:block absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 pointer-events-none">
+                  <div className="bg-bg-card rounded-xl shadow-2xl shadow-black/50 p-2 border border-white/10">
+                    <img
+                      src={s.image}
+                      alt={title}
+                      className="w-40 h-40 object-contain"
+                    />
+                    <p className="text-center text-[10px] text-grey-muted mt-1 truncate max-w-[160px]">{title}</p>
+                  </div>
+                </div>
+              </div>
+              <span className={`flex-1 text-sm font-medium truncate ${isSelected ? 'text-heading' : 'text-grey-muted'}`}>
                 {title}
               </span>
               <div className="flex items-center gap-1 flex-shrink-0">
