@@ -163,7 +163,7 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {} }) {
       {!fixedTier && !(isUnique && customPrice) && (
         <div>
           <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-1.5">
-            {tx({ fr: 'Qualite d\'impression', en: 'Print Quality', es: 'Calidad de impresion' })}
+            {tx({ fr: 'Qualité d\'impression', en: 'Print Quality', es: 'Calidad de impresión' })}
           </label>
           <div className="grid grid-cols-2 gap-2">
             {artistPrinterTiers.map(t => (
@@ -352,41 +352,38 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {} }) {
           )}
           {priceInfo && (
             <div className="p-4 rounded-xl highlight-bordered">
-              <div className="flex items-baseline gap-3">
-                <span className="text-2xl font-heading font-bold text-heading">{priceInfo.price * quantity}$</span>
-                {quantity > 1 && <span className="text-grey-muted text-sm">{quantity} x {priceInfo.price}$</span>}
-              </div>
-              {withFrame && (
-                <div className="text-grey-muted text-xs mt-1">
-                  {tx({
-                    fr: `Tirage ${priceInfo.basePrice}$ + Cadre ${priceInfo.framePrice}$`,
-                    en: `Print ${priceInfo.basePrice}$ + Frame ${priceInfo.framePrice}$`,
-                    es: `Impresion ${priceInfo.basePrice}$ + Marco ${priceInfo.framePrice}$`,
-                  })}
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-2xl font-heading font-bold text-heading">{priceInfo.price * quantity}$</span>
+                    {quantity > 1 && <span className="text-grey-muted text-sm">{quantity} x {priceInfo.price}$</span>}
+                  </div>
+                  {withFrame && (
+                    <div className="text-grey-muted text-xs mt-0.5">
+                      {tx({
+                        fr: `Tirage ${priceInfo.basePrice}$ + Cadre ${priceInfo.framePrice}$`,
+                        en: `Print ${priceInfo.basePrice}$ + Frame ${priceInfo.framePrice}$`,
+                        es: `Impresión ${priceInfo.basePrice}$ + Marco ${priceInfo.framePrice}$`,
+                      })}
+                    </div>
+                  )}
                 </div>
-              )}
-              <div className="flex items-center gap-2 mt-2">
-                <span className="text-grey-muted text-xs">
-                  {tier === 'museum'
-                    ? tx({ fr: 'Qualité musée - 12 encres pigmentées, conservation 100+ ans', en: 'Museum quality - 12 pigmented inks, 100+ year archival', es: 'Calidad museo - 12 tintas pigmentadas, conservacion 100+ anos' })
-                    : tx({ fr: 'Qualité studio - impression professionnelle pigmentée', en: 'Studio quality - professional pigmented printing', es: 'Calidad estudio - impresion profesional pigmentada' })}
-                </span>
+                {!isUnique && (
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="w-8 h-8 rounded-lg border border-white/10 text-heading font-bold text-sm flex items-center justify-center hover:border-accent/50 transition-colors">-</button>
+                    <span className="text-heading font-bold w-6 text-center">{quantity}</span>
+                    <button onClick={() => setQuantity(q => q + 1)} className="w-8 h-8 rounded-lg border border-white/10 text-heading font-bold text-sm flex items-center justify-center hover:border-accent/50 transition-colors">+</button>
+                  </div>
+                )}
+              </div>
+              <div className="text-grey-muted text-xs mt-1.5">
+                {tier === 'museum'
+                  ? tx({ fr: 'Qualité musée - 12 encres pigmentées, conservation 100+ ans', en: 'Museum quality - 12 pigmented inks, 100+ year archival', es: 'Calidad museo - 12 tintas pigmentadas, conservación 100+ años' })
+                  : tx({ fr: 'Qualité studio - impression professionnelle pigmentée', en: 'Studio quality - professional pigmented printing', es: 'Calidad estudio - impresión profesional pigmentada' })}
               </div>
             </div>
           )}
         </>
-      )}
-
-      {/* Quantite */}
-      {!isUnique && effectivePrice && (
-        <div className="flex items-center justify-between py-3">
-          <span className="text-heading text-sm font-medium">{tx({ fr: 'Quantite', en: 'Quantity', es: 'Cantidad' })}</span>
-          <div className="flex items-center gap-3">
-            <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="w-9 h-9 rounded-lg border border-white/10 text-heading font-bold flex items-center justify-center hover:border-accent/50 transition-colors">-</button>
-            <span className="text-heading font-bold text-lg w-8 text-center">{quantity}</span>
-            <button onClick={() => setQuantity(q => q + 1)} className="w-9 h-9 rounded-lg border border-white/10 text-heading font-bold flex items-center justify-center hover:border-accent/50 transition-colors">+</button>
-          </div>
-        </div>
       )}
 
       {/* Add to cart */}
