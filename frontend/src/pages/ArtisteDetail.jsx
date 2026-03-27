@@ -389,7 +389,26 @@ function ArtisteDetail({ subdomainSlug }) {
           viewport={{ once: true }}
           className="mb-20 scroll-mt-24"
         >
-          <h2 className="text-3xl font-heading font-bold text-gradient mb-3 text-center">
+          {/* Mini nav pour scroller entre sections */}
+          {(artist.stickers?.length > 0 || artist.merch?.length > 0) && (
+            <div className="flex justify-center gap-2 mb-8">
+              <button onClick={() => document.getElementById('section-prints')?.scrollIntoView({ behavior: 'smooth' })} className="px-4 py-2 rounded-full text-xs font-semibold bg-accent/15 text-accent hover:bg-accent/25 transition-colors">
+                Prints ({artist.prints?.length || 0})
+              </button>
+              {artist.stickers?.length > 0 && (
+                <button onClick={() => document.getElementById('section-stickers')?.scrollIntoView({ behavior: 'smooth' })} className="px-4 py-2 rounded-full text-xs font-semibold bg-white/5 text-grey-light hover:bg-white/10 transition-colors">
+                  Stickers ({artist.stickers.length})
+                </button>
+              )}
+              {artist.merch?.length > 0 && (
+                <button onClick={() => document.getElementById('section-merch')?.scrollIntoView({ behavior: 'smooth' })} className="px-4 py-2 rounded-full text-xs font-semibold bg-white/5 text-grey-light hover:bg-white/10 transition-colors">
+                  Merch ({artist.merch.length})
+                </button>
+              )}
+            </div>
+          )}
+
+          <h2 id="section-prints" className="text-3xl font-heading font-bold text-gradient mb-3 text-center scroll-mt-24">
             {tx({ fr: 'Oeuvres disponibles', en: 'Available Artworks', es: 'Obras disponibles' })}
           </h2>
           <p className="text-grey-muted text-center mb-10 max-w-2xl mx-auto">
@@ -512,7 +531,7 @@ function ArtisteDetail({ subdomainSlug }) {
             viewport={{ once: true }}
             className="mb-20 scroll-mt-24"
           >
-            <h2 className="text-3xl font-heading font-bold text-gradient mb-3 text-center">
+            <h2 id="section-stickers" className="text-3xl font-heading font-bold text-gradient mb-3 text-center scroll-mt-24">
               {tx({ fr: 'Stickers', en: 'Stickers', es: 'Stickers' })}
             </h2>
             <p className="text-grey-muted text-center mb-10 max-w-2xl mx-auto">
