@@ -343,8 +343,8 @@ export function applyTheme(step) {
     root.style.setProperty(prop, palette[prop]);
   }
 
-  // data-theme : "vibrant" pour les thèmes sombres (0-7), absent pour les clairs (8-9)
-  if (step <= 7) {
+  // data-theme : "vibrant" pour les themes sombres (0-8 incl. Slate), absent pour les clairs (9-10)
+  if (step <= 8) {
     root.setAttribute('data-theme', 'vibrant');
   } else {
     root.removeAttribute('data-theme');
