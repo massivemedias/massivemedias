@@ -350,6 +350,9 @@ export function applyTheme(step) {
     root.removeAttribute('data-theme');
   }
 
+  // CPR tagline: noir pour Slate (8) et themes clairs (9-10), blanc pour themes sombres (0-7)
+  root.style.setProperty('--cpr-filter', step >= 8 ? 'brightness(0)' : 'none');
+
   // Mettre a jour le meta theme-color pour la barre du navigateur mobile
   const meta = document.querySelector('meta[name="theme-color"]');
   if (meta) meta.setAttribute('content', palette['--bg-body']);

@@ -1006,13 +1006,9 @@ select.input-field option {
   color: rgba(255, 255, 255, 0.4);
 }
 
-/* CPR tagline filter for light mode */
-:root .cpr-invert {
-  filter: brightness(0);
-}
-
-[data-theme="vibrant"] .cpr-invert {
-  filter: none;
+/* CPR tagline filter - utilise la variable --cpr-filter definie par le theme engine */
+.cpr-invert {
+  filter: var(--cpr-filter, brightness(0));
 }
 
 /* Login card */
