@@ -204,13 +204,15 @@ function Artistes() {
 
   const getTypeBadge = (type) => {
     const label = TYPE_LABELS[type] || TYPE_LABELS.peintre;
-    const colors = {
-      photographe: 'bg-blue-600 text-white border-blue-500',
-      peintre: 'bg-purple-600 text-white border-purple-500',
-      tatoueur: 'bg-pink-600 text-white border-pink-500',
+    const config = {
+      photographe: { icon: '📷', color: 'text-blue-400' },
+      peintre: { icon: '🎨', color: 'text-purple-400' },
+      tatoueur: { icon: '✦', color: 'text-pink-400' },
     };
+    const c = config[type] || config.peintre;
     return (
-      <span className={`inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full border ${colors[type] || colors.peintre}`}>
+      <span className={`inline-flex items-center gap-1 text-[10px] font-medium tracking-wide uppercase ${c.color}`}>
+        <span className="text-xs">{c.icon}</span>
         {tx(label)}
       </span>
     );
