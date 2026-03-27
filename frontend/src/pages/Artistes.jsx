@@ -209,7 +209,7 @@ function Artistes() {
       tatoueur: { Icon: PenTool, color: 'text-white/60' },
     };
     const c = config[type] || config.peintre;
-    return <c.Icon size={14} className={c.color} />;
+    return <c.Icon size={18} className={c.color} strokeWidth={1.5} />;
   };
 
   return (
