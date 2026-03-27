@@ -235,7 +235,7 @@ function TatoueurDetail({ subdomainSlug }) {
       <section className="relative min-h-[50vh] md:min-h-[60vh] flex items-end">
         {/* Background */}
         {tatoueur.heroImage ? (
-          <img
+          <img loading="lazy"
             src={tatoueur.heroImage}
             alt={tatoueur.name}
             className="absolute inset-0 w-full h-full object-cover"
@@ -254,7 +254,7 @@ function TatoueurDetail({ subdomainSlug }) {
           >
             {/* Avatar */}
             {tatoueur.avatar && (
-              <img
+              <img loading="lazy"
                 src={tatoueur.avatar}
                 alt={tatoueur.name}
                 className="w-24 h-24 md:w-32 md:h-32 rounded-full object-cover border-4 border-accent/40 shadow-2xl"

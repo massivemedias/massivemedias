@@ -328,7 +328,7 @@ function ArtisteDetail({ subdomainSlug }) {
 
               <div className="flex items-center gap-4 mb-6">
                 {artist.avatar ? (
-                  <img
+                  <img loading="lazy"
                     src={artist.avatar}
                     alt={artist.name}
                     className="w-16 h-16 rounded-full object-cover border-2 border-accent/40"
@@ -366,7 +366,7 @@ function ArtisteDetail({ subdomainSlug }) {
                 className="hidden lg:block lg:flex-1 max-w-md"
               >
                 <div className="relative overflow-hidden rounded-2xl">
-                <img
+                <img loading="lazy"
                   src={artist.heroImage}
                   alt={artist.name}
                   className="w-full h-auto max-h-[400px] object-contain drop-shadow-2xl"
@@ -548,7 +548,7 @@ function ArtisteDetail({ subdomainSlug }) {
                     onClick={() => handleSelectSticker(sticker)}
                   >
                     <div className="aspect-square p-4">
-                      <img
+                      <img loading="lazy"
                         src={sticker.image}
                         alt={getItemTitle(sticker)}
                         className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-110 sticker-diecut"
@@ -596,7 +596,7 @@ function ArtisteDetail({ subdomainSlug }) {
                 className="relative rounded-2xl overflow-hidden aspect-square cursor-pointer group flex items-center justify-center p-6"
                 onClick={() => setLightbox({ type: 'sticker', index: artist.stickers.findIndex(s => s.id === selectedSticker.id) })}
               >
-                <img
+                <img loading="lazy"
                   src={selectedSticker.image}
                   alt={tx({ fr: selectedSticker.titleFr, en: selectedSticker.titleEn, es: selectedSticker.titleEs || selectedSticker.titleEn })}
                   className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105 sticker-diecut"
@@ -649,7 +649,7 @@ function ArtisteDetail({ subdomainSlug }) {
                   style={{ minHeight: '400px' }}
                   onClick={() => setLightbox(artist.prints.findIndex(p => p.id === selectedPrint.id))}
                 >
-                  <img
+                  <img loading="lazy"
                     src={selectedPrint.fullImage || toFull(selectedPrint.image)}
                     alt={getItemTitle(selectedPrint)}
                     className="max-w-full max-h-[70vh] object-contain"
@@ -923,7 +923,7 @@ function ArtisteDetail({ subdomainSlug }) {
                 className="relative watermark-light rounded-lg overflow-hidden"
                 onClick={(e) => e.stopPropagation()}
               >
-                <img
+                <img loading="lazy"
                   src={item.fullImage || toFull(item.image)}
                   alt={tx({ fr: item.titleFr, en: item.titleEn, es: item.titleEs || item.titleEn })}
                   className={`max-w-full max-h-[85vh] object-contain${isSticker ? ' sticker-diecut' : ''}`}
