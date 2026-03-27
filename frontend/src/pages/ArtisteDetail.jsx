@@ -412,7 +412,6 @@ function ArtisteDetail({ subdomainSlug }) {
               </div>
             )}
           </div>
-          </h2>
           <p className="text-grey-muted text-center mb-10 max-w-2xl mx-auto">
             {tx({
               fr: 'Cliquez sur une oeuvre pour configurer votre tirage.',
