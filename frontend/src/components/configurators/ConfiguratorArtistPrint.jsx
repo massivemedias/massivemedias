@@ -386,7 +386,6 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {} }) {
             <span className="text-heading font-bold text-lg w-8 text-center">{quantity}</span>
             <button onClick={() => setQuantity(q => q + 1)} className="w-9 h-9 rounded-lg border border-white/10 text-heading font-bold flex items-center justify-center hover:border-accent/50 transition-colors">+</button>
           </div>
-          {quantity > 1 && <span className="text-accent font-bold text-sm">{effectivePrice * quantity}$</span>}
         </div>
       )}
 
