@@ -71,7 +71,13 @@ function ArtisteDetail({ subdomainSlug }) {
       prints: mergeList(cms.prints, local.prints),
       stickers: mergeList(cms.stickers, local.stickers),
       merch: mergeList(cms.merch, local.merch),
-      pricing: cms.pricing || local.pricing,
+      pricing: cms.pricing
+        ? {
+            studio: { ...(local.pricing?.studio || {}), ...(cms.pricing.studio || {}) },
+            museum: { ...(local.pricing?.museum || {}), ...(cms.pricing.museum || {}) },
+            framePrice: cms.pricing.framePrice ?? local.pricing?.framePrice ?? 30,
+          }
+        : local.pricing,
       avatar: (cms.socials?.avatarUrl) || (cms.avatar && !cms.avatar.includes('undefined') ? cms.avatar : null) || local.avatar,
       heroImage: (cms.heroImage && !cms.heroImage.includes('undefined')) ? cms.heroImage : local.heroImage,
     };
