@@ -49,13 +49,19 @@ export function CartProvider({ children }) {
   const [discountPercent, setDiscountPercent] = useState(() => loadPromo()?.percent || 0);
   const [promoLabel, setPromoLabel] = useState(() => loadPromo()?.label || '');
 
-  // A la connexion : restaurer le panier depuis Supabase si le panier local est vide
+  // A la connexion : restaurer le panier depuis Supabase SEULEMENT si pas de panier local
   useEffect(() => {
     if (!user || syncedRef.current) return;
     syncedRef.current = true;
+    const localCart = loadCart();
+    if (localCart.length > 0) {
+      // Le panier local a priorite - sync vers Supabase
+      saveToSupabase(localCart);
+      return;
+    }
     const meta = user.user_metadata || {};
     const savedCart = meta.cart_items || [];
-    if (savedCart.length > 0 && items.length === 0) {
+    if (savedCart.length > 0) {
       setItems(savedCart);
       saveCartLocal(savedCart);
     }
@@ -113,10 +119,12 @@ export function CartProvider({ children }) {
       const removed = prev[index];
       if (removed) trackRemoveFromCart(removed);
       const updated = prev.filter((_, i) => i !== index);
-      saveCart(updated);
+      saveCartLocal(updated);
+      // Sauvegarde immediate dans Supabase (pas debounce) pour eviter la restauration fantome
+      if (user) saveToSupabase(updated);
       return updated;
     });
-  }, [saveCart]);
+  }, [user, saveToSupabase]);
 
   const updateQuantity = useCallback((index, quantity, unitPrice) => {
     setItems(prev => {
