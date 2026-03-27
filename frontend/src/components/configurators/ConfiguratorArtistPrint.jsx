@@ -117,19 +117,19 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {} }) {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {/* Selected print info */}
-      <div className="p-4 rounded-xl bg-glass flex items-center gap-4">
+      <div className="p-3 rounded-xl bg-glass flex items-center gap-3">
         <img
           src={selectedPrint.image}
           alt={printTitle}
-          className="w-16 h-16 rounded-lg object-cover"
+          className="w-12 h-12 rounded-lg object-cover"
         />
         <div>
-          <div className="text-heading font-heading font-bold text-sm">{printTitle}</div>
+          <div className="text-heading font-heading font-bold text-sm leading-tight">{printTitle}</div>
           <div className="text-grey-muted text-xs">{artist.name}</div>
           {isUnique && (
-            <span className="inline-block mt-1 px-2 py-0.5 rounded-full bg-accent/20 text-accent text-[10px] font-bold uppercase tracking-wider">
+            <span className="inline-block mt-0.5 px-2 py-0.5 rounded-full bg-accent/20 text-accent text-[10px] font-bold uppercase tracking-wider">
               {tx({ fr: 'Pièce unique', en: 'One of a kind', es: 'Pieza única' })}
             </span>
           )}
@@ -162,28 +162,27 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {} }) {
       {/* Printer tier selector */}
       {!fixedTier && !(isUnique && customPrice) && (
         <div>
-          <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2.5">
-            {tx({ fr: 'Qualité d\'impression', en: 'Print Quality', es: 'Calidad de impresión' })}
+          <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-1.5">
+            {tx({ fr: 'Qualite d\'impression', en: 'Print Quality', es: 'Calidad de impresion' })}
           </label>
-          <div className="space-y-2">
+          <div className="grid grid-cols-2 gap-2">
             {artistPrinterTiers.map(t => (
               <button
                 key={t.id}
                 onClick={() => {
                   setTier(t.id);
-                  // Reset format if current format is unavailable in new tier
                   const newPrices = t.id === 'museum' ? artist.pricing.museum : artist.pricing.studio;
                   if (newPrices[format] == null) setFormat('a4');
                 }}
-                className={`block w-full text-center py-3.5 px-4 rounded-lg text-xs font-medium transition-all border-2 ${tier === t.id
+                className={`text-center py-2.5 px-3 rounded-lg text-xs font-medium transition-all border-2 ${tier === t.id
                   ? 'border-accent option-selected'
                   : 'border-transparent hover:border-grey-muted/30 option-default'
                 }`}
               >
-                <span className="text-heading font-semibold text-sm">
+                <span className="text-heading font-semibold text-sm block">
                   {tx({ fr: t.labelFr, en: t.labelEn, es: t.labelEn })}
                 </span>
-                <span className="text-grey-muted ml-2 text-[11px]">{t.desc}</span>
+                <span className="text-grey-muted text-[10px]">{t.desc}</span>
               </button>
             ))}
           </div>
@@ -193,7 +192,7 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {} }) {
       {/* Format selector */}
       {!fixedFormat && !(isUnique && customPrice) && (
         <div>
-          <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2.5">
+          <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-1.5">
             Format
           </label>
           <div className="flex flex-wrap items-end gap-3 justify-center">
@@ -310,41 +309,17 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {} }) {
 
       {/* Notes */}
       <div>
-        <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2.5">
-          {tx({ fr: 'Notes / Description', en: 'Notes / Description', es: 'Notas / Descripción' })}
+        <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-1.5">
+          {tx({ fr: 'Notes', en: 'Notes', es: 'Notas' })}
         </label>
         <textarea
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
-          rows={3}
-          placeholder={tx({ fr: 'Décrivez vos préférences (dedicace, message, details...)', en: 'Describe your preferences (dedication, message, details...)', es: 'Describe tus preferencias (dedicatoria, mensaje, detalles...)' })}
-          className="w-full rounded-lg border-2 border-grey-muted/20 bg-transparent px-4 py-3 text-sm text-heading placeholder:text-grey-muted/50 focus:border-accent focus:outline-none transition-colors resize-none"
+          rows={2}
+          placeholder={tx({ fr: 'Dedicace, message, details...', en: 'Dedication, message, details...', es: 'Dedicatoria, mensaje, detalles...' })}
+          className="w-full rounded-lg border-2 border-grey-muted/20 bg-transparent px-3 py-2 text-sm text-heading placeholder:text-grey-muted/50 focus:border-accent focus:outline-none transition-colors resize-none"
         />
       </div>
-
-      {/* Quantity */}
-      {!isUnique && (
-        <div>
-          <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2.5">
-            {tx({ fr: 'Quantite', en: 'Quantity', es: 'Cantidad' })}
-          </label>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setQuantity(q => Math.max(1, q - 1))}
-              className="w-10 h-10 rounded-lg border border-white/10 text-heading font-bold text-lg flex items-center justify-center hover:border-accent/50 transition-colors"
-            >
-              -
-            </button>
-            <span className="text-heading font-bold text-lg w-10 text-center">{quantity}</span>
-            <button
-              onClick={() => setQuantity(q => q + 1)}
-              className="w-10 h-10 rounded-lg border border-white/10 text-heading font-bold text-lg flex items-center justify-center hover:border-accent/50 transition-colors"
-            >
-              +
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* Price display */}
       {isUnique && customPrice ? (
@@ -376,9 +351,9 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {} }) {
             </div>
           )}
           {priceInfo && (
-            <div className="p-5 rounded-xl highlight-bordered">
+            <div className="p-4 rounded-xl highlight-bordered">
               <div className="flex items-baseline gap-3">
-                <span className="text-3xl font-heading font-bold text-heading">{priceInfo.price * quantity}$</span>
+                <span className="text-2xl font-heading font-bold text-heading">{priceInfo.price * quantity}$</span>
                 {quantity > 1 && <span className="text-grey-muted text-sm">{quantity} x {priceInfo.price}$</span>}
               </div>
               {withFrame && (
@@ -416,23 +391,23 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {} }) {
       )}
 
       {/* Add to cart */}
-      <button onClick={handleAddToCart} disabled={!effectivePrice} className={`btn-primary w-full justify-center text-base py-4 ${!effectivePrice ? 'opacity-40 cursor-not-allowed' : ''}`}>
+      <button onClick={handleAddToCart} disabled={!effectivePrice} className={`btn-primary w-full justify-center text-sm py-3 ${!effectivePrice ? 'opacity-40 cursor-not-allowed' : ''}`}>
         {added ? (
-          <><Check size={20} className="mr-2" />{tx({ fr: 'Ajouté au panier!', en: 'Added to cart!', es: 'Agregado al carrito!' })}</>
+          <><Check size={18} className="mr-2" />{tx({ fr: 'Ajoute!', en: 'Added!', es: 'Agregado!' })}</>
         ) : (
-          <><ShoppingCart size={20} className="mr-2" />{tx({ fr: 'Ajouter au panier', en: 'Add to cart', es: 'Agregar al carrito' })}</>
+          <><ShoppingCart size={18} className="mr-2" />{tx({ fr: 'Ajouter au panier', en: 'Add to cart', es: 'Agregar al carrito' })}</>
         )}
       </button>
 
-      <Link to="/panier" className="btn-outline w-full justify-center text-sm py-3">
+      <Link to="/panier" className="btn-outline w-full justify-center text-xs py-2.5">
         {tx({ fr: 'Voir le panier', en: 'View cart', es: 'Ver el carrito' })}
       </Link>
 
-      <p className="text-grey-muted text-xs text-center">
+      <p className="text-grey-muted text-[10px] text-center leading-tight">
         {tx({
-          fr: 'Impression professionnelle par Massive. Soft proofing inclus.',
-          en: 'Professional printing by Massive. Soft proofing included.',
-          es: 'Impresión profesional por Massive. Soft proofing incluido.',
+          fr: 'Impression pro par Massive. Soft proofing inclus.',
+          en: 'Pro printing by Massive. Soft proofing included.',
+          es: 'Impresion pro por Massive. Soft proofing incluido.',
         })}
       </p>
     </div>
