@@ -101,6 +101,7 @@ function ConfiguratorFineArt() {
   const [format, setFormat] = useState('a4');
   const [withFrame, setWithFrame] = useState(false);
   const [frameColor, setFrameColor] = useState('black');
+  const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [notes, setNotes] = useState('');
@@ -154,9 +155,9 @@ function ConfiguratorFineArt() {
           })
         : null,
       size: formatLabel?.label,
-      quantity: 1,
+      quantity,
       unitPrice: priceInfo.price,
-      totalPrice: priceInfo.price,
+      totalPrice: priceInfo.price * quantity,
       image: fineArtImages[0],
       uploadedFiles,
       notes,
@@ -401,6 +402,11 @@ function ConfiguratorFineArt() {
                   ({priceInfo.basePrice}+{priceInfo.framePrice})
                 </span>
               )}
+            </div>
+            <div className="flex items-center gap-2">
+              <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="w-8 h-8 rounded-lg border border-white/10 text-heading font-bold text-sm flex items-center justify-center hover:border-accent/50">-</button>
+              <span className="text-heading font-bold w-6 text-center">{quantity}</span>
+              <button onClick={() => setQuantity(q => q + 1)} className="w-8 h-8 rounded-lg border border-white/10 text-heading font-bold text-sm flex items-center justify-center hover:border-accent/50">+</button>
             </div>
             <button onClick={handleAddToCart} className="btn-primary justify-center text-sm py-2 px-5">
               {added ? (

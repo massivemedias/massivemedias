@@ -94,9 +94,9 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {} }) {
             })
           : null,
         size: isUnique ? tx({ fr: 'Pièce unique', en: 'Unique piece', es: 'Pieza unica' }) : formatLabel?.label,
-        quantity: 1,
+        quantity: isUnique ? 1 : quantity,
         unitPrice: effectivePrice,
-        totalPrice: effectivePrice,
+        totalPrice: effectivePrice * (isUnique ? 1 : quantity),
         image: selectedPrint.image,
         uploadedFiles: [],
         notes,
@@ -400,6 +400,19 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {} }) {
             </div>
           )}
         </>
+      )}
+
+      {/* Quantite */}
+      {!isUnique && effectivePrice && (
+        <div className="flex items-center justify-between py-3">
+          <span className="text-heading text-sm font-medium">{tx({ fr: 'Quantite', en: 'Quantity', es: 'Cantidad' })}</span>
+          <div className="flex items-center gap-3">
+            <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="w-9 h-9 rounded-lg border border-white/10 text-heading font-bold flex items-center justify-center hover:border-accent/50 transition-colors">-</button>
+            <span className="text-heading font-bold text-lg w-8 text-center">{quantity}</span>
+            <button onClick={() => setQuantity(q => q + 1)} className="w-9 h-9 rounded-lg border border-white/10 text-heading font-bold flex items-center justify-center hover:border-accent/50 transition-colors">+</button>
+          </div>
+          {quantity > 1 && <span className="text-accent font-bold text-sm">{effectivePrice * quantity}$</span>}
+        </div>
       )}
 
       {/* Add to cart */}
