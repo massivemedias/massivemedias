@@ -203,19 +203,13 @@ function Artistes() {
   ];
 
   const getTypeBadge = (type) => {
-    const label = TYPE_LABELS[type] || TYPE_LABELS.peintre;
     const config = {
-      photographe: { icon: '📷', color: 'text-blue-400' },
-      peintre: { icon: '🎨', color: 'text-purple-400' },
-      tatoueur: { icon: '✦', color: 'text-pink-400' },
+      photographe: { Icon: Aperture, color: 'text-white/60' },
+      peintre: { Icon: Paintbrush, color: 'text-white/60' },
+      tatoueur: { Icon: PenTool, color: 'text-white/60' },
     };
     const c = config[type] || config.peintre;
-    return (
-      <span className={`inline-flex items-center gap-1 text-[10px] font-medium tracking-wide uppercase ${c.color}`}>
-        <span className="text-xs">{c.icon}</span>
-        {tx(label)}
-      </span>
-    );
+    return <c.Icon size={14} className={c.color} />;
   };
 
   return (
