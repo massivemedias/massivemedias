@@ -81,6 +81,18 @@ function Panier() {
                   )}
                 </div>
               </div>
+              {/* Detail du pack stickers */}
+              {item.packDetails?.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 pl-0 sm:pl-[68px] mb-2">
+                  {item.packDetails.map((pd, j) => (
+                    <div key={j} className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-white/5 text-[10px]">
+                      <img src={pd.image} alt={pd.title} className="w-4 h-4 rounded-sm object-contain" />
+                      <span className="text-grey-light">{pd.title}</span>
+                      <span className="text-accent font-bold">x{pd.qty}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
               {/* Ligne 2: quantite + prix + supprimer */}
               <div className="flex items-center justify-between pl-0 sm:pl-[68px]">
                 <div className="flex items-center gap-2">
