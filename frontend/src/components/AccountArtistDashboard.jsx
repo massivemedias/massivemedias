@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, lazy, Suspense } from 'react';
+import { useState, useEffect, useMemo, useRef, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 
@@ -605,6 +605,18 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
     const signedAt = user?.user_metadata?.contractSignedAt;
     const signedVersion = user?.user_metadata?.contractVersion;
 
+    const [hasScrolledToBottom, setHasScrolledToBottom] = useState(false);
+    const contractRef = useRef(null);
+
+    const handleContractScroll = () => {
+      const el = contractRef.current;
+      if (!el) return;
+      // Considere "en bas" quand il reste moins de 50px a scroller
+      if (el.scrollTop + el.clientHeight >= el.scrollHeight - 50) {
+        setHasScrolledToBottom(true);
+      }
+    };
+
     const handleSignContract = async () => {
       try {
         const { error } = await supabase.auth.updateUser({
@@ -640,6 +652,8 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
             </button>
           </div>
           <div
+            ref={contractRef}
+            onScroll={handleContractScroll}
             className="contract-content prose prose-invert prose-sm max-w-none max-h-[70vh] overflow-y-auto rounded-xl bg-glass p-5 md:p-6 text-grey-light text-sm md:text-base leading-relaxed"
             dangerouslySetInnerHTML={{ __html: contractText }}
           />
@@ -669,9 +683,16 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
                     es: 'Al marcar esta casilla, confirmas haber leido y aceptado los terminos del contrato de asociacion de Massive Medias anterior.',
                   })}
                 </p>
+                {!hasScrolledToBottom && (
+                  <p className="text-yellow-400/70 text-xs flex items-center gap-1.5">
+                    <ScrollText size={14} />
+                    {tx({ fr: 'Lis le contrat en entier avant de pouvoir l\'accepter', en: 'Read the entire contract before you can accept it', es: 'Lee el contrato completo antes de poder aceptarlo' })}
+                  </p>
+                )}
                 <button
                   onClick={handleSignContract}
-                  className="flex items-center gap-3 px-5 py-3 rounded-xl bg-accent/10 border border-accent/30 hover:bg-accent/20 transition-colors group"
+                  disabled={!hasScrolledToBottom}
+                  className={`flex items-center gap-3 px-5 py-3 rounded-xl border transition-colors group ${hasScrolledToBottom ? 'bg-accent/10 border-accent/30 hover:bg-accent/20 cursor-pointer' : 'bg-white/5 border-white/10 opacity-40 cursor-not-allowed'}`}
                 >
                   <div className="w-5 h-5 rounded border-2 border-accent/50 group-hover:border-accent flex items-center justify-center">
                   </div>
