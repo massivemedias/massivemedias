@@ -84,7 +84,24 @@ export function CartProvider({ children }) {
 
   const addToCart = useCallback((item) => {
     setItems(prev => {
-      const updated = [...prev, item];
+      // Si le meme produit existe deja (meme productId + finish + size + shape), incrementer la quantite
+      const existingIndex = prev.findIndex(existing =>
+        existing.productId === item.productId &&
+        existing.finish === item.finish &&
+        existing.size === item.size &&
+        existing.shape === item.shape &&
+        !existing.isUnique && !item.isUnique
+      );
+      let updated;
+      if (existingIndex >= 0) {
+        updated = prev.map((existing, i) =>
+          i === existingIndex
+            ? { ...existing, quantity: existing.quantity + (item.quantity || 1), totalPrice: (existing.quantity + (item.quantity || 1)) * existing.unitPrice }
+            : existing
+        );
+      } else {
+        updated = [...prev, item];
+      }
       saveCart(updated);
       return updated;
     });
