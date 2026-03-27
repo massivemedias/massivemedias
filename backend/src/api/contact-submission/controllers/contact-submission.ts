@@ -118,10 +118,23 @@ export default factories.createCoreController('api::contact-submission.contact-s
   },
 
   async submit(ctx) {
-    const { nom, email, telephone, entreprise, service, budget, urgence, message } = ctx.request.body as any;
+    const { nom, email, telephone, entreprise, service, budget, urgence, message, website } = ctx.request.body as any;
+
+    // Anti-spam honeypot: si le champ "website" est rempli, c'est un bot
+    if (website) {
+      ctx.body = { success: true, id: 'ok' }; // fake success
+      return;
+    }
 
     if (!nom || !email || !message) {
       return ctx.badRequest('Name, email and message are required');
+    }
+
+    // Anti-spam: bloquer les messages avec liens suspects
+    const spamPatterns = [/turbojot/i, /sign up for free/i, /give it a try/i, /\$[\d.]+ per submission/i];
+    if (spamPatterns.some(p => p.test(message))) {
+      ctx.body = { success: true, id: 'ok' }; // fake success
+      return;
     }
 
     try {

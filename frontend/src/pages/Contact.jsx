@@ -76,16 +76,26 @@ function Contact() {
     service: '',
     budget: '',
     urgence: '',
-    message: ''
+    message: '',
+    website: '', // honeypot anti-spam
   });
+  const [formLoadTime] = useState(Date.now());
   const [status, setStatus] = useState('idle');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Anti-spam: si le honeypot est rempli ou soumission trop rapide (<3s)
+    if (formData.website || (Date.now() - formLoadTime) < 3000) {
+      setStatus('success'); // fake success pour pas alerter le bot
+      return;
+    }
+
     setStatus('sending');
 
     try {
-      await api.post('/contact-submissions/submit', formData);
+      const { website, ...submitData } = formData; // exclure le honeypot
+      await api.post('/contact-submissions/submit', submitData);
       setStatus('success');
       setFormData({
         nom: '',
@@ -275,6 +285,19 @@ function Contact() {
               </motion.div>
             ) : (
               <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
+                {/* Honeypot anti-spam - invisible pour les humains */}
+                <div aria-hidden="true" style={{ position: 'absolute', left: '-9999px', top: '-9999px', opacity: 0, height: 0, overflow: 'hidden' }}>
+                  <label htmlFor="website">Website</label>
+                  <input
+                    type="text"
+                    id="website"
+                    name="website"
+                    value={formData.website}
+                    onChange={handleChange}
+                    tabIndex={-1}
+                    autoComplete="off"
+                  />
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label htmlFor="nom" className="block text-heading font-semibold mb-2">
