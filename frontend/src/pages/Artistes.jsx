@@ -205,9 +205,9 @@ function Artistes() {
   const getTypeBadge = (type) => {
     const label = TYPE_LABELS[type] || TYPE_LABELS.peintre;
     const colors = {
-      photographe: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
-      peintre: 'bg-purple-500/20 text-purple-300 border-purple-500/30',
-      tatoueur: 'bg-pink-600/20 text-pink-400 border-pink-500/30',
+      photographe: 'bg-blue-600 text-white border-blue-500',
+      peintre: 'bg-purple-600 text-white border-purple-500',
+      tatoueur: 'bg-pink-600 text-white border-pink-500',
     };
     return (
       <span className={`inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full border ${colors[type] || colors.peintre}`}>
@@ -342,7 +342,7 @@ function Artistes() {
                       {/* Avatar rond en haut a gauche */}
                       {creator.avatar && (
                         <div className="absolute top-3 left-3 z-10 flex items-center gap-2">
-                          <img
+                          <img loading="lazy"
                             src={creator.avatar}
                             alt={creator.name}
                             className="w-9 h-9 md:w-10 md:h-10 rounded-full object-cover shadow-lg shadow-black/40"
@@ -450,7 +450,7 @@ function Artistes() {
                     >
                       <div className="flex items-center gap-4">
                         {creator.avatar && (
-                          <img
+                          <img loading="lazy"
                             src={creator.avatar}
                             alt={creator.name}
                             className="w-10 h-10 md:w-12 md:h-12 rounded-full object-cover shadow-lg shadow-black/40 shrink-0"
@@ -487,7 +487,7 @@ function Artistes() {
                             <div className="flex flex-col md:flex-row gap-6">
                               {/* Profile photo */}
                               <div className="shrink-0">
-                                <img
+                                <img loading="lazy"
                                   src={creator.heroImage || creator.avatar}
                                   alt={creator.name}
                                   className="w-28 h-28 md:w-36 md:h-36 rounded-xl object-cover border border-white/10"
