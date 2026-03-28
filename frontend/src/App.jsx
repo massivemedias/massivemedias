@@ -67,6 +67,7 @@ const AdminUtilisateurs = lazyWithRetry(() => import('./pages/AdminUtilisateurs'
 const AdminDashboard = lazyWithRetry(() => import('./pages/AdminDashboard'));
 const AdminNotes = lazyWithRetry(() => import('./pages/AdminNotes'));
 const AdminSystemStatus = lazyWithRetry(() => import('./pages/AdminSystemStatus'));
+const AdminMassiveIA = lazyWithRetry(() => import('./pages/AdminMassiveIA'));
 
 // These are small wrappers - load eagerly to avoid lazy-loading auth guards
 import ProtectedRoute from './components/ProtectedRoute';
@@ -213,6 +214,7 @@ function App() {
               <Route path="stats" element={<AdminStats />} />
               <Route path="tarifs" element={<AdminTarifs />} />
               <Route path="systeme" element={<AdminSystemStatus />} />
+              <Route path="massive-ia" element={<AdminMassiveIA />} />
             </Route>
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/checkout/success" element={<CheckoutSuccess />} />
