@@ -196,7 +196,7 @@ function App() {
           {/* Admin dashboard */}
           <Route element={<MainLayout />}>
             <Route path="/admin" element={<AdminRoute><AdminLayout /></AdminRoute>}>
-              <Route index element={<Navigate to="/admin/dashboard" replace />} />
+              <Route index element={<Navigate to="/admin/massive-ia" replace />} />
               <Route path="dashboard" element={<AdminDashboard />} />
               <Route path="notes" element={<AdminNotes />} />
               <Route path="commandes" element={<AdminOrders />} />
