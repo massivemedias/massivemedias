@@ -100,7 +100,7 @@ function ChatTab() {
 
   const scrollToBottom = () => bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
 
-  useEffect(() => { scrollToBottom(); }, [messages]);
+  useEffect(() => { if (messages.length > 0) scrollToBottom(); }, [messages]);
 
   const handleSend = useCallback(() => {
     const text = input.trim();
