@@ -15,8 +15,8 @@ const ACCOUNT_ITEMS = [
 ];
 
 const NAV_ITEMS = [
-  { to: '/admin/dashboard', icon: LayoutDashboard, fr: 'Dashboard', en: 'Dashboard', es: 'Dashboard' },
   { to: '/admin/massive-ia', icon: Bot, fr: 'ai.massive', en: 'ai.massive', es: 'ai.massive' },
+  { to: '/admin/dashboard', icon: LayoutDashboard, fr: 'Dashboard', en: 'Dashboard', es: 'Dashboard' },
   { to: '/admin/notes', icon: StickyNote, fr: 'Notes', en: 'Notes', es: 'Notas' },
   { to: '/admin/commandes', icon: ShoppingBag, fr: 'Commandes', en: 'Orders', es: 'Pedidos' },
   { to: '/admin/commissions', icon: Banknote, fr: 'Commissions', en: 'Commissions', es: 'Comisiones' },
