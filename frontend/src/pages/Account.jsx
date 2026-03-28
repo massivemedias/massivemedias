@@ -756,7 +756,7 @@ function Account() {
           <div className="max-w-7xl mx-auto mb-6">
             <div className="flex items-center gap-5">
               <div className="w-14 h-14 rounded-full bg-accent/20 border-2 border-accent/40 flex items-center justify-center flex-shrink-0">
-                <Settings size={24} className="text-accent" />
+                <Settings size={24} className="text-white" />
               </div>
               <div className="flex-grow min-w-0">
                 <h1 className="text-2xl md:text-3xl font-heading font-bold text-heading">
@@ -966,7 +966,7 @@ function Account() {
                 <img src={artistAvatar} alt={initials} className="w-11 h-11 rounded-full object-cover border-2 border-accent/40 flex-shrink-0" />
               ) : (
                 <div className="w-11 h-11 rounded-full bg-accent/20 border-2 border-accent/40 flex items-center justify-center flex-shrink-0">
-                  <span className="text-sm font-bold text-accent">{initials}</span>
+                  <span className="text-sm font-bold text-white">{initials}</span>
                 </div>
               )}
               <div className="flex-grow min-w-0">
@@ -1228,7 +1228,7 @@ function Account() {
           <div className="max-w-7xl mx-auto mb-6">
             <div className="flex items-center gap-4">
               <div className="w-11 h-11 rounded-full bg-accent/20 border-2 border-accent/40 flex items-center justify-center flex-shrink-0">
-                <span className="text-sm font-bold text-accent">{initials}</span>
+                <span className="text-sm font-bold text-white">{initials}</span>
               </div>
               <div className="flex-grow min-w-0">
                 <h1 className="text-sm lg:text-lg text-heading font-heading font-bold">{meta.full_name || user?.email?.split('@')[0] || ''}</h1>
@@ -1476,7 +1476,7 @@ function Account() {
                   <img src={av} alt={initials} className="w-11 h-11 rounded-full object-cover border-2 border-accent/40 flex-shrink-0" />
                 ) : (
                   <div className="w-11 h-11 rounded-full bg-accent/20 border-2 border-accent/40 flex items-center justify-center flex-shrink-0">
-                    <span className="text-sm font-bold text-accent">{initials}</span>
+                    <span className="text-sm font-bold text-white">{initials}</span>
                   </div>
                 );
               })()}

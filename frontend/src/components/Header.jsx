@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, ShoppingCart, LogIn, Printer, Sticker, Shirt, Globe, Monitor, Store, Info, Phone, ChevronRight, Bell, PenTool, Camera } from 'lucide-react';
+import { Menu, X, ShoppingCart, LogIn, Printer, Sticker, Shirt, Globe, Monitor, Store, Info, Phone, ChevronRight, Bell, PenTool, Camera, Settings } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import MassiveLogo from './MassiveLogo';
 import { useLang } from '../i18n/LanguageContext';
@@ -72,8 +72,10 @@ function Header() {
 
               {user ? (
                 <Link to={isAdmin && adminMsgCount > 0 ? "/admin/messages" : "/account"} className="relative p-1 transition-colors duration-200 nav-link" title={t('nav.account')}>
-                  <span className="w-8 h-8 rounded-full bg-accent/20 text-accent flex items-center justify-center font-bold text-sm">
-                    {(() => {
+                  <span className="w-8 h-8 rounded-full bg-accent/20 text-white flex items-center justify-center font-bold text-sm">
+                    {isAdmin ? (
+                      <Settings size={16} />
+                    ) : (() => {
                       const name = user.user_metadata?.full_name;
                       if (name) {
                         const parts = name.trim().split(' ');
@@ -304,8 +306,10 @@ function Header() {
                     onClick={close}
                   >
                     <span className="relative flex-shrink-0">
-                      <span className="w-8 h-8 rounded-full bg-accent/20 text-accent flex items-center justify-center font-bold text-sm">
-                        {(() => {
+                      <span className="w-8 h-8 rounded-full bg-accent/20 text-white flex items-center justify-center font-bold text-sm">
+                        {isAdmin ? (
+                          <Settings size={16} />
+                        ) : (() => {
                           const name = user.user_metadata?.full_name;
                           if (name) {
                             const parts = name.trim().split(' ');
