@@ -6,7 +6,7 @@ import {
   Eye, EyeOff, ChevronDown, ChevronUp, Shield, Pencil, Save, ShoppingBag,
   ArrowRight, Gift, Copy, Heart, Clock, RotateCcw, MessageCircle, Download,
   Palette, Settings, Menu, X, Banknote, Receipt, BarChart3, DollarSign, Users, ScrollText, ImagePlus, FileText, ExternalLink,
-  LayoutDashboard, BookOpen, CalendarDays, Image, MessageSquare,
+  LayoutDashboard, BookOpen, CalendarDays, Image, MessageSquare, Bot,
 } from 'lucide-react';
 import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
@@ -212,6 +212,7 @@ function Account() {
   // Menu items pour le sidebar admin
   const ADMIN_NAV_ITEMS = [
     { to: '/admin/dashboard', icon: BarChart3, fr: 'Dashboard', en: 'Dashboard', es: 'Dashboard' },
+    { to: '/admin/massive-ia', icon: Bot, fr: 'ai.massive', en: 'ai.massive', es: 'ai.massive' },
     { to: '/admin/notes', icon: FileText, fr: 'Notes', en: 'Notes', es: 'Notas' },
     { to: '/admin/commandes', icon: ShoppingBag, fr: 'Commandes', en: 'Orders', es: 'Pedidos' },
     { to: '/admin/factures', icon: FileText, fr: 'Factures', en: 'Invoices', es: 'Facturas' },
