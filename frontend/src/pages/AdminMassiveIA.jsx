@@ -551,7 +551,7 @@ function AdminMassiveIA() {
   }, []);
 
   return (
-    <div className="flex flex-col" style={{ height: 'calc(100vh - 320px)' }}>
+    <div className="flex flex-col" style={{ height: 'calc(100vh - 450px)' }}>
       {/* Status indicator (titre gere par AdminLayout) */}
       {health && (
         <div className="flex items-center gap-1.5 mb-4">
