@@ -552,24 +552,19 @@ function AdminMassiveIA() {
 
   return (
     <div className="flex flex-col" style={{ height: 'calc(100vh - 200px)' }}>
-      {/* Header avec status */}
-      <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
-        <div className="flex items-center gap-3">
-          <h2 className="text-xl font-heading font-bold bg-gradient-to-r from-[#FF52A0] via-[#FFCC00] to-[#8100D1] bg-clip-text text-transparent">
-            Massive IA
-          </h2>
-          {health && (
-            <span className={`inline-flex items-center gap-1.5 text-xs font-medium ${
-              health.status === 'ok' ? 'text-green-400' : 'text-red-400'
-            }`}>
-              <span className={`w-2 h-2 rounded-full ${
-                health.status === 'ok' ? 'bg-green-400' : 'bg-red-400'
-              }`} />
-              {health.status === 'ok' ? 'En ligne' : 'Hors ligne'}
-            </span>
-          )}
+      {/* Status indicator (titre gere par AdminLayout) */}
+      {health && (
+        <div className="flex items-center gap-1.5 mb-4">
+          <span className={`w-2 h-2 rounded-full ${
+            health.status === 'ok' ? 'bg-green-400' : 'bg-red-400'
+          }`} />
+          <span className={`text-xs font-medium ${
+            health.status === 'ok' ? 'text-green-400' : 'text-red-400'
+          }`}>
+            {health.status === 'ok' ? 'En ligne' : 'Hors ligne'}
+          </span>
         </div>
-      </div>
+      )}
 
       {/* Tabs */}
       <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1 mb-4 flex-shrink-0">
