@@ -314,11 +314,11 @@ function StickersTab() {
     <div className="grid lg:grid-cols-2 gap-6">
       <div className="space-y-4">
         <DropZone
-          accept="image/png"
+          accept="image/*"
           file={file}
           onFile={setFile}
           onClear={() => { setFile(null); setResult(null); }}
-          label="Glisser un PNG transparent ici"
+          label="Glisser une image ici (PNG, WebP, JPG)"
         />
 
         <div className="rounded-xl bg-black/20 p-4 space-y-4">
