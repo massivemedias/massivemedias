@@ -17,19 +17,28 @@ function CheckoutForm({ cartTotal }) {
     setIsProcessing(true);
     setErrorMessage('');
 
-    const { error } = await stripe.confirmPayment({
-      elements,
-      confirmParams: {
-        return_url: `${window.location.origin}/checkout/success`,
-      },
-    });
+    try {
+      const { error } = await stripe.confirmPayment({
+        elements,
+        confirmParams: {
+          return_url: `${window.location.origin}/checkout/success`,
+        },
+      });
 
-    // If error, it means the payment was not redirected (card error, etc.)
-    if (error) {
-      setErrorMessage(error.message || t('checkout.stripeError'));
+      // If error, it means the payment was not redirected (card error, etc.)
+      if (error) {
+        if (error.type === 'card_error' || error.type === 'validation_error') {
+          setErrorMessage(error.message || t('checkout.stripeError'));
+        } else {
+          setErrorMessage(t('checkout.stripeError') || 'Une erreur est survenue. Veuillez reessayer ou utiliser une autre methode de paiement.');
+        }
+        setIsProcessing(false);
+      }
+      // If successful, the user is redirected to return_url
+    } catch (err) {
+      setErrorMessage('Une erreur inattendue est survenue. Veuillez reessayer.');
       setIsProcessing(false);
     }
-    // If successful, the user is redirected to return_url
   };
 
   return (
