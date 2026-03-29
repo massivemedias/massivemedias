@@ -13,14 +13,23 @@ function CheckoutForm({ cartTotal, checkoutData }) {
   const [stripeBlocked, setStripeBlocked] = useState(false);
   const [fallbackLoading, setFallbackLoading] = useState(false);
 
-  // Detecter si Stripe est bloque (bloqueur de pub)
+  // Detecter si Stripe est bloque (bloqueur de pub) -> fallback auto
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (!stripe) setStripeBlocked(true);
-    }, 5000);
+      if (!stripe) {
+        setStripeBlocked(true);
+      }
+    }, 6000);
     if (stripe) clearTimeout(timer);
     return () => clearTimeout(timer);
   }, [stripe]);
+
+  // Lancer automatiquement le fallback Stripe Checkout si bloque
+  useEffect(() => {
+    if (stripeBlocked && checkoutData && !fallbackLoading) {
+      handleFallbackCheckout();
+    }
+  }, [stripeBlocked]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

@@ -11,17 +11,22 @@ export function getStripePromise() {
     return stripePromiseCache;
   }
 
-  // Fallback: attendre que le script async se charge
-  stripePromiseCache = new Promise((resolve) => {
+  // Fallback: attendre que le script async se charge (max 10s)
+  stripePromiseCache = new Promise((resolve, reject) => {
+    let attempts = 0;
+    const maxAttempts = 100; // 100 x 100ms = 10 secondes
     const check = () => {
       if (window.Stripe) {
         resolve(window.Stripe(key));
+      } else if (attempts >= maxAttempts) {
+        reject(new Error('Stripe failed to load'));
       } else {
+        attempts++;
         setTimeout(check, 100);
       }
     };
     check();
-  });
+  }).catch(() => null); // Retourne null si Stripe ne charge pas
 
   return stripePromiseCache;
 }
