@@ -1,37 +1,15 @@
 import { useState, useEffect } from 'react';
 import { PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
-import { CreditCard, AlertCircle, ExternalLink, Loader2 } from 'lucide-react';
+import { CreditCard, AlertCircle, Loader2 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
-import api from '../services/api';
 
-function CheckoutForm({ cartTotal, checkoutData }) {
+function CheckoutForm({ cartTotal }) {
   const stripe = useStripe();
   const elements = useElements();
   const { t, tx } = useLang();
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const [fallbackLoading, setFallbackLoading] = useState(false);
   const [paymentElementReady, setPaymentElementReady] = useState(false);
-  const [usesFallback, setUsesFallback] = useState(false);
-
-  // Si apres 8 secondes le PaymentElement n'est toujours pas ready,
-  // on bascule automatiquement vers Stripe Checkout (page hebergee)
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (!paymentElementReady) {
-        setUsesFallback(true);
-      }
-    }, 8000);
-
-    return () => clearTimeout(timer);
-  }, [paymentElementReady]);
-
-  // Lancer automatiquement le fallback
-  useEffect(() => {
-    if (usesFallback && checkoutData && !fallbackLoading) {
-      handleFallbackCheckout();
-    }
-  }, [usesFallback]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -57,74 +35,10 @@ function CheckoutForm({ cartTotal, checkoutData }) {
         setIsProcessing(false);
       }
     } catch (err) {
-      // Si confirmPayment echoue completement, fallback vers Stripe Checkout
-      setUsesFallback(true);
+      setErrorMessage('Une erreur inattendue est survenue. Veuillez reessayer.');
+      setIsProcessing(false);
     }
   };
-
-  // Fallback: rediriger vers Stripe Checkout (page hebergee par Stripe)
-  const handleFallbackCheckout = async () => {
-    if (!checkoutData) return;
-    setFallbackLoading(true);
-    setErrorMessage('');
-    try {
-      const res = await api.post('/orders/create-checkout-session', checkoutData);
-      const url = res.data?.url;
-      if (url) {
-        window.location.href = url;
-      } else {
-        setErrorMessage('Impossible de creer la session de paiement.');
-        setFallbackLoading(false);
-      }
-    } catch (err) {
-      setErrorMessage(err.response?.data?.error?.message || 'Erreur lors de la creation du paiement.');
-      setFallbackLoading(false);
-    }
-  };
-
-  // Affichage fallback
-  if (usesFallback) {
-    return (
-      <div className="space-y-4">
-        <div className="p-4 rounded-xl bg-glass">
-          <p className="text-heading text-sm mb-4">
-            {tx({
-              fr: 'Redirection vers la page de paiement securisee...',
-              en: 'Redirecting to secure payment page...',
-              es: 'Redirigiendo a la pagina de pago segura...',
-            })}
-          </p>
-          <button
-            onClick={handleFallbackCheckout}
-            disabled={fallbackLoading}
-            className="btn-primary w-full justify-center text-base py-3.5 disabled:opacity-50"
-          >
-            {fallbackLoading ? (
-              <>
-                <Loader2 size={18} className="mr-2 animate-spin" />
-                {tx({ fr: 'Redirection...', en: 'Redirecting...', es: 'Redirigiendo...' })}
-              </>
-            ) : (
-              <>
-                <ExternalLink size={18} className="mr-2" />
-                {tx({
-                  fr: `Payer ${cartTotal}$ via Stripe`,
-                  en: `Pay ${cartTotal}$ via Stripe`,
-                  es: `Pagar ${cartTotal}$ via Stripe`,
-                })}
-              </>
-            )}
-          </button>
-        </div>
-        {errorMessage && (
-          <div className="flex items-center gap-3 p-4 rounded-lg border border-red-500/30 error-bg">
-            <AlertCircle size={20} className="text-red-400 flex-shrink-0" />
-            <p className="text-red-400 text-sm">{errorMessage}</p>
-          </div>
-        )}
-      </div>
-    );
-  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -134,6 +48,12 @@ function CheckoutForm({ cartTotal, checkoutData }) {
           {t('checkout.paymentInfo')}
         </h3>
         <div className="p-4 rounded-xl bg-glass">
+          {!paymentElementReady && (
+            <div className="flex items-center justify-center gap-3 py-6 text-grey-muted">
+              <Loader2 size={20} className="animate-spin text-accent" />
+              <span className="text-sm">{tx({ fr: 'Chargement du formulaire de paiement...', en: 'Loading payment form...', es: 'Cargando formulario de pago...' })}</span>
+            </div>
+          )}
           <PaymentElement
             onReady={() => setPaymentElementReady(true)}
             options={{

@@ -411,17 +411,7 @@ function Checkout() {
                           appearance: stripeAppearance,
                         }}
                       >
-                        <CheckoutForm cartTotal={orderTotal} checkoutData={{
-                          items: items.map(item => ({ ...item, uploadedFiles: item.uploadedFiles || [] })),
-                          customerEmail: formData.email,
-                          customerName: formData.nom,
-                          customerPhone: formData.telephone,
-                          shippingAddress: { address: formData.adresse, city: formData.ville, province: formData.province, postalCode: formData.codePostal },
-                          promoCode: promoCode || undefined,
-                          designReady: hasDesignFiles,
-                          notes: formData.message,
-                          supabaseUserId: user?.id || '',
-                        }} />
+                        <CheckoutForm cartTotal={orderTotal} />
                       </Elements>
                     )}
                   </motion.div>
