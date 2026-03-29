@@ -118,6 +118,22 @@ function Checkout() {
 
   const handleInfoSubmit = async (e) => {
     e.preventDefault();
+
+    // Bloquer si "design pret = oui" mais aucun fichier uploade
+    if (hasCustomItems && formData.designReady === 'yes') {
+      const hasFiles = items.some(item =>
+        CUSTOM_PREFIXES.some(prefix => item.productId?.startsWith(prefix)) && item.uploadedFiles?.length > 0
+      );
+      if (!hasFiles) {
+        setError(tx({
+          fr: 'Vous avez indique que votre design est pret, mais aucun fichier n\'a ete joint. Retournez au panier pour ajouter votre design, ou selectionnez "Non, j\'ai besoin du design".',
+          en: 'You indicated your design is ready, but no file was attached. Go back to your cart to upload your design, or select "No, I need the design".',
+          es: 'Indico que su diseno esta listo, pero no se adjunto ningun archivo. Vuelva al carrito para subir su diseno, o seleccione "No, necesito el diseno".',
+        }));
+        return;
+      }
+    }
+
     setIsLoading(true);
     setError('');
 
