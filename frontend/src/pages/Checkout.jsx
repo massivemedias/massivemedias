@@ -89,7 +89,6 @@ function Checkout() {
     ville: meta.city || '',
     province: meta.province || 'QC',
     codePostal: meta.postal_code || '',
-    designReady: 'yes',
     message: '',
   });
 
@@ -110,29 +109,11 @@ function Checkout() {
   const taxes = useMemo(() => calculateTaxes(subtotal, formData.province), [subtotal, formData.province]);
   const orderTotal = +(subtotal + shipping + taxes.total).toFixed(2);
 
-  // Custom items need design question - ready-made boutique items don't
-  const CUSTOM_PREFIXES = ['sticker-custom', 'sublimation-', 'fine-art-print', 'flyer-'];
-  const hasCustomItems = items.some(item =>
-    CUSTOM_PREFIXES.some(prefix => item.productId?.startsWith(prefix))
-  );
+  // Detect if design is ready based on uploaded files in cart
+  const hasDesignFiles = items.some(item => item.uploadedFiles?.length > 0);
 
   const handleInfoSubmit = async (e) => {
     e.preventDefault();
-
-    // Bloquer si "design pret = oui" mais aucun fichier uploade
-    if (hasCustomItems && formData.designReady === 'yes') {
-      const hasFiles = items.some(item =>
-        CUSTOM_PREFIXES.some(prefix => item.productId?.startsWith(prefix)) && item.uploadedFiles?.length > 0
-      );
-      if (!hasFiles) {
-        setError(tx({
-          fr: 'Vous avez indique que votre design est pret, mais aucun fichier n\'a ete joint. Retournez au panier pour ajouter votre design, ou selectionnez "Non, j\'ai besoin du design".',
-          en: 'You indicated your design is ready, but no file was attached. Go back to your cart to upload your design, or select "No, I need the design".',
-          es: 'Indico que su diseno esta listo, pero no se adjunto ningun archivo. Vuelva al carrito para subir su diseno, o seleccione "No, necesito el diseno".',
-        }));
-        return;
-      }
-    }
 
     setIsLoading(true);
     setError('');
@@ -162,7 +143,7 @@ function Checkout() {
         shipping,
         taxes,
         orderTotal,
-        designReady: formData.designReady === 'yes',
+        designReady: hasDesignFiles,
         notes: formData.message,
         supabaseUserId: user?.id || '',
       });
@@ -353,38 +334,6 @@ function Checkout() {
                         </div>
                       </div>
 
-                      {hasCustomItems && (
-                        <>
-                          <div>
-                            <label className="block text-heading font-semibold text-sm mb-2">
-                              {tx({ fr: 'Avez-vous votre design pret?', en: 'Do you have your design ready?', es: 'Tiene su diseno listo?' })}
-                            </label>
-                            <div className="flex gap-4">
-                              <label className={`flex items-center gap-2 px-4 py-2.5 rounded-lg cursor-pointer transition-all ${formData.designReady === 'yes' ? 'bg-accent text-white' : 'text-heading bg-glass'}`}>
-                                <input type="radio" name="designReady" value="yes" checked={formData.designReady === 'yes'} onChange={handleChange} className="hidden" />
-                                {tx({ fr: 'Oui', en: 'Yes', es: 'Si' })}
-                              </label>
-                              <label className={`flex items-center gap-2 px-4 py-2.5 rounded-lg cursor-pointer transition-all ${formData.designReady === 'no' ? 'bg-accent text-white' : 'text-heading bg-glass'}`}>
-                                <input type="radio" name="designReady" value="no" checked={formData.designReady === 'no'} onChange={handleChange} className="hidden" />
-                                {tx({ fr: 'Non, j\'ai besoin du design', en: 'No, I need design help', es: 'No, necesito ayuda con el diseno' })}
-                              </label>
-                            </div>
-                          </div>
-
-                          <div>
-                            <label htmlFor="message" className="block text-heading font-semibold text-sm mb-2">
-                              {tx({ fr: 'Instructions ou details', en: 'Instructions or details', es: 'Instrucciones o detalles' })}
-                            </label>
-                            <textarea
-                              id="message" name="message"
-                              value={formData.message} onChange={handleChange}
-                              rows={3}
-                              placeholder={tx({ fr: 'Couleurs, texte, precisions...', en: 'Colors, text, details...', es: 'Colores, texto, detalles...' })}
-                              className="input-field resize-none"
-                            />
-                          </div>
-                        </>
-                      )}
 
                       {/* Files from cart items summary */}
                       {items.some(item => item.uploadedFiles?.length > 0) && (
@@ -467,7 +416,7 @@ function Checkout() {
                           customerPhone: formData.telephone,
                           shippingAddress: { address: formData.adresse, city: formData.ville, province: formData.province, postalCode: formData.codePostal },
                           promoCode: promoCode || undefined,
-                          designReady: formData.designReady === 'yes',
+                          designReady: hasDesignFiles,
                           notes: formData.message,
                           supabaseUserId: user?.id || '',
                         }} />
