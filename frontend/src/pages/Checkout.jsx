@@ -45,7 +45,7 @@ function calculateTaxes(subtotal, province) {
 function Checkout() {
   const { t, lang, tx } = useLang();
   const { items, cartTotal, promoCode, discountPercent, discountAmount } = useCart();
-  const { user, session } = useAuth();
+  const { user, session, updateProfile } = useAuth();
   const { step: themeStep } = useTheme();
   const navigate = useNavigate();
 
@@ -170,6 +170,18 @@ function Checkout() {
       const secret = result?.clientSecret;
       if (!secret || typeof secret !== 'string' || !secret.startsWith('pi_')) {
         throw new Error(tx({ fr: 'Le serveur n\'a pas pu creer le paiement. Veuillez reessayer.', en: 'Server could not create payment. Please try again.', es: 'El servidor no pudo crear el pago. Intente de nuevo.' }));
+      }
+
+      // Sauvegarder les infos dans le profil pour pre-remplir la prochaine fois
+      if (user && updateProfile) {
+        updateProfile({
+          full_name: formData.nom,
+          phone: formData.telephone,
+          address: formData.adresse,
+          city: formData.ville,
+          province: formData.province,
+          postal_code: formData.codePostal,
+        }).catch(() => {}); // silencieux, non bloquant
       }
 
       setClientSecret(secret);
