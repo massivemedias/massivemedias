@@ -178,9 +178,9 @@ function Header() {
               </div>
 
               {/* Scrollable links */}
-              <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-3 py-4 flex flex-col gap-0.5">
+              <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-3 py-3 flex flex-col gap-0">
                 {/* Services */}
-                <p className="mobile-drawer-label text-[10px] font-bold uppercase tracking-[0.14em] px-3 mb-1.5">
+                <p className="mobile-drawer-label text-[10px] font-bold uppercase tracking-[0.14em] px-3 mb-1">
                   Services
                 </p>
 
@@ -191,124 +191,94 @@ function Header() {
                     <Link
                       key={service.slug}
                       to={`/services/${service.slug}`}
-                      className={`flex items-center gap-3 px-3 py-2.5 rounded-xl mobile-drawer-item group transition-colors ${active ? 'bg-accent/15 text-accent' : 'nav-link'}`}
+                      className={`flex items-center gap-3 px-3 py-2 rounded-xl mobile-drawer-item group transition-colors ${active ? 'bg-accent/15 text-accent' : 'nav-link'}`}
                       onClick={close}
                     >
                       {Icon && (
-                        <span className="w-8 h-8 rounded-lg flex items-center justify-center mobile-icon-bg flex-shrink-0">
-                          <Icon size={15} className="text-accent" />
+                        <span className="w-7 h-7 rounded-lg flex items-center justify-center mobile-icon-bg flex-shrink-0">
+                          <Icon size={14} className="text-accent" />
                         </span>
                       )}
-                      <span className="font-semibold text-[15px]">{service.name}</span>
+                      <span className="font-semibold text-[14px]">{service.name}</span>
                       <ChevronRight size={14} className="ml-auto opacity-25 group-hover:opacity-50 transition-opacity" />
                     </Link>
                   );
                 })}
 
-                <div className="h-px mobile-drawer-sep mx-2 my-2.5" />
+                <div className="h-px mobile-drawer-sep mx-2 my-1.5" />
 
-                {/* Artistes */}
-                <p className="mobile-drawer-label text-[10px] font-bold uppercase tracking-[0.14em] px-3 mb-1.5" style={{ color: 'var(--logo-accent, #FFCC02)' }}>
-                  {tx({ fr: 'Artistes', en: 'Artists' })}
-                </p>
-
+                {/* Artistes - single link */}
                 <Link
-                  to="/artistes#photographes"
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl mobile-drawer-item group transition-colors ${isActive('/artistes') ? 'bg-accent/15 text-accent' : 'nav-link'}`}
+                  to="/artistes"
+                  className={`flex items-center gap-3 px-3 py-2 rounded-xl mobile-drawer-item group transition-colors ${(isActive('/artistes') || isActive('/tatoueurs') || isActive('/boutique')) ? 'bg-accent/15 text-accent' : 'nav-link'}`}
                   onClick={close}
                 >
-                  <span className="w-8 h-8 rounded-lg flex items-center justify-center mobile-icon-bg flex-shrink-0">
-                    <Camera size={15} className="text-accent" />
+                  <span className="w-7 h-7 rounded-lg flex items-center justify-center mobile-icon-bg flex-shrink-0">
+                    <Camera size={14} className="text-accent" />
                   </span>
-                  <span className="font-semibold text-[15px]">{tx({ fr: 'Photographes & Peintres', en: 'Photographers & Painters' })}</span>
+                  <span className="font-bold text-[15px]" style={{ color: 'var(--logo-accent, #FFCC02)' }}>{tx({ fr: 'Artistes', en: 'Artists' })}</span>
                   <ChevronRight size={14} className="ml-auto opacity-25 group-hover:opacity-50 transition-opacity" />
                 </Link>
 
-                <Link
-                  to="/tatoueurs"
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl mobile-drawer-item group transition-colors ${isActive('/tatoueurs') ? 'bg-accent/15 text-accent' : 'nav-link'}`}
-                  onClick={close}
-                >
-                  <span className="w-8 h-8 rounded-lg flex items-center justify-center mobile-icon-bg flex-shrink-0">
-                    <PenTool size={15} className="text-accent" />
-                  </span>
-                  <span className="font-semibold text-[15px]">{tx({ fr: 'Tatoueurs', en: 'Tattoo Artists' })}</span>
-                  <ChevronRight size={14} className="ml-auto opacity-25 group-hover:opacity-50 transition-opacity" />
-                </Link>
-
-                <Link
-                  to="/boutique"
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl mobile-drawer-item group transition-colors ${isActive('/boutique') ? 'bg-accent/15 text-accent' : 'nav-link'}`}
-                  onClick={close}
-                >
-                  <span className="w-8 h-8 rounded-lg flex items-center justify-center mobile-icon-bg flex-shrink-0">
-                    <Store size={15} className="text-accent" />
-                  </span>
-                  <span className="font-semibold text-[15px]">{tx({ fr: 'Boutique Massive', en: 'Massive Shop' })}</span>
-                  <ChevronRight size={14} className="ml-auto opacity-25 group-hover:opacity-50 transition-opacity" />
-                </Link>
-
-                {/* A propos */}
                 <Link
                   to="/a-propos"
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl mobile-drawer-item group transition-colors ${isActive('/a-propos') ? 'bg-accent/15 text-accent' : 'nav-link'}`}
+                  className={`flex items-center gap-3 px-3 py-2 rounded-xl mobile-drawer-item group transition-colors ${isActive('/a-propos') ? 'bg-accent/15 text-accent' : 'nav-link'}`}
                   onClick={close}
                 >
-                  <span className="w-8 h-8 rounded-lg flex items-center justify-center mobile-icon-bg flex-shrink-0">
-                    <Info size={15} className="text-accent" />
+                  <span className="w-7 h-7 rounded-lg flex items-center justify-center mobile-icon-bg flex-shrink-0">
+                    <Info size={14} className="text-accent" />
                   </span>
-                  <span className="font-semibold text-[15px]">{t('nav.aPropos')}</span>
+                  <span className="font-semibold text-[14px]">{t('nav.aPropos')}</span>
                   <ChevronRight size={14} className="ml-auto opacity-25 group-hover:opacity-50 transition-opacity" />
                 </Link>
 
-                {/* Panier */}
                 <Link
                   to="/panier"
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl mobile-drawer-item group transition-colors ${isActive('/panier') ? 'bg-accent/15 text-accent' : 'nav-link'}`}
+                  className={`flex items-center gap-3 px-3 py-2 rounded-xl mobile-drawer-item group transition-colors ${isActive('/panier') ? 'bg-accent/15 text-accent' : 'nav-link'}`}
                   onClick={close}
                 >
-                  <span className="w-8 h-8 rounded-lg flex items-center justify-center mobile-icon-bg flex-shrink-0 relative">
-                    <ShoppingCart size={15} className="text-accent" />
+                  <span className="w-7 h-7 rounded-lg flex items-center justify-center mobile-icon-bg flex-shrink-0 relative">
+                    <ShoppingCart size={14} className="text-accent" />
                     {cartCount > 0 && (
                       <span className="absolute -top-1 -right-1 bg-accent text-white text-[9px] rounded-full w-4 h-4 flex items-center justify-center font-bold">
                         {cartCount}
                       </span>
                     )}
                   </span>
-                  <span className="font-semibold text-[15px]">{tx({ fr: 'Panier', en: 'Cart', es: 'Carrito' })}</span>
+                  <span className="font-semibold text-[14px]">{tx({ fr: 'Panier', en: 'Cart', es: 'Carrito' })}</span>
                   <ChevronRight size={14} className="ml-auto opacity-25 group-hover:opacity-50 transition-opacity" />
                 </Link>
 
                 {isAdmin && adminMsgCount > 0 && (
                   <Link
                     to="/account?tab=messages"
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl nav-link mobile-drawer-item group transition-colors"
+                    className="flex items-center gap-3 px-3 py-2 rounded-xl nav-link mobile-drawer-item group transition-colors"
                     onClick={close}
                   >
-                    <span className="w-8 h-8 rounded-lg flex items-center justify-center mobile-icon-bg flex-shrink-0 relative">
-                      <Bell size={15} className="text-accent" />
+                    <span className="w-7 h-7 rounded-lg flex items-center justify-center mobile-icon-bg flex-shrink-0 relative">
+                      <Bell size={14} className="text-accent" />
                       <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] rounded-full w-4 h-4 flex items-center justify-center font-bold animate-pulse shadow-lg shadow-red-500/40">
                         {adminMsgCount}
                       </span>
                     </span>
-                    <span className="font-semibold text-[15px]">{tx({ fr: 'Messages', en: 'Messages', es: 'Mensajes' })}</span>
+                    <span className="font-semibold text-[14px]">{tx({ fr: 'Messages', en: 'Messages', es: 'Mensajes' })}</span>
                     <ChevronRight size={14} className="ml-auto opacity-25 group-hover:opacity-50 transition-opacity" />
                   </Link>
                 )}
 
-                <div className="h-px mobile-drawer-sep mx-2 my-2.5" />
+                <div className="h-px mobile-drawer-sep mx-2 my-1.5" />
 
                 {/* Account / Login */}
                 {user ? (
                   <Link
                     to="/account"
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-xl mobile-drawer-item group transition-colors ${isActive('/account') ? 'bg-accent/15 text-accent' : 'nav-link'}`}
+                    className={`flex items-center gap-3 px-3 py-2 rounded-xl mobile-drawer-item group transition-colors ${isActive('/account') ? 'bg-accent/15 text-accent' : 'nav-link'}`}
                     onClick={close}
                   >
                     <span className="relative flex-shrink-0">
-                      <span className="w-8 h-8 rounded-full bg-accent/20 text-white flex items-center justify-center font-bold text-sm">
+                      <span className="w-7 h-7 rounded-full bg-accent/20 text-white flex items-center justify-center font-bold text-xs">
                         {isAdmin ? (
-                          <Settings size={16} />
+                          <Settings size={14} />
                         ) : (() => {
                           const name = user.user_metadata?.full_name;
                           if (name) {
@@ -319,12 +289,12 @@ function Header() {
                         })()}
                       </span>
                       {isAdmin && adminMsgCount > 0 && (
-                        <span className="absolute -top-1 -right-1 flex items-center justify-center min-w-[16px] h-4 px-1 rounded-full bg-red-500 text-white text-[9px] font-bold shadow-lg shadow-red-500/40">
+                        <span className="absolute -top-1 -right-1 flex items-center justify-center min-w-[14px] h-3.5 px-0.5 rounded-full bg-red-500 text-white text-[8px] font-bold shadow-lg shadow-red-500/40">
                           {adminMsgCount}
                         </span>
                       )}
                     </span>
-                    <span className="font-semibold text-[15px]">
+                    <span className="font-semibold text-[14px]">
                       {t('nav.account')}
                     </span>
                     <ChevronRight size={14} className="ml-auto opacity-25 group-hover:opacity-50 transition-opacity" />
@@ -332,34 +302,31 @@ function Header() {
                 ) : (
                   <Link
                     to="/login"
-                    className="flex items-center gap-3 px-4 py-3.5 rounded-xl bg-accent text-white group transition-all hover:brightness-110 mt-2 shadow-[0_0_20px_rgba(var(--accent-rgb,255,200,0),0.3)]"
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-accent text-white group transition-all hover:brightness-110 mt-1 shadow-[0_0_15px_rgba(var(--accent-rgb,255,200,0),0.3)]"
                     onClick={close}
                   >
-                    <span className="w-9 h-9 rounded-lg flex items-center justify-center bg-white/20 flex-shrink-0">
-                      <LogIn size={18} className="text-white" />
+                    <span className="w-7 h-7 rounded-lg flex items-center justify-center bg-white/20 flex-shrink-0">
+                      <LogIn size={15} className="text-white" />
                     </span>
-                    <div>
-                      <span className="font-bold text-[15px] block">{tx({ fr: 'Connexion / Inscription', en: 'Sign in / Register', es: 'Conectarse / Registro' })}</span>
-                      <span className="text-[11px] text-white/70">{tx({ fr: 'Google, Apple ou email', en: 'Google, Apple or email', es: 'Google, Apple o email' })}</span>
-                    </div>
+                    <span className="font-bold text-[14px]">{tx({ fr: 'Connexion / Inscription', en: 'Sign in / Register', es: 'Conectarse / Registro' })}</span>
                     <ChevronRight size={14} className="ml-auto text-white/60 group-hover:text-white transition-opacity" />
                   </Link>
                 )}
 
                 {/* Contact CTA */}
-                <div className="mt-3 pt-3 border-t mobile-drawer-border">
+                <div className="mt-2 pt-2 border-t mobile-drawer-border">
                   <Link
                     to="/contact"
-                    className="btn-primary w-full text-center py-3 font-bold flex items-center justify-center gap-2 text-[15px]"
+                    className="btn-primary w-full text-center py-2.5 font-bold flex items-center justify-center gap-2 text-[14px]"
                     onClick={close}
                   >
-                    <Phone size={17} />
+                    <Phone size={15} />
                     {t('nav.contact')}
                   </Link>
                 </div>
 
                 {/* Espace en bas pour safe area iOS */}
-                <div className="h-20 flex-shrink-0" />
+                <div className="h-10 flex-shrink-0" />
               </div>
             </motion.div>
           </>
