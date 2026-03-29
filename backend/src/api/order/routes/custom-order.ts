@@ -9,6 +9,14 @@ export default {
       },
     },
     {
+      method: 'POST',
+      path: '/orders/create-checkout-session',
+      handler: 'order.createCheckoutSession',
+      config: {
+        auth: false,
+      },
+    },
+    {
       method: 'GET',
       path: '/orders/my-orders',
       handler: 'order.myOrders',

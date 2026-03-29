@@ -195,6 +195,142 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
     }
   },
 
+  async createCheckoutSession(ctx) {
+    const { items, customerEmail, customerName, customerPhone, shippingAddress, promoCode, designReady, notes, supabaseUserId } = ctx.request.body as any;
+
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return ctx.badRequest('Cart is empty');
+    }
+    if (!customerEmail || !customerName) {
+      return ctx.badRequest('Customer email and name are required');
+    }
+
+    // Recalculate server-side (same logic as createPaymentIntent)
+    let subtotal = items.reduce((sum: number, item: any) => sum + (item.totalPrice || 0), 0);
+
+    const PROMO_CODES: Record<string, { discountPercent: number; label: string }> = {
+      'MASSIVE6327': { discountPercent: 20, label: 'Promo Massive 20%' },
+    };
+    let promoDiscount = 0;
+    let appliedPromoCode = '';
+    if (promoCode && typeof promoCode === 'string') {
+      const promo = PROMO_CODES[promoCode.toUpperCase().trim()];
+      if (promo) {
+        promoDiscount = Math.round(subtotal * promo.discountPercent / 100);
+        appliedPromoCode = promoCode.toUpperCase().trim();
+        subtotal = subtotal - promoDiscount;
+      }
+    }
+
+    const province = shippingAddress?.province || 'QC';
+    const postalCode = shippingAddress?.postalCode || '';
+    const { shippingCost, totalWeight } = calculateShipping(province, postalCode, items);
+
+    const tps = Math.round(subtotal * 0.05 * 100) / 100;
+    const tvq = province === 'QC' ? Math.round(subtotal * 0.09975 * 100) / 100 : 0;
+    const taxesTotal = Math.round((tps + tvq) * 100) / 100;
+    const totalAmount = subtotal + shippingCost + taxesTotal;
+    const amountInCents = Math.round(totalAmount * 100);
+
+    if (amountInCents < 50) {
+      return ctx.badRequest('Minimum order is $0.50 CAD');
+    }
+
+    try {
+      const stripe = getStripe();
+
+      const itemsSummary = items.map((i: any) => {
+        const parts = [i.productName || 'Produit'];
+        if (i.size) parts.push(i.size);
+        if (i.finish) parts.push(i.finish);
+        if (i.quantity > 1) parts.push(`x${i.quantity}`);
+        return parts.join(' - ');
+      }).join(', ');
+
+      const addrLine = shippingAddress
+        ? `${shippingAddress.address || ''}, ${shippingAddress.city || ''}, ${shippingAddress.province || ''} ${shippingAddress.postalCode || ''}`
+        : '';
+
+      // Create Stripe Checkout Session (hosted payment page - works with ad blockers)
+      const session = await stripe.checkout.sessions.create({
+        mode: 'payment',
+        payment_method_types: ['card'],
+        customer_email: customerEmail,
+        line_items: [{
+          price_data: {
+            currency: 'cad',
+            product_data: {
+              name: `Commande Massive - ${customerName}`,
+              description: itemsSummary.slice(0, 500),
+            },
+            unit_amount: amountInCents,
+          },
+          quantity: 1,
+        }],
+        metadata: {
+          customerName,
+          customerEmail,
+          customerPhone: customerPhone || '',
+          items: itemsSummary.slice(0, 500),
+          shippingAddress: addrLine.slice(0, 500),
+          supabaseUserId: supabaseUserId || '',
+          promoCode: appliedPromoCode || '',
+        },
+        success_url: `https://massivemedias.com/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `https://massivemedias.com/checkout/cancel`,
+      });
+
+      // Create order in Strapi
+      const itemsWithFiles = items.map((item: any) => ({
+        ...item,
+        uploadedFiles: item.uploadedFiles || [],
+      }));
+
+      let client = null;
+      try {
+        const existingClients = await strapi.documents('api::client.client').findMany({
+          filters: { email: customerEmail.toLowerCase() },
+        });
+        client = existingClients.length > 0 ? existingClients[0] : await strapi.documents('api::client.client').create({
+          data: { email: customerEmail.toLowerCase(), name: customerName, phone: customerPhone || '', supabaseUserId: supabaseUserId || '', totalSpent: 0, orderCount: 0 },
+        });
+      } catch (err) {
+        strapi.log.warn('Could not create/find client:', err);
+      }
+
+      const orderData: any = {
+        stripePaymentIntentId: session.payment_intent as string || session.id,
+        customerEmail,
+        customerName,
+        customerPhone: customerPhone || '',
+        supabaseUserId: supabaseUserId || '',
+        items: itemsWithFiles,
+        subtotal: Math.round(subtotal * 100),
+        shipping: Math.round(shippingCost * 100),
+        tps: Math.round(tps * 100),
+        tvq: Math.round(tvq * 100),
+        totalWeight,
+        total: amountInCents,
+        currency: 'cad',
+        status: 'pending',
+        designReady: designReady !== false,
+        notes: notes || '',
+        shippingAddress: shippingAddress || null,
+        promoCode: appliedPromoCode || null,
+        promoDiscount: promoDiscount > 0 ? Math.round(promoDiscount * 100) : 0,
+      };
+      if (client) {
+        orderData.client = { connect: [{ documentId: client.documentId }] };
+      }
+      await strapi.documents('api::order.order').create({ data: orderData });
+
+      ctx.body = { url: session.url };
+    } catch (err: any) {
+      strapi.log.error('Stripe createCheckoutSession error:', err);
+      return ctx.badRequest(err.message || 'Checkout session creation failed');
+    }
+  },
+
   async myOrders(ctx) {
     const supabaseUserId = ctx.query.supabaseUserId as string;
 
