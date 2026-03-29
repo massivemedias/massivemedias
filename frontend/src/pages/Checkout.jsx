@@ -168,6 +168,8 @@ function Checkout() {
       setClientSecret(secret);
       setStep('payment');
       trackBeginCheckout(items, orderTotal);
+      // Scroll en haut pour voir le formulaire de paiement
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err) {
       setError(
         err?.response?.data?.error?.message ||
