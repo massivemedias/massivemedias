@@ -23,9 +23,10 @@ const SCENES = [
 ];
 
 const SHADERS = [
+  { value: 'none', label: 'Aucun' },
   { value: 'holographic', label: 'Holographic' },
   { value: 'glossy', label: 'Glossy' },
-  { value: 'none', label: 'Aucun' },
+  { value: 'broken_glass', label: 'Broken Glass' },
 ];
 
 // ---------------------------------------------------------------------------
@@ -290,7 +291,7 @@ function StickersTab() {
   const [file, setFile] = useState(null);
   const [strokeColor, setStrokeColor] = useState('#FFFFFF');
   const [strokeWidth, setStrokeWidth] = useState(3);
-  const [shader, setShader] = useState('holographic');
+  const [shader, setShader] = useState('none');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
@@ -339,11 +340,11 @@ function StickersTab() {
             <label className="text-xs text-grey-muted block mb-1">Epaisseur stroke: {strokeWidth}mm</label>
             <input
               type="range"
-              min="1"
+              min="0"
               max="5"
-              step="0.5"
+              step="1"
               value={strokeWidth}
-              onChange={(e) => setStrokeWidth(parseFloat(e.target.value))}
+              onChange={(e) => setStrokeWidth(parseInt(e.target.value))}
               className="w-full accent-accent"
             />
           </div>

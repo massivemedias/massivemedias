@@ -63,11 +63,11 @@ export function chatStream({ message, model, temperature, max_tokens, system_pro
   return controller;
 }
 
-export async function processSticker(file, { stroke_color = '#FFFFFF', stroke_width = 3, shader = 'holographic' } = {}) {
+export async function processSticker(file, { stroke_color = '#FFFFFF', stroke_width = 3, shader = 'none' } = {}) {
   const form = new FormData();
   form.append('file', file);
   form.append('stroke_color', stroke_color);
-  form.append('stroke_width', stroke_width);
+  form.append('stroke_width', String(Math.round(stroke_width)));
   form.append('shader', shader);
 
   const res = await fetch(`${AI_BASE_URL}/api/v1/stickers/process`, {
