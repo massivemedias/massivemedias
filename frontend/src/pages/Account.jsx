@@ -120,7 +120,7 @@ function Account() {
   const meta = user?.user_metadata || {};
 
   const tabFromUrl = searchParams.get('tab');
-  const validTabs = ['profile', 'address', 'security', 'overview', 'orders', 'artist', 'dashboard', 'profil-artiste', 'contrat', 'tarifs', 'ventes',
+  const validTabs = ['profile', 'security', 'overview', 'orders', 'artist', 'dashboard', 'profil-artiste', 'contrat', 'tarifs', 'ventes',
     'dashboard-tatoueur', 'flashs', 'reservations', 'calendrier', 'realisations', 'messages', 'boutique-tatoueur', 'profil-tatoueur', 'parametres'];
   const initialTab = (tabFromUrl && validTabs.includes(tabFromUrl)) ? tabFromUrl : (isAdmin ? 'profile' : isArtist ? 'dashboard' : isTatoueur ? 'dashboard-tatoueur' : 'overview');
   const [activeTab, setActiveTab] = useState(initialTab);
@@ -167,23 +167,18 @@ function Account() {
   const [pwdSuccess, setPwdSuccess] = useState(false);
   const [pwdLoading, setPwdLoading] = useState(false);
 
-  // Profile form
+  // Profile form (includes address)
   const [profileForm, setProfileForm] = useState({
     full_name: meta.full_name || '',
     phone: meta.phone || '',
     company: meta.company || '',
-  });
-  const [profileSaving, setProfileSaving] = useState(false);
-
-  // Address form
-  const [addressForm, setAddressForm] = useState({
     address: meta.address || '',
     city: meta.city || '',
     province: meta.province || '',
     postal_code: meta.postal_code || '',
     country: meta.country || 'Canada',
   });
-  const [addressSaving, setAddressSaving] = useState(false);
+  const [profileSaving, setProfileSaving] = useState(false);
 
   // Save feedback
   const [saveMsg, setSaveMsg] = useState('');
@@ -193,14 +188,12 @@ function Account() {
   const [artistMobileOpen, setArtistMobileOpen] = useState(false);
   const [tatoueurMobileOpen, setTatoueurMobileOpen] = useState(false);
 
-  // Sync forms when user metadata changes
+  // Sync form when user metadata changes
   useEffect(() => {
     setProfileForm({
       full_name: meta.full_name || '',
       phone: meta.phone || '',
       company: meta.company || '',
-    });
-    setAddressForm({
       address: meta.address || '',
       city: meta.city || '',
       province: meta.province || '',
@@ -227,7 +220,6 @@ function Account() {
 
   const ACCOUNT_SIDEBAR_ITEMS = [
     { id: 'profile', label: tx({ fr: 'Profil', en: 'Profile', es: 'Perfil' }), icon: User },
-    { id: 'address', label: tx({ fr: 'Adresse', en: 'Address', es: 'Direccion' }), icon: MapPin },
     { id: 'security', label: tx({ fr: 'Sécurité', en: 'Security', es: 'Seguridad' }), icon: Shield },
   ];
 
@@ -235,7 +227,6 @@ function Account() {
     { id: 'overview', label: tx({ fr: 'Tableau de bord', en: 'Dashboard', es: 'Panel' }), icon: User },
     { id: 'orders', label: tx({ fr: 'Commandes', en: 'Orders', es: 'Pedidos' }), icon: Package },
     { id: 'profile', label: tx({ fr: 'Profil', en: 'Profile', es: 'Perfil' }), icon: User },
-    { id: 'address', label: tx({ fr: 'Adresse', en: 'Address', es: 'Direccion' }), icon: MapPin },
     { id: 'security', label: tx({ fr: 'Sécurité', en: 'Security', es: 'Seguridad' }), icon: Shield },
   ];
 
@@ -321,18 +312,6 @@ function Account() {
     setTimeout(() => setSaveMsg(''), 3000);
   };
 
-  const handleAddressSave = async (e) => {
-    e.preventDefault();
-    setAddressSaving(true);
-    const { error } = await updateProfile(addressForm);
-    setAddressSaving(false);
-    if (error) {
-      setSaveMsg(tx({ fr: 'Erreur lors de la sauvegarde.', en: 'Error saving.', es: 'Error al guardar.' }));
-    } else {
-      setSaveMsg(tx({ fr: 'Adresse sauvegardée!', en: 'Address saved!', es: 'Direccion guardada!' }));
-    }
-    setTimeout(() => setSaveMsg(''), 3000);
-  };
 
   const handlePasswordChange = async (e) => {
     e.preventDefault();
@@ -420,16 +399,8 @@ function Account() {
           </p>
         </div>
       </div>
-      <button type="submit" disabled={profileSaving} className="btn-primary text-base py-3 px-10 mt-3">
-        {profileSaving ? <Loader2 size={18} className="animate-spin mr-2" /> : <Save size={18} className="mr-2" />}
-        {tx({ fr: 'Sauvegarder', en: 'Save', es: 'Guardar' })}
-      </button>
-    </form>
-  );
 
-  const renderAddressContent = () => (
-    <form onSubmit={handleAddressSave} className="rounded-2xl p-6 md:p-10 card-bg">
-      <h3 className="text-heading font-semibold text-lg mb-6 flex items-center gap-2">
+      <h3 className="text-heading font-semibold text-lg mb-6 mt-8 flex items-center gap-2">
         <MapPin size={20} className="text-accent" />
         {tx({ fr: 'Adresse de livraison', en: 'Shipping address', es: 'Direccion de envio' })}
       </h3>
@@ -440,16 +411,16 @@ function Account() {
             {tx({ fr: 'Adresse', en: 'Street address', es: 'Direccion' })}
           </label>
           <AddressAutocomplete
-            value={addressForm.address}
-            onChange={v => setAddressForm(a => ({ ...a, address: v }))}
+            value={profileForm.address}
+            onChange={v => setProfileForm(p => ({ ...p, address: v }))}
             onPlaceSelect={({ address, city, province, postalCode, country }) => {
-              setAddressForm(a => ({
-                ...a,
+              setProfileForm(p => ({
+                ...p,
                 address,
-                city: city || a.city,
-                province: province || a.province,
-                postal_code: postalCode || a.postal_code,
-                country: country === 'United States' ? 'US' : country || a.country,
+                city: city || p.city,
+                province: province || p.province,
+                postal_code: postalCode || p.postal_code,
+                country: country === 'United States' ? 'US' : country || p.country,
               }));
             }}
             className="input-field text-base"
@@ -459,36 +430,36 @@ function Account() {
         <FormInput
           icon={MapPin}
           label={tx({ fr: 'Ville', en: 'City', es: 'Ciudad' })}
-          value={addressForm.city}
+          value={profileForm.city}
           placeholder="Montreal"
-          onChange={v => setAddressForm(a => ({ ...a, city: v }))}
+          onChange={v => setProfileForm(p => ({ ...p, city: v }))}
           autoComplete="address-level2"
         />
         <FormSelect
           icon={MapPin}
           label={tx({ fr: 'Province / État', en: 'Province / State', es: 'Provincia / Estado' })}
-          value={addressForm.province}
-          onChange={v => setAddressForm(a => ({ ...a, province: v }))}
+          value={profileForm.province}
+          onChange={v => setProfileForm(p => ({ ...p, province: v }))}
           autoComplete="address-level1"
           options={
-            addressForm.country === 'Canada'
+            profileForm.country === 'Canada'
               ? [{ value: '', label: tx({ fr: 'Sélectionner...', en: 'Select...', es: 'Seleccionar...' }) }, ...PROVINCES_CA.map(p => ({ value: p.code, label: lang === 'en' ? p.en : p.fr }))]
-              : [{ value: '', label: tx({ fr: 'Sélectionner...', en: 'Select...', es: 'Seleccionar...' }) }, { value: addressForm.province, label: addressForm.province || '...' }]
+              : [{ value: '', label: tx({ fr: 'Sélectionner...', en: 'Select...', es: 'Seleccionar...' }) }, { value: profileForm.province, label: profileForm.province || '...' }]
           }
         />
         <FormInput
           icon={MapPin}
           label={tx({ fr: 'Code postal', en: 'Postal code', es: 'Codigo postal' })}
-          value={addressForm.postal_code}
+          value={profileForm.postal_code}
           placeholder="H2X 1Y4"
-          onChange={v => setAddressForm(a => ({ ...a, postal_code: v }))}
+          onChange={v => setProfileForm(p => ({ ...p, postal_code: v }))}
           autoComplete="postal-code"
         />
         <FormSelect
           icon={MapPin}
           label={tx({ fr: 'Pays', en: 'Country', es: 'Pais' })}
-          value={addressForm.country}
-          onChange={v => setAddressForm(a => ({ ...a, country: v, province: '' }))}
+          value={profileForm.country}
+          onChange={v => setProfileForm(p => ({ ...p, country: v, province: '' }))}
           autoComplete="country-name"
           options={[
             ...COUNTRIES.map(c => ({ value: c.code, label: lang === 'en' ? c.en : c.fr })),
@@ -496,8 +467,9 @@ function Account() {
           ]}
         />
       </div>
-      <button type="submit" disabled={addressSaving} className="btn-primary text-base py-3 px-10 mt-3">
-        {addressSaving ? <Loader2 size={18} className="animate-spin mr-2" /> : <Save size={18} className="mr-2" />}
+
+      <button type="submit" disabled={profileSaving} className="btn-primary text-base py-3 px-10 mt-3">
+        {profileSaving ? <Loader2 size={18} className="animate-spin mr-2" /> : <Save size={18} className="mr-2" />}
         {tx({ fr: 'Sauvegarder', en: 'Save', es: 'Guardar' })}
       </button>
     </form>
@@ -921,7 +893,6 @@ function Account() {
                   transition={{ duration: 0.2 }}
                 >
                   {activeTab === 'profile' && renderProfileContent()}
-                  {activeTab === 'address' && renderAddressContent()}
                   {activeTab === 'security' && renderSecurityContent()}
                 </motion.div>
               </AnimatePresence>
@@ -1182,7 +1153,6 @@ function Account() {
                     </Suspense>
                   )}
                   {activeTab === 'profile' && renderProfileContent()}
-                  {activeTab === 'address' && renderAddressContent()}
                   {activeTab === 'security' && renderSecurityContent()}
                   {activeTab === 'orders' && renderOrdersContent()}
                 </motion.div>
@@ -1443,7 +1413,6 @@ function Account() {
                     </Suspense>
                   )}
                   {activeTab === 'profile' && renderProfileContent()}
-                  {activeTab === 'address' && renderAddressContent()}
                   {activeTab === 'security' && renderSecurityContent()}
                   {activeTab === 'orders' && renderOrdersContent()}
                 </motion.div>
