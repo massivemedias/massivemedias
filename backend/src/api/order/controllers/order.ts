@@ -153,7 +153,8 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
         uploadedFiles: item.uploadedFiles || [],
       }));
 
-      // Create order in Strapi with status "pending"
+      // Create order in Strapi with status "draft" (not yet paid)
+      // Will be updated to "paid" by Stripe webhook when payment succeeds
       const orderData: any = {
         stripePaymentIntentId: paymentIntent.id,
         customerEmail,
@@ -168,7 +169,7 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
         totalWeight,
         total: amountInCents,
         currency: 'cad',
-        status: 'pending',
+        status: 'draft',
         designReady: designReady !== false,
         notes: notes || '',
         shippingAddress: shippingAddress || null,
@@ -280,7 +281,7 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
         cancel_url: `https://massivemedias.com/checkout/cancel`,
       });
 
-      // Create order in Strapi
+      // Create order in Strapi with draft status (not yet paid)
       const itemsWithFiles = items.map((item: any) => ({
         ...item,
         uploadedFiles: item.uploadedFiles || [],
@@ -312,7 +313,7 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
         totalWeight,
         total: amountInCents,
         currency: 'cad',
-        status: 'pending',
+        status: 'draft',
         designReady: designReady !== false,
         notes: notes || '',
         shippingAddress: shippingAddress || null,
@@ -339,7 +340,7 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
     }
 
     const orders = await strapi.documents('api::order.order').findMany({
-      filters: { supabaseUserId },
+      filters: { supabaseUserId, status: { $ne: 'draft' } },
       sort: 'createdAt:desc',
     });
 
@@ -628,6 +629,9 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
     const filters: any = {};
     if (status && status !== 'all') {
       filters.status = status;
+    } else {
+      // By default, exclude draft orders (payment not yet completed)
+      filters.status = { $ne: 'draft' };
     }
     if (search) {
       filters.$or = [
@@ -667,7 +671,7 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
     const { documentId } = ctx.params;
     const { status: newStatus } = ctx.request.body as any;
 
-    const validStatuses = ['pending', 'paid', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded'];
+    const validStatuses = ['draft', 'pending', 'paid', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded'];
     if (!newStatus || !validStatuses.includes(newStatus)) {
       return ctx.badRequest(`Status invalide. Valeurs acceptees: ${validStatuses.join(', ')}`);
     }

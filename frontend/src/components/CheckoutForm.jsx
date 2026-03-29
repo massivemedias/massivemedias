@@ -10,30 +10,32 @@ function CheckoutForm({ cartTotal, checkoutData }) {
   const { t, tx } = useLang();
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const [stripeBlocked, setStripeBlocked] = useState(false);
   const [fallbackLoading, setFallbackLoading] = useState(false);
+  const [paymentElementReady, setPaymentElementReady] = useState(false);
+  const [usesFallback, setUsesFallback] = useState(false);
 
-  // Detecter si Stripe est bloque (bloqueur de pub) -> fallback auto
+  // Si apres 8 secondes le PaymentElement n'est toujours pas ready,
+  // on bascule automatiquement vers Stripe Checkout (page hebergee)
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (!stripe) {
-        setStripeBlocked(true);
+      if (!paymentElementReady) {
+        setUsesFallback(true);
       }
-    }, 6000);
-    if (stripe) clearTimeout(timer);
-    return () => clearTimeout(timer);
-  }, [stripe]);
+    }, 8000);
 
-  // Lancer automatiquement le fallback Stripe Checkout si bloque
+    return () => clearTimeout(timer);
+  }, [paymentElementReady]);
+
+  // Lancer automatiquement le fallback
   useEffect(() => {
-    if (stripeBlocked && checkoutData && !fallbackLoading) {
+    if (usesFallback && checkoutData && !fallbackLoading) {
       handleFallbackCheckout();
     }
-  }, [stripeBlocked]);
+  }, [usesFallback]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!stripe || !elements) return;
+    if (!stripe || !elements || !paymentElementReady) return;
 
     setIsProcessing(true);
     setErrorMessage('');
@@ -55,8 +57,8 @@ function CheckoutForm({ cartTotal, checkoutData }) {
         setIsProcessing(false);
       }
     } catch (err) {
-      setErrorMessage('Une erreur inattendue est survenue. Veuillez reessayer.');
-      setIsProcessing(false);
+      // Si confirmPayment echoue completement, fallback vers Stripe Checkout
+      setUsesFallback(true);
     }
   };
 
@@ -80,8 +82,8 @@ function CheckoutForm({ cartTotal, checkoutData }) {
     }
   };
 
-  // Si Stripe est bloque, rediriger automatiquement vers Stripe Checkout
-  if (stripeBlocked) {
+  // Affichage fallback
+  if (usesFallback) {
     return (
       <div className="space-y-4">
         <div className="p-4 rounded-xl bg-glass">
@@ -133,6 +135,7 @@ function CheckoutForm({ cartTotal, checkoutData }) {
         </h3>
         <div className="p-4 rounded-xl bg-glass">
           <PaymentElement
+            onReady={() => setPaymentElementReady(true)}
             options={{
               layout: 'tabs',
             }}
@@ -149,7 +152,7 @@ function CheckoutForm({ cartTotal, checkoutData }) {
 
       <button
         type="submit"
-        disabled={!stripe || isProcessing}
+        disabled={!stripe || !paymentElementReady || isProcessing}
         className="btn-primary w-full justify-center text-base py-3.5 disabled:opacity-50"
       >
         {isProcessing ? (
@@ -159,6 +162,11 @@ function CheckoutForm({ cartTotal, checkoutData }) {
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
             </svg>
             {t('checkout.processing')}
+          </>
+        ) : !paymentElementReady ? (
+          <>
+            <Loader2 size={18} className="mr-2 animate-spin" />
+            {tx({ fr: 'Chargement...', en: 'Loading...', es: 'Cargando...' })}
           </>
         ) : (
           <>

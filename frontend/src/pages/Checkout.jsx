@@ -144,7 +144,7 @@ function Checkout() {
         uploadedFiles: item.uploadedFiles || [],
       }));
 
-      const { clientSecret: secret } = await createPaymentIntent({
+      const result = await createPaymentIntent({
         items: itemsToSend,
         customerEmail: formData.email,
         customerName: formData.nom,
@@ -166,6 +166,11 @@ function Checkout() {
         notes: formData.message,
         supabaseUserId: user?.id || '',
       });
+
+      const secret = result?.clientSecret;
+      if (!secret || typeof secret !== 'string' || !secret.startsWith('pi_')) {
+        throw new Error(tx({ fr: 'Le serveur n\'a pas pu creer le paiement. Veuillez reessayer.', en: 'Server could not create payment. Please try again.', es: 'El servidor no pudo crear el pago. Intente de nuevo.' }));
+      }
 
       setClientSecret(secret);
       setStep('payment');

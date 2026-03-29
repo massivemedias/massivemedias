@@ -12,6 +12,7 @@ import { getOrders, getOrderStats, updateOrderStatus, updateOrderNotes, updateOr
 import { generateInvoicePDF } from '../utils/generateInvoice';
 
 const ORDER_STATUS = {
+  draft:      { fr: 'Brouillon',    en: 'Draft',      es: 'Borrador',     color: 'bg-gray-600/20 text-gray-500', icon: Clock },
   pending:    { fr: 'En attente',    en: 'Pending',    es: 'Pendiente',    color: 'bg-yellow-500/20 text-yellow-400', icon: Clock },
   paid:       { fr: 'Payé',          en: 'Paid',       es: 'Pagado',       color: 'bg-green-500/20 text-green-400', icon: CreditCard },
   processing: { fr: 'En production', en: 'Processing', es: 'En proceso',   color: 'bg-blue-500/20 text-blue-400', icon: Package },
@@ -22,6 +23,7 @@ const ORDER_STATUS = {
 };
 
 const STATUS_FLOW = {
+  draft: ['cancelled'],
   pending: ['paid', 'cancelled'],
   paid: ['processing', 'refunded'],
   processing: ['shipped', 'cancelled'],
