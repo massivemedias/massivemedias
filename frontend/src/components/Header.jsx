@@ -71,7 +71,7 @@ function Header() {
               </button>
 
               {user ? (
-                <Link to={isAdmin && adminMsgCount > 0 ? "/admin/messages" : "/account"} className="relative p-1 transition-colors duration-200 nav-link" title={t('nav.account')}>
+                <Link to={isAdmin && adminMsgCount > 0 ? "/admin/messages" : "/account"} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="relative p-1 transition-colors duration-200 nav-link" title={t('nav.account')}>
                   <span className="w-8 h-8 rounded-full bg-accent/20 text-white flex items-center justify-center font-bold text-sm">
                     {isAdmin ? (
                       <Settings size={16} />
