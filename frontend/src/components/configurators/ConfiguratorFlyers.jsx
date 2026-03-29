@@ -37,8 +37,10 @@ function ConfiguratorFlyers() {
   const priceInfo = getFlyerPrice(side, qtyIndex);
   const sideLabel = flyerSides.find(s => s.id === side);
 
+  const canAddToCart = uploadedFiles.length > 0 || notes.trim().length > 0;
+
   const handleAddToCart = () => {
-    if (!priceInfo) return;
+    if (!priceInfo || !canAddToCart) return;
     addToCart({
       productId: 'flyer-a6',
       productName: tx({ fr: 'Flyers A6', en: 'A6 Flyers', es: 'Flyers A6' }),
@@ -147,9 +149,9 @@ function ConfiguratorFlyers() {
       )}
 
       {/* Add to cart */}
-      <button onClick={handleAddToCart} className="btn-primary w-full justify-center text-base py-3.5 mb-3">
+      <button onClick={handleAddToCart} disabled={!canAddToCart} className={`btn-primary w-full justify-center text-base py-3.5 mb-3 ${!canAddToCart ? 'opacity-40 cursor-not-allowed' : ''}`}>
         {added ? (
-          <><Check size={20} className="mr-2" />{tx({ fr: 'Ajout\u00e9 au panier!', en: 'Added to cart!', es: '\u00a1Agregado al carrito!' })}</>
+          <><Check size={20} className="mr-2" />{tx({ fr: 'Ajoute!', en: 'Added!', es: 'Agregado!' })}</>
         ) : (
           <><ShoppingCart size={20} className="mr-2" />{tx({ fr: 'Ajouter au panier', en: 'Add to cart', es: 'Agregar al carrito' })}</>
         )}

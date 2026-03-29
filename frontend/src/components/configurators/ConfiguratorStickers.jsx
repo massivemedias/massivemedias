@@ -58,7 +58,10 @@ function ConfiguratorStickers({ onFinishChange }) {
   };
   const previewImage = finishImages[finish] || finishImages.matte;
 
+  const canAddToCart = uploadedFiles.length > 0 || notes.trim().length > 0;
+
   const handleAddToCart = () => {
+    if (!canAddToCart) return;
     addToCart({
       productId: 'sticker-custom',
       productName: tx({ fr: 'Sticker Custom', en: 'Custom Sticker', es: 'Sticker Personalizado' }),
@@ -280,13 +283,18 @@ function ConfiguratorStickers({ onFinishChange }) {
       )}
 
       {/* Add to cart */}
-      <button onClick={handleAddToCart} className="btn-primary w-full justify-center text-sm md:text-base py-3 md:py-3.5 mb-2 md:mb-3">
+      <button onClick={handleAddToCart} disabled={!canAddToCart} className={`btn-primary w-full justify-center text-sm md:text-base py-3 md:py-3.5 mb-2 md:mb-3 ${!canAddToCart ? 'opacity-40 cursor-not-allowed' : ''}`}>
         {added ? (
-          <><Check size={18} className="mr-2" />{tx({ fr: 'Ajouté au panier!', en: 'Added to cart!', es: 'Agregado al carrito!' })}</>
+          <><Check size={18} className="mr-2" />{tx({ fr: 'Ajoute!', en: 'Added!', es: 'Agregado!' })}</>
         ) : (
           <><ShoppingCart size={18} className="mr-2" />{tx({ fr: 'Ajouter au panier', en: 'Add to cart', es: 'Agregar al carrito' })}</>
         )}
       </button>
+      {!canAddToCart && (
+        <p className="text-yellow-400 text-xs text-center">
+          {tx({ fr: 'Ajoutez votre design ou decrivez votre projet dans les notes', en: 'Upload your design or describe your project in the notes', es: 'Suba su diseno o describa su proyecto en las notas' })}
+        </p>
+      )}
 
       <Link to="/panier" className="btn-outline w-full justify-center text-sm py-2 md:py-2.5">
         {tx({ fr: 'Voir le panier', en: 'View cart', es: 'Ver el carrito' })}

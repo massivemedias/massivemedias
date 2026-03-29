@@ -141,8 +141,10 @@ function ConfiguratorFineArt() {
     img.src = previewImage;
   }, [previewImage]);
 
+  const canAddToCart = uploadedFiles.length > 0 || notes.trim().length > 0;
+
   const handleAddToCart = () => {
-    if (!priceInfo) return;
+    if (!priceInfo || !canAddToCart) return;
     addToCart({
       productId: 'fine-art-print',
       productName: tx({ fr: 'Impression Fine Art', en: 'Fine Art Print', es: 'Impresion Fine Art' }),
@@ -408,7 +410,7 @@ function ConfiguratorFineArt() {
               <span className="text-heading font-bold w-6 text-center">{quantity}</span>
               <button onClick={() => setQuantity(q => q + 1)} className="w-8 h-8 rounded-lg border border-white/10 text-heading font-bold text-sm flex items-center justify-center hover:border-accent/50">+</button>
             </div>
-            <button onClick={handleAddToCart} className="btn-primary justify-center text-sm py-2 px-5">
+            <button onClick={handleAddToCart} disabled={!canAddToCart} className={`btn-primary justify-center text-sm py-2 px-5 ${!canAddToCart ? 'opacity-40 cursor-not-allowed' : ''}`}>
               {added ? (
                 <><Check size={14} className="mr-1" />{tx({ fr: 'Ajoute!', en: 'Added!', es: 'Agregado!' })}</>
               ) : (

@@ -80,8 +80,10 @@ function ConfiguratorSublimation() {
     }
   };
 
+  const canAddToCart = uploadedFiles.length > 0 || notes.trim().length > 0;
+
   const handleAddToCart = () => {
-    if (!priceInfo) return;
+    if (!priceInfo || !canAddToCart) return;
     addToCart({
       productId: `sublimation-${product}`,
       productName: tx({
@@ -349,9 +351,9 @@ function ConfiguratorSublimation() {
       {/* Add to cart or contact */}
       {priceInfo && !priceInfo.surSoumission ? (
         <>
-          <button onClick={handleAddToCart} className="btn-primary w-full justify-center text-sm md:text-base py-3 md:py-3.5 mb-2 md:mb-3">
+          <button onClick={handleAddToCart} disabled={!canAddToCart} className={`btn-primary w-full justify-center text-sm md:text-base py-3 md:py-3.5 mb-2 md:mb-3 ${!canAddToCart ? 'opacity-40 cursor-not-allowed' : ''}`}>
             {added ? (
-              <><Check size={18} className="mr-2" />{tx({ fr: 'Ajoute au panier!', en: 'Added to cart!', es: 'Agregado al carrito!' })}</>
+              <><Check size={18} className="mr-2" />{tx({ fr: 'Ajoute!', en: 'Added!', es: 'Agregado!' })}</>
             ) : (
               <><ShoppingCart size={18} className="mr-2" />{tx({ fr: 'Ajouter au panier', en: 'Add to cart', es: 'Agregar al carrito' })}</>
             )}
