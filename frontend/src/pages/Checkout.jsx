@@ -53,13 +53,9 @@ function Checkout() {
 
   const [step, setStep] = useState('info'); // 'info' | 'payment'
   const [clientSecret, setClientSecret] = useState('');
-  const [stripePromise, setStripePromise] = useState(null);
+  const stripePromise = getStripePromise();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-
-  useEffect(() => {
-    getStripePromise()?.then(setStripePromise);
-  }, []);
 
   // Read theme CSS variables for Stripe appearance
   const stripeAppearance = useMemo(() => {
