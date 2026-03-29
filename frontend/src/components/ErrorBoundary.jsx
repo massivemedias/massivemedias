@@ -12,6 +12,7 @@ class ErrorBoundaryInner extends Component {
     const isChunkError =
       error?.name === 'ChunkLoadError' ||
       error?.message?.includes('Failed to fetch dynamically imported module') ||
+      error?.message?.includes('Importing a module script failed') ||
       error?.message?.includes('Loading chunk') ||
       error?.message?.includes('Loading CSS chunk') ||
       error?.message?.includes('Unable to preload CSS') ||
@@ -35,17 +36,16 @@ class ErrorBoundaryInner extends Component {
   componentDidCatch(error, info) {
     console.error('[ErrorBoundary]', error, info?.componentStack);
 
-    // For chunk loading errors, auto-retry after a short delay
+    // For chunk loading errors, force a hard reload to get fresh JS files
     if (this.state.isChunkError) {
-      console.warn('[ErrorBoundary] Chunk load error detected, auto-recovering...');
-      setTimeout(() => {
-        this.setState((prev) => ({
-          hasError: false,
-          error: null,
-          isChunkError: false,
-          resetKey: prev.resetKey + 1,
-        }));
-      }, 100);
+      console.warn('[ErrorBoundary] Chunk load error detected, reloading page...');
+      // Avoid infinite reload loop: only reload once per session
+      const lastReload = sessionStorage.getItem('chunk_error_reload');
+      const now = Date.now();
+      if (!lastReload || now - parseInt(lastReload) > 10000) {
+        sessionStorage.setItem('chunk_error_reload', now.toString());
+        window.location.reload();
+      }
     }
   }
 
