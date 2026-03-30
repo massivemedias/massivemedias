@@ -10,8 +10,6 @@ import { useLang } from '../i18n/LanguageContext';
 
 const ACCOUNT_ITEMS = [
   { to: '/account?tab=profile', icon: Pencil, fr: 'Profil', en: 'Profile', es: 'Perfil' },
-  { to: '/account?tab=address', icon: MapPin, fr: 'Adresse', en: 'Address', es: 'Direccion' },
-  { to: '/account?tab=security', icon: Shield, fr: 'Sécurité', en: 'Security', es: 'Seguridad' },
 ];
 
 const NAV_ITEMS = [
