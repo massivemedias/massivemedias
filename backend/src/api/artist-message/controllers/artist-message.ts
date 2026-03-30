@@ -38,7 +38,100 @@ export default factories.createCoreController('api::artist-message.artist-messag
     }
   },
 
-  // GET /artist-messages/my-messages?email=xxx - Messages d'un artiste
+  // POST /artist-messages/send-public - Public envoie un message a un artiste
+  async sendPublic(ctx) {
+    const { artistSlug, artistName, senderName, senderEmail, message } = ctx.request.body as any;
+
+    if (!senderEmail || !senderName || !message || !artistSlug) {
+      ctx.throw(400, 'artistSlug, senderName, senderEmail and message required');
+      return;
+    }
+
+    try {
+      const conversationId = `pub-${artistSlug}-${Date.now()}`;
+      const entry = await strapi.documents('api::artist-message.artist-message').create({
+        data: {
+          artistSlug,
+          artistName: artistName || '',
+          email: senderEmail.toLowerCase().trim(),
+          senderName,
+          senderEmail: senderEmail.toLowerCase().trim(),
+          senderType: 'public',
+          subject: `Message de ${senderName}`,
+          message,
+          category: 'question',
+          status: 'new',
+          conversationId,
+        },
+      });
+
+      ctx.body = { data: { documentId: entry.documentId, conversationId } };
+    } catch (err: any) {
+      ctx.throw(500, err.message);
+    }
+  },
+
+  // PUT /artist-messages/:documentId/artist-reply - Artiste repond a un message public
+  async artistReply(ctx) {
+    const { documentId } = ctx.params;
+    const { artistReply } = ctx.request.body as any;
+
+    if (!artistReply) {
+      ctx.throw(400, 'Reply message required');
+      return;
+    }
+
+    try {
+      const entry = await strapi.documents('api::artist-message.artist-message').update({
+        documentId,
+        data: {
+          artistReply,
+          artistRepliedAt: new Date().toISOString(),
+          status: 'replied',
+        },
+      });
+
+      ctx.body = { data: { documentId: entry.documentId, status: entry.status } };
+    } catch (err: any) {
+      ctx.throw(500, err.message);
+    }
+  },
+
+  // GET /artist-messages/inbox?artistSlug=xxx - Messages recus par un artiste (du public)
+  async inbox(ctx) {
+    const { artistSlug } = ctx.query;
+    if (!artistSlug) {
+      ctx.throw(400, 'artistSlug required');
+      return;
+    }
+
+    try {
+      const entries = await strapi.documents('api::artist-message.artist-message').findMany({
+        filters: { artistSlug: artistSlug as string, senderType: 'public' },
+        sort: { createdAt: 'desc' },
+        limit: 50,
+      });
+
+      ctx.body = {
+        data: (entries || []).map((e: any) => ({
+          documentId: e.documentId,
+          senderName: e.senderName,
+          senderEmail: e.senderEmail,
+          subject: e.subject,
+          message: e.message,
+          status: e.status,
+          artistReply: e.artistReply,
+          artistRepliedAt: e.artistRepliedAt,
+          conversationId: e.conversationId,
+          createdAt: e.createdAt,
+        })),
+      };
+    } catch (err: any) {
+      ctx.throw(500, err.message);
+    }
+  },
+
+  // GET /artist-messages/my-messages?email=xxx - Messages d'un artiste (envoyes par l'artiste)
   async myMessages(ctx) {
     const { email } = ctx.query;
     if (!email) {
@@ -63,6 +156,12 @@ export default factories.createCoreController('api::artist-message.artist-messag
           attachments: e.attachments,
           adminReply: e.adminReply,
           repliedAt: e.repliedAt,
+          senderName: e.senderName,
+          senderEmail: e.senderEmail,
+          senderType: e.senderType,
+          artistReply: e.artistReply,
+          artistRepliedAt: e.artistRepliedAt,
+          conversationId: e.conversationId,
           createdAt: e.createdAt,
         })),
       };

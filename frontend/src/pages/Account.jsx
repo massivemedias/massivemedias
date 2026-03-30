@@ -120,7 +120,7 @@ function Account() {
   const meta = user?.user_metadata || {};
 
   const tabFromUrl = searchParams.get('tab');
-  const validTabs = ['profile', 'overview', 'orders', 'artist', 'dashboard', 'profil-artiste', 'contrat', 'tarifs', 'ventes',
+  const validTabs = ['profile', 'overview', 'orders', 'artist', 'dashboard', 'profil-artiste', 'contrat', 'tarifs', 'ventes', 'messages-artiste',
     'dashboard-tatoueur', 'flashs', 'reservations', 'calendrier', 'realisations', 'messages', 'boutique-tatoueur', 'profil-tatoueur', 'parametres'];
   const initialTab = (tabFromUrl && validTabs.includes(tabFromUrl)) ? tabFromUrl : (isAdmin ? 'profile' : isArtist ? 'dashboard' : isTatoueur ? 'dashboard-tatoueur' : 'overview');
   const [activeTab, setActiveTab] = useState(initialTab);
@@ -896,9 +896,10 @@ function Account() {
     { id: 'contrat', label: tx({ fr: 'Contrat', en: 'Contract', es: 'Contrato' }), icon: ScrollText },
     { id: 'tarifs', label: tx({ fr: 'Tarifs Massive', en: 'Massive Pricing', es: 'Precios Massive' }), icon: Receipt },
     { id: 'ventes', label: tx({ fr: 'Mes ventes', en: 'My sales', es: 'Mis ventas' }), icon: BarChart3 },
+    { id: 'messages-artiste', label: tx({ fr: 'Messages', en: 'Messages', es: 'Mensajes' }), icon: MessageCircle },
   ] : [];
 
-  const artistValidTabs = ['dashboard', 'profil-artiste', 'contrat', 'tarifs', 'ventes', 'profile', 'orders'];
+  const artistValidTabs = ['dashboard', 'profil-artiste', 'contrat', 'tarifs', 'ventes', 'messages-artiste', 'profile', 'orders'];
 
   const getArtistSectionTitle = () => {
     const artistItem = ARTIST_SIDEBAR_ITEMS.find(i => i.id === activeTab);
@@ -1131,7 +1132,7 @@ function Account() {
                   transition={{ duration: 0.2 }}
                 >
                   {/* Artist sections */}
-                  {['dashboard', 'profil-artiste', 'contrat', 'tarifs', 'ventes'].includes(activeTab) && (
+                  {['dashboard', 'profil-artiste', 'contrat', 'tarifs', 'ventes', 'messages-artiste'].includes(activeTab) && (
                     <Suspense fallback={<div className="flex items-center gap-2 text-grey-muted py-8 justify-center"><Loader2 size={16} className="animate-spin" /></div>}>
                       <AccountArtistDashboard section={activeTab} />
                     </Suspense>

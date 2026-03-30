@@ -48,6 +48,26 @@
         },
         "repliedAt": {
             "type": "datetime"
+        },
+        "senderName": {
+            "type": "string"
+        },
+        "senderEmail": {
+            "type": "email"
+        },
+        "senderType": {
+            "type": "enumeration",
+            "enum": ["artist", "public", "admin"],
+            "default": "artist"
+        },
+        "conversationId": {
+            "type": "string"
+        },
+        "artistReply": {
+            "type": "text"
+        },
+        "artistRepliedAt": {
+            "type": "datetime"
         }
     }
 }

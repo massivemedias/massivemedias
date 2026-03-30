@@ -7,6 +7,24 @@ export default {
       config: { auth: false },
     },
     {
+      method: 'POST',
+      path: '/artist-messages/send-public',
+      handler: 'artist-message.sendPublic',
+      config: { auth: false },
+    },
+    {
+      method: 'GET',
+      path: '/artist-messages/inbox',
+      handler: 'artist-message.inbox',
+      config: { auth: false },
+    },
+    {
+      method: 'PUT',
+      path: '/artist-messages/:documentId/artist-reply',
+      handler: 'artist-message.artistReply',
+      config: { auth: false },
+    },
+    {
       method: 'GET',
       path: '/artist-messages/my-messages',
       handler: 'artist-message.myMessages',

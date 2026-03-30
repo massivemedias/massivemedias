@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { useParams, Link, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, MessageSquare, ChevronDown, ChevronLeft, ChevronRight, CheckCircle, Image, ExternalLink, X, ZoomIn } from 'lucide-react';
+import { ArrowRight, MessageSquare, ChevronDown, ChevronLeft, ChevronRight, CheckCircle, Image, ExternalLink, X, ZoomIn, Send, LogIn, MessageCircle } from 'lucide-react';
 import SEO from '../components/SEO';
 import { getArtistSchema } from '../components/seo/schemas';
 import ArtistPrintCard from '../components/ArtistPrintCard';
@@ -14,6 +14,96 @@ import { mediaUrl } from '../utils/cms';
 import artistsData from '../data/artists';
 import { toFull } from '../utils/paths';
 import { useAuth } from '../contexts/AuthContext';
+import api from '../services/api';
+
+function ContactArtisteForm({ artist, tx }) {
+  const { user } = useAuth();
+  const [message, setMessage] = useState('');
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [showForm, setShowForm] = useState(false);
+
+  const handleSend = async () => {
+    if (!message.trim() || !user) return;
+    setSending(true);
+    try {
+      await api.post('/artist-messages/send-public', {
+        artistSlug: artist.slug,
+        artistName: artist.name,
+        senderEmail: user.email,
+        senderName: user.user_metadata?.full_name || user.email.split('@')[0],
+        message: message.trim(),
+      });
+      setSent(true);
+      setMessage('');
+    } catch (err) {
+      console.error('Erreur envoi message:', err);
+    } finally {
+      setSending(false);
+    }
+  };
+
+  if (sent) {
+    return (
+      <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-xl text-center">
+        <MessageCircle size={24} className="mx-auto mb-2 text-green-400" />
+        <p className="text-green-400 text-sm font-medium">
+          {tx({ fr: 'Message envoye!', en: 'Message sent!', es: 'Mensaje enviado!' })}
+        </p>
+        <p className="text-grey-muted text-xs mt-1">
+          {tx({ fr: `${artist.name} vous repondra bientot.`, en: `${artist.name} will reply soon.`, es: `${artist.name} respondera pronto.` })}
+        </p>
+        <button onClick={() => setSent(false)} className="text-accent text-xs mt-3 hover:underline">
+          {tx({ fr: 'Envoyer un autre message', en: 'Send another message', es: 'Enviar otro mensaje' })}
+        </button>
+      </div>
+    );
+  }
+
+  if (!showForm) {
+    return (
+      <button onClick={() => setShowForm(true)} className="btn-outline w-full text-center">
+        <MessageCircle size={18} className="mr-2" />
+        {tx({ fr: `Ecrire a ${artist.name}`, en: `Write to ${artist.name}`, es: `Escribir a ${artist.name}` })}
+      </button>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div>
+        <Link to="/login" className="btn-primary w-full text-center">
+          <LogIn size={18} className="mr-2" />
+          {tx({ fr: 'Connectez-vous pour ecrire', en: 'Sign in to write', es: 'Inicie sesion para escribir' })}
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      <textarea
+        value={message}
+        onChange={e => setMessage(e.target.value)}
+        rows={3}
+        placeholder={tx({
+          fr: `Ecrivez a ${artist.name}...`,
+          en: `Write to ${artist.name}...`,
+          es: `Escriba a ${artist.name}...`,
+        })}
+        className="w-full rounded-xl bg-black/20 border border-white/10 px-4 py-3 text-sm text-heading placeholder:text-grey-muted/50 focus:border-accent focus:outline-none resize-none"
+      />
+      <button
+        onClick={handleSend}
+        disabled={!message.trim() || sending}
+        className="btn-primary w-full text-center disabled:opacity-50"
+      >
+        <Send size={18} className="mr-2" />
+        {sending ? '...' : tx({ fr: 'Envoyer le message', en: 'Send message', es: 'Enviar mensaje' })}
+      </button>
+    </div>
+  );
+}
 
 function buildArtistFromCMS(cms) {
   if (!cms) return null;
@@ -473,6 +563,11 @@ function ArtisteDetail({ subdomainSlug }) {
                     )}
                   </div>
                 )}
+
+                {/* Contact artist */}
+                <div className="mt-6">
+                  <ContactArtisteForm artist={artist} tx={tx} />
+                </div>
               </div>
 
               {/* Ce qui est inclus */}

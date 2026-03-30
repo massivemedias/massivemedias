@@ -7,7 +7,7 @@ const ArtistStats = lazy(() => import('./ArtistStats'));
 import {
   DollarSign, Palette, Clock, CheckCircle,
   FileText, Loader2, AlertCircle, Package,
-  Send, ImagePlus, Check, X, CreditCard, Download, ChevronDown, ChevronUp, ScrollText, Gem,
+  Send, ImagePlus, Check, X, CreditCard, Download, ChevronDown, ChevronUp, ScrollText, Gem, MessageCircle,
   User, Heart, BarChart3, Banknote, Receipt, ExternalLink, Globe, Link2,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
@@ -1275,6 +1275,104 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
             </div>
           ) : (
             <div className="flex items-center gap-2 text-grey-muted py-8 justify-center"><Loader2 size={16} className="animate-spin" /></div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // Messages recus du public
+  if (section === 'messages-artiste') {
+    const [inboxMessages, setInboxMessages] = useState([]);
+    const [inboxLoading, setInboxLoading] = useState(true);
+    const [replyingId, setReplyingId] = useState(null);
+    const [replyText, setReplyText] = useState('');
+    const [replySending, setReplySending] = useState(false);
+
+    useEffect(() => {
+      if (!artist?.slug) return;
+      api.get(`/artist-messages/inbox?artistSlug=${artist.slug}`)
+        .then(res => setInboxMessages(res.data?.data || []))
+        .catch(() => {})
+        .finally(() => setInboxLoading(false));
+    }, [artist?.slug]);
+
+    const handleReply = async (documentId) => {
+      if (!replyText.trim()) return;
+      setReplySending(true);
+      try {
+        await api.put(`/artist-messages/${documentId}/artist-reply`, { artistReply: replyText.trim() });
+        setInboxMessages(msgs => msgs.map(m => m.documentId === documentId ? { ...m, artistReply: replyText.trim(), status: 'replied' } : m));
+        setReplyingId(null);
+        setReplyText('');
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setReplySending(false);
+      }
+    };
+
+    return (
+      <div className="space-y-6">
+        {toastElement}
+        <div className="rounded-2xl p-5 md:p-8 card-bg">
+          <h3 className="text-heading font-heading font-bold text-lg mb-6 flex items-center gap-2">
+            <MessageCircle size={20} className="text-accent" />
+            {tx({ fr: 'Messages recus', en: 'Received messages', es: 'Mensajes recibidos' })}
+          </h3>
+
+          {inboxLoading ? (
+            <div className="flex items-center gap-2 text-grey-muted py-8 justify-center">
+              <Loader2 size={16} className="animate-spin" />
+            </div>
+          ) : inboxMessages.length === 0 ? (
+            <p className="text-grey-muted text-sm text-center py-8">
+              {tx({ fr: 'Aucun message pour l\'instant.', en: 'No messages yet.', es: 'Sin mensajes por ahora.' })}
+            </p>
+          ) : (
+            <div className="space-y-4">
+              {inboxMessages.map(msg => (
+                <div key={msg.documentId} className="rounded-xl p-4 bg-black/20">
+                  <div className="flex items-start justify-between mb-2">
+                    <div>
+                      <p className="text-heading font-semibold text-sm">{msg.senderName}</p>
+                      <p className="text-grey-muted text-xs">{msg.senderEmail}</p>
+                    </div>
+                    <span className="text-grey-muted text-xs">{new Date(msg.createdAt).toLocaleDateString()}</span>
+                  </div>
+                  <p className="text-heading text-sm whitespace-pre-line mb-3">{msg.message}</p>
+
+                  {msg.artistReply ? (
+                    <div className="mt-3 p-3 rounded-lg bg-accent/10 border border-accent/20">
+                      <p className="text-accent text-xs font-semibold mb-1">{tx({ fr: 'Votre reponse', en: 'Your reply', es: 'Tu respuesta' })}</p>
+                      <p className="text-heading text-sm whitespace-pre-line">{msg.artistReply}</p>
+                    </div>
+                  ) : replyingId === msg.documentId ? (
+                    <div className="mt-3 space-y-2">
+                      <textarea
+                        value={replyText}
+                        onChange={e => setReplyText(e.target.value)}
+                        rows={3}
+                        placeholder={tx({ fr: 'Votre reponse...', en: 'Your reply...', es: 'Tu respuesta...' })}
+                        className="w-full rounded-lg bg-black/20 border border-white/10 px-3 py-2 text-sm text-heading placeholder:text-grey-muted/50 focus:border-accent focus:outline-none resize-none"
+                      />
+                      <div className="flex gap-2">
+                        <button onClick={() => handleReply(msg.documentId)} disabled={replySending || !replyText.trim()} className="btn-primary text-xs py-1.5 px-4 disabled:opacity-50">
+                          {replySending ? '...' : tx({ fr: 'Envoyer', en: 'Send', es: 'Enviar' })}
+                        </button>
+                        <button onClick={() => { setReplyingId(null); setReplyText(''); }} className="text-grey-muted text-xs hover:text-heading">
+                          {tx({ fr: 'Annuler', en: 'Cancel', es: 'Cancelar' })}
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button onClick={() => setReplyingId(msg.documentId)} className="text-accent text-xs hover:underline">
+                      {tx({ fr: 'Repondre', en: 'Reply', es: 'Responder' })}
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
           )}
         </div>
       </div>
