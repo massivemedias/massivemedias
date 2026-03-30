@@ -15,7 +15,7 @@ import { useUserRole } from '../contexts/UserRoleContext';
 import { getMyOrders } from '../services/orderService';
 import { getContactSubmissions, getArtistSubmissions } from '../services/adminService';
 import { getArtistMessagesAdmin } from '../services/artistService';
-import { isServerDown } from '../services/api';
+import api, { isServerDown } from '../services/api';
 // Lazy import - jsPDF (~386KB) charge seulement au clic
 const loadGenerateInvoice = () => import('../utils/generateInvoice').then(m => m.generateInvoicePDF);
 import AddressAutocomplete from '../components/AddressAutocomplete';
@@ -276,6 +276,18 @@ function Account() {
     fetchOrders();
     return () => { cancelled = true; };
   }, [user?.id]);
+
+  // Fetch artist message count for notification badge
+  const [artistMsgCount, setArtistMsgCount] = useState(0);
+  useEffect(() => {
+    if (!isArtist || !artistSlug) return;
+    api.get(`/artist-messages/inbox?artistSlug=${artistSlug}`)
+      .then(res => {
+        const msgs = res.data?.data || [];
+        setArtistMsgCount(msgs.filter(m => m.status === 'new').length);
+      })
+      .catch(() => {});
+  }, [isArtist, artistSlug]);
 
   const dateLocale = { fr: 'fr-CA', en: 'en-CA', es: 'es-MX' }[lang] || 'fr-CA';
 
@@ -896,7 +908,7 @@ function Account() {
     { id: 'contrat', label: tx({ fr: 'Contrat', en: 'Contract', es: 'Contrato' }), icon: ScrollText },
     { id: 'tarifs', label: tx({ fr: 'Tarifs Massive', en: 'Massive Pricing', es: 'Precios Massive' }), icon: Receipt },
     { id: 'ventes', label: tx({ fr: 'Mes ventes', en: 'My sales', es: 'Mis ventas' }), icon: BarChart3 },
-    { id: 'messages-artiste', label: tx({ fr: 'Messages', en: 'Messages', es: 'Mensajes' }), icon: MessageCircle },
+    { id: 'messages-artiste', label: tx({ fr: 'Messages', en: 'Messages', es: 'Mensajes' }), icon: MessageCircle, badge: artistMsgCount },
   ] : [];
 
   const artistValidTabs = ['dashboard', 'profil-artiste', 'contrat', 'tarifs', 'ventes', 'messages-artiste', 'profile', 'orders'];
@@ -1096,6 +1108,9 @@ function Account() {
                     >
                       <Icon size={16} />
                       {item.label}
+                      {item.badge > 0 && (
+                        <span className="ml-auto bg-accent text-white text-[9px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 animate-pulse">{item.badge}</span>
+                      )}
                     </button>
                   );
                 })}
@@ -1355,6 +1370,9 @@ function Account() {
                     >
                       <Icon size={16} />
                       {item.label}
+                      {item.badge > 0 && (
+                        <span className="ml-auto bg-accent text-white text-[9px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 animate-pulse">{item.badge}</span>
+                      )}
                     </button>
                   );
                 })}

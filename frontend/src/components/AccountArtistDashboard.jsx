@@ -1292,9 +1292,11 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
   if (section === 'messages-artiste') {
     const [inboxMessages, setInboxMessages] = useState([]);
     const [inboxLoading, setInboxLoading] = useState(true);
+    const [expandedId, setExpandedId] = useState(null);
     const [replyingId, setReplyingId] = useState(null);
     const [replyText, setReplyText] = useState('');
     const [replySending, setReplySending] = useState(false);
+    const [showArchived, setShowArchived] = useState(false);
 
     useEffect(() => {
       if (!artist?.slug) return;
@@ -1319,66 +1321,124 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
       }
     };
 
+    const handleArchive = async (documentId) => {
+      try {
+        await api.put(`/artist-messages/${documentId}/status`, { status: 'archived' });
+        setInboxMessages(msgs => msgs.map(m => m.documentId === documentId ? { ...m, status: 'archived' } : m));
+      } catch (err) { console.error(err); }
+    };
+
+    const handleDelete = async (documentId) => {
+      try {
+        await api.delete(`/artist-messages/${documentId}`);
+        setInboxMessages(msgs => msgs.filter(m => m.documentId !== documentId));
+        if (expandedId === documentId) setExpandedId(null);
+      } catch (err) { console.error(err); }
+    };
+
+    const filtered = inboxMessages.filter(m => showArchived ? m.status === 'archived' : m.status !== 'archived');
+    const newCount = inboxMessages.filter(m => m.status === 'new').length;
+
     return (
       <div className="space-y-6">
         {toastElement}
         <div className="rounded-2xl p-5 md:p-8 card-bg">
-          <h3 className="text-heading font-heading font-bold text-lg mb-6 flex items-center gap-2">
-            <MessageCircle size={20} className="text-accent" />
-            {tx({ fr: 'Messages recus', en: 'Received messages', es: 'Mensajes recibidos' })}
-          </h3>
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-heading font-heading font-bold text-lg flex items-center gap-2">
+              <MessageCircle size={20} className="text-accent" />
+              {tx({ fr: 'Messages recus', en: 'Received messages', es: 'Mensajes recibidos' })}
+              {newCount > 0 && (
+                <span className="bg-accent text-white text-[10px] font-bold rounded-full px-2 py-0.5 animate-pulse">{newCount}</span>
+              )}
+            </h3>
+            <button
+              onClick={() => setShowArchived(!showArchived)}
+              className="text-grey-muted text-xs hover:text-heading transition-colors"
+            >
+              {showArchived ? tx({ fr: 'Voir actifs', en: 'Show active', es: 'Ver activos' }) : tx({ fr: 'Voir archives', en: 'Show archived', es: 'Ver archivados' })}
+            </button>
+          </div>
 
           {inboxLoading ? (
             <div className="flex items-center gap-2 text-grey-muted py-8 justify-center">
               <Loader2 size={16} className="animate-spin" />
             </div>
-          ) : inboxMessages.length === 0 ? (
+          ) : filtered.length === 0 ? (
             <p className="text-grey-muted text-sm text-center py-8">
-              {tx({ fr: 'Aucun message pour l\'instant.', en: 'No messages yet.', es: 'Sin mensajes por ahora.' })}
+              {showArchived
+                ? tx({ fr: 'Aucun message archive.', en: 'No archived messages.', es: 'Sin mensajes archivados.' })
+                : tx({ fr: 'Aucun message pour l\'instant.', en: 'No messages yet.', es: 'Sin mensajes por ahora.' })}
             </p>
           ) : (
-            <div className="space-y-4">
-              {inboxMessages.map(msg => (
-                <div key={msg.documentId} className="rounded-xl p-4 bg-black/20">
-                  <div className="flex items-start justify-between mb-2">
-                    <div>
-                      <p className="text-heading font-semibold text-sm">{msg.senderName}</p>
-                      <p className="text-grey-muted text-xs">{msg.senderEmail}</p>
-                    </div>
-                    <span className="text-grey-muted text-xs">{new Date(msg.createdAt).toLocaleDateString()}</span>
-                  </div>
-                  <p className="text-heading text-sm whitespace-pre-line mb-3">{msg.message}</p>
-
-                  {msg.artistReply ? (
-                    <div className="mt-3 p-3 rounded-lg bg-accent/10 border border-accent/20">
-                      <p className="text-accent text-xs font-semibold mb-1">{tx({ fr: 'Votre reponse', en: 'Your reply', es: 'Tu respuesta' })}</p>
-                      <p className="text-heading text-sm whitespace-pre-line">{msg.artistReply}</p>
-                    </div>
-                  ) : replyingId === msg.documentId ? (
-                    <div className="mt-3 space-y-2">
-                      <textarea
-                        value={replyText}
-                        onChange={e => setReplyText(e.target.value)}
-                        rows={3}
-                        placeholder={tx({ fr: 'Votre reponse...', en: 'Your reply...', es: 'Tu respuesta...' })}
-                        className="w-full rounded-lg bg-black/20 border border-white/10 px-3 py-2 text-sm text-heading placeholder:text-grey-muted/50 focus:border-accent focus:outline-none resize-none"
-                      />
-                      <div className="flex gap-2">
-                        <button onClick={() => handleReply(msg.documentId)} disabled={replySending || !replyText.trim()} className="btn-primary text-xs py-1.5 px-4 disabled:opacity-50">
-                          {replySending ? '...' : tx({ fr: 'Envoyer', en: 'Send', es: 'Enviar' })}
-                        </button>
-                        <button onClick={() => { setReplyingId(null); setReplyText(''); }} className="text-grey-muted text-xs hover:text-heading">
-                          {tx({ fr: 'Annuler', en: 'Cancel', es: 'Cancelar' })}
-                        </button>
+            <div className="space-y-2">
+              {filtered.map(msg => {
+                const isExpanded = expandedId === msg.documentId;
+                const isNew = msg.status === 'new';
+                return (
+                  <div key={msg.documentId} className={`rounded-xl overflow-hidden ${isNew ? 'ring-1 ring-accent/30' : ''}`}>
+                    {/* Accordion header */}
+                    <button
+                      onClick={() => setExpandedId(isExpanded ? null : msg.documentId)}
+                      className="w-full flex items-center gap-3 px-4 py-3 bg-black/20 hover:bg-black/30 transition-colors text-left"
+                    >
+                      {isNew && <span className="w-2 h-2 rounded-full bg-accent flex-shrink-0 animate-pulse" />}
+                      <div className="flex-grow min-w-0">
+                        <span className="text-heading font-semibold text-sm">{msg.senderName}</span>
+                        <span className="text-grey-muted text-xs ml-2">{msg.senderEmail}</span>
                       </div>
-                    </div>
-                  ) : (
-                    <button onClick={() => setReplyingId(msg.documentId)} className="text-accent text-xs hover:underline">
-                      {tx({ fr: 'Repondre', en: 'Reply', es: 'Responder' })}
+                      <span className="text-grey-muted text-xs flex-shrink-0">{new Date(msg.createdAt).toLocaleDateString()}</span>
+                      <ChevronDown size={14} className={`text-grey-muted flex-shrink-0 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                     </button>
-                  )}
-                </div>
-              ))}
+
+                    {/* Accordion body */}
+                    {isExpanded && (
+                      <div className="px-4 py-4 bg-black/10">
+                        <p className="text-heading text-sm whitespace-pre-line mb-4">{msg.message}</p>
+
+                        {msg.artistReply ? (
+                          <div className="p-3 rounded-lg bg-accent/10 border border-accent/20 mb-3">
+                            <p className="text-accent text-xs font-semibold mb-1">{tx({ fr: 'Votre reponse', en: 'Your reply', es: 'Tu respuesta' })}</p>
+                            <p className="text-heading text-sm whitespace-pre-line">{msg.artistReply}</p>
+                          </div>
+                        ) : replyingId === msg.documentId ? (
+                          <div className="space-y-2 mb-3">
+                            <textarea
+                              value={replyText}
+                              onChange={e => setReplyText(e.target.value)}
+                              rows={3}
+                              placeholder={tx({ fr: 'Votre reponse...', en: 'Your reply...', es: 'Tu respuesta...' })}
+                              className="w-full rounded-lg bg-black/20 border border-white/10 px-3 py-2 text-sm text-heading placeholder:text-grey-muted/50 focus:border-accent focus:outline-none resize-none"
+                            />
+                            <div className="flex gap-2">
+                              <button onClick={() => handleReply(msg.documentId)} disabled={replySending || !replyText.trim()} className="btn-primary text-xs py-1.5 px-4 disabled:opacity-50">
+                                {replySending ? '...' : tx({ fr: 'Envoyer', en: 'Send', es: 'Enviar' })}
+                              </button>
+                              <button onClick={() => { setReplyingId(null); setReplyText(''); }} className="text-grey-muted text-xs hover:text-heading">
+                                {tx({ fr: 'Annuler', en: 'Cancel', es: 'Cancelar' })}
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <button onClick={() => setReplyingId(msg.documentId)} className="text-accent text-xs hover:underline mb-3 block">
+                            {tx({ fr: 'Repondre', en: 'Reply', es: 'Responder' })}
+                          </button>
+                        )}
+
+                        <div className="flex gap-2 pt-2 border-t border-white/5">
+                          {msg.status !== 'archived' && (
+                            <button onClick={() => handleArchive(msg.documentId)} className="text-grey-muted text-xs hover:text-heading transition-colors">
+                              {tx({ fr: 'Archiver', en: 'Archive', es: 'Archivar' })}
+                            </button>
+                          )}
+                          <button onClick={() => handleDelete(msg.documentId)} className="text-red-400/60 text-xs hover:text-red-400 transition-colors">
+                            {tx({ fr: 'Supprimer', en: 'Delete', es: 'Eliminar' })}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
