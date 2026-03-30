@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { CreditCard, AlertCircle, Loader2 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
+import { getStripeInstance } from '../lib/stripe';
 
 function CheckoutForm({ cartTotal, clientSecret }) {
   const { t, tx } = useLang();
@@ -14,50 +15,58 @@ function CheckoutForm({ cartTotal, clientSecret }) {
   useEffect(() => {
     if (!clientSecret || mountedRef.current) return;
 
-    // Wait for DOM element to be available
-    const tryMount = () => {
-      const target = document.getElementById('stripe-payment-mount');
-      if (!target || !window.Stripe) {
-        // Retry in 100ms
-        setTimeout(tryMount, 100);
-        return;
-      }
+    let cancelled = false;
 
-      mountedRef.current = true;
-      const key = import.meta.env.VITE_STRIPE_PUBLIC_KEY;
-      if (!key) return;
+    async function initStripe() {
+      const stripe = await getStripeInstance();
+      if (cancelled || !stripe) return;
 
-      const stripe = window.Stripe(key);
-      stripeRef.current = stripe;
+      // Wait for the DOM element
+      const waitForMount = () => {
+        const target = document.getElementById('stripe-payment-mount');
+        if (!target) {
+          setTimeout(waitForMount, 50);
+          return;
+        }
 
-      const s = getComputedStyle(document.documentElement);
-      const accent = s.getPropertyValue('--accent-color').trim() || '#FF52A0';
-      const bg = s.getPropertyValue('--bg-main').trim() || '#1a1a2e';
-      const text = s.getPropertyValue('--text-heading').trim() || '#e4e4f0';
+        if (mountedRef.current) return;
+        mountedRef.current = true;
+        stripeRef.current = stripe;
 
-      const elements = stripe.elements({
-        clientSecret,
-        appearance: {
-          theme: 'night',
-          variables: {
-            colorPrimary: accent,
-            colorBackground: bg,
-            colorText: text,
-            colorDanger: '#ef4444',
-            fontFamily: 'system-ui, sans-serif',
-            borderRadius: '8px',
+        const s = getComputedStyle(document.documentElement);
+        const accent = s.getPropertyValue('--accent-color').trim() || '#FF52A0';
+        const bg = s.getPropertyValue('--bg-main').trim() || '#1a1a2e';
+        const text = s.getPropertyValue('--text-heading').trim() || '#e4e4f0';
+
+        const elements = stripe.elements({
+          clientSecret,
+          appearance: {
+            theme: 'night',
+            variables: {
+              colorPrimary: accent,
+              colorBackground: bg,
+              colorText: text,
+              colorDanger: '#ef4444',
+              fontFamily: 'system-ui, sans-serif',
+              borderRadius: '8px',
+            },
           },
-        },
-      });
-      elementsRef.current = elements;
+        });
+        elementsRef.current = elements;
 
-      const pe = elements.create('payment', { layout: 'tabs' });
-      pe.on('ready', () => setPaymentElementReady(true));
-      pe.mount('#stripe-payment-mount');
-    };
+        const paymentElement = elements.create('payment', { layout: 'tabs' });
+        paymentElement.on('ready', () => {
+          if (!cancelled) setPaymentElementReady(true);
+        });
+        paymentElement.mount(target);
+      };
 
-    // Small delay to ensure React has committed the DOM
-    setTimeout(tryMount, 50);
+      waitForMount();
+    }
+
+    initStripe();
+
+    return () => { cancelled = true; };
   }, [clientSecret]);
 
   const handleSubmit = async (e) => {
