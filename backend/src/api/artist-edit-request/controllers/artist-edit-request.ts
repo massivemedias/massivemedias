@@ -485,8 +485,11 @@ export default factories.createCoreController('api::artist-edit-request.artist-e
 
   // POST /artist-edit-requests/upload-direct - Upload fichier direct vers Google Drive + conversion WebP
   async uploadDirect(ctx) {
-    const { request: { files } } = ctx as any;
+    try {
+    const files = (ctx.request as any).files;
     const { artistSlug } = ctx.request.body as any;
+
+    strapi.log.info(`uploadDirect called - artistSlug: ${artistSlug}, hasFiles: ${!!files}, fileKeys: ${files ? Object.keys(files) : 'none'}`);
 
     if (!files || !files.file) {
       return ctx.badRequest('No file provided');
@@ -496,12 +499,12 @@ export default factories.createCoreController('api::artist-edit-request.artist-e
     }
 
     const file = Array.isArray(files.file) ? files.file[0] : files.file;
+    strapi.log.info(`uploadDirect file: ${file.originalFilename || file.name || 'unknown'}, filepath: ${file.filepath || file.path || 'none'}, size: ${file.size || 'unknown'}`);
+
     const fs = require('fs');
     const fileBuffer = fs.readFileSync(file.filepath || file.path);
     const fileName = file.originalFilename || file.name || 'upload';
     const mimeType = file.mimetype || file.type || 'application/octet-stream';
-
-    try {
       // 1. Upload original vers Google Drive
       const driveResult = await tryUploadBufferToGoogleDrive(fileBuffer, fileName, artistSlug, mimeType);
       if ((driveResult as any).error) {
@@ -554,9 +557,13 @@ export default factories.createCoreController('api::artist-edit-request.artist-e
           driveUrl: (driveResult as any).webViewLink || null,
         },
       };
+    } catch (innerErr: any) {
+      strapi.log.error('uploadDirect drive/webp error:', innerErr);
+      ctx.throw(500, innerErr.message);
+    }
     } catch (err: any) {
-      strapi.log.error('uploadDirect error:', err);
-      ctx.throw(500, err.message);
+      strapi.log.error('uploadDirect FATAL error:', err?.message || err, err?.stack || '');
+      ctx.throw(500, err?.message || 'Upload failed');
     }
   },
 }));
