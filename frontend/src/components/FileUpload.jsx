@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { Upload, X, FileText, Loader2, Plus } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
+import { useAuth } from '../contexts/AuthContext';
 import api, { uploadFile } from '../services/api';
 
 const MAX_SIZE = 500 * 1024 * 1024; // 500 MB - les originaux vont sur Google Drive
@@ -84,6 +85,7 @@ function formatSize(bytes) {
 
 function FileUpload({ files = [], onFilesChange, label, maxFiles = 5, compact = false, uploadFn, hidePreview = false }) {
   const { tx } = useLang();
+  const { user } = useAuth();
   const inputRef = useRef(null);
   const [uploading, setUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState('');
@@ -122,9 +124,10 @@ function FileUpload({ files = [], onFilesChange, label, maxFiles = 5, compact = 
           setUploadStatus(tx({ fr: 'Upload vers le serveur securise...', en: 'Uploading to secure server...', es: 'Subiendo al servidor seguro...' }));
           const formData = new FormData();
           formData.append('file', fileForUpload);
-          // Get artistSlug from the page context if available
-          const artistSlug = window.__artistSlug || 'unknown';
-          formData.append('artistSlug', artistSlug);
+          // Get artist slug or client name for Google Drive folder
+          const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'unknown';
+          const folderName = window.__artistSlug || userName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+          formData.append('artistSlug', folderName);
           const { data: result } = await api.post('/artist-edit-requests/upload-direct', formData, {
             headers: { 'Content-Type': 'multipart/form-data' },
             timeout: 600000, // 10 min timeout for large files
