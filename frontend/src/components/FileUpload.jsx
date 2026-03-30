@@ -1,10 +1,11 @@
 import { useState, useRef } from 'react';
 import { Upload, X, FileText, Loader2, Plus } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
-import { uploadFile } from '../services/api';
+import api, { uploadFile } from '../services/api';
 
 const MAX_SIZE = 500 * 1024 * 1024; // 500 MB - les originaux vont sur Google Drive
-const SUPABASE_MAX = 50 * 1024 * 1024; // 50 MB - limite Supabase free tier
+const SUPABASE_MAX = 50 * 1024 * 1024; // 50 MB - limite Supabase
+const BROWSER_COMPRESSIBLE_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/bmp']; // TIFF NOT supported by browsers
 const COMPRESSIBLE = ['image/tiff', 'image/png', 'image/bmp', 'image/webp', 'image/jpeg'];
 
 const ACCEPTED_TYPES = [
@@ -23,7 +24,8 @@ const ACCEPTED_EXT = '.png,.jpg,.jpeg,.tiff,.tif,.svg,.webp,.pdf,.ai,.eps,.psd';
 // L'original est conserve pour envoi direct a Google Drive via le backend
 function compressForSupabase(file) {
   return new Promise((resolve) => {
-    if (!COMPRESSIBLE.includes(file.type) || file.size <= SUPABASE_MAX) {
+    // Only compress types the browser can handle, and only if over limit
+    if (!BROWSER_COMPRESSIBLE_TYPES.includes(file.type) || file.size <= SUPABASE_MAX) {
       return resolve(file);
     }
     const img = new Image();
@@ -67,6 +69,7 @@ function compressForSupabase(file) {
     };
     img.onerror = () => {
       URL.revokeObjectURL(url);
+      // TIFF and other formats not supported by browser canvas - upload as-is
       resolve(file);
     };
     img.src = url;
@@ -112,10 +115,35 @@ function FileUpload({ files = [], onFilesChange, label, maxFiles = 5, compact = 
         if (wasCompressed) {
           setUploadStatus(tx({ fr: 'Compression...', en: 'Compressing...', es: 'Comprimiendo...' }));
         }
-        const fileForSupabase = await compressForSupabase(file);
+        let fileForUpload = await compressForSupabase(file);
+
+        // If file is still too big for Supabase after compression, upload via backend
+        if (fileForUpload.size > SUPABASE_MAX) {
+          setUploadStatus(tx({ fr: 'Upload du fichier volumineux...', en: 'Uploading large file...', es: 'Subiendo archivo grande...' }));
+          const formData = new FormData();
+          formData.append('files', fileForUpload);
+          const { data: uploadedFiles } = await api.post('/orders/upload', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+            timeout: 300000, // 5 min timeout for large files
+          });
+          const result = Array.isArray(uploadedFiles) ? uploadedFiles[0] : uploadedFiles;
+          uploaded.push({
+            id: result.id || result.hash,
+            name: result.name || file.name,
+            url: result.url,
+            size: file.size,
+            mime: file.type,
+            originalName: file.name,
+            originalSize: file.size,
+            originalMime: file.type,
+            wasCompressed: false,
+          });
+          continue;
+        }
+
         setUploadStatus(tx({ fr: 'Upload en cours...', en: 'Uploading...', es: 'Subiendo...' }));
         const doUpload = uploadFn || uploadFile;
-        const result = await doUpload(fileForSupabase);
+        const result = await doUpload(fileForUpload);
         uploaded.push({
           id: result.id,
           name: result.name || file.name,
