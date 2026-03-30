@@ -141,7 +141,8 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
                 ...item,
                 uploadedFiles: item.uploadedFiles || [],
             }));
-            // Create order in Strapi with status "pending"
+            // Create order in Strapi with status "draft" (not yet paid)
+            // Will be updated to "paid" by Stripe webhook when payment succeeds
             const orderData = {
                 stripePaymentIntentId: paymentIntent.id,
                 customerEmail,
@@ -156,7 +157,7 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
                 totalWeight,
                 total: amountInCents,
                 currency: 'cad',
-                status: 'pending',
+                status: 'draft',
                 designReady: designReady !== false,
                 notes: notes || '',
                 shippingAddress: shippingAddress || null,
@@ -180,13 +181,139 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
             return ctx.badRequest(err.message || 'Payment creation failed');
         }
     },
+    async createCheckoutSession(ctx) {
+        const { items, customerEmail, customerName, customerPhone, shippingAddress, promoCode, designReady, notes, supabaseUserId } = ctx.request.body;
+        if (!items || !Array.isArray(items) || items.length === 0) {
+            return ctx.badRequest('Cart is empty');
+        }
+        if (!customerEmail || !customerName) {
+            return ctx.badRequest('Customer email and name are required');
+        }
+        // Recalculate server-side (same logic as createPaymentIntent)
+        let subtotal = items.reduce((sum, item) => sum + (item.totalPrice || 0), 0);
+        const PROMO_CODES = {
+            'MASSIVE6327': { discountPercent: 20, label: 'Promo Massive 20%' },
+        };
+        let promoDiscount = 0;
+        let appliedPromoCode = '';
+        if (promoCode && typeof promoCode === 'string') {
+            const promo = PROMO_CODES[promoCode.toUpperCase().trim()];
+            if (promo) {
+                promoDiscount = Math.round(subtotal * promo.discountPercent / 100);
+                appliedPromoCode = promoCode.toUpperCase().trim();
+                subtotal = subtotal - promoDiscount;
+            }
+        }
+        const province = (shippingAddress === null || shippingAddress === void 0 ? void 0 : shippingAddress.province) || 'QC';
+        const postalCode = (shippingAddress === null || shippingAddress === void 0 ? void 0 : shippingAddress.postalCode) || '';
+        const { shippingCost, totalWeight } = (0, shipping_1.calculateShipping)(province, postalCode, items);
+        const tps = Math.round(subtotal * 0.05 * 100) / 100;
+        const tvq = province === 'QC' ? Math.round(subtotal * 0.09975 * 100) / 100 : 0;
+        const taxesTotal = Math.round((tps + tvq) * 100) / 100;
+        const totalAmount = subtotal + shippingCost + taxesTotal;
+        const amountInCents = Math.round(totalAmount * 100);
+        if (amountInCents < 50) {
+            return ctx.badRequest('Minimum order is $0.50 CAD');
+        }
+        try {
+            const stripe = getStripe();
+            const itemsSummary = items.map((i) => {
+                const parts = [i.productName || 'Produit'];
+                if (i.size)
+                    parts.push(i.size);
+                if (i.finish)
+                    parts.push(i.finish);
+                if (i.quantity > 1)
+                    parts.push(`x${i.quantity}`);
+                return parts.join(' - ');
+            }).join(', ');
+            const addrLine = shippingAddress
+                ? `${shippingAddress.address || ''}, ${shippingAddress.city || ''}, ${shippingAddress.province || ''} ${shippingAddress.postalCode || ''}`
+                : '';
+            // Create Stripe Checkout Session (hosted payment page - works with ad blockers)
+            const session = await stripe.checkout.sessions.create({
+                mode: 'payment',
+                payment_method_types: ['card'],
+                customer_email: customerEmail,
+                line_items: [{
+                        price_data: {
+                            currency: 'cad',
+                            product_data: {
+                                name: `Commande Massive - ${customerName}`,
+                                description: itemsSummary.slice(0, 500),
+                            },
+                            unit_amount: amountInCents,
+                        },
+                        quantity: 1,
+                    }],
+                metadata: {
+                    customerName,
+                    customerEmail,
+                    customerPhone: customerPhone || '',
+                    items: itemsSummary.slice(0, 500),
+                    shippingAddress: addrLine.slice(0, 500),
+                    supabaseUserId: supabaseUserId || '',
+                    promoCode: appliedPromoCode || '',
+                },
+                success_url: `https://massivemedias.com/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+                cancel_url: `https://massivemedias.com/checkout/cancel`,
+            });
+            // Create order in Strapi with draft status (not yet paid)
+            const itemsWithFiles = items.map((item) => ({
+                ...item,
+                uploadedFiles: item.uploadedFiles || [],
+            }));
+            let client = null;
+            try {
+                const existingClients = await strapi.documents('api::client.client').findMany({
+                    filters: { email: customerEmail.toLowerCase() },
+                });
+                client = existingClients.length > 0 ? existingClients[0] : await strapi.documents('api::client.client').create({
+                    data: { email: customerEmail.toLowerCase(), name: customerName, phone: customerPhone || '', supabaseUserId: supabaseUserId || '', totalSpent: 0, orderCount: 0 },
+                });
+            }
+            catch (err) {
+                strapi.log.warn('Could not create/find client:', err);
+            }
+            const orderData = {
+                stripePaymentIntentId: session.payment_intent || session.id,
+                customerEmail,
+                customerName,
+                customerPhone: customerPhone || '',
+                supabaseUserId: supabaseUserId || '',
+                items: itemsWithFiles,
+                subtotal: Math.round(subtotal * 100),
+                shipping: Math.round(shippingCost * 100),
+                tps: Math.round(tps * 100),
+                tvq: Math.round(tvq * 100),
+                totalWeight,
+                total: amountInCents,
+                currency: 'cad',
+                status: 'draft',
+                designReady: designReady !== false,
+                notes: notes || '',
+                shippingAddress: shippingAddress || null,
+                promoCode: appliedPromoCode || null,
+                promoDiscount: promoDiscount > 0 ? Math.round(promoDiscount * 100) : 0,
+            };
+            if (client) {
+                orderData.client = { connect: [{ documentId: client.documentId }] };
+            }
+            await strapi.documents('api::order.order').create({ data: orderData });
+            ctx.body = { url: session.url };
+        }
+        catch (err) {
+            strapi.log.error('Stripe createCheckoutSession error:', err);
+            return ctx.badRequest(err.message || 'Checkout session creation failed');
+        }
+    },
     async myOrders(ctx) {
         const supabaseUserId = ctx.query.supabaseUserId;
         if (!supabaseUserId) {
             return ctx.badRequest('Missing user ID');
         }
         const orders = await strapi.documents('api::order.order').findMany({
-            filters: { supabaseUserId },
+            filters: { supabaseUserId, status: { $ne: 'draft' } },
             sort: 'createdAt:desc',
         });
         ctx.body = orders;
@@ -457,6 +584,10 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
         if (status && status !== 'all') {
             filters.status = status;
         }
+        else {
+            // By default, exclude draft orders (payment not yet completed)
+            filters.status = { $ne: 'draft' };
+        }
         if (search) {
             filters.$or = [
                 { customerName: { $containsi: search } },
@@ -490,7 +621,7 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
     async updateStatus(ctx) {
         const { documentId } = ctx.params;
         const { status: newStatus } = ctx.request.body;
-        const validStatuses = ['pending', 'paid', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded'];
+        const validStatuses = ['draft', 'pending', 'paid', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded'];
         if (!newStatus || !validStatuses.includes(newStatus)) {
             return ctx.badRequest(`Status invalide. Valeurs acceptees: ${validStatuses.join(', ')}`);
         }

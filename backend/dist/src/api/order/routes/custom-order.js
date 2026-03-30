@@ -11,6 +11,14 @@ exports.default = {
             },
         },
         {
+            method: 'POST',
+            path: '/orders/create-checkout-session',
+            handler: 'order.createCheckoutSession',
+            config: {
+                auth: false,
+            },
+        },
+        {
             method: 'GET',
             path: '/orders/my-orders',
             handler: 'order.myOrders',
@@ -100,3 +108,5 @@ exports.default = {
         },
     ],
 };
+// Trigger redeploy 1774828260
+// redeploy 1774847336
