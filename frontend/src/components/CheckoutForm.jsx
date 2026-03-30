@@ -27,14 +27,12 @@ function CheckoutForm({ cartTotal, clientSecret }) {
   useEffect(() => {
     if (!clientSecret || !STRIPE_KEY || mountedRef.current) return;
 
-    let cancelled = false;
-
     loadStripeScript().then((Stripe) => {
-      if (cancelled || !Stripe || mountedRef.current) return;
+      if (!Stripe || mountedRef.current) return;
 
       // Poll for the LIVE DOM element using querySelector (not ref)
       const interval = setInterval(() => {
-        if (cancelled || mountedRef.current) { clearInterval(interval); return; }
+        if (mountedRef.current) { clearInterval(interval); return; }
 
         // Use querySelector to get the CURRENT live DOM node
         const target = document.getElementById(MOUNT_ID);
@@ -64,12 +62,10 @@ function CheckoutForm({ cartTotal, clientSecret }) {
         elementsRef.current = elements;
 
         const pe = elements.create('payment', { layout: 'tabs' });
-        pe.on('ready', () => { if (!cancelled) setPaymentElementReady(true); });
+        pe.on('ready', () => setPaymentElementReady(true));
         pe.mount('#' + MOUNT_ID);
       }, 200);
     });
-
-    return () => { cancelled = true; };
   }, [clientSecret]);
 
   const handleSubmit = async (e) => {
