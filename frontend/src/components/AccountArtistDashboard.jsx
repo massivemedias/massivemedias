@@ -434,7 +434,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
               <ScrollText size={22} className="text-orange-400 group-hover:scale-110 transition-transform" />
               <p className="text-heading text-sm font-semibold">{tx({ fr: 'Contrat', en: 'Contract', es: 'Contrato' })}</p>
             </Link>
-            <button onClick={() => { const el = document.getElementById('artist-gallery-section'); if (el) el.scrollIntoView({ behavior: 'smooth' }); }} className="flex flex-col items-center gap-2 p-4 md:p-5 rounded-xl bg-black/20 shadow-lg hover:bg-black/30 transition-all group text-center">
+            <button onClick={() => { const url = new URL(window.location); url.searchParams.set('tab', 'profil-artiste'); window.history.pushState({}, '', url); window.dispatchEvent(new PopStateEvent('popstate')); setTimeout(() => { const el = document.getElementById('artist-gallery-section'); if (el) el.scrollIntoView({ behavior: 'smooth' }); }, 500); }} className="flex flex-col items-center gap-2 p-4 md:p-5 rounded-xl bg-black/20 shadow-lg hover:bg-black/30 transition-all group text-center">
               <Send size={22} className="text-green-400 group-hover:scale-110 transition-transform" />
               <p className="text-heading text-sm font-semibold">{tx({ fr: 'Envoyer fichiers', en: 'Send files', es: 'Enviar archivos' })}</p>
             </button>
