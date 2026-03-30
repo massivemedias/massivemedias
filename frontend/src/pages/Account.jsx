@@ -120,7 +120,7 @@ function Account() {
   const meta = user?.user_metadata || {};
 
   const tabFromUrl = searchParams.get('tab');
-  const validTabs = ['profile', 'security', 'overview', 'orders', 'artist', 'dashboard', 'profil-artiste', 'contrat', 'tarifs', 'ventes',
+  const validTabs = ['profile', 'overview', 'orders', 'artist', 'dashboard', 'profil-artiste', 'contrat', 'tarifs', 'ventes',
     'dashboard-tatoueur', 'flashs', 'reservations', 'calendrier', 'realisations', 'messages', 'boutique-tatoueur', 'profil-tatoueur', 'parametres'];
   const initialTab = (tabFromUrl && validTabs.includes(tabFromUrl)) ? tabFromUrl : (isAdmin ? 'profile' : isArtist ? 'dashboard' : isTatoueur ? 'dashboard-tatoueur' : 'overview');
   const [activeTab, setActiveTab] = useState(initialTab);
@@ -220,14 +220,12 @@ function Account() {
 
   const ACCOUNT_SIDEBAR_ITEMS = [
     { id: 'profile', label: tx({ fr: 'Profil', en: 'Profile', es: 'Perfil' }), icon: User },
-    { id: 'security', label: tx({ fr: 'Sécurité', en: 'Security', es: 'Seguridad' }), icon: Shield },
   ];
 
   const baseTabs = [
     { id: 'overview', label: tx({ fr: 'Tableau de bord', en: 'Dashboard', es: 'Panel' }), icon: User },
     { id: 'orders', label: tx({ fr: 'Commandes', en: 'Orders', es: 'Pedidos' }), icon: Package },
     { id: 'profile', label: tx({ fr: 'Profil', en: 'Profile', es: 'Perfil' }), icon: User },
-    { id: 'security', label: tx({ fr: 'Sécurité', en: 'Security', es: 'Seguridad' }), icon: Shield },
   ];
 
   // Tabs pour users non-admin
@@ -472,18 +470,14 @@ function Account() {
         {profileSaving ? <Loader2 size={18} className="animate-spin mr-2" /> : <Save size={18} className="mr-2" />}
         {tx({ fr: 'Sauvegarder', en: 'Save', es: 'Guardar' })}
       </button>
-    </form>
-  );
 
-  const renderSecurityContent = () => (
-    <div className="rounded-2xl p-6 md:p-10 card-bg">
-      <div className="mb-8">
+      <div className="mt-10 pt-8 border-t card-border">
         <h3 className="text-heading font-semibold text-lg mb-4 flex items-center gap-2">
           <Lock size={20} className="text-accent" />
           {tx({ fr: 'Mot de passe', en: 'Password', es: 'Contrasena' })}
         </h3>
         {changingPassword ? (
-          <form onSubmit={handlePasswordChange} className="max-w-sm space-y-4">
+          <div className="max-w-sm space-y-4">
             <div>
               <label className="text-xs text-grey-muted uppercase tracking-wider font-medium mb-2 block">
                 {tx({ fr: 'Nouveau mot de passe', en: 'New password', es: 'Nueva contrasena' })}
@@ -495,7 +489,6 @@ function Account() {
                   onChange={e => setNewPassword(e.target.value)}
                   className="input-field text-base"
                   placeholder="--------"
-                  required
                   minLength={6}
                 />
                 <button
@@ -517,7 +510,6 @@ function Account() {
                 onChange={e => setConfirmPwd(e.target.value)}
                 className="input-field text-base"
                 placeholder="--------"
-                required
                 minLength={6}
               />
             </div>
@@ -528,7 +520,7 @@ function Account() {
               </p>
             )}
             <div className="flex gap-3 pt-1">
-              <button type="submit" disabled={pwdLoading} className="btn-primary text-sm py-2 px-6">
+              <button type="button" onClick={handlePasswordChange} disabled={pwdLoading} className="btn-primary text-sm py-2 px-6">
                 {pwdLoading ? '...' : tx({ fr: 'Sauvegarder', en: 'Save', es: 'Guardar' })}
               </button>
               <button
@@ -539,7 +531,7 @@ function Account() {
                 {tx({ fr: 'Annuler', en: 'Cancel', es: 'Cancelar' })}
               </button>
             </div>
-          </form>
+          </div>
         ) : (
           <div className="flex items-center justify-between">
             <div>
@@ -549,6 +541,7 @@ function Account() {
               </p>
             </div>
             <button
+              type="button"
               onClick={() => setChangingPassword(true)}
               className="text-accent hover:text-accent/80 transition-colors text-sm font-medium flex items-center gap-1.5"
             >
@@ -558,17 +551,8 @@ function Account() {
           </div>
         )}
       </div>
-      <div className="pt-6 shadow-[0_-1px_0_rgba(255,255,255,0.04)]">
-        <h3 className="text-heading font-semibold text-lg mb-3 flex items-center gap-2">
-          <Mail size={20} className="text-accent" />
-          {tx({ fr: 'Email du compte', en: 'Account email', es: 'Correo de la cuenta' })}
-        </h3>
-        <p className="text-heading text-base">{user?.email}</p>
-        <p className="text-grey-muted text-sm mt-1">
-          {tx({ fr: 'L\'email est utilisé pour la connexion et les notifications de commande.', en: 'Email is used for login and order notifications.', es: 'El correo se usa para iniciar sesion y notificaciones de pedidos.' })}
-        </p>
-      </div>
-      <div className="pt-6 mt-6 shadow-[0_-1px_0_rgba(239,68,68,0.1)]">
+
+      <div className="mt-8 pt-6 border-t border-red-500/10">
         <h3 className="text-red-400/70 font-semibold text-base mb-2 flex items-center gap-2">
           <Shield size={18} />
           {tx({ fr: 'Zone danger', en: 'Danger zone', es: 'Zona de peligro' })}
@@ -577,6 +561,7 @@ function Account() {
           {tx({ fr: 'Déconnexion de tous les appareils.', en: 'Sign out from all devices.', es: 'Cerrar sesion en todos los dispositivos.' })}
         </p>
         <button
+          type="button"
           onClick={signOut}
           className="text-sm text-red-400 hover:text-red-300 font-medium flex items-center gap-2 transition-colors"
         >
@@ -584,7 +569,7 @@ function Account() {
           {tx({ fr: 'Se déconnecter', en: 'Sign out', es: 'Cerrar sesion' })}
         </button>
       </div>
-    </div>
+    </form>
   );
 
   const renderOrdersContent = () => (
@@ -893,7 +878,6 @@ function Account() {
                   transition={{ duration: 0.2 }}
                 >
                   {activeTab === 'profile' && renderProfileContent()}
-                  {activeTab === 'security' && renderSecurityContent()}
                 </motion.div>
               </AnimatePresence>
             </main>
@@ -914,7 +898,7 @@ function Account() {
     { id: 'ventes', label: tx({ fr: 'Mes ventes', en: 'My sales', es: 'Mis ventas' }), icon: BarChart3 },
   ] : [];
 
-  const artistValidTabs = ['dashboard', 'profil-artiste', 'contrat', 'tarifs', 'ventes', 'profile', 'address', 'security', 'orders'];
+  const artistValidTabs = ['dashboard', 'profil-artiste', 'contrat', 'tarifs', 'ventes', 'profile', 'orders'];
 
   const getArtistSectionTitle = () => {
     const artistItem = ARTIST_SIDEBAR_ITEMS.find(i => i.id === activeTab);
@@ -1153,7 +1137,6 @@ function Account() {
                     </Suspense>
                   )}
                   {activeTab === 'profile' && renderProfileContent()}
-                  {activeTab === 'security' && renderSecurityContent()}
                   {activeTab === 'orders' && renderOrdersContent()}
                 </motion.div>
               </AnimatePresence>
@@ -1179,7 +1162,7 @@ function Account() {
     { id: 'parametres', label: tx({ fr: 'Paramètres', en: 'Settings', es: 'Ajustes' }), icon: Settings },
   ] : [];
 
-  const tatoueurValidTabs = ['dashboard-tatoueur', 'flashs', 'reservations', 'calendrier', 'realisations', 'messages', 'boutique-tatoueur', 'profil-tatoueur', 'parametres', 'profile', 'address', 'security', 'orders'];
+  const tatoueurValidTabs = ['dashboard-tatoueur', 'flashs', 'reservations', 'calendrier', 'realisations', 'messages', 'boutique-tatoueur', 'profil-tatoueur', 'parametres', 'profile', 'orders'];
 
   const getTatoueurSectionTitle = () => {
     const tatoueurItem = TATOUEUR_SIDEBAR_ITEMS.find(i => i.id === activeTab);
@@ -1413,7 +1396,6 @@ function Account() {
                     </Suspense>
                   )}
                   {activeTab === 'profile' && renderProfileContent()}
-                  {activeTab === 'security' && renderSecurityContent()}
                   {activeTab === 'orders' && renderOrdersContent()}
                 </motion.div>
               </AnimatePresence>
@@ -1745,10 +1727,6 @@ function Account() {
                 {activeTab === 'orders' && renderOrdersContent()}
 
                 {/* -- ADDRESS TAB -- */}
-                {activeTab === 'address' && renderAddressContent()}
-
-                {/* -- SECURITY TAB -- */}
-                {activeTab === 'security' && renderSecurityContent()}
 
               </motion.div>
             </AnimatePresence>
