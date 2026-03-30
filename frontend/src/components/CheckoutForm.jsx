@@ -1,10 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { CreditCard, AlertCircle, Loader2 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
-import { loadStripe } from '@stripe/stripe-js';
 
 const STRIPE_KEY = import.meta.env.VITE_STRIPE_PUBLIC_KEY;
-const stripePromise = STRIPE_KEY ? loadStripe(STRIPE_KEY) : null;
 
 function CheckoutForm({ cartTotal, clientSecret }) {
   const { t, tx } = useLang();
@@ -16,59 +14,45 @@ function CheckoutForm({ cartTotal, clientSecret }) {
   const divRef = useRef(null);
   const mountedRef = useRef(false);
 
-  // Mount Stripe PaymentElement when div is in DOM and stripe is loaded
   useEffect(() => {
-    if (!clientSecret || !stripePromise || mountedRef.current) return;
+    if (!clientSecret || !STRIPE_KEY || !window.Stripe || mountedRef.current) return;
 
-    let cancelled = false;
+    // Poll until divRef is connected to the DOM
+    const interval = setInterval(() => {
+      if (mountedRef.current) { clearInterval(interval); return; }
+      const target = divRef.current;
+      if (!target || !target.isConnected) return;
 
-    stripePromise.then((stripe) => {
-      if (cancelled || !stripe || mountedRef.current) return;
+      clearInterval(interval);
+      mountedRef.current = true;
 
-      // Use MutationObserver to wait for our div to actually be in the DOM
-      const tryMount = () => {
-        const target = divRef.current;
-        if (!target || !target.isConnected || mountedRef.current) return false;
+      // Use window.Stripe directly - loadStripe wrapper doesn't work with pe.mount()
+      const stripe = window.Stripe(STRIPE_KEY);
+      stripeRef.current = stripe;
 
-        mountedRef.current = true;
-        stripeRef.current = stripe;
-
-        const cs = getComputedStyle(document.documentElement);
-        const elements = stripe.elements({
-          clientSecret,
-          appearance: {
-            theme: 'night',
-            variables: {
-              colorPrimary: cs.getPropertyValue('--accent-color').trim() || '#FF52A0',
-              colorBackground: cs.getPropertyValue('--bg-main').trim() || '#1a1a2e',
-              colorText: cs.getPropertyValue('--text-heading').trim() || '#e4e4f0',
-              colorDanger: '#ef4444',
-              fontFamily: 'system-ui, sans-serif',
-              borderRadius: '8px',
-            },
+      const cs = getComputedStyle(document.documentElement);
+      const elements = stripe.elements({
+        clientSecret,
+        appearance: {
+          theme: 'night',
+          variables: {
+            colorPrimary: cs.getPropertyValue('--accent-color').trim() || '#FF52A0',
+            colorBackground: cs.getPropertyValue('--bg-main').trim() || '#1a1a2e',
+            colorText: cs.getPropertyValue('--text-heading').trim() || '#e4e4f0',
+            colorDanger: '#ef4444',
+            fontFamily: 'system-ui, sans-serif',
+            borderRadius: '8px',
           },
-        });
-        elementsRef.current = elements;
+        },
+      });
+      elementsRef.current = elements;
 
-        const pe = elements.create('payment', { layout: 'tabs' });
-        pe.on('ready', () => { if (!cancelled) setPaymentElementReady(true); });
-        pe.mount(target);
-        return true;
-      };
+      const pe = elements.create('payment', { layout: 'tabs' });
+      pe.on('ready', () => setPaymentElementReady(true));
+      pe.mount(target);
+    }, 100);
 
-      // Try immediately
-      if (tryMount()) return;
-
-      // If not ready yet, poll every 100ms
-      const interval = setInterval(() => {
-        if (tryMount() || cancelled) clearInterval(interval);
-      }, 100);
-
-      // Cleanup interval after 30s
-      setTimeout(() => clearInterval(interval), 30000);
-    });
-
-    return () => { cancelled = true; };
+    return () => clearInterval(interval);
   }, [clientSecret]);
 
   const handleSubmit = async (e) => {
