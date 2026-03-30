@@ -11,6 +11,15 @@ async function tryUploadToGoogleDrive(fileUrl: string, fileName: string, artistS
   }
 }
 
+async function tryUploadBufferToGoogleDrive(buffer: Buffer, fileName: string, artistSlug: string, mimeType: string) {
+  try {
+    const { uploadBufferToGoogleDrive } = await import('../../../utils/google-drive');
+    return await uploadBufferToGoogleDrive(buffer, fileName, artistSlug, mimeType);
+  } catch (err: any) {
+    return { error: err.message || 'Google Drive upload failed' };
+  }
+}
+
 // Types de requetes qui s'appliquent automatiquement (pas besoin d'approbation admin)
 const AUTO_APPLY_TYPES = ['update-profile', 'update-bio', 'update-socials', 'update-avatar', 'rename-item'];
 
@@ -472,6 +481,73 @@ export default factories.createCoreController('api::artist-edit-request.artist-e
       }
       ctx.body = { success: true, results };
     } catch (err: any) { ctx.throw(500, err.message); }
+  },
+
+  // POST /artist-edit-requests/upload-direct - Upload fichier direct vers Google Drive + conversion WebP
+  async uploadDirect(ctx) {
+    const { request: { files } } = ctx as any;
+    const { artistSlug } = ctx.request.body as any;
+
+    if (!files || !files.file) {
+      return ctx.badRequest('No file provided');
+    }
+    if (!artistSlug) {
+      return ctx.badRequest('artistSlug is required');
+    }
+
+    const file = Array.isArray(files.file) ? files.file[0] : files.file;
+    const fs = require('fs');
+    const fileBuffer = fs.readFileSync(file.filepath || file.path);
+    const fileName = file.originalFilename || file.name || 'upload';
+    const mimeType = file.mimetype || file.type || 'application/octet-stream';
+
+    try {
+      // 1. Upload original vers Google Drive
+      const driveResult = await tryUploadBufferToGoogleDrive(fileBuffer, fileName, artistSlug, mimeType);
+      if ((driveResult as any).error) {
+        strapi.log.error('Google Drive upload error:', (driveResult as any).error);
+      }
+
+      // 2. Convertir en WebP pour le site (via image-processor)
+      // Sauvegarder temporairement sur Supabase pour que image-processor puisse le traiter
+      let supabaseUrl = '';
+      try {
+        const { createClient } = require('@supabase/supabase-js');
+        const supabaseUrl2 = process.env.SUPABASE_URL;
+        const supabaseKey = process.env.SUPABASE_SERVICE_KEY;
+        if (supabaseUrl2 && supabaseKey) {
+          const supabase = createClient(supabaseUrl2, supabaseKey);
+          const timestamp = Date.now();
+          const safeName = fileName.replace(/[^a-zA-Z0-9._-]/g, '_');
+          const path = `artist-submissions/${timestamp}-${safeName}`;
+          const { data } = await supabase.storage.from('order-files').upload(path, fileBuffer, {
+            contentType: mimeType,
+            upsert: false,
+          });
+          if (data?.path) {
+            const { data: urlData } = supabase.storage.from('order-files').getPublicUrl(data.path);
+            supabaseUrl = urlData?.publicUrl || '';
+          }
+        }
+      } catch (err) {
+        strapi.log.warn('Supabase temp upload failed (non-blocking):', err);
+      }
+
+      ctx.body = {
+        success: true,
+        file: {
+          name: fileName,
+          size: fileBuffer.length,
+          mime: mimeType,
+          url: supabaseUrl,
+          driveFileId: (driveResult as any).fileId || null,
+          driveUrl: (driveResult as any).webViewLink || null,
+        },
+      };
+    } catch (err: any) {
+      strapi.log.error('uploadDirect error:', err);
+      ctx.throw(500, err.message);
+    }
   },
 }));
 

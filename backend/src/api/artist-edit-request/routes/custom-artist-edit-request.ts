@@ -36,5 +36,11 @@ export default {
       handler: 'artist-edit-request.cleanupOriginals',
       config: { auth: false },
     },
+    {
+      method: 'POST',
+      path: '/artist-edit-requests/upload-direct',
+      handler: 'artist-edit-request.uploadDirect',
+      config: { auth: false },
+    },
   ],
 };

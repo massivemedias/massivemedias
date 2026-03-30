@@ -31,6 +31,8 @@ function ArtistGalleryManager() {
   const { tx, lang } = useLang();
   const { user, updateProfile } = useAuth();
   const { artistSlug } = useUserRole();
+  // Expose artistSlug for FileUpload large file uploads
+  if (artistSlug) window.__artistSlug = artistSlug;
   const { artists: cmsArtists } = useArtists();
 
   // State

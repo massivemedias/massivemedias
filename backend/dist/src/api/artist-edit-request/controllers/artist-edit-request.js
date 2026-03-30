@@ -35,6 +35,15 @@ async function tryUploadToGoogleDrive(fileUrl, fileName, artistSlug, mimeType) {
         return { error: err.message || 'Google Drive upload failed' };
     }
 }
+async function tryUploadBufferToGoogleDrive(buffer, fileName, artistSlug, mimeType) {
+    try {
+        const { uploadBufferToGoogleDrive } = await Promise.resolve().then(() => __importStar(require('../../../utils/google-drive')));
+        return await uploadBufferToGoogleDrive(buffer, fileName, artistSlug, mimeType);
+    }
+    catch (err) {
+        return { error: err.message || 'Google Drive upload failed' };
+    }
+}
 // Types de requetes qui s'appliquent automatiquement (pas besoin d'approbation admin)
 const AUTO_APPLY_TYPES = ['update-profile', 'update-bio', 'update-socials', 'update-avatar', 'rename-item'];
 // Labels humains pour les notifications
@@ -482,6 +491,69 @@ exports.default = strapi_1.factories.createCoreController('api::artist-edit-requ
             ctx.body = { success: true, results };
         }
         catch (err) {
+            ctx.throw(500, err.message);
+        }
+    },
+    // POST /artist-edit-requests/upload-direct - Upload fichier direct vers Google Drive + conversion WebP
+    async uploadDirect(ctx) {
+        const { request: { files } } = ctx;
+        const { artistSlug } = ctx.request.body;
+        if (!files || !files.file) {
+            return ctx.badRequest('No file provided');
+        }
+        if (!artistSlug) {
+            return ctx.badRequest('artistSlug is required');
+        }
+        const file = Array.isArray(files.file) ? files.file[0] : files.file;
+        const fs = require('fs');
+        const fileBuffer = fs.readFileSync(file.filepath || file.path);
+        const fileName = file.originalFilename || file.name || 'upload';
+        const mimeType = file.mimetype || file.type || 'application/octet-stream';
+        try {
+            // 1. Upload original vers Google Drive
+            const driveResult = await tryUploadBufferToGoogleDrive(fileBuffer, fileName, artistSlug, mimeType);
+            if (driveResult.error) {
+                strapi.log.error('Google Drive upload error:', driveResult.error);
+            }
+            // 2. Convertir en WebP pour le site (via image-processor)
+            // Sauvegarder temporairement sur Supabase pour que image-processor puisse le traiter
+            let supabaseUrl = '';
+            try {
+                const { createClient } = require('@supabase/supabase-js');
+                const supabaseUrl2 = process.env.SUPABASE_URL;
+                const supabaseKey = process.env.SUPABASE_SERVICE_KEY;
+                if (supabaseUrl2 && supabaseKey) {
+                    const supabase = createClient(supabaseUrl2, supabaseKey);
+                    const timestamp = Date.now();
+                    const safeName = fileName.replace(/[^a-zA-Z0-9._-]/g, '_');
+                    const path = `artist-submissions/${timestamp}-${safeName}`;
+                    const { data } = await supabase.storage.from('order-files').upload(path, fileBuffer, {
+                        contentType: mimeType,
+                        upsert: false,
+                    });
+                    if (data === null || data === void 0 ? void 0 : data.path) {
+                        const { data: urlData } = supabase.storage.from('order-files').getPublicUrl(data.path);
+                        supabaseUrl = (urlData === null || urlData === void 0 ? void 0 : urlData.publicUrl) || '';
+                    }
+                }
+            }
+            catch (err) {
+                strapi.log.warn('Supabase temp upload failed (non-blocking):', err);
+            }
+            ctx.body = {
+                success: true,
+                file: {
+                    name: fileName,
+                    size: fileBuffer.length,
+                    mime: mimeType,
+                    url: supabaseUrl,
+                    driveFileId: driveResult.fileId || null,
+                    driveUrl: driveResult.webViewLink || null,
+                },
+            };
+        }
+        catch (err) {
+            strapi.log.error('uploadDirect error:', err);
             ctx.throw(500, err.message);
         }
     },

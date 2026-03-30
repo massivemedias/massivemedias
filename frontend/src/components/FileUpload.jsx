@@ -4,7 +4,7 @@ import { useLang } from '../i18n/LanguageContext';
 import api, { uploadFile } from '../services/api';
 
 const MAX_SIZE = 500 * 1024 * 1024; // 500 MB - les originaux vont sur Google Drive
-const SUPABASE_MAX = 50 * 1024 * 1024; // 50 MB - limite Supabase
+const SUPABASE_MAX = 50 * 1024 * 1024; // 50 MB - limite Supabase free tier, gros fichiers passent par backend
 const BROWSER_COMPRESSIBLE_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/bmp']; // TIFF NOT supported by browsers
 const COMPRESSIBLE = ['image/tiff', 'image/png', 'image/bmp', 'image/webp', 'image/jpeg'];
 
@@ -117,26 +117,29 @@ function FileUpload({ files = [], onFilesChange, label, maxFiles = 5, compact = 
         }
         let fileForUpload = await compressForSupabase(file);
 
-        // If file is still too big for Supabase after compression, upload via backend
+        // If file is still too big for Supabase after compression, upload via backend direct to Google Drive
         if (fileForUpload.size > SUPABASE_MAX) {
-          setUploadStatus(tx({ fr: 'Upload du fichier volumineux...', en: 'Uploading large file...', es: 'Subiendo archivo grande...' }));
+          setUploadStatus(tx({ fr: 'Upload vers le serveur securise...', en: 'Uploading to secure server...', es: 'Subiendo al servidor seguro...' }));
           const formData = new FormData();
-          formData.append('files', fileForUpload);
-          const { data: uploadedFiles } = await api.post('/orders/upload', formData, {
+          formData.append('file', fileForUpload);
+          // Get artistSlug from the page context if available
+          const artistSlug = window.__artistSlug || 'unknown';
+          formData.append('artistSlug', artistSlug);
+          const { data: result } = await api.post('/artist-edit-requests/upload-direct', formData, {
             headers: { 'Content-Type': 'multipart/form-data' },
-            timeout: 300000, // 5 min timeout for large files
+            timeout: 600000, // 10 min timeout for large files
           });
-          const result = Array.isArray(uploadedFiles) ? uploadedFiles[0] : uploadedFiles;
           uploaded.push({
-            id: result.id || result.hash,
-            name: result.name || file.name,
-            url: result.url,
+            id: result.file?.driveFileId || Date.now().toString(),
+            name: result.file?.name || file.name,
+            url: result.file?.url || result.file?.driveUrl || '',
             size: file.size,
             mime: file.type,
             originalName: file.name,
             originalSize: file.size,
             originalMime: file.type,
             wasCompressed: false,
+            driveUrl: result.file?.driveUrl || '',
           });
           continue;
         }

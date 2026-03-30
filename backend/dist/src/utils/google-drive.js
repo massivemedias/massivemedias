@@ -3,7 +3,7 @@
 // OAuth2 avec refresh token - upload en tant que mauditemachine@gmail.com
 // Zero dependance externe - fetch natif + API Drive REST v3
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteFromGoogleDrive = exports.uploadToGoogleDrive = void 0;
+exports.deleteFromGoogleDrive = exports.uploadBufferToGoogleDrive = exports.uploadToGoogleDrive = void 0;
 const DRIVE_API = 'https://www.googleapis.com/upload/drive/v3/files';
 const DRIVE_API_META = 'https://www.googleapis.com/drive/v3/files';
 const TOKEN_URL = 'https://oauth2.googleapis.com/token';
@@ -106,6 +106,52 @@ async function uploadToGoogleDrive(fileUrl, fileName, artistSlug, mimeType) {
     };
 }
 exports.uploadToGoogleDrive = uploadToGoogleDrive;
+// Upload un fichier directement depuis un Buffer (pour les uploads directs du frontend)
+async function uploadBufferToGoogleDrive(fileBuffer, fileName, artistSlug, mimeType = 'application/octet-stream') {
+    const parentFolderId = process.env.GOOGLE_DRIVE_FOLDER_ID;
+    if (!parentFolderId)
+        throw new Error('GOOGLE_DRIVE_FOLDER_ID env var not set');
+    const token = await getAccessToken();
+    const artistFolderId = await getOrCreateArtistFolder(token, parentFolderId, artistSlug);
+    const date = new Date().toISOString().split('T')[0];
+    const safeName = `${date}_${fileName}`;
+    // Use resumable upload for large files
+    // Step 1: Initiate resumable upload
+    const initRes = await fetch(`${DRIVE_API}?uploadType=resumable`, {
+        method: 'POST',
+        headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            'X-Upload-Content-Type': mimeType,
+            'X-Upload-Content-Length': fileBuffer.length.toString(),
+        },
+        body: JSON.stringify({ name: safeName, parents: [artistFolderId] }),
+    });
+    if (!initRes.ok)
+        throw new Error(`Drive resumable init failed: ${await initRes.text()}`);
+    const uploadUrl = initRes.headers.get('location');
+    if (!uploadUrl)
+        throw new Error('No upload URL returned');
+    // Step 2: Upload the file content
+    const uploadRes = await fetch(uploadUrl, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': mimeType,
+            'Content-Length': fileBuffer.length.toString(),
+        },
+        body: fileBuffer,
+    });
+    if (!uploadRes.ok)
+        throw new Error(`Drive upload failed: ${await uploadRes.text()}`);
+    const file = await uploadRes.json();
+    return {
+        fileId: file.id,
+        fileName: file.name || safeName,
+        webViewLink: file.webViewLink || `https://drive.google.com/file/d/${file.id}/view`,
+        webContentLink: file.webContentLink || '',
+    };
+}
+exports.uploadBufferToGoogleDrive = uploadBufferToGoogleDrive;
 async function deleteFromGoogleDrive(fileId) {
     try {
         const token = await getAccessToken();

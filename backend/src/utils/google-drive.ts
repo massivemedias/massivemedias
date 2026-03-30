@@ -136,6 +136,63 @@ export async function uploadToGoogleDrive(
   };
 }
 
+// Upload un fichier directement depuis un Buffer (pour les uploads directs du frontend)
+export async function uploadBufferToGoogleDrive(
+  fileBuffer: Buffer,
+  fileName: string,
+  artistSlug: string,
+  mimeType: string = 'application/octet-stream'
+): Promise<DriveUploadResult> {
+  const parentFolderId = process.env.GOOGLE_DRIVE_FOLDER_ID;
+  if (!parentFolderId) throw new Error('GOOGLE_DRIVE_FOLDER_ID env var not set');
+
+  const token = await getAccessToken();
+  const artistFolderId = await getOrCreateArtistFolder(token, parentFolderId, artistSlug);
+
+  const date = new Date().toISOString().split('T')[0];
+  const safeName = `${date}_${fileName}`;
+
+  // Use resumable upload for large files
+  // Step 1: Initiate resumable upload
+  const initRes = await fetch(
+    `${DRIVE_API}?uploadType=resumable`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        'X-Upload-Content-Type': mimeType,
+        'X-Upload-Content-Length': fileBuffer.length.toString(),
+      },
+      body: JSON.stringify({ name: safeName, parents: [artistFolderId] }),
+    }
+  );
+
+  if (!initRes.ok) throw new Error(`Drive resumable init failed: ${await initRes.text()}`);
+  const uploadUrl = initRes.headers.get('location');
+  if (!uploadUrl) throw new Error('No upload URL returned');
+
+  // Step 2: Upload the file content
+  const uploadRes = await fetch(uploadUrl, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': mimeType,
+      'Content-Length': fileBuffer.length.toString(),
+    },
+    body: fileBuffer,
+  });
+
+  if (!uploadRes.ok) throw new Error(`Drive upload failed: ${await uploadRes.text()}`);
+  const file: any = await uploadRes.json();
+
+  return {
+    fileId: file.id,
+    fileName: file.name || safeName,
+    webViewLink: file.webViewLink || `https://drive.google.com/file/d/${file.id}/view`,
+    webContentLink: file.webContentLink || '',
+  };
+}
+
 export async function deleteFromGoogleDrive(fileId: string): Promise<boolean> {
   try {
     const token = await getAccessToken();
