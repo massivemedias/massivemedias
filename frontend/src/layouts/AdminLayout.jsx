@@ -1,9 +1,9 @@
 import { Outlet, NavLink, useLocation } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   ShoppingBag, Package, MessageSquare, Banknote,
-  Users, Receipt, FileText, BarChart3, Menu, X, DollarSign,
-  Pencil, MapPin, Shield, Star, LayoutDashboard, StickyNote, PenTool, Activity, Bot,
+  Users, Receipt, FileText, BarChart3, X, DollarSign,
+  Pencil, Star, LayoutDashboard, StickyNote, Bot, ChevronRight,
 } from 'lucide-react';
 import { useState } from 'react';
 import { useLang } from '../i18n/LanguageContext';
@@ -35,63 +35,114 @@ function AdminLayout() {
 
   const currentNav = NAV_ITEMS.find(item => location.pathname.startsWith(item.to));
   const pageTitle = currentNav ? tx({ fr: currentNav.fr, en: currentNav.en, es: currentNav.es }) : 'Admin';
+  const close = () => setMobileOpen(false);
 
   return (
     <section className="section-container pt-28 pb-20 min-h-screen">
-      {/* Mobile header */}
-      <div className="lg:hidden flex items-center justify-between mb-4">
+      {/* Mobile title */}
+      <div className="lg:hidden mb-4">
         <h1 className="text-2xl font-heading font-bold text-heading">{pageTitle}</h1>
-        <button
-          onClick={() => setMobileOpen(!mobileOpen)}
-          className="p-2 rounded-lg bg-glass text-heading"
-        >
-          {mobileOpen ? <X size={20} /> : <Menu size={20} />}
-        </button>
       </div>
 
-      {/* Mobile nav */}
-      {mobileOpen && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="lg:hidden flex flex-wrap gap-2 mb-6"
-        >
-          {ACCOUNT_ITEMS.map((item) => {
-            const Icon = item.icon;
-            return (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                onClick={() => setMobileOpen(false)}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all bg-glass text-grey-muted hover:text-heading"
-              >
-                <Icon size={14} />
-                {tx({ fr: item.fr, en: item.en, es: item.es })}
-              </NavLink>
-            );
-          })}
-          <div className="w-full shadow-[0_-1px_0_rgba(255,255,255,0.04)] mt-1 pt-2" />
-          {NAV_ITEMS.map((item) => {
-            const Icon = item.icon;
-            const isActive = location.pathname.startsWith(item.to);
-            return (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                onClick={() => setMobileOpen(false)}
-                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
-                  isActive
-                    ? 'bg-accent text-white'
-                    : 'bg-glass text-grey-muted hover:text-heading'
-                }`}
-              >
-                <Icon size={14} />
-                {tx({ fr: item.fr, en: item.en, es: item.es })}
-              </NavLink>
-            );
-          })}
-        </motion.div>
-      )}
+      {/* Sticky tab on right edge - mobile only */}
+      <button
+        onClick={() => setMobileOpen(true)}
+        className="lg:hidden fixed right-0 top-1/2 -translate-y-1/2 z-[50] bg-accent text-white px-1.5 py-4 rounded-l-lg shadow-lg shadow-accent/30"
+        style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}
+        aria-label="Menu Admin"
+      >
+        <span className="text-[11px] font-bold tracking-wider uppercase">Menu Admin</span>
+      </button>
+
+      {/* Mobile drawer */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.22 }}
+              className="lg:hidden fixed inset-0 z-[55] bg-black/50 backdrop-blur-[2px]"
+              onClick={close}
+              aria-hidden="true"
+            />
+
+            {/* Drawer panel - slides from right */}
+            <motion.div
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+              className="lg:hidden fixed top-0 right-0 bottom-0 z-[60] w-[min(280px,80vw)] mobile-drawer flex flex-col h-[100dvh]"
+              style={{ backgroundColor: 'var(--bg-body, #3D0079)' }}
+            >
+              {/* Drawer header */}
+              <div className="flex items-center justify-between px-4 py-3 border-b mobile-drawer-border flex-shrink-0">
+                <span className="text-heading font-heading font-bold text-sm">Menu Admin</span>
+                <button
+                  onClick={close}
+                  className="p-2 rounded-lg nav-link transition-colors"
+                  aria-label="Fermer"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              {/* Scrollable nav */}
+              <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-3 py-3 flex flex-col gap-0">
+                {/* Mon compte */}
+                <p className="mobile-drawer-label text-[10px] font-bold uppercase tracking-[0.14em] px-3 mb-1">
+                  {tx({ fr: 'Mon compte', en: 'My account', es: 'Mi cuenta' })}
+                </p>
+                {ACCOUNT_ITEMS.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <NavLink
+                      key={item.to}
+                      to={item.to}
+                      onClick={close}
+                      className="flex items-center gap-3 px-3 py-2 rounded-xl mobile-drawer-item group transition-colors nav-link"
+                    >
+                      <span className="w-7 h-7 rounded-lg flex items-center justify-center mobile-icon-bg flex-shrink-0">
+                        <Icon size={14} className="text-accent" />
+                      </span>
+                      <span className="font-semibold text-[13px]">{tx({ fr: item.fr, en: item.en, es: item.es })}</span>
+                      <ChevronRight size={12} className="ml-auto opacity-25" />
+                    </NavLink>
+                  );
+                })}
+
+                <div className="h-px mobile-drawer-sep mx-2 my-2" />
+
+                {/* Admin */}
+                <p className="mobile-drawer-label text-[10px] font-bold uppercase tracking-[0.14em] px-3 mb-1">
+                  Admin
+                </p>
+                {NAV_ITEMS.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = location.pathname.startsWith(item.to);
+                  return (
+                    <NavLink
+                      key={item.to}
+                      to={item.to}
+                      onClick={close}
+                      className={`flex items-center gap-3 px-3 py-2 rounded-xl mobile-drawer-item group transition-colors ${isActive ? 'bg-accent/15 text-accent' : 'nav-link'}`}
+                    >
+                      <span className="w-7 h-7 rounded-lg flex items-center justify-center mobile-icon-bg flex-shrink-0">
+                        <Icon size={14} className="text-accent" />
+                      </span>
+                      <span className="font-semibold text-[13px]">{tx({ fr: item.fr, en: item.en, es: item.es })}</span>
+                      <ChevronRight size={12} className="ml-auto opacity-25" />
+                    </NavLink>
+                  );
+                })}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       <div className="flex gap-6 max-w-7xl mx-auto">
         {/* Sidebar desktop */}
