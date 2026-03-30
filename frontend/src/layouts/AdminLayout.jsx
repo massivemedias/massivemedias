@@ -20,7 +20,6 @@ const NAV_ITEMS = [
   { to: '/admin/commissions', icon: Banknote, fr: 'Commissions', en: 'Commissions', es: 'Comisiones' },
   { to: '/admin/inventaire', icon: Package, fr: 'Inventaire', en: 'Inventory', es: 'Inventario' },
   { to: '/admin/messages', icon: MessageSquare, fr: 'Messages', en: 'Messages', es: 'Mensajes' },
-  { to: '/admin/tatoueurs', icon: PenTool, fr: 'Tatoueurs', en: 'Tattoo Artists', es: 'Tatuadores' },
   { to: '/admin/utilisateurs', icon: Users, fr: 'Utilisateurs', en: 'Users', es: 'Usuarios' },
   { to: '/admin/factures', icon: FileText, fr: 'Factures', en: 'Invoices', es: 'Facturas' },
   { to: '/admin/depenses', icon: Receipt, fr: 'Dépenses', en: 'Expenses', es: 'Gastos' },
