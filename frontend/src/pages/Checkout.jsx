@@ -100,7 +100,6 @@ function Checkout() {
     setStep('payment');
     trackBeginCheckout(items, orderTotal);
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
   };
 
   // Empty cart
