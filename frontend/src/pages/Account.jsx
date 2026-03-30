@@ -775,7 +775,7 @@ function Account() {
                     key={item.id}
                     onClick={() => { handleSetTab(item.id); setAdminMobileOpen(false); }}
                     className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
-                      isActive ? 'bg-[#a21895] text-white' : 'bg-glass text-grey-muted hover:text-heading'
+                      isActive ? 'bg-[var(--active-tab-bg)] text-white' : 'bg-glass text-grey-muted hover:text-heading'
                     }`}
                   >
                     <Icon size={14} />
@@ -823,7 +823,7 @@ function Account() {
                       onClick={() => handleSetTab(item.id)}
                       className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
                         isActive
-                          ? 'bg-[#a21895] text-white'
+                          ? 'bg-[var(--active-tab-bg)] text-white'
                           : 'text-grey-muted hover:text-heading hover:bg-glass'
                       }`}
                     >
@@ -977,7 +977,7 @@ function Account() {
               <button
                 onClick={() => { handleSetTab('orders'); setArtistMobileOpen(false); }}
                 className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
-                  activeTab === 'orders' ? 'bg-[#a21895] text-white' : 'bg-glass text-grey-muted hover:text-heading'
+                  activeTab === 'orders' ? 'bg-[var(--active-tab-bg)] text-white' : 'bg-glass text-grey-muted hover:text-heading'
                 }`}
               >
                 <ShoppingBag size={14} />
@@ -991,7 +991,7 @@ function Account() {
                     key={item.id}
                     onClick={() => { handleSetTab(item.id); setArtistMobileOpen(false); }}
                     className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
-                      isActive ? 'bg-[#a21895] text-white' : 'bg-glass text-grey-muted hover:text-heading'
+                      isActive ? 'bg-[var(--active-tab-bg)] text-white' : 'bg-glass text-grey-muted hover:text-heading'
                     }`}
                   >
                     <Icon size={14} />
@@ -1022,7 +1022,7 @@ function Account() {
                     key={item.id}
                     onClick={() => { handleSetTab(item.id); setArtistMobileOpen(false); }}
                     className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
-                      isActive ? 'bg-[#a21895] text-white' : 'bg-glass text-grey-muted hover:text-heading'
+                      isActive ? 'bg-[var(--active-tab-bg)] text-white' : 'bg-glass text-grey-muted hover:text-heading'
                     }`}
                   >
                     <Icon size={14} />
@@ -1045,7 +1045,7 @@ function Account() {
                   onClick={() => handleSetTab('orders')}
                   className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
                     activeTab === 'orders'
-                      ? 'bg-[#a21895] text-white'
+                      ? 'bg-[var(--active-tab-bg)] text-white'
                       : 'text-grey-muted hover:text-heading hover:bg-glass'
                   }`}
                 >
@@ -1064,7 +1064,7 @@ function Account() {
                       onClick={() => handleSetTab(item.id)}
                       className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
                         isActive
-                          ? 'bg-[#a21895] text-white'
+                          ? 'bg-[var(--active-tab-bg)] text-white'
                           : 'text-grey-muted hover:text-heading hover:bg-glass'
                       }`}
                     >
@@ -1102,7 +1102,7 @@ function Account() {
                       onClick={() => handleSetTab(item.id)}
                       className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
                         isActive
-                          ? 'bg-[#a21895] text-white'
+                          ? 'bg-[var(--active-tab-bg)] text-white'
                           : 'text-grey-muted hover:text-heading hover:bg-glass'
                       }`}
                     >
@@ -1239,7 +1239,7 @@ function Account() {
               <button
                 onClick={() => { handleSetTab('orders'); setTatoueurMobileOpen(false); }}
                 className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
-                  activeTab === 'orders' ? 'bg-[#a21895] text-white' : 'bg-glass text-grey-muted hover:text-heading'
+                  activeTab === 'orders' ? 'bg-[var(--active-tab-bg)] text-white' : 'bg-glass text-grey-muted hover:text-heading'
                 }`}
               >
                 <ShoppingBag size={14} />
@@ -1253,7 +1253,7 @@ function Account() {
                     key={item.id}
                     onClick={() => { handleSetTab(item.id); setTatoueurMobileOpen(false); }}
                     className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
-                      isActive ? 'bg-[#a21895] text-white' : 'bg-glass text-grey-muted hover:text-heading'
+                      isActive ? 'bg-[var(--active-tab-bg)] text-white' : 'bg-glass text-grey-muted hover:text-heading'
                     }`}
                   >
                     <Icon size={14} />
@@ -1284,7 +1284,7 @@ function Account() {
                     key={item.id}
                     onClick={() => { handleSetTab(item.id); setTatoueurMobileOpen(false); }}
                     className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
-                      isActive ? 'bg-[#a21895] text-white' : 'bg-glass text-grey-muted hover:text-heading'
+                      isActive ? 'bg-[var(--active-tab-bg)] text-white' : 'bg-glass text-grey-muted hover:text-heading'
                     }`}
                   >
                     <Icon size={14} />
@@ -1307,7 +1307,7 @@ function Account() {
                   onClick={() => handleSetTab('orders')}
                   className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
                     activeTab === 'orders'
-                      ? 'bg-[#a21895] text-white'
+                      ? 'bg-[var(--active-tab-bg)] text-white'
                       : 'text-grey-muted hover:text-heading hover:bg-glass'
                   }`}
                 >
@@ -1326,7 +1326,7 @@ function Account() {
                       onClick={() => handleSetTab(item.id)}
                       className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
                         isActive
-                          ? 'bg-[#a21895] text-white'
+                          ? 'bg-[var(--active-tab-bg)] text-white'
                           : 'text-grey-muted hover:text-heading hover:bg-glass'
                       }`}
                     >
@@ -1364,7 +1364,7 @@ function Account() {
                       onClick={() => handleSetTab(item.id)}
                       className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
                         isActive
-                          ? 'bg-[#a21895] text-white'
+                          ? 'bg-[var(--active-tab-bg)] text-white'
                           : 'text-grey-muted hover:text-heading hover:bg-glass'
                       }`}
                     >

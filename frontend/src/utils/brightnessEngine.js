@@ -85,6 +85,7 @@ function darkPalette(base, darker, darkest, accent, hoverBg, hoverText, logoMain
     '--btn-primary-hover-text': hoverText,
     '--btn-primary-shadow': `rgba(${a.r}, ${a.g}, ${a.b}, 0.3)`,
     '--accent-color': accent,
+    '--active-tab-bg': accent,
     '--filter-active-bg': accent,
     '--filter-hover-bg': hoverBg,
     '--filter-hover-text': hoverText,
@@ -105,11 +106,14 @@ function darkPalette(base, darker, darkest, accent, hoverBg, hoverText, logoMain
 // ============================================================
 
 // 0 - Violet Profond (Massive)
-const PALETTE_0 = darkPalette(
-  '#2C0056', '#1E003B', '#100020',
-  '#FF52A0', '#FFCC02', '#1E0E30',
-  '#FF52A0', '#FFCC00'
-);
+const PALETTE_0 = {
+  ...darkPalette(
+    '#2C0056', '#1E003B', '#100020',
+    '#FF52A0', '#FFCC02', '#1E0E30',
+    '#FF52A0', '#FFCC00'
+  ),
+  '--active-tab-bg': '#a21895',
+};
 
 // 1 - Bleu Nuit
 const PALETTE_1 = darkPalette(

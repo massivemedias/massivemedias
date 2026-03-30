@@ -1378,8 +1378,15 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
                   <div key={msg.documentId} className={`rounded-xl overflow-hidden ${isNew ? 'ring-1 ring-accent/30' : ''}`}>
                     {/* Accordion header */}
                     <button
-                      onClick={() => setExpandedId(isExpanded ? null : msg.documentId)}
-                      className="w-full flex items-center gap-3 px-4 py-3 bg-black/20 hover:bg-black/30 transition-colors text-left"
+                      onClick={() => {
+                        setExpandedId(isExpanded ? null : msg.documentId);
+                        if (!isExpanded && isNew) {
+                          api.put(`/artist-messages/${msg.documentId}/status`, { status: 'read' })
+                            .then(() => setInboxMessages(msgs => msgs.map(m => m.documentId === msg.documentId ? { ...m, status: 'read' } : m)))
+                            .catch(() => {});
+                        }
+                      }}
+                      className="w-full flex items-center gap-3 px-4 py-3 bg-black/20 hover:bg-black/30 transition-colors text-left focus:outline-none"
                     >
                       {isNew && <span className="w-2 h-2 rounded-full bg-accent flex-shrink-0 animate-pulse" />}
                       <div className="flex-grow min-w-0">
