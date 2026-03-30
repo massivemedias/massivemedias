@@ -5,16 +5,6 @@ import { useLang } from '../i18n/LanguageContext';
 const STRIPE_KEY = import.meta.env.VITE_STRIPE_PUBLIC_KEY;
 const MOUNT_ID = 'stripe-payment-element-mount';
 
-function loadStripeScript() {
-  return new Promise((resolve) => {
-    if (window.Stripe) return resolve(window.Stripe);
-    const s = document.createElement('script');
-    s.src = 'https://js.stripe.com/v3/';
-    s.onload = () => resolve(window.Stripe);
-    document.head.appendChild(s);
-  });
-}
-
 function CheckoutForm({ cartTotal, clientSecret }) {
   const { t, tx } = useLang();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -27,48 +17,58 @@ function CheckoutForm({ cartTotal, clientSecret }) {
   useEffect(() => {
     if (!clientSecret || !STRIPE_KEY || mountedRef.current) return;
 
-    loadStripeScript().then((Stripe) => {
-      if (!Stripe || mountedRef.current) return;
+    function doMount() {
+      if (mountedRef.current) return;
+      const target = document.getElementById(MOUNT_ID);
+      if (!target || !target.isConnected || !window.Stripe) return;
 
-      // Poll for the LIVE DOM element using querySelector (not ref)
+      mountedRef.current = true;
+
+      // CRITICAL: Remove ALL orphan Stripe iframes BEFORE creating instance
+      document.querySelectorAll('iframe[src*="stripe"]').forEach(f => f.remove());
+
+      const stripe = window.Stripe(STRIPE_KEY);
+      stripeRef.current = stripe;
+
+      const cs = getComputedStyle(document.documentElement);
+      const elements = stripe.elements({
+        clientSecret,
+        appearance: {
+          theme: 'night',
+          variables: {
+            colorPrimary: cs.getPropertyValue('--accent-color').trim() || '#FF52A0',
+            colorBackground: cs.getPropertyValue('--bg-main').trim() || '#1a1a2e',
+            colorText: cs.getPropertyValue('--text-heading').trim() || '#e4e4f0',
+            colorDanger: '#ef4444',
+            fontFamily: 'system-ui, sans-serif',
+            borderRadius: '8px',
+          },
+        },
+      });
+      elementsRef.current = elements;
+
+      const pe = elements.create('payment', { layout: 'tabs' });
+      pe.on('ready', () => setPaymentElementReady(true));
+      pe.mount('#' + MOUNT_ID);
+    }
+
+    // Load Stripe script if needed, then poll for mount target
+    if (!window.Stripe) {
+      const s = document.createElement('script');
+      s.src = 'https://js.stripe.com/v3/';
+      s.onload = () => {
+        const interval = setInterval(() => {
+          if (mountedRef.current) { clearInterval(interval); return; }
+          doMount();
+        }, 200);
+      };
+      document.head.appendChild(s);
+    } else {
       const interval = setInterval(() => {
         if (mountedRef.current) { clearInterval(interval); return; }
-
-        // Use querySelector to get the CURRENT live DOM node
-        const target = document.getElementById(MOUNT_ID);
-        if (!target || !target.isConnected) return;
-
-        clearInterval(interval);
-        mountedRef.current = true;
-
-        const stripe = Stripe(STRIPE_KEY);
-        stripeRef.current = stripe;
-
-        const cs = getComputedStyle(document.documentElement);
-        const elements = stripe.elements({
-          clientSecret,
-          appearance: {
-            theme: 'night',
-            variables: {
-              colorPrimary: cs.getPropertyValue('--accent-color').trim() || '#FF52A0',
-              colorBackground: cs.getPropertyValue('--bg-main').trim() || '#1a1a2e',
-              colorText: cs.getPropertyValue('--text-heading').trim() || '#e4e4f0',
-              colorDanger: '#ef4444',
-              fontFamily: 'system-ui, sans-serif',
-              borderRadius: '8px',
-            },
-          },
-        });
-        elementsRef.current = elements;
-
-        const pe = elements.create('payment', { layout: 'tabs' });
-        // Remove orphan iframes created by Stripe script loading
-        document.querySelectorAll('body > iframe[src*="stripe"]').forEach(f => f.remove());
-
-        pe.on('ready', () => setPaymentElementReady(true));
-        pe.mount('#' + MOUNT_ID);
+        doMount();
       }, 200);
-    });
+    }
   }, [clientSecret]);
 
   const handleSubmit = async (e) => {
