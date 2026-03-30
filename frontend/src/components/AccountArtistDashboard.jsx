@@ -737,12 +737,13 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
                   <th className="text-left py-2 pr-1 sm:pr-3">{tx({ fr: 'Format', en: 'Format', es: 'Formato' })}</th>
                   <th className="text-right py-2 px-1 sm:px-2">{tx({ fr: 'Prix client', en: 'Client price', es: 'Precio cliente' })}</th>
                   <th className="text-right py-2 px-1 sm:px-2 text-grey-muted">{tx({ fr: 'Production', en: 'Production', es: 'Produccion' })}</th>
+                  <th className="text-right py-2 px-1 sm:px-2 text-purple-400">{tx({ fr: 'Massive (50%)', en: 'Massive (50%)', es: 'Massive (50%)' })}</th>
                   <th className="text-right py-2 px-1 sm:px-2 text-green-400">{tx({ fr: 'Ta commission (50%)', en: 'Your commission (50%)', es: 'Tu comision (50%)' })}</th>
                   <th className="text-right py-2 px-1 sm:px-2 text-accent">{tx({ fr: 'Ton prix (-30%)', en: 'Your price (-30%)', es: 'Tu precio (-30%)' })}</th>
                 </tr>
               </thead>
               <tbody>
-                <tr className="shadow-[0_1px_0_rgba(255,255,255,0.03)]"><td colSpan="5" className="pt-3 pb-1 text-accent font-semibold text-xs">{tx({ fr: 'Série Studio (4 encres pigmentées)', en: 'Studio Series (4 pigment inks)', es: 'Serie Studio (4 tintas pigmentadas)' })}</td></tr>
+                <tr className="shadow-[0_1px_0_rgba(255,255,255,0.03)]"><td colSpan="6" className="pt-3 pb-1 text-accent font-semibold text-xs">{tx({ fr: 'Série Studio (4 encres pigmentées)', en: 'Studio Series (4 pigment inks)', es: 'Serie Studio (4 tintas pigmentadas)' })}</td></tr>
                 {[{ format: 'A6 (4x6")', key: 'postcard' }, { format: 'A4 (8.5x11")', key: 'a4' }, { format: 'A3 (11x17")', key: 'a3' }, { format: 'A3+ (13x19")', key: 'a3plus' }, { format: 'A2 (18x24")', key: 'a2' }].map(({ format, key }) => {
                   const clientPrice = CLIENT_PRICES.studio[key];
                   const prodCost = PRODUCTION_COSTS.studio[key] || 0;
@@ -754,12 +755,13 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
                       <td className="py-2 pr-1 sm:pr-3 text-heading text-xs sm:text-sm">{format}</td>
                       <td className="py-2 px-1 sm:px-2 text-right text-heading text-xs sm:text-sm">{clientPrice}$</td>
                       <td className="py-2 px-1 sm:px-2 text-right text-grey-muted text-xs sm:text-sm">{prodCost}$</td>
+                      <td className="py-2 px-1 sm:px-2 text-right text-purple-400 text-xs sm:text-sm">{commission}$</td>
                       <td className="py-2 px-1 sm:px-2 text-right text-green-400 font-semibold text-xs sm:text-sm">{commission}$</td>
                       <td className="py-2 px-1 sm:px-2 text-right text-accent text-xs sm:text-sm">{artistPrice}$</td>
                     </tr>
                   );
                 })}
-                <tr className="shadow-[0_1px_0_rgba(255,255,255,0.03)]"><td colSpan="5" className="pt-4 pb-1 text-accent font-semibold text-xs">{tx({ fr: 'Série Musée (12 encres pigmentées)', en: 'Museum Series (12 pigment inks)', es: 'Serie Museo (12 tintas pigmentadas)' })}</td></tr>
+                <tr className="shadow-[0_1px_0_rgba(255,255,255,0.03)]"><td colSpan="6" className="pt-4 pb-1 text-accent font-semibold text-xs">{tx({ fr: 'Série Musée (12 encres pigmentées)', en: 'Museum Series (12 pigment inks)', es: 'Serie Museo (12 tintas pigmentadas)' })}</td></tr>
                 {[{ format: 'A6 (4x6")', key: 'postcard' }, { format: 'A4 (8.5x11")', key: 'a4' }, { format: 'A3 (11x17")', key: 'a3' }, { format: 'A3+ (13x19")', key: 'a3plus' }, { format: 'A2 (18x24")', key: 'a2' }].map(({ format, key }) => {
                   const clientPrice = CLIENT_PRICES.museum[key];
                   const prodCost = PRODUCTION_COSTS.museum[key] || 0;
@@ -771,12 +773,13 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
                       <td className="py-2 pr-1 sm:pr-3 text-heading text-xs sm:text-sm">{format}</td>
                       <td className="py-2 px-1 sm:px-2 text-right text-heading text-xs sm:text-sm">{clientPrice}$</td>
                       <td className="py-2 px-1 sm:px-2 text-right text-grey-muted text-xs sm:text-sm">{prodCost}$</td>
+                      <td className="py-2 px-1 sm:px-2 text-right text-purple-400 text-xs sm:text-sm">{commission}$</td>
                       <td className="py-2 px-1 sm:px-2 text-right text-green-400 font-semibold text-xs sm:text-sm">{commission}$</td>
                       <td className="py-2 px-1 sm:px-2 text-right text-accent text-xs sm:text-sm">{artistPrice}$</td>
                     </tr>
                   );
                 })}
-                <tr className="shadow-[0_1px_0_rgba(255,255,255,0.03)]"><td colSpan="5" className="pt-4 pb-1 text-accent font-semibold text-xs">{tx({ fr: 'Cadres (noir ou blanc)', en: 'Frames (black or white)', es: 'Marcos (negro o blanco)' })}</td></tr>
+                <tr className="shadow-[0_1px_0_rgba(255,255,255,0.03)]"><td colSpan="6" className="pt-4 pb-1 text-accent font-semibold text-xs">{tx({ fr: 'Cadres (noir ou blanc)', en: 'Frames (black or white)', es: 'Marcos (negro o blanco)' })}</td></tr>
                 {[{ format: 'A6 / A4', key: 'a4' }, { format: 'A3', key: 'a3' }, { format: 'A3+', key: 'a3plus' }, { format: 'A2', key: 'a2' }].map(({ format, key }) => (
                   <tr key={`f-${key}`} className="shadow-[0_1px_0_rgba(255,255,255,0.03)]">
                     <td className="py-2 pr-1 sm:pr-3 text-heading text-xs sm:text-sm">{format}</td>
