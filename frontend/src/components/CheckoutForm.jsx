@@ -62,6 +62,9 @@ function CheckoutForm({ cartTotal, clientSecret }) {
         elementsRef.current = elements;
 
         const pe = elements.create('payment', { layout: 'tabs' });
+        // Remove orphan iframes created by Stripe script loading
+        document.querySelectorAll('body > iframe[src*="stripe"]').forEach(f => f.remove());
+
         pe.on('ready', () => setPaymentElementReady(true));
         pe.mount('#' + MOUNT_ID);
       }, 200);
