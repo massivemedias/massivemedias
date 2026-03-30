@@ -1,7 +1,24 @@
 import { useState, useEffect, useRef } from 'react';
 import { CreditCard, AlertCircle, Loader2 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
-import { getStripeInstance } from '../lib/stripe';
+
+const STRIPE_KEY = import.meta.env.VITE_STRIPE_PUBLIC_KEY;
+
+function ensureStripe() {
+  return new Promise((resolve) => {
+    if (window.Stripe) return resolve(window.Stripe);
+    const existing = document.querySelector('script[src*="js.stripe.com"]');
+    if (existing) {
+      existing.addEventListener('load', () => resolve(window.Stripe));
+      if (window.Stripe) resolve(window.Stripe);
+      return;
+    }
+    const s = document.createElement('script');
+    s.src = 'https://js.stripe.com/v3/';
+    s.onload = () => resolve(window.Stripe);
+    document.head.appendChild(s);
+  });
+}
 
 function CheckoutForm({ cartTotal, clientSecret }) {
   const { t, tx } = useLang();
@@ -13,59 +30,50 @@ function CheckoutForm({ cartTotal, clientSecret }) {
   const mountedRef = useRef(false);
 
   useEffect(() => {
-    if (!clientSecret || mountedRef.current) return;
-
+    if (!clientSecret || !STRIPE_KEY || mountedRef.current) return;
     let cancelled = false;
 
-    async function initStripe() {
-      const stripe = await getStripeInstance();
-      if (cancelled || !stripe) return;
+    async function mount() {
+      const Stripe = await ensureStripe();
+      if (cancelled || !Stripe) return;
 
-      // Wait for the DOM element
-      const waitForMount = () => {
-        const target = document.getElementById('stripe-payment-mount');
-        if (!target) {
-          setTimeout(waitForMount, 50);
-          return;
-        }
+      // Poll for DOM element
+      let target = null;
+      for (let i = 0; i < 50; i++) {
+        target = document.getElementById('stripe-payment-mount');
+        if (target) break;
+        await new Promise(r => setTimeout(r, 100));
+      }
+      if (!target || cancelled || mountedRef.current) return;
 
-        if (mountedRef.current) return;
-        mountedRef.current = true;
-        stripeRef.current = stripe;
+      mountedRef.current = true;
+      const stripe = Stripe(STRIPE_KEY);
+      stripeRef.current = stripe;
 
-        const s = getComputedStyle(document.documentElement);
-        const accent = s.getPropertyValue('--accent-color').trim() || '#FF52A0';
-        const bg = s.getPropertyValue('--bg-main').trim() || '#1a1a2e';
-        const text = s.getPropertyValue('--text-heading').trim() || '#e4e4f0';
-
-        const elements = stripe.elements({
-          clientSecret,
-          appearance: {
-            theme: 'night',
-            variables: {
-              colorPrimary: accent,
-              colorBackground: bg,
-              colorText: text,
-              colorDanger: '#ef4444',
-              fontFamily: 'system-ui, sans-serif',
-              borderRadius: '8px',
-            },
+      const cs = getComputedStyle(document.documentElement);
+      const elements = stripe.elements({
+        clientSecret,
+        appearance: {
+          theme: 'night',
+          variables: {
+            colorPrimary: cs.getPropertyValue('--accent-color').trim() || '#FF52A0',
+            colorBackground: cs.getPropertyValue('--bg-main').trim() || '#1a1a2e',
+            colorText: cs.getPropertyValue('--text-heading').trim() || '#e4e4f0',
+            colorDanger: '#ef4444',
+            fontFamily: 'system-ui, sans-serif',
+            borderRadius: '8px',
           },
-        });
-        elementsRef.current = elements;
+        },
+      });
+      elementsRef.current = elements;
 
-        const paymentElement = elements.create('payment', { layout: 'tabs' });
-        paymentElement.on('ready', () => {
-          if (!cancelled) setPaymentElementReady(true);
-        });
-        paymentElement.mount(target);
-      };
-
-      waitForMount();
+      const pe = elements.create('payment', { layout: 'tabs' });
+      pe.on('ready', () => { if (!cancelled) setPaymentElementReady(true); });
+      target.innerHTML = '';
+      pe.mount(target);
     }
 
-    initStripe();
-
+    mount();
     return () => { cancelled = true; };
   }, [clientSecret]);
 
@@ -85,11 +93,11 @@ function CheckoutForm({ cartTotal, clientSecret }) {
       });
 
       if (error) {
-        if (error.type === 'card_error' || error.type === 'validation_error') {
-          setErrorMessage(error.message || t('checkout.stripeError'));
-        } else {
-          setErrorMessage(t('checkout.stripeError') || 'Une erreur est survenue. Veuillez reessayer.');
-        }
+        setErrorMessage(
+          error.type === 'card_error' || error.type === 'validation_error'
+            ? error.message || t('checkout.stripeError')
+            : t('checkout.stripeError') || 'Une erreur est survenue.'
+        );
         setIsProcessing(false);
       }
     } catch (err) {
