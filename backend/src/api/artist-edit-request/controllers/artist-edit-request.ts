@@ -486,25 +486,26 @@ export default factories.createCoreController('api::artist-edit-request.artist-e
   // POST /artist-edit-requests/upload-direct - Upload fichier direct vers Google Drive + conversion WebP
   async uploadDirect(ctx) {
     try {
-    const files = (ctx.request as any).files;
-    const { artistSlug } = ctx.request.body as any;
+      const files = (ctx.request as any).files;
+      const { artistSlug } = ctx.request.body as any;
 
-    strapi.log.info(`uploadDirect called - artistSlug: ${artistSlug}, hasFiles: ${!!files}, fileKeys: ${files ? Object.keys(files) : 'none'}`);
+      strapi.log.info(`uploadDirect called - artistSlug: ${artistSlug}, hasFiles: ${!!files}, fileKeys: ${files ? Object.keys(files) : 'none'}`);
 
-    if (!files || !files.file) {
-      return ctx.badRequest('No file provided');
-    }
-    if (!artistSlug) {
-      return ctx.badRequest('artistSlug is required');
-    }
+      if (!files || !files.file) {
+        return ctx.badRequest('No file provided');
+      }
+      if (!artistSlug) {
+        return ctx.badRequest('artistSlug is required');
+      }
 
-    const file = Array.isArray(files.file) ? files.file[0] : files.file;
-    strapi.log.info(`uploadDirect file: ${file.originalFilename || file.name || 'unknown'}, filepath: ${file.filepath || file.path || 'none'}, size: ${file.size || 'unknown'}`);
+      const file = Array.isArray(files.file) ? files.file[0] : files.file;
+      strapi.log.info(`uploadDirect file: ${file.originalFilename || file.name || 'unknown'}, filepath: ${file.filepath || file.path || 'none'}, size: ${file.size || 'unknown'}`);
 
-    const fs = require('fs');
-    const fileBuffer = fs.readFileSync(file.filepath || file.path);
-    const fileName = file.originalFilename || file.name || 'upload';
-    const mimeType = file.mimetype || file.type || 'application/octet-stream';
+      const fs = require('fs');
+      const fileBuffer = fs.readFileSync(file.filepath || file.path);
+      const fileName = file.originalFilename || file.name || 'upload';
+      const mimeType = file.mimetype || file.type || 'application/octet-stream';
+
       // 1. Upload original vers Google Drive
       const driveResult = await tryUploadBufferToGoogleDrive(fileBuffer, fileName, artistSlug, mimeType);
       if ((driveResult as any).error) {
@@ -542,8 +543,8 @@ export default factories.createCoreController('api::artist-edit-request.artist-e
           }
           strapi.log.info(`WebP created: ${webpPath} (${(webpBuffer.length / 1024).toFixed(0)} KB from ${(fileBuffer.length / (1024*1024)).toFixed(1)} MB original)`);
         }
-      } catch (err) {
-        strapi.log.warn('WebP conversion failed (non-blocking):', err);
+      } catch (webpErr) {
+        strapi.log.warn('WebP conversion failed (non-blocking):', webpErr);
       }
 
       ctx.body = {
@@ -557,10 +558,6 @@ export default factories.createCoreController('api::artist-edit-request.artist-e
           driveUrl: (driveResult as any).webViewLink || null,
         },
       };
-    } catch (innerErr: any) {
-      strapi.log.error('uploadDirect drive/webp error:', innerErr);
-      ctx.throw(500, innerErr.message);
-    }
     } catch (err: any) {
       strapi.log.error('uploadDirect FATAL error:', err?.message || err, err?.stack || '');
       ctx.throw(500, err?.message || 'Upload failed');
