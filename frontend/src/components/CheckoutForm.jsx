@@ -5,15 +5,8 @@ import { useLang } from '../i18n/LanguageContext';
 const STRIPE_KEY = import.meta.env.VITE_STRIPE_PUBLIC_KEY;
 const MOUNT_ID = 'stripe-payment-element-mount';
 
-// SINGLETON: one Stripe instance for the entire app lifetime
-let _stripeInstance = null;
-function getOrCreateStripe() {
-  if (_stripeInstance) return _stripeInstance;
-  if (window.Stripe && STRIPE_KEY) {
-    _stripeInstance = window.Stripe(STRIPE_KEY);
-  }
-  return _stripeInstance;
-}
+// ONE Stripe instance for the entire app
+let _stripe = null;
 
 function CheckoutForm({ cartTotal, clientSecret }) {
   const { t, tx } = useLang();
@@ -26,81 +19,68 @@ function CheckoutForm({ cartTotal, clientSecret }) {
   useEffect(() => {
     if (!clientSecret || !STRIPE_KEY || mountedRef.current) return;
 
-    function tryMount() {
-      if (mountedRef.current) return true;
-      const target = document.getElementById(MOUNT_ID);
-      if (!target || !target.isConnected) return false;
-
-      // Load Stripe script if not available
-      if (!window.Stripe) return false;
-
-      mountedRef.current = true;
-
-      const stripe = getOrCreateStripe();
-      if (!stripe) return false;
-
-      const cs = getComputedStyle(document.documentElement);
-      const elements = stripe.elements({
-        clientSecret,
-        appearance: {
-          theme: 'night',
-          variables: {
-            colorPrimary: cs.getPropertyValue('--accent-color').trim() || '#FF52A0',
-            colorBackground: cs.getPropertyValue('--bg-main').trim() || '#1a1a2e',
-            colorText: cs.getPropertyValue('--text-heading').trim() || '#e4e4f0',
-            colorDanger: '#ef4444',
-            fontFamily: 'system-ui, sans-serif',
-            borderRadius: '8px',
-          },
-        },
-      });
-      elementsRef.current = elements;
-
-      const pe = elements.create('payment', { layout: 'tabs' });
-      pe.on('ready', () => setPaymentElementReady(true));
-      pe.mount('#' + MOUNT_ID);
-      return true;
+    // Ensure Stripe script is loaded
+    if (!window.Stripe && !document.querySelector('script[src*="js.stripe.com"]')) {
+      const s = document.createElement('script');
+      s.src = 'https://js.stripe.com/v3/';
+      document.head.appendChild(s);
     }
 
-    // If Stripe not loaded, inject script then poll
-    if (!window.Stripe) {
-      const existing = document.querySelector('script[src*="js.stripe.com"]');
-      if (!existing) {
-        const s = document.createElement('script');
-        s.src = 'https://js.stripe.com/v3/';
-        document.head.appendChild(s);
-      }
-    }
-
-    // Use setTimeout inside interval to ensure mount happens outside React's commit phase
+    // Poll until Stripe + mount target are ready, then mount with delay
     const interval = setInterval(() => {
       if (mountedRef.current) { clearInterval(interval); return; }
+      if (!window.Stripe) return;
       const target = document.getElementById(MOUNT_ID);
-      if (!target || !target.isConnected || !window.Stripe) return;
+      if (!target || !target.isConnected) return;
+
+      // Everything ready - stop polling, mount after a tick
       clearInterval(interval);
-      // Delay mount to next macrotask - outside React's render cycle
-      setTimeout(tryMount, 0);
+      mountedRef.current = true;
+
+      setTimeout(() => {
+        if (!_stripe) _stripe = window.Stripe(STRIPE_KEY);
+
+        const cs = getComputedStyle(document.documentElement);
+        const elements = _stripe.elements({
+          clientSecret,
+          appearance: {
+            theme: 'night',
+            variables: {
+              colorPrimary: cs.getPropertyValue('--accent-color').trim() || '#FF52A0',
+              colorBackground: cs.getPropertyValue('--bg-main').trim() || '#1a1a2e',
+              colorText: cs.getPropertyValue('--text-heading').trim() || '#e4e4f0',
+              colorDanger: '#ef4444',
+              fontFamily: 'system-ui, sans-serif',
+              borderRadius: '8px',
+            },
+          },
+        });
+        elementsRef.current = elements;
+
+        const pe = elements.create('payment', { layout: 'tabs' });
+        pe.on('ready', () => setPaymentElementReady(true));
+
+        // Get fresh reference to mount target and clear it
+        const mountTarget = document.getElementById(MOUNT_ID);
+        if (mountTarget) {
+          mountTarget.innerHTML = '';
+          pe.mount(mountTarget);
+        }
+      }, 100);
     }, 200);
 
-    // Safety: stop polling after 30s
-    const safety = setTimeout(() => clearInterval(interval), 30000);
-
-    return () => {
-      clearInterval(interval);
-      clearTimeout(safety);
-    };
+    return () => clearInterval(interval);
   }, [clientSecret]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const stripe = getOrCreateStripe();
-    if (!stripe || !elementsRef.current || !paymentElementReady) return;
+    if (!_stripe || !elementsRef.current || !paymentElementReady) return;
 
     setIsProcessing(true);
     setErrorMessage('');
 
     try {
-      const { error } = await stripe.confirmPayment({
+      const { error } = await _stripe.confirmPayment({
         elements: elementsRef.current,
         confirmParams: {
           return_url: `${window.location.origin}/checkout/success`,
