@@ -356,11 +356,7 @@ function Checkout() {
                     </form>
                   </motion.div>
                 ) : (
-                  <motion.div
-                    key="payment"
-                    initial={{ opacity: 0, x: 10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                  >
+                  <div>
                     <button
                       onClick={() => setStep('info')}
                       className="flex items-center gap-2 text-grey-muted hover:text-heading transition-colors mb-6 text-sm"
@@ -400,7 +396,7 @@ function Checkout() {
                         <CheckoutForm cartTotal={orderTotal} />
                       </Elements>
                     )}
-                  </motion.div>
+                  </div>
                 )}
               </div>
 
