@@ -4,14 +4,15 @@ import { useLang } from '../i18n/LanguageContext';
 
 const STRIPE_KEY = import.meta.env.VITE_STRIPE_PUBLIC_KEY;
 
-// Create ONE Stripe instance at module level - never create a second one
-let _stripe = null;
-function getStripe() {
-  if (_stripe) return _stripe;
-  if (window.Stripe && STRIPE_KEY) {
-    _stripe = window.Stripe(STRIPE_KEY);
-  }
-  return _stripe;
+// Load Stripe script on demand, only when checkout is needed
+function loadStripeScript() {
+  return new Promise((resolve) => {
+    if (window.Stripe) return resolve(window.Stripe);
+    const s = document.createElement('script');
+    s.src = 'https://js.stripe.com/v3/';
+    s.onload = () => resolve(window.Stripe);
+    document.head.appendChild(s);
+  });
 }
 
 function CheckoutForm({ cartTotal, clientSecret }) {
@@ -19,63 +20,66 @@ function CheckoutForm({ cartTotal, clientSecret }) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [paymentElementReady, setPaymentElementReady] = useState(false);
+  const stripeRef = useRef(null);
   const elementsRef = useRef(null);
   const divRef = useRef(null);
   const mountedRef = useRef(false);
 
   useEffect(() => {
-    if (!clientSecret || mountedRef.current) return;
+    if (!clientSecret || !STRIPE_KEY || mountedRef.current) return;
 
-    const stripe = getStripe();
-    if (!stripe) return;
+    let cancelled = false;
 
-    // Wait for div to be in DOM
-    const interval = setInterval(() => {
-      if (mountedRef.current) { clearInterval(interval); return; }
-      const target = divRef.current;
-      if (!target || !target.isConnected) return;
+    loadStripeScript().then((Stripe) => {
+      if (cancelled || !Stripe || mountedRef.current) return;
 
-      clearInterval(interval);
-      mountedRef.current = true;
+      // Poll for div to be connected
+      const interval = setInterval(() => {
+        if (cancelled || mountedRef.current) { clearInterval(interval); return; }
+        const target = divRef.current;
+        if (!target || !target.isConnected) return;
 
-      // Remove orphan Stripe iframes from previous loads
-      document.querySelectorAll('body > iframe[src*="stripe"]').forEach(f => f.remove());
+        clearInterval(interval);
+        mountedRef.current = true;
 
-      const cs = getComputedStyle(document.documentElement);
-      const elements = stripe.elements({
-        clientSecret,
-        appearance: {
-          theme: 'night',
-          variables: {
-            colorPrimary: cs.getPropertyValue('--accent-color').trim() || '#FF52A0',
-            colorBackground: cs.getPropertyValue('--bg-main').trim() || '#1a1a2e',
-            colorText: cs.getPropertyValue('--text-heading').trim() || '#e4e4f0',
-            colorDanger: '#ef4444',
-            fontFamily: 'system-ui, sans-serif',
-            borderRadius: '8px',
+        const stripe = Stripe(STRIPE_KEY);
+        stripeRef.current = stripe;
+
+        const cs = getComputedStyle(document.documentElement);
+        const elements = stripe.elements({
+          clientSecret,
+          appearance: {
+            theme: 'night',
+            variables: {
+              colorPrimary: cs.getPropertyValue('--accent-color').trim() || '#FF52A0',
+              colorBackground: cs.getPropertyValue('--bg-main').trim() || '#1a1a2e',
+              colorText: cs.getPropertyValue('--text-heading').trim() || '#e4e4f0',
+              colorDanger: '#ef4444',
+              fontFamily: 'system-ui, sans-serif',
+              borderRadius: '8px',
+            },
           },
-        },
-      });
-      elementsRef.current = elements;
+        });
+        elementsRef.current = elements;
 
-      const pe = elements.create('payment', { layout: 'tabs' });
-      pe.on('ready', () => setPaymentElementReady(true));
-      pe.mount(target);
-    }, 200);
+        const pe = elements.create('payment', { layout: 'tabs' });
+        pe.on('ready', () => { if (!cancelled) setPaymentElementReady(true); });
+        pe.mount(target);
+      }, 200);
+    });
 
-    return () => clearInterval(interval);
+    return () => { cancelled = true; };
   }, [clientSecret]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const stripe = getStripe();
-    if (!stripe || !elementsRef.current || !paymentElementReady) return;
+    if (!stripeRef.current || !elementsRef.current || !paymentElementReady) return;
 
     setIsProcessing(true);
     setErrorMessage('');
 
     try {
-      const { error } = await stripe.confirmPayment({
+      const { error } = await stripeRef.current.confirmPayment({
         elements: elementsRef.current,
         confirmParams: {
           return_url: `${window.location.origin}/checkout/success`,
