@@ -314,17 +314,14 @@ function SystemStatusWidget({ tx }) {
     // Neon DB (implied by Strapi working)
     results.push({ name: 'Neon DB', ok: results[0]?.ok });
 
-    // GitHub Pages
+    // Cloudflare Pages (frontend)
     try {
       const start = Date.now();
       await fetch('https://massivemedias.com/', { mode: 'no-cors', signal: AbortSignal.timeout(5000) });
-      results.push({ name: 'GitHub Pages', ok: true, ms: Date.now() - start });
+      results.push({ name: 'Cloudflare Pages', ok: true, ms: Date.now() - start });
     } catch {
-      results.push({ name: 'GitHub Pages', ok: false, ms: 0 });
+      results.push({ name: 'Cloudflare Pages', ok: false, ms: 0 });
     }
-
-    // Cloudflare
-    results.push({ name: 'Cloudflare', ok: true });
 
     // Supabase
     results.push({ name: 'Supabase', ok: !!import.meta.env.VITE_SUPABASE_URL });
@@ -334,6 +331,17 @@ function SystemStatusWidget({ tx }) {
 
     // Google Analytics
     results.push({ name: 'Analytics', ok: !!import.meta.env.VITE_GA_ID });
+
+    // Last deploy info from GitHub
+    try {
+      const ghRes = await fetch('https://api.github.com/repos/massivemedias/massivemedias/commits?per_page=1', { signal: AbortSignal.timeout(5000) });
+      if (ghRes.ok) {
+        const [commit] = await ghRes.json();
+        const ago = Math.round((Date.now() - new Date(commit.commit.author.date).getTime()) / 60000);
+        const msg = commit.commit.message.split('\n')[0].substring(0, 50);
+        results.push({ name: `Dernier push: ${ago < 60 ? ago + 'min' : Math.round(ago / 60) + 'h'}`, ok: true, info: msg });
+      }
+    } catch {}
 
     setServices(results);
     setChecking(false);
@@ -357,7 +365,7 @@ function SystemStatusWidget({ tx }) {
       </div>
       <div className="flex flex-wrap gap-2">
         {services.map(s => (
-          <div key={s.name} className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/20 text-xs">
+          <div key={s.name} className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/20 text-xs" title={s.info || ''}>
             <span className={`w-1.5 h-1.5 rounded-full ${s.ok ? 'bg-green-500' : 'bg-red-500'}`} />
             <span className="text-grey-light">{s.name}</span>
             {s.ms > 0 && <span className="text-grey-muted">{s.ms}ms</span>}
