@@ -5,30 +5,39 @@ import { useLang } from '../i18n/LanguageContext';
 const STRIPE_KEY = import.meta.env.VITE_STRIPE_PUBLIC_KEY;
 const MOUNT_ID = 'stripe-payment-element-mount';
 
+// SINGLETON: one Stripe instance for the entire app lifetime
+let _stripeInstance = null;
+function getOrCreateStripe() {
+  if (_stripeInstance) return _stripeInstance;
+  if (window.Stripe && STRIPE_KEY) {
+    _stripeInstance = window.Stripe(STRIPE_KEY);
+  }
+  return _stripeInstance;
+}
+
 function CheckoutForm({ cartTotal, clientSecret }) {
   const { t, tx } = useLang();
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [paymentElementReady, setPaymentElementReady] = useState(false);
-  const stripeRef = useRef(null);
   const elementsRef = useRef(null);
   const mountedRef = useRef(false);
 
   useEffect(() => {
     if (!clientSecret || !STRIPE_KEY || mountedRef.current) return;
 
-    function doMount() {
-      if (mountedRef.current) return;
+    function tryMount() {
+      if (mountedRef.current) return true;
       const target = document.getElementById(MOUNT_ID);
-      if (!target || !target.isConnected || !window.Stripe) return;
+      if (!target || !target.isConnected) return false;
+
+      // Load Stripe script if not available
+      if (!window.Stripe) return false;
 
       mountedRef.current = true;
 
-      // CRITICAL: Remove ALL orphan Stripe iframes BEFORE creating instance
-      document.querySelectorAll('iframe[src*="stripe"]').forEach(f => f.remove());
-
-      const stripe = window.Stripe(STRIPE_KEY);
-      stripeRef.current = stripe;
+      const stripe = getOrCreateStripe();
+      if (!stripe) return false;
 
       const cs = getComputedStyle(document.documentElement);
       const elements = stripe.elements({
@@ -50,36 +59,42 @@ function CheckoutForm({ cartTotal, clientSecret }) {
       const pe = elements.create('payment', { layout: 'tabs' });
       pe.on('ready', () => setPaymentElementReady(true));
       pe.mount('#' + MOUNT_ID);
+      return true;
     }
 
-    // Load Stripe script if needed, then poll for mount target
+    // If Stripe not loaded, inject script then poll
     if (!window.Stripe) {
-      const s = document.createElement('script');
-      s.src = 'https://js.stripe.com/v3/';
-      s.onload = () => {
-        const interval = setInterval(() => {
-          if (mountedRef.current) { clearInterval(interval); return; }
-          doMount();
-        }, 200);
-      };
-      document.head.appendChild(s);
-    } else {
-      const interval = setInterval(() => {
-        if (mountedRef.current) { clearInterval(interval); return; }
-        doMount();
-      }, 200);
+      const existing = document.querySelector('script[src*="js.stripe.com"]');
+      if (!existing) {
+        const s = document.createElement('script');
+        s.src = 'https://js.stripe.com/v3/';
+        document.head.appendChild(s);
+      }
     }
+
+    const interval = setInterval(() => {
+      if (tryMount()) clearInterval(interval);
+    }, 200);
+
+    // Safety: stop polling after 30s
+    const safety = setTimeout(() => clearInterval(interval), 30000);
+
+    return () => {
+      clearInterval(interval);
+      clearTimeout(safety);
+    };
   }, [clientSecret]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!stripeRef.current || !elementsRef.current || !paymentElementReady) return;
+    const stripe = getOrCreateStripe();
+    if (!stripe || !elementsRef.current || !paymentElementReady) return;
 
     setIsProcessing(true);
     setErrorMessage('');
 
     try {
-      const { error } = await stripeRef.current.confirmPayment({
+      const { error } = await stripe.confirmPayment({
         elements: elementsRef.current,
         confirmParams: {
           return_url: `${window.location.origin}/checkout/success`,
