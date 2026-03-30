@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { CreditCard, AlertCircle, Loader2 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 
@@ -9,45 +9,55 @@ function CheckoutForm({ cartTotal, clientSecret }) {
   const [paymentElementReady, setPaymentElementReady] = useState(false);
   const stripeRef = useRef(null);
   const elementsRef = useRef(null);
-  const peRef = useRef(null);
+  const mountedRef = useRef(false);
 
-  // Callback ref: fires when the div is actually in the DOM
-  const mountCallback = useCallback((node) => {
-    if (!node || !clientSecret || !window.Stripe) return;
-    // Don't mount twice
-    if (peRef.current) return;
+  useEffect(() => {
+    if (!clientSecret || mountedRef.current) return;
 
-    const key = import.meta.env.VITE_STRIPE_PUBLIC_KEY;
-    if (!key) return;
+    // Wait for DOM element to be available
+    const tryMount = () => {
+      const target = document.getElementById('stripe-payment-mount');
+      if (!target || !window.Stripe) {
+        // Retry in 100ms
+        setTimeout(tryMount, 100);
+        return;
+      }
 
-    const stripe = window.Stripe(key);
-    stripeRef.current = stripe;
+      mountedRef.current = true;
+      const key = import.meta.env.VITE_STRIPE_PUBLIC_KEY;
+      if (!key) return;
 
-    const s = getComputedStyle(document.documentElement);
-    const accent = s.getPropertyValue('--accent-color').trim() || '#FF52A0';
-    const bg = s.getPropertyValue('--bg-main').trim() || '#1a1a2e';
-    const text = s.getPropertyValue('--text-heading').trim() || '#e4e4f0';
+      const stripe = window.Stripe(key);
+      stripeRef.current = stripe;
 
-    const elements = stripe.elements({
-      clientSecret,
-      appearance: {
-        theme: 'night',
-        variables: {
-          colorPrimary: accent,
-          colorBackground: bg,
-          colorText: text,
-          colorDanger: '#ef4444',
-          fontFamily: 'system-ui, sans-serif',
-          borderRadius: '8px',
+      const s = getComputedStyle(document.documentElement);
+      const accent = s.getPropertyValue('--accent-color').trim() || '#FF52A0';
+      const bg = s.getPropertyValue('--bg-main').trim() || '#1a1a2e';
+      const text = s.getPropertyValue('--text-heading').trim() || '#e4e4f0';
+
+      const elements = stripe.elements({
+        clientSecret,
+        appearance: {
+          theme: 'night',
+          variables: {
+            colorPrimary: accent,
+            colorBackground: bg,
+            colorText: text,
+            colorDanger: '#ef4444',
+            fontFamily: 'system-ui, sans-serif',
+            borderRadius: '8px',
+          },
         },
-      },
-    });
-    elementsRef.current = elements;
+      });
+      elementsRef.current = elements;
 
-    const paymentElement = elements.create('payment', { layout: 'tabs' });
-    peRef.current = paymentElement;
-    paymentElement.on('ready', () => setPaymentElementReady(true));
-    paymentElement.mount(node);
+      const pe = elements.create('payment', { layout: 'tabs' });
+      pe.on('ready', () => setPaymentElementReady(true));
+      pe.mount('#stripe-payment-mount');
+    };
+
+    // Small delay to ensure React has committed the DOM
+    setTimeout(tryMount, 50);
   }, [clientSecret]);
 
   const handleSubmit = async (e) => {
@@ -93,7 +103,7 @@ function CheckoutForm({ cartTotal, clientSecret }) {
               <span className="text-sm">{tx({ fr: 'Chargement du formulaire de paiement...', en: 'Loading payment form...', es: 'Cargando formulario de pago...' })}</span>
             </div>
           )}
-          <div ref={mountCallback} />
+          <div id="stripe-payment-mount" />
         </div>
       </div>
 
