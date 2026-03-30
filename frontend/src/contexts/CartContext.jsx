@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { trackAddToCart, trackRemoveFromCart } from '../utils/analytics';
 import { useAuth } from './AuthContext';
+import { getStickerPrice } from '../data/products';
 
 const CartContext = createContext();
 
@@ -128,9 +129,20 @@ export function CartProvider({ children }) {
 
   const updateQuantity = useCallback((index, quantity, unitPrice) => {
     setItems(prev => {
-      const updated = prev.map((item, i) =>
-        i === index ? { ...item, quantity, unitPrice, totalPrice: quantity * unitPrice } : item
-      );
+      const updated = prev.map((item, i) => {
+        if (i !== index) return item;
+        // Pour les stickers, recalculer le prix selon le palier (anti-manipulation)
+        let finalUnitPrice = unitPrice;
+        let finalTotal = quantity * unitPrice;
+        if (item.productId === 'sticker-custom' || item.productId === 'sticker-artist') {
+          const priceInfo = getStickerPrice(item.finish, item.shape, quantity);
+          if (priceInfo) {
+            finalUnitPrice = priceInfo.unitPrice;
+            finalTotal = priceInfo.price;
+          }
+        }
+        return { ...item, quantity, unitPrice: finalUnitPrice, totalPrice: finalTotal };
+      });
       saveCart(updated);
       return updated;
     });

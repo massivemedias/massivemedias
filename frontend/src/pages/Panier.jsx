@@ -7,8 +7,11 @@ import { useCart } from '../contexts/CartContext';
 import { useLang } from '../i18n/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 import { validatePromoCode } from '../services/orderService';
+import { getStickerPrice } from '../data/products';
 
 const ARTIST_DISCOUNT = 0.30;
+// Produits a paliers fixes - pas de +/- libre
+const TIERED_PRODUCTS = ['sticker-custom', 'sticker-artist'];
 
 function Panier() {
   const { tx } = useLang();
@@ -96,6 +99,10 @@ function Panier() {
               {/* Ligne 2: quantite + prix + supprimer */}
               <div className="flex items-center justify-between pl-0 sm:pl-[68px]">
                 <div className="flex items-center gap-2">
+                  {TIERED_PRODUCTS.includes(item.productId) ? (
+                    <span className="text-heading font-bold text-sm px-2">{item.quantity} {tx({ fr: 'unites', en: 'units', es: 'unidades' })}</span>
+                  ) : (
+                  <>
                   <button
                     onClick={() => updateQuantity(i, Math.max(1, item.quantity - 1), item.unitPrice)}
                     className="w-8 h-8 rounded-lg border border-white/10 text-heading font-bold text-sm flex items-center justify-center hover:border-accent/50 transition-colors"
@@ -109,6 +116,8 @@ function Panier() {
                   >
                     +
                   </button>
+                  </>
+                  )}
                 </div>
                 <div className="text-right">
                   {item.isArtistOwnPrint ? (

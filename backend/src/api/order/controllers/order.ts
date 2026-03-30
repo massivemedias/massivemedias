@@ -12,6 +12,11 @@ const getStripe = () => {
   return new Stripe(key);
 };
 
+// Sticker pricing tiers for server-side validation
+const STICKER_STANDARD_TIERS: Record<number, number> = { 25: 30, 50: 47.50, 100: 85, 250: 200, 500: 375 };
+const STICKER_FX_TIERS: Record<number, number> = { 25: 35, 50: 57.50, 100: 100, 250: 225, 500: 425 };
+const FX_FINISHES = ['holographic', 'broken-glass', 'stars'];
+
 export default factories.createCoreController('api::order.order', ({ strapi }) => ({
 
   async uploadFile(ctx) {
@@ -42,11 +47,26 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
     }
 
     // Recalculate total server-side (never trust client-side totals)
-    let subtotal = items.reduce((sum: number, item: any) => sum + (item.totalPrice || 0), 0);
+    let subtotal = 0;
+    for (const item of items) {
+      let validPrice = item.totalPrice || 0;
+      // Validate sticker pricing against tiers
+      if (item.productId === 'sticker-custom' || item.productId === 'sticker-artist') {
+        const tiers = FX_FINISHES.includes(item.finish) ? STICKER_FX_TIERS : STICKER_STANDARD_TIERS;
+        const tierPrice = tiers[item.quantity];
+        if (tierPrice) {
+          validPrice = tierPrice; // Override with server-validated price
+        } else {
+          strapi.log.warn(`Invalid sticker tier: qty=${item.quantity}, using client price ${item.totalPrice}`);
+        }
+      }
+      subtotal += validPrice;
+    }
 
     // Validate and apply promo code server-side (never trust client discount)
     const PROMO_CODES: Record<string, { discountPercent: number; label: string }> = {
       'MASSIVE6327': { discountPercent: 20, label: 'Promo Massive 20%' },
+      'MASSIVE432': { discountPercent: 15, label: 'Promo Massive 15%' },
     };
     let promoDiscount = 0;
     let appliedPromoCode = '';
@@ -206,11 +226,21 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
       return ctx.badRequest('Customer email and name are required');
     }
 
-    // Recalculate server-side (same logic as createPaymentIntent)
-    let subtotal = items.reduce((sum: number, item: any) => sum + (item.totalPrice || 0), 0);
+    // Recalculate server-side with sticker tier validation
+    let subtotal = 0;
+    for (const item of items) {
+      let validPrice = item.totalPrice || 0;
+      if (item.productId === 'sticker-custom' || item.productId === 'sticker-artist') {
+        const tiers = FX_FINISHES.includes(item.finish) ? STICKER_FX_TIERS : STICKER_STANDARD_TIERS;
+        const tierPrice = tiers[item.quantity];
+        if (tierPrice) validPrice = tierPrice;
+      }
+      subtotal += validPrice;
+    }
 
     const PROMO_CODES: Record<string, { discountPercent: number; label: string }> = {
       'MASSIVE6327': { discountPercent: 20, label: 'Promo Massive 20%' },
+      'MASSIVE432': { discountPercent: 15, label: 'Promo Massive 15%' },
     };
     let promoDiscount = 0;
     let appliedPromoCode = '';

@@ -181,7 +181,9 @@ function Checkout() {
                         <input
                           type="tel" id="telephone" name="telephone" autoComplete="tel"
                           value={formData.telephone} onChange={handleChange}
-                          placeholder="514-xxx-xxxx"
+                          placeholder="514-555-1234"
+                          pattern="^[\+]?1?[\s.-]?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}$"
+                          title={tx({ fr: 'Format: 514-555-1234 ou (514) 555-1234', en: 'Format: 514-555-1234 or (514) 555-1234', es: 'Formato: 514-555-1234 o (514) 555-1234' })}
                           className="input-field"
                         />
                       </div>
