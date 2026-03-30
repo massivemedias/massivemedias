@@ -32,7 +32,7 @@ function AdminInventaire() {
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [editingId, setEditingId] = useState(null);
-  const [editData, setEditData] = useState({ quantity: 0 });
+  const [editData, setEditData] = useState({ quantity: 0, nameFr: '' });
   const [saving, setSaving] = useState(false);
 
   const fetchData = useCallback(async () => {
@@ -66,7 +66,7 @@ function AdminInventaire() {
 
   const startEdit = (item) => {
     setEditingId(item.documentId);
-    setEditData({ quantity: item.quantity || 0 });
+    setEditData({ quantity: item.quantity || 0, nameFr: item.nameFr || '' });
   };
 
   const getName = (item) => lang === 'en' ? (item.nameEn || item.nameFr) : item.nameFr;
@@ -180,7 +180,16 @@ function AdminInventaire() {
                       exit={{ opacity: 0 }}
                       className="shadow-[0_-1px_0_rgba(255,255,255,0.04)] hover:bg-white/[0.02] transition-colors"
                     >
-                      <td className="px-4 py-2 text-heading font-medium">{getName(item)}</td>
+                      <td className="px-4 py-2 text-heading font-medium">
+                        {isEditing ? (
+                          <input
+                            type="text"
+                            value={editData.nameFr}
+                            onChange={(e) => setEditData(d => ({ ...d, nameFr: e.target.value }))}
+                            className="w-full rounded bg-glass text-heading p-1 text-sm"
+                          />
+                        ) : getName(item)}
+                      </td>
                       <td className="px-4 py-2 font-mono text-grey-muted text-xs">{item.sku || '-'}</td>
                       <td className="px-4 py-2 text-grey-muted">{CATEGORY_LABELS[item.category] ? tx(CATEGORY_LABELS[item.category]) : item.category}</td>
                       <td className="px-4 py-2 text-center">

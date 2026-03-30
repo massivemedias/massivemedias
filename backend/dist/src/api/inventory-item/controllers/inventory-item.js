@@ -48,9 +48,9 @@ exports.default = strapi_1.factories.createCoreController('api::inventory-item.i
     },
     async adjustStock(ctx) {
         const { documentId } = ctx.params;
-        const { quantity, reserved, notes } = ctx.request.body;
-        if (quantity === undefined && reserved === undefined) {
-            return ctx.badRequest('quantity or reserved is required');
+        const { quantity, reserved, notes, nameFr } = ctx.request.body;
+        if (quantity === undefined && reserved === undefined && !nameFr) {
+            return ctx.badRequest('quantity, reserved or nameFr is required');
         }
         const item = await strapi.documents('api::inventory-item.inventory-item').findFirst({
             filters: { documentId },
@@ -65,6 +65,8 @@ exports.default = strapi_1.factories.createCoreController('api::inventory-item.i
             updateData.reserved = reserved;
         if (notes)
             updateData.notes = notes;
+        if (nameFr)
+            updateData.nameFr = nameFr;
         const updated = await strapi.documents('api::inventory-item.inventory-item').update({
             documentId: item.documentId,
             data: updateData,
