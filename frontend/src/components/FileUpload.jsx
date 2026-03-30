@@ -159,7 +159,8 @@ function FileUpload({ files = [], onFilesChange, label, maxFiles = 5, compact = 
     onFilesChange(files.filter((_, i) => i !== index));
   };
 
-  const isImage = (mime) => mime && mime.startsWith('image/');
+  const NON_WEB_IMAGES = ['image/tiff', 'image/x-tiff', 'image/bmp', 'image/x-adobe-dng', 'image/vnd.adobe.photoshop'];
+  const isImage = (mime) => mime && mime.startsWith('image/') && !NON_WEB_IMAGES.includes(mime);
   const canAddMore = files.length < maxFiles;
 
   // -- Compact mode: preview replaces drop zone --
@@ -208,7 +209,7 @@ function FileUpload({ files = [], onFilesChange, label, maxFiles = 5, compact = 
           <div className="space-y-2">
             {files.map((file, i) => (
               <div key={file.id || i} className="relative group">
-                {isImage(file.mime) && file.url && !hidePreview ? (
+                {((isImage(file.mime) || (file.url && file.url.includes('.webp'))) && file.url && !hidePreview) ? (
                   <div className="rounded-lg overflow-hidden bg-glass">
                     <img
                       src={file.url}
