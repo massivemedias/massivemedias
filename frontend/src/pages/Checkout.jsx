@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, User, MapPin, AlertCircle, Paperclip } from 'lucide-react';
+import { ArrowLeft, User, MapPin, AlertCircle, Paperclip, Truck, Store } from 'lucide-react';
 import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
 import { useCart } from '../contexts/CartContext';
@@ -49,6 +49,7 @@ function Checkout() {
   const [step, setStep] = useState('info'); // 'info' | 'payment'
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [deliveryMethod, setDeliveryMethod] = useState('shipping'); // 'shipping' | 'pickup'
 
   const meta = user?.user_metadata || {};
   const [formData, setFormData] = useState({
@@ -75,7 +76,8 @@ function Checkout() {
   const promoDiscount = discountAmount || 0;
   const subtotal = cartTotal - artistDiscountTotal - promoDiscount;
 
-  const { shippingCost: shipping } = useMemo(() => calcShipping(formData.province, formData.codePostal, items), [formData.province, formData.codePostal, items]);
+  const { shippingCost: shippingCalc } = useMemo(() => calcShipping(formData.province, formData.codePostal, items), [formData.province, formData.codePostal, items]);
+  const shipping = deliveryMethod === 'pickup' ? 0 : shippingCalc;
   const taxes = useMemo(() => calculateTaxes(subtotal, formData.province), [subtotal, formData.province]);
   const orderTotal = +(subtotal + shipping + taxes.total).toFixed(2);
 
@@ -184,6 +186,50 @@ function Checkout() {
                         />
                       </div>
 
+                      {/* Methode de livraison */}
+                      <div className="pt-2">
+                        <h2 className="text-xl font-heading font-bold text-heading mb-4 flex items-center gap-2">
+                          <Truck size={20} className="text-accent" />
+                          {tx({ fr: 'Mode de livraison', en: 'Delivery method', es: 'Metodo de entrega' })}
+                        </h2>
+                        <div className="grid grid-cols-2 gap-3 mb-5">
+                          <button
+                            type="button"
+                            onClick={() => setDeliveryMethod('shipping')}
+                            className={`p-4 rounded-xl border-2 transition-all text-left ${
+                              deliveryMethod === 'shipping'
+                                ? 'border-accent bg-accent/10'
+                                : 'border-white/10 bg-glass hover:border-white/20'
+                            }`}
+                          >
+                            <Truck size={20} className={deliveryMethod === 'shipping' ? 'text-accent mb-2' : 'text-grey-muted mb-2'} />
+                            <p className="text-heading font-semibold text-sm">{tx({ fr: 'Livraison', en: 'Shipping', es: 'Envio' })}</p>
+                            <p className="text-grey-muted text-xs">{tx({ fr: 'A votre adresse', en: 'To your address', es: 'A tu direccion' })}</p>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setDeliveryMethod('pickup')}
+                            className={`p-4 rounded-xl border-2 transition-all text-left ${
+                              deliveryMethod === 'pickup'
+                                ? 'border-accent bg-accent/10'
+                                : 'border-white/10 bg-glass hover:border-white/20'
+                            }`}
+                          >
+                            <Store size={20} className={deliveryMethod === 'pickup' ? 'text-accent mb-2' : 'text-grey-muted mb-2'} />
+                            <p className="text-heading font-semibold text-sm">{tx({ fr: 'Ramassage sur place', en: 'Pickup', es: 'Recoger en tienda' })}</p>
+                            <p className="text-grey-muted text-xs">{tx({ fr: 'Gratuit - 7049 St-Urbain', en: 'Free - 7049 St-Urbain', es: 'Gratis - 7049 St-Urbain' })}</p>
+                          </button>
+                        </div>
+                      </div>
+
+                      {deliveryMethod === 'pickup' ? (
+                        <div className="p-4 rounded-xl bg-accent/5 border border-accent/20 mb-2">
+                          <p className="text-heading font-semibold text-sm mb-1">{tx({ fr: 'Adresse de ramassage', en: 'Pickup address', es: 'Direccion de recogida' })}</p>
+                          <p className="text-grey-muted text-sm">7049 rue Saint-Urbain, Montreal, QC</p>
+                          <p className="text-grey-muted text-xs mt-2">{tx({ fr: 'Nous vous contacterons pour coordonner le ramassage.', en: 'We will contact you to coordinate pickup.', es: 'Le contactaremos para coordinar la recogida.' })}</p>
+                        </div>
+                      ) : (
+                      <>
                       {/* Adresse de livraison */}
                       <div className="pt-2">
                         <h2 className="text-xl font-heading font-bold text-heading mb-5 flex items-center gap-2">
@@ -256,7 +302,8 @@ function Checkout() {
                           />
                         </div>
                       </div>
-
+                      </>
+                      )}
 
                       {/* Files from cart items summary */}
                       {items.some(item => item.uploadedFiles?.length > 0) && (
@@ -316,7 +363,10 @@ function Checkout() {
                       <p className="text-grey-muted text-sm">{formData.email}</p>
                       {formData.telephone && <p className="text-grey-muted text-sm">{formData.telephone}</p>}
                       <p className="text-grey-muted text-sm mt-2">
-                        {formData.adresse}, {formData.ville}, {formData.province} {formData.codePostal}
+                        {deliveryMethod === 'pickup'
+                          ? tx({ fr: 'Ramassage sur place - 7049 rue Saint-Urbain, Montreal', en: 'Pickup - 7049 rue Saint-Urbain, Montreal', es: 'Recoger - 7049 rue Saint-Urbain, Montreal' })
+                          : `${formData.adresse}, ${formData.ville}, ${formData.province} ${formData.codePostal}`
+                        }
                       </p>
                     </div>
 
@@ -326,10 +376,13 @@ function Checkout() {
                         customerEmail: formData.email,
                         customerName: formData.nom,
                         customerPhone: formData.telephone,
-                        shippingAddress: { address: formData.adresse, city: formData.ville, province: formData.province, postalCode: formData.codePostal },
+                        shippingAddress: deliveryMethod === 'pickup'
+                          ? { address: 'Ramassage sur place - 7049 rue Saint-Urbain', city: 'Montreal', province: 'QC', postalCode: 'H2S 3H8' }
+                          : { address: formData.adresse, city: formData.ville, province: formData.province, postalCode: formData.codePostal },
+                        deliveryMethod,
                         promoCode: promoCode || undefined,
                         designReady: hasDesignFiles,
-                        notes: formData.message,
+                        notes: deliveryMethod === 'pickup' ? `[PICKUP] ${formData.message || ''}`.trim() : formData.message,
                         supabaseUserId: user?.id || '',
                       }} />
                     )}
@@ -394,7 +447,11 @@ function Checkout() {
                       </div>
                     )}
                     <div className="flex justify-between items-center text-sm">
-                      <span className="text-grey-muted">{tx({ fr: 'Frais de livraison', en: 'Shipping', es: 'Envio' })}</span>
+                      <span className="text-grey-muted">
+                        {deliveryMethod === 'pickup'
+                          ? tx({ fr: 'Ramassage sur place', en: 'Pickup', es: 'Recoger en tienda' })
+                          : tx({ fr: 'Frais de livraison', en: 'Shipping', es: 'Envio' })}
+                      </span>
                       <span className="text-heading">
                         {shipping === 0 ? tx({ fr: 'Gratuit', en: 'Free', es: 'Gratis' }) : `${shipping.toFixed(2)}$`}
                       </span>
