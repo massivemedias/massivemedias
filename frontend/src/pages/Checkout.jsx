@@ -6,7 +6,6 @@ import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
-import { createPaymentIntent } from '../services/orderService';
 import { trackBeginCheckout } from '../utils/analytics';
 import CheckoutForm from '../components/CheckoutForm';
 import AddressAutocomplete from '../components/AddressAutocomplete';
@@ -48,7 +47,6 @@ function Checkout() {
   // Guest checkout supporte - pas de redirection vers login
 
   const [step, setStep] = useState('info'); // 'info' | 'payment'
-  const [clientSecret, setClientSecret] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -87,69 +85,21 @@ function Checkout() {
   const handleInfoSubmit = async (e) => {
     e.preventDefault();
 
-    setIsLoading(true);
-    setError('');
+    // Sauvegarder les infos dans le profil pour pre-remplir la prochaine fois
+    if (user && updateProfile) {
+      updateProfile({
+        full_name: formData.nom,
+        phone: formData.telephone,
+        address: formData.adresse,
+        city: formData.ville,
+        province: formData.province,
+        postal_code: formData.codePostal,
+      }).catch(() => {});
+    }
 
-    try {
-      // Include extra checkout files in the items data
-      const itemsToSend = items.map(item => ({
-        ...item,
-        uploadedFiles: item.uploadedFiles || [],
-      }));
-
-      const result = await createPaymentIntent({
-        items: itemsToSend,
-        customerEmail: formData.email,
-        customerName: formData.nom,
-        customerPhone: formData.telephone,
-        shippingAddress: {
-          address: formData.adresse,
-          city: formData.ville,
-          province: formData.province,
-          postalCode: formData.codePostal,
-        },
-        subtotal,
-        artistDiscount: artistDiscountTotal > 0 ? artistDiscountTotal : undefined,
-        promoCode: promoCode || undefined,
-        promoDiscountPercent: discountPercent || undefined,
-        shipping,
-        taxes,
-        orderTotal,
-        designReady: hasDesignFiles,
-        notes: formData.message,
-        supabaseUserId: user?.id || '',
-      });
-
-      const secret = result?.clientSecret;
-      if (!secret || typeof secret !== 'string' || !secret.startsWith('pi_')) {
-        throw new Error(tx({ fr: 'Le serveur n\'a pas pu creer le paiement. Veuillez reessayer.', en: 'Server could not create payment. Please try again.', es: 'El servidor no pudo crear el pago. Intente de nuevo.' }));
-      }
-
-      // Sauvegarder les infos dans le profil pour pre-remplir la prochaine fois
-      if (user && updateProfile) {
-        updateProfile({
-          full_name: formData.nom,
-          phone: formData.telephone,
-          address: formData.adresse,
-          city: formData.ville,
-          province: formData.province,
-          postal_code: formData.codePostal,
-        }).catch(() => {}); // silencieux, non bloquant
-      }
-
-      setClientSecret(secret);
-      setStep('payment');
-      trackBeginCheckout(items, orderTotal);
-      // Scroll en haut pour voir le formulaire de paiement
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    } catch (err) {
-      setError(
-        err?.response?.data?.error?.message ||
-        err?.message ||
-        tx({ fr: 'Erreur lors de la creation du paiement.', en: 'Error creating payment.', es: 'Error al crear el pago.' })
-      );
-    } finally {
-      setIsLoading(false);
+    setStep('payment');
+    trackBeginCheckout(items, orderTotal);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
@@ -371,8 +321,18 @@ function Checkout() {
                       </p>
                     </div>
 
-                    {clientSecret && (
-                      <CheckoutForm cartTotal={orderTotal} clientSecret={clientSecret} />
+                    {step === 'payment' && (
+                      <CheckoutForm cartTotal={orderTotal} checkoutData={{
+                        items: items.map(item => ({ ...item, uploadedFiles: item.uploadedFiles || [] })),
+                        customerEmail: formData.email,
+                        customerName: formData.nom,
+                        customerPhone: formData.telephone,
+                        shippingAddress: { address: formData.adresse, city: formData.ville, province: formData.province, postalCode: formData.codePostal },
+                        promoCode: promoCode || undefined,
+                        designReady: hasDesignFiles,
+                        notes: formData.message,
+                        supabaseUserId: user?.id || '',
+                      }} />
                     )}
                   </div>
                 )}
