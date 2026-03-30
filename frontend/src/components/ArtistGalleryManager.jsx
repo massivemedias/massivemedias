@@ -630,17 +630,24 @@ function ArtistGalleryManager() {
         )}
       </div>
 
-      {/* Section: Ajouter des images */}
-      <div className="rounded-2xl p-5 md:p-8 card-bg">
+      {/* Section: Ajouter des fichiers */}
+      <div id="artist-gallery-section" className="rounded-2xl p-5 md:p-8 card-bg">
         <h3 className="text-heading font-heading font-bold text-lg flex items-center gap-2 mb-2">
           <ImagePlus size={20} className="text-accent" />
-          {tx({ fr: 'Ajouter des images', en: 'Add images', es: 'Agregar imagenes' })}
+          {tx({ fr: 'Ajouter des fichiers', en: 'Add files', es: 'Agregar archivos' })}
         </h3>
-        <p className="text-grey-muted text-sm mb-6">
+        <p className="text-grey-muted text-sm mb-3">
           {tx({
-            fr: 'Depose tes images haute-resolution. Elles seront soumises pour approbation avant d\'apparaitre sur ta page.',
-            en: 'Upload your high-resolution images. They will be submitted for approval before appearing on your page.',
-            es: 'Sube tus imagenes de alta resolucion. Seran enviadas para aprobacion antes de aparecer en tu pagina.',
+            fr: 'Depose tes fichiers haute-resolution. Ils seront soumis pour approbation avant d\'apparaitre sur ta page.',
+            en: 'Upload your high-resolution files. They will be submitted for approval before appearing on your page.',
+            es: 'Sube tus archivos de alta resolucion. Seran enviados para aprobacion antes de aparecer en tu pagina.',
+          })}
+        </p>
+        <p className="text-grey-muted/70 text-xs mb-6">
+          {tx({
+            fr: 'Tes fichiers originaux sont conserves sur un serveur securise. Les images affichees sur le site sont en format ultra compresse (WebP) pour la fluidite du site et protegees par un filigrane.',
+            en: 'Your original files are stored on a secure server. Images displayed on the site are in ultra-compressed format (WebP) for site performance and protected with a watermark.',
+            es: 'Tus archivos originales se guardan en un servidor seguro. Las imagenes mostradas en el sitio estan en formato ultra comprimido (WebP) para el rendimiento del sitio y protegidas con marca de agua.',
           })}
         </p>
 

@@ -434,10 +434,10 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
               <ScrollText size={22} className="text-orange-400 group-hover:scale-110 transition-transform" />
               <p className="text-heading text-sm font-semibold">{tx({ fr: 'Contrat', en: 'Contract', es: 'Contrato' })}</p>
             </Link>
-            <a href="mailto:massivemedias@gmail.com" className="flex flex-col items-center gap-2 p-4 md:p-5 rounded-xl bg-black/20 shadow-lg hover:bg-black/30 transition-all group text-center">
+            <button onClick={() => { const el = document.getElementById('artist-gallery-section'); if (el) el.scrollIntoView({ behavior: 'smooth' }); }} className="flex flex-col items-center gap-2 p-4 md:p-5 rounded-xl bg-black/20 shadow-lg hover:bg-black/30 transition-all group text-center">
               <Send size={22} className="text-green-400 group-hover:scale-110 transition-transform" />
               <p className="text-heading text-sm font-semibold">{tx({ fr: 'Envoyer fichiers', en: 'Send files', es: 'Enviar archivos' })}</p>
-            </a>
+            </button>
           </div>
         </div>
 
