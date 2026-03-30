@@ -4,20 +4,32 @@ import { useLang } from '../i18n/LanguageContext';
 
 const STRIPE_KEY = import.meta.env.VITE_STRIPE_PUBLIC_KEY;
 
+// Create ONE Stripe instance at module level - never create a second one
+let _stripe = null;
+function getStripe() {
+  if (_stripe) return _stripe;
+  if (window.Stripe && STRIPE_KEY) {
+    _stripe = window.Stripe(STRIPE_KEY);
+  }
+  return _stripe;
+}
+
 function CheckoutForm({ cartTotal, clientSecret }) {
   const { t, tx } = useLang();
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [paymentElementReady, setPaymentElementReady] = useState(false);
-  const stripeRef = useRef(null);
   const elementsRef = useRef(null);
   const divRef = useRef(null);
   const mountedRef = useRef(false);
 
   useEffect(() => {
-    if (!clientSecret || !STRIPE_KEY || !window.Stripe || mountedRef.current) return;
+    if (!clientSecret || mountedRef.current) return;
 
-    // Poll until divRef is connected to the DOM
+    const stripe = getStripe();
+    if (!stripe) return;
+
+    // Wait for div to be in DOM
     const interval = setInterval(() => {
       if (mountedRef.current) { clearInterval(interval); return; }
       const target = divRef.current;
@@ -26,9 +38,8 @@ function CheckoutForm({ cartTotal, clientSecret }) {
       clearInterval(interval);
       mountedRef.current = true;
 
-      // Use window.Stripe directly - loadStripe wrapper doesn't work with pe.mount()
-      const stripe = window.Stripe(STRIPE_KEY);
-      stripeRef.current = stripe;
+      // Remove orphan Stripe iframes from previous loads
+      document.querySelectorAll('body > iframe[src*="stripe"]').forEach(f => f.remove());
 
       const cs = getComputedStyle(document.documentElement);
       const elements = stripe.elements({
@@ -50,20 +61,21 @@ function CheckoutForm({ cartTotal, clientSecret }) {
       const pe = elements.create('payment', { layout: 'tabs' });
       pe.on('ready', () => setPaymentElementReady(true));
       pe.mount(target);
-    }, 100);
+    }, 200);
 
     return () => clearInterval(interval);
   }, [clientSecret]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!stripeRef.current || !elementsRef.current || !paymentElementReady) return;
+    const stripe = getStripe();
+    if (!stripe || !elementsRef.current || !paymentElementReady) return;
 
     setIsProcessing(true);
     setErrorMessage('');
 
     try {
-      const { error } = await stripeRef.current.confirmPayment({
+      const { error } = await stripe.confirmPayment({
         elements: elementsRef.current,
         confirmParams: {
           return_url: `${window.location.origin}/checkout/success`,
