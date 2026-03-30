@@ -72,8 +72,14 @@ function CheckoutForm({ cartTotal, clientSecret }) {
       }
     }
 
+    // Use setTimeout inside interval to ensure mount happens outside React's commit phase
     const interval = setInterval(() => {
-      if (tryMount()) clearInterval(interval);
+      if (mountedRef.current) { clearInterval(interval); return; }
+      const target = document.getElementById(MOUNT_ID);
+      if (!target || !target.isConnected || !window.Stripe) return;
+      clearInterval(interval);
+      // Delay mount to next macrotask - outside React's render cycle
+      setTimeout(tryMount, 0);
     }, 200);
 
     // Safety: stop polling after 30s
