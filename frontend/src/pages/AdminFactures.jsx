@@ -5,7 +5,7 @@ import {
   CheckCircle, Trash2, Download, Send, Eye, ChevronDown, ChevronUp,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
-import { getInvoices, createInvoice, updateInvoice, deleteInvoice } from '../services/adminService';
+import { getInvoices, createInvoice, updateInvoice, deleteInvoice, uploadInvoicePDF } from '../services/adminService';
 import { generateManualInvoicePDF } from '../utils/generateInvoice';
 
 const STATUS_LABELS = {
@@ -36,6 +36,7 @@ function AdminFactures() {
   const [showForm, setShowForm] = useState(false);
   const [expandedId, setExpandedId] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [pdfFile, setPdfFile] = useState(null);
 
   // Form state
   const [form, setForm] = useState({
@@ -82,6 +83,7 @@ function AdminFactures() {
 
   const openNewForm = () => {
     resetForm();
+    setPdfFile(null);
     setShowForm(true);
   };
 
@@ -113,6 +115,20 @@ function AdminFactures() {
     if (!form.customerName || form.items.length === 0) return;
     setSaving(true);
     try {
+      // Upload PDF si present
+      let pdfUrl = null;
+      let pdfFileId = null;
+      if (pdfFile) {
+        try {
+          const uploadRes = await uploadInvoicePDF(pdfFile);
+          pdfUrl = uploadRes.data?.pdfUrl || null;
+          pdfFileId = uploadRes.data?.pdfFileId || null;
+        } catch (uploadErr) {
+          console.error('Erreur upload PDF:', uploadErr);
+          // Continuer sans le PDF
+        }
+      }
+
       const payload = {
         invoiceNumber: form.invoiceNumber,
         date: form.date,
@@ -129,8 +145,11 @@ function AdminFactures() {
         total,
         status: form.status,
         notes: form.notes,
+        ...(pdfUrl && { pdfUrl }),
+        ...(pdfFileId && { pdfFileId }),
       };
       await createInvoice(payload);
+      setPdfFile(null);
       setShowForm(false);
       fetchInvoices();
     } catch (err) {
@@ -360,6 +379,28 @@ function AdminFactures() {
               </div>
             </div>
 
+            {/* PDF upload */}
+            <div className="mb-4">
+              <label className="block text-grey-muted text-xs mb-1.5">{tx({ fr: 'Joindre un PDF', en: 'Attach PDF', es: 'Adjuntar PDF' })}</label>
+              <div className="flex items-center gap-3">
+                <label className="flex items-center gap-2 px-4 py-2 rounded-lg bg-glass text-sm text-grey-muted hover:text-heading cursor-pointer transition-colors border border-dashed border-white/10 hover:border-accent/30">
+                  <FileText size={16} />
+                  {pdfFile ? pdfFile.name : tx({ fr: 'Choisir un fichier PDF...', en: 'Choose a PDF file...', es: 'Elegir un archivo PDF...' })}
+                  <input
+                    type="file"
+                    accept=".pdf"
+                    className="hidden"
+                    onChange={e => setPdfFile(e.target.files?.[0] || null)}
+                  />
+                </label>
+                {pdfFile && (
+                  <button onClick={() => setPdfFile(null)} className="text-red-400/60 hover:text-red-400 transition-colors">
+                    <X size={16} />
+                  </button>
+                )}
+              </div>
+            </div>
+
             <div className="flex gap-3">
               <button onClick={handleSave} disabled={saving || !form.customerName} className="btn-primary text-sm flex items-center gap-2">
                 {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
@@ -445,9 +486,15 @@ function AdminFactures() {
 
                       {/* Actions */}
                       <div className="flex flex-wrap gap-2">
-                        <button onClick={() => handleDownloadPDF(inv)} className="btn-outline text-xs py-1.5 px-3 flex items-center gap-1.5">
-                          <Download size={13} /> PDF
-                        </button>
+                        {inv.pdfUrl ? (
+                          <a href={inv.pdfUrl} target="_blank" rel="noopener noreferrer" className="btn-outline text-xs py-1.5 px-3 flex items-center gap-1.5">
+                            <Eye size={13} /> {tx({ fr: 'Voir PDF', en: 'View PDF', es: 'Ver PDF' })}
+                          </a>
+                        ) : (
+                          <button onClick={() => handleDownloadPDF(inv)} className="btn-outline text-xs py-1.5 px-3 flex items-center gap-1.5">
+                            <Download size={13} /> PDF
+                          </button>
+                        )}
                         {inv.status === 'draft' && (
                           <button onClick={() => handleStatusChange(inv, 'sent')} className="btn-outline text-xs py-1.5 px-3 flex items-center gap-1.5 text-blue-400">
                             <Send size={13} /> {tx({ fr: 'Marquer envoyee', en: 'Mark sent', es: 'Marcar enviada' })}

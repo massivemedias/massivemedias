@@ -72,6 +72,12 @@
     },
     "paidAt": {
       "type": "datetime"
+    },
+    "pdfUrl": {
+      "type": "string"
+    },
+    "pdfFileId": {
+      "type": "string"
     }
   }
 }

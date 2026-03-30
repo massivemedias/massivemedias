@@ -193,6 +193,51 @@ export async function uploadBufferToGoogleDrive(
   };
 }
 
+// Upload un fichier directement dans un dossier Google Drive specifique (sans sous-dossier artiste)
+export async function uploadBufferToFolder(
+  fileBuffer: Buffer,
+  fileName: string,
+  folderId: string,
+  mimeType: string = 'application/octet-stream'
+): Promise<DriveUploadResult> {
+  const token = await getAccessToken();
+
+  const date = new Date().toISOString().split('T')[0];
+  const safeName = `${date}_${fileName}`;
+  const metadata = JSON.stringify({ name: safeName, parents: [folderId] });
+
+  const boundary = '===massive_boundary===';
+  const body = Buffer.concat([
+    Buffer.from(
+      `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${metadata}\r\n--${boundary}\r\nContent-Type: ${mimeType}\r\n\r\n`
+    ),
+    fileBuffer,
+    Buffer.from(`\r\n--${boundary}--`),
+  ]);
+
+  const uploadRes = await fetch(
+    `${DRIVE_API}?uploadType=multipart&fields=id,name,webViewLink,webContentLink`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': `multipart/related; boundary=${boundary}`,
+      },
+      body,
+    }
+  );
+
+  if (!uploadRes.ok) throw new Error(`Drive upload failed: ${await uploadRes.text()}`);
+  const file: any = await uploadRes.json();
+
+  return {
+    fileId: file.id,
+    fileName: file.name || safeName,
+    webViewLink: file.webViewLink || `https://drive.google.com/file/d/${file.id}/view`,
+    webContentLink: file.webContentLink || '',
+  };
+}
+
 export async function deleteFromGoogleDrive(fileId: string): Promise<boolean> {
   try {
     const token = await getAccessToken();

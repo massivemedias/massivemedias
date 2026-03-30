@@ -48,3 +48,8 @@ export const getInvoices = () => api.get('/invoices', { params: { sort: 'date:de
 export const createInvoice = (data) => api.post('/invoices', { data });
 export const updateInvoice = (documentId, data) => api.put(`/invoices/${documentId}`, { data });
 export const deleteInvoice = (documentId) => api.delete(`/invoices/${documentId}`);
+export const uploadInvoicePDF = (file) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  return api.post('/invoices/upload-pdf', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+};
