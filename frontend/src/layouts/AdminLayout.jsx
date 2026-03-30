@@ -179,7 +179,7 @@ function AdminLayout() {
                   to={item.to}
                   className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
                     isActive
-                      ? 'bg-accent/20 text-accent'
+                      ? 'bg-accent text-white'
                       : 'text-grey-muted hover:text-heading hover:bg-glass'
                   }`}
                 >
