@@ -2,13 +2,10 @@ import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, User, MapPin, AlertCircle, Paperclip } from 'lucide-react';
-import { Elements } from '@stripe/react-stripe-js';
 import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
-import { useTheme } from '../i18n/ThemeContext';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
-import { getStripePromise } from '../lib/stripe';
 import { createPaymentIntent } from '../services/orderService';
 import { trackBeginCheckout } from '../utils/analytics';
 import CheckoutForm from '../components/CheckoutForm';
@@ -46,35 +43,14 @@ function Checkout() {
   const { t, lang, tx } = useLang();
   const { items, cartTotal, promoCode, discountPercent, discountAmount } = useCart();
   const { user, session, updateProfile } = useAuth();
-  const { step: themeStep } = useTheme();
   const navigate = useNavigate();
 
   // Guest checkout supporte - pas de redirection vers login
 
   const [step, setStep] = useState('info'); // 'info' | 'payment'
   const [clientSecret, setClientSecret] = useState('');
-  const stripePromise = getStripePromise();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-
-  // Read theme CSS variables for Stripe appearance
-  const stripeAppearance = useMemo(() => {
-    const s = getComputedStyle(document.documentElement);
-    const accent = s.getPropertyValue('--accent-color').trim() || '#FF52A0';
-    const bg = s.getPropertyValue('--bg-main').trim() || '#1a1a2e';
-    const text = s.getPropertyValue('--text-heading').trim() || '#e4e4f0';
-    return {
-      theme: 'night',
-      variables: {
-        colorPrimary: accent,
-        colorBackground: bg,
-        colorText: text,
-        colorDanger: '#ef4444',
-        fontFamily: 'system-ui, sans-serif',
-        borderRadius: '8px',
-      },
-    };
-  }, [themeStep]);
 
   const meta = user?.user_metadata || {};
   const [formData, setFormData] = useState({
@@ -399,16 +375,8 @@ function Checkout() {
                       </p>
                     </div>
 
-                    {clientSecret && stripePromise && (
-                      <Elements
-                        stripe={stripePromise}
-                        options={{
-                          clientSecret,
-                          appearance: stripeAppearance,
-                        }}
-                      >
-                        <CheckoutForm cartTotal={orderTotal} />
-                      </Elements>
+                    {clientSecret && (
+                      <CheckoutForm cartTotal={orderTotal} clientSecret={clientSecret} />
                     )}
                   </motion.div>
                 )}
