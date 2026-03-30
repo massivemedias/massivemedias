@@ -4,22 +4,6 @@ import { useLang } from '../i18n/LanguageContext';
 
 const STRIPE_KEY = import.meta.env.VITE_STRIPE_PUBLIC_KEY;
 
-function ensureStripe() {
-  return new Promise((resolve) => {
-    if (window.Stripe) return resolve(window.Stripe);
-    const existing = document.querySelector('script[src*="js.stripe.com"]');
-    if (existing) {
-      existing.addEventListener('load', () => resolve(window.Stripe));
-      if (window.Stripe) resolve(window.Stripe);
-      return;
-    }
-    const s = document.createElement('script');
-    s.src = 'https://js.stripe.com/v3/';
-    s.onload = () => resolve(window.Stripe);
-    document.head.appendChild(s);
-  });
-}
-
 function CheckoutForm({ cartTotal, clientSecret }) {
   const { t, tx } = useLang();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -27,27 +11,42 @@ function CheckoutForm({ cartTotal, clientSecret }) {
   const [paymentElementReady, setPaymentElementReady] = useState(false);
   const stripeRef = useRef(null);
   const elementsRef = useRef(null);
-  const mountedRef = useRef(false);
 
   useEffect(() => {
-    if (!clientSecret || !STRIPE_KEY || mountedRef.current) return;
-    let cancelled = false;
+    if (!clientSecret || !STRIPE_KEY) return;
+
+    let pe = null;
 
     async function mount() {
-      const Stripe = await ensureStripe();
-      if (cancelled || !Stripe) return;
+      // Ensure Stripe script is loaded
+      if (!window.Stripe) {
+        await new Promise((resolve) => {
+          const existing = document.querySelector('script[src*="js.stripe.com"]');
+          if (existing) {
+            existing.addEventListener('load', resolve);
+            if (window.Stripe) resolve();
+            return;
+          }
+          const s = document.createElement('script');
+          s.src = 'https://js.stripe.com/v3/';
+          s.onload = resolve;
+          document.head.appendChild(s);
+        });
+      }
 
-      // Poll for DOM element
+      if (!window.Stripe) return;
+
+      // Wait for mount div
       let target = null;
-      for (let i = 0; i < 50; i++) {
+      for (let i = 0; i < 100; i++) {
         target = document.getElementById('stripe-payment-mount');
         if (target) break;
-        await new Promise(r => setTimeout(r, 100));
+        await new Promise(r => setTimeout(r, 50));
       }
-      if (!target || cancelled || mountedRef.current) return;
+      if (!target) return;
 
-      mountedRef.current = true;
-      const stripe = Stripe(STRIPE_KEY);
+      // Mount
+      const stripe = window.Stripe(STRIPE_KEY);
       stripeRef.current = stripe;
 
       const cs = getComputedStyle(document.documentElement);
@@ -67,14 +66,19 @@ function CheckoutForm({ cartTotal, clientSecret }) {
       });
       elementsRef.current = elements;
 
-      const pe = elements.create('payment', { layout: 'tabs' });
-      pe.on('ready', () => { if (!cancelled) setPaymentElementReady(true); });
+      pe = elements.create('payment', { layout: 'tabs' });
+      pe.on('ready', () => setPaymentElementReady(true));
       target.innerHTML = '';
       pe.mount(target);
     }
 
     mount();
-    return () => { cancelled = true; };
+
+    return () => {
+      if (pe) {
+        try { pe.unmount(); } catch {}
+      }
+    };
   }, [clientSecret]);
 
   const handleSubmit = async (e) => {
