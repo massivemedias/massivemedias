@@ -2,8 +2,6 @@ import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, User, MapPin, AlertCircle, Paperclip } from 'lucide-react';
-import { Elements } from '@stripe/react-stripe-js';
-import { loadStripe } from '@stripe/stripe-js';
 import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
 import { useCart } from '../contexts/CartContext';
@@ -13,8 +11,6 @@ import { trackBeginCheckout } from '../utils/analytics';
 import CheckoutForm from '../components/CheckoutForm';
 import AddressAutocomplete from '../components/AddressAutocomplete';
 import { calculateShipping as calcShipping } from '../utils/shipping';
-
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
 
 const provinces = [
   { code: 'QC', fr: 'Quebec', en: 'Quebec', es: 'Quebec' },
@@ -376,25 +372,7 @@ function Checkout() {
                     </div>
 
                     {clientSecret && (
-                      <Elements
-                        stripe={stripePromise}
-                        options={{
-                          clientSecret,
-                          appearance: {
-                            theme: 'night',
-                            variables: {
-                              colorPrimary: '#FF52A0',
-                              colorBackground: '#1a1a2e',
-                              colorText: '#e4e4f0',
-                              colorDanger: '#ef4444',
-                              fontFamily: 'system-ui, sans-serif',
-                              borderRadius: '8px',
-                            },
-                          },
-                        }}
-                      >
-                        <CheckoutForm cartTotal={orderTotal} />
-                      </Elements>
+                      <CheckoutForm cartTotal={orderTotal} clientSecret={clientSecret} />
                     )}
                   </div>
                 )}

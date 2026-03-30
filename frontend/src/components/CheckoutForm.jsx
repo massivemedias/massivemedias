@@ -1,26 +1,86 @@
-import { useState } from 'react';
-import { PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { useState, useEffect, useRef } from 'react';
 import { CreditCard, AlertCircle, Loader2 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
+import { loadStripe } from '@stripe/stripe-js';
 
-function CheckoutForm({ cartTotal }) {
-  const stripe = useStripe();
-  const elements = useElements();
+const STRIPE_KEY = import.meta.env.VITE_STRIPE_PUBLIC_KEY;
+const stripePromise = STRIPE_KEY ? loadStripe(STRIPE_KEY) : null;
+
+function CheckoutForm({ cartTotal, clientSecret }) {
   const { t, tx } = useLang();
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [paymentElementReady, setPaymentElementReady] = useState(false);
+  const stripeRef = useRef(null);
+  const elementsRef = useRef(null);
+  const divRef = useRef(null);
+  const mountedRef = useRef(false);
+
+  // Mount Stripe PaymentElement when div is in DOM and stripe is loaded
+  useEffect(() => {
+    if (!clientSecret || !stripePromise || mountedRef.current) return;
+
+    let cancelled = false;
+
+    stripePromise.then((stripe) => {
+      if (cancelled || !stripe || mountedRef.current) return;
+
+      // Use MutationObserver to wait for our div to actually be in the DOM
+      const tryMount = () => {
+        const target = divRef.current;
+        if (!target || !target.isConnected || mountedRef.current) return false;
+
+        mountedRef.current = true;
+        stripeRef.current = stripe;
+
+        const cs = getComputedStyle(document.documentElement);
+        const elements = stripe.elements({
+          clientSecret,
+          appearance: {
+            theme: 'night',
+            variables: {
+              colorPrimary: cs.getPropertyValue('--accent-color').trim() || '#FF52A0',
+              colorBackground: cs.getPropertyValue('--bg-main').trim() || '#1a1a2e',
+              colorText: cs.getPropertyValue('--text-heading').trim() || '#e4e4f0',
+              colorDanger: '#ef4444',
+              fontFamily: 'system-ui, sans-serif',
+              borderRadius: '8px',
+            },
+          },
+        });
+        elementsRef.current = elements;
+
+        const pe = elements.create('payment', { layout: 'tabs' });
+        pe.on('ready', () => { if (!cancelled) setPaymentElementReady(true); });
+        pe.mount(target);
+        return true;
+      };
+
+      // Try immediately
+      if (tryMount()) return;
+
+      // If not ready yet, poll every 100ms
+      const interval = setInterval(() => {
+        if (tryMount() || cancelled) clearInterval(interval);
+      }, 100);
+
+      // Cleanup interval after 30s
+      setTimeout(() => clearInterval(interval), 30000);
+    });
+
+    return () => { cancelled = true; };
+  }, [clientSecret]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!stripe || !elements || !paymentElementReady) return;
+    if (!stripeRef.current || !elementsRef.current || !paymentElementReady) return;
 
     setIsProcessing(true);
     setErrorMessage('');
 
     try {
-      const { error } = await stripe.confirmPayment({
-        elements,
+      const { error } = await stripeRef.current.confirmPayment({
+        elements: elementsRef.current,
         confirmParams: {
           return_url: `${window.location.origin}/checkout/success`,
         },
@@ -54,10 +114,7 @@ function CheckoutForm({ cartTotal }) {
               <span className="text-sm">{tx({ fr: 'Chargement du formulaire de paiement...', en: 'Loading payment form...', es: 'Cargando formulario de pago...' })}</span>
             </div>
           )}
-          <PaymentElement
-            onReady={() => setPaymentElementReady(true)}
-            options={{ layout: 'tabs' }}
-          />
+          <div ref={divRef} />
         </div>
       </div>
 
@@ -70,7 +127,7 @@ function CheckoutForm({ cartTotal }) {
 
       <button
         type="submit"
-        disabled={!stripe || !paymentElementReady || isProcessing}
+        disabled={!paymentElementReady || isProcessing}
         className="btn-primary w-full justify-center text-base py-3.5 disabled:opacity-50"
       >
         {isProcessing ? (
