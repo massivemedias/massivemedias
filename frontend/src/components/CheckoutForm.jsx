@@ -3,8 +3,8 @@ import { CreditCard, AlertCircle, Loader2 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 
 const STRIPE_KEY = import.meta.env.VITE_STRIPE_PUBLIC_KEY;
+const MOUNT_ID = 'stripe-payment-element-mount';
 
-// Load Stripe script on demand, only when checkout is needed
 function loadStripeScript() {
   return new Promise((resolve) => {
     if (window.Stripe) return resolve(window.Stripe);
@@ -22,7 +22,6 @@ function CheckoutForm({ cartTotal, clientSecret }) {
   const [paymentElementReady, setPaymentElementReady] = useState(false);
   const stripeRef = useRef(null);
   const elementsRef = useRef(null);
-  const divRef = useRef(null);
   const mountedRef = useRef(false);
 
   useEffect(() => {
@@ -33,10 +32,12 @@ function CheckoutForm({ cartTotal, clientSecret }) {
     loadStripeScript().then((Stripe) => {
       if (cancelled || !Stripe || mountedRef.current) return;
 
-      // Poll for div to be connected
+      // Poll for the LIVE DOM element using querySelector (not ref)
       const interval = setInterval(() => {
         if (cancelled || mountedRef.current) { clearInterval(interval); return; }
-        const target = divRef.current;
+
+        // Use querySelector to get the CURRENT live DOM node
+        const target = document.getElementById(MOUNT_ID);
         if (!target || !target.isConnected) return;
 
         clearInterval(interval);
@@ -64,7 +65,7 @@ function CheckoutForm({ cartTotal, clientSecret }) {
 
         const pe = elements.create('payment', { layout: 'tabs' });
         pe.on('ready', () => { if (!cancelled) setPaymentElementReady(true); });
-        pe.mount(target);
+        pe.mount('#' + MOUNT_ID);
       }, 200);
     });
 
@@ -114,7 +115,7 @@ function CheckoutForm({ cartTotal, clientSecret }) {
               <span className="text-sm">{tx({ fr: 'Chargement du formulaire de paiement...', en: 'Loading payment form...', es: 'Cargando formulario de pago...' })}</span>
             </div>
           )}
-          <div ref={divRef} />
+          <div id={MOUNT_ID} />
         </div>
       </div>
 
