@@ -1,60 +1,26 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState } from 'react';
+import { PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { CreditCard, AlertCircle, Loader2 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 
-const STRIPE_KEY = import.meta.env.VITE_STRIPE_PUBLIC_KEY;
-
-function CheckoutForm({ cartTotal, clientSecret }) {
+function CheckoutForm({ cartTotal }) {
+  const stripe = useStripe();
+  const elements = useElements();
   const { t, tx } = useLang();
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [paymentElementReady, setPaymentElementReady] = useState(false);
-  const stripeRef = useRef(null);
-  const elementsRef = useRef(null);
-
-  // Callback ref: called by React when the div is placed in the DOM
-  // No useEffect, no async, no race conditions
-  const mountRef = useCallback((node) => {
-    if (!node || !clientSecret || !STRIPE_KEY || !window.Stripe) return;
-
-    // Prevent double mount
-    if (node.children.length > 0) return;
-
-    const stripe = window.Stripe(STRIPE_KEY);
-    stripeRef.current = stripe;
-
-    const cs = getComputedStyle(document.documentElement);
-    const elements = stripe.elements({
-      clientSecret,
-      appearance: {
-        theme: 'night',
-        variables: {
-          colorPrimary: cs.getPropertyValue('--accent-color').trim() || '#FF52A0',
-          colorBackground: cs.getPropertyValue('--bg-main').trim() || '#1a1a2e',
-          colorText: cs.getPropertyValue('--text-heading').trim() || '#e4e4f0',
-          colorDanger: '#ef4444',
-          fontFamily: 'system-ui, sans-serif',
-          borderRadius: '8px',
-        },
-      },
-    });
-    elementsRef.current = elements;
-
-    const pe = elements.create('payment', { layout: 'tabs' });
-    pe.on('ready', () => setPaymentElementReady(true));
-    pe.mount(node);
-  }, [clientSecret]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!stripeRef.current || !elementsRef.current || !paymentElementReady) return;
+    if (!stripe || !elements || !paymentElementReady) return;
 
     setIsProcessing(true);
     setErrorMessage('');
 
     try {
-      const { error } = await stripeRef.current.confirmPayment({
-        elements: elementsRef.current,
+      const { error } = await stripe.confirmPayment({
+        elements,
         confirmParams: {
           return_url: `${window.location.origin}/checkout/success`,
         },
@@ -88,7 +54,10 @@ function CheckoutForm({ cartTotal, clientSecret }) {
               <span className="text-sm">{tx({ fr: 'Chargement du formulaire de paiement...', en: 'Loading payment form...', es: 'Cargando formulario de pago...' })}</span>
             </div>
           )}
-          <div ref={mountRef} />
+          <PaymentElement
+            onReady={() => setPaymentElementReady(true)}
+            options={{ layout: 'tabs' }}
+          />
         </div>
       </div>
 
@@ -101,7 +70,7 @@ function CheckoutForm({ cartTotal, clientSecret }) {
 
       <button
         type="submit"
-        disabled={!paymentElementReady || isProcessing}
+        disabled={!stripe || !paymentElementReady || isProcessing}
         className="btn-primary w-full justify-center text-base py-3.5 disabled:opacity-50"
       >
         {isProcessing ? (
