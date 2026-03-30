@@ -111,55 +111,30 @@ function FileUpload({ files = [], onFilesChange, label, maxFiles = 5, compact = 
     setUploading(true);
     try {
       const uploaded = [];
+      const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'unknown';
+      const folderName = window.__artistSlug || userName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+
       for (const file of toUpload) {
-        const wasCompressed = file.size > SUPABASE_MAX && COMPRESSIBLE.includes(file.type);
-        // Compresser pour Supabase si nécessaire (les originaux iront sur Google Drive via le backend)
-        if (wasCompressed) {
-          setUploadStatus(tx({ fr: 'Compression...', en: 'Compressing...', es: 'Comprimiendo...' }));
-        }
-        let fileForUpload = await compressForSupabase(file);
-
-        // If file is still too big for Supabase after compression, upload via backend direct to Google Drive
-        if (fileForUpload.size > SUPABASE_MAX) {
-          setUploadStatus(tx({ fr: 'Upload vers le serveur securise...', en: 'Uploading to secure server...', es: 'Subiendo al servidor seguro...' }));
-          const formData = new FormData();
-          formData.append('file', fileForUpload);
-          // Get artist slug or client name for Google Drive folder
-          const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'unknown';
-          const folderName = window.__artistSlug || userName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-          formData.append('artistSlug', folderName);
-          const { data: result } = await api.post('/artist-edit-requests/upload-direct', formData, {
-            headers: { 'Content-Type': 'multipart/form-data' },
-            timeout: 600000, // 10 min timeout for large files
-          });
-          uploaded.push({
-            id: result.file?.driveFileId || Date.now().toString(),
-            name: result.file?.name || file.name,
-            url: result.file?.url || result.file?.driveUrl || '',
-            size: file.size,
-            mime: file.type,
-            originalName: file.name,
-            originalSize: file.size,
-            originalMime: file.type,
-            wasCompressed: false,
-            driveUrl: result.file?.driveUrl || '',
-          });
-          continue;
-        }
-
-        setUploadStatus(tx({ fr: 'Upload en cours...', en: 'Uploading...', es: 'Subiendo...' }));
-        const doUpload = uploadFn || uploadFile;
-        const result = await doUpload(fileForUpload);
+        // ALL files go to Google Drive via backend (originals preserved)
+        // Backend also creates WebP for site display
+        setUploadStatus(tx({ fr: 'Upload vers le serveur securise...', en: 'Uploading to secure server...', es: 'Subiendo al servidor seguro...' }));
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('artistSlug', folderName);
+        const { data: result } = await api.post('/artist-edit-requests/upload-direct', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+          timeout: 600000,
+        });
         uploaded.push({
-          id: result.id,
-          name: result.name || file.name,
-          url: result.url,
-          size: result.size || fileForSupabase.size,
-          mime: result.mime || fileForSupabase.type,
+          id: result.file?.driveFileId || Date.now().toString(),
+          name: result.file?.name || file.name,
+          url: result.file?.url || result.file?.driveUrl || '',
+          size: file.size,
+          mime: file.type,
           originalName: file.name,
           originalSize: file.size,
           originalMime: file.type,
-          wasCompressed,
+          driveUrl: result.file?.driveUrl || '',
         });
       }
       setUploadStatus('');
