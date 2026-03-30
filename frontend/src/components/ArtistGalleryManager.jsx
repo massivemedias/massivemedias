@@ -652,6 +652,14 @@ function ArtistGalleryManager() {
             es: 'Tus archivos originales se guardan en un servidor seguro. Las imagenes mostradas en el sitio estan en formato ultra comprimido (WebP) para el rendimiento del sitio y protegidas con marca de agua.',
           })}
         </p>
+        <p className="text-accent/80 text-xs mb-6 flex items-center gap-1.5">
+          <Check size={12} className="flex-shrink-0" />
+          {tx({
+            fr: 'Massive contacte le client pour valider le rendu par photo ou video avant chaque envoi.',
+            en: 'Massive contacts the client to validate the result by photo or video before each shipment.',
+            es: 'Massive contacta al cliente para validar el resultado por foto o video antes de cada envio.',
+          })}
+        </p>
 
         {success && (
           <motion.div

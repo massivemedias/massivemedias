@@ -371,9 +371,9 @@ function ConfiguratorSublimation() {
 
       <p className="text-grey-muted text-xs mt-2 md:mt-3 text-center">
         {tx({
-          fr: 'Nous vous contacterons pour confirmer les details (taille, couleur, design).',
-          en: 'We\'ll contact you to confirm details (size, color, design).',
-          es: 'Te contactaremos para confirmar los detalles (talla, color, diseno).',
+          fr: 'Massive vous contactera pour valider le rendu par photo ou video avant l\'envoi du produit.',
+          en: 'Massive will contact you to validate the result by photo or video before shipping.',
+          es: 'Massive te contactara para validar el resultado por foto o video antes del envio.',
         })}
       </p>
     </>
