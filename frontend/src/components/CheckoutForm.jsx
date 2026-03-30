@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { CreditCard, AlertCircle, Loader2 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 
@@ -7,12 +7,15 @@ function CheckoutForm({ cartTotal, clientSecret }) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [paymentElementReady, setPaymentElementReady] = useState(false);
-  const mountRef = useRef(null);
   const stripeRef = useRef(null);
   const elementsRef = useRef(null);
+  const peRef = useRef(null);
 
-  useEffect(() => {
-    if (!clientSecret || !window.Stripe) return;
+  // Callback ref: fires when the div is actually in the DOM
+  const mountCallback = useCallback((node) => {
+    if (!node || !clientSecret || !window.Stripe) return;
+    // Don't mount twice
+    if (peRef.current) return;
 
     const key = import.meta.env.VITE_STRIPE_PUBLIC_KEY;
     if (!key) return;
@@ -20,7 +23,6 @@ function CheckoutForm({ cartTotal, clientSecret }) {
     const stripe = window.Stripe(key);
     stripeRef.current = stripe;
 
-    // Read theme CSS variables for appearance
     const s = getComputedStyle(document.documentElement);
     const accent = s.getPropertyValue('--accent-color').trim() || '#FF52A0';
     const bg = s.getPropertyValue('--bg-main').trim() || '#1a1a2e';
@@ -43,12 +45,9 @@ function CheckoutForm({ cartTotal, clientSecret }) {
     elementsRef.current = elements;
 
     const paymentElement = elements.create('payment', { layout: 'tabs' });
+    peRef.current = paymentElement;
     paymentElement.on('ready', () => setPaymentElementReady(true));
-    paymentElement.mount(mountRef.current);
-
-    return () => {
-      paymentElement.unmount();
-    };
+    paymentElement.mount(node);
   }, [clientSecret]);
 
   const handleSubmit = async (e) => {
@@ -94,7 +93,7 @@ function CheckoutForm({ cartTotal, clientSecret }) {
               <span className="text-sm">{tx({ fr: 'Chargement du formulaire de paiement...', en: 'Loading payment form...', es: 'Cargando formulario de pago...' })}</span>
             </div>
           )}
-          <div ref={mountRef} />
+          <div ref={mountCallback} />
         </div>
       </div>
 
