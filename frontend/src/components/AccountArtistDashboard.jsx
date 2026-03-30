@@ -739,7 +739,12 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
                   <th className="text-right py-2 px-1 sm:px-2 text-grey-muted">{tx({ fr: 'Production', en: 'Production', es: 'Produccion' })}</th>
                   <th className="text-right py-2 px-1 sm:px-2 text-purple-400">{tx({ fr: 'Massive (50%)', en: 'Massive (50%)', es: 'Massive (50%)' })}</th>
                   <th className="text-right py-2 px-1 sm:px-2 text-green-400">{tx({ fr: 'Ta commission (50%)', en: 'Your commission (50%)', es: 'Tu comision (50%)' })}</th>
-                  <th className="text-right py-2 px-1 sm:px-2 text-accent">{tx({ fr: 'Ton prix (-30%)', en: 'Your price (-30%)', es: 'Tu precio (-30%)' })}</th>
+                  <th className="text-right py-2 px-1 sm:px-2 text-accent relative group cursor-help">
+                    {tx({ fr: 'Ton prix (-30%)', en: 'Your price (-30%)', es: 'Tu precio (-30%)' })}
+                    <span className="absolute bottom-full right-0 mb-2 w-56 p-3 rounded-lg bg-black/95 text-white text-[11px] font-normal normal-case tracking-normal leading-relaxed opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 shadow-xl">
+                      {tx({ fr: 'Ce prix est exclusivement reserve a l\'artiste pour son usage personnel. Aucune revente permise.', en: 'This price is exclusively for the artist\'s personal use. No resale permitted.', es: 'Este precio es exclusivamente para uso personal del artista. No se permite la reventa.' })}
+                    </span>
+                  </th>
                 </tr>
               </thead>
               <tbody>
