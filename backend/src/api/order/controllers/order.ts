@@ -659,10 +659,8 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
     const filters: any = {};
     if (status && status !== 'all') {
       filters.status = status;
-    } else {
-      // By default, exclude draft orders (payment not yet completed)
-      filters.status = { $ne: 'draft' };
     }
+    // Show all orders including drafts (drafts = payment created but webhook not received)
     if (search) {
       filters.$or = [
         { customerName: { $containsi: search } },
