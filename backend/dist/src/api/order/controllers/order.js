@@ -368,6 +368,32 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
             strapi.log.error('Webhook signature verification failed:', err.message);
             return ctx.badRequest(`Webhook Error: ${err.message}`);
         }
+        // Pour checkout sessions, recuperer le payment_intent_id
+        if (event.type === 'checkout.session.completed') {
+            const session = event.data.object;
+            if (session.payment_intent && session.payment_status === 'paid') {
+                // Trouver l'ordre par session ID ou payment intent
+                const orders = await strapi.documents('api::order.order').findMany({
+                    filters: {
+                        $or: [
+                            { stripePaymentIntentId: session.payment_intent },
+                            { stripePaymentIntentId: session.id },
+                        ],
+                    },
+                });
+                if (orders.length > 0 && orders[0].status === 'draft') {
+                    // Mettre a jour avec le vrai payment intent ID
+                    await strapi.documents('api::order.order').update({
+                        documentId: orders[0].documentId,
+                        data: { stripePaymentIntentId: session.payment_intent },
+                    });
+                    strapi.log.info(`Checkout session completed: updated order ${orders[0].documentId} with payment_intent ${session.payment_intent}`);
+                }
+            }
+            // Le payment_intent.succeeded va suivre et gerer le reste
+            ctx.body = { received: true };
+            return;
+        }
         if (event.type === 'payment_intent.succeeded') {
             const paymentIntent = event.data.object;
             const orders = await strapi.documents('api::order.order').findMany({
@@ -537,11 +563,11 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
                     // Grouper les items par artiste
                     for (const item of orderItems) {
                         const pid = item.productId || '';
-                        if (!pid.startsWith('artist-print-'))
+                        if (!pid.startsWith('artist-print-') && !pid.startsWith('artist-sticker-pack-'))
                             continue;
                         let matchedSlug = null;
                         for (const slug of slugs) {
-                            if (pid.startsWith(`artist-print-${slug}-`)) {
+                            if (pid.startsWith(`artist-print-${slug}-`) || pid.startsWith(`artist-sticker-pack-${slug}-`)) {
                                 if (!matchedSlug || slug.length > matchedSlug.length) {
                                     matchedSlug = slug;
                                 }
@@ -810,8 +836,26 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
             museum: { a4: 25, a3: 38, a3plus: 48, a2: 65 },
             frame: 8,
         };
+        // Cout de production des stickers par palier (materiel + encre + temps)
+        const STICKER_PROD_COSTS = {
+            25: 8, 50: 12, 100: 15, 250: 30, 500: 50,
+        };
         function getProductionCost(artist, item) {
             var _a;
+            const pid = item.productId || '';
+            // Sticker packs: cout par palier de quantite
+            if (pid.startsWith('artist-sticker-pack-')) {
+                const qty = item.quantity || 100;
+                // Trouver le palier le plus proche
+                const tiers = Object.keys(STICKER_PROD_COSTS).map(Number).sort((a, b) => a - b);
+                let cost = STICKER_PROD_COSTS[100]; // defaut 100 unites
+                for (const t of tiers) {
+                    if (qty >= t)
+                        cost = STICKER_PROD_COSTS[t];
+                }
+                return cost;
+            }
+            // Prints: cout par format et tier
             const costs = artist.productionCosts || DEFAULT_COSTS;
             const tier = (item.finish || 'studio').toLowerCase().includes('museum') ? 'museum' : 'studio';
             const format = (item.size || 'a4').toLowerCase().replace(/[^a-z0-9]/g, '');
