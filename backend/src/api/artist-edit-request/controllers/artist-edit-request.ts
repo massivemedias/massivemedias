@@ -512,14 +512,17 @@ export default factories.createCoreController('api::artist-edit-request.artist-e
         strapi.log.error('Google Drive upload error:', (driveResult as any).error);
       }
 
-      // 2. Convertir en WebP pour l'affichage et stocker sur Google Drive (dossier webp/)
+      // 2. Convertir en WebP pour l'affichage sur le site et stocker sur Supabase
       let webpUrl = '';
       try {
         const sharp = require('sharp');
-        const { uploadBufferToFolder } = await import('../../../utils/google-drive');
+        const { createClient } = require('@supabase/supabase-js');
+        const supabaseUrl2 = process.env.SUPABASE_URL;
+        const supabaseKey = process.env.SUPABASE_SERVICE_KEY;
 
-        const parentFolderId = process.env.GOOGLE_DRIVE_FOLDER_ID;
-        if (parentFolderId) {
+        if (supabaseUrl2 && supabaseKey) {
+          const supabase = createClient(supabaseUrl2, supabaseKey);
+          const timestamp = Date.now();
           const baseName = fileName.replace(/\.[^.]+$/, '');
           const safeName = baseName.replace(/[^a-zA-Z0-9._-]/g, '_');
 
@@ -529,10 +532,18 @@ export default factories.createCoreController('api::artist-edit-request.artist-e
             .webp({ quality: 80 })
             .toBuffer();
 
-          const webpResult = await uploadBufferToFolder(webpBuffer, `${safeName}.webp`, parentFolderId, 'image/webp');
-          // Rendre le fichier accessible publiquement via le lien direct
-          webpUrl = `https://lh3.googleusercontent.com/d/${webpResult.fileId}`;
-          strapi.log.info(`WebP created on Drive: ${webpResult.fileName} (${(webpBuffer.length / 1024).toFixed(0)} KB from ${(fileBuffer.length / (1024*1024)).toFixed(1)} MB original)`);
+          const webpPath = `artist-submissions/${artistSlug}/${timestamp}-${safeName}.webp`;
+          const { data } = await supabase.storage.from('order-files').upload(webpPath, webpBuffer, {
+            contentType: 'image/webp',
+            upsert: false,
+          });
+          if (data?.path) {
+            const { data: urlData } = supabase.storage.from('order-files').getPublicUrl(data.path);
+            webpUrl = urlData?.publicUrl || '';
+          }
+          strapi.log.info(`WebP created: ${webpPath} (${(webpBuffer.length / 1024).toFixed(0)} KB from ${(fileBuffer.length / (1024*1024)).toFixed(1)} MB original)`);
+        } else {
+          strapi.log.warn('Supabase env vars missing - skipping WebP upload');
         }
       } catch (webpErr: any) {
         strapi.log.warn('WebP conversion failed (non-blocking):', webpErr?.message || webpErr);
