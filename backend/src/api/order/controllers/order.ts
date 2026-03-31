@@ -645,6 +645,21 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
     ctx.body = { received: true };
   },
 
+  // POST /orders/admin-create - Creer une commande manuellement (admin)
+  async adminCreate(ctx) {
+    const data = ctx.request.body as any;
+    if (!data.customerName || !data.total) {
+      return ctx.badRequest('customerName and total are required');
+    }
+    try {
+      const order = await strapi.documents('api::order.order').create({ data });
+      ctx.body = { success: true, data: order };
+    } catch (err: any) {
+      strapi.log.error('adminCreate error:', err);
+      return ctx.badRequest(err.message);
+    }
+  },
+
   async clients(ctx) {
     // Read from Client collection (CRM)
     const clients = await strapi.documents('api::client.client').findMany({

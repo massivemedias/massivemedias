@@ -104,6 +104,14 @@ export default {
         auth: false,
       },
     },
+    {
+      method: 'POST',
+      path: '/orders/admin-create',
+      handler: 'order.adminCreate',
+      config: {
+        auth: false,
+      },
+    },
   ],
 };
 // Trigger redeploy 1774828260
