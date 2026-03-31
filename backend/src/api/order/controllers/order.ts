@@ -910,11 +910,12 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
       const items: any[] = Array.isArray(order.items) ? order.items : [];
       for (const item of items) {
         const pid = item.productId || '';
-        if (!pid.startsWith('artist-print-')) continue;
+        // Match artist prints AND sticker packs
+        if (!pid.startsWith('artist-print-') && !pid.startsWith('artist-sticker-pack-')) continue;
 
         let matchedSlug: string | null = null;
         for (const slug of slugs) {
-          if (pid.startsWith(`artist-print-${slug}-`)) {
+          if (pid.startsWith(`artist-print-${slug}-`) || pid.startsWith(`artist-sticker-pack-${slug}-`)) {
             if (!matchedSlug || slug.length > matchedSlug.length) {
               matchedSlug = slug;
             }

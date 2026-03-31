@@ -828,11 +828,12 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
             const items = Array.isArray(order.items) ? order.items : [];
             for (const item of items) {
                 const pid = item.productId || '';
-                if (!pid.startsWith('artist-print-'))
+                // Match artist prints AND sticker packs
+                if (!pid.startsWith('artist-print-') && !pid.startsWith('artist-sticker-pack-'))
                     continue;
                 let matchedSlug = null;
                 for (const slug of slugs) {
-                    if (pid.startsWith(`artist-print-${slug}-`)) {
+                    if (pid.startsWith(`artist-print-${slug}-`) || pid.startsWith(`artist-sticker-pack-${slug}-`)) {
                         if (!matchedSlug || slug.length > matchedSlug.length) {
                             matchedSlug = slug;
                         }

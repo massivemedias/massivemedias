@@ -1,0 +1,1 @@
+import{f as s,t as r,c5 as o,c6 as u}from"./strapi-WIx0ocis.js";function m(a,t){s(2,arguments);var e=r(a),n=r(t);return e.getTime()>n.getTime()}function g(a,t){s(2,arguments);var e=u(t);return o(a,-e)}export{m as i,g as s};
