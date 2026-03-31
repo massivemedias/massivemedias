@@ -172,6 +172,15 @@ function ArtisteDetail({ subdomainSlug }) {
       heroImage: (cms.heroImage && !cms.heroImage.includes('undefined')) ? cms.heroImage : local.heroImage,
     };
   }, [cmsArtists, slug]);
+
+  // Override hero si l'artiste connecte a choisi un hero
+  const heroOverrideId = user?.user_metadata?.artist_hero_image;
+  const resolvedHero = useMemo(() => {
+    if (!heroOverrideId || !artist) return artist?.heroImage;
+    const print = artist.prints?.find(p => p.id === heroOverrideId);
+    if (print) return print.image || print.fullImage;
+    return artist.heroImage;
+  }, [heroOverrideId, artist]);
   const [selectedPrint, setSelectedPrint] = useState(null);
   const [selectedSticker, setSelectedSticker] = useState(null);
   const [openFaq, setOpenFaq] = useState(null);
@@ -454,7 +463,7 @@ function ArtisteDetail({ subdomainSlug }) {
 
             </motion.div>
 
-            {artist.heroImage && (
+            {resolvedHero && (
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -463,7 +472,7 @@ function ArtisteDetail({ subdomainSlug }) {
               >
                 <div className="relative overflow-hidden rounded-2xl">
                 <img loading="lazy"
-                  src={artist.heroImage}
+                  src={resolvedHero}
                   alt={artist.name}
                   className="w-full h-auto max-h-[400px] object-contain drop-shadow-2xl"
                 />
