@@ -8,6 +8,7 @@ const stripe_1 = __importDefault(require("stripe"));
 const shipping_1 = require("../../../utils/shipping");
 const email_1 = require("../../../utils/email");
 const crypto_1 = __importDefault(require("crypto"));
+const promo_codes_1 = require("../../../utils/promo-codes");
 const getStripe = () => {
     const key = process.env.STRIPE_SECRET_KEY;
     if (!key || key === 'sk_test_REPLACE_ME') {
@@ -59,14 +60,11 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
             subtotal += validPrice;
         }
         // Validate and apply promo code server-side (never trust client discount)
-        const PROMO_CODES = {
-            'MASSIVE6327': { discountPercent: 20, label: 'Promo Massive 20%' },
-            'MASSIVE432': { discountPercent: 15, label: 'Promo Massive 15%' },
-        };
+        // PROMO_CODES importe de src/utils/promo-codes.ts
         let promoDiscount = 0;
         let appliedPromoCode = '';
         if (promoCode && typeof promoCode === 'string') {
-            const promo = PROMO_CODES[promoCode.toUpperCase().trim()];
+            const promo = promo_codes_1.PROMO_CODES[promoCode.toUpperCase().trim()];
             if (promo) {
                 promoDiscount = Math.round(subtotal * promo.discountPercent / 100);
                 appliedPromoCode = promoCode.toUpperCase().trim();
@@ -221,14 +219,11 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
             }
             subtotal += validPrice;
         }
-        const PROMO_CODES = {
-            'MASSIVE6327': { discountPercent: 20, label: 'Promo Massive 20%' },
-            'MASSIVE432': { discountPercent: 15, label: 'Promo Massive 15%' },
-        };
+        // PROMO_CODES importe de src/utils/promo-codes.ts
         let promoDiscount = 0;
         let appliedPromoCode = '';
         if (promoCode && typeof promoCode === 'string') {
-            const promo = PROMO_CODES[promoCode.toUpperCase().trim()];
+            const promo = promo_codes_1.PROMO_CODES[promoCode.toUpperCase().trim()];
             if (promo) {
                 promoDiscount = Math.round(subtotal * promo.discountPercent / 100);
                 appliedPromoCode = promoCode.toUpperCase().trim();

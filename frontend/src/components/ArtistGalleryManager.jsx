@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   ImagePlus, Trash2, Loader2, Check, X, Clock, Send, AlertCircle,
   ChevronDown, ChevronUp, Eye, Pencil, Gem, DollarSign, ImageIcon,
+  LayoutGrid, Grid3X3, List,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -50,6 +51,7 @@ function ArtistGalleryManager() {
   const [uniqueFormId, setUniqueFormId] = useState(null);
   const [uniquePrice, setUniquePrice] = useState('');
   const [uniqueFormat, setUniqueFormat] = useState('a3plus');
+  const [viewMode, setViewMode] = useState('list'); // 'grid' | 'compact' | 'list'
   const [uniqueSending, setUniqueSending] = useState(false);
 
   const email = user?.email || '';
@@ -328,7 +330,7 @@ function ArtistGalleryManager() {
     return item[`title${lang === 'fr' ? 'Fr' : lang === 'en' ? 'En' : 'Es'}`] || item.titleFr || item.title || '';
   };
 
-  // Rendu liste detaillee
+  // Rendu galerie (grid / compact / list)
   const renderGalleryGrid = (items, category) => {
     if (!items || items.length === 0) return (
       <div className="text-center py-6">
@@ -336,6 +338,37 @@ function ArtistGalleryManager() {
       </div>
     );
 
+    // Vue grille (grid ou compact) - thumbs avec titre
+    if (viewMode === 'grid' || viewMode === 'compact') {
+      const cols = viewMode === 'grid' ? 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4' : 'grid-cols-3 sm:grid-cols-4 lg:grid-cols-6';
+      return (
+        <div className={`grid ${cols} gap-2`}>
+          {[...items].map((item) => {
+            const thumbSrc = resolveThumb(item);
+            const title = getTitle(item);
+            const isHero = currentHeroId === item.id;
+            const isUnique = item.unique;
+            return (
+              <div key={item.id} onClick={() => setSelectedItemId(selectedItemId === item.id ? null : item.id)}
+                className={`relative rounded-lg overflow-hidden cursor-pointer transition-all hover:ring-1 hover:ring-white/20 ${selectedItemId === item.id ? 'ring-2 ring-accent' : ''}`}>
+                {thumbSrc ? (
+                  <img src={thumbSrc} alt={title} loading="lazy" className={`w-full ${category === 'stickers' ? 'object-contain p-1 aspect-square' : 'object-cover aspect-[3/4]'}`} />
+                ) : (
+                  <div className="w-full aspect-[3/4] bg-glass flex items-center justify-center"><ImagePlus size={16} className="text-grey-muted/30" /></div>
+                )}
+                {isHero && <div className="absolute top-1 right-1 w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center"><ImageIcon size={8} className="text-white" /></div>}
+                {isUnique && <div className="absolute top-1 left-1 px-1 py-0.5 rounded-full bg-accent/90 text-white text-[7px] font-bold flex items-center gap-0.5"><Gem size={7} /></div>}
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-1.5 py-1 pt-3">
+                  <p className="text-white text-[9px] truncate">{title || item.id}</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      );
+    }
+
+    // Vue liste detaillee
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {[...items].map((item) => {
@@ -521,6 +554,22 @@ function ArtistGalleryManager() {
             <Check size={16} /> {success}
           </div>
         )}
+
+        {/* View toggle */}
+        <div className="flex justify-end mb-4">
+          <div className="flex items-center gap-0.5 p-1 rounded-lg bg-black/20">
+            {[
+              { mode: 'grid', icon: LayoutGrid },
+              { mode: 'compact', icon: Grid3X3 },
+              { mode: 'list', icon: List },
+            ].map(({ mode, icon: Icon }) => (
+              <button key={mode} onClick={() => setViewMode(mode)}
+                className={`p-1.5 rounded-md transition-all ${viewMode === mode ? 'bg-accent text-white shadow-md' : 'text-grey-muted hover:text-heading hover:bg-white/5'}`}>
+                <Icon size={16} />
+              </button>
+            ))}
+          </div>
+        </div>
 
         {/* Prints */}
         <div className="mb-6">

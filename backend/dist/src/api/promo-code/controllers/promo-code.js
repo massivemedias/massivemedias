@@ -1,16 +1,10 @@
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * Promo code validation controller
- *
- * Codes promo valides (hardcoded pour le moment).
- * Pour ajouter/modifier des codes, editer la map PROMO_CODES ci-dessous.
- * A terme, ces codes pourront etre geres via une collection Strapi.
+ * Les codes sont dans src/utils/promo-codes.ts (un seul endroit)
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-const PROMO_CODES = {
-    'MASSIVE6327': { discountPercent: 20, label: 'Promo Massive 20%' },
-    'MASSIVE432': { discountPercent: 15, label: 'Promo Massive 15%' },
-};
+const promo_codes_1 = require("../../../utils/promo-codes");
 exports.default = {
     async validate(ctx) {
         const { code } = ctx.request.body;
@@ -18,7 +12,7 @@ exports.default = {
             ctx.body = { valid: false };
             return;
         }
-        const promo = PROMO_CODES[code.toUpperCase().trim()];
+        const promo = promo_codes_1.PROMO_CODES[code.toUpperCase().trim()];
         if (promo) {
             ctx.body = {
                 valid: true,
