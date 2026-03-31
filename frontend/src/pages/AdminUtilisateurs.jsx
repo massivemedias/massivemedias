@@ -136,7 +136,10 @@ function AdminUtilisateurs() {
     return roles[e]?.role || 'user';
   };
 
-  const getUserArtistSlug = (email) => roles[(email || '').toLowerCase()]?.artistSlug || null;
+  const getUserArtistSlug = (email) => {
+    const r = roles[(email || '').toLowerCase()];
+    return r?.artistSlug || r?.tatoueurSlug || null;
+  };
 
   const filtered = allUsers.filter(u => {
     // Search filter
@@ -408,22 +411,27 @@ function AdminUtilisateurs() {
                   {/* Name + provider */}
                   <div className="flex items-center gap-3">
                     <div className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0 ${
-                      role === 'admin' ? 'bg-red-500/20 text-red-400' :
-                      role === 'artist' ? 'bg-purple-500/20 text-purple-400' :
+                      role === 'admin' ? 'bg-yellow-500/20 text-yellow-400' :
+                      role === 'artist' ? 'bg-red-500/20 text-red-400' :
+                      role === 'tatoueur' ? 'bg-blue-500/20 text-blue-400' :
                       user.isBuyer ? 'bg-green-500/20 text-green-400' :
-                      'bg-accent/20 text-accent'
+                      'bg-purple-500/20 text-purple-400'
                     }`}>
                       {(user.fullName || user.email || '?')[0].toUpperCase()}
                     </div>
                     <div className="min-w-0">
                       <p className={`text-[15px] font-semibold truncate ${
-                        role === 'admin' ? 'text-red-400' :
-                        role === 'artist' ? 'text-purple-400' :
+                        role === 'admin' ? 'text-yellow-400' :
+                        role === 'artist' ? 'text-red-400' :
+                        role === 'tatoueur' ? 'text-blue-400' :
                         'text-heading'
                       }`}>
                         {user.fullName || tx({ fr: 'Sans nom', en: 'No name', es: 'Sin nombre' })}
                         {role === 'artist' && artistSlug && (
-                          <span className="text-[11px] text-purple-400/60 font-normal ml-1.5">({artistSlug})</span>
+                          <span className="text-[11px] text-red-400/60 font-normal ml-1.5">({artistSlug})</span>
+                        )}
+                        {role === 'tatoueur' && artistSlug && (
+                          <span className="text-[11px] text-blue-400/60 font-normal ml-1.5">({artistSlug})</span>
                         )}
                       </p>
                       <p className="text-[11px] text-grey-muted flex items-center gap-1">
@@ -476,17 +484,19 @@ function AdminUtilisateurs() {
                   {/* Line 1: Avatar + Name + Spent */}
                   <div className="flex items-center gap-3">
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0 ${
-                      role === 'admin' ? 'bg-red-500/20 text-red-400' :
-                      role === 'artist' ? 'bg-purple-500/20 text-purple-400' :
+                      role === 'admin' ? 'bg-yellow-500/20 text-yellow-400' :
+                      role === 'artist' ? 'bg-red-500/20 text-red-400' :
+                      role === 'tatoueur' ? 'bg-blue-500/20 text-blue-400' :
                       user.isBuyer ? 'bg-green-500/20 text-green-400' :
-                      'bg-accent/20 text-accent'
+                      'bg-purple-500/20 text-purple-400'
                     }`}>
                       {(user.fullName || user.email || '?')[0].toUpperCase()}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className={`text-sm font-semibold truncate ${
-                        role === 'admin' ? 'text-red-400' :
-                        role === 'artist' ? 'text-purple-400' :
+                        role === 'admin' ? 'text-yellow-400' :
+                        role === 'artist' ? 'text-red-400' :
+                        role === 'tatoueur' ? 'text-blue-400' :
                         'text-heading'
                       }`}>
                         {user.fullName || tx({ fr: 'Sans nom', en: 'No name', es: 'Sin nombre' })}
