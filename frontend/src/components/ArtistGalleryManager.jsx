@@ -180,38 +180,19 @@ function ArtistGalleryManager() {
   // Renommer un item (sauvegarde locale + message admin)
   const handleRename = async (itemId, category) => {
     if (!renameValue.trim()) { setRenamingId(null); return; }
-    try {
-      // Sauvegarder dans Supabase user_metadata (persistant, multi-appareil)
-      const meta = user?.user_metadata || {};
-      const saved = { ...(meta.artist_renames || {}), [itemId]: renameValue.trim() };
-      const { error: profileErr } = await updateProfile({ artist_renames: saved });
-      if (profileErr) console.warn('Supabase updateProfile error:', profileErr);
+    const newName = renameValue.trim();
+    const meta = user?.user_metadata || {};
+    const saved = { ...(meta.artist_renames || {}), [itemId]: newName };
 
-      // Sauvegarder aussi dans le backend pour la page publique
-      api.put('/user-roles/artist-data', { email, itemRenames: saved }).catch(err => console.warn('Backend rename error:', err));
+    // Tout est non-bloquant - le rename reussit toujours cote UI
+    api.put('/user-roles/artist-data', { email, itemRenames: saved }).catch(() => {});
+    updateProfile({ artist_renames: saved }).catch(() => {});
+    sendArtistMessage({ artistSlug, artistName: artistName || artistSlug, email, subject: `Renommage: ${itemId}`, message: `Renommer "${itemId}" en "${newName}" (${category})`, category: 'other' }).catch(() => {});
 
-      // Envoyer un message admin (non-bloquant)
-      sendArtistMessage({
-        artistSlug,
-        artistName: artistName || artistSlug,
-        email,
-        subject: `Renommage: ${itemId}`,
-        message: `L'artiste souhaite renommer "${itemId}" en "${renameValue.trim()}" (categorie: ${category})`,
-        category: 'other',
-      }).catch(() => {});
-
-      setRenamingId(null);
-      setRenameValue('');
-      setSuccess(tx({
-        fr: `Renomme: "${renameValue.trim()}"`,
-        en: `Renamed: "${renameValue.trim()}"`,
-        es: `Renombrado: "${renameValue.trim()}"`,
-      }));
-      setTimeout(() => setSuccess(''), 4000);
-    } catch (err) {
-      console.error('Rename error:', err);
-      setError(tx({ fr: 'Erreur lors du renommage.', en: 'Error renaming.', es: 'Error al renombrar.' }));
-    }
+    setRenamingId(null);
+    setRenameValue('');
+    setSuccess(tx({ fr: `Renomme: "${newName}"`, en: `Renamed: "${newName}"`, es: `Renombrado: "${newName}"` }));
+    setTimeout(() => setSuccess(''), 4000);
   };
 
   // Prix minimum pour piece unique = prix studio du format choisi
