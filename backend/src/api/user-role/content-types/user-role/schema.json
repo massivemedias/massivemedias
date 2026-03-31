@@ -33,6 +33,12 @@
     },
     "tatoueurSlug": {
       "type": "string"
+    },
+    "itemRenames": {
+      "type": "json"
+    },
+    "heroImageId": {
+      "type": "string"
     }
   }
 }

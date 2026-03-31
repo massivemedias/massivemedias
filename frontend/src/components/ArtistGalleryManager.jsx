@@ -138,6 +138,8 @@ function ArtistGalleryManager() {
   const handleSetHero = async (itemId) => {
     try {
       await updateProfile({ artist_hero_image: itemId });
+      // Sauvegarder aussi dans le backend pour la page publique
+      api.put('/user-roles/artist-data', { email, heroImageId: itemId }).catch(() => {});
       setSuccess(tx({ fr: 'Image hero mise a jour!', en: 'Hero image updated!', es: 'Imagen hero actualizada!' }));
       setTimeout(() => setSuccess(''), 3000);
     } catch (err) {
@@ -184,6 +186,9 @@ function ArtistGalleryManager() {
       const saved = meta.artist_renames || {};
       saved[itemId] = renameValue.trim();
       await updateProfile({ artist_renames: saved });
+
+      // Sauvegarder aussi dans le backend pour la page publique
+      api.put('/user-roles/artist-data', { email, itemRenames: saved }).catch(() => {});
 
       // Envoyer un message admin pour que le code soit mis à jour
       await sendArtistMessage({

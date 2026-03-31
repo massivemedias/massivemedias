@@ -173,8 +173,17 @@ function ArtisteDetail({ subdomainSlug }) {
     };
   }, [cmsArtists, slug]);
 
-  // Override hero si l'artiste connecte a choisi un hero
-  const heroOverrideId = user?.user_metadata?.artist_hero_image;
+  // Charger les renames et hero depuis le backend (visible par tous)
+  const [artistData, setArtistData] = useState({ itemRenames: {}, heroImageId: null });
+  useEffect(() => {
+    if (!slug) return;
+    api.get(`/user-roles/artist-data/${slug}`)
+      .then(res => setArtistData(res.data?.data || { itemRenames: {}, heroImageId: null }))
+      .catch(() => {});
+  }, [slug]);
+
+  // Override hero: backend > user_metadata > default
+  const heroOverrideId = artistData.heroImageId || user?.user_metadata?.artist_hero_image;
   const resolvedHero = useMemo(() => {
     if (!heroOverrideId || !artist) return artist?.heroImage;
     const print = artist.prints?.find(p => p.id === heroOverrideId);
@@ -271,10 +280,12 @@ function ArtisteDetail({ subdomainSlug }) {
   const bio = tx({ fr: artist.bio.fr, en: artist.bio.en, es: artist.bio.es || artist.bio.en });
   const minPrice = Math.min(...Object.values(artist.pricing.studio).filter(v => v != null));
 
-  // Renommages depuis Supabase user_metadata (si artiste connecte)
+  // Renommages: backend (visible par tous) > user_metadata (artiste connecte) > default
   const localRenames = useMemo(() => {
-    return user?.user_metadata?.artist_renames || {};
-  }, [user]);
+    const backendRenames = artistData.itemRenames || {};
+    const userRenames = user?.user_metadata?.artist_renames || {};
+    return { ...userRenames, ...backendRenames };
+  }, [user, artistData]);
   const getItemTitle = (item) => {
     if (localRenames[item.id]) return localRenames[item.id];
     return tx({ fr: item.titleFr, en: item.titleEn, es: item.titleEs || item.titleEn });

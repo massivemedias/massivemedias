@@ -124,6 +124,57 @@ export default factories.createCoreController('api::user-role.user-role', ({ str
     }
   },
 
+  // PUT /user-roles/artist-data - Sauvegarder renames et hero pour un artiste
+  async updateArtistData(ctx) {
+    const { email, itemRenames, heroImageId } = ctx.request.body as any;
+    if (!email) { ctx.throw(400, 'Email required'); return; }
+
+    try {
+      const existing = await strapi.documents('api::user-role.user-role').findMany({
+        filters: { email: { $eqi: email } },
+        limit: 1,
+      });
+      if (!existing || existing.length === 0) { ctx.throw(404, 'User role not found'); return; }
+
+      const updateData: any = {};
+      if (itemRenames !== undefined) updateData.itemRenames = itemRenames;
+      if (heroImageId !== undefined) updateData.heroImageId = heroImageId;
+
+      await strapi.documents('api::user-role.user-role').update({
+        documentId: existing[0].documentId,
+        data: updateData,
+      });
+
+      ctx.body = { success: true };
+    } catch (err: any) {
+      ctx.throw(500, err.message);
+    }
+  },
+
+  // GET /user-roles/artist-data/:slug - Lire les renames et hero d'un artiste (public)
+  async getArtistData(ctx) {
+    const { slug } = ctx.params;
+    try {
+      const entries = await strapi.documents('api::user-role.user-role').findMany({
+        filters: {
+          $or: [
+            { artistSlug: slug },
+            { tatoueurSlug: slug },
+          ],
+        } as any,
+        limit: 1,
+      });
+      if (!entries || entries.length === 0) {
+        ctx.body = { data: { itemRenames: {}, heroImageId: null } };
+        return;
+      }
+      const e: any = entries[0];
+      ctx.body = { data: { itemRenames: e.itemRenames || {}, heroImageId: e.heroImageId || null } };
+    } catch (err: any) {
+      ctx.throw(500, err.message);
+    }
+  },
+
   // DELETE /user-roles/:documentId - Supprimer un role (remet en user)
   async removeRole(ctx) {
     const { documentId } = ctx.params;

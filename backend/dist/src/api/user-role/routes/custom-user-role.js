@@ -21,6 +21,18 @@ exports.default = {
             config: { auth: false },
         },
         {
+            method: 'PUT',
+            path: '/user-roles/artist-data',
+            handler: 'user-role.updateArtistData',
+            config: { auth: false },
+        },
+        {
+            method: 'GET',
+            path: '/user-roles/artist-data/:slug',
+            handler: 'user-role.getArtistData',
+            config: { auth: false },
+        },
+        {
             method: 'DELETE',
             path: '/user-roles/:documentId',
             handler: 'user-role.removeRole',
