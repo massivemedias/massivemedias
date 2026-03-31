@@ -1,7 +1,7 @@
 import { img } from '../utils/paths';
 
 export const stickerFinishes = [
-  { id: 'clear', labelFr: 'Vinyle Clear (lamine)', labelEn: 'Clear Vinyl (laminated)', labelEs: 'Vinilo Clear (laminado)', descFr: 'Protection laminee, durable et resistante', descEn: 'Laminated protection, durable and resistant', descEs: 'Proteccion laminada, durable y resistente' },
+  { id: 'clear', labelFr: 'Clear', labelEn: 'Clear', labelEs: 'Clear', descFr: 'Finition laminee protectrice', descEn: 'Protective laminated finish', descEs: 'Acabado laminado protector' },
   { id: 'glossy', labelFr: 'Vinyle Lustré', labelEn: 'Luster Vinyl', labelEs: 'Vinilo Lustrado', descFr: 'Brillant subtil, couleurs éclatantes', descEn: 'Subtle shine, vibrant colors', descEs: 'Brillo sutil, colores vibrantes' },
   { id: 'holographic', labelFr: 'Holographique', labelEn: 'Holographic', labelEs: 'Holográfico', descFr: 'Reflets arc-en-ciel, effet wow', descEn: 'Rainbow reflections, wow effect', descEs: 'Reflejos arcoíris, efecto wow' },
   { id: 'broken-glass', labelFr: 'Verre Brisé', labelEn: 'Broken Glass', labelEs: 'Vidrio Roto', descFr: 'Éclats cristallins, reflets prismatiques', descEn: 'Crystal shards, prismatic reflections', descEs: 'Fragmentos cristalinos, reflejos prismáticos' },
