@@ -390,8 +390,13 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
     try {
       const stripe = getStripe();
       // Access the raw unparsed body for signature verification
-      const rawBody = (ctx.request as any).body?.[Symbol.for('unparsedBody')] || JSON.stringify(ctx.request.body);
+      // Strapi v5 stores raw body via Symbol.for('unparsedBody') when includeUnparsed: true
+      const unparsedBody = (ctx.request as any).body?.[Symbol.for('unparsedBody')];
+      const koaRawBody = (ctx.request as any).rawBody;
+      const rawBody = unparsedBody || koaRawBody || JSON.stringify(ctx.request.body);
+      strapi.log.info(`Webhook received - sig: ${sig ? 'present' : 'missing'}, rawBody type: ${typeof rawBody}, length: ${rawBody?.length || 0}, source: ${unparsedBody ? 'unparsed' : koaRawBody ? 'koa' : 'json-stringify'}`);
       event = stripe.webhooks.constructEvent(rawBody, sig, endpointSecret);
+      strapi.log.info(`Webhook verified OK - event type: ${event.type}`);
     } catch (err: any) {
       strapi.log.error('Webhook signature verification failed:', err.message);
       return ctx.badRequest(`Webhook Error: ${err.message}`);
@@ -659,8 +664,10 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
     const filters: any = {};
     if (status && status !== 'all') {
       filters.status = status;
+    } else {
+      // Exclude draft orders (payment not yet confirmed by Stripe webhook)
+      filters.status = { $ne: 'draft' };
     }
-    // Show all orders including drafts (drafts = payment created but webhook not received)
     if (search) {
       filters.$or = [
         { customerName: { $containsi: search } },
