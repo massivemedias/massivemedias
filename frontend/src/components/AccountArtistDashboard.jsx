@@ -526,9 +526,9 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
               </p>
               <p className="text-grey-light text-xs md:text-sm leading-relaxed">
                 {tx({
-                  fr: 'Tu bénéficies d\'un rabais exclusif sur tes propres prints (voir onglet Tarifs). Pour usage personnel, portfolio ou expos. Stickers: prix régulier pour tous.',
-                  en: 'You get an exclusive discount on your own prints (see Pricing tab). For personal use, portfolio or exhibitions. Stickers: regular price for everyone.',
-                  es: 'Tienes un descuento exclusivo en tus propios prints (ver pestana Precios). Para uso personal, portafolio o exposiciones. Stickers: precio regular para todos.',
+                  fr: 'Tu beneficies d\'un rabais exclusif de 25% sur tes propres prints et stickers. Pour usage personnel, portfolio ou expos.',
+                  en: 'You get an exclusive 25% discount on your own prints and stickers. For personal use, portfolio or exhibitions.',
+                  es: 'Tienes un descuento exclusivo del 25% en tus propios prints y stickers. Para uso personal, portafolio o exposiciones.',
                 })}
               </p>
             </div>
@@ -813,9 +813,9 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
             </p>
             <p className="text-grey-light text-xs leading-relaxed">
               {tx({
-                fr: 'En tant qu\'artiste partenaire, tu bénéficies d\'un rabais exclusif sur tes propres prints (colonne "Prix artiste"). Stickers: prix régulier pour tous.',
+                fr: 'En tant qu\'artiste partenaire, tu beneficies d\'un rabais exclusif de 25% sur tes propres prints et stickers.',
                 en: 'As a partner artist, you get an exclusive 25% discount on your own prints and stickers.',
-                es: 'Como artista asociado, tienes un descuento exclusivo en tus propios prints (columna "Precio artista"). Stickers: precio regular para todos.',
+                es: 'Como artista asociado, tienes un descuento exclusivo del 25% en tus propios prints y stickers.',
               })}
             </p>
           </div>
