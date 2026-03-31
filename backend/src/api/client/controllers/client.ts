@@ -45,7 +45,7 @@ export default factories.createCoreController('api::client.client', ({ strapi })
         sort: sort as any,
         limit: pageSize,
         start: (page - 1) * pageSize,
-        populate: { orders: { sort: 'createdAt:desc', limit: 1 } } as any,
+        populate: ['orders'] as any,
       }),
       strapi.documents('api::client.client').findMany({ filters } as any),
     ]);

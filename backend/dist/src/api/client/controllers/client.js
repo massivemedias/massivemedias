@@ -42,7 +42,7 @@ exports.default = strapi_1.factories.createCoreController('api::client.client', 
                 sort: sort,
                 limit: pageSize,
                 start: (page - 1) * pageSize,
-                populate: { orders: { sort: 'createdAt:desc', limit: 1 } },
+                populate: ['orders'],
             }),
             strapi.documents('api::client.client').findMany({ filters }),
         ]);
