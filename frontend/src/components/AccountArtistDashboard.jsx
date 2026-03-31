@@ -645,7 +645,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
             </div>
             <button
               onClick={() => generateContractPDF(lang)}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-accent/10 shadow-lg shadow-black/20 text-accent text-sm font-semibold hover:bg-accent/20 transition-colors flex-shrink-0"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white/10 shadow-lg shadow-black/20 text-white/90 text-sm font-semibold hover:bg-white/15 transition-colors flex-shrink-0"
             >
               <Download size={16} />
               {tx({ fr: 'PDF', en: 'PDF', es: 'PDF' })}
@@ -879,7 +879,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
                   )}
                 </div>
                 <div className="flex-grow">
-                  <label className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-accent/10 shadow-lg shadow-black/20 text-accent text-sm font-semibold hover:bg-accent/20 transition-colors">
+                  <label className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 shadow-lg shadow-black/20 text-white/90 text-sm font-semibold hover:bg-white/15 transition-colors">
                     {profileImageUploading ? <Loader2 size={14} className="animate-spin" /> : <ImagePlus size={14} />}
                     {tx({ fr: 'Changer l\'image', en: 'Change image', es: 'Cambiar imagen' })}
                     <input
