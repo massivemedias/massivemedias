@@ -21,7 +21,7 @@ function ConfiguratorStickers({ onFinishChange }) {
   const stickerShapes = pd?.shapes || defaultShapes;
   const stickerSizes = pd?.sizes || defaultSizes;
 
-  const [finish, setFinish] = useState('matte');
+  const [finish, setFinish] = useState('clear');
   const [shape, setShape] = useState('round');
   const [size, setSize] = useState('2.5in');
   const [qtyIndex, setQtyIndex] = useState(0);
@@ -49,14 +49,14 @@ function ConfiguratorStickers({ onFinishChange }) {
   // Preview image per finish type - cache bust avec build ID
   const v = import.meta.env.VITE_BUILD_TIME ? `?v=${import.meta.env.VITE_BUILD_TIME}` : '';
   const finishImages = {
-    matte: `/images/stickers/finish-matte.webp${v}`,
+    clear: `/images/stickers/finish-matte.webp${v}`,
     glossy: `/images/stickers/finish-glossy.webp${v}`,
     holographic: `/images/stickers/finish-holographic.webp${v}`,
     'broken-glass': `/images/stickers/finish-broken-glass.webp${v}`,
     stars: `/images/stickers/finish-stars.webp${v}`,
     dots: `/images/stickers/finish-dots-v2.webp${v}`,
   };
-  const previewImage = finishImages[finish] || finishImages.matte;
+  const previewImage = finishImages[finish] || finishImages.clear;
 
   const canAddToCart = uploadedFiles.length > 0 || notes.trim().length > 0;
 
@@ -142,7 +142,7 @@ function ConfiguratorStickers({ onFinishChange }) {
                   }`}
                 >
                   <span className={`w-4 h-4 md:w-3.5 md:h-3.5 rounded-full mb-1.5 border ${
-                    f.id === 'matte' ? 'bg-gray-400 border-gray-400' :
+                    f.id === 'clear' ? 'bg-white/80 border-gray-300 shadow-inner' :
                     f.id === 'glossy' ? 'bg-white border-gray-300 shadow-sm' :
                     f.id === 'broken-glass' ? 'bg-gradient-to-br from-cyan-200 via-white to-cyan-400 border-cyan-300' :
                     f.id === 'stars' ? 'bg-gradient-to-br from-yellow-200 via-amber-300 to-yellow-400 border-yellow-300' :

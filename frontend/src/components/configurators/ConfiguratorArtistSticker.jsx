@@ -19,7 +19,7 @@ function ConfiguratorArtistSticker({ artist, selectedSticker, allStickers = [] }
 
   const stickers = allStickers.length > 0 ? allStickers : (artist?.stickers || []);
 
-  const [finish, setFinish] = useState('matte');
+  const [finish, setFinish] = useState('clear');
   const [shape, setShape] = useState('diecut');
   const [size, setSize] = useState('3in');
   const [added, setAdded] = useState(false);
@@ -290,7 +290,7 @@ function ConfiguratorArtistSticker({ artist, selectedSticker, allStickers = [] }
               }`}
             >
               <span className={`w-3.5 h-3.5 rounded-full mb-1 border ${
-                f.id === 'matte' ? 'bg-gray-400 border-gray-400' :
+                f.id === 'clear' ? 'bg-white/80 border-gray-300 shadow-inner' :
                 f.id === 'glossy' ? 'bg-white border-gray-300 shadow-sm' :
                 f.id === 'broken-glass' ? 'bg-gradient-to-br from-cyan-200 via-white to-cyan-400 border-cyan-300' :
                 f.id === 'stars' ? 'bg-gradient-to-br from-yellow-200 via-amber-300 to-yellow-400 border-yellow-300' :

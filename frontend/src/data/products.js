@@ -1,7 +1,7 @@
 import { img } from '../utils/paths';
 
 export const stickerFinishes = [
-  { id: 'matte', labelFr: 'Vinyle Matte', labelEn: 'Matte Vinyl', labelEs: 'Vinilo Mate', descFr: 'Toucher velouté, sans reflet', descEn: 'Smooth feel, glare-free', descEs: 'Tacto aterciopelado, sin reflejos' },
+  { id: 'clear', labelFr: 'Vinyle Clear (lamine)', labelEn: 'Clear Vinyl (laminated)', labelEs: 'Vinilo Clear (laminado)', descFr: 'Protection laminee, durable et resistante', descEn: 'Laminated protection, durable and resistant', descEs: 'Proteccion laminada, durable y resistente' },
   { id: 'glossy', labelFr: 'Vinyle Lustré', labelEn: 'Luster Vinyl', labelEs: 'Vinilo Lustrado', descFr: 'Brillant subtil, couleurs éclatantes', descEn: 'Subtle shine, vibrant colors', descEs: 'Brillo sutil, colores vibrantes' },
   { id: 'holographic', labelFr: 'Holographique', labelEn: 'Holographic', labelEs: 'Holográfico', descFr: 'Reflets arc-en-ciel, effet wow', descEn: 'Rainbow reflections, wow effect', descEs: 'Reflejos arcoíris, efecto wow' },
   { id: 'broken-glass', labelFr: 'Verre Brisé', labelEn: 'Broken Glass', labelEs: 'Vidrio Roto', descFr: 'Éclats cristallins, reflets prismatiques', descEn: 'Crystal shards, prismatic reflections', descEs: 'Fragmentos cristalinos, reflejos prismáticos' },
@@ -23,7 +23,7 @@ export const stickerSizes = [
   { id: '4in', label: '4"' },
 ];
 
-// Prix Standard (Matte / Lustré) - alignés sur le tableau services.js
+// Prix Standard (Clear / Lustre) - alignes sur le tableau services.js
 export const stickerPriceTiers = [
   { qty: 25, price: 30, unitPrice: 1.20 },
   { qty: 50, price: 47.50, unitPrice: 0.95 },
@@ -49,7 +49,7 @@ export function getStickerPrice(finish, shape, qty) {
   if (finish === 'holographic' || finish === 'broken-glass' || finish === 'stars') {
     tiers = holographicPriceTiers;
   } else {
-    // matte, glossy, transparent = Standard pricing
+    // clear, glossy, transparent, dots = Standard pricing
     tiers = stickerPriceTiers;
   }
   const tier = tiers.find(t => t.qty === qty);
@@ -83,7 +83,7 @@ export const stickerImages = [
 export const stickerHighlights = {
   fr: [
     'Découpe de précision professionnelle',
-    'Vinyle matte, lustré, holographique, transparent, verre brisé, étoiles',
+    'Vinyle clear (lamine), lustre, holographique, transparent, verre brise, etoiles',
     'Découpe contour à la forme exacte du design',
     'Lamination incluse - résistant eau, UV, rayures',
     'Design graphique inclus dans le prix',
@@ -92,7 +92,7 @@ export const stickerHighlights = {
   ],
   en: [
     'Professional precision cutting',
-    'Matte, glossy, clear, holographic vinyl',
+    'Clear (laminated), glossy, holographic vinyl',
     'Contour cut to exact design shape',
     'Lamination included - water, UV, scratch resistant',
     'Graphic design included in price',

@@ -10,7 +10,7 @@ import { img } from '../utils/paths';
 
 // Image de finition par type (affichee en premier dans la galerie)
 const finishImages = {
-  matte: img('/images/stickers/finish-matte.webp'),
+  clear: img('/images/stickers/finish-matte.webp'),
   glossy: img('/images/stickers/finish-glossy.webp'),
   holographic: img('/images/stickers/finish-holographic.webp'),
   'broken-glass': img('/images/stickers/finish-broken-glass.webp'),
@@ -23,7 +23,7 @@ function BoutiqueStickers() {
   const stickerFaq = cmsProduct ? { fr: cmsProduct.faqFr || defaultFaq.fr, en: cmsProduct.faqEn || defaultFaq.en, es: cmsProduct?.faqEs || defaultFaq.es } : defaultFaq;
   const cmsImages = cmsProduct?.images?.length ? cmsProduct.images.map(i => mediaUrl(i)) : null;
 
-  const [selectedFinish, setSelectedFinish] = useState('matte');
+  const [selectedFinish, setSelectedFinish] = useState('clear');
 
   // Image de finition en premier, puis les images de realisations
   const allImages = useMemo(() => {
