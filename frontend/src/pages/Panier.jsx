@@ -24,6 +24,7 @@ function Panier() {
   const [promoError, setPromoError] = useState('');
 
   const hasArtistOwnPrints = items.some(i => i.isArtistOwnPrint);
+  const hasArtistOwnPrintsOnly = items.some(i => i.isArtistOwnPrint && (i.productId || '').startsWith('artist-print-'));
   const artistDiscountTotal = items
     .filter(i => i.isArtistOwnPrint)
     .reduce((sum, i) => sum + Math.round(i.totalPrice * ARTIST_DISCOUNT), 0);
@@ -169,16 +170,18 @@ function Panier() {
                   })}
                 </p>
               </div>
-              <div className="flex items-start gap-2 mt-2">
-                <AlertTriangle size={14} className="text-yellow-400 flex-shrink-0 mt-0.5" />
-                <p className="text-yellow-400/80 text-xs">
-                  {tx({
-                    fr: 'Usage personnel, portfolio ou exposition uniquement. Revente interdite (contrat signe).',
-                    en: 'Personal use, portfolio or exhibition only. Resale prohibited (signed contract).',
-                    es: 'Uso personal, portafolio o exposicion solamente. Reventa prohibida (contrato firmado).',
-                  })}
-                </p>
-              </div>
+              {hasArtistOwnPrintsOnly && (
+                <div className="flex items-start gap-2 mt-2">
+                  <AlertTriangle size={14} className="text-yellow-400 flex-shrink-0 mt-0.5" />
+                  <p className="text-yellow-400/80 text-xs">
+                    {tx({
+                      fr: 'Prints: usage personnel, portfolio ou exposition uniquement. Revente interdite (contrat signe).',
+                      en: 'Prints: personal use, portfolio or exhibition only. Resale prohibited (signed contract).',
+                      es: 'Prints: uso personal, portafolio o exposicion solamente. Reventa prohibida (contrato firmado).',
+                    })}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         )}
