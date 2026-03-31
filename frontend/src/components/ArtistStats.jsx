@@ -122,16 +122,10 @@ export default function ArtistStats({ artistSlug }) {
       color: colors.accent,
     },
     {
-      label: tx({ fr: 'Visiteurs', en: 'Visitors', es: 'Visitantes' }),
+      label: tx({ fr: 'Visiteurs uniques', en: 'Unique visitors', es: 'Visitantes unicos' }),
       value: overview.activeUsers,
       icon: Users,
       color: colors.blue,
-    },
-    {
-      label: tx({ fr: 'Sessions', en: 'Sessions', es: 'Sesiones' }),
-      value: overview.sessions,
-      icon: TrendingUp,
-      color: colors.green,
     },
     {
       label: tx({ fr: 'Duree moy.', en: 'Avg. duration', es: 'Duracion prom.' }),
@@ -259,8 +253,8 @@ export default function ArtistStats({ artistSlug }) {
             </h4>
             <div className="space-y-2">
               {sources.slice(0, 8).map((s, i) => {
-                const maxSessions = sources[0]?.sessions || 1;
-                const pct = Math.round((s.sessions / maxSessions) * 100);
+                const maxUsers = sources[0]?.users || 1;
+                const pct = Math.round((s.users / maxUsers) * 100);
                 return (
                   <div key={i} className="flex items-center gap-3">
                     <span className="text-sm text-heading w-28 truncate" title={s.source}>
@@ -277,7 +271,7 @@ export default function ArtistStats({ artistSlug }) {
                         }}
                       />
                     </div>
-                    <span className="text-xs text-grey-muted w-8 text-right">{s.sessions}</span>
+                    <span className="text-xs text-grey-muted w-8 text-right">{s.users}</span>
                   </div>
                 );
               })}

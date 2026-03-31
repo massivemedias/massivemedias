@@ -220,7 +220,7 @@ function AdminStats() {
                 {[
                   { label: tx({ fr: 'En ligne', en: 'Online now', es: 'En linea' }), value: analytics.realtimeUsers ?? '-', icon: Activity, accent: 'text-green-400', pulse: true },
                   { label: tx({ fr: 'Visiteurs', en: 'Visitors', es: 'Visitantes' }), value: analytics.overview?.activeUsers || 0, icon: Users, accent: 'text-blue-400' },
-                  { label: tx({ fr: 'Sessions', en: 'Sessions', es: 'Sesiones' }), value: analytics.overview?.sessions || 0, icon: MousePointerClick, accent: 'text-purple-400' },
+                  { label: tx({ fr: 'Visiteurs uniques', en: 'Unique visitors', es: 'Visitantes unicos' }), value: analytics.overview?.activeUsers || 0, icon: MousePointerClick, accent: 'text-purple-400' },
                   { label: tx({ fr: 'Pages vues', en: 'Page views', es: 'Paginas vistas' }), value: analytics.overview?.pageViews || 0, icon: Eye, accent: 'text-cyan-400' },
                   { label: tx({ fr: 'Nouveaux', en: 'New users', es: 'Nuevos' }), value: analytics.overview?.newUsers || 0, icon: ArrowUpRight, accent: 'text-emerald-400' },
                   { label: tx({ fr: 'Taux rebond', en: 'Bounce rate', es: 'Tasa rebote' }), value: `${((analytics.overview?.bounceRate || 0) * 100).toFixed(1)}%`, icon: ArrowDownRight, accent: 'text-orange-400' },
@@ -303,7 +303,7 @@ function AdminStats() {
                     <div className="w-36 h-36 flex-shrink-0">
                       <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
-                          <Pie data={(analytics.sources || []).map((s, i) => ({ ...s, name: s.source, value: s.sessions, color: [colors.blue, colors.green, colors.purple, colors.yellow, colors.cyan, colors.red, colors.orange, colors.emerald, colors.accent, colors.gray][i % 10] }))}
+                          <Pie data={(analytics.sources || []).map((s, i) => ({ ...s, name: s.source, value: s.users || s.sessions, color: [colors.blue, colors.green, colors.purple, colors.yellow, colors.cyan, colors.red, colors.orange, colors.emerald, colors.accent, colors.gray][i % 10] }))}
                             cx="50%" cy="50%" innerRadius={30} outerRadius={60} paddingAngle={2} dataKey="value">
                             {(analytics.sources || []).map((_, i) => (
                               <Cell key={i} fill={[colors.blue, colors.green, colors.purple, colors.yellow, colors.cyan, colors.red, colors.orange, colors.emerald, colors.accent, colors.gray][i % 10]} fillOpacity={0.7} stroke="none" />
@@ -318,7 +318,7 @@ function AdminStats() {
                         <div key={i} className="flex items-center gap-2 text-xs">
                           <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: [colors.blue, colors.green, colors.purple, colors.yellow, colors.cyan, colors.red, colors.orange, colors.emerald, colors.accent, colors.gray][i % 10], opacity: 0.7 }} />
                           <span className="text-grey-muted flex-1 truncate">{s.source}</span>
-                          <span className="text-heading font-semibold">{s.sessions}</span>
+                          <span className="text-heading font-semibold">{s.users || s.sessions}</span>
                         </div>
                       ))}
                     </div>
@@ -455,7 +455,7 @@ function AdminStats() {
                     {(analytics.landingPages || []).map((lp, i) => (
                       <div key={i} className="flex items-center justify-between px-3 py-1.5 rounded-lg hover:bg-black/10 transition-colors">
                         <span className="text-xs text-heading truncate max-w-[200px]" title={lp.page}>{lp.page}</span>
-                        <span className="text-xs text-heading font-semibold flex-shrink-0 ml-2">{lp.sessions} <span className="text-grey-muted">sess.</span></span>
+                        <span className="text-xs text-heading font-semibold flex-shrink-0 ml-2">{lp.users || lp.sessions} <span className="text-grey-muted">uniq.</span></span>
                       </div>
                     ))}
                   </div>
