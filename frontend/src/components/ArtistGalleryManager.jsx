@@ -328,7 +328,7 @@ function ArtistGalleryManager() {
     return item[`title${lang === 'fr' ? 'Fr' : lang === 'en' ? 'En' : 'Es'}`] || item.titleFr || item.title || '';
   };
 
-  // Rendu d'une grille d'images
+  // Rendu liste detaillee
   const renderGalleryGrid = (items, category) => {
     if (!items || items.length === 0) return (
       <div className="text-center py-6">
@@ -336,239 +336,162 @@ function ArtistGalleryManager() {
       </div>
     );
 
-    // Trier: portraits d'abord, paysages ensuite
-    const sorted = [...items];
-    const selectedItem = items.find(i => i.id === selectedItemId);
-
     return (
-      <>
-      <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-2">
-        {sorted.map((item) => {
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {[...items].map((item) => {
           const isPendingRemoval = pendingRemovalIds.includes(item.id);
           const isPendingUnique = pendingUniqueIds.includes(item.id);
           const thumbSrc = resolveThumb(item);
           const title = getTitle(item);
           const isUnique = item.unique;
-          const isSelected = selectedItemId === item.id;
+          const isHero = currentHeroId === item.id;
+          const isRenaming = renamingId === item.id;
+          const showUniqueForm = uniqueFormId === item.id;
 
           return (
-            <div
-              key={item.id}
-              onClick={() => setSelectedItemId(isSelected ? null : item.id)}
-              className={`relative group rounded-lg overflow-hidden cursor-pointer transition-all ${
-                isPendingRemoval ? 'opacity-40' : ''
-              } ${isSelected ? 'ring-2 ring-accent' : 'hover:ring-1 hover:ring-white/20'}`}
-            >
-              {thumbSrc ? (
-                <img
-                  src={thumbSrc}
-                  alt={title}
-                  className={`w-full ${category === 'stickers' ? 'object-contain p-1 aspect-square' : 'object-cover'}`}
-                  style={category !== 'stickers' ? { aspectRatio: 'auto' } : undefined}
-                  loading="lazy"
-                />
-              ) : (
-                <div className="w-full aspect-[2/3] bg-glass flex items-center justify-center">
-                  <ImagePlus size={20} className="text-grey-muted/30" />
+            <div key={item.id} className={`rounded-xl bg-black/20 overflow-hidden transition-all ${isPendingRemoval ? 'opacity-40' : ''}`}>
+              <div className="flex gap-3 p-3">
+                {/* Thumb */}
+                <div className="relative flex-shrink-0">
+                  {thumbSrc ? (
+                    <img src={thumbSrc} alt={title} loading="lazy"
+                      className={`rounded-lg ${category === 'stickers' ? 'w-16 h-16 object-contain' : 'w-20 h-28 object-cover'}`}
+                    />
+                  ) : (
+                    <div className="w-20 h-28 rounded-lg bg-glass flex items-center justify-center">
+                      <ImagePlus size={16} className="text-grey-muted/30" />
+                    </div>
+                  )}
+                  {isHero && (
+                    <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center" title="Hero">
+                      <ImageIcon size={10} className="text-white" />
+                    </div>
+                  )}
+                  {isUnique && (
+                    <div className="absolute -top-1 -left-1 w-5 h-5 rounded-full bg-accent flex items-center justify-center" title="Unique">
+                      <Gem size={10} className="text-white" />
+                    </div>
+                  )}
                 </div>
-              )}
 
-              {/* Badge piece unique */}
-              {isUnique && (
-                <div className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded-full bg-accent/90 text-white text-[8px] font-bold uppercase flex items-center gap-0.5 whitespace-nowrap z-10" title={item.customPrice ? `Unique - ${item.customPrice}$` : 'Unique'}>
-                  <Gem size={8} />
-                  Unique
+                {/* Details */}
+                <div className="flex-1 min-w-0">
+                  {/* Titre editable */}
+                  {isRenaming ? (
+                    <form onSubmit={(e) => { e.preventDefault(); handleRename(item.id, category); }} className="flex gap-1 mb-2">
+                      <input value={renameValue} onChange={(e) => setRenameValue(e.target.value)}
+                        className="flex-1 min-w-0 bg-black/40 text-heading text-xs px-2 py-1 rounded-lg border border-white/20 focus:outline-none focus:border-accent" autoFocus />
+                      <button type="submit" className="px-1.5 py-1 rounded-lg bg-green-500/20 text-green-400"><Check size={12} /></button>
+                      <button type="button" onClick={() => setRenamingId(null)} className="px-1.5 py-1 rounded-lg bg-white/10 text-grey-muted"><X size={12} /></button>
+                    </form>
+                  ) : (
+                    <p className="text-heading text-sm font-semibold truncate cursor-pointer hover:text-accent transition-colors flex items-center gap-1 mb-1"
+                      onClick={() => { setRenamingId(item.id); setRenameValue(item[`title${lang === 'fr' ? 'Fr' : 'En'}`] || item.titleFr || ''); }}>
+                      {title || item.id}
+                      <Pencil size={10} className="text-grey-muted flex-shrink-0" />
+                    </p>
+                  )}
+
+                  {/* Badges */}
+                  <div className="flex flex-wrap gap-1 mb-2">
+                    {isUnique && (
+                      <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-accent/20 text-accent text-[9px] font-bold">
+                        <Gem size={8} /> {tx({ fr: 'Unique', en: 'Unique', es: 'Unica' })} {item.customPrice ? `${item.customPrice}$` : ''}
+                      </span>
+                    )}
+                    {isHero && (
+                      <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-blue-500/20 text-blue-400 text-[9px] font-bold">
+                        <ImageIcon size={8} /> Hero
+                      </span>
+                    )}
+                    {isPendingRemoval && (
+                      <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-red-500/20 text-red-400 text-[9px] font-bold">
+                        <Trash2 size={8} /> {tx({ fr: 'Suppression demandee', en: 'Removal requested', es: 'Eliminacion solicitada' })}
+                      </span>
+                    )}
+                    {isPendingUnique && !isUnique && (
+                      <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-yellow-500/20 text-yellow-400 text-[9px] font-bold">
+                        <Clock size={8} /> {tx({ fr: 'En attente', en: 'Pending', es: 'Pendiente' })}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Actions inline */}
+                  <div className="flex flex-wrap gap-1.5">
+                    {category === 'prints' && !isHero && (
+                      <button onClick={() => handleSetHero(item.id)}
+                        className="flex items-center gap-1 px-2 py-1 rounded-lg bg-blue-500/10 text-blue-400 text-[10px] font-medium hover:bg-blue-500/20 transition-colors">
+                        <ImageIcon size={10} /> Hero
+                      </button>
+                    )}
+                    {!isUnique && !isPendingUnique && (
+                      <button onClick={() => { setUniqueFormId(showUniqueForm ? null : item.id); setUniquePrice(''); }}
+                        className="flex items-center gap-1 px-2 py-1 rounded-lg bg-accent/10 text-accent text-[10px] font-medium hover:bg-accent/20 transition-colors">
+                        <Gem size={10} /> {tx({ fr: 'Unique', en: 'Unique', es: 'Unica' })}
+                      </button>
+                    )}
+                    {isUnique && (
+                      <button onClick={() => handleUnmarkUnique(item.id, category, item.titleFr || item.id)}
+                        className="flex items-center gap-1 px-2 py-1 rounded-lg bg-white/5 text-grey-muted text-[10px] hover:text-red-400 transition-colors">
+                        <X size={10} /> {tx({ fr: 'Retirer unique', en: 'Remove unique', es: 'Quitar unica' })}
+                      </button>
+                    )}
+                    {!isPendingRemoval && (
+                      <button onClick={() => handleRemove(item.id, category)}
+                        className="flex items-center gap-1 px-2 py-1 rounded-lg bg-red-500/10 text-red-400 text-[10px] font-medium hover:bg-red-500/20 transition-colors">
+                        <Trash2 size={10} /> {tx({ fr: 'Supprimer', en: 'Delete', es: 'Eliminar' })}
+                      </button>
+                    )}
+                  </div>
                 </div>
-              )}
-
-              {/* Badge suppression demandee */}
-              {isPendingRemoval && (
-                <div className="absolute inset-0 bg-red-900/50 flex flex-col items-center justify-center z-10">
-                  <Trash2 size={20} className="text-red-300 mb-1" />
-                  <span className="text-red-200 text-[8px] font-bold uppercase tracking-wider">En attente</span>
-                </div>
-              )}
-
-              {/* Badge pending unique */}
-              {isPendingUnique && !isUnique && (
-                <div className="absolute top-1 left-1 px-1 py-0.5 rounded-full bg-yellow-500/80 text-white text-[7px] font-bold flex items-center gap-0.5">
-                  <Clock size={7} />
-                </div>
-              )}
-
-              {/* Titre en bas */}
-              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-1.5 py-1 pt-4">
-                <p className="text-white text-[9px] truncate">{title || item.id}</p>
               </div>
+
+              {/* Formulaire piece unique expandable */}
+              {showUniqueForm && (() => {
+                const minPrice = getMinPrice(uniqueFormat);
+                const currentPrice = parseFloat(uniquePrice) || 0;
+                const isValid = currentPrice >= minPrice;
+                return (
+                  <div className="px-3 pb-3">
+                    <div className="flex flex-wrap items-end gap-2 p-2.5 rounded-lg bg-black/30">
+                      <div>
+                        <p className="text-grey-muted text-[9px] uppercase mb-1">Format</p>
+                        <div className="flex gap-1">
+                          {artistFormats.map(f => (
+                            <button key={f.id} onClick={() => setUniqueFormat(f.id)}
+                              className={`px-1.5 py-0.5 rounded text-[10px] font-semibold ${uniqueFormat === f.id ? 'bg-accent text-white' : 'bg-white/10 text-white/60 hover:bg-white/20'}`}>
+                              {f.short}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <p className="text-grey-muted text-[9px] uppercase mb-1">{tx({ fr: `Min ${minPrice}$`, en: `Min $${minPrice}`, es: `Min $${minPrice}` })}</p>
+                        <div className="flex items-center gap-1">
+                          <input type="number" min={minPrice} value={uniquePrice} onChange={(e) => setUniquePrice(e.target.value)}
+                            className={`w-16 bg-black/50 text-white text-xs px-2 py-1 rounded border ${isValid || !uniquePrice ? 'border-accent/50' : 'border-red-500'} focus:outline-none text-center`}
+                            placeholder={`${minPrice}`} autoFocus />
+                          <span className="text-white text-xs font-bold">$</span>
+                        </div>
+                      </div>
+                      <button onClick={() => handleMarkUnique(item.id, category, item.titleFr || item.id)}
+                        disabled={uniqueSending || !isValid || !uniquePrice}
+                        className="px-2.5 py-1 rounded-lg bg-accent text-white text-[10px] font-semibold disabled:opacity-50 flex items-center gap-1">
+                        {uniqueSending ? <Loader2 size={10} className="animate-spin" /> : <Send size={10} />}
+                        OK
+                      </button>
+                      <button onClick={() => { setUniqueFormId(null); setUniquePrice(''); }}
+                        className="px-1.5 py-1 rounded-lg bg-white/10 text-grey-muted hover:bg-white/20">
+                        <X size={10} />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
           );
         })}
       </div>
-
-      {/* Panneau de detail quand on selectionne un item */}
-      {selectedItem && (
-        <div className="mt-3 p-3 sm:p-4 rounded-xl bg-black/20 space-y-3 overflow-hidden">
-          <div className="flex items-start gap-3 sm:gap-4">
-            <img
-              src={resolveThumb(selectedItem) || ''}
-              alt=""
-              className={`rounded-lg flex-shrink-0 ${category === 'stickers' ? 'w-12 h-12 sm:w-16 sm:h-16 object-contain' : 'w-16 h-24 sm:w-20 sm:h-28 object-cover'}`}
-            />
-            <div className="flex-1 min-w-0 overflow-hidden">
-              {/* Nom editable */}
-              <label className="text-grey-muted text-[10px] uppercase tracking-wider mb-1 block">
-                {tx({ fr: 'Nom', en: 'Name', es: 'Nombre' })}
-              </label>
-              {renamingId === selectedItem.id ? (
-                <form onSubmit={(e) => { e.preventDefault(); handleRename(selectedItem.id, category); }} className="flex gap-1 sm:gap-1.5 mb-2">
-                  <input
-                    value={renameValue}
-                    onChange={(e) => setRenameValue(e.target.value)}
-                    className="flex-1 min-w-0 bg-black/40 text-heading text-xs sm:text-sm px-2 py-1.5 rounded-lg border border-white/20 focus:outline-none focus:border-accent"
-                    autoFocus
-                  />
-                  <button type="submit" className="flex-shrink-0 px-2 py-1.5 rounded-lg bg-green-500/20 text-green-400 hover:bg-green-500/30"><Check size={14} /></button>
-                  <button type="button" onClick={() => setRenamingId(null)} className="flex-shrink-0 px-2 py-1.5 rounded-lg bg-white/10 text-grey-muted hover:bg-white/20"><X size={14} /></button>
-                </form>
-              ) : (
-                <p
-                  className="text-heading text-sm font-medium cursor-pointer hover:text-accent transition-colors flex items-center gap-1.5 mb-2"
-                  onClick={() => { setRenamingId(selectedItem.id); setRenameValue(selectedItem[`title${lang === 'fr' ? 'Fr' : 'En'}`] || selectedItem.titleFr || ''); }}
-                >
-                  {selectedItem[`title${lang === 'fr' ? 'Fr' : lang === 'en' ? 'En' : 'Es'}`] || selectedItem.titleFr || selectedItem.id}
-                  <Pencil size={12} className="text-grey-muted" />
-                </p>
-              )}
-
-              {/* Status unique */}
-              {selectedItem.unique ? (
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-accent/20 text-accent text-[10px] font-bold">
-                    <Gem size={10} />
-                    {tx({ fr: 'Pièce unique', en: 'Unique piece', es: 'Pieza unica' })}
-                    {selectedItem.customPrice ? ` - ${selectedItem.customPrice}$` : ''}
-                  </span>
-                  <button
-                    onClick={() => handleUnmarkUnique(selectedItem.id, category, selectedItem.titleFr || selectedItem.id)}
-                    className="text-grey-muted text-[10px] hover:text-red-400 transition-colors"
-                  >
-                    {tx({ fr: 'Retirer', en: 'Remove', es: 'Quitar' })}
-                  </button>
-                </div>
-              ) : pendingUniqueIds.includes(selectedItem.id) ? (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-yellow-500/20 text-yellow-400 text-[10px] font-bold mb-2">
-                  <Clock size={10} />
-                  {tx({ fr: 'Validation en attente', en: 'Pending approval', es: 'Aprobacion pendiente' })}
-                </span>
-              ) : (
-                /* Formulaire piece unique inline */
-                <div className="space-y-2">
-                  <button
-                    onClick={() => { setUniqueFormId(uniqueFormId === selectedItem.id ? null : selectedItem.id); setUniquePrice(''); }}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-accent/10 text-accent text-[11px] font-semibold hover:bg-accent/20 transition-colors"
-                  >
-                    <Gem size={12} />
-                    {tx({ fr: 'Marquer comme pièce unique', en: 'Mark as unique piece', es: 'Marcar como pieza unica' })}
-                  </button>
-
-                  {uniqueFormId === selectedItem.id && (() => {
-                    const minPrice = getMinPrice(uniqueFormat);
-                    const currentPrice = parseFloat(uniquePrice) || 0;
-                    const isValid = currentPrice >= minPrice;
-                    return (
-                      <div className="flex flex-wrap items-end gap-2 p-3 rounded-lg bg-black/30">
-                        {/* Format */}
-                        <div>
-                          <p className="text-grey-muted text-[9px] uppercase mb-1">Format</p>
-                          <div className="flex gap-1">
-                            {artistFormats.map(f => (
-                              <button
-                                key={f.id}
-                                onClick={() => setUniqueFormat(f.id)}
-                                className={`px-1.5 py-0.5 rounded text-[10px] font-semibold ${uniqueFormat === f.id ? 'bg-accent text-white' : 'bg-white/10 text-white/60 hover:bg-white/20'}`}
-                              >
-                                {f.short}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                        {/* Prix */}
-                        <div>
-                          <p className="text-grey-muted text-[9px] uppercase mb-1">{tx({ fr: `Prix (min ${minPrice}$)`, en: `Price (min $${minPrice})`, es: `Precio (min $${minPrice})` })}</p>
-                          <div className="flex items-center gap-1">
-                            <input
-                              type="number"
-                              min={minPrice}
-                              value={uniquePrice}
-                              onChange={(e) => setUniquePrice(e.target.value)}
-                              className={`w-20 bg-black/50 text-white text-sm px-2 py-1 rounded border ${isValid || !uniquePrice ? 'border-accent/50' : 'border-red-500'} focus:outline-none focus:border-accent text-center`}
-                              placeholder={`${minPrice}`}
-                              autoFocus
-                            />
-                            <span className="text-white text-sm font-bold">$</span>
-                          </div>
-                        </div>
-                        {/* Boutons */}
-                        <button
-                          onClick={() => handleMarkUnique(selectedItem.id, category, selectedItem.titleFr || selectedItem.id)}
-                          disabled={uniqueSending || !isValid || !uniquePrice}
-                          className="px-3 py-1.5 rounded-lg bg-accent text-white text-[11px] font-semibold hover:bg-accent/80 disabled:opacity-50 flex items-center gap-1"
-                        >
-                          {uniqueSending ? <Loader2 size={12} className="animate-spin" /> : <Send size={12} />}
-                          {tx({ fr: 'Valider', en: 'Submit', es: 'Enviar' })}
-                        </button>
-                        <button
-                          onClick={() => { setUniqueFormId(null); setUniquePrice(''); }}
-                          className="px-2 py-1.5 rounded-lg bg-white/10 text-grey-muted hover:bg-white/20"
-                        >
-                          <X size={12} />
-                        </button>
-                      </div>
-                    );
-                  })()}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Actions */}
-          <div className="flex flex-wrap gap-2 pt-1">
-            {category === 'prints' && (
-              <button
-                onClick={() => handleSetHero(selectedItem.id)}
-                className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-colors ${
-                  currentHeroId === selectedItem.id
-                    ? 'bg-accent/20 text-accent cursor-default'
-                    : 'bg-blue-500/10 text-blue-400 hover:bg-blue-500/20'
-                }`}
-                disabled={currentHeroId === selectedItem.id}
-              >
-                <ImageIcon size={12} />
-                {currentHeroId === selectedItem.id
-                  ? tx({ fr: 'Image hero actuelle', en: 'Current hero image', es: 'Imagen hero actual' })
-                  : tx({ fr: 'Definir comme hero', en: 'Set as hero', es: 'Definir como hero' })}
-              </button>
-            )}
-            {!pendingRemovalIds.includes(selectedItem.id) && (
-              <button
-                onClick={() => { handleRemove(selectedItem.id, category); setSelectedItemId(null); }}
-                className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-red-500/10 text-red-400 text-[11px] font-medium hover:bg-red-500/20 transition-colors"
-              >
-                <Trash2 size={12} />
-                {tx({ fr: 'Demander suppression', en: 'Request removal', es: 'Solicitar eliminacion' })}
-              </button>
-            )}
-            <button
-              onClick={() => setSelectedItemId(null)}
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-white/5 text-grey-muted text-[11px] font-medium hover:bg-white/10 transition-colors ml-auto"
-            >
-              <X size={12} />
-              {tx({ fr: 'Fermer', en: 'Close', es: 'Cerrar' })}
-            </button>
-          </div>
-        </div>
-      )}
-      </>
     );
   };
 
