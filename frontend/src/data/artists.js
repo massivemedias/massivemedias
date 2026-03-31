@@ -103,8 +103,8 @@ const artistsData = {
       { id: 'mm-stk-001', titleFr: 'Maudite Machine', titleEn: 'Maudite Machine', titleEs: 'Maudite Machine', image: img('/images/stickers/Stickers-Maudite-Machine.webp'), fullImage: img('/images/stickers/Stickers-Maudite-Machine.webp') },
     ],
     prints: [
-      { id: 'gemini-002', titleFr: 'Affiche 1', titleEn: 'Poster 1', titleEs: 'Afiche 1', image: thumb('/images/prints/Gemini2.webp'), fullImage: img('/images/prints/Gemini2.webp'), limited: false, unique: true, fixedFormat: 'a2', fixedTier: 'studio', noFrame: true },
-      { id: 'gemini-004', titleFr: 'Affiche 2', titleEn: 'Poster 2', titleEs: 'Afiche 2', image: thumb('/images/prints/Gemini4.webp'), fullImage: img('/images/prints/Gemini4.webp'), limited: false, unique: true, fixedFormat: 'a2', fixedTier: 'studio', noFrame: true },
+      { id: 'gemini-002', titleFr: 'Maudite Machine et VRSTL', titleEn: 'Maudite Machine et VRSTL', titleEs: 'Maudite Machine et VRSTL', image: thumb('/images/prints/Gemini2.webp'), fullImage: img('/images/prints/Gemini2.webp'), limited: false, unique: true, fixedFormat: 'a2', fixedTier: 'studio', noFrame: true },
+      { id: 'gemini-004', titleFr: 'Vendre ou perir', titleEn: 'Vendre ou perir', titleEs: 'Vendre ou perir', image: thumb('/images/prints/Gemini4.webp'), fullImage: img('/images/prints/Gemini4.webp'), limited: false, unique: true, fixedFormat: 'a2', fixedTier: 'studio', noFrame: true },
     ],
     pricing: {
       studio: { postcard: 15, a4: 35, a3: 50, a3plus: 65, a2: 85 },
