@@ -1,15 +1,8 @@
 /**
  * Promo code validation controller
- *
- * Codes promo valides (hardcoded pour le moment).
- * Pour ajouter/modifier des codes, editer la map PROMO_CODES ci-dessous.
- * A terme, ces codes pourront etre geres via une collection Strapi.
+ * Les codes sont dans src/utils/promo-codes.ts (un seul endroit)
  */
-
-const PROMO_CODES: Record<string, { discountPercent: number; label: string }> = {
-  'MASSIVE6327': { discountPercent: 20, label: 'Promo Massive 20%' },
-  'MASSIVE432': { discountPercent: 15, label: 'Promo Massive 15%' },
-};
+import { PROMO_CODES } from '../../../utils/promo-codes';
 
 export default {
   async validate(ctx) {

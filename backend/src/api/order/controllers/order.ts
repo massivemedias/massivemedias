@@ -3,6 +3,7 @@ import Stripe from 'stripe';
 import { calculateShipping } from '../../../utils/shipping';
 import { sendOrderConfirmationEmail, sendTestimonialRequestEmail, sendArtistSaleNotificationEmail, sendNewOrderNotificationEmail, sendTrackingEmail } from '../../../utils/email';
 import crypto from 'crypto';
+import { PROMO_CODES } from '../../../utils/promo-codes';
 
 const getStripe = () => {
   const key = process.env.STRIPE_SECRET_KEY;
@@ -64,10 +65,7 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
     }
 
     // Validate and apply promo code server-side (never trust client discount)
-    const PROMO_CODES: Record<string, { discountPercent: number; label: string }> = {
-      'MASSIVE6327': { discountPercent: 20, label: 'Promo Massive 20%' },
-      'MASSIVE432': { discountPercent: 15, label: 'Promo Massive 15%' },
-    };
+    // PROMO_CODES importe de src/utils/promo-codes.ts
     let promoDiscount = 0;
     let appliedPromoCode = '';
     if (promoCode && typeof promoCode === 'string') {
@@ -238,10 +236,7 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
       subtotal += validPrice;
     }
 
-    const PROMO_CODES: Record<string, { discountPercent: number; label: string }> = {
-      'MASSIVE6327': { discountPercent: 20, label: 'Promo Massive 20%' },
-      'MASSIVE432': { discountPercent: 15, label: 'Promo Massive 15%' },
-    };
+    // PROMO_CODES importe de src/utils/promo-codes.ts
     let promoDiscount = 0;
     let appliedPromoCode = '';
     if (promoCode && typeof promoCode === 'string') {
