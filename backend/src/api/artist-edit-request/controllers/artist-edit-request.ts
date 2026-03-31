@@ -517,8 +517,8 @@ export default factories.createCoreController('api::artist-edit-request.artist-e
       try {
         const sharp = require('sharp');
         const { createClient } = require('@supabase/supabase-js');
-        const supabaseUrl2 = process.env.SUPABASE_URL;
-        const supabaseKey = process.env.SUPABASE_SERVICE_KEY;
+        const supabaseUrl2 = process.env.SUPABASE_URL || process.env.SUPABASE_API_URL;
+        const supabaseKey = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_API_KEY;
 
         if (supabaseUrl2 && supabaseKey) {
           const supabase = createClient(supabaseUrl2, supabaseKey);
