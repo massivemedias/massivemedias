@@ -183,22 +183,22 @@ function ArtistGalleryManager() {
     try {
       // Sauvegarder dans Supabase user_metadata (persistant, multi-appareil)
       const meta = user?.user_metadata || {};
-      const saved = meta.artist_renames || {};
-      saved[itemId] = renameValue.trim();
-      await updateProfile({ artist_renames: saved });
+      const saved = { ...(meta.artist_renames || {}), [itemId]: renameValue.trim() };
+      const { error: profileErr } = await updateProfile({ artist_renames: saved });
+      if (profileErr) console.warn('Supabase updateProfile error:', profileErr);
 
       // Sauvegarder aussi dans le backend pour la page publique
-      api.put('/user-roles/artist-data', { email, itemRenames: saved }).catch(() => {});
+      api.put('/user-roles/artist-data', { email, itemRenames: saved }).catch(err => console.warn('Backend rename error:', err));
 
-      // Envoyer un message admin pour que le code soit mis à jour
-      await sendArtistMessage({
+      // Envoyer un message admin (non-bloquant)
+      sendArtistMessage({
         artistSlug,
         artistName: artistName || artistSlug,
         email,
         subject: `Renommage: ${itemId}`,
         message: `L'artiste souhaite renommer "${itemId}" en "${renameValue.trim()}" (categorie: ${category})`,
         category: 'other',
-      }).catch(() => {}); // pas grave si le message echoue
+      }).catch(() => {});
 
       setRenamingId(null);
       setRenameValue('');
@@ -208,7 +208,8 @@ function ArtistGalleryManager() {
         es: `Renombrado: "${renameValue.trim()}"`,
       }));
       setTimeout(() => setSuccess(''), 4000);
-    } catch {
+    } catch (err) {
+      console.error('Rename error:', err);
       setError(tx({ fr: 'Erreur lors du renommage.', en: 'Error renaming.', es: 'Error al renombrar.' }));
     }
   };
