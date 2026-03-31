@@ -3,6 +3,5 @@
  * Format: 'CODE': { discountPercent: 15, label: 'Description' }
  */
 export const PROMO_CODES: Record<string, { discountPercent: number; label: string }> = {
-  // Ajouter les codes promo ici:
-  // 'MONCODE': { discountPercent: 15, label: 'Promo 15%' },
+  'CINDY20': { discountPercent: 20, label: 'Promo Cindy 20%' },
 };

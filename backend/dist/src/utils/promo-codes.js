@@ -6,6 +6,5 @@ exports.PROMO_CODES = void 0;
  * Format: 'CODE': { discountPercent: 15, label: 'Description' }
  */
 exports.PROMO_CODES = {
-// Ajouter les codes promo ici:
-// 'MONCODE': { discountPercent: 15, label: 'Promo 15%' },
+    'CINDY20': { discountPercent: 20, label: 'Promo Cindy 20%' },
 };
