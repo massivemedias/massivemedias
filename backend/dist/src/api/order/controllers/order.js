@@ -15,6 +15,10 @@ const getStripe = () => {
     }
     return new stripe_1.default(key);
 };
+// Sticker pricing tiers for server-side validation
+const STICKER_STANDARD_TIERS = { 25: 30, 50: 47.50, 100: 85, 250: 200, 500: 375 };
+const STICKER_FX_TIERS = { 25: 35, 50: 57.50, 100: 100, 250: 225, 500: 425 };
+const FX_FINISHES = ['holographic', 'broken-glass', 'stars'];
 exports.default = strapi_1.factories.createCoreController('api::order.order', ({ strapi }) => ({
     async uploadFile(ctx) {
         const { request: { files } } = ctx;
@@ -38,10 +42,26 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
             return ctx.badRequest('Customer email and name are required');
         }
         // Recalculate total server-side (never trust client-side totals)
-        let subtotal = items.reduce((sum, item) => sum + (item.totalPrice || 0), 0);
+        let subtotal = 0;
+        for (const item of items) {
+            let validPrice = item.totalPrice || 0;
+            // Validate sticker pricing against tiers
+            if (item.productId === 'sticker-custom' || item.productId === 'sticker-artist') {
+                const tiers = FX_FINISHES.includes(item.finish) ? STICKER_FX_TIERS : STICKER_STANDARD_TIERS;
+                const tierPrice = tiers[item.quantity];
+                if (tierPrice) {
+                    validPrice = tierPrice; // Override with server-validated price
+                }
+                else {
+                    strapi.log.warn(`Invalid sticker tier: qty=${item.quantity}, using client price ${item.totalPrice}`);
+                }
+            }
+            subtotal += validPrice;
+        }
         // Validate and apply promo code server-side (never trust client discount)
         const PROMO_CODES = {
             'MASSIVE6327': { discountPercent: 20, label: 'Promo Massive 20%' },
+            'MASSIVE432': { discountPercent: 15, label: 'Promo Massive 15%' },
         };
         let promoDiscount = 0;
         let appliedPromoCode = '';
@@ -189,10 +209,21 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
         if (!customerEmail || !customerName) {
             return ctx.badRequest('Customer email and name are required');
         }
-        // Recalculate server-side (same logic as createPaymentIntent)
-        let subtotal = items.reduce((sum, item) => sum + (item.totalPrice || 0), 0);
+        // Recalculate server-side with sticker tier validation
+        let subtotal = 0;
+        for (const item of items) {
+            let validPrice = item.totalPrice || 0;
+            if (item.productId === 'sticker-custom' || item.productId === 'sticker-artist') {
+                const tiers = FX_FINISHES.includes(item.finish) ? STICKER_FX_TIERS : STICKER_STANDARD_TIERS;
+                const tierPrice = tiers[item.quantity];
+                if (tierPrice)
+                    validPrice = tierPrice;
+            }
+            subtotal += validPrice;
+        }
         const PROMO_CODES = {
             'MASSIVE6327': { discountPercent: 20, label: 'Promo Massive 20%' },
+            'MASSIVE432': { discountPercent: 15, label: 'Promo Massive 15%' },
         };
         let promoDiscount = 0;
         let appliedPromoCode = '';
@@ -330,8 +361,13 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
         try {
             const stripe = getStripe();
             // Access the raw unparsed body for signature verification
-            const rawBody = ((_a = ctx.request.body) === null || _a === void 0 ? void 0 : _a[Symbol.for('unparsedBody')]) || JSON.stringify(ctx.request.body);
+            // Strapi v5 stores raw body via Symbol.for('unparsedBody') when includeUnparsed: true
+            const unparsedBody = (_a = ctx.request.body) === null || _a === void 0 ? void 0 : _a[Symbol.for('unparsedBody')];
+            const koaRawBody = ctx.request.rawBody;
+            const rawBody = unparsedBody || koaRawBody || JSON.stringify(ctx.request.body);
+            strapi.log.info(`Webhook received - sig: ${sig ? 'present' : 'missing'}, rawBody type: ${typeof rawBody}, length: ${(rawBody === null || rawBody === void 0 ? void 0 : rawBody.length) || 0}, source: ${unparsedBody ? 'unparsed' : koaRawBody ? 'koa' : 'json-stringify'}`);
             event = stripe.webhooks.constructEvent(rawBody, sig, endpointSecret);
+            strapi.log.info(`Webhook verified OK - event type: ${event.type}`);
         }
         catch (err) {
             strapi.log.error('Webhook signature verification failed:', err.message);
@@ -567,6 +603,21 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
         }
         ctx.body = { received: true };
     },
+    // POST /orders/admin-create - Creer une commande manuellement (admin)
+    async adminCreate(ctx) {
+        const data = ctx.request.body;
+        if (!data.customerName || !data.total) {
+            return ctx.badRequest('customerName and total are required');
+        }
+        try {
+            const order = await strapi.documents('api::order.order').create({ data });
+            ctx.body = { success: true, data: order };
+        }
+        catch (err) {
+            strapi.log.error('adminCreate error:', err);
+            return ctx.badRequest(err.message);
+        }
+    },
     async clients(ctx) {
         // Read from Client collection (CRM)
         const clients = await strapi.documents('api::client.client').findMany({
@@ -585,7 +636,7 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
             filters.status = status;
         }
         else {
-            // By default, exclude draft orders (payment not yet completed)
+            // Exclude draft orders (payment not yet confirmed by Stripe webhook)
             filters.status = { $ne: 'draft' };
         }
         if (search) {

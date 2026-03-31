@@ -40,7 +40,7 @@ export default {
       const startDate = `${period}daysAgo`;
 
       // Filtre sur les pages de l'artiste: /artistes/slug et slug.massivemedias.com
-      const artistPageFilter = {
+      const artistPageFilter: any = {
         orGroup: {
           expressions: [
             {

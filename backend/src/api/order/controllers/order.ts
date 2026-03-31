@@ -370,7 +370,7 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
     }
 
     const orders = await strapi.documents('api::order.order').findMany({
-      filters: { supabaseUserId, status: { $ne: 'draft' } },
+      filters: { supabaseUserId, status: { $ne: 'draft' as any } },
       sort: 'createdAt:desc',
     });
 

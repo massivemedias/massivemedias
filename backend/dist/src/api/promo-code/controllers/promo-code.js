@@ -9,6 +9,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const PROMO_CODES = {
     'MASSIVE6327': { discountPercent: 20, label: 'Promo Massive 20%' },
+    'MASSIVE432': { discountPercent: 15, label: 'Promo Massive 15%' },
 };
 exports.default = {
     async validate(ctx) {

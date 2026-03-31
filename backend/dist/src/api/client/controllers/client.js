@@ -3,6 +3,26 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const strapi_1 = require("@strapi/strapi");
 const email_1 = require("../../../utils/email");
 exports.default = strapi_1.factories.createCoreController('api::client.client', ({ strapi }) => ({
+    async findAll(ctx) {
+        var _a, _b;
+        const sort = (ctx.query.sort || 'createdAt:desc');
+        const pageSize = parseInt(((_b = (_a = ctx.query) === null || _a === void 0 ? void 0 : _a.pagination) === null || _b === void 0 ? void 0 : _b.pageSize) || '100');
+        const clients = await strapi.documents('api::client.client').findMany({ sort, limit: pageSize });
+        ctx.body = { data: clients };
+    },
+    async updateOne(ctx) {
+        const { documentId } = ctx.params;
+        const { data } = ctx.request.body;
+        if (!data)
+            return ctx.badRequest('data is required');
+        const client = await strapi.documents('api::client.client').update({ documentId, data });
+        ctx.body = { data: client };
+    },
+    async deleteOne(ctx) {
+        const { documentId } = ctx.params;
+        await strapi.documents('api::client.client').delete({ documentId });
+        ctx.body = { success: true };
+    },
     async adminList(ctx) {
         const page = parseInt(ctx.query.page) || 1;
         const pageSize = parseInt(ctx.query.pageSize) || 25;

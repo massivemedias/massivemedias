@@ -1,3 +1,1 @@
-import { factories } from '@strapi/strapi';
-
-export default factories.createCoreService('api::admin-note.admin-note');
+export default {} as any;

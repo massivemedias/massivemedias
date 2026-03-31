@@ -3,7 +3,7 @@
 // OAuth2 avec refresh token - upload en tant que mauditemachine@gmail.com
 // Zero dependance externe - fetch natif + API Drive REST v3
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteFromGoogleDrive = exports.uploadBufferToGoogleDrive = exports.uploadToGoogleDrive = void 0;
+exports.deleteFromGoogleDrive = exports.uploadBufferToFolder = exports.uploadBufferToGoogleDrive = exports.uploadToGoogleDrive = void 0;
 const DRIVE_API = 'https://www.googleapis.com/upload/drive/v3/files';
 const DRIVE_API_META = 'https://www.googleapis.com/drive/v3/files';
 const TOKEN_URL = 'https://oauth2.googleapis.com/token';
@@ -152,6 +152,37 @@ async function uploadBufferToGoogleDrive(fileBuffer, fileName, artistSlug, mimeT
     };
 }
 exports.uploadBufferToGoogleDrive = uploadBufferToGoogleDrive;
+// Upload un fichier directement dans un dossier Google Drive specifique (sans sous-dossier artiste)
+async function uploadBufferToFolder(fileBuffer, fileName, folderId, mimeType = 'application/octet-stream') {
+    const token = await getAccessToken();
+    const date = new Date().toISOString().split('T')[0];
+    const safeName = `${date}_${fileName}`;
+    const metadata = JSON.stringify({ name: safeName, parents: [folderId] });
+    const boundary = '===massive_boundary===';
+    const body = Buffer.concat([
+        Buffer.from(`--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${metadata}\r\n--${boundary}\r\nContent-Type: ${mimeType}\r\n\r\n`),
+        fileBuffer,
+        Buffer.from(`\r\n--${boundary}--`),
+    ]);
+    const uploadRes = await fetch(`${DRIVE_API}?uploadType=multipart&fields=id,name,webViewLink,webContentLink`, {
+        method: 'POST',
+        headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': `multipart/related; boundary=${boundary}`,
+        },
+        body,
+    });
+    if (!uploadRes.ok)
+        throw new Error(`Drive upload failed: ${await uploadRes.text()}`);
+    const file = await uploadRes.json();
+    return {
+        fileId: file.id,
+        fileName: file.name || safeName,
+        webViewLink: file.webViewLink || `https://drive.google.com/file/d/${file.id}/view`,
+        webContentLink: file.webContentLink || '',
+    };
+}
+exports.uploadBufferToFolder = uploadBufferToFolder;
 async function deleteFromGoogleDrive(fileId) {
     try {
         const token = await getAccessToken();

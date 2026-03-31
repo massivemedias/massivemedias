@@ -6,6 +6,7 @@ export default factories.createCoreController('api::tattoo-message.tattoo-messag
   async send(ctx) {
     const {
       tatoueurDocumentId,
+      tatoueurSlug,
       senderName,
       senderEmail,
       senderType,
@@ -16,8 +17,8 @@ export default factories.createCoreController('api::tattoo-message.tattoo-messag
       supabaseUserId,
     } = ctx.request.body as any;
 
-    if (!senderName || !senderEmail || !content || !tatoueurDocumentId) {
-      return ctx.badRequest('senderName, senderEmail, content et tatoueurDocumentId sont requis');
+    if (!senderName || !senderEmail || !content || (!tatoueurDocumentId && !tatoueurSlug)) {
+      return ctx.badRequest('senderName, senderEmail, content et tatoueurDocumentId ou tatoueurSlug sont requis');
     }
 
     const validSenderTypes = ['client', 'tatoueur', 'admin'];
@@ -25,14 +26,22 @@ export default factories.createCoreController('api::tattoo-message.tattoo-messag
       return ctx.badRequest('senderType invalide. Valeurs acceptees: ' + validSenderTypes.join(', '));
     }
 
-    // Recuperer le tatoueur
-    const tatoueur = await strapi.documents('api::tatoueur.tatoueur').findFirst({
-      filters: { documentId: tatoueurDocumentId },
-    }) as any;
-
-    if (!tatoueur) {
-      return ctx.notFound('Tatoueur introuvable');
+    // Recuperer le tatoueur par documentId ou slug
+    let tatoueur: any = null;
+    if (tatoueurDocumentId) {
+      tatoueur = await strapi.documents('api::tatoueur.tatoueur').findFirst({
+        filters: { documentId: tatoueurDocumentId },
+      }) as any;
+    } else if (tatoueurSlug) {
+      const results = await strapi.documents('api::tatoueur.tatoueur').findMany({
+        filters: { slug: tatoueurSlug } as any,
+        limit: 1,
+      }) as any;
+      tatoueur = results?.[0] || null;
     }
+
+    // Si pas dans le CMS, on cree quand meme le message (tatoueur local)
+    // Le message sera visible quand le tatoueur sera cree dans le CMS
 
     // Recuperer le flash si fourni
     let flash: any = null;

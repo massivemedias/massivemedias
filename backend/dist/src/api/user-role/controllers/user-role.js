@@ -14,6 +14,7 @@ exports.default = strapi_1.factories.createCoreController('api::user-role.user-r
                     email: e.email,
                     role: e.role,
                     artistSlug: e.artistSlug,
+                    tatoueurSlug: e.tatoueurSlug || null,
                     supabaseUserId: e.supabaseUserId,
                     displayName: e.displayName,
                 })),

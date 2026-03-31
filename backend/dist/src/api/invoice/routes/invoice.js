@@ -1,4 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const strapi_1 = require("@strapi/strapi");
-exports.default = strapi_1.factories.createCoreRouter('api::invoice.invoice');
+// Routes standard desactivees - on utilise les routes custom (custom-invoice.ts)
+// pour contourner les permissions Strapi Public role
+exports.default = { routes: [] };

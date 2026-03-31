@@ -1,6 +1,6 @@
 import { factories } from '@strapi/strapi';
 
-export default factories.createCoreController('api::admin-note.admin-note', ({ strapi }) => ({
+export default factories.createCoreController('api::admin-note.admin-note' as any, ({ strapi }) => ({
 
   async list(ctx) {
     const search = ctx.query.search as string;
@@ -13,7 +13,7 @@ export default factories.createCoreController('api::admin-note.admin-note', ({ s
       ];
     }
 
-    const items = await strapi.documents('api::admin-note.admin-note').findMany({
+    const items = await (strapi.documents as any)('api::admin-note.admin-note').findMany({
       filters,
       sort: 'updatedAt:desc',
     });
@@ -24,7 +24,7 @@ export default factories.createCoreController('api::admin-note.admin-note', ({ s
   async createNote(ctx) {
     const { title, body, color, pinned } = ctx.request.body as any;
 
-    const note = await strapi.documents('api::admin-note.admin-note').create({
+    const note = await (strapi.documents as any)('api::admin-note.admin-note').create({
       data: {
         title: title || '',
         body: body || '',
@@ -40,7 +40,7 @@ export default factories.createCoreController('api::admin-note.admin-note', ({ s
     const { documentId } = ctx.params;
     const bodyData = ctx.request.body as any;
 
-    const item = await strapi.documents('api::admin-note.admin-note').findFirst({
+    const item = await (strapi.documents as any)('api::admin-note.admin-note').findFirst({
       filters: { documentId },
     });
     if (!item) return ctx.notFound('Note introuvable');
@@ -51,7 +51,7 @@ export default factories.createCoreController('api::admin-note.admin-note', ({ s
     if (bodyData.color !== undefined) updateData.color = bodyData.color;
     if (bodyData.pinned !== undefined) updateData.pinned = bodyData.pinned;
 
-    const updated = await strapi.documents('api::admin-note.admin-note').update({
+    const updated = await (strapi.documents as any)('api::admin-note.admin-note').update({
       documentId: item.documentId,
       data: updateData,
     });
@@ -62,12 +62,12 @@ export default factories.createCoreController('api::admin-note.admin-note', ({ s
   async deleteNote(ctx) {
     const { documentId } = ctx.params;
 
-    const item = await strapi.documents('api::admin-note.admin-note').findFirst({
+    const item = await (strapi.documents as any)('api::admin-note.admin-note').findFirst({
       filters: { documentId },
     });
     if (!item) return ctx.notFound('Note introuvable');
 
-    await strapi.documents('api::admin-note.admin-note').delete({
+    await (strapi.documents as any)('api::admin-note.admin-note').delete({
       documentId: item.documentId,
     });
 

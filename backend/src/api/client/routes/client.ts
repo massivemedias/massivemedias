@@ -1,3 +1,2 @@
-import { factories } from '@strapi/strapi';
-
-export default factories.createCoreRouter('api::client.client');
+// Routes standard desactivees - on utilise les routes custom (01-client.ts)
+export default { routes: [] };
