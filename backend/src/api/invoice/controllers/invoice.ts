@@ -2,7 +2,44 @@ import { factories } from '@strapi/strapi';
 import { uploadBufferToFolder } from '../../../utils/google-drive';
 
 export default factories.createCoreController('api::invoice.invoice', ({ strapi }) => ({
-  // POST /invoices/upload-pdf - Upload un PDF de facture vers Google Drive
+
+  async findAll(ctx) {
+    const sort = ((ctx.query.sort as string) || 'date:desc') as any;
+    const pageSize = parseInt((ctx.query as any)?.pagination?.pageSize || '100');
+    const invoices = await strapi.documents('api::invoice.invoice').findMany({
+      sort,
+      limit: pageSize,
+    });
+    ctx.body = {
+      data: invoices,
+      meta: { pagination: { page: 1, pageSize, total: invoices.length } },
+    };
+  },
+
+  async createOne(ctx) {
+    const { data } = ctx.request.body as any;
+    if (!data) return ctx.badRequest('data is required');
+    const invoice = await strapi.documents('api::invoice.invoice').create({ data });
+    ctx.body = { data: invoice };
+  },
+
+  async updateOne(ctx) {
+    const { documentId } = ctx.params;
+    const { data } = ctx.request.body as any;
+    if (!data) return ctx.badRequest('data is required');
+    const invoice = await strapi.documents('api::invoice.invoice').update({
+      documentId,
+      data,
+    });
+    ctx.body = { data: invoice };
+  },
+
+  async deleteOne(ctx) {
+    const { documentId } = ctx.params;
+    await strapi.documents('api::invoice.invoice').delete({ documentId });
+    ctx.body = { success: true };
+  },
+
   async uploadPdf(ctx) {
     const { request: { files } } = ctx as any;
 

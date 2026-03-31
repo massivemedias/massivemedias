@@ -1,3 +1,3 @@
-import { factories } from '@strapi/strapi';
-
-export default factories.createCoreRouter('api::invoice.invoice');
+// Routes standard desactivees - on utilise les routes custom (custom-invoice.ts)
+// pour contourner les permissions Strapi Public role
+export default { routes: [] };
