@@ -9,7 +9,7 @@ import { useLang } from '../i18n/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useUserRole } from '../contexts/UserRoleContext';
 import { createEditRequest, getMyEditRequests, sendArtistMessage } from '../services/artistService';
-import { uploadArtistFile } from '../services/api';
+import api, { uploadArtistFile } from '../services/api';
 import FileUpload from './FileUpload';
 import artistsData, { artistFormats, framePriceByFormat } from '../data/artists';
 import { useArtists } from '../hooks/useArtists';
