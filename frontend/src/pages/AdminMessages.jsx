@@ -317,15 +317,16 @@ function AdminMessages() {
                     className={`grid grid-cols-1 md:grid-cols-[100px_1fr_1fr_120px_100px_40px] gap-2 md:gap-3 px-4 py-3 items-center cursor-pointer hover:bg-accent/5 transition-colors ${item.status === 'new' ? 'bg-blue-500/5' : ''}`}>
                     {/* Mobile: 2-line compact */}
                     <span className="text-xs text-grey-muted md:block hidden">{formatDate(item.createdAt)}</span>
-                    <span className="md:hidden text-xs text-grey-muted flex items-center gap-2">
+                    <span className="md:hidden text-xs text-grey-muted flex items-center gap-2 flex-wrap">
                       {formatDate(item.createdAt)}
                       <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold ${st.color}`}>
                         <StIcon size={10} />{tx({ fr: st.fr, en: st.en, es: st.es })}
                       </span>
                       {isCandidature && <span className="text-purple-400 text-[10px] font-semibold">{tx({ fr: 'Candidature', en: 'Application', es: 'Candidatura' })}</span>}
                       {isArtistMsg && <span className="text-pink-400 text-[10px] font-semibold">{item._service}</span>}
+                      <span className="text-sm text-heading font-medium">{item._nom}</span>
                     </span>
-                    <span className="text-sm text-heading font-medium truncate">{item._nom}</span>
+                    <span className="text-sm text-heading font-medium truncate hidden md:block">{item._nom}</span>
                     <span className="text-xs text-grey-muted truncate hidden md:block">{item._email}</span>
                     <span className="text-xs text-grey-muted truncate hidden md:block">
                       {isCandidature ? (
