@@ -3,6 +3,7 @@ import { ShoppingCart, Check, Sparkles, Shuffle, RotateCcw, Plus, Minus } from '
 import { Link } from 'react-router-dom';
 import { useCart } from '../../contexts/CartContext';
 import { useLang } from '../../i18n/LanguageContext';
+import { useUserRole } from '../../contexts/UserRoleContext';
 import {
   stickerFinishes as defaultFinishes, stickerShapes as defaultShapes, stickerSizes as defaultSizes,
   stickerPriceTiers as defaultTiers, getStickerPrice as defaultGetPrice,
@@ -13,6 +14,8 @@ const PACK_TIERS = [25, 50, 100, 250, 500];
 function ConfiguratorArtistSticker({ artist, selectedSticker, allStickers = [] }) {
   const { lang, tx } = useLang();
   const { addToCart } = useCart();
+  const { artistSlug: loggedArtistSlug } = useUserRole();
+  const isArtistOwnPrint = loggedArtistSlug && loggedArtistSlug === artist?.slug;
 
   const stickers = allStickers.length > 0 ? allStickers : (artist?.stickers || []);
 
@@ -117,6 +120,7 @@ function ConfiguratorArtistSticker({ artist, selectedSticker, allStickers = [] }
         uploadedFiles: [],
         notes,
         packDetails,
+        ...(isArtistOwnPrint ? { isArtistOwnPrint: true, artistSlug: artist.slug } : {}),
       });
       setAdded(true);
       setTimeout(() => setAdded(false), 2000);

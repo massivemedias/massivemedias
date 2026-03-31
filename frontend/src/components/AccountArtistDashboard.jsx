@@ -25,7 +25,7 @@ import { generateContractPDF } from '../utils/generateContractPDF';
 import { supabase } from '../lib/supabase';
 
 // Prix client et prix artiste (rabais 30% sur prix client)
-const ARTIST_DISCOUNT = 0.30;
+const ARTIST_DISCOUNT = 0.25;
 const CLIENT_PRICES = {
   studio: { postcard: 15, a4: 35, a3: 50, a3plus: 65, a2: 85 },
   museum: { postcard: 25, a4: 75, a3: 120, a3plus: 160, a2: 190 },
@@ -814,7 +814,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
             <p className="text-grey-light text-xs leading-relaxed">
               {tx({
                 fr: 'En tant qu\'artiste partenaire, tu bénéficies d\'un rabais exclusif sur tes propres prints (colonne "Prix artiste"). Stickers: prix régulier pour tous.',
-                en: 'As a partner artist, you get an exclusive discount on your own prints ("Artist price" column). Stickers: regular price for everyone.',
+                en: 'As a partner artist, you get an exclusive 25% discount on your own prints and stickers.',
                 es: 'Como artista asociado, tienes un descuento exclusivo en tus propios prints (columna "Precio artista"). Stickers: precio regular para todos.',
               })}
             </p>

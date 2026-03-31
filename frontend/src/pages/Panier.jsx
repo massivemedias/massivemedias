@@ -9,7 +9,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { validatePromoCode } from '../services/orderService';
 import { getStickerPrice } from '../data/products';
 
-const ARTIST_DISCOUNT = 0.30;
+const ARTIST_DISCOUNT = 0.25;
 // Produits a paliers fixes - pas de +/- libre
 const TIERED_PRODUCTS = ['sticker-custom', 'sticker-artist'];
 
@@ -156,7 +156,7 @@ function Panier() {
               <div className="flex items-center gap-2 mb-2">
                 <Percent size={16} className="text-green-400" />
                 <span className="text-green-400 font-semibold text-sm">
-                  {tx({ fr: 'Rabais artiste 30% applique', en: 'Artist 30% discount applied', es: 'Descuento artista 30% aplicado' })}
+                  {tx({ fr: 'Rabais artiste 25% applique', en: 'Artist 25% discount applied', es: 'Descuento artista 25% aplicado' })}
                 </span>
               </div>
               <div className="flex items-start gap-2 mt-2">
@@ -256,7 +256,7 @@ function Panier() {
               </div>
               {hasArtistOwnPrints && (
                 <div className="flex justify-between items-center mb-1">
-                  <span className="text-green-400 text-sm">{tx({ fr: 'Rabais artiste (-30%)', en: 'Artist discount (-30%)', es: 'Descuento artista (-30%)' })}</span>
+                  <span className="text-green-400 text-sm">{tx({ fr: 'Rabais artiste (-25%)', en: 'Artist discount (-25%)', es: 'Descuento artista (-25%)' })}</span>
                   <span className="text-green-400 font-semibold">-{artistDiscountTotal}$</span>
                 </div>
               )}

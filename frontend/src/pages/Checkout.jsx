@@ -30,7 +30,7 @@ const provinces = [
 // TPS (GST) 5% partout au Canada, TVQ (QST) 9.975% au Quebec seulement
 const TPS_RATE = 0.05;
 const TVQ_RATE = 0.09975;
-const ARTIST_DISCOUNT = 0.30;
+const ARTIST_DISCOUNT = 0.25;
 
 function calculateTaxes(subtotal, province) {
   const tps = +(subtotal * TPS_RATE).toFixed(2);

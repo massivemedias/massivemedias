@@ -913,6 +913,9 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
         // Match artist prints AND sticker packs
         if (!pid.startsWith('artist-print-') && !pid.startsWith('artist-sticker-pack-')) continue;
 
+        // Skip commission if artist bought their own product
+        if (item.isArtistOwnPrint) continue;
+
         let matchedSlug: string | null = null;
         for (const slug of slugs) {
           if (pid.startsWith(`artist-print-${slug}-`) || pid.startsWith(`artist-sticker-pack-${slug}-`)) {
