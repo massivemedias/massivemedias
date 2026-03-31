@@ -312,7 +312,7 @@ export default function TatoueurFlashManager({ tatoueur, setTatoueur }) {
                     {flash.style && <span className="capitalize">{flash.style}</span>}
                     {flash.priceTattoo && <span className="ml-2">{flash.priceTattoo}$</span>}
                     {flash.isUnique && <span className="ml-2 text-accent">{tx({ fr: 'Unique', en: 'Unique' })}</span>}
-                    {!flash.approved && <span className="ml-2 text-amber-500">{tx({ fr: 'En attente', en: 'Pending' })}</span>}
+                    {flash.approved === false && <span className="ml-2 text-amber-500">{tx({ fr: 'En attente', en: 'Pending' })}</span>}
                   </div>
                 </div>
 
