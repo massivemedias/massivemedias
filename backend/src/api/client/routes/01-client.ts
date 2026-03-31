@@ -2,6 +2,24 @@ export default {
   routes: [
     {
       method: 'GET',
+      path: '/clients',
+      handler: 'client.findAll',
+      config: { auth: false },
+    },
+    {
+      method: 'PUT',
+      path: '/clients/:documentId',
+      handler: 'client.updateOne',
+      config: { auth: false },
+    },
+    {
+      method: 'DELETE',
+      path: '/clients/:documentId',
+      handler: 'client.deleteOne',
+      config: { auth: false },
+    },
+    {
+      method: 'GET',
       path: '/clients/admin',
       handler: 'client.adminList',
       config: {

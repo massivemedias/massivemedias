@@ -3,6 +3,27 @@ import { sendNewUserNotificationEmail } from '../../../utils/email';
 
 export default factories.createCoreController('api::client.client', ({ strapi }) => ({
 
+  async findAll(ctx) {
+    const sort = ((ctx.query.sort as string) || 'createdAt:desc') as any;
+    const pageSize = parseInt((ctx.query as any)?.pagination?.pageSize || '100');
+    const clients = await strapi.documents('api::client.client').findMany({ sort, limit: pageSize });
+    ctx.body = { data: clients };
+  },
+
+  async updateOne(ctx) {
+    const { documentId } = ctx.params;
+    const { data } = ctx.request.body as any;
+    if (!data) return ctx.badRequest('data is required');
+    const client = await strapi.documents('api::client.client').update({ documentId, data });
+    ctx.body = { data: client };
+  },
+
+  async deleteOne(ctx) {
+    const { documentId } = ctx.params;
+    await strapi.documents('api::client.client').delete({ documentId });
+    ctx.body = { success: true };
+  },
+
   async adminList(ctx) {
     const page = parseInt(ctx.query.page as string) || 1;
     const pageSize = parseInt(ctx.query.pageSize as string) || 25;
