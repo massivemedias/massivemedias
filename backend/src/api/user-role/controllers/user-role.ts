@@ -15,6 +15,7 @@ export default factories.createCoreController('api::user-role.user-role', ({ str
           email: e.email,
           role: e.role,
           artistSlug: e.artistSlug,
+          tatoueurSlug: e.tatoueurSlug || null,
           supabaseUserId: e.supabaseUserId,
           displayName: e.displayName,
         })),
