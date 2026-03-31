@@ -1,0 +1,199 @@
+{
+    "kind": "singleType",
+    "collectionName": "site_contents",
+    "info": {
+        "singularName": "site-content",
+        "pluralName": "site-contents",
+        "displayName": "Contenu du Site",
+        "description": "Tout le contenu editable du site par section"
+    },
+    "options": {
+        "draftAndPublish": true
+    },
+    "attributes": {
+        "announcementFr": { "type": "string" },
+        "announcementEn": { "type": "string" },
+        "announcementEs": { "type": "string" },
+        "announcementActive": { "type": "boolean", "default": false },
+        "homeSeo": {
+            "type": "component",
+            "component": "shared.seo-meta"
+        },
+        "heroTaglineFr": { "type": "string" },
+        "heroTaglineEn": { "type": "string" },
+        "heroTaglineEs": { "type": "string" },
+        "heroSubtitleFr": { "type": "text" },
+        "heroSubtitleEn": { "type": "text" },
+        "heroSubtitleEs": { "type": "text" },
+        "heroServicesFr": { "type": "string" },
+        "heroServicesEn": { "type": "string" },
+        "heroServicesEs": { "type": "string" },
+        "heroCta1Fr": { "type": "string" },
+        "heroCta1En": { "type": "string" },
+        "heroCta1Es": { "type": "string" },
+        "heroCta2Fr": { "type": "string" },
+        "heroCta2En": { "type": "string" },
+        "heroCta2Es": { "type": "string" },
+        "heroImages": {
+            "type": "media",
+            "multiple": true,
+            "allowedTypes": ["images"]
+        },
+        "servicesSectionTitleFr": { "type": "string" },
+        "servicesSectionTitleEn": { "type": "string" },
+        "servicesSectionTitleEs": { "type": "string" },
+        "servicesSectionSubtitleFr": { "type": "text" },
+        "servicesSectionSubtitleEn": { "type": "text" },
+        "servicesSectionSubtitleEs": { "type": "text" },
+        "serviceCards": {
+            "type": "component",
+            "repeatable": true,
+            "component": "home.service-card"
+        },
+        "projectsSectionTitleFr": { "type": "string" },
+        "projectsSectionTitleEn": { "type": "string" },
+        "projectsSectionTitleEs": { "type": "string" },
+        "projectsSectionSubtitleFr": { "type": "text" },
+        "projectsSectionSubtitleEn": { "type": "text" },
+        "projectsSectionSubtitleEs": { "type": "text" },
+        "featuredProjects": {
+            "type": "component",
+            "repeatable": true,
+            "component": "home.featured-project"
+        },
+        "stats": {
+            "type": "component",
+            "repeatable": true,
+            "component": "home.stat-item"
+        },
+        "advantagesTitleFr": { "type": "string" },
+        "advantagesTitleEn": { "type": "string" },
+        "advantagesTitleEs": { "type": "string" },
+        "advantages": {
+            "type": "component",
+            "repeatable": true,
+            "component": "home.advantage"
+        },
+        "testimonialsTitleFr": { "type": "string" },
+        "testimonialsTitleEn": { "type": "string" },
+        "testimonialsTitleEs": { "type": "string" },
+        "testimonials": {
+            "type": "component",
+            "repeatable": true,
+            "component": "home.testimonial"
+        },
+        "ctaTitleFr": { "type": "string" },
+        "ctaTitleEn": { "type": "string" },
+        "ctaTitleEs": { "type": "string" },
+        "ctaSubtitleFr": { "type": "text" },
+        "ctaSubtitleEn": { "type": "text" },
+        "ctaSubtitleEs": { "type": "text" },
+        "ctaButtonFr": { "type": "string" },
+        "ctaButtonEn": { "type": "string" },
+        "ctaButtonEs": { "type": "string" },
+        "ctaBackgroundImage": {
+            "type": "media",
+            "multiple": false,
+            "allowedTypes": ["images"]
+        },
+        "aboutSeo": {
+            "type": "component",
+            "component": "shared.seo-meta"
+        },
+        "aboutHeroTitleFr": { "type": "string" },
+        "aboutHeroTitleEn": { "type": "string" },
+        "aboutHeroTitleEs": { "type": "string" },
+        "aboutHeroSubtitleFr": { "type": "text" },
+        "aboutHeroSubtitleEn": { "type": "text" },
+        "aboutHeroSubtitleEs": { "type": "text" },
+        "aboutHistoryTitleFr": { "type": "string" },
+        "aboutHistoryTitleEn": { "type": "string" },
+        "aboutHistoryTitleEs": { "type": "string" },
+        "aboutTextFr": { "type": "richtext" },
+        "aboutTextEn": { "type": "richtext" },
+        "aboutTextEs": { "type": "richtext" },
+        "aboutHistoryImages": {
+            "type": "media",
+            "multiple": true,
+            "allowedTypes": ["images"]
+        },
+        "aboutTimelineTitleFr": { "type": "string" },
+        "aboutTimelineTitleEn": { "type": "string" },
+        "aboutTimelineTitleEs": { "type": "string" },
+        "aboutTimeline": {
+            "type": "component",
+            "repeatable": true,
+            "component": "about.timeline-event"
+        },
+        "aboutTeamTitleFr": { "type": "string" },
+        "aboutTeamTitleEn": { "type": "string" },
+        "aboutTeamTitleEs": { "type": "string" },
+        "aboutTeam": {
+            "type": "component",
+            "repeatable": true,
+            "component": "about.team-member"
+        },
+        "aboutEquipmentTitleFr": { "type": "string" },
+        "aboutEquipmentTitleEn": { "type": "string" },
+        "aboutEquipmentTitleEs": { "type": "string" },
+        "aboutEquipmentImages": {
+            "type": "media",
+            "multiple": true,
+            "allowedTypes": ["images"]
+        },
+        "aboutEquipment": {
+            "type": "component",
+            "repeatable": true,
+            "component": "about.equipment-item"
+        },
+        "aboutSpaceLocationFr": { "type": "string" },
+        "aboutSpaceLocationEn": { "type": "string" },
+        "aboutSpaceLocationEs": { "type": "string" },
+        "aboutSpaceTitleFr": { "type": "string" },
+        "aboutSpaceTitleEn": { "type": "string" },
+        "aboutSpaceTitleEs": { "type": "string" },
+        "aboutSpaceDescriptionFr": { "type": "text" },
+        "aboutSpaceDescriptionEn": { "type": "text" },
+        "aboutSpaceDescriptionEs": { "type": "text" },
+        "aboutSpaceImage": {
+            "type": "media",
+            "multiple": false,
+            "allowedTypes": ["images"]
+        },
+        "aboutUniverseTitleFr": { "type": "string" },
+        "aboutUniverseTitleEn": { "type": "string" },
+        "aboutUniverseTitleEs": { "type": "string" },
+        "aboutUniverse": {
+            "type": "component",
+            "repeatable": true,
+            "component": "about.universe-project"
+        },
+        "contactSeo": {
+            "type": "component",
+            "component": "shared.seo-meta"
+        },
+        "contactPageTitleFr": { "type": "string" },
+        "contactPageTitleEn": { "type": "string" },
+        "contactPageTitleEs": { "type": "string" },
+        "contactPageSubtitleFr": { "type": "text" },
+        "contactPageSubtitleEn": { "type": "text" },
+        "contactPageSubtitleEs": { "type": "text" },
+        "footerTaglineFr": { "type": "string" },
+        "footerTaglineEn": { "type": "string" },
+        "footerTaglineEs": { "type": "string" },
+        "footerStudioDescFr": { "type": "text" },
+        "footerStudioDescEn": { "type": "text" },
+        "footerStudioDescEs": { "type": "text" },
+        "footerLocationFr": { "type": "string" },
+        "footerLocationEn": { "type": "string" },
+        "footerLocationEs": { "type": "string" },
+        "contactEmail": { "type": "email" },
+        "contactPhone": { "type": "string" },
+        "socialLinks": {
+            "type": "component",
+            "repeatable": true,
+            "component": "footer.social-link"
+        },
+        "newsletterFormEndpoint": { "type": "string" }
+    }
+}

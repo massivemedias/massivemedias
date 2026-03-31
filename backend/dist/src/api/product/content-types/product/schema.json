@@ -1,0 +1,91 @@
+{
+    "kind": "collectionType",
+    "collectionName": "products",
+    "info": {
+        "singularName": "product",
+        "pluralName": "products",
+        "displayName": "Produit",
+        "description": "Produits, tarifs et configurateurs"
+    },
+    "options": {
+        "draftAndPublish": true
+    },
+    "attributes": {
+        "name": {
+            "type": "string",
+            "required": true
+        },
+        "slug": {
+            "type": "string",
+            "unique": true,
+            "required": true
+        },
+        "category": {
+            "type": "enumeration",
+            "enum": ["stickers", "fine-art", "sublimation", "flyers", "design", "web", "pret-a-porter", "sticker-pack", "merch-tshirt", "merch-hoodie", "merch-crewneck", "merch-totebag"],
+            "required": true
+        },
+        "nameFr": {
+            "type": "string",
+            "required": true
+        },
+        "nameEn": {
+            "type": "string",
+            "required": true
+        },
+        "nameEs": {
+            "type": "string"
+        },
+        "descriptionFr": {
+            "type": "richtext"
+        },
+        "descriptionEn": {
+            "type": "richtext"
+        },
+        "descriptionEs": {
+            "type": "richtext"
+        },
+        "pricingData": {
+            "type": "json",
+            "required": true
+        },
+        "images": {
+            "type": "media",
+            "multiple": true,
+            "allowedTypes": ["images"]
+        },
+        "highlightsFr": {
+            "type": "json"
+        },
+        "highlightsEn": {
+            "type": "json"
+        },
+        "highlightsEs": {
+            "type": "json"
+        },
+        "faqFr": {
+            "type": "json"
+        },
+        "faqEn": {
+            "type": "json"
+        },
+        "faqEs": {
+            "type": "json"
+        },
+        "comingSoon": {
+            "type": "boolean",
+            "default": false
+        },
+        "imageUrl": {
+            "type": "string"
+        },
+        "sortOrder": {
+            "type": "integer",
+            "default": 0
+        },
+        "active": {
+            "type": "boolean",
+            "default": true
+        }
+    }
+}

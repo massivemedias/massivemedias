@@ -1,0 +1,63 @@
+{
+    "kind": "collectionType",
+    "collectionName": "artist_submissions",
+    "info": {
+        "singularName": "artist-submission",
+        "pluralName": "artist-submissions",
+        "displayName": "Soumission Artiste",
+        "description": "Soumissions de partenariat artiste"
+    },
+    "options": {
+        "draftAndPublish": false
+    },
+    "attributes": {
+        "nomLegal": {
+            "type": "string",
+            "required": true
+        },
+        "nomArtiste": {
+            "type": "string"
+        },
+        "adresse": {
+            "type": "text",
+            "required": true
+        },
+        "email": {
+            "type": "email",
+            "required": true
+        },
+        "telephone": {
+            "type": "string",
+            "required": true
+        },
+        "tpsTvq": {
+            "type": "string"
+        },
+        "bio": {
+            "type": "text"
+        },
+        "photoProfilUrl": {
+            "type": "string"
+        },
+        "portfolioUrls": {
+            "type": "json"
+        },
+        "contractAccepted": {
+            "type": "boolean",
+            "required": true,
+            "default": false
+        },
+        "contractVersion": {
+            "type": "string"
+        },
+        "status": {
+            "type": "enumeration",
+            "enum": ["new", "reviewing", "accepted", "rejected", "archived"],
+            "default": "new",
+            "required": true
+        },
+        "notes": {
+            "type": "text"
+        }
+    }
+}
