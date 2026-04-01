@@ -509,7 +509,7 @@ export default {
 
     // --- Main domain: fetch from origin and inject SEO meta ---
     const originUrl = new URL(url.toString());
-    originUrl.hostname = 'massivemedias.github.io';
+    originUrl.hostname = 'massivemedias.pages.dev';
 
     const originResponse = await fetch(originUrl.toString(), {
       headers: request.headers,
