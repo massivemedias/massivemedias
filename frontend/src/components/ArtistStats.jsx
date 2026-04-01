@@ -347,10 +347,7 @@ export default function ArtistStats({ artistSlug }) {
                     {tx({ fr: 'Page', en: 'Page', es: 'Pagina' })}
                   </th>
                   <th className="text-right py-2 font-medium">
-                    {tx({ fr: 'Vues', en: 'Views', es: 'Vistas' })}
-                  </th>
-                  <th className="text-right py-2 font-medium">
-                    {tx({ fr: 'Visiteurs', en: 'Visitors', es: 'Visitantes' })}
+                    {tx({ fr: 'Visiteurs uniques', en: 'Unique visitors', es: 'Visitantes unicos' })}
                   </th>
                 </tr>
               </thead>
@@ -361,9 +358,6 @@ export default function ArtistStats({ artistSlug }) {
                       {formatPagePath(p.path)}
                     </td>
                     <td className="py-2 text-right text-heading font-medium">
-                      {p.views.toLocaleString()}
-                    </td>
-                    <td className="py-2 text-right text-grey-muted">
                       {p.users.toLocaleString()}
                     </td>
                   </tr>
