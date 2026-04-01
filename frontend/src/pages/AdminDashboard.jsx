@@ -135,7 +135,8 @@ function AdminDashboard() {
       }
     }
     fetchAll();
-    return () => { cancelled = true; };
+    const interval = setInterval(fetchAll, 60000); // refresh toutes les 60s
+    return () => { cancelled = true; clearInterval(interval); };
   }, []);
 
   if (loading) {
@@ -171,21 +172,25 @@ function AdminDashboard() {
   // Revenue from stats + commissions APIs
   const [revenue, setRevenue] = useState({ total: 0, orders: 0, commissions: 0 });
   useEffect(() => {
-    Promise.all([
-      api.get('/orders/stats').catch(() => ({ data: {} })),
-      api.get('/orders/commissions').catch(() => ({ data: { artists: [] } })),
-    ]).then(([statsRes, commRes]) => {
-      const d = statsRes.data;
-      const artists = commRes.data?.artists || [];
-      const totalCommissions = artists.reduce((s, a) => s + (a.totalCommission || 0), 0);
-      // Exclure les drafts du count
-      const paidOrders = (d.orderStats?.byStatus?.paid || 0) + (d.orderStats?.byStatus?.processing || 0) + (d.orderStats?.byStatus?.shipped || 0) + (d.orderStats?.byStatus?.delivered || 0);
-      setRevenue({
-        total: d.revenue?.totalDollars || 0,
-        orders: paidOrders || d.orderStats?.total || 0,
-        commissions: Math.round(totalCommissions * 100) / 100,
+    const fetchRevenue = () => {
+      Promise.all([
+        api.get('/orders/stats').catch(() => ({ data: {} })),
+        api.get('/orders/commissions').catch(() => ({ data: { artists: [] } })),
+      ]).then(([statsRes, commRes]) => {
+        const d = statsRes.data;
+        const artists = commRes.data?.artists || [];
+        const totalCommissions = artists.reduce((s, a) => s + (a.totalCommission || 0), 0);
+        const paidOrders = (d.orderStats?.byStatus?.paid || 0) + (d.orderStats?.byStatus?.processing || 0) + (d.orderStats?.byStatus?.shipped || 0) + (d.orderStats?.byStatus?.delivered || 0);
+        setRevenue({
+          total: d.revenue?.totalDollars || 0,
+          orders: paidOrders || d.orderStats?.total || 0,
+          commissions: Math.round(totalCommissions * 100) / 100,
+        });
       });
-    });
+    };
+    fetchRevenue();
+    const interval = setInterval(fetchRevenue, 60000);
+    return () => clearInterval(interval);
   }, []);
 
   return (
