@@ -168,17 +168,24 @@ function AdminDashboard() {
   };
   const deleteNote = (id) => { saveNotes(notes.filter(n => n.id !== id)); if (editingNote === id) setEditingNote(null); };
 
-  // Revenue from stats API
+  // Revenue from stats + commissions APIs
   const [revenue, setRevenue] = useState({ total: 0, orders: 0, commissions: 0 });
   useEffect(() => {
-    api.get('/orders/stats').then(res => {
-      const d = res.data;
+    Promise.all([
+      api.get('/orders/stats').catch(() => ({ data: {} })),
+      api.get('/orders/commissions').catch(() => ({ data: { artists: [] } })),
+    ]).then(([statsRes, commRes]) => {
+      const d = statsRes.data;
+      const artists = commRes.data?.artists || [];
+      const totalCommissions = artists.reduce((s, a) => s + (a.totalCommission || 0), 0);
+      // Exclure les drafts du count
+      const paidOrders = (d.orderStats?.byStatus?.paid || 0) + (d.orderStats?.byStatus?.processing || 0) + (d.orderStats?.byStatus?.shipped || 0) + (d.orderStats?.byStatus?.delivered || 0);
       setRevenue({
         total: d.revenue?.totalDollars || 0,
-        orders: d.orderStats?.total || 0,
-        commissions: Math.round((d.revenue?.totalDollars || 0) * 0.3 * 100) / 100,
+        orders: paidOrders || d.orderStats?.total || 0,
+        commissions: Math.round(totalCommissions * 100) / 100,
       });
-    }).catch(() => {});
+    });
   }, []);
 
   return (
