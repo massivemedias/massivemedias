@@ -669,11 +669,11 @@ function Account() {
                       )}
                       <span>{tx({ fr: 'Devise', en: 'Currency', es: 'Moneda' })}: {(order.currency || 'cad').toUpperCase()}</span>
                       <button
-                        onClick={async () => { const fn = await loadGenerateInvoice(); fn(order, 'receipt'); }}
+                        onClick={async () => { const fn = await loadGenerateInvoice(); fn(order, 'invoice'); }}
                         className="flex items-center gap-1.5 text-accent font-medium hover:underline"
                       >
                         <Download size={12} />
-                        {tx({ fr: 'Télécharger le reçu', en: 'Download receipt', es: 'Descargar recibo' })}
+                        {tx({ fr: 'Telecharger la facture', en: 'Download invoice', es: 'Descargar factura' })}
                       </button>
                       <Link
                         to="/boutique"
