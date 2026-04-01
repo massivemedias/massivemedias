@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { useParams, Link, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, MessageSquare, ChevronDown, ChevronLeft, ChevronRight, CheckCircle, Image, ExternalLink, X, ZoomIn, Send, LogIn, MessageCircle } from 'lucide-react';
+import { ArrowRight, MessageSquare, ChevronDown, ChevronLeft, ChevronRight, CheckCircle, Image, ExternalLink, X, ZoomIn, Send, LogIn, MessageCircle, LayoutGrid, Grid3X3, List } from 'lucide-react';
 import SEO from '../components/SEO';
 import { getArtistSchema } from '../components/seo/schemas';
 import ArtistPrintCard from '../components/ArtistPrintCard';
@@ -191,6 +191,7 @@ function ArtisteDetail({ subdomainSlug }) {
     return artist.heroImage;
   }, [heroOverrideId, artist]);
   const [selectedPrint, setSelectedPrint] = useState(null);
+  const [galleryView, setGalleryView] = useState('grid');
   const [selectedSticker, setSelectedSticker] = useState(null);
   const [openFaq, setOpenFaq] = useState(null);
   const [lightbox, setLightbox] = useState(null);
@@ -616,15 +617,51 @@ function ArtisteDetail({ subdomainSlug }) {
 
             {/* Oeuvres - prend 2/3 en desktop, a droite */}
             <div className="lg:w-2/3 order-1 lg:order-2">
-              <div className="flex flex-wrap gap-4">
+              {/* View toggle */}
+              <div className="flex justify-end mb-3">
+                <div className="flex items-center gap-0.5 p-1 rounded-lg bg-black/20">
+                  {[
+                    { mode: 'grid', icon: LayoutGrid },
+                    { mode: 'compact', icon: Grid3X3 },
+                    { mode: 'list', icon: List },
+                  ].map(({ mode, icon: Icon }) => (
+                    <button key={mode} onClick={() => setGalleryView(mode)}
+                      className={`p-1.5 rounded-md transition-all ${galleryView === mode ? 'bg-accent text-white shadow-md' : 'text-grey-muted hover:text-heading hover:bg-white/5'}`}>
+                      <Icon size={14} />
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className={
+                galleryView === 'list' ? 'grid grid-cols-1 sm:grid-cols-2 gap-3' :
+                galleryView === 'compact' ? 'grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-2' :
+                'flex flex-wrap gap-4'
+              }>
                 {artist.prints.map((print, index) => (
+                  galleryView === 'list' ? (
+                    <motion.div
+                      key={print.id}
+                      initial={{ opacity: 0 }}
+                      whileInView={{ opacity: 1 }}
+                      viewport={{ once: true }}
+                      className="flex gap-3 p-3 rounded-xl bg-black/20 cursor-pointer hover:bg-black/30 transition-colors"
+                      onClick={() => handleSelectPrint(print)}
+                    >
+                      <img src={print.image} alt={getItemTitle(print)} loading="lazy" className="w-20 h-28 object-cover rounded-lg flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-heading text-sm font-semibold truncate">{getItemTitle(print)}</p>
+                        {print.unique && <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-accent/20 text-accent text-[9px] font-bold mt-1">Unique</span>}
+                        <p className="text-grey-muted text-xs mt-1">{tx({ fr: 'A partir de', en: 'From', es: 'Desde' })} {minPrice}$</p>
+                      </div>
+                    </motion.div>
+                  ) : (
                   <motion.div
                     key={print.id}
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4, delay: index * 0.08 }}
                     viewport={{ once: true }}
-                    className="w-[calc(50%-0.5rem)] md:w-[calc(25%-0.75rem)]"
+                    className={galleryView === 'compact' ? '' : 'w-[calc(50%-0.5rem)] md:w-[calc(25%-0.75rem)]'}
                   >
                     <ArtistPrintCard
                       print={print}
@@ -638,6 +675,7 @@ function ArtisteDetail({ subdomainSlug }) {
                       }}
                     />
                   </motion.div>
+                  )
                 ))}
               </div>
             </div>

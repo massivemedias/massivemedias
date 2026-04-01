@@ -19,6 +19,7 @@ const ARTIST_TYPES = {
   'quentin-delobel': 'photographe',
   'no-pixl': 'photographe',
   'cornelia-rose': 'peintre',
+  'eric-sanchez': 'photographe',
   'ginko-ink': 'tatoueur',
 };
 
