@@ -146,140 +146,96 @@ function AdminDashboard() {
     );
   }
 
+  // Notes inline
+  const [notes, setNotes] = useState(() => {
+    try { return JSON.parse(localStorage.getItem(NOTES_KEY) || '[]'); } catch { return []; }
+  });
+  const [editingNote, setEditingNote] = useState(null);
+  const [noteTitle, setNoteTitle] = useState('');
+  const [noteBody, setNoteBody] = useState('');
+
+  const saveNotes = (updated) => { setNotes(updated); localStorage.setItem(NOTES_KEY, JSON.stringify(updated)); };
+  const addNote = () => {
+    const n = { id: Date.now(), title: '', body: '', updatedAt: Date.now() };
+    const updated = [n, ...notes];
+    saveNotes(updated);
+    setEditingNote(n.id); setNoteTitle(''); setNoteBody('');
+  };
+  const saveEdit = () => {
+    const updated = notes.map(n => n.id === editingNote ? { ...n, title: noteTitle, body: noteBody, updatedAt: Date.now() } : n);
+    saveNotes(updated);
+    setEditingNote(null);
+  };
+  const deleteNote = (id) => { saveNotes(notes.filter(n => n.id !== id)); if (editingNote === id) setEditingNote(null); };
+
+  // Revenue from stats API
+  const [revenue, setRevenue] = useState({ total: 0, orders: 0, commissions: 0 });
+  useEffect(() => {
+    api.get('/orders/stats').then(res => {
+      const d = res.data;
+      setRevenue({
+        total: d.revenue?.totalDollars || 0,
+        orders: d.orderStats?.total || 0,
+        commissions: Math.round((d.revenue?.totalDollars || 0) * 0.3 * 100) / 100,
+      });
+    }).catch(() => {});
+  }, []);
+
   return (
-    <div className="space-y-6">
-      {/* Stats rapides */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-        <StatCard
-          icon={Clock}
-          label={tx({ fr: 'En attente', en: 'Pending', es: 'Pendientes' })}
-          value={stats.pending}
-          color="bg-yellow-500/15 text-yellow-400"
-          to="/admin/commandes"
-        />
-        <StatCard
-          icon={ShoppingBag}
-          label={tx({ fr: 'En production', en: 'Processing', es: 'En produccion' })}
-          value={stats.processing}
-          color="bg-blue-500/15 text-blue-400"
-          to="/admin/commandes"
-        />
-        <StatCard
-          icon={Truck}
-          label={tx({ fr: 'Expediees', en: 'Shipped', es: 'Enviados' })}
-          value={stats.shipped}
-          color="bg-green-500/15 text-green-400"
-          to="/admin/commandes"
-        />
-        <StatCard
-          icon={MessageSquare}
-          label={tx({ fr: 'Messages non lus', en: 'Unread', es: 'No leidos' })}
-          value={stats.unreadMessages}
-          color={stats.unreadMessages > 0 ? 'bg-red-500/15 text-red-400' : 'bg-white/5 text-grey-muted'}
-          to="/admin/messages"
-        />
-        <StatCard
-          icon={UserPlus}
-          label={tx({ fr: 'Nouveaux (3j)', en: 'New users (3d)', es: 'Nuevos (3d)' })}
-          value={stats.newUsers3d}
-          color={stats.newUsers3d > 0 ? 'bg-purple-500/15 text-purple-400' : 'bg-white/5 text-grey-muted'}
-          to="/admin/utilisateurs"
-        />
-        <StatCard
-          icon={Eye}
-          label={tx({ fr: 'Visiteurs aujourd\'hui', en: 'Visitors today', es: 'Visitantes hoy' })}
-          value={stats.visitorsToday}
-          color="bg-cyan-500/15 text-cyan-400"
-          to="/admin/stats"
-        />
+    <div className="space-y-5">
+      {/* Ventes + Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <StatCard icon={ShoppingBag} label={tx({ fr: 'Ventes', en: 'Sales', es: 'Ventas' })} value={revenue.orders} color="bg-green-500/15 text-green-400" to="/admin/commandes" />
+        <StatCard icon={DollarSign} label={tx({ fr: 'Revenus', en: 'Revenue', es: 'Ingresos' })} value={`${revenue.total.toFixed(0)}$`} color="bg-accent/15 text-accent" to="/admin/commandes" />
+        <StatCard icon={Banknote} label={tx({ fr: 'Commissions artistes', en: 'Artist commissions', es: 'Comisiones' })} value={`${revenue.commissions.toFixed(0)}$`} color="bg-blue-500/15 text-blue-400" to="/admin/commissions" />
+        <StatCard icon={Eye} label={tx({ fr: 'Visiteurs uniques', en: 'Unique visitors', es: 'Visitantes' })} value={stats.visitorsToday} color="bg-cyan-500/15 text-cyan-400" to="/admin/stats" />
       </div>
 
-      {/* Raccourcis rapides */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
-        {[
-          { to: '/admin/commandes', icon: ShoppingBag, label: tx({ fr: 'Commandes', en: 'Orders', es: 'Pedidos' }), count: stats.orders },
-          { to: '/admin/inventaire', icon: Package, label: tx({ fr: 'Inventaire', en: 'Inventory', es: 'Inventario' }), count: stats.inventoryLow > 0 ? `${stats.inventoryLow} low` : null },
-          { to: '/admin/depenses', icon: Receipt, label: tx({ fr: 'Depenses', en: 'Expenses', es: 'Gastos' }), count: stats.expenses > 0 ? `${stats.expenses.toFixed(0)}$` : null },
-          { to: '/admin/utilisateurs', icon: Users, label: tx({ fr: 'Utilisateurs', en: 'Users', es: 'Usuarios' }) },
-          { to: '/admin/stats', icon: BarChart3, label: tx({ fr: 'Statistiques', en: 'Statistics', es: 'Estadisticas' }) },
-        ].map(item => (
-          <Link
-            key={item.to}
-            to={item.to}
-            className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-black/10 hover:bg-black/20 transition-all text-center group"
-          >
-            <item.icon size={20} className="text-grey-muted group-hover:text-accent transition-colors" />
-            <span className="text-xs text-heading font-medium">{item.label}</span>
-            {item.count && <span className="text-[10px] text-accent">{item.count}</span>}
-          </Link>
-        ))}
+      {/* Status commandes + Messages */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <StatCard icon={Clock} label={tx({ fr: 'En attente', en: 'Pending', es: 'Pendientes' })} value={stats.pending} color="bg-yellow-500/15 text-yellow-400" to="/admin/commandes" />
+        <StatCard icon={Package} label={tx({ fr: 'En production', en: 'Processing', es: 'En produccion' })} value={stats.processing} color="bg-blue-500/15 text-blue-400" to="/admin/commandes" />
+        <StatCard icon={MessageSquare} label={tx({ fr: 'Messages', en: 'Messages', es: 'Mensajes' })} value={stats.unreadMessages > 0 ? stats.unreadMessages : '0'} color={stats.unreadMessages > 0 ? 'bg-red-500/15 text-red-400' : 'bg-white/5 text-grey-muted'} to="/admin/messages" />
+        <StatCard icon={UserPlus} label={tx({ fr: 'Nouveaux (3j)', en: 'New (3d)', es: 'Nuevos (3d)' })} value={stats.newUsers3d} color={stats.newUsers3d > 0 ? 'bg-purple-500/15 text-purple-400' : 'bg-white/5 text-grey-muted'} to="/admin/utilisateurs" />
       </div>
 
-      {/* Notes + Activite recente */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Notes - titres seulement */}
-        <div className="rounded-2xl p-4 md:p-5 card-bg">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-heading font-heading font-bold text-base flex items-center gap-2">
-              <StickyNote size={18} className="text-accent" />
-              {tx({ fr: 'Notes', en: 'Notes', es: 'Notas' })}
-            </h3>
-            <Link to="/admin/notes" className="text-xs text-accent hover:underline flex items-center gap-1">
-              {tx({ fr: 'Ouvrir', en: 'Open', es: 'Abrir' })}
-              <ArrowRight size={12} />
-            </Link>
-          </div>
-          <DashboardNotes />
-        </div>
-
-        {/* Activite recente */}
-        <div className="rounded-2xl p-4 md:p-5 card-bg">
-          <h3 className="text-heading font-heading font-bold text-base flex items-center gap-2 mb-3">
-            <Clock size={18} className="text-accent" />
-            {tx({ fr: 'Activite recente', en: 'Recent activity', es: 'Actividad reciente' })}
+      {/* Notes inline */}
+      <div className="rounded-2xl p-4 md:p-5 card-bg">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-heading font-heading font-bold text-sm flex items-center gap-2">
+            <StickyNote size={16} className="text-accent" />
+            Notes
           </h3>
-          <div className="space-y-2">
-            {stats.pending > 0 && (
-              <Link to="/admin/commandes" className="flex items-center gap-2 p-2 rounded-lg hover:bg-black/10 transition-colors">
-                <div className="w-2 h-2 rounded-full bg-yellow-400" />
-                <span className="text-xs text-heading">{stats.pending} {tx({ fr: 'commande(s) en attente', en: 'pending order(s)', es: 'pedido(s) pendiente(s)' })}</span>
-              </Link>
-            )}
-            {stats.processing > 0 && (
-              <Link to="/admin/commandes" className="flex items-center gap-2 p-2 rounded-lg hover:bg-black/10 transition-colors">
-                <div className="w-2 h-2 rounded-full bg-blue-400" />
-                <span className="text-xs text-heading">{stats.processing} {tx({ fr: 'en production', en: 'in production', es: 'en produccion' })}</span>
-              </Link>
-            )}
-            {stats.shipped > 0 && (
-              <Link to="/admin/commandes" className="flex items-center gap-2 p-2 rounded-lg hover:bg-black/10 transition-colors">
-                <div className="w-2 h-2 rounded-full bg-green-400" />
-                <span className="text-xs text-heading">{stats.shipped} {tx({ fr: 'expediee(s)', en: 'shipped', es: 'enviado(s)' })}</span>
-              </Link>
-            )}
-            {stats.unreadMessages > 0 && (
-              <Link to="/admin/messages" className="flex items-center gap-2 p-2 rounded-lg hover:bg-black/10 transition-colors">
-                <div className="w-2 h-2 rounded-full bg-red-400" />
-                <span className="text-xs text-heading">{stats.unreadMessages} {tx({ fr: 'message(s) non lu(s)', en: 'unread message(s)', es: 'mensaje(s) no leido(s)' })}</span>
-              </Link>
-            )}
-            {stats.inventoryLow > 0 && (
-              <Link to="/admin/inventaire" className="flex items-center gap-2 p-2 rounded-lg hover:bg-black/10 transition-colors">
-                <div className="w-2 h-2 rounded-full bg-orange-400" />
-                <span className="text-xs text-heading">{stats.inventoryLow} {tx({ fr: 'article(s) stock bas', en: 'low stock item(s)', es: 'articulo(s) stock bajo' })}</span>
-              </Link>
-            )}
-            {stats.pending === 0 && stats.processing === 0 && stats.shipped === 0 && stats.unreadMessages === 0 && stats.inventoryLow === 0 && (
-              <div className="flex items-center gap-2 p-2">
-                <CheckCircle size={14} className="text-green-400" />
-                <span className="text-xs text-grey-muted">{tx({ fr: 'Tout est à jour!', en: 'All caught up!', es: 'Todo al dia!' })}</span>
-              </div>
-            )}
-          </div>
+          <button onClick={addNote} className="text-xs text-accent hover:underline">+ {tx({ fr: 'Ajouter', en: 'Add', es: 'Agregar' })}</button>
+        </div>
+        <div className="space-y-2 max-h-[300px] overflow-y-auto">
+          {notes.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0)).map(n => (
+            <div key={n.id} className="rounded-lg bg-black/20 p-3">
+              {editingNote === n.id ? (
+                <div className="space-y-2">
+                  <input value={noteTitle} onChange={e => setNoteTitle(e.target.value)} placeholder={tx({ fr: 'Titre', en: 'Title', es: 'Titulo' })}
+                    className="w-full bg-black/30 text-heading text-sm px-2 py-1.5 rounded border border-white/10 focus:outline-none focus:border-accent" autoFocus />
+                  <textarea value={noteBody} onChange={e => setNoteBody(e.target.value)} placeholder="..." rows={3}
+                    className="w-full bg-black/30 text-heading text-xs px-2 py-1.5 rounded border border-white/10 focus:outline-none focus:border-accent resize-none" />
+                  <div className="flex gap-2">
+                    <button onClick={saveEdit} className="px-3 py-1 rounded bg-green-500/20 text-green-400 text-xs font-semibold"><CheckCircle size={12} className="inline mr-1" />OK</button>
+                    <button onClick={() => setEditingNote(null)} className="px-3 py-1 rounded bg-white/10 text-grey-muted text-xs">Annuler</button>
+                    <button onClick={() => deleteNote(n.id)} className="px-3 py-1 rounded bg-red-500/10 text-red-400 text-xs ml-auto">Supprimer</button>
+                  </div>
+                </div>
+              ) : (
+                <div className="cursor-pointer" onClick={() => { setEditingNote(n.id); setNoteTitle(n.title || ''); setNoteBody(n.body || ''); }}>
+                  <p className="text-heading text-sm font-medium">{n.title || tx({ fr: 'Sans titre', en: 'Untitled', es: 'Sin titulo' })}</p>
+                  {n.body && <p className="text-grey-muted text-xs mt-1 line-clamp-2">{n.body.replace(/<[^>]*>/g, '').slice(0, 150)}</p>}
+                </div>
+              )}
+            </div>
+          ))}
+          {notes.length === 0 && <p className="text-grey-muted text-xs text-center py-4">{tx({ fr: 'Aucune note', en: 'No notes', es: 'Sin notas' })}</p>}
         </div>
       </div>
 
-      {/* Systeme - widget compact */}
+      {/* Systeme */}
       <SystemStatusWidget tx={tx} />
     </div>
   );
