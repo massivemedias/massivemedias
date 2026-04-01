@@ -1,0 +1,9 @@
+name = "artist-proxy"
+main = "og-worker.js"
+compatibility_date = "2024-01-01"
+account_id = "48c0f0149933a7f0e3a24479e33c69d3"
+
+routes = [
+  { pattern = "*.massivemedias.com/*", zone_name = "massivemedias.com" },
+  { pattern = "massivemedias.com/*", zone_name = "massivemedias.com" }
+]
