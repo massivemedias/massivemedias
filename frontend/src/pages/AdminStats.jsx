@@ -276,15 +276,14 @@ function AdminStats() {
                   </h3>
                   <div className="space-y-2 max-h-[300px] overflow-y-auto">
                     {(analytics.pages || []).map((page, i) => {
-                      const maxViews = analytics.pages[0]?.views || 1;
+                      const maxUsers = analytics.pages[0]?.users || 1;
                       return (
                         <div key={i} className="relative">
-                          <div className="absolute inset-0 rounded-lg bg-cyan-500/10" style={{ width: `${(page.views / maxViews) * 100}%` }} />
+                          <div className="absolute inset-0 rounded-lg bg-cyan-500/10" style={{ width: `${((page.users || 0) / maxUsers) * 100}%` }} />
                           <div className="relative flex items-center justify-between px-3 py-2">
                             <span className="text-xs text-heading truncate flex-1 font-mono">{page.path}</span>
                             <div className="flex items-center gap-3 flex-shrink-0 ml-2">
-                              <span className="text-xs text-grey-muted">{page.users} <Users size={10} className="inline" /></span>
-                              <span className="text-xs text-heading font-semibold">{page.views}</span>
+                              <span className="text-xs text-heading font-semibold">{page.users || 0} <Users size={10} className="inline" /></span>
                             </div>
                           </div>
                         </div>
