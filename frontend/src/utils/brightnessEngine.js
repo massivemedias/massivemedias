@@ -126,7 +126,7 @@ const PALETTE_1 = darkPalette(
 const PALETTE_2 = darkPalette(
   '#0D3040', '#082028', '#041418',
   '#00BCD4', '#4DD0E1', '#0A2830',
-  '#E0F7FA', '#00BCD4'
+  '#5CC8D4', '#00BCD4'
 );
 
 // 3 - Vert Forêt
