@@ -110,7 +110,7 @@ const PALETTE_0 = {
   ...darkPalette(
     '#2C0056', '#1E003B', '#100020',
     '#FF52A0', '#FFCC02', '#1E0E30',
-    '#FF52A0', '#FFCC00'
+    '#CC2C91', '#FFBF00'
   ),
   '--active-tab-bg': '#a21895',
 };
