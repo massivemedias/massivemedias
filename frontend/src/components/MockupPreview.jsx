@@ -52,6 +52,13 @@ function MockupPreview({ imageUrl, frameColor = 'black', className = '' }) {
 
   const [showMockup, setShowMockup] = useState(false);
 
+  // URL absolue pour le backend (les chemins relatifs ne sont pas fetchables cote serveur)
+  const absoluteUrl = imageUrl?.startsWith('http')
+    ? imageUrl
+    : imageUrl?.startsWith('data:')
+      ? imageUrl
+      : `${window.location.origin}${imageUrl?.startsWith('/') ? '' : '/'}${imageUrl}`;
+
   // Reset quand l'image ou la couleur de cadre change
   useEffect(() => {
     if (showMockup) {
@@ -62,14 +69,14 @@ function MockupPreview({ imageUrl, frameColor = 'black', className = '' }) {
 
   const handleGenerate = useCallback((selectedScene) => {
     const s = selectedScene || scene;
-    generate(imageUrl, s, frameColor);
+    generate(absoluteUrl, s, frameColor);
     setShowMockup(true);
-  }, [imageUrl, scene, frameColor, generate]);
+  }, [absoluteUrl, scene, frameColor, generate]);
 
   const handleSceneChange = (newScene) => {
     setScene(newScene);
     if (showMockup) {
-      generate(imageUrl, newScene, frameColor);
+      generate(absoluteUrl, newScene, frameColor);
     }
   };
 
