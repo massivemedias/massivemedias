@@ -332,9 +332,10 @@ export const THEME_COLORS = [
 ];
 
 // Couleur accent par theme (pour le slider dots)
+// Ordre: Massive, Bleu Nuit, Ocean, Vert Foret, Bordeaux, Espresso, PALETTE_10, Charbon, Ardoise, Creme, Blanc
 export const THEME_ACCENTS = [
   '#FF52A0', '#3B9FFF', '#00BCD4', '#00CC88', '#FF4080',
-  '#D4A574', '#C4725A', '#FF6B35', '#38B2AC', '#9B30FF', '#A600FF'
+  '#D4A574', '#C4725A', '#FF6B35', '#38B2AC', '#C07830', '#444444'
 ];
 
 const ALL_PROPS = Object.keys(PALETTE_0);
