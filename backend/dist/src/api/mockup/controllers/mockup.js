@@ -9,7 +9,8 @@
  * - Rate limiting: 30 req/min par IP
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent';
+// gemini-2.5-flash-image: modele stable pour generation d'images
+const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent';
 // Descriptions de scenes avec variantes de decor
 const SCENE_PROMPTS = {
     living_room: [
