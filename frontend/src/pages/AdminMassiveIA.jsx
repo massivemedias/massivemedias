@@ -466,12 +466,25 @@ function PrintsTab() {
     setMockupData(null);
 
     try {
-      // Convertir le fichier en base64 et envoyer comme URL data
-      const reader = new FileReader();
+      // Resizer l'image a max 1500px avant envoi (evite HTTP 413)
       const base64 = await new Promise((resolve, reject) => {
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
+        const img = new window.Image();
+        img.onload = () => {
+          const MAX = 1500;
+          let { width, height } = img;
+          if (width > MAX || height > MAX) {
+            const ratio = Math.min(MAX / width, MAX / height);
+            width = Math.round(width * ratio);
+            height = Math.round(height * ratio);
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/webp', 0.85));
+        };
+        img.onerror = reject;
+        img.src = URL.createObjectURL(file);
       });
 
       // L'admin utilise l'API Strapi directement

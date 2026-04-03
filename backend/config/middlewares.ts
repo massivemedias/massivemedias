@@ -45,6 +45,7 @@ const config: Core.Config.Middlewares = [
     name: 'strapi::body',
     config: {
       includeUnparsed: true, // Required for Stripe webhook signature verification
+      jsonLimit: '10mb', // Pour les mockups AI (images base64 dans le body)
     },
   },
   'strapi::session',
