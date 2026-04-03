@@ -411,32 +411,20 @@ function StickersTab() {
 
 // ---------------------------------------------------------------------------
 // Prints Tab - Mockup AI via Strapi/Gemini
+// Auto-generation des qu'une image est deposee (salon + cadre noir)
+// Dots pour switcher entre cadre noir et blanc
 // ---------------------------------------------------------------------------
-const ADMIN_SCENES = [
-  { value: 'living_room', label: 'Salon' },
-  { value: 'bedroom', label: 'Chambre' },
-  { value: 'office', label: 'Bureau' },
-  { value: 'dining', label: 'Salle a manger' },
-  { value: 'studio', label: 'Studio' },
-  { value: 'zen', label: 'Zen' },
-];
-
-const FRAME_COLORS = [
-  { value: 'black', label: 'Noir', color: '#000' },
-  { value: 'white', label: 'Blanc', color: '#fff' },
-];
-
 function PrintsTab() {
   const { tx } = useLang();
   const [file, setFile] = useState(null);
-  const [imageUrl, setImageUrl] = useState('');
-  const [scene, setScene] = useState('living_room');
   const [frameColor, setFrameColor] = useState('black');
   const [loading, setLoading] = useState(false);
   const [mockupData, setMockupData] = useState(null);
   const [error, setError] = useState(null);
   const [elapsed, setElapsed] = useState(0);
+  const [base64Cache, setBase64Cache] = useState(null); // image resizee en cache
   const timerRef = useRef(null);
+  const isGeneratingRef = useRef(false);
 
   // Timer pour afficher le temps ecoule
   useEffect(() => {
@@ -449,53 +437,42 @@ function PrintsTab() {
     return () => clearInterval(timerRef.current);
   }, [loading]);
 
-  // Quand un fichier est uploade, creer un object URL temporaire
-  useEffect(() => {
-    if (file) {
-      const url = URL.createObjectURL(file);
-      setImageUrl(url);
-      return () => URL.revokeObjectURL(url);
-    }
-    setImageUrl('');
-  }, [file]);
+  // Resizer l'image et retourner le base64
+  const resizeToBase64 = (f) => new Promise((resolve, reject) => {
+    const img = new window.Image();
+    img.onload = () => {
+      const MAX = 1500;
+      let { width, height } = img;
+      if (width > MAX || height > MAX) {
+        const ratio = Math.min(MAX / width, MAX / height);
+        width = Math.round(width * ratio);
+        height = Math.round(height * ratio);
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+      resolve(canvas.toDataURL('image/webp', 0.85));
+    };
+    img.onerror = reject;
+    img.src = URL.createObjectURL(f);
+  });
 
-  const handleGenerate = async () => {
-    if (!file) return;
+  const generateMockup = async (base64, frame = 'black') => {
+    if (isGeneratingRef.current) return;
+    isGeneratingRef.current = true;
     setLoading(true);
     setError(null);
-    setMockupData(null);
 
     try {
-      // Resizer l'image a max 1500px avant envoi (evite HTTP 413)
-      const base64 = await new Promise((resolve, reject) => {
-        const img = new window.Image();
-        img.onload = () => {
-          const MAX = 1500;
-          let { width, height } = img;
-          if (width > MAX || height > MAX) {
-            const ratio = Math.min(MAX / width, MAX / height);
-            width = Math.round(width * ratio);
-            height = Math.round(height * ratio);
-          }
-          const canvas = document.createElement('canvas');
-          canvas.width = width;
-          canvas.height = height;
-          canvas.getContext('2d').drawImage(img, 0, 0, width, height);
-          resolve(canvas.toDataURL('image/webp', 0.85));
-        };
-        img.onerror = reject;
-        img.src = URL.createObjectURL(file);
-      });
-
-      // L'admin utilise l'API Strapi directement
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:1337/api';
       const res = await fetch(`${apiUrl}/mockup/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           imageUrl: base64,
-          scene,
-          frameColor,
+          scene: 'living_room',
+          frameColor: frame,
         }),
       });
 
@@ -511,153 +488,150 @@ function PrintsTab() {
       setError(err.message);
     } finally {
       setLoading(false);
+      isGeneratingRef.current = false;
     }
+  };
+
+  // Auto-generation des qu'un fichier est depose
+  const handleFile = async (f) => {
+    setFile(f);
+    setMockupData(null);
+    setError(null);
+    setFrameColor('black');
+    try {
+      const b64 = await resizeToBase64(f);
+      setBase64Cache(b64);
+      generateMockup(b64, 'black');
+    } catch (err) {
+      setError('Erreur de lecture du fichier');
+    }
+  };
+
+  // Changer de cadre = regenerer
+  const handleFrameSwitch = (newColor) => {
+    if (newColor === frameColor || loading || !base64Cache) return;
+    setFrameColor(newColor);
+    setMockupData(null);
+    generateMockup(base64Cache, newColor);
+  };
+
+  const handleClear = () => {
+    setFile(null);
+    setMockupData(null);
+    setError(null);
+    setBase64Cache(null);
   };
 
   const handleDownload = () => {
     if (!mockupData) return;
     const link = document.createElement('a');
     link.href = mockupData;
-    link.download = `mockup-${scene}-${frameColor}-${Date.now()}.png`;
+    link.download = `mockup-${frameColor}-${Date.now()}.png`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
 
-  return (
-    <div className="grid lg:grid-cols-2 gap-6">
-      <div className="space-y-4">
+  // Pas encore de fichier: afficher la drop zone
+  if (!file) {
+    return (
+      <div className="max-w-xl mx-auto">
         <DropZone
           accept="image/*"
-          file={file}
-          onFile={setFile}
-          onClear={() => { setFile(null); setMockupData(null); setError(null); }}
-          label="Glisser une image d'oeuvre ici"
+          file={null}
+          onFile={handleFile}
+          onClear={handleClear}
+          label="Deposer une image pour voir le mockup"
         />
-
-        <div className="rounded-xl bg-black/20 p-4 space-y-4">
-          {/* Scene */}
-          <div>
-            <h3 className="text-xs font-semibold text-grey-muted uppercase tracking-wider mb-2">Scene</h3>
-            <div className="flex flex-wrap gap-2">
-              {ADMIN_SCENES.map((s) => (
-                <button
-                  key={s.value}
-                  onClick={() => setScene(s.value)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                    scene === s.value ? 'bg-accent text-white' : 'bg-black/20 text-grey-muted hover:text-heading'
-                  }`}
-                >
-                  {s.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Frame color */}
-          <div>
-            <h3 className="text-xs font-semibold text-grey-muted uppercase tracking-wider mb-2">Cadre</h3>
-            <div className="flex gap-2">
-              {FRAME_COLORS.map((f) => (
-                <button
-                  key={f.value}
-                  onClick={() => setFrameColor(f.value)}
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                    frameColor === f.value ? 'bg-accent text-white' : 'bg-black/20 text-grey-muted hover:text-heading'
-                  }`}
-                >
-                  <span
-                    className="w-3 h-3 rounded-full border border-grey-muted/30"
-                    style={{ backgroundColor: f.color }}
-                  />
-                  {f.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Info */}
-          <div className="text-[10px] text-grey-muted space-y-1">
-            <p>API: Gemini 2.0 Flash (via Strapi)</p>
-            <p>Decor aleatoire parmi 4 variantes par scene</p>
-            <p>Rate limit: 30 req/min, 5/heure cote client</p>
-          </div>
-        </div>
-
-        <button
-          onClick={handleGenerate}
-          disabled={!file || loading}
-          className="w-full py-3 rounded-xl bg-accent text-white font-semibold text-sm disabled:opacity-40 transition-opacity flex items-center justify-center gap-2"
-        >
-          {loading ? (
-            <>
-              <Loader2 size={16} className="animate-spin" />
-              Generation... ({elapsed}s)
-            </>
-          ) : (
-            <>
-              <Image size={16} />
-              Generer le mockup
-            </>
-          )}
-        </button>
+        <p className="text-grey-muted text-[10px] text-center mt-3">
+          L'image sera affichee dans un salon avec cadre noir automatiquement
+        </p>
       </div>
+    );
+  }
 
-      {/* Resultat */}
-      <div className="rounded-xl bg-black/20 p-4 flex items-center justify-center min-h-[300px]">
-        {error && (
+  return (
+    <div className="space-y-4">
+      {/* Mockup genere OU loading */}
+      <div className="rounded-xl bg-black/20 p-4 flex items-center justify-center min-h-[400px]">
+        {loading && (
+          <div className="flex flex-col items-center gap-3">
+            <Loader2 size={32} className="animate-spin text-accent" />
+            <p className="text-heading text-sm">Generation... {elapsed}s</p>
+            <p className="text-grey-muted text-xs">Cadre {frameColor === 'black' ? 'noir' : 'blanc'} dans un salon</p>
+          </div>
+        )}
+        {error && !loading && (
           <div className="flex flex-col items-center gap-3">
             <div className="flex items-center gap-2 text-red-400 text-sm">
               <AlertCircle size={16} />
               {error}
             </div>
             <button
-              onClick={handleGenerate}
-              disabled={!file}
+              onClick={() => base64Cache && generateMockup(base64Cache, frameColor)}
               className="text-accent text-xs hover:underline"
             >
               Reessayer
             </button>
           </div>
         )}
-        {mockupData ? (
-          <div className="flex flex-col items-center gap-4 w-full">
-            <img
-              src={mockupData}
-              alt="mockup"
-              className="max-h-[500px] rounded-lg object-contain w-full"
-            />
-            <div className="flex gap-3">
-              <button
-                onClick={handleDownload}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-accent/20 text-accent text-sm font-semibold hover:bg-accent/30 transition-colors"
-              >
-                <Download size={14} />
-                Telecharger
-              </button>
-              <button
-                onClick={handleGenerate}
-                disabled={!file || loading}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 text-heading text-sm hover:bg-white/15 transition-colors"
-              >
-                <Image size={14} />
-                Regenerer
-              </button>
-            </div>
-            <p className="text-grey-muted text-[10px]">
-              Scene: {scene} | Cadre: {frameColor} | Genere en {elapsed}s
-            </p>
-          </div>
-        ) : !error && !loading && (
-          <p className="text-grey-muted text-sm">Le resultat apparaitra ici</p>
+        {mockupData && !loading && (
+          <img
+            src={mockupData}
+            alt="mockup"
+            className="max-h-[550px] rounded-lg object-contain w-full"
+          />
         )}
-        {loading && !mockupData && !error && (
-          <div className="flex flex-col items-center gap-3">
-            <Loader2 size={32} className="animate-spin text-accent" />
-            <p className="text-heading text-sm">{elapsed}s...</p>
-            <p className="text-grey-muted text-xs">Gemini genere votre mockup</p>
-          </div>
+      </div>
+
+      {/* Dots cadre noir / blanc */}
+      <div className="flex items-center justify-center gap-4">
+        <button
+          onClick={() => handleFrameSwitch('black')}
+          disabled={loading}
+          className="flex flex-col items-center gap-1.5 group"
+          title="Cadre noir"
+        >
+          <span className={`w-5 h-5 rounded-full border-2 bg-black transition-all ${
+            frameColor === 'black' ? 'border-accent scale-110' : 'border-grey-muted/40 group-hover:border-grey-muted'
+          }`} />
+          <span className={`text-[10px] transition-colors ${
+            frameColor === 'black' ? 'text-accent font-semibold' : 'text-grey-muted'
+          }`}>Noir</span>
+        </button>
+        <button
+          onClick={() => handleFrameSwitch('white')}
+          disabled={loading}
+          className="flex flex-col items-center gap-1.5 group"
+          title="Cadre blanc"
+        >
+          <span className={`w-5 h-5 rounded-full border-2 bg-white transition-all ${
+            frameColor === 'white' ? 'border-accent scale-110' : 'border-grey-muted/40 group-hover:border-grey-muted'
+          }`} />
+          <span className={`text-[10px] transition-colors ${
+            frameColor === 'white' ? 'text-accent font-semibold' : 'text-grey-muted'
+          }`}>Blanc</span>
+        </button>
+      </div>
+
+      {/* Actions */}
+      <div className="flex items-center justify-center gap-3">
+        {mockupData && (
+          <button
+            onClick={handleDownload}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-accent/20 text-accent text-sm font-semibold hover:bg-accent/30 transition-colors"
+          >
+            <Download size={14} />
+            Telecharger
+          </button>
         )}
+        <button
+          onClick={handleClear}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 text-grey-muted text-sm hover:text-heading transition-colors"
+        >
+          <X size={14} />
+          Nouvelle image
+        </button>
       </div>
     </div>
   );

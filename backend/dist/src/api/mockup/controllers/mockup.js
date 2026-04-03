@@ -124,10 +124,13 @@ exports.default = {
             const prompt = [
                 `Generate a photorealistic interior design photograph showing this artwork displayed in ${frameDesc},`,
                 `hanging centered on a wall in ${sceneDesc}.`,
-                `The artwork MUST be clearly visible, sharp, and undistorted inside the frame - it is the focal point of the image.`,
-                `The frame should be well-lit with warm natural lighting creating soft shadows.`,
-                `Camera angle: slightly below eye level, as if a person is admiring the framed artwork.`,
-                `Style: professional interior design photography, warm cozy ambiance, gallery-quality presentation.`,
+                `IMPORTANT FRAMING: The framed artwork must occupy at least 50-60% of the image area.`,
+                `Shoot as a CLOSE-UP of the wall and frame - the frame and artwork are the hero of the shot.`,
+                `Only show a small portion of the room around the frame for context (a sliver of furniture, a plant edge, part of a shelf).`,
+                `The artwork MUST be clearly visible, sharp, and undistorted inside the frame - it is the absolute focal point.`,
+                `The frame should be well-lit with warm natural lighting creating soft shadows on the wall.`,
+                `Camera angle: straight-on, slightly below eye level, tight crop on the frame.`,
+                `Style: professional interior design photography, warm cozy ambiance, gallery-quality close-up.`,
                 `Aspect ratio: portrait orientation (9:16).`,
                 `Do NOT add any text, watermark, logo, or signature. Do NOT alter the artwork itself.`,
             ].join(' ');
