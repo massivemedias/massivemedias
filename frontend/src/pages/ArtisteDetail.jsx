@@ -6,6 +6,7 @@ import SEO from '../components/SEO';
 import { getArtistSchema } from '../components/seo/schemas';
 import ArtistPrintCard from '../components/ArtistPrintCard';
 import ConfiguratorArtistPrint from '../components/configurators/ConfiguratorArtistPrint';
+import MockupPreview from '../components/MockupPreview';
 import ConfiguratorArtistSticker from '../components/configurators/ConfiguratorArtistSticker';
 import { useLang } from '../i18n/LanguageContext';
 import { useTheme } from '../i18n/ThemeContext';
@@ -852,6 +853,11 @@ function ArtisteDetail({ subdomainSlug }) {
                     <ChevronRight size={20} />
                   </button>
                 )}
+                {/* Mockup AI */}
+                <MockupPreview
+                  imageUrl={selectedPrint.fullImage || toFull(selectedPrint.image)}
+                  className="mt-4"
+                />
               </div>
 
               {/* Options */}
