@@ -8,7 +8,7 @@ import {
   getArtistPrintPrice, artistPrinterTiers, artistFormats, isFormatAvailable, framePriceByFormat,
 } from '../../data/artists';
 
-function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {} }) {
+function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {}, onFrameColorChange }) {
   const { lang, tx } = useLang();
   const { addToCart } = useCart();
   const { artistSlug: loggedArtistSlug } = useUserRole();
@@ -28,6 +28,11 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {} }) {
   const [added, setAdded] = useState(false);
   const [notes, setNotes] = useState('');
   const prevPrintIdRef = useRef(selectedPrint?.id);
+
+  // Notifier le parent quand la couleur du cadre change (pour MockupPreview)
+  useEffect(() => {
+    if (onFrameColorChange) onFrameColorChange(withFrame ? frameColor : 'black');
+  }, [frameColor, withFrame, onFrameColorChange]);
 
   // Sauvegarder la config actuelle avant de changer de print
   useEffect(() => {

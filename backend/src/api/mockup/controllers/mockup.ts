@@ -1,15 +1,79 @@
 /**
  * Mockup Generator - Gemini AI
  * Genere un mockup realiste d'un print dans un cadre sur un mur
+ *
+ * - 6 scenes disponibles (salon, chambre, bureau, salle a manger, studio, zen)
+ * - 4 styles de decor aleatoires par scene
+ * - Cadre noir ou blanc
+ * - Rate limiting: 30 req/min par IP
  */
 
 const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent';
 
-const SCENE_PROMPTS: Record<string, string> = {
-  living_room: 'a cozy modern living room with a sofa, warm lighting, and decorative plants',
-  bedroom: 'a serene bedroom with soft natural light, a bed with white linens, and minimal decor',
-  office: 'a stylish home office with a wooden desk, bookshelves, and natural light from a window',
+// Descriptions de scenes avec variantes de decor
+const SCENE_PROMPTS: Record<string, string[]> = {
+  living_room: [
+    'a cozy modern living room with a deep velvet sofa, warm Edison bulb lighting, decorative plants, and a soft area rug on hardwood floors',
+    'a Scandinavian living room with a light grey linen sofa, minimalist wooden furniture, large windows with sheer curtains, and potted ferns',
+    'a mid-century modern living room with a teak credenza, an Eames lounge chair, warm ambient lighting, and a geometric rug',
+    'a bohemian living room with a tufted leather sofa, macrame wall hangings, layered textiles, warm candlelight, and trailing plants',
+  ],
+  bedroom: [
+    'a serene bedroom with soft natural light from large windows, a bed with white linen bedding, bedside wooden tables, and dried flower arrangements',
+    'a cozy bedroom with warm string lights, a plush grey duvet, floating wooden shelves, and a soft knit throw blanket',
+    'a minimalist Japanese-inspired bedroom with a low platform bed, tatami-style flooring, a paper lantern, and a small bonsai on the nightstand',
+    'a romantic Parisian bedroom with ornate molding, a wrought-iron bed frame, vintage nightstands, and soft golden light from a table lamp',
+  ],
+  office: [
+    'a stylish home office with a solid walnut desk, built-in bookshelves filled with books, a leather desk chair, and warm natural light from a window',
+    'a creative studio workspace with an industrial metal desk, exposed brick wall, vintage task lamp, and art supplies organized on shelves',
+    'a modern home office with a clean white desk, large monitor, indoor plants, and floor-to-ceiling windows overlooking a garden',
+    'a cozy writer\'s office with a dark wood desk, stacked books, a brass desk lamp, and rain visible through a nearby window',
+  ],
+  dining: [
+    'an elegant dining room with a long oak table, linen chairs, a statement chandelier, and fresh flowers in a ceramic vase',
+    'a rustic farmhouse dining room with a reclaimed wood table, woven placemats, terracotta pottery, and warm pendant lights',
+    'a modern dining space with a round marble table, velvet chairs, a gold pendant light, and a minimalist sideboard',
+    'a Mediterranean dining room with terracotta floors, a wooden table with blue ceramic dishes, olive branches in a vase, and warm afternoon light',
+  ],
+  studio: [
+    'a bright artist\'s studio with concrete floors, large skylights, paint-splattered easels, and canvases leaning against exposed brick walls',
+    'a photographer\'s studio with soft diffused lighting, neutral grey walls, a comfortable viewing couch, and a clean modern aesthetic',
+    'a music producer\'s studio with acoustic panels, warm LED strips, a mixing console, and vintage vinyl records on the wall',
+    'a designer\'s loft studio with high ceilings, a drafting table, mood boards, material samples, and industrial pendant lighting',
+  ],
+  zen: [
+    'a peaceful meditation room with bamboo flooring, a low wooden bench, incense smoke, a small indoor fountain, and soft warm light',
+    'a Japanese tea room with tatami mats, a tokonoma alcove, a hanging scroll, fresh ikebana, and natural wood beams',
+    'a yoga studio corner with a cork mat, a potted monstera plant, soft white curtains, natural wood walls, and diffused morning light',
+    'a tranquil spa-like bathroom alcove with smooth stone walls, a teak bench, candles, eucalyptus branches, and warm indirect lighting',
+  ],
 };
+
+// Rate limiting simple en memoire
+const rateLimitMap = new Map<string, number[]>();
+const RATE_LIMIT = 30; // requetes
+const RATE_WINDOW = 60 * 1000; // par minute
+
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const timestamps = rateLimitMap.get(ip) || [];
+  const recent = timestamps.filter(t => t > now - RATE_WINDOW);
+  rateLimitMap.set(ip, recent);
+  if (recent.length >= RATE_LIMIT) return false;
+  recent.push(now);
+  return true;
+}
+
+// Nettoyage periodique
+setInterval(() => {
+  const now = Date.now();
+  for (const [ip, timestamps] of rateLimitMap.entries()) {
+    const recent = timestamps.filter(t => t > now - RATE_WINDOW);
+    if (recent.length === 0) rateLimitMap.delete(ip);
+    else rateLimitMap.set(ip, recent);
+  }
+}, 5 * 60 * 1000);
 
 export default {
   async generate(ctx) {
@@ -25,17 +89,52 @@ export default {
       return ctx.badRequest('Mockup generation not configured');
     }
 
-    try {
-      // Telecharger l'image source
-      strapi.log.info(`Mockup generate: downloading ${imageUrl}`);
-      const imgRes = await fetch(imageUrl);
-      if (!imgRes.ok) throw new Error(`Failed to download image: ${imgRes.status}`);
-      const imgBuffer = Buffer.from(await imgRes.arrayBuffer());
-      const base64Image = imgBuffer.toString('base64');
-      const mimeType = imgRes.headers.get('content-type') || 'image/webp';
+    // Rate limiting
+    const clientIp = ctx.request.ip || 'unknown';
+    if (!checkRateLimit(clientIp)) {
+      ctx.status = 429;
+      ctx.body = { error: 'Too many requests. Try again in a minute.' };
+      return;
+    }
 
-      const sceneDesc = SCENE_PROMPTS[scene] || SCENE_PROMPTS.living_room;
-      const prompt = `Generate a photorealistic interior design photograph showing this artwork displayed in a ${frameColor} frame, hanging centered on a wall in ${sceneDesc}. The image should be in portrait orientation (9:16 ratio), zoomed in on the framed artwork. The frame should be the focal point, well-lit with warm natural lighting. The artwork must be clearly visible and undistorted inside the frame. Style: professional interior design photography, warm cozy ambiance, gallery quality. Do NOT add any text or watermark.`;
+    try {
+      let base64Image: string;
+      let mimeType: string;
+
+      // Supporter les data URI (depuis l'admin) et les URL normales (depuis le frontend)
+      if (imageUrl.startsWith('data:')) {
+        const match = imageUrl.match(/^data:(image\/[^;]+);base64,(.+)$/);
+        if (!match) return ctx.badRequest('Invalid data URI format');
+        mimeType = match[1];
+        base64Image = match[2];
+        strapi.log.info(`Mockup generate: using inline base64 image (${mimeType})`);
+      } else {
+        strapi.log.info(`Mockup generate: downloading ${imageUrl}`);
+        const imgRes = await fetch(imageUrl);
+        if (!imgRes.ok) throw new Error(`Failed to download image: ${imgRes.status}`);
+        const imgBuffer = Buffer.from(await imgRes.arrayBuffer());
+        base64Image = imgBuffer.toString('base64');
+        mimeType = imgRes.headers.get('content-type') || 'image/webp';
+      }
+
+      // Choisir un decor aleatoire pour la scene
+      const sceneVariants = SCENE_PROMPTS[scene] || SCENE_PROMPTS.living_room;
+      const sceneDesc = sceneVariants[Math.floor(Math.random() * sceneVariants.length)];
+
+      const frameDesc = frameColor === 'white'
+        ? 'an elegant thin white wooden frame with a subtle shadow'
+        : 'a sleek thin black wooden frame with a subtle shadow';
+
+      const prompt = [
+        `Generate a photorealistic interior design photograph showing this artwork displayed in ${frameDesc},`,
+        `hanging centered on a wall in ${sceneDesc}.`,
+        `The artwork MUST be clearly visible, sharp, and undistorted inside the frame - it is the focal point of the image.`,
+        `The frame should be well-lit with warm natural lighting creating soft shadows.`,
+        `Camera angle: slightly below eye level, as if a person is admiring the framed artwork.`,
+        `Style: professional interior design photography, warm cozy ambiance, gallery-quality presentation.`,
+        `Aspect ratio: portrait orientation (9:16).`,
+        `Do NOT add any text, watermark, logo, or signature. Do NOT alter the artwork itself.`,
+      ].join(' ');
 
       strapi.log.info(`Mockup generate: calling Gemini API, scene=${scene}, frame=${frameColor}`);
 
@@ -63,6 +162,11 @@ export default {
       if (!geminiRes.ok) {
         const errText = await geminiRes.text();
         strapi.log.error(`Gemini API error: ${geminiRes.status} ${errText}`);
+        if (geminiRes.status === 429) {
+          ctx.status = 429;
+          ctx.body = { error: 'Gemini API rate limit reached' };
+          return;
+        }
         return ctx.badRequest(`Gemini API error: ${geminiRes.status}`);
       }
 
@@ -73,11 +177,12 @@ export default {
       const imagePart = parts.find((p: any) => p.inlineData?.mimeType?.startsWith('image/'));
 
       if (!imagePart) {
-        strapi.log.warn('Gemini did not return an image', JSON.stringify(parts.map((p: any) => p.text || 'image').slice(0, 3)));
+        const textParts = parts.filter((p: any) => p.text).map((p: any) => p.text).join(' ');
+        strapi.log.warn('Gemini did not return an image. Text response:', textParts.slice(0, 200));
         return ctx.badRequest('Mockup generation failed - no image returned');
       }
 
-      strapi.log.info('Mockup generated successfully');
+      strapi.log.info(`Mockup generated successfully (scene=${scene}, frame=${frameColor})`);
 
       ctx.body = {
         success: true,
@@ -85,6 +190,7 @@ export default {
           mimeType: imagePart.inlineData.mimeType,
           data: imagePart.inlineData.data,
         },
+        meta: { scene, frameColor },
       };
     } catch (err: any) {
       strapi.log.error('Mockup generation error:', err?.message || err);

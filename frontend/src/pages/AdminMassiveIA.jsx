@@ -410,29 +410,105 @@ function StickersTab() {
 }
 
 // ---------------------------------------------------------------------------
-// Prints Tab
+// Prints Tab - Mockup AI via Strapi/Gemini
 // ---------------------------------------------------------------------------
+const ADMIN_SCENES = [
+  { value: 'living_room', label: 'Salon' },
+  { value: 'bedroom', label: 'Chambre' },
+  { value: 'office', label: 'Bureau' },
+  { value: 'dining', label: 'Salle a manger' },
+  { value: 'studio', label: 'Studio' },
+  { value: 'zen', label: 'Zen' },
+];
+
+const FRAME_COLORS = [
+  { value: 'black', label: 'Noir', color: '#000' },
+  { value: 'white', label: 'Blanc', color: '#fff' },
+];
+
 function PrintsTab() {
   const { tx } = useLang();
   const [file, setFile] = useState(null);
+  const [imageUrl, setImageUrl] = useState('');
   const [scene, setScene] = useState('living_room');
+  const [frameColor, setFrameColor] = useState('black');
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState(null);
+  const [mockupData, setMockupData] = useState(null);
   const [error, setError] = useState(null);
+  const [elapsed, setElapsed] = useState(0);
+  const timerRef = useRef(null);
+
+  // Timer pour afficher le temps ecoule
+  useEffect(() => {
+    if (loading) {
+      setElapsed(0);
+      timerRef.current = setInterval(() => setElapsed(e => e + 1), 1000);
+    } else {
+      clearInterval(timerRef.current);
+    }
+    return () => clearInterval(timerRef.current);
+  }, [loading]);
+
+  // Quand un fichier est uploade, creer un object URL temporaire
+  useEffect(() => {
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setImageUrl(url);
+      return () => URL.revokeObjectURL(url);
+    }
+    setImageUrl('');
+  }, [file]);
 
   const handleGenerate = async () => {
     if (!file) return;
     setLoading(true);
     setError(null);
-    setResult(null);
+    setMockupData(null);
+
     try {
-      const data = await generateMockup(file, scene);
-      setResult(data);
+      // Convertir le fichier en base64 et envoyer comme URL data
+      const reader = new FileReader();
+      const base64 = await new Promise((resolve, reject) => {
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      // L'admin utilise l'API Strapi directement
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:1337/api';
+      const res = await fetch(`${apiUrl}/mockup/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          imageUrl: base64,
+          scene,
+          frameColor,
+        }),
+      });
+
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+
+      if (data.success && data.image) {
+        setMockupData(`data:${data.image.mimeType};base64,${data.image.data}`);
+      } else {
+        throw new Error('No image returned');
+      }
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleDownload = () => {
+    if (!mockupData) return;
+    const link = document.createElement('a');
+    link.href = mockupData;
+    link.download = `mockup-${scene}-${frameColor}-${Date.now()}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (
@@ -442,24 +518,56 @@ function PrintsTab() {
           accept="image/*"
           file={file}
           onFile={setFile}
-          onClear={() => { setFile(null); setResult(null); }}
-          label="Glisser une image d'affiche ici"
+          onClear={() => { setFile(null); setMockupData(null); setError(null); }}
+          label="Glisser une image d'oeuvre ici"
         />
 
-        <div className="rounded-xl bg-black/20 p-4 space-y-3">
-          <h3 className="text-xs font-semibold text-grey-muted uppercase tracking-wider">Scene</h3>
-          <div className="flex gap-2">
-            {SCENES.map((s) => (
-              <button
-                key={s.value}
-                onClick={() => setScene(s.value)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                  scene === s.value ? 'bg-accent text-white' : 'bg-black/20 text-grey-muted hover:text-heading'
-                }`}
-              >
-                {tx({ fr: s.fr, en: s.en, es: s.es })}
-              </button>
-            ))}
+        <div className="rounded-xl bg-black/20 p-4 space-y-4">
+          {/* Scene */}
+          <div>
+            <h3 className="text-xs font-semibold text-grey-muted uppercase tracking-wider mb-2">Scene</h3>
+            <div className="flex flex-wrap gap-2">
+              {ADMIN_SCENES.map((s) => (
+                <button
+                  key={s.value}
+                  onClick={() => setScene(s.value)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                    scene === s.value ? 'bg-accent text-white' : 'bg-black/20 text-grey-muted hover:text-heading'
+                  }`}
+                >
+                  {s.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Frame color */}
+          <div>
+            <h3 className="text-xs font-semibold text-grey-muted uppercase tracking-wider mb-2">Cadre</h3>
+            <div className="flex gap-2">
+              {FRAME_COLORS.map((f) => (
+                <button
+                  key={f.value}
+                  onClick={() => setFrameColor(f.value)}
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                    frameColor === f.value ? 'bg-accent text-white' : 'bg-black/20 text-grey-muted hover:text-heading'
+                  }`}
+                >
+                  <span
+                    className="w-3 h-3 rounded-full border border-grey-muted/30"
+                    style={{ backgroundColor: f.color }}
+                  />
+                  {f.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Info */}
+          <div className="text-[10px] text-grey-muted space-y-1">
+            <p>API: Gemini 2.0 Flash (via Strapi)</p>
+            <p>Decor aleatoire parmi 4 variantes par scene</p>
+            <p>Rate limit: 30 req/min, 5/heure cote client</p>
           </div>
         </div>
 
@@ -468,36 +576,74 @@ function PrintsTab() {
           disabled={!file || loading}
           className="w-full py-3 rounded-xl bg-accent text-white font-semibold text-sm disabled:opacity-40 transition-opacity flex items-center justify-center gap-2"
         >
-          {loading ? <Loader2 size={16} className="animate-spin" /> : <Image size={16} />}
-          {loading ? 'Generation...' : 'Generer le mockup'}
+          {loading ? (
+            <>
+              <Loader2 size={16} className="animate-spin" />
+              Generation... ({elapsed}s)
+            </>
+          ) : (
+            <>
+              <Image size={16} />
+              Generer le mockup
+            </>
+          )}
         </button>
       </div>
 
+      {/* Resultat */}
       <div className="rounded-xl bg-black/20 p-4 flex items-center justify-center min-h-[300px]">
         {error && (
-          <div className="flex items-center gap-2 text-red-400 text-sm">
-            <AlertCircle size={16} />
-            {error}
+          <div className="flex flex-col items-center gap-3">
+            <div className="flex items-center gap-2 text-red-400 text-sm">
+              <AlertCircle size={16} />
+              {error}
+            </div>
+            <button
+              onClick={handleGenerate}
+              disabled={!file}
+              className="text-accent text-xs hover:underline"
+            >
+              Reessayer
+            </button>
           </div>
         )}
-        {result ? (
-          <div className="flex flex-col items-center gap-4">
+        {mockupData ? (
+          <div className="flex flex-col items-center gap-4 w-full">
             <img
-              src={`${AI_BASE_URL}${result.output_url}`}
+              src={mockupData}
               alt="mockup"
-              className="max-h-64 rounded-lg object-contain"
+              className="max-h-[500px] rounded-lg object-contain w-full"
             />
-            <a
-              href={`${AI_BASE_URL}${result.output_url}`}
-              download
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-accent/20 text-accent text-sm font-semibold hover:bg-accent/30 transition-colors"
-            >
-              <Download size={14} />
-              Telecharger
-            </a>
+            <div className="flex gap-3">
+              <button
+                onClick={handleDownload}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-accent/20 text-accent text-sm font-semibold hover:bg-accent/30 transition-colors"
+              >
+                <Download size={14} />
+                Telecharger
+              </button>
+              <button
+                onClick={handleGenerate}
+                disabled={!file || loading}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 text-heading text-sm hover:bg-white/15 transition-colors"
+              >
+                <Image size={14} />
+                Regenerer
+              </button>
+            </div>
+            <p className="text-grey-muted text-[10px]">
+              Scene: {scene} | Cadre: {frameColor} | Genere en {elapsed}s
+            </p>
           </div>
-        ) : !error && (
+        ) : !error && !loading && (
           <p className="text-grey-muted text-sm">Le resultat apparaitra ici</p>
+        )}
+        {loading && !mockupData && !error && (
+          <div className="flex flex-col items-center gap-3">
+            <Loader2 size={32} className="animate-spin text-accent" />
+            <p className="text-heading text-sm">{elapsed}s...</p>
+            <p className="text-grey-muted text-xs">Gemini genere votre mockup</p>
+          </div>
         )}
       </div>
     </div>

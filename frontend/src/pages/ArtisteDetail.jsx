@@ -192,6 +192,7 @@ function ArtisteDetail({ subdomainSlug }) {
     return artist.heroImage;
   }, [heroOverrideId, artist]);
   const [selectedPrint, setSelectedPrint] = useState(null);
+  const [printFrameColor, setPrintFrameColor] = useState('black');
   const [galleryView, setGalleryView] = useState('grid');
   const [selectedSticker, setSelectedSticker] = useState(null);
   const [openFaq, setOpenFaq] = useState(null);
@@ -853,19 +854,22 @@ function ArtisteDetail({ subdomainSlug }) {
                     <ChevronRight size={20} />
                   </button>
                 )}
-                {/* Mockup AI */}
-                <MockupPreview
-                  imageUrl={selectedPrint.fullImage || toFull(selectedPrint.image)}
-                  className="mt-4"
-                />
               </div>
 
-              {/* Options */}
-              <div className="p-4 sm:p-6 rounded-2xl transition-colors duration-300 highlight-shadow lg:sticky lg:top-24 self-start">
-                <ConfiguratorArtistPrint
-                  artist={artist}
-                  selectedPrint={selectedPrint}
-                  savedConfigs={printConfigsRef.current}
+              {/* Options + Mockup AI */}
+              <div className="space-y-4 lg:sticky lg:top-24 self-start">
+                <div className="p-4 sm:p-6 rounded-2xl transition-colors duration-300 highlight-shadow">
+                  <ConfiguratorArtistPrint
+                    artist={artist}
+                    selectedPrint={selectedPrint}
+                    savedConfigs={printConfigsRef.current}
+                    onFrameColorChange={setPrintFrameColor}
+                  />
+                </div>
+                {/* Mockup AI - sous le configurateur */}
+                <MockupPreview
+                  imageUrl={selectedPrint.fullImage || toFull(selectedPrint.image)}
+                  frameColor={printFrameColor}
                 />
               </div>
             </div>
