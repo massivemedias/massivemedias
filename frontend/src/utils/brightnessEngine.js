@@ -109,8 +109,8 @@ function darkPalette(base, darker, darkest, accent, hoverBg, hoverText, logoMain
 const PALETTE_0 = {
   ...darkPalette(
     '#2C0056', '#1E003B', '#100020',
-    '#FF52A0', '#FFCC02', '#1E0E30',
-    '#CC2C91', '#FFBF00'
+    '#F00098', '#FFCC02', '#1E0E30',
+    '#F00098', '#FFBF00'
   ),
   '--active-tab-bg': '#a21895',
 };
@@ -334,7 +334,7 @@ export const THEME_COLORS = [
 // Couleur accent par theme (pour le slider dots)
 // Ordre: Massive, Bleu Nuit, Ocean, Vert Foret, Bordeaux, Espresso, PALETTE_10, Charbon, Ardoise, Creme, Blanc
 export const THEME_ACCENTS = [
-  '#FF52A0', '#3B9FFF', '#00BCD4', '#00CC88', '#FF4080',
+  '#F00098', '#3B9FFF', '#00BCD4', '#00CC88', '#FF4080',
   '#D4A574', '#C4725A', '#FF6B35', '#38B2AC', '#C07830', '#444444'
 ];
 

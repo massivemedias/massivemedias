@@ -12,7 +12,7 @@ import { useLang } from '../i18n/LanguageContext';
 import { getArtistAnalytics } from '../services/adminService';
 
 // Lire les couleurs CSS du theme actif
-function getThemeColor(varName, fallback = '#FF52A0') {
+function getThemeColor(varName, fallback = '#F00098') {
   if (typeof window === 'undefined') return fallback;
   return getComputedStyle(document.documentElement).getPropertyValue(varName).trim() || fallback;
 }
@@ -71,7 +71,7 @@ export default function ArtistStats({ artistSlug }) {
   }, [artistSlug, period]);
 
   const colors = useMemo(() => ({
-    accent: getThemeColor('--accent-color', '#FF52A0'),
+    accent: getThemeColor('--accent-color', '#F00098'),
     green: '#4ade80',
     blue: '#60a5fa',
     purple: '#c084fc',

@@ -7,14 +7,14 @@ button, [role="button"], a, label[class*="cursor"], select, input[type="checkbox
 
 /* =============================================
    MASSIVE MEDIAS - Design Tokens (Tailwind v4)
-   Palette : #FF52A0 (magenta), #FFCC00 (gold),
+   Palette : #F00098 (magenta), #FFCC00 (gold),
              #3D0079 (violet), #200048 (sombre)
    ============================================= */
 
 @theme {
   /* Brand colors (fixed - never change with theme) */
-  --color-magenta: #FF52A0;
-  --color-accent: var(--accent-color, #FF52A0);
+  --color-magenta: #F00098;
+  --color-accent: var(--accent-color, #F00098);
   --color-gold: #FFCC00;
   --color-purple-bright: #8100D1;
   --color-electric-purple: #A348FE;
@@ -144,7 +144,7 @@ button, [role="button"], a, label[class*="cursor"], select, input[type="checkbox
   --table-hover: rgba(255, 82, 160, 0.05);
   --scrollbar-track: #3A0080;
   --scrollbar-thumb: #6A20C0;
-  --scrollbar-thumb-hover: #FF52A0;
+  --scrollbar-thumb-hover: #F00098;
   --card-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
   --pattern-dot: rgba(255, 82, 160, 0.12);
   --overlay-cta: rgba(65, 0, 129, 0.92);
@@ -192,7 +192,7 @@ button, [role="button"], a, label[class*="cursor"], select, input[type="checkbox
 }
 
 [data-theme="vibrant"] .price-table th {
-  border-bottom: 2px solid var(--accent-color, #FF52A0);
+  border-bottom: 2px solid var(--accent-color, #F00098);
 }
 
 [data-theme="vibrant"] .price-table tr:hover td.text-gradient {
@@ -277,7 +277,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 ::selection {
-  background: var(--accent-color, #FF52A0);
+  background: var(--accent-color, #F00098);
   color: #FFFFFF;
 }
 
@@ -305,7 +305,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .btn-primary:hover {
   transform: scale(1.04);
-  background: var(--btn-primary-hover-bg, #FF52A0);
+  background: var(--btn-primary-hover-bg, #F00098);
   color: var(--btn-primary-hover-text, #FFFFFF);
   box-shadow: 0 4px 12px var(--btn-primary-shadow, rgba(166, 0, 255, 0.3));
 }
@@ -355,9 +355,9 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .filter-btn-active {
-  background: var(--filter-active-bg, #FF52A0);
+  background: var(--filter-active-bg, #F00098);
   color: #FFFFFF;
-  border-color: var(--filter-active-bg, #FF52A0);
+  border-color: var(--filter-active-bg, #F00098);
 }
 
 .filter-btn-active:hover {
@@ -384,7 +384,7 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Texte accent */
 .text-gradient {
-  color: var(--accent-color, #FF52A0);
+  color: var(--accent-color, #F00098);
 }
 
 /* Section container */
@@ -412,7 +412,7 @@ h1, h2, h3, h4, h5, h6 {
 
   .input-field:focus {
     outline: none;
-    box-shadow: 0 0 0 2px var(--accent-color, #FF52A0);
+    box-shadow: 0 0 0 2px var(--accent-color, #F00098);
   }
 
   .input-field::placeholder {
@@ -528,7 +528,7 @@ select.input-field option {
 }
 
 .price-table tr:hover td.text-gradient {
-  color: var(--accent-color, #FF52A0);
+  color: var(--accent-color, #F00098);
 }
 
 /* Background classes */
@@ -590,7 +590,7 @@ select.input-field option {
 
 /* Announcement bar */
 .announcement-bar {
-  background: var(--accent-color, #FF52A0);
+  background: var(--accent-color, #F00098);
   color: white;
 }
 
@@ -611,7 +611,7 @@ select.input-field option {
 }
 
 .mega-menu-cta:hover {
-  background: var(--accent-color, #FF52A0);
+  background: var(--accent-color, #F00098);
   color: white;
 }
 
@@ -666,7 +666,7 @@ select.input-field option {
 
 .theme-select:focus {
   outline: none;
-  border-color: var(--accent-color, #FF52A0);
+  border-color: var(--accent-color, #F00098);
 }
 
 .theme-select option {
@@ -832,7 +832,7 @@ select.input-field option {
 /* Glass bordered with top accent */
 .glass-accent-top {
   background: var(--bg-glass);
-  border-top: 2px solid var(--accent-color, #FF52A0);
+  border-top: 2px solid var(--accent-color, #F00098);
 }
 
 /* CTA text bg with border */
@@ -927,7 +927,7 @@ select.input-field option {
 /* Checkbox active */
 .checkbox-active {
   background: var(--highlight-bg);
-  border-color: var(--accent-color, #FF52A0);
+  border-color: var(--accent-color, #F00098);
 }
 
 /* Category filter active (dark bg) */
@@ -942,7 +942,7 @@ select.input-field option {
 }
 
 [data-theme="vibrant"] .filter-active {
-  background: var(--filter-active-bg, #FF52A0);
+  background: var(--filter-active-bg, #F00098);
   color: #FFFFFF;
 }
 
@@ -979,7 +979,7 @@ select.input-field option {
   padding: 0.5rem;
   border-radius: 9999px;
   color: #FFFFFF;
-  background: var(--accent-color, #FF52A0);
+  background: var(--accent-color, #F00098);
   opacity: 0.75;
   transition: opacity 0.3s, transform 0.3s;
 }
@@ -987,7 +987,7 @@ select.input-field option {
 .social-icon-btn:hover {
   opacity: 1;
   transform: scale(1.1);
-  background: var(--accent-color, #FF52A0);
+  background: var(--accent-color, #F00098);
 }
 
 /* Footer text - always on dark bg */
@@ -1041,12 +1041,12 @@ select.input-field option {
   font-weight: 700;
   font-size: 0.875rem;
   color: #FFFFFF;
-  background: var(--accent-color, #FF52A0);
+  background: var(--accent-color, #F00098);
   flex-shrink: 0;
 }
 
 [data-theme="vibrant"] .process-step-number {
-  background: var(--accent-color, #FF52A0);
+  background: var(--accent-color, #F00098);
 }
 
 /* Trust bar separateurs */

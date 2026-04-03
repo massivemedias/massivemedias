@@ -37,7 +37,7 @@ function downloadCSV(filename, csvContent) {
 }
 
 // Helper: lire les couleurs CSS du theme actif
-function getThemeColor(varName, fallback = '#FF52A0') {
+function getThemeColor(varName, fallback = '#F00098') {
   if (typeof window === 'undefined') return fallback;
   return getComputedStyle(document.documentElement).getPropertyValue(varName).trim() || fallback;
 }
@@ -88,7 +88,7 @@ function AdminStats() {
 
   // Couleurs theme (relues a chaque render pour suivre les changements de theme)
   const colors = useMemo(() => ({
-    accent: getThemeColor('--accent-color', '#FF52A0'),
+    accent: getThemeColor('--accent-color', '#F00098'),
     green: '#4ade80',
     red: '#f87171',
     purple: '#c084fc',

@@ -423,7 +423,7 @@ function BoutiqueProductLayout({
                   className="rounded-xl overflow-hidden transition-all"
                   style={{
                     border: '1px solid var(--bg-card-border)',
-                    borderLeft: openFaq === i ? '3px solid var(--accent-color, #FF52A0)' : '1px solid var(--bg-card-border)',
+                    borderLeft: openFaq === i ? '3px solid var(--accent-color, #F00098)' : '1px solid var(--bg-card-border)',
                   }}
                 >
                   <button

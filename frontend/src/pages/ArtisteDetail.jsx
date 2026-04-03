@@ -928,7 +928,7 @@ function ArtisteDetail({ subdomainSlug }) {
                 viewport={{ once: true }}
                 className="p-6 rounded-xl relative transition-colors duration-300 glass-shadow"
               >
-                <div className="absolute -top-3 -left-1 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold text-white" style={{ background: theme === 'light' ? '#1A1A1A' : `linear-gradient(135deg, var(--logo-main, #8100D1), var(--accent-color, #FF52A0))` }}>
+                <div className="absolute -top-3 -left-1 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold text-white" style={{ background: theme === 'light' ? '#1A1A1A' : `linear-gradient(135deg, var(--logo-main, #8100D1), var(--accent-color, #F00098))` }}>
                   {item.step}
                 </div>
                 <h3 className="text-heading font-heading font-bold text-lg mt-2 mb-2">
