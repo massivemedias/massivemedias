@@ -108,8 +108,8 @@ function CreateItemForm({ onClose, onCreated, tx }) {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-lg rounded-2xl shadow-2xl p-6 space-y-4 border border-white/10"
-        style={{ background: 'var(--bg-secondary, #1a1030)' }}
+        className="w-full max-w-lg rounded-2xl shadow-2xl p-6 space-y-4 border border-white/15"
+        style={{ background: '#2a2040' }}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">
