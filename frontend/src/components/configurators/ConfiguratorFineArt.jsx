@@ -6,6 +6,7 @@ import { useCart } from '../../contexts/CartContext';
 import { useLang } from '../../i18n/LanguageContext';
 import { useProduct } from '../../hooks/useProducts';
 import FileUpload from '../FileUpload';
+import MockupPreview from '../MockupPreview';
 import {
   fineArtPrinterTiers as defaultTiers, fineArtFormats as defaultFormats, fineArtFramePrice as defaultFramePrice,
   fineArtFramePriceByFormat, getFineArtPrice as defaultGetPrice, fineArtImages,
@@ -269,6 +270,13 @@ function ConfiguratorFineArt() {
               {withFrame && ` · ${tx({ fr: 'Cadre', en: 'Frame', es: 'Marco' })} ${frameColor === 'black' ? tx({ fr: 'noir', en: 'black', es: 'negro' }) : tx({ fr: 'blanc', en: 'white', es: 'blanco' })}`}
             </span>
           </div>
+          {/* Mockup AI - visible quand une image est uploadee */}
+          {previewImage && (
+            <MockupPreview
+              imageUrl={previewImage}
+              frameColor={withFrame ? frameColor : 'black'}
+            />
+          )}
         </div>
       </div>
 
