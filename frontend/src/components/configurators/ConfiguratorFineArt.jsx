@@ -7,7 +7,6 @@ import { useLang } from '../../i18n/LanguageContext';
 import { useProduct } from '../../hooks/useProducts';
 import FileUpload from '../FileUpload';
 import InstantMockup from '../InstantMockup';
-import MockupPreview from '../MockupPreview';
 import {
   fineArtPrinterTiers as defaultTiers, fineArtFormats as defaultFormats, fineArtFramePrice as defaultFramePrice,
   fineArtFramePriceByFormat, getFineArtPrice as defaultGetPrice, fineArtImages,
@@ -273,17 +272,10 @@ function ConfiguratorFineArt() {
           </div>
           {/* Mockup instantane - visible des qu'une image est uploadee */}
           {previewImage && (
-            <>
-              <InstantMockup
-                imageUrl={previewImage}
-                frameColor={withFrame ? frameColor : 'black'}
-              />
-              {/* Option AI photoréaliste */}
-              <MockupPreview
-                imageUrl={previewImage}
-                frameColor={withFrame ? frameColor : 'black'}
-              />
-            </>
+            <InstantMockup
+              imageUrl={previewImage}
+              frameColor={withFrame ? frameColor : 'black'}
+            />
           )}
         </div>
       </div>
