@@ -1,5 +1,6 @@
 /**
  * Script one-shot: genere 6 photos de pieces via Gemini et les sauvegarde en WebP.
+ * Les photos montrent un mur vide avec des meubles en bas - le cadre sera superpose en CSS.
  * Usage: GEMINI_API_KEY=xxx node scripts/generate-room-backgrounds.mjs
  */
 import fs from 'fs';
@@ -11,30 +12,77 @@ if (!API_KEY) { console.error('GEMINI_API_KEY required'); process.exit(1); }
 const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${API_KEY}`;
 const OUT_DIR = path.resolve('frontend/public/images/mockups');
 
+// Chaque prompt est concu pour:
+// - Format paysage 16:10
+// - Un grand mur vide dans les 2/3 superieurs
+// - Meubles seulement dans le 1/3 inferieur
+// - Eclairage chaud naturel, photo pro
 const ROOMS = [
   {
     id: 'living_room',
-    prompt: 'Generate a photorealistic interior photograph of a cozy modern living room. Show a large empty beige/cream colored wall as the main focus. Below the wall, show a stylish grey sofa with throw pillows, a small side table with a plant, and warm natural lighting from a window on the left. Hardwood floors. The wall must be mostly empty and clean - no artwork, no frames, no decorations on the main wall. Camera angle: straight on, eye level. Style: professional interior design photography, warm ambient lighting. Aspect ratio: 16:10 landscape.',
+    prompt: `Professional interior photography of a modern living room, shot at eye level straight-on.
+COMPOSITION: The image is divided roughly into upper 2/3 and lower 1/3.
+UPPER 2/3: A large, clean, empty wall in warm beige/cream tone. The wall is completely bare - absolutely no art, frames, shelves, or decorations on it. Subtle wall texture visible.
+LOWER 1/3: A comfortable dark grey velvet sofa with 2 throw pillows (one mustard, one white), a small wooden side table with a potted monstera plant. Warm hardwood flooring.
+LIGHTING: Warm natural light coming from the left side, creating a soft gradient on the wall. Golden hour feel.
+STYLE: High-end interior design magazine photography. 4K quality, sharp, professional color grading.
+ASPECT RATIO: Wide landscape format, 16:10 ratio.
+IMPORTANT: The wall must be pristinely empty - this is crucial as artwork will be digitally added later.`,
   },
   {
     id: 'bedroom',
-    prompt: 'Generate a photorealistic interior photograph of a serene modern bedroom. Show a large empty soft grey/lavender wall as the main focus. Below, show a bed with white linen bedding and a padded headboard, bedside tables with small lamps. Soft natural light from a window. The wall must be mostly empty and clean - no artwork, no frames on the main wall. Camera angle: straight on, eye level. Style: professional interior design photography, soft warm lighting. Aspect ratio: 16:10 landscape.',
+    prompt: `Professional interior photography of a serene modern bedroom, shot at eye level straight-on.
+COMPOSITION: The image is divided roughly into upper 2/3 and lower 1/3.
+UPPER 2/3: A large, clean, empty wall in soft warm grey/lavender tone. The wall is completely bare - absolutely no art, frames, shelves, or decorations. Subtle paint texture.
+LOWER 1/3: A bed with upholstered headboard in light fabric, crisp white linen bedding, two white pillows, a small bedside table with a table lamp emitting warm light. Light wooden flooring.
+LIGHTING: Soft, diffused natural light from a window to the right. Warm, peaceful atmosphere.
+STYLE: High-end interior design magazine photography. 4K quality, sharp, professional.
+ASPECT RATIO: Wide landscape format, 16:10 ratio.
+IMPORTANT: The wall must be pristinely empty - this is crucial as artwork will be digitally added later.`,
   },
   {
     id: 'office',
-    prompt: 'Generate a photorealistic interior photograph of a stylish home office. Show a large empty light grey wall as the main focus. Below, show a wooden desk with a monitor, a comfortable chair, and a small bookshelf to the side. Natural light from a window. The wall must be mostly empty and clean - no artwork, no frames on the main wall. Camera angle: straight on, eye level. Style: professional interior design photography, clean natural lighting. Aspect ratio: 16:10 landscape.',
+    prompt: `Professional interior photography of a stylish home office, shot at eye level straight-on.
+COMPOSITION: The image is divided roughly into upper 2/3 and lower 1/3.
+UPPER 2/3: A large, clean, empty wall in light warm grey tone. The wall is completely bare - absolutely no art, frames, shelves, or decorations.
+LOWER 1/3: A solid walnut wooden desk with a modern monitor, a leather desk chair, a small plant, and a brass desk lamp. Light hardwood or concrete flooring.
+LIGHTING: Clean natural light from a window to the left. Professional, focused atmosphere.
+STYLE: High-end interior design magazine photography. 4K quality, sharp, professional.
+ASPECT RATIO: Wide landscape format, 16:10 ratio.
+IMPORTANT: The wall must be pristinely empty - this is crucial as artwork will be digitally added later.`,
   },
   {
     id: 'dining',
-    prompt: 'Generate a photorealistic interior photograph of an elegant dining room. Show a large empty warm cream/ivory wall as the main focus. Below, show a wooden dining table with chairs, a vase with flowers on the table, and a pendant light above. The wall must be mostly empty and clean - no artwork, no frames on the main wall. Camera angle: straight on, eye level. Style: professional interior design photography, warm golden hour lighting. Aspect ratio: 16:10 landscape.',
+    prompt: `Professional interior photography of an elegant dining room, shot at eye level straight-on.
+COMPOSITION: The image is divided roughly into upper 2/3 and lower 1/3.
+UPPER 2/3: A large, clean, empty wall in warm cream/ivory tone. The wall is completely bare - absolutely no art, frames, shelves, or decorations. Subtle texture.
+LOWER 1/3: An oak dining table with two visible chairs, a ceramic vase with fresh eucalyptus branches on the table, a pendant light hanging from above visible at top of frame. Herringbone wooden flooring.
+LIGHTING: Warm golden afternoon light from the right. Elegant, inviting atmosphere.
+STYLE: High-end interior design magazine photography. 4K quality, sharp, professional.
+ASPECT RATIO: Wide landscape format, 16:10 ratio.
+IMPORTANT: The wall must be pristinely empty - this is crucial as artwork will be digitally added later.`,
   },
   {
     id: 'studio',
-    prompt: 'Generate a photorealistic interior photograph of a bright creative artist studio. Show a large empty white/off-white wall as the main focus. Below, show art supplies, an easel to the side, paint tubes, and concrete or wooden floors. Large skylights providing bright natural light. The wall must be mostly empty and clean - no artwork hanging, no frames on the main wall. Camera angle: straight on, eye level. Style: professional interior design photography, bright diffused lighting. Aspect ratio: 16:10 landscape.',
+    prompt: `Professional interior photography of a bright artist's studio, shot at eye level straight-on.
+COMPOSITION: The image is divided roughly into upper 2/3 and lower 1/3.
+UPPER 2/3: A large, clean, empty white/off-white wall. The wall is completely bare - absolutely no art, frames, or decorations hanging on it.
+LOWER 1/3: A wooden easel to the right side, some paint tubes and brushes on a small table, a wooden stool. Polished concrete flooring. Bright, creative space.
+LIGHTING: Bright, diffused natural light from large windows or skylights. Airy and creative.
+STYLE: High-end interior design magazine photography. 4K quality, sharp, professional.
+ASPECT RATIO: Wide landscape format, 16:10 ratio.
+IMPORTANT: The wall must be pristinely empty - this is crucial as artwork will be digitally added later.`,
   },
   {
     id: 'zen',
-    prompt: 'Generate a photorealistic interior photograph of a peaceful zen/meditation room. Show a large empty warm beige/sand wall as the main focus. Below, show a low wooden bench or platform, a small potted plant (bamboo or bonsai), and perhaps a candle. Natural materials, minimalist. The wall must be mostly empty and clean - no artwork, no frames on the main wall. Camera angle: straight on, eye level. Style: professional interior design photography, soft peaceful natural lighting. Aspect ratio: 16:10 landscape.',
+    prompt: `Professional interior photography of a peaceful zen meditation room, shot at eye level straight-on.
+COMPOSITION: The image is divided roughly into upper 2/3 and lower 1/3.
+UPPER 2/3: A large, clean, empty wall in warm sand/natural beige tone. The wall is completely bare - absolutely no art, frames, or decorations. Natural plaster texture.
+LOWER 1/3: A low wooden bench or platform, a small bonsai tree in a ceramic pot, two candles. Natural bamboo or light wood flooring. Minimal and peaceful.
+LIGHTING: Soft, peaceful natural light. Zen and calming atmosphere.
+STYLE: High-end interior design magazine photography. 4K quality, sharp, professional.
+ASPECT RATIO: Wide landscape format, 16:10 ratio.
+IMPORTANT: The wall must be pristinely empty - this is crucial as artwork will be digitally added later.`,
   },
 ];
 
@@ -51,7 +99,7 @@ async function generateRoom(room) {
 
   if (!res.ok) {
     const err = await res.text();
-    console.error(`  ERROR ${res.status}: ${err.slice(0, 200)}`);
+    console.error(`  ERROR ${res.status}: ${err.slice(0, 300)}`);
     return false;
   }
 
@@ -65,8 +113,7 @@ async function generateRoom(room) {
   }
 
   const buffer = Buffer.from(imgPart.inlineData.data, 'base64');
-  const ext = imgPart.inlineData.mimeType.includes('png') ? 'png' : 'webp';
-  const outPath = path.join(OUT_DIR, `${room.id}.${ext}`);
+  const outPath = path.join(OUT_DIR, `${room.id}.png`);
   fs.writeFileSync(outPath, buffer);
   console.log(`  Saved ${outPath} (${Math.round(buffer.length / 1024)}KB)`);
   return true;
@@ -76,11 +123,12 @@ async function main() {
   fs.mkdirSync(OUT_DIR, { recursive: true });
   for (const room of ROOMS) {
     const ok = await generateRoom(room);
-    if (!ok) console.log(`  Skipping ${room.id}, will retry later`);
-    // Pause entre les appels pour eviter le rate limit
-    await new Promise(r => setTimeout(r, 3000));
+    if (!ok) console.log(`  Skipping ${room.id}`);
+    // Pause entre les appels
+    await new Promise(r => setTimeout(r, 4000));
   }
-  console.log('Done!');
+  console.log('\nDone! Now convert to webp:');
+  console.log('cd frontend/public/images/mockups && for f in *.png; do magick "$f" -resize 1400x875 -quality 82 "${f%.png}.webp" && rm "$f"; done');
 }
 
 main().catch(console.error);

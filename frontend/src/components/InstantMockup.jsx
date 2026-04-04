@@ -1,26 +1,28 @@
 /**
  * InstantMockup - Apercu photo d'une image dans un cadre sur un mur
  *
- * Utilise des photos de pieces pre-generees (Gemini, stockees en static)
- * et superpose l'image du client dans un cadre CSS par-dessus.
- * Zero API call, instantane (< 1 seconde), 6 scenes.
+ * Photos de pieces pre-generees (Gemini, stockees en static WebP).
+ * L'image du client est superposee dans un cadre CSS avec:
+ * - Passe-partout realiste
+ * - Ombre portee sur le mur
+ * - Leger effet perspective pour l'integration
+ * - Position ajustee par scene (pas sur les meubles!)
  *
- * Props:
- *   - imageUrl: URL de l'image (uploadee ou artiste)
- *   - frameColor: 'black' | 'white'
- *   - className: classes CSS additionnelles
+ * Zero API, instantane, 6 scenes, lightbox plein ecran.
  */
 import { useState, useEffect } from 'react';
 import { X, Sofa, BedDouble, Briefcase, UtensilsCrossed, BookOpen, Flower2 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 
+// Position du cadre adaptee a chaque scene (en % depuis le haut)
+// Chaque photo a le mur dans les ~60% superieurs, meubles en bas
 const SCENES = [
-  { id: 'living_room', icon: Sofa, fr: 'Salon', en: 'Living Room', es: 'Salon', img: '/images/mockups/living_room.webp' },
-  { id: 'bedroom', icon: BedDouble, fr: 'Chambre', en: 'Bedroom', es: 'Dormitorio', img: '/images/mockups/bedroom.webp' },
-  { id: 'office', icon: Briefcase, fr: 'Bureau', en: 'Office', es: 'Oficina', img: '/images/mockups/office.webp' },
-  { id: 'dining', icon: UtensilsCrossed, fr: 'Salle a manger', en: 'Dining Room', es: 'Comedor', img: '/images/mockups/dining.webp' },
-  { id: 'studio', icon: BookOpen, fr: 'Studio', en: 'Studio', es: 'Estudio', img: '/images/mockups/studio.webp' },
-  { id: 'zen', icon: Flower2, fr: 'Zen', en: 'Zen', es: 'Zen', img: '/images/mockups/zen.webp' },
+  { id: 'living_room', icon: Sofa, fr: 'Salon', en: 'Living Room', es: 'Salon', img: '/images/mockups/living_room.webp', frameTop: '10%' },
+  { id: 'bedroom', icon: BedDouble, fr: 'Chambre', en: 'Bedroom', es: 'Dormitorio', img: '/images/mockups/bedroom.webp', frameTop: '8%' },
+  { id: 'office', icon: Briefcase, fr: 'Bureau', en: 'Office', es: 'Oficina', img: '/images/mockups/office.webp', frameTop: '10%' },
+  { id: 'dining', icon: UtensilsCrossed, fr: 'Salle a manger', en: 'Dining Room', es: 'Comedor', img: '/images/mockups/dining.webp', frameTop: '8%' },
+  { id: 'studio', icon: BookOpen, fr: 'Studio', en: 'Studio', es: 'Estudio', img: '/images/mockups/studio.webp', frameTop: '10%' },
+  { id: 'zen', icon: Flower2, fr: 'Zen', en: 'Zen', es: 'Zen', img: '/images/mockups/zen.webp', frameTop: '10%' },
 ];
 
 function InstantMockup({ imageUrl, frameColor = 'black', className = '' }) {
@@ -47,19 +49,18 @@ function InstantMockup({ imageUrl, frameColor = 'black', className = '' }) {
   const scene = SCENES[sceneIdx];
   const isBlack = frameColor === 'black';
 
-  // Cadre CSS superpose sur la photo de la piece
   const renderMockup = (isLarge = false) => {
-    const frameW = isLandscape ? (isLarge ? '42%' : '44%') : (isLarge ? '28%' : '30%');
-    const borderPx = isLarge ? 8 : 5;
-    const matPx = isLarge ? 16 : 10;
+    const frameWidth = isLandscape ? (isLarge ? '38%' : '40%') : (isLarge ? '24%' : '26%');
+    const borderPx = isLarge ? 7 : 4;
+    const matPx = isLarge ? 14 : 8;
 
     return (
       <div
-        className={`relative overflow-hidden ${isLarge ? 'rounded-lg' : 'rounded-xl cursor-pointer'}`}
+        className={`relative overflow-hidden select-none ${isLarge ? 'rounded-lg' : 'rounded-xl cursor-pointer'}`}
         style={{ aspectRatio: '16/10' }}
         onClick={!isLarge ? () => setLightboxOpen(true) : undefined}
       >
-        {/* Photo de la piece en background */}
+        {/* Photo de la piece */}
         <img
           src={scene.img}
           alt={tx({ fr: scene.fr, en: scene.en, es: scene.es })}
@@ -67,58 +68,87 @@ function InstantMockup({ imageUrl, frameColor = 'black', className = '' }) {
           draggable={false}
         />
 
-        {/* Cadre + image du client, centre sur le mur */}
-        <div className="absolute inset-0 flex items-start justify-center" style={{ paddingTop: '8%' }}>
+        {/* Cadre positionne sur le mur */}
+        <div
+          className="absolute left-1/2 -translate-x-1/2"
+          style={{
+            top: scene.frameTop,
+            width: frameWidth,
+            // Ombre portee realiste sur le mur
+            filter: `
+              drop-shadow(0 4px 12px rgba(0,0,0,0.3))
+              drop-shadow(0 1px 3px rgba(0,0,0,0.2))
+              drop-shadow(0 12px 28px rgba(0,0,0,0.15))
+            `,
+            // Subtile perspective pour integrer au mur
+            transform: 'translateX(-50%) perspective(800px) rotateX(0.5deg)',
+          }}
+        >
+          {/* Cadre */}
           <div
             style={{
-              width: frameW,
-              filter: 'drop-shadow(0 8px 24px rgba(0,0,0,0.35)) drop-shadow(0 2px 8px rgba(0,0,0,0.2))',
+              padding: `${borderPx}px`,
+              background: isBlack
+                ? 'linear-gradient(160deg, #333 0%, #1a1a1a 40%, #111 100%)'
+                : 'linear-gradient(160deg, #fff 0%, #f0ece6 40%, #e5e0da 100%)',
+              borderRadius: '1px',
+              // Reflet subtil du cadre
+              boxShadow: isBlack
+                ? 'inset 1px 1px 0 rgba(255,255,255,0.08), inset -1px -1px 0 rgba(0,0,0,0.3)'
+                : 'inset 1px 1px 0 rgba(255,255,255,0.5), inset -1px -1px 0 rgba(0,0,0,0.05)',
             }}
           >
-            {/* Cadre exterieur */}
+            {/* Passe-partout */}
             <div
               style={{
-                padding: `${borderPx}px`,
+                padding: `${matPx}px`,
                 background: isBlack
-                  ? 'linear-gradient(145deg, #2a2a2a 0%, #1a1a1a 50%, #0a0a0a 100%)'
-                  : 'linear-gradient(145deg, #ffffff 0%, #f5f0eb 50%, #ebe6e0 100%)',
-                borderRadius: '1px',
+                  ? '#f0ede8'
+                  : '#faf8f5',
+                // Ombre interieure du passe-partout (effet profondeur biseau)
+                boxShadow: 'inset 0 0 2px rgba(0,0,0,0.08), inset 1px 1px 3px rgba(0,0,0,0.05)',
               }}
             >
-              {/* Passe-partout */}
+              {/* Image du client */}
               <div
+                className="relative overflow-hidden"
                 style={{
-                  padding: `${matPx}px`,
-                  background: isBlack
-                    ? 'linear-gradient(135deg, #f5f3ef 0%, #edeae4 100%)'
-                    : 'linear-gradient(135deg, #fefefe 0%, #f8f5f0 100%)',
+                  aspectRatio: isLandscape ? '4/3' : '3/4',
+                  // Ombre interieure subtile (le cadre projette une ombre sur l'image)
+                  boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.1)',
                 }}
               >
-                {/* Image du client */}
-                <div className="relative overflow-hidden" style={{ aspectRatio: isLandscape ? '4/3' : '3/4' }}>
-                  <img
-                    src={imageUrl}
-                    alt={tx({ fr: 'Votre oeuvre', en: 'Your artwork', es: 'Tu obra' })}
-                    className="w-full h-full object-cover"
-                    draggable={false}
-                  />
-                  {/* Reflet verre subtil */}
-                  <div
-                    className="absolute inset-0 pointer-events-none"
-                    style={{
-                      background: 'linear-gradient(135deg, rgba(255,255,255,0.07) 0%, transparent 35%, transparent 65%, rgba(255,255,255,0.03) 100%)',
-                    }}
-                  />
-                </div>
+                <img
+                  src={imageUrl}
+                  alt={tx({ fr: 'Votre oeuvre', en: 'Your artwork', es: 'Tu obra' })}
+                  className="w-full h-full object-cover"
+                  draggable={false}
+                />
+                {/* Reflet de la vitre */}
+                <div
+                  className="absolute inset-0 pointer-events-none"
+                  style={{
+                    background: `
+                      linear-gradient(
+                        120deg,
+                        rgba(255,255,255,0.04) 0%,
+                        rgba(255,255,255,0.08) 25%,
+                        transparent 50%,
+                        transparent 75%,
+                        rgba(255,255,255,0.02) 100%
+                      )
+                    `,
+                  }}
+                />
               </div>
             </div>
           </div>
         </div>
 
-        {/* Vignettage leger */}
+        {/* Vignettage photo */}
         <div
           className="absolute inset-0 pointer-events-none"
-          style={{ background: 'radial-gradient(ellipse at center 40%, transparent 50%, rgba(0,0,0,0.12) 100%)' }}
+          style={{ background: 'radial-gradient(ellipse at center 35%, transparent 55%, rgba(0,0,0,0.1) 100%)' }}
         />
       </div>
     );
@@ -129,7 +159,7 @@ function InstantMockup({ imageUrl, frameColor = 'black', className = '' }) {
       {renderMockup(false)}
 
       {/* Selecteur de scenes */}
-      <div className="flex items-center justify-center gap-1.5 flex-wrap">
+      <div className="flex items-center justify-center gap-1 flex-wrap">
         {SCENES.map((s, i) => {
           const Icon = s.icon;
           return (
@@ -149,7 +179,7 @@ function InstantMockup({ imageUrl, frameColor = 'black', className = '' }) {
         })}
       </div>
 
-      {/* Lightbox plein ecran */}
+      {/* Lightbox */}
       {lightboxOpen && (
         <div
           className="fixed inset-0 z-[9999] bg-black/90 flex items-center justify-center p-4 sm:p-8"
@@ -163,7 +193,6 @@ function InstantMockup({ imageUrl, frameColor = 'black', className = '' }) {
           </button>
           <div className="w-full max-w-5xl" onClick={(e) => e.stopPropagation()}>
             {renderMockup(true)}
-            {/* Selecteur dans le lightbox */}
             <div className="flex items-center justify-center gap-2 mt-4 flex-wrap">
               {SCENES.map((s, i) => {
                 const Icon = s.icon;
