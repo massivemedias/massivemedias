@@ -28,6 +28,14 @@ exports.default = {
         },
         {
             method: 'POST',
+            path: '/inventory-items/create',
+            handler: 'inventory-item.createItem',
+            config: {
+                auth: false,
+            },
+        },
+        {
+            method: 'POST',
             path: '/inventory-items/import-invoice',
             handler: 'inventory-item.importInvoice',
             config: {

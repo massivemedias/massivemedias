@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Package, AlertTriangle, XCircle, CheckCircle, Search,
-  Edit3, X, Save, Loader2, DollarSign, Archive,
+  Edit3, X, Save, Loader2, DollarSign, Archive, Plus,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import api from '../services/api';
@@ -23,6 +23,307 @@ const CATEGORY_LABELS = {
   other: { fr: 'Autre', en: 'Other', es: 'Otro' },
 };
 
+const CATEGORIES = [
+  { value: 'textile', label: 'Textile (Hoodie, T-shirt, Crewneck...)' },
+  { value: 'frame', label: 'Cadre' },
+  { value: 'accessory', label: 'Accessoire' },
+  { value: 'sticker', label: 'Sticker' },
+  { value: 'print', label: 'Print' },
+  { value: 'merch', label: 'Merch (Tote bag, Mug...)' },
+  { value: 'other', label: 'Autre' },
+];
+
+// Variantes suggerees par categorie
+const VARIANT_SUGGESTIONS = {
+  textile: ['Hoodie', 'T-Shirt', 'Crewneck', 'Tank Top', 'Jogger', 'Cap'],
+  frame: ['Black', 'White', 'Natural', 'Gold'],
+  accessory: ['Tote Bag', 'Fanny Pack', 'Phone Case', 'Poster Tube'],
+  sticker: ['Clear', 'Glossy', 'Holographic', 'Broken Glass', 'Stars'],
+  print: ['Fine Art', 'Photo', 'Canvas', 'Metal'],
+  merch: ['Mug', 'Tumbler', 'Mousepad', 'Pin', 'Patch'],
+  other: [],
+};
+
+const SIZE_SUGGESTIONS = {
+  textile: ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL'],
+  frame: ['A6', 'A4', 'A3', 'A3+', 'A2'],
+  sticker: ['2"', '3"', '4"', '5"'],
+  print: ['A6', 'A4', 'A3', 'A3+', 'A2'],
+  default: [],
+};
+
+// ---- Formulaire creation ----
+function CreateItemForm({ onClose, onCreated, tx }) {
+  const [form, setForm] = useState({
+    nameFr: '', nameEn: '', category: 'textile', variant: '', detail: '',
+    quantity: 0, costPrice: '', location: '', notes: '',
+  });
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+  const [createdSku, setCreatedSku] = useState('');
+
+  const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
+
+  const variants = VARIANT_SUGGESTIONS[form.category] || [];
+  const sizes = SIZE_SUGGESTIONS[form.category] || SIZE_SUGGESTIONS.default;
+
+  // Auto-generer le nom FR
+  const autoName = () => {
+    const parts = [form.variant, form.detail].filter(Boolean);
+    if (parts.length > 0 && !form.nameFr) {
+      set('nameFr', parts.join(' '));
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!form.nameFr || !form.category) return;
+    setSaving(true);
+    setError('');
+    try {
+      const res = await api.post('/inventory-items/create', {
+        nameFr: form.nameFr,
+        nameEn: form.nameEn || form.nameFr,
+        category: form.category,
+        variant: form.variant,
+        detail: form.detail,
+        quantity: Number(form.quantity) || 0,
+        costPrice: form.costPrice ? Number(form.costPrice) : 0,
+        location: form.location,
+        notes: form.notes,
+      });
+      setCreatedSku(res.data?.data?.sku || '');
+      onCreated();
+      // Reset pour ajouter un autre
+      setForm(f => ({ ...f, nameFr: '', nameEn: '', variant: '', detail: '', quantity: 0, costPrice: '', notes: '' }));
+    } catch (err) {
+      setError(err.response?.data?.error?.message || 'Erreur de creation');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/60 flex items-start justify-center p-4 pt-20 overflow-y-auto" onClick={onClose}>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="w-full max-w-lg rounded-2xl card-bg shadow-2xl p-6 space-y-4"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between">
+          <h3 className="text-heading font-heading font-bold text-lg">
+            {tx({ fr: 'Ajouter au stock', en: 'Add to stock', es: 'Agregar al stock' })}
+          </h3>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-white/10 text-grey-muted"><X size={18} /></button>
+        </div>
+
+        {createdSku && (
+          <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center gap-2">
+            <CheckCircle size={16} className="text-green-400" />
+            <span className="text-green-400 text-sm">
+              {tx({ fr: 'Cree!', en: 'Created!', es: 'Creado!' })} SKU: <span className="font-mono font-bold">{createdSku}</span>
+            </span>
+          </div>
+        )}
+
+        {error && (
+          <div className="p-3 rounded-lg bg-red-500/10 text-red-400 text-sm">{error}</div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Categorie */}
+          <div>
+            <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-1">
+              {tx({ fr: 'Categorie', en: 'Category', es: 'Categoria' })} *
+            </label>
+            <select
+              value={form.category}
+              onChange={(e) => { set('category', e.target.value); set('variant', ''); set('detail', ''); }}
+              className="w-full rounded-lg bg-black/20 text-heading text-sm px-3 py-2.5 outline-none border border-white/5 focus:border-accent"
+            >
+              {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
+            </select>
+          </div>
+
+          {/* Variante (chips suggerees) */}
+          <div>
+            <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-1">
+              {tx({ fr: 'Variante / Type', en: 'Variant / Type', es: 'Variante / Tipo' })}
+            </label>
+            {variants.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mb-2">
+                {variants.map(v => (
+                  <button
+                    key={v}
+                    type="button"
+                    onClick={() => { set('variant', v); autoName(); }}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
+                      form.variant === v ? 'bg-accent text-white' : 'bg-black/20 text-grey-muted hover:text-heading'
+                    }`}
+                  >
+                    {v}
+                  </button>
+                ))}
+              </div>
+            )}
+            <input
+              type="text"
+              value={form.variant}
+              onChange={(e) => set('variant', e.target.value)}
+              onBlur={autoName}
+              placeholder="Ex: Hoodie, T-Shirt, Black..."
+              className="w-full rounded-lg bg-black/20 text-heading text-sm px-3 py-2 outline-none border border-white/5 focus:border-accent placeholder:text-grey-muted/50"
+            />
+          </div>
+
+          {/* Taille / Detail (chips suggerees) */}
+          <div>
+            <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-1">
+              {tx({ fr: 'Taille / Detail', en: 'Size / Detail', es: 'Talla / Detalle' })}
+            </label>
+            {sizes.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mb-2">
+                {sizes.map(s => (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => set('detail', s)}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
+                      form.detail === s ? 'bg-accent text-white' : 'bg-black/20 text-grey-muted hover:text-heading'
+                    }`}
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            )}
+            <input
+              type="text"
+              value={form.detail}
+              onChange={(e) => set('detail', e.target.value)}
+              onBlur={autoName}
+              placeholder="Ex: L, XL, A4, 3&quot;..."
+              className="w-full rounded-lg bg-black/20 text-heading text-sm px-3 py-2 outline-none border border-white/5 focus:border-accent placeholder:text-grey-muted/50"
+            />
+          </div>
+
+          {/* SKU preview */}
+          <div className="p-3 rounded-lg bg-accent/5 border border-accent/20">
+            <span className="text-grey-muted text-xs">SKU auto-genere: </span>
+            <span className="font-mono text-accent text-sm font-bold">
+              {(() => {
+                const prefixes = { textile: 'TXT', frame: 'FRM', accessory: 'ACC', sticker: 'STK', print: 'PRT', merch: 'MRC', other: 'OTH' };
+                const p = prefixes[form.category] || 'OTH';
+                const v = (form.variant || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8) || 'GEN';
+                const d = (form.detail || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+                return d ? `${p}-${v}-${d}-001` : `${p}-${v}-001`;
+              })()}
+            </span>
+          </div>
+
+          {/* Nom FR / EN */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-1">
+                {tx({ fr: 'Nom FR', en: 'Name FR', es: 'Nombre FR' })} *
+              </label>
+              <input
+                type="text"
+                value={form.nameFr}
+                onChange={(e) => set('nameFr', e.target.value)}
+                required
+                placeholder="Hoodie Noir L"
+                className="w-full rounded-lg bg-black/20 text-heading text-sm px-3 py-2 outline-none border border-white/5 focus:border-accent placeholder:text-grey-muted/50"
+              />
+            </div>
+            <div>
+              <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-1">
+                {tx({ fr: 'Nom EN', en: 'Name EN', es: 'Nombre EN' })}
+              </label>
+              <input
+                type="text"
+                value={form.nameEn}
+                onChange={(e) => set('nameEn', e.target.value)}
+                placeholder="Black Hoodie L"
+                className="w-full rounded-lg bg-black/20 text-heading text-sm px-3 py-2 outline-none border border-white/5 focus:border-accent placeholder:text-grey-muted/50"
+              />
+            </div>
+          </div>
+
+          {/* Quantite + Prix coutant */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-1">
+                {tx({ fr: 'Quantite', en: 'Quantity', es: 'Cantidad' })}
+              </label>
+              <input
+                type="number"
+                min="0"
+                value={form.quantity}
+                onChange={(e) => set('quantity', e.target.value)}
+                className="w-full rounded-lg bg-black/20 text-heading text-sm px-3 py-2 outline-none border border-white/5 focus:border-accent"
+              />
+            </div>
+            <div>
+              <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-1">
+                {tx({ fr: 'Prix coutant ($)', en: 'Cost price ($)', es: 'Precio costo ($)' })}
+              </label>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={form.costPrice}
+                onChange={(e) => set('costPrice', e.target.value)}
+                placeholder="0.00"
+                className="w-full rounded-lg bg-black/20 text-heading text-sm px-3 py-2 outline-none border border-white/5 focus:border-accent placeholder:text-grey-muted/50"
+              />
+            </div>
+          </div>
+
+          {/* Location + Notes */}
+          <div>
+            <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-1">
+              {tx({ fr: 'Emplacement', en: 'Location', es: 'Ubicacion' })}
+            </label>
+            <input
+              type="text"
+              value={form.location}
+              onChange={(e) => set('location', e.target.value)}
+              placeholder="Ex: Etagere A3, Bac 2..."
+              className="w-full rounded-lg bg-black/20 text-heading text-sm px-3 py-2 outline-none border border-white/5 focus:border-accent placeholder:text-grey-muted/50"
+            />
+          </div>
+
+          <div>
+            <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-1">Notes</label>
+            <textarea
+              value={form.notes}
+              onChange={(e) => set('notes', e.target.value)}
+              rows={2}
+              placeholder={tx({ fr: 'Notes supplementaires...', en: 'Additional notes...', es: 'Notas adicionales...' })}
+              className="w-full rounded-lg bg-black/20 text-heading text-sm px-3 py-2 outline-none border border-white/5 focus:border-accent resize-none placeholder:text-grey-muted/50"
+            />
+          </div>
+
+          {/* Submit */}
+          <button
+            type="submit"
+            disabled={!form.nameFr || !form.category || saving}
+            className="w-full py-3 rounded-xl bg-accent text-white font-semibold text-sm disabled:opacity-40 transition-opacity flex items-center justify-center gap-2"
+          >
+            {saving ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
+            {saving
+              ? tx({ fr: 'Creation...', en: 'Creating...', es: 'Creando...' })
+              : tx({ fr: 'Creer l\'item', en: 'Create item', es: 'Crear item' })}
+          </button>
+        </form>
+      </motion.div>
+    </div>
+  );
+}
+
+// ---- Page principale ----
 function AdminInventaire() {
   const { tx, lang } = useLang();
   const [items, setItems] = useState([]);
@@ -31,9 +332,11 @@ function AdminInventaire() {
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
+  const [filterCategory, setFilterCategory] = useState('all');
   const [editingId, setEditingId] = useState(null);
   const [editData, setEditData] = useState({ quantity: 0, nameFr: '' });
   const [saving, setSaving] = useState(false);
+  const [showCreate, setShowCreate] = useState(false);
 
   const fetchData = useCallback(async () => {
     try {
@@ -85,7 +388,8 @@ function AdminInventaire() {
     if (isConsommable(item)) return false;
     const matchSearch = !search || getName(item).toLowerCase().includes(search.toLowerCase()) || (item.sku || '').toLowerCase().includes(search.toLowerCase());
     const matchStatus = filterStatus === 'all' || item.status === filterStatus;
-    return matchSearch && matchStatus;
+    const matchCategory = filterCategory === 'all' || item.category === filterCategory;
+    return matchSearch && matchStatus && matchCategory;
   });
 
   if (loading) {
@@ -96,12 +400,20 @@ function AdminInventaire() {
     );
   }
 
-
   return (
     <div>
-      <p className="text-grey-muted mb-6">
-        {tx({ fr: 'Gestion du stock en temps réel', en: 'Real-time stock management', es: 'Gestion de stock en tiempo real' })}
-      </p>
+      <div className="flex items-center justify-between mb-6">
+        <p className="text-grey-muted">
+          {tx({ fr: 'Gestion du stock en temps reel', en: 'Real-time stock management', es: 'Gestion de stock en tiempo real' })}
+        </p>
+        <button
+          onClick={() => setShowCreate(true)}
+          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-accent text-white text-sm font-semibold hover:bg-accent/90 transition-colors"
+        >
+          <Plus size={16} />
+          {tx({ fr: 'Ajouter', en: 'Add', es: 'Agregar' })}
+        </button>
+      </div>
 
       {error && (
         <div className="p-4 rounded-lg bg-red-500/10 shadow-sm error-bg mb-6">
@@ -150,6 +462,14 @@ function AdminInventaire() {
             className="w-full pl-10 pr-4 py-2.5 rounded-lg bg-glass text-heading placeholder-grey-muted text-sm focus:outline-none focus:ring-1 focus:ring-accent"
           />
         </div>
+        <select
+          value={filterCategory}
+          onChange={(e) => setFilterCategory(e.target.value)}
+          className="rounded-lg bg-glass text-heading text-sm px-3 py-2.5 outline-none border border-white/5"
+        >
+          <option value="all">{tx({ fr: 'Toutes categories', en: 'All categories', es: 'Todas categorias' })}</option>
+          {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
+        </select>
       </div>
 
       {/* Table */}
@@ -181,17 +501,22 @@ function AdminInventaire() {
                       className="shadow-[0_-1px_0_rgba(255,255,255,0.04)] hover:bg-white/[0.02] transition-colors"
                     >
                       <td className="px-4 py-2 text-heading font-medium">
-                        {isEditing ? (
-                          <input
-                            type="text"
-                            value={editData.nameFr}
-                            onChange={(e) => setEditData(d => ({ ...d, nameFr: e.target.value }))}
-                            className="w-full rounded bg-glass text-heading p-1 text-sm"
-                          />
-                        ) : getName(item)}
+                        <div className="flex items-center gap-2">
+                          <StatusIcon size={14} className={statusCfg.color.split(' ')[1]} />
+                          {isEditing ? (
+                            <input
+                              type="text"
+                              value={editData.nameFr}
+                              onChange={(e) => setEditData(d => ({ ...d, nameFr: e.target.value }))}
+                              className="w-full rounded bg-glass text-heading p-1 text-sm"
+                            />
+                          ) : getName(item)}
+                        </div>
                       </td>
                       <td className="px-4 py-2 font-mono text-grey-muted text-xs">{item.sku || '-'}</td>
-                      <td className="px-4 py-2 text-grey-muted">{CATEGORY_LABELS[item.category] ? tx(CATEGORY_LABELS[item.category]) : item.category}</td>
+                      <td className="px-4 py-2 text-grey-muted text-xs">
+                        {CATEGORY_LABELS[item.category] ? tx(CATEGORY_LABELS[item.category]) : item.category}
+                      </td>
                       <td className="px-4 py-2 text-center">
                         {isEditing ? (
                           <input
@@ -202,7 +527,9 @@ function AdminInventaire() {
                             min="0"
                           />
                         ) : (
-                          <span className="text-heading font-medium">{item.quantity}</span>
+                          <span className={`font-medium ${item.status === 'out' ? 'text-red-400' : item.status === 'low' ? 'text-orange-400' : 'text-heading'}`}>
+                            {item.quantity}
+                          </span>
                         )}
                       </td>
                       <td className="px-4 py-2 text-center">
@@ -246,6 +573,17 @@ function AdminInventaire() {
           </div>
         )}
       </div>
+
+      {/* Modal creation */}
+      <AnimatePresence>
+        {showCreate && (
+          <CreateItemForm
+            onClose={() => setShowCreate(false)}
+            onCreated={() => fetchData()}
+            tx={tx}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

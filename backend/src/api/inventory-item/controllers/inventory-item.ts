@@ -88,6 +88,77 @@ export default factories.createCoreController('api::inventory-item.inventory-ite
   },
 
   /**
+   * Creer un nouvel item d'inventaire avec SKU auto-genere
+   * Format SKU: {CAT}-{VARIANT}-{DETAIL}-{NNN}
+   * Ex: TXT-HOODIE-L-001, FRM-BLACK-A4-001, STK-HOLO-3IN-001
+   */
+  async createItem(ctx) {
+    const { nameFr, nameEn, category, variant, detail, quantity, costPrice, location, notes, lowStockThreshold } = ctx.request.body as any;
+
+    if (!nameFr || !category) {
+      return ctx.badRequest('nameFr and category are required');
+    }
+
+    const VALID_CATEGORIES = ['textile', 'frame', 'accessory', 'sticker', 'print', 'merch', 'other'];
+    if (!VALID_CATEGORIES.includes(category)) {
+      return ctx.badRequest(`Invalid category. Must be one of: ${VALID_CATEGORIES.join(', ')}`);
+    }
+
+    // Prefixes SKU par categorie
+    const SKU_PREFIXES: Record<string, string> = {
+      textile: 'TXT',
+      frame: 'FRM',
+      accessory: 'ACC',
+      sticker: 'STK',
+      print: 'PRT',
+      merch: 'MRC',
+      other: 'OTH',
+    };
+
+    const prefix = SKU_PREFIXES[category] || 'OTH';
+    const variantSlug = (variant || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8) || 'GEN';
+    const detailSlug = (detail || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6) || '';
+    const skuBase = detailSlug ? `${prefix}-${variantSlug}-${detailSlug}` : `${prefix}-${variantSlug}`;
+
+    // Trouver le prochain numero pour ce prefixe
+    const existing = await strapi.documents('api::inventory-item.inventory-item').findMany({
+      filters: { sku: { $startsWith: skuBase } },
+      sort: 'sku:desc',
+    });
+
+    let nextNum = 1;
+    if (existing.length > 0) {
+      // Extraire le dernier numero
+      const lastSku = existing[0].sku || '';
+      const match = lastSku.match(/-(\d+)$/);
+      if (match) nextNum = parseInt(match[1], 10) + 1;
+      else nextNum = existing.length + 1;
+    }
+
+    const sku = `${skuBase}-${String(nextNum).padStart(3, '0')}`;
+
+    const created = await strapi.documents('api::inventory-item.inventory-item').create({
+      data: {
+        nameFr,
+        nameEn: nameEn || nameFr,
+        sku,
+        category,
+        variant: variant || '',
+        quantity: quantity || 0,
+        reserved: 0,
+        lowStockThreshold: lowStockThreshold || 5,
+        costPrice: costPrice || 0,
+        location: location || '',
+        notes: notes || '',
+        active: true,
+      },
+    });
+
+    strapi.log.info(`Inventory item created: ${sku} - ${nameFr} (qty: ${quantity || 0})`);
+    ctx.body = { data: created };
+  },
+
+  /**
    * Import depuis facture PDF: cree ou met a jour les items d'inventaire
    * + cree une depense automatiquement
    */
