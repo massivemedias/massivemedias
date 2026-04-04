@@ -214,7 +214,7 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {}, onF
               return (
                 <button
                   key={f.id}
-                  onClick={() => { if (isAvailable) { setFormat(f.id); if (f.id === 'a2') setWithFrame(false); } }}
+                  onClick={() => { if (isAvailable) { setFormat(f.id); } }}
                   disabled={!isAvailable}
                   title={formatDesc}
                   className={`flex flex-col items-center gap-1.5 transition-all ${!isAvailable ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer'}`}
@@ -264,8 +264,8 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {}, onF
         </div>
       )}
 
-      {/* Frame option - disabled for A2, unique pieces with custom price */}
-      {!noFrame && format !== 'a2' && !(isUnique && customPrice) && (
+      {/* Frame option */}
+      {!noFrame && !(isUnique && customPrice) && (
         <div>
           <label className={`flex items-center gap-3 w-full p-4 rounded-lg cursor-pointer transition-all border-2 ${withFrame ? 'checkbox-active' : 'option-default'}`}>
             <input
