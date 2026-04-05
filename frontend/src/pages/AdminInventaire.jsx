@@ -161,9 +161,12 @@ function ItemForm({ onClose, onSaved, tx, lang, editItem }) {
     setError('');
     try {
       if (isEdit) {
-        // Mode edition: mettre a jour l'item existant
+        // Mode edition: mettre a jour tous les champs
         await api.put(`/inventory-items/${editItem.documentId}/adjust`, {
           nameFr: form.nameFr,
+          nameEn: form.nameEn || form.nameFr,
+          category: form.category,
+          variant: form.variant,
           quantity: Number(form.quantity) || 0,
           costPrice: form.costPrice ? Number(form.costPrice) : 0,
           location: form.location,
