@@ -148,9 +148,16 @@ function ItemForm({ onClose, onSaved, tx, lang, editItem }) {
 
   // Auto-generer le nom FR depuis les champs
   const autoName = () => {
-    const parts = [form.brand, form.variant, form.hasZip ? 'Zip' : '', form.color, form.detail].filter(Boolean);
-    if (parts.length > 0) {
-      set('nameFr', parts.join(' '));
+    if (form.category === 'textile') {
+      // Pour textile: marque = nom produit (on concatene variant + zip + couleur + taille)
+      const parts = [form.brand, form.variant, form.hasZip ? 'Zip' : '', form.color, form.detail].filter(Boolean);
+      if (parts.length > 0) set('nameFr', parts.join(' '));
+    } else if (form.category === 'equipment') {
+      const parts = [form.brand, form.variant].filter(Boolean);
+      if (parts.length > 0) set('nameFr', parts.join(' '));
+    } else {
+      const parts = [form.brand, form.variant, form.color, form.detail].filter(Boolean);
+      if (parts.length > 0) set('nameFr', parts.join(' '));
     }
   };
 
@@ -434,21 +441,23 @@ function ItemForm({ onClose, onSaved, tx, lang, editItem }) {
           </label>
           </>)}
 
-          {/* Nom genere (modifiable) */}
-          <div>
-            <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-1">
-              {tx({ fr: 'Nom produit', en: 'Product name', es: 'Nombre producto' })} *
-            </label>
-            <input
-              type="text"
-              value={form.nameFr}
-              onChange={(e) => set('nameFr', e.target.value)}
-              required
-              placeholder="Auto-genere ou saisir manuellement"
-              className="w-full rounded-lg bg-black/20 text-heading text-sm px-3 py-2 outline-none border border-white/5 focus:border-accent placeholder:text-grey-muted/50"
-            />
-            <p className="text-grey-muted text-[10px] mt-1">Se remplit automatiquement depuis les champs ci-dessus</p>
-          </div>
+          {/* Nom produit - cache pour textile (marque = nom) */}
+          {form.category !== 'textile' && (
+            <div>
+              <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-1">
+                {tx({ fr: 'Nom produit', en: 'Product name', es: 'Nombre producto' })} *
+              </label>
+              <input
+                type="text"
+                value={form.nameFr}
+                onChange={(e) => set('nameFr', e.target.value)}
+                required
+                placeholder="Auto-genere ou saisir manuellement"
+                className="w-full rounded-lg bg-black/20 text-heading text-sm px-3 py-2 outline-none border border-white/5 focus:border-accent placeholder:text-grey-muted/50"
+              />
+              <p className="text-grey-muted text-[10px] mt-1">Se remplit automatiquement depuis les champs ci-dessus</p>
+            </div>
+          )}
 
           {/* Quantite + Prix coutant */}
           <div className="grid grid-cols-2 gap-3">
