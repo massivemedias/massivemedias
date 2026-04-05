@@ -88,7 +88,7 @@ const VARIANT_SUGGESTIONS = {
   sticker: ['Clear', 'Glossy', 'Holographic', 'Broken Glass', 'Stars'],
   print: ['Fine Art', 'Photo', 'Canvas', 'Metal'],
   merch: ['Tote Bag', 'Mug', 'Tumbler', 'Fanny Pack', 'Pin'],
-  equipment: [],
+  equipment: ['Imprimante', 'Decoupeuse', 'Lamineuse', 'Presse a chaud', 'Tete d\'impression', 'Massicot', 'Plastifieuse', 'Scanner'],
   other: [],
 };
 
@@ -252,12 +252,26 @@ function ItemForm({ onClose, onSaved, tx, lang, editItem }) {
               <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-1">
                 Type
               </label>
+              <div className="flex flex-wrap gap-1.5 mb-2">
+                {VARIANT_SUGGESTIONS.equipment.map(v => (
+                  <button
+                    key={v}
+                    type="button"
+                    onClick={() => { set('variant', v); }}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
+                      form.variant === v ? 'bg-accent text-white' : 'bg-black/20 text-grey-muted hover:text-heading'
+                    }`}
+                  >
+                    {v}
+                  </button>
+                ))}
+              </div>
               <input
                 type="text"
                 value={form.variant}
                 onChange={(e) => set('variant', e.target.value)}
                 onBlur={autoName}
-                placeholder="Ex: Decoupeuse, Imprimante, Presse a chaud..."
+                placeholder="Ou saisir manuellement..."
                 className="w-full rounded-lg bg-black/20 text-heading text-sm px-3 py-2 outline-none border border-white/5 focus:border-accent placeholder:text-grey-muted/50"
               />
             </div>
