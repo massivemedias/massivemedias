@@ -577,6 +577,12 @@ function AdminInventaire() {
     else if (sortKey === 'sku') { va = (a.sku || '').toLowerCase(); vb = (b.sku || '').toLowerCase(); }
     else if (sortKey === 'category') { va = a.category || ''; vb = b.category || ''; }
     else if (sortKey === 'variant') { va = (a.variant || '').toLowerCase(); vb = (b.variant || '').toLowerCase(); }
+    else if (sortKey === 'detail') {
+      const sizeOrder = ['XS','S','M','L','XL','2XL','3XL','A6','A4','A3','A3+','A2'];
+      const getSize = (item) => { const p = (item.sku||'').split('-'); const s = p.length >= 4 ? p[p.length-2] : ''; return sizeOrder.indexOf(s); };
+      va = getSize(a); vb = getSize(b);
+      if (va === -1) va = 99; if (vb === -1) vb = 99;
+    }
     else if (sortKey === 'quantity') { va = a.quantity || 0; vb = b.quantity || 0; }
     else { va = ''; vb = ''; }
     if (typeof va === 'number') return sortDir === 'asc' ? va - vb : vb - va;
@@ -670,16 +676,17 @@ function AdminInventaire() {
             <thead>
               <tr className="text-grey-muted text-xs uppercase tracking-wider">
                 {[
-                  { key: 'category', label: tx({ fr: 'Cat.', en: 'Cat.', es: 'Cat.' }), align: 'text-left', w: 'w-20' },
-                  { key: 'variant', label: 'Type', align: 'text-left', w: 'w-24' },
-                  { key: 'nameFr', label: tx({ fr: 'Produit', en: 'Product', es: 'Producto' }), align: 'text-left', w: '' },
-                  { key: 'sku', label: 'SKU', align: 'text-left', w: 'w-40' },
-                  { key: 'quantity', label: 'Stock', align: 'text-center', w: 'w-16' },
+                  { key: 'category', label: tx({ fr: 'Cat.', en: 'Cat.', es: 'Cat.' }), align: 'text-left' },
+                  { key: 'variant', label: 'Type', align: 'text-left' },
+                  { key: 'nameFr', label: tx({ fr: 'Produit', en: 'Product', es: 'Producto' }), align: 'text-left' },
+                  { key: 'detail', label: tx({ fr: 'Taille', en: 'Size', es: 'Talla' }), align: 'text-center' },
+                  { key: 'sku', label: 'SKU', align: 'text-left' },
+                  { key: 'quantity', label: 'Stock', align: 'text-center' },
                 ].map(col => (
                   <th
                     key={col.key}
                     onClick={() => toggleSort(col.key)}
-                    className={`${col.align} ${col.w} px-3 py-2 cursor-pointer hover:text-heading transition-colors select-none`}
+                    className={`${col.align} px-3 py-2 cursor-pointer hover:text-heading transition-colors select-none whitespace-nowrap`}
                   >
                     <span className="inline-flex items-center gap-1">
                       {col.label}
@@ -687,7 +694,7 @@ function AdminInventaire() {
                     </span>
                   </th>
                 ))}
-                <th className="text-center px-2 py-2 w-20">Actions</th>
+                <th className="text-center px-2 py-2">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -696,6 +703,22 @@ function AdminInventaire() {
                   const statusCfg = STATUS_CONFIG[item.status] || STATUS_CONFIG.ok;
                   const StatusIcon = statusCfg.icon;
                   const isDeleting = deleting === item.documentId;
+
+                  // Extraire taille depuis le SKU (TXT-HOODIE-XL-001 -> XL)
+                  const skuParts = (item.sku || '').split('-');
+                  const sizeFromSku = skuParts.length >= 4 ? skuParts[skuParts.length - 2] : '';
+                  const allSizes = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', 'A6', 'A4', 'A3', 'A3+', 'A2'];
+                  const size = allSizes.includes(sizeFromSku) ? sizeFromSku : '';
+
+                  // Pour les textiles: afficher la marque (premier mot du nom qui n'est pas le variant)
+                  const displayName = (() => {
+                    const name = getName(item);
+                    if (item.category !== 'textile') return name;
+                    // Retirer variant, taille, et couleurs connues pour isoler la marque
+                    const words = name.split(' ');
+                    const brand = words.find(w => w !== item.variant && !allSizes.includes(w.toUpperCase()) && w !== 'Zip');
+                    return brand || name;
+                  })();
 
                   return (
                     <motion.tr
@@ -706,19 +729,22 @@ function AdminInventaire() {
                       className="shadow-[0_-1px_0_rgba(255,255,255,0.04)] hover:bg-white/[0.02] transition-colors cursor-pointer"
                       onClick={() => openEdit(item)}
                     >
-                      <td className="px-3 py-2 text-grey-muted text-xs">
+                      <td className="px-3 py-2 text-grey-muted text-xs whitespace-nowrap">
                         {CATEGORY_LABELS[item.category] ? tx(CATEGORY_LABELS[item.category]) : item.category}
                       </td>
-                      <td className="px-3 py-2 text-heading text-xs font-medium">
+                      <td className="px-3 py-2 text-heading text-xs font-medium whitespace-nowrap">
                         {item.variant || '-'}
                       </td>
                       <td className="px-3 py-2 text-heading font-medium text-sm">
                         <div className="flex items-center gap-1.5">
                           <StatusIcon size={12} className={statusCfg.color.split(' ')[1]} />
-                          {getName(item)}
+                          {displayName}
                         </div>
                       </td>
-                      <td className="px-3 py-2 font-mono text-grey-muted text-[11px]">{item.sku || '-'}</td>
+                      <td className="px-3 py-2 text-center text-heading text-xs font-semibold">
+                        {size || '-'}
+                      </td>
+                      <td className="px-3 py-2 font-mono text-grey-muted text-[11px] whitespace-nowrap">{item.sku || '-'}</td>
                       <td className="px-3 py-2 text-center">
                         <span className={`font-semibold text-sm ${item.status === 'out' ? 'text-red-400' : item.status === 'low' ? 'text-orange-400' : 'text-heading'}`}>
                           {item.quantity}
