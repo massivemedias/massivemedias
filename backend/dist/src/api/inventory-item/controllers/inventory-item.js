@@ -84,7 +84,7 @@ exports.default = strapi_1.factories.createCoreController('api::inventory-item.i
         if (!nameFr || !category) {
             return ctx.badRequest('nameFr and category are required');
         }
-        const VALID_CATEGORIES = ['textile', 'frame', 'accessory', 'sticker', 'print', 'merch', 'other'];
+        const VALID_CATEGORIES = ['textile', 'frame', 'accessory', 'sticker', 'print', 'merch', 'equipment', 'other'];
         if (!VALID_CATEGORIES.includes(category)) {
             return ctx.badRequest(`Invalid category. Must be one of: ${VALID_CATEGORIES.join(', ')}`);
         }
@@ -96,6 +96,7 @@ exports.default = strapi_1.factories.createCoreController('api::inventory-item.i
             sticker: 'STK',
             print: 'PRT',
             merch: 'MRC',
+            equipment: 'EQP',
             other: 'OTH',
         };
         const prefix = SKU_PREFIXES[category] || 'OTH';
@@ -146,7 +147,7 @@ exports.default = strapi_1.factories.createCoreController('api::inventory-item.i
         if (!items || !Array.isArray(items) || items.length === 0) {
             return ctx.badRequest('Au moins un item est requis');
         }
-        const VALID_CATEGORIES = ['textile', 'frame', 'accessory', 'sticker', 'print', 'merch', 'other'];
+        const VALID_CATEGORIES = ['textile', 'frame', 'accessory', 'sticker', 'print', 'merch', 'equipment', 'other'];
         const results = [];
         for (const item of items) {
             if (!item.nameFr || !item.category)

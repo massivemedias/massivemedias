@@ -21,6 +21,7 @@ const CATEGORY_LABELS = {
   sticker: 'Sticker',
   print: 'Print',
   merch: 'Merch',
+  equipment: { fr: 'Materiel', en: 'Equipment', es: 'Equipo' },
   other: { fr: 'Autre', en: 'Other', es: 'Otro' },
 };
 
@@ -30,6 +31,7 @@ const CATEGORIES = [
   { value: 'sticker', label: 'Sticker' },
   { value: 'print', label: 'Print' },
   { value: 'merch', label: 'Merch' },
+  { value: 'equipment', label: 'Materiel' },
   { value: 'other', label: 'Autre' },
 ];
 
@@ -40,6 +42,7 @@ const VARIANT_SUGGESTIONS = {
   sticker: ['Clear', 'Glossy', 'Holographic', 'Broken Glass', 'Stars'],
   print: ['Fine Art', 'Photo', 'Canvas', 'Metal'],
   merch: ['Tote Bag', 'Mug', 'Tumbler', 'Fanny Pack', 'Pin'],
+  equipment: [],
   other: [],
 };
 

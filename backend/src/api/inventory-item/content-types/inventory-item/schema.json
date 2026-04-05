@@ -26,7 +26,7 @@
     },
     "category": {
       "type": "enumeration",
-      "enum": ["textile", "frame", "accessory", "sticker", "print", "merch", "other"],
+      "enum": ["textile", "frame", "accessory", "sticker", "print", "merch", "equipment", "other"],
       "required": true
     },
     "variant": {
