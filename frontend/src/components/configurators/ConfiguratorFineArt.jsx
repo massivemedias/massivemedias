@@ -276,7 +276,6 @@ function ConfiguratorFineArt() {
               imageUrl={previewImage}
               frameColor={withFrame ? frameColor : 'black'}
               format={format}
-              orientation={isLandscape ? 'landscape' : 'portrait'}
             />
           )}
         </div>
