@@ -24,25 +24,25 @@ const CATEGORY_LABELS = {
 };
 
 const CATEGORIES = [
-  { value: 'textile', label: 'Textile (Hoodie, T-shirt, Crewneck...)' },
+  { value: 'textile', label: 'Textile' },
   { value: 'frame', label: 'Cadre' },
-  { value: 'accessory', label: 'Accessoire' },
   { value: 'sticker', label: 'Sticker' },
   { value: 'print', label: 'Print' },
-  { value: 'merch', label: 'Merch (Tote bag, Mug...)' },
+  { value: 'merch', label: 'Merch' },
   { value: 'other', label: 'Autre' },
 ];
 
 // Variantes suggerees par categorie
 const VARIANT_SUGGESTIONS = {
-  textile: ['Hoodie', 'T-Shirt', 'Crewneck', 'Tank Top', 'Jogger', 'Cap'],
+  textile: ['Hoodie', 'T-Shirt', 'Crewneck'],
   frame: ['Black', 'White', 'Natural', 'Gold'],
-  accessory: ['Tote Bag', 'Fanny Pack', 'Phone Case', 'Poster Tube'],
   sticker: ['Clear', 'Glossy', 'Holographic', 'Broken Glass', 'Stars'],
   print: ['Fine Art', 'Photo', 'Canvas', 'Metal'],
-  merch: ['Mug', 'Tumbler', 'Mousepad', 'Pin', 'Patch'],
+  merch: ['Tote Bag', 'Mug', 'Tumbler', 'Fanny Pack', 'Pin'],
   other: [],
 };
+
+const COLOR_SUGGESTIONS = ['Noir', 'Blanc', 'Gris', 'Navy', 'Rouge', 'Vert'];
 
 const SIZE_SUGGESTIONS = {
   textile: ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL'],
@@ -56,7 +56,7 @@ const SIZE_SUGGESTIONS = {
 function CreateItemForm({ onClose, onCreated, tx }) {
   const [form, setForm] = useState({
     nameFr: '', nameEn: '', category: 'textile', variant: '', detail: '',
-    quantity: 0, costPrice: '', location: '', notes: '',
+    color: '', brand: '', quantity: 0, costPrice: '', location: '', notes: '',
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -67,10 +67,10 @@ function CreateItemForm({ onClose, onCreated, tx }) {
   const variants = VARIANT_SUGGESTIONS[form.category] || [];
   const sizes = SIZE_SUGGESTIONS[form.category] || SIZE_SUGGESTIONS.default;
 
-  // Auto-generer le nom FR
+  // Auto-generer le nom FR depuis les champs
   const autoName = () => {
-    const parts = [form.variant, form.detail].filter(Boolean);
-    if (parts.length > 0 && !form.nameFr) {
+    const parts = [form.brand, form.variant, form.color, form.detail].filter(Boolean);
+    if (parts.length > 0) {
       set('nameFr', parts.join(' '));
     }
   };
@@ -95,7 +95,7 @@ function CreateItemForm({ onClose, onCreated, tx }) {
       setCreatedSku(res.data?.data?.sku || '');
       onCreated();
       // Reset pour ajouter un autre
-      setForm(f => ({ ...f, nameFr: '', nameEn: '', variant: '', detail: '', quantity: 0, costPrice: '', notes: '' }));
+      setForm(f => ({ ...f, nameFr: '', nameEn: '', variant: '', detail: '', color: '', brand: '', quantity: 0, costPrice: '', notes: '' }));
     } catch (err) {
       setError(err.response?.data?.error?.message || 'Erreur de creation');
     } finally {
@@ -223,33 +223,64 @@ function CreateItemForm({ onClose, onCreated, tx }) {
             </span>
           </div>
 
-          {/* Nom FR / EN */}
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-1">
-                {tx({ fr: 'Nom FR', en: 'Name FR', es: 'Nombre FR' })} *
-              </label>
-              <input
-                type="text"
-                value={form.nameFr}
-                onChange={(e) => set('nameFr', e.target.value)}
-                required
-                placeholder="Hoodie Noir L"
-                className="w-full rounded-lg bg-black/20 text-heading text-sm px-3 py-2 outline-none border border-white/5 focus:border-accent placeholder:text-grey-muted/50"
-              />
+          {/* Marque */}
+          <div>
+            <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-1">
+              {tx({ fr: 'Marque', en: 'Brand', es: 'Marca' })}
+            </label>
+            <input
+              type="text"
+              value={form.brand}
+              onChange={(e) => set('brand', e.target.value)}
+              onBlur={autoName}
+              placeholder="Ex: Gildan, Bella+Canvas, Stanley/Stella..."
+              className="w-full rounded-lg bg-black/20 text-heading text-sm px-3 py-2 outline-none border border-white/5 focus:border-accent placeholder:text-grey-muted/50"
+            />
+          </div>
+
+          {/* Couleur */}
+          <div>
+            <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-1">
+              {tx({ fr: 'Couleur', en: 'Color', es: 'Color' })}
+            </label>
+            <div className="flex flex-wrap gap-1.5 mb-2">
+              {COLOR_SUGGESTIONS.map(c => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => { set('color', c); }}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
+                    form.color === c ? 'bg-accent text-white' : 'bg-black/20 text-grey-muted hover:text-heading'
+                  }`}
+                >
+                  {c}
+                </button>
+              ))}
             </div>
-            <div>
-              <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-1">
-                {tx({ fr: 'Nom EN', en: 'Name EN', es: 'Nombre EN' })}
-              </label>
-              <input
-                type="text"
-                value={form.nameEn}
-                onChange={(e) => set('nameEn', e.target.value)}
-                placeholder="Black Hoodie L"
-                className="w-full rounded-lg bg-black/20 text-heading text-sm px-3 py-2 outline-none border border-white/5 focus:border-accent placeholder:text-grey-muted/50"
-              />
-            </div>
+            <input
+              type="text"
+              value={form.color}
+              onChange={(e) => set('color', e.target.value)}
+              onBlur={autoName}
+              placeholder="Ex: Noir, Blanc, Forest Green..."
+              className="w-full rounded-lg bg-black/20 text-heading text-sm px-3 py-2 outline-none border border-white/5 focus:border-accent placeholder:text-grey-muted/50"
+            />
+          </div>
+
+          {/* Nom genere (modifiable) */}
+          <div>
+            <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-1">
+              {tx({ fr: 'Nom produit', en: 'Product name', es: 'Nombre producto' })} *
+            </label>
+            <input
+              type="text"
+              value={form.nameFr}
+              onChange={(e) => set('nameFr', e.target.value)}
+              required
+              placeholder="Auto-genere ou saisir manuellement"
+              className="w-full rounded-lg bg-black/20 text-heading text-sm px-3 py-2 outline-none border border-white/5 focus:border-accent placeholder:text-grey-muted/50"
+            />
+            <p className="text-grey-muted text-[10px] mt-1">Se remplit automatiquement depuis les champs ci-dessus</p>
           </div>
 
           {/* Quantite + Prix coutant */}
