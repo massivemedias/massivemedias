@@ -275,6 +275,7 @@ function ConfiguratorFineArt() {
             <InstantMockup
               imageUrl={previewImage}
               frameColor={withFrame ? frameColor : 'black'}
+              format={format}
             />
           )}
         </div>

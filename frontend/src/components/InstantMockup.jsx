@@ -37,7 +37,16 @@ const SCENES = [
   { id: 'zen', icon: Flower2, fr: 'Zen', en: 'Zen', es: 'Zen' },
 ];
 
-function InstantMockup({ imageUrl, frameColor = 'black', className = '' }) {
+// Dimensions reelles des formats (en pouces) pour proportions correctes
+const FORMAT_SIZES = {
+  postcard: { w: 4, h: 6 },
+  a4: { w: 8.5, h: 11 },
+  a3: { w: 11, h: 17 },
+  a3plus: { w: 13, h: 19 },
+  a2: { w: 18, h: 24 },
+};
+
+function InstantMockup({ imageUrl, frameColor = 'black', format = 'a4', className = '' }) {
   const { tx } = useLang();
   const canvasRef = useRef(null);
   const lightboxCanvasRef = useRef(null);
@@ -81,29 +90,68 @@ function InstantMockup({ imageUrl, frameColor = 'black', className = '' }) {
       // 1. Dessiner la photo de la piece
       ctx.drawImage(roomImg, 0, 0, cw, ch);
 
-      // 2. Calculer la zone du placeholder
-      const px = Math.round(cw * coords.x / 100);
-      const py = Math.round(ch * coords.y / 100);
-      const pw = Math.round(cw * coords.w / 100);
-      const ph = Math.round(ch * coords.h / 100);
+      // 2. Zone du placeholder (le rectangle vert original)
+      const placeholderX = Math.round(cw * coords.x / 100);
+      const placeholderY = Math.round(ch * coords.y / 100);
+      const placeholderW = Math.round(cw * coords.w / 100);
+      const placeholderH = Math.round(ch * coords.h / 100);
+      const placeholderCx = placeholderX + placeholderW / 2;
+      const placeholderCy = placeholderY + placeholderH / 2;
 
-      // 3. Dessiner l'image du client dans la zone (cover crop)
+      // 3. Calculer la taille du print selon le format choisi
+      // Le format A2 (le plus grand) occupe tout le placeholder
+      // Les formats plus petits sont proportionnellement reduits
+      const fmtSize = FORMAT_SIZES[format] || FORMAT_SIZES.a4;
+      const a2Size = FORMAT_SIZES.a2; // reference = le plus grand
+      const fmtArea = fmtSize.w * fmtSize.h;
+      const a2Area = a2Size.w * a2Size.h;
+      // Echelle basee sur la racine carree du ratio de surface (perception visuelle)
+      const scaleFactor = Math.sqrt(fmtArea / a2Area);
+      // Minimum 55% du placeholder pour que meme A6 soit visible
+      const clampedScale = Math.max(0.55, Math.min(1.0, scaleFactor));
+
+      // Ratio du format (portrait par defaut)
+      const fmtRatio = fmtSize.w / fmtSize.h; // < 1 pour portrait
+
+      // Taille du print dans le placeholder
+      let printW, printH;
+      if (fmtRatio < 1) {
+        // Portrait: hauteur = placeholder * scale, largeur = proportionnelle
+        printH = Math.round(placeholderH * clampedScale * 1.3); // 1.3x zoom
+        printW = Math.round(printH * fmtRatio);
+        // Si trop large, contraindre
+        if (printW > placeholderW * clampedScale * 1.3) {
+          printW = Math.round(placeholderW * clampedScale * 1.3);
+          printH = Math.round(printW / fmtRatio);
+        }
+      } else {
+        // Paysage: largeur = placeholder * scale
+        printW = Math.round(placeholderW * clampedScale * 1.3);
+        printH = Math.round(printW / fmtRatio);
+        if (printH > placeholderH * clampedScale * 1.3) {
+          printH = Math.round(placeholderH * clampedScale * 1.3);
+          printW = Math.round(printH * fmtRatio);
+        }
+      }
+
+      // Centrer le print dans le placeholder
+      const printX = Math.round(placeholderCx - printW / 2);
+      const printY = Math.round(placeholderCy - printH / 2);
+
+      // 4. Dessiner l'image du client (cover crop selon le ratio du format)
       const userImg = userImgRef.current;
       const imgRatio = userImg.naturalWidth / userImg.naturalHeight;
-      const frameRatio = pw / ph;
 
       let sx = 0, sy = 0, sw = userImg.naturalWidth, sh = userImg.naturalHeight;
-      if (imgRatio > frameRatio) {
-        // Image plus large: crop horizontal
-        sw = Math.round(userImg.naturalHeight * frameRatio);
+      if (imgRatio > fmtRatio) {
+        sw = Math.round(userImg.naturalHeight * fmtRatio);
         sx = Math.round((userImg.naturalWidth - sw) / 2);
       } else {
-        // Image plus haute: crop vertical
-        sh = Math.round(userImg.naturalWidth / frameRatio);
+        sh = Math.round(userImg.naturalWidth / fmtRatio);
         sy = Math.round((userImg.naturalHeight - sh) / 2);
       }
 
-      ctx.drawImage(userImg, sx, sy, sw, sh, px, py, pw, ph);
+      ctx.drawImage(userImg, sx, sy, sw, sh, printX, printY, printW, printH);
     };
 
     // Charger ou utiliser le cache
@@ -118,21 +166,21 @@ function InstantMockup({ imageUrl, frameColor = 'black', className = '' }) {
       };
       img.src = roomSrc;
     }
-  }, [frameKey, coords]);
+  }, [frameKey, coords, format]);
 
   // Re-dessiner quand les parametres changent
   useEffect(() => {
     if (ready && canvasRef.current) {
       drawComposite(canvasRef.current, 800);
     }
-  }, [ready, sceneIdx, frameColor, drawComposite]);
+  }, [ready, sceneIdx, frameColor, format, drawComposite]);
 
   // Dessiner le lightbox
   useEffect(() => {
     if (lightboxOpen && lightboxCanvasRef.current && ready) {
       drawComposite(lightboxCanvasRef.current, 1400);
     }
-  }, [lightboxOpen, ready, sceneIdx, frameColor, drawComposite]);
+  }, [lightboxOpen, ready, sceneIdx, frameColor, format, drawComposite]);
 
   if (!imageUrl || !ready) return null;
 
