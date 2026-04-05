@@ -105,11 +105,33 @@ const SIZE_SUGGESTIONS = {
 // ---- Formulaire creation / edition ----
 function ItemForm({ onClose, onSaved, tx, lang, editItem }) {
   const isEdit = !!editItem;
+
+  // Parser les infos depuis le nom pour pre-remplir en mode edition
+  const parseFromName = (name, variant) => {
+    if (!name) return { brand: '', color: '', detail: '', hasZip: false };
+    const words = name.split(' ');
+    const allColorNames = merchColors.map(c => c.name);
+    const allSizes = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', 'A6', 'A4', 'A3', 'A3+', 'A2'];
+    let color = '', detail = '', brand = '', hasZip = false;
+
+    for (const w of words) {
+      if (w.toLowerCase() === 'zip') { hasZip = true; continue; }
+      if (allSizes.includes(w.toUpperCase())) { detail = w.toUpperCase(); continue; }
+      if (allColorNames.includes(w)) { color = w; continue; }
+      // Le premier mot qui n'est ni variant, ni taille, ni couleur, ni zip = marque
+      if (w !== variant && !brand) { brand = w; }
+    }
+    return { brand, color, detail, hasZip };
+  };
+
+  const parsed = isEdit ? parseFromName(editItem.nameFr, editItem.variant) : { brand: '', color: '', detail: '', hasZip: false };
+
   const [form, setForm] = useState({
     nameFr: editItem?.nameFr || '', nameEn: editItem?.nameEn || '',
     category: editItem?.category || 'textile',
-    variant: editItem?.variant || '', detail: '',
-    color: '', brand: '', hasZip: false,
+    variant: editItem?.variant || '',
+    detail: parsed.detail,
+    color: parsed.color, brand: parsed.brand, hasZip: parsed.hasZip,
     quantity: editItem?.quantity || 0,
     costPrice: editItem?.costPrice || '',
     location: editItem?.location || '',
