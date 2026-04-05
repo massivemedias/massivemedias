@@ -1,12 +1,58 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Package, AlertTriangle, XCircle, CheckCircle, Search,
+  Package, AlertTriangle, XCircle, CheckCircle, Check, Search,
   Edit3, X, Save, Loader2, DollarSign, Archive, Plus,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import api from '../services/api';
 import { merchColors } from '../data/merchData';
+
+// Couleurs triees du plus clair au plus fonce avec traductions
+// Luminance percue: 0.299*R + 0.587*G + 0.114*B
+function hexLuminance(hex) {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return 0.299 * r + 0.587 * g + 0.114 * b;
+}
+
+const COLOR_NAMES_FR = {
+  'White': 'Blanc', 'PFD White': 'Blanc PFD', 'Mint Green': 'Vert Menthe', 'Natural': 'Naturel',
+  'Cornsilk': 'Jaune Mais', 'Light Pink': 'Rose Pale', 'Light Blue': 'Bleu Pale', 'Pistachio': 'Pistache',
+  'Lime': 'Lime', 'Safety Green': 'Vert Fluo', 'Sky': 'Ciel', 'Azalea': 'Azalee',
+  'Ash': 'Cendre', 'Ice Grey': 'Gris Glace', 'Vegas Gold': 'Or Vegas', 'Daisy': 'Marguerite',
+  'Safety Pink': 'Rose Fluo', 'Sand': 'Sable', 'Orchid': 'Orchidee', 'Sport Grey': 'Gris Sport',
+  'Tan': 'Fauve', 'Carolina Blue': 'Bleu Carolina', 'Gold': 'Or', 'Heather Sapphire': 'Saphir Chine',
+  'Safety Orange': 'Orange Fluo', 'Tangerine': 'Mandarine', 'Stone Blue': 'Bleu Pierre',
+  'Indigo Blue': 'Bleu Indigo', 'Orange': 'Orange', 'Heather Cardinal': 'Cardinal Chine',
+  'Heather Indigo': 'Indigo Chine', 'Irish Green': 'Vert Irlandais', 'Prairie Dust': 'Poussiere Prairie',
+  'Antique Irish Green': 'Vert Irlandais Antique', 'Iris': 'Iris', 'Texas Orange': 'Orange Texas',
+  'Heliconia': 'Heliconia', 'Jade Dome': 'Jade', 'Kelly': 'Kelly', 'Olive': 'Olive',
+  'Sapphire': 'Saphir', 'Charcoal': 'Charbon', 'Dark Heather': 'Chine Fonce',
+  'Galapagos Blue': 'Bleu Galapagos', 'Cherry Red': 'Rouge Cerise', 'Military Green': 'Vert Militaire',
+  'Royal': 'Bleu Royal', 'Red': 'Rouge', 'Forest': 'Foret', 'Cardinal Red': 'Rouge Cardinal',
+  'Blue Dusk': 'Bleu Crepuscule', 'Antique Cherry Red': 'Rouge Cerise Antique',
+  'Antique Royal': 'Bleu Royal Antique', 'Heather Navy': 'Marine Chine',
+  'Dark Chocolate': 'Chocolat Noir', 'Maroon': 'Bordeaux', 'Purple': 'Violet',
+  'Metro Blue': 'Bleu Metro', 'Navy': 'Marine', 'Black': 'Noir',
+};
+
+const COLOR_NAMES_ES = {
+  'White': 'Blanco', 'PFD White': 'Blanco PFD', 'Mint Green': 'Verde Menta', 'Natural': 'Natural',
+  'Cornsilk': 'Maiz', 'Light Pink': 'Rosa Claro', 'Light Blue': 'Azul Claro', 'Pistachio': 'Pistacho',
+  'Lime': 'Lima', 'Safety Green': 'Verde Fluo', 'Sky': 'Cielo', 'Azalea': 'Azalea',
+  'Ash': 'Ceniza', 'Ice Grey': 'Gris Hielo', 'Vegas Gold': 'Oro Vegas', 'Daisy': 'Margarita',
+  'Safety Pink': 'Rosa Fluo', 'Sand': 'Arena', 'Orchid': 'Orquidea', 'Sport Grey': 'Gris Sport',
+  'Tan': 'Bronceado', 'Carolina Blue': 'Azul Carolina', 'Gold': 'Oro',
+  'Safety Orange': 'Naranja Fluo', 'Tangerine': 'Mandarina', 'Orange': 'Naranja',
+  'Irish Green': 'Verde Irlandes', 'Heliconia': 'Heliconia', 'Olive': 'Oliva',
+  'Sapphire': 'Zafiro', 'Charcoal': 'Carbon', 'Cherry Red': 'Rojo Cereza',
+  'Military Green': 'Verde Militar', 'Royal': 'Azul Real', 'Red': 'Rojo', 'Forest': 'Bosque',
+  'Maroon': 'Granate', 'Purple': 'Purpura', 'Navy': 'Marino', 'Black': 'Negro',
+};
+
+const SORTED_COLORS = [...merchColors].sort((a, b) => hexLuminance(b.hex) - hexLuminance(a.hex));
 
 const STATUS_CONFIG = {
   ok: { label: { fr: 'OK', en: 'OK', es: 'OK' }, icon: CheckCircle, color: 'bg-green-500/20 text-green-400' },
@@ -57,10 +103,10 @@ const SIZE_SUGGESTIONS = {
 };
 
 // ---- Formulaire creation ----
-function CreateItemForm({ onClose, onCreated, tx }) {
+function CreateItemForm({ onClose, onCreated, tx, lang }) {
   const [form, setForm] = useState({
     nameFr: '', nameEn: '', category: 'textile', variant: '', detail: '',
-    color: '', brand: '', quantity: 0, costPrice: '', location: '', notes: '',
+    color: '', brand: '', hasZip: false, quantity: 0, costPrice: '', location: '', notes: '',
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -73,7 +119,7 @@ function CreateItemForm({ onClose, onCreated, tx }) {
 
   // Auto-generer le nom FR depuis les champs
   const autoName = () => {
-    const parts = [form.brand, form.variant, form.color, form.detail].filter(Boolean);
+    const parts = [form.brand, form.variant, form.hasZip ? 'Zip' : '', form.color, form.detail].filter(Boolean);
     if (parts.length > 0) {
       set('nameFr', parts.join(' '));
     }
@@ -99,7 +145,7 @@ function CreateItemForm({ onClose, onCreated, tx }) {
       setCreatedSku(res.data?.data?.sku || '');
       onCreated();
       // Reset pour ajouter un autre
-      setForm(f => ({ ...f, nameFr: '', nameEn: '', variant: '', detail: '', color: '', brand: '', quantity: 0, costPrice: '', notes: '' }));
+      setForm(f => ({ ...f, nameFr: '', nameEn: '', variant: '', detail: '', color: '', brand: '', hasZip: false, quantity: 0, costPrice: '', notes: '' }));
     } catch (err) {
       setError(err.response?.data?.error?.message || 'Erreur de creation');
     } finally {
@@ -242,35 +288,46 @@ function CreateItemForm({ onClose, onCreated, tx }) {
             />
           </div>
 
-          {/* Couleur (ronds clickables depuis merchData) */}
+          {/* Couleur (liste deroulante triee clair->fonce) */}
           <div>
             <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-1">
               {tx({ fr: 'Couleur', en: 'Color', es: 'Color' })}
-              {form.color && <span className="text-accent ml-2 normal-case font-normal">{form.color}</span>}
             </label>
-            <div className="flex flex-wrap gap-1.5 mb-2 max-h-24 overflow-y-auto rounded-lg p-1.5 bg-black/10">
-              {merchColors.map(c => (
-                <button
-                  key={c.id}
-                  type="button"
-                  onClick={() => { set('color', c.name); }}
-                  title={c.name}
-                  className={`w-6 h-6 rounded-full border-2 transition-all flex-shrink-0 ${
-                    form.color === c.name ? 'border-accent scale-110 ring-2 ring-accent/30' : 'border-white/10 hover:border-white/30'
-                  }`}
-                  style={{ backgroundColor: c.hex }}
-                />
-              ))}
+            <div className="flex items-center gap-2">
+              {form.color && (() => {
+                const c = merchColors.find(x => x.name === form.color);
+                return c ? <span className="w-5 h-5 rounded-full border border-white/20 flex-shrink-0" style={{ backgroundColor: c.hex }} /> : null;
+              })()}
+              <select
+                value={form.color}
+                onChange={(e) => { set('color', e.target.value); }}
+                onBlur={autoName}
+                className="flex-1 rounded-lg bg-black/20 text-heading text-sm px-3 py-2.5 outline-none border border-white/5 focus:border-accent"
+              >
+                <option value="">{tx({ fr: '-- Choisir une couleur --', en: '-- Choose a color --', es: '-- Elegir un color --' })}</option>
+                {SORTED_COLORS.map(c => (
+                  <option key={c.id} value={c.name}>
+                    {lang === 'es' ? (COLOR_NAMES_ES[c.name] || c.name) : lang === 'fr' ? (COLOR_NAMES_FR[c.name] || c.name) : c.name}
+                  </option>
+                ))}
+              </select>
             </div>
-            <input
-              type="text"
-              value={form.color}
-              onChange={(e) => set('color', e.target.value)}
-              onBlur={autoName}
-              placeholder="Ou saisir manuellement..."
-              className="w-full rounded-lg bg-black/20 text-heading text-sm px-3 py-2 outline-none border border-white/5 focus:border-accent placeholder:text-grey-muted/50"
-            />
           </div>
+
+          {/* Case Zip */}
+          <label className="flex items-center gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={form.hasZip}
+              onChange={(e) => { set('hasZip', e.target.checked); }}
+              onBlur={autoName}
+              className="sr-only"
+            />
+            <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${form.hasZip ? 'bg-accent border-accent' : 'border-grey-muted/50'}`}>
+              {form.hasZip && <Check size={14} className="text-white" />}
+            </div>
+            <span className="text-heading text-sm font-medium">Zip</span>
+          </label>
 
           {/* Nom genere (modifiable) */}
           <div>
@@ -618,6 +675,7 @@ function AdminInventaire() {
             onClose={() => setShowCreate(false)}
             onCreated={() => fetchData()}
             tx={tx}
+            lang={lang}
           />
         )}
       </AnimatePresence>
