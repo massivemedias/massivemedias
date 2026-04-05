@@ -102,11 +102,18 @@ const SIZE_SUGGESTIONS = {
   default: [],
 };
 
-// ---- Formulaire creation ----
-function CreateItemForm({ onClose, onCreated, tx, lang }) {
+// ---- Formulaire creation / edition ----
+function ItemForm({ onClose, onSaved, tx, lang, editItem }) {
+  const isEdit = !!editItem;
   const [form, setForm] = useState({
-    nameFr: '', nameEn: '', category: 'textile', variant: '', detail: '',
-    color: '', brand: '', hasZip: false, quantity: 0, costPrice: '', location: '', notes: '',
+    nameFr: editItem?.nameFr || '', nameEn: editItem?.nameEn || '',
+    category: editItem?.category || 'textile',
+    variant: editItem?.variant || '', detail: '',
+    color: '', brand: '', hasZip: false,
+    quantity: editItem?.quantity || 0,
+    costPrice: editItem?.costPrice || '',
+    location: editItem?.location || '',
+    notes: editItem?.notes || '',
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -131,23 +138,38 @@ function CreateItemForm({ onClose, onCreated, tx, lang }) {
     setSaving(true);
     setError('');
     try {
-      const res = await api.post('/inventory-items/create', {
-        nameFr: form.nameFr,
-        nameEn: form.nameEn || form.nameFr,
-        category: form.category,
-        variant: form.variant,
-        detail: form.detail,
-        quantity: Number(form.quantity) || 0,
-        costPrice: form.costPrice ? Number(form.costPrice) : 0,
-        location: form.location,
-        notes: form.notes,
-      });
-      setCreatedSku(res.data?.data?.sku || '');
-      onCreated();
-      // Reset pour ajouter un autre
-      setForm(f => ({ ...f, nameFr: '', nameEn: '', variant: '', detail: '', color: '', brand: '', hasZip: false, quantity: 0, costPrice: '', notes: '' }));
+      if (isEdit) {
+        // Mode edition: mettre a jour l'item existant
+        await api.put(`/inventory-items/${editItem.documentId}/adjust`, {
+          nameFr: form.nameFr,
+          quantity: Number(form.quantity) || 0,
+          costPrice: form.costPrice ? Number(form.costPrice) : 0,
+          location: form.location,
+          notes: form.notes,
+        });
+        setCreatedSku('');
+        onSaved();
+        onClose();
+      } else {
+        // Mode creation
+        const res = await api.post('/inventory-items/create', {
+          nameFr: form.nameFr,
+          nameEn: form.nameEn || form.nameFr,
+          category: form.category,
+          variant: form.variant,
+          detail: form.detail,
+          quantity: Number(form.quantity) || 0,
+          costPrice: form.costPrice ? Number(form.costPrice) : 0,
+          location: form.location,
+          notes: form.notes,
+        });
+        setCreatedSku(res.data?.data?.sku || '');
+        onSaved();
+        // Reset pour ajouter un autre
+        setForm(f => ({ ...f, nameFr: '', nameEn: '', variant: '', detail: '', color: '', brand: '', hasZip: false, quantity: 0, costPrice: '', notes: '' }));
+      }
     } catch (err) {
-      setError(err.response?.data?.error?.message || 'Erreur de creation');
+      setError(err.response?.data?.error?.message || 'Erreur');
     } finally {
       setSaving(false);
     }
@@ -164,7 +186,9 @@ function CreateItemForm({ onClose, onCreated, tx, lang }) {
       >
         <div className="flex items-center justify-between">
           <h3 className="text-heading font-heading font-bold text-lg">
-            {tx({ fr: 'Ajouter au stock', en: 'Add to stock', es: 'Agregar al stock' })}
+            {isEdit
+              ? tx({ fr: 'Modifier l\'item', en: 'Edit item', es: 'Editar item' })
+              : tx({ fr: 'Ajouter au stock', en: 'Add to stock', es: 'Agregar al stock' })}
           </h3>
           <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-white/10 text-grey-muted"><X size={18} /></button>
         </div>
@@ -423,10 +447,12 @@ function CreateItemForm({ onClose, onCreated, tx, lang }) {
             disabled={!form.nameFr || !form.category || saving}
             className="w-full py-3 rounded-xl bg-accent text-white font-semibold text-sm disabled:opacity-40 transition-opacity flex items-center justify-center gap-2"
           >
-            {saving ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
+            {saving ? <Loader2 size={16} className="animate-spin" /> : isEdit ? <Save size={16} /> : <Plus size={16} />}
             {saving
-              ? tx({ fr: 'Creation...', en: 'Creating...', es: 'Creando...' })
-              : tx({ fr: 'Creer l\'item', en: 'Create item', es: 'Crear item' })}
+              ? tx({ fr: 'Sauvegarde...', en: 'Saving...', es: 'Guardando...' })
+              : isEdit
+                ? tx({ fr: 'Sauvegarder', en: 'Save', es: 'Guardar' })
+                : tx({ fr: 'Creer l\'item', en: 'Create item', es: 'Crear item' })}
           </button>
         </form>
       </motion.div>
@@ -444,13 +470,11 @@ function AdminInventaire() {
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterCategory, setFilterCategory] = useState('all');
-  const [editingId, setEditingId] = useState(null);
-  const [editData, setEditData] = useState({ quantity: 0, nameFr: '', costPrice: '', location: '', notes: '' });
-  const [saving, setSaving] = useState(false);
-  const [showCreate, setShowCreate] = useState(false);
+  const [showForm, setShowForm] = useState(false); // true = creation, item = edition
+  const [editItem, setEditItem] = useState(null);
   const [sortKey, setSortKey] = useState('nameFr');
   const [sortDir, setSortDir] = useState('asc');
-  const [deleting, setDeleting] = useState(null); // documentId en attente de confirmation
+  const [deleting, setDeleting] = useState(null);
 
   const fetchData = useCallback(async () => {
     try {
@@ -468,31 +492,14 @@ function AdminInventaire() {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  const handleSave = async (documentId) => {
-    setSaving(true);
-    try {
-      await api.put(`/inventory-items/${documentId}/adjust`, {
-        ...editData,
-        costPrice: editData.costPrice ? Number(editData.costPrice) : undefined,
-      });
-      setEditingId(null);
-      await fetchData();
-    } catch (err) {
-      console.error('Erreur sauvegarde:', err);
-    } finally {
-      setSaving(false);
-    }
+  const openEdit = (item) => {
+    setEditItem(item);
+    setShowForm(true);
   };
 
-  const startEdit = (item) => {
-    setEditingId(item.documentId);
-    setEditData({
-      quantity: item.quantity || 0,
-      nameFr: item.nameFr || '',
-      costPrice: item.costPrice || '',
-      location: item.location || '',
-      notes: item.notes || '',
-    });
+  const openCreate = () => {
+    setEditItem(null);
+    setShowForm(true);
   };
 
   const handleDelete = async (documentId) => {
@@ -536,6 +543,7 @@ function AdminInventaire() {
     if (sortKey === 'nameFr') { va = getName(a).toLowerCase(); vb = getName(b).toLowerCase(); }
     else if (sortKey === 'sku') { va = (a.sku || '').toLowerCase(); vb = (b.sku || '').toLowerCase(); }
     else if (sortKey === 'category') { va = a.category || ''; vb = b.category || ''; }
+    else if (sortKey === 'variant') { va = (a.variant || '').toLowerCase(); vb = (b.variant || '').toLowerCase(); }
     else if (sortKey === 'quantity') { va = a.quantity || 0; vb = b.quantity || 0; }
     else { va = ''; vb = ''; }
     if (typeof va === 'number') return sortDir === 'asc' ? va - vb : vb - va;
@@ -557,7 +565,7 @@ function AdminInventaire() {
           {tx({ fr: 'Gestion du stock en temps reel', en: 'Real-time stock management', es: 'Gestion de stock en tiempo real' })}
         </p>
         <button
-          onClick={() => setShowCreate(true)}
+          onClick={openCreate}
           className="flex items-center gap-2 px-4 py-2 rounded-xl bg-accent text-white text-sm font-semibold hover:bg-accent/90 transition-colors"
         >
           <Plus size={16} />
@@ -629,15 +637,16 @@ function AdminInventaire() {
             <thead>
               <tr className="text-grey-muted text-xs uppercase tracking-wider">
                 {[
-                  { key: 'nameFr', label: tx({ fr: 'Produit', en: 'Product', es: 'Producto' }), align: 'text-left' },
-                  { key: 'sku', label: 'SKU', align: 'text-left' },
-                  { key: 'category', label: tx({ fr: 'Categorie', en: 'Category', es: 'Categoria' }), align: 'text-left' },
-                  { key: 'quantity', label: 'Stock', align: 'text-center' },
+                  { key: 'category', label: tx({ fr: 'Cat.', en: 'Cat.', es: 'Cat.' }), align: 'text-left', w: 'w-20' },
+                  { key: 'variant', label: 'Type', align: 'text-left', w: 'w-24' },
+                  { key: 'nameFr', label: tx({ fr: 'Produit', en: 'Product', es: 'Producto' }), align: 'text-left', w: '' },
+                  { key: 'sku', label: 'SKU', align: 'text-left', w: 'w-40' },
+                  { key: 'quantity', label: 'Stock', align: 'text-center', w: 'w-16' },
                 ].map(col => (
                   <th
                     key={col.key}
                     onClick={() => toggleSort(col.key)}
-                    className={`${col.align} px-4 py-2 cursor-pointer hover:text-heading transition-colors select-none`}
+                    className={`${col.align} ${col.w} px-3 py-2 cursor-pointer hover:text-heading transition-colors select-none`}
                   >
                     <span className="inline-flex items-center gap-1">
                       {col.label}
@@ -645,7 +654,7 @@ function AdminInventaire() {
                     </span>
                   </th>
                 ))}
-                <th className="text-center px-4 py-2">Actions</th>
+                <th className="text-center px-2 py-2 w-20">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -653,7 +662,6 @@ function AdminInventaire() {
                 {sorted.map((item) => {
                   const statusCfg = STATUS_CONFIG[item.status] || STATUS_CONFIG.ok;
                   const StatusIcon = statusCfg.icon;
-                  const isEditing = editingId === item.documentId;
                   const isDeleting = deleting === item.documentId;
 
                   return (
@@ -662,116 +670,58 @@ function AdminInventaire() {
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
-                      className="shadow-[0_-1px_0_rgba(255,255,255,0.04)] hover:bg-white/[0.02] transition-colors"
+                      className="shadow-[0_-1px_0_rgba(255,255,255,0.04)] hover:bg-white/[0.02] transition-colors cursor-pointer"
+                      onClick={() => openEdit(item)}
                     >
-                      <td className="px-4 py-2 text-heading font-medium">
-                        <div className="flex items-center gap-2">
-                          <StatusIcon size={14} className={statusCfg.color.split(' ')[1]} />
-                          {isEditing ? (
-                            <input
-                              type="text"
-                              value={editData.nameFr}
-                              onChange={(e) => setEditData(d => ({ ...d, nameFr: e.target.value }))}
-                              className="w-full rounded bg-glass text-heading p-1 text-sm"
-                            />
-                          ) : getName(item)}
-                        </div>
-                        {/* Champs supplementaires en mode edition */}
-                        {isEditing && (
-                          <div className="mt-2 space-y-1.5 pl-6">
-                            <div className="flex gap-2">
-                              <input
-                                type="number"
-                                step="0.01"
-                                value={editData.costPrice}
-                                onChange={(e) => setEditData(d => ({ ...d, costPrice: e.target.value }))}
-                                placeholder={tx({ fr: 'Prix coutant', en: 'Cost price', es: 'Precio costo' })}
-                                className="w-28 rounded bg-glass text-heading p-1 text-xs"
-                              />
-                              <input
-                                type="text"
-                                value={editData.location}
-                                onChange={(e) => setEditData(d => ({ ...d, location: e.target.value }))}
-                                placeholder={tx({ fr: 'Emplacement', en: 'Location', es: 'Ubicacion' })}
-                                className="flex-1 rounded bg-glass text-heading p-1 text-xs"
-                              />
-                            </div>
-                            <input
-                              type="text"
-                              value={editData.notes}
-                              onChange={(e) => setEditData(d => ({ ...d, notes: e.target.value }))}
-                              placeholder="Notes"
-                              className="w-full rounded bg-glass text-heading p-1 text-xs"
-                            />
-                          </div>
-                        )}
-                      </td>
-                      <td className="px-4 py-2 font-mono text-grey-muted text-xs">{item.sku || '-'}</td>
-                      <td className="px-4 py-2 text-grey-muted text-xs">
+                      <td className="px-3 py-2 text-grey-muted text-xs">
                         {CATEGORY_LABELS[item.category] ? tx(CATEGORY_LABELS[item.category]) : item.category}
                       </td>
-                      <td className="px-4 py-2 text-center">
-                        {isEditing ? (
-                          <input
-                            type="number"
-                            value={editData.quantity}
-                            onChange={(e) => setEditData(d => ({ ...d, quantity: Number(e.target.value) }))}
-                            className="w-16 text-center rounded bg-glass text-heading p-1 text-sm"
-                            min="0"
-                          />
-                        ) : (
-                          <span className={`font-medium ${item.status === 'out' ? 'text-red-400' : item.status === 'low' ? 'text-orange-400' : 'text-heading'}`}>
-                            {item.quantity}
-                          </span>
-                        )}
+                      <td className="px-3 py-2 text-heading text-xs font-medium">
+                        {item.variant || '-'}
                       </td>
-                      <td className="px-4 py-2 text-center">
+                      <td className="px-3 py-2 text-heading font-medium text-sm">
+                        <div className="flex items-center gap-1.5">
+                          <StatusIcon size={12} className={statusCfg.color.split(' ')[1]} />
+                          {getName(item)}
+                        </div>
+                      </td>
+                      <td className="px-3 py-2 font-mono text-grey-muted text-[11px]">{item.sku || '-'}</td>
+                      <td className="px-3 py-2 text-center">
+                        <span className={`font-semibold text-sm ${item.status === 'out' ? 'text-red-400' : item.status === 'low' ? 'text-orange-400' : 'text-heading'}`}>
+                          {item.quantity}
+                        </span>
+                      </td>
+                      <td className="px-2 py-2 text-center" onClick={(e) => e.stopPropagation()}>
                         {isDeleting ? (
                           <div className="flex items-center justify-center gap-1">
                             <button
                               onClick={() => handleDelete(item.documentId)}
                               className="px-2 py-1 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 text-[10px] font-semibold transition-colors"
                             >
-                              {tx({ fr: 'Confirmer', en: 'Confirm', es: 'Confirmar' })}
+                              OK
                             </button>
                             <button
                               onClick={() => setDeleting(null)}
-                              className="p-1 rounded-lg bg-glass text-grey-muted hover:text-heading text-xs transition-colors"
+                              className="p-1 rounded-lg text-grey-muted hover:text-heading transition-colors"
                             >
                               <X size={12} />
-                            </button>
-                          </div>
-                        ) : isEditing ? (
-                          <div className="flex items-center justify-center gap-1">
-                            <button
-                              onClick={() => handleSave(item.documentId)}
-                              disabled={saving}
-                              className="p-1.5 rounded-lg bg-green-500/20 text-green-400 hover:bg-green-500/30 transition-colors"
-                            >
-                              {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
-                            </button>
-                            <button
-                              onClick={() => setEditingId(null)}
-                              className="p-1.5 rounded-lg bg-white/5 text-grey-muted hover:text-heading transition-colors"
-                            >
-                              <X size={14} />
                             </button>
                           </div>
                         ) : (
                           <div className="flex items-center justify-center gap-1">
                             <button
-                              onClick={() => startEdit(item)}
+                              onClick={() => openEdit(item)}
                               className="p-1.5 rounded-lg bg-glass text-grey-muted hover:text-accent transition-colors"
                               title={tx({ fr: 'Modifier', en: 'Edit', es: 'Editar' })}
                             >
-                              <Edit3 size={14} />
+                              <Edit3 size={13} />
                             </button>
                             <button
                               onClick={() => setDeleting(item.documentId)}
                               className="p-1.5 rounded-lg bg-glass text-grey-muted hover:text-red-400 transition-colors"
                               title={tx({ fr: 'Supprimer', en: 'Delete', es: 'Eliminar' })}
                             >
-                              <Trash2 size={14} />
+                              <Trash2 size={13} />
                             </button>
                           </div>
                         )}
@@ -794,12 +744,13 @@ function AdminInventaire() {
 
       {/* Modal creation */}
       <AnimatePresence>
-        {showCreate && (
-          <CreateItemForm
-            onClose={() => setShowCreate(false)}
-            onCreated={() => fetchData()}
+        {showForm && (
+          <ItemForm
+            onClose={() => { setShowForm(false); setEditItem(null); }}
+            onSaved={() => fetchData()}
             tx={tx}
             lang={lang}
+            editItem={editItem}
           />
         )}
       </AnimatePresence>
