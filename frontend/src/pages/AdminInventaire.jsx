@@ -239,12 +239,29 @@ function ItemForm({ onClose, onSaved, tx, lang, editItem }) {
             </label>
             <select
               value={form.category}
-              onChange={(e) => { set('category', e.target.value); set('variant', ''); set('detail', ''); }}
+              onChange={(e) => { set('category', e.target.value); if (e.target.value !== 'equipment') { set('variant', ''); set('detail', ''); } }}
               className="w-full rounded-lg bg-black/20 text-heading text-sm px-3 py-2.5 outline-none border border-white/5 focus:border-accent"
             >
               {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
             </select>
           </div>
+
+          {/* Type pour Materiel */}
+          {form.category === 'equipment' && (
+            <div>
+              <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-1">
+                Type
+              </label>
+              <input
+                type="text"
+                value={form.variant}
+                onChange={(e) => set('variant', e.target.value)}
+                onBlur={autoName}
+                placeholder="Ex: Decoupeuse, Imprimante, Presse a chaud..."
+                className="w-full rounded-lg bg-black/20 text-heading text-sm px-3 py-2 outline-none border border-white/5 focus:border-accent placeholder:text-grey-muted/50"
+              />
+            </div>
+          )}
 
           {/* --- Champs specifiques (caches pour Materiel) --- */}
           {form.category !== 'equipment' && (<>
