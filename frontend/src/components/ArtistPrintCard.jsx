@@ -38,7 +38,15 @@ function ArtistPrintCard({ print, minPrice, pricing, selected, onClick, onZoom }
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           loading="lazy"
         />
-        {print.unique && (
+        {print.unique && print.sold && (
+          <>
+            <div className="absolute inset-0 bg-black/40 z-10" />
+            <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-grey-muted text-white text-[9px] font-bold uppercase tracking-wider whitespace-nowrap z-20">
+              {tx({ fr: 'Vendu', en: 'Sold', es: 'Vendido' })}
+            </div>
+          </>
+        )}
+        {print.unique && !print.sold && (
           <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-accent text-white text-[9px] font-bold uppercase tracking-wider whitespace-nowrap z-10">
             {tx({ fr: 'Unique', en: 'Unique', es: 'Única' })}
           </div>

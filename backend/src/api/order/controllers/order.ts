@@ -645,6 +645,50 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
         } catch (err) {
           strapi.log.warn('Could not notify artists:', err);
         }
+
+        // Marquer les pieces uniques comme vendues dans le CMS artiste
+        try {
+          const orderItems: any[] = Array.isArray(order.items) ? order.items : [];
+          for (const item of orderItems) {
+            if (!item.isUnique) continue;
+            const pid = item.productId || '';
+            if (!pid.startsWith('artist-print-')) continue;
+
+            // Extraire le slug artiste et l'id du print
+            // Format productId: artist-print-{slug}-{printId}
+            const parts = pid.replace('artist-print-', '').split('-');
+            if (parts.length < 2) continue;
+
+            // Trouver le slug le plus long qui match un artiste
+            const artists = await strapi.documents('api::artist.artist').findMany({ filters: { active: true } });
+            let matchedArtist: any = null;
+            let printId = '';
+            for (const a of artists) {
+              if (pid.startsWith(`artist-print-${a.slug}-`)) {
+                if (!matchedArtist || a.slug.length > matchedArtist.slug.length) {
+                  matchedArtist = a;
+                  printId = pid.replace(`artist-print-${a.slug}-`, '');
+                }
+              }
+            }
+
+            if (!matchedArtist || !printId) continue;
+
+            const prints = Array.isArray(matchedArtist.prints) ? [...matchedArtist.prints] : [];
+            const idx = prints.findIndex((p: any) => p.id === printId);
+            if (idx === -1) continue;
+
+            // Marquer comme vendu avec la date
+            prints[idx] = { ...prints[idx], sold: true, soldAt: new Date().toISOString() };
+            await strapi.documents('api::artist.artist').update({
+              documentId: matchedArtist.documentId,
+              data: { prints },
+            });
+            strapi.log.info(`Piece unique ${printId} de ${matchedArtist.slug} marquee comme vendue`);
+          }
+        } catch (err) {
+          strapi.log.warn('Could not mark unique pieces as sold:', err);
+        }
       }
     }
 

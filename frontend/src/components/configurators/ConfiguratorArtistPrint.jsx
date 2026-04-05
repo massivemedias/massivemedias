@@ -14,6 +14,7 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {}, onF
   const { artistSlug: loggedArtistSlug } = useUserRole();
 
   const isUnique = selectedPrint?.unique;
+  const isSold = selectedPrint?.sold;
   const fixedFormat = selectedPrint?.fixedFormat;
   const fixedTier = selectedPrint?.fixedTier;
   const noFrame = selectedPrint?.noFrame;
@@ -391,18 +392,26 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {}, onF
         </>
       )}
 
-      {/* Add to cart */}
-      <button onClick={handleAddToCart} disabled={!effectivePrice} className={`btn-primary w-full justify-center text-sm py-3 ${!effectivePrice ? 'opacity-40 cursor-not-allowed' : ''}`}>
-        {added ? (
-          <><Check size={18} className="mr-2" />{tx({ fr: 'Ajoute!', en: 'Added!', es: 'Agregado!' })}</>
-        ) : (
-          <><ShoppingCart size={18} className="mr-2" />{tx({ fr: 'Ajouter au panier', en: 'Add to cart', es: 'Agregar al carrito' })}</>
-        )}
-      </button>
+      {/* Add to cart / Vendu */}
+      {isSold ? (
+        <div className="w-full text-center py-3 rounded-xl bg-grey-muted/20 text-grey-muted text-sm font-semibold">
+          {tx({ fr: 'Cette piece unique a ete vendue', en: 'This unique piece has been sold', es: 'Esta pieza unica ha sido vendida' })}
+        </div>
+      ) : (
+        <>
+          <button onClick={handleAddToCart} disabled={!effectivePrice} className={`btn-primary w-full justify-center text-sm py-3 ${!effectivePrice ? 'opacity-40 cursor-not-allowed' : ''}`}>
+            {added ? (
+              <><Check size={18} className="mr-2" />{tx({ fr: 'Ajoute!', en: 'Added!', es: 'Agregado!' })}</>
+            ) : (
+              <><ShoppingCart size={18} className="mr-2" />{tx({ fr: 'Ajouter au panier', en: 'Add to cart', es: 'Agregar al carrito' })}</>
+            )}
+          </button>
 
-      <Link to="/panier" className="btn-outline w-full justify-center text-xs py-2.5">
-        {tx({ fr: 'Voir le panier', en: 'View cart', es: 'Ver el carrito' })}
-      </Link>
+          <Link to="/panier" className="btn-outline w-full justify-center text-xs py-2.5">
+            {tx({ fr: 'Voir le panier', en: 'View cart', es: 'Ver el carrito' })}
+          </Link>
+        </>
+      )}
 
       <p className="text-grey-muted text-[10px] text-center leading-tight">
         {tx({
