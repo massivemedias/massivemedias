@@ -100,12 +100,11 @@ function InstantMockup({ imageUrl, frameColor = 'black', format = 'a4', classNam
       const matRatio = matW / matH;
       const imgRatio = userImg.naturalWidth / userImg.naturalHeight;
 
-      // Marge du mat autour de l'image (simule le passe-partout)
-      const margin = Math.round(Math.min(matW, matH) * 0.04);
-      const printX = matX + margin;
-      const printY = matY + margin;
-      const printW = matW - margin * 2;
-      const printH = matH - margin * 2;
+      // L'image remplit toute la zone du mat (pas de marge supplementaire)
+      const printX = matX;
+      const printY = matY;
+      const printW = matW;
+      const printH = matH;
       const printRatio = printW / printH;
 
       // Cover crop
