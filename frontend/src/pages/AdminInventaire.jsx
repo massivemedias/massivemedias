@@ -797,7 +797,7 @@ function AdminInventaire() {
                       </td>
                       <td className="px-3 py-2 font-mono text-grey-muted text-[11px] whitespace-nowrap">{item.sku || '-'}</td>
                       <td className="px-3 py-2 text-center">
-                        <span className={`font-semibold text-sm ${item.quantity === 0 ? 'text-yellow-400' : item.status === 'low' ? 'text-orange-400' : 'text-heading'}`}>
+                        <span className={`font-semibold text-sm ${item.quantity === 0 ? 'text-yellow-400' : 'text-heading'}`}>
                           {item.quantity}
                         </span>
                       </td>
