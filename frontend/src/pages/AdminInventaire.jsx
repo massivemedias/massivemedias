@@ -615,6 +615,7 @@ function AdminInventaire() {
       if (va === -1) va = 99; if (vb === -1) vb = 99;
     }
     else if (sortKey === 'quantity') { va = a.quantity || 0; vb = b.quantity || 0; }
+    else if (sortKey === 'location') { va = (a.location || '').toLowerCase(); vb = (b.location || '').toLowerCase(); }
     else { va = ''; vb = ''; }
     if (typeof va === 'number') return sortDir === 'asc' ? va - vb : vb - va;
     return sortDir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
@@ -713,6 +714,7 @@ function AdminInventaire() {
                   { key: 'detail', label: tx({ fr: 'Taille', en: 'Size', es: 'Talla' }), align: 'text-center' },
                   { key: 'sku', label: 'SKU', align: 'text-left' },
                   { key: 'quantity', label: 'Stock', align: 'text-center' },
+                  { key: 'location', label: tx({ fr: 'Emplacement', en: 'Location', es: 'Ubicacion' }), align: 'text-left' },
                 ].map(col => (
                   <th
                     key={col.key}
@@ -782,6 +784,7 @@ function AdminInventaire() {
                           {item.quantity}
                         </span>
                       </td>
+                      <td className="px-3 py-2 text-grey-muted text-xs whitespace-nowrap">{item.location || '-'}</td>
                       <td className="px-2 py-2 text-center" onClick={(e) => e.stopPropagation()}>
                         {isDeleting ? (
                           <div className="flex items-center justify-center gap-1">
