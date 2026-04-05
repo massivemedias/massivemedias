@@ -710,13 +710,14 @@ function AdminInventaire() {
                   const allSizes = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', 'A6', 'A4', 'A3', 'A3+', 'A2'];
                   const size = allSizes.includes(sizeFromSku) ? sizeFromSku : '';
 
-                  // Pour les textiles: afficher la marque (premier mot du nom qui n'est pas le variant)
+                  // Pour les textiles: afficher la marque (nom sans variant, taille, couleur, zip)
                   const displayName = (() => {
                     const name = getName(item);
                     if (item.category !== 'textile') return name;
-                    // Retirer variant, taille, et couleurs connues pour isoler la marque
-                    const words = name.split(' ');
-                    const brand = words.find(w => w !== item.variant && !allSizes.includes(w.toUpperCase()) && w !== 'Zip');
+                    const colorNames = merchColors.map(c => c.name);
+                    const remove = new Set([item.variant, 'Zip', size, ...allSizes]);
+                    colorNames.forEach(c => remove.add(c));
+                    const brand = name.split(' ').filter(w => w && !remove.has(w)).join(' ');
                     return brand || name;
                   })();
 
