@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import api from '../services/api';
+import { merchColors } from '../data/merchData';
 
 const STATUS_CONFIG = {
   ok: { label: { fr: 'OK', en: 'OK', es: 'OK' }, icon: CheckCircle, color: 'bg-green-500/20 text-green-400' },
@@ -42,7 +43,7 @@ const VARIANT_SUGGESTIONS = {
   other: [],
 };
 
-const COLOR_SUGGESTIONS = ['Noir', 'Blanc', 'Gris', 'Navy', 'Rouge', 'Vert'];
+// Couleurs depuis merchData (memes que le configurateur merch)
 
 const SIZE_SUGGESTIONS = {
   textile: ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL'],
@@ -238,23 +239,24 @@ function CreateItemForm({ onClose, onCreated, tx }) {
             />
           </div>
 
-          {/* Couleur */}
+          {/* Couleur (ronds clickables depuis merchData) */}
           <div>
             <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-1">
               {tx({ fr: 'Couleur', en: 'Color', es: 'Color' })}
+              {form.color && <span className="text-accent ml-2 normal-case font-normal">{form.color}</span>}
             </label>
-            <div className="flex flex-wrap gap-1.5 mb-2">
-              {COLOR_SUGGESTIONS.map(c => (
+            <div className="flex flex-wrap gap-1.5 mb-2 max-h-24 overflow-y-auto rounded-lg p-1.5 bg-black/10">
+              {merchColors.map(c => (
                 <button
-                  key={c}
+                  key={c.id}
                   type="button"
-                  onClick={() => { set('color', c); }}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
-                    form.color === c ? 'bg-accent text-white' : 'bg-black/20 text-grey-muted hover:text-heading'
+                  onClick={() => { set('color', c.name); }}
+                  title={c.name}
+                  className={`w-6 h-6 rounded-full border-2 transition-all flex-shrink-0 ${
+                    form.color === c.name ? 'border-accent scale-110 ring-2 ring-accent/30' : 'border-white/10 hover:border-white/30'
                   }`}
-                >
-                  {c}
-                </button>
+                  style={{ backgroundColor: c.hex }}
+                />
               ))}
             </div>
             <input
@@ -262,7 +264,7 @@ function CreateItemForm({ onClose, onCreated, tx }) {
               value={form.color}
               onChange={(e) => set('color', e.target.value)}
               onBlur={autoName}
-              placeholder="Ex: Noir, Blanc, Forest Green..."
+              placeholder="Ou saisir manuellement..."
               className="w-full rounded-lg bg-black/20 text-heading text-sm px-3 py-2 outline-none border border-white/5 focus:border-accent placeholder:text-grey-muted/50"
             />
           </div>
