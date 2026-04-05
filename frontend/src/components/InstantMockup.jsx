@@ -68,8 +68,9 @@ function InstantMockup({ imageUrl, frameColor = 'black', format = 'a4', classNam
         for (let x = 0; x < cw; x++) {
           const i = (y * cw + x) * 4;
           const r = pixels[i], g = pixels[i + 1], b = pixels[i + 2];
-          // Vert vif: R < 120, G > 150, B < 120
-          if (r < 120 && g > 150 && b < 120) {
+          // Vert: detection large pour attraper l'anti-aliasing et la compression
+          const isGreen = g > 100 && g > r * 1.3 && g > b * 1.3;
+          if (isGreen) {
             if (x < minX) minX = x;
             if (x > maxX) maxX = x;
             if (y < minY) minY = y;
