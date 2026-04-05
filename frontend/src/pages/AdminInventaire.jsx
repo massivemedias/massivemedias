@@ -84,7 +84,7 @@ const CATEGORIES = [
 // Variantes suggerees par categorie
 const VARIANT_SUGGESTIONS = {
   textile: ['Hoodie', 'T-Shirt', 'Crewneck'],
-  frame: ['Black', 'White', 'Natural', 'Gold'],
+  frame: ['Noir', 'Blanc', 'Gris'],
   sticker: ['Clear', 'Glossy', 'Holographic', 'Broken Glass', 'Stars'],
   print: ['Fine Art', 'Photo', 'Canvas', 'Metal'],
   merch: ['Tote Bag', 'Mug', 'Tumbler', 'Fanny Pack', 'Pin'],
@@ -96,7 +96,7 @@ const VARIANT_SUGGESTIONS = {
 
 const SIZE_SUGGESTIONS = {
   textile: ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL'],
-  frame: ['A6', 'A4', 'A3', 'A3+', 'A2'],
+  frame: ['A6', 'A4', 'A3', '11x17', 'A3+', '18x24', 'A2'],
   sticker: ['2"', '3"', '4"', '5"'],
   print: ['A6', 'A4', 'A3', 'A3+', 'A2'],
   default: [],
@@ -369,8 +369,8 @@ function ItemForm({ onClose, onSaved, tx, lang, editItem }) {
 
           </>)}
 
-          {/* Marque */}
-          <div>
+          {/* Marque (cache pour cadre et materiel) */}
+          {form.category !== 'frame' && form.category !== 'equipment' && (<div>
             <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-1">
               {tx({ fr: 'Marque', en: 'Brand', es: 'Marca' })}
             </label>
@@ -389,10 +389,10 @@ function ItemForm({ onClose, onSaved, tx, lang, editItem }) {
               placeholder="Ex: Gildan, Bella+Canvas, Stanley/Stella..."
               className="w-full rounded-lg bg-black/20 text-heading text-sm px-3 py-2 outline-none border border-white/5 focus:border-accent placeholder:text-grey-muted/50"
             />
-          </div>
+          </div>)}
 
-          {/* Couleur + Zip (caches pour Materiel) */}
-          {form.category !== 'equipment' && (<>
+          {/* Couleur + Zip (caches pour Materiel et Cadre) */}
+          {form.category !== 'equipment' && form.category !== 'frame' && (<>
           {/* Couleur (dropdown custom avec ronds de couleur) */}
           <div className="relative">
             <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-1">
