@@ -9,15 +9,13 @@
  * Le cadre fait partie de la photo = integration naturelle.
  */
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { X, Sofa, BedDouble, Briefcase, UtensilsCrossed, BookOpen, Flower2 } from 'lucide-react';
+import { X, Sofa, BedDouble, Briefcase, Flower2 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 
 const SCENES = [
-  { id: 'living_room', icon: Sofa, fr: 'Salon', en: 'Living Room', es: 'Salon' },
   { id: 'bedroom', icon: BedDouble, fr: 'Chambre', en: 'Bedroom', es: 'Dormitorio' },
+  { id: 'living_room', icon: Sofa, fr: 'Salon', en: 'Living Room', es: 'Salon' },
   { id: 'office', icon: Briefcase, fr: 'Bureau', en: 'Office', es: 'Oficina' },
-  { id: 'dining', icon: UtensilsCrossed, fr: 'Salle a manger', en: 'Dining Room', es: 'Comedor' },
-  { id: 'studio', icon: BookOpen, fr: 'Studio', en: 'Studio', es: 'Estudio' },
   { id: 'zen', icon: Flower2, fr: 'Zen', en: 'Zen', es: 'Zen' },
 ];
 
@@ -25,16 +23,13 @@ const MAT_COLOR = { r: 240, g: 237, b: 232 }; // #f0ede8
 
 function InstantMockup({ imageUrl, frameColor = 'black', format = 'a4', className = '' }) {
   const { tx } = useLang();
-  const canvasRef = useRef(null);
+  const canvasRefs = useRef({});
   const lightboxCanvasRef = useRef(null);
-  const [sceneIdx, setSceneIdx] = useState(0);
-  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxScene, setLightboxScene] = useState(null);
   const [ready, setReady] = useState(false);
 
   const roomImgCache = useRef({});
   const userImgRef = useRef(null);
-  const scene = SCENES[sceneIdx];
-  const roomKey = `${scene.id}_${frameColor}`;
 
   useEffect(() => {
     if (!imageUrl) { setReady(false); return; }
@@ -45,8 +40,9 @@ function InstantMockup({ imageUrl, frameColor = 'black', format = 'a4', classNam
     img.src = imageUrl;
   }, [imageUrl]);
 
-  const drawComposite = useCallback((canvas, targetWidth) => {
+  const drawComposite = useCallback((canvas, targetWidth, sceneId) => {
     if (!canvas || !userImgRef.current) return;
+    const roomKey = `${sceneId}_${frameColor}`;
 
     const doRender = (roomImg) => {
       const roomRatio = roomImg.naturalHeight / roomImg.naturalWidth;
@@ -129,62 +125,48 @@ function InstantMockup({ imageUrl, frameColor = 'black', format = 'a4', classNam
       img.onload = () => { roomImgCache.current[roomKey] = img; doRender(img); };
       img.src = roomSrc;
     }
-  }, [roomKey]);
+  }, [frameColor]);
 
+  // Dessiner tous les mockups quand ready ou quand frameColor change
   useEffect(() => {
-    if (ready && canvasRef.current) drawComposite(canvasRef.current, 800);
-  }, [ready, drawComposite]);
+    if (!ready) return;
+    SCENES.forEach(s => {
+      const canvas = canvasRefs.current[s.id];
+      if (canvas) drawComposite(canvas, 600, s.id);
+    });
+  }, [ready, frameColor, drawComposite]);
 
+  // Lightbox
   useEffect(() => {
-    if (lightboxOpen && lightboxCanvasRef.current && ready) drawComposite(lightboxCanvasRef.current, 1400);
-  }, [lightboxOpen, ready, drawComposite]);
+    if (lightboxScene && lightboxCanvasRef.current && ready) {
+      drawComposite(lightboxCanvasRef.current, 1400, lightboxScene);
+    }
+  }, [lightboxScene, ready, frameColor, drawComposite]);
 
   if (!imageUrl || !ready) return null;
 
   return (
-    <div className={`space-y-2 ${className}`}>
-      <canvas
-        ref={canvasRef}
-        className="w-full rounded-xl cursor-pointer shadow-lg"
-        onClick={() => setLightboxOpen(true)}
-      />
-      <div className="flex items-center justify-center gap-1 flex-wrap">
-        {SCENES.map((s, i) => {
-          const Icon = s.icon;
-          return (
-            <button key={s.id} onClick={() => setSceneIdx(i)}
-              className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-medium transition-all ${
-                i === sceneIdx ? 'bg-accent text-white' : 'bg-black/20 text-grey-muted hover:text-heading'
-              }`}>
-              <Icon size={10} />
-              {tx({ fr: s.fr, en: s.en, es: s.es })}
-            </button>
-          );
-        })}
-      </div>
-      {lightboxOpen && (
+    <div className={`space-y-3 ${className}`}>
+      {/* Tous les mockups affiches */}
+      {SCENES.map(s => (
+        <canvas
+          key={s.id}
+          ref={el => { canvasRefs.current[s.id] = el; }}
+          className="w-full rounded-xl cursor-pointer shadow-lg"
+          onClick={() => setLightboxScene(s.id)}
+        />
+      ))}
+
+      {/* Lightbox */}
+      {lightboxScene && (
         <div className="fixed inset-0 z-[9999] bg-black/90 flex items-center justify-center p-4 sm:p-8"
-          onClick={() => setLightboxOpen(false)}>
-          <button onClick={() => setLightboxOpen(false)}
+          onClick={() => setLightboxScene(null)}>
+          <button onClick={() => setLightboxScene(null)}
             className="absolute top-4 right-4 p-2 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors z-10">
             <X size={24} />
           </button>
           <div className="w-full max-w-5xl" onClick={(e) => e.stopPropagation()}>
             <canvas ref={lightboxCanvasRef} className="w-full rounded-lg" />
-            <div className="flex items-center justify-center gap-2 mt-4 flex-wrap">
-              {SCENES.map((s, i) => {
-                const Icon = s.icon;
-                return (
-                  <button key={s.id} onClick={() => setSceneIdx(i)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                      i === sceneIdx ? 'bg-accent text-white' : 'bg-white/10 text-white/60 hover:text-white'
-                    }`}>
-                    <Icon size={12} />
-                    {tx({ fr: s.fr, en: s.en, es: s.es })}
-                  </button>
-                );
-              })}
-            </div>
           </div>
         </div>
       )}

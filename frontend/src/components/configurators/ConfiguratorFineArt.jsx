@@ -226,40 +226,6 @@ function ConfiguratorFineArt() {
               </div>
             )}
             {imageFiles.length > 1 && <div className="w-px h-4 bg-white/10" />}
-            {/* Mini cadres toggle a cote du preview */}
-            <div className="flex items-center gap-1.5">
-              <button
-                onClick={() => { setWithFrame(false); }}
-                title={tx({ fr: 'Sans cadre', en: 'No frame', es: 'Sin marco' })}
-                className={`w-7 h-8 rounded-[2px] border transition-all ${
-                  !withFrame ? 'border-accent bg-accent/20' : 'border-white/15 bg-white/5 hover:border-white/30'
-                }`}
-              >
-                <div className={`w-3.5 h-4.5 mx-auto rounded-[1px] ${!withFrame ? 'bg-accent/40' : 'bg-white/10'}`} />
-              </button>
-              <button
-                onClick={() => { setWithFrame(true); setFrameColor('black'); }}
-                title={tx({ fr: 'Cadre noir', en: 'Black frame', es: 'Marco negro' })}
-                className={`w-7 h-8 rounded-[2px] border transition-all ${
-                  withFrame && frameColor === 'black' ? 'border-accent bg-accent/20' : 'border-white/15 bg-white/5 hover:border-white/30'
-                }`}
-              >
-                <div className="w-5 h-6 mx-auto border-2 border-[#1a1a1a] rounded-[1px] flex items-center justify-center">
-                  <div className={`w-2.5 h-3 rounded-[0.5px] ${withFrame && frameColor === 'black' ? 'bg-accent/30' : 'bg-white/8'}`} />
-                </div>
-              </button>
-              <button
-                onClick={() => { setWithFrame(true); setFrameColor('white'); }}
-                title={tx({ fr: 'Cadre blanc', en: 'White frame', es: 'Marco blanco' })}
-                className={`w-7 h-8 rounded-[2px] border transition-all ${
-                  withFrame && frameColor === 'white' ? 'border-accent bg-accent/20' : 'border-white/15 bg-white/5 hover:border-white/30'
-                }`}
-              >
-                <div className="w-5 h-6 mx-auto border-2 border-[#e5e5e5] rounded-[1px] flex items-center justify-center">
-                  <div className={`w-2.5 h-3 rounded-[0.5px] ${withFrame && frameColor === 'white' ? 'bg-accent/30' : 'bg-white/8'}`} />
-                </div>
-              </button>
-            </div>
           </div>
           {/* Info format */}
           <div className="text-center">
