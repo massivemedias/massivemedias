@@ -221,6 +221,9 @@ function ItemForm({ onClose, onSaved, tx, lang, editItem }) {
             </select>
           </div>
 
+          {/* --- Champs specifiques (caches pour Materiel) --- */}
+          {form.category !== 'equipment' && (<>
+
           {/* Variante (chips suggerees) */}
           <div>
             <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-1">
@@ -297,6 +300,8 @@ function ItemForm({ onClose, onSaved, tx, lang, editItem }) {
             </span>
           </div>
 
+          </>)}
+
           {/* Marque */}
           <div>
             <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-1">
@@ -312,6 +317,8 @@ function ItemForm({ onClose, onSaved, tx, lang, editItem }) {
             />
           </div>
 
+          {/* Couleur + Zip (caches pour Materiel) */}
+          {form.category !== 'equipment' && (<>
           {/* Couleur (dropdown custom avec ronds de couleur) */}
           <div className="relative">
             <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-1">
@@ -369,6 +376,7 @@ function ItemForm({ onClose, onSaved, tx, lang, editItem }) {
             </div>
             <span className="text-heading text-sm font-medium">Zip</span>
           </label>
+          </>)}
 
           {/* Nom genere (modifiable) */}
           <div>
