@@ -163,6 +163,10 @@ function ItemForm({ onClose, onSaved, tx, lang, editItem }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    // Pour textile, generer le nom depuis la marque si vide
+    if (form.category === 'textile' && !form.nameFr && form.brand) {
+      form.nameFr = [form.brand, form.variant, form.hasZip ? 'Zip' : '', form.color, form.detail].filter(Boolean).join(' ');
+    }
     if (!form.nameFr || !form.category) return;
     setSaving(true);
     setError('');
@@ -373,7 +377,14 @@ function ItemForm({ onClose, onSaved, tx, lang, editItem }) {
             <input
               type="text"
               value={form.brand}
-              onChange={(e) => set('brand', e.target.value)}
+              onChange={(e) => {
+                set('brand', e.target.value);
+                // Pour textile, la marque = le nom, auto-update en temps reel
+                if (form.category === 'textile') {
+                  const parts = [e.target.value, form.variant, form.hasZip ? 'Zip' : '', form.color, form.detail].filter(Boolean);
+                  set('nameFr', parts.join(' '));
+                }
+              }}
               onBlur={autoName}
               placeholder="Ex: Gildan, Bella+Canvas, Stanley/Stella..."
               className="w-full rounded-lg bg-black/20 text-heading text-sm px-3 py-2 outline-none border border-white/5 focus:border-accent placeholder:text-grey-muted/50"
