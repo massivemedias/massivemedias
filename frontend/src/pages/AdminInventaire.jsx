@@ -288,30 +288,47 @@ function CreateItemForm({ onClose, onCreated, tx, lang }) {
             />
           </div>
 
-          {/* Couleur (liste deroulante triee clair->fonce) */}
-          <div>
+          {/* Couleur (dropdown custom avec ronds de couleur) */}
+          <div className="relative">
             <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-1">
               {tx({ fr: 'Couleur', en: 'Color', es: 'Color' })}
             </label>
-            <div className="flex items-center gap-2">
-              {form.color && (() => {
-                const c = merchColors.find(x => x.name === form.color);
-                return c ? <span className="w-5 h-5 rounded-full border border-white/20 flex-shrink-0" style={{ backgroundColor: c.hex }} /> : null;
-              })()}
-              <select
-                value={form.color}
-                onChange={(e) => { set('color', e.target.value); }}
-                onBlur={autoName}
-                className="flex-1 rounded-lg bg-black/20 text-heading text-sm px-3 py-2.5 outline-none border border-white/5 focus:border-accent"
-              >
-                <option value="">{tx({ fr: '-- Choisir une couleur --', en: '-- Choose a color --', es: '-- Elegir un color --' })}</option>
-                {SORTED_COLORS.map(c => (
-                  <option key={c.id} value={c.name}>
-                    {lang === 'es' ? (COLOR_NAMES_ES[c.name] || c.name) : lang === 'fr' ? (COLOR_NAMES_FR[c.name] || c.name) : c.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <button
+              type="button"
+              onClick={() => set('_colorOpen', !form._colorOpen)}
+              className="w-full flex items-center gap-2.5 rounded-lg bg-black/20 text-sm px-3 py-2.5 outline-none border border-white/5 hover:border-white/15 transition-colors text-left"
+            >
+              {form.color ? (
+                <>
+                  <span className="w-4 h-4 rounded-full border border-white/20 flex-shrink-0" style={{ backgroundColor: (merchColors.find(x => x.name === form.color) || {}).hex || '#888' }} />
+                  <span className="text-heading">
+                    {lang === 'es' ? (COLOR_NAMES_ES[form.color] || form.color) : lang === 'fr' ? (COLOR_NAMES_FR[form.color] || form.color) : form.color}
+                  </span>
+                </>
+              ) : (
+                <span className="text-grey-muted">{tx({ fr: '-- Choisir une couleur --', en: '-- Choose a color --', es: '-- Elegir un color --' })}</span>
+              )}
+            </button>
+            {form._colorOpen && (
+              <div className="absolute z-20 mt-1 w-full max-h-52 overflow-y-auto rounded-lg border border-white/10 shadow-xl" style={{ background: '#2a2040' }}>
+                {SORTED_COLORS.map(c => {
+                  const label = lang === 'es' ? (COLOR_NAMES_ES[c.name] || c.name) : lang === 'fr' ? (COLOR_NAMES_FR[c.name] || c.name) : c.name;
+                  return (
+                    <button
+                      key={c.id}
+                      type="button"
+                      onClick={() => { set('color', c.name); set('_colorOpen', false); }}
+                      className={`w-full flex items-center gap-2.5 px-3 py-2 text-sm text-left transition-colors ${
+                        form.color === c.name ? 'bg-accent/20 text-accent' : 'text-heading hover:bg-white/5'
+                      }`}
+                    >
+                      <span className="w-4 h-4 rounded-full border border-white/15 flex-shrink-0" style={{ backgroundColor: c.hex }} />
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           {/* Case Zip */}
