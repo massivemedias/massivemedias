@@ -159,14 +159,8 @@ for (const [route, meta] of Object.entries(ROUTES)) {
   count++;
 }
 
-// Mettre a jour aussi le 404.html
-const notFoundHtml = template.replace(
-  /<title>[^<]*<\/title>/,
-  '<title>Page introuvable | Massive Medias</title>'
-).replace(
-  /name="description" content="[^"]*"/,
-  'name="description" content="Cette page n\'existe pas. Retournez a l\'accueil de Massive Medias."'
-);
-writeFileSync(join(DIST, '404.html'), notFoundHtml);
+// 404.html = copie de index.html (SPA fallback pour Cloudflare Pages)
+// On garde le meme titre/meta - React Router gere la route cote client
+writeFileSync(join(DIST, '404.html'), template);
 
 console.log(`[seo-prerender] ${count} pages pre-rendues + 404.html`);
