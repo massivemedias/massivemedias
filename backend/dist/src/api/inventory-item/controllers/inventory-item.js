@@ -48,10 +48,7 @@ exports.default = strapi_1.factories.createCoreController('api::inventory-item.i
     },
     async adjustStock(ctx) {
         const { documentId } = ctx.params;
-        const { quantity, reserved, notes, nameFr } = ctx.request.body;
-        if (quantity === undefined && reserved === undefined && !nameFr) {
-            return ctx.badRequest('quantity, reserved or nameFr is required');
-        }
+        const { quantity, reserved, notes, nameFr, costPrice, location } = ctx.request.body;
         const item = await strapi.documents('api::inventory-item.inventory-item').findFirst({
             filters: { documentId },
         });
@@ -63,10 +60,14 @@ exports.default = strapi_1.factories.createCoreController('api::inventory-item.i
             updateData.quantity = quantity;
         if (reserved !== undefined)
             updateData.reserved = reserved;
-        if (notes)
+        if (notes !== undefined)
             updateData.notes = notes;
         if (nameFr)
             updateData.nameFr = nameFr;
+        if (costPrice !== undefined)
+            updateData.costPrice = costPrice;
+        if (location !== undefined)
+            updateData.location = location;
         const updated = await strapi.documents('api::inventory-item.inventory-item').update({
             documentId: item.documentId,
             data: updateData,
@@ -137,6 +138,22 @@ exports.default = strapi_1.factories.createCoreController('api::inventory-item.i
         });
         strapi.log.info(`Inventory item created: ${sku} - ${nameFr} (qty: ${quantity || 0})`);
         ctx.body = { data: created };
+    },
+    /**
+     * Supprimer (desactiver) un item d'inventaire
+     */
+    async deleteItem(ctx) {
+        const { documentId } = ctx.params;
+        const item = await strapi.documents('api::inventory-item.inventory-item').findFirst({
+            filters: { documentId },
+        });
+        if (!item)
+            return ctx.notFound('Item not found');
+        await strapi.documents('api::inventory-item.inventory-item').delete({
+            documentId: item.documentId,
+        });
+        strapi.log.info(`Inventory item deleted: ${item.sku} - ${item.nameFr}`);
+        ctx.body = { data: { deleted: true } };
     },
     /**
      * Import depuis facture PDF: cree ou met a jour les items d'inventaire

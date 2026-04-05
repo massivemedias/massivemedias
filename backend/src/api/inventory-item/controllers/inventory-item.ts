@@ -58,11 +58,7 @@ export default factories.createCoreController('api::inventory-item.inventory-ite
 
   async adjustStock(ctx) {
     const { documentId } = ctx.params;
-    const { quantity, reserved, notes, nameFr } = ctx.request.body as any;
-
-    if (quantity === undefined && reserved === undefined && !nameFr) {
-      return ctx.badRequest('quantity, reserved or nameFr is required');
-    }
+    const { quantity, reserved, notes, nameFr, costPrice, location } = ctx.request.body as any;
 
     const item = await strapi.documents('api::inventory-item.inventory-item').findFirst({
       filters: { documentId },
@@ -75,8 +71,10 @@ export default factories.createCoreController('api::inventory-item.inventory-ite
     const updateData: any = {};
     if (quantity !== undefined) updateData.quantity = quantity;
     if (reserved !== undefined) updateData.reserved = reserved;
-    if (notes) updateData.notes = notes;
+    if (notes !== undefined) updateData.notes = notes;
     if (nameFr) updateData.nameFr = nameFr;
+    if (costPrice !== undefined) updateData.costPrice = costPrice;
+    if (location !== undefined) updateData.location = location;
 
     const updated = await strapi.documents('api::inventory-item.inventory-item').update({
       documentId: item.documentId,
@@ -157,6 +155,24 @@ export default factories.createCoreController('api::inventory-item.inventory-ite
 
     strapi.log.info(`Inventory item created: ${sku} - ${nameFr} (qty: ${quantity || 0})`);
     ctx.body = { data: created };
+  },
+
+  /**
+   * Supprimer (desactiver) un item d'inventaire
+   */
+  async deleteItem(ctx) {
+    const { documentId } = ctx.params;
+    const item = await strapi.documents('api::inventory-item.inventory-item').findFirst({
+      filters: { documentId },
+    });
+    if (!item) return ctx.notFound('Item not found');
+
+    await strapi.documents('api::inventory-item.inventory-item').delete({
+      documentId: item.documentId,
+    });
+
+    strapi.log.info(`Inventory item deleted: ${item.sku} - ${item.nameFr}`);
+    ctx.body = { data: { deleted: true } };
   },
 
   /**

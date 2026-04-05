@@ -27,6 +27,12 @@ exports.default = {
             },
         },
         {
+            method: 'DELETE',
+            path: '/inventory-items/:documentId',
+            handler: 'inventory-item.deleteItem',
+            config: { auth: false },
+        },
+        {
             method: 'POST',
             path: '/inventory-items/create',
             handler: 'inventory-item.createItem',

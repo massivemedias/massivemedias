@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Package, AlertTriangle, XCircle, CheckCircle, Check, Search,
-  Edit3, X, Save, Loader2, DollarSign, Archive, Plus,
+  Edit3, X, Save, Loader2, DollarSign, Archive, Plus, ArrowUpDown, Trash2,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import api from '../services/api';
@@ -445,9 +445,12 @@ function AdminInventaire() {
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterCategory, setFilterCategory] = useState('all');
   const [editingId, setEditingId] = useState(null);
-  const [editData, setEditData] = useState({ quantity: 0, nameFr: '' });
+  const [editData, setEditData] = useState({ quantity: 0, nameFr: '', costPrice: '', location: '', notes: '' });
   const [saving, setSaving] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
+  const [sortKey, setSortKey] = useState('nameFr');
+  const [sortDir, setSortDir] = useState('asc');
+  const [deleting, setDeleting] = useState(null); // documentId en attente de confirmation
 
   const fetchData = useCallback(async () => {
     try {
@@ -468,7 +471,10 @@ function AdminInventaire() {
   const handleSave = async (documentId) => {
     setSaving(true);
     try {
-      await api.put(`/inventory-items/${documentId}/adjust`, editData);
+      await api.put(`/inventory-items/${documentId}/adjust`, {
+        ...editData,
+        costPrice: editData.costPrice ? Number(editData.costPrice) : undefined,
+      });
       setEditingId(null);
       await fetchData();
     } catch (err) {
@@ -480,7 +486,28 @@ function AdminInventaire() {
 
   const startEdit = (item) => {
     setEditingId(item.documentId);
-    setEditData({ quantity: item.quantity || 0, nameFr: item.nameFr || '' });
+    setEditData({
+      quantity: item.quantity || 0,
+      nameFr: item.nameFr || '',
+      costPrice: item.costPrice || '',
+      location: item.location || '',
+      notes: item.notes || '',
+    });
+  };
+
+  const handleDelete = async (documentId) => {
+    try {
+      await api.delete(`/inventory-items/${documentId}`);
+      setDeleting(null);
+      await fetchData();
+    } catch (err) {
+      console.error('Erreur suppression:', err);
+    }
+  };
+
+  const toggleSort = (key) => {
+    if (sortKey === key) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
+    else { setSortKey(key); setSortDir('asc'); }
   };
 
   const getName = (item) => lang === 'en' ? (item.nameEn || item.nameFr) : item.nameFr;
@@ -501,6 +528,18 @@ function AdminInventaire() {
     const matchStatus = filterStatus === 'all' || item.status === filterStatus;
     const matchCategory = filterCategory === 'all' || item.category === filterCategory;
     return matchSearch && matchStatus && matchCategory;
+  });
+
+  // Tri
+  const sorted = [...filtered].sort((a, b) => {
+    let va, vb;
+    if (sortKey === 'nameFr') { va = getName(a).toLowerCase(); vb = getName(b).toLowerCase(); }
+    else if (sortKey === 'sku') { va = (a.sku || '').toLowerCase(); vb = (b.sku || '').toLowerCase(); }
+    else if (sortKey === 'category') { va = a.category || ''; vb = b.category || ''; }
+    else if (sortKey === 'quantity') { va = a.quantity || 0; vb = b.quantity || 0; }
+    else { va = ''; vb = ''; }
+    if (typeof va === 'number') return sortDir === 'asc' ? va - vb : vb - va;
+    return sortDir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
   });
 
   if (loading) {
@@ -589,19 +628,33 @@ function AdminInventaire() {
           <table className="w-full text-sm">
             <thead>
               <tr className="text-grey-muted text-xs uppercase tracking-wider">
-                <th className="text-left px-4 py-2">{tx({ fr: 'Produit', en: 'Product', es: 'Producto' })}</th>
-                <th className="text-left px-4 py-2">SKU</th>
-                <th className="text-left px-4 py-2">{tx({ fr: 'Categorie', en: 'Category', es: 'Categoria' })}</th>
-                <th className="text-center px-4 py-2">Stock</th>
+                {[
+                  { key: 'nameFr', label: tx({ fr: 'Produit', en: 'Product', es: 'Producto' }), align: 'text-left' },
+                  { key: 'sku', label: 'SKU', align: 'text-left' },
+                  { key: 'category', label: tx({ fr: 'Categorie', en: 'Category', es: 'Categoria' }), align: 'text-left' },
+                  { key: 'quantity', label: 'Stock', align: 'text-center' },
+                ].map(col => (
+                  <th
+                    key={col.key}
+                    onClick={() => toggleSort(col.key)}
+                    className={`${col.align} px-4 py-2 cursor-pointer hover:text-heading transition-colors select-none`}
+                  >
+                    <span className="inline-flex items-center gap-1">
+                      {col.label}
+                      <ArrowUpDown size={10} className={sortKey === col.key ? 'text-accent' : 'opacity-30'} />
+                    </span>
+                  </th>
+                ))}
                 <th className="text-center px-4 py-2">Actions</th>
               </tr>
             </thead>
             <tbody>
               <AnimatePresence>
-                {filtered.map((item) => {
+                {sorted.map((item) => {
                   const statusCfg = STATUS_CONFIG[item.status] || STATUS_CONFIG.ok;
                   const StatusIcon = statusCfg.icon;
                   const isEditing = editingId === item.documentId;
+                  const isDeleting = deleting === item.documentId;
 
                   return (
                     <motion.tr
@@ -623,6 +676,35 @@ function AdminInventaire() {
                             />
                           ) : getName(item)}
                         </div>
+                        {/* Champs supplementaires en mode edition */}
+                        {isEditing && (
+                          <div className="mt-2 space-y-1.5 pl-6">
+                            <div className="flex gap-2">
+                              <input
+                                type="number"
+                                step="0.01"
+                                value={editData.costPrice}
+                                onChange={(e) => setEditData(d => ({ ...d, costPrice: e.target.value }))}
+                                placeholder={tx({ fr: 'Prix coutant', en: 'Cost price', es: 'Precio costo' })}
+                                className="w-28 rounded bg-glass text-heading p-1 text-xs"
+                              />
+                              <input
+                                type="text"
+                                value={editData.location}
+                                onChange={(e) => setEditData(d => ({ ...d, location: e.target.value }))}
+                                placeholder={tx({ fr: 'Emplacement', en: 'Location', es: 'Ubicacion' })}
+                                className="flex-1 rounded bg-glass text-heading p-1 text-xs"
+                              />
+                            </div>
+                            <input
+                              type="text"
+                              value={editData.notes}
+                              onChange={(e) => setEditData(d => ({ ...d, notes: e.target.value }))}
+                              placeholder="Notes"
+                              className="w-full rounded bg-glass text-heading p-1 text-xs"
+                            />
+                          </div>
+                        )}
                       </td>
                       <td className="px-4 py-2 font-mono text-grey-muted text-xs">{item.sku || '-'}</td>
                       <td className="px-4 py-2 text-grey-muted text-xs">
@@ -644,7 +726,22 @@ function AdminInventaire() {
                         )}
                       </td>
                       <td className="px-4 py-2 text-center">
-                        {isEditing ? (
+                        {isDeleting ? (
+                          <div className="flex items-center justify-center gap-1">
+                            <button
+                              onClick={() => handleDelete(item.documentId)}
+                              className="px-2 py-1 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 text-[10px] font-semibold transition-colors"
+                            >
+                              {tx({ fr: 'Confirmer', en: 'Confirm', es: 'Confirmar' })}
+                            </button>
+                            <button
+                              onClick={() => setDeleting(null)}
+                              className="p-1 rounded-lg bg-glass text-grey-muted hover:text-heading text-xs transition-colors"
+                            >
+                              <X size={12} />
+                            </button>
+                          </div>
+                        ) : isEditing ? (
                           <div className="flex items-center justify-center gap-1">
                             <button
                               onClick={() => handleSave(item.documentId)}
@@ -655,18 +752,28 @@ function AdminInventaire() {
                             </button>
                             <button
                               onClick={() => setEditingId(null)}
-                              className="p-1.5 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-colors"
+                              className="p-1.5 rounded-lg bg-white/5 text-grey-muted hover:text-heading transition-colors"
                             >
                               <X size={14} />
                             </button>
                           </div>
                         ) : (
-                          <button
-                            onClick={() => startEdit(item)}
-                            className="p-1.5 rounded-lg bg-glass text-grey-muted hover:text-accent transition-colors"
-                          >
-                            <Edit3 size={14} />
-                          </button>
+                          <div className="flex items-center justify-center gap-1">
+                            <button
+                              onClick={() => startEdit(item)}
+                              className="p-1.5 rounded-lg bg-glass text-grey-muted hover:text-accent transition-colors"
+                              title={tx({ fr: 'Modifier', en: 'Edit', es: 'Editar' })}
+                            >
+                              <Edit3 size={14} />
+                            </button>
+                            <button
+                              onClick={() => setDeleting(item.documentId)}
+                              className="p-1.5 rounded-lg bg-glass text-grey-muted hover:text-red-400 transition-colors"
+                              title={tx({ fr: 'Supprimer', en: 'Delete', es: 'Eliminar' })}
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
                         )}
                       </td>
                     </motion.tr>
