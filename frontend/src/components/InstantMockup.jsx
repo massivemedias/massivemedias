@@ -127,14 +127,14 @@ function InstantMockup({ imageUrl, frameColor = 'black', format = 'a4', classNam
     }
   }, [frameColor]);
 
-  // Dessiner tous les mockups quand ready ou quand frameColor change
+  const [sceneIdx, setSceneIdx] = useState(0);
+
+  // Dessiner le mockup actif
   useEffect(() => {
     if (!ready) return;
-    SCENES.forEach(s => {
-      const canvas = canvasRefs.current[s.id];
-      if (canvas) drawComposite(canvas, 600, s.id);
-    });
-  }, [ready, frameColor, drawComposite]);
+    const canvas = canvasRefs.current['main'];
+    if (canvas) drawComposite(canvas, 800, SCENES[sceneIdx].id);
+  }, [ready, frameColor, sceneIdx, drawComposite]);
 
   // Lightbox
   useEffect(() => {
@@ -146,16 +146,26 @@ function InstantMockup({ imageUrl, frameColor = 'black', format = 'a4', classNam
   if (!imageUrl || !ready) return null;
 
   return (
-    <div className={`space-y-3 ${className}`}>
-      {/* Tous les mockups affiches */}
-      {SCENES.map(s => (
-        <canvas
-          key={s.id}
-          ref={el => { canvasRefs.current[s.id] = el; }}
-          className="w-full rounded-xl cursor-pointer shadow-lg"
-          onClick={() => setLightboxScene(s.id)}
-        />
-      ))}
+    <div className={`space-y-2 ${className}`}>
+      {/* Dots au dessus */}
+      <div className="flex items-center justify-center gap-2">
+        {SCENES.map((s, i) => (
+          <button
+            key={s.id}
+            onClick={() => setSceneIdx(i)}
+            className={`w-2.5 h-2.5 rounded-full transition-all ${
+              i === sceneIdx ? 'bg-accent scale-125' : 'bg-white/20 hover:bg-white/40'
+            }`}
+          />
+        ))}
+      </div>
+
+      {/* Canvas mockup unique */}
+      <canvas
+        ref={el => { canvasRefs.current['main'] = el; }}
+        className="w-full rounded-xl cursor-pointer shadow-lg"
+        onClick={() => setLightboxScene(SCENES[sceneIdx].id)}
+      />
 
       {/* Lightbox */}
       {lightboxScene && (
