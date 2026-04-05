@@ -790,10 +790,7 @@ function AdminInventaire() {
                         {item.variant || '-'}
                       </td>
                       <td className="px-3 py-2 text-heading font-medium text-sm">
-                        <div className="flex items-center gap-1.5">
-                          <StatusIcon size={12} className={statusCfg.color.split(' ')[1]} />
-                          {displayName}
-                        </div>
+                        {displayName}
                       </td>
                       <td className="px-3 py-2 text-center text-heading text-xs font-semibold">
                         {size || '-'}
