@@ -134,7 +134,7 @@ function ArtisteDetail({ subdomainSlug }) {
   const { artists: cmsArtists } = useArtists();
   const { user } = useAuth();
 
-  const artist = useMemo(() => {
+  const artistRaw = useMemo(() => {
     const local = artistsData[slug] || null;
     const cmsArr = !cmsArtists ? [] : Array.isArray(cmsArtists) ? cmsArtists : Object.values(cmsArtists);
     const cmsArtist = cmsArr.find(a => a.slug === slug);
@@ -173,6 +173,18 @@ function ArtisteDetail({ subdomainSlug }) {
       heroImage: (cms.heroImage && !cms.heroImage.includes('undefined')) ? cms.heroImage : local.heroImage,
     };
   }, [cmsArtists, slug]);
+
+  // Filtrer les prints prives: ne montrer que ceux dont le clientEmail correspond a l'utilisateur connecte
+  const artist = useMemo(() => {
+    if (!artistRaw) return null;
+    const userEmail = user?.email?.toLowerCase();
+    const filteredPrints = (artistRaw.prints || []).filter(p => {
+      if (!p.private) return true; // Pas prive = visible par tous
+      if (!userEmail) return false; // Prive + pas connecte = cache
+      return p.clientEmail?.toLowerCase() === userEmail;
+    });
+    return { ...artistRaw, prints: filteredPrints };
+  }, [artistRaw, user]);
 
   // Charger les renames et hero depuis le backend (visible par tous)
   const [artistData, setArtistData] = useState({ itemRenames: {}, heroImageId: null });

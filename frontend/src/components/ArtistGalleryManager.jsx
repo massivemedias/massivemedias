@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   ImagePlus, Trash2, Loader2, Check, X, Clock, Send, AlertCircle,
   ChevronDown, ChevronUp, Eye, Pencil, Gem, DollarSign, ImageIcon,
-  LayoutGrid, Grid3X3, List,
+  LayoutGrid, Grid3X3, List, Lock, Hash,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -42,6 +42,8 @@ function ArtistGalleryManager() {
   const [uploadFiles, setUploadFiles] = useState([]);
   const [uploadCategory, setUploadCategory] = useState('prints');
   const [uploadTitles, setUploadTitles] = useState({});
+  // Options par image: { type: 'standard'|'unique'|'limited'|'private', limitedQty, clientEmail, customPrice, fixedFormat }
+  const [uploadOptions, setUploadOptions] = useState({});
   const [sending, setSending] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
@@ -269,13 +271,30 @@ function ArtistGalleryManager() {
 
     try {
       const cat = CATEGORIES.find(c => c.id === uploadCategory);
-      const images = uploadFiles.map((f, i) => ({
-        originalUrl: f.url,
-        originalName: f.originalName || f.name || '',
-        originalSize: f.originalSize || f.size || 0,
-        title: uploadTitles[i] || f.name?.replace(/\.[^/.]+$/, '') || '',
-        titleFr: uploadTitles[i] || f.name?.replace(/\.[^/.]+$/, '') || '',
-      }));
+      const images = uploadFiles.map((f, i) => {
+        const opts = uploadOptions[i] || { type: 'standard' };
+        return {
+          originalUrl: f.url,
+          originalName: f.originalName || f.name || '',
+          originalSize: f.originalSize || f.size || 0,
+          title: uploadTitles[i] || f.name?.replace(/\.[^/.]+$/, '') || '',
+          titleFr: uploadTitles[i] || f.name?.replace(/\.[^/.]+$/, '') || '',
+          // Options: unique, edition limitee, privee
+          ...(opts.type === 'unique' ? {
+            unique: true,
+            customPrice: parseFloat(opts.customPrice) || 0,
+            fixedFormat: opts.fixedFormat || 'a3plus',
+          } : {}),
+          ...(opts.type === 'limited' ? {
+            limitedEdition: true,
+            limitedQty: parseInt(opts.limitedQty) || 50,
+          } : {}),
+          ...(opts.type === 'private' ? {
+            private: true,
+            clientEmail: opts.clientEmail || '',
+          } : {}),
+        };
+      });
 
       const res = await createEditRequest({
         artistSlug,
@@ -292,6 +311,7 @@ function ArtistGalleryManager() {
 
       setUploadFiles([]);
       setUploadTitles({});
+      setUploadOptions({});
       setSuccess(tx({
         fr: `${images.length} image(s) soumise(s) pour approbation!`,
         en: `${images.length} image(s) submitted for approval!`,
@@ -345,6 +365,8 @@ function ArtistGalleryManager() {
                 )}
                 {isHero && <div className="absolute top-1 right-1 w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center"><ImageIcon size={8} className="text-white" /></div>}
                 {isUnique && <div className="absolute top-1 left-1 px-1 py-0.5 rounded-full bg-accent/90 text-white text-[7px] font-bold flex items-center gap-0.5"><Gem size={7} /></div>}
+                {item.limitedEdition && <div className="absolute top-1 left-1 px-1 py-0.5 rounded-full bg-blue-500/90 text-white text-[7px] font-bold flex items-center gap-0.5"><Hash size={7} />{item.limitedQty}</div>}
+                {item.private && <div className="absolute top-1 right-7 px-1 py-0.5 rounded-full bg-orange-500/90 text-white text-[7px] font-bold flex items-center gap-0.5"><Lock size={7} /></div>}
                 <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-1.5 py-1 pt-3">
                   <p className="text-white text-[9px] truncate">{title || item.id}</p>
                 </div>
@@ -711,24 +733,106 @@ function ArtistGalleryManager() {
             uploadFn={uploadArtistFile}
           />
 
-          {/* Titres par image */}
+          {/* Config par image */}
           {uploadFiles.length > 0 && (
-            <div className="space-y-2">
-              <label className="text-[11px] text-grey-muted uppercase tracking-wider font-medium block">
-                {tx({ fr: 'Titres (optionnel)', en: 'Titles (optional)', es: 'Titulos (opcional)' })}
-              </label>
-              {uploadFiles.map((f, i) => (
-                <div key={f.id || i} className="flex items-center gap-2">
-                  <span className="text-grey-muted text-[10px] truncate w-24 flex-shrink-0">{f.name}</span>
-                  <input
-                    type="text"
-                    value={uploadTitles[i] || ''}
-                    onChange={(e) => setUploadTitles(prev => ({ ...prev, [i]: e.target.value }))}
-                    className="input-field text-sm py-1.5 flex-1"
-                    placeholder={tx({ fr: 'Titre de l\'oeuvre', en: 'Artwork title', es: 'Titulo de la obra' })}
-                  />
-                </div>
-              ))}
+            <div className="space-y-4">
+              {uploadFiles.map((f, i) => {
+                const opts = uploadOptions[i] || { type: 'standard' };
+                const setOpt = (key, val) => setUploadOptions(prev => ({ ...prev, [i]: { ...opts, [key]: val } }));
+                return (
+                  <div key={f.id || i} className="rounded-xl bg-black/10 p-3 space-y-2">
+                    {/* Titre */}
+                    <div className="flex items-center gap-2">
+                      <span className="text-grey-muted text-[10px] truncate w-20 flex-shrink-0">{f.name}</span>
+                      <input
+                        type="text"
+                        value={uploadTitles[i] || ''}
+                        onChange={(e) => setUploadTitles(prev => ({ ...prev, [i]: e.target.value }))}
+                        className="input-field text-sm py-1.5 flex-1"
+                        placeholder={tx({ fr: 'Titre de l\'oeuvre', en: 'Artwork title', es: 'Titulo de la obra' })}
+                      />
+                    </div>
+
+                    {/* Type d'oeuvre (seulement pour prints) */}
+                    {uploadCategory === 'prints' && (
+                      <>
+                        <div className="flex flex-wrap gap-1.5">
+                          {[
+                            { id: 'standard', label: 'Standard', icon: null },
+                            { id: 'unique', label: tx({ fr: 'Piece unique', en: 'Unique', es: 'Unica' }), icon: Gem },
+                            { id: 'limited', label: tx({ fr: 'Edition limitee', en: 'Limited edition', es: 'Edicion limitada' }), icon: Hash },
+                            { id: 'private', label: tx({ fr: 'Privee', en: 'Private', es: 'Privada' }), icon: Lock },
+                          ].map(t => {
+                            const Icon = t.icon;
+                            return (
+                              <button
+                                key={t.id}
+                                type="button"
+                                onClick={() => setOpt('type', t.id)}
+                                className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-medium transition-all ${
+                                  opts.type === t.id ? 'bg-accent text-white' : 'bg-black/20 text-grey-muted hover:text-heading'
+                                }`}
+                              >
+                                {Icon && <Icon size={10} />}
+                                {t.label}
+                              </button>
+                            );
+                          })}
+                        </div>
+
+                        {/* Options piece unique */}
+                        {opts.type === 'unique' && (
+                          <div className="flex gap-2 pl-2">
+                            <select
+                              value={opts.fixedFormat || 'a3plus'}
+                              onChange={(e) => setOpt('fixedFormat', e.target.value)}
+                              className="rounded-lg bg-black/20 text-heading text-xs px-2 py-1.5 outline-none border border-white/5"
+                            >
+                              {artistFormats.map(f => <option key={f.id} value={f.id}>{f.label}</option>)}
+                            </select>
+                            <input
+                              type="number"
+                              value={opts.customPrice || ''}
+                              onChange={(e) => setOpt('customPrice', e.target.value)}
+                              placeholder={tx({ fr: 'Prix ($)', en: 'Price ($)', es: 'Precio ($)' })}
+                              className="w-24 rounded-lg bg-black/20 text-heading text-xs px-2 py-1.5 outline-none border border-white/5"
+                              min="1"
+                            />
+                          </div>
+                        )}
+
+                        {/* Options edition limitee */}
+                        {opts.type === 'limited' && (
+                          <div className="flex items-center gap-2 pl-2">
+                            <span className="text-grey-muted text-[10px]">{tx({ fr: 'Exemplaires:', en: 'Copies:', es: 'Copias:' })}</span>
+                            <input
+                              type="number"
+                              value={opts.limitedQty || ''}
+                              onChange={(e) => setOpt('limitedQty', e.target.value)}
+                              placeholder="50"
+                              className="w-20 rounded-lg bg-black/20 text-heading text-xs px-2 py-1.5 outline-none border border-white/5"
+                              min="2"
+                            />
+                          </div>
+                        )}
+
+                        {/* Options privee */}
+                        {opts.type === 'private' && (
+                          <div className="pl-2">
+                            <input
+                              type="email"
+                              value={opts.clientEmail || ''}
+                              onChange={(e) => setOpt('clientEmail', e.target.value)}
+                              placeholder={tx({ fr: 'Courriel du client', en: 'Client email', es: 'Email del cliente' })}
+                              className="w-full rounded-lg bg-black/20 text-heading text-xs px-2 py-1.5 outline-none border border-white/5"
+                            />
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
 

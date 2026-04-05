@@ -756,6 +756,23 @@ async function handleAddImages(strapi, artist, requestType, changeData) {
         if (!isStickers && !isMerch) {
             newItem.limited = img.limited || false;
             newItem.unique = img.unique || false;
+            // Piece unique: prix custom + format fixe
+            if (img.unique && img.customPrice) {
+                newItem.customPrice = parseFloat(img.customPrice);
+                newItem.fixedFormat = img.fixedFormat || 'a3plus';
+                newItem.fixedTier = 'studio';
+                newItem.noFrame = true;
+            }
+            // Edition limitee
+            if (img.limitedEdition) {
+                newItem.limitedEdition = true;
+                newItem.limitedQty = parseInt(img.limitedQty) || 50;
+            }
+            // Privee (visible seulement par un client specifique)
+            if (img.private && img.clientEmail) {
+                newItem.private = true;
+                newItem.clientEmail = img.clientEmail;
+            }
         }
         currentItems.push(newItem);
     }
