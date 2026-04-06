@@ -854,17 +854,11 @@ function AdminMassiveIA() {
 
   return (
     <div className="flex flex-col" style={{ height: 'calc(100vh - 750px)' }}>
-      {/* Status indicator (titre gere par AdminLayout) */}
-      {health && (
+      {/* Status indicator - seulement si en ligne */}
+      {health?.status === 'ok' && (
         <div className="flex items-center gap-1.5 mb-4">
-          <span className={`w-2 h-2 rounded-full ${
-            health.status === 'ok' ? 'bg-green-400' : 'bg-red-400'
-          }`} />
-          <span className={`text-xs font-medium ${
-            health.status === 'ok' ? 'text-green-400' : 'text-red-400'
-          }`}>
-            {health.status === 'ok' ? 'En ligne' : 'Hors ligne'}
-          </span>
+          <span className="w-2 h-2 rounded-full bg-green-400" />
+          <span className="text-xs font-medium text-green-400">En ligne</span>
         </div>
       )}
 
