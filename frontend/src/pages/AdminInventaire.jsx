@@ -559,7 +559,7 @@ function AdminInventaire() {
   const [sortKey, setSortKey] = useState('nameFr');
   const [sortDir, setSortDir] = useState('asc');
   const [deleting, setDeleting] = useState(null);
-  const [collapsedCats, setCollapsedCats] = useState([]);
+  const [collapsedCats, setCollapsedCats] = useState(['textile', 'frame', 'equipment', 'sticker', 'print', 'merch', 'other']);
 
   const fetchData = useCallback(async () => {
     try {
@@ -803,7 +803,7 @@ function AdminInventaire() {
                   >
                     <div className="flex items-center gap-2">
                       <ChevronDown size={16} className={`text-grey-muted transition-transform ${isOpen ? '' : '-rotate-90'}`} />
-                      <span className="text-heading font-heading font-bold text-sm">{catLabel}</span>
+                      <span className="text-heading font-heading font-bold text-base">{catLabel}</span>
                       <span className="text-grey-muted text-xs">({catItems.length})</span>
                     </div>
                     <span className="text-heading font-semibold text-sm">{totalQty}</span>
