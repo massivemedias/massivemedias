@@ -159,9 +159,9 @@ function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, t
       onMouseLeave={resumeAutoPlay}
     >
       {/* Zone d'apercu unique */}
-      <div className="relative overflow-hidden rounded-xl" style={{ minHeight: '200px' }}>
+      <div className="relative overflow-hidden rounded-xl">
         {/* Slide 0: FramePreview */}
-        {slideIdx === 0 && (
+        <div className={slideIdx === 0 ? '' : 'hidden'}>
           <div className="flex items-center justify-center p-2 cursor-pointer" onClick={onClickImage}>
             <div style={{ aspectRatio: withFrame ? `${frameW}/${frameH}` : `${w}/${h}`, width: '100%', maxWidth: `${previewMaxW}px` }}
               className="relative transition-all duration-500 ease-out">
@@ -184,16 +184,17 @@ function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, t
               )}
             </div>
           </div>
-        )}
+        </div>
 
-        {/* Slides 1-4: Mockups Canvas */}
-        {slideIdx > 0 && (
+        {/* Slides 1-4: Mockups Canvas (tous rendus, seul l'actif visible) */}
+        {MOCKUP_SCENES.map((s, i) => (
           <canvas
-            ref={el => { canvasRefs.current[MOCKUP_SCENES[slideIdx - 1].id] = el; }}
-            className="w-full cursor-pointer"
+            key={s.id}
+            ref={el => { canvasRefs.current[s.id] = el; }}
+            className={`w-full cursor-pointer ${slideIdx === i + 1 ? '' : 'hidden'}`}
             onClick={() => setLightboxOpen(true)}
           />
-        )}
+        ))}
       </div>
 
       {/* Dots */}
