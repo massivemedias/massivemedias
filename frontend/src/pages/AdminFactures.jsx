@@ -1,12 +1,16 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search, FileText, DollarSign, Loader2, Plus, X, Save,
   CheckCircle, Trash2, Download, Send, Eye, ChevronDown, ChevronUp,
+  ArrowUpRight, ArrowDownLeft,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
+import Tooltip from '../components/Tooltip';
 import { getInvoices, createInvoice, updateInvoice, deleteInvoice, uploadInvoicePDF } from '../services/adminService';
 import { generateManualInvoicePDF } from '../utils/generateInvoice';
+
+const AdminDepenses = lazy(() => import('./AdminDepenses'));
 
 const STATUS_LABELS = {
   draft: { fr: 'Brouillon', en: 'Draft', es: 'Borrador', color: 'bg-gray-500/20 text-gray-400' },
@@ -27,7 +31,7 @@ function generateInvoiceNumber() {
   return `MM-${y}${m}${d}-${rand}`;
 }
 
-function AdminFactures() {
+function FacturesSortantes() {
   const { tx, lang } = useLang();
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -517,6 +521,50 @@ function AdminFactures() {
           );
         })}
       </div>
+    </div>
+  );
+}
+
+// Wrapper avec onglets Sortantes / Entrantes
+function AdminFactures() {
+  const { tx } = useLang();
+  const [tab, setTab] = useState('sortantes');
+
+  return (
+    <div>
+      {/* Onglets */}
+      <div className="flex gap-2 mb-6">
+        <Tooltip text={tx({ fr: 'Factures envoyees a vos clients - vous recevez de l\'argent', en: 'Invoices sent to clients - you receive money', es: 'Facturas enviadas a clientes - recibes dinero' })} position="bottom">
+          <button
+            onClick={() => setTab('sortantes')}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+              tab === 'sortantes' ? 'bg-accent text-white' : 'bg-glass text-grey-muted hover:text-heading'
+            }`}
+          >
+            <ArrowUpRight size={16} />
+            {tx({ fr: 'Sortantes', en: 'Outgoing', es: 'Salientes' })}
+          </button>
+        </Tooltip>
+        <Tooltip text={tx({ fr: 'Factures de vos achats et depenses - l\'argent sort', en: 'Purchase invoices and expenses - money goes out', es: 'Facturas de compras y gastos - el dinero sale' })} position="bottom">
+          <button
+            onClick={() => setTab('entrantes')}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+              tab === 'entrantes' ? 'bg-accent text-white' : 'bg-glass text-grey-muted hover:text-heading'
+            }`}
+          >
+            <ArrowDownLeft size={16} />
+            {tx({ fr: 'Entrantes', en: 'Incoming', es: 'Entrantes' })}
+          </button>
+        </Tooltip>
+      </div>
+
+      {/* Contenu */}
+      {tab === 'sortantes' && <FacturesSortantes />}
+      {tab === 'entrantes' && (
+        <Suspense fallback={<div className="flex justify-center py-12"><Loader2 className="animate-spin text-accent" size={32} /></div>}>
+          <AdminDepenses />
+        </Suspense>
+      )}
     </div>
   );
 }

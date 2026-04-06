@@ -209,7 +209,7 @@ function App() {
               <Route path="tatoueurs" element={<AdminTatoueurs />} />
               <Route path="clients" element={<Navigate to="/admin/utilisateurs" replace />} />
               <Route path="utilisateurs" element={<AdminUtilisateurs />} />
-              <Route path="depenses" element={<AdminDepenses />} />
+              <Route path="depenses" element={<Navigate to="/admin/factures" replace />} />
               <Route path="temoignages" element={<AdminTemoignages />} />
               <Route path="stats" element={<AdminStats />} />
               <Route path="tarifs" element={<AdminTarifs />} />
