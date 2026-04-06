@@ -84,26 +84,18 @@ function InstantMockup({ imageUrl, frameColor = 'black', format = 'a4', classNam
 
       if (maxX <= minX || maxY <= minY) return; // Pas de vert trouve
 
-      // 3. Zone du mat (la ou etait le vert)
-      const matX = minX;
-      const matY = minY;
-      const matW = maxX - minX + 1;
-      const matH = maxY - minY + 1;
+      // 3. Zone du mat avec marge pour eviter les bords verts
+      const margin = 2;
+      const printX = minX + margin;
+      const printY = minY + margin;
+      const printW = maxX - minX + 1 - margin * 2;
+      const printH = maxY - minY + 1 - margin * 2;
+      if (printW <= 0 || printH <= 0) return;
 
-      // 4. Dessiner l'image du client - elle remplit tout le mat
-      // (le format est deja represente par le ratio de la photo du client)
+      const printRatio = printW / printH;
       const userImg = userImgRef.current;
-      const matRatio = matW / matH;
       const imgRatio = userImg.naturalWidth / userImg.naturalHeight;
 
-      // L'image remplit toute la zone du mat (pas de marge supplementaire)
-      const printX = matX;
-      const printY = matY;
-      const printW = matW;
-      const printH = matH;
-      const printRatio = printW / printH;
-
-      // Cover crop
       let sx = 0, sy = 0, sw = userImg.naturalWidth, sh = userImg.naturalHeight;
       if (imgRatio > printRatio) {
         sw = Math.round(sh * printRatio);
@@ -113,7 +105,12 @@ function InstantMockup({ imageUrl, frameColor = 'black', format = 'a4', classNam
         sy = Math.round((userImg.naturalHeight - sh) / 2);
       }
 
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(printX, printY, printW, printH);
+      ctx.clip();
       ctx.drawImage(userImg, sx, sy, sw, sh, printX, printY, printW, printH);
+      ctx.restore();
     };
 
     const roomSrc = `/images/mockups/${roomKey}.webp`;

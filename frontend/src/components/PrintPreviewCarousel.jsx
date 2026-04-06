@@ -79,14 +79,26 @@ function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, t
       ctx.putImageData(imageData, 0, 0);
       if (maxX <= minX || maxY <= minY) return;
 
-      const printX = minX, printY = minY, printW = maxX - minX + 1, printH = maxY - minY + 1;
+      // Reduire la zone de 2px de chaque cote pour eviter les bords verts residuels
+      const margin = 2;
+      const printX = minX + margin, printY = minY + margin;
+      const printW = maxX - minX + 1 - margin * 2, printH = maxY - minY + 1 - margin * 2;
+      if (printW <= 0 || printH <= 0) return;
+
       const printRatio = printW / printH;
       const userImg = userImgRef.current;
       const imgRatio = userImg.naturalWidth / userImg.naturalHeight;
       let sx = 0, sy = 0, sw = userImg.naturalWidth, sh = userImg.naturalHeight;
       if (imgRatio > printRatio) { sw = Math.round(sh * printRatio); sx = Math.round((userImg.naturalWidth - sw) / 2); }
       else { sh = Math.round(sw / printRatio); sy = Math.round((userImg.naturalHeight - sh) / 2); }
+
+      // Clipper pour que l'image ne depasse jamais le cadre
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(printX, printY, printW, printH);
+      ctx.clip();
       ctx.drawImage(userImg, sx, sy, sw, sh, printX, printY, printW, printH);
+      ctx.restore();
     };
 
     if (roomImgCache.current[roomKey]) { doRender(roomImgCache.current[roomKey]); }
