@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Package, AlertTriangle, XCircle, CheckCircle, Check, Search,
-  Edit3, X, Save, Loader2, DollarSign, Archive, Plus, ArrowUpDown, Trash2,
+  Edit3, X, Save, Loader2, DollarSign, Archive, Plus, ArrowUpDown, Trash2, ChevronDown,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import api from '../services/api';
@@ -559,6 +559,7 @@ function AdminInventaire() {
   const [sortKey, setSortKey] = useState('nameFr');
   const [sortDir, setSortDir] = useState('asc');
   const [deleting, setDeleting] = useState(null);
+  const [collapsedCats, setCollapsedCats] = useState([]);
 
   const fetchData = useCallback(async () => {
     try {
@@ -721,137 +722,130 @@ function AdminInventaire() {
         </select>
       </div>
 
-      {/* Table */}
-      <div className="rounded-xl card-bg shadow-lg shadow-black/20 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-grey-muted text-xs uppercase tracking-wider">
-                {[
-                  { key: 'category', label: tx({ fr: 'Cat.', en: 'Cat.', es: 'Cat.' }), align: 'text-left' },
-                  { key: 'variant', label: 'Type', align: 'text-left' },
-                  { key: 'nameFr', label: tx({ fr: 'Produit', en: 'Product', es: 'Producto' }), align: 'text-left' },
-                  { key: 'detail', label: tx({ fr: 'Taille', en: 'Size', es: 'Talla' }), align: 'text-center' },
-                  { key: 'sku', label: 'SKU', align: 'text-left' },
-                  { key: 'quantity', label: 'Stock', align: 'text-center' },
-                  { key: 'location', label: tx({ fr: 'Emplacement', en: 'Location', es: 'Ubicacion' }), align: 'text-left' },
-                ].map(col => (
-                  <th
-                    key={col.key}
-                    onClick={() => toggleSort(col.key)}
-                    className={`${col.align} px-3 py-2 cursor-pointer hover:text-heading transition-colors select-none whitespace-nowrap`}
-                  >
-                    <span className="inline-flex items-center gap-1">
-                      {col.label}
-                      <ArrowUpDown size={10} className={sortKey === col.key ? 'text-accent' : 'opacity-30'} />
-                    </span>
-                  </th>
-                ))}
-                <th className="text-center px-2 py-2">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <AnimatePresence>
-                {sorted.map((item) => {
-                  const statusCfg = STATUS_CONFIG[item.status] || STATUS_CONFIG.ok;
-                  const StatusIcon = statusCfg.icon;
-                  const isDeleting = deleting === item.documentId;
+      {/* Accordeons par categorie */}
+      {(() => {
+        // Grouper par categorie
+        const groups = {};
+        filtered.forEach(item => {
+          const cat = item.category || 'other';
+          if (!groups[cat]) groups[cat] = [];
+          groups[cat].push(item);
+        });
 
-                  // Extraire taille depuis le SKU (TXT-HOODIE-XL-001 -> XL)
-                  const skuParts = (item.sku || '').split('-');
-                  const sizeFromSku = skuParts.length >= 4 ? skuParts[skuParts.length - 2] : '';
-                  const allSizes = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', 'A6', 'A4', 'A3', 'A3+', 'A2'];
-                  const size = allSizes.includes(sizeFromSku) ? sizeFromSku : '';
+        const allSizes = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', 'A6', 'A4', 'A3', 'A3+', 'A2', '11X17', '18X24'];
 
-                  // Pour les textiles: afficher la marque (nom sans variant, taille, couleur, zip)
-                  const displayName = (() => {
-                    const name = getName(item);
-                    if (item.category !== 'textile') return name;
-                    const colorNames = merchColors.map(c => c.name);
-                    const remove = new Set([item.variant, 'Zip', size, ...allSizes]);
-                    colorNames.forEach(c => remove.add(c));
-                    const brand = name.split(' ').filter(w => w && !remove.has(w)).join(' ');
-                    return brand || name;
-                  })();
+        const renderItem = (item) => {
+          const isDeleting2 = deleting === item.documentId;
+          const skuParts = (item.sku || '').split('-');
+          const sizeFromSku = skuParts.length >= 4 ? skuParts[skuParts.length - 2] : '';
+          const size = allSizes.includes(sizeFromSku) ? sizeFromSku : '';
 
-                  return (
-                    <motion.tr
-                      key={item.documentId}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      className="shadow-[0_-1px_0_rgba(255,255,255,0.04)] hover:bg-white/[0.02] transition-colors cursor-pointer"
-                      onClick={() => openEdit(item)}
-                    >
-                      <td className="px-3 py-2 text-grey-muted text-xs whitespace-nowrap">
-                        {CATEGORY_LABELS[item.category] ? tx(CATEGORY_LABELS[item.category]) : item.category}
-                      </td>
-                      <td className="px-3 py-2 text-heading text-xs font-medium whitespace-nowrap">
-                        {item.variant || '-'}
-                      </td>
-                      <td className="px-3 py-2 text-heading font-medium text-sm">
-                        {displayName}
-                      </td>
-                      <td className="px-3 py-2 text-center text-heading text-xs font-semibold">
-                        {size || '-'}
-                      </td>
-                      <td className="px-3 py-2 font-mono text-grey-muted text-[11px] whitespace-nowrap">{item.sku || '-'}</td>
-                      <td className="px-3 py-2 text-center">
-                        <span className={`font-semibold text-sm ${item.quantity === 0 ? 'text-yellow-400' : 'text-heading'}`}>
-                          {item.quantity}
-                        </span>
-                      </td>
-                      <td className="px-3 py-2 text-grey-muted text-xs whitespace-nowrap">{item.location || '-'}</td>
-                      <td className="px-2 py-2 text-center" onClick={(e) => e.stopPropagation()}>
-                        {isDeleting ? (
-                          <div className="flex items-center justify-center gap-1">
-                            <button
-                              onClick={() => handleDelete(item.documentId)}
-                              className="px-2 py-1 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 text-[10px] font-semibold transition-colors"
-                            >
-                              OK
-                            </button>
-                            <button
-                              onClick={() => setDeleting(null)}
-                              className="p-1 rounded-lg text-grey-muted hover:text-heading transition-colors"
-                            >
-                              <X size={12} />
-                            </button>
-                          </div>
-                        ) : (
-                          <div className="flex items-center justify-center gap-1">
-                            <button
-                              onClick={() => openEdit(item)}
-                              className="p-1.5 rounded-lg bg-glass text-grey-muted hover:text-accent transition-colors"
-                              title={tx({ fr: 'Modifier', en: 'Edit', es: 'Editar' })}
-                            >
-                              <Edit3 size={13} />
-                            </button>
-                            <button
-                              onClick={() => setDeleting(item.documentId)}
-                              className="p-1.5 rounded-lg bg-glass text-grey-muted hover:text-red-400 transition-colors"
-                              title={tx({ fr: 'Supprimer', en: 'Delete', es: 'Eliminar' })}
-                            >
-                              <Trash2 size={13} />
-                            </button>
-                          </div>
-                        )}
-                      </td>
-                    </motion.tr>
-                  );
-                })}
-              </AnimatePresence>
-            </tbody>
-          </table>
-        </div>
+          return (
+            <div
+              key={item.documentId}
+              onClick={() => openEdit(item)}
+              className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/[0.03] cursor-pointer transition-colors group"
+            >
+              <span className="text-heading text-sm font-medium flex-1 truncate">{getName(item)}</span>
+              {size && <span className="text-grey-muted text-xs font-mono">{size}</span>}
+              <span className={`font-semibold text-sm w-8 text-center ${item.quantity === 0 ? 'text-yellow-400' : 'text-heading'}`}>{item.quantity}</span>
+              {item.location && <span className="text-grey-muted text-[10px] hidden sm:inline">{item.location}</span>}
+              <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
+                <button onClick={() => openEdit(item)} className="p-1 rounded text-grey-muted hover:text-accent"><Edit3 size={12} /></button>
+                {isDeleting2 ? (
+                  <>
+                    <button onClick={() => handleDelete(item.documentId)} className="px-1.5 py-0.5 rounded bg-red-500/20 text-red-400 text-[9px] font-bold">OK</button>
+                    <button onClick={() => setDeleting(null)} className="p-1 text-grey-muted"><X size={10} /></button>
+                  </>
+                ) : (
+                  <button onClick={() => setDeleting(item.documentId)} className="p-1 rounded text-grey-muted hover:text-red-400"><Trash2 size={12} /></button>
+                )}
+              </div>
+            </div>
+          );
+        };
 
-        {filtered.length === 0 && (
+        const catOrder = ['textile', 'frame', 'equipment', 'sticker', 'print', 'merch', 'other'];
+        const sortedCats = Object.keys(groups).sort((a, b) => catOrder.indexOf(a) - catOrder.indexOf(b));
+
+        if (sortedCats.length === 0) return (
           <div className="p-12 text-center text-grey-muted">
             <Package size={40} className="mx-auto mb-4 opacity-30" />
             <p>{tx({ fr: 'Aucun item trouve', en: 'No items found', es: 'Ningun item encontrado' })}</p>
           </div>
-        )}
-      </div>
+        );
+
+        return (
+          <div className="space-y-2">
+            {sortedCats.map(cat => {
+              const catItems = groups[cat];
+              const catLabel = CATEGORY_LABELS[cat] ? (typeof CATEGORY_LABELS[cat] === 'string' ? CATEGORY_LABELS[cat] : tx(CATEGORY_LABELS[cat])) : cat;
+              const totalQty = catItems.reduce((s, i) => s + (i.quantity || 0), 0);
+              const isOpen = !collapsedCats.includes(cat);
+
+              // Pour textile: sous-grouper par variant (Hoodie, T-Shirt, Crewneck)
+              const hasSubGroups = cat === 'textile';
+              const subGroups = {};
+              if (hasSubGroups) {
+                catItems.forEach(item => {
+                  const variant = item.variant || 'Autre';
+                  if (!subGroups[variant]) subGroups[variant] = [];
+                  subGroups[variant].push(item);
+                });
+              }
+
+              return (
+                <div key={cat} className="rounded-xl card-bg shadow-lg shadow-black/20 overflow-hidden">
+                  {/* Header categorie */}
+                  <button
+                    onClick={() => setCollapsedCats(prev => isOpen ? [...prev, cat] : prev.filter(c => c !== cat))}
+                    className="w-full flex items-center justify-between px-4 py-3 hover:bg-white/[0.02] transition-colors"
+                  >
+                    <div className="flex items-center gap-2">
+                      <ChevronDown size={16} className={`text-grey-muted transition-transform ${isOpen ? '' : '-rotate-90'}`} />
+                      <span className="text-heading font-heading font-bold text-sm">{catLabel}</span>
+                      <span className="text-grey-muted text-xs">({catItems.length})</span>
+                    </div>
+                    <span className="text-heading font-semibold text-sm">{totalQty}</span>
+                  </button>
+
+                  {/* Contenu */}
+                  {isOpen && (
+                    <div className="px-2 pb-2">
+                      {hasSubGroups ? (
+                        // Sous-accordeons par variant
+                        Object.entries(subGroups).map(([variant, vItems]) => {
+                          const vQty = vItems.reduce((s, i) => s + (i.quantity || 0), 0);
+                          const vOpen = !collapsedCats.includes(`${cat}_${variant}`);
+                          return (
+                            <div key={variant} className="ml-2 mb-1">
+                              <button
+                                onClick={() => setCollapsedCats(prev => vOpen ? [...prev, `${cat}_${variant}`] : prev.filter(c => c !== `${cat}_${variant}`))}
+                                className="w-full flex items-center justify-between px-3 py-1.5 rounded-lg hover:bg-white/[0.02] transition-colors"
+                              >
+                                <div className="flex items-center gap-2">
+                                  <ChevronDown size={12} className={`text-grey-muted transition-transform ${vOpen ? '' : '-rotate-90'}`} />
+                                  <span className="text-heading text-xs font-semibold">{variant}</span>
+                                  <span className="text-grey-muted text-[10px]">({vItems.length})</span>
+                                </div>
+                                <span className="text-heading text-xs font-semibold">{vQty}</span>
+                              </button>
+                              {vOpen && <div className="ml-4">{vItems.map(renderItem)}</div>}
+                            </div>
+                          );
+                        })
+                      ) : (
+                        // Liste directe
+                        catItems.map(renderItem)
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        );
+      })()}
 
       {/* Modal creation */}
       <AnimatePresence>
