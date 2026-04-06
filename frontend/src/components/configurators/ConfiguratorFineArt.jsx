@@ -6,7 +6,7 @@ import { useCart } from '../../contexts/CartContext';
 import { useLang } from '../../i18n/LanguageContext';
 import { useProduct } from '../../hooks/useProducts';
 import FileUpload from '../FileUpload';
-import InstantMockup from '../InstantMockup';
+import PrintPreviewCarousel from '../PrintPreviewCarousel';
 import {
   fineArtPrinterTiers as defaultTiers, fineArtFormats as defaultFormats, fineArtFramePrice as defaultFramePrice,
   fineArtFramePriceByFormat, getFineArtPrice as defaultGetPrice, fineArtImages,
@@ -182,68 +182,17 @@ function ConfiguratorFineArt() {
             compact
             hidePreview
           />
-          {/* Preview cadre - swipeable sur mobile */}
-          <div
-            onTouchStart={(e) => {
-              if (imageFiles.length <= 1) return;
-              e.currentTarget._touchX = e.touches[0].clientX;
-            }}
-            onTouchEnd={(e) => {
-              if (imageFiles.length <= 1 || !e.currentTarget._touchX) return;
-              const diff = e.currentTarget._touchX - e.changedTouches[0].clientX;
-              if (Math.abs(diff) > 40) {
-                const dir = diff > 0 ? 1 : -1;
-                setActiveImageIdx(prev => (prev + dir + imageFiles.length) % imageFiles.length);
-              }
-              e.currentTarget._touchX = null;
-            }}
-          >
-            <FramePreview
-              image={previewImage}
-              withFrame={withFrame}
-              frameColor={frameColor}
-              format={format}
-              formats={fineArtFormats}
-              tx={tx}
-              isLandscape={isLandscape}
-              onClickImage={() => previewImage && setLightboxOpen(true)}
-            />
-          </div>
-          {/* Bullets navigation + cadre toggles */}
-          <div className="flex items-center justify-center gap-3">
-            {/* Bullets images */}
-            {imageFiles.length > 1 && (
-              <div className="flex items-center gap-1.5">
-                {imageFiles.map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setActiveImageIdx(i)}
-                    className={`w-2.5 h-2.5 rounded-full transition-all ${
-                      i === activeImageIdx ? 'bg-accent scale-125' : 'bg-white/20 hover:bg-white/40'
-                    }`}
-                  />
-                ))}
-              </div>
-            )}
-            {imageFiles.length > 1 && <div className="w-px h-4 bg-white/10" />}
-          </div>
-          {/* Info format */}
-          <div className="text-center">
-            <span className="text-grey-muted text-[10px]">
-              {formatLabel?.label} · {tier === 'museum'
-                ? tx({ fr: 'Musée', en: 'Museum', es: 'Museo' })
-                : tx({ fr: 'Studio', en: 'Studio', es: 'Studio' })}
-              {withFrame && ` · ${tx({ fr: 'Cadre', en: 'Frame', es: 'Marco' })} ${frameColor === 'black' ? tx({ fr: 'noir', en: 'black', es: 'negro' }) : tx({ fr: 'blanc', en: 'white', es: 'blanco' })}`}
-            </span>
-          </div>
-          {/* Mockup instantane - visible des qu'une image est uploadee */}
-          {previewImage && (
-            <InstantMockup
-              imageUrl={previewImage}
-              frameColor={withFrame ? frameColor : 'black'}
-              format={format}
-            />
-          )}
+          {/* Carrousel unique: FramePreview + Mockups */}
+          <PrintPreviewCarousel
+            image={previewImage}
+            withFrame={withFrame}
+            frameColor={frameColor}
+            format={format}
+            formats={fineArtFormats}
+            tx={tx}
+            isLandscape={isLandscape}
+            onClickImage={() => previewImage && setLightboxOpen(true)}
+          />
         </div>
       </div>
 
