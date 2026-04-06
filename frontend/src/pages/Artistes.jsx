@@ -309,7 +309,7 @@ function Artistes() {
 
           {/* ---- LARGE GRID VIEW ---- */}
           {viewMode === 'large' && (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 mb-12">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4 mb-12">
               {filteredCreators.map((creator, index) => {
                 const tagline = tx({ fr: creator.tagline?.fr || '', en: creator.tagline?.en || '', es: creator.tagline?.es || '' });
                 const flashCount = creator.isTatoueur ? (creator.flashs || []).filter(f => f.status === 'disponible').length : 0;
