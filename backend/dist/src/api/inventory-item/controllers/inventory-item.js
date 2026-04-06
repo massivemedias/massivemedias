@@ -110,20 +110,42 @@ exports.default = strapi_1.factories.createCoreController('api::inventory-item.i
         const variantSlug = (variant || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8) || 'GEN';
         const detailSlug = (detail || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6) || '';
         const skuBase = detailSlug ? `${prefix}-${variantSlug}-${detailSlug}` : `${prefix}-${variantSlug}`;
-        // Trouver le prochain numero pour ce prefixe
-        const existing = await strapi.documents('api::inventory-item.inventory-item').findMany({
-            filters: { sku: { $startsWith: skuBase } },
+        // Auto-merge: chercher un item existant avec le meme SKU base (meme categorie+variant+detail)
+        const existingItems = await strapi.documents('api::inventory-item.inventory-item').findMany({
+            filters: { sku: { $startsWith: skuBase }, active: true },
             sort: 'sku:desc',
         });
+        // Chercher un item identique (meme nom OU meme SKU base avec un seul item)
+        const duplicate = existingItems.find((item) => {
+            const itemName = (item.nameFr || '').toLowerCase().trim();
+            const newName = nameFr.toLowerCase().trim();
+            return itemName === newName;
+        });
+        if (duplicate) {
+            // Merge: ajouter la quantite au stock existant
+            const updated = await strapi.documents('api::inventory-item.inventory-item').update({
+                documentId: duplicate.documentId,
+                data: {
+                    quantity: (duplicate.quantity || 0) + (quantity || 0),
+                    costPrice: costPrice || duplicate.costPrice,
+                    location: location || duplicate.location,
+                    notes: notes ? `${duplicate.notes || ''}\n${notes}`.trim() : duplicate.notes,
+                },
+                populate: ['image', 'product'],
+            });
+            strapi.log.info(`Inventory item merged: ${duplicate.sku} - ${nameFr} (+${quantity || 0} = ${updated.quantity})`);
+            ctx.body = { data: updated, merged: true };
+            return;
+        }
+        // Pas de doublon: creer un nouveau
         let nextNum = 1;
-        if (existing.length > 0) {
-            // Extraire le dernier numero
-            const lastSku = existing[0].sku || '';
+        if (existingItems.length > 0) {
+            const lastSku = existingItems[0].sku || '';
             const match = lastSku.match(/-(\d+)$/);
             if (match)
                 nextNum = parseInt(match[1], 10) + 1;
             else
-                nextNum = existing.length + 1;
+                nextNum = existingItems.length + 1;
         }
         const sku = `${skuBase}-${String(nextNum).padStart(3, '0')}`;
         const created = await strapi.documents('api::inventory-item.inventory-item').create({
