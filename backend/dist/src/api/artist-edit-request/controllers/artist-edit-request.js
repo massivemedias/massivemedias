@@ -756,13 +756,20 @@ async function handleAddImages(strapi, artist, requestType, changeData) {
         if (!isStickers && !isMerch) {
             newItem.limited = img.limited || false;
             newItem.unique = img.unique || false;
-            // Piece unique: prix custom + format fixe
-            if (img.unique && img.customPrice) {
-                newItem.customPrice = parseFloat(img.customPrice);
-                newItem.fixedFormat = img.fixedFormat || 'a3plus';
-                newItem.fixedTier = 'studio';
-                newItem.noFrame = true;
+            // Config commune (format, tier, cadre) pour unique/limited/private
+            if (img.fixedFormat)
+                newItem.fixedFormat = img.fixedFormat;
+            if (img.fixedTier)
+                newItem.fixedTier = img.fixedTier;
+            if (img.frameOption && img.frameOption !== 'none') {
+                newItem.withFrame = true;
+                newItem.frameColor = img.frameOption; // 'black' ou 'white'
             }
+            else if (img.noFrame !== undefined) {
+                newItem.noFrame = img.noFrame;
+            }
+            if (img.customPrice)
+                newItem.customPrice = parseFloat(img.customPrice);
             // Edition limitee
             if (img.limitedEdition) {
                 newItem.limitedEdition = true;
@@ -771,7 +778,9 @@ async function handleAddImages(strapi, artist, requestType, changeData) {
             // Privee (visible seulement par un client specifique)
             if (img.private && img.clientEmail) {
                 newItem.private = true;
-                newItem.clientEmail = img.clientEmail;
+                newItem.clientEmail = img.clientEmail.toLowerCase();
+                // Generer un token unique pour le lien d'achat
+                newItem.privateToken = require('crypto').randomBytes(16).toString('hex');
             }
         }
         currentItems.push(newItem);
@@ -781,6 +790,27 @@ async function handleAddImages(strapi, artist, requestType, changeData) {
         data: { [fieldName]: currentItems },
         status: 'published',
     });
+    // Envoyer un email au client pour les pieces privees
+    for (const item of currentItems) {
+        if (item.private && item.clientEmail && item.privateToken) {
+            const buyLink = `https://massivemedias.com/artistes/${artist.slug}?print=${item.id}&token=${item.privateToken}`;
+            try {
+                const { sendPrivatePrintEmail } = require('../../../utils/email');
+                await sendPrivatePrintEmail({
+                    clientEmail: item.clientEmail,
+                    artistName: artist.name,
+                    printTitle: item.titleFr || item.titleEn || 'Oeuvre',
+                    printImage: item.fullImage || item.image || '',
+                    buyLink,
+                    price: item.customPrice || null,
+                });
+                strapi.log.info(`Email piece privee envoye a ${item.clientEmail} pour ${item.id}`);
+            }
+            catch (emailErr) {
+                strapi.log.warn(`Email piece privee non envoye a ${item.clientEmail}:`, emailErr);
+            }
+        }
+    }
 }
 async function handleMarkUnique(strapi, artist, changeData) {
     const { itemId, customPrice, fixedFormat, fixedTier, category } = changeData || {};

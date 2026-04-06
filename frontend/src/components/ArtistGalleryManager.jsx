@@ -279,20 +279,17 @@ function ArtistGalleryManager() {
           originalSize: f.originalSize || f.size || 0,
           title: uploadTitles[i] || f.name?.replace(/\.[^/.]+$/, '') || '',
           titleFr: uploadTitles[i] || f.name?.replace(/\.[^/.]+$/, '') || '',
-          // Options: unique, edition limitee, privee
-          ...(opts.type === 'unique' ? {
-            unique: true,
-            customPrice: parseFloat(opts.customPrice) || 0,
-            fixedFormat: opts.fixedFormat || 'a3plus',
+          // Config commune (format, tier, cadre) pour unique/limited/private
+          ...((opts.type === 'unique' || opts.type === 'limited' || opts.type === 'private') ? {
+            fixedFormat: opts.fixedFormat || 'a4',
+            fixedTier: opts.fixedTier || 'studio',
+            frameOption: opts.frameOption || 'none',
+            ...(opts.customPrice ? { customPrice: parseFloat(opts.customPrice) } : {}),
           } : {}),
-          ...(opts.type === 'limited' ? {
-            limitedEdition: true,
-            limitedQty: parseInt(opts.limitedQty) || 50,
-          } : {}),
-          ...(opts.type === 'private' ? {
-            private: true,
-            clientEmail: opts.clientEmail || '',
-          } : {}),
+          // Options specifiques
+          ...(opts.type === 'unique' ? { unique: true, noFrame: (opts.frameOption || 'none') === 'none' } : {}),
+          ...(opts.type === 'limited' ? { limitedEdition: true, limitedQty: parseInt(opts.limitedQty) || 50 } : {}),
+          ...(opts.type === 'private' ? { private: true, clientEmail: opts.clientEmail || '' } : {}),
         };
       });
 
@@ -780,52 +777,94 @@ function ArtistGalleryManager() {
                           })}
                         </div>
 
-                        {/* Options piece unique */}
-                        {opts.type === 'unique' && (
-                          <div className="flex gap-2 pl-2">
-                            <select
-                              value={opts.fixedFormat || 'a3plus'}
-                              onChange={(e) => setOpt('fixedFormat', e.target.value)}
-                              className="rounded-lg bg-black/20 text-heading text-xs px-2 py-1.5 outline-none border border-white/5"
-                            >
-                              {artistFormats.map(f => <option key={f.id} value={f.id}>{f.label}</option>)}
-                            </select>
-                            <input
-                              type="number"
-                              value={opts.customPrice || ''}
-                              onChange={(e) => setOpt('customPrice', e.target.value)}
-                              placeholder={tx({ fr: 'Prix ($)', en: 'Price ($)', es: 'Precio ($)' })}
-                              className="w-24 rounded-lg bg-black/20 text-heading text-xs px-2 py-1.5 outline-none border border-white/5"
-                              min="1"
-                            />
-                          </div>
-                        )}
+                        {/* Mini-configurateur (unique, limitee, privee) */}
+                        {(opts.type === 'unique' || opts.type === 'limited' || opts.type === 'private') && (
+                          <div className="pl-2 space-y-2 border-l-2 border-accent/30 ml-1">
+                            {/* Format */}
+                            <div className="flex items-center gap-2">
+                              <span className="text-grey-muted text-[9px] uppercase w-14 flex-shrink-0">Format</span>
+                              <div className="flex flex-wrap gap-1">
+                                {artistFormats.map(f => (
+                                  <button key={f.id} type="button" onClick={() => setOpt('fixedFormat', f.id)}
+                                    className={`px-2 py-0.5 rounded text-[10px] font-medium transition-all ${
+                                      (opts.fixedFormat || 'a4') === f.id ? 'bg-accent text-white' : 'bg-black/20 text-grey-muted hover:text-heading'
+                                    }`}>{f.short || f.id.toUpperCase()}</button>
+                                ))}
+                              </div>
+                            </div>
 
-                        {/* Options edition limitee */}
-                        {opts.type === 'limited' && (
-                          <div className="flex items-center gap-2 pl-2">
-                            <span className="text-grey-muted text-[10px]">{tx({ fr: 'Exemplaires:', en: 'Copies:', es: 'Copias:' })}</span>
-                            <input
-                              type="number"
-                              value={opts.limitedQty || ''}
-                              onChange={(e) => setOpt('limitedQty', e.target.value)}
-                              placeholder="50"
-                              className="w-20 rounded-lg bg-black/20 text-heading text-xs px-2 py-1.5 outline-none border border-white/5"
-                              min="2"
-                            />
-                          </div>
-                        )}
+                            {/* Tier */}
+                            <div className="flex items-center gap-2">
+                              <span className="text-grey-muted text-[9px] uppercase w-14 flex-shrink-0">{tx({ fr: 'Qualite', en: 'Quality', es: 'Calidad' })}</span>
+                              <div className="flex gap-1">
+                                {[{ id: 'studio', label: 'Studio' }, { id: 'museum', label: tx({ fr: 'Musee', en: 'Museum', es: 'Museo' }) }].map(t => (
+                                  <button key={t.id} type="button" onClick={() => setOpt('fixedTier', t.id)}
+                                    className={`px-2 py-0.5 rounded text-[10px] font-medium transition-all ${
+                                      (opts.fixedTier || 'studio') === t.id ? 'bg-accent text-white' : 'bg-black/20 text-grey-muted hover:text-heading'
+                                    }`}>{t.label}</button>
+                                ))}
+                              </div>
+                            </div>
 
-                        {/* Options privee */}
-                        {opts.type === 'private' && (
-                          <div className="pl-2">
-                            <input
-                              type="email"
-                              value={opts.clientEmail || ''}
-                              onChange={(e) => setOpt('clientEmail', e.target.value)}
-                              placeholder={tx({ fr: 'Courriel du client', en: 'Client email', es: 'Email del cliente' })}
-                              className="w-full rounded-lg bg-black/20 text-heading text-xs px-2 py-1.5 outline-none border border-white/5"
-                            />
+                            {/* Cadre */}
+                            <div className="flex items-center gap-2">
+                              <span className="text-grey-muted text-[9px] uppercase w-14 flex-shrink-0">{tx({ fr: 'Cadre', en: 'Frame', es: 'Marco' })}</span>
+                              <div className="flex gap-1">
+                                {[
+                                  { id: 'none', label: tx({ fr: 'Sans', en: 'None', es: 'Sin' }) },
+                                  { id: 'black', label: tx({ fr: 'Noir', en: 'Black', es: 'Negro' }) },
+                                  { id: 'white', label: tx({ fr: 'Blanc', en: 'White', es: 'Blanco' }) },
+                                ].map(c => (
+                                  <button key={c.id} type="button" onClick={() => setOpt('frameOption', c.id)}
+                                    className={`px-2 py-0.5 rounded text-[10px] font-medium transition-all ${
+                                      (opts.frameOption || 'none') === c.id ? 'bg-accent text-white' : 'bg-black/20 text-grey-muted hover:text-heading'
+                                    }`}>{c.label}</button>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* Prix */}
+                            <div className="flex items-center gap-2">
+                              <span className="text-grey-muted text-[9px] uppercase w-14 flex-shrink-0">Prix</span>
+                              <input
+                                type="number"
+                                value={opts.customPrice || ''}
+                                onChange={(e) => setOpt('customPrice', e.target.value)}
+                                placeholder={tx({ fr: 'Prix ($)', en: 'Price ($)', es: 'Precio ($)' })}
+                                className="w-24 rounded-lg bg-black/20 text-heading text-xs px-2 py-1.5 outline-none border border-white/5"
+                                min="1"
+                              />
+                              <span className="text-grey-muted text-[9px]">{tx({ fr: 'Laisser vide = prix standard', en: 'Leave empty = standard price', es: 'Dejar vacio = precio estandar' })}</span>
+                            </div>
+
+                            {/* Nombre d'exemplaires (edition limitee) */}
+                            {opts.type === 'limited' && (
+                              <div className="flex items-center gap-2">
+                                <span className="text-grey-muted text-[9px] uppercase w-14 flex-shrink-0">{tx({ fr: 'Copies', en: 'Copies', es: 'Copias' })}</span>
+                                <input
+                                  type="number"
+                                  value={opts.limitedQty || ''}
+                                  onChange={(e) => setOpt('limitedQty', e.target.value)}
+                                  placeholder="50"
+                                  className="w-20 rounded-lg bg-black/20 text-heading text-xs px-2 py-1.5 outline-none border border-white/5"
+                                  min="2"
+                                />
+                              </div>
+                            )}
+
+                            {/* Email client (privee) */}
+                            {opts.type === 'private' && (
+                              <div className="flex items-center gap-2">
+                                <span className="text-grey-muted text-[9px] uppercase w-14 flex-shrink-0">Email</span>
+                                <input
+                                  type="email"
+                                  value={opts.clientEmail || ''}
+                                  onChange={(e) => setOpt('clientEmail', e.target.value)}
+                                  placeholder={tx({ fr: 'Courriel du client', en: 'Client email', es: 'Email del cliente' })}
+                                  className="flex-1 rounded-lg bg-black/20 text-heading text-xs px-2 py-1.5 outline-none border border-white/5"
+                                />
+                              </div>
+                            )}
                           </div>
                         )}
                       </>

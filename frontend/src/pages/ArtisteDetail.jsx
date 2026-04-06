@@ -174,17 +174,21 @@ function ArtisteDetail({ subdomainSlug }) {
     };
   }, [cmsArtists, slug]);
 
-  // Filtrer les prints prives: ne montrer que ceux dont le clientEmail correspond a l'utilisateur connecte
+  // Filtrer les prints prives: montrer si email correspond OU si token valide dans l'URL
+  const [searchParams] = useSearchParams();
+  const urlToken = searchParams.get('token');
   const artist = useMemo(() => {
     if (!artistRaw) return null;
     const userEmail = user?.email?.toLowerCase();
     const filteredPrints = (artistRaw.prints || []).filter(p => {
-      if (!p.private) return true; // Pas prive = visible par tous
-      if (!userEmail) return false; // Prive + pas connecte = cache
+      if (!p.private) return true;
+      // Token dans l'URL bypass le filtre
+      if (urlToken && p.privateToken === urlToken) return true;
+      if (!userEmail) return false;
       return p.clientEmail?.toLowerCase() === userEmail;
     });
     return { ...artistRaw, prints: filteredPrints };
-  }, [artistRaw, user]);
+  }, [artistRaw, user, urlToken]);
 
   // Charger les renames et hero depuis le backend (visible par tous)
   const [artistData, setArtistData] = useState({ itemRenames: {}, heroImageId: null });
@@ -213,7 +217,6 @@ function ArtisteDetail({ subdomainSlug }) {
   const configuratorRef = useRef(null);
   const stickerConfiguratorRef = useRef(null);
   const printConfigsRef = useRef({}); // Sauvegarder la config par print id
-  const [searchParams] = useSearchParams();
 
   // Auto-select sticker from URL param (e.g. ?sticker=psyqu33n-stk-002)
   useEffect(() => {

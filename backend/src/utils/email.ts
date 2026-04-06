@@ -1143,3 +1143,57 @@ export async function sendTattooMessageEmail(data: TattooMessageEmailData): Prom
     return false;
   }
 }
+
+// -----------------------------------------------------------
+// Email piece privee artiste -> client
+// -----------------------------------------------------------
+interface PrivatePrintData {
+  clientEmail: string;
+  artistName: string;
+  printTitle: string;
+  printImage: string;
+  buyLink: string;
+  price: number | null;
+}
+
+function buildPrivatePrintHtml(data: PrivatePrintData): string {
+  const priceText = data.price ? `${data.price}$` : '';
+  return massiveEmailWrapper(`
+    <h1 style="color:#F00098;font-size:24px;margin:0 0 16px">Une oeuvre vous attend</h1>
+    <p style="color:#ccc;font-size:15px;line-height:1.6">
+      <strong>${data.artistName}</strong> a prepare une oeuvre exclusive pour vous:
+    </p>
+    <h2 style="color:#fff;font-size:20px;margin:16px 0 8px">${data.printTitle}</h2>
+    ${data.printImage ? `<img src="${data.printImage}" alt="${data.printTitle}" style="max-width:100%;border-radius:8px;margin:16px 0" />` : ''}
+    ${priceText ? `<p style="color:#F00098;font-size:22px;font-weight:bold;margin:8px 0">${priceText}</p>` : ''}
+    <p style="color:#999;font-size:13px;margin:16px 0">
+      Cette oeuvre est reservee exclusivement pour vous. Cliquez sur le bouton ci-dessous pour la voir et l'acheter.
+    </p>
+    <div style="text-align:center;margin:24px 0">
+      <a href="${data.buyLink}" style="display:inline-block;background:#F00098;color:#fff;padding:14px 32px;border-radius:12px;text-decoration:none;font-weight:bold;font-size:16px">
+        Voir et acheter
+      </a>
+    </div>
+    <p style="color:#666;font-size:11px;margin-top:24px">
+      Vous devrez vous connecter avec l'adresse ${data.clientEmail} pour acceder a cette oeuvre.
+    </p>
+  `);
+}
+
+export async function sendPrivatePrintEmail(data: PrivatePrintData): Promise<boolean> {
+  const resend = getResend();
+  if (!resend) { console.warn('[email] Resend non configure'); return false; }
+  try {
+    await resend.emails.send({
+      from: 'Massive Medias <noreply@massivemedias.com>',
+      to: data.clientEmail,
+      subject: `${data.artistName} a prepare une oeuvre pour vous - Massive Medias`,
+      html: buildPrivatePrintHtml(data),
+    });
+    console.log('[email] Email piece privee envoye a', data.clientEmail);
+    return true;
+  } catch (err) {
+    console.error('[email] Erreur email piece privee:', err);
+    return false;
+  }
+}
