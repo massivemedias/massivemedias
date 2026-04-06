@@ -732,23 +732,34 @@ function AdminDepenses() {
                     )}
                   </div>
 
-                  {/* Totaux */}
+                  {/* Totaux - recalcul auto */}
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     <div>
                       <label className="text-[10px] text-grey-muted uppercase tracking-wider">{tx({ fr: 'Sous-total', en: 'Subtotal', es: 'Subtotal' })}</label>
-                      <input type="number" step="0.01" value={invoiceData.subtotal} onChange={(e) => setInvoiceData(prev => ({ ...prev, subtotal: parseFloat(e.target.value) || 0 }))} className="input-field text-sm mt-1" />
+                      <input type="number" step="0.01" value={invoiceData.subtotal} onChange={(e) => {
+                        const sub = parseFloat(e.target.value) || 0;
+                        setInvoiceData(prev => ({ ...prev, subtotal: sub, total: Math.round((sub + (prev.tps || 0) + (prev.tvq || 0)) * 100) / 100 }));
+                      }} className="input-field text-sm mt-1" />
                     </div>
                     <div>
                       <label className="text-[10px] text-grey-muted uppercase tracking-wider">TPS (5%)</label>
-                      <input type="number" step="0.01" value={invoiceData.tps} onChange={(e) => setInvoiceData(prev => ({ ...prev, tps: parseFloat(e.target.value) || 0 }))} className="input-field text-sm mt-1" />
+                      <input type="number" step="0.01" value={invoiceData.tps} onChange={(e) => {
+                        const tps = parseFloat(e.target.value) || 0;
+                        setInvoiceData(prev => ({ ...prev, tps, total: Math.round((prev.subtotal + tps + (prev.tvq || 0)) * 100) / 100 }));
+                      }} className="input-field text-sm mt-1" />
                     </div>
                     <div>
                       <label className="text-[10px] text-grey-muted uppercase tracking-wider">TVQ (9.975%)</label>
-                      <input type="number" step="0.01" value={invoiceData.tvq} onChange={(e) => setInvoiceData(prev => ({ ...prev, tvq: parseFloat(e.target.value) || 0 }))} className="input-field text-sm mt-1" />
+                      <input type="number" step="0.01" value={invoiceData.tvq} onChange={(e) => {
+                        const tvq = parseFloat(e.target.value) || 0;
+                        setInvoiceData(prev => ({ ...prev, tvq, total: Math.round((prev.subtotal + (prev.tps || 0) + tvq) * 100) / 100 }));
+                      }} className="input-field text-sm mt-1" />
                     </div>
                     <div>
                       <label className="text-[10px] text-grey-muted uppercase tracking-wider">Total</label>
-                      <input type="number" step="0.01" value={invoiceData.total} onChange={(e) => setInvoiceData(prev => ({ ...prev, total: parseFloat(e.target.value) || 0 }))} className="input-field text-sm mt-1 font-bold" />
+                      <div className="input-field text-sm mt-1 font-bold text-accent">
+                        {Math.round((invoiceData.subtotal + (invoiceData.tps || 0) + (invoiceData.tvq || 0)) * 100) / 100}$
+                      </div>
                     </div>
                   </div>
 
