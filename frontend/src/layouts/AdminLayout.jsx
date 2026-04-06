@@ -173,21 +173,19 @@ function AdminLayout() {
             {NAV_ITEMS.map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname.startsWith(item.to);
-              const tooltipText = item.tooltip ? tx(item.tooltip) : '';
               return (
-                <Tooltip key={item.to} text={tooltipText} position="right">
-                  <NavLink
-                    to={item.to}
-                    className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
-                      isActive
-                        ? 'bg-[var(--active-tab-bg)] text-white'
-                        : 'text-grey-muted hover:text-heading hover:bg-glass'
-                    }`}
-                  >
-                    <Icon size={16} />
-                    {tx({ fr: item.fr, en: item.en, es: item.es })}
-                  </NavLink>
-                </Tooltip>
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    isActive
+                      ? 'bg-[var(--active-tab-bg)] text-white'
+                      : 'text-grey-muted hover:text-heading hover:bg-glass'
+                  }`}
+                >
+                  <Icon size={16} />
+                  {tx({ fr: item.fr, en: item.en, es: item.es })}
+                </NavLink>
               );
             })}
           </div>
