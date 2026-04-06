@@ -167,8 +167,8 @@ exports.default = strapi_1.factories.createCoreController('api::inventory-item.i
      */
     async importInvoice(ctx) {
         const { items, expense } = ctx.request.body;
-        if (!items || !Array.isArray(items) || items.length === 0) {
-            return ctx.badRequest('Au moins un item est requis');
+        if ((!items || !Array.isArray(items) || items.length === 0) && !expense) {
+            return ctx.badRequest('Au moins un item ou une depense est requis');
         }
         const VALID_CATEGORIES = ['textile', 'frame', 'accessory', 'sticker', 'print', 'merch', 'equipment', 'other'];
         const results = [];
