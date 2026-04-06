@@ -699,26 +699,38 @@ function AdminDepenses() {
                       <div className="space-y-2">
                         {invoiceData.lineItems.map((lineItem, i) => (
                           <div key={i} className="rounded-lg card-bg shadow-md shadow-black/15 p-3">
-                            <div className="grid grid-cols-1 sm:grid-cols-[1fr_80px_90px_90px_100px_40px_40px] gap-2 items-center">
-                              <input type="text" value={lineItem.description} onChange={(e) => updateInvoiceItem(i, 'description', e.target.value)}
-                                placeholder={tx({ fr: 'Description', en: 'Description', es: 'Descripcion' })} className="input-field text-sm" />
-                              <input type="number" value={lineItem.quantity} onChange={(e) => updateInvoiceItem(i, 'quantity', Number(e.target.value))}
-                                placeholder="Qty" min="0" className="input-field text-sm text-center" />
-                              <input type="number" step="0.01" value={lineItem.unitPrice}
-                                onChange={(e) => {
-                                  const price = parseFloat(e.target.value) || 0;
-                                  updateInvoiceItem(i, 'unitPrice', price);
-                                  updateInvoiceItem(i, 'total', price * (lineItem.quantity || 1));
-                                }}
-                                placeholder={tx({ fr: 'Prix unit.', en: 'Unit price', es: 'Precio unit.' })} className="input-field text-sm text-right" />
-                              <div className="text-sm text-heading font-semibold text-right px-2">{(lineItem.total || 0).toFixed(2)}$</div>
-                              <select value={lineItem.category} onChange={(e) => updateInvoiceItem(i, 'category', e.target.value)} className="input-field text-[10px] p-1">
-                                {INVENTORY_CATEGORIES.map((c) => (
-                                  <option key={c} value={c}>{typeof INVENTORY_CATEGORY_LABELS[c] === 'string' ? INVENTORY_CATEGORY_LABELS[c] : tx(INVENTORY_CATEGORY_LABELS[c])}</option>
-                                ))}
-                              </select>
+                            <div className="grid grid-cols-1 sm:grid-cols-[1fr_120px_100px_40px_40px] gap-2 items-end">
+                              <div>
+                                {i === 0 && <label className="text-[9px] text-grey-muted uppercase tracking-wider mb-0.5 block">{tx({ fr: 'Description', en: 'Description', es: 'Descripcion' })}</label>}
+                                <input type="text" value={lineItem.description} onChange={(e) => updateInvoiceItem(i, 'description', e.target.value)}
+                                  placeholder={tx({ fr: 'Description', en: 'Description', es: 'Descripcion' })} className="input-field text-sm" />
+                              </div>
+                              <div>
+                                {i === 0 && <label className="text-[9px] text-grey-muted uppercase tracking-wider mb-0.5 block">{tx({ fr: 'Montant', en: 'Amount', es: 'Monto' })}</label>}
+                                <input type="number" step="0.01" value={lineItem.total || lineItem.unitPrice || ''}
+                                  onChange={(e) => {
+                                    const amount = parseFloat(e.target.value) || 0;
+                                    updateInvoiceItem(i, 'total', amount);
+                                    updateInvoiceItem(i, 'unitPrice', amount);
+                                    updateInvoiceItem(i, 'quantity', 1);
+                                    // Recalculer le sous-total
+                                    const items = [...invoiceData.lineItems];
+                                    items[i] = { ...items[i], total: amount, unitPrice: amount };
+                                    const sub = items.reduce((s, it) => s + (it.total || 0), 0);
+                                    setInvoiceData(prev => ({ ...prev, subtotal: Math.round(sub * 100) / 100, total: Math.round((sub + (prev.tps || 0) + (prev.tvq || 0)) * 100) / 100 }));
+                                  }}
+                                  placeholder="0.00" className="input-field text-sm text-right" />
+                              </div>
+                              <div>
+                                {i === 0 && <label className="text-[9px] text-grey-muted uppercase tracking-wider mb-0.5 block">{tx({ fr: 'Categorie', en: 'Category', es: 'Categoria' })}</label>}
+                                <select value={lineItem.category} onChange={(e) => updateInvoiceItem(i, 'category', e.target.value)} className="input-field text-[10px] p-1.5">
+                                  {INVENTORY_CATEGORIES.map((c) => (
+                                    <option key={c} value={c}>{typeof INVENTORY_CATEGORY_LABELS[c] === 'string' ? INVENTORY_CATEGORY_LABELS[c] : tx(INVENTORY_CATEGORY_LABELS[c])}</option>
+                                  ))}
+                                </select>
+                              </div>
                               <button onClick={() => updateInvoiceItem(i, 'addToInventory', !lineItem.addToInventory)}
-                                title={lineItem.addToInventory ? tx({ fr: 'Ajouter à l\'inventaire', en: 'Add to inventory', es: 'Agregar al inventario' }) : tx({ fr: 'Exclure de l\'inventaire', en: 'Exclude from inventory', es: 'Excluir del inventario' })}
+                                title={lineItem.addToInventory ? tx({ fr: 'Ajouter a l\'inventaire', en: 'Add to inventory', es: 'Agregar al inventario' }) : tx({ fr: 'Exclure de l\'inventaire', en: 'Exclude from inventory', es: 'Excluir del inventario' })}
                                 className={`p-1.5 rounded-lg transition-colors ${lineItem.addToInventory ? 'bg-green-500/20 text-green-400' : 'bg-glass text-grey-muted'}`}>
                                 <Package size={14} />
                               </button>
