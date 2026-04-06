@@ -358,7 +358,7 @@ export const flyerImages = [
   img('/images/realisations/flyers/from_vision.webp'),
   img('/images/realisations/flyers/rituals.webp'),
   img('/images/realisations/prints/Prints24.webp'),
-  img('/images/realisations/prints/FineArt1.webp'),
+  img('/images/realisations/prints/FineArt4.webp'),
 ];
 
 export const flyerFaq = {

@@ -48,7 +48,7 @@ const fallbackServiceImages = [
 ];
 const fallbackAdvantageIcons = [Truck, Award, Users, Zap, DollarSign, Music];
 const fallbackFeaturedProjectImages = [
-  thumb('/images/realisations/prints/FineArt1.webp'),
+  thumb('/images/realisations/prints/FineArt4.webp'),
   thumb('/images/realisations/stickers/Stickers-Cosmovision.webp'),
   thumb('/images/realisations/textile/Textile1.webp'),
   thumb('/images/graphism/onomiko.webp'),
