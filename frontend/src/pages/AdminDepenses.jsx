@@ -48,13 +48,22 @@ function downloadCSV(filename, csvContent) {
   URL.revokeObjectURL(url);
 }
 
-const INVENTORY_CATEGORIES = ['textile', 'frame', 'accessory', 'sticker', 'print', 'merch', 'other'];
+const INVENTORY_CATEGORIES = [
+  'consommables', 'materiel', 'equipment', 'textile', 'frame',
+  'sticker', 'print', 'merch', 'shipping', 'software', 'marketing', 'taxes', 'other',
+];
 const INVENTORY_CATEGORY_LABELS = {
+  consommables: { fr: 'Consommables', en: 'Consumables', es: 'Consumibles' },
+  materiel: { fr: 'Materiel', en: 'Materials', es: 'Materiales' },
+  equipment: { fr: 'Equipement', en: 'Equipment', es: 'Equipo' },
   textile: { fr: 'Textile', en: 'Textile', es: 'Textil' },
   frame: { fr: 'Cadre', en: 'Frame', es: 'Marco' },
-  accessory: { fr: 'Accessoire', en: 'Accessory', es: 'Accesorio' },
   sticker: 'Sticker',
   print: 'Print',
+  shipping: { fr: 'Livraison', en: 'Shipping', es: 'Envio' },
+  software: { fr: 'Logiciel', en: 'Software', es: 'Software' },
+  marketing: 'Marketing',
+  taxes: { fr: 'Taxes', en: 'Taxes', es: 'Impuestos' },
   merch: 'Merch',
   other: { fr: 'Autre', en: 'Other', es: 'Otro' },
 };
