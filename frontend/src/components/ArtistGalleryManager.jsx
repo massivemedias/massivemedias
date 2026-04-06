@@ -433,9 +433,24 @@ function ArtistGalleryManager() {
 
                   {/* Badges */}
                   <div className="flex flex-wrap gap-1 mb-2">
+                    {item.onSale && (
+                      <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-yellow-500/20 text-yellow-400 text-[9px] font-bold">
+                        -{item.salePercent || 20}%
+                      </span>
+                    )}
                     {isUnique && (
                       <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-accent/20 text-accent text-[9px] font-bold">
                         <Gem size={8} /> {tx({ fr: 'Unique', en: 'Unique', es: 'Unica' })} {item.customPrice ? `${item.customPrice}$` : ''}
+                      </span>
+                    )}
+                    {item.limitedEdition && (
+                      <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-blue-500/20 text-blue-400 text-[9px] font-bold">
+                        <Hash size={8} /> {item.limitedQty || '?'}
+                      </span>
+                    )}
+                    {item.private && (
+                      <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-orange-500/20 text-orange-400 text-[9px] font-bold">
+                        <Lock size={8} /> {tx({ fr: 'Privee', en: 'Private', es: 'Privada' })}
                       </span>
                     )}
                     {isHero && (
@@ -463,16 +478,11 @@ function ArtistGalleryManager() {
                         <ImageIcon size={10} /> Hero
                       </button>
                     )}
-                    {!isUnique && !isPendingUnique && (
+                    {/* Type: Standard / Unique / Limitee / Privee / Solde */}
+                    {category === 'prints' && !isPendingUnique && (
                       <button onClick={() => { setUniqueFormId(showUniqueForm ? null : item.id); setUniquePrice(''); }}
                         className="flex items-center gap-1 px-2 py-1 rounded-lg bg-accent/10 text-accent text-[10px] font-medium hover:bg-accent/20 transition-colors">
-                        <Gem size={10} /> {tx({ fr: 'Unique', en: 'Unique', es: 'Unica' })}
-                      </button>
-                    )}
-                    {isUnique && (
-                      <button onClick={() => handleUnmarkUnique(item.id, category, item.titleFr || item.id)}
-                        className="flex items-center gap-1 px-2 py-1 rounded-lg bg-white/5 text-grey-muted text-[10px] hover:text-red-400 transition-colors">
-                        <X size={10} /> {tx({ fr: 'Retirer unique', en: 'Remove unique', es: 'Quitar unica' })}
+                        <Gem size={10} /> {tx({ fr: 'Type / Config', en: 'Type / Config', es: 'Tipo / Config' })}
                       </button>
                     )}
                     {!isPendingRemoval && (
@@ -485,13 +495,34 @@ function ArtistGalleryManager() {
                 </div>
               </div>
 
-              {/* Formulaire piece unique expandable */}
+              {/* Configurateur type expandable */}
               {showUniqueForm && (() => {
-                const minPrice = getMinPrice(uniqueFormat);
-                const currentPrice = parseFloat(uniquePrice) || 0;
-                const isValid = currentPrice >= minPrice;
+                const currentType = item.onSale ? 'sale' : item.private ? 'private' : item.limitedEdition ? 'limited' : item.unique ? 'unique' : 'standard';
                 return (
-                  <div className="px-3 pb-3">
+                  <div className="px-3 pb-3 space-y-2">
+                    {/* Selecteur de type */}
+                    <div className="flex flex-wrap gap-1">
+                      {[
+                        { id: 'standard', label: 'Standard' },
+                        { id: 'unique', label: tx({ fr: 'Unique', en: 'Unique', es: 'Unica' }) },
+                        { id: 'limited', label: tx({ fr: 'Limitee', en: 'Limited', es: 'Limitada' }) },
+                        { id: 'private', label: tx({ fr: 'Privee', en: 'Private', es: 'Privada' }) },
+                        { id: 'sale', label: tx({ fr: 'Solde', en: 'Sale', es: 'Oferta' }) },
+                      ].map(t => (
+                        <button key={t.id}
+                          onClick={() => {
+                            const data = { itemId: item.id, category, itemTitle: item.titleFr || item.id, printType: t.id };
+                            if (t.id === 'standard') data.clearAll = true;
+                            setUniqueFormId(`${item.id}_${t.id}`);
+                          }}
+                          className={`px-2 py-0.5 rounded text-[10px] font-medium transition-all ${
+                            (uniqueFormId === `${item.id}_${t.id}` || (uniqueFormId === item.id && currentType === t.id))
+                              ? 'bg-accent text-white' : 'bg-black/20 text-grey-muted hover:text-heading'
+                          }`}>{t.label}</button>
+                      ))}
+                    </div>
+
+                    {/* Mini-configurateur */}
                     <div className="flex flex-wrap items-end gap-2 p-2.5 rounded-lg bg-black/30">
                       <div>
                         <p className="text-grey-muted text-[9px] uppercase mb-1">Format</p>
@@ -505,16 +536,27 @@ function ArtistGalleryManager() {
                         </div>
                       </div>
                       <div>
-                        <p className="text-grey-muted text-[9px] uppercase mb-1">{tx({ fr: `Min ${minPrice}$`, en: `Min $${minPrice}`, es: `Min $${minPrice}` })}</p>
-                        <div className="flex items-center gap-1">
-                          <input type="number" min={minPrice} value={uniquePrice} onChange={(e) => setUniquePrice(e.target.value)}
-                            className={`w-16 bg-black/50 text-white text-xs px-2 py-1 rounded border ${isValid || !uniquePrice ? 'border-accent/50' : 'border-red-500'} focus:outline-none text-center`}
-                            placeholder={`${minPrice}`} autoFocus />
-                          <span className="text-white text-xs font-bold">$</span>
-                        </div>
+                        <p className="text-grey-muted text-[9px] uppercase mb-1">Prix $</p>
+                        <input type="number" min="0" value={uniquePrice} onChange={(e) => setUniquePrice(e.target.value)}
+                          className="w-16 bg-black/50 text-white text-xs px-2 py-1 rounded border border-accent/50 focus:outline-none text-center"
+                          placeholder="0" />
                       </div>
-                      <button onClick={() => handleMarkUnique(item.id, category, item.titleFr || item.id)}
-                        disabled={uniqueSending || !isValid || !uniquePrice}
+                      {/* Solde: pourcentage de reduction */}
+                      {(uniqueFormId || '').includes('_sale') && (
+                        <div>
+                          <p className="text-grey-muted text-[9px] uppercase mb-1">% {tx({ fr: 'rabais', en: 'off', es: 'desc.' })}</p>
+                          <input type="number" min="5" max="90" step="5"
+                            value={uniquePrice || ''}
+                            onChange={(e) => setUniquePrice(e.target.value)}
+                            className="w-16 bg-black/50 text-white text-xs px-2 py-1 rounded border border-yellow-500/50 focus:outline-none text-center"
+                            placeholder="20" />
+                        </div>
+                      )}
+                      <button onClick={() => {
+                        const selectedType = (uniqueFormId || '').split('_').pop();
+                        handleMarkUnique(item.id, category, item.titleFr || item.id);
+                      }}
+                        disabled={uniqueSending}
                         className="px-2.5 py-1 rounded-lg bg-accent text-white text-[10px] font-semibold disabled:opacity-50 flex items-center gap-1">
                         {uniqueSending ? <Loader2 size={10} className="animate-spin" /> : <Send size={10} />}
                         OK

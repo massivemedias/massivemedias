@@ -51,6 +51,11 @@ function ArtistPrintCard({ print, minPrice, pricing, selected, onClick, onZoom }
             {tx({ fr: 'Unique', en: 'Unique', es: 'Única' })}
           </div>
         )}
+        {print.onSale && !print.sold && (
+          <div className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-yellow-500 text-black text-[9px] font-bold uppercase tracking-wider whitespace-nowrap z-10">
+            -{print.salePercent || 20}%
+          </div>
+        )}
         {print.limited && !print.unique && (
           <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-accent text-white text-[9px] font-bold uppercase tracking-wider whitespace-nowrap z-10">
             {tx({ fr: 'Édition limitée', en: 'Limited', es: 'Limitada' })}

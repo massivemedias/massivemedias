@@ -80,8 +80,12 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {}, onF
 
   const isArtistOwnPrint = loggedArtistSlug && loggedArtistSlug === artist?.slug;
 
-  // Prix effectif: customPrice pour pieces uniques, sinon prix standard
-  const effectivePrice = (isUnique && customPrice) ? customPrice : priceInfo?.price;
+  // Prix effectif: customPrice pour pieces uniques, solde, ou prix standard
+  const basePrice = (isUnique && customPrice) ? customPrice : priceInfo?.price;
+  const isOnSale = selectedPrint?.onSale && selectedPrint?.salePercent;
+  const saleDiscount = isOnSale ? (1 - selectedPrint.salePercent / 100) : 1;
+  const effectivePrice = basePrice ? Math.round(basePrice * saleDiscount * 100) / 100 : basePrice;
+  const originalPrice = isOnSale ? basePrice : null;
 
   const handleAddToCart = () => {
     if (!effectivePrice) return;
@@ -361,8 +365,10 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {}, onF
               <div className="flex items-center justify-between">
                 <div>
                   <div className="flex items-baseline gap-2">
-                    <span className="text-2xl font-heading font-bold text-heading">{priceInfo.price * quantity}$</span>
-                    {quantity > 1 && <span className="text-grey-muted text-sm">{quantity} x {priceInfo.price}$</span>}
+                    <span className="text-2xl font-heading font-bold text-heading">{effectivePrice * quantity}$</span>
+                    {originalPrice && <span className="text-grey-muted text-sm line-through">{originalPrice * quantity}$</span>}
+                    {isOnSale && <span className="text-yellow-400 text-xs font-bold">-{selectedPrint.salePercent}%</span>}
+                    {quantity > 1 && !originalPrice && <span className="text-grey-muted text-sm">{quantity} x {effectivePrice}$</span>}
                   </div>
                   {withFrame && (
                     <div className="text-grey-muted text-xs mt-0.5">
