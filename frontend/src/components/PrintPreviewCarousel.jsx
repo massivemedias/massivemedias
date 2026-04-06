@@ -39,23 +39,7 @@ function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, t
     img.src = image;
   }, [image]);
 
-  // Auto-play 3 secondes
-  useEffect(() => {
-    if (!image || totalSlides <= 1) return;
-    autoPlayRef.current = setInterval(() => {
-      setSlideIdx(prev => (prev + 1) % totalSlides);
-    }, 3000);
-    return () => clearInterval(autoPlayRef.current);
-  }, [image, totalSlides]);
-
-  // Pause auto-play au hover
-  const pauseAutoPlay = () => clearInterval(autoPlayRef.current);
-  const resumeAutoPlay = () => {
-    if (!image || totalSlides <= 1) return;
-    autoPlayRef.current = setInterval(() => {
-      setSlideIdx(prev => (prev + 1) % totalSlides);
-    }, 3000);
-  };
+  // Pas d'auto-play - navigation manuelle seulement
 
   // Dessiner un mockup Canvas (chroma-key)
   const drawMockup = useCallback((canvas, targetWidth, sceneId) => {
@@ -114,18 +98,29 @@ function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, t
     }
   }, [withFrame, frameColor]);
 
-  // Dessiner les mockups quand l'image ou les options changent
+  // Dessiner le mockup du slide actif quand les options changent
+  useEffect(() => {
+    if (!image || !userImgRef.current || slideIdx === 0) return;
+    const sceneId = MOCKUP_SCENES[slideIdx - 1]?.id;
+    if (!sceneId) return;
+    const timer = setTimeout(() => {
+      const canvas = canvasRefs.current[sceneId];
+      if (canvas) drawMockup(canvas, 600, sceneId);
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [image, frameColor, withFrame, slideIdx, drawMockup]);
+
+  // Pre-dessiner tous les mockups au chargement initial
   useEffect(() => {
     if (!image || !userImgRef.current) return;
-    // Petit delai pour s'assurer que l'image est chargee
     const timer = setTimeout(() => {
       MOCKUP_SCENES.forEach(s => {
         const canvas = canvasRefs.current[s.id];
         if (canvas) drawMockup(canvas, 600, s.id);
       });
-    }, 200);
+    }, 500);
     return () => clearTimeout(timer);
-  }, [image, frameColor, withFrame, drawMockup]);
+  }, [image, drawMockup]);
 
   // Lightbox mockup
   useEffect(() => {
@@ -153,11 +148,7 @@ function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, t
   const matThickness = withFrame ? (isPostcard ? Math.max(16, Math.round(previewMaxW * 0.1)) : Math.max(12, Math.round(previewMaxW * 0.06))) : 0;
 
   return (
-    <div
-      className="space-y-2"
-      onMouseEnter={pauseAutoPlay}
-      onMouseLeave={resumeAutoPlay}
-    >
+    <div className="space-y-2">
       {/* Zone d'apercu unique */}
       <div className="relative overflow-hidden rounded-xl">
         {/* Slide 0: FramePreview */}
