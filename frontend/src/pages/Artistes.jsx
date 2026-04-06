@@ -229,7 +229,7 @@ function Artistes() {
       />
 
       {/* ============ HERO ============ */}
-      <section className="pt-24 pb-0 md:pt-28">
+      <section className="relative py-4 overflow-hidden">
         <div className="section-container">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
