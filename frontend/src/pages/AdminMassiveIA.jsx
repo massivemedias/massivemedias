@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import {
   MessageSquare, Sparkles, Image, Camera, Send, Plus, Settings2,
-  Upload, Download, Loader2, X, AlertCircle,
+  Upload, Download, Loader2, X, AlertCircle, ImageDown,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import { chatStream, processSticker, generateMockup, checkHealth } from '../services/iaService';
@@ -13,6 +13,7 @@ const TABS = [
   { id: 'chat', icon: MessageSquare, label: 'Chat' },
   { id: 'stickers', icon: Sparkles, label: 'Stickers' },
   { id: 'prints', icon: Image, label: 'Prints' },
+  { id: 'resize', icon: ImageDown, label: 'Resize' },
   { id: 'lens', icon: Camera, label: 'Lens' },
 ];
 
@@ -638,6 +639,173 @@ function PrintsTab() {
 }
 
 // ---------------------------------------------------------------------------
+// Resize Tab - Redimensionner + compresser en WebP
+// ---------------------------------------------------------------------------
+function ResizeTab() {
+  const [file, setFile] = useState(null);
+  const [preview, setPreview] = useState(null);
+  const [origSize, setOrigSize] = useState({ w: 0, h: 0, bytes: 0 });
+  const [maxWidth, setMaxWidth] = useState(1600);
+  const [quality, setQuality] = useState(80);
+  const [result, setResult] = useState(null); // { blob, url, w, h, bytes }
+  const [processing, setProcessing] = useState(false);
+
+  const handleFile = (f) => {
+    setFile(f);
+    setResult(null);
+    setOrigSize({ w: 0, h: 0, bytes: f.size });
+    const url = URL.createObjectURL(f);
+    setPreview(url);
+    const img = new window.Image();
+    img.onload = () => setOrigSize(prev => ({ ...prev, w: img.naturalWidth, h: img.naturalHeight }));
+    img.src = url;
+  };
+
+  const handleProcess = () => {
+    if (!file || !preview) return;
+    setProcessing(true);
+    setResult(null);
+    const img = new window.Image();
+    img.onload = () => {
+      let w = img.naturalWidth, h = img.naturalHeight;
+      if (w > maxWidth) {
+        const ratio = maxWidth / w;
+        w = maxWidth;
+        h = Math.round(h * ratio);
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      canvas.toBlob((blob) => {
+        const url = URL.createObjectURL(blob);
+        setResult({ blob, url, w, h, bytes: blob.size });
+        setProcessing(false);
+      }, 'image/webp', quality / 100);
+    };
+    img.src = preview;
+  };
+
+  const handleDownload = () => {
+    if (!result) return;
+    const name = (file?.name || 'image').replace(/\.[^/.]+$/, '') + '.webp';
+    const a = document.createElement('a');
+    a.href = result.url;
+    a.download = name;
+    a.click();
+  };
+
+  const fmt = (bytes) => {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  };
+
+  return (
+    <div className="grid lg:grid-cols-2 gap-6">
+      <div className="space-y-4">
+        {/* Drop zone */}
+        <DropZone
+          accept="image/*"
+          file={file}
+          onFile={handleFile}
+          onClear={() => { setFile(null); setPreview(null); setResult(null); }}
+          label="Deposer une image a redimensionner"
+        />
+
+        {/* Info original */}
+        {file && (
+          <div className="rounded-xl bg-black/20 p-4 space-y-3">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-grey-muted">Original</span>
+              <span className="text-heading font-mono">{origSize.w}x{origSize.h} - {fmt(origSize.bytes)}</span>
+            </div>
+
+            {/* Max width */}
+            <div>
+              <label className="text-xs text-grey-muted block mb-1">Largeur max: {maxWidth}px</label>
+              <input
+                type="range" min="200" max="4000" step="100" value={maxWidth}
+                onChange={(e) => setMaxWidth(Number(e.target.value))}
+                className="w-full accent-accent"
+              />
+              <div className="flex justify-between text-[9px] text-grey-muted">
+                <span>200px</span>
+                <div className="flex gap-2">
+                  {[800, 1200, 1600, 2400].map(v => (
+                    <button key={v} onClick={() => setMaxWidth(v)}
+                      className={`px-1.5 py-0.5 rounded ${maxWidth === v ? 'bg-accent text-white' : 'hover:text-heading'}`}>{v}</button>
+                  ))}
+                </div>
+                <span>4000px</span>
+              </div>
+            </div>
+
+            {/* Quality */}
+            <div>
+              <label className="text-xs text-grey-muted block mb-1">Qualite WebP: {quality}%</label>
+              <input
+                type="range" min="10" max="100" step="5" value={quality}
+                onChange={(e) => setQuality(Number(e.target.value))}
+                className="w-full accent-accent"
+              />
+              <div className="flex justify-between text-[9px] text-grey-muted">
+                <span>10%</span>
+                <div className="flex gap-2">
+                  {[50, 70, 80, 90].map(v => (
+                    <button key={v} onClick={() => setQuality(v)}
+                      className={`px-1.5 py-0.5 rounded ${quality === v ? 'bg-accent text-white' : 'hover:text-heading'}`}>{v}%</button>
+                  ))}
+                </div>
+                <span>100%</span>
+              </div>
+            </div>
+
+            <button
+              onClick={handleProcess}
+              disabled={processing}
+              className="w-full py-3 rounded-xl bg-accent text-white font-semibold text-sm disabled:opacity-40 transition-opacity flex items-center justify-center gap-2"
+            >
+              {processing ? <Loader2 size={16} className="animate-spin" /> : <ImageDown size={16} />}
+              {processing ? 'Conversion...' : 'Convertir en WebP'}
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Resultat */}
+      <div className="rounded-xl bg-black/20 p-4 flex items-center justify-center min-h-[300px]">
+        {result ? (
+          <div className="flex flex-col items-center gap-4 w-full">
+            <img src={result.url} alt="result" className="max-h-[400px] rounded-lg object-contain w-full" />
+            <div className="flex items-center gap-4 text-sm">
+              <span className="text-heading font-mono">{result.w}x{result.h}</span>
+              <span className={`font-semibold ${result.bytes < origSize.bytes ? 'text-green-400' : 'text-orange-400'}`}>
+                {fmt(result.bytes)}
+              </span>
+              {result.bytes < origSize.bytes && (
+                <span className="text-green-400 text-xs">
+                  -{Math.round((1 - result.bytes / origSize.bytes) * 100)}%
+                </span>
+              )}
+            </div>
+            <button
+              onClick={handleDownload}
+              className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-accent text-white text-sm font-semibold hover:bg-accent/90 transition-colors"
+            >
+              <Download size={16} />
+              Telecharger .webp
+            </button>
+          </div>
+        ) : (
+          <p className="text-grey-muted text-sm">Le resultat apparaitra ici</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Lens Tab (placeholder)
 // ---------------------------------------------------------------------------
 function LensTab() {
@@ -733,6 +901,7 @@ function AdminMassiveIA() {
         {activeTab === 'chat' && <ChatTab />}
         {activeTab === 'stickers' && <StickersTab />}
         {activeTab === 'prints' && <PrintsTab />}
+        {activeTab === 'resize' && <ResizeTab />}
         {activeTab === 'lens' && <LensTab />}
       </motion.div>
     </div>
