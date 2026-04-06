@@ -77,14 +77,12 @@ También imprimimos flyers, postales y tarjetas de presentación - todo lo que n
     showcaseRight: thumb('/images/prints/PrintsTaille.webp'),
     showcaseLeft: thumb('/images/prints/PrintsFormats.webp'),
     gallery: [
-      thumb('/images/realisations/prints/FineArt4.webp'),
+      thumb('/images/realisations/prints/FineArt1.webp'),
       thumb('/images/realisations/prints/FineArt4.webp'),
       thumb('/images/realisations/prints/FineArt6.webp'),
-      thumb('/images/realisations/prints/FineArt4.webp'),
-      thumb('/images/realisations/prints/Prints24.webp'),
+      thumb('/images/realisations/prints/Prints7.webp'),
       thumb('/images/realisations/prints/Prints17.webp'),
       thumb('/images/realisations/prints/Prints18.webp'),
-      thumb('/images/realisations/prints/Prints22.webp'),
       thumb('/images/realisations/prints/Prints24.webp'),
     ],
     equipment: [

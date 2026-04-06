@@ -172,8 +172,10 @@ export function getFineArtPrice(tier, format, withFrame) {
 }
 
 export const fineArtImages = [
+  img('/images/realisations/prints/FineArt1.webp'),
   img('/images/realisations/prints/FineArt4.webp'),
   img('/images/realisations/prints/FineArt6.webp'),
+  img('/images/realisations/prints/Prints7.webp'),
   img('/images/realisations/prints/Prints17.webp'),
   img('/images/realisations/prints/Prints18.webp'),
   img('/images/realisations/prints/Prints24.webp'),
