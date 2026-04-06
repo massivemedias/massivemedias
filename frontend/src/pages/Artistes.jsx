@@ -229,14 +229,14 @@ function Artistes() {
       />
 
       {/* ============ HERO ============ */}
-      <section className="pt-24 pb-2 md:pt-28 md:pb-2">
+      <section className="pt-24 pb-0 md:pt-28">
         <div className="section-container">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <div className="flex items-center gap-2 mb-4 text-sm">
+            <div className="flex items-center gap-2 mb-3 text-sm">
               <Link to="/" className="text-grey-muted hover:text-accent transition-colors">
                 {tx({ fr: 'Accueil', en: 'Home', es: 'Inicio' })}
               </Link>
@@ -246,13 +246,11 @@ function Artistes() {
               </span>
             </div>
 
-            <h1 className="text-5xl md:text-8xl font-heading font-bold text-heading tracking-tight leading-none mb-4">
+            <h1 className="text-4xl md:text-5xl font-heading font-bold text-heading tracking-tight leading-none mb-3">
               {tx({ fr: 'Artistes', en: 'Artists', es: 'Artistas' })}
             </h1>
 
-            <div className="w-16 h-1 bg-accent mb-6" />
-
-            <p className="text-lg md:text-xl text-grey-light max-w-xl mb-2">
+            <p className="text-base text-grey-light max-w-xl">
               {tx({
                 fr: "Photographes, peintres, tatoueurs. Decouvrez les createurs de Massive Medias.",
                 en: 'Photographers, painters, tattoo artists. Discover the creators of Massive Medias.',
