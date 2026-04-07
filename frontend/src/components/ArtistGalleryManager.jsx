@@ -433,7 +433,7 @@ function ArtistGalleryManager() {
                       <button type="button" onClick={() => setRenamingId(null)} className="px-1.5 py-1 rounded-lg bg-white/10 text-grey-muted"><X size={12} /></button>
                     </form>
                   ) : (
-                    <p className="text-heading text-sm font-semibold truncate cursor-pointer hover:text-accent transition-colors flex items-center gap-1 mb-1"
+                    <p className="text-heading text-base font-semibold truncate cursor-pointer hover:text-accent transition-colors flex items-center gap-1.5 mb-1.5"
                       onClick={() => { setRenamingId(item.id); setRenameValue(item[`title${lang === 'fr' ? 'Fr' : 'En'}`] || item.titleFr || ''); }}>
                       {title || item.id}
                       <Pencil size={10} className="text-grey-muted flex-shrink-0" />
@@ -441,46 +441,46 @@ function ArtistGalleryManager() {
                   )}
 
                   {/* Badges */}
-                  <div className="flex flex-wrap gap-1 mb-2">
+                  <div className="flex flex-wrap gap-1.5 mb-2">
                     {item.onSale && (
-                      <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-yellow-500/20 text-yellow-400 text-[9px] font-bold">
+                      <span className="inline-flex items-center gap-0.5 px-2.5 py-1 rounded-full bg-yellow-500/20 text-yellow-400 text-xs font-bold">
                         -{item.salePercent || 20}%
                       </span>
                     )}
                     {isUnique && (
-                      <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-accent/20 text-accent text-[9px] font-bold">
+                      <span className="inline-flex items-center gap-0.5 px-2.5 py-1 rounded-full bg-accent/20 text-accent text-xs font-bold">
                         <Gem size={8} /> {tx({ fr: 'Unique', en: 'Unique', es: 'Unica' })} {item.customPrice ? `${item.customPrice}$` : ''}
                       </span>
                     )}
                     {item.limitedEdition && (
-                      <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-blue-500/20 text-blue-400 text-[9px] font-bold">
+                      <span className="inline-flex items-center gap-0.5 px-2.5 py-1 rounded-full bg-blue-500/20 text-blue-400 text-xs font-bold">
                         <Hash size={8} /> {item.limitedQty || '?'}
                       </span>
                     )}
                     {item.private && (
-                      <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-orange-500/20 text-orange-400 text-[9px] font-bold">
+                      <span className="inline-flex items-center gap-0.5 px-2.5 py-1 rounded-full bg-orange-500/20 text-orange-400 text-xs font-bold">
                         <Lock size={8} /> {tx({ fr: 'Privee', en: 'Private', es: 'Privada' })}
                       </span>
                     )}
                     {isHero && (
-                      <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-blue-500/20 text-blue-400 text-[9px] font-bold">
+                      <span className="inline-flex items-center gap-0.5 px-2.5 py-1 rounded-full bg-blue-500/20 text-blue-400 text-xs font-bold">
                         <ImageIcon size={8} /> Hero
                       </span>
                     )}
                     {isPendingRemoval && (
-                      <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-red-500/20 text-red-400 text-[9px] font-bold">
+                      <span className="inline-flex items-center gap-0.5 px-2.5 py-1 rounded-full bg-red-500/20 text-red-400 text-xs font-bold">
                         <Trash2 size={8} /> {tx({ fr: 'Suppression demandee', en: 'Removal requested', es: 'Eliminacion solicitada' })}
                       </span>
                     )}
                     {isPendingUnique && !isUnique && (
-                      <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-yellow-500/20 text-yellow-400 text-[9px] font-bold">
+                      <span className="inline-flex items-center gap-0.5 px-2.5 py-1 rounded-full bg-yellow-500/20 text-yellow-400 text-xs font-bold">
                         <Clock size={8} /> {tx({ fr: 'En attente', en: 'Pending', es: 'Pendiente' })}
                       </span>
                     )}
                   </div>
                   {/* Details du print */}
                   {category === 'prints' && (
-                    <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-[10px] text-grey-muted mb-1">
+                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-grey-muted mb-2">
                       {item.fixedFormat && <span>Format: <strong className="text-heading">{item.fixedFormat.toUpperCase()}</strong></span>}
                       {item.fixedTier && <span>Qualite: <strong className="text-heading">{item.fixedTier === 'museum' ? 'Musee' : 'Studio'}</strong></span>}
                       {item.customPrice && <span>Prix: <strong className="text-accent">{item.customPrice}$</strong></span>}
@@ -493,11 +493,11 @@ function ArtistGalleryManager() {
                   )}
 
                   {/* Actions inline */}
-                  <div className="flex flex-wrap gap-1.5">
+                  <div className="flex flex-wrap gap-2">
                     {category === 'prints' && !isHero && (
                       <button onClick={() => handleSetHero(item.id)}
-                        className="flex items-center gap-1 px-2 py-1 rounded-lg bg-blue-500/10 text-blue-400 text-[10px] font-medium hover:bg-blue-500/20 transition-colors">
-                        <ImageIcon size={10} /> Hero
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-500/10 text-blue-400 text-xs font-medium hover:bg-blue-500/20 transition-colors">
+                        <ImageIcon size={14} /> Hero
                       </button>
                     )}
                     {/* Type: Standard / Unique / Limitee / Privee / Solde */}
@@ -513,14 +513,14 @@ function ArtistGalleryManager() {
                           setUniqueEmail(item.clientEmail || '');
                         }
                       }}
-                        className="flex items-center gap-1 px-2 py-1 rounded-lg bg-accent/10 text-accent text-[10px] font-medium hover:bg-accent/20 transition-colors">
-                        <Gem size={10} /> {tx({ fr: 'Type / Config', en: 'Type / Config', es: 'Tipo / Config' })}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent/10 text-accent text-xs font-medium hover:bg-accent/20 transition-colors">
+                        <Gem size={14} /> {tx({ fr: 'Type / Config', en: 'Type / Config', es: 'Tipo / Config' })}
                       </button>
                     )}
                     {!isPendingRemoval && (
                       <button onClick={() => handleRemove(item.id, category)}
-                        className="flex items-center gap-1 px-2 py-1 rounded-lg bg-red-500/10 text-red-400 text-[10px] font-medium hover:bg-red-500/20 transition-colors">
-                        <Trash2 size={10} /> {tx({ fr: 'Supprimer', en: 'Delete', es: 'Eliminar' })}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-500/10 text-red-400 text-xs font-medium hover:bg-red-500/20 transition-colors">
+                        <Trash2 size={14} /> {tx({ fr: 'Supprimer', en: 'Delete', es: 'Eliminar' })}
                       </button>
                     )}
                   </div>
