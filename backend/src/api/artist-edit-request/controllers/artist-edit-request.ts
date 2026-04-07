@@ -826,42 +826,67 @@ async function handleMarkUnique(strapi: any, artist: any, changeData: any) {
   const items = Array.isArray(artist[fieldName]) ? [...artist[fieldName]] : [];
   const idx = items.findIndex((it: any) => it.id === itemId);
 
-  if (idx >= 0) {
-    items[idx] = {
-      ...items[idx],
-      unique: true,
-      customPrice: parseFloat(customPrice) || 0,
-      fixedFormat: fixedFormat || 'a2',
-      fixedTier: fixedTier || 'studio',
-      noFrame: true,
-    };
+  if (idx < 0) return;
 
-    await strapi.documents('api::artist.artist').update({
-      documentId: artist.documentId,
-      data: { [fieldName]: items },
-      status: 'published',
-    });
+  const printType = changeData.printType || 'unique';
+
+  // Nettoyer les anciens flags
+  const { unique: _u, customPrice: _cp, fixedFormat: _ff, fixedTier: _ft, noFrame: _nf,
+    limitedEdition: _le, limitedQty: _lq, private: _p, clientEmail: _ce, privateToken: _pt,
+    onSale: _os, salePercent: _sp, sold: _so, soldAt: _sa, ...cleanItem } = items[idx];
+
+  // Appliquer le nouveau type
+  switch (printType) {
+    case 'unique':
+      items[idx] = { ...cleanItem, unique: true, customPrice: parseFloat(customPrice) || 0,
+        fixedFormat: fixedFormat || 'a4', fixedTier: fixedTier || 'studio', noFrame: true };
+      break;
+    case 'limited':
+      items[idx] = { ...cleanItem, limitedEdition: true, limitedQty: changeData.limitedQty || 50 };
+      break;
+    case 'private':
+      items[idx] = { ...cleanItem, private: true, unique: true,
+        clientEmail: (changeData.clientEmail || '').toLowerCase(),
+        privateToken: crypto.randomBytes(16).toString('hex'),
+        customPrice: parseFloat(customPrice) || 0,
+        fixedFormat: fixedFormat || 'a4', fixedTier: fixedTier || 'studio', noFrame: true };
+      break;
+    case 'sale':
+      items[idx] = { ...cleanItem, onSale: true, salePercent: changeData.salePercent || 20 };
+      break;
+    default: // standard
+      items[idx] = cleanItem;
+  }
+
+  await strapi.documents('api::artist.artist').update({
+    documentId: artist.documentId,
+    data: { [fieldName]: items },
+    status: 'published',
+  });
+
+  // Envoyer email au client pour les pieces privees
+  if (printType === 'private' && items[idx].clientEmail && items[idx].privateToken) {
+    const buyLink = `https://massivemedias.com/artistes/${artist.slug}?print=${items[idx].id}&token=${items[idx].privateToken}`;
+    try {
+      await sendPrivatePrintEmail({
+        clientEmail: items[idx].clientEmail,
+        artistName: artist.name,
+        printTitle: items[idx].titleFr || items[idx].titleEn || 'Oeuvre',
+        printImage: items[idx].fullImage || items[idx].image || '',
+        buyLink,
+        price: items[idx].customPrice || null,
+      });
+      strapi.log.info(`Email piece privee envoye a ${items[idx].clientEmail}`);
+    } catch (emailErr) {
+      strapi.log.warn(`Email piece privee non envoye:`, emailErr);
+    }
   }
 }
 
 async function handleUnmarkUnique(strapi: any, artist: any, changeData: any) {
-  const { itemId, category } = changeData || {};
-  if (!itemId) return;
-
-  const fieldName = category === 'stickers' ? 'stickers' : category === 'merch' ? 'merch' : 'prints';
-  const items = Array.isArray(artist[fieldName]) ? [...artist[fieldName]] : [];
-  const idx = items.findIndex((it: any) => it.id === itemId);
-
-  if (idx >= 0) {
-    const { unique, customPrice, fixedFormat, fixedTier, noFrame, ...rest } = items[idx];
-    items[idx] = rest;
-
-    await strapi.documents('api::artist.artist').update({
-      documentId: artist.documentId,
-      data: { [fieldName]: items },
-      status: 'published',
-    });
-  }
+  // handleMarkUnique gere aussi le type 'standard' (nettoyage)
+  // On redirige vers handleMarkUnique avec printType standard
+  await handleMarkUnique(strapi, artist, { ...changeData, printType: 'standard', customPrice: 0 });
 }
 
 async function handleRemoveImages(strapi: any, artist: any, requestType: string, changeData: any) {

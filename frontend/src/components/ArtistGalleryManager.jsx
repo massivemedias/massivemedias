@@ -55,6 +55,7 @@ function ArtistGalleryManager() {
   const [uniqueFormat, setUniqueFormat] = useState('a3plus');
   const [viewMode, setViewMode] = useState('list'); // 'grid' | 'compact' | 'list'
   const [uniqueSending, setUniqueSending] = useState(false);
+  const [uniqueEmail, setUniqueEmail] = useState('');
 
   const email = user?.email || '';
   const localArtist = artistsData[artistSlug] || null;
@@ -495,76 +496,192 @@ function ArtistGalleryManager() {
                 </div>
               </div>
 
-              {/* Configurateur type expandable */}
+              {/* Configurateur type - grand panneau */}
               {showUniqueForm && (() => {
                 const currentType = item.onSale ? 'sale' : item.private ? 'private' : item.limitedEdition ? 'limited' : item.unique ? 'unique' : 'standard';
-                return (
-                  <div className="px-3 pb-3 space-y-2">
-                    {/* Selecteur de type */}
-                    <div className="flex flex-wrap gap-1">
-                      {[
-                        { id: 'standard', label: 'Standard' },
-                        { id: 'unique', label: tx({ fr: 'Unique', en: 'Unique', es: 'Unica' }) },
-                        { id: 'limited', label: tx({ fr: 'Limitee', en: 'Limited', es: 'Limitada' }) },
-                        { id: 'private', label: tx({ fr: 'Privee', en: 'Private', es: 'Privada' }) },
-                        { id: 'sale', label: tx({ fr: 'Solde', en: 'Sale', es: 'Oferta' }) },
-                      ].map(t => (
-                        <button key={t.id}
-                          onClick={() => {
-                            const data = { itemId: item.id, category, itemTitle: item.titleFr || item.id, printType: t.id };
-                            if (t.id === 'standard') data.clearAll = true;
-                            setUniqueFormId(`${item.id}_${t.id}`);
-                          }}
-                          className={`px-2 py-0.5 rounded text-[10px] font-medium transition-all ${
-                            (uniqueFormId === `${item.id}_${t.id}` || (uniqueFormId === item.id && currentType === t.id))
-                              ? 'bg-accent text-white' : 'bg-black/20 text-grey-muted hover:text-heading'
-                          }`}>{t.label}</button>
-                      ))}
-                    </div>
+                const selectedType = (uniqueFormId || '').includes('_') ? (uniqueFormId || '').split('_').pop() : currentType;
+                const minPrice = getMinPrice(uniqueFormat);
 
-                    {/* Mini-configurateur */}
-                    <div className="flex flex-wrap items-end gap-2 p-2.5 rounded-lg bg-black/30">
-                      <div>
-                        <p className="text-grey-muted text-[9px] uppercase mb-1">Format</p>
-                        <div className="flex gap-1">
-                          {artistFormats.map(f => (
-                            <button key={f.id} onClick={() => setUniqueFormat(f.id)}
-                              className={`px-1.5 py-0.5 rounded text-[10px] font-semibold ${uniqueFormat === f.id ? 'bg-accent text-white' : 'bg-white/10 text-white/60 hover:bg-white/20'}`}>
-                              {f.short}
+                const handleSubmitType = async () => {
+                  setUniqueSending(true);
+                  setError('');
+                  try {
+                    const changeData = {
+                      itemId: item.id, category, itemTitle: item.titleFr || item.id,
+                      printType: selectedType,
+                      fixedFormat: uniqueFormat,
+                    };
+                    if (selectedType === 'unique' || selectedType === 'private') {
+                      const price = parseFloat(uniquePrice);
+                      if (!price || price < minPrice) {
+                        setError(tx({ fr: `Prix minimum: ${minPrice}$`, en: `Min price: $${minPrice}`, es: `Precio minimo: $${minPrice}` }));
+                        setUniqueSending(false);
+                        return;
+                      }
+                      changeData.customPrice = price;
+                    }
+                    if (selectedType === 'limited') {
+                      changeData.limitedQty = parseInt(uniquePrice) || 50;
+                    }
+                    if (selectedType === 'sale') {
+                      changeData.salePercent = parseInt(uniquePrice) || 20;
+                    }
+                    if (selectedType === 'private') {
+                      if (!uniqueEmail || !uniqueEmail.includes('@')) {
+                        setError(tx({ fr: 'Email du client requis', en: 'Client email required', es: 'Email del cliente requerido' }));
+                        setUniqueSending(false);
+                        return;
+                      }
+                      changeData.clientEmail = uniqueEmail;
+                    }
+
+                    const res = await createEditRequest({
+                      artistSlug, artistName, email,
+                      requestType: selectedType === 'standard' ? 'unmark-unique' : 'mark-unique',
+                      changeData,
+                    });
+                    const newReq = res.data?.data;
+                    if (newReq) setEditRequests(prev => [newReq, ...prev]);
+                    setUniqueFormId(null);
+                    setUniquePrice('');
+                    setSuccess(tx({ fr: 'Demande envoyee pour validation!', en: 'Request sent for approval!', es: 'Solicitud enviada!' }));
+                    setTimeout(() => setSuccess(''), 5000);
+                  } catch {
+                    setError(tx({ fr: 'Erreur lors de la demande.', en: 'Error.', es: 'Error.' }));
+                  } finally {
+                    setUniqueSending(false);
+                  }
+                };
+
+                return (
+                  <div className="px-3 pb-3">
+                    <div className="rounded-xl bg-black/30 border border-white/10 p-4 space-y-3">
+                      {/* Selecteur de type */}
+                      <div className="flex flex-wrap gap-1.5">
+                        {[
+                          { id: 'standard', label: 'Standard', desc: tx({ fr: 'Print normal', en: 'Normal print', es: 'Print normal' }) },
+                          { id: 'unique', label: tx({ fr: 'Piece unique', en: 'Unique', es: 'Unica' }), desc: tx({ fr: 'Un seul exemplaire', en: 'One of a kind', es: 'Una sola copia' }) },
+                          { id: 'limited', label: tx({ fr: 'Limitee', en: 'Limited', es: 'Limitada' }), desc: tx({ fr: 'Nombre limite', en: 'Limited copies', es: 'Copias limitadas' }) },
+                          { id: 'private', label: tx({ fr: 'Privee', en: 'Private', es: 'Privada' }), desc: tx({ fr: 'Pour un client specifique', en: 'For a specific client', es: 'Para un cliente especifico' }) },
+                          { id: 'sale', label: tx({ fr: 'Solde', en: 'Sale', es: 'Oferta' }), desc: tx({ fr: 'Prix reduit', en: 'Discounted', es: 'Descuento' }) },
+                        ].map(t => (
+                          <button key={t.id}
+                            onClick={() => setUniqueFormId(`${item.id}_${t.id}`)}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                              selectedType === t.id ? 'bg-accent text-white' : 'bg-black/20 text-grey-muted hover:text-heading'
+                            }`}>{t.label}</button>
+                        ))}
+                      </div>
+
+                      {/* Formulaire selon le type */}
+                      {selectedType !== 'standard' && (
+                        <div className="space-y-3">
+                          {/* Format (unique + private) */}
+                          {(selectedType === 'unique' || selectedType === 'private') && (
+                            <div>
+                              <p className="text-grey-muted text-[10px] uppercase tracking-wider mb-1.5">Format</p>
+                              <div className="flex gap-1.5">
+                                {artistFormats.map(f => (
+                                  <button key={f.id} onClick={() => setUniqueFormat(f.id)}
+                                    className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${uniqueFormat === f.id ? 'bg-accent text-white' : 'bg-white/10 text-white/60 hover:bg-white/20'}`}>
+                                    {f.label}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Prix (unique + private) */}
+                          {(selectedType === 'unique' || selectedType === 'private') && (
+                            <div>
+                              <p className="text-grey-muted text-[10px] uppercase tracking-wider mb-1.5">
+                                Prix (min {minPrice}$)
+                              </p>
+                              <div className="flex items-center gap-2">
+                                <input type="number" min={minPrice} value={uniquePrice} onChange={(e) => setUniquePrice(e.target.value)}
+                                  className="w-24 bg-black/50 text-white text-sm px-3 py-2 rounded-lg border border-accent/50 focus:outline-none focus:border-accent"
+                                  placeholder={String(minPrice)} />
+                                <span className="text-white text-sm font-bold">$</span>
+                                <span className="text-grey-muted text-[10px]">
+                                  ({tx({ fr: `Format ${uniqueFormat.toUpperCase()} serie studio`, en: `${uniqueFormat.toUpperCase()} studio series`, es: `${uniqueFormat.toUpperCase()} serie studio` })})
+                                </span>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Nombre exemplaires (limited) */}
+                          {selectedType === 'limited' && (
+                            <div>
+                              <p className="text-grey-muted text-[10px] uppercase tracking-wider mb-1.5">
+                                {tx({ fr: 'Nombre d\'exemplaires', en: 'Number of copies', es: 'Numero de copias' })}
+                              </p>
+                              <input type="number" min="2" max="500" value={uniquePrice} onChange={(e) => setUniquePrice(e.target.value)}
+                                className="w-24 bg-black/50 text-white text-sm px-3 py-2 rounded-lg border border-blue-500/50 focus:outline-none focus:border-blue-400"
+                                placeholder="50" />
+                            </div>
+                          )}
+
+                          {/* Pourcentage rabais (sale) */}
+                          {selectedType === 'sale' && (
+                            <div>
+                              <p className="text-grey-muted text-[10px] uppercase tracking-wider mb-1.5">
+                                {tx({ fr: 'Pourcentage de rabais', en: 'Discount percentage', es: 'Porcentaje de descuento' })}
+                              </p>
+                              <div className="flex items-center gap-2">
+                                <input type="number" min="5" max="90" step="5" value={uniquePrice} onChange={(e) => setUniquePrice(e.target.value)}
+                                  className="w-20 bg-black/50 text-white text-sm px-3 py-2 rounded-lg border border-yellow-500/50 focus:outline-none focus:border-yellow-400"
+                                  placeholder="20" />
+                                <span className="text-yellow-400 text-sm font-bold">%</span>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Email client (private) */}
+                          {selectedType === 'private' && (
+                            <div>
+                              <p className="text-grey-muted text-[10px] uppercase tracking-wider mb-1.5">
+                                {tx({ fr: 'Email du client', en: 'Client email', es: 'Email del cliente' })}
+                              </p>
+                              <input type="email" value={uniqueEmail || ''} onChange={(e) => setUniqueEmail(e.target.value)}
+                                className="w-full bg-black/50 text-white text-sm px-3 py-2 rounded-lg border border-orange-500/50 focus:outline-none focus:border-orange-400"
+                                placeholder="client@email.com" />
+                              <p className="text-grey-muted text-[9px] mt-1">
+                                {tx({ fr: 'Le client recevra un email avec un lien pour acheter cette oeuvre', en: 'Client will receive an email with a link to buy this artwork', es: 'El cliente recibira un email con un enlace para comprar' })}
+                              </p>
+                            </div>
+                          )}
+
+                          {/* Boutons */}
+                          <div className="flex items-center gap-2 pt-1">
+                            <button onClick={handleSubmitType}
+                              disabled={uniqueSending}
+                              className="px-4 py-2 rounded-lg bg-accent text-white text-xs font-semibold disabled:opacity-50 flex items-center gap-1.5 hover:bg-accent/90 transition-colors">
+                              {uniqueSending ? <Loader2 size={12} className="animate-spin" /> : <Send size={12} />}
+                              {tx({ fr: 'Envoyer pour validation', en: 'Submit for approval', es: 'Enviar para validacion' })}
                             </button>
-                          ))}
-                        </div>
-                      </div>
-                      <div>
-                        <p className="text-grey-muted text-[9px] uppercase mb-1">Prix $</p>
-                        <input type="number" min="0" value={uniquePrice} onChange={(e) => setUniquePrice(e.target.value)}
-                          className="w-16 bg-black/50 text-white text-xs px-2 py-1 rounded border border-accent/50 focus:outline-none text-center"
-                          placeholder="0" />
-                      </div>
-                      {/* Solde: pourcentage de reduction */}
-                      {(uniqueFormId || '').includes('_sale') && (
-                        <div>
-                          <p className="text-grey-muted text-[9px] uppercase mb-1">% {tx({ fr: 'rabais', en: 'off', es: 'desc.' })}</p>
-                          <input type="number" min="5" max="90" step="5"
-                            value={uniquePrice || ''}
-                            onChange={(e) => setUniquePrice(e.target.value)}
-                            className="w-16 bg-black/50 text-white text-xs px-2 py-1 rounded border border-yellow-500/50 focus:outline-none text-center"
-                            placeholder="20" />
+                            <button onClick={() => { setUniqueFormId(null); setUniquePrice(''); }}
+                              className="px-3 py-2 rounded-lg bg-white/10 text-grey-muted text-xs hover:bg-white/20 transition-colors">
+                              {tx({ fr: 'Annuler', en: 'Cancel', es: 'Cancelar' })}
+                            </button>
+                          </div>
                         </div>
                       )}
-                      <button onClick={() => {
-                        const selectedType = (uniqueFormId || '').split('_').pop();
-                        handleMarkUnique(item.id, category, item.titleFr || item.id);
-                      }}
-                        disabled={uniqueSending}
-                        className="px-2.5 py-1 rounded-lg bg-accent text-white text-[10px] font-semibold disabled:opacity-50 flex items-center gap-1">
-                        {uniqueSending ? <Loader2 size={10} className="animate-spin" /> : <Send size={10} />}
-                        OK
-                      </button>
-                      <button onClick={() => { setUniqueFormId(null); setUniquePrice(''); }}
-                        className="px-1.5 py-1 rounded-lg bg-white/10 text-grey-muted hover:bg-white/20">
-                        <X size={10} />
-                      </button>
+
+                      {/* Standard: juste le bouton */}
+                      {selectedType === 'standard' && currentType !== 'standard' && (
+                        <div className="flex items-center gap-2">
+                          <button onClick={handleSubmitType}
+                            disabled={uniqueSending}
+                            className="px-4 py-2 rounded-lg bg-white/10 text-heading text-xs font-semibold disabled:opacity-50 flex items-center gap-1.5 hover:bg-white/20 transition-colors">
+                            {uniqueSending ? <Loader2 size={12} className="animate-spin" /> : <Send size={12} />}
+                            {tx({ fr: 'Remettre en standard', en: 'Set as standard', es: 'Poner estandar' })}
+                          </button>
+                          <button onClick={() => { setUniqueFormId(null); setUniquePrice(''); }}
+                            className="px-3 py-2 rounded-lg bg-white/10 text-grey-muted text-xs hover:bg-white/20">
+                            {tx({ fr: 'Annuler', en: 'Cancel', es: 'Cancelar' })}
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 );
