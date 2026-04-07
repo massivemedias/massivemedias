@@ -480,7 +480,7 @@ function ArtistGalleryManager() {
                       </button>
                     )}
                     {/* Type: Standard / Unique / Limitee / Privee / Solde */}
-                    {category === 'prints' && !isPendingUnique && (
+                    {category === 'prints' && (
                       <button onClick={() => { setUniqueFormId(showUniqueForm ? null : item.id); setUniquePrice(''); }}
                         className="flex items-center gap-1 px-2 py-1 rounded-lg bg-accent/10 text-accent text-[10px] font-medium hover:bg-accent/20 transition-colors">
                         <Gem size={10} /> {tx({ fr: 'Type / Config', en: 'Type / Config', es: 'Tipo / Config' })}
