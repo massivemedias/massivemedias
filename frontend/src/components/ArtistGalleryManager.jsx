@@ -386,7 +386,7 @@ function ArtistGalleryManager() {
           const isUnique = item.unique;
           const isHero = currentHeroId === item.id;
           const isRenaming = renamingId === item.id;
-          const showUniqueForm = uniqueFormId === item.id;
+          const showUniqueForm = uniqueFormId === item.id || (uniqueFormId || '').startsWith(item.id + '_');
 
           return (
             <div key={item.id} className={`rounded-xl bg-black/20 overflow-hidden transition-all ${isPendingRemoval ? 'opacity-40' : ''}`}>
