@@ -137,6 +137,35 @@ exports.default = strapi_1.factories.createCoreController('api::artist-edit-requ
                 documentId: entry.documentId,
                 data: { linkedMessageId: msg.documentId },
             });
+            // Envoyer email notification a l'admin pour les demandes qui necessitent une approbation
+            if (!AUTO_APPLY_TYPES.includes(requestType)) {
+                try {
+                    const { Resend } = require('resend');
+                    const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+                    if (resend) {
+                        const notifMessage = buildNotificationMessage(requestType, enrichedChangeData, artistName || artistSlug);
+                        await resend.emails.send({
+                            from: 'Massive Medias <noreply@massivemedias.com>',
+                            to: 'massivemedias44@gmail.com',
+                            subject: `[Demande artiste] ${TYPE_LABELS[requestType] || requestType} - ${artistName || artistSlug}`,
+                            html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:20px;background:#1a1030;color:#e0e0e0;border-radius:12px;">
+                <h2 style="color:#F00098;margin:0 0 16px;">Demande de modification</h2>
+                <p style="color:#aaa;font-size:13px;">Artiste: <strong style="color:#fff;">${artistName || artistSlug}</strong> (${email})</p>
+                <p style="color:#aaa;font-size:13px;">Type: <strong style="color:#F00098;">${TYPE_LABELS[requestType] || requestType}</strong></p>
+                <div style="background:#0a0618;padding:16px;border-radius:8px;margin:16px 0;">
+                  <p style="color:#ccc;font-size:14px;white-space:pre-wrap;margin:0;">${notifMessage}</p>
+                </div>
+                <p style="color:#888;font-size:12px;">Connectez-vous au panneau admin pour approuver ou rejeter cette demande.</p>
+                <a href="https://massivemedias.com/admin/messages" style="display:inline-block;background:#F00098;color:#fff;padding:10px 24px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:14px;margin-top:8px;">Voir dans l'admin</a>
+              </div>`,
+                        });
+                        strapi.log.info(`Email notification admin envoye pour ${requestType} de ${artistName}`);
+                    }
+                }
+                catch (emailErr) {
+                    strapi.log.warn('Email notification admin non envoye:', emailErr);
+                }
+            }
             // Auto-apply pour les modifications de profil
             if (AUTO_APPLY_TYPES.includes(requestType)) {
                 await applyProfileChange(strapi, artistSlug, requestType, changeData);
@@ -640,15 +669,25 @@ function buildNotificationMessage(requestType, changeData, artistName) {
         case 'update-profile':
             return `${name} a mis a jour son profil. Applique automatiquement.`;
         case 'mark-unique': {
-            const itemId = (changeData === null || changeData === void 0 ? void 0 : changeData.itemId) || '';
-            const price = (changeData === null || changeData === void 0 ? void 0 : changeData.customPrice) || 0;
-            const itemTitle = (changeData === null || changeData === void 0 ? void 0 : changeData.itemTitle) || itemId;
-            return `${name} souhaite designer "${itemTitle}" comme piece unique au prix de ${price}$. En attente de validation.`;
+            const itemTitle = (changeData === null || changeData === void 0 ? void 0 : changeData.itemTitle) || (changeData === null || changeData === void 0 ? void 0 : changeData.itemId) || '';
+            const pt = (changeData === null || changeData === void 0 ? void 0 : changeData.printType) || 'unique';
+            if (pt === 'unique') {
+                return `${name} souhaite designer "${itemTitle}" comme PIECE UNIQUE au prix de ${(changeData === null || changeData === void 0 ? void 0 : changeData.customPrice) || 0}$ (format ${((changeData === null || changeData === void 0 ? void 0 : changeData.fixedFormat) || 'a4').toUpperCase()}). En attente de validation.`;
+            }
+            if (pt === 'limited') {
+                return `${name} souhaite designer "${itemTitle}" en EDITION LIMITEE (${(changeData === null || changeData === void 0 ? void 0 : changeData.limitedQty) || 50} exemplaires). En attente de validation.`;
+            }
+            if (pt === 'private') {
+                return `${name} souhaite designer "${itemTitle}" comme PIECE PRIVEE pour le client ${(changeData === null || changeData === void 0 ? void 0 : changeData.clientEmail) || '?'} au prix de ${(changeData === null || changeData === void 0 ? void 0 : changeData.customPrice) || 0}$ (format ${((changeData === null || changeData === void 0 ? void 0 : changeData.fixedFormat) || 'a4').toUpperCase()}). Un email sera envoye au client apres approbation. En attente de validation.`;
+            }
+            if (pt === 'sale') {
+                return `${name} souhaite mettre "${itemTitle}" en SOLDE (-${(changeData === null || changeData === void 0 ? void 0 : changeData.salePercent) || 20}%). En attente de validation.`;
+            }
+            return `${name} souhaite modifier le type de "${itemTitle}". En attente de validation.`;
         }
         case 'unmark-unique': {
-            const itemId2 = (changeData === null || changeData === void 0 ? void 0 : changeData.itemId) || '';
-            const itemTitle2 = (changeData === null || changeData === void 0 ? void 0 : changeData.itemTitle) || itemId2;
-            return `${name} souhaite retirer le statut piece unique de "${itemTitle2}". En attente de validation.`;
+            const itemTitle2 = (changeData === null || changeData === void 0 ? void 0 : changeData.itemTitle) || (changeData === null || changeData === void 0 ? void 0 : changeData.itemId) || '';
+            return `${name} souhaite remettre "${itemTitle2}" en standard (retirer le statut special). En attente de validation.`;
         }
         default:
             return `${name} a fait une demande de modification (${label}).`;
