@@ -34,7 +34,10 @@
                 "update-profile",
                 "update-bio",
                 "update-socials",
-                "update-avatar"
+                "update-avatar",
+                "mark-unique",
+                "unmark-unique",
+                "rename-item"
             ],
             "required": true
         },
