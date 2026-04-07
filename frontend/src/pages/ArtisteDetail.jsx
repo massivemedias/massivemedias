@@ -148,9 +148,21 @@ function ArtisteDetail({ subdomainSlug }) {
       const local2 = Array.isArray(localList) ? localList : [];
       if (cms2.length === 0) return local2;
       if (local2.length === 0) return cms2;
+      // Merger: CMS ecrase le local pour les memes IDs
+      const cmsMap = {};
+      cms2.forEach(p => { if (p.id) cmsMap[p.id] = p; });
+      const merged = local2.map(p => {
+        if (p.id && cmsMap[p.id]) {
+          // CMS override le local (pour customPrice, unique, etc.)
+          const { image: cmsImg, fullImage: cmsFull, ...cmsRest } = cmsMap[p.id];
+          return { ...p, ...cmsRest, image: cmsImg || p.image, fullImage: cmsFull || p.fullImage };
+        }
+        return p;
+      });
+      // Ajouter les prints CMS qui n'existent pas en local
       const localIds = new Set(local2.map(p => p.id));
       const newFromCms = cms2.filter(p => !localIds.has(p.id));
-      return [...local2, ...newFromCms];
+      return [...merged, ...newFromCms];
     };
     return {
       ...local,

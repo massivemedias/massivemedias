@@ -67,16 +67,24 @@ function ArtistGalleryManager() {
     return arr.find(a => a.slug === artistSlug) || null;
   }, [cmsArtists, artistSlug]);
 
-  // Local = base, CMS = ajouts. Les prints CMS s'ajoutent aux locaux.
+  // Local = base, CMS override les champs existants + ajoute les nouveaux
   const mergeItems = (cmsItems, localItems) => {
     const cms = Array.isArray(cmsItems) ? cmsItems : [];
     const local = Array.isArray(localItems) ? localItems : [];
     if (cms.length === 0) return local;
     if (local.length === 0) return cms;
-    // Ajouter les prints CMS qui ne sont pas deja dans le local (par id)
+    const cmsMap = {};
+    cms.forEach(p => { if (p.id) cmsMap[p.id] = p; });
+    const merged = local.map(p => {
+      if (p.id && cmsMap[p.id]) {
+        const { image: cmsImg, fullImage: cmsFull, ...cmsRest } = cmsMap[p.id];
+        return { ...p, ...cmsRest, image: cmsImg || p.image, fullImage: cmsFull || p.fullImage };
+      }
+      return p;
+    });
     const localIds = new Set(local.map(p => p.id));
     const newFromCms = cms.filter(p => !localIds.has(p.id));
-    return [...local, ...newFromCms];
+    return [...merged, ...newFromCms];
   };
 
   const artistPrints = useMemo(() => mergeItems(cmsArtist?.prints, localArtist?.prints), [cmsArtist, localArtist]);
