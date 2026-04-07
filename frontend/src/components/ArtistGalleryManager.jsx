@@ -385,7 +385,7 @@ function ArtistGalleryManager() {
 
     // Vue liste detaillee
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3">
         {[...items].map((item) => {
           const isPendingRemoval = pendingRemovalIds.includes(item.id);
           const isPendingUnique = pendingUniqueIds.includes(item.id);
