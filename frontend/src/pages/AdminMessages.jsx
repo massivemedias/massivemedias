@@ -415,10 +415,10 @@ function AdminMessages() {
                                 const editReqId = item.attachments.editRequestId;
                                 const reqType = item.attachments.requestType || '';
                                 const changeData = item.attachments.changeData || {};
-                                const isGalleryChange = reqType.startsWith('add-') || reqType.startsWith('remove-');
+                                const isActionable = reqType.startsWith('add-') || reqType.startsWith('remove-') || reqType === 'mark-unique' || reqType === 'unmark-unique';
                                 const isAlreadyProcessed = item.status === 'replied' || item.adminReply;
 
-                                if (!isGalleryChange || isAlreadyProcessed) return null;
+                                if (!isActionable || isAlreadyProcessed) return null;
 
                                 const images = changeData.images || [];
                                 const itemIds = changeData.itemIds || [];
