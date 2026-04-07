@@ -559,7 +559,8 @@ function AdminInventaire() {
   const [sortKey, setSortKey] = useState('nameFr');
   const [sortDir, setSortDir] = useState('asc');
   const [deleting, setDeleting] = useState(null);
-  const [collapsedCats, setCollapsedCats] = useState(['textile', 'frame', 'equipment', 'sticker', 'print', 'merch', 'other']);
+  // On stocke les sections OUVERTES (tout ferme par defaut)
+  const [openCats, setOpenCats] = useState([]);
 
   const fetchData = useCallback(async () => {
     try {
@@ -781,7 +782,7 @@ function AdminInventaire() {
               const catItems = groups[cat];
               const catLabel = CATEGORY_LABELS[cat] ? (typeof CATEGORY_LABELS[cat] === 'string' ? CATEGORY_LABELS[cat] : tx(CATEGORY_LABELS[cat])) : cat;
               const totalQty = catItems.reduce((s, i) => s + (i.quantity || 0), 0);
-              const isOpen = !collapsedCats.includes(cat);
+              const isOpen = openCats.includes(cat);
 
               // Pour textile: sous-grouper par variant (Hoodie, T-Shirt, Crewneck)
               const hasSubGroups = cat === 'textile';
@@ -798,7 +799,7 @@ function AdminInventaire() {
                 <div key={cat} className="rounded-xl card-bg shadow-lg shadow-black/20 overflow-hidden">
                   {/* Header categorie */}
                   <button
-                    onClick={() => setCollapsedCats(prev => isOpen ? [...prev, cat] : prev.filter(c => c !== cat))}
+                    onClick={() => setOpenCats(prev => isOpen ? prev.filter(c => c !== cat) : [...prev, cat])}
                     className="w-full flex items-center justify-between px-4 py-3 hover:bg-white/[0.02] transition-colors"
                   >
                     <div className="flex items-center gap-2">
@@ -816,11 +817,11 @@ function AdminInventaire() {
                         // Sous-accordeons par variant
                         Object.entries(subGroups).map(([variant, vItems]) => {
                           const vQty = vItems.reduce((s, i) => s + (i.quantity || 0), 0);
-                          const vOpen = !collapsedCats.includes(`${cat}_${variant}`);
+                          const vOpen = openCats.includes(`${cat}_${variant}`);
                           return (
                             <div key={variant} className="ml-2 mb-1">
                               <button
-                                onClick={() => setCollapsedCats(prev => vOpen ? [...prev, `${cat}_${variant}`] : prev.filter(c => c !== `${cat}_${variant}`))}
+                                onClick={() => setOpenCats(prev => vOpen ? prev.filter(c => c !== `${cat}_${variant}`) : [...prev, `${cat}_${variant}`])}
                                 className="w-full flex items-center justify-between px-3 py-1.5 rounded-lg hover:bg-white/[0.02] transition-colors"
                               >
                                 <div className="flex items-center gap-2">
