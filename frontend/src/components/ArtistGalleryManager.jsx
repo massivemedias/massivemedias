@@ -490,8 +490,7 @@ function ArtistGalleryManager() {
                       {item.sold && <span className="text-red-400 font-bold">VENDU</span>}
                       <span className="font-mono opacity-50">{item.id}</span>
                     </div>
-                  )
-                  </div>
+                  )}
 
                   {/* Actions inline */}
                   <div className="flex flex-wrap gap-1.5">
