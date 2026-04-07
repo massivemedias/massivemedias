@@ -1,5 +1,7 @@
 import { factories } from '@strapi/strapi';
+import crypto from 'crypto';
 import { processArtistImage, deleteFromSupabase } from '../../../utils/image-processor';
+import { sendPrivatePrintEmail } from '../../../utils/email';
 
 // Import dynamique pour eviter crash si googleapis pas installe ou env vars manquantes
 async function tryUploadToGoogleDrive(fileUrl: string, fileName: string, artistSlug: string, mimeType?: string) {
@@ -782,7 +784,7 @@ async function handleAddImages(strapi: any, artist: any, requestType: string, ch
         newItem.private = true;
         newItem.clientEmail = img.clientEmail.toLowerCase();
         // Generer un token unique pour le lien d'achat
-        newItem.privateToken = require('crypto').randomBytes(16).toString('hex');
+        newItem.privateToken = crypto.randomBytes(16).toString('hex');
       }
     }
 
@@ -800,7 +802,6 @@ async function handleAddImages(strapi: any, artist: any, requestType: string, ch
     if (item.private && item.clientEmail && item.privateToken) {
       const buyLink = `https://massivemedias.com/artistes/${artist.slug}?print=${item.id}&token=${item.privateToken}`;
       try {
-        const { sendPrivatePrintEmail } = require('../../../utils/email');
         await sendPrivatePrintEmail({
           clientEmail: item.clientEmail,
           artistName: artist.name,
