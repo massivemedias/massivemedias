@@ -478,6 +478,20 @@ function ArtistGalleryManager() {
                       </span>
                     )}
                   </div>
+                  {/* Details du print */}
+                  {category === 'prints' && (
+                    <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-[10px] text-grey-muted mb-1">
+                      {item.fixedFormat && <span>Format: <strong className="text-heading">{item.fixedFormat.toUpperCase()}</strong></span>}
+                      {item.fixedTier && <span>Qualite: <strong className="text-heading">{item.fixedTier === 'museum' ? 'Musee' : 'Studio'}</strong></span>}
+                      {item.customPrice && <span>Prix: <strong className="text-accent">{item.customPrice}$</strong></span>}
+                      {item.limitedQty && <span>Exemplaires: <strong className="text-heading">{item.limitedQty}</strong></span>}
+                      {item.clientEmail && <span>Client: <strong className="text-orange-400">{item.clientEmail}</strong></span>}
+                      {item.salePercent && <span>Rabais: <strong className="text-yellow-400">-{item.salePercent}%</strong></span>}
+                      {item.sold && <span className="text-red-400 font-bold">VENDU</span>}
+                      <span className="font-mono opacity-50">{item.id}</span>
+                    </div>
+                  )
+                  </div>
 
                   {/* Actions inline */}
                   <div className="flex flex-wrap gap-1.5">
@@ -489,7 +503,17 @@ function ArtistGalleryManager() {
                     )}
                     {/* Type: Standard / Unique / Limitee / Privee / Solde */}
                     {category === 'prints' && (
-                      <button onClick={() => { setUniqueFormId(showUniqueForm ? null : item.id); setUniquePrice(''); }}
+                      <button onClick={() => {
+                        if (showUniqueForm) { setUniqueFormId(null); setUniquePrice(''); }
+                        else {
+                          // Pre-remplir avec les valeurs actuelles du print
+                          const ct = item.onSale ? 'sale' : item.private ? 'private' : item.limitedEdition ? 'limited' : item.unique ? 'unique' : 'standard';
+                          setUniqueFormId(`${item.id}_${ct}`);
+                          setUniqueFormat(item.fixedFormat || 'a4');
+                          setUniquePrice(item.customPrice ? String(item.customPrice) : item.salePercent ? String(item.salePercent) : item.limitedQty ? String(item.limitedQty) : '');
+                          setUniqueEmail(item.clientEmail || '');
+                        }
+                      }}
                         className="flex items-center gap-1 px-2 py-1 rounded-lg bg-accent/10 text-accent text-[10px] font-medium hover:bg-accent/20 transition-colors">
                         <Gem size={10} /> {tx({ fr: 'Type / Config', en: 'Type / Config', es: 'Tipo / Config' })}
                       </button>
