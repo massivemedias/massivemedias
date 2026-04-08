@@ -807,80 +807,66 @@ function ResizeTab() {
 }
 
 // ---------------------------------------------------------------------------
-// QR Code Tab
+// QR Code Tab - Generateur avance
 // ---------------------------------------------------------------------------
 function QRCodeTab() {
   const [url, setUrl] = useState('https://massivemedias.com');
-  const [dotStyle, setDotStyle] = useState('rounded'); // 'square' | 'rounded' | 'dots'
-  const [cornerStyle, setCornerStyle] = useState('rounded');
+  const [shortUrl, setShortUrl] = useState('');
+  const [qrTab, setQrTab] = useState('content'); // content | colors | design | logo
+  const [dotStyle, setDotStyle] = useState('rounded');
+  const [ecLevel, setEcLevel] = useState('L');
   const [fgColor, setFgColor] = useState('#000000');
   const [bgColor, setBgColor] = useState('#FFFFFF');
-  const [size, setSize] = useState(400);
+  const [size, setSize] = useState(600);
   const [logoFile, setLogoFile] = useState(null);
   const [logoUrl, setLogoUrl] = useState('');
   const canvasRef = useRef(null);
-  const [generating, setGenerating] = useState(false);
+
+  // URL effective: raccourcie si disponible, sinon originale
+  const effectiveUrl = shortUrl || url;
 
   const generateQR = useCallback(async () => {
-    if (!url.trim() || !canvasRef.current) return;
-    setGenerating(true);
+    if (!effectiveUrl.trim() || !canvasRef.current) return;
     try {
       const QRCode = (await import('qrcode')).default;
       const canvas = canvasRef.current;
+      const ecl = logoUrl ? 'Q' : ecLevel; // Q minimum si logo
 
-      // Error correction L = minimum de points
-      await QRCode.toCanvas(canvas, url.trim(), {
-        width: size,
-        margin: 2,
-        errorCorrectionLevel: logoUrl ? 'M' : 'L', // M si logo (besoin de plus de redondance)
-        color: { dark: fgColor, light: bgColor },
-      });
+      // Generer les modules
+      const qrData = await QRCode.create(effectiveUrl.trim(), { errorCorrectionLevel: ecl });
+      const modules = qrData.modules;
+      const modSize = modules.size;
+      const margin = 2;
+      const totalMods = modSize + margin * 2;
+      const cellSize = size / totalMods;
 
-      // Appliquer les styles de points
+      canvas.width = size;
+      canvas.height = size;
       const ctx = canvas.getContext('2d');
-      if (dotStyle !== 'square') {
-        const imageData = ctx.getImageData(0, 0, size, size);
-        const moduleCount = Math.round(size / (size / Math.sqrt(imageData.data.length / 4)));
-        // Redessiner avec des ronds
-        const tempCanvas = document.createElement('canvas');
-        tempCanvas.width = size;
-        tempCanvas.height = size;
-        const tCtx = tempCanvas.getContext('2d');
 
-        await QRCode.toCanvas(tempCanvas, url.trim(), {
-          width: size, margin: 2,
-          errorCorrectionLevel: logoUrl ? 'M' : 'L',
-          color: { dark: fgColor, light: bgColor },
-        });
+      // Fond
+      ctx.fillStyle = bgColor;
+      ctx.fillRect(0, 0, size, size);
 
-        // Lire les modules du QR
-        const qrData = await QRCode.create(url.trim(), { errorCorrectionLevel: logoUrl ? 'M' : 'L' });
-        const modules = qrData.modules;
-        const modSize = modules.size;
-        const cellSize = (size - 4) / (modSize + 4); // marge 2 de chaque cote
-        const offset = cellSize * 2; // marge
+      // Dessiner les modules selon le style
+      for (let row = 0; row < modSize; row++) {
+        for (let col = 0; col < modSize; col++) {
+          if (!modules.get(row, col)) continue;
+          const x = (col + margin) * cellSize;
+          const y = (row + margin) * cellSize;
+          ctx.fillStyle = fgColor;
 
-        ctx.fillStyle = bgColor;
-        ctx.fillRect(0, 0, size, size);
-
-        for (let row = 0; row < modSize; row++) {
-          for (let col = 0; col < modSize; col++) {
-            if (modules.get(row, col)) {
-              const x = offset + col * cellSize;
-              const y = offset + row * cellSize;
-              ctx.fillStyle = fgColor;
-              if (dotStyle === 'dots') {
-                ctx.beginPath();
-                ctx.arc(x + cellSize / 2, y + cellSize / 2, cellSize * 0.35, 0, Math.PI * 2);
-                ctx.fill();
-              } else {
-                // rounded
-                const r = cellSize * 0.3;
-                ctx.beginPath();
-                ctx.roundRect(x + 0.5, y + 0.5, cellSize - 1, cellSize - 1, r);
-                ctx.fill();
-              }
-            }
+          if (dotStyle === 'dots') {
+            ctx.beginPath();
+            ctx.arc(x + cellSize / 2, y + cellSize / 2, cellSize * 0.38, 0, Math.PI * 2);
+            ctx.fill();
+          } else if (dotStyle === 'rounded') {
+            const r = cellSize * 0.32;
+            ctx.beginPath();
+            ctx.roundRect(x + 0.5, y + 0.5, cellSize - 1, cellSize - 1, r);
+            ctx.fill();
+          } else {
+            ctx.fillRect(x, y, cellSize, cellSize);
           }
         }
       }
@@ -890,163 +876,223 @@ function QRCodeTab() {
         const logo = new window.Image();
         logo.crossOrigin = 'anonymous';
         logo.onload = () => {
-          const logoSize = size * 0.2;
-          const x = (size - logoSize) / 2;
-          const y = (size - logoSize) / 2;
-          // Fond blanc derriere le logo
+          const logoSize = size * 0.22;
+          const lx = (size - logoSize) / 2;
+          const ly = (size - logoSize) / 2;
           ctx.fillStyle = bgColor;
           ctx.beginPath();
-          ctx.roundRect(x - 4, y - 4, logoSize + 8, logoSize + 8, 8);
+          ctx.roundRect(lx - 6, ly - 6, logoSize + 12, logoSize + 12, 10);
           ctx.fill();
-          ctx.drawImage(logo, x, y, logoSize, logoSize);
+          ctx.drawImage(logo, lx, ly, logoSize, logoSize);
         };
         logo.src = logoUrl;
       }
     } catch (err) {
-      console.error('QR generation error:', err);
-    } finally {
-      setGenerating(false);
+      console.error('QR error:', err);
     }
-  }, [url, dotStyle, fgColor, bgColor, size, logoUrl]);
+  }, [effectiveUrl, dotStyle, ecLevel, fgColor, bgColor, size, logoUrl]);
 
-  // Regenerer a chaque changement
-  useEffect(() => {
-    const timer = setTimeout(generateQR, 300);
-    return () => clearTimeout(timer);
-  }, [generateQR]);
-
-  // Logo upload
-  const handleLogo = (f) => {
-    setLogoFile(f);
-    setLogoUrl(URL.createObjectURL(f));
-  };
+  useEffect(() => { const t = setTimeout(generateQR, 200); return () => clearTimeout(t); }, [generateQR]);
 
   const handleDownloadPNG = () => {
     if (!canvasRef.current) return;
     const a = document.createElement('a');
     a.href = canvasRef.current.toDataURL('image/png');
-    a.download = `qr-${url.replace(/https?:\/\//, '').replace(/[^a-z0-9]/gi, '-')}.png`;
+    a.download = `qr-${effectiveUrl.replace(/https?:\/\//, '').replace(/[^a-z0-9]/gi, '-').slice(0, 30)}.png`;
     a.click();
   };
 
   const handleDownloadSVG = async () => {
     try {
       const QRCode = (await import('qrcode')).default;
-      const svg = await QRCode.toString(url.trim(), {
-        type: 'svg',
-        width: size,
-        margin: 2,
-        errorCorrectionLevel: 'L',
+      const svg = await QRCode.toString(effectiveUrl.trim(), {
+        type: 'svg', width: size, margin: 2,
+        errorCorrectionLevel: logoUrl ? 'Q' : ecLevel,
         color: { dark: fgColor, light: bgColor },
       });
       const blob = new Blob([svg], { type: 'image/svg+xml' });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
-      a.download = `qr-${url.replace(/https?:\/\//, '').replace(/[^a-z0-9]/gi, '-')}.svg`;
+      a.download = `qr-${effectiveUrl.replace(/https?:\/\//, '').replace(/[^a-z0-9]/gi, '-').slice(0, 30)}.svg`;
       a.click();
-    } catch (err) {
-      console.error('SVG export error:', err);
-    }
+    } catch (err) { console.error('SVG error:', err); }
   };
 
+  const TABS_QR = [
+    { id: 'content', label: 'Contenu' },
+    { id: 'design', label: 'Design' },
+    { id: 'colors', label: 'Couleurs' },
+    { id: 'logo', label: 'Logo' },
+  ];
+
   return (
-    <div className="grid lg:grid-cols-2 gap-6">
-      {/* Config */}
+    <div className="grid lg:grid-cols-[1fr_auto] gap-6">
+      {/* Config gauche */}
       <div className="space-y-4">
-        {/* URL */}
-        <div>
-          <label className="text-xs text-grey-muted uppercase tracking-wider block mb-1">URL</label>
-          <input
-            type="text" value={url} onChange={(e) => setUrl(e.target.value)}
-            placeholder="https://massivemedias.com"
-            className="w-full rounded-lg bg-black/20 text-heading text-sm px-3 py-2.5 outline-none border border-white/5 focus:border-accent"
-          />
+        {/* Tabs */}
+        <div className="flex gap-1 p-1 rounded-xl bg-black/20">
+          {TABS_QR.map(t => (
+            <button key={t.id} onClick={() => setQrTab(t.id)}
+              className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-all ${
+                qrTab === t.id ? 'bg-accent text-white' : 'text-grey-muted hover:text-heading'
+              }`}>{t.label}</button>
+          ))}
         </div>
 
-        <div className="rounded-xl bg-black/20 p-4 space-y-4">
-          {/* Forme des points */}
-          <div>
-            <label className="text-xs text-grey-muted uppercase tracking-wider block mb-2">Forme des points</label>
-            <div className="flex gap-2">
-              {[
-                { id: 'square', label: 'Carre' },
-                { id: 'rounded', label: 'Arrondi' },
-                { id: 'dots', label: 'Rond' },
-              ].map(s => (
-                <button key={s.id} onClick={() => setDotStyle(s.id)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                    dotStyle === s.id ? 'bg-accent text-white' : 'bg-black/20 text-grey-muted hover:text-heading'
-                  }`}>{s.label}</button>
-              ))}
+        {/* Tab: Contenu */}
+        {qrTab === 'content' && (
+          <div className="rounded-xl bg-black/20 p-4 space-y-4">
+            <div>
+              <label className="text-xs text-grey-muted uppercase tracking-wider block mb-1">URL / Texte</label>
+              <input type="text" value={url} onChange={(e) => { setUrl(e.target.value); setShortUrl(''); }}
+                placeholder="https://massivemedias.com"
+                className="w-full rounded-lg bg-black/30 text-heading text-sm px-3 py-2.5 outline-none border border-white/5 focus:border-accent" />
+            </div>
+            <div>
+              <label className="text-xs text-grey-muted uppercase tracking-wider block mb-1">
+                Correction d'erreur
+                <span className="text-grey-muted/50 normal-case ml-1">(Low = moins de points)</span>
+              </label>
+              <div className="flex gap-1.5">
+                {[
+                  { id: 'L', label: 'Low', desc: 'Simple' },
+                  { id: 'M', label: 'Medium', desc: 'Standard' },
+                  { id: 'Q', label: 'Quartile', desc: 'Logo' },
+                  { id: 'H', label: 'High', desc: 'Max' },
+                ].map(e => (
+                  <button key={e.id} onClick={() => setEcLevel(e.id)}
+                    className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-all ${
+                      ecLevel === e.id ? 'bg-accent text-white' : 'bg-black/20 text-grey-muted hover:text-heading'
+                    }`}>
+                    <span className="block">{e.label}</span>
+                    <span className="block text-[9px] opacity-60">{e.desc}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label className="text-xs text-grey-muted uppercase tracking-wider block mb-1">Taille: {size}px</label>
+              <input type="range" min="200" max="1200" step="50" value={size}
+                onChange={(e) => setSize(Number(e.target.value))} className="w-full accent-accent" />
+              <div className="flex justify-between text-[9px] text-grey-muted mt-1">
+                {[200, 400, 600, 800, 1200].map(v => (
+                  <button key={v} onClick={() => setSize(v)}
+                    className={`px-1.5 py-0.5 rounded ${size === v ? 'bg-accent text-white' : 'hover:text-heading'}`}>{v}</button>
+                ))}
+              </div>
             </div>
           </div>
+        )}
 
-          {/* Couleurs */}
-          <div className="flex gap-4">
+        {/* Tab: Design */}
+        {qrTab === 'design' && (
+          <div className="rounded-xl bg-black/20 p-4 space-y-4">
             <div>
-              <label className="text-xs text-grey-muted uppercase tracking-wider block mb-1">Couleur</label>
-              <div className="flex items-center gap-2">
+              <label className="text-xs text-grey-muted uppercase tracking-wider block mb-2">Forme des points</label>
+              <div className="flex gap-2">
+                {[
+                  { id: 'square', label: 'Carre', icon: '■' },
+                  { id: 'rounded', label: 'Arrondi', icon: '▢' },
+                  { id: 'dots', label: 'Rond', icon: '●' },
+                ].map(s => (
+                  <button key={s.id} onClick={() => setDotStyle(s.id)}
+                    className={`flex-1 flex flex-col items-center gap-1 py-3 rounded-xl text-xs font-semibold transition-all ${
+                      dotStyle === s.id ? 'bg-accent text-white' : 'bg-black/20 text-grey-muted hover:text-heading'
+                    }`}>
+                    <span className="text-xl">{s.icon}</span>
+                    {s.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Tab: Couleurs */}
+        {qrTab === 'colors' && (
+          <div className="rounded-xl bg-black/20 p-4 space-y-4">
+            <div>
+              <label className="text-xs text-grey-muted uppercase tracking-wider block mb-2">Points (Foreground)</label>
+              <div className="flex items-center gap-3">
                 <input type="color" value={fgColor} onChange={(e) => setFgColor(e.target.value)}
-                  className="w-8 h-8 rounded cursor-pointer bg-transparent" />
-                <span className="text-grey-muted text-xs font-mono">{fgColor}</span>
+                  className="w-10 h-10 rounded-lg cursor-pointer bg-transparent border border-white/10" />
+                <input type="text" value={fgColor} onChange={(e) => setFgColor(e.target.value)}
+                  className="w-24 rounded-lg bg-black/30 text-heading text-xs font-mono px-2 py-1.5 outline-none border border-white/5" />
+                <div className="flex gap-1">
+                  {['#000000', '#F00098', '#3D0079', '#FFFFFF'].map(c => (
+                    <button key={c} onClick={() => setFgColor(c)}
+                      className={`w-7 h-7 rounded-full border-2 ${fgColor === c ? 'border-accent' : 'border-white/10'}`}
+                      style={{ backgroundColor: c }} />
+                  ))}
+                </div>
               </div>
             </div>
             <div>
-              <label className="text-xs text-grey-muted uppercase tracking-wider block mb-1">Fond</label>
-              <div className="flex items-center gap-2">
+              <label className="text-xs text-grey-muted uppercase tracking-wider block mb-2">Fond (Background)</label>
+              <div className="flex items-center gap-3">
                 <input type="color" value={bgColor} onChange={(e) => setBgColor(e.target.value)}
-                  className="w-8 h-8 rounded cursor-pointer bg-transparent" />
-                <span className="text-grey-muted text-xs font-mono">{bgColor}</span>
+                  className="w-10 h-10 rounded-lg cursor-pointer bg-transparent border border-white/10" />
+                <input type="text" value={bgColor} onChange={(e) => setBgColor(e.target.value)}
+                  className="w-24 rounded-lg bg-black/30 text-heading text-xs font-mono px-2 py-1.5 outline-none border border-white/5" />
+                <div className="flex gap-1">
+                  {['#FFFFFF', '#000000', '#3D0079', '#F5F0EB'].map(c => (
+                    <button key={c} onClick={() => setBgColor(c)}
+                      className={`w-7 h-7 rounded-full border-2 ${bgColor === c ? 'border-accent' : 'border-white/10'}`}
+                      style={{ backgroundColor: c }} />
+                  ))}
+                </div>
               </div>
             </div>
           </div>
+        )}
 
-          {/* Taille */}
-          <div>
-            <label className="text-xs text-grey-muted uppercase tracking-wider block mb-1">Taille: {size}px</label>
-            <input type="range" min="200" max="1000" step="50" value={size}
-              onChange={(e) => setSize(Number(e.target.value))}
-              className="w-full accent-accent" />
-          </div>
-
-          {/* Logo */}
-          <div>
+        {/* Tab: Logo */}
+        {qrTab === 'logo' && (
+          <div className="rounded-xl bg-black/20 p-4 space-y-4">
             <label className="text-xs text-grey-muted uppercase tracking-wider block mb-1">Logo au centre</label>
-            <div className="flex items-center gap-2">
-              {logoUrl ? (
-                <div className="flex items-center gap-2">
-                  <img src={logoUrl} alt="logo" className="w-8 h-8 rounded object-contain" />
+            {logoUrl ? (
+              <div className="flex items-center gap-4">
+                <img src={logoUrl} alt="logo" className="w-16 h-16 rounded-lg object-contain bg-white/5 p-1" />
+                <div>
+                  <p className="text-heading text-xs mb-1">{logoFile?.name}</p>
                   <button onClick={() => { setLogoFile(null); setLogoUrl(''); }}
-                    className="text-red-400 text-xs hover:underline">Retirer</button>
+                    className="text-red-400 text-xs hover:underline flex items-center gap-1"><X size={10} /> Retirer</button>
                 </div>
-              ) : (
-                <label className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-black/20 text-grey-muted text-xs cursor-pointer hover:text-heading transition-colors">
-                  <Upload size={12} /> Ajouter un logo
-                  <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files[0] && handleLogo(e.target.files[0])} />
-                </label>
-              )}
-            </div>
+              </div>
+            ) : (
+              <label className="flex flex-col items-center gap-2 py-8 rounded-xl border-2 border-dashed border-white/10 cursor-pointer hover:border-white/20 transition-colors">
+                <Upload size={24} className="text-grey-muted" />
+                <span className="text-grey-muted text-xs">Deposer un logo (PNG, JPG, SVG)</span>
+                <input type="file" accept="image/*" className="hidden" onChange={(e) => {
+                  if (e.target.files[0]) { setLogoFile(e.target.files[0]); setLogoUrl(URL.createObjectURL(e.target.files[0])); }
+                }} />
+              </label>
+            )}
+            <p className="text-grey-muted text-[10px]">Le niveau de correction passe automatiquement a Quartile quand un logo est present</p>
           </div>
-        </div>
+        )}
 
         {/* Download */}
         <div className="flex gap-2">
           <button onClick={handleDownloadPNG}
-            className="flex-1 py-2.5 rounded-xl bg-accent text-white font-semibold text-sm flex items-center justify-center gap-2 hover:bg-accent/90 transition-colors">
+            className="flex-1 py-3 rounded-xl bg-accent text-white font-semibold text-sm flex items-center justify-center gap-2 hover:bg-accent/90 transition-colors">
             <Download size={16} /> PNG
           </button>
           <button onClick={handleDownloadSVG}
-            className="flex-1 py-2.5 rounded-xl bg-green-600 text-white font-semibold text-sm flex items-center justify-center gap-2 hover:bg-green-500 transition-colors">
+            className="flex-1 py-3 rounded-xl bg-green-600 text-white font-semibold text-sm flex items-center justify-center gap-2 hover:bg-green-500 transition-colors">
             <Download size={16} /> SVG
           </button>
         </div>
       </div>
 
-      {/* Preview */}
-      <div className="flex items-center justify-center">
+      {/* Preview droite */}
+      <div className="flex flex-col items-center gap-4">
         <div className="rounded-2xl bg-white p-6 shadow-lg">
-          <canvas ref={canvasRef} style={{ width: `${Math.min(size, 400)}px`, height: `${Math.min(size, 400)}px` }} />
+          <canvas ref={canvasRef} style={{ width: `${Math.min(size, 350)}px`, height: `${Math.min(size, 350)}px` }} />
         </div>
+        <p className="text-grey-muted text-[10px] text-center max-w-[300px]">
+          {effectiveUrl.length} caracteres | {ecLevel} correction | {size}px
+        </p>
       </div>
     </div>
   );
