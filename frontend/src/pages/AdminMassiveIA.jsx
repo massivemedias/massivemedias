@@ -817,6 +817,7 @@ function QRCodeTab() {
   const [ecLevel, setEcLevel] = useState('L');
   const [fgColor, setFgColor] = useState('#000000');
   const [bgColor, setBgColor] = useState('#FFFFFF');
+  const [transparentBg, setTransparentBg] = useState(false);
   const [size, setSize] = useState(1000);
   const [logoFile, setLogoFile] = useState(null);
   const [logoUrl, setLogoUrl] = useState('');
@@ -845,8 +846,12 @@ function QRCodeTab() {
       const ctx = canvas.getContext('2d');
 
       // Fond
-      ctx.fillStyle = bgColor;
-      ctx.fillRect(0, 0, size, size);
+      if (transparentBg) {
+        ctx.clearRect(0, 0, size, size);
+      } else {
+        ctx.fillStyle = bgColor;
+        ctx.fillRect(0, 0, size, size);
+      }
 
       // Dessiner les modules selon le style
       for (let row = 0; row < modSize; row++) {
@@ -879,10 +884,14 @@ function QRCodeTab() {
           const logoSize = size * 0.25;
           const lx = (size - logoSize) / 2;
           const ly = (size - logoSize) / 2;
-          ctx.fillStyle = bgColor;
-          ctx.beginPath();
-          ctx.roundRect(lx - 6, ly - 6, logoSize + 12, logoSize + 12, 10);
-          ctx.fill();
+          if (transparentBg) {
+            ctx.clearRect(lx - 6, ly - 6, logoSize + 12, logoSize + 12);
+          } else {
+            ctx.fillStyle = bgColor;
+            ctx.beginPath();
+            ctx.roundRect(lx - 6, ly - 6, logoSize + 12, logoSize + 12, 10);
+            ctx.fill();
+          }
           ctx.drawImage(logo, lx, ly, logoSize, logoSize);
         };
         logo.src = logoUrl;
@@ -890,7 +899,7 @@ function QRCodeTab() {
     } catch (err) {
       console.error('QR error:', err);
     }
-  }, [effectiveUrl, dotStyle, ecLevel, fgColor, bgColor, size, logoUrl]);
+  }, [effectiveUrl, dotStyle, ecLevel, fgColor, bgColor, size, logoUrl, transparentBg]);
 
   useEffect(() => { const t = setTimeout(generateQR, 200); return () => clearTimeout(t); }, [generateQR]);
 
@@ -1028,20 +1037,31 @@ function QRCodeTab() {
               </div>
             </div>
             <div>
-              <label className="text-xs text-grey-muted uppercase tracking-wider block mb-2">Fond (Background)</label>
-              <div className="flex items-center gap-3">
-                <input type="color" value={bgColor} onChange={(e) => setBgColor(e.target.value)}
-                  className="w-10 h-10 rounded-lg cursor-pointer bg-transparent border border-white/10" />
-                <input type="text" value={bgColor} onChange={(e) => setBgColor(e.target.value)}
-                  className="w-24 rounded-lg bg-black/30 text-heading text-xs font-mono px-2 py-1.5 outline-none border border-white/5" />
-                <div className="flex gap-1">
-                  {['#FFFFFF', '#000000', '#3D0079', '#F5F0EB'].map(c => (
-                    <button key={c} onClick={() => setBgColor(c)}
-                      className={`w-7 h-7 rounded-full border-2 ${bgColor === c ? 'border-accent' : 'border-white/10'}`}
-                      style={{ backgroundColor: c }} />
-                  ))}
-                </div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-xs text-grey-muted uppercase tracking-wider">Fond (Background)</label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <span className="text-xs text-grey-muted">Transparent</span>
+                  <div className={`w-9 h-5 rounded-full transition-colors flex items-center ${transparentBg ? 'bg-accent' : 'bg-white/10'}`}
+                    onClick={() => setTransparentBg(!transparentBg)}>
+                    <div className={`w-4 h-4 rounded-full bg-white shadow transition-transform ${transparentBg ? 'translate-x-4.5 ml-auto mr-0.5' : 'ml-0.5'}`} />
+                  </div>
+                </label>
               </div>
+              {!transparentBg && (
+                <div className="flex items-center gap-3">
+                  <input type="color" value={bgColor} onChange={(e) => setBgColor(e.target.value)}
+                    className="w-10 h-10 rounded-lg cursor-pointer bg-transparent border border-white/10" />
+                  <input type="text" value={bgColor} onChange={(e) => setBgColor(e.target.value)}
+                    className="w-24 rounded-lg bg-black/30 text-heading text-xs font-mono px-2 py-1.5 outline-none border border-white/5" />
+                  <div className="flex gap-1">
+                    {['#FFFFFF', '#000000', '#3D0079', '#F5F0EB'].map(c => (
+                      <button key={c} onClick={() => setBgColor(c)}
+                        className={`w-7 h-7 rounded-full border-2 ${bgColor === c ? 'border-accent' : 'border-white/10'}`}
+                        style={{ backgroundColor: c }} />
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -1087,7 +1107,11 @@ function QRCodeTab() {
 
       {/* Preview droite */}
       <div className="flex flex-col items-center gap-4">
-        <div className="rounded-2xl bg-white p-6 shadow-lg">
+        <div className="rounded-2xl p-6 shadow-lg" style={{
+          background: transparentBg
+            ? 'repeating-conic-gradient(#e0e0e0 0% 25%, #fff 0% 50%) 0 0 / 20px 20px'
+            : '#fff'
+        }}>
           <canvas ref={canvasRef} style={{ width: '400px', height: '400px' }} />
         </div>
         <p className="text-grey-muted text-[10px] text-center max-w-[300px]">
