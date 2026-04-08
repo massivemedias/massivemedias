@@ -817,7 +817,7 @@ function QRCodeTab() {
   const [ecLevel, setEcLevel] = useState('L');
   const [fgColor, setFgColor] = useState('#000000');
   const [bgColor, setBgColor] = useState('#FFFFFF');
-  const [size, setSize] = useState(600);
+  const [size, setSize] = useState(1000);
   const [logoFile, setLogoFile] = useState(null);
   const [logoUrl, setLogoUrl] = useState('');
   const canvasRef = useRef(null);
@@ -876,7 +876,7 @@ function QRCodeTab() {
         const logo = new window.Image();
         logo.crossOrigin = 'anonymous';
         logo.onload = () => {
-          const logoSize = size * 0.22;
+          const logoSize = size * 0.25;
           const lx = (size - logoSize) / 2;
           const ly = (size - logoSize) / 2;
           ctx.fillStyle = bgColor;
@@ -1088,7 +1088,7 @@ function QRCodeTab() {
       {/* Preview droite */}
       <div className="flex flex-col items-center gap-4">
         <div className="rounded-2xl bg-white p-6 shadow-lg">
-          <canvas ref={canvasRef} style={{ width: `${Math.min(size, 350)}px`, height: `${Math.min(size, 350)}px` }} />
+          <canvas ref={canvasRef} style={{ width: '400px', height: '400px' }} />
         </div>
         <p className="text-grey-muted text-[10px] text-center max-w-[300px]">
           {effectiveUrl.length} caracteres | {ecLevel} correction | {size}px
