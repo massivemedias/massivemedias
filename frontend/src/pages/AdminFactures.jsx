@@ -50,7 +50,7 @@ function FacturesSortantes() {
     customerEmail: '',
     customerPhone: '',
     customerAddress: '',
-    items: [{ description: '', papier: '', format: 'A4', prix: 0, qty: 1 }],
+    items: [{ description: '', category: '', prix: 0, qty: 1 }],
     discountPercent: 0,
     notes: '',
     status: 'draft',
@@ -78,7 +78,7 @@ function FacturesSortantes() {
       customerEmail: '',
       customerPhone: '',
       customerAddress: '',
-      items: [{ description: '', papier: '', format: 'A4', prix: 0, qty: 1 }],
+      items: [{ description: '', category: '', prix: 0, qty: 1 }],
       discountPercent: 0,
       notes: '',
       status: 'draft',
@@ -92,7 +92,7 @@ function FacturesSortantes() {
   };
 
   const addItem = () => {
-    setForm(f => ({ ...f, items: [...f.items, { description: '', papier: '', format: 'A4', prix: 0, qty: 1 }] }));
+    setForm(f => ({ ...f, items: [...f.items, { description: '', category: '', prix: 0, qty: 1 }] }));
   };
 
   const removeItem = (idx) => {
@@ -329,14 +329,40 @@ function FacturesSortantes() {
             <div className="mb-4">
               <label className="text-xs text-grey-muted uppercase tracking-wider mb-2 block">{tx({ fr: 'Articles', en: 'Items', es: 'Articulos' })}</label>
               {form.items.map((item, i) => (
-                <div key={i} className="flex gap-2 mb-2 items-center">
-                  <input value={item.description} onChange={e => updateItem(i, 'description', e.target.value)} placeholder={tx({ fr: 'Description', en: 'Description', es: 'Descripcion' })} className="flex-1 px-3 py-2 rounded-lg bg-glass text-heading text-sm focus:outline-none" />
-                  <input value={item.papier} onChange={e => updateItem(i, 'papier', e.target.value)} placeholder={tx({ fr: 'Papier', en: 'Paper', es: 'Papel' })} className="w-32 px-3 py-2 rounded-lg bg-glass text-heading text-sm focus:outline-none" />
-                  <input value={item.format} onChange={e => updateItem(i, 'format', e.target.value)} placeholder="Format" className="w-16 px-3 py-2 rounded-lg bg-glass text-heading text-sm focus:outline-none" />
-                  <input type="number" value={item.prix || ''} onChange={e => updateItem(i, 'prix', e.target.value)} placeholder="$" className="w-20 px-3 py-2 rounded-lg bg-glass text-heading text-sm focus:outline-none text-right" />
-                  <input type="number" value={item.qty || ''} onChange={e => updateItem(i, 'qty', e.target.value)} placeholder="x" className="w-14 px-3 py-2 rounded-lg bg-glass text-heading text-sm focus:outline-none text-center" />
+                <div key={i} className="flex flex-wrap gap-2 mb-3 items-start p-3 rounded-lg bg-black/10">
+                  <div className="flex-1 min-w-[200px]">
+                    {i === 0 && <label className="text-[9px] text-grey-muted uppercase tracking-wider mb-0.5 block">Description</label>}
+                    <input value={item.description} onChange={e => updateItem(i, 'description', e.target.value)} placeholder={tx({ fr: 'Ex: Developpement site web, Design graphique, Impression A3...', en: 'Ex: Web development, Graphic design, A3 print...', es: 'Descripcion' })} className="w-full px-3 py-2 rounded-lg bg-glass text-heading text-sm focus:outline-none" />
+                  </div>
+                  <div className="w-36">
+                    {i === 0 && <label className="text-[9px] text-grey-muted uppercase tracking-wider mb-0.5 block">{tx({ fr: 'Categorie', en: 'Category', es: 'Categoria' })}</label>}
+                    <select value={item.category || ''} onChange={e => updateItem(i, 'category', e.target.value)} className="w-full px-2 py-2 rounded-lg bg-glass text-heading text-sm focus:outline-none">
+                      <option value="">{tx({ fr: '-- Type --', en: '-- Type --', es: '-- Tipo --' })}</option>
+                      <option value="web">Web</option>
+                      <option value="design">Design</option>
+                      <option value="print">Print</option>
+                      <option value="sticker">Sticker</option>
+                      <option value="merch">Merch</option>
+                      <option value="photo">Photo</option>
+                      <option value="video">Video</option>
+                      <option value="consulting">{tx({ fr: 'Consulting', en: 'Consulting', es: 'Consultoria' })}</option>
+                      <option value="hosting">{tx({ fr: 'Hebergement', en: 'Hosting', es: 'Hosting' })}</option>
+                      <option value="other">{tx({ fr: 'Autre', en: 'Other', es: 'Otro' })}</option>
+                    </select>
+                  </div>
+                  <div className="w-24">
+                    {i === 0 && <label className="text-[9px] text-grey-muted uppercase tracking-wider mb-0.5 block">Prix $</label>}
+                    <input type="number" value={item.prix || ''} onChange={e => updateItem(i, 'prix', e.target.value)} placeholder="0.00" className="w-full px-3 py-2 rounded-lg bg-glass text-heading text-sm focus:outline-none text-right" />
+                  </div>
+                  <div className="w-16">
+                    {i === 0 && <label className="text-[9px] text-grey-muted uppercase tracking-wider mb-0.5 block">Qty</label>}
+                    <input type="number" value={item.qty || ''} onChange={e => updateItem(i, 'qty', e.target.value)} placeholder="1" min="1" className="w-full px-3 py-2 rounded-lg bg-glass text-heading text-sm focus:outline-none text-center" />
+                  </div>
+                  <div className="w-20 text-right pt-5">
+                    <span className="text-heading font-semibold text-sm">{((item.prix || 0) * (item.qty || 1)).toFixed(2)}$</span>
+                  </div>
                   {form.items.length > 1 && (
-                    <button onClick={() => removeItem(i)} className="text-red-400 hover:text-red-300 p-1"><X size={14} /></button>
+                    <button onClick={() => removeItem(i)} className="text-red-400 hover:text-red-300 p-1 pt-5"><X size={14} /></button>
                   )}
                 </div>
               ))}
@@ -471,7 +497,7 @@ function FacturesSortantes() {
                         <p className="text-xs text-grey-muted uppercase tracking-wider mb-2">{tx({ fr: 'Articles', en: 'Items', es: 'Articulos' })}</p>
                         {(inv.items || []).map((it, i) => (
                           <div key={i} className="flex justify-between text-sm py-1">
-                            <span className="text-heading">{it.description} {it.papier && `- ${it.papier}`} {it.format && `(${it.format})`}</span>
+                            <span className="text-heading">{it.description} {it.category && `[${it.category}]`}</span>
                             <span className="text-heading font-medium">{(it.prix * (it.qty || 1)).toFixed(2)} $</span>
                           </div>
                         ))}
