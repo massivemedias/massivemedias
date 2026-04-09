@@ -5,6 +5,7 @@ import Home from './pages/Home';
 import ErrorBoundary from './components/ErrorBoundary';
 import { useLang } from './i18n/LanguageContext';
 import ScrollToTop from './components/ScrollToTop';
+import ScrollToTopButton from './components/ScrollToTopButton';
 import './index.css';
 import tatoueursData from './data/tatoueurs';
 
@@ -134,6 +135,7 @@ function App() {
     <BrowserRouter basename={basename}>
       <RecoveryRedirect />
       <ScrollToTop />
+      <ScrollToTopButton />
       <ErrorBoundary>
       <Suspense fallback={<div className="min-h-screen" />}>
         <Routes>
