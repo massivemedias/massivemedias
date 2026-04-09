@@ -161,8 +161,18 @@ function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, t
 
   return (
     <div className="space-y-2">
-      {/* Zone d'apercu unique */}
-      <div className="relative overflow-hidden rounded-xl">
+      {/* Zone d'apercu unique - swipeable */}
+      <div className="relative overflow-hidden rounded-xl"
+        onTouchStart={(e) => { e.currentTarget._touchX = e.touches[0].clientX; }}
+        onTouchEnd={(e) => {
+          if (!e.currentTarget._touchX) return;
+          const diff = e.currentTarget._touchX - e.changedTouches[0].clientX;
+          if (Math.abs(diff) > 40) {
+            const dir = diff > 0 ? 1 : -1;
+            setSlideIdx(prev => (prev + dir + totalSlides) % totalSlides);
+          }
+          e.currentTarget._touchX = null;
+        }}>
         {/* Slide 0: FramePreview */}
         <div className={slideIdx === 0 ? '' : 'hidden'}>
           <div className="flex items-center justify-center p-2 cursor-pointer" onClick={onClickImage}>

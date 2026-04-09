@@ -157,12 +157,25 @@ function InstantMockup({ imageUrl, frameColor = 'black', format = 'a4', classNam
         ))}
       </div>
 
-      {/* Canvas mockup unique */}
-      <canvas
-        ref={el => { canvasRefs.current['main'] = el; }}
-        className="w-full rounded-xl cursor-pointer shadow-lg"
-        onClick={() => setLightboxScene(SCENES[sceneIdx].id)}
-      />
+      {/* Canvas mockup unique - swipeable */}
+      <div
+        onTouchStart={(e) => { e.currentTarget._touchX = e.touches[0].clientX; }}
+        onTouchEnd={(e) => {
+          if (!e.currentTarget._touchX) return;
+          const diff = e.currentTarget._touchX - e.changedTouches[0].clientX;
+          if (Math.abs(diff) > 40) {
+            const dir = diff > 0 ? 1 : -1;
+            setSceneIdx(prev => (prev + dir + SCENES.length) % SCENES.length);
+          }
+          e.currentTarget._touchX = null;
+        }}
+      >
+        <canvas
+          ref={el => { canvasRefs.current['main'] = el; }}
+          className="w-full rounded-xl cursor-pointer shadow-lg"
+          onClick={() => setLightboxScene(SCENES[sceneIdx].id)}
+        />
+      </div>
 
       {/* Lightbox */}
       {lightboxScene && (
