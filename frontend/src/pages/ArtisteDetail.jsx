@@ -7,6 +7,7 @@ import { getArtistSchema } from '../components/seo/schemas';
 import ArtistPrintCard from '../components/ArtistPrintCard';
 import ConfiguratorArtistPrint from '../components/configurators/ConfiguratorArtistPrint';
 import MockupPreview from '../components/MockupPreview';
+import InstantMockup from '../components/InstantMockup';
 import ConfiguratorArtistSticker from '../components/configurators/ConfiguratorArtistSticker';
 import { useLang } from '../i18n/LanguageContext';
 import { useTheme } from '../i18n/ThemeContext';
@@ -893,8 +894,8 @@ function ArtisteDetail({ subdomainSlug }) {
                     onFrameColorChange={setPrintFrameColor}
                   />
                 </div>
-                {/* Mockup AI - sous le configurateur */}
-                <MockupPreview
+                {/* Mockup instantane - sous le configurateur */}
+                <InstantMockup
                   imageUrl={selectedPrint.fullImage || toFull(selectedPrint.image)}
                   frameColor={printFrameColor}
                 />
