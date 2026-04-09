@@ -84,8 +84,8 @@ function InstantMockup({ imageUrl, frameColor = 'black', format = 'a4', classNam
 
       if (maxX <= minX || maxY <= minY) return; // Pas de vert trouve
 
-      // 3. Zone du mat avec marge pour eviter les bords verts
-      const margin = 2;
+      // 3. Zone du mat avec marge pour eviter les bords verts et debordement
+      const margin = Math.max(4, Math.round(Math.min(maxX - minX, maxY - minY) * 0.02));
       const printX = minX + margin;
       const printY = minY + margin;
       const printW = maxX - minX + 1 - margin * 2;

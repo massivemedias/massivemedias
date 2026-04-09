@@ -79,8 +79,8 @@ function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, t
       ctx.putImageData(imageData, 0, 0);
       if (maxX <= minX || maxY <= minY) return;
 
-      // Reduire la zone de 2px de chaque cote pour eviter les bords verts residuels
-      const margin = 2;
+      // Reduire la zone pour eviter les bords verts et le debordement
+      const margin = Math.max(4, Math.round(Math.min(maxX - minX, maxY - minY) * 0.02));
       const printX = minX + margin, printY = minY + margin;
       const printW = maxX - minX + 1 - margin * 2, printH = maxY - minY + 1 - margin * 2;
       if (printW <= 0 || printH <= 0) return;
@@ -171,7 +171,8 @@ function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, t
               {withFrame ? (
                 <div className="absolute inset-0 rounded-[2px]" style={{
                   background: frameColor === 'black' ? 'linear-gradient(135deg, #2a2a2a, #111)' : 'linear-gradient(135deg, #fff, #e8e3de)',
-                  boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+                  boxShadow: frameColor === 'black' ? '0 4px 20px rgba(0,0,0,0.3)' : '0 4px 20px rgba(0,0,0,0.3), inset 0 0 0 1px rgba(0,0,0,0.08)',
+                  border: frameColor === 'white' ? '1px solid rgba(0,0,0,0.1)' : 'none',
                   padding: `${frameThickness}px`,
                 }}>
                   <div style={{ background: '#f5f2ed', padding: `${matThickness}px`, width: '100%', height: '100%' }}>
