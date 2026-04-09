@@ -405,7 +405,7 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {}, onF
         </div>
       ) : (
         <>
-          <button onClick={handleAddToCart} disabled={!effectivePrice} className={`btn-primary w-full justify-center text-sm py-3 ${!effectivePrice ? 'opacity-40 cursor-not-allowed' : ''}`}>
+          <button onClick={handleAddToCart} disabled={!effectivePrice} className={`btn-primary w-full justify-center text-xs py-2.5 ${!effectivePrice ? 'opacity-40 cursor-not-allowed' : ''}`}>
             {added ? (
               <><Check size={18} className="mr-2" />{tx({ fr: 'Ajoute!', en: 'Added!', es: 'Agregado!' })}</>
             ) : (

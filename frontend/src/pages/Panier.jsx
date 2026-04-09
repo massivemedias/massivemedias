@@ -235,7 +235,7 @@ function Panier() {
                     }
                   }}
                   disabled={promoLoading || !promoInput.trim()}
-                  className="btn-outline text-sm px-4 py-2 flex-shrink-0 disabled:opacity-50"
+                  className="btn-primary text-sm px-5 py-2 flex-shrink-0 disabled:opacity-50"
                 >
                   {promoLoading ? '...' : tx({ fr: 'Appliquer', en: 'Apply', es: 'Aplicar' })}
                 </button>

@@ -50,7 +50,7 @@ function darkPalette(base, darker, darkest, accent, hoverBg, hoverText, logoMain
     '--bg-card-border': `rgba(${a.r}, ${a.g}, ${a.b}, 0.15)`,
     '--bg-header': `rgba(${b.r}, ${b.g}, ${b.b}, 0.96)`,
     '--bg-footer': darkest,
-    '--bg-input': `rgba(${b.r}, ${b.g}, ${b.b}, 0.5)`,
+    '--bg-input': `rgba(${Math.min(255, b.r + 30)}, ${Math.min(255, b.g + 30)}, ${Math.min(255, b.b + 30)}, 0.7)`,
     '--bg-input-border': `rgba(${a.r}, ${a.g}, ${a.b}, 0.2)`,
     '--bg-glass': 'rgba(255, 255, 255, 0.06)',
     '--bg-glass-alt': 'rgba(255, 255, 255, 0.08)',

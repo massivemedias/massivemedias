@@ -198,7 +198,27 @@ function ConfiguratorFineArt() {
 
       {/* ========== COLONNE DROITE : Selecteurs ========== */}
       <div className="flex-1 min-w-0 space-y-4">
-        {/* Qualite - boutons plus gros */}
+        {/* Cadre - checkbox + couleurs (AVANT qualite) */}
+        <div className="flex items-center gap-3">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" checked={withFrame} onChange={(e) => setWithFrame(e.target.checked)} className="sr-only" />
+            <div className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-colors ${withFrame ? 'bg-accent border-accent' : 'border-grey-muted/50'}`}>
+              {withFrame && <Check size={10} className="text-white" />}
+            </div>
+            <span className="text-heading text-sm">{tx({ fr: 'Cadre', en: 'Frame', es: 'Marco' })}</span>
+            <span className="text-accent text-xs font-semibold">+{fineArtFramePriceByFormat[format] || fineArtFramePrice}$</span>
+          </label>
+          {withFrame && (
+            <div className="flex gap-1.5">
+              <button onClick={() => setFrameColor('black')}
+                className={`w-6 h-6 rounded-full bg-black border-2 transition-all ${frameColor === 'black' ? 'border-accent scale-110' : 'border-grey-muted/30'}`} />
+              <button onClick={() => setFrameColor('white')}
+                className={`w-6 h-6 rounded-full bg-white border-2 transition-all ${frameColor === 'white' ? 'border-accent scale-110' : 'border-grey-muted/30'}`} />
+            </div>
+          )}
+        </div>
+
+        {/* Qualite */}
         <div>
           <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2">
             {tx({ fr: 'Qualite', en: 'Quality', es: 'Calidad' })}
@@ -276,38 +296,7 @@ function ConfiguratorFineArt() {
           </div>
         </div>
 
-        {/* Cadre - checkbox + couleurs */}
-        <div className="flex items-center gap-3">
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={withFrame}
-              onChange={(e) => setWithFrame(e.target.checked)}
-              className="sr-only"
-            />
-            <div className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-colors ${withFrame ? 'bg-accent border-accent' : 'border-grey-muted/50'}`}>
-              {withFrame && <Check size={10} className="text-white" />}
-            </div>
-            <span className="text-heading text-sm">
-              {tx({ fr: 'Cadre', en: 'Frame', es: 'Marco' })}
-            </span>
-            <span className="text-accent text-xs font-semibold">+{fineArtFramePriceByFormat[format] || fineArtFramePrice}$</span>
-          </label>
-          {withFrame && (
-            <div className="flex gap-1.5">
-              <button
-                onClick={() => setFrameColor('black')}
-                className={`w-6 h-6 rounded-full bg-black border-2 transition-all ${frameColor === 'black' ? 'border-accent scale-110' : 'border-grey-muted/30 hover:border-grey-muted/60'}`}
-                title={tx({ fr: 'Noir', en: 'Black', es: 'Negro' })}
-              />
-              <button
-                onClick={() => setFrameColor('white')}
-                className={`w-6 h-6 rounded-full bg-white border-2 transition-all ${frameColor === 'white' ? 'border-accent scale-110' : 'border-grey-muted/30 hover:border-grey-muted/60'}`}
-                title={tx({ fr: 'Blanc', en: 'White', es: 'Blanco' })}
-              />
-            </div>
-          )}
-        </div>
+        {/* (Cadre deplace avant Qualite) */}
 
         {/* Notes */}
         <textarea
