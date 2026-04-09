@@ -107,7 +107,8 @@ function AdminDashboard() {
         const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
         const newUsers3d = users.filter(u => new Date(u.createdAt) >= threeDaysAgo).length;
         const analytics = analyticsRes.status === 'fulfilled' ? (analyticsRes.value?.data || {}) : {};
-        const visitorsToday = analytics.visitorsToday ?? analytics.uniqueVisitors ?? '-';
+        const rawVisitors = analytics.visitorsToday ?? analytics.uniqueVisitors ?? '-';
+        const visitorsToday = typeof rawVisitors === 'object' ? JSON.stringify(rawVisitors) : String(rawVisitors);
         const monthExpenses = expenses
           .filter(e => {
             const d = new Date(e.date || e.createdAt);
@@ -197,9 +198,9 @@ function AdminDashboard() {
     <div className="space-y-5">
       {/* Ventes + Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <StatCard icon={ShoppingBag} label={tx({ fr: 'Ventes', en: 'Sales', es: 'Ventas' })} value={revenue.orders} color="bg-green-500/15 text-green-400" to="/admin/commandes" />
-        <StatCard icon={DollarSign} label={tx({ fr: 'Revenus', en: 'Revenue', es: 'Ingresos' })} value={`${revenue.total.toFixed(0)}$`} color="bg-accent/15 text-accent" to="/admin/commandes" />
-        <StatCard icon={Banknote} label={tx({ fr: 'Commissions artistes', en: 'Artist commissions', es: 'Comisiones' })} value={`${revenue.commissions.toFixed(0)}$`} color="bg-blue-500/15 text-blue-400" to="/admin/commissions" />
+        <StatCard icon={ShoppingBag} label={tx({ fr: 'Ventes', en: 'Sales', es: 'Ventas' })} value={revenue.orders || 0} color="bg-green-500/15 text-green-400" to="/admin/commandes" />
+        <StatCard icon={DollarSign} label={tx({ fr: 'Revenus', en: 'Revenue', es: 'Ingresos' })} value={`${(revenue.total || 0).toFixed(0)}$`} color="bg-accent/15 text-accent" to="/admin/commandes" />
+        <StatCard icon={Banknote} label={tx({ fr: 'Commissions artistes', en: 'Artist commissions', es: 'Comisiones' })} value={`${(revenue.commissions || 0).toFixed(0)}$`} color="bg-blue-500/15 text-blue-400" to="/admin/commissions" />
         <StatCard icon={Eye} label={tx({ fr: 'Visiteurs uniques', en: 'Unique visitors', es: 'Visitantes' })} value={stats.visitorsToday} color="bg-cyan-500/15 text-cyan-400" to="/admin/stats" />
       </div>
 
