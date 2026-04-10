@@ -212,7 +212,7 @@ function Panier() {
                     value={promoInput}
                     onChange={(e) => { setPromoInput(e.target.value.toUpperCase()); if (promoError) setPromoError(''); }}
                     placeholder={tx({ fr: 'Code promo', en: 'Promo code', es: 'Codigo' })}
-                    className="w-36 pl-8 pr-2 py-2 rounded-lg bg-glass text-heading text-xs focus:outline-none focus:ring-1 focus:ring-accent"
+                    className="w-40 pl-8 pr-2 py-2.5 rounded-lg bg-glass text-heading text-sm focus:outline-none focus:ring-1 focus:ring-accent"
                   />
                 </div>
                 <button
