@@ -1,8 +1,10 @@
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { MASSIVE_LOGO_B64 } from './massiveLogo';
 
-// Logo Massive Medias en base64 (favicon 80x80 PNG)
-const LOGO_B64 = 'data:image/png;base64,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';
+// Logo Massive Medias (horizontal 1440x263, ratio ~5.48:1)
+const LOGO_B64 = MASSIVE_LOGO_B64;
+const LOGO_RATIO = 1440 / 263;
 
 // Info entreprise
 const COMPANY = {
@@ -56,25 +58,21 @@ export function generateInvoicePDF(order, type = 'invoice') {
   const lightBg = [248, 248, 252];
 
   // ==================== HEADER ====================
-  // Logo
+  // Logo Massive Medias horizontal (contient le wordmark)
+  const logoW = 50;
+  const logoH = logoW / LOGO_RATIO;
   try {
-    doc.addImage(LOGO_B64, 'PNG', margin, y, 16, 16);
+    doc.addImage(LOGO_B64, 'PNG', margin, y, logoW, logoH);
   } catch {
     // silently skip logo if it fails
   }
 
-  // Company name
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(18);
-  doc.setTextColor(...darkText);
-  doc.text(COMPANY.name, margin + 20, y + 6);
-
-  // Company details
+  // Company details (sous le logo)
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8);
   doc.setTextColor(...greyText);
-  doc.text(COMPANY.address, margin + 20, y + 11);
-  doc.text(`${COMPANY.city}  |  ${COMPANY.email}`, margin + 20, y + 15);
+  doc.text(COMPANY.address, margin, y + logoH + 4);
+  doc.text(`${COMPANY.city}  |  ${COMPANY.email}`, margin, y + logoH + 8);
 
   // Document type - right aligned
   doc.setFont('helvetica', 'bold');
@@ -316,8 +314,10 @@ export function generateManualInvoicePDF(invoice) {
   const pageWidth = doc.internal.pageSize.getWidth();
   const margin = 18;
 
-  // Logo
-  try { doc.addImage(LOGO_B64, 'PNG', margin, 12, 22, 22); } catch {}
+  // Logo Massive Medias horizontal
+  const logoW = 55;
+  const logoH = logoW / LOGO_RATIO;
+  try { doc.addImage(LOGO_B64, 'PNG', margin, 12, logoW, logoH); } catch {}
 
   // Titre FACTURE
   doc.setFontSize(24);
@@ -348,10 +348,15 @@ export function generateManualInvoicePDF(invoice) {
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8);
   doc.setTextColor(120);
-  doc.text(COMPANY.address, margin, y + 11);
-  doc.text(COMPANY.city, margin, y + 16);
-  doc.text(COMPANY.email, margin, y + 21);
-  doc.text(`NEQ ${COMPANY.neq}`, margin, y + 26);
+  let deY = y + 11;
+  if (invoice.includeOwnerName) {
+    doc.text(COMPANY.owner, margin, deY);
+    deY += 5;
+  }
+  doc.text(COMPANY.address, margin, deY);
+  doc.text(COMPANY.city, margin, deY + 5);
+  doc.text(COMPANY.email, margin, deY + 10);
+  doc.text(`NEQ ${COMPANY.neq}`, margin, deY + 15);
 
   // FACTURER A
   const col2 = pageWidth / 2 + 10;

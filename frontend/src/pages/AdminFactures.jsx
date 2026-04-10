@@ -55,6 +55,7 @@ function FacturesSortantes() {
     discountPercent: 0,
     notes: '',
     status: 'draft',
+    includeOwnerName: false,
   });
 
   const fetchInvoices = useCallback(async () => {
@@ -83,6 +84,7 @@ function FacturesSortantes() {
       discountPercent: 0,
       notes: '',
       status: 'draft',
+      includeOwnerName: false,
     });
     setExpandedItemIdx(null);
   };
@@ -161,6 +163,7 @@ function FacturesSortantes() {
         total,
         status: form.status,
         notes: form.notes,
+        includeOwnerName: form.includeOwnerName,
         ...(pdfUrl && { pdfUrl }),
         ...(pdfFileId && { pdfFileId }),
       };
@@ -537,6 +540,25 @@ function FacturesSortantes() {
                 <label className="text-xs text-grey-muted uppercase tracking-wider mb-1 block">Notes</label>
                 <input value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} className="w-full px-3 py-2 rounded-lg bg-glass text-heading text-sm focus:outline-none" />
               </div>
+            </div>
+
+            {/* Option: inclure le nom du proprio */}
+            <div className="mb-4">
+              <label className="flex items-center gap-2.5 text-sm text-grey-muted hover:text-heading cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={form.includeOwnerName || false}
+                  onChange={e => setForm(f => ({ ...f, includeOwnerName: e.target.checked }))}
+                  className="w-4 h-4 rounded accent-accent cursor-pointer"
+                />
+                <span>
+                  {tx({
+                    fr: 'Inclure mon nom (Michael Sanchez) dans le PDF',
+                    en: 'Include my name (Michael Sanchez) in the PDF',
+                    es: 'Incluir mi nombre (Michael Sanchez) en el PDF',
+                  })}
+                </span>
+              </label>
             </div>
 
             {/* Totals preview */}
