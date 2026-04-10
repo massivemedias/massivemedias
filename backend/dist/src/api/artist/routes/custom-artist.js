@@ -8,5 +8,11 @@ exports.default = {
             handler: 'artist.cleanupSoldUniques',
             config: { auth: false },
         },
+        {
+            method: 'POST',
+            path: '/artists/update-by-slug',
+            handler: 'artist.updateBySlug',
+            config: { auth: false },
+        },
     ],
 };

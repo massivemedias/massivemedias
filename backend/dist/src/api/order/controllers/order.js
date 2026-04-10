@@ -257,9 +257,10 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
                 ? `${shippingAddress.address || ''}, ${shippingAddress.city || ''}, ${shippingAddress.province || ''} ${shippingAddress.postalCode || ''}`
                 : '';
             // Create Stripe Checkout Session (hosted payment page - works with ad blockers)
+            // Note: on n'hardcode PAS payment_method_types pour que Stripe utilise
+            // les methodes activees dans le Dashboard (card, Link, Apple/Google Pay, etc.)
             const session = await stripe.checkout.sessions.create({
                 mode: 'payment',
-                payment_method_types: ['card'],
                 customer_email: customerEmail,
                 line_items: [{
                         price_data: {

@@ -199,17 +199,34 @@ exports.default = strapi_1.factories.createCoreController('api::inventory-item.i
                 continue;
             if (!VALID_CATEGORIES.includes(item.category))
                 item.category = 'other';
-            // Chercher un item existant par SKU ou nom
+            // Mode explicite du frontend:
+            // - 'create': forcer la creation d'un nouvel item (aucun fuzzy match)
+            // - 'link':   lier a un item existant (priorite a linkedInventoryId, sinon fuzzy match par nom)
+            // - undefined (legacy): comportement historique = fuzzy match par nom
+            const matchMode = item.matchMode || 'link';
             let existing = null;
-            if (item.sku) {
-                existing = await strapi.documents('api::inventory-item.inventory-item').findFirst({
-                    filters: { sku: item.sku },
-                });
+            if (matchMode === 'create') {
+                // L'utilisateur a explicitement demande "Creer nouveau": on saute tout matching
+                existing = null;
             }
-            if (!existing && item.nameFr) {
-                existing = await strapi.documents('api::inventory-item.inventory-item').findFirst({
-                    filters: { nameFr: { $containsi: item.nameFr } },
-                });
+            else {
+                // matchMode === 'link' ou legacy
+                if (item.linkedInventoryId) {
+                    existing = await strapi.documents('api::inventory-item.inventory-item').findOne({
+                        documentId: item.linkedInventoryId,
+                    });
+                }
+                if (!existing && item.sku) {
+                    existing = await strapi.documents('api::inventory-item.inventory-item').findFirst({
+                        filters: { sku: item.sku },
+                    });
+                }
+                if (!existing && item.nameFr) {
+                    // Fallback fuzzy match par nom
+                    existing = await strapi.documents('api::inventory-item.inventory-item').findFirst({
+                        filters: { nameFr: { $containsi: item.nameFr } },
+                    });
+                }
             }
             if (existing) {
                 // Ajouter au stock existant
