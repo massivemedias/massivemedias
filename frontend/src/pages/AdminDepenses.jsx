@@ -9,6 +9,11 @@ import {
 import { useLang } from '../i18n/LanguageContext';
 import { getExpenses, createExpense, updateExpense, deleteExpense, getExpenseSummary } from '../services/adminService';
 import api, { uploadFile } from '../services/api';
+import {
+  findBestMatch,
+  shouldDefaultAddToInventory,
+  guessInventoryCategory,
+} from '../utils/fuzzyMatchInventory';
 
 const CATEGORY_LABELS = {
   consommables: { fr: 'Consommables', en: 'Consumables', es: 'Consumibles' },
@@ -113,6 +118,9 @@ function AdminDepenses() {
   const [receiptUrl, setReceiptUrl] = useState('');
   const invoiceInputRef = useRef(null);
 
+  // Inventory items (pour le fuzzy matching sur l'import de facture)
+  const [inventoryItems, setInventoryItems] = useState([]);
+
   // Year summary
   const [showSummary, setShowSummary] = useState(false);
   const [summaryYear, setSummaryYear] = useState(new Date().getFullYear());
@@ -173,6 +181,27 @@ function AdminDepenses() {
     } catch { /* silent */ } finally { setUploadingEditReceipt(false); }
   };
 
+  // Enrichit chaque ligne parsee avec:
+  // - addToInventory default ON si la ligne semble etre un item physique
+  // - matchedItem / matchMode suggeres par le fuzzy matcher
+  // - category d'inventaire devinee
+  const autoMatchLineItems = useCallback((lineItems, expenseCategory, existingInventory) => {
+    if (!Array.isArray(lineItems)) return lineItems;
+    return lineItems.map(line => {
+      const shouldAdd = shouldDefaultAddToInventory(line, expenseCategory);
+      const match = shouldAdd ? findBestMatch(line, existingInventory) : null;
+      return {
+        ...line,
+        addToInventory: line.addToInventory ?? shouldAdd,
+        category: line.category || guessInventoryCategory(line),
+        // Match suggestion: 'link' ou 'create' (defaut create si pas de match)
+        matchMode: match ? 'link' : 'create',
+        matchedItemId: match ? match.item.documentId : null,
+        matchScore: match ? match.score : 0,
+      };
+    });
+  }, []);
+
   // --- Invoice PDF import ---
   const handlePDFSelect = async (file) => {
     if (!file || file.type !== 'application/pdf') {
@@ -191,9 +220,26 @@ function AdminDepenses() {
       setReceiptUrl(uploaded.url);
       setUploadingInvoice(false);
 
+      // Fetch inventory en parallele du parsing pour etre pret pour le matching
+      const inventoryPromise = inventoryItems.length === 0
+        ? api.get('/inventory-items/dashboard').then(r => r.data?.data || []).catch(() => [])
+        : Promise.resolve(inventoryItems);
+
       const { parseInvoicePDF } = await import('../utils/invoiceParser');
-      const result = await parseInvoicePDF(file);
-      setInvoiceData(result);
+      const [result, currentInventory] = await Promise.all([
+        parseInvoicePDF(file),
+        inventoryPromise,
+      ]);
+
+      // Mettre a jour l'inventaire en cache pour les imports suivants
+      if (currentInventory !== inventoryItems) setInventoryItems(currentInventory);
+
+      // Auto-match: default ON par categorie + suggestion de lien avec item existant
+      const enriched = {
+        ...result,
+        lineItems: autoMatchLineItems(result.lineItems || [], result.expenseCategory, currentInventory),
+      };
+      setInvoiceData(enriched);
     } catch (err) {
       console.error('Erreur parsing PDF:', err);
       setParseError(tx({ fr: 'Erreur lors de l\'analyse du PDF. Vérifiez que le fichier est valide.', en: 'Error analyzing PDF. Check that the file is valid.', es: 'Error al analizar el PDF.' }));
@@ -236,7 +282,7 @@ function AdminDepenses() {
     setParseError('');
 
     try {
-      const inventoryItems = invoiceData.lineItems
+      const inventoryItemsPayload = invoiceData.lineItems
         .filter(i => i.addToInventory && i.description)
         .map(i => ({
           nameFr: i.description,
@@ -245,6 +291,9 @@ function AdminDepenses() {
           quantity: parseInt(i.quantity) || 0,
           costPrice: parseFloat(i.unitPrice) || 0,
           notes: `Facture ${invoiceData.invoiceNumber || ''} - ${invoiceData.vendor || ''} - ${invoiceData.date}`,
+          // Mode explicite choisi dans l'UI: 'link' (lier a un item existant) ou 'create' (forcer la creation d'un nouvel item)
+          matchMode: i.matchMode || 'link', // defaut 'link' pour garder la compat (fuzzy match fallback)
+          linkedInventoryId: i.matchMode === 'link' && i.matchedItemId ? i.matchedItemId : null,
         }));
 
       // Creer une depense PAR item (avec taxes au prorata)
@@ -291,12 +340,12 @@ function AdminDepenses() {
       // Envoyer: premier appel avec inventaire + premiere depense, puis les depenses supplementaires
       for (let idx = 0; idx < expenseList.length; idx++) {
         await api.post('/inventory-items/import-invoice', {
-          items: idx === 0 ? inventoryItems : [], // inventaire seulement sur le premier
+          items: idx === 0 ? inventoryItemsPayload : [], // inventaire seulement sur le premier
           expense: expenseList[idx],
         });
       }
 
-      const created = inventoryItems.length;
+      const created = inventoryItemsPayload.length;
       const totalAmount = expenseList.reduce((s, e) => s + e.amount, 0).toFixed(2);
       setImportSuccess(tx({
         fr: `Import reussi! ${created} item(s) a l'inventaire + ${expenseList.length} depense(s) pour ${totalAmount}$ creee(s).`,
@@ -306,6 +355,11 @@ function AdminDepenses() {
 
       setInvoiceData(null);
       fetchItems();
+      // Re-fetch l'inventaire pour avoir les quantites a jour pour les prochains imports
+      try {
+        const { data: invData } = await api.get('/inventory-items/dashboard');
+        setInventoryItems(invData.data || []);
+      } catch { /* silent */ }
     } catch (err) {
       console.error('Erreur import:', err);
       setParseError(tx({ fr: 'Erreur lors de l\'import. Reessayez.', en: 'Import error. Try again.', es: 'Error de importacion.' }));
@@ -706,7 +760,11 @@ function AdminDepenses() {
                       </div>
                     ) : (
                       <div className="space-y-2">
-                        {invoiceData.lineItems.map((lineItem, i) => (
+                        {invoiceData.lineItems.map((lineItem, i) => {
+                          const matchedInvItem = lineItem.matchedItemId
+                            ? inventoryItems.find(it => it.documentId === lineItem.matchedItemId)
+                            : null;
+                          return (
                           <div key={i} className="rounded-lg card-bg shadow-md shadow-black/15 p-3">
                             <div className="grid grid-cols-1 sm:grid-cols-[1fr_120px_100px_40px_40px] gap-2 items-end">
                               <div>
@@ -747,8 +805,67 @@ function AdminDepenses() {
                                 <Trash2 size={14} />
                               </button>
                             </div>
+                            {/* Mode de match inventaire (visible uniquement si addToInventory est ON) */}
+                            {lineItem.addToInventory && (
+                              <div className="mt-2 pt-2 border-t border-white/5">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  {/* Toggle Link / Create */}
+                                  <div className="inline-flex rounded-md bg-glass p-0.5 gap-0.5">
+                                    <button type="button"
+                                      onClick={() => updateInvoiceItem(i, 'matchMode', 'link')}
+                                      disabled={inventoryItems.length === 0}
+                                      className={`px-2 py-1 rounded text-[10px] font-semibold transition-colors ${
+                                        lineItem.matchMode === 'link' ? 'bg-accent text-white' : 'text-grey-muted hover:text-heading disabled:opacity-30'
+                                      }`}>
+                                      🔗 {tx({ fr: 'Lier existant', en: 'Link existing', es: 'Vincular' })}
+                                    </button>
+                                    <button type="button"
+                                      onClick={() => { updateInvoiceItem(i, 'matchMode', 'create'); updateInvoiceItem(i, 'matchedItemId', null); }}
+                                      className={`px-2 py-1 rounded text-[10px] font-semibold transition-colors ${
+                                        lineItem.matchMode === 'create' ? 'bg-accent text-white' : 'text-grey-muted hover:text-heading'
+                                      }`}>
+                                      🆕 {tx({ fr: 'Creer nouveau', en: 'Create new', es: 'Crear nuevo' })}
+                                    </button>
+                                  </div>
+                                  {/* Dropdown des items existants (mode link seulement) */}
+                                  {lineItem.matchMode === 'link' && (
+                                    <select
+                                      value={lineItem.matchedItemId || ''}
+                                      onChange={(e) => updateInvoiceItem(i, 'matchedItemId', e.target.value || null)}
+                                      className="input-field text-[10px] p-1 flex-1 min-w-[180px]">
+                                      <option value="">{tx({ fr: '-- Choisir un item --', en: '-- Choose item --', es: '-- Elegir item --' })}</option>
+                                      {inventoryItems.filter(it => it.active).map(it => (
+                                        <option key={it.documentId} value={it.documentId}>
+                                          {it.nameFr || it.nameEn} {it.variant ? `- ${it.variant}` : ''} (qty: {it.quantity || 0})
+                                        </option>
+                                      ))}
+                                    </select>
+                                  )}
+                                  {/* Badge de score de suggestion */}
+                                  {lineItem.matchMode === 'link' && matchedInvItem && lineItem.matchScore > 0 && (
+                                    <span className="text-[9px] text-green-400 bg-green-500/10 px-1.5 py-0.5 rounded"
+                                      title={tx({ fr: 'Correspondance automatique', en: 'Auto match', es: 'Match automatico' })}>
+                                      ✨ {Math.round(lineItem.matchScore * 100)}%
+                                    </span>
+                                  )}
+                                </div>
+                                {/* Info sur l'item lie */}
+                                {lineItem.matchMode === 'link' && matchedInvItem && (
+                                  <p className="text-[10px] text-grey-muted mt-1">
+                                    {tx({ fr: 'Quantite apres import:', en: 'Quantity after import:', es: 'Cantidad despues:' })}
+                                    {' '}
+                                    <span className="text-heading font-semibold">
+                                      {(matchedInvItem.quantity || 0)} → {(matchedInvItem.quantity || 0) + (parseInt(lineItem.quantity) || 0)}
+                                    </span>
+                                    {' '}
+                                    (+{parseInt(lineItem.quantity) || 0})
+                                  </p>
+                                )}
+                              </div>
+                            )}
                           </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     )}
                   </div>
