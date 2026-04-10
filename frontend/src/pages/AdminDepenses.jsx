@@ -800,11 +800,17 @@ function AdminDepenses() {
                     <button onClick={handleImport} disabled={importing || invoiceData.lineItems.length === 0}
                       className="flex items-center gap-1.5 px-5 py-2 rounded-lg bg-accent text-white text-sm font-semibold hover:bg-accent/80 transition-colors disabled:opacity-50 ml-auto">
                       {importing ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
-                      {tx({
-                        fr: `Importer ${invoiceData.lineItems.filter(i => i.addToInventory).length} item(s) + dépense`,
-                        en: `Import ${invoiceData.lineItems.filter(i => i.addToInventory).length} item(s) + expense`,
-                        es: `Importar ${invoiceData.lineItems.filter(i => i.addToInventory).length} item(s) + gasto`,
-                      })}
+                      {(() => {
+                        const invCount = invoiceData.lineItems.filter(i => i.addToInventory).length;
+                        if (invCount === 0) {
+                          return tx({ fr: 'Importer la dépense', en: 'Import expense', es: 'Importar gasto' });
+                        }
+                        return tx({
+                          fr: `Importer la dépense + ${invCount} item${invCount > 1 ? 's' : ''} à l'inventaire`,
+                          en: `Import expense + ${invCount} item${invCount > 1 ? 's' : ''} to inventory`,
+                          es: `Importar gasto + ${invCount} item${invCount > 1 ? 's' : ''} al inventario`,
+                        });
+                      })()}
                     </button>
                   </div>
                 </div>
