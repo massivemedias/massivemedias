@@ -35,4 +35,43 @@ export default factories.createCoreController('api::artist.artist', ({ strapi })
 
     ctx.body = { data: { cleaned, message: `${cleaned} piece(s) unique(s) retiree(s)` } };
   },
+
+  /**
+   * Met a jour les champs "display" d'un artiste par son slug
+   * (name, taglineFr, taglineEn, bioFr, bioEn, bioEs).
+   * Utilise pour renommer un artiste sans toucher au slug (qui sert a
+   * l'URL, l'auth et les ids de prints).
+   *
+   * POST /api/artists/update-by-slug
+   * Body: { slug: string, name?, taglineFr?, taglineEn?, bioFr?, bioEn?, bioEs? }
+   */
+  async updateBySlug(ctx) {
+    const { slug, ...fields } = ctx.request.body as any;
+    if (!slug) return ctx.badRequest('slug est requis');
+
+    const existing = await strapi.documents('api::artist.artist').findFirst({
+      filters: { slug },
+    });
+    if (!existing) return ctx.notFound(`Artiste '${slug}' introuvable`);
+
+    // Seuls les champs display sont modifiables ici. Slug, socials, pricing,
+    // prints, stickers, merch ne sont PAS modifiables via cette route.
+    const ALLOWED_FIELDS = ['name', 'taglineFr', 'taglineEn', 'bioFr', 'bioEn', 'bioEs'];
+    const data: Record<string, any> = {};
+    for (const key of ALLOWED_FIELDS) {
+      if (fields[key] !== undefined && fields[key] !== null) {
+        data[key] = fields[key];
+      }
+    }
+    if (Object.keys(data).length === 0) {
+      return ctx.badRequest('Aucun champ a mettre a jour');
+    }
+
+    const updated = await strapi.documents('api::artist.artist').update({
+      documentId: existing.documentId,
+      data,
+    });
+    strapi.log.info(`Artist updated by slug: ${slug} -> ${JSON.stringify(data)}`);
+    ctx.body = { data: updated };
+  },
 }));
