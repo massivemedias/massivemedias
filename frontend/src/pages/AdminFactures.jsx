@@ -22,13 +22,32 @@ const STATUS_LABELS = {
 const TPS_RATE = 0.05;
 const TVQ_RATE = 0.09975;
 
-function generateInvoiceNumber() {
-  const now = new Date();
-  const y = now.getFullYear();
-  const m = String(now.getMonth() + 1).padStart(2, '0');
-  const d = String(now.getDate()).padStart(2, '0');
-  const rand = Math.random().toString(36).slice(2, 6).toUpperCase();
-  return `MM-${y}${m}${d}-${rand}`;
+// Genere un numero de facture sequentiel par annee: MM-2026-001, MM-2026-002, etc.
+// Prend en compte les factures existantes (meme en ancien format) pour eviter les doublons.
+function generateInvoiceNumber(existingInvoices = []) {
+  const year = new Date().getFullYear();
+  const prefix = `MM-${year}-`;
+
+  // Chercher le plus grand numero sequentiel deja utilise pour l'annee en cours
+  let maxSeq = 0;
+  const re = new RegExp(`^MM-${year}-(\\d{3,})$`);
+  existingInvoices.forEach(inv => {
+    const num = inv.invoiceNumber || '';
+    const match = num.match(re);
+    if (match) {
+      const n = parseInt(match[1], 10);
+      if (n > maxSeq) maxSeq = n;
+    }
+  });
+
+  // Compter aussi les factures de l'annee en cours pour garantir un numero apres les anciens formats
+  const countThisYear = existingInvoices.filter(inv => {
+    if (!inv.date) return false;
+    return new Date(inv.date).getFullYear() === year;
+  }).length;
+
+  const next = Math.max(maxSeq, countThisYear) + 1;
+  return `${prefix}${String(next).padStart(3, '0')}`;
 }
 
 function FacturesSortantes() {
@@ -75,7 +94,7 @@ function FacturesSortantes() {
 
   const resetForm = () => {
     setForm({
-      invoiceNumber: generateInvoiceNumber(),
+      invoiceNumber: generateInvoiceNumber(invoices),
       date: new Date().toISOString().split('T')[0],
       customerName: '',
       customerEmail: '',
