@@ -5,6 +5,17 @@ button, [role="button"], a, label[class*="cursor"], select, input[type="checkbox
   cursor: pointer;
 }
 
+/* Global: cacher les fleches spinner des inputs number (Chrome/Safari/Firefox) */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
 /* =============================================
    MASSIVE MEDIAS - Design Tokens (Tailwind v4)
    Palette : #F00098 (magenta), #FFCC00 (gold),
