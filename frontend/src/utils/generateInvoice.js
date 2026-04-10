@@ -20,6 +20,16 @@ const COMPANY = {
   website: 'massivemedias.com',
 };
 
+// Informations de paiement (affichees sur les factures manuelles B2B)
+const PAYMENT_INFO = {
+  interacEmail: 'massivemedias@gmail.com',
+  bankName: 'RBC Banque Royale',
+  accountHolder: 'Michael Gilbert Sanchez',
+  transit: '03981',
+  institution: '003',
+  account: '5129614',
+};
+
 // Convertir cents en dollars formate
 const dollars = (cents) => {
   const val = (cents || 0) / 100;
@@ -462,6 +472,57 @@ export function generateManualInvoicePDF(invoice) {
   doc.setTextColor(61, 0, 121);
   doc.text('TOTAL', totalsX, ty);
   doc.text(`${Number(invoice.total).toFixed(2)} $`, pageWidth - margin, ty, { align: 'right' });
+
+  // ==================== MODALITES DE PAIEMENT ====================
+  let payY = ty + 18;
+  // Boite grise avec info de paiement
+  const boxH = 32;
+  doc.setFillColor(248, 248, 252);
+  doc.setDrawColor(220, 220, 230);
+  doc.setLineWidth(0.2);
+  doc.roundedRect(margin, payY, pageWidth - margin * 2, boxH, 2, 2, 'FD');
+
+  // Titre
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(61, 0, 121);
+  doc.text('MODALITES DE PAIEMENT', margin + 4, payY + 6);
+
+  // Colonne 1 - Interac
+  doc.setFontSize(7);
+  doc.setTextColor(100);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Virement Interac', margin + 4, payY + 12);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(60);
+  doc.text(PAYMENT_INFO.interacEmail, margin + 4, payY + 16);
+  doc.setTextColor(140);
+  doc.setFontSize(6);
+  doc.text('Aucune question de securite requise', margin + 4, payY + 20);
+
+  // Colonne 2 - Virement bancaire
+  const col2X = pageWidth / 2;
+  doc.setFontSize(7);
+  doc.setTextColor(100);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Virement bancaire (EFT)', col2X, payY + 12);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(6);
+  doc.setTextColor(60);
+  doc.text(`${PAYMENT_INFO.bankName} - ${PAYMENT_INFO.accountHolder}`, col2X, payY + 16);
+  doc.text(
+    `Transit: ${PAYMENT_INFO.transit}   Institution: ${PAYMENT_INFO.institution}   Compte: ${PAYMENT_INFO.account}`,
+    col2X, payY + 20
+  );
+
+  // Terme de paiement (centre en bas de la boite)
+  doc.setFontSize(6);
+  doc.setTextColor(140);
+  doc.setFont('helvetica', 'italic');
+  doc.text(
+    'Paiement du dans les 30 jours suivant la reception de la facture',
+    pageWidth / 2, payY + 27, { align: 'center' }
+  );
 
   // Footer
   doc.setFontSize(6);
