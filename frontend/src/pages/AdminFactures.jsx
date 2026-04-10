@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search, FileText, DollarSign, Loader2, Plus, X, Save,
   CheckCircle, Trash2, Download, Send, Eye, ChevronDown, ChevronUp,
-  ArrowUpRight, ArrowDownLeft, Globe, ListTree,
+  ArrowUpRight, ArrowDownLeft, Globe, ListTree, Pencil,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import Tooltip from '../components/Tooltip';
@@ -42,6 +42,7 @@ function FacturesSortantes() {
   const [saving, setSaving] = useState(false);
   const [pdfFile, setPdfFile] = useState(null);
   const [expandedItemIdx, setExpandedItemIdx] = useState(null);
+  const [editingId, setEditingId] = useState(null); // documentId de la facture en edition
 
   // Form state
   const [form, setForm] = useState({
@@ -92,7 +93,42 @@ function FacturesSortantes() {
   const openNewForm = () => {
     resetForm();
     setPdfFile(null);
+    setEditingId(null);
     setShowForm(true);
+  };
+
+  const openEditForm = (inv) => {
+    setForm({
+      invoiceNumber: inv.invoiceNumber || '',
+      date: inv.date ? inv.date.split('T')[0] : new Date().toISOString().split('T')[0],
+      customerName: inv.customerName || '',
+      customerEmail: inv.customerEmail || '',
+      customerPhone: inv.customerPhone || '',
+      customerAddress: inv.customerAddress || '',
+      items: (inv.items || []).length > 0
+        ? inv.items.map(it => ({
+            description: it.description || '',
+            category: it.category || '',
+            prix: it.prix || 0,
+            qty: it.qty || 1,
+            details: it.details || '',
+            projectType: it.projectType || '',
+            projectUrl: it.projectUrl || '',
+            technologies: it.technologies || '',
+            hours: it.hours || '',
+            hourlyRate: it.hourlyRate ?? 100,
+          }))
+        : [{ description: '', category: '', prix: 0, qty: 1, details: '', projectType: '', projectUrl: '', technologies: '', hours: '', hourlyRate: 100 }],
+      discountPercent: inv.discountPercent || 0,
+      notes: inv.notes || '',
+      status: inv.status || 'draft',
+      includeOwnerName: !!inv.includeOwnerName,
+    });
+    setEditingId(inv.documentId);
+    setPdfFile(null);
+    setExpandedItemIdx(null);
+    setShowForm(true);
+    setExpandedId(null);
   };
 
   const addItem = () => {
@@ -167,12 +203,17 @@ function FacturesSortantes() {
         ...(pdfUrl && { pdfUrl }),
         ...(pdfFileId && { pdfFileId }),
       };
-      await createInvoice(payload);
+      if (editingId) {
+        await updateInvoice(editingId, payload);
+      } else {
+        await createInvoice(payload);
+      }
       setPdfFile(null);
       setShowForm(false);
+      setEditingId(null);
       fetchInvoices();
     } catch (err) {
-      console.error('Erreur creation facture:', err);
+      console.error('Erreur sauvegarde facture:', err);
       alert('Erreur: ' + (err.response?.data?.error?.message || err.message));
     } finally {
       setSaving(false);
@@ -302,10 +343,15 @@ function FacturesSortantes() {
           >
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-heading font-semibold flex items-center gap-2">
-                <Plus size={18} className="text-accent" />
-                {tx({ fr: 'Nouvelle facture', en: 'New invoice', es: 'Nueva factura' })}
+                {editingId ? <Pencil size={18} className="text-accent" /> : <Plus size={18} className="text-accent" />}
+                {editingId
+                  ? tx({ fr: 'Modifier la facture', en: 'Edit invoice', es: 'Editar factura' })
+                  : tx({ fr: 'Nouvelle facture', en: 'New invoice', es: 'Nueva factura' })}
+                {editingId && form.invoiceNumber && (
+                  <span className="text-grey-muted text-xs font-normal">({form.invoiceNumber})</span>
+                )}
               </h3>
-              <button onClick={() => setShowForm(false)} className="text-grey-muted hover:text-heading">
+              <button onClick={() => { setShowForm(false); setEditingId(null); }} className="text-grey-muted hover:text-heading">
                 <X size={18} />
               </button>
             </div>
@@ -612,9 +658,11 @@ function FacturesSortantes() {
             <div className="flex gap-3">
               <button onClick={handleSave} disabled={saving || !form.customerName} className="btn-primary text-sm flex items-center gap-2">
                 {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
-                {tx({ fr: 'Sauvegarder', en: 'Save', es: 'Guardar' })}
+                {editingId
+                  ? tx({ fr: 'Enregistrer les modifications', en: 'Save changes', es: 'Guardar cambios' })
+                  : tx({ fr: 'Sauvegarder', en: 'Save', es: 'Guardar' })}
               </button>
-              <button onClick={() => setShowForm(false)} className="btn-outline text-sm">
+              <button onClick={() => { setShowForm(false); setEditingId(null); }} className="btn-outline text-sm">
                 {tx({ fr: 'Annuler', en: 'Cancel', es: 'Cancelar' })}
               </button>
             </div>
@@ -712,6 +760,11 @@ function FacturesSortantes() {
 
                       {/* Actions */}
                       <div className="flex flex-wrap gap-2">
+                        {(inv.status === 'draft' || inv.status === 'sent') && (
+                          <button onClick={() => openEditForm(inv)} className="btn-outline text-xs py-1.5 px-3 flex items-center gap-1.5 text-accent">
+                            <Pencil size={13} /> {tx({ fr: 'Modifier', en: 'Edit', es: 'Editar' })}
+                          </button>
+                        )}
                         {inv.pdfUrl ? (
                           <a href={inv.pdfUrl} target="_blank" rel="noopener noreferrer" className="btn-outline text-xs py-1.5 px-3 flex items-center gap-1.5">
                             <Eye size={13} /> {tx({ fr: 'Voir PDF', en: 'View PDF', es: 'Ver PDF' })}
