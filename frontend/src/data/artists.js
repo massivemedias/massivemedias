@@ -43,16 +43,16 @@ export function isFormatAvailable(formatId, maxFormat) {
 const artistsData = {
   'adrift': {
     slug: 'adrift',
-    name: 'Adrift',
+    name: 'Adrift Vision',
     tagline: {
       fr: 'Art numérique & univers immersifs',
       en: 'Digital Art & Immersive Worlds',
       es: 'Arte digital y mundos inmersivos',
     },
     bio: {
-      fr: "Adrift explore les frontières entre le réel et le virtuel à travers des compositions numériques saisissantes. Son univers visuel puise dans la science-fiction, les textures organiques et les paysages oniriques pour créer des oeuvres qui transportent le spectateur dans des dimensions parallèles.",
-      en: "Adrift explores the boundaries between real and virtual through striking digital compositions. Their visual universe draws from science fiction, organic textures and dreamlike landscapes to create works that transport the viewer into parallel dimensions.",
-      es: "Adrift explora las fronteras entre lo real y lo virtual a través de composiciones digitales impactantes. Su universo visual se nutre de la ciencia ficción, las texturas orgánicas y los paisajes oníricos para crear obras que transportan al espectador a dimensiones paralelas.",
+      fr: "Adrift Vision explore les frontières entre le réel et le virtuel à travers des compositions numériques saisissantes. Son univers visuel puise dans la science-fiction, les textures organiques et les paysages oniriques pour créer des oeuvres qui transportent le spectateur dans des dimensions parallèles.",
+      en: "Adrift Vision explores the boundaries between real and virtual through striking digital compositions. Their visual universe draws from science fiction, organic textures and dreamlike landscapes to create works that transport the viewer into parallel dimensions.",
+      es: "Adrift Vision explora las fronteras entre lo real y lo virtual a través de composiciones digitales impactantes. Su universo visual se nutre de la ciencia ficción, las texturas orgánicas y los paisajes oníricos para crear obras que transportan al espectador a dimensiones paralelas.",
     },
     socials: {
       instagram: 'https://instagram.com/alx.rouleau',

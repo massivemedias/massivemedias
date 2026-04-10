@@ -64,8 +64,8 @@ const ROUTES = {
   },
   // Artistes individuels
   '/artistes/adrift': {
-    title: 'Adrift | Art Numerique & Prints Fine Art - Massive Medias Montreal',
-    description: 'Adrift explore les frontieres entre le reel et le virtuel a travers l\'art numerique. Prints fine art disponibles en plusieurs formats sur papier Hahnemuhle. Achetez en ligne.',
+    title: 'Adrift Vision | Art Numerique & Prints Fine Art - Massive Medias Montreal',
+    description: 'Adrift Vision explore les frontieres entre le reel et le virtuel a travers l\'art numerique. Prints fine art disponibles en plusieurs formats sur papier Hahnemuhle. Achetez en ligne.',
   },
   '/artistes/maudite-machine': {
     title: 'Maudite Machine | Art Visuel & Musique Electronique Montreal - Massive Medias',

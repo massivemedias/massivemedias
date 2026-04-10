@@ -20,7 +20,7 @@ const ACCENT = '#FF69B4';
 const YELLOW = '#FFCC02';
 
 const artists = [
-  { slug: 'adrift', name: 'Adrift', tagline: 'Digital Art & Immersive Worlds', avatar: 'images/prints/AdriftAvatar.webp', artwork: 'images/prints/Adrift1.webp' },
+  { slug: 'adrift', name: 'Adrift Vision', tagline: 'Digital Art & Immersive Worlds', avatar: 'images/prints/AdriftAvatar.webp', artwork: 'images/prints/Adrift1.webp' },
   { slug: 'maudite-machine', name: 'Maudite Machine', tagline: 'Electronic Music & Visual Culture', avatar: 'images/stickers/Stickers-Maudite-Machine.webp', artwork: 'images/prints/Gemini2.webp' },
   { slug: 'mok', name: 'Mok', tagline: 'Urban Photography & Light', avatar: 'images/prints/MokAvatar.webp', artwork: 'images/prints/Mok1.webp' },
   { slug: 'quentin-delobel', name: 'Quentin Delobel', tagline: 'Photography - Light, Contrasts & Intimacy', avatar: 'images/prints/QuentinDelobelAvatar.webp', artwork: 'images/prints/QuentinDelobel15.webp' },

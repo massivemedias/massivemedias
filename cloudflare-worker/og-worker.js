@@ -27,7 +27,7 @@ const TATOUEURS = {
 };
 
 const ARTISTS = {
-  'adrift': { name: 'Adrift', taglineFr: 'Art numerique & univers immersifs', taglineEn: 'Digital Art & Immersive Worlds' },
+  'adrift': { name: 'Adrift Vision', taglineFr: 'Art numerique & univers immersifs', taglineEn: 'Digital Art & Immersive Worlds' },
   'maudite-machine': { name: 'Maudite Machine', taglineFr: 'Musique electronique & culture visuelle', taglineEn: 'Electronic Music & Visual Culture' },
   'mok': { name: 'Mok', taglineFr: 'Photographie urbaine & lumiere', taglineEn: 'Urban Photography & Light' },
   'quentin-delobel': { name: 'Quentin Delobel', taglineFr: 'Photographie - lumiere, contrastes & intimite', taglineEn: 'Photography - Light, Contrasts & Intimacy' },
