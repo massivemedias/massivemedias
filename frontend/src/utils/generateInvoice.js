@@ -372,12 +372,23 @@ export function generateManualInvoicePDF(invoice) {
   // Table items
   const tableY = y + 38;
   const items = invoice.items || [];
-  const tableBody = items.map(it => [
-    it.description + (it.papier ? ` - ${it.papier}` : '') + (it.format ? ` (${it.format})` : ''),
-    `${it.qty || 1}`,
-    `${Number(it.prix || 0).toFixed(2)} $`,
-    `${(Number(it.prix || 0) * (it.qty || 1)).toFixed(2)} $`,
-  ]);
+  const tableBody = items.map(it => {
+    // Build rich description: main line + web meta + bullet details
+    const lines = [it.description + (it.papier ? ` - ${it.papier}` : '') + (it.format ? ` (${it.format})` : '')];
+    if (it.category === 'web') {
+      if (it.projectType) lines.push(`Type: ${it.projectType}`);
+      if (it.projectUrl) lines.push(`URL: ${it.projectUrl}`);
+      if (it.technologies) lines.push(`Tech: ${it.technologies}`);
+    }
+    const detailLines = (it.details || '').split('\n').map(s => s.trim()).filter(Boolean);
+    detailLines.forEach(line => lines.push(`  \u2022 ${line}`));
+    return [
+      lines.join('\n'),
+      `${it.qty || 1}`,
+      `${Number(it.prix || 0).toFixed(2)} $`,
+      `${(Number(it.prix || 0) * (it.qty || 1)).toFixed(2)} $`,
+    ];
+  });
 
   autoTable(doc, {
     startY: tableY,

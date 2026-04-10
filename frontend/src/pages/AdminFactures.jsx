@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search, FileText, DollarSign, Loader2, Plus, X, Save,
   CheckCircle, Trash2, Download, Send, Eye, ChevronDown, ChevronUp,
-  ArrowUpRight, ArrowDownLeft,
+  ArrowUpRight, ArrowDownLeft, Globe, ListTree,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import Tooltip from '../components/Tooltip';
@@ -41,6 +41,7 @@ function FacturesSortantes() {
   const [expandedId, setExpandedId] = useState(null);
   const [saving, setSaving] = useState(false);
   const [pdfFile, setPdfFile] = useState(null);
+  const [expandedItemIdx, setExpandedItemIdx] = useState(null);
 
   // Form state
   const [form, setForm] = useState({
@@ -50,7 +51,7 @@ function FacturesSortantes() {
     customerEmail: '',
     customerPhone: '',
     customerAddress: '',
-    items: [{ description: '', category: '', prix: 0, qty: 1 }],
+    items: [{ description: '', category: '', prix: 0, qty: 1, details: '', projectType: '', projectUrl: '', technologies: '' }],
     discountPercent: 0,
     notes: '',
     status: 'draft',
@@ -78,11 +79,12 @@ function FacturesSortantes() {
       customerEmail: '',
       customerPhone: '',
       customerAddress: '',
-      items: [{ description: '', category: '', prix: 0, qty: 1 }],
+      items: [{ description: '', category: '', prix: 0, qty: 1, details: '', projectType: '', projectUrl: '', technologies: '' }],
       discountPercent: 0,
       notes: '',
       status: 'draft',
     });
+    setExpandedItemIdx(null);
   };
 
   const openNewForm = () => {
@@ -92,7 +94,7 @@ function FacturesSortantes() {
   };
 
   const addItem = () => {
-    setForm(f => ({ ...f, items: [...f.items, { description: '', category: '', prix: 0, qty: 1 }] }));
+    setForm(f => ({ ...f, items: [...f.items, { description: '', category: '', prix: 0, qty: 1, details: '', projectType: '', projectUrl: '', technologies: '' }] }));
   };
 
   const removeItem = (idx) => {
@@ -328,44 +330,140 @@ function FacturesSortantes() {
             {/* Items */}
             <div className="mb-4">
               <label className="text-xs text-grey-muted uppercase tracking-wider mb-2 block">{tx({ fr: 'Articles', en: 'Items', es: 'Articulos' })}</label>
-              {form.items.map((item, i) => (
-                <div key={i} className="flex flex-wrap gap-2 mb-3 items-start p-3 rounded-lg bg-black/10">
-                  <div className="flex-1 min-w-[200px]">
-                    {i === 0 && <label className="text-[9px] text-grey-muted uppercase tracking-wider mb-0.5 block">Description</label>}
-                    <input value={item.description} onChange={e => updateItem(i, 'description', e.target.value)} placeholder={tx({ fr: 'Ex: Developpement site web, Design graphique, Impression A3...', en: 'Ex: Web development, Graphic design, A3 print...', es: 'Descripcion' })} className="w-full px-3 py-2 rounded-lg bg-glass text-heading text-sm focus:outline-none" />
+              {form.items.map((item, i) => {
+                const isDetailsOpen = expandedItemIdx === i;
+                const hasDetails = item.details || item.projectType || item.projectUrl || item.technologies;
+                return (
+                <div key={i} className="mb-3 rounded-lg bg-black/10 overflow-hidden">
+                  <div className="flex flex-wrap gap-2 items-start p-3">
+                    <div className="flex-1 min-w-[200px]">
+                      {i === 0 && <label className="text-[9px] text-grey-muted uppercase tracking-wider mb-0.5 block">Description</label>}
+                      <input value={item.description} onChange={e => updateItem(i, 'description', e.target.value)} placeholder={tx({ fr: 'Ex: Developpement site web, Design graphique, Impression A3...', en: 'Ex: Web development, Graphic design, A3 print...', es: 'Descripcion' })} className="w-full px-3 py-2 rounded-lg bg-glass text-heading text-sm focus:outline-none" />
+                    </div>
+                    <div className="w-36">
+                      {i === 0 && <label className="text-[9px] text-grey-muted uppercase tracking-wider mb-0.5 block">{tx({ fr: 'Categorie', en: 'Category', es: 'Categoria' })}</label>}
+                      <select value={item.category || ''} onChange={e => updateItem(i, 'category', e.target.value)} className="w-full px-2 py-2 rounded-lg bg-glass text-heading text-sm focus:outline-none">
+                        <option value="">{tx({ fr: '-- Type --', en: '-- Type --', es: '-- Tipo --' })}</option>
+                        <option value="web">Web</option>
+                        <option value="design">Design</option>
+                        <option value="print">Print</option>
+                        <option value="sticker">Sticker</option>
+                        <option value="merch">Merch</option>
+                        <option value="photo">Photo</option>
+                        <option value="video">Video</option>
+                        <option value="consulting">{tx({ fr: 'Consulting', en: 'Consulting', es: 'Consultoria' })}</option>
+                        <option value="hosting">{tx({ fr: 'Hebergement', en: 'Hosting', es: 'Hosting' })}</option>
+                        <option value="other">{tx({ fr: 'Autre', en: 'Other', es: 'Otro' })}</option>
+                      </select>
+                    </div>
+                    <div className="w-24">
+                      {i === 0 && <label className="text-[9px] text-grey-muted uppercase tracking-wider mb-0.5 block">Prix $</label>}
+                      <input type="number" value={item.prix || ''} onChange={e => updateItem(i, 'prix', e.target.value)} placeholder="0.00" className="w-full px-3 py-2 rounded-lg bg-glass text-heading text-sm focus:outline-none text-right" />
+                    </div>
+                    <div className="w-16">
+                      {i === 0 && <label className="text-[9px] text-grey-muted uppercase tracking-wider mb-0.5 block">Qty</label>}
+                      <input type="number" value={item.qty || ''} onChange={e => updateItem(i, 'qty', e.target.value)} placeholder="1" min="1" className="w-full px-3 py-2 rounded-lg bg-glass text-heading text-sm focus:outline-none text-center" />
+                    </div>
+                    <div className="w-20 text-right pt-5">
+                      <span className="text-heading font-semibold text-sm">{((item.prix || 0) * (item.qty || 1)).toFixed(2)}$</span>
+                    </div>
+                    {form.items.length > 1 && (
+                      <button onClick={() => removeItem(i)} className="text-red-400 hover:text-red-300 p-1 pt-5"><X size={14} /></button>
+                    )}
                   </div>
-                  <div className="w-36">
-                    {i === 0 && <label className="text-[9px] text-grey-muted uppercase tracking-wider mb-0.5 block">{tx({ fr: 'Categorie', en: 'Category', es: 'Categoria' })}</label>}
-                    <select value={item.category || ''} onChange={e => updateItem(i, 'category', e.target.value)} className="w-full px-2 py-2 rounded-lg bg-glass text-heading text-sm focus:outline-none">
-                      <option value="">{tx({ fr: '-- Type --', en: '-- Type --', es: '-- Tipo --' })}</option>
-                      <option value="web">Web</option>
-                      <option value="design">Design</option>
-                      <option value="print">Print</option>
-                      <option value="sticker">Sticker</option>
-                      <option value="merch">Merch</option>
-                      <option value="photo">Photo</option>
-                      <option value="video">Video</option>
-                      <option value="consulting">{tx({ fr: 'Consulting', en: 'Consulting', es: 'Consultoria' })}</option>
-                      <option value="hosting">{tx({ fr: 'Hebergement', en: 'Hosting', es: 'Hosting' })}</option>
-                      <option value="other">{tx({ fr: 'Autre', en: 'Other', es: 'Otro' })}</option>
-                    </select>
+                  {/* Bouton details + expansion */}
+                  <div className="px-3 pb-2">
+                    <button
+                      type="button"
+                      onClick={() => setExpandedItemIdx(isDetailsOpen ? null : i)}
+                      className={`text-xs flex items-center gap-1.5 transition-colors ${hasDetails ? 'text-accent' : 'text-grey-muted hover:text-heading'}`}
+                    >
+                      {item.category === 'web' ? <Globe size={12} /> : <ListTree size={12} />}
+                      {isDetailsOpen
+                        ? tx({ fr: 'Masquer les details', en: 'Hide details', es: 'Ocultar detalles' })
+                        : hasDetails
+                          ? tx({ fr: 'Modifier les details', en: 'Edit details', es: 'Editar detalles' })
+                          : tx({ fr: 'Ajouter des details', en: 'Add details', es: 'Agregar detalles' })}
+                      {isDetailsOpen ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                    </button>
                   </div>
-                  <div className="w-24">
-                    {i === 0 && <label className="text-[9px] text-grey-muted uppercase tracking-wider mb-0.5 block">Prix $</label>}
-                    <input type="number" value={item.prix || ''} onChange={e => updateItem(i, 'prix', e.target.value)} placeholder="0.00" className="w-full px-3 py-2 rounded-lg bg-glass text-heading text-sm focus:outline-none text-right" />
-                  </div>
-                  <div className="w-16">
-                    {i === 0 && <label className="text-[9px] text-grey-muted uppercase tracking-wider mb-0.5 block">Qty</label>}
-                    <input type="number" value={item.qty || ''} onChange={e => updateItem(i, 'qty', e.target.value)} placeholder="1" min="1" className="w-full px-3 py-2 rounded-lg bg-glass text-heading text-sm focus:outline-none text-center" />
-                  </div>
-                  <div className="w-20 text-right pt-5">
-                    <span className="text-heading font-semibold text-sm">{((item.prix || 0) * (item.qty || 1)).toFixed(2)}$</span>
-                  </div>
-                  {form.items.length > 1 && (
-                    <button onClick={() => removeItem(i)} className="text-red-400 hover:text-red-300 p-1 pt-5"><X size={14} /></button>
-                  )}
+                  <AnimatePresence>
+                    {isDetailsOpen && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="px-3 pb-3 space-y-3 border-t border-white/5 pt-3">
+                          {/* Champs specifiques WEB */}
+                          {item.category === 'web' && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                              <div>
+                                <label className="text-[9px] text-grey-muted uppercase tracking-wider mb-0.5 block">
+                                  {tx({ fr: 'Type de projet', en: 'Project type', es: 'Tipo de proyecto' })}
+                                </label>
+                                <input
+                                  value={item.projectType || ''}
+                                  onChange={e => updateItem(i, 'projectType', e.target.value)}
+                                  placeholder={tx({ fr: 'Site vitrine, E-commerce, Landing page...', en: 'Website, E-commerce, Landing page...', es: 'Sitio, E-commerce...' })}
+                                  className="w-full px-3 py-2 rounded-lg bg-glass text-heading text-sm focus:outline-none"
+                                />
+                              </div>
+                              <div>
+                                <label className="text-[9px] text-grey-muted uppercase tracking-wider mb-0.5 block">
+                                  URL
+                                </label>
+                                <input
+                                  value={item.projectUrl || ''}
+                                  onChange={e => updateItem(i, 'projectUrl', e.target.value)}
+                                  placeholder="https://..."
+                                  className="w-full px-3 py-2 rounded-lg bg-glass text-heading text-sm focus:outline-none"
+                                />
+                              </div>
+                              <div className="md:col-span-2">
+                                <label className="text-[9px] text-grey-muted uppercase tracking-wider mb-0.5 block">
+                                  {tx({ fr: 'Technologies', en: 'Technologies', es: 'Tecnologias' })}
+                                </label>
+                                <input
+                                  value={item.technologies || ''}
+                                  onChange={e => updateItem(i, 'technologies', e.target.value)}
+                                  placeholder="React, Vite, Tailwind, Strapi, Stripe..."
+                                  className="w-full px-3 py-2 rounded-lg bg-glass text-heading text-sm focus:outline-none"
+                                />
+                              </div>
+                            </div>
+                          )}
+                          <div>
+                            <label className="text-[9px] text-grey-muted uppercase tracking-wider mb-0.5 block">
+                              {item.category === 'web'
+                                ? tx({ fr: 'Travaux realises (une ligne par point)', en: 'Work done (one line per point)', es: 'Trabajos realizados (una linea por punto)' })
+                                : tx({ fr: 'Details (une ligne par point)', en: 'Details (one line per point)', es: 'Detalles (una linea por punto)' })}
+                            </label>
+                            <textarea
+                              value={item.details || ''}
+                              onChange={e => updateItem(i, 'details', e.target.value)}
+                              rows={5}
+                              placeholder={item.category === 'web'
+                                ? tx({
+                                    fr: 'Ex:\nIntegration design responsive\nDeveloppement frontend React\nIntegration API Stripe\nDeploiement + SEO de base\nFormation admin',
+                                    en: 'Ex:\nResponsive design integration\nReact frontend\nStripe API integration\nDeployment + basic SEO\nAdmin training',
+                                    es: 'Ej:\nIntegracion diseno responsive\nFrontend React\nIntegracion Stripe\nDespliegue + SEO\nFormacion admin',
+                                  })
+                                : tx({ fr: 'Details de la prestation...', en: 'Service details...', es: 'Detalles del servicio...' })}
+                              className="w-full px-3 py-2 rounded-lg bg-glass text-heading text-sm focus:outline-none font-mono"
+                            />
+                            <p className="text-[9px] text-grey-muted/60 mt-1">
+                              {tx({ fr: 'Chaque ligne apparaitra comme une puce sous la description dans le PDF.', en: 'Each line will appear as a bullet under the description in the PDF.', es: 'Cada linea aparecera como una vineta debajo de la descripcion en el PDF.' })}
+                            </p>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
-              ))}
+                );
+              })}
               <button onClick={addItem} className="text-accent text-xs hover:underline flex items-center gap-1 mt-1">
                 <Plus size={12} /> {tx({ fr: 'Ajouter un article', en: 'Add item', es: 'Agregar articulo' })}
               </button>
@@ -495,12 +593,29 @@ function FacturesSortantes() {
                       {/* Items */}
                       <div className="bg-glass rounded-lg p-3">
                         <p className="text-xs text-grey-muted uppercase tracking-wider mb-2">{tx({ fr: 'Articles', en: 'Items', es: 'Articulos' })}</p>
-                        {(inv.items || []).map((it, i) => (
-                          <div key={i} className="flex justify-between text-sm py-1">
-                            <span className="text-heading">{it.description} {it.category && `[${it.category}]`}</span>
-                            <span className="text-heading font-medium">{(it.prix * (it.qty || 1)).toFixed(2)} $</span>
+                        {(inv.items || []).map((it, i) => {
+                          const detailLines = (it.details || '').split('\n').map(s => s.trim()).filter(Boolean);
+                          return (
+                          <div key={i} className="py-1">
+                            <div className="flex justify-between text-sm">
+                              <span className="text-heading">{it.description} {it.category && `[${it.category}]`}</span>
+                              <span className="text-heading font-medium">{(it.prix * (it.qty || 1)).toFixed(2)} $</span>
+                            </div>
+                            {it.category === 'web' && (it.projectType || it.projectUrl || it.technologies) && (
+                              <div className="mt-1 ml-2 text-[11px] text-grey-muted space-y-0.5">
+                                {it.projectType && <div><span className="text-grey-muted/60">Type: </span>{it.projectType}</div>}
+                                {it.projectUrl && <div><span className="text-grey-muted/60">URL: </span><span className="text-accent">{it.projectUrl}</span></div>}
+                                {it.technologies && <div><span className="text-grey-muted/60">Tech: </span>{it.technologies}</div>}
+                              </div>
+                            )}
+                            {detailLines.length > 0 && (
+                              <ul className="mt-1 ml-4 text-[11px] text-grey-muted list-disc space-y-0.5">
+                                {detailLines.map((line, idx) => <li key={idx}>{line}</li>)}
+                              </ul>
+                            )}
                           </div>
-                        ))}
+                          );
+                        })}
                         <div className="border-t border-white/10 mt-2 pt-2 space-y-1 text-xs">
                           <div className="flex justify-between"><span className="text-grey-muted">Sous-total</span><span className="text-heading">{Number(inv.subtotal || 0).toFixed(2)} $</span></div>
                           {inv.discountPercent > 0 && (
