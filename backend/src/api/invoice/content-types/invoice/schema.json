@@ -69,6 +69,11 @@
       "type": "boolean",
       "default": false
     },
+    "lang": {
+      "type": "enumeration",
+      "enum": ["fr", "en"],
+      "default": "fr"
+    },
     "order": {
       "type": "relation",
       "relation": "oneToOne",

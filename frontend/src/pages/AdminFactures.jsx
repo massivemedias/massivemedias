@@ -76,6 +76,7 @@ function FacturesSortantes() {
     notes: '',
     status: 'draft',
     includeOwnerName: false,
+    lang: 'fr',
   });
 
   const fetchInvoices = useCallback(async () => {
@@ -105,6 +106,7 @@ function FacturesSortantes() {
       notes: '',
       status: 'draft',
       includeOwnerName: false,
+      lang: 'fr',
     });
     setExpandedItemIdx(null);
   };
@@ -142,6 +144,7 @@ function FacturesSortantes() {
       notes: inv.notes || '',
       status: inv.status || 'draft',
       includeOwnerName: !!inv.includeOwnerName,
+      lang: inv.lang || 'fr',
     });
     setEditingId(inv.documentId);
     setPdfFile(null);
@@ -219,6 +222,7 @@ function FacturesSortantes() {
         status: form.status,
         notes: form.notes,
         includeOwnerName: form.includeOwnerName,
+        lang: form.lang || 'fr',
         ...(pdfUrl && { pdfUrl }),
         ...(pdfFileId && { pdfFileId }),
       };
@@ -261,7 +265,7 @@ function FacturesSortantes() {
   };
 
   const handleDownloadPDF = (inv) => {
-    generateManualInvoicePDF(inv);
+    generateManualInvoicePDF(inv, inv.lang || 'fr');
   };
 
   const formatDate = (d) => d ? new Date(d).toLocaleDateString('fr-CA', { day: 'numeric', month: 'short', year: 'numeric' }) : '-';
@@ -624,6 +628,37 @@ function FacturesSortantes() {
                   })}
                 </span>
               </label>
+            </div>
+
+            {/* Langue de la facture (PDF) */}
+            <div className="mb-4">
+              <label className="text-xs text-grey-muted uppercase tracking-wider mb-1.5 block">
+                {tx({ fr: 'Langue de la facture', en: 'Invoice language', es: 'Idioma de la factura' })}
+              </label>
+              <div className="inline-flex rounded-lg bg-glass p-1 gap-1">
+                <button
+                  type="button"
+                  onClick={() => setForm(f => ({ ...f, lang: 'fr' }))}
+                  className={`px-4 py-1.5 rounded-md text-xs font-semibold transition-colors ${
+                    (form.lang || 'fr') === 'fr'
+                      ? 'bg-accent text-white'
+                      : 'text-grey-muted hover:text-heading'
+                  }`}
+                >
+                  FR
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setForm(f => ({ ...f, lang: 'en' }))}
+                  className={`px-4 py-1.5 rounded-md text-xs font-semibold transition-colors ${
+                    form.lang === 'en'
+                      ? 'bg-accent text-white'
+                      : 'text-grey-muted hover:text-heading'
+                  }`}
+                >
+                  EN
+                </button>
+              </div>
             </div>
 
             {/* Totals preview */}

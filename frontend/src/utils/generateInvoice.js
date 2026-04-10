@@ -320,8 +320,69 @@ export function generateInvoicePDF(order, type = 'invoice') {
 
 export default generateInvoicePDF;
 
+// Labels bilingues pour les factures manuelles
+const INVOICE_LABELS = {
+  fr: {
+    title: 'FACTURE',
+    no: 'No',
+    date: 'Date',
+    from: 'DE',
+    billTo: 'FACTURER \u00c0',
+    neq: 'NEQ',
+    descr: 'Description',
+    qty: 'Qte',
+    unitPrice: 'Prix/u',
+    total: 'Total',
+    billing: 'Facturation',
+    type: 'Type',
+    subtotal: 'Sous-total',
+    discount: 'Rabais',
+    gst: 'TPS (5%)',
+    qst: 'TVQ (9,975%)',
+    grandTotal: 'TOTAL',
+    paymentTitle: 'MODALITES DE PAIEMENT',
+    interacTitle: 'Virement Interac',
+    interacHint: 'Aucune question de securite requise',
+    eftTitle: 'Virement bancaire (EFT)',
+    eftLine: (t, i, a) => `Transit: ${t}   Institution: ${i}   Compte: ${a}`,
+    paymentTerm: 'Paiement du dans les 30 jours suivant la reception de la facture',
+    thanks: 'Merci pour votre confiance!',
+    filePrefix: 'facture',
+    locale: 'fr-CA',
+  },
+  en: {
+    title: 'INVOICE',
+    no: 'No',
+    date: 'Date',
+    from: 'FROM',
+    billTo: 'BILL TO',
+    neq: 'QBN',
+    descr: 'Description',
+    qty: 'Qty',
+    unitPrice: 'Unit Price',
+    total: 'Total',
+    billing: 'Billing',
+    type: 'Type',
+    subtotal: 'Subtotal',
+    discount: 'Discount',
+    gst: 'GST (5%)',
+    qst: 'QST (9.975%)',
+    grandTotal: 'TOTAL',
+    paymentTitle: 'PAYMENT METHODS',
+    interacTitle: 'Interac e-Transfer',
+    interacHint: 'No security question required',
+    eftTitle: 'Wire Transfer (EFT)',
+    eftLine: (t, i, a) => `Transit: ${t}   Institution: ${i}   Account: ${a}`,
+    paymentTerm: 'Payment due within 30 days of invoice reception',
+    thanks: 'Thank you for your trust!',
+    filePrefix: 'invoice',
+    locale: 'en-CA',
+  },
+};
+
 // ==================== FACTURE MANUELLE (admin) ====================
-export function generateManualInvoicePDF(invoice) {
+export function generateManualInvoicePDF(invoice, lang = 'fr') {
+  const L = INVOICE_LABELS[lang] || INVOICE_LABELS.fr;
   const doc = new jsPDF({ unit: 'mm', format: 'a4' });
   const pageWidth = doc.internal.pageSize.getWidth();
   const margin = 18;
@@ -331,28 +392,28 @@ export function generateManualInvoicePDF(invoice) {
   const logoH = logoW / LOGO_RATIO;
   try { doc.addImage(LOGO_B64, 'PNG', margin, 12, logoW, logoH); } catch {}
 
-  // Titre FACTURE
+  // Titre FACTURE / INVOICE
   doc.setFontSize(24);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(61, 0, 121);
-  doc.text('FACTURE', pageWidth - margin, 22, { align: 'right' });
+  doc.text(L.title, pageWidth - margin, 22, { align: 'right' });
 
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(120, 120, 120);
-  doc.text(`No: ${invoice.invoiceNumber}`, pageWidth - margin, 30, { align: 'right' });
-  const dateStr = new Date(invoice.date).toLocaleDateString('fr-CA', { day: 'numeric', month: 'long', year: 'numeric' });
-  doc.text(`Date: ${dateStr}`, pageWidth - margin, 36, { align: 'right' });
+  doc.text(`${L.no}: ${invoice.invoiceNumber}`, pageWidth - margin, 30, { align: 'right' });
+  const dateStr = new Date(invoice.date).toLocaleDateString(L.locale, { day: 'numeric', month: 'long', year: 'numeric' });
+  doc.text(`${L.date}: ${dateStr}`, pageWidth - margin, 36, { align: 'right' });
 
   // Ligne separatrice
   doc.setDrawColor(220);
   doc.line(margin, 42, pageWidth - margin, 42);
 
-  // DE
+  // DE / FROM
   let y = 50;
   doc.setFontSize(7);
   doc.setTextColor(150);
-  doc.text('DE', margin, y);
+  doc.text(L.from, margin, y);
   doc.setFontSize(10);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(30);
@@ -369,13 +430,13 @@ export function generateManualInvoicePDF(invoice) {
   doc.text(COMPANY.city, margin, deY + 5);
   doc.text(COMPANY.phone, margin, deY + 10);
   doc.text(COMPANY.email, margin, deY + 15);
-  doc.text(`NEQ ${COMPANY.neq}`, margin, deY + 20);
+  doc.text(`${L.neq} ${COMPANY.neq}`, margin, deY + 20);
 
-  // FACTURER A
+  // FACTURER A / BILL TO
   const col2 = pageWidth / 2 + 10;
   doc.setFontSize(7);
   doc.setTextColor(150);
-  doc.text('FACTURER \u00c0', col2, y);
+  doc.text(L.billTo, col2, y);
   doc.setFontSize(10);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(30);
@@ -388,7 +449,7 @@ export function generateManualInvoicePDF(invoice) {
   if (invoice.customerEmail) doc.text(invoice.customerEmail, col2, y + 21);
 
   // Table items - espace genereux entre le bloc DE et la table
-  const deLastLineY = deY + 20; // NEQ est la derniere ligne
+  const deLastLineY = deY + 20; // NEQ/QBN est la derniere ligne
   const tableY = deLastLineY + 16; // 16mm de marge entre le bloc et l'en-tete violet
   const items = invoice.items || [];
   const tableBody = items.map(it => {
@@ -397,8 +458,8 @@ export function generateManualInvoicePDF(invoice) {
     if (it.category === 'web') {
       const h = Number(it.hours) || 0;
       const r = Number(it.hourlyRate) || 0;
-      if (h > 0) lines.push(`Facturation: ${h.toFixed(2)}h x ${r.toFixed(2)}$/h`);
-      if (it.projectType) lines.push(`Type: ${it.projectType}`);
+      if (h > 0) lines.push(`${L.billing}: ${h.toFixed(2)}h x ${r.toFixed(2)}$/h`);
+      if (it.projectType) lines.push(`${L.type}: ${it.projectType}`);
       if (it.projectUrl) lines.push(`URL: ${it.projectUrl}`);
       if (it.technologies) lines.push(`Tech: ${it.technologies}`);
     }
@@ -414,7 +475,7 @@ export function generateManualInvoicePDF(invoice) {
 
   autoTable(doc, {
     startY: tableY,
-    head: [['Description', 'Qte', 'Prix/u', 'Total']],
+    head: [[L.descr, L.qty, L.unitPrice, L.total]],
     body: tableBody,
     theme: 'grid',
     headStyles: { fillColor: [61, 0, 121], textColor: 255, fontSize: 8, fontStyle: 'bold' },
@@ -435,7 +496,7 @@ export function generateManualInvoicePDF(invoice) {
 
   doc.setFontSize(9);
   doc.setTextColor(120);
-  doc.text('Sous-total', totalsX, finalY);
+  doc.text(L.subtotal, totalsX, finalY);
   doc.setTextColor(30);
   doc.text(`${Number(invoice.subtotal).toFixed(2)} $`, pageWidth - margin, finalY, { align: 'right' });
 
@@ -444,20 +505,20 @@ export function generateManualInvoicePDF(invoice) {
     ty += 6;
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(46, 125, 50);
-    doc.text(`Rabais (${invoice.discountPercent}%)`, totalsX, ty);
+    doc.text(`${L.discount} (${invoice.discountPercent}%)`, totalsX, ty);
     doc.text(`-${Number(invoice.discountAmount).toFixed(2)} $`, pageWidth - margin, ty, { align: 'right' });
     doc.setFont('helvetica', 'normal');
   }
 
   ty += 6;
   doc.setTextColor(120);
-  doc.text('TPS (5%)', totalsX, ty);
+  doc.text(L.gst, totalsX, ty);
   doc.setTextColor(30);
   doc.text(`${Number(invoice.tps).toFixed(2)} $`, pageWidth - margin, ty, { align: 'right' });
 
   ty += 6;
   doc.setTextColor(120);
-  doc.text('TVQ (9,975%)', totalsX, ty);
+  doc.text(L.qst, totalsX, ty);
   doc.setTextColor(30);
   doc.text(`${Number(invoice.tvq).toFixed(2)} $`, pageWidth - margin, ty, { align: 'right' });
 
@@ -470,10 +531,10 @@ export function generateManualInvoicePDF(invoice) {
   doc.setFontSize(12);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(61, 0, 121);
-  doc.text('TOTAL', totalsX, ty);
+  doc.text(L.grandTotal, totalsX, ty);
   doc.text(`${Number(invoice.total).toFixed(2)} $`, pageWidth - margin, ty, { align: 'right' });
 
-  // ==================== MODALITES DE PAIEMENT ====================
+  // ==================== MODALITES DE PAIEMENT / PAYMENT METHODS ====================
   let payY = ty + 18;
   // Boite grise avec info de paiement
   const boxH = 32;
@@ -486,32 +547,32 @@ export function generateManualInvoicePDF(invoice) {
   doc.setFontSize(8);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(61, 0, 121);
-  doc.text('MODALITES DE PAIEMENT', margin + 4, payY + 6);
+  doc.text(L.paymentTitle, margin + 4, payY + 6);
 
   // Colonne 1 - Interac
   doc.setFontSize(7);
   doc.setTextColor(100);
   doc.setFont('helvetica', 'bold');
-  doc.text('Virement Interac', margin + 4, payY + 12);
+  doc.text(L.interacTitle, margin + 4, payY + 12);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(60);
   doc.text(PAYMENT_INFO.interacEmail, margin + 4, payY + 16);
   doc.setTextColor(140);
   doc.setFontSize(6);
-  doc.text('Aucune question de securite requise', margin + 4, payY + 20);
+  doc.text(L.interacHint, margin + 4, payY + 20);
 
   // Colonne 2 - Virement bancaire
   const col2X = pageWidth / 2;
   doc.setFontSize(7);
   doc.setTextColor(100);
   doc.setFont('helvetica', 'bold');
-  doc.text('Virement bancaire (EFT)', col2X, payY + 12);
+  doc.text(L.eftTitle, col2X, payY + 12);
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(6);
   doc.setTextColor(60);
   doc.text(`${PAYMENT_INFO.bankName} - ${PAYMENT_INFO.accountHolder}`, col2X, payY + 16);
   doc.text(
-    `Transit: ${PAYMENT_INFO.transit}   Institution: ${PAYMENT_INFO.institution}   Compte: ${PAYMENT_INFO.account}`,
+    L.eftLine(PAYMENT_INFO.transit, PAYMENT_INFO.institution, PAYMENT_INFO.account),
     col2X, payY + 20
   );
 
@@ -519,20 +580,17 @@ export function generateManualInvoicePDF(invoice) {
   doc.setFontSize(6);
   doc.setTextColor(140);
   doc.setFont('helvetica', 'italic');
-  doc.text(
-    'Paiement du dans les 30 jours suivant la reception de la facture',
-    pageWidth / 2, payY + 27, { align: 'center' }
-  );
+  doc.text(L.paymentTerm, pageWidth / 2, payY + 27, { align: 'center' });
 
   // Footer
   doc.setFontSize(6);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(160);
   doc.text(
-    `${COMPANY.name} - ${COMPANY.address}, ${COMPANY.city} - ${COMPANY.email} - NEQ ${COMPANY.neq}`,
+    `${COMPANY.name} - ${COMPANY.address}, ${COMPANY.city} - ${COMPANY.email} - ${L.neq} ${COMPANY.neq}`,
     pageWidth / 2, 282, { align: 'center' }
   );
-  doc.text('Merci pour votre confiance!', pageWidth / 2, 286, { align: 'center' });
+  doc.text(L.thanks, pageWidth / 2, 286, { align: 'center' });
 
-  doc.save(`facture-${invoice.invoiceNumber}.pdf`);
+  doc.save(`${L.filePrefix}-${invoice.invoiceNumber}.pdf`);
 }
