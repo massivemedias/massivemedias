@@ -63,10 +63,21 @@ exports.default = strapi_1.factories.createCoreController('api::artist.artist', 
         if (Object.keys(data).length === 0) {
             return ctx.badRequest('Aucun champ a mettre a jour');
         }
+        // Update le draft
         const updated = await strapi.documents('api::artist.artist').update({
             documentId: existing.documentId,
             data,
         });
+        // Republier pour que la version publiee (visible via GET public) soit mise a jour
+        // (artist a draftAndPublish: true, sans republier on update seulement le draft)
+        try {
+            await strapi.documents('api::artist.artist').publish({
+                documentId: existing.documentId,
+            });
+        }
+        catch (err) {
+            strapi.log.warn(`Publish failed for artist ${slug}: ${(err === null || err === void 0 ? void 0 : err.message) || err}`);
+        }
         strapi.log.info(`Artist updated by slug: ${slug} -> ${JSON.stringify(data)}`);
         ctx.body = { data: updated };
     },
