@@ -376,6 +376,9 @@ export function generateManualInvoicePDF(invoice) {
     // Build rich description: main line + web meta + bullet details
     const lines = [it.description + (it.papier ? ` - ${it.papier}` : '') + (it.format ? ` (${it.format})` : '')];
     if (it.category === 'web') {
+      const h = Number(it.hours) || 0;
+      const r = Number(it.hourlyRate) || 0;
+      if (h > 0) lines.push(`Facturation: ${h.toFixed(2)}h x ${r.toFixed(2)}$/h`);
       if (it.projectType) lines.push(`Type: ${it.projectType}`);
       if (it.projectUrl) lines.push(`URL: ${it.projectUrl}`);
       if (it.technologies) lines.push(`Tech: ${it.technologies}`);

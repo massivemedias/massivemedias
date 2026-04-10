@@ -51,7 +51,7 @@ function FacturesSortantes() {
     customerEmail: '',
     customerPhone: '',
     customerAddress: '',
-    items: [{ description: '', category: '', prix: 0, qty: 1, details: '', projectType: '', projectUrl: '', technologies: '' }],
+    items: [{ description: '', category: '', prix: 0, qty: 1, details: '', projectType: '', projectUrl: '', technologies: '', hours: '', hourlyRate: 100 }],
     discountPercent: 0,
     notes: '',
     status: 'draft',
@@ -79,7 +79,7 @@ function FacturesSortantes() {
       customerEmail: '',
       customerPhone: '',
       customerAddress: '',
-      items: [{ description: '', category: '', prix: 0, qty: 1, details: '', projectType: '', projectUrl: '', technologies: '' }],
+      items: [{ description: '', category: '', prix: 0, qty: 1, details: '', projectType: '', projectUrl: '', technologies: '', hours: '', hourlyRate: 100 }],
       discountPercent: 0,
       notes: '',
       status: 'draft',
@@ -94,7 +94,7 @@ function FacturesSortantes() {
   };
 
   const addItem = () => {
-    setForm(f => ({ ...f, items: [...f.items, { description: '', category: '', prix: 0, qty: 1, details: '', projectType: '', projectUrl: '', technologies: '' }] }));
+    setForm(f => ({ ...f, items: [...f.items, { description: '', category: '', prix: 0, qty: 1, details: '', projectType: '', projectUrl: '', technologies: '', hours: '', hourlyRate: 100 }] }));
   };
 
   const removeItem = (idx) => {
@@ -104,7 +104,17 @@ function FacturesSortantes() {
   const updateItem = (idx, field, value) => {
     setForm(f => {
       const items = [...f.items];
-      items[idx] = { ...items[idx], [field]: field === 'prix' || field === 'qty' ? Number(value) || 0 : value };
+      const numericFields = ['prix', 'qty', 'hours', 'hourlyRate'];
+      const parsedValue = numericFields.includes(field) ? (Number(value) || 0) : value;
+      items[idx] = { ...items[idx], [field]: parsedValue };
+      // Auto-calcul du prix pour web si heures + taux sont remplis
+      if ((field === 'hours' || field === 'hourlyRate') && items[idx].category === 'web') {
+        const h = field === 'hours' ? parsedValue : (Number(items[idx].hours) || 0);
+        const r = field === 'hourlyRate' ? parsedValue : (Number(items[idx].hourlyRate) || 0);
+        if (h > 0 && r > 0) {
+          items[idx].prix = Math.round(h * r * 100) / 100;
+        }
+      }
       return { ...f, items };
     });
   };
@@ -399,6 +409,54 @@ function FacturesSortantes() {
                           {/* Champs specifiques WEB */}
                           {item.category === 'web' && (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                              {/* Bloc taux horaire - pleine largeur */}
+                              <div className="md:col-span-2 p-3 rounded-lg bg-accent/5 border border-accent/20">
+                                <label className="text-[9px] text-accent uppercase tracking-wider mb-2 block font-semibold">
+                                  {tx({ fr: 'Facturation horaire', en: 'Hourly billing', es: 'Facturacion por hora' })}
+                                </label>
+                                <div className="grid grid-cols-3 gap-2 items-end">
+                                  <div>
+                                    <label className="text-[9px] text-grey-muted uppercase tracking-wider mb-0.5 block">
+                                      {tx({ fr: 'Heures', en: 'Hours', es: 'Horas' })}
+                                    </label>
+                                    <input
+                                      type="number"
+                                      step="0.25"
+                                      value={item.hours || ''}
+                                      onChange={e => updateItem(i, 'hours', e.target.value)}
+                                      placeholder="0"
+                                      className="w-full px-3 py-2 rounded-lg bg-glass text-heading text-sm focus:outline-none text-right"
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="text-[9px] text-grey-muted uppercase tracking-wider mb-0.5 block">
+                                      {tx({ fr: 'Taux $/h', en: 'Rate $/h', es: 'Tarifa $/h' })}
+                                    </label>
+                                    <input
+                                      type="number"
+                                      value={item.hourlyRate ?? 100}
+                                      onChange={e => updateItem(i, 'hourlyRate', e.target.value)}
+                                      placeholder="100"
+                                      className="w-full px-3 py-2 rounded-lg bg-glass text-heading text-sm focus:outline-none text-right"
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="text-[9px] text-grey-muted uppercase tracking-wider mb-0.5 block">
+                                      {tx({ fr: 'Total', en: 'Total', es: 'Total' })}
+                                    </label>
+                                    <div className="px-3 py-2 rounded-lg bg-black/20 text-accent text-sm text-right font-semibold">
+                                      {((Number(item.hours) || 0) * (Number(item.hourlyRate) || 0)).toFixed(2)} $
+                                    </div>
+                                  </div>
+                                </div>
+                                <p className="text-[9px] text-grey-muted/60 mt-1.5">
+                                  {tx({
+                                    fr: 'Heures x Taux = Prix (auto-calcule, mais modifiable manuellement ci-dessus)',
+                                    en: 'Hours x Rate = Price (auto-computed, but editable above)',
+                                    es: 'Horas x Tarifa = Precio (auto-calculado, editable arriba)',
+                                  })}
+                                </p>
+                              </div>
                               <div>
                                 <label className="text-[9px] text-grey-muted uppercase tracking-wider mb-0.5 block">
                                   {tx({ fr: 'Type de projet', en: 'Project type', es: 'Tipo de proyecto' })}
@@ -601,8 +659,9 @@ function FacturesSortantes() {
                               <span className="text-heading">{it.description} {it.category && `[${it.category}]`}</span>
                               <span className="text-heading font-medium">{(it.prix * (it.qty || 1)).toFixed(2)} $</span>
                             </div>
-                            {it.category === 'web' && (it.projectType || it.projectUrl || it.technologies) && (
+                            {it.category === 'web' && (it.projectType || it.projectUrl || it.technologies || it.hours) && (
                               <div className="mt-1 ml-2 text-[11px] text-grey-muted space-y-0.5">
+                                {it.hours > 0 && <div><span className="text-grey-muted/60">Facturation: </span>{Number(it.hours).toFixed(2)}h x {Number(it.hourlyRate || 0).toFixed(2)}$/h</div>}
                                 {it.projectType && <div><span className="text-grey-muted/60">Type: </span>{it.projectType}</div>}
                                 {it.projectUrl && <div><span className="text-grey-muted/60">URL: </span><span className="text-accent">{it.projectUrl}</span></div>}
                                 {it.technologies && <div><span className="text-grey-muted/60">Tech: </span>{it.technologies}</div>}
