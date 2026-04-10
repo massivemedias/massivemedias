@@ -204,15 +204,15 @@ function Panier() {
             </div>
           ) : (
             <div>
-              <div className="flex gap-2">
-                <div className="relative flex-grow">
-                  <Tag size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-grey-muted" />
+              <div className="flex gap-2 items-center max-w-xs">
+                <div className="relative">
+                  <Tag size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-grey-muted" />
                   <input
                     type="text"
                     value={promoInput}
                     onChange={(e) => { setPromoInput(e.target.value.toUpperCase()); if (promoError) setPromoError(''); }}
-                    placeholder={tx({ fr: 'Code promo', en: 'Promo code', es: 'Codigo promo' })}
-                    className="input-field pl-9 text-sm"
+                    placeholder={tx({ fr: 'Code promo', en: 'Promo code', es: 'Codigo' })}
+                    className="w-36 pl-8 pr-2 py-2 rounded-lg bg-glass text-heading text-xs focus:outline-none focus:ring-1 focus:ring-accent"
                   />
                 </div>
                 <button
@@ -235,9 +235,9 @@ function Panier() {
                     }
                   }}
                   disabled={promoLoading || !promoInput.trim()}
-                  className="btn-primary text-sm px-5 py-2 flex-shrink-0 disabled:opacity-50"
+                  className="px-3 py-2 rounded-lg bg-accent text-white text-xs font-semibold disabled:opacity-50 transition-colors hover:bg-accent/90"
                 >
-                  {promoLoading ? '...' : tx({ fr: 'Appliquer', en: 'Apply', es: 'Aplicar' })}
+                  {promoLoading ? '...' : 'OK'}
                 </button>
               </div>
               {promoError && (
