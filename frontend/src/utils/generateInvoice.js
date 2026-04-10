@@ -13,8 +13,9 @@ const COMPANY = {
   neq: '2269057891',
   tps: '732457635RT0001',
   tvq: '4012577678TQ0001',
-  address: '7049 rue Saint-Urbain',
-  city: 'Montréal (QC)',
+  address: '5338 rue Marquette',
+  city: 'Montreal (QC) H2J 3Z3',
+  phone: '+1 514 653 1423',
   email: 'massivemedias@gmail.com',
   website: 'massivemedias.com',
 };
@@ -72,7 +73,8 @@ export function generateInvoicePDF(order, type = 'invoice') {
   doc.setFontSize(8);
   doc.setTextColor(...greyText);
   doc.text(COMPANY.address, margin, y + logoH + 4);
-  doc.text(`${COMPANY.city}  |  ${COMPANY.email}`, margin, y + logoH + 8);
+  doc.text(COMPANY.city, margin, y + logoH + 8);
+  doc.text(`${COMPANY.phone}  |  ${COMPANY.email}`, margin, y + logoH + 12);
 
   // Document type - right aligned
   doc.setFont('helvetica', 'bold');
@@ -355,8 +357,9 @@ export function generateManualInvoicePDF(invoice) {
   }
   doc.text(COMPANY.address, margin, deY);
   doc.text(COMPANY.city, margin, deY + 5);
-  doc.text(COMPANY.email, margin, deY + 10);
-  doc.text(`NEQ ${COMPANY.neq}`, margin, deY + 15);
+  doc.text(COMPANY.phone, margin, deY + 10);
+  doc.text(COMPANY.email, margin, deY + 15);
+  doc.text(`NEQ ${COMPANY.neq}`, margin, deY + 20);
 
   // FACTURER A
   const col2 = pageWidth / 2 + 10;
@@ -374,8 +377,9 @@ export function generateManualInvoicePDF(invoice) {
   if (invoice.customerPhone) doc.text(invoice.customerPhone, col2, y + 16);
   if (invoice.customerEmail) doc.text(invoice.customerEmail, col2, y + 21);
 
-  // Table items
-  const tableY = y + 38;
+  // Table items - espace genereux entre le bloc DE et la table
+  const deLastLineY = deY + 20; // NEQ est la derniere ligne
+  const tableY = deLastLineY + 16; // 16mm de marge entre le bloc et l'en-tete violet
   const items = invoice.items || [];
   const tableBody = items.map(it => {
     // Build rich description: main line + web meta + bullet details

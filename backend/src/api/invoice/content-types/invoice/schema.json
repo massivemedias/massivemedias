@@ -65,6 +65,10 @@
     "notes": {
       "type": "text"
     },
+    "includeOwnerName": {
+      "type": "boolean",
+      "default": false
+    },
     "order": {
       "type": "relation",
       "relation": "oneToOne",
