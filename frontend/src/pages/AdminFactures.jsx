@@ -3,11 +3,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search, FileText, DollarSign, Loader2, Plus, X, Save,
   CheckCircle, Trash2, Download, Send, Eye, ChevronDown, ChevronUp,
-  ArrowUpRight, ArrowDownLeft, Globe, ListTree, Pencil,
+  ArrowUpRight, ArrowDownLeft, Globe, ListTree, Pencil, Package,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import Tooltip from '../components/Tooltip';
-import { getInvoices, createInvoice, updateInvoice, deleteInvoice, uploadInvoicePDF } from '../services/adminService';
+import { getInvoices, createInvoice, updateInvoice, deleteInvoice, uploadInvoicePDF, syncInvoiceToInventory } from '../services/adminService';
 import { generateManualInvoicePDF } from '../utils/generateInvoice';
 
 const AdminDepenses = lazy(() => import('./AdminDepenses'));
@@ -62,6 +62,8 @@ function FacturesSortantes() {
   const [pdfFile, setPdfFile] = useState(null);
   const [expandedItemIdx, setExpandedItemIdx] = useState(null);
   const [editingId, setEditingId] = useState(null); // documentId de la facture en edition
+  const [editingOriginalItems, setEditingOriginalItems] = useState([]); // items de la facture AVANT edition (pour delta inventaire)
+  const [syncFeedback, setSyncFeedback] = useState(null); // { matched, skipped, details }
 
   // Form state
   const [form, setForm] = useState({
@@ -115,6 +117,7 @@ function FacturesSortantes() {
     resetForm();
     setPdfFile(null);
     setEditingId(null);
+    setEditingOriginalItems([]);
     setShowForm(true);
   };
 
@@ -147,6 +150,7 @@ function FacturesSortantes() {
       lang: inv.lang || 'fr',
     });
     setEditingId(inv.documentId);
+    setEditingOriginalItems(inv.items || []);
     setPdfFile(null);
     setExpandedItemIdx(null);
     setShowForm(true);
@@ -231,9 +235,27 @@ function FacturesSortantes() {
       } else {
         await createInvoice(payload);
       }
+
+      // Sync inventaire: delta entre anciens items et nouveaux
+      // On ne sync que si la facture n'est pas annulee
+      if (form.status !== 'cancelled') {
+        try {
+          const syncRes = await syncInvoiceToInventory(editingOriginalItems, form.items);
+          const { matched = 0, skipped = 0, adjustments = [] } = syncRes.data?.data || {};
+          if (matched > 0 || skipped > 0) {
+            setSyncFeedback({ matched, skipped, adjustments });
+            // Auto-hide apres 6 secondes
+            setTimeout(() => setSyncFeedback(null), 6000);
+          }
+        } catch (syncErr) {
+          console.warn('Sync inventaire echoue (non bloquant):', syncErr);
+        }
+      }
+
       setPdfFile(null);
       setShowForm(false);
       setEditingId(null);
+      setEditingOriginalItems([]);
       fetchInvoices();
     } catch (err) {
       console.error('Erreur sauvegarde facture:', err);
@@ -258,6 +280,14 @@ function FacturesSortantes() {
     if (!confirm(tx({ fr: 'Supprimer cette facture?', en: 'Delete this invoice?', es: 'Eliminar esta factura?' }))) return;
     try {
       await deleteInvoice(inv.documentId);
+      // Restaurer l'inventaire: delta entre items supprimes et rien
+      if (inv.status !== 'cancelled' && Array.isArray(inv.items) && inv.items.length > 0) {
+        try {
+          await syncInvoiceToInventory(inv.items, []);
+        } catch (syncErr) {
+          console.warn('Sync inventaire apres suppression echoue:', syncErr);
+        }
+      }
       fetchInvoices();
     } catch (err) {
       console.error('Erreur suppression:', err);
@@ -296,6 +326,55 @@ function FacturesSortantes() {
 
   return (
     <div className="space-y-6">
+      {/* Toast: sync inventaire */}
+      <AnimatePresence>
+        {syncFeedback && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="rounded-xl p-4 bg-accent/10 border border-accent/30 flex items-start gap-3"
+          >
+            <Package size={18} className="text-accent flex-shrink-0 mt-0.5" />
+            <div className="flex-1 text-sm">
+              <p className="text-heading font-semibold mb-1">
+                {tx({ fr: 'Inventaire mis a jour', en: 'Inventory updated', es: 'Inventario actualizado' })}
+              </p>
+              <p className="text-grey-muted text-xs">
+                {syncFeedback.matched > 0 && (
+                  <>
+                    <span className="text-accent font-semibold">{syncFeedback.matched}</span>{' '}
+                    {tx({ fr: 'article(s) ajuste(s)', en: 'item(s) adjusted', es: 'articulo(s) ajustado(s)' })}
+                  </>
+                )}
+                {syncFeedback.matched > 0 && syncFeedback.skipped > 0 && ' · '}
+                {syncFeedback.skipped > 0 && (
+                  <>
+                    <span className="text-grey-muted">{syncFeedback.skipped}</span>{' '}
+                    {tx({ fr: 'sans correspondance', en: 'without match', es: 'sin coincidencia' })}
+                  </>
+                )}
+              </p>
+              {syncFeedback.adjustments?.filter(a => a.status === 'updated').length > 0 && (
+                <ul className="mt-2 text-[11px] text-grey-muted space-y-0.5">
+                  {syncFeedback.adjustments
+                    .filter(a => a.status === 'updated')
+                    .slice(0, 5)
+                    .map((a, i) => (
+                      <li key={i}>
+                        <span className="text-heading">{a.nameFr}</span>: {a.before} -&gt; {a.after} ({a.delta > 0 ? '-' : '+'}{Math.abs(a.delta)})
+                      </li>
+                    ))}
+                </ul>
+              )}
+            </div>
+            <button onClick={() => setSyncFeedback(null)} className="text-grey-muted hover:text-heading">
+              <X size={16} />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-heading font-bold text-heading flex items-center gap-2">

@@ -307,4 +307,105 @@ export default factories.createCoreController('api::inventory-item.inventory-ite
     strapi.log.info(`Import facture: ${results.length} items, depense: ${expense?.amount || 0}$`);
     ctx.body = { data: { items: results, expense: expenseResult } };
   },
+
+  /**
+   * Sync inventaire depuis une facture sortante (delta oldItems -> newItems).
+   * - Pour chaque item matche par sku/nameFr, calcule la difference de qty
+   *   entre l'ancienne version et la nouvelle, puis ajuste l'inventaire.
+   * - Items non matches sont ignores silencieusement (pas tous les items de
+   *   facture correspondent a de l'inventaire, ex: services web/design).
+   * - Safety: n'autorise jamais une quantite inventaire < 0.
+   *
+   * Request body:
+   *   { oldItems: Array<{ description, sku?, qty }>,
+   *     newItems: Array<{ description, sku?, qty }> }
+   *
+   * Algorithme:
+   *   1. Aggrege oldItems par cle (sku ou nameFr normalise) -> totalQty
+   *   2. Aggrege newItems pareil
+   *   3. Pour chaque cle, delta = newQty - oldQty
+   *   4. Match en inventaire, applique -delta sur quantity
+   *      (sortie = deduction = soustrait delta positif, ajoute si delta negatif)
+   */
+  async syncOutgoingInvoice(ctx) {
+    const { oldItems = [], newItems = [] } = ctx.request.body as any;
+
+    const normalize = (s: string) => (s || '').trim().toLowerCase();
+    const keyOf = (it: any) => (it.sku && it.sku.trim())
+      ? `sku:${normalize(it.sku)}`
+      : `name:${normalize(it.description || it.nameFr || '')}`;
+
+    const aggregate = (list: any[]) => {
+      const map = new Map<string, { qty: number; raw: any }>();
+      for (const it of list || []) {
+        const key = keyOf(it);
+        if (!key || key === 'name:' || key === 'sku:') continue;
+        const qty = Number(it.qty) || 0;
+        if (qty <= 0) continue;
+        const existing = map.get(key);
+        if (existing) {
+          existing.qty += qty;
+        } else {
+          map.set(key, { qty, raw: it });
+        }
+      }
+      return map;
+    };
+
+    const oldAgg = aggregate(oldItems);
+    const newAgg = aggregate(newItems);
+
+    const allKeys = new Set([...oldAgg.keys(), ...newAgg.keys()]);
+    const adjustments: any[] = [];
+
+    for (const key of allKeys) {
+      const oldQty = oldAgg.get(key)?.qty || 0;
+      const newQty = newAgg.get(key)?.qty || 0;
+      const raw = newAgg.get(key)?.raw || oldAgg.get(key)?.raw;
+      const delta = newQty - oldQty; // positif = plus vendu, negatif = moins vendu
+
+      if (delta === 0) continue;
+
+      // Match par sku exact en priorite, sinon fuzzy par nameFr
+      let existing = null;
+      if (raw?.sku) {
+        existing = await strapi.documents('api::inventory-item.inventory-item').findFirst({
+          filters: { sku: raw.sku.trim() },
+        });
+      }
+      if (!existing && raw?.description) {
+        existing = await strapi.documents('api::inventory-item.inventory-item').findFirst({
+          filters: { nameFr: { $containsi: raw.description.trim().slice(0, 60) } },
+        });
+      }
+
+      if (!existing) {
+        adjustments.push({ key, status: 'no-match', description: raw?.description, delta });
+        continue;
+      }
+
+      const currentQty = existing.quantity || 0;
+      const targetQty = Math.max(0, currentQty - delta);
+
+      await strapi.documents('api::inventory-item.inventory-item').update({
+        documentId: existing.documentId,
+        data: { quantity: targetQty },
+      });
+
+      adjustments.push({
+        key,
+        status: 'updated',
+        sku: existing.sku,
+        nameFr: existing.nameFr,
+        delta,
+        before: currentQty,
+        after: targetQty,
+      });
+    }
+
+    const matched = adjustments.filter(a => a.status === 'updated').length;
+    const skipped = adjustments.filter(a => a.status === 'no-match').length;
+    strapi.log.info(`Sync facture sortante: ${matched} items ajustes, ${skipped} sans match`);
+    ctx.body = { data: { adjustments, matched, skipped } };
+  },
 }));

@@ -53,3 +53,6 @@ export const uploadInvoicePDF = (file) => {
   formData.append('file', file);
   return api.post('/invoices/upload-pdf', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
 };
+// Sync facture sortante -> inventaire (delta entre oldItems et newItems)
+export const syncInvoiceToInventory = (oldItems, newItems) =>
+  api.post('/inventory-items/sync-outgoing-invoice', { oldItems, newItems });
