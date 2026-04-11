@@ -599,6 +599,26 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
           }
           const slugs = Object.keys(artistMap);
 
+          // Charger TOUS les user-roles artist pour avoir un fallback email par slug
+          // (le champ artist.email peut etre null dans le CMS, l'email reel est dans user-role)
+          const userRoleEmailBySlug: Record<string, string> = {};
+          try {
+            const artistRoles = await strapi.documents('api::user-role.user-role').findMany({
+              filters: { role: 'artist' },
+            });
+            for (const ur of artistRoles) {
+              const slug = (ur as any).artistSlug;
+              if (slug && (ur as any).email) {
+                // Premier email trouve pour ce slug (ou le plus recent selon ordre de findMany)
+                if (!userRoleEmailBySlug[slug]) {
+                  userRoleEmailBySlug[slug] = (ur as any).email;
+                }
+              }
+            }
+          } catch (urErr) {
+            strapi.log.warn('Could not load user-roles for artist email fallback:', urErr);
+          }
+
           // Grouper les items par artiste
           for (const item of orderItems) {
             const pid = item.productId || '';
@@ -629,42 +649,44 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
 
           for (const [slug, items] of Object.entries(artistItemsMap)) {
             const artist = artistMap[slug];
-            if (!artist?.email) {
-              strapi.log.info(`Artiste ${slug} n'a pas d'email configure, notification non envoyee`);
+            // Email prioritaire: artist.email, sinon fallback user-role.email
+            const artistEmail = artist?.email || userRoleEmailBySlug[slug] || null;
+            if (!artistEmail) {
+              strapi.log.warn(`Artiste ${slug}: aucun email trouve (ni CMS ni user-role), notification non envoyee`);
               continue;
             }
-            sendArtistSaleNotificationEmail({
-              artistName: artist.name,
-              artistEmail: artist.email,
-              items,
-              orderDate: new Date().toISOString(),
-              customerCity,
-            }).catch(err => {
-              strapi.log.warn(`Notification vente artiste ${slug} non envoyee:`, err);
-            });
+            // IMPORTANT: await pour que l'erreur soit visible dans les logs au lieu d'un .catch silencieux
+            try {
+              await sendArtistSaleNotificationEmail({
+                artistName: artist?.name || slug,
+                artistEmail,
+                items,
+                orderDate: new Date().toISOString(),
+                customerCity,
+              });
+              strapi.log.info(`Notification vente artiste ${slug} envoyee a ${artistEmail}`);
+            } catch (err) {
+              strapi.log.error(`ECHEC notification vente artiste ${slug} (${artistEmail}):`, err);
+            }
           }
         } catch (err) {
           strapi.log.warn('Could not notify artists:', err);
         }
 
-        // Marquer les pieces uniques comme vendues dans le CMS artiste
+        // Marquer les pieces uniques ET privees comme vendues dans le CMS artiste
         try {
           const orderItems: any[] = Array.isArray(order.items) ? order.items : [];
+          // Charger une fois tous les artistes
+          const allArtists = await strapi.documents('api::artist.artist').findMany({ filters: { active: true } });
+
           for (const item of orderItems) {
-            if (!item.isUnique) continue;
             const pid = item.productId || '';
             if (!pid.startsWith('artist-print-')) continue;
 
-            // Extraire le slug artiste et l'id du print
-            // Format productId: artist-print-{slug}-{printId}
-            const parts = pid.replace('artist-print-', '').split('-');
-            if (parts.length < 2) continue;
-
-            // Trouver le slug le plus long qui match un artiste
-            const artists = await strapi.documents('api::artist.artist').findMany({ filters: { active: true } });
+            // Trouver l'artiste et l'id du print
             let matchedArtist: any = null;
             let printId = '';
-            for (const a of artists) {
+            for (const a of allArtists) {
               if (pid.startsWith(`artist-print-${a.slug}-`)) {
                 if (!matchedArtist || a.slug.length > matchedArtist.slug.length) {
                   matchedArtist = a;
@@ -679,16 +701,25 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
             const idx = prints.findIndex((p: any) => p.id === printId);
             if (idx === -1) continue;
 
-            // Marquer comme vendu avec la date
-            prints[idx] = { ...prints[idx], sold: true, soldAt: new Date().toISOString() };
+            const print = prints[idx];
+            // Marquer comme vendu si: unique OU private (piece sur commande)
+            // Les prints non-uniques / non-prives (editions multiples) ne sont pas marques
+            const shouldMarkSold = print.unique === true || print.private === true || item.isUnique === true;
+            if (!shouldMarkSold) continue;
+            if (print.sold === true) {
+              strapi.log.warn(`Piece ${printId} de ${matchedArtist.slug} deja marquee vendue (race condition?)`);
+              continue;
+            }
+
+            prints[idx] = { ...print, sold: true, soldAt: new Date().toISOString() };
             await strapi.documents('api::artist.artist').update({
               documentId: matchedArtist.documentId,
               data: { prints },
             });
-            strapi.log.info(`Piece unique ${printId} de ${matchedArtist.slug} marquee comme vendue`);
+            strapi.log.info(`Piece ${print.unique ? 'unique' : 'privee'} ${printId} de ${matchedArtist.slug} marquee comme vendue`);
           }
         } catch (err) {
-          strapi.log.warn('Could not mark unique pieces as sold:', err);
+          strapi.log.error('Could not mark unique/private pieces as sold:', err);
         }
       }
     }
