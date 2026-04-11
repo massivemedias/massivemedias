@@ -76,6 +76,18 @@ function AdminDashboard() {
     visitorsToday: '-',
   });
 
+  // Notes inline — TOUS les hooks DOIVENT etre declares avant tout return conditionnel
+  // (Rules of Hooks: https://react.dev/errors/310)
+  const [notes, setNotes] = useState(() => {
+    try { return JSON.parse(localStorage.getItem(NOTES_KEY) || '[]'); } catch { return []; }
+  });
+  const [editingNote, setEditingNote] = useState(null);
+  const [noteTitle, setNoteTitle] = useState('');
+  const [noteBody, setNoteBody] = useState('');
+
+  // Revenue from stats + commissions APIs
+  const [revenue, setRevenue] = useState({ total: 0, orders: 0, commissions: 0 });
+
   useEffect(() => {
     let cancelled = false;
     async function fetchAll() {
@@ -140,38 +152,6 @@ function AdminDashboard() {
     return () => { cancelled = true; clearInterval(interval); };
   }, []);
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 size={32} className="animate-spin text-accent" />
-      </div>
-    );
-  }
-
-  // Notes inline
-  const [notes, setNotes] = useState(() => {
-    try { return JSON.parse(localStorage.getItem(NOTES_KEY) || '[]'); } catch { return []; }
-  });
-  const [editingNote, setEditingNote] = useState(null);
-  const [noteTitle, setNoteTitle] = useState('');
-  const [noteBody, setNoteBody] = useState('');
-
-  const saveNotes = (updated) => { setNotes(updated); localStorage.setItem(NOTES_KEY, JSON.stringify(updated)); };
-  const addNote = () => {
-    const n = { id: Date.now(), title: '', body: '', updatedAt: Date.now() };
-    const updated = [n, ...notes];
-    saveNotes(updated);
-    setEditingNote(n.id); setNoteTitle(''); setNoteBody('');
-  };
-  const saveEdit = () => {
-    const updated = notes.map(n => n.id === editingNote ? { ...n, title: noteTitle, body: noteBody, updatedAt: Date.now() } : n);
-    saveNotes(updated);
-    setEditingNote(null);
-  };
-  const deleteNote = (id) => { saveNotes(notes.filter(n => n.id !== id)); if (editingNote === id) setEditingNote(null); };
-
-  // Revenue from stats + commissions APIs
-  const [revenue, setRevenue] = useState({ total: 0, orders: 0, commissions: 0 });
   useEffect(() => {
     const fetchRevenue = () => {
       Promise.all([
@@ -193,6 +173,30 @@ function AdminDashboard() {
     const interval = setInterval(fetchRevenue, 60000);
     return () => clearInterval(interval);
   }, []);
+
+  // Handlers notes (pas des hooks, peuvent rester apres le return conditionnel)
+  const saveNotes = (updated) => { setNotes(updated); localStorage.setItem(NOTES_KEY, JSON.stringify(updated)); };
+  const addNote = () => {
+    const n = { id: Date.now(), title: '', body: '', updatedAt: Date.now() };
+    const updated = [n, ...notes];
+    saveNotes(updated);
+    setEditingNote(n.id); setNoteTitle(''); setNoteBody('');
+  };
+  const saveEdit = () => {
+    const updated = notes.map(n => n.id === editingNote ? { ...n, title: noteTitle, body: noteBody, updatedAt: Date.now() } : n);
+    saveNotes(updated);
+    setEditingNote(null);
+  };
+  const deleteNote = (id) => { saveNotes(notes.filter(n => n.id !== id)); if (editingNote === id) setEditingNote(null); };
+
+  // Early return AFTER all hooks are declared (Rules of Hooks compliance)
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 size={32} className="animate-spin text-accent" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-5">
