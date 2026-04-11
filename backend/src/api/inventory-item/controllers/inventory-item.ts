@@ -100,7 +100,7 @@ export default factories.createCoreController('api::inventory-item.inventory-ite
       return ctx.badRequest('nameFr and category are required');
     }
 
-    const VALID_CATEGORIES = ['textile', 'frame', 'accessory', 'sticker', 'print', 'merch', 'equipment', 'other'];
+    const VALID_CATEGORIES = ['textile', 'frame', 'accessory', 'sticker', 'print', 'merch', 'equipment', 'web', 'design', 'photo', 'video', 'consulting', 'hosting', 'other'];
     if (!VALID_CATEGORIES.includes(category)) {
       return ctx.badRequest(`Invalid category. Must be one of: ${VALID_CATEGORIES.join(', ')}`);
     }
@@ -213,7 +213,7 @@ export default factories.createCoreController('api::inventory-item.inventory-ite
       return ctx.badRequest('Au moins un item ou une depense est requis');
     }
 
-    const VALID_CATEGORIES = ['textile', 'frame', 'accessory', 'sticker', 'print', 'merch', 'equipment', 'other'];
+    const VALID_CATEGORIES = ['textile', 'frame', 'accessory', 'sticker', 'print', 'merch', 'equipment', 'web', 'design', 'photo', 'video', 'consulting', 'hosting', 'other'];
     const results: any[] = [];
 
     for (const item of items) {

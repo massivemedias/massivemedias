@@ -68,6 +68,12 @@ const CATEGORY_LABELS = {
   print: 'Print',
   merch: 'Merch',
   equipment: { fr: 'Materiel', en: 'Equipment', es: 'Equipo' },
+  web: { fr: 'Web', en: 'Web', es: 'Web' },
+  design: { fr: 'Design', en: 'Design', es: 'Diseno' },
+  photo: { fr: 'Photo', en: 'Photo', es: 'Foto' },
+  video: { fr: 'Video', en: 'Video', es: 'Video' },
+  consulting: { fr: 'Consulting', en: 'Consulting', es: 'Consultoria' },
+  hosting: { fr: 'Hebergement', en: 'Hosting', es: 'Hosting' },
   other: { fr: 'Autre', en: 'Other', es: 'Otro' },
 };
 
@@ -78,6 +84,12 @@ const CATEGORIES = [
   { value: 'print', label: 'Print' },
   { value: 'merch', label: 'Merch' },
   { value: 'equipment', label: 'Materiel' },
+  { value: 'web', label: 'Web' },
+  { value: 'design', label: 'Design' },
+  { value: 'photo', label: 'Photo' },
+  { value: 'video', label: 'Video' },
+  { value: 'consulting', label: 'Consulting' },
+  { value: 'hosting', label: 'Hebergement' },
   { value: 'other', label: 'Autre' },
 ];
 
@@ -163,8 +175,9 @@ function ItemForm({ onClose, onSaved, tx, lang, editItem }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // Pour textile, generer le nom depuis la marque si vide
-    if (form.category === 'textile' && !form.nameFr && form.brand) {
+    // Pour textile: TOUJOURS regenerer le nom depuis les champs pour eviter que
+    // la couleur/zip/taille soient oubliees si l'utilisateur les a changes apres coup
+    if (form.category === 'textile' && form.brand) {
       form.nameFr = [form.brand, form.variant, form.hasZip ? 'Zip' : '', form.color, form.detail].filter(Boolean).join(' ');
     }
     if (!form.nameFr || !form.category) return;
@@ -333,7 +346,18 @@ function ItemForm({ onClose, onSaved, tx, lang, editItem }) {
                   <button
                     key={s}
                     type="button"
-                    onClick={() => set('detail', s)}
+                    onClick={() => {
+                      // Maj detail + regenerer nameFr immediatement pour textile
+                      setForm(f => {
+                        const next = { ...f, detail: s };
+                        if (next.category === 'textile') {
+                          next.nameFr = [next.brand, next.variant, next.hasZip ? 'Zip' : '', next.color, next.detail].filter(Boolean).join(' ');
+                        } else {
+                          next.nameFr = [next.brand, next.variant, next.color, next.detail].filter(Boolean).join(' ');
+                        }
+                        return next;
+                      });
+                    }}
                     className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
                       form.detail === s ? 'bg-accent text-white' : 'bg-black/20 text-grey-muted hover:text-heading'
                     }`}
@@ -422,7 +446,18 @@ function ItemForm({ onClose, onSaved, tx, lang, editItem }) {
                     <button
                       key={c.id}
                       type="button"
-                      onClick={() => { set('color', c.name); set('_colorOpen', false); }}
+                      onClick={() => {
+                        // Maj couleur + regenerer nameFr immediatement pour textile
+                        setForm(f => {
+                          const next = { ...f, color: c.name, _colorOpen: false };
+                          if (next.category === 'textile') {
+                            next.nameFr = [next.brand, next.variant, next.hasZip ? 'Zip' : '', next.color, next.detail].filter(Boolean).join(' ');
+                          } else {
+                            next.nameFr = [next.brand, next.variant, next.color, next.detail].filter(Boolean).join(' ');
+                          }
+                          return next;
+                        });
+                      }}
                       className={`w-full flex items-center gap-2.5 px-3 py-2 text-sm text-left transition-colors ${
                         form.color === c.name ? 'bg-accent/20 text-accent' : 'text-heading hover:bg-white/5'
                       }`}
@@ -441,8 +476,16 @@ function ItemForm({ onClose, onSaved, tx, lang, editItem }) {
             <input
               type="checkbox"
               checked={form.hasZip}
-              onChange={(e) => { set('hasZip', e.target.checked); }}
-              onBlur={autoName}
+              onChange={(e) => {
+                // Maj hasZip + regenerer nameFr immediatement pour textile
+                setForm(f => {
+                  const next = { ...f, hasZip: e.target.checked };
+                  if (next.category === 'textile') {
+                    next.nameFr = [next.brand, next.variant, next.hasZip ? 'Zip' : '', next.color, next.detail].filter(Boolean).join(' ');
+                  }
+                  return next;
+                });
+              }}
               className="sr-only"
             />
             <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${form.hasZip ? 'bg-accent border-accent' : 'border-grey-muted/50'}`}>
