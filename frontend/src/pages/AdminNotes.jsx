@@ -82,8 +82,12 @@ function AdminNotes({ embedded = false }) {
       }));
       setNotes(cmsNotes);
 
-      // Migration: si le CMS est vide mais localStorage a des notes, les migrer
-      if (cmsNotes.length === 0) {
+      // Migration: si le CMS n'a PAS de notes avec du contenu reel,
+      // mais localStorage en a, les migrer automatiquement.
+      // (Fix: avant on checkait juste length === 0, mais une note vide bloquait la migration)
+      const hasRealCmsContent = cmsNotes.some(n => (n.title || '').trim() || (n.body || '').trim());
+      const alreadyMigrated = localStorage.getItem(STORAGE_KEY + '-migrated') === 'true';
+      if (!hasRealCmsContent && !alreadyMigrated) {
         const localNotes = loadLocalNotes();
         if (localNotes.length > 0) {
           console.log('[AdminNotes] Migration de', localNotes.length, 'notes localStorage vers CMS...');
