@@ -518,11 +518,22 @@ export default {
     // Only inject meta on HTML pages
     if (isHtmlRequest(request, url)) {
       const meta = getMetaForPath(url.pathname);
+      // IMPORTANT: ne JAMAIS cacher le HTML (sinon l'ancien index.html est servi
+      // par Cloudflare edge et les nouveaux onglets/features n'apparaissent pas)
+      const noCacheHeaders = {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+      };
       if (meta) {
-        // Clone response so we can modify it
         const response = new Response(originResponse.body, originResponse);
+        Object.entries(noCacheHeaders).forEach(([k, v]) => response.headers.set(k, v));
         return injectMeta(response, meta);
       }
+      // HTML sans meta SEO specifique: retourner avec no-cache aussi
+      const response = new Response(originResponse.body, originResponse);
+      Object.entries(noCacheHeaders).forEach(([k, v]) => response.headers.set(k, v));
+      return response;
     }
 
     return originResponse;

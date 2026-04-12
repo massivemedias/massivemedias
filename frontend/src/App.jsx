@@ -51,7 +51,9 @@ const TatoueurDashboard = lazyWithRetry(() => import('./pages/TatoueurDashboard'
 const Temoignage = lazyWithRetry(() => import('./pages/Temoignage'));
 const NotFound = lazyWithRetry(() => import('./pages/NotFound'));
 const MmAdmin = lazyWithRetry(() => import('./pages/MmAdmin'));
-const AdminLayout = lazyWithRetry(() => import('./layouts/AdminLayout'));
+// AdminLayout est importe STATIQUEMENT (pas lazy) pour eviter les problemes
+// de cache Cloudflare ou le sidebar n'affiche pas les nouveaux onglets au premier chargement.
+import AdminLayout from './layouts/AdminLayout';
 const AdminOrders = lazyWithRetry(() => import('./pages/AdminOrders'));
 const AdminInventaire = lazyWithRetry(() => import('./pages/AdminInventaire'));
 const AdminMessages = lazyWithRetry(() => import('./pages/AdminMessages'));
