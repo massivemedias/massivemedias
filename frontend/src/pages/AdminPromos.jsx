@@ -146,6 +146,47 @@ function AdminPromos() {
         </button>
       </div>
 
+      {/* Mini tuto */}
+      <div className="rounded-xl p-4 card-bg border border-white/5 text-sm text-grey-muted space-y-2">
+        <p className="text-heading font-semibold text-base">
+          {tx({ fr: 'Comment ca marche', en: 'How it works', es: 'Como funciona' })}
+        </p>
+        <ol className="list-decimal list-inside space-y-1.5 text-[13px] leading-relaxed">
+          <li>{tx({
+            fr: 'Clique "Nouveau code" pour creer un code promo (ex: NOEL25 pour 25% de rabais)',
+            en: 'Click "New code" to create a promo code (e.g. XMAS25 for 25% off)',
+            es: 'Clic "Nuevo codigo" para crear un codigo promo (ej: NAVIDAD25 para 25% de descuento)',
+          })}</li>
+          <li>{tx({
+            fr: 'Le code est automatiquement en MAJUSCULES. Tu peux ajouter une date d\'expiration et une limite d\'utilisations.',
+            en: 'The code is automatically UPPERCASE. You can add an expiry date and a usage limit.',
+            es: 'El codigo se convierte automaticamente a MAYUSCULAS. Puedes agregar fecha de expiracion y limite de usos.',
+          })}</li>
+          <li>{tx({
+            fr: 'Le client entre le code dans son panier avant de payer. Le rabais est applique automatiquement sur le total.',
+            en: 'The customer enters the code in their cart before paying. The discount is applied automatically to the total.',
+            es: 'El cliente ingresa el codigo en su carrito antes de pagar. El descuento se aplica automaticamente.',
+          })}</li>
+          <li>{tx({
+            fr: 'Le compteur d\'utilisations se met a jour a chaque fois qu\'un client utilise le code.',
+            en: 'The usage counter updates each time a customer uses the code.',
+            es: 'El contador de usos se actualiza cada vez que un cliente usa el codigo.',
+          })}</li>
+          <li>{tx({
+            fr: 'Tu peux desactiver un code a tout moment avec le bouton vert (il devient gris). Le code reste dans la liste mais ne fonctionne plus au panier.',
+            en: 'You can disable a code anytime with the green button (turns grey). The code stays in the list but no longer works in the cart.',
+            es: 'Puedes desactivar un codigo con el boton verde (se vuelve gris). El codigo queda en la lista pero ya no funciona.',
+          })}</li>
+        </ol>
+        <p className="text-[11px] text-grey-muted/60 pt-1">
+          {tx({
+            fr: 'Astuce: donne le code a un client ou partage-le sur tes reseaux. Il fonctionne sur tout le site (prints, stickers, merch).',
+            en: 'Tip: give the code to a customer or share it on social media. It works on the entire site (prints, stickers, merch).',
+            es: 'Consejo: dale el codigo a un cliente o compartelo en redes. Funciona en todo el sitio.',
+          })}
+        </p>
+      </div>
+
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
         <div className="rounded-xl p-4 card-bg text-center">
