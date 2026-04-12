@@ -148,7 +148,7 @@ function AdminLayout() {
       <div className="flex gap-6 max-w-7xl mx-auto">
         {/* Sidebar desktop */}
         <aside className="hidden lg:block w-48 flex-shrink-0">
-          <div className="sticky top-24 max-h-[calc(100vh-6rem)] overflow-y-auto rounded-xl bg-glass p-2 space-y-0.5 scrollbar-thin">
+          <div className="sticky top-20 rounded-xl bg-glass p-2 space-y-0.5">
             <h2 className="text-[10px] font-semibold text-grey-muted uppercase tracking-wider px-2.5 py-1">
               {tx({ fr: 'Mon compte', en: 'My account', es: 'Mi cuenta' })}
             </h2>
