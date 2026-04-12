@@ -158,9 +158,9 @@ function AdminLayout() {
                 <NavLink
                   key={item.to}
                   to={item.to}
-                  className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 text-grey-muted hover:text-heading hover:bg-glass"
+                  className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[13px] font-medium transition-all duration-200 text-grey-muted hover:text-heading hover:bg-glass"
                 >
-                  <Icon size={16} />
+                  <Icon size={15} />
                   {tx({ fr: item.fr, en: item.en, es: item.es })}
                 </NavLink>
               );
@@ -178,13 +178,13 @@ function AdminLayout() {
                 <NavLink
                   key={item.to}
                   to={item.to}
-                  className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                  className={`flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[13px] font-medium transition-all duration-200 ${
                     isActive
                       ? 'bg-[var(--active-tab-bg)] text-white'
                       : 'text-grey-muted hover:text-heading hover:bg-glass'
                   }`}
                 >
-                  <Icon size={16} />
+                  <Icon size={15} />
                   {tx({ fr: item.fr, en: item.en, es: item.es })}
                 </NavLink>
               );
