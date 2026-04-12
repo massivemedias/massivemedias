@@ -80,8 +80,12 @@ function BrightnessFader() {
                   }}
                 >
                   <span
-                    className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                    style={{ background: THEME_ACCENTS[i] }}
+                    className="w-3 h-3 rounded-full flex-shrink-0"
+                    style={{
+                      background: THEME_COLORS[i],
+                      border: i >= 9 ? '1.5px solid rgba(0,0,0,0.15)' : `1.5px solid ${THEME_ACCENTS[i]}40`,
+                      boxShadow: `inset 0 0 0 1px ${THEME_ACCENTS[i]}30`,
+                    }}
                   />
                   <span className={isSelected ? '' : 'text-grey-light'}>{name}</span>
                 </button>
