@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   ShoppingBag, Package, MessageSquare, Banknote,
   Users, Receipt, FileText, BarChart3, X, DollarSign,
-  Pencil, Star, LayoutDashboard, StickyNote, Bot, ChevronRight,
+  Pencil, Star, LayoutDashboard, StickyNote, Bot, ChevronRight, Tag,
 } from 'lucide-react';
 import { useState } from 'react';
 import { useLang } from '../i18n/LanguageContext';
@@ -26,6 +26,7 @@ const NAV_ITEMS = [
   { to: '/admin/temoignages', icon: Star, fr: 'Témoignages', en: 'Testimonials', es: 'Testimonios', tooltip: { fr: 'Temoignages clients affiches sur le site', en: 'Client testimonials shown on website', es: 'Testimonios de clientes' } },
   { to: '/admin/stats', icon: BarChart3, fr: 'Stats', en: 'Stats', es: 'Stats', tooltip: { fr: 'Statistiques de ventes et revenus', en: 'Sales and revenue statistics', es: 'Estadisticas de ventas' } },
   { to: '/admin/tarifs', icon: DollarSign, fr: 'Tarifs', en: 'Pricing', es: 'Precios', tooltip: { fr: 'Gestion des prix (CMS)', en: 'Price management (CMS)', es: 'Gestion de precios' } },
+  { to: '/admin/promos', icon: Tag, fr: 'Codes Promo', en: 'Promo Codes', es: 'Codigos Promo', tooltip: { fr: 'Gestion des codes promotionnels', en: 'Promo code management', es: 'Gestion de codigos promocionales' } },
 ];
 
 function AdminLayout() {
