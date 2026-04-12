@@ -14,7 +14,11 @@ export function getArtistPrintPrice(pricing, tier, format, withFrame) {
   const prices = tier === 'museum' ? pricing.museum : pricing.studio;
   const base = prices[format];
   if (base == null) return null;
-  const framePrice = withFrame ? (framePriceByFormat[format] || 30) : 0;
+  // Prix du cadre: priorite au CMS per-artiste, fallback sur le hardcode global
+  const artistFramePrices = pricing?.framePriceByFormat || {};
+  const framePrice = withFrame
+    ? (artistFramePrices[format] ?? framePriceByFormat[format] ?? 30)
+    : 0;
   return { price: base + framePrice, basePrice: base, framePrice };
 }
 

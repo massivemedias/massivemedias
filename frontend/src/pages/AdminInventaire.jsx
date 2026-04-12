@@ -136,14 +136,17 @@ function ItemForm({ onClose, onSaved, tx, lang, editItem }) {
     return { brand, color, detail, hasZip };
   };
 
+  // Priorite aux champs dedies du DB, fallback sur parsing du nom (compat legacy)
   const parsed = isEdit ? parseFromName(editItem.nameFr, editItem.variant) : { brand: '', color: '', detail: '', hasZip: false };
 
   const [form, setForm] = useState({
     nameFr: editItem?.nameFr || '', nameEn: editItem?.nameEn || '',
     category: editItem?.category || 'textile',
     variant: editItem?.variant || '',
-    detail: parsed.detail,
-    color: parsed.color, brand: parsed.brand, hasZip: parsed.hasZip,
+    detail: editItem?.detail ?? parsed.detail,
+    color: editItem?.color ?? parsed.color,
+    brand: editItem?.brand ?? parsed.brand,
+    hasZip: editItem?.hasZip ?? parsed.hasZip,
     quantity: editItem?.quantity || 0,
     costPrice: editItem?.costPrice || '',
     location: editItem?.location || '',
@@ -185,12 +188,16 @@ function ItemForm({ onClose, onSaved, tx, lang, editItem }) {
     setError('');
     try {
       if (isEdit) {
-        // Mode edition: mettre a jour tous les champs
+        // Mode edition: mettre a jour tous les champs (incluant brand/color/detail/hasZip)
         await api.put(`/inventory-items/${editItem.documentId}/adjust`, {
           nameFr: form.nameFr,
           nameEn: form.nameEn || form.nameFr,
           category: form.category,
           variant: form.variant,
+          brand: form.brand,
+          color: form.color,
+          detail: form.detail,
+          hasZip: !!form.hasZip,
           quantity: Number(form.quantity) || 0,
           costPrice: form.costPrice ? Number(form.costPrice) : 0,
           location: form.location,
@@ -206,7 +213,10 @@ function ItemForm({ onClose, onSaved, tx, lang, editItem }) {
           nameEn: form.nameEn || form.nameFr,
           category: form.category,
           variant: form.variant,
+          brand: form.brand,
+          color: form.color,
           detail: form.detail,
+          hasZip: !!form.hasZip,
           quantity: Number(form.quantity) || 0,
           costPrice: form.costPrice ? Number(form.costPrice) : 0,
           location: form.location,

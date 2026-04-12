@@ -67,6 +67,19 @@
     "active": {
       "type": "boolean",
       "default": true
+    },
+    "brand": {
+      "type": "string"
+    },
+    "color": {
+      "type": "string"
+    },
+    "detail": {
+      "type": "string"
+    },
+    "hasZip": {
+      "type": "boolean",
+      "default": false
     }
   }
 }

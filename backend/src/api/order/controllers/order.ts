@@ -225,14 +225,99 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
     }
 
     // Recalculate server-side with sticker tier validation
+    // ET validation des prix des artist-prints (anti-manipulation) + check sold/private token
+    const FRAME_PRICES_FALLBACK: Record<string, number> = { postcard: 20, a4: 20, a3: 30, a3plus: 35, a2: 40 };
     let subtotal = 0;
+
+    // Charger une seule fois les artistes actifs pour valider les prints
+    let cachedArtists: any[] | null = null;
+    const getArtists = async () => {
+      if (cachedArtists === null) {
+        cachedArtists = await strapi.documents('api::artist.artist').findMany({ filters: { active: true } });
+      }
+      return cachedArtists;
+    };
+
     for (const item of items) {
       let validPrice = item.totalPrice || 0;
+
+      // --- Stickers: validation par tier (existant) ---
       if (item.productId === 'sticker-custom' || item.productId === 'sticker-artist') {
         const tiers = FX_FINISHES.includes(item.finish) ? STICKER_FX_TIERS : STICKER_STANDARD_TIERS;
         const tierPrice = tiers[item.quantity];
         if (tierPrice) validPrice = tierPrice;
       }
+
+      // --- Artist prints: validation serveur contre le CMS ---
+      if (typeof item.productId === 'string' && item.productId.startsWith('artist-print-')) {
+        try {
+          const pid = item.productId as string;
+          const artists = await getArtists();
+          // Trouver artiste + printId (slug le plus long gagne)
+          let matchedArtist: any = null;
+          let printId = '';
+          for (const a of artists) {
+            if (pid.startsWith(`artist-print-${a.slug}-`)) {
+              if (!matchedArtist || a.slug.length > matchedArtist.slug.length) {
+                matchedArtist = a;
+                printId = pid.replace(`artist-print-${a.slug}-`, '');
+              }
+            }
+          }
+          if (!matchedArtist || !printId) {
+            return ctx.badRequest(`Print introuvable: ${pid}`);
+          }
+          const prints = Array.isArray(matchedArtist.prints) ? matchedArtist.prints : [];
+          const print = prints.find((p: any) => p.id === printId);
+          if (!print) {
+            return ctx.badRequest(`Print ${printId} introuvable chez ${matchedArtist.slug}`);
+          }
+
+          // Refuser si deja vendu (unique ou private)
+          if (print.sold === true) {
+            return ctx.badRequest(`Cette oeuvre a deja ete vendue et n'est plus disponible.`);
+          }
+
+          // Recalculer le prix attendu a partir du CMS
+          const pricing = matchedArtist.pricing || {};
+          // Prix de base selon tier/format (fige pour les pieces privees)
+          const tier = print.fixedTier || 'studio';
+          const format = print.fixedFormat || 'a4';
+          const tierPrices = tier === 'museum' ? (pricing.museum || {}) : (pricing.studio || {});
+          const basePrice = tierPrices[format] || 0;
+          // Cadre: lire depuis pricing.framePriceByFormat sinon fallback
+          const frameMap = pricing.framePriceByFormat || {};
+          const expectedFramePrice = (print.withFrame || item.shape)
+            ? (frameMap[format] ?? FRAME_PRICES_FALLBACK[format] ?? 30)
+            : 0;
+          // Prix unique: customPrice si defini (pour unique: true)
+          let expectedUnitPrice;
+          if (print.unique === true && typeof print.customPrice === 'number') {
+            expectedUnitPrice = print.customPrice;
+          } else {
+            expectedUnitPrice = basePrice + expectedFramePrice;
+          }
+          // Solde (onSale): appliquer le discount
+          if (print.onSale && typeof print.salePercent === 'number') {
+            expectedUnitPrice = Math.round(expectedUnitPrice * (1 - print.salePercent / 100) * 100) / 100;
+          }
+
+          const qty = (print.unique === true || print.private === true) ? 1 : (item.quantity || 1);
+          const expectedTotal = Math.round(expectedUnitPrice * qty * 100) / 100;
+
+          // Tolerance 1 cent pour les arrondis
+          if (Math.abs((item.totalPrice || 0) - expectedTotal) > 0.01) {
+            strapi.log.warn(`Prix manipule detecte: ${pid} client=${item.totalPrice} expected=${expectedTotal}`);
+            validPrice = expectedTotal;
+          } else {
+            validPrice = item.totalPrice;
+          }
+        } catch (validationErr) {
+          strapi.log.error(`Erreur validation artist-print ${item.productId}:`, validationErr);
+          return ctx.badRequest('Validation du prix impossible, reessayez plus tard');
+        }
+      }
+
       subtotal += validPrice;
     }
 

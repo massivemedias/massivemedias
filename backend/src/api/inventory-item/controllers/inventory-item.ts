@@ -58,7 +58,7 @@ export default factories.createCoreController('api::inventory-item.inventory-ite
 
   async adjustStock(ctx) {
     const { documentId } = ctx.params;
-    const { quantity, reserved, notes, nameFr, nameEn, costPrice, location, category, variant } = ctx.request.body as any;
+    const { quantity, reserved, notes, nameFr, nameEn, costPrice, location, category, variant, brand, color, detail, hasZip } = ctx.request.body as any;
 
     const item = await strapi.documents('api::inventory-item.inventory-item').findFirst({
       filters: { documentId },
@@ -78,6 +78,10 @@ export default factories.createCoreController('api::inventory-item.inventory-ite
     if (location !== undefined) updateData.location = location;
     if (category) updateData.category = category;
     if (variant !== undefined) updateData.variant = variant;
+    if (brand !== undefined) updateData.brand = brand;
+    if (color !== undefined) updateData.color = color;
+    if (detail !== undefined) updateData.detail = detail;
+    if (hasZip !== undefined) updateData.hasZip = !!hasZip;
 
     const updated = await strapi.documents('api::inventory-item.inventory-item').update({
       documentId: item.documentId,
@@ -94,7 +98,7 @@ export default factories.createCoreController('api::inventory-item.inventory-ite
    * Ex: TXT-HOODIE-L-001, FRM-BLACK-A4-001, STK-HOLO-3IN-001
    */
   async createItem(ctx) {
-    const { nameFr, nameEn, category, variant, detail, quantity, costPrice, location, notes, lowStockThreshold } = ctx.request.body as any;
+    const { nameFr, nameEn, category, variant, detail, brand, color, hasZip, quantity, costPrice, location, notes, lowStockThreshold } = ctx.request.body as any;
 
     if (!nameFr || !category) {
       return ctx.badRequest('nameFr and category are required');
@@ -170,6 +174,10 @@ export default factories.createCoreController('api::inventory-item.inventory-ite
         sku,
         category,
         variant: variant || '',
+        brand: brand || '',
+        color: color || '',
+        detail: detail || '',
+        hasZip: !!hasZip,
         quantity: quantity || 0,
         reserved: 0,
         lowStockThreshold: lowStockThreshold || 5,

@@ -287,7 +287,7 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {}, onF
                 {tx({ fr: 'Ajouter un cadre', en: 'Add a frame', es: 'Agregar un marco' })}
               </span>
             </div>
-            <span className="text-accent font-semibold text-sm">+{framePriceByFormat[format] || 30}$</span>
+            <span className="text-accent font-semibold text-sm">+{(artist.pricing?.framePriceByFormat?.[format] ?? framePriceByFormat[format] ?? 30)}$</span>
           </label>
 
           {withFrame && (
