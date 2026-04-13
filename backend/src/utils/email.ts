@@ -129,7 +129,7 @@ function buildOrderConfirmationHtml(data: OrderEmailData): string {
     <!-- Titre document -->
     <h1 style="color:#FF52A0;margin:0 0 4px;font-size:13px;text-transform:uppercase;letter-spacing:2px;font-weight:700;">Confirmation de commande</h1>
 
-    <h2 style="color:#222;margin:0 0 8px;font-size:22px;">Merci ${data.customerName} !</h2>
+    <h2 style="color:#222;margin:0 0 8px;font-size:16px;">Merci ${data.customerName} !</h2>
     <p style="color:#666;margin:0 0 4px;font-size:15px;line-height:1.5;">
       Votre commande a \u00e9t\u00e9 accept\u00e9e et est en cours de traitement.
     </p>
@@ -187,7 +187,7 @@ function buildOrderConfirmationHtml(data: OrderEmailData): string {
       </tr>
       <tr>
         <td style="padding:12px 12px 4px;color:#222;font-size:16px;font-weight:700;">Total</td>
-        <td style="padding:12px 12px 4px;text-align:right;color:#FF52A0;font-size:20px;font-weight:700;">${formatPrice(data.total)}$</td>
+        <td style="padding:12px 12px 4px;text-align:right;color:#FF52A0;font-size:16px;font-weight:700;">${formatPrice(data.total)}$</td>
       </tr>
       <tr>
         <td style="padding:4px 12px;color:#666;font-size:12px;">Paiement par carte de cr\u00e9dit</td>
@@ -240,7 +240,7 @@ interface ContactReplyData {
 
 function buildContactReplyHtml(data: ContactReplyData): string {
   const content = `
-    <h2 style="color:#222;margin:0 0 8px;font-size:20px;font-weight:600;">Bonjour ${data.customerName},</h2>
+    <h2 style="color:#222;margin:0 0 8px;font-size:16px;font-weight:600;">Bonjour ${data.customerName},</h2>
 
     <div style="color:#333;font-size:15px;line-height:1.7;margin:16px 0 24px;white-space:pre-wrap;">${data.replyMessage}</div>
 
@@ -292,7 +292,7 @@ interface TestimonialRequestData {
 
 function buildTestimonialRequestHtml(data: TestimonialRequestData): string {
   const content = `
-    <h2 style="color:#222;margin:0 0 8px;font-size:22px;">Bonjour ${data.customerName},</h2>
+    <h2 style="color:#222;margin:0 0 8px;font-size:16px;">Bonjour ${data.customerName},</h2>
 
     <p style="color:#666;margin:16px 0;font-size:15px;line-height:1.7;">
       Merci d'avoir fait confiance \u00e0 Massive Medias${data.orderRef ? ` pour votre commande <strong style="color:#222;font-family:monospace;background:#f0f0f0;padding:2px 8px;border-radius:4px;">${data.orderRef}</strong>` : ''} !
@@ -389,7 +389,7 @@ function buildContractSignedHtml(data: ContractEmailData, isForArtist: boolean):
   const title = isForArtist ? 'Copie de ton contrat signe' : `Nouveau contrat signe - ${data.artistName}`;
 
   const content = `
-    <h2 style="color:#222;margin:0 0 16px;font-size:22px;">${title}</h2>
+    <h2 style="color:#222;margin:0 0 16px;font-size:16px;">${title}</h2>
 
     ${isForArtist ? `<p style="color:#666;margin:0 0 20px;font-size:15px;line-height:1.6;">
       F\u00e9licitations ! Ton contrat de partenariat artiste avec Massive Medias a \u00e9t\u00e9 sign\u00e9 avec succ\u00e8s. Voici un r\u00e9sum\u00e9 des informations enregistr\u00e9es.
@@ -432,12 +432,12 @@ function buildContractSignedHtml(data: ContractEmailData, isForArtist: boolean):
       <tr>
         <td style="width:50%;padding:16px;background:#f7f7f7;border-radius:10px 0 0 10px;border:1px solid #eee;border-right:none;vertical-align:top;">
           <p style="margin:0 0 8px;color:#666;font-size:11px;text-transform:uppercase;letter-spacing:1px;font-weight:600;">Massive Medias</p>
-          <p style="font-family:'Segoe Script','Comic Sans MS',cursive;color:#FF52A0;font-size:22px;margin:0;">Yan Morin</p>
+          <p style="font-family:'Segoe Script','Comic Sans MS',cursive;color:#FF52A0;font-size:16px;margin:0;">Yan Morin</p>
           <p style="color:#666;font-size:11px;margin:6px 0 0;">Proprietaire - NEQ: 2269057891</p>
         </td>
         <td style="width:50%;padding:16px;background:#f7f7f7;border-radius:0 10px 10px 0;border:1px solid #eee;border-left:none;vertical-align:top;">
           <p style="margin:0 0 8px;color:#666;font-size:11px;text-transform:uppercase;letter-spacing:1px;font-weight:600;">L'Artiste</p>
-          <p style="font-family:'Segoe Script','Comic Sans MS',cursive;color:#4ade80;font-size:22px;margin:0;">${data.artistName}</p>
+          <p style="font-family:'Segoe Script','Comic Sans MS',cursive;color:#4ade80;font-size:16px;margin:0;">${data.artistName}</p>
           <p style="color:#666;font-size:11px;margin:6px 0 0;">${date}</p>
         </td>
       </tr>
@@ -528,7 +528,7 @@ function buildArtistSaleNotificationHtml(data: ArtistSaleNotificationData): stri
   `).join('');
 
   const content = `
-    <h2 style="color:#222;margin:0 0 8px;font-size:22px;">&#127881; Nouvelle vente !</h2>
+    <h2 style="color:#222;margin:0 0 8px;font-size:16px;">Nouvelle vente</h2>
     <p style="color:#666;margin:0 0 24px;font-size:15px;line-height:1.5;">
       Salut ${data.artistName}, quelqu'un vient d'acheter ${totalQty > 1 ? totalQty + ' de tes oeuvres' : 'une de tes oeuvres'} !
       ${data.customerCity ? `<br>Destination : <strong style="color:#222;">${data.customerCity}</strong>` : ''}
@@ -632,7 +632,7 @@ function buildNewOrderNotificationHtml(data: NewOrderNotificationData): string {
   const addressBlock = addr ? `${addr.city}, ${addr.province} ${addr.postalCode}` : 'N/A';
 
   const content = `
-    <h2 style="color:#222;margin:0 0 8px;font-size:22px;">&#128176; Nouvelle vente !</h2>
+    <h2 style="color:#222;margin:0 0 8px;font-size:16px;">Nouvelle vente</h2>
     <p style="color:#666;margin:0 0 20px;font-size:15px;line-height:1.5;">
       ${itemCount} article${itemCount > 1 ? 's' : ''} commande${itemCount > 1 ? 's' : ''} par <strong style="color:#222;">${data.customerName}</strong>
     </p>
@@ -699,15 +699,15 @@ function buildNewOrderNotificationHtml(data: NewOrderNotificationData): string {
       </tr>
       <tr>
         <td style="padding:10px 12px 4px;color:#222;font-size:16px;font-weight:700;">Total</td>
-        <td style="padding:10px 12px 4px;text-align:right;color:#4ade80;font-size:22px;font-weight:900;">${formatPrice(data.total)}$</td>
+        <td style="padding:10px 12px 4px;text-align:right;color:#4ade80;font-size:16px;font-weight:900;">${formatPrice(data.total)}$</td>
       </tr>
     </table>
 
     <!-- CTA -->
     <table width="100%" cellpadding="0" cellspacing="0" style="margin:24px 0 0;">
       <tr><td align="center">
-        <a href="https://massivemedias.com/account?tab=commandes" style="display:inline-block;background:linear-gradient(135deg,#FF52A0,#6B21A8);color:#ffffff;text-decoration:none;padding:12px 28px;border-radius:10px;font-size:14px;font-weight:700;box-shadow:0 4px 16px rgba(255,82,160,0.3);">
-          Voir dans le panneau admin
+        <a href="https://massivemedias.com/account?tab=commandes" style="display:inline-block;color:#FF52A0;text-decoration:none;font-size:13px;font-weight:600;">
+          Voir ma commande &rarr;
         </a>
       </td></tr>
     </table>
@@ -769,7 +769,7 @@ function buildTrackingEmailHtml(data: TrackingEmailData): string {
     : '5-10 jours ouvrables';
 
   const content = `
-    <h2 style="color:#222;margin:0 0 8px;font-size:22px;">&#128230; Votre colis est en route !</h2>
+    <h2 style="color:#222;margin:0 0 8px;font-size:16px;">Votre colis est en route</h2>
     <p style="color:#666;margin:0 0 24px;font-size:15px;line-height:1.5;">
       Bonjour ${data.customerName}, votre commande <strong style="color:#222;font-family:monospace;background:#f0f0f0;padding:2px 8px;border-radius:4px;">${data.orderRef}</strong> a \u00e9t\u00e9 exp\u00e9di\u00e9e.
     </p>
@@ -872,7 +872,7 @@ function buildNewContactNotificationHtml(data: NewContactData): string {
   `).join('');
 
   const content = `
-    <h2 style="color:#222;margin:0 0 16px;font-size:22px;">&#128172; Nouveau message de contact</h2>
+    <h2 style="color:#222;margin:0 0 16px;font-size:16px;">Nouveau message de contact</h2>
 
     <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px;">
       ${rows}
@@ -889,7 +889,7 @@ function buildNewContactNotificationHtml(data: NewContactData): string {
     <!-- CTA -->
     <table width="100%" cellpadding="0" cellspacing="0" style="margin:24px 0 0;">
       <tr><td align="center">
-        <a href="https://massivemedias.com/account" style="display:inline-block;background:linear-gradient(135deg,#FF52A0,#6B21A8);color:#ffffff;text-decoration:none;padding:12px 28px;border-radius:10px;font-size:14px;font-weight:700;box-shadow:0 4px 16px rgba(255,82,160,0.3);">
+        <a href="https://massivemedias.com/account" style="display:inline-block;color:#FF52A0;text-decoration:none;font-size:13px;font-weight:600;">
           Repondre dans le panneau admin
         </a>
       </td></tr>
@@ -933,7 +933,7 @@ export async function sendNewUserNotificationEmail(userName: string, userEmail: 
   const date = new Date().toLocaleDateString('fr-CA', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 
   const content = `
-    <h2 style="color:#222;margin:0 0 16px;font-size:22px;">&#128100; Nouvelle inscription</h2>
+    <h2 style="color:#222;margin:0 0 16px;font-size:16px;">Nouvelle inscription</h2>
 
     <table width="100%" cellpadding="0" cellspacing="0">
       <tr>
@@ -957,7 +957,7 @@ export async function sendNewUserNotificationEmail(userName: string, userEmail: 
     <!-- CTA -->
     <table width="100%" cellpadding="0" cellspacing="0" style="margin:24px 0 0;">
       <tr><td align="center">
-        <a href="https://massivemedias.com/mm-admin" style="display:inline-block;background:linear-gradient(135deg,#FF52A0,#6B21A8);color:#ffffff;text-decoration:none;padding:12px 28px;border-radius:10px;font-size:14px;font-weight:700;box-shadow:0 4px 16px rgba(255,82,160,0.3);">
+        <a href="https://massivemedias.com/mm-admin" style="display:inline-block;color:#FF52A0;text-decoration:none;font-size:13px;font-weight:600;">
           Voir dans le panneau admin
         </a>
       </td></tr>
@@ -1014,7 +1014,7 @@ function buildReservationNotificationHtml(data: ReservationNotificationData): st
   `).join('');
 
   const content = `
-    <h2 style="color:#222;margin:0 0 16px;font-size:22px;">&#128205; Nouvelle reservation !</h2>
+    <h2 style="color:#222;margin:0 0 16px;font-size:16px;">Nouvelle reservation</h2>
     <p style="color:#666;margin:0 0 20px;font-size:15px;line-height:1.5;">
       Salut ${data.tatoueurName}, <strong style="color:#222;">${data.clientName}</strong> veut reserver ton flash <strong style="color:#FF52A0;">${data.flashTitle}</strong>.
     </p>
@@ -1086,7 +1086,7 @@ interface TattooMessageEmailData {
 
 function buildTattooMessageHtml(data: TattooMessageEmailData): string {
   const content = `
-    <h2 style="color:#222;margin:0 0 16px;font-size:22px;">&#128172; Nouveau message</h2>
+    <h2 style="color:#222;margin:0 0 16px;font-size:16px;">Nouveau message</h2>
     <p style="color:#666;margin:0 0 20px;font-size:15px;line-height:1.5;">
       <strong style="color:#222;">${data.senderName}</strong> t'a envoye un message${data.flashTitle ? ` concernant le flash <strong style="color:#FF52A0;">${data.flashTitle}</strong>` : ''}.
     </p>
@@ -1155,9 +1155,9 @@ function buildPrivatePrintHtml(data: PrivatePrintData): string {
     <p style="color:#ccc;font-size:15px;line-height:1.6">
       <strong>${data.artistName}</strong> a prepare une oeuvre exclusive pour vous:
     </p>
-    <h2 style="color:#fff;font-size:20px;margin:16px 0 8px">${data.printTitle}</h2>
+    <h2 style="color:#fff;font-size:16px;margin:16px 0 8px">${data.printTitle}</h2>
     ${data.printImage ? `<img src="${data.printImage}" alt="${data.printTitle}" style="max-width:100%;border-radius:8px;margin:16px 0" />` : ''}
-    ${priceText ? `<p style="color:#F00098;font-size:22px;font-weight:bold;margin:8px 0">${priceText}</p>` : ''}
+    ${priceText ? `<p style="color:#F00098;font-size:16px;font-weight:bold;margin:8px 0">${priceText}</p>` : ''}
     <p style="color:#999;font-size:13px;margin:16px 0">
       Cette oeuvre est reservee exclusivement pour vous. Cliquez sur le bouton ci-dessous pour la voir et l'acheter.
     </p>
