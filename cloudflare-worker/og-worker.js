@@ -61,24 +61,24 @@ const ROUTE_META = {
     description: 'Achetez des prints fine art, stickers die-cut, t-shirts et hoodies. Impression professionnelle, materiaux premium. Livraison rapide.',
   },
   '/services/prints': {
-    title: 'Impression Fine Art | Massive Medias - Tirages Premium Montreal',
-    description: "Service d'impression fine art professionnel. Papier Hahnemuhle, encres pigmentees 12 couleurs. Formats A6 a A2. Livraison 24-48h.",
+    title: 'Impression Fine Art Montreal | Massive Medias - Imprimeur Tirages Premium',
+    description: "Imprimeur fine art a Montreal. Papier Hahnemuhle, encres pigmentaires 12 couleurs, formats A6 a A2. Tirages photo, affiches, posters. Livraison locale 24-48h. Meilleur imprimeur Montreal.",
   },
   '/services/stickers': {
-    title: 'Stickers Die-Cut | Massive Medias - Autocollants Premium',
-    description: 'Stickers die-cut impermeables avec finitions premium. Holographique, etoiles, glossy, matte. Commandez vos stickers personnalises.',
+    title: 'Stickers Personnalises Montreal | Massive Medias - Die-Cut Premium',
+    description: 'Stickers die-cut personnalises a Montreal. Vinyle impermeable, finitions holographique, glossy, matte, broken glass. Autocollants premium pour artistes et entreprises.',
   },
   '/services/merch': {
-    title: 'Merch & Textile | Massive Medias - T-shirts, Hoodies & Plus',
-    description: 'Sublimation textile professionnelle. T-shirts, hoodies, crewnecks, tote bags. Impression all-over ou placement.',
+    title: 'Impression Textile Montreal | Massive Medias - T-shirts, Hoodies Personnalises',
+    description: 'Impression textile par sublimation a Montreal. T-shirts, hoodies, crewnecks, tote bags personnalises. All-over ou placement. Production locale rapide.',
   },
   '/services/design': {
-    title: 'Design Graphique | Massive Medias - Logos, Flyers & Pochettes',
-    description: "Service de design graphique professionnel. Logos, flyers evenementiels, pochettes d'album, identite visuelle. Montreal.",
+    title: 'Design Graphique Montreal | Massive Medias - Logos, Branding & Identite Visuelle',
+    description: "Graphiste a Montreal. Logos, identite visuelle, flyers evenementiels, pochettes d'album, affiches, cartes d'affaires. Design creatif et moderne. Devis gratuit.",
   },
   '/services/web': {
-    title: 'Developpement Web | Massive Medias - Sites & Applications',
-    description: 'Developpement web professionnel. Sites vitrines, e-commerce, applications React. SEO, performance et design moderne.',
+    title: 'Developpement Web Montreal | Massive Medias - Sites Web, E-commerce & SEO',
+    description: 'Developpeur web a Montreal. Sites vitrines, e-commerce, applications React, SEO, webmastering. Performance, design moderne et referencement. Devis gratuit.',
   },
   '/a-propos': {
     title: 'A propos | Massive Medias - Studio Creatif Montreal Mile-End',
@@ -87,6 +87,42 @@ const ROUTE_META = {
   '/contact': {
     title: 'Contact | Massive Medias - Demandez un Devis',
     description: 'Contactez Massive Medias pour vos projets d\'impression, design ou web. Studio au Mile-End, Montreal. Reponse rapide garantie.',
+  },
+  '/boutique/fine-art': {
+    title: 'Prints Fine Art Montreal | Massive Medias - Tirages Hahnemuhle',
+    description: 'Achetez des tirages fine art sur papier Hahnemuhle a Montreal. Impressions pigmentaires haute qualite, formats A6 a A2. Artistes locaux, editions limitees. Livraison rapide.',
+  },
+  '/boutique/stickers': {
+    title: 'Stickers Personnalises Montreal | Massive Medias - Die-Cut Premium',
+    description: 'Stickers personnalises die-cut a Montreal. Vinyle impermeable, finitions holographique, matte, glossy, broken glass. Commande en ligne, livraison rapide.',
+  },
+  '/boutique/sublimation': {
+    title: 'Sublimation Textile Montreal | Massive Medias - T-shirts & Hoodies',
+    description: 'Impression sublimation textile a Montreal. T-shirts, hoodies, crewnecks, tote bags personnalises. All-over ou placement. Production locale.',
+  },
+  '/boutique/design': {
+    title: 'Design Graphique Montreal | Massive Medias - Logos & Branding',
+    description: 'Services de design graphique a Montreal. Logos, identite visuelle, flyers, affiches evenementiels, pochettes d\'album. Design moderne et creatif.',
+  },
+  '/boutique/web': {
+    title: 'Developpement Web Montreal | Massive Medias - Sites & E-commerce',
+    description: 'Developpement web professionnel a Montreal. Sites vitrines, e-commerce, applications React, SEO, webmastering. Performance et design moderne.',
+  },
+  '/boutique/merch/tshirt': {
+    title: 'T-Shirts Personnalises Montreal | Massive Medias - Sublimation',
+    description: 'T-shirts personnalises par sublimation a Montreal. Gildan, impression all-over ou placement. Commande en ligne, production locale.',
+  },
+  '/boutique/merch/hoodie': {
+    title: 'Hoodies Personnalises Montreal | Massive Medias - Sublimation',
+    description: 'Hoodies personnalises par sublimation a Montreal. Impression all-over ou placement. Qualite premium, production locale.',
+  },
+  '/boutique/merch/crewneck': {
+    title: 'Crewnecks Personnalises Montreal | Massive Medias - Sublimation',
+    description: 'Crewnecks personnalises par sublimation a Montreal. Impression all-over ou placement. Production locale, livraison rapide.',
+  },
+  '/temoignage': {
+    title: 'Temoignages Clients | Massive Medias - Avis & Reviews',
+    description: 'Avis et temoignages de clients satisfaits de Massive Medias. Impression fine art, stickers, design graphique et developpement web a Montreal.',
   },
 };
 
