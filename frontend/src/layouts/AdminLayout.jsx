@@ -129,8 +129,8 @@ function AdminLayout() {
       <div className="flex gap-6 max-w-7xl mx-auto">
         {/* Sidebar desktop */}
         <aside className="hidden lg:block w-48 flex-shrink-0">
-          <div className="sticky top-20 rounded-xl bg-glass p-2 space-y-0.5">
-            <h2 className="text-[10px] font-semibold text-grey-muted uppercase tracking-wider px-2.5 py-1">
+          <div className="sticky top-20 rounded-xl bg-glass p-3 space-y-1">
+            <h2 className="text-[11px] font-semibold text-grey-muted uppercase tracking-wider px-2.5 py-1.5">
               {tx({ fr: 'Mon compte', en: 'My account', es: 'Mi cuenta' })}
             </h2>
             {ACCOUNT_ITEMS.map((item) => {
@@ -139,17 +139,17 @@ function AdminLayout() {
                 <NavLink
                   key={item.to}
                   to={item.to}
-                  className="flex items-center gap-2 px-2.5 py-1 rounded-lg text-xs font-medium transition-all duration-200 text-grey-muted hover:text-heading hover:bg-glass"
+                  className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 text-grey-muted hover:text-heading hover:bg-glass"
                 >
-                  <Icon size={14} />
+                  <Icon size={16} />
                   {tx({ fr: item.fr, en: item.en, es: item.es })}
                 </NavLink>
               );
             })}
 
-            <div className="shadow-[0_-1px_0_rgba(255,255,255,0.04)] my-1" />
+            <div className="shadow-[0_-1px_0_rgba(255,255,255,0.04)] my-2" />
 
-            <h2 className="text-[10px] font-semibold text-grey-muted uppercase tracking-wider px-2.5 py-1">
+            <h2 className="text-[11px] font-semibold text-grey-muted uppercase tracking-wider px-2.5 py-1.5">
               Admin
             </h2>
             {NAV_ITEMS.map((item) => {
@@ -159,13 +159,13 @@ function AdminLayout() {
                 <NavLink
                   key={item.to}
                   to={item.to}
-                  className={`flex items-center gap-2 px-2.5 py-1 rounded-lg text-xs font-medium transition-all duration-200 ${
+                  className={`flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
                     isActive
                       ? 'bg-[var(--active-tab-bg)] text-white'
                       : 'text-grey-muted hover:text-heading hover:bg-glass'
                   }`}
                 >
-                  <Icon size={14} />
+                  <Icon size={16} />
                   {tx({ fr: item.fr, en: item.en, es: item.es })}
                 </NavLink>
               );
