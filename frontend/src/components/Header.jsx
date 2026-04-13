@@ -18,6 +18,13 @@ function Header() {
   const { user, signInWithOAuth } = useAuth();
   const { isAdmin } = useUserRole();
   const [showLoginModal, setShowLoginModal] = useState(false);
+
+  // Ecouter l'event global pour ouvrir la modal login depuis n'importe quelle page
+  useEffect(() => {
+    const handler = () => setShowLoginModal(true);
+    window.addEventListener('open-login-modal', handler);
+    return () => window.removeEventListener('open-login-modal', handler);
+  }, []);
   const { adminMsgCount } = useNotifications();
   const { pathname } = useLocation();
   const isActive = (path) => pathname === path || pathname.startsWith(path + '/');
