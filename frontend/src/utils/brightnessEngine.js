@@ -98,6 +98,7 @@ function darkPalette(base, darker, darkest, accent, hoverBg, hoverText, logoMain
     '--cta-text-bg': `linear-gradient(145deg, rgba(${b.r},${b.g},${b.b},0.5), rgba(${d.r},${d.g},${d.b},0.4))`,
     '--space-overlay': `linear-gradient(180deg, transparent 0%, rgba(${dk.r},${dk.g},${dk.b},0.95) 100%)`,
     '--icon-glass-blur': 'blur(8px)',
+    '--icon-color': '#FFFFFF',
   };
 }
 
