@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { DollarSign, Copy, Check, Download, Printer, Users, BarChart3, Sticker, Shirt, Palette, Globe, FileText, Loader2, Image } from 'lucide-react';
+import { DollarSign, Copy, Check, Download, Printer, Users, BarChart3, Sticker, Shirt, Palette, Globe, FileText, Loader2, Image, CreditCard } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -48,6 +48,26 @@ const FLYERS = [
   { qty: 150, single: 98, double: 127 },
   { qty: 250, single: 138, double: 179 },
   { qty: 500, single: 250, double: 325 },
+];
+
+const BUSINESS_CARDS_STANDARD = [
+  { qty: 100, price: 55, unit: 0.55 },
+  { qty: 250, price: 75, unit: 0.30 },
+  { qty: 500, price: 95, unit: 0.19 },
+  { qty: 1000, price: 130, unit: 0.13 },
+];
+
+const BUSINESS_CARDS_LAMINE = [
+  { qty: 100, price: 70, unit: 0.70 },
+  { qty: 250, price: 95, unit: 0.38 },
+  { qty: 500, price: 120, unit: 0.24 },
+  { qty: 1000, price: 165, unit: 0.17 },
+];
+
+const BUSINESS_CARDS_PREMIUM = [
+  { qty: 100, price: 120, unit: 1.20 },
+  { qty: 250, price: 175, unit: 0.70 },
+  { qty: 500, price: 250, unit: 0.50 },
 ];
 
 const SUBLIMATION = [
@@ -370,6 +390,157 @@ function AdminTarifs() {
     }
   };
 
+  // --- PDF tous les tarifs ---
+  const [allPdfLoading, setAllPdfLoading] = useState(false);
+  const handleDownloadAllPDF = () => {
+    setAllPdfLoading(true);
+    try {
+      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'letter' });
+      const pageW = 215.9;
+      const margin = 15;
+      const contentW = pageW - margin * 2;
+      let y = 20;
+
+      const accent = [255, 0, 152];
+      const dark = [34, 34, 34];
+      const grey = [120, 120, 120];
+      const white = [255, 255, 255];
+      const lightBg = [247, 247, 247];
+
+      // --- Header ---
+      doc.setFillColor(255, 255, 255);
+      doc.rect(0, 0, pageW, 35, 'F');
+      doc.setTextColor(...dark);
+      doc.setFontSize(18);
+      doc.setFont('helvetica', 'bold');
+      doc.text('MASSIVE MEDIAS', margin, 16);
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(...accent);
+      doc.text(tx({ fr: 'Grille tarifaire complete', en: 'Complete pricing grid', es: 'Tabla de precios completa' }), margin, 23);
+      doc.setTextColor(...grey);
+      doc.setFontSize(7);
+      doc.text(tx({ fr: 'Tous les prix avant taxes (TPS + TVQ en sus)', en: 'All prices before taxes (GST + QST extra)', es: 'Precios antes de impuestos' }), margin, 29);
+      doc.text('massivemedias.com', pageW - margin, 29, { align: 'right' });
+      doc.setDrawColor(...accent);
+      doc.setLineWidth(0.5);
+      doc.line(margin, 33, pageW - margin, 33);
+      y = 40;
+
+      const sectionTitle = (text) => {
+        if (y > 250) { doc.addPage(); y = 20; }
+        doc.setFontSize(11);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(...accent);
+        doc.text(text, margin, y);
+        y += 6;
+      };
+
+      const addTable = (head, body, opts = {}) => {
+        if (y > 240) { doc.addPage(); y = 20; }
+        autoTable(doc, {
+          startY: y,
+          margin: { left: margin, right: margin },
+          head: [head],
+          body,
+          theme: 'grid',
+          headStyles: { fillColor: dark, textColor: white, fontSize: 7.5, fontStyle: 'bold', halign: 'center' },
+          bodyStyles: { fontSize: 7.5, textColor: dark },
+          alternateRowStyles: { fillColor: lightBg },
+          styles: { cellPadding: 2, lineColor: [220, 220, 220], lineWidth: 0.15 },
+          ...opts,
+        });
+        y = doc.lastAutoTable.finalY + 8;
+      };
+
+      // --- Fine Art Prints ---
+      sectionTitle(tx({ fr: 'Impression Fine Art', en: 'Fine Art Printing', es: 'Impresion Fine Art' }));
+      addTable(
+        ['Format', 'Studio (4 encres)', tx({ fr: 'Musee (12 encres)', en: 'Museum (12 inks)', es: 'Museo (12 tintas)' }), 'Frame'],
+        SERVICE_PRICES.map(p => [p.format, p.studio ? `${p.studio}$` : 'N/A', `${p.museum}$`, p.frame ? `+${p.frame}$` : 'N/A'])
+      );
+
+      // --- Cartes d'affaires ---
+      sectionTitle(tx({ fr: 'Cartes d\'affaires', en: 'Business Cards', es: 'Tarjetas de presentacion' }));
+      addTable(
+        [tx({ fr: 'Quantite', en: 'Quantity', es: 'Cantidad' }), 'Standard (14pt)', tx({ fr: 'Lamine (16pt)', en: 'Laminated (16pt)', es: 'Laminado (16pt)' }), 'Premium Soft Touch (24pt)'],
+        BUSINESS_CARDS_STANDARD.map((s, i) => {
+          const l = BUSINESS_CARDS_LAMINE[i];
+          const p = BUSINESS_CARDS_PREMIUM[i];
+          return [`${s.qty}`, `${s.price}$ (${s.unit.toFixed(2)}$/u)`, l ? `${l.price}$ (${l.unit.toFixed(2)}$/u)` : 'N/A', p ? `${p.price}$ (${p.unit.toFixed(2)}$/u)` : 'N/A'];
+        })
+      );
+
+      // --- Stickers ---
+      sectionTitle('Stickers');
+      addTable(
+        [tx({ fr: 'Quantite', en: 'Quantity', es: 'Cantidad' }), 'Standard', '$/unit', 'FX (Holo/Prisme)', '$/unit'],
+        STICKER_STANDARD.map((s, i) => {
+          const h = STICKER_FX[i];
+          return [`${s.qty}`, `${s.price}$`, `${s.unit.toFixed(2)}$`, `${h.price}$`, `${h.unit.toFixed(2)}$`];
+        })
+      );
+
+      // --- Flyers ---
+      sectionTitle(tx({ fr: 'Flyers & Cartes postales', en: 'Flyers & Postcards', es: 'Flyers y Postales' }));
+      addTable(
+        [tx({ fr: 'Quantite', en: 'Quantity', es: 'Cantidad' }), tx({ fr: 'Recto', en: 'Single', es: 'Anverso' }), '$/unit', tx({ fr: 'Recto-verso', en: 'Double-sided', es: 'Doble cara' }), '$/unit'],
+        FLYERS.map(f => [`${f.qty}`, `${f.single}$`, `${(f.single / f.qty).toFixed(2)}$`, `${f.double}$`, `${(f.double / f.qty).toFixed(2)}$`])
+      );
+
+      // --- Sublimation ---
+      sectionTitle(tx({ fr: 'Sublimation & Merch', en: 'Sublimation & Merch', es: 'Sublimacion y Merch' }));
+      const subBody = SUBLIMATION.map(s => {
+        const name = typeof s.product === 'string' ? s.product : tx(s.product);
+        return [name, ...s.tiers.map(t => `${t.qty}x = ${t.unit}$${t.soumission ? '*' : ''}`)];
+      });
+      addTable(
+        [tx({ fr: 'Produit', en: 'Product', es: 'Producto' }), ...SUBLIMATION[0].tiers.map((_, i) => `Palier ${i + 1}`)],
+        subBody
+      );
+      doc.setFontSize(6.5);
+      doc.setTextColor(...grey);
+      doc.text(tx({ fr: `* Sur soumission pour 25+ unites. Frais de design: ${SUBLIMATION_DESIGN}$ (one-time).`, en: `* On quote for 25+ units. Design fee: ${SUBLIMATION_DESIGN}$ (one-time).`, es: `* Bajo cotizacion 25+ unidades. Diseno: ${SUBLIMATION_DESIGN}$.` }), margin, y);
+      y += 8;
+
+      // --- Design ---
+      sectionTitle(tx({ fr: 'Design graphique', en: 'Graphic Design', es: 'Diseno grafico' }));
+      addTable(
+        ['Service', tx({ fr: 'Prix', en: 'Price', es: 'Precio' }), tx({ fr: 'Delai', en: 'Timeline', es: 'Plazo' })],
+        DESIGN_SERVICES.map(d => [d.service, d.price, d.delai])
+      );
+
+      // --- Web ---
+      sectionTitle(tx({ fr: 'Developpement Web', en: 'Web Development', es: 'Desarrollo Web' }));
+      addTable(
+        ['Service', tx({ fr: 'Prix', en: 'Price', es: 'Precio' }), tx({ fr: 'Delai', en: 'Timeline', es: 'Plazo' })],
+        WEB_SERVICES.map(w => [w.service, w.price, w.delai])
+      );
+      doc.setFontSize(7);
+      doc.setTextColor(...grey);
+      doc.text(tx({ fr: `Taux horaire: ${WEB_HOURLY}`, en: `Hourly rate: ${WEB_HOURLY}`, es: `Tarifa por hora: ${WEB_HOURLY}` }), margin, y);
+      y += 10;
+
+      // --- Footer ---
+      if (y > 260) { doc.addPage(); y = 20; }
+      doc.setDrawColor(...accent);
+      doc.setLineWidth(0.3);
+      doc.line(margin, y, pageW - margin, y);
+      y += 5;
+      doc.setTextColor(...grey);
+      doc.setFontSize(7);
+      doc.text('Massive Medias - 5338 rue Marquette, Montreal, QC H2J 3Z3', margin, y);
+      doc.text('massivemedias@gmail.com - massivemedias.com', pageW - margin, y, { align: 'right' });
+
+      doc.save(`Massive-Medias-Tarifs-Complets-${new Date().getFullYear()}.pdf`);
+    } catch (err) {
+      console.error('PDF generation error:', err);
+      alert(tx({ fr: 'Erreur lors de la generation du PDF.', en: 'Error generating PDF.', es: 'Error al generar el PDF.' }));
+    } finally {
+      setAllPdfLoading(false);
+    }
+  };
+
   // Labels traduits
   const L = {
     title: tx({ fr: 'Grille tarifaire', en: 'Pricing Grid', es: 'Tabla de precios' }),
@@ -450,9 +621,13 @@ function AdminTarifs() {
             {copied ? <Check size={16} /> : <Copy size={16} />}
             {copied ? L.copied : L.copyBtn}
           </button>
-          <button onClick={handleDownloadPDF} disabled={pdfLoading} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-purple-500/20 text-purple-400 text-sm font-semibold hover:bg-purple-500/30 transition-colors disabled:opacity-50">
+          <button onClick={handleDownloadPDF} disabled={pdfLoading || allPdfLoading} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-purple-500/20 text-purple-400 text-sm font-semibold hover:bg-purple-500/30 transition-colors disabled:opacity-50">
             {pdfLoading ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
             {pdfLoading ? tx({ fr: 'Generation...', en: 'Generating...', es: 'Generando...' }) : L.pdfBtn}
+          </button>
+          <button onClick={handleDownloadAllPDF} disabled={pdfLoading || allPdfLoading} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-accent/20 text-accent text-sm font-semibold hover:bg-accent/30 transition-colors disabled:opacity-50">
+            {allPdfLoading ? <Loader2 size={16} className="animate-spin" /> : <FileText size={16} />}
+            {allPdfLoading ? tx({ fr: 'Generation...', en: 'Generating...', es: 'Generando...' }) : tx({ fr: 'PDF Tous les tarifs', en: 'All Pricing PDF', es: 'PDF Todos los precios' })}
           </button>
         </div>
       </div>
@@ -741,6 +916,50 @@ function AdminTarifs() {
                 </tr>
               ))}
             </DataTable>
+          </SectionCard>
+
+          {/* Cartes d'affaires */}
+          <SectionCard icon={CreditCard} iconColor="text-violet-400"
+            title={tx({ fr: 'Cartes d\'affaires', en: 'Business Cards', es: 'Tarjetas de presentacion' })}
+            subtitle={tx({ fr: 'Recto-verso inclus - Formats 3.5x2" et 2.5x2.5"', en: 'Double-sided included - 3.5x2" and 2.5x2.5" formats', es: 'Doble cara incluida - Formatos 3.5x2" y 2.5x2.5"' })} delay={0.12}>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              <div>
+                <h4 className="text-xs font-semibold text-heading mb-2 uppercase tracking-wider">Standard 14pt</h4>
+                <DataTable headers={[{ label: L.qty }, { label: L.price }, { label: L.unit }]}>
+                  {BUSINESS_CARDS_STANDARD.map((c, i) => (
+                    <tr key={i} className="shadow-[0_1px_0_rgba(255,255,255,0.04)] hover:bg-accent/5 transition-colors">
+                      <Td center={false} className="text-heading font-medium">{c.qty}</Td>
+                      <Td className="text-heading font-semibold">{c.price}$</Td>
+                      <Td className="text-accent font-semibold">{c.unit.toFixed(2)}$</Td>
+                    </tr>
+                  ))}
+                </DataTable>
+              </div>
+              <div>
+                <h4 className="text-xs font-semibold text-heading mb-2 uppercase tracking-wider">{tx({ fr: 'Lamine 16pt', en: 'Laminated 16pt', es: 'Laminado 16pt' })}</h4>
+                <DataTable headers={[{ label: L.qty }, { label: L.price }, { label: L.unit }]}>
+                  {BUSINESS_CARDS_LAMINE.map((c, i) => (
+                    <tr key={i} className="shadow-[0_1px_0_rgba(255,255,255,0.04)] hover:bg-accent/5 transition-colors">
+                      <Td center={false} className="text-heading font-medium">{c.qty}</Td>
+                      <Td className="text-heading font-semibold">{c.price}$</Td>
+                      <Td className="text-accent font-semibold">{c.unit.toFixed(2)}$</Td>
+                    </tr>
+                  ))}
+                </DataTable>
+              </div>
+              <div>
+                <h4 className="text-xs font-semibold text-heading mb-2 uppercase tracking-wider">Soft Touch 24pt Premium</h4>
+                <DataTable headers={[{ label: L.qty }, { label: L.price }, { label: L.unit }]}>
+                  {BUSINESS_CARDS_PREMIUM.map((c, i) => (
+                    <tr key={i} className="shadow-[0_1px_0_rgba(255,255,255,0.04)] hover:bg-accent/5 transition-colors">
+                      <Td center={false} className="text-heading font-medium">{c.qty}</Td>
+                      <Td className="text-heading font-semibold">{c.price}$</Td>
+                      <Td className="text-accent font-semibold">{c.unit.toFixed(2)}$</Td>
+                    </tr>
+                  ))}
+                </DataTable>
+              </div>
+            </div>
           </SectionCard>
 
           {/* Sublimation */}

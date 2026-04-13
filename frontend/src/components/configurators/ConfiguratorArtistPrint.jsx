@@ -7,6 +7,9 @@ import { useUserRole } from '../../contexts/UserRoleContext';
 import {
   getArtistPrintPrice, artistPrinterTiers, artistFormats, isFormatAvailable, framePriceByFormat,
 } from '../../data/artists';
+import {
+  businessCardFinishes, businessCardPriceTiers, getBusinessCardPrice, businessCardSizes,
+} from '../../data/products';
 
 function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {}, onFrameColorChange }) {
   const { lang, tx } = useLang();
@@ -28,6 +31,11 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {}, onF
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
   const [notes, setNotes] = useState('');
+  // Business card state
+  const [cardFinish, setCardFinish] = useState('standard');
+  const [cardQtyIndex, setCardQtyIndex] = useState(1);
+  const [cardSize, setCardSize] = useState('standard');
+  const isBusinessCard = tier === 'business-card';
   const prevPrintIdRef = useRef(selectedPrint?.id);
 
   // Notifier le parent quand la couleur du cadre change (pour MockupPreview)
@@ -73,16 +81,19 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {}, onF
 
   if (!selectedPrint || !artist) return null;
 
-  const priceInfo = getArtistPrintPrice(artist.pricing, tier, format, withFrame);
+  const priceInfo = isBusinessCard ? null : getArtistPrintPrice(artist.pricing, tier, format, withFrame);
   const tierLabel = artistPrinterTiers.find(t => t.id === tier);
   const formatLabel = artistFormats.find(f => f.id === format);
   const printTitle = tx({ fr: selectedPrint.titleFr, en: selectedPrint.titleEn, es: selectedPrint.titleEn });
 
   const isArtistOwnPrint = loggedArtistSlug && loggedArtistSlug === artist?.slug;
 
-  // Prix effectif: customPrice pour pieces uniques, solde, ou prix standard
-  const basePrice = (isUnique && customPrice) ? customPrice : priceInfo?.price;
-  const isOnSale = selectedPrint?.onSale && selectedPrint?.salePercent;
+  // Business card price
+  const cardPriceInfo = isBusinessCard ? getBusinessCardPrice(cardFinish, cardQtyIndex) : null;
+
+  // Prix effectif: customPrice pour pieces uniques, solde, business card, ou prix standard
+  const basePrice = isBusinessCard ? cardPriceInfo?.price : (isUnique && customPrice) ? customPrice : priceInfo?.price;
+  const isOnSale = selectedPrint?.onSale && selectedPrint?.salePercent && !isBusinessCard;
   const saleDiscount = isOnSale ? (1 - selectedPrint.salePercent / 100) : 1;
   const effectivePrice = basePrice ? Math.round(basePrice * saleDiscount * 100) / 100 : basePrice;
   const originalPrice = isOnSale ? basePrice : null;
@@ -90,6 +101,25 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {}, onF
   const handleAddToCart = () => {
     if (!effectivePrice) return;
     try {
+      if (isBusinessCard) {
+        const finishObj = businessCardFinishes.find(f => f.id === cardFinish);
+        const sizeObj = businessCardSizes.find(s => s.id === cardSize);
+        const tierInfo = businessCardPriceTiers[cardFinish]?.[cardQtyIndex];
+        addToCart({
+          productId: `business-card-${cardFinish}`,
+          productName: tx({ fr: 'Cartes d\'affaires', en: 'Business Cards', es: 'Tarjetas de presentacion' }),
+          finish: tx({ fr: finishObj?.labelFr, en: finishObj?.labelEn, es: finishObj?.labelEs || finishObj?.labelEn }),
+          shape: null,
+          size: tx({ fr: sizeObj?.labelFr, en: sizeObj?.labelEn, es: sizeObj?.labelEn }) + ` (${sizeObj?.dimensions})`,
+          quantity: 1,
+          unitPrice: effectivePrice,
+          totalPrice: effectivePrice,
+          image: null,
+          uploadedFiles: [],
+          notes,
+          cardQuantity: tierInfo?.qty,
+        });
+      } else {
       addToCart({
         productId: `artist-print-${artist.slug}-${selectedPrint.id}`,
         productName: `${artist.name} - ${printTitle}`,
@@ -113,6 +143,7 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {}, onF
         isUnique: isUnique || false,
         ...(isArtistOwnPrint ? { isArtistOwnPrint: true, artistSlug: artist.slug } : {}),
       });
+      }
       setAdded(true);
       setTimeout(() => setAdded(false), 2000);
     } catch (err) {
@@ -175,14 +206,16 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {}, onF
           <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-1.5">
             {tx({ fr: 'Qualité d\'impression', en: 'Print Quality', es: 'Calidad de impresión' })}
           </label>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-3 gap-2">
             {artistPrinterTiers.map(t => (
               <button
                 key={t.id}
                 onClick={() => {
                   setTier(t.id);
-                  const newPrices = t.id === 'museum' ? artist.pricing.museum : artist.pricing.studio;
-                  if (newPrices[format] == null) setFormat('a4');
+                  if (t.id !== 'business-card') {
+                    const newPrices = t.id === 'museum' ? artist.pricing.museum : artist.pricing.studio;
+                    if (newPrices?.[format] == null) setFormat('a4');
+                  }
                 }}
                 className={`text-center py-2.5 px-3 rounded-lg text-xs font-medium transition-all border-2 ${tier === t.id
                   ? 'border-accent option-selected'
@@ -199,8 +232,79 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {}, onF
         </div>
       )}
 
+      {/* ===== MODE BUSINESS CARD ===== */}
+      {isBusinessCard && !isUnique && (
+        <div className="space-y-3">
+          {/* Finition */}
+          <div>
+            <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-1.5">
+              {tx({ fr: 'Finition', en: 'Finish', es: 'Acabado' })}
+            </label>
+            <div className="grid grid-cols-3 gap-2">
+              {businessCardFinishes.map(f => (
+                <button
+                  key={f.id}
+                  onClick={() => { setCardFinish(f.id); setCardQtyIndex(0); }}
+                  className={`text-center py-2.5 px-2 rounded-lg text-xs font-medium transition-all border-2 ${cardFinish === f.id
+                    ? 'border-accent option-selected'
+                    : 'border-transparent hover:border-grey-muted/30 option-default'
+                  }`}
+                >
+                  <span className="text-heading font-semibold text-[11px] block">
+                    {tx({ fr: f.labelFr, en: f.labelEn, es: f.labelEs || f.labelEn })}
+                  </span>
+                  <span className="text-grey-muted text-[9px]">{f.weight}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+          {/* Format carte */}
+          <div>
+            <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-1.5">
+              Format
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              {businessCardSizes.map(s => (
+                <button
+                  key={s.id}
+                  onClick={() => setCardSize(s.id)}
+                  className={`text-center py-2.5 px-3 rounded-lg text-xs font-medium transition-all border-2 ${cardSize === s.id
+                    ? 'border-accent option-selected'
+                    : 'border-transparent hover:border-grey-muted/30 option-default'
+                  }`}
+                >
+                  <span className="text-heading font-semibold text-sm">{tx({ fr: s.labelFr, en: s.labelEn, es: s.labelEn })}</span>
+                  <span className="text-grey-muted text-[10px] block">{s.dimensions}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+          {/* Quantite */}
+          <div>
+            <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-1.5">
+              {tx({ fr: 'Quantité', en: 'Quantity', es: 'Cantidad' })}
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {(businessCardPriceTiers[cardFinish] || []).map((t, i) => (
+                <button
+                  key={i}
+                  onClick={() => setCardQtyIndex(i)}
+                  className={`py-2 px-4 rounded-lg text-xs font-medium transition-all border-2 ${cardQtyIndex === i
+                    ? 'border-accent option-selected'
+                    : 'border-transparent hover:border-grey-muted/30 option-default'
+                  }`}
+                >
+                  <span className="text-heading font-semibold block">{t.qty}</span>
+                  <span className="text-grey-muted text-[10px]">{t.price}$</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Format selector */}
-      {!fixedFormat && !(isUnique && customPrice) && (
+      {!fixedFormat && !(isUnique && customPrice) && !isBusinessCard && (
         <div>
           <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-1.5">
             Format
@@ -270,7 +374,7 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {}, onF
       )}
 
       {/* Frame option */}
-      {!noFrame && !(isUnique && customPrice) && (
+      {!noFrame && !(isUnique && customPrice) && !isBusinessCard && (
         <div>
           <label className={`flex items-center gap-3 w-full p-4 rounded-lg cursor-pointer transition-all border-2 ${withFrame ? 'checkbox-active' : 'option-default'}`}>
             <input
@@ -326,7 +430,9 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {}, onF
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           rows={2}
-          placeholder={tx({ fr: 'Dedicace, message, details...', en: 'Dedication, message, details...', es: 'Dedicatoria, mensaje, detalles...' })}
+          placeholder={isBusinessCard
+            ? tx({ fr: 'Nom, titre, coordonnees, style souhaite...', en: 'Name, title, contact info, desired style...', es: 'Nombre, titulo, contacto, estilo deseado...' })
+            : tx({ fr: 'Dedicace, message, details...', en: 'Dedication, message, details...', es: 'Dedicatoria, mensaje, detalles...' })}
           className="w-full rounded-lg border-2 border-grey-muted/20 bg-transparent px-3 py-2 text-sm text-heading placeholder:text-grey-muted/50 focus:border-accent focus:outline-none transition-colors resize-none"
         />
       </div>
@@ -349,7 +455,7 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {}, onF
         </div>
       ) : (
         <>
-          {!priceInfo && (
+          {!priceInfo && !isBusinessCard && (
             <div className="p-5 rounded-xl highlight-bordered text-center">
               <span className="text-grey-muted text-sm">
                 {tx({
@@ -360,7 +466,7 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {}, onF
               </span>
             </div>
           )}
-          {priceInfo && (
+          {(priceInfo || isBusinessCard) && effectivePrice && (
             <div className="p-4 rounded-xl highlight-bordered">
               <div className="flex items-center justify-between">
                 <div>
@@ -380,7 +486,7 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {}, onF
                     </div>
                   )}
                 </div>
-                {!isUnique && (
+                {!isUnique && !isBusinessCard && (
                   <div className="flex items-center gap-2">
                     <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="w-8 h-8 rounded-lg border border-white/10 text-heading font-bold text-sm flex items-center justify-center hover:border-accent/50 transition-colors">-</button>
                     <span className="text-heading font-bold w-6 text-center">{quantity}</span>
@@ -389,7 +495,9 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {}, onF
                 )}
               </div>
               <div className="text-grey-muted text-xs mt-1.5">
-                {tier === 'museum'
+                {isBusinessCard
+                  ? tx({ fr: `${cardPriceInfo?.qty} cartes - ${cardPriceInfo?.unitPrice?.toFixed(2)}$/carte - design inclus`, en: `${cardPriceInfo?.qty} cards - ${cardPriceInfo?.unitPrice?.toFixed(2)}$/card - design included`, es: `${cardPriceInfo?.qty} tarjetas - diseno incluido` })
+                  : tier === 'museum'
                   ? tx({ fr: 'Qualité musée - 12 encres pigmentées, conservation 100+ ans', en: 'Museum quality - 12 pigmented inks, 100+ year archival', es: 'Calidad museo - 12 tintas pigmentadas, conservación 100+ años' })
                   : tx({ fr: 'Qualité studio - impression professionnelle pigmentée', en: 'Studio quality - professional pigmented printing', es: 'Calidad estudio - impresión profesional pigmentada' })}
               </div>
