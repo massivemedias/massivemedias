@@ -797,10 +797,10 @@ function Account() {
           )}
 
           <div className="flex gap-6 max-w-7xl mx-auto">
-            {/* Sidebar desktop */}
-            <aside className="hidden lg:block w-52 flex-shrink-0">
-              <div className="sticky top-32 max-h-[calc(100vh-9rem)] overflow-y-auto rounded-xl bg-glass p-3 space-y-1">
-                <h2 className="text-xs font-semibold text-grey-muted uppercase tracking-wider px-3 py-2">
+            {/* Sidebar desktop - MEME CSS que AdminLayout.jsx */}
+            <aside className="hidden lg:block w-48 flex-shrink-0">
+              <div className="sticky top-20 rounded-xl bg-glass p-2 space-y-0.5">
+                <h2 className="text-[10px] font-semibold text-grey-muted uppercase tracking-wider px-2.5 py-1">
                   {tx({ fr: 'Mon compte', en: 'My account', es: 'Mi cuenta' })}
                 </h2>
                 {ACCOUNT_SIDEBAR_ITEMS.map((item) => {
@@ -810,21 +810,21 @@ function Account() {
                     <button
                       key={item.id}
                       onClick={() => handleSetTab(item.id)}
-                      className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      className={`w-full flex items-center gap-2 px-2.5 py-1 rounded-lg text-xs font-medium transition-all duration-200 ${
                         isActive
                           ? 'bg-[var(--active-tab-bg)] text-white'
                           : 'text-grey-muted hover:text-heading hover:bg-glass'
                       }`}
                     >
-                      <Icon size={16} />
+                      <Icon size={14} />
                       {item.label}
                     </button>
                   );
                 })}
 
-                <div className="shadow-[0_-1px_0_rgba(255,255,255,0.04)] my-2" />
+                <div className="shadow-[0_-1px_0_rgba(255,255,255,0.04)] my-1" />
 
-                <h2 className="text-xs font-semibold text-grey-muted uppercase tracking-wider px-3 py-2">
+                <h2 className="text-[10px] font-semibold text-grey-muted uppercase tracking-wider px-2.5 py-1">
                   Admin
                 </h2>
                 {ADMIN_NAV_ITEMS.map((item) => {
@@ -834,9 +834,9 @@ function Account() {
                     <NavLink
                       key={item.to}
                       to={item.to}
-                      className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 text-grey-muted hover:text-heading hover:bg-glass relative"
+                      className={({ isActive }) => `flex items-center gap-2 px-2.5 py-1 rounded-lg text-xs font-medium transition-all duration-200 relative ${isActive ? 'bg-[var(--active-tab-bg)] text-white' : 'text-grey-muted hover:text-heading hover:bg-glass'}`}
                     >
-                      <Icon size={16} />
+                      <Icon size={14} />
                       {tx({ fr: item.fr, en: item.en, es: item.es })}
                       {isMessages && adminNewMsgCount > 0 && (
                         <span className="ml-auto flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-accent text-white text-[10px] font-bold animate-pulse">
@@ -1051,13 +1051,13 @@ function Account() {
                     <button
                       key={item.id}
                       onClick={() => handleSetTab(item.id)}
-                      className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      className={`w-full flex items-center gap-2 px-2.5 py-1 rounded-lg text-xs font-medium transition-all duration-200 ${
                         isActive
                           ? 'bg-[var(--active-tab-bg)] text-white'
                           : 'text-grey-muted hover:text-heading hover:bg-glass'
                       }`}
                     >
-                      <Icon size={16} />
+                      <Icon size={14} />
                       {item.label}
                     </button>
                   );
@@ -1313,13 +1313,13 @@ function Account() {
                     <button
                       key={item.id}
                       onClick={() => handleSetTab(item.id)}
-                      className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      className={`w-full flex items-center gap-2 px-2.5 py-1 rounded-lg text-xs font-medium transition-all duration-200 ${
                         isActive
                           ? 'bg-[var(--active-tab-bg)] text-white'
                           : 'text-grey-muted hover:text-heading hover:bg-glass'
                       }`}
                     >
-                      <Icon size={16} />
+                      <Icon size={14} />
                       {item.label}
                     </button>
                   );
