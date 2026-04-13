@@ -368,21 +368,22 @@ export const businessCardFinishes = [
 
 export const businessCardPriceTiers = {
   standard: [
+    { qty: 50, price: 25, unitPrice: 0.50 },
     { qty: 100, price: 55, unitPrice: 0.55 },
-    { qty: 250, price: 75, unitPrice: 0.30 },
-    { qty: 500, price: 95, unitPrice: 0.19 },
-    { qty: 1000, price: 130, unitPrice: 0.13 },
+    { qty: 250, price: 100, unitPrice: 0.40 },
+    { qty: 500, price: 200, unitPrice: 0.40 },
   ],
   lamine: [
+    { qty: 50, price: 35, unitPrice: 0.70 },
     { qty: 100, price: 70, unitPrice: 0.70 },
-    { qty: 250, price: 95, unitPrice: 0.38 },
-    { qty: 500, price: 120, unitPrice: 0.24 },
-    { qty: 1000, price: 165, unitPrice: 0.17 },
+    { qty: 250, price: 125, unitPrice: 0.50 },
+    { qty: 500, price: 240, unitPrice: 0.48 },
   ],
   premium: [
+    { qty: 50, price: 60, unitPrice: 1.20 },
     { qty: 100, price: 120, unitPrice: 1.20 },
-    { qty: 250, price: 175, unitPrice: 0.70 },
-    { qty: 500, price: 250, unitPrice: 0.50 },
+    { qty: 250, price: 200, unitPrice: 0.80 },
+    { qty: 500, price: 375, unitPrice: 0.75 },
   ],
 };
 

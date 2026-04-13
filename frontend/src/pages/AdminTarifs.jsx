@@ -51,23 +51,24 @@ const FLYERS = [
 ];
 
 const BUSINESS_CARDS_STANDARD = [
+  { qty: 50, price: 25, unit: 0.50 },
   { qty: 100, price: 55, unit: 0.55 },
-  { qty: 250, price: 75, unit: 0.30 },
-  { qty: 500, price: 95, unit: 0.19 },
-  { qty: 1000, price: 130, unit: 0.13 },
+  { qty: 250, price: 100, unit: 0.40 },
+  { qty: 500, price: 200, unit: 0.40 },
 ];
 
 const BUSINESS_CARDS_LAMINE = [
+  { qty: 50, price: 35, unit: 0.70 },
   { qty: 100, price: 70, unit: 0.70 },
-  { qty: 250, price: 95, unit: 0.38 },
-  { qty: 500, price: 120, unit: 0.24 },
-  { qty: 1000, price: 165, unit: 0.17 },
+  { qty: 250, price: 125, unit: 0.50 },
+  { qty: 500, price: 240, unit: 0.48 },
 ];
 
 const BUSINESS_CARDS_PREMIUM = [
+  { qty: 50, price: 60, unit: 1.20 },
   { qty: 100, price: 120, unit: 1.20 },
-  { qty: 250, price: 175, unit: 0.70 },
-  { qty: 500, price: 250, unit: 0.50 },
+  { qty: 250, price: 200, unit: 0.80 },
+  { qty: 500, price: 375, unit: 0.75 },
 ];
 
 const SUBLIMATION = [
