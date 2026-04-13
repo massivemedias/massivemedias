@@ -18,41 +18,33 @@ function massiveEmailWrapper(content: string): string {
   return `<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#0f0f23;color:#e4e4f0;font-family:-apple-system,system-ui,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0f0f23;">
-    <tr><td align="center" style="padding:40px 16px;">
-      <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+<body style="margin:0;padding:0;background:#f5f5f5;color:#222;font-family:-apple-system,system-ui,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f5;">
+    <tr><td align="center" style="padding:32px 16px;">
+      <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
 
-        <!-- Header Massive -->
-        <tr><td align="center" style="padding:0 0 8px;">
-          <h1 style="color:#FF52A0;margin:0;font-size:32px;font-weight:900;letter-spacing:-0.5px;">MASSIVE MEDIAS</h1>
-          <p style="color:#6B21A8;margin:4px 0 0;font-size:11px;text-transform:uppercase;letter-spacing:2px;font-weight:600;">Fine Art Printing - Stickers - Merch</p>
-        </td></tr>
-
-        <!-- Ligne accent -->
-        <tr><td style="padding:16px 0 24px;">
-          <div style="height:2px;background:linear-gradient(90deg,transparent,#FF52A0,#6B21A8,transparent);"></div>
+        <!-- Header avec logo -->
+        <tr><td align="center" style="padding:28px 32px 20px;border-bottom:2px solid #FF52A0;">
+          <a href="https://massivemedias.com"><img src="https://massivemedias.com/images/massive-logo-email.png" alt="Massive Medias" width="280" style="width:280px;max-width:100%;height:auto;display:block;" /></a>
         </td></tr>
 
         <!-- Contenu principal -->
-        <tr><td style="background:#16162a;border-radius:16px;padding:32px;border:1px solid rgba(139,92,246,0.2);box-shadow:0 4px 24px rgba(0,0,0,0.3);">
+        <tr><td style="padding:32px;">
           ${content}
         </td></tr>
 
         <!-- Footer -->
-        <tr><td align="center" style="padding:28px 0 0;">
-          <table cellpadding="0" cellspacing="0">
-            <tr>
-              <td style="padding:0 8px;"><a href="https://massivemedias.com" style="color:#FF52A0;text-decoration:none;font-size:12px;font-weight:600;">massivemedias.com</a></td>
-              <td style="color:#333;font-size:12px;">|</td>
-              <td style="padding:0 8px;"><a href="https://instagram.com/massivemedias" style="color:#6B21A8;text-decoration:none;font-size:12px;">@massivemedias</a></td>
-              <td style="color:#333;font-size:12px;">|</td>
-              <td style="padding:0 8px;"><a href="mailto:massivemedias@gmail.com" style="color:#6B21A8;text-decoration:none;font-size:12px;">massivemedias@gmail.com</a></td>
-            </tr>
+        <tr><td style="padding:20px 32px;background:#fafafa;border-top:1px solid #eee;">
+          <table width="100%" cellpadding="0" cellspacing="0">
+            <tr><td style="font-size:12px;color:#888;line-height:1.6;">
+              <a href="https://massivemedias.com" style="color:#FF52A0;text-decoration:none;font-weight:600;">massivemedias.com</a> &nbsp;|&nbsp;
+              <a href="https://instagram.com/massivemedias" style="color:#888;text-decoration:none;">@massivemedias</a> &nbsp;|&nbsp;
+              <a href="mailto:massivemedias@gmail.com" style="color:#888;text-decoration:none;">massivemedias@gmail.com</a>
+            </td></tr>
+            <tr><td style="font-size:10px;color:#aaa;padding-top:8px;">
+              Massive Medias - 5338 rue Marquette, Montreal, QC H2J 3Z3
+            </td></tr>
           </table>
-          <p style="color:#444;font-size:10px;margin:10px 0 0;">
-            Massive Medias - 5338 rue Marquette, Montreal, QC H2J 3Z3 - NEQ: 2269057891
-          </p>
         </td></tr>
 
       </table>
@@ -111,13 +103,13 @@ function formatPrice(cents: number): string {
 function buildOrderConfirmationHtml(data: OrderEmailData): string {
   const itemRows = data.items.map(item => `
     <tr>
-      <td style="padding:10px 12px;border-bottom:1px solid #2a2a4a;color:#e4e4f0;font-size:14px;">
+      <td style="padding:10px 12px;border-bottom:1px solid #eee;color:#222;font-size:14px;">
         ${item.productName}${item.size ? ` - ${item.size}` : ''}${item.finish ? ` (${item.finish})` : ''}
       </td>
-      <td style="padding:10px 12px;border-bottom:1px solid #2a2a4a;text-align:center;color:#e4e4f0;font-size:14px;">
+      <td style="padding:10px 12px;border-bottom:1px solid #eee;text-align:center;color:#222;font-size:14px;">
         ${item.quantity}
       </td>
-      <td style="padding:10px 12px;border-bottom:1px solid #2a2a4a;text-align:right;color:#e4e4f0;font-size:14px;">
+      <td style="padding:10px 12px;border-bottom:1px solid #eee;text-align:right;color:#222;font-size:14px;">
         ${(typeof item.totalPrice === 'number' ? item.totalPrice.toFixed(2) : '0.00')}$
       </td>
     </tr>
@@ -137,34 +129,34 @@ function buildOrderConfirmationHtml(data: OrderEmailData): string {
     <!-- Titre document -->
     <h1 style="color:#FF52A0;margin:0 0 4px;font-size:13px;text-transform:uppercase;letter-spacing:2px;font-weight:700;">Confirmation de commande</h1>
 
-    <h2 style="color:#e4e4f0;margin:0 0 8px;font-size:22px;">Merci ${data.customerName} !</h2>
-    <p style="color:#a0a0b8;margin:0 0 4px;font-size:15px;line-height:1.5;">
+    <h2 style="color:#222;margin:0 0 8px;font-size:22px;">Merci ${data.customerName} !</h2>
+    <p style="color:#666;margin:0 0 4px;font-size:15px;line-height:1.5;">
       Votre commande a \u00e9t\u00e9 accept\u00e9e et est en cours de traitement.
     </p>
-    <p style="color:#a0a0b8;margin:0 0 4px;font-size:14px;">
-      R\u00e9f\u00e9rence : <strong style="color:#e4e4f0;font-family:monospace;background:#1e1e3a;padding:2px 8px;border-radius:4px;">${data.orderRef}</strong>
+    <p style="color:#666;margin:0 0 4px;font-size:14px;">
+      R\u00e9f\u00e9rence : <strong style="color:#222;font-family:monospace;background:#f0f0f0;padding:2px 8px;border-radius:4px;">${data.orderRef}</strong>
     </p>
-    ${data.invoiceNumber ? `<p style="color:#a0a0b8;margin:0 0 4px;font-size:14px;">
-      Facture : <strong style="color:#e4e4f0;font-family:monospace;background:#1e1e3a;padding:2px 8px;border-radius:4px;">${data.invoiceNumber}</strong>
+    ${data.invoiceNumber ? `<p style="color:#666;margin:0 0 4px;font-size:14px;">
+      Facture : <strong style="color:#222;font-family:monospace;background:#f0f0f0;padding:2px 8px;border-radius:4px;">${data.invoiceNumber}</strong>
     </p>` : ''}
-    <p style="color:#a0a0b8;margin:0 0 24px;font-size:14px;">
-      Date : <strong style="color:#e4e4f0;">${dateFr}</strong>
+    <p style="color:#666;margin:0 0 24px;font-size:14px;">
+      Date : <strong style="color:#222;">${dateFr}</strong>
     </p>
 
     <!-- Adresse emettrice -->
     <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px;">
-      <tr><td style="padding:12px 16px;background:rgba(139,92,246,0.05);border-radius:8px;">
-        <p style="margin:0;color:#e4e4f0;font-weight:600;font-size:13px;">Massive Medias</p>
-        <p style="margin:2px 0 0;color:#a0a0b8;font-size:12px;line-height:1.4;">5338 rue Marquette, Montreal, QC H2J 3Z3<br>TPS : 732457635RT0001 | TVQ : 4012577678TQ0001 | NEQ : 2269057891</p>
+      <tr><td style="padding:12px 16px;background:#f7f7f7;border-radius:8px;">
+        <p style="margin:0;color:#222;font-weight:600;font-size:13px;">Massive Medias</p>
+        <p style="margin:2px 0 0;color:#666;font-size:12px;line-height:1.4;">5338 rue Marquette, Montreal, QC H2J 3Z3<br>TPS : 732457635RT0001 | TVQ : 4012577678TQ0001 | NEQ : 2269057891</p>
       </td></tr>
     </table>
 
     <!-- Items table -->
     <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin-bottom:20px;">
       <tr style="border-bottom:2px solid #FF52A0;">
-        <th style="text-align:left;padding:8px 12px;color:#a0a0b8;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Produit</th>
-        <th style="text-align:center;padding:8px 12px;color:#a0a0b8;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Qt\u00e9</th>
-        <th style="text-align:right;padding:8px 12px;color:#a0a0b8;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Prix</th>
+        <th style="text-align:left;padding:8px 12px;color:#666;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Produit</th>
+        <th style="text-align:center;padding:8px 12px;color:#666;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Qt\u00e9</th>
+        <th style="text-align:right;padding:8px 12px;color:#666;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Prix</th>
       </tr>
       ${itemRows}
     </table>
@@ -172,21 +164,21 @@ function buildOrderConfirmationHtml(data: OrderEmailData): string {
     <!-- Totals -->
     <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
       <tr>
-        <td style="padding:4px 12px;color:#a0a0b8;font-size:14px;">Sous-total</td>
-        <td style="padding:4px 12px;text-align:right;color:#e4e4f0;font-size:14px;">${formatPrice(data.subtotal)}$</td>
+        <td style="padding:4px 12px;color:#666;font-size:14px;">Sous-total</td>
+        <td style="padding:4px 12px;text-align:right;color:#222;font-size:14px;">${formatPrice(data.subtotal)}$</td>
       </tr>
       ${data.promoCode && data.promoDiscount ? '<tr><td style="padding:4px 12px;color:#4ade80;font-size:14px;">Code promo : ' + data.promoCode + '</td><td style="padding:4px 12px;text-align:right;color:#4ade80;font-size:14px;font-weight:600;">-' + formatPrice(data.promoDiscount) + '$</td></tr>' : ''}
       <tr>
-        <td style="padding:4px 12px;color:#a0a0b8;font-size:14px;">Livraison</td>
-        <td style="padding:4px 12px;text-align:right;color:#e4e4f0;font-size:14px;">${data.shipping === 0 ? 'Gratuit' : formatPrice(data.shipping) + '$'}</td>
+        <td style="padding:4px 12px;color:#666;font-size:14px;">Livraison</td>
+        <td style="padding:4px 12px;text-align:right;color:#222;font-size:14px;">${data.shipping === 0 ? 'Gratuit' : formatPrice(data.shipping) + '$'}</td>
       </tr>
       <tr>
-        <td style="padding:4px 12px;color:#a0a0b8;font-size:14px;">TPS (5%) <span style="font-size:11px;color:#777;">- 732457635RT0001</span></td>
-        <td style="padding:4px 12px;text-align:right;color:#e4e4f0;font-size:14px;">${formatPrice(data.tps)}$</td>
+        <td style="padding:4px 12px;color:#666;font-size:14px;">TPS (5%) <span style="font-size:11px;color:#777;">- 732457635RT0001</span></td>
+        <td style="padding:4px 12px;text-align:right;color:#222;font-size:14px;">${formatPrice(data.tps)}$</td>
       </tr>
       ${data.tvq > 0 ? `<tr>
-        <td style="padding:4px 12px;color:#a0a0b8;font-size:14px;">TVQ (9.975%) <span style="font-size:11px;color:#777;">- 4012577678TQ0001</span></td>
-        <td style="padding:4px 12px;text-align:right;color:#e4e4f0;font-size:14px;">${formatPrice(data.tvq)}$</td>
+        <td style="padding:4px 12px;color:#666;font-size:14px;">TVQ (9.975%) <span style="font-size:11px;color:#777;">- 4012577678TQ0001</span></td>
+        <td style="padding:4px 12px;text-align:right;color:#222;font-size:14px;">${formatPrice(data.tvq)}$</td>
       </tr>` : ''}
       <tr>
         <td colspan="2" style="padding:8px 12px 0;">
@@ -194,27 +186,27 @@ function buildOrderConfirmationHtml(data: OrderEmailData): string {
         </td>
       </tr>
       <tr>
-        <td style="padding:12px 12px 4px;color:#e4e4f0;font-size:16px;font-weight:700;">Total</td>
+        <td style="padding:12px 12px 4px;color:#222;font-size:16px;font-weight:700;">Total</td>
         <td style="padding:12px 12px 4px;text-align:right;color:#FF52A0;font-size:20px;font-weight:700;">${formatPrice(data.total)}$</td>
       </tr>
       <tr>
-        <td style="padding:4px 12px;color:#a0a0b8;font-size:12px;">Paiement par carte de cr\u00e9dit</td>
+        <td style="padding:4px 12px;color:#666;font-size:12px;">Paiement par carte de cr\u00e9dit</td>
         <td></td>
       </tr>
     </table>
 
     <!-- Shipping address -->
     <table width="100%" cellpadding="0" cellspacing="0">
-      <tr><td style="padding:16px;background:rgba(139,92,246,0.08);border-radius:8px;border:1px solid rgba(139,92,246,0.15);">
-        <p style="margin:0 0 4px;color:#e4e4f0;font-weight:600;font-size:13px;text-transform:uppercase;letter-spacing:0.5px;">Adresse de livraison</p>
-        <p style="margin:0;color:#a0a0b8;font-size:14px;line-height:1.5;">${addressBlock}</p>
+      <tr><td style="padding:16px;background:#f7f7f7;border-radius:8px;border:1px solid #eee;">
+        <p style="margin:0 0 4px;color:#222;font-weight:600;font-size:13px;text-transform:uppercase;letter-spacing:0.5px;">Adresse de livraison</p>
+        <p style="margin:0;color:#666;font-size:14px;line-height:1.5;">${addressBlock}</p>
       </td></tr>
     </table>
 
     <!-- Delay notice -->
     <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:16px;">
       <tr><td style="padding:16px;background:rgba(255,82,160,0.06);border-radius:8px;border:1px solid rgba(255,82,160,0.15);">
-        <p style="margin:0;color:#e4e4f0;font-size:14px;line-height:1.6;">
+        <p style="margin:0;color:#222;font-size:14px;line-height:1.6;">
           &#128666; Votre commande sera traitee dans un delai de 3 a 5 jours ouvrables.
           Vous recevrez un courriel de confirmation lors de l'expedition.
           Pour toute question : <a href="mailto:massivemedias@gmail.com" style="color:#FF52A0;text-decoration:none;">massivemedias@gmail.com</a>
@@ -224,8 +216,8 @@ function buildOrderConfirmationHtml(data: OrderEmailData): string {
 
     <!-- Invoice notice -->
     <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:12px;">
-      <tr><td style="padding:16px;background:rgba(139,92,246,0.06);border-radius:8px;border:1px solid rgba(139,92,246,0.15);">
-        <p style="margin:0;color:#e4e4f0;font-size:14px;line-height:1.6;">
+      <tr><td style="padding:16px;background:#f7f7f7;border-radius:8px;border:1px solid #eee;">
+        <p style="margin:0;color:#222;font-size:14px;line-height:1.6;">
           ${data.supabaseUserId ? '&#128196; Votre facture est disponible dans votre compte sous <a href="https://massivemedias.com/account?tab=commandes" style="color:#FF52A0;text-decoration:none;font-weight:600;">Mes commandes</a>.' : '&#128196; Creez un compte sur <a href="https://massivemedias.com/account" style="color:#FF52A0;text-decoration:none;font-weight:600;">massivemedias.com</a> pour acceder a vos factures et suivre vos commandes.'}
         </p>
       </td></tr>
@@ -248,15 +240,15 @@ interface ContactReplyData {
 
 function buildContactReplyHtml(data: ContactReplyData): string {
   const content = `
-    <h2 style="color:#e4e4f0;margin:0 0 8px;font-size:22px;">Bonjour ${data.customerName},</h2>
+    <h2 style="color:#222;margin:0 0 8px;font-size:20px;font-weight:600;">Bonjour ${data.customerName},</h2>
 
-    <div style="color:#e4e4f0;font-size:15px;line-height:1.7;margin:16px 0 24px;white-space:pre-wrap;">${data.replyMessage}</div>
+    <div style="color:#333;font-size:15px;line-height:1.7;margin:16px 0 24px;white-space:pre-wrap;">${data.replyMessage}</div>
 
     <!-- Original message -->
     <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:8px;">
-      <tr><td style="padding:16px;background:rgba(139,92,246,0.08);border-radius:8px;border:1px solid rgba(139,92,246,0.15);border-left:3px solid #FF52A0;">
-        <p style="margin:0 0 6px;color:#a0a0b8;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">Votre message original</p>
-        <p style="margin:0;color:#a0a0b8;font-size:13px;line-height:1.5;white-space:pre-wrap;">${data.originalMessage}</p>
+      <tr><td style="padding:14px 16px;background:#f7f7f7;border-radius:6px;border-left:3px solid #FF52A0;">
+        <p style="margin:0 0 6px;color:#999;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">Votre message original</p>
+        <p style="margin:0;color:#666;font-size:13px;line-height:1.5;white-space:pre-wrap;">${data.originalMessage}</p>
       </td></tr>
     </table>
   `;
@@ -300,13 +292,13 @@ interface TestimonialRequestData {
 
 function buildTestimonialRequestHtml(data: TestimonialRequestData): string {
   const content = `
-    <h2 style="color:#e4e4f0;margin:0 0 8px;font-size:22px;">Bonjour ${data.customerName},</h2>
+    <h2 style="color:#222;margin:0 0 8px;font-size:22px;">Bonjour ${data.customerName},</h2>
 
-    <p style="color:#a0a0b8;margin:16px 0;font-size:15px;line-height:1.7;">
-      Merci d'avoir fait confiance \u00e0 Massive Medias${data.orderRef ? ` pour votre commande <strong style="color:#e4e4f0;font-family:monospace;background:#1e1e3a;padding:2px 8px;border-radius:4px;">${data.orderRef}</strong>` : ''} !
+    <p style="color:#666;margin:16px 0;font-size:15px;line-height:1.7;">
+      Merci d'avoir fait confiance \u00e0 Massive Medias${data.orderRef ? ` pour votre commande <strong style="color:#222;font-family:monospace;background:#f0f0f0;padding:2px 8px;border-radius:4px;">${data.orderRef}</strong>` : ''} !
     </p>
 
-    <p style="color:#a0a0b8;margin:16px 0;font-size:15px;line-height:1.7;">
+    <p style="color:#666;margin:16px 0;font-size:15px;line-height:1.7;">
       Votre avis est precieux pour nous. Prenez un moment pour partager votre experience - ca ne prend que 2 minutes et ca nous aide enormement.
     </p>
 
@@ -397,54 +389,54 @@ function buildContractSignedHtml(data: ContractEmailData, isForArtist: boolean):
   const title = isForArtist ? 'Copie de ton contrat signe' : `Nouveau contrat signe - ${data.artistName}`;
 
   const content = `
-    <h2 style="color:#e4e4f0;margin:0 0 16px;font-size:22px;">${title}</h2>
+    <h2 style="color:#222;margin:0 0 16px;font-size:22px;">${title}</h2>
 
-    ${isForArtist ? `<p style="color:#a0a0b8;margin:0 0 20px;font-size:15px;line-height:1.6;">
+    ${isForArtist ? `<p style="color:#666;margin:0 0 20px;font-size:15px;line-height:1.6;">
       F\u00e9licitations ! Ton contrat de partenariat artiste avec Massive Medias a \u00e9t\u00e9 sign\u00e9 avec succ\u00e8s. Voici un r\u00e9sum\u00e9 des informations enregistr\u00e9es.
     </p>` : ''}
 
     <!-- Infos artiste -->
     <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
       <tr>
-        <td style="padding:10px 14px;border-bottom:1px solid #2a2a4a;color:#a0a0b8;font-size:13px;width:140px;">Nom legal</td>
-        <td style="padding:10px 14px;border-bottom:1px solid #2a2a4a;color:#e4e4f0;font-size:14px;font-weight:600;">${data.artistName}</td>
+        <td style="padding:10px 14px;border-bottom:1px solid #eee;color:#666;font-size:13px;width:140px;">Nom legal</td>
+        <td style="padding:10px 14px;border-bottom:1px solid #eee;color:#222;font-size:14px;font-weight:600;">${data.artistName}</td>
       </tr>
       ${data.nomArtiste ? `<tr>
-        <td style="padding:10px 14px;border-bottom:1px solid #2a2a4a;color:#a0a0b8;font-size:13px;">Nom d'artiste</td>
-        <td style="padding:10px 14px;border-bottom:1px solid #2a2a4a;color:#FF52A0;font-size:14px;font-weight:600;">${data.nomArtiste}</td>
+        <td style="padding:10px 14px;border-bottom:1px solid #eee;color:#666;font-size:13px;">Nom d'artiste</td>
+        <td style="padding:10px 14px;border-bottom:1px solid #eee;color:#FF52A0;font-size:14px;font-weight:600;">${data.nomArtiste}</td>
       </tr>` : ''}
       <tr>
-        <td style="padding:10px 14px;border-bottom:1px solid #2a2a4a;color:#a0a0b8;font-size:13px;">Courriel</td>
-        <td style="padding:10px 14px;border-bottom:1px solid #2a2a4a;color:#e4e4f0;font-size:14px;">${data.artistEmail}</td>
+        <td style="padding:10px 14px;border-bottom:1px solid #eee;color:#666;font-size:13px;">Courriel</td>
+        <td style="padding:10px 14px;border-bottom:1px solid #eee;color:#222;font-size:14px;">${data.artistEmail}</td>
       </tr>
       <tr>
-        <td style="padding:10px 14px;border-bottom:1px solid #2a2a4a;color:#a0a0b8;font-size:13px;">Telephone</td>
-        <td style="padding:10px 14px;border-bottom:1px solid #2a2a4a;color:#e4e4f0;font-size:14px;">${data.telephone}</td>
+        <td style="padding:10px 14px;border-bottom:1px solid #eee;color:#666;font-size:13px;">Telephone</td>
+        <td style="padding:10px 14px;border-bottom:1px solid #eee;color:#222;font-size:14px;">${data.telephone}</td>
       </tr>
       <tr>
-        <td style="padding:10px 14px;border-bottom:1px solid #2a2a4a;color:#a0a0b8;font-size:13px;">Adresse</td>
-        <td style="padding:10px 14px;border-bottom:1px solid #2a2a4a;color:#e4e4f0;font-size:14px;">${data.adresse}</td>
+        <td style="padding:10px 14px;border-bottom:1px solid #eee;color:#666;font-size:13px;">Adresse</td>
+        <td style="padding:10px 14px;border-bottom:1px solid #eee;color:#222;font-size:14px;">${data.adresse}</td>
       </tr>
       <tr>
-        <td style="padding:10px 14px;border-bottom:1px solid #2a2a4a;color:#a0a0b8;font-size:13px;">Contrat</td>
-        <td style="padding:10px 14px;border-bottom:1px solid #2a2a4a;color:#4ade80;font-size:14px;font-weight:700;">${data.contractVersion}</td>
+        <td style="padding:10px 14px;border-bottom:1px solid #eee;color:#666;font-size:13px;">Contrat</td>
+        <td style="padding:10px 14px;border-bottom:1px solid #eee;color:#4ade80;font-size:14px;font-weight:700;">${data.contractVersion}</td>
       </tr>
       <tr>
-        <td style="padding:10px 14px;color:#a0a0b8;font-size:13px;">Date de signature</td>
-        <td style="padding:10px 14px;color:#e4e4f0;font-size:14px;">${date}</td>
+        <td style="padding:10px 14px;color:#666;font-size:13px;">Date de signature</td>
+        <td style="padding:10px 14px;color:#222;font-size:14px;">${date}</td>
       </tr>
     </table>
 
     <!-- Signatures -->
     <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:8px;">
       <tr>
-        <td style="width:50%;padding:16px;background:rgba(139,92,246,0.08);border-radius:10px 0 0 10px;border:1px solid rgba(139,92,246,0.15);border-right:none;vertical-align:top;">
-          <p style="margin:0 0 8px;color:#a0a0b8;font-size:11px;text-transform:uppercase;letter-spacing:1px;font-weight:600;">Massive Medias</p>
+        <td style="width:50%;padding:16px;background:#f7f7f7;border-radius:10px 0 0 10px;border:1px solid #eee;border-right:none;vertical-align:top;">
+          <p style="margin:0 0 8px;color:#666;font-size:11px;text-transform:uppercase;letter-spacing:1px;font-weight:600;">Massive Medias</p>
           <p style="font-family:'Segoe Script','Comic Sans MS',cursive;color:#FF52A0;font-size:22px;margin:0;">Yan Morin</p>
           <p style="color:#666;font-size:11px;margin:6px 0 0;">Proprietaire - NEQ: 2269057891</p>
         </td>
-        <td style="width:50%;padding:16px;background:rgba(139,92,246,0.08);border-radius:0 10px 10px 0;border:1px solid rgba(139,92,246,0.15);border-left:none;vertical-align:top;">
-          <p style="margin:0 0 8px;color:#a0a0b8;font-size:11px;text-transform:uppercase;letter-spacing:1px;font-weight:600;">L'Artiste</p>
+        <td style="width:50%;padding:16px;background:#f7f7f7;border-radius:0 10px 10px 0;border:1px solid #eee;border-left:none;vertical-align:top;">
+          <p style="margin:0 0 8px;color:#666;font-size:11px;text-transform:uppercase;letter-spacing:1px;font-weight:600;">L'Artiste</p>
           <p style="font-family:'Segoe Script','Comic Sans MS',cursive;color:#4ade80;font-size:22px;margin:0;">${data.artistName}</p>
           <p style="color:#666;font-size:11px;margin:6px 0 0;">${date}</p>
         </td>
@@ -520,40 +512,40 @@ function buildArtistSaleNotificationHtml(data: ArtistSaleNotificationData): stri
 
   const itemRows = data.items.map(item => `
     <tr>
-      <td style="padding:10px 12px;border-bottom:1px solid #2a2a4a;color:#e4e4f0;font-size:14px;">
+      <td style="padding:10px 12px;border-bottom:1px solid #eee;color:#222;font-size:14px;">
         ${item.productName}
       </td>
-      <td style="padding:10px 12px;border-bottom:1px solid #2a2a4a;color:#FF52A0;font-size:14px;text-align:center;font-weight:600;">
+      <td style="padding:10px 12px;border-bottom:1px solid #eee;color:#FF52A0;font-size:14px;text-align:center;font-weight:600;">
         ${item.size}
       </td>
-      <td style="padding:10px 12px;border-bottom:1px solid #2a2a4a;color:#a0a0b8;font-size:14px;text-align:center;">
+      <td style="padding:10px 12px;border-bottom:1px solid #eee;color:#666;font-size:14px;text-align:center;">
         ${item.finish}
       </td>
-      <td style="padding:10px 12px;border-bottom:1px solid #2a2a4a;color:#e4e4f0;font-size:14px;text-align:center;font-weight:600;">
+      <td style="padding:10px 12px;border-bottom:1px solid #eee;color:#222;font-size:14px;text-align:center;font-weight:600;">
         ${item.quantity}
       </td>
     </tr>
   `).join('');
 
   const content = `
-    <h2 style="color:#e4e4f0;margin:0 0 8px;font-size:22px;">&#127881; Nouvelle vente !</h2>
-    <p style="color:#a0a0b8;margin:0 0 24px;font-size:15px;line-height:1.5;">
+    <h2 style="color:#222;margin:0 0 8px;font-size:22px;">&#127881; Nouvelle vente !</h2>
+    <p style="color:#666;margin:0 0 24px;font-size:15px;line-height:1.5;">
       Salut ${data.artistName}, quelqu'un vient d'acheter ${totalQty > 1 ? totalQty + ' de tes oeuvres' : 'une de tes oeuvres'} !
-      ${data.customerCity ? `<br>Destination : <strong style="color:#e4e4f0;">${data.customerCity}</strong>` : ''}
+      ${data.customerCity ? `<br>Destination : <strong style="color:#222;">${data.customerCity}</strong>` : ''}
     </p>
 
     <!-- Items table -->
     <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin-bottom:20px;">
       <tr style="border-bottom:2px solid #FF52A0;">
-        <th style="text-align:left;padding:8px 12px;color:#a0a0b8;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Oeuvre</th>
-        <th style="text-align:center;padding:8px 12px;color:#a0a0b8;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Format</th>
-        <th style="text-align:center;padding:8px 12px;color:#a0a0b8;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Serie</th>
-        <th style="text-align:center;padding:8px 12px;color:#a0a0b8;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Qte</th>
+        <th style="text-align:left;padding:8px 12px;color:#666;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Oeuvre</th>
+        <th style="text-align:center;padding:8px 12px;color:#666;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Format</th>
+        <th style="text-align:center;padding:8px 12px;color:#666;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Serie</th>
+        <th style="text-align:center;padding:8px 12px;color:#666;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Qte</th>
       </tr>
       ${itemRows}
     </table>
 
-    <p style="color:#a0a0b8;margin:0 0 4px;font-size:13px;">Date : ${date}</p>
+    <p style="color:#666;margin:0 0 4px;font-size:13px;">Date : ${date}</p>
 
     <!-- Dashboard CTA -->
     <table width="100%" cellpadding="0" cellspacing="0" style="margin:24px 0 0;">
@@ -624,13 +616,13 @@ function buildNewOrderNotificationHtml(data: NewOrderNotificationData): string {
 
   const itemRows = data.items.map(item => `
     <tr>
-      <td style="padding:8px 12px;border-bottom:1px solid #2a2a4a;color:#e4e4f0;font-size:13px;">
+      <td style="padding:8px 12px;border-bottom:1px solid #eee;color:#222;font-size:13px;">
         ${item.productName}${item.size ? ` - ${item.size}` : ''}${item.finish ? ` (${item.finish})` : ''}
       </td>
-      <td style="padding:8px 12px;border-bottom:1px solid #2a2a4a;text-align:center;color:#e4e4f0;font-size:13px;">
+      <td style="padding:8px 12px;border-bottom:1px solid #eee;text-align:center;color:#222;font-size:13px;">
         ${item.quantity}
       </td>
-      <td style="padding:8px 12px;border-bottom:1px solid #2a2a4a;text-align:right;color:#e4e4f0;font-size:13px;">
+      <td style="padding:8px 12px;border-bottom:1px solid #eee;text-align:right;color:#222;font-size:13px;">
         ${(typeof item.totalPrice === 'number' ? item.totalPrice.toFixed(2) : '0.00')}$
       </td>
     </tr>
@@ -640,48 +632,48 @@ function buildNewOrderNotificationHtml(data: NewOrderNotificationData): string {
   const addressBlock = addr ? `${addr.city}, ${addr.province} ${addr.postalCode}` : 'N/A';
 
   const content = `
-    <h2 style="color:#e4e4f0;margin:0 0 8px;font-size:22px;">&#128176; Nouvelle vente !</h2>
-    <p style="color:#a0a0b8;margin:0 0 20px;font-size:15px;line-height:1.5;">
-      ${itemCount} article${itemCount > 1 ? 's' : ''} commande${itemCount > 1 ? 's' : ''} par <strong style="color:#e4e4f0;">${data.customerName}</strong>
+    <h2 style="color:#222;margin:0 0 8px;font-size:22px;">&#128176; Nouvelle vente !</h2>
+    <p style="color:#666;margin:0 0 20px;font-size:15px;line-height:1.5;">
+      ${itemCount} article${itemCount > 1 ? 's' : ''} commande${itemCount > 1 ? 's' : ''} par <strong style="color:#222;">${data.customerName}</strong>
     </p>
 
     <!-- Client info -->
     <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:16px;">
       <tr>
-        <td style="padding:8px 14px;border-bottom:1px solid #2a2a4a;color:#a0a0b8;font-size:13px;width:100px;">Client</td>
-        <td style="padding:8px 14px;border-bottom:1px solid #2a2a4a;color:#e4e4f0;font-size:14px;font-weight:600;">${data.customerName}</td>
+        <td style="padding:8px 14px;border-bottom:1px solid #eee;color:#666;font-size:13px;width:100px;">Client</td>
+        <td style="padding:8px 14px;border-bottom:1px solid #eee;color:#222;font-size:14px;font-weight:600;">${data.customerName}</td>
       </tr>
       <tr>
-        <td style="padding:8px 14px;border-bottom:1px solid #2a2a4a;color:#a0a0b8;font-size:13px;">Courriel</td>
-        <td style="padding:8px 14px;border-bottom:1px solid #2a2a4a;color:#e4e4f0;font-size:14px;">${data.customerEmail}</td>
+        <td style="padding:8px 14px;border-bottom:1px solid #eee;color:#666;font-size:13px;">Courriel</td>
+        <td style="padding:8px 14px;border-bottom:1px solid #eee;color:#222;font-size:14px;">${data.customerEmail}</td>
       </tr>
       <tr>
-        <td style="padding:8px 14px;border-bottom:1px solid #2a2a4a;color:#a0a0b8;font-size:13px;">Destination</td>
-        <td style="padding:8px 14px;border-bottom:1px solid #2a2a4a;color:#e4e4f0;font-size:14px;">${addressBlock}</td>
+        <td style="padding:8px 14px;border-bottom:1px solid #eee;color:#666;font-size:13px;">Destination</td>
+        <td style="padding:8px 14px;border-bottom:1px solid #eee;color:#222;font-size:14px;">${addressBlock}</td>
       </tr>
       <tr>
-        <td style="padding:8px 14px;border-bottom:1px solid #2a2a4a;color:#a0a0b8;font-size:13px;">Reference</td>
-        <td style="padding:8px 14px;border-bottom:1px solid #2a2a4a;color:#FF52A0;font-size:14px;font-weight:700;font-family:monospace;">${data.orderRef}</td>
+        <td style="padding:8px 14px;border-bottom:1px solid #eee;color:#666;font-size:13px;">Reference</td>
+        <td style="padding:8px 14px;border-bottom:1px solid #eee;color:#FF52A0;font-size:14px;font-weight:700;font-family:monospace;">${data.orderRef}</td>
       </tr>
       <tr>
-        <td style="padding:8px 14px;border-bottom:1px solid #2a2a4a;color:#a0a0b8;font-size:13px;">Date</td>
-        <td style="padding:8px 14px;border-bottom:1px solid #2a2a4a;color:#e4e4f0;font-size:14px;">${date}</td>
+        <td style="padding:8px 14px;border-bottom:1px solid #eee;color:#666;font-size:13px;">Date</td>
+        <td style="padding:8px 14px;border-bottom:1px solid #eee;color:#222;font-size:14px;">${date}</td>
       </tr>
       <tr>
-        <td style="padding:8px 14px;border-bottom:1px solid #2a2a4a;color:#a0a0b8;font-size:13px;">Design pret</td>
-        <td style="padding:8px 14px;border-bottom:1px solid #2a2a4a;color:${data.designReady ? '#4ade80' : '#f59e0b'};font-size:14px;font-weight:600;">${data.designReady ? 'Oui' : 'Non - design a faire'}</td>
+        <td style="padding:8px 14px;border-bottom:1px solid #eee;color:#666;font-size:13px;">Design pret</td>
+        <td style="padding:8px 14px;border-bottom:1px solid #eee;color:${data.designReady ? '#4ade80' : '#f59e0b'};font-size:14px;font-weight:600;">${data.designReady ? 'Oui' : 'Non - design a faire'}</td>
       </tr>
-      ${data.notes ? '<tr><td style="padding:8px 14px;border-bottom:1px solid #2a2a4a;color:#a0a0b8;font-size:13px;">Notes client</td><td style="padding:8px 14px;border-bottom:1px solid #2a2a4a;color:#e4e4f0;font-size:14px;">' + data.notes + '</td></tr>' : ''}
+      ${data.notes ? '<tr><td style="padding:8px 14px;border-bottom:1px solid #eee;color:#666;font-size:13px;">Notes client</td><td style="padding:8px 14px;border-bottom:1px solid #eee;color:#222;font-size:14px;">' + data.notes + '</td></tr>' : ''}
     </table>
 
-    ${data.uploadedFiles && data.uploadedFiles.length > 0 ? '<table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:16px;"><tr><td style="padding:16px;background:rgba(139,92,246,0.08);border-radius:8px;border:1px solid rgba(139,92,246,0.15);"><p style="margin:0 0 8px;color:#a0a0b8;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Fichiers envoyes par le client</p>' + data.uploadedFiles.map((f: { name: string; url: string }) => '<p style="margin:4px 0;"><a href="' + f.url + '" style="color:#FF52A0;text-decoration:none;font-size:14px;">&#128206; ' + f.name + '</a></p>').join('') + '</td></tr></table>' : ''}
+    ${data.uploadedFiles && data.uploadedFiles.length > 0 ? '<table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:16px;"><tr><td style="padding:16px;background:#f7f7f7;border-radius:8px;border:1px solid #eee;"><p style="margin:0 0 8px;color:#666;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Fichiers envoyes par le client</p>' + data.uploadedFiles.map((f: { name: string; url: string }) => '<p style="margin:4px 0;"><a href="' + f.url + '" style="color:#FF52A0;text-decoration:none;font-size:14px;">&#128206; ' + f.name + '</a></p>').join('') + '</td></tr></table>' : ''}
 
     <!-- Items table -->
     <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin-bottom:16px;">
       <tr style="border-bottom:2px solid #FF52A0;">
-        <th style="text-align:left;padding:8px 12px;color:#a0a0b8;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">Produit</th>
-        <th style="text-align:center;padding:8px 12px;color:#a0a0b8;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">Qte</th>
-        <th style="text-align:right;padding:8px 12px;color:#a0a0b8;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">Prix</th>
+        <th style="text-align:left;padding:8px 12px;color:#666;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">Produit</th>
+        <th style="text-align:center;padding:8px 12px;color:#666;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">Qte</th>
+        <th style="text-align:right;padding:8px 12px;color:#666;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">Prix</th>
       </tr>
       ${itemRows}
     </table>
@@ -689,24 +681,24 @@ function buildNewOrderNotificationHtml(data: NewOrderNotificationData): string {
     <!-- Total -->
     <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px;">
       <tr>
-        <td style="padding:4px 12px;color:#a0a0b8;font-size:13px;">Sous-total</td>
-        <td style="padding:4px 12px;text-align:right;color:#e4e4f0;font-size:13px;">${formatPrice(data.subtotal)}$</td>
+        <td style="padding:4px 12px;color:#666;font-size:13px;">Sous-total</td>
+        <td style="padding:4px 12px;text-align:right;color:#222;font-size:13px;">${formatPrice(data.subtotal)}$</td>
       </tr>
       ${data.promoCode && data.promoDiscount ? '<tr><td style="padding:4px 12px;color:#4ade80;font-size:13px;">Code promo : ' + data.promoCode + '</td><td style="padding:4px 12px;text-align:right;color:#4ade80;font-size:13px;font-weight:600;">-' + formatPrice(data.promoDiscount) + '$</td></tr>' : ''}
       <tr>
-        <td style="padding:4px 12px;color:#a0a0b8;font-size:13px;">Livraison</td>
-        <td style="padding:4px 12px;text-align:right;color:#e4e4f0;font-size:13px;">${data.shipping === 0 ? 'Gratuit' : formatPrice(data.shipping) + '$'}</td>
+        <td style="padding:4px 12px;color:#666;font-size:13px;">Livraison</td>
+        <td style="padding:4px 12px;text-align:right;color:#222;font-size:13px;">${data.shipping === 0 ? 'Gratuit' : formatPrice(data.shipping) + '$'}</td>
       </tr>
       <tr>
-        <td style="padding:4px 12px;color:#a0a0b8;font-size:13px;">TPS</td>
-        <td style="padding:4px 12px;text-align:right;color:#e4e4f0;font-size:13px;">${formatPrice(data.tps)}$</td>
+        <td style="padding:4px 12px;color:#666;font-size:13px;">TPS</td>
+        <td style="padding:4px 12px;text-align:right;color:#222;font-size:13px;">${formatPrice(data.tps)}$</td>
       </tr>
-      ${data.tvq > 0 ? '<tr><td style="padding:4px 12px;color:#a0a0b8;font-size:13px;">TVQ</td><td style="padding:4px 12px;text-align:right;color:#e4e4f0;font-size:13px;">' + formatPrice(data.tvq) + '$</td></tr>' : ''}
+      ${data.tvq > 0 ? '<tr><td style="padding:4px 12px;color:#666;font-size:13px;">TVQ</td><td style="padding:4px 12px;text-align:right;color:#222;font-size:13px;">' + formatPrice(data.tvq) + '$</td></tr>' : ''}
       <tr>
         <td colspan="2" style="padding:6px 12px 0;"><div style="border-top:2px solid #FF52A0;"></div></td>
       </tr>
       <tr>
-        <td style="padding:10px 12px 4px;color:#e4e4f0;font-size:16px;font-weight:700;">Total</td>
+        <td style="padding:10px 12px 4px;color:#222;font-size:16px;font-weight:700;">Total</td>
         <td style="padding:10px 12px 4px;text-align:right;color:#4ade80;font-size:22px;font-weight:900;">${formatPrice(data.total)}$</td>
       </tr>
     </table>
@@ -777,26 +769,26 @@ function buildTrackingEmailHtml(data: TrackingEmailData): string {
     : '5-10 jours ouvrables';
 
   const content = `
-    <h2 style="color:#e4e4f0;margin:0 0 8px;font-size:22px;">&#128230; Votre colis est en route !</h2>
-    <p style="color:#a0a0b8;margin:0 0 24px;font-size:15px;line-height:1.5;">
-      Bonjour ${data.customerName}, votre commande <strong style="color:#e4e4f0;font-family:monospace;background:#1e1e3a;padding:2px 8px;border-radius:4px;">${data.orderRef}</strong> a \u00e9t\u00e9 exp\u00e9di\u00e9e.
+    <h2 style="color:#222;margin:0 0 8px;font-size:22px;">&#128230; Votre colis est en route !</h2>
+    <p style="color:#666;margin:0 0 24px;font-size:15px;line-height:1.5;">
+      Bonjour ${data.customerName}, votre commande <strong style="color:#222;font-family:monospace;background:#f0f0f0;padding:2px 8px;border-radius:4px;">${data.orderRef}</strong> a \u00e9t\u00e9 exp\u00e9di\u00e9e.
     </p>
 
     <!-- Tracking info -->
     <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
-      <tr><td style="padding:20px;background:rgba(139,92,246,0.08);border-radius:12px;border:1px solid rgba(139,92,246,0.15);">
+      <tr><td style="padding:20px;background:#f7f7f7;border-radius:12px;border:1px solid #eee;">
         <table width="100%" cellpadding="0" cellspacing="0">
           <tr>
-            <td style="padding:8px 0;color:#a0a0b8;font-size:13px;">Transporteur</td>
-            <td style="padding:8px 0;text-align:right;color:#e4e4f0;font-size:14px;font-weight:600;">${carrierName}</td>
+            <td style="padding:8px 0;color:#666;font-size:13px;">Transporteur</td>
+            <td style="padding:8px 0;text-align:right;color:#222;font-size:14px;font-weight:600;">${carrierName}</td>
           </tr>
           <tr>
-            <td style="padding:8px 0;color:#a0a0b8;font-size:13px;">Numero de suivi</td>
+            <td style="padding:8px 0;color:#666;font-size:13px;">Numero de suivi</td>
             <td style="padding:8px 0;text-align:right;color:#FF52A0;font-size:14px;font-weight:700;font-family:monospace;">${data.trackingNumber}</td>
           </tr>
           <tr>
-            <td style="padding:8px 0;color:#a0a0b8;font-size:13px;">Delai estime</td>
-            <td style="padding:8px 0;text-align:right;color:#e4e4f0;font-size:14px;font-weight:600;">${deliveryEstimate}</td>
+            <td style="padding:8px 0;color:#666;font-size:13px;">Delai estime</td>
+            <td style="padding:8px 0;text-align:right;color:#222;font-size:14px;font-weight:600;">${deliveryEstimate}</td>
           </tr>
         </table>
       </td></tr>
@@ -874,13 +866,13 @@ function buildNewContactNotificationHtml(data: NewContactData): string {
 
   const rows = detailRows.map(r => `
     <tr>
-      <td style="padding:8px 14px;border-bottom:1px solid #2a2a4a;color:#a0a0b8;font-size:13px;width:100px;">${r!.label}</td>
-      <td style="padding:8px 14px;border-bottom:1px solid #2a2a4a;color:#e4e4f0;font-size:14px;font-weight:600;">${r!.value}</td>
+      <td style="padding:8px 14px;border-bottom:1px solid #eee;color:#666;font-size:13px;width:100px;">${r!.label}</td>
+      <td style="padding:8px 14px;border-bottom:1px solid #eee;color:#222;font-size:14px;font-weight:600;">${r!.value}</td>
     </tr>
   `).join('');
 
   const content = `
-    <h2 style="color:#e4e4f0;margin:0 0 16px;font-size:22px;">&#128172; Nouveau message de contact</h2>
+    <h2 style="color:#222;margin:0 0 16px;font-size:22px;">&#128172; Nouveau message de contact</h2>
 
     <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px;">
       ${rows}
@@ -888,9 +880,9 @@ function buildNewContactNotificationHtml(data: NewContactData): string {
 
     <!-- Message -->
     <table width="100%" cellpadding="0" cellspacing="0">
-      <tr><td style="padding:16px;background:rgba(139,92,246,0.08);border-radius:8px;border:1px solid rgba(139,92,246,0.15);border-left:3px solid #FF52A0;">
-        <p style="margin:0 0 6px;color:#a0a0b8;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">Message</p>
-        <p style="margin:0;color:#e4e4f0;font-size:14px;line-height:1.6;white-space:pre-wrap;">${data.message}</p>
+      <tr><td style="padding:16px;background:#f7f7f7;border-radius:8px;border:1px solid #eee;border-left:3px solid #FF52A0;">
+        <p style="margin:0 0 6px;color:#666;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">Message</p>
+        <p style="margin:0;color:#222;font-size:14px;line-height:1.6;white-space:pre-wrap;">${data.message}</p>
       </td></tr>
     </table>
 
@@ -941,24 +933,24 @@ export async function sendNewUserNotificationEmail(userName: string, userEmail: 
   const date = new Date().toLocaleDateString('fr-CA', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 
   const content = `
-    <h2 style="color:#e4e4f0;margin:0 0 16px;font-size:22px;">&#128100; Nouvelle inscription</h2>
+    <h2 style="color:#222;margin:0 0 16px;font-size:22px;">&#128100; Nouvelle inscription</h2>
 
     <table width="100%" cellpadding="0" cellspacing="0">
       <tr>
-        <td style="padding:10px 14px;border-bottom:1px solid #2a2a4a;color:#a0a0b8;font-size:13px;width:100px;">Nom</td>
-        <td style="padding:10px 14px;border-bottom:1px solid #2a2a4a;color:#e4e4f0;font-size:15px;font-weight:600;">${userName || 'Sans nom'}</td>
+        <td style="padding:10px 14px;border-bottom:1px solid #eee;color:#666;font-size:13px;width:100px;">Nom</td>
+        <td style="padding:10px 14px;border-bottom:1px solid #eee;color:#222;font-size:15px;font-weight:600;">${userName || 'Sans nom'}</td>
       </tr>
       <tr>
-        <td style="padding:10px 14px;border-bottom:1px solid #2a2a4a;color:#a0a0b8;font-size:13px;">Courriel</td>
-        <td style="padding:10px 14px;border-bottom:1px solid #2a2a4a;color:#e4e4f0;font-size:15px;">${userEmail}</td>
+        <td style="padding:10px 14px;border-bottom:1px solid #eee;color:#666;font-size:13px;">Courriel</td>
+        <td style="padding:10px 14px;border-bottom:1px solid #eee;color:#222;font-size:15px;">${userEmail}</td>
       </tr>
       <tr>
-        <td style="padding:10px 14px;border-bottom:1px solid #2a2a4a;color:#a0a0b8;font-size:13px;">Methode</td>
-        <td style="padding:10px 14px;border-bottom:1px solid #2a2a4a;color:#FF52A0;font-size:14px;font-weight:600;">${provider}</td>
+        <td style="padding:10px 14px;border-bottom:1px solid #eee;color:#666;font-size:13px;">Methode</td>
+        <td style="padding:10px 14px;border-bottom:1px solid #eee;color:#FF52A0;font-size:14px;font-weight:600;">${provider}</td>
       </tr>
       <tr>
-        <td style="padding:10px 14px;color:#a0a0b8;font-size:13px;">Date</td>
-        <td style="padding:10px 14px;color:#e4e4f0;font-size:14px;">${date}</td>
+        <td style="padding:10px 14px;color:#666;font-size:13px;">Date</td>
+        <td style="padding:10px 14px;color:#222;font-size:14px;">${date}</td>
       </tr>
     </table>
 
@@ -1016,15 +1008,15 @@ function buildReservationNotificationHtml(data: ReservationNotificationData): st
 
   const rows = detailRows.map(r => `
     <tr>
-      <td style="padding:8px 14px;border-bottom:1px solid #2a2a4a;color:#a0a0b8;font-size:13px;width:120px;">${r!.label}</td>
-      <td style="padding:8px 14px;border-bottom:1px solid #2a2a4a;color:#e4e4f0;font-size:14px;font-weight:600;">${r!.value}</td>
+      <td style="padding:8px 14px;border-bottom:1px solid #eee;color:#666;font-size:13px;width:120px;">${r!.label}</td>
+      <td style="padding:8px 14px;border-bottom:1px solid #eee;color:#222;font-size:14px;font-weight:600;">${r!.value}</td>
     </tr>
   `).join('');
 
   const content = `
-    <h2 style="color:#e4e4f0;margin:0 0 16px;font-size:22px;">&#128205; Nouvelle reservation !</h2>
-    <p style="color:#a0a0b8;margin:0 0 20px;font-size:15px;line-height:1.5;">
-      Salut ${data.tatoueurName}, <strong style="color:#e4e4f0;">${data.clientName}</strong> veut reserver ton flash <strong style="color:#FF52A0;">${data.flashTitle}</strong>.
+    <h2 style="color:#222;margin:0 0 16px;font-size:22px;">&#128205; Nouvelle reservation !</h2>
+    <p style="color:#666;margin:0 0 20px;font-size:15px;line-height:1.5;">
+      Salut ${data.tatoueurName}, <strong style="color:#222;">${data.clientName}</strong> veut reserver ton flash <strong style="color:#FF52A0;">${data.flashTitle}</strong>.
     </p>
 
     <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px;">
@@ -1034,9 +1026,9 @@ function buildReservationNotificationHtml(data: ReservationNotificationData): st
     ${data.messageDuClient ? `
     <!-- Message du client -->
     <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
-      <tr><td style="padding:16px;background:rgba(139,92,246,0.08);border-radius:8px;border:1px solid rgba(139,92,246,0.15);border-left:3px solid #FF52A0;">
-        <p style="margin:0 0 6px;color:#a0a0b8;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">Message du client</p>
-        <p style="margin:0;color:#e4e4f0;font-size:14px;line-height:1.6;white-space:pre-wrap;">${data.messageDuClient}</p>
+      <tr><td style="padding:16px;background:#f7f7f7;border-radius:8px;border:1px solid #eee;border-left:3px solid #FF52A0;">
+        <p style="margin:0 0 6px;color:#666;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">Message du client</p>
+        <p style="margin:0;color:#222;font-size:14px;line-height:1.6;white-space:pre-wrap;">${data.messageDuClient}</p>
       </td></tr>
     </table>
     ` : ''}
@@ -1094,16 +1086,16 @@ interface TattooMessageEmailData {
 
 function buildTattooMessageHtml(data: TattooMessageEmailData): string {
   const content = `
-    <h2 style="color:#e4e4f0;margin:0 0 16px;font-size:22px;">&#128172; Nouveau message</h2>
-    <p style="color:#a0a0b8;margin:0 0 20px;font-size:15px;line-height:1.5;">
-      <strong style="color:#e4e4f0;">${data.senderName}</strong> t'a envoye un message${data.flashTitle ? ` concernant le flash <strong style="color:#FF52A0;">${data.flashTitle}</strong>` : ''}.
+    <h2 style="color:#222;margin:0 0 16px;font-size:22px;">&#128172; Nouveau message</h2>
+    <p style="color:#666;margin:0 0 20px;font-size:15px;line-height:1.5;">
+      <strong style="color:#222;">${data.senderName}</strong> t'a envoye un message${data.flashTitle ? ` concernant le flash <strong style="color:#FF52A0;">${data.flashTitle}</strong>` : ''}.
     </p>
 
     <!-- Message -->
     <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
-      <tr><td style="padding:16px;background:rgba(139,92,246,0.08);border-radius:8px;border:1px solid rgba(139,92,246,0.15);border-left:3px solid #FF52A0;">
-        <p style="margin:0 0 6px;color:#a0a0b8;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">Message</p>
-        <p style="margin:0;color:#e4e4f0;font-size:14px;line-height:1.6;white-space:pre-wrap;">${data.messageContent}</p>
+      <tr><td style="padding:16px;background:#f7f7f7;border-radius:8px;border:1px solid #eee;border-left:3px solid #FF52A0;">
+        <p style="margin:0 0 6px;color:#666;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">Message</p>
+        <p style="margin:0;color:#222;font-size:14px;line-height:1.6;white-space:pre-wrap;">${data.messageContent}</p>
       </td></tr>
     </table>
 
