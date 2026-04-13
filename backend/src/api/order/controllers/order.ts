@@ -18,6 +18,17 @@ const STICKER_STANDARD_TIERS: Record<number, number> = { 25: 30, 50: 47.50, 100:
 const STICKER_FX_TIERS: Record<number, number> = { 25: 35, 50: 57.50, 100: 100, 250: 225, 500: 425 };
 const FX_FINISHES = ['holographic', 'broken-glass', 'stars'];
 
+// Business card pricing tiers for server-side validation
+const BUSINESS_CARD_TIERS: Record<string, Record<number, number>> = {
+  'business-card-standard': { 100: 55, 250: 75, 500: 95, 1000: 130 },
+  'business-card-lamine':   { 100: 70, 250: 95, 500: 120, 1000: 165 },
+  'business-card-premium':  { 100: 120, 250: 175, 500: 250 },
+};
+
+// Flyer pricing tiers for server-side validation
+const FLYER_TIERS: Record<number, number> = { 50: 40, 100: 70, 150: 98, 250: 138, 500: 250 };
+const FLYER_RECTO_VERSO_MULTIPLIER = 1.3;
+
 export default factories.createCoreController('api::order.order', ({ strapi }) => ({
 
   async uploadFile(ctx) {
@@ -59,6 +70,31 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
           validPrice = tierPrice; // Override with server-validated price
         } else {
           strapi.log.warn(`Invalid sticker tier: qty=${item.quantity}, using client price ${item.totalPrice}`);
+        }
+      }
+
+      // Validate business card pricing against tiers
+      if (item.productId && item.productId.startsWith('business-card-')) {
+        const cardTiers = BUSINESS_CARD_TIERS[item.productId];
+        if (cardTiers) {
+          const tierPrice = cardTiers[item.quantity];
+          if (tierPrice) {
+            validPrice = tierPrice;
+          } else {
+            strapi.log.warn(`Invalid business card tier: ${item.productId} qty=${item.quantity}, using client price ${item.totalPrice}`);
+          }
+        }
+      }
+
+      // Validate flyer pricing against tiers
+      if (item.productId === 'flyer-a6') {
+        const tierPrice = FLYER_TIERS[item.quantity];
+        if (tierPrice) {
+          // Apply recto-verso multiplier if applicable
+          const isRectoVerso = item.finish && (item.finish.toLowerCase().includes('recto-verso') || item.finish.toLowerCase().includes('double'));
+          validPrice = isRectoVerso ? Math.round(tierPrice * FLYER_RECTO_VERSO_MULTIPLIER) : tierPrice;
+        } else {
+          strapi.log.warn(`Invalid flyer tier: qty=${item.quantity}, using client price ${item.totalPrice}`);
         }
       }
       subtotal += validPrice;
@@ -839,6 +875,60 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
       ctx.body = { success: true, data: order };
     } catch (err: any) {
       strapi.log.error('adminCreate error:', err);
+      return ctx.badRequest(err.message);
+    }
+  },
+
+  // POST /orders/:documentId/resend-notification - Renvoyer la notification admin
+  async resendAdminNotification(ctx) {
+    const { documentId } = ctx.params;
+    try {
+      const order = await strapi.documents('api::order.order').findFirst({
+        filters: { documentId },
+      }) as any;
+      if (!order) return ctx.notFound('Order not found');
+
+      const orderItems: any[] = Array.isArray(order.items) ? order.items : [];
+      const orderRef = (order.stripePaymentIntentId || order.documentId || '').slice(-8).toUpperCase();
+
+      const allUploadedFiles: { name: string; url: string }[] = [];
+      for (const item of orderItems) {
+        if (Array.isArray(item.uploadedFiles)) {
+          for (const f of item.uploadedFiles) {
+            if (f && (f.url || f.name)) {
+              allUploadedFiles.push({ name: f.name || f.url || 'Fichier', url: f.url || '' });
+            }
+          }
+        }
+      }
+
+      await sendNewOrderNotificationEmail({
+        orderRef,
+        customerName: order.customerName,
+        customerEmail: order.customerEmail,
+        items: orderItems.map((item: any) => ({
+          productName: item.productName || 'Produit',
+          quantity: item.quantity || 1,
+          totalPrice: item.totalPrice || 0,
+          size: item.size || '',
+          finish: item.finish || '',
+        })),
+        subtotal: order.subtotal || 0,
+        shipping: order.shipping || 0,
+        tps: order.tps || 0,
+        tvq: order.tvq || 0,
+        total: order.total || 0,
+        shippingAddress: order.shippingAddress || null,
+        uploadedFiles: allUploadedFiles.length > 0 ? allUploadedFiles : undefined,
+        notes: order.notes || undefined,
+        designReady: order.designReady !== false,
+        promoCode: order.promoCode || undefined,
+        promoDiscount: order.promoDiscount || undefined,
+      });
+
+      ctx.body = { success: true, message: 'Notification admin envoyee' };
+    } catch (err: any) {
+      strapi.log.error('resendAdminNotification error:', err);
       return ctx.badRequest(err.message);
     }
   },

@@ -112,6 +112,14 @@ export default {
         auth: false,
       },
     },
+    {
+      method: 'POST',
+      path: '/orders/:documentId/resend-notification',
+      handler: 'order.resendAdminNotification',
+      config: {
+        auth: false,
+      },
+    },
   ],
 };
 // Trigger redeploy 1774828260
