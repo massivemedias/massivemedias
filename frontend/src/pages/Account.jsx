@@ -6,7 +6,7 @@ import {
   Eye, EyeOff, ChevronDown, ChevronUp, Shield, Pencil, Save, ShoppingBag,
   ArrowRight, Gift, Copy, Heart, Clock, RotateCcw, MessageCircle, Download,
   Palette, Settings, Menu, X, Banknote, Receipt, BarChart3, DollarSign, Users, ScrollText, ImagePlus, FileText, ExternalLink,
-  LayoutDashboard, BookOpen, CalendarDays, Image, MessageSquare, Bot,
+  LayoutDashboard, BookOpen, CalendarDays, Image, MessageSquare, Bot, Tag, StickyNote,
 } from 'lucide-react';
 import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
@@ -203,19 +203,21 @@ function Account() {
   }, [user]);
 
   // Menu items pour le sidebar admin
+  // IMPORTANT: garder cette liste IDENTIQUE a NAV_ITEMS dans AdminLayout.jsx
   const ADMIN_NAV_ITEMS = [
-    { to: '/admin/dashboard', icon: BarChart3, fr: 'Dashboard', en: 'Dashboard', es: 'Dashboard' },
+    { to: '/admin/dashboard', icon: LayoutDashboard, fr: 'Dashboard', en: 'Dashboard', es: 'Dashboard' },
     { to: '/admin/massive-ia', icon: Bot, fr: 'ai.massive', en: 'ai.massive', es: 'ai.massive' },
-    { to: '/admin/notes', icon: FileText, fr: 'Notes', en: 'Notes', es: 'Notas' },
+    { to: '/admin/notes', icon: StickyNote, fr: 'Notes', en: 'Notes', es: 'Notas' },
     { to: '/admin/commandes', icon: ShoppingBag, fr: 'Commandes', en: 'Orders', es: 'Pedidos' },
-    { to: '/admin/factures', icon: FileText, fr: 'Factures', en: 'Invoices', es: 'Facturas' },
     { to: '/admin/commissions', icon: Banknote, fr: 'Commissions', en: 'Commissions', es: 'Comisiones' },
     { to: '/admin/inventaire', icon: Package, fr: 'Inventaire', en: 'Inventory', es: 'Inventario' },
-    { to: '/admin/messages', icon: MessageCircle, fr: 'Messages', en: 'Messages', es: 'Mensajes' },
+    { to: '/admin/messages', icon: MessageSquare, fr: 'Messages', en: 'Messages', es: 'Mensajes' },
     { to: '/admin/utilisateurs', icon: Users, fr: 'Utilisateurs', en: 'Users', es: 'Usuarios' },
-    { to: '/admin/depenses', icon: Receipt, fr: 'Dépenses', en: 'Expenses', es: 'Gastos' },
+    { to: '/admin/factures', icon: FileText, fr: 'Factures', en: 'Invoices', es: 'Facturas' },
+    { to: '/admin/temoignages', icon: Heart, fr: 'Temoignages', en: 'Testimonials', es: 'Testimonios' },
     { to: '/admin/stats', icon: BarChart3, fr: 'Stats', en: 'Stats', es: 'Stats' },
     { to: '/admin/tarifs', icon: DollarSign, fr: 'Tarifs', en: 'Pricing', es: 'Precios' },
+    { to: '/admin/promos', icon: Tag, fr: 'Codes Promo', en: 'Promo Codes', es: 'Codigos Promo' },
   ];
 
   const ACCOUNT_SIDEBAR_ITEMS = [
