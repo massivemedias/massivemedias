@@ -143,8 +143,8 @@ const siteContentData = {
   aboutSpaceLocationEn: 'Mile-End, Montreal',
   aboutSpaceTitleFr: "L'espace Versatile",
   aboutSpaceTitleEn: 'The Versatile Space',
-  aboutSpaceDescriptionFr: "On opère depuis l'espace collaboratif Versatile, au 7049 rue Saint-Urbain dans le Mile-End. Un lieu de création partagé avec une quinzaine de créateurs : vidéastes, photographes, designers, artistes. Pick-up disponible sur rendez-vous.",
-  aboutSpaceDescriptionEn: "We operate from the Versatile collaborative space, at 7049 Saint-Urbain Street in Mile-End. A shared creative space with about fifteen creators: videographers, photographers, designers, artists. Pick-up available by appointment.",
+  aboutSpaceDescriptionFr: "On opere depuis le 5338 rue Marquette dans le Plateau Mont-Royal. Pick-up disponible sur rendez-vous.",
+  aboutSpaceDescriptionEn: "We operate from 5338 rue Marquette in the Plateau Mont-Royal. Pick-up available by appointment.",
 
   aboutUniverseTitleFr: "Aussi dans l'univers Massive",
   aboutUniverseTitleEn: 'Also in the Massive Universe',

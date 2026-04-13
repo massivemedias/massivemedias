@@ -198,7 +198,7 @@ const translations = {
       space: {
         location: 'Mile-End, Montréal',
         title: "L'espace Age of Union",
-        description: "On opère depuis l'espace Age of Union, au 7049 rue Saint-Urbain dans le Mile-End. Pick-up disponible sur rendez-vous.",
+        description: "On opere depuis le 5338 rue Marquette dans le Plateau Mont-Royal. Pick-up disponible sur rendez-vous.",
       },
       universe: {
         title: "Aussi dans l'univers Massive",
@@ -559,7 +559,7 @@ const translations = {
       space: {
         location: 'Mile-End, Montreal',
         title: 'The Age of Union Space',
-        description: "We operate from the Age of Union space, at 7049 Saint-Urbain Street in Mile-End. Pick-up available by appointment.",
+        description: "We operate from 5338 rue Marquette in the Plateau Mont-Royal. Pick-up available by appointment.",
       },
       universe: {
         title: 'Also in the Massive Universe',
@@ -920,7 +920,7 @@ const translations = {
       space: {
         location: 'Mile-End, Montreal',
         title: 'El espacio Age of Union',
-        description: 'Operamos desde el espacio Age of Union, en el 7049 rue Saint-Urbain en Mile-End. Recogida disponible con cita previa.',
+        description: 'Operamos desde el 5338 rue Marquette en el Plateau Mont-Royal. Recogida disponible con cita previa.',
       },
       universe: {
         title: 'También en el universo Massive',

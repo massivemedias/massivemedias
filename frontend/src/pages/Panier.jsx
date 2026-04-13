@@ -164,9 +164,9 @@ function Panier() {
                 <MapPin size={14} className="text-grey-muted flex-shrink-0 mt-0.5" />
                 <p className="text-grey-muted text-xs">
                   {tx({
-                    fr: 'Frais de livraison en sus. Pickup gratuit au 7049 St-Urbain, Montréal.',
-                    en: 'Shipping fees extra. Free pickup at 7049 St-Urbain, Montreal.',
-                    es: 'Gastos de envio adicionales. Recogida gratis en 7049 St-Urbain, Montreal.',
+                    fr: 'Frais de livraison en sus. Pickup gratuit au 5338 Marquette, Montreal.',
+                    en: 'Shipping fees extra. Free pickup at 5338 Marquette, Montreal.',
+                    es: 'Gastos de envio adicionales. Recogida gratis en 5338 Marquette, Montreal.',
                   })}
                 </p>
               </div>

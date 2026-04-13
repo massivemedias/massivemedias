@@ -51,7 +51,7 @@ function massiveEmailWrapper(content: string): string {
             </tr>
           </table>
           <p style="color:#444;font-size:10px;margin:10px 0 0;">
-            Massive Medias - 7049 rue Saint-Urbain, Montr\u00e9al, QC H2S 3H5 - NEQ: 2269057891
+            Massive Medias - 5338 rue Marquette, Montreal, QC H2J 3Z3 - NEQ: 2269057891
           </p>
         </td></tr>
 
@@ -155,7 +155,7 @@ function buildOrderConfirmationHtml(data: OrderEmailData): string {
     <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px;">
       <tr><td style="padding:12px 16px;background:rgba(139,92,246,0.05);border-radius:8px;">
         <p style="margin:0;color:#e4e4f0;font-weight:600;font-size:13px;">Massive Medias</p>
-        <p style="margin:2px 0 0;color:#a0a0b8;font-size:12px;line-height:1.4;">7049 rue Saint-Urbain, Montr\u00e9al, QC H2S 3H5<br>TPS : 732457635RT0001 | TVQ : 4012577678TQ0001 | NEQ : 2269057891</p>
+        <p style="margin:2px 0 0;color:#a0a0b8;font-size:12px;line-height:1.4;">5338 rue Marquette, Montreal, QC H2J 3Z3<br>TPS : 732457635RT0001 | TVQ : 4012577678TQ0001 | NEQ : 2269057891</p>
       </td></tr>
     </table>
 

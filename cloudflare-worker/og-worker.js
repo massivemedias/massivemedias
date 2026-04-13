@@ -40,8 +40,8 @@ const ARTISTS = {
 
 const ROUTE_META = {
   '/': {
-    title: 'Massive Medias | Impression Fine Art, Stickers & Design - Montreal',
-    description: 'Studio de production creative a Montreal. Impression fine art, stickers die-cut, sublimation textile, design graphique. Production locale au Mile-End.',
+    title: 'Massive Medias | Imprimeur Montreal - Stickers, Prints & Design',
+    description: 'Massive Medias - Imprimeur a Montreal. Impression fine art, stickers personnalises die-cut, sublimation textile, design graphique, developpement web et webmastering. Studio creatif au Mile-End. Print Montreal.',
   },
   '/artistes': {
     title: 'Artistes | Massive Medias - Photographes, Peintres & Tatoueurs',

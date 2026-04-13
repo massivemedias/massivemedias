@@ -219,7 +219,7 @@ function Checkout() {
                           >
                             <Store size={20} className={deliveryMethod === 'pickup' ? 'text-accent mb-2' : 'text-grey-muted mb-2'} />
                             <p className="text-heading font-semibold text-sm">{tx({ fr: 'Ramassage sur place', en: 'Pickup', es: 'Recoger en tienda' })}</p>
-                            <p className="text-grey-muted text-xs">{tx({ fr: 'Gratuit - 7049 St-Urbain', en: 'Free - 7049 St-Urbain', es: 'Gratis - 7049 St-Urbain' })}</p>
+                            <p className="text-grey-muted text-xs">{tx({ fr: 'Gratuit - 5338 Marquette', en: 'Free - 5338 Marquette', es: 'Gratis - 5338 Marquette' })}</p>
                           </button>
                         </div>
                       </div>
@@ -227,7 +227,7 @@ function Checkout() {
                       {deliveryMethod === 'pickup' ? (
                         <div className="p-4 rounded-xl bg-accent/5 border border-accent/20 mb-2">
                           <p className="text-heading font-semibold text-sm mb-1">{tx({ fr: 'Adresse de ramassage', en: 'Pickup address', es: 'Direccion de recogida' })}</p>
-                          <p className="text-grey-muted text-sm">7049 rue Saint-Urbain, Montreal, QC</p>
+                          <p className="text-grey-muted text-sm">5338 rue Marquette, Montreal, QC H2J 3Z3</p>
                           <p className="text-grey-muted text-xs mt-2">{tx({ fr: 'Nous vous contacterons pour coordonner le ramassage.', en: 'We will contact you to coordinate pickup.', es: 'Le contactaremos para coordinar la recogida.' })}</p>
                         </div>
                       ) : (
@@ -366,7 +366,7 @@ function Checkout() {
                       {formData.telephone && <p className="text-grey-muted text-sm">{formData.telephone}</p>}
                       <p className="text-grey-muted text-sm mt-2">
                         {deliveryMethod === 'pickup'
-                          ? tx({ fr: 'Ramassage sur place - 7049 rue Saint-Urbain, Montreal', en: 'Pickup - 7049 rue Saint-Urbain, Montreal', es: 'Recoger - 7049 rue Saint-Urbain, Montreal' })
+                          ? tx({ fr: 'Ramassage sur place - 5338 rue Marquette, Montreal', en: 'Pickup - 5338 rue Marquette, Montreal', es: 'Recoger - 5338 rue Marquette, Montreal' })
                           : `${formData.adresse}, ${formData.ville}, ${formData.province} ${formData.codePostal}`
                         }
                       </p>
@@ -379,7 +379,7 @@ function Checkout() {
                         customerName: formData.nom,
                         customerPhone: formData.telephone,
                         shippingAddress: deliveryMethod === 'pickup'
-                          ? { address: 'Ramassage sur place - 7049 rue Saint-Urbain', city: 'Montreal', province: 'QC', postalCode: 'H2S 3H8' }
+                          ? { address: 'Ramassage sur place - 5338 rue Marquette', city: 'Montreal', province: 'QC', postalCode: 'H2J 3Z3' }
                           : { address: formData.adresse, city: formData.ville, province: formData.province, postalCode: formData.codePostal },
                         deliveryMethod,
                         promoCode: promoCode || undefined,
