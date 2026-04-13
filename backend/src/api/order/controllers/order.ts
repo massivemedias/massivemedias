@@ -879,7 +879,7 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
     }
   },
 
-  // POST /orders/:documentId/resend-notification - Renvoyer la notification admin
+  // POST /orders/:documentId/resend-emails - Renvoyer TOUS les emails (confirmation client + notification admin)
   async resendAdminNotification(ctx) {
     const { documentId } = ctx.params;
     try {
@@ -926,7 +926,57 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
         promoDiscount: order.promoDiscount || undefined,
       });
 
-      ctx.body = { success: true, message: 'Notification admin envoyee' };
+      // Aussi envoyer la confirmation au client
+      try {
+        // Generer invoiceNumber si manquant
+        if (!order.invoiceNumber) {
+          const year = new Date().getFullYear();
+          const prefix = `MM-${year}-`;
+          const existingOrders = await strapi.documents('api::order.order').findMany({
+            filters: { invoiceNumber: { $startsWith: prefix } },
+            sort: { invoiceNumber: 'desc' },
+            limit: 1,
+          });
+          let seq = 1;
+          if (existingOrders.length > 0 && (existingOrders[0] as any).invoiceNumber) {
+            seq = (parseInt((existingOrders[0] as any).invoiceNumber.replace(prefix, ''), 10) || 0) + 1;
+          }
+          const invoiceNumber = `${prefix}${String(seq).padStart(4, '0')}`;
+          await strapi.documents('api::order.order').update({
+            documentId: order.documentId,
+            data: { invoiceNumber } as any,
+          });
+          order.invoiceNumber = invoiceNumber;
+        }
+
+        await sendOrderConfirmationEmail({
+          customerName: order.customerName,
+          customerEmail: order.customerEmail,
+          orderRef,
+          invoiceNumber: order.invoiceNumber,
+          items: orderItems.map((item: any) => ({
+            productName: item.productName || 'Produit',
+            quantity: item.quantity || 1,
+            totalPrice: item.totalPrice || 0,
+            size: item.size || '',
+            finish: item.finish || '',
+          })),
+          subtotal: order.subtotal || 0,
+          shipping: order.shipping || 0,
+          tps: order.tps || 0,
+          tvq: order.tvq || 0,
+          total: order.total || 0,
+          shippingAddress: order.shippingAddress || null,
+          promoCode: order.promoCode || undefined,
+          promoDiscount: order.promoDiscount || undefined,
+          supabaseUserId: order.supabaseUserId || undefined,
+        });
+        strapi.log.info(`Email confirmation renvoye a ${order.customerEmail}`);
+      } catch (clientEmailErr) {
+        strapi.log.warn('Erreur renvoi email client (non bloquant):', clientEmailErr);
+      }
+
+      ctx.body = { success: true, message: 'Notification admin + confirmation client envoyees' };
     } catch (err: any) {
       strapi.log.error('resendAdminNotification error:', err);
       return ctx.badRequest(err.message);
