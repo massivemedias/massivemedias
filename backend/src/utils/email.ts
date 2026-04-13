@@ -239,10 +239,18 @@ interface ContactReplyData {
 }
 
 function buildContactReplyHtml(data: ContactReplyData): string {
+  const subject = encodeURIComponent(data.subject || 'Re: Votre demande - Massive Medias');
   const content = `
     <h2 style="color:#222;margin:0 0 8px;font-size:16px;font-weight:600;">Bonjour ${data.customerName},</h2>
 
     <div style="color:#333;font-size:15px;line-height:1.7;margin:16px 0 24px;white-space:pre-wrap;">${data.replyMessage}</div>
+
+    <!-- Bouton repondre -->
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 24px;">
+      <tr><td>
+        <a href="mailto:massivemedias@gmail.com?subject=${subject}" style="display:inline-block;background:#222;color:#ffffff;text-decoration:none;padding:10px 24px;border-radius:6px;font-size:13px;font-weight:600;">Repondre</a>
+      </td></tr>
+    </table>
 
     <!-- Original message -->
     <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:8px;">
