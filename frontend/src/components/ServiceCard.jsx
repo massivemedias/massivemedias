@@ -25,7 +25,7 @@ function ServiceCard({ icon: Icon, title, description, link, image, mirror }) {
               loading="lazy"
             />
             <div className="absolute bottom-3 left-4 p-2 rounded-lg icon-glass">
-              <Icon size={18} className="text-white" />
+              <Icon size={18} style={{ color: 'var(--icon-color, #FFFFFF)' }} />
             </div>
           </div>
         )}
@@ -33,7 +33,7 @@ function ServiceCard({ icon: Icon, title, description, link, image, mirror }) {
         <div className="p-4 flex flex-col" style={{ minHeight: image ? 'auto' : '100%' }}>
           {!image && (
             <div className="mb-4 p-3 rounded-lg w-fit icon-bg">
-              <Icon size={32} className="text-white" />
+              <Icon size={32} style={{ color: 'var(--icon-color, #FFFFFF)' }} />
             </div>
           )}
 
