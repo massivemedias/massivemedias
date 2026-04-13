@@ -374,6 +374,29 @@ function AdminDepenses() {
     setSaving(true);
     try {
       await createExpense(formData);
+
+      // Auto-sync inventaire pour les achats de materiel/consommables/equipment
+      const physicalCategories = ['materiel', 'equipment', 'consommables'];
+      if (physicalCategories.includes(formData.category)) {
+        try {
+          // Mapper la categorie depense vers la categorie inventaire
+          const catMap = { materiel: 'equipment', equipment: 'equipment', consommables: 'accessory' };
+          await api.post('/inventory-items/import-invoice', {
+            items: [{
+              nameFr: formData.description,
+              nameEn: formData.description,
+              category: catMap[formData.category] || 'other',
+              quantity: 1,
+              costPrice: parseFloat(formData.amount) || 0,
+              notes: `Achat ${formData.vendor || ''} ${formData.date} - ${formData.receiptNumber || ''}`.trim(),
+              matchMode: 'link',
+            }],
+          });
+        } catch (invErr) {
+          console.warn('Auto-sync inventaire echoue (non-bloquant):', invErr);
+        }
+      }
+
       setShowForm(false);
       setFormData({ ...emptyForm });
       fetchItems();
