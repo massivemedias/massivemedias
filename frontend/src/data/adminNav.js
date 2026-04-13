@@ -1,0 +1,27 @@
+/**
+ * SOURCE UNIQUE du menu admin.
+ * Importe dans AdminLayout.jsx ET Account.jsx.
+ * Pour ajouter un onglet: ajouter ICI et nulle part ailleurs.
+ */
+import {
+  LayoutDashboard, Bot, StickyNote, ShoppingBag, Banknote, Package,
+  MessageSquare, Users, FileText, Star, BarChart3, DollarSign, Tag,
+} from 'lucide-react';
+
+const ADMIN_NAV_ITEMS = [
+  { to: '/admin/dashboard', icon: LayoutDashboard, fr: 'Dashboard', en: 'Dashboard', es: 'Dashboard', tooltip: { fr: 'Vue d\'ensemble de l\'activite', en: 'Activity overview', es: 'Resumen de actividad' } },
+  { to: '/admin/massive-ia', icon: Bot, fr: 'ai.massive', en: 'ai.massive', es: 'ai.massive', tooltip: { fr: 'Outils IA: chat, stickers, mockups', en: 'AI tools: chat, stickers, mockups', es: 'Herramientas IA: chat, stickers, mockups' } },
+  { to: '/admin/notes', icon: StickyNote, fr: 'Notes', en: 'Notes', es: 'Notas', tooltip: { fr: 'Notes internes et rappels', en: 'Internal notes and reminders', es: 'Notas internas y recordatorios' } },
+  { to: '/admin/commandes', icon: ShoppingBag, fr: 'Commandes', en: 'Orders', es: 'Pedidos', tooltip: { fr: 'Gestion des commandes clients', en: 'Customer order management', es: 'Gestion de pedidos' } },
+  { to: '/admin/commissions', icon: Banknote, fr: 'Commissions', en: 'Commissions', es: 'Comisiones', tooltip: { fr: 'Suivi des commissions artistes', en: 'Artist commission tracking', es: 'Seguimiento de comisiones' } },
+  { to: '/admin/inventaire', icon: Package, fr: 'Inventaire', en: 'Inventory', es: 'Inventario', tooltip: { fr: 'Gestion du stock (textiles, cadres, materiel)', en: 'Stock management (textiles, frames, equipment)', es: 'Gestion de stock' } },
+  { to: '/admin/messages', icon: MessageSquare, fr: 'Messages', en: 'Messages', es: 'Mensajes', tooltip: { fr: 'Messages des artistes et clients', en: 'Artist and client messages', es: 'Mensajes de artistas y clientes' } },
+  { to: '/admin/utilisateurs', icon: Users, fr: 'Utilisateurs', en: 'Users', es: 'Usuarios', tooltip: { fr: 'Gestion des comptes (admin, artistes, clients)', en: 'Account management (admin, artists, clients)', es: 'Gestion de cuentas' } },
+  { to: '/admin/factures', icon: FileText, fr: 'Factures', en: 'Invoices', es: 'Facturas', tooltip: { fr: 'Factures sortantes (ventes) et entrantes (achats)', en: 'Outgoing (sales) and incoming (purchases) invoices', es: 'Facturas salientes (ventas) y entrantes (compras)' } },
+  { to: '/admin/temoignages', icon: Star, fr: 'Temoignages', en: 'Testimonials', es: 'Testimonios', tooltip: { fr: 'Temoignages clients affiches sur le site', en: 'Client testimonials shown on website', es: 'Testimonios de clientes' } },
+  { to: '/admin/stats', icon: BarChart3, fr: 'Stats', en: 'Stats', es: 'Stats', tooltip: { fr: 'Statistiques de ventes et revenus', en: 'Sales and revenue statistics', es: 'Estadisticas de ventas' } },
+  { to: '/admin/tarifs', icon: DollarSign, fr: 'Tarifs', en: 'Pricing', es: 'Precios', tooltip: { fr: 'Gestion des prix (CMS)', en: 'Price management (CMS)', es: 'Gestion de precios' } },
+  { to: '/admin/promos', icon: Tag, fr: 'Codes Promo', en: 'Promo Codes', es: 'Codigos Promo', tooltip: { fr: 'Gestion des codes promotionnels', en: 'Promo code management', es: 'Gestion de codigos promocionales' } },
+];
+
+export default ADMIN_NAV_ITEMS;

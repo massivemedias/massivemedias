@@ -16,6 +16,7 @@ import { getMyOrders } from '../services/orderService';
 import { getContactSubmissions, getArtistSubmissions } from '../services/adminService';
 import { getArtistMessagesAdmin } from '../services/artistService';
 import api, { isServerDown } from '../services/api';
+import ADMIN_NAV_ITEMS_SHARED from '../data/adminNav';
 // Lazy import - jsPDF (~386KB) charge seulement au clic
 const loadGenerateInvoice = () => import('../utils/generateInvoice').then(m => m.generateInvoicePDF);
 import AddressAutocomplete from '../components/AddressAutocomplete';
@@ -202,23 +203,9 @@ function Account() {
     });
   }, [user]);
 
-  // Menu items pour le sidebar admin
-  // IMPORTANT: garder cette liste IDENTIQUE a NAV_ITEMS dans AdminLayout.jsx
-  const ADMIN_NAV_ITEMS = [
-    { to: '/admin/dashboard', icon: LayoutDashboard, fr: 'Dashboard', en: 'Dashboard', es: 'Dashboard' },
-    { to: '/admin/massive-ia', icon: Bot, fr: 'ai.massive', en: 'ai.massive', es: 'ai.massive' },
-    { to: '/admin/notes', icon: StickyNote, fr: 'Notes', en: 'Notes', es: 'Notas' },
-    { to: '/admin/commandes', icon: ShoppingBag, fr: 'Commandes', en: 'Orders', es: 'Pedidos' },
-    { to: '/admin/commissions', icon: Banknote, fr: 'Commissions', en: 'Commissions', es: 'Comisiones' },
-    { to: '/admin/inventaire', icon: Package, fr: 'Inventaire', en: 'Inventory', es: 'Inventario' },
-    { to: '/admin/messages', icon: MessageSquare, fr: 'Messages', en: 'Messages', es: 'Mensajes' },
-    { to: '/admin/utilisateurs', icon: Users, fr: 'Utilisateurs', en: 'Users', es: 'Usuarios' },
-    { to: '/admin/factures', icon: FileText, fr: 'Factures', en: 'Invoices', es: 'Facturas' },
-    { to: '/admin/temoignages', icon: Heart, fr: 'Temoignages', en: 'Testimonials', es: 'Testimonios' },
-    { to: '/admin/stats', icon: BarChart3, fr: 'Stats', en: 'Stats', es: 'Stats' },
-    { to: '/admin/tarifs', icon: DollarSign, fr: 'Tarifs', en: 'Pricing', es: 'Precios' },
-    { to: '/admin/promos', icon: Tag, fr: 'Codes Promo', en: 'Promo Codes', es: 'Codigos Promo' },
-  ];
+  // Menu admin: source unique importee depuis data/adminNav.js
+  // Pour ajouter un onglet: modifier UNIQUEMENT data/adminNav.js
+  const ADMIN_NAV_ITEMS = ADMIN_NAV_ITEMS_SHARED;
 
   const ACCOUNT_SIDEBAR_ITEMS = [
     { id: 'profile', label: tx({ fr: 'Profil', en: 'Profile', es: 'Perfil' }), icon: User },
