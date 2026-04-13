@@ -368,7 +368,7 @@ export const businessCardFinishes = [
 
 export const businessCardPriceTiers = {
   standard: [
-    { qty: 50, price: 25, unitPrice: 0.50 },
+    { qty: 25, price: 35, unitPrice: 1.40 },
     { qty: 100, price: 55, unitPrice: 0.55 },
     { qty: 250, price: 100, unitPrice: 0.40 },
     { qty: 500, price: 200, unitPrice: 0.40 },

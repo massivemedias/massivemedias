@@ -51,7 +51,7 @@ const FLYERS = [
 ];
 
 const BUSINESS_CARDS_STANDARD = [
-  { qty: 50, price: 25, unit: 0.50 },
+  { qty: 25, price: 35, unit: 1.40 },
   { qty: 100, price: 55, unit: 0.55 },
   { qty: 250, price: 100, unit: 0.40 },
   { qty: 500, price: 200, unit: 0.40 },
