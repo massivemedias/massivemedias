@@ -17,6 +17,7 @@ import { getContactSubmissions, getArtistSubmissions } from '../services/adminSe
 import { getArtistMessagesAdmin } from '../services/artistService';
 import api, { isServerDown } from '../services/api';
 import ADMIN_NAV_ITEMS_SHARED from '../data/adminNav';
+import { AccountSidebarNav } from '../components/AdminSidebar';
 // Lazy import - jsPDF (~386KB) charge seulement au clic
 const loadGenerateInvoice = () => import('../utils/generateInvoice').then(m => m.generateInvoicePDF);
 import AddressAutocomplete from '../components/AddressAutocomplete';
@@ -797,56 +798,15 @@ function Account() {
           )}
 
           <div className="flex gap-6 max-w-7xl mx-auto">
-            {/* Sidebar desktop - MEME CSS que AdminLayout.jsx */}
+            {/* Sidebar desktop - composant partage */}
             <aside className="hidden lg:block w-48 flex-shrink-0">
-              <div className="sticky top-20 rounded-xl bg-glass p-3 space-y-1">
-                <h2 className="text-[11px] font-semibold text-grey-muted uppercase tracking-wider px-2.5 py-1.5">
-                  {tx({ fr: 'Mon compte', en: 'My account', es: 'Mi cuenta' })}
-                </h2>
-                {ACCOUNT_SIDEBAR_ITEMS.map((item) => {
-                  const Icon = item.icon;
-                  const isActive = activeTab === item.id;
-                  return (
-                    <button
-                      key={item.id}
-                      onClick={() => handleSetTab(item.id)}
-                      className={`w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
-                        isActive
-                          ? 'bg-[var(--active-tab-bg)] text-white'
-                          : 'text-grey-muted hover:text-heading hover:bg-glass'
-                      }`}
-                    >
-                      <Icon size={16} />
-                      {item.label}
-                    </button>
-                  );
-                })}
-
-                <div className="shadow-[0_-1px_0_rgba(255,255,255,0.04)] my-2" />
-
-                <h2 className="text-[11px] font-semibold text-grey-muted uppercase tracking-wider px-2.5 py-1.5">
-                  Admin
-                </h2>
-                {ADMIN_NAV_ITEMS.map((item) => {
-                  const Icon = item.icon;
-                  const isMessages = item.to === '/admin/messages';
-                  return (
-                    <NavLink
-                      key={item.to}
-                      to={item.to}
-                      className={({ isActive }) => `flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 relative ${isActive ? 'bg-[var(--active-tab-bg)] text-white' : 'text-grey-muted hover:text-heading hover:bg-glass'}`}
-                    >
-                      <Icon size={16} />
-                      {tx({ fr: item.fr, en: item.en, es: item.es })}
-                      {isMessages && adminNewMsgCount > 0 && (
-                        <span className="ml-auto flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-accent text-white text-[10px] font-bold animate-pulse">
-                          {adminNewMsgCount}
-                        </span>
-                      )}
-                    </NavLink>
-                  );
-                })}
-              </div>
+              <AccountSidebarNav
+                activeTab={activeTab}
+                onSetTab={handleSetTab}
+                accountItems={ACCOUNT_SIDEBAR_ITEMS}
+                adminItems={ADMIN_NAV_ITEMS}
+                msgCount={adminNewMsgCount}
+              />
             </aside>
 
             {/* Main content */}

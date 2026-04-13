@@ -1,14 +1,11 @@
 import { Outlet, NavLink, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Pencil, ChevronRight } from 'lucide-react';
+import { X, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
 import { useLang } from '../i18n/LanguageContext';
 import Tooltip from '../components/Tooltip';
 import NAV_ITEMS from '../data/adminNav';
-
-const ACCOUNT_ITEMS = [
-  { to: '/account?tab=profile', icon: Pencil, fr: 'Profil', en: 'Profile', es: 'Perfil' },
-];
+import { AdminSidebarNav } from '../components/AdminSidebar';
 
 function AdminLayout() {
   const { tx } = useLang();
@@ -127,50 +124,9 @@ function AdminLayout() {
       </AnimatePresence>
 
       <div className="flex gap-6 max-w-7xl mx-auto">
-        {/* Sidebar desktop */}
+        {/* Sidebar desktop - composant partage */}
         <aside className="hidden lg:block w-48 flex-shrink-0">
-          <div className="sticky top-20 rounded-xl bg-glass p-3 space-y-1">
-            <h2 className="text-[11px] font-semibold text-grey-muted uppercase tracking-wider px-2.5 py-1.5">
-              {tx({ fr: 'Mon compte', en: 'My account', es: 'Mi cuenta' })}
-            </h2>
-            {ACCOUNT_ITEMS.map((item) => {
-              const Icon = item.icon;
-              return (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 text-grey-muted hover:text-heading hover:bg-glass"
-                >
-                  <Icon size={16} />
-                  {tx({ fr: item.fr, en: item.en, es: item.es })}
-                </NavLink>
-              );
-            })}
-
-            <div className="shadow-[0_-1px_0_rgba(255,255,255,0.04)] my-2" />
-
-            <h2 className="text-[11px] font-semibold text-grey-muted uppercase tracking-wider px-2.5 py-1.5">
-              Admin
-            </h2>
-            {NAV_ITEMS.map((item) => {
-              const Icon = item.icon;
-              const isActive = location.pathname.startsWith(item.to);
-              return (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  className={`flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
-                    isActive
-                      ? 'bg-[var(--active-tab-bg)] text-white'
-                      : 'text-grey-muted hover:text-heading hover:bg-glass'
-                  }`}
-                >
-                  <Icon size={16} />
-                  {tx({ fr: item.fr, en: item.en, es: item.es })}
-                </NavLink>
-              );
-            })}
-          </div>
+          <AdminSidebarNav currentPath={location.pathname} />
         </aside>
 
         {/* Main content */}
