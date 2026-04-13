@@ -148,8 +148,9 @@ export const stickerFaq = {
 // =============================================
 
 export const fineArtPrinterTiers = [
-  { id: 'studio', labelFr: 'Série Studio', labelEn: 'Studio Series', labelEs: 'Serie Studio', desc: '', descFr: '', descEn: '', descEs: '' },
-  { id: 'museum', labelFr: 'Série Musée', labelEn: 'Museum Series', labelEs: 'Serie Museo', desc: '', descFr: '', descEn: '', descEs: '' },
+  { id: 'studio', labelFr: 'Serie Studio', labelEn: 'Studio Series', labelEs: 'Serie Studio', desc: '', descFr: '4 encres pigmentees', descEn: '4 pigmented inks', descEs: '4 tintas pigmentadas' },
+  { id: 'museum', labelFr: 'Serie Musee', labelEn: 'Museum Series', labelEs: 'Serie Museo', desc: '', descFr: '12 encres pigmentees', descEn: '12 pigmented inks', descEs: '12 tintas pigmentadas' },
+  { id: 'business-card', labelFr: 'Cartes d\'affaires', labelEn: 'Business Cards', labelEs: 'Tarjetas', desc: '', descFr: 'Standard, lamine, soft touch', descEn: 'Standard, laminated, soft touch', descEs: 'Estandar, laminado, soft touch' },
 ];
 
 export const fineArtFormats = [
@@ -354,6 +355,52 @@ export function getFlyerPrice(side, qtyIndex) {
     unitPrice: +(tier.unitPrice * multiplier).toFixed(2),
   };
 }
+
+// =============================================
+// CARTES D'AFFAIRES
+// =============================================
+
+export const businessCardFinishes = [
+  { id: 'standard', labelFr: 'Standard 14pt', labelEn: 'Standard 14pt', labelEs: 'Estandar 14pt', descFr: 'Papier epais classique, matte ou lustre', descEn: 'Classic thick paper, matte or glossy', descEs: 'Papel grueso clasico, mate o brillante' },
+  { id: 'lamine', labelFr: 'Lamine 16pt', labelEn: 'Laminated 16pt', labelEs: 'Laminado 16pt', descFr: 'Protection laminee, plus rigide et durable', descEn: 'Laminated protection, stiffer and durable', descEs: 'Proteccion laminada, mas rigida y durable' },
+  { id: 'premium', labelFr: 'Soft Touch 24pt', labelEn: 'Soft Touch 24pt', labelEs: 'Soft Touch 24pt', descFr: 'Finition velours haut de gamme, effet luxe', descEn: 'Velvety premium finish, luxury feel', descEs: 'Acabado terciopelo premium, sensacion de lujo' },
+];
+
+export const businessCardPriceTiers = {
+  standard: [
+    { qty: 100, price: 55, unitPrice: 0.55 },
+    { qty: 250, price: 75, unitPrice: 0.30 },
+    { qty: 500, price: 95, unitPrice: 0.19 },
+    { qty: 1000, price: 130, unitPrice: 0.13 },
+  ],
+  lamine: [
+    { qty: 100, price: 70, unitPrice: 0.70 },
+    { qty: 250, price: 95, unitPrice: 0.38 },
+    { qty: 500, price: 120, unitPrice: 0.24 },
+    { qty: 1000, price: 165, unitPrice: 0.17 },
+  ],
+  premium: [
+    { qty: 100, price: 120, unitPrice: 1.20 },
+    { qty: 250, price: 175, unitPrice: 0.70 },
+    { qty: 500, price: 250, unitPrice: 0.50 },
+  ],
+};
+
+export function getBusinessCardPrice(finish, qtyIndex) {
+  const tiers = businessCardPriceTiers[finish];
+  if (!tiers || !tiers[qtyIndex]) return null;
+  const tier = tiers[qtyIndex];
+  return {
+    qty: tier.qty,
+    price: tier.price,
+    unitPrice: tier.unitPrice,
+  };
+}
+
+export const businessCardSizes = [
+  { id: 'standard', label: '3.5 x 2"', dimensions: '3.5 x 2"', labelFr: 'Standard', labelEn: 'Standard', labelEs: 'Estandar' },
+  { id: 'square', label: '2.5 x 2.5"', dimensions: '2.5 x 2.5"', labelFr: 'Carree', labelEn: 'Square', labelEs: 'Cuadrada' },
+];
 
 export const flyerImages = [
   img('/images/realisations/flyers/discodyssee.webp'),
