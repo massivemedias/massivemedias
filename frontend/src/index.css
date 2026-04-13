@@ -737,6 +737,10 @@ select.input-field option {
 
 .icon-bg {
   background: var(--icon-bg);
+  color: var(--icon-color, #FFFFFF);
+}
+.icon-bg svg {
+  color: var(--icon-color, #FFFFFF) !important;
 }
 
 .icon-glass {
