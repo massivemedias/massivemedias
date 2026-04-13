@@ -150,7 +150,6 @@ export const stickerFaq = {
 export const fineArtPrinterTiers = [
   { id: 'studio', labelFr: 'Serie Studio', labelEn: 'Studio Series', labelEs: 'Serie Studio', desc: '', descFr: '4 encres pigmentees', descEn: '4 pigmented inks', descEs: '4 tintas pigmentadas' },
   { id: 'museum', labelFr: 'Serie Musee', labelEn: 'Museum Series', labelEs: 'Serie Museo', desc: '', descFr: '12 encres pigmentees', descEn: '12 pigmented inks', descEs: '12 tintas pigmentadas' },
-  { id: 'business-card', labelFr: 'Cartes d\'affaires', labelEn: 'Business Cards', labelEs: 'Tarjetas', desc: '', descFr: 'Standard, lamine, soft touch', descEn: 'Standard, laminated, soft touch', descEs: 'Estandar, laminado, soft touch' },
 ];
 
 export const fineArtFormats = [
@@ -356,52 +355,6 @@ export function getFlyerPrice(side, qtyIndex) {
   };
 }
 
-// =============================================
-// CARTES D'AFFAIRES
-// =============================================
-
-export const businessCardFinishes = [
-  { id: 'standard', labelFr: 'Standard 14pt', labelEn: 'Standard 14pt', labelEs: 'Estandar 14pt', descFr: 'Papier epais classique, matte ou lustre', descEn: 'Classic thick paper, matte or glossy', descEs: 'Papel grueso clasico, mate o brillante' },
-  { id: 'lamine', labelFr: 'Lamine 16pt', labelEn: 'Laminated 16pt', labelEs: 'Laminado 16pt', descFr: 'Protection laminee, plus rigide et durable', descEn: 'Laminated protection, stiffer and durable', descEs: 'Proteccion laminada, mas rigida y durable' },
-  { id: 'premium', labelFr: 'Soft Touch 24pt', labelEn: 'Soft Touch 24pt', labelEs: 'Soft Touch 24pt', descFr: 'Finition velours haut de gamme, effet luxe', descEn: 'Velvety premium finish, luxury feel', descEs: 'Acabado terciopelo premium, sensacion de lujo' },
-];
-
-export const businessCardPriceTiers = {
-  standard: [
-    { qty: 25, price: 35, unitPrice: 1.40 },
-    { qty: 100, price: 55, unitPrice: 0.55 },
-    { qty: 250, price: 100, unitPrice: 0.40 },
-    { qty: 500, price: 200, unitPrice: 0.40 },
-  ],
-  lamine: [
-    { qty: 50, price: 35, unitPrice: 0.70 },
-    { qty: 100, price: 70, unitPrice: 0.70 },
-    { qty: 250, price: 125, unitPrice: 0.50 },
-    { qty: 500, price: 240, unitPrice: 0.48 },
-  ],
-  premium: [
-    { qty: 50, price: 60, unitPrice: 1.20 },
-    { qty: 100, price: 120, unitPrice: 1.20 },
-    { qty: 250, price: 200, unitPrice: 0.80 },
-    { qty: 500, price: 375, unitPrice: 0.75 },
-  ],
-};
-
-export function getBusinessCardPrice(finish, qtyIndex) {
-  const tiers = businessCardPriceTiers[finish];
-  if (!tiers || !tiers[qtyIndex]) return null;
-  const tier = tiers[qtyIndex];
-  return {
-    qty: tier.qty,
-    price: tier.price,
-    unitPrice: tier.unitPrice,
-  };
-}
-
-export const businessCardSizes = [
-  { id: 'standard', label: '3.5 x 2"', dimensions: '3.5 x 2"', labelFr: 'Standard', labelEn: 'Standard', labelEs: 'Estandar' },
-  { id: 'square', label: '2.5 x 2.5"', dimensions: '2.5 x 2.5"', labelFr: 'Carree', labelEn: 'Square', labelEs: 'Cuadrada' },
-];
 
 export const flyerImages = [
   img('/images/realisations/flyers/discodyssee.webp'),

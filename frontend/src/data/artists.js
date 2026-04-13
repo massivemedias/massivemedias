@@ -25,7 +25,6 @@ export function getArtistPrintPrice(pricing, tier, format, withFrame) {
 export const artistPrinterTiers = [
   { id: 'studio', labelFr: 'Série Studio', labelEn: 'Studio Series', labelEs: 'Serie Studio', desc: '' },
   { id: 'museum', labelFr: 'Série Musée', labelEn: 'Museum Series', labelEs: 'Serie Museo', desc: '' },
-  { id: 'business-card', labelFr: 'Cartes d\'affaires', labelEn: 'Business Cards', labelEs: 'Tarjetas', desc: '' },
 ];
 
 export const artistFormats = [

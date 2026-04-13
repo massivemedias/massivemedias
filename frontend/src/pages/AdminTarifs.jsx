@@ -50,26 +50,6 @@ const FLYERS = [
   { qty: 500, single: 250, double: 325 },
 ];
 
-const BUSINESS_CARDS_STANDARD = [
-  { qty: 25, price: 35, unit: 1.40 },
-  { qty: 100, price: 55, unit: 0.55 },
-  { qty: 250, price: 100, unit: 0.40 },
-  { qty: 500, price: 200, unit: 0.40 },
-];
-
-const BUSINESS_CARDS_LAMINE = [
-  { qty: 50, price: 35, unit: 0.70 },
-  { qty: 100, price: 70, unit: 0.70 },
-  { qty: 250, price: 125, unit: 0.50 },
-  { qty: 500, price: 240, unit: 0.48 },
-];
-
-const BUSINESS_CARDS_PREMIUM = [
-  { qty: 50, price: 60, unit: 1.20 },
-  { qty: 100, price: 120, unit: 1.20 },
-  { qty: 250, price: 200, unit: 0.80 },
-  { qty: 500, price: 375, unit: 0.75 },
-];
 
 const SUBLIMATION = [
   { product: 'T-shirt', tiers: [{ qty: 1, unit: 30 }, { qty: 5, unit: 27 }, { qty: 10, unit: 25 }, { qty: '25+', unit: 23, soumission: true }] },
@@ -459,17 +439,6 @@ function AdminTarifs() {
       addTable(
         ['Format', 'Studio (4 encres)', tx({ fr: 'Musee (12 encres)', en: 'Museum (12 inks)', es: 'Museo (12 tintas)' }), 'Frame'],
         SERVICE_PRICES.map(p => [p.format, p.studio ? `${p.studio}$` : 'N/A', `${p.museum}$`, p.frame ? `+${p.frame}$` : 'N/A'])
-      );
-
-      // --- Cartes d'affaires ---
-      sectionTitle(tx({ fr: 'Cartes d\'affaires', en: 'Business Cards', es: 'Tarjetas de presentacion' }));
-      addTable(
-        [tx({ fr: 'Quantite', en: 'Quantity', es: 'Cantidad' }), 'Standard (14pt)', tx({ fr: 'Lamine (16pt)', en: 'Laminated (16pt)', es: 'Laminado (16pt)' }), 'Premium Soft Touch (24pt)'],
-        BUSINESS_CARDS_STANDARD.map((s, i) => {
-          const l = BUSINESS_CARDS_LAMINE[i];
-          const p = BUSINESS_CARDS_PREMIUM[i];
-          return [`${s.qty}`, `${s.price}$ (${s.unit.toFixed(2)}$/u)`, l ? `${l.price}$ (${l.unit.toFixed(2)}$/u)` : 'N/A', p ? `${p.price}$ (${p.unit.toFixed(2)}$/u)` : 'N/A'];
-        })
       );
 
       // --- Stickers ---
@@ -917,50 +886,6 @@ function AdminTarifs() {
                 </tr>
               ))}
             </DataTable>
-          </SectionCard>
-
-          {/* Cartes d'affaires */}
-          <SectionCard icon={CreditCard} iconColor="text-violet-400"
-            title={tx({ fr: 'Cartes d\'affaires', en: 'Business Cards', es: 'Tarjetas de presentacion' })}
-            subtitle={tx({ fr: 'Recto-verso inclus - Formats 3.5x2" et 2.5x2.5"', en: 'Double-sided included - 3.5x2" and 2.5x2.5" formats', es: 'Doble cara incluida - Formatos 3.5x2" y 2.5x2.5"' })} delay={0.12}>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              <div>
-                <h4 className="text-xs font-semibold text-heading mb-2 uppercase tracking-wider">Standard 14pt</h4>
-                <DataTable headers={[{ label: L.qty }, { label: L.price }, { label: L.unit }]}>
-                  {BUSINESS_CARDS_STANDARD.map((c, i) => (
-                    <tr key={i} className="shadow-[0_1px_0_rgba(255,255,255,0.04)] hover:bg-accent/5 transition-colors">
-                      <Td center={false} className="text-heading font-medium">{c.qty}</Td>
-                      <Td className="text-heading font-semibold">{c.price}$</Td>
-                      <Td className="text-accent font-semibold">{c.unit.toFixed(2)}$</Td>
-                    </tr>
-                  ))}
-                </DataTable>
-              </div>
-              <div>
-                <h4 className="text-xs font-semibold text-heading mb-2 uppercase tracking-wider">{tx({ fr: 'Lamine 16pt', en: 'Laminated 16pt', es: 'Laminado 16pt' })}</h4>
-                <DataTable headers={[{ label: L.qty }, { label: L.price }, { label: L.unit }]}>
-                  {BUSINESS_CARDS_LAMINE.map((c, i) => (
-                    <tr key={i} className="shadow-[0_1px_0_rgba(255,255,255,0.04)] hover:bg-accent/5 transition-colors">
-                      <Td center={false} className="text-heading font-medium">{c.qty}</Td>
-                      <Td className="text-heading font-semibold">{c.price}$</Td>
-                      <Td className="text-accent font-semibold">{c.unit.toFixed(2)}$</Td>
-                    </tr>
-                  ))}
-                </DataTable>
-              </div>
-              <div>
-                <h4 className="text-xs font-semibold text-heading mb-2 uppercase tracking-wider">Soft Touch 24pt Premium</h4>
-                <DataTable headers={[{ label: L.qty }, { label: L.price }, { label: L.unit }]}>
-                  {BUSINESS_CARDS_PREMIUM.map((c, i) => (
-                    <tr key={i} className="shadow-[0_1px_0_rgba(255,255,255,0.04)] hover:bg-accent/5 transition-colors">
-                      <Td center={false} className="text-heading font-medium">{c.qty}</Td>
-                      <Td className="text-heading font-semibold">{c.price}$</Td>
-                      <Td className="text-accent font-semibold">{c.unit.toFixed(2)}$</Td>
-                    </tr>
-                  ))}
-                </DataTable>
-              </div>
-            </div>
           </SectionCard>
 
           {/* Sublimation */}
