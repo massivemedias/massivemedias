@@ -151,10 +151,10 @@ function AdminUtilisateurs() {
       if (!match) return false;
     }
     // Tab filter
+    const role = getUserRole(u.email);
     if (tab === 'buyers') return u.isBuyer;
-    if (tab === 'visitors') return !u.isBuyer && getUserRole(u.email) === 'user';
-    if (tab === 'artists') return getUserRole(u.email) === 'artist';
-    if (tab === 'tatoueurs') return getUserRole(u.email) === 'tatoueur';
+    if (tab === 'visitors') return !u.isBuyer && role !== 'admin';
+    if (tab === 'artists') return role === 'artist' || role === 'tatoueur';
     return true;
   }).sort((a, b) => {
     // Buyers first, then by date
@@ -165,9 +165,8 @@ function AdminUtilisateurs() {
   // Summary stats
   const totalUsers = allUsers.length;
   const totalBuyers = allUsers.filter(u => u.isBuyer).length;
-  const totalVisitors = allUsers.filter(u => !u.isBuyer && getUserRole(u.email) === 'user').length;
-  const artistCount = Object.values(roles).filter(r => r.role === 'artist').length;
-  const tatoueurCount = Object.values(roles).filter(r => r.role === 'tatoueur').length;
+  const totalVisitors = allUsers.filter(u => !u.isBuyer && getUserRole(u.email) !== 'admin').length;
+  const artistCount = Object.values(roles).filter(r => r.role === 'artist' || r.role === 'tatoueur').length;
   const totalRevenue = allUsers.reduce((s, u) => s + (parseFloat(u.totalSpent) || 0), 0);
 
   const summaryCards = [
@@ -175,7 +174,6 @@ function AdminUtilisateurs() {
     { label: tx({ fr: 'Acheteurs', en: 'Buyers', es: 'Compradores' }), value: totalBuyers, icon: ShoppingBag, accent: 'text-green-400' },
     { label: tx({ fr: 'Sans achat', en: 'No purchase', es: 'Sin compra' }), value: totalVisitors, icon: Eye, accent: 'text-blue-400' },
     { label: tx({ fr: 'Artistes', en: 'Artists', es: 'Artistas' }), value: artistCount, icon: Palette, accent: 'text-red-400' },
-    { label: tx({ fr: 'Tatoueurs', en: 'Tattoo Artists', es: 'Tatuadores' }), value: tatoueurCount, icon: PenTool, accent: 'text-blue-400' },
   ];
 
   const tabs = [
@@ -183,7 +181,6 @@ function AdminUtilisateurs() {
     { key: 'buyers', label: tx({ fr: 'Acheteurs', en: 'Buyers', es: 'Compradores' }), count: totalBuyers },
     { key: 'visitors', label: tx({ fr: 'Sans achat', en: 'No purchase', es: 'Sin compra' }), count: totalVisitors },
     { key: 'artists', label: tx({ fr: 'Artistes', en: 'Artists', es: 'Artistas' }), count: artistCount },
-    { key: 'tatoueurs', label: tx({ fr: 'Tatoueurs', en: 'Tattoo Artists', es: 'Tatuadores' }), count: tatoueurCount },
   ];
 
   const handleSetArtist = async (user) => {
