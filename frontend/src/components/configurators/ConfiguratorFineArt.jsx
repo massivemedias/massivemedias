@@ -10,7 +10,6 @@ import PrintPreviewCarousel from '../PrintPreviewCarousel';
 import {
   fineArtPrinterTiers as defaultTiers, fineArtFormats as defaultFormats, fineArtFramePrice as defaultFramePrice,
   fineArtFramePriceByFormat, getFineArtPrice as defaultGetPrice, fineArtImages,
-  businessCardFinishes, businessCardPriceTiers, getBusinessCardPrice, businessCardSizes,
 } from '../../data/products';
 
 function FramePreview({ image, withFrame, frameColor, format, formats, tx, isLandscape, onClickImage }) {
