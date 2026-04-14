@@ -687,11 +687,11 @@ function ArtisteDetail({ subdomainSlug }) {
                   ) : (
                   <motion.div
                     key={print.id}
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 12 }}
                     whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4, delay: index * 0.08 }}
-                    viewport={{ once: true }}
-                    className={galleryView === 'compact' ? '' : 'w-[calc(50%-0.5rem)] md:w-[calc(25%-0.75rem)]'}
+                    transition={{ duration: 0.25, delay: Math.min(index, 8) * 0.03 }}
+                    viewport={{ once: true, margin: '200px' }}
+                    className={galleryView === 'compact' ? '' : 'w-[calc(50%-0.5rem)] md:w-[calc(33.333%-0.667rem)] lg:w-[calc(20%-0.8rem)]'}
                   >
                     <ArtistPrintCard
                       print={print}
