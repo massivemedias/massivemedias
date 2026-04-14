@@ -132,17 +132,18 @@ export default factories.createCoreController('api::artist-edit-request.artist-e
             const notifMessage = buildNotificationMessage(requestType, enrichedChangeData, artistName || artistSlug);
             await resend.emails.send({
               from: 'Massive Medias <noreply@massivemedias.com>',
-              to: 'massivemedias44@gmail.com',
+              to: process.env.ADMIN_EMAIL || 'massivemedias@gmail.com',
+              replyTo: email || 'massivemedias@gmail.com',
               subject: `[Demande artiste] ${TYPE_LABELS[requestType] || requestType} - ${artistName || artistSlug}`,
-              html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:20px;background:#1a1030;color:#e0e0e0;border-radius:12px;">
-                <h2 style="color:#F00098;margin:0 0 16px;">Demande de modification</h2>
-                <p style="color:#aaa;font-size:13px;">Artiste: <strong style="color:#fff;">${artistName || artistSlug}</strong> (${email})</p>
-                <p style="color:#aaa;font-size:13px;">Type: <strong style="color:#F00098;">${TYPE_LABELS[requestType] || requestType}</strong></p>
-                <div style="background:#0a0618;padding:16px;border-radius:8px;margin:16px 0;">
-                  <p style="color:#ccc;font-size:14px;white-space:pre-wrap;margin:0;">${notifMessage}</p>
+              html: `<div style="font-family:-apple-system,system-ui,sans-serif;max-width:600px;margin:0 auto;padding:32px;background:#ffffff;color:#222;border:1px solid #eee;border-radius:8px;">
+                <h2 style="color:#222;margin:0 0 16px;font-size:16px;font-weight:600;">Demande de modification artiste</h2>
+                <p style="color:#666;font-size:14px;margin:8px 0;">Artiste: <strong style="color:#222;">${artistName || artistSlug}</strong> (${email})</p>
+                <p style="color:#666;font-size:14px;margin:8px 0;">Type: <strong style="color:#FF0098;">${TYPE_LABELS[requestType] || requestType}</strong></p>
+                <div style="background:#f7f7f7;padding:16px;border-radius:6px;border-left:3px solid #FF0098;margin:16px 0;">
+                  <p style="color:#333;font-size:14px;white-space:pre-wrap;margin:0;line-height:1.6;">${notifMessage}</p>
                 </div>
-                <p style="color:#888;font-size:12px;">Connectez-vous au panneau admin pour approuver ou rejeter cette demande.</p>
-                <a href="https://massivemedias.com/admin/messages" style="display:inline-block;background:#F00098;color:#fff;padding:10px 24px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:14px;margin-top:8px;">Voir dans l'admin</a>
+                <p style="color:#666;font-size:13px;margin:16px 0 12px;">Connectez-vous au panneau admin pour approuver ou rejeter cette demande.</p>
+                <a href="https://massivemedias.com/admin/messages" style="display:inline-block;background:#222;color:#ffffff;padding:10px 24px;border-radius:6px;text-decoration:none;font-weight:600;font-size:13px;">Voir dans l'admin</a>
               </div>`,
             });
             strapi.log.info(`Email notification admin envoye pour ${requestType} de ${artistName}`);
