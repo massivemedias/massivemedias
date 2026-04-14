@@ -32,3 +32,13 @@ export async function getMyOrders(supabaseUserId) {
   });
   return data;
 }
+
+export async function getOrderByPaymentIntent(paymentIntentId) {
+  const { data } = await api.get(`/orders/by-payment-intent/${paymentIntentId}`);
+  return data;
+}
+
+export async function linkOrdersByEmail({ email, supabaseUserId }) {
+  const { data } = await api.post('/orders/link-by-email', { email, supabaseUserId });
+  return data;
+}

@@ -879,6 +879,76 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
     }
   },
 
+  // GET /orders/by-payment-intent/:paymentIntentId - Recupere infos minimales d'une commande pour CheckoutSuccess
+  async getByPaymentIntent(ctx) {
+    const { paymentIntentId } = ctx.params;
+    if (!paymentIntentId) return ctx.badRequest('paymentIntentId required');
+    try {
+      const order = await strapi.documents('api::order.order').findFirst({
+        filters: { stripePaymentIntentId: paymentIntentId },
+      }) as any;
+      if (!order) return ctx.notFound('Order not found');
+      // Retourner SEULEMENT les infos non-sensibles necessaires au signup
+      ctx.body = {
+        customerName: order.customerName || '',
+        customerEmail: order.customerEmail || '',
+        customerPhone: order.customerPhone || '',
+        total: order.total || 0,
+        invoiceNumber: order.invoiceNumber || null,
+        hasUserAccount: !!(order.supabaseUserId && order.supabaseUserId !== ''),
+      };
+    } catch (err: any) {
+      strapi.log.error('getByPaymentIntent error:', err);
+      return ctx.badRequest(err.message);
+    }
+  },
+
+  // POST /orders/link-by-email - Lier les guest orders au nouveau compte par email match
+  async linkByEmail(ctx) {
+    const { email, supabaseUserId } = ctx.request.body as any;
+    if (!email || !supabaseUserId) return ctx.badRequest('email and supabaseUserId required');
+    try {
+      const orders = await strapi.documents('api::order.order').findMany({
+        filters: {
+          customerEmail: email.toLowerCase(),
+          $or: [
+            { supabaseUserId: '' as any },
+            { supabaseUserId: { $null: true } as any },
+          ],
+        } as any,
+      });
+      let count = 0;
+      for (const order of orders) {
+        await strapi.documents('api::order.order').update({
+          documentId: order.documentId,
+          data: { supabaseUserId } as any,
+        });
+        count++;
+      }
+      // Aussi update le client record
+      try {
+        const clients = await strapi.documents('api::client.client').findMany({
+          filters: { email: email.toLowerCase() },
+        });
+        for (const client of clients) {
+          if (!client.supabaseUserId || client.supabaseUserId === '') {
+            await strapi.documents('api::client.client').update({
+              documentId: client.documentId,
+              data: { supabaseUserId } as any,
+            });
+          }
+        }
+      } catch (clientErr) {
+        strapi.log.warn('Could not update client supabaseUserId:', clientErr);
+      }
+      strapi.log.info(`Linked ${count} orders to user ${supabaseUserId} (email: ${email})`);
+      ctx.body = { success: true, linkedCount: count };
+    } catch (err: any) {
+      strapi.log.error('linkByEmail error:', err);
+      return ctx.badRequest(err.message);
+    }
+  },
+
   // POST /orders/:documentId/resend-emails - Renvoyer TOUS les emails (confirmation client + notification admin)
   async resendAdminNotification(ctx) {
     const { documentId } = ctx.params;

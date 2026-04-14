@@ -131,9 +131,9 @@ export default factories.createCoreController('api::client.client', ({ strapi })
     }
   },
 
-  // Notification de nouvelle inscription
+  // Notification de nouvelle inscription + linking auto des guest orders
   async notifySignup(ctx) {
-    const { name, email, provider } = ctx.request.body as any;
+    const { name, email, provider, supabaseUserId } = ctx.request.body as any;
     if (!email) {
       ctx.status = 400;
       ctx.body = { error: 'Email requis' };
@@ -144,7 +144,47 @@ export default factories.createCoreController('api::client.client', ({ strapi })
       strapi.log.warn('Email notification inscription non envoye:', err);
     });
 
-    ctx.body = { success: true };
+    // Linker les guest orders avec cet email au nouveau supabaseUserId
+    let linkedCount = 0;
+    if (supabaseUserId) {
+      try {
+        const orders = await strapi.documents('api::order.order').findMany({
+          filters: {
+            customerEmail: email.toLowerCase(),
+            $or: [
+              { supabaseUserId: '' as any },
+              { supabaseUserId: { $null: true } as any },
+            ],
+          } as any,
+        });
+        for (const order of orders) {
+          await strapi.documents('api::order.order').update({
+            documentId: order.documentId,
+            data: { supabaseUserId } as any,
+          });
+          linkedCount++;
+        }
+        // Aussi update le client record
+        const clients = await strapi.documents('api::client.client').findMany({
+          filters: { email: email.toLowerCase() },
+        });
+        for (const client of clients) {
+          if (!client.supabaseUserId || client.supabaseUserId === '') {
+            await strapi.documents('api::client.client').update({
+              documentId: client.documentId,
+              data: { supabaseUserId } as any,
+            });
+          }
+        }
+        if (linkedCount > 0) {
+          strapi.log.info(`Auto-linked ${linkedCount} guest orders to new user ${supabaseUserId} (${email})`);
+        }
+      } catch (linkErr) {
+        strapi.log.warn('Erreur linking guest orders:', linkErr);
+      }
+    }
+
+    ctx.body = { success: true, linkedCount };
   },
 
   // Supprimer un utilisateur Supabase

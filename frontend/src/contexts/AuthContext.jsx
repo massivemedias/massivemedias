@@ -44,12 +44,13 @@ export function AuthProvider({ children }) {
       password,
       options: { data: meta },
     });
-    // Notifier le backend de la nouvelle inscription
+    // Notifier le backend de la nouvelle inscription + linker les guest orders par email
     if (!error && data?.user) {
       api.post('/clients/notify-signup', {
         name: fullName,
         email,
         provider: 'email',
+        supabaseUserId: data.user.id,
       }).catch(() => {});
     }
     return { data, error };
