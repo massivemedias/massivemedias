@@ -348,9 +348,9 @@ function applyShader(ctx, shader, w, h) {
   ctx.save();
 
   if (shader === 'holographic') {
-    // Gradient conique arc-en-ciel (fallback linear si createConicGradient non supporte)
+    // Gradient conique arc-en-ciel - opacite reduite pour laisser l'image visible
     ctx.globalCompositeOperation = 'source-atop';
-    ctx.globalAlpha = 0.55;
+    ctx.globalAlpha = 0.28;
     let grad;
     if (typeof ctx.createConicGradient === 'function') {
       grad = ctx.createConicGradient(0, w / 2, h / 2);
@@ -374,13 +374,13 @@ function applyShader(ctx, shader, w, h) {
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, w, h);
 
-    // Highlight diagonal blanc subtil
-    ctx.globalAlpha = 0.25;
+    // Highlight diagonal blanc - subtil
+    ctx.globalAlpha = 0.10;
     const high = ctx.createLinearGradient(0, 0, w, h);
     high.addColorStop(0.0, 'rgba(255,255,255,0)');
-    high.addColorStop(0.4, 'rgba(255,255,255,0.9)');
+    high.addColorStop(0.4, 'rgba(255,255,255,1)');
     high.addColorStop(0.5, 'rgba(255,255,255,0)');
-    high.addColorStop(0.6, 'rgba(255,255,255,0.7)');
+    high.addColorStop(0.6, 'rgba(255,255,255,0.8)');
     high.addColorStop(1.0, 'rgba(255,255,255,0)');
     ctx.fillStyle = high;
     ctx.fillRect(0, 0, w, h);
@@ -399,71 +399,133 @@ function applyShader(ctx, shader, w, h) {
   }
 
   else if (shader === 'broken_glass') {
-    // Cracks aleatoires par dessus le sticker
+    // Facettes cristal holographiques (verre brise - geometric rainbow shards)
     ctx.globalCompositeOperation = 'source-atop';
-    ctx.strokeStyle = 'rgba(255,255,255,0.6)';
-    ctx.lineCap = 'round';
 
-    // Creer quelques points de cracks
-    const nCracks = 4;
-    for (let c = 0; c < nCracks; c++) {
-      const cx = Math.random() * w;
-      const cy = Math.random() * h;
-      const branches = 5 + Math.floor(Math.random() * 4);
-      for (let b = 0; b < branches; b++) {
-        ctx.beginPath();
-        ctx.lineWidth = 0.5 + Math.random() * 1.5;
-        ctx.globalAlpha = 0.4 + Math.random() * 0.3;
-        let x = cx;
-        let y = cy;
-        const angle = Math.random() * Math.PI * 2;
-        const segments = 3 + Math.floor(Math.random() * 4);
-        ctx.moveTo(x, y);
-        for (let s = 0; s < segments; s++) {
-          const len = 20 + Math.random() * 60;
-          const jitter = (Math.random() - 0.5) * 0.8;
-          const a = angle + jitter * (s + 1);
-          x += Math.cos(a) * len;
-          y += Math.sin(a) * len;
-          ctx.lineTo(x, y);
-        }
-        ctx.stroke();
-      }
+    // RNG deterministe base sur les dimensions (meme pattern a chaque generation)
+    let seed = ((w * 31337) ^ (h * 42069)) >>> 0;
+    const rnd = () => {
+      seed ^= seed << 13; seed ^= seed >>> 17; seed ^= seed << 5;
+      return (seed >>> 0) / 4294967296;
+    };
+
+    const FACETS = 34;
+    const hueShift = rnd() * 360;
+    const refSize = Math.min(w, h);
+
+    // 1. Facettes triangulaires colorees (chaque shard reflete une couleur differente)
+    for (let i = 0; i < FACETS; i++) {
+      const cx = rnd() * w;
+      const cy = rnd() * h;
+      const size = refSize * (0.07 + rnd() * 0.20);
+      const a0 = rnd() * Math.PI * 2;
+      const a1 = a0 + Math.PI * (0.35 + rnd() * 1.0);
+      const a2 = a1 + Math.PI * (0.35 + rnd() * 1.0);
+      const r0 = size * (0.6 + rnd() * 0.5);
+      const r1 = size * (0.5 + rnd() * 0.6);
+      const r2 = size * (0.4 + rnd() * 0.7);
+
+      ctx.save();
+      ctx.globalAlpha = 0.18 + rnd() * 0.32;
+      const hue = (hueShift + i * (360 / FACETS) + rnd() * 25) % 360;
+      ctx.fillStyle = `hsl(${hue}, 100%, 62%)`;
+      ctx.beginPath();
+      ctx.moveTo(cx + Math.cos(a0) * r0, cy + Math.sin(a0) * r0);
+      ctx.lineTo(cx + Math.cos(a1) * r1, cy + Math.sin(a1) * r1);
+      ctx.lineTo(cx + Math.cos(a2) * r2, cy + Math.sin(a2) * r2);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
     }
-    // Ombre noire tenue pour effet verre
-    ctx.globalAlpha = 0.15;
-    ctx.fillStyle = 'rgba(30,30,40,1)';
+
+    // 2. Lignes de cassure blanches (bords entre les shards)
+    ctx.save();
+    ctx.strokeStyle = 'rgba(255,255,255,0.7)';
+    ctx.lineCap = 'round';
+    const CRACKS = 12;
+    for (let c = 0; c < CRACKS; c++) {
+      const x0 = rnd() * w;
+      const y0 = rnd() * h;
+      const angle = rnd() * Math.PI * 2;
+      const mainLen = refSize * (0.08 + rnd() * 0.28);
+      ctx.save();
+      ctx.globalAlpha = 0.35 + rnd() * 0.30;
+      ctx.lineWidth = 0.4 + rnd() * 1.2;
+      ctx.beginPath();
+      ctx.moveTo(x0, y0);
+      ctx.lineTo(x0 + Math.cos(angle) * mainLen, y0 + Math.sin(angle) * mainLen);
+      // Branche secondaire
+      const branchT = 0.3 + rnd() * 0.45;
+      const bx = x0 + Math.cos(angle) * mainLen * branchT;
+      const by = y0 + Math.sin(angle) * mainLen * branchT;
+      const bAngle = angle + (rnd() > 0.5 ? 1 : -1) * (0.4 + rnd() * 0.7);
+      const bLen = mainLen * (0.25 + rnd() * 0.45);
+      ctx.moveTo(bx, by);
+      ctx.lineTo(bx + Math.cos(bAngle) * bLen, by + Math.sin(bAngle) * bLen);
+      ctx.stroke();
+      ctx.restore();
+    }
+    ctx.restore();
+
+    // 3. Leger voile blanc pour unifier les shards (effet "verre")
+    ctx.save();
+    ctx.globalAlpha = 0.07;
+    ctx.fillStyle = 'rgba(220,230,255,1)';
     ctx.fillRect(0, 0, w, h);
+    ctx.restore();
   }
 
   else if (shader === 'stars') {
-    // Etoiles scintillantes sur le sticker
+    // Etoiles / glitter scintillantes - effet subtil 4 branches
     ctx.globalCompositeOperation = 'source-atop';
-    const nStars = 28;
+
+    let seed = ((w * 12345) ^ (h * 67890)) >>> 0;
+    const rnd = () => {
+      seed ^= seed << 13; seed ^= seed >>> 17; seed ^= seed << 5;
+      return (seed >>> 0) / 4294967296;
+    };
+
+    const refSize = Math.min(w, h);
+    const nStars = 20;
+
     for (let i = 0; i < nStars; i++) {
-      const x = Math.random() * w;
-      const y = Math.random() * h;
-      const r = 3 + Math.random() * 8;
-      const grad = ctx.createRadialGradient(x, y, 0, x, y, r);
-      grad.addColorStop(0, 'rgba(255,255,255,1)');
-      grad.addColorStop(0.4, 'rgba(255,255,230,0.7)');
-      grad.addColorStop(1, 'rgba(255,255,255,0)');
-      ctx.fillStyle = grad;
+      const x = rnd() * w;
+      const y = rnd() * h;
+      // Taille proportionnelle a l'image, petite
+      const r = refSize * (0.006 + rnd() * 0.016);
+      const alpha = 0.35 + rnd() * 0.45; // 35-80% - subtil
+
+      ctx.save();
+
+      // Halo radial doux
+      const grd = ctx.createRadialGradient(x, y, 0, x, y, r * 3);
+      grd.addColorStop(0,   `rgba(255,255,255,${alpha})`);
+      grd.addColorStop(0.3, `rgba(255,250,200,${alpha * 0.5})`);
+      grd.addColorStop(1,   'rgba(255,255,255,0)');
+      ctx.fillStyle = grd;
       ctx.beginPath();
-      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.arc(x, y, r * 3, 0, Math.PI * 2);
       ctx.fill();
 
-      // Petit trait cross pour donner un look d'etoile
-      ctx.globalAlpha = 0.9;
-      ctx.strokeStyle = 'rgba(255,255,255,0.9)';
-      ctx.lineWidth = 0.8;
+      // Bras longs (4 pointes)
+      ctx.globalAlpha = alpha * 0.90;
+      ctx.strokeStyle = 'rgba(255,255,255,1)';
+      ctx.lineWidth = Math.max(0.5, r * 0.22);
+      ctx.lineCap = 'round';
       ctx.beginPath();
-      ctx.moveTo(x - r * 1.3, y);
-      ctx.lineTo(x + r * 1.3, y);
-      ctx.moveTo(x, y - r * 1.3);
-      ctx.lineTo(x, y + r * 1.3);
+      ctx.moveTo(x - r * 2.4, y); ctx.lineTo(x + r * 2.4, y);
+      ctx.moveTo(x, y - r * 2.4); ctx.lineTo(x, y + r * 2.4);
       ctx.stroke();
-      ctx.globalAlpha = 1;
+
+      // Bras diagonaux courts (45deg) - encore plus subtils
+      ctx.globalAlpha = alpha * 0.35;
+      ctx.lineWidth = Math.max(0.4, r * 0.14);
+      ctx.beginPath();
+      ctx.moveTo(x - r * 1.1, y - r * 1.1); ctx.lineTo(x + r * 1.1, y + r * 1.1);
+      ctx.moveTo(x + r * 1.1, y - r * 1.1); ctx.lineTo(x - r * 1.1, y + r * 1.1);
+      ctx.stroke();
+
+      ctx.restore();
     }
   }
 
@@ -632,7 +694,7 @@ function StickersTab() {
             <img
               src={result}
               alt="sticker"
-              className="max-h-72 object-contain"
+              className="max-w-full max-h-[500px] object-contain"
             />
             <a
               href={result}
