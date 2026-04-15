@@ -54,12 +54,53 @@ function useImage(src) {
   return img;
 }
 
+// Curseur rotation custom (SVG data URI). Le curseur natif n'existe pas.
+const ROTATE_CURSOR = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><g fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><path d='M3 12a9 9 0 1 0 3-6.7'/><polyline points='3 4 3 10 9 10'/></g></svg>") 12 12, alias`;
+
+// Distance (en pixels ecran) au bord du logo pour passer en mode rotation
+const ROTATE_EDGE_PX = 4;
+
 // ---------------------------------------------------------------------------
-// DraggableLogo - un logo superpose draggable + resizable + removable
+// DraggableLogo - un logo superpose draggable + resizable + rotatable + removable
 // ---------------------------------------------------------------------------
 function DraggableLogo({ logo, onChange, onDelete, containerRef, selected, onSelect }) {
   const [dragging, setDragging] = useState(false);
   const [resizing, setResizing] = useState(false);
+  const [rotating, setRotating] = useState(false);
+  const [hoverMode, setHoverMode] = useState('drag'); // 'drag' | 'rotate'
+  const logoRef = useRef(null);
+
+  const rotation = logo.rotation || 0;
+  const aspect = logo.aspect || 1;
+
+  // Detection du bord: calcule la distance depuis le centre du logo en espace local
+  // (en tenant compte de la rotation pour que ca reste coherent quand le logo tourne)
+  const updateHoverMode = (clientX, clientY) => {
+    const el = logoRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    // Un-rotate le point souris pour obtenir coords locales (non rotees)
+    const rad = -rotation * Math.PI / 180;
+    const dx = clientX - cx;
+    const dy = clientY - cy;
+    const lx = dx * Math.cos(rad) - dy * Math.sin(rad);
+    const ly = dx * Math.sin(rad) + dy * Math.cos(rad);
+    // Dimensions non rotees = offsetWidth/offsetHeight
+    const w = el.offsetWidth;
+    const h = el.offsetHeight;
+    // Distance depuis chaque bord dans l'espace local
+    const distEdge = Math.min(
+      w / 2 - Math.abs(lx),
+      h / 2 - Math.abs(ly)
+    );
+    if (distEdge >= 0 && distEdge <= ROTATE_EDGE_PX) {
+      setHoverMode('rotate');
+    } else {
+      setHoverMode('drag');
+    }
+  };
 
   const startDrag = (clientX, clientY) => {
     const rect = containerRef.current.getBoundingClientRect();
@@ -91,18 +132,51 @@ function DraggableLogo({ logo, onChange, onDelete, containerRef, selected, onSel
     window.addEventListener('touchend', end);
   };
 
+  const startRotate = (clientX, clientY) => {
+    const el = logoRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    const startAngle = Math.atan2(clientY - cy, clientX - cx) * 180 / Math.PI;
+    const initialRotation = rotation;
+    setRotating(true);
+    onSelect();
+
+    const move = (e) => {
+      const mx = e.touches ? e.touches[0].clientX : e.clientX;
+      const my = e.touches ? e.touches[0].clientY : e.clientY;
+      const angle = Math.atan2(my - cy, mx - cx) * 180 / Math.PI;
+      let newRot = initialRotation + (angle - startAngle);
+      // Snap a 0/90/180/270 si on est a <=3 degres (utile pour aligner)
+      const snapTargets = [-360, -270, -180, -90, 0, 90, 180, 270, 360];
+      for (const target of snapTargets) {
+        if (Math.abs(newRot - target) <= 3) { newRot = target; break; }
+      }
+      onChange({ ...logo, rotation: newRot });
+    };
+    const end = () => {
+      setRotating(false);
+      window.removeEventListener('mousemove', move);
+      window.removeEventListener('mouseup', end);
+      window.removeEventListener('touchmove', move);
+      window.removeEventListener('touchend', end);
+    };
+    window.addEventListener('mousemove', move);
+    window.addEventListener('mouseup', end);
+    window.addEventListener('touchmove', move, { passive: false });
+    window.addEventListener('touchend', end);
+  };
+
   const startResize = (clientX, clientY, e) => {
     e.stopPropagation();
     const rect = containerRef.current.getBoundingClientRect();
     const logoPixelX = logo.x * rect.width;
-    const logoPixelY = logo.y * rect.height;
-    const startW = logo.width * rect.width;
     setResizing(true);
     onSelect();
 
     const move = (ev) => {
       const cx = ev.touches ? ev.touches[0].clientX : ev.clientX;
-      const cy = ev.touches ? ev.touches[0].clientY : ev.clientY;
       const r = containerRef.current.getBoundingClientRect();
       const newW = Math.max(20, (cx - r.left) - logoPixelX);
       const newWRel = Math.min(1 - logo.x, newW / r.width);
@@ -121,20 +195,51 @@ function DraggableLogo({ logo, onChange, onDelete, containerRef, selected, onSel
     window.addEventListener('touchend', end);
   };
 
-  const aspect = logo.aspect || 1;
+  const handleMouseMove = (e) => {
+    if (dragging || resizing || rotating) return;
+    updateHoverMode(e.clientX, e.clientY);
+  };
+
+  const handleMouseDown = (e) => {
+    if (e.button !== 0) return;
+    updateHoverMode(e.clientX, e.clientY);
+    // On relit le hover apres update (sync): la zone bord declenche rotation
+    const el = logoRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    const rad = -rotation * Math.PI / 180;
+    const dx = e.clientX - cx;
+    const dy = e.clientY - cy;
+    const lx = dx * Math.cos(rad) - dy * Math.sin(rad);
+    const ly = dx * Math.sin(rad) + dy * Math.cos(rad);
+    const distEdge = Math.min(el.offsetWidth / 2 - Math.abs(lx), el.offsetHeight / 2 - Math.abs(ly));
+    if (distEdge >= 0 && distEdge <= ROTATE_EDGE_PX) {
+      startRotate(e.clientX, e.clientY);
+    } else {
+      startDrag(e.clientX, e.clientY);
+    }
+  };
+
+  const cursor = rotating ? ROTATE_CURSOR : (dragging || resizing ? 'grabbing' : (hoverMode === 'rotate' ? ROTATE_CURSOR : 'grab'));
 
   return (
     <div
-      onMouseDown={(e) => { if (e.button === 0) startDrag(e.clientX, e.clientY); }}
+      ref={logoRef}
+      onMouseMove={handleMouseMove}
+      onMouseDown={handleMouseDown}
       onTouchStart={(e) => { const t = e.touches[0]; startDrag(t.clientX, t.clientY); }}
-      className={`absolute select-none ${dragging || resizing ? 'cursor-grabbing' : 'cursor-grab'} ${selected ? 'ring-2 ring-accent' : 'hover:ring-1 hover:ring-white/40'}`}
+      className={`absolute select-none ${selected ? 'ring-2 ring-accent' : 'hover:ring-1 hover:ring-white/40'}`}
       style={{
         left: `${logo.x * 100}%`,
         top: `${logo.y * 100}%`,
         width: `${logo.width * 100}%`,
         aspectRatio: `${aspect}`,
         touchAction: 'none',
-        transform: 'translateZ(0)',
+        transform: `rotate(${rotation}deg)`,
+        transformOrigin: 'center center',
+        cursor,
       }}
     >
       <img
@@ -152,6 +257,7 @@ function DraggableLogo({ logo, onChange, onDelete, containerRef, selected, onSel
             onTouchStart={(e) => e.stopPropagation()}
             onClick={(e) => { e.stopPropagation(); onDelete(); }}
             className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center shadow-lg z-10"
+            style={{ cursor: 'pointer' }}
           >
             <X size={14} />
           </button>
@@ -159,9 +265,16 @@ function DraggableLogo({ logo, onChange, onDelete, containerRef, selected, onSel
           <div
             onMouseDown={(e) => startResize(e.clientX, e.clientY, e)}
             onTouchStart={(e) => { e.stopPropagation(); const t = e.touches[0]; startResize(t.clientX, t.clientY, e); }}
-            className="absolute -bottom-2 -right-2 w-5 h-5 rounded-full bg-accent border-2 border-white shadow-lg cursor-nwse-resize"
+            className="absolute -bottom-2 -right-2 w-5 h-5 rounded-full bg-accent border-2 border-white shadow-lg z-10"
+            style={{ cursor: 'nwse-resize' }}
             title="Redimensionner"
           />
+          {/* Indicateur de rotation (affiche angle non nul) */}
+          {rotation !== 0 && !rotating && (
+            <div className="absolute -top-6 left-1/2 -translate-x-1/2 px-1.5 py-0.5 rounded bg-black/70 text-white text-[10px] font-mono pointer-events-none whitespace-nowrap">
+              {Math.round(rotation)}°
+            </div>
+          )}
         </>
       )}
     </div>
@@ -300,7 +413,19 @@ async function composeAndDownload(bgImg, logos, filename, bgW, bgH) {
       const h = w / aspect;
       const x = logo.x * canvas.width;
       const y = logo.y * canvas.height;
-      ctx.drawImage(li, x, y, w, h);
+      const rotation = logo.rotation || 0;
+      if (rotation) {
+        // Rotation autour du centre du logo
+        const cx = x + w / 2;
+        const cy = y + h / 2;
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(rotation * Math.PI / 180);
+        ctx.drawImage(li, -w / 2, -h / 2, w, h);
+        ctx.restore();
+      } else {
+        ctx.drawImage(li, x, y, w, h);
+      }
     } catch (_) { /* ignore */ }
   }
 
@@ -337,16 +462,16 @@ function MerchMockupTool() {
   const [selectedId, setSelectedId] = useState(null);
   const [mobileSide, setMobileSide] = useState('front');
 
-  // Vue "flat" pour le produit courant (ce que ProductCanvas attend: {id, src, aspect, x, y, width})
+  // Vue "flat" pour le produit courant (ce que ProductCanvas attend)
   const flattenForProduct = (items) => items.map(item => {
-    const p = item.placements[productKey] || item.placements.hoodie || { x: 0.35, y: 0.30, width: 0.30 };
-    return { id: item.id, src: item.src, aspect: item.aspect, x: p.x, y: p.y, width: p.width };
+    const p = item.placements[productKey] || item.placements.hoodie || { x: 0.35, y: 0.30, width: 0.30, rotation: 0 };
+    return { id: item.id, src: item.src, aspect: item.aspect, x: p.x, y: p.y, width: p.width, rotation: p.rotation || 0 };
   });
   const frontLogos = useMemo(() => flattenForProduct(frontLogoItems), [frontLogoItems, productKey]);
   const backLogos  = useMemo(() => flattenForProduct(backLogoItems),  [backLogoItems, productKey]);
 
   // Quand ProductCanvas appelle onLogosChange avec un tableau de logos "flat" modifies,
-  // on applique les changements de position/taille UNIQUEMENT au produit courant.
+  // on applique les changements de position/taille/rotation UNIQUEMENT au produit courant.
   const syncPlacements = (prevItems, updatedFlat) => {
     const updatedIds = new Set(updatedFlat.map(l => l.id));
     const afterDelete = prevItems.filter(item => updatedIds.has(item.id));
@@ -357,7 +482,7 @@ function MerchMockupTool() {
         ...item,
         placements: {
           ...item.placements,
-          [productKey]: { x: flat.x, y: flat.y, width: flat.width },
+          [productKey]: { x: flat.x, y: flat.y, width: flat.width, rotation: flat.rotation || 0 },
         },
       };
     });
@@ -376,7 +501,7 @@ function MerchMockupTool() {
   const createPlacements = (flat) => {
     const placements = {};
     Object.keys(PRODUCTS).forEach(k => {
-      placements[k] = { x: flat.x, y: flat.y, width: flat.width };
+      placements[k] = { x: flat.x, y: flat.y, width: flat.width, rotation: 0 };
     });
     return placements;
   };
@@ -526,7 +651,7 @@ function MerchMockupTool() {
 
       {/* Aide */}
       <div className="text-[11px] text-grey-muted/80 italic px-1">
-        Drag pour deplacer · poignee accent = resize (ratio garde) · X rouge = supprimer · chaque produit se souvient de sa propre position/taille de logo
+        Drag pour deplacer · <b>bord du logo</b> (4px) = rotation · poignee accent = resize · X rouge = supprimer · chaque produit se souvient de sa position/taille/rotation
       </div>
     </div>
   );
