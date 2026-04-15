@@ -9,7 +9,7 @@ export const updateOrderTracking = (documentId, trackingNumber, carrier) => api.
 export const deleteOrder = (documentId) => api.delete(`/orders/${documentId}`);
 
 // --- Ventes privees (prints artistes) ---
-export const getPrivateSales = () => api.get('/artists/private-sales');
+export const getPrivateSales = () => api.get('/artists-private-sales');
 
 // --- Messages contact ---
 export const getContactSubmissions = (params) => api.get('/contact-submissions/admin', { params });
