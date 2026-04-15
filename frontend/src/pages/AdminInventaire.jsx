@@ -358,7 +358,8 @@ function ItemForm({ onClose, onSaved, tx, lang, editItem }) {
       </button>
       {form._colorOpen && (
         <div
-          className="absolute z-20 mt-1 w-full max-h-52 overflow-y-auto rounded-lg border border-white/10 shadow-xl card-bg"
+          className="absolute z-20 mt-1 w-full max-h-52 overflow-y-auto rounded-lg border border-white/10 shadow-xl"
+          style={{ background: 'var(--bg-select-option)' }}
         >
           <button
             type="button"
@@ -410,7 +411,8 @@ function ItemForm({ onClose, onSaved, tx, lang, editItem }) {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-6xl rounded-2xl shadow-2xl border border-white/10 mb-8 card-bg"
+        className="w-full max-w-6xl rounded-2xl shadow-2xl border border-white/10 mb-8"
+        style={{ background: 'var(--bg-select-option)' }}
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
