@@ -227,7 +227,11 @@ function ArtisteDetail({ subdomainSlug }) {
   const [openFaq, setOpenFaq] = useState(null);
   const [lightbox, setLightbox] = useState(null);
   const [isLandscape, setIsLandscape] = useState(false);
+  const [mockupSlideIdx, setMockupSlideIdx] = useState(0);
   const configuratorRef = useRef(null);
+
+  // Scenes du slide: null = print brut, les autres = pieces interieures
+  const MOCKUP_SCENES = [null, 'bedroom', 'living_room', 'office', 'zen'];
   const stickerConfiguratorRef = useRef(null);
   const printConfigsRef = useRef({}); // Sauvegarder la config par print id
 
@@ -278,21 +282,25 @@ function ArtisteDetail({ subdomainSlug }) {
     return () => window.removeEventListener('keydown', handleKey);
   }, [lightbox, artist]);
 
-  // Fleches clavier dans le configurateur (quand pas de lightbox)
+  // Fleches clavier dans le configurateur: navigate les scenes mockup
   useEffect(() => {
-    if (!selectedPrint || lightbox !== null || !artist?.prints?.length) return;
+    if (!selectedPrint || lightbox !== null) return;
     const handleKey = (e) => {
       if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
       e.preventDefault();
       const dir = e.key === 'ArrowLeft' ? -1 : 1;
-      const idx = artist.prints.findIndex(p => p.id === selectedPrint.id);
-      const next = (idx + dir + artist.prints.length) % artist.prints.length;
-      setSelectedPrint(artist.prints[next]);
+      setMockupSlideIdx(prev => (prev + dir + MOCKUP_SCENES.length) % MOCKUP_SCENES.length);
     };
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
-  }, [selectedPrint, lightbox, artist]);
+  }, [selectedPrint, lightbox]);
+
+  // Reset slide quand on change de print
+  useEffect(() => {
+    setMockupSlideIdx(0);
+    setIsLandscape(false);
+  }, [selectedPrint?.id]);
 
   if (!artist) {
     return (
@@ -841,50 +849,76 @@ function ArtisteDetail({ subdomainSlug }) {
             </h2>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-8 max-w-5xl mx-auto items-start">
-              {/* Preview avec fleches navigation */}
-              <div className="relative flex items-center lg:sticky lg:top-24">
-                {/* Fleche gauche */}
-                {artist.prints.length > 1 && (
+              {/* Slide mockup: 0=print brut, 1-4=pieces interieures */}
+              <div className="lg:sticky lg:top-24">
+                <div className="relative flex items-center">
+                  {/* Fleche gauche */}
                   <button
-                    onClick={(e) => { e.stopPropagation(); navigatePrint(-1); }}
+                    onClick={() => setMockupSlideIdx(prev => (prev - 1 + MOCKUP_SCENES.length) % MOCKUP_SCENES.length)}
                     className="absolute -left-2 lg:-left-5 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white transition-colors z-10"
-                    aria-label="Previous"
+                    aria-label="Scene precedente"
                   >
                     <ChevronLeft size={20} />
                   </button>
-                )}
-                <div
-                  className="relative overflow-hidden cursor-pointer group w-full flex items-center justify-center"
-                  style={{ minHeight: '400px' }}
-                  onClick={() => setLightbox(artist.prints.findIndex(p => p.id === selectedPrint.id))}
-                >
-                  <img loading="lazy"
-                    src={selectedPrint.fullImage || toFull(selectedPrint.image)}
-                    alt={getItemTitle(selectedPrint)}
-                    className="max-w-full max-h-[70vh] object-contain"
-                    onLoad={(e) => setIsLandscape(e.target.naturalWidth > e.target.naturalHeight)}
-                  />
-                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <ZoomIn size={32} className="text-white md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 drop-shadow-lg" />
+
+                  {/* Contenu du slide */}
+                  <div className="w-full">
+                    {mockupSlideIdx === 0 ? (
+                      /* Print brut */
+                      <div
+                        className="relative overflow-hidden cursor-pointer group w-full flex items-center justify-center rounded-xl"
+                        style={{ minHeight: '400px' }}
+                        onClick={() => setLightbox(artist.prints.findIndex(p => p.id === selectedPrint.id))}
+                      >
+                        <img loading="lazy"
+                          src={selectedPrint.fullImage || toFull(selectedPrint.image)}
+                          alt={getItemTitle(selectedPrint)}
+                          className="max-w-full max-h-[70vh] object-contain"
+                          onLoad={(e) => setIsLandscape(e.target.naturalWidth > e.target.naturalHeight)}
+                        />
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                          <ZoomIn size={32} className="text-white md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 drop-shadow-lg" />
+                        </div>
+                      </div>
+                    ) : (
+                      /* Mockup piece */
+                      <InstantMockup
+                        imageUrl={selectedPrint.fullImage || toFull(selectedPrint.image)}
+                        frameColor={printFrameColor}
+                        isLandscape={isLandscape}
+                        sceneId={MOCKUP_SCENES[mockupSlideIdx]}
+                      />
+                    )}
                   </div>
-                  {/* Indicateur position */}
-                  <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/50 backdrop-blur-sm text-white text-xs px-3 py-1 rounded-full">
-                    {artist.prints.findIndex(p => p.id === selectedPrint.id) + 1} / {artist.prints.length}
-                  </div>
-                </div>
-                {/* Fleche droite */}
-                {artist.prints.length > 1 && (
+
+                  {/* Fleche droite */}
                   <button
-                    onClick={(e) => { e.stopPropagation(); navigatePrint(1); }}
+                    onClick={() => setMockupSlideIdx(prev => (prev + 1) % MOCKUP_SCENES.length)}
                     className="absolute -right-2 lg:-right-5 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white transition-colors z-10"
-                    aria-label="Next"
+                    aria-label="Scene suivante"
                   >
                     <ChevronRight size={20} />
                   </button>
-                )}
+                </div>
+
+                {/* Dots de navigation */}
+                <div className="flex items-center justify-center gap-2 mt-3">
+                  {MOCKUP_SCENES.map((s, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setMockupSlideIdx(i)}
+                      className={`transition-all rounded-full ${
+                        i === mockupSlideIdx
+                          ? 'bg-accent w-4 h-2.5 scale-100'
+                          : 'bg-white/20 hover:bg-white/40 w-2.5 h-2.5'
+                      }`}
+                      aria-label={s || 'Oeuvre'}
+                    />
+                  ))}
+                </div>
               </div>
 
-              {/* Options + Mockup AI */}
+              {/* Options configurateur */}
               <div className="space-y-4 lg:sticky lg:top-24 self-start">
                 <div className="p-4 sm:p-6 rounded-2xl transition-colors duration-300 highlight-shadow">
                   <ConfiguratorArtistPrint
@@ -894,11 +928,6 @@ function ArtisteDetail({ subdomainSlug }) {
                     onFrameColorChange={setPrintFrameColor}
                   />
                 </div>
-                {/* Mockup instantane - sous le configurateur */}
-                <InstantMockup
-                  imageUrl={selectedPrint.fullImage || toFull(selectedPrint.image)}
-                  frameColor={printFrameColor}
-                />
               </div>
             </div>
           </motion.div>

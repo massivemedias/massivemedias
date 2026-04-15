@@ -1,36 +1,25 @@
 /**
- * InstantMockup v5 - Chroma-key Canvas
+ * InstantMockup v6 - Composant controle (sceneId en prop)
  *
- * 12 photos de pieces avec cadres integres + placeholder vert (#00FF00).
- * Canvas detecte les pixels verts en temps reel et les remplace par:
- * 1. Couleur mat (passe-partout) pour couvrir tout le vert
- * 2. Image du client dimensionnee selon le format choisi, centree dans le mat
- *
- * Le cadre fait partie de la photo = integration naturelle.
+ * Rendu canvas chroma-key pour un seul scene donne.
+ * La navigation (fleches, dots) est geree par le parent (ArtisteDetail).
+ * Cliquer sur le canvas ouvre la lightbox haute resolution.
  */
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { X, Sofa, BedDouble, Briefcase, Flower2 } from 'lucide-react';
-import { useLang } from '../i18n/LanguageContext';
-
-const SCENES = [
-  { id: 'bedroom', icon: BedDouble, fr: 'Chambre', en: 'Bedroom', es: 'Dormitorio' },
-  { id: 'living_room', icon: Sofa, fr: 'Salon', en: 'Living Room', es: 'Salon' },
-  { id: 'office', icon: Briefcase, fr: 'Bureau', en: 'Office', es: 'Oficina' },
-  { id: 'zen', icon: Flower2, fr: 'Zen', en: 'Zen', es: 'Zen' },
-];
+import { X } from 'lucide-react';
 
 const MAT_COLOR = { r: 240, g: 237, b: 232 }; // #f0ede8
 
-function InstantMockup({ imageUrl, frameColor = 'black', format = 'a4', className = '' }) {
-  const { tx } = useLang();
-  const canvasRefs = useRef({});
+function InstantMockup({ imageUrl, frameColor = 'black', isLandscape = false, sceneId, className = '' }) {
+  const canvasRef = useRef(null);
   const lightboxCanvasRef = useRef(null);
-  const [lightboxScene, setLightboxScene] = useState(null);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
   const [ready, setReady] = useState(false);
 
   const roomImgCache = useRef({});
   const userImgRef = useRef(null);
 
+  // Charger l'image du print
   useEffect(() => {
     if (!imageUrl) { setReady(false); return; }
     const img = new Image();
@@ -40,9 +29,12 @@ function InstantMockup({ imageUrl, frameColor = 'black', format = 'a4', classNam
     img.src = imageUrl;
   }, [imageUrl]);
 
-  const drawComposite = useCallback((canvas, targetWidth, sceneId) => {
-    if (!canvas || !userImgRef.current) return;
-    const roomKey = `${sceneId}_${frameColor}`;
+  const drawComposite = useCallback((canvas, targetWidth, sid, landscape, fc) => {
+    if (!canvas || !userImgRef.current || !sid) return;
+    // Utilise la variante " 2" pour les prints paysage
+    const variant = landscape ? ' 2' : '';
+    const roomKey = `${sid}_${fc}${variant}`;
+    const roomSrc = `/images/mockups/${roomKey}.webp`;
 
     const doRender = (roomImg) => {
       const roomRatio = roomImg.naturalHeight / roomImg.naturalWidth;
@@ -52,10 +44,8 @@ function InstantMockup({ imageUrl, frameColor = 'black', format = 'a4', classNam
       canvas.height = ch;
       const ctx = canvas.getContext('2d');
 
-      // 1. Dessiner la photo de la piece
       ctx.drawImage(roomImg, 0, 0, cw, ch);
 
-      // 2. Detecter la bounding box du vert (#00FF00) dans les pixels
       const imageData = ctx.getImageData(0, 0, cw, ch);
       const pixels = imageData.data;
       let minX = cw, minY = ch, maxX = 0, maxY = 0;
@@ -64,27 +54,22 @@ function InstantMockup({ imageUrl, frameColor = 'black', format = 'a4', classNam
         for (let x = 0; x < cw; x++) {
           const i = (y * cw + x) * 4;
           const r = pixels[i], g = pixels[i + 1], b = pixels[i + 2];
-          // Vert: detection large pour attraper l'anti-aliasing et la compression
           const isGreen = g > 100 && g > r * 1.3 && g > b * 1.3;
           if (isGreen) {
             if (x < minX) minX = x;
             if (x > maxX) maxX = x;
             if (y < minY) minY = y;
             if (y > maxY) maxY = y;
-            // Remplacer le pixel vert par la couleur du mat
             pixels[i] = MAT_COLOR.r;
             pixels[i + 1] = MAT_COLOR.g;
             pixels[i + 2] = MAT_COLOR.b;
           }
         }
       }
-
-      // Remettre les pixels modifies (vert -> mat)
       ctx.putImageData(imageData, 0, 0);
 
-      if (maxX <= minX || maxY <= minY) return; // Pas de vert trouve
+      if (maxX <= minX || maxY <= minY) return;
 
-      // 3. Zone du mat avec marge pour eviter les bords verts et debordement
       const margin = Math.max(4, Math.round(Math.min(maxX - minX, maxY - minY) * 0.02));
       const printX = minX + margin;
       const printY = minY + margin;
@@ -113,76 +98,62 @@ function InstantMockup({ imageUrl, frameColor = 'black', format = 'a4', classNam
       ctx.restore();
     };
 
-    const roomSrc = `/images/mockups/${roomKey}.webp`;
     if (roomImgCache.current[roomKey]) {
       doRender(roomImgCache.current[roomKey]);
     } else {
       const img = new Image();
       img.crossOrigin = 'anonymous';
       img.onload = () => { roomImgCache.current[roomKey] = img; doRender(img); };
+      img.onerror = () => {
+        // Fallback: si la variante landscape n'existe pas, tenter la version portrait
+        if (landscape) {
+          const fallbackKey = `${sid}_${fc}`;
+          if (roomImgCache.current[fallbackKey]) {
+            doRender(roomImgCache.current[fallbackKey]);
+          } else {
+            const fallbackImg = new Image();
+            fallbackImg.crossOrigin = 'anonymous';
+            fallbackImg.onload = () => { roomImgCache.current[fallbackKey] = fallbackImg; doRender(fallbackImg); };
+            fallbackImg.src = `/images/mockups/${fallbackKey}.webp`;
+          }
+        }
+      };
       img.src = roomSrc;
     }
-  }, [frameColor]);
+  }, []);
 
-  const [sceneIdx, setSceneIdx] = useState(0);
-
-  // Dessiner le mockup actif
+  // Dessiner quand scene, cadre ou image change
   useEffect(() => {
-    if (!ready) return;
-    const canvas = canvasRefs.current['main'];
-    if (canvas) drawComposite(canvas, 800, SCENES[sceneIdx].id);
-  }, [ready, frameColor, sceneIdx, drawComposite]);
+    if (!ready || !sceneId) return;
+    if (canvasRef.current) drawComposite(canvasRef.current, 800, sceneId, isLandscape, frameColor);
+  }, [ready, sceneId, isLandscape, frameColor, drawComposite]);
 
   // Lightbox
   useEffect(() => {
-    if (lightboxScene && lightboxCanvasRef.current && ready) {
-      drawComposite(lightboxCanvasRef.current, 1400, lightboxScene);
+    if (lightboxOpen && lightboxCanvasRef.current && ready && sceneId) {
+      drawComposite(lightboxCanvasRef.current, 1400, sceneId, isLandscape, frameColor);
     }
-  }, [lightboxScene, ready, frameColor, drawComposite]);
+  }, [lightboxOpen, ready, sceneId, isLandscape, frameColor, drawComposite]);
 
-  if (!imageUrl || !ready) return null;
+  if (!imageUrl || !ready || !sceneId) return null;
 
   return (
-    <div className={`space-y-2 ${className}`}>
-      {/* Dots au dessus */}
-      <div className="flex items-center justify-center gap-2">
-        {SCENES.map((s, i) => (
+    <div className={`w-full ${className}`}>
+      <canvas
+        ref={canvasRef}
+        className="w-full rounded-xl cursor-zoom-in shadow-lg"
+        onClick={() => setLightboxOpen(true)}
+      />
+
+      {lightboxOpen && (
+        <div
+          className="fixed inset-0 z-[9999] bg-black/90 flex items-center justify-center p-4 sm:p-8"
+          onClick={() => setLightboxOpen(false)}
+        >
           <button
-            key={s.id}
-            onClick={() => setSceneIdx(i)}
-            className={`w-2.5 h-2.5 rounded-full transition-all ${
-              i === sceneIdx ? 'bg-accent scale-125' : 'bg-white/20 hover:bg-white/40'
-            }`}
-          />
-        ))}
-      </div>
-
-      {/* Canvas mockup unique - swipeable */}
-      <div
-        onTouchStart={(e) => { e.currentTarget._touchX = e.touches[0].clientX; }}
-        onTouchEnd={(e) => {
-          if (!e.currentTarget._touchX) return;
-          const diff = e.currentTarget._touchX - e.changedTouches[0].clientX;
-          if (Math.abs(diff) > 40) {
-            const dir = diff > 0 ? 1 : -1;
-            setSceneIdx(prev => (prev + dir + SCENES.length) % SCENES.length);
-          }
-          e.currentTarget._touchX = null;
-        }}
-      >
-        <canvas
-          ref={el => { canvasRefs.current['main'] = el; }}
-          className="w-full rounded-xl cursor-pointer shadow-lg"
-          onClick={() => setLightboxScene(SCENES[sceneIdx].id)}
-        />
-      </div>
-
-      {/* Lightbox */}
-      {lightboxScene && (
-        <div className="fixed inset-0 z-[9999] bg-black/90 flex items-center justify-center p-4 sm:p-8"
-          onClick={() => setLightboxScene(null)}>
-          <button onClick={() => setLightboxScene(null)}
-            className="absolute top-4 right-4 p-2 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors z-10">
+            onClick={() => setLightboxOpen(false)}
+            className="absolute top-4 right-4 p-2 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors z-10"
+          >
             <X size={24} />
           </button>
           <div className="w-full max-w-5xl" onClick={(e) => e.stopPropagation()}>
