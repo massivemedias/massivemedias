@@ -1,7 +1,7 @@
 import { img } from '../utils/paths';
 
 export const stickerFinishes = [
-  { id: 'clear', labelFr: 'Clear', labelEn: 'Clear', labelEs: 'Clear', descFr: 'Finition laminee protectrice', descEn: 'Protective laminated finish', descEs: 'Acabado laminado protector' },
+  { id: 'matte', labelFr: 'Matte', labelEn: 'Matte', labelEs: 'Mate', descFr: 'Fini mat naturel, sans reflets', descEn: 'Natural matte finish, no shine', descEs: 'Acabado mate natural, sin reflejos' },
   { id: 'glossy', labelFr: 'Vinyle Lustré', labelEn: 'Luster Vinyl', labelEs: 'Vinilo Lustrado', descFr: 'Brillant subtil, couleurs éclatantes', descEn: 'Subtle shine, vibrant colors', descEs: 'Brillo sutil, colores vibrantes' },
   { id: 'holographic', labelFr: 'Holographique', labelEn: 'Holographic', labelEs: 'Holográfico', descFr: 'Reflets arc-en-ciel, effet wow', descEn: 'Rainbow reflections, wow effect', descEs: 'Reflejos arcoíris, efecto wow' },
   { id: 'broken-glass', labelFr: 'Verre Brisé', labelEn: 'Broken Glass', labelEs: 'Vidrio Roto', descFr: 'Éclats cristallins, reflets prismatiques', descEn: 'Crystal shards, prismatic reflections', descEs: 'Fragmentos cristalinos, reflejos prismáticos' },
@@ -49,7 +49,7 @@ export function getStickerPrice(finish, shape, qty) {
   if (finish === 'holographic' || finish === 'broken-glass' || finish === 'stars') {
     tiers = holographicPriceTiers;
   } else {
-    // clear, glossy, transparent, dots = Standard pricing
+    // matte, glossy, dots = Standard pricing
     tiers = stickerPriceTiers;
   }
   const tier = tiers.find(t => t.qty === qty);
