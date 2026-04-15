@@ -81,20 +81,24 @@ function InstantMockup({ imageUrl, frameColor = 'black', isLandscape = false, sc
       const userImg = userImgRef.current;
       const imgRatio = userImg.naturalWidth / userImg.naturalHeight;
 
-      let sx = 0, sy = 0, sw = userImg.naturalWidth, sh = userImg.naturalHeight;
+      // "Contain": l'image entiere est toujours visible, le mat remplit le reste.
+      // Comme en galerie: un tirage paysage dans un cadre portrait = mat en haut/bas.
+      let destX = printX, destY = printY, destW = printW, destH = printH;
       if (imgRatio > printRatio) {
-        sw = Math.round(sh * printRatio);
-        sx = Math.round((userImg.naturalWidth - sw) / 2);
+        // Image plus large que le cadre → contraindre par la largeur, centrer verticalement
+        destH = Math.round(printW / imgRatio);
+        destY = printY + Math.round((printH - destH) / 2);
       } else {
-        sh = Math.round(sw / printRatio);
-        sy = Math.round((userImg.naturalHeight - sh) / 2);
+        // Image plus haute que le cadre → contraindre par la hauteur, centrer horizontalement
+        destW = Math.round(printH * imgRatio);
+        destX = printX + Math.round((printW - destW) / 2);
       }
 
       ctx.save();
       ctx.beginPath();
       ctx.rect(printX, printY, printW, printH);
       ctx.clip();
-      ctx.drawImage(userImg, sx, sy, sw, sh, printX, printY, printW, printH);
+      ctx.drawImage(userImg, 0, 0, userImg.naturalWidth, userImg.naturalHeight, destX, destY, destW, destH);
       ctx.restore();
     };
 
