@@ -13,7 +13,7 @@ const PRINT_WEIGHTS = {
 const CLOTHING_WEIGHTS = {
     tshirt: 250,
     hoodie: 600,
-    crewneck: 450,
+    longsleeve: 450,
     totebag: 200,
     bag: 200,
     mug: 350,
@@ -51,6 +51,10 @@ function getItemWeight(item) {
     // Flyers: 5g par flyer
     if (id.startsWith('flyer-')) {
         return 5 * qty;
+    }
+    // Cartes d'affaires: 3g par carte (plus petit qu'un flyer)
+    if (id.startsWith('business-card-')) {
+        return 3 * qty;
     }
     // Fallback
     return 200 * qty;

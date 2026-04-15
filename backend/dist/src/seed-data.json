@@ -1094,10 +1094,10 @@
             "iconName": "Shirt",
             "titleFr": "Merch",
             "titleEn": "Merch",
-            "subtitleFr": "T-shirts, crewnecks, hoodies, sacs bananes, mugs - ton merch sur mesure",
-            "subtitleEn": "T-shirts, crewnecks, hoodies, fanny packs, mugs - your custom merch",
-            "descriptionFr": "Impression sublimation sur textile et objets. La sublimation produit des couleurs vibrantes et permanentes qui ne craquent pas, ne s'effacent pas et résistent au lavage.\n\nIdéal pour le merch d'artiste, les événements, les cadeaux corporatifs ou tout projet personnalisé. T-shirts, crewnecks, hoodies, sacs bananes avec ton logo, mugs, thermos et plus encore.",
-            "descriptionEn": "Sublimation printing on textiles and objects. Sublimation produces vibrant and permanent colors that don't crack, don't fade and are wash-resistant.\n\nIdeal for artist merch, events, corporate gifts or any custom project. T-shirts, crewnecks, hoodies, fanny packs with your logo, mugs, tumblers and more.",
+            "subtitleFr": "T-shirts, long sleeves, hoodies, sacs bananes, mugs - ton merch sur mesure",
+            "subtitleEn": "T-shirts, long sleeves, hoodies, fanny packs, mugs - your custom merch",
+            "descriptionFr": "Impression sublimation sur textile et objets. La sublimation produit des couleurs vibrantes et permanentes qui ne craquent pas, ne s'effacent pas et résistent au lavage.\n\nIdéal pour le merch d'artiste, les événements, les cadeaux corporatifs ou tout projet personnalisé. T-shirts, long sleeves, hoodies, sacs bananes avec ton logo, mugs, thermos et plus encore.",
+            "descriptionEn": "Sublimation printing on textiles and objects. Sublimation produces vibrant and permanent colors that don't crack, don't fade and are wash-resistant.\n\nIdeal for artist merch, events, corporate gifts or any custom project. T-shirts, long sleeves, hoodies, fanny packs with your logo, mugs, tumblers and more.",
             "highlightsFr": [
                 "Presse à chaud grand format - textile",
                 "Presse à chaud compacte - objets et accessoires",
@@ -1120,7 +1120,7 @@
                 {
                     "step": 1,
                     "title": "Choix du produit",
-                    "desc": "T-shirt, crewneck, hoodie, sac banane, mug, thermos, tapis de souris, etc."
+                    "desc": "T-shirt, longsleeve, hoodie, sac banane, mug, thermos, tapis de souris, etc."
                 },
                 {
                     "step": 2,
@@ -1152,7 +1152,7 @@
                 {
                     "step": 1,
                     "title": "Product choice",
-                    "desc": "T-shirt, crewneck, hoodie, fanny pack, mug, tumbler, mousepad, etc."
+                    "desc": "T-shirt, longsleeve, hoodie, fanny pack, mug, tumbler, mousepad, etc."
                 },
                 {
                     "step": 2,
@@ -1215,19 +1215,19 @@
                         "Sur soumission"
                     ],
                     [
-                        "Crewneck (design fourni)",
+                        "Long Sleeve (design fourni)",
                         "1",
                         "45$",
                         "45$"
                     ],
                     [
-                        "Crewneck (design fourni)",
+                        "Long Sleeve (design fourni)",
                         "5",
                         "40$",
                         "200$"
                     ],
                     [
-                        "Crewneck (design fourni)",
+                        "Long Sleeve (design fourni)",
                         "10",
                         "35$",
                         "350$"
@@ -1305,19 +1305,19 @@
                         "On quote"
                     ],
                     [
-                        "Crewneck (design provided)",
+                        "Long Sleeve (design provided)",
                         "1",
                         "$45",
                         "$45"
                     ],
                     [
-                        "Crewneck (design provided)",
+                        "Long Sleeve (design provided)",
                         "5",
                         "$40",
                         "$200"
                     ],
                     [
-                        "Crewneck (design provided)",
+                        "Long Sleeve (design provided)",
                         "10",
                         "$35",
                         "$350"
@@ -1407,7 +1407,7 @@
                 },
                 {
                     "q": "Quels produits peut-on sublimer?",
-                    "a": "T-shirts, crewnecks, hoodies, sacs bananes, mugs, thermos, tapis de souris, porte-clés, et plus. Les sacs bananes sont parfaits pour mettre ton logo dessus!"
+                    "a": "T-shirts, long sleeves, hoodies, sacs bananes, mugs, thermos, tapis de souris, porte-clés, et plus. Les sacs bananes sont parfaits pour mettre ton logo dessus!"
                 }
             ],
             "faqEn": [
@@ -1429,14 +1429,14 @@
                 },
                 {
                     "q": "What products can be sublimated?",
-                    "a": "T-shirts, crewnecks, hoodies, fanny packs, mugs, tumblers, mousepads, keychains, and more. Fanny packs are perfect for putting your logo on!"
+                    "a": "T-shirts, long sleeves, hoodies, fanny packs, mugs, tumblers, mousepads, keychains, and more. Fanny packs are perfect for putting your logo on!"
                 }
             ],
             "seo": {
                 "titleFr": "Merch & Sublimation Montréal - Massive Medias",
                 "titleEn": "Merch & Sublimation Montreal - Massive Medias",
-                "descriptionFr": "T-shirts, crewnecks, hoodies, sacs bananes, mugs en sublimation. Merch d'artiste sur mesure. Production locale Montréal.",
-                "descriptionEn": "T-shirts, crewnecks, hoodies, fanny packs, mugs in sublimation. Custom artist merch. Local production in Montreal."
+                "descriptionFr": "T-shirts, long sleeves, hoodies, sacs bananes, mugs en sublimation. Merch d'artiste sur mesure. Production locale Montréal.",
+                "descriptionEn": "T-shirts, long sleeves, hoodies, fanny packs, mugs in sublimation. Custom artist merch. Local production in Montreal."
             },
             "sortOrder": 3,
             "active": true
@@ -2777,9 +2777,9 @@
                         "descEn": "Light and comfortable, all-over"
                     },
                     {
-                        "id": "crewneck",
-                        "labelFr": "Crewneck",
-                        "labelEn": "Crewneck",
+                        "id": "longsleeve",
+                        "labelFr": "Long Sleeve",
+                        "labelEn": "Long Sleeve",
                         "descFr": "Style decontracte, coton epais",
                         "descEn": "Casual style, thick cotton"
                     },
@@ -2829,7 +2829,7 @@
                             "surSoumission": true
                         }
                     ],
-                    "crewneck": [
+                    "longsleeve": [
                         {
                             "qty": 1,
                             "unitPrice": 50,
@@ -2936,7 +2936,7 @@
                 },
                 {
                     "q": "Sur quels produits imprimez-vous?",
-                    "a": "T-shirts, crewnecks, hoodies, sacs bananes, mugs, thermos, tapis de souris et plus."
+                    "a": "T-shirts, long sleeves, hoodies, sacs bananes, mugs, thermos, tapis de souris et plus."
                 },
                 {
                     "q": "Puis-je fournir mon propre design?",
@@ -2962,7 +2962,7 @@
                 },
                 {
                     "q": "What products do you print on?",
-                    "a": "T-shirts, crewnecks, hoodies, fanny packs, mugs, tumblers, mousepads and more."
+                    "a": "T-shirts, long sleeves, hoodies, fanny packs, mugs, tumblers, mousepads and more."
                 },
                 {
                     "q": "Can I provide my own design?",
@@ -3388,13 +3388,13 @@
             "active": true
         },
         {
-            "name": "Merch Crewneck",
-            "slug": "merch-crewneck",
-            "category": "merch-crewneck",
-            "nameFr": "Crewneck Custom",
-            "nameEn": "Custom Crewneck",
-            "descriptionFr": "Crewnecks personnalises en sublimation.",
-            "descriptionEn": "Custom sublimation crewnecks.",
+            "name": "Merch Long Sleeve",
+            "slug": "merch-longsleeve",
+            "category": "merch-longsleeve",
+            "nameFr": "Long Sleeve Custom",
+            "nameEn": "Custom Long Sleeve",
+            "descriptionFr": "Long Sleeves personnalises en sublimation.",
+            "descriptionEn": "Custom sublimation long sleeves.",
             "pricingData": {
                 "base": 30,
                 "sizes": {
@@ -3475,11 +3475,11 @@
             "active": true
         },
         {
-            "name": "Crewneck Massive",
-            "slug": "pret-a-porter-crewneck",
+            "name": "Long Sleeve Massive",
+            "slug": "pret-a-porter-longsleeve",
             "category": "pret-a-porter",
-            "nameFr": "Crewneck",
-            "nameEn": "Crewneck",
+            "nameFr": "Long Sleeve",
+            "nameEn": "Long Sleeve",
             "descriptionFr": "Molleton mi-poids, design exclusif. Tailles S a 3XL.",
             "descriptionEn": "Midweight fleece, exclusive design. Sizes S to 3XL.",
             "pricingData": {
@@ -3494,7 +3494,7 @@
                 ]
             },
             "comingSoon": true,
-            "imageUrl": "/images/crewneck/light-pink.webp",
+            "imageUrl": "/images/longsleeve/light-pink.webp",
             "sortOrder": 22,
             "active": true
         },

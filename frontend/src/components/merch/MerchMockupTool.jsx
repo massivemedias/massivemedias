@@ -1,26 +1,41 @@
 /**
- * MerchMockupTool - Outil de mockup hoodie noir avec placement libre de logos.
+ * MerchMockupTool - Outil de mockup merch noir (hoodie/t-shirt/long sleeve)
+ * avec placement libre de logos.
  *
  * Interactions:
+ *   - Selecteur de produit en haut (switche l'image sans perdre les logos)
  *   - Upload un ou plusieurs logos
  *   - Chaque logo peut etre draggue (souris + touch)
  *   - Poignee bas-droite: resize proportionnel
  *   - Petit X haut-droite: supprime le logo
  *   - Mobile: toggle front/back. Desktop: les 2 vues cote a cote.
- *   - Telecharger PNG front et back separement (image hoodie + logos composes)
+ *   - Telecharger PNG front et back separement (image + logos composes)
  *
- * Les logos sont places en coordonnees relatives (0..1 de la box hoodie).
- * Chaque face a sa propre liste de logos.
+ * Les logos sont places en coordonnees relatives (0..1 de la box produit),
+ * donc ils suivent quand on switche entre produits de ratios differents.
  */
-import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { Upload, Download, RotateCcw, X, Shirt } from 'lucide-react';
 
-const HOODIE_FRONT = '/images/mockups/hoodie/front.webp';
-const HOODIE_BACK = '/images/mockups/hoodie/back.webp';
-
-// Dimensions natives des images hoodies (486x608) - utilise pour l'export HD
-const HOODIE_W = 486;
-const HOODIE_H = 608;
+// Catalogue des produits dispo. Chaque face a ses propres dimensions natives
+// pour un export HD fidele a l'image source.
+const PRODUCTS = {
+  hoodie: {
+    label: 'Hoodie',
+    front: { src: '/images/mockups/hoodie/front.webp', w: 486, h: 608 },
+    back:  { src: '/images/mockups/hoodie/back.webp',  w: 486, h: 608 },
+  },
+  tshirt: {
+    label: 'T-shirt',
+    front: { src: '/images/mockups/tshirt/front.webp', w: 486, h: 608 },
+    back:  { src: '/images/mockups/tshirt/back.webp',  w: 720, h: 900 },
+  },
+  longsleeve: {
+    label: 'Long Sleeve',
+    front: { src: '/images/mockups/longsleeve/front.webp', w: 486, h: 608 },
+    back:  { src: '/images/mockups/longsleeve/back.webp',  w: 720, h: 900 },
+  },
+};
 
 // ---------------------------------------------------------------------------
 // Hook pour charger une image en HTMLImageElement
@@ -154,9 +169,9 @@ function DraggableLogo({ logo, onChange, onDelete, containerRef, selected, onSel
 }
 
 // ---------------------------------------------------------------------------
-// HoodieCanvas - une face (front ou back) avec son lot de logos
+// ProductCanvas - une face (front ou back) avec son lot de logos
 // ---------------------------------------------------------------------------
-function HoodieCanvas({ side, bgSrc, logos, onLogosChange, selectedId, onSelect, onAddLogo }) {
+function ProductCanvas({ side, bgSrc, bgW, bgH, logos, onLogosChange, selectedId, onSelect, onAddLogo }) {
   const containerRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -216,7 +231,7 @@ function HoodieCanvas({ side, bgSrc, logos, onLogosChange, selectedId, onSelect,
         ref={containerRef}
         onMouseDown={(e) => { if (e.target === containerRef.current || e.target.tagName === 'IMG') deselect(); }}
         className="relative w-full rounded-lg overflow-hidden bg-black/30 border border-white/5"
-        style={{ aspectRatio: `${HOODIE_W}/${HOODIE_H}`, touchAction: 'none' }}
+        style={{ aspectRatio: `${bgW}/${bgH}`, touchAction: 'none' }}
       >
         <img
           src={bgSrc}
@@ -256,13 +271,13 @@ function HoodieCanvas({ side, bgSrc, logos, onLogosChange, selectedId, onSelect,
 // Composeur offscreen pour l'export PNG
 // Dessine l'image hoodie puis chaque logo a sa position relative
 // ---------------------------------------------------------------------------
-async function composeAndDownload(bgImg, logos, filename) {
+async function composeAndDownload(bgImg, logos, filename, bgW, bgH) {
   if (!bgImg) return;
   const canvas = document.createElement('canvas');
   // Export en 2x pour qualite
   const scale = 2;
-  canvas.width = HOODIE_W * scale;
-  canvas.height = HOODIE_H * scale;
+  canvas.width = bgW * scale;
+  canvas.height = bgH * scale;
   const ctx = canvas.getContext('2d');
 
   // Draw hoodie fond
@@ -306,15 +321,20 @@ async function composeAndDownload(bgImg, logos, filename) {
 // MerchMockupTool - composant exporte
 // ---------------------------------------------------------------------------
 function MerchMockupTool() {
-  const frontImg = useImage(HOODIE_FRONT);
-  const backImg = useImage(HOODIE_BACK);
+  const [productKey, setProductKey] = useState('hoodie');
+  const product = PRODUCTS[productKey];
 
+  const frontImg = useImage(product.front.src);
+  const backImg = useImage(product.back.src);
+
+  // Les logos sont partages entre produits (coordonnees relatives 0..1)
+  // donc quand on switche, les logos suivent visuellement au meme endroit
+  // proportionnel sur le nouveau produit.
   const [frontLogos, setFrontLogos] = useState([]);
   const [backLogos, setBackLogos] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
-  const [mobileSide, setMobileSide] = useState('front'); // mobile only
+  const [mobileSide, setMobileSide] = useState('front');
 
-  // Cleanup: revoquer les URLs blob a unmount
   useEffect(() => {
     return () => {
       [...frontLogos, ...backLogos].forEach(l => {
@@ -334,20 +354,43 @@ function MerchMockupTool() {
   };
 
   const totalLogos = frontLogos.length + backLogos.length;
+  const productSlug = productKey; // hoodie / tshirt / longsleeve
 
   return (
     <div className="space-y-4">
+      {/* Selecteur de produit */}
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-xs uppercase tracking-wider text-grey-muted font-semibold mr-1">
+          Produit
+        </span>
+        {Object.entries(PRODUCTS).map(([key, p]) => (
+          <button
+            key={key}
+            type="button"
+            onClick={() => setProductKey(key)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors border-2 ${
+              productKey === key
+                ? 'border-accent bg-accent/15 text-accent'
+                : 'border-transparent bg-black/20 text-grey-muted hover:text-heading hover:bg-black/30'
+            }`}
+          >
+            <Shirt size={14} />
+            {p.label}
+          </button>
+        ))}
+      </div>
+
       {/* Barre d'actions globale */}
       <div className="flex flex-wrap items-center gap-2 rounded-xl bg-black/20 p-3">
         <div className="flex items-center gap-2 text-grey-muted text-sm">
           <Shirt size={16} />
-          <span className="font-semibold text-heading">Hoodie noir</span>
+          <span className="font-semibold text-heading">{product.label} noir</span>
           <span className="text-xs">· {totalLogos} logo{totalLogos !== 1 ? 's' : ''}</span>
         </div>
         <div className="flex-1" />
         <button
           type="button"
-          onClick={() => composeAndDownload(frontImg, frontLogos, 'hoodie-front-mockup.png')}
+          onClick={() => composeAndDownload(frontImg, frontLogos, `${productSlug}-front-mockup.png`, product.front.w, product.front.h)}
           disabled={!frontImg || frontLogos.length === 0}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent text-white text-xs font-semibold disabled:opacity-40 hover:bg-accent/90 transition-colors"
         >
@@ -356,7 +399,7 @@ function MerchMockupTool() {
         </button>
         <button
           type="button"
-          onClick={() => composeAndDownload(backImg, backLogos, 'hoodie-back-mockup.png')}
+          onClick={() => composeAndDownload(backImg, backLogos, `${productSlug}-back-mockup.png`, product.back.w, product.back.h)}
           disabled={!backImg || backLogos.length === 0}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent text-white text-xs font-semibold disabled:opacity-40 hover:bg-accent/90 transition-colors"
         >
@@ -396,9 +439,11 @@ function MerchMockupTool() {
       {/* Desktop: 2 colonnes / Mobile: 1 colonne avec toggle */}
       <div className="grid md:grid-cols-2 gap-4">
         <div className={mobileSide === 'front' ? 'block' : 'hidden md:block'}>
-          <HoodieCanvas
+          <ProductCanvas
             side="front"
-            bgSrc={HOODIE_FRONT}
+            bgSrc={product.front.src}
+            bgW={product.front.w}
+            bgH={product.front.h}
             logos={frontLogos}
             onLogosChange={setFrontLogos}
             selectedId={selectedId}
@@ -407,9 +452,11 @@ function MerchMockupTool() {
           />
         </div>
         <div className={mobileSide === 'back' ? 'block' : 'hidden md:block'}>
-          <HoodieCanvas
+          <ProductCanvas
             side="back"
-            bgSrc={HOODIE_BACK}
+            bgSrc={product.back.src}
+            bgW={product.back.w}
+            bgH={product.back.h}
             logos={backLogos}
             onLogosChange={setBackLogos}
             selectedId={selectedId}
@@ -421,7 +468,7 @@ function MerchMockupTool() {
 
       {/* Aide */}
       <div className="text-[11px] text-grey-muted/80 italic px-1">
-        Drag pour deplacer · poignee accent = resize (ratio garde) · X rouge = supprimer · clique ailleurs pour deselectionner
+        Drag pour deplacer · poignee accent = resize (ratio garde) · X rouge = supprimer · switche de produit en haut pour voir ton design sur autre chose
       </div>
     </div>
   );

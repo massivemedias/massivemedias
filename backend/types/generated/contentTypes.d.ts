@@ -430,6 +430,38 @@ export interface AdminUser extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiAdminNoteAdminNote extends Struct.CollectionTypeSchema {
+  collectionName: 'admin_notes';
+  info: {
+    description: 'Notes internes du panneau admin';
+    displayName: 'Note Admin';
+    pluralName: 'admin-notes';
+    singularName: 'admin-note';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    body: Schema.Attribute.RichText;
+    color: Schema.Attribute.String & Schema.Attribute.DefaultTo<''>;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::admin-note.admin-note'
+    > &
+      Schema.Attribute.Private;
+    pinned: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    publishedAt: Schema.Attribute.DateTime;
+    title: Schema.Attribute.String & Schema.Attribute.DefaultTo<''>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiArtistEditRequestArtistEditRequest
   extends Struct.CollectionTypeSchema {
   collectionName: 'artist_edit_requests';
@@ -472,6 +504,9 @@ export interface ApiArtistEditRequestArtistEditRequest
         'update-bio',
         'update-socials',
         'update-avatar',
+        'mark-unique',
+        'unmark-unique',
+        'rename-item',
       ]
     > &
       Schema.Attribute.Required;
@@ -498,6 +533,8 @@ export interface ApiArtistMessageArtistMessage
   attributes: {
     adminReply: Schema.Attribute.Text;
     artistName: Schema.Attribute.String;
+    artistRepliedAt: Schema.Attribute.DateTime;
+    artistReply: Schema.Attribute.Text;
     artistSlug: Schema.Attribute.String & Schema.Attribute.Required;
     attachments: Schema.Attribute.JSON;
     category: Schema.Attribute.Enumeration<
@@ -511,6 +548,7 @@ export interface ApiArtistMessageArtistMessage
       ]
     > &
       Schema.Attribute.DefaultTo<'other'>;
+    conversationId: Schema.Attribute.String;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -524,6 +562,10 @@ export interface ApiArtistMessageArtistMessage
     message: Schema.Attribute.Text & Schema.Attribute.Required;
     publishedAt: Schema.Attribute.DateTime;
     repliedAt: Schema.Attribute.DateTime;
+    senderEmail: Schema.Attribute.Email;
+    senderName: Schema.Attribute.String;
+    senderType: Schema.Attribute.Enumeration<['artist', 'public', 'admin']> &
+      Schema.Attribute.DefaultTo<'artist'>;
     status: Schema.Attribute.Enumeration<
       ['new', 'read', 'replied', 'archived']
     > &
@@ -666,6 +708,7 @@ export interface ApiArtistArtist extends Struct.CollectionTypeSchema {
       Schema.Attribute.Unique;
     socials: Schema.Attribute.JSON;
     sortOrder: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    stickers: Schema.Attribute.JSON;
     taglineEn: Schema.Attribute.String;
     taglineEs: Schema.Attribute.String;
     taglineFr: Schema.Attribute.String;
@@ -964,14 +1007,26 @@ export interface ApiInventoryItemInventoryItem
   };
   attributes: {
     active: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    brand: Schema.Attribute.String;
     category: Schema.Attribute.Enumeration<
-      ['textile', 'frame', 'accessory', 'sticker', 'print', 'merch', 'other']
+      [
+        'textile',
+        'frame',
+        'sticker',
+        'merch',
+        'equipment',
+        'consommable',
+        'emballage',
+      ]
     > &
       Schema.Attribute.Required;
+    color: Schema.Attribute.String;
     costPrice: Schema.Attribute.Decimal;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    detail: Schema.Attribute.String;
+    hasZip: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     image: Schema.Attribute.Media<'images'>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
@@ -1020,10 +1075,14 @@ export interface ApiInvoiceInvoice extends Struct.CollectionTypeSchema {
     date: Schema.Attribute.Date & Schema.Attribute.Required;
     discountAmount: Schema.Attribute.Decimal;
     discountPercent: Schema.Attribute.Decimal;
+    includeOwnerName: Schema.Attribute.Boolean &
+      Schema.Attribute.DefaultTo<false>;
     invoiceNumber: Schema.Attribute.String &
       Schema.Attribute.Required &
       Schema.Attribute.Unique;
     items: Schema.Attribute.JSON & Schema.Attribute.Required;
+    lang: Schema.Attribute.Enumeration<['fr', 'en']> &
+      Schema.Attribute.DefaultTo<'fr'>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
@@ -1033,6 +1092,8 @@ export interface ApiInvoiceInvoice extends Struct.CollectionTypeSchema {
     notes: Schema.Attribute.Text;
     order: Schema.Attribute.Relation<'oneToOne', 'api::order.order'>;
     paidAt: Schema.Attribute.DateTime;
+    pdfFileId: Schema.Attribute.String;
+    pdfUrl: Schema.Attribute.String;
     publishedAt: Schema.Attribute.DateTime;
     status: Schema.Attribute.Enumeration<
       ['draft', 'sent', 'paid', 'cancelled']
@@ -1124,11 +1185,14 @@ export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
     localizations: Schema.Attribute.Relation<'oneToMany', 'api::order.order'> &
       Schema.Attribute.Private;
     notes: Schema.Attribute.Text;
+    promoCode: Schema.Attribute.String;
+    promoDiscount: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
     publishedAt: Schema.Attribute.DateTime;
     shipping: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
     shippingAddress: Schema.Attribute.JSON;
     status: Schema.Attribute.Enumeration<
       [
+        'draft',
         'pending',
         'paid',
         'processing',
@@ -1139,7 +1203,7 @@ export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
       ]
     > &
       Schema.Attribute.Required &
-      Schema.Attribute.DefaultTo<'pending'>;
+      Schema.Attribute.DefaultTo<'draft'>;
     stripePaymentIntentId: Schema.Attribute.String &
       Schema.Attribute.Required &
       Schema.Attribute.Unique;
@@ -1181,6 +1245,7 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
         'sticker-pack',
         'merch-tshirt',
         'merch-hoodie',
+        'merch-longsleeve',
         'merch-crewneck',
         'merch-totebag',
       ]
@@ -1217,6 +1282,51 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
       Schema.Attribute.Required &
       Schema.Attribute.Unique;
     sortOrder: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiPromoCodePromoCode extends Struct.CollectionTypeSchema {
+  collectionName: 'promo_codes';
+  info: {
+    description: 'Codes promotionnels avec gestion admin';
+    displayName: 'Code Promo';
+    pluralName: 'promo-codes';
+    singularName: 'promo-code';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    active: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    code: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    currentUses: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    discountPercent: Schema.Attribute.Integer &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMax<
+        {
+          max: 100;
+          min: 1;
+        },
+        number
+      >;
+    expiresAt: Schema.Attribute.DateTime;
+    label: Schema.Attribute.String & Schema.Attribute.Required;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::promo-code.promo-code'
+    > &
+      Schema.Attribute.Private;
+    maxUses: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    publishedAt: Schema.Attribute.DateTime;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -1708,6 +1818,8 @@ export interface ApiUserRoleUserRole extends Struct.CollectionTypeSchema {
     email: Schema.Attribute.Email &
       Schema.Attribute.Required &
       Schema.Attribute.Unique;
+    heroImageId: Schema.Attribute.String;
+    itemRenames: Schema.Attribute.JSON;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
@@ -2279,6 +2391,7 @@ declare module '@strapi/strapi' {
       'admin::transfer-token': AdminTransferToken;
       'admin::transfer-token-permission': AdminTransferTokenPermission;
       'admin::user': AdminUser;
+      'api::admin-note.admin-note': ApiAdminNoteAdminNote;
       'api::artist-edit-request.artist-edit-request': ApiArtistEditRequestArtistEditRequest;
       'api::artist-message.artist-message': ApiArtistMessageArtistMessage;
       'api::artist-payment.artist-payment': ApiArtistPaymentArtistPayment;
@@ -2295,6 +2408,7 @@ declare module '@strapi/strapi' {
       'api::news-article.news-article': ApiNewsArticleNewsArticle;
       'api::order.order': ApiOrderOrder;
       'api::product.product': ApiProductProduct;
+      'api::promo-code.promo-code': ApiPromoCodePromoCode;
       'api::reservation.reservation': ApiReservationReservation;
       'api::service-package.service-package': ApiServicePackageServicePackage;
       'api::service-page.service-page': ApiServicePageServicePage;

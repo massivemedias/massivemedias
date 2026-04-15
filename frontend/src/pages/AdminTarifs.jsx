@@ -53,7 +53,7 @@ const FLYERS = [
 
 const SUBLIMATION = [
   { product: 'T-shirt', tiers: [{ qty: 1, unit: 30 }, { qty: 5, unit: 27 }, { qty: 10, unit: 25 }, { qty: '25+', unit: 23, soumission: true }] },
-  { product: 'Crewneck', tiers: [{ qty: 1, unit: 40 }, { qty: 5, unit: 37 }, { qty: 10, unit: 35 }, { qty: '25+', unit: 33, soumission: true }] },
+  { product: 'Long Sleeve', tiers: [{ qty: 1, unit: 40 }, { qty: 5, unit: 37 }, { qty: 10, unit: 35 }, { qty: '25+', unit: 33, soumission: true }] },
   { product: 'Hoodie', tiers: [{ qty: 1, unit: 50 }, { qty: 5, unit: 45 }, { qty: 10, unit: 42 }, { qty: '25+', unit: 40, soumission: true }] },
   { product: 'Tote Bag', tiers: [{ qty: 1, unit: 15 }, { qty: 10, unit: 13 }, { qty: 25, unit: 12 }, { qty: 50, unit: 10 }] },
   { product: { fr: 'Sac banane', en: 'Fanny pack', es: 'Rinonera' }, tiers: [{ qty: 1, unit: 80 }, { qty: 5, unit: 75 }, { qty: 10, unit: 70 }] },
@@ -64,7 +64,7 @@ const SUBLIMATION_DESIGN = 125;
 
 const MERCH_MASSIVE = [
   { product: 'T-shirt Massive', price: 22 },
-  { product: 'Crewneck Massive', price: 30 },
+  { product: 'Long Sleeve Massive', price: 30 },
   { product: 'Hoodie Massive', price: 39 },
 ];
 

@@ -11,12 +11,12 @@ import {
   sublimationProducts as defaultProducts, sublimationPriceTiers as defaultPriceTiers, sublimationDesignPrice as defaultDesignPrice,
   getSublimationPrice as defaultGetPrice, sublimationImages,
 } from '../../data/products';
-import { merchColors, merchSizes, getTshirtImage, hoodieColors, getHoodieImage, crewneckColors, getCrewneckImage, totebagColors, getTotebagImage } from '../../data/merchData';
+import { merchColors, merchSizes, getTshirtImage, hoodieColors, getHoodieImage, longsleeveColors, getLongSleeveImage, totebagColors, getTotebagImage } from '../../data/merchData';
 
 // Products that support color selection
-const productsWithColors = ['tshirt', 'hoodie', 'crewneck', 'totebag'];
+const productsWithColors = ['tshirt', 'hoodie', 'longsleeve', 'totebag'];
 // Products that also have size selection
-const productsWithSizes = ['tshirt', 'hoodie', 'crewneck'];
+const productsWithSizes = ['tshirt', 'hoodie', 'longsleeve'];
 // Static preview images for products without color picker
 const staticProductImages = {
   mug: '/images/mugs/mug-white.webp',
@@ -59,14 +59,14 @@ function ConfiguratorSublimation() {
 
   const hasColors = productsWithColors.includes(product);
   const hasSizes = productsWithSizes.includes(product);
-  const colorsMap = { tshirt: merchColors, hoodie: hoodieColors, crewneck: crewneckColors, totebag: totebagColors };
-  const imageMap = { tshirt: getTshirtImage, hoodie: getHoodieImage, crewneck: getCrewneckImage, totebag: getTotebagImage };
+  const colorsMap = { tshirt: merchColors, hoodie: hoodieColors, longsleeve: longsleeveColors, totebag: totebagColors };
+  const imageMap = { tshirt: getTshirtImage, hoodie: getHoodieImage, longsleeve: getLongSleeveImage, totebag: getTotebagImage };
   const currentColors = colorsMap[product] || merchColors;
   const currentGetImage = imageMap[product] || getTshirtImage;
   const colorObj = currentColors.find(c => c.id === selectedColor) || currentColors[0];
 
   // Preferred default color per product type
-  const defaultColorMap = { tshirt: 'orchid', hoodie: 'orchid', crewneck: 'orchid', totebag: 'lavender' };
+  const defaultColorMap = { tshirt: 'orchid', hoodie: 'orchid', longsleeve: 'orchid', totebag: 'lavender' };
 
   const handleProductChange = (p) => {
     setProduct(p);

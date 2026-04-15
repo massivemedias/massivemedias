@@ -133,8 +133,8 @@ const inventoryItems = [
     active: true,
   },
   {
-    nameFr: 'Crewneck Gildan 18000',
-    nameEn: 'Crewneck Sweatshirt Gildan 18000',
+    nameFr: 'Long Sleeve Gildan 18000',
+    nameEn: 'Long Sleeve Sweatshirt Gildan 18000',
     sku: 'MS-CREW-G18000',
     category: 'textile',
     variant: 'Noir - toutes tailles',
@@ -390,7 +390,7 @@ async function main() {
   const skuToProduct = {
     'MS-TSHIRT': 'merch-tshirt',
     'MS-HOODIE': 'merch-hoodie',
-    'MS-CREW': 'merch-crewneck',
+    'MS-CREW': 'merch-longsleeve',
     'MS-TOTE': 'merch-totebag',
     'MS-STK-': 'stickers',
     'MS-FRM-': 'fine-art',

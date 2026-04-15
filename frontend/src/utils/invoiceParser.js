@@ -240,7 +240,7 @@ function extractTotals(text) {
  */
 function guessCategory(description) {
   const d = description.toLowerCase();
-  if (/t-?shirt|hoodie|crewneck|chandail|vêtement|textile|coton|polyester|gildan|bella|canvas/i.test(d)) return 'textile';
+  if (/t-?shirt|hoodie|longsleeve|chandail|vêtement|textile|coton|polyester|gildan|bella|canvas/i.test(d)) return 'textile';
   if (/cadre|frame|moulure|verre|glass/i.test(d)) return 'frame';
   if (/sublimation|heat transfer|transfert/i.test(d)) return 'merch';
   if (/sticker|vinyle|vinyl|autocollant|decal/i.test(d)) return 'sticker';

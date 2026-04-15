@@ -73,7 +73,7 @@ const CATEGORY_LABELS = {
 };
 
 const CATEGORIES = [
-  { value: 'textile',     icon: Shirt,       label: 'Textile',      desc: 'T-Shirts, Hoodies, Crewnecks' },
+  { value: 'textile',     icon: Shirt,       label: 'Textile',      desc: 'T-Shirts, Hoodies, Long Sleeves' },
   { value: 'consommable', icon: Layers,      label: 'Consommables', desc: 'Feuilles, papiers, encres, laminat' },
   { value: 'emballage',   icon: PackageOpen, label: 'Emballage',    desc: 'Boites, enveloppes, protections' },
   { value: 'equipment',   icon: Printer,     label: 'Equipement',   desc: 'Imprimantes, decoupe, laminage' },
@@ -145,7 +145,7 @@ const EQUIPMENT_TYPES = [
   'Ecran / Moniteur',
 ];
 
-const TEXTILE_VARIANTS = ['T-Shirt', 'Hoodie', 'Crewneck', 'Polo', 'Tank Top'];
+const TEXTILE_VARIANTS = ['T-Shirt', 'Hoodie', 'Long Sleeve', 'Polo', 'Tank Top'];
 const TEXTILE_SIZES    = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL'];
 
 const MERCH_TYPES = ['Tote Bag', 'Mug', 'Tumbler', 'Fanny Pack', 'Casquette', 'Pin / Badge'];

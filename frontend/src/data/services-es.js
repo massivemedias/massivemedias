@@ -72,6 +72,35 @@ También imprimimos flyers, postales y tarjetas de presentación - todo lo que n
             ['500', '$250', '$0.50'],
           ],
         },
+        {
+          subtitle: 'Tarjetas de presentacion - Estandar 14pt (doble cara incluida)',
+          headers: ['Cantidad', 'Precio total', 'Precio/unidad'],
+          rows: [
+            ['100', '$55', '$0.55'],
+            ['250', '$75', '$0.30'],
+            ['500', '$95', '$0.19'],
+            ['1000', '$130', '$0.13'],
+          ],
+        },
+        {
+          subtitle: 'Tarjetas de presentacion - Laminado 16pt (doble cara incluida)',
+          headers: ['Cantidad', 'Precio total', 'Precio/unidad'],
+          rows: [
+            ['100', '$70', '$0.70'],
+            ['250', '$95', '$0.38'],
+            ['500', '$120', '$0.24'],
+            ['1000', '$165', '$0.17'],
+          ],
+        },
+        {
+          subtitle: 'Tarjetas de presentacion - Soft Touch 24pt Premium (doble cara incluida)',
+          headers: ['Cantidad', 'Precio total', 'Precio/unidad'],
+          rows: [
+            ['100', '$120', '$1.20'],
+            ['250', '$175', '$0.70'],
+            ['500', '$250', '$0.50'],
+          ],
+        },
       ],
     },
     showcaseRight: thumb('/images/prints/PrintsTaille.webp'),
@@ -191,11 +220,11 @@ Cortados a la forma exacta de tu diseño con nuestro equipo de corte profesional
     boutiqueSlug: 'sublimation',
     icon: Shirt,
     title: 'Merch',
-    subtitle: 'Camisetas, crewnecks, hoodies, riñoneras, tazas - tu merch personalizado',
+    subtitle: 'Camisetas, long sleeves, hoodies, riñoneras, tazas - tu merch personalizado',
     heroImage: thumb('/images/textile/MerchHero.webp'),
     description: `Impresión por sublimación sobre textiles y objetos. La sublimación produce colores vibrantes y permanentes que no se agrietan, no se desvanecen y resisten al lavado.
 
-Ideal para merch de artistas, eventos, regalos corporativos o cualquier proyecto personalizado. Camisetas, crewnecks, hoodies, riñoneras con tu logo, tazas, termos y más.`,
+Ideal para merch de artistas, eventos, regalos corporativos o cualquier proyecto personalizado. Camisetas, long sleeves, hoodies, riñoneras con tu logo, tazas, termos y más.`,
     highlights: [
       'Prensa de calor gran formato - textil',
       'Prensa de calor compacta - objetos y accesorios',
@@ -206,7 +235,7 @@ Ideal para merch de artistas, eventos, regalos corporativos o cualquier proyecto
       'Pequeñas y medianas series',
     ],
     process: [
-      { step: 1, title: 'Elección del producto', desc: 'Camiseta, crewneck, hoodie, riñonera, taza, termo, mousepad, etc.' },
+      { step: 1, title: 'Elección del producto', desc: 'Camiseta, longsleeve, hoodie, riñonera, taza, termo, mousepad, etc.' },
       { step: 2, title: 'Diseño', desc: 'Envía tu visual o solicita diseño gráfico' },
       { step: 3, title: 'Validación', desc: 'Mockup digital para aprobación antes de la producción' },
       { step: 4, title: 'Impresión sublimación', desc: 'Impresión de la transferencia en papel de sublimación especializado' },
@@ -218,7 +247,7 @@ Ideal para merch de artistas, eventos, regalos corporativos o cualquier proyecto
       note: '+$100-150 si se necesita creacion de diseno grafico',
       cards: [
         { product: 'Camiseta', desc: 'Diseno proporcionado', tiers: [{ qty: '1', price: '$30' }, { qty: '5', price: '$27' }, { qty: '10', price: '$25' }, { qty: '25+', price: '$23' }] },
-        { product: 'Crewneck', desc: 'Diseno proporcionado', tiers: [{ qty: '1', price: '$40' }, { qty: '5', price: '$37' }, { qty: '10', price: '$35' }, { qty: '25+', price: '$33' }] },
+        { product: 'Long Sleeve', desc: 'Diseno proporcionado', tiers: [{ qty: '1', price: '$40' }, { qty: '5', price: '$37' }, { qty: '10', price: '$35' }, { qty: '25+', price: '$33' }] },
         { product: 'Hoodie', desc: 'Diseno proporcionado', tiers: [{ qty: '1', price: '$50' }, { qty: '5', price: '$45' }, { qty: '10', price: '$42' }, { qty: '25+', price: '$40' }] },
         { product: 'Rinonera', desc: 'Con logo', tiers: [{ qty: '1', price: '$80' }, { qty: '5', price: '$75' }, { qty: '10', price: '$70' }] },
         { product: 'Mug', desc: 'Diseno proporcionado', tiers: [{ qty: '1', price: '$15' }, { qty: '5', price: '$13' }, { qty: '10', price: '$12' }, { qty: '25', price: '$10' }] },
@@ -242,11 +271,11 @@ Ideal para merch de artistas, eventos, regalos corporativos o cualquier proyecto
       { q: '¿Se puede imprimir en cualquier tela?', a: 'La sublimación funciona en tejidos de poliéster o con alto contenido de poliéster, y en sustratos tratados (tazas, termos, etc.). Las camisetas 100% algodón requieren un tratamiento especial.' },
       { q: '¿Cuál es la cantidad mínima?', a: '¡Desde una sola unidad! Sin mínimo. Ideal para prototipos o pequeñas series.' },
       { q: '¿El diseño está incluido?', a: 'La adaptación de tu visual para sublimación está incluida. Si no tienes diseño, podemos crearlo por un cargo de diseño gráfico.' },
-      { q: '¿Qué productos se pueden sublimar?', a: 'Camisetas, crewnecks, hoodies, riñoneras, tazas, termos, mousepads, llaveros y más. ¡Las riñoneras son perfectas para poner tu logo!' },
+      { q: '¿Qué productos se pueden sublimar?', a: 'Camisetas, long sleeves, hoodies, riñoneras, tazas, termos, mousepads, llaveros y más. ¡Las riñoneras son perfectas para poner tu logo!' },
     ],
     seo: {
       title: 'Sublimacion & Merch Montreal | Camisetas, Hoodies, Tazas - Massive',
-      description: 'Sublimacion textil personalizada en Montreal. Camisetas, hoodies, crewnecks, rinoneras, tazas, termos. Merch de artista y corporativo. Desde 1 unidad. Produccion local Mile-End.',
+      description: 'Sublimacion textil personalizada en Montreal. Camisetas, hoodies, long sleeves, rinoneras, tazas, termos. Merch de artista y corporativo. Desde 1 unidad. Produccion local Mile-End.',
     },
   },
 

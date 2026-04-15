@@ -297,7 +297,7 @@ async function seedProducts() {
     'web': { images: ['web/DevWebHero.webp'] },
     'merch-tshirt': { images: ['tshirts/white.webp'] },
     'merch-hoodie': { images: ['hoodies/white.webp'] },
-    'merch-crewneck': { images: ['crewneck/white.webp'] },
+    'merch-longsleeve': { images: ['longsleeve/white.webp'] },
     'merch-totebag': { images: ['totebags/natural.webp'] },
   };
 

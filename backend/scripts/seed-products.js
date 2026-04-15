@@ -141,7 +141,7 @@ const products = [
     pricingData: {
       products: [
         { id: 'tshirt', labelFr: 'T-shirt', labelEn: 'T-shirt' },
-        { id: 'crewneck', labelFr: 'Crewneck', labelEn: 'Crewneck' },
+        { id: 'longsleeve', labelFr: 'Long Sleeve', labelEn: 'Long Sleeve' },
         { id: 'hoodie', labelFr: 'Hoodie', labelEn: 'Hoodie' },
         { id: 'bag', labelFr: 'Sac banane', labelEn: 'Fanny Pack' },
       ],
@@ -152,7 +152,7 @@ const products = [
           { qty: 10, unitPrice: 25, price: 250 },
           { qty: 25, unitPrice: 23, price: 575 },
         ],
-        crewneck: [
+        longsleeve: [
           { qty: 1, unitPrice: 40, price: 40 },
           { qty: 5, unitPrice: 37, price: 185 },
           { qty: 10, unitPrice: 35, price: 350 },
@@ -187,13 +187,13 @@ const products = [
     highlightsFr: [
       'Impression permanente intégrée dans la fibre',
       'Ne craque pas, ne s\'efface pas au lavage',
-      'T-shirts, crewnecks, hoodies, sacs bananes',
+      'T-shirts, long sleeves, hoodies, sacs bananes',
       'Design graphique disponible en option',
     ],
     highlightsEn: [
       'Permanent print integrated into the fiber',
       'Doesn\'t crack, doesn\'t fade in wash',
-      'T-shirts, crewnecks, hoodies, fanny packs',
+      'T-shirts, long sleeves, hoodies, fanny packs',
       'Graphic design available as option',
     ],
     faqFr: [

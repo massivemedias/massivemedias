@@ -70,7 +70,7 @@ const ROUTE_META = {
   },
   '/services/merch': {
     title: 'Impression Textile Montreal | Massive Medias - T-shirts, Hoodies Personnalises',
-    description: 'Impression textile par sublimation a Montreal. T-shirts, hoodies, crewnecks, tote bags personnalises. All-over ou placement. Production locale rapide.',
+    description: 'Impression textile par sublimation a Montreal. T-shirts, hoodies, long sleeves, tote bags personnalises. All-over ou placement. Production locale rapide.',
   },
   '/services/design': {
     title: 'Design Graphique Montreal | Massive Medias - Logos, Branding & Identite Visuelle',
@@ -98,7 +98,7 @@ const ROUTE_META = {
   },
   '/boutique/sublimation': {
     title: 'Sublimation Textile Montreal | Massive Medias - T-shirts & Hoodies',
-    description: 'Impression sublimation textile a Montreal. T-shirts, hoodies, crewnecks, tote bags personnalises. All-over ou placement. Production locale.',
+    description: 'Impression sublimation textile a Montreal. T-shirts, hoodies, long sleeves, tote bags personnalises. All-over ou placement. Production locale.',
   },
   '/boutique/design': {
     title: 'Design Graphique Montreal | Massive Medias - Logos & Branding',
@@ -116,9 +116,9 @@ const ROUTE_META = {
     title: 'Hoodies Personnalises Montreal | Massive Medias - Sublimation',
     description: 'Hoodies personnalises par sublimation a Montreal. Impression all-over ou placement. Qualite premium, production locale.',
   },
-  '/boutique/merch/crewneck': {
-    title: 'Crewnecks Personnalises Montreal | Massive Medias - Sublimation',
-    description: 'Crewnecks personnalises par sublimation a Montreal. Impression all-over ou placement. Production locale, livraison rapide.',
+  '/boutique/merch/longsleeve': {
+    title: 'Long Sleeves Personnalises Montreal | Massive Medias - Sublimation',
+    description: 'Long Sleeves personnalises par sublimation a Montreal. Impression all-over ou placement. Production locale, livraison rapide.',
   },
   '/boutique/flyers': {
     title: 'Impression Flyers & Cartes d\'affaires Montreal | Massive Medias - Rapide & Pro',

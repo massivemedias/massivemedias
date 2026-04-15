@@ -63,12 +63,41 @@ Nous imprimons aussi des flyers, cartes postales et cartes d'affaires - tout ce 
         },
         {
           subtitle: 'Flyers et affiches de distribution (A6 / 4x6")',
-          headers: ['Quantité', 'Prix total', 'Prix/unité'],
+          headers: ['Quantite', 'Prix total', 'Prix/unite'],
           rows: [
             ['50', '40$', '0,80$'],
             ['100', '70$', '0,70$'],
             ['150', '98$', '0,65$'],
             ['250', '138$', '0,55$'],
+            ['500', '250$', '0,50$'],
+          ],
+        },
+        {
+          subtitle: 'Cartes d\'affaires - Standard 14pt (recto-verso inclus)',
+          headers: ['Quantite', 'Prix total', 'Prix/unite'],
+          rows: [
+            ['100', '55$', '0,55$'],
+            ['250', '75$', '0,30$'],
+            ['500', '95$', '0,19$'],
+            ['1000', '130$', '0,13$'],
+          ],
+        },
+        {
+          subtitle: 'Cartes d\'affaires - Lamine 16pt (recto-verso inclus)',
+          headers: ['Quantite', 'Prix total', 'Prix/unite'],
+          rows: [
+            ['100', '70$', '0,70$'],
+            ['250', '95$', '0,38$'],
+            ['500', '120$', '0,24$'],
+            ['1000', '165$', '0,17$'],
+          ],
+        },
+        {
+          subtitle: 'Cartes d\'affaires - Soft Touch 24pt Premium (recto-verso inclus)',
+          headers: ['Quantite', 'Prix total', 'Prix/unite'],
+          rows: [
+            ['100', '120$', '1,20$'],
+            ['250', '175$', '0,70$'],
             ['500', '250$', '0,50$'],
           ],
         },
@@ -191,11 +220,11 @@ Découpés à la forme exacte de ton design avec notre équipement de découpe p
     boutiqueSlug: 'sublimation',
     icon: Shirt,
     title: 'Merch',
-    subtitle: 'T-shirts, crewnecks, hoodies, sacs bananes, mugs - ton merch sur mesure',
+    subtitle: 'T-shirts, long sleeves, hoodies, sacs bananes, mugs - ton merch sur mesure',
     heroImage: thumb('/images/textile/MerchHero.webp'),
     description: `Impression sublimation sur textile et objets. La sublimation produit des couleurs vibrantes et permanentes qui ne craquent pas, ne s'effacent pas et résistent au lavage.
 
-Idéal pour le merch d'artiste, les événements, les cadeaux corporatifs ou tout projet personnalisé. T-shirts, crewnecks, hoodies, sacs bananes avec ton logo, mugs, thermos et plus encore.`,
+Idéal pour le merch d'artiste, les événements, les cadeaux corporatifs ou tout projet personnalisé. T-shirts, long sleeves, hoodies, sacs bananes avec ton logo, mugs, thermos et plus encore.`,
     highlights: [
       'Presse à chaud grand format - textile',
       'Presse à chaud compacte - objets et accessoires',
@@ -206,7 +235,7 @@ Idéal pour le merch d'artiste, les événements, les cadeaux corporatifs ou tou
       'Petites et moyennes séries',
     ],
     process: [
-      { step: 1, title: 'Choix du produit', desc: 'T-shirt, crewneck, hoodie, sac banane, mug, thermos, tapis de souris, etc.' },
+      { step: 1, title: 'Choix du produit', desc: 'T-shirt, longsleeve, hoodie, sac banane, mug, thermos, tapis de souris, etc.' },
       { step: 2, title: 'Design', desc: 'Envoi de ton visuel ou création graphique sur demande' },
       { step: 3, title: 'Validation', desc: 'Mockup numérique pour approbation avant production' },
       { step: 4, title: 'Impression sublimation', desc: 'Impression du transfert sur papier sublimation spécialisé' },
@@ -218,7 +247,7 @@ Idéal pour le merch d'artiste, les événements, les cadeaux corporatifs ou tou
       note: '+100-150$ si création design graphique à faire',
       cards: [
         { product: 'T-shirt', desc: 'Design fourni', tiers: [{ qty: '1', price: '30$' }, { qty: '5', price: '27$' }, { qty: '10', price: '25$' }, { qty: '25+', price: '23$' }] },
-        { product: 'Crewneck', desc: 'Design fourni', tiers: [{ qty: '1', price: '40$' }, { qty: '5', price: '37$' }, { qty: '10', price: '35$' }, { qty: '25+', price: '33$' }] },
+        { product: 'Long Sleeve', desc: 'Design fourni', tiers: [{ qty: '1', price: '40$' }, { qty: '5', price: '37$' }, { qty: '10', price: '35$' }, { qty: '25+', price: '33$' }] },
         { product: 'Hoodie', desc: 'Design fourni', tiers: [{ qty: '1', price: '50$' }, { qty: '5', price: '45$' }, { qty: '10', price: '42$' }, { qty: '25+', price: '40$' }] },
         { product: 'Sac banane', desc: 'Avec logo', tiers: [{ qty: '1', price: '80$' }, { qty: '5', price: '75$' }, { qty: '10', price: '70$' }] },
         { product: 'Mug', desc: 'Design fourni', tiers: [{ qty: '1', price: '15$' }, { qty: '5', price: '13$' }, { qty: '10', price: '12$' }, { qty: '25', price: '10$' }] },
@@ -242,11 +271,11 @@ Idéal pour le merch d'artiste, les événements, les cadeaux corporatifs ou tou
       { q: 'Peut-on imprimer sur n\'importe quel tissu?', a: 'La sublimation fonctionne sur les tissus en polyester ou à forte teneur en polyester, et sur les substrats traités (mugs, thermos, etc.). Les t-shirts 100% coton nécessitent un traitement spécial.' },
       { q: 'Quelle est la quantité minimum?', a: 'À partir d\'une seule unité! Pas de minimum. Idéal pour les prototypes ou les petites séries.' },
       { q: 'Le design est-il inclus?', a: 'L\'adaptation de ton visuel pour la sublimation est incluse. Si tu n\'as pas de design, on peut le créer moyennant des frais de design graphique.' },
-      { q: 'Quels produits peut-on sublimer?', a: 'T-shirts, crewnecks, hoodies, sacs bananes, mugs, thermos, tapis de souris, porte-clés, et plus. Les sacs bananes sont parfaits pour mettre ton logo dessus!' },
+      { q: 'Quels produits peut-on sublimer?', a: 'T-shirts, long sleeves, hoodies, sacs bananes, mugs, thermos, tapis de souris, porte-clés, et plus. Les sacs bananes sont parfaits pour mettre ton logo dessus!' },
     ],
     seo: {
       title: 'Sublimation & Merch Montréal | T-Shirts, Hoodies, Mugs - Massive',
-      description: 'Sublimation textile sur mesure à Montréal. T-shirts, hoodies, crewnecks, sacs bananes, mugs, thermos. Merch d\'artiste et corporatif. À partir d\'1 unité. Production locale Mile-End.',
+      description: 'Sublimation textile sur mesure à Montréal. T-shirts, hoodies, long sleeves, sacs bananes, mugs, thermos. Merch d\'artiste et corporatif. À partir d\'1 unité. Production locale Mile-End.',
     },
   },
 

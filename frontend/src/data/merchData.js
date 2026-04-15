@@ -141,10 +141,10 @@ export const merchHoodiePrice = {
 export const getHoodieImage = (colorId) => img(`/images/hoodies/${colorId}.webp`);
 
 /**
- * Crewneck colors - Gildan 18000
+ * Long Sleeve colors - Gildan 18000
  * Sorted lightest to darkest (perceived luminance)
  */
-export const crewneckColors = [
+export const longsleeveColors = [
   { id: 'white', name: 'White', hex: '#F5F5F0' },
   { id: 'light-pink', name: 'Light Pink', hex: '#E8C4D8' },
   { id: 'light-blue', name: 'Light Blue', hex: '#B8D4E8' },
@@ -181,15 +181,15 @@ export const crewneckColors = [
   { id: 'black', name: 'Black', hex: '#1A1A1A' },
 ];
 
-export const merchCrewneckPrice = {
+export const merchLongSleevePrice = {
   base: 30,
   sizes: {
     'S': 30, 'M': 30, 'L': 30, 'XL': 30, '2XL': 30, '3XL': 30,
   },
 };
 
-/** Get crewneck product image path for a given color ID */
-export const getCrewneckImage = (colorId) => img(`/images/crewneck/${colorId}.webp`);
+/** Get longsleeve product image path for a given color ID */
+export const getLongSleeveImage = (colorId) => img(`/images/longsleeve/${colorId}.webp`);
 
 /**
  * Tote Bag colors - Q-Tees QTB

@@ -222,7 +222,7 @@ const productPricingData = {
   sublimation: {
     products: [
       { id: 'tshirt', labelFr: 'T-shirt', labelEn: 'T-shirt', prices: { 1: 30, 5: 27, 10: 25, 25: 23 } },
-      { id: 'crewneck', labelFr: 'Crewneck', labelEn: 'Crewneck', prices: { 1: 40, 5: 37, 10: 35, 25: 33 } },
+      { id: 'longsleeve', labelFr: 'Long Sleeve', labelEn: 'Long Sleeve', prices: { 1: 40, 5: 37, 10: 35, 25: 33 } },
       { id: 'hoodie', labelFr: 'Hoodie', labelEn: 'Hoodie', prices: { 1: 50, 5: 45, 10: 42, 25: 40 } },
       { id: 'bag', labelFr: 'Sac banane', labelEn: 'Fanny Pack', prices: { 1: 80, 5: 75, 10: 70 } },
       { id: 'mug', labelFr: 'Mug', labelEn: 'Mug', prices: { 1: 15, 5: 13, 10: 12, 25: 10 } },

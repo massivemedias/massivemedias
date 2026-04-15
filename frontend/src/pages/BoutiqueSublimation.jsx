@@ -41,8 +41,8 @@ function BoutiqueSublimation() {
       startingPrice={15}
       pageTitle={{ fr: 'Sublimation Textile Montréal - T-Shirts, Hoodies, Mugs | Massive', en: 'Textile Sublimation Montreal - T-Shirts, Hoodies, Mugs | Massive', es: 'Sublimacion Textil Montreal - Camisetas, Hoodies, Tazas | Massive' }}
       metaDescription={{
-        fr: 'Sublimation textile à Montréal. T-shirts, hoodies, crewnecks, mugs, tote bags. Impression all-over permanente. Merch d\'artiste et corporatif. À partir d\'1 unité. Production locale Mile-End.',
-        en: 'Textile sublimation in Montreal. T-shirts, hoodies, crewnecks, mugs, tote bags. Permanent all-over printing. Artist and corporate merch. From 1 unit. Local production Mile-End.',
+        fr: 'Sublimation textile à Montréal. T-shirts, hoodies, long sleeves, mugs, tote bags. Impression all-over permanente. Merch d\'artiste et corporatif. À partir d\'1 unité. Production locale Mile-End.',
+        en: 'Textile sublimation in Montreal. T-shirts, hoodies, long sleeves, mugs, tote bags. Permanent all-over printing. Artist and corporate merch. From 1 unit. Local production Mile-End.',
         es: 'Camisetas, hoodies, tazas en sublimaci\u00f3n. Impresi\u00f3n permanente. Merch de artista personalizado. Montreal.',
       }}
       productTitle={{ fr: 'Sublimation & Merch', en: 'Sublimation & Merch', es: 'Sublimaci\u00f3n y Merch' }}

@@ -26,7 +26,7 @@ ROUTES=(
   "boutique/web"
   "boutique/merch/tshirt"
   "boutique/merch/hoodie"
-  "boutique/merch/crewneck"
+  "boutique/merch/longsleeve"
   "boutique/merch-tshirt"
   "contact"
   "a-propos"

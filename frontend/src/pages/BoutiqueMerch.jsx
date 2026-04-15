@@ -10,7 +10,7 @@ import { useProduct } from '../hooks/useProducts';
 import {
   merchColors, merchSizes, merchTshirtPrice, getTshirtImage,
   hoodieColors, merchHoodiePrice, getHoodieImage,
-  crewneckColors, merchCrewneckPrice, getCrewneckImage,
+  longsleeveColors, merchLongSleevePrice, getLongSleeveImage,
 } from '../data/merchData';
 
 const merchConfig = {
@@ -52,22 +52,22 @@ const merchConfig = {
       es: 'Sudadera Massive. 40+ colores, tallas S a 3XL.',
     },
   },
-  crewneck: {
-    colors: crewneckColors,
+  longsleeve: {
+    colors: longsleeveColors,
     sizes: merchSizes,
-    price: merchCrewneckPrice,
-    getImage: getCrewneckImage,
+    price: merchLongSleevePrice,
+    getImage: getLongSleeveImage,
     defaultColor: 'light-pink',
-    cmsSlug: 'merch-crewneck',
-    label: { fr: 'Crewneck Massive', en: 'Massive Crewneck', es: 'Sudadera Massive' },
+    cmsSlug: 'merch-longsleeve',
+    label: { fr: 'Long Sleeve Massive', en: 'Massive Long Sleeve', es: 'Sudadera Massive' },
     subtitle: {
       fr: '30+ couleurs disponibles. Molleton mi-poids, impression durable.',
       en: '30+ colors available. Midweight fleece, durable print.',
       es: '30+ colores disponibles. Forro polar de peso medio, impresión duradera.',
     },
     seoDesc: {
-      fr: 'Crewneck Massive. 30+ couleurs, tailles S à 3XL.',
-      en: 'Massive Crewneck. 30+ colors, sizes S to 3XL.',
+      fr: 'Long Sleeve Massive. 30+ couleurs, tailles S à 3XL.',
+      en: 'Massive Long Sleeve. 30+ colors, sizes S to 3XL.',
       es: 'Sudadera cuello redondo Massive. 30+ colores, tallas S a 3XL.',
     },
   },

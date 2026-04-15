@@ -44,7 +44,7 @@ const ROUTES = {
   },
   '/services/merch': {
     title: 'Impression Textile Montreal | T-shirts, Hoodies, Sublimation - Massive Medias',
-    description: 'Sublimation textile professionnelle a Montreal. T-shirts, hoodies, crewnecks, tote bags personnalises. Impression all-over ou placement. Qualite premium, petites series ou bulk.',
+    description: 'Sublimation textile professionnelle a Montreal. T-shirts, hoodies, long sleeves, tote bags personnalises. Impression all-over ou placement. Qualite premium, petites series ou bulk.',
   },
   '/services/design': {
     title: 'Design Graphique Montreal | Logos, Flyers, Pochettes d\'Album - Massive Medias',

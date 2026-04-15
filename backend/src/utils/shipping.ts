@@ -21,7 +21,7 @@ const PRINT_WEIGHTS: Record<string, { print: number; framed: number }> = {
 const CLOTHING_WEIGHTS: Record<string, number> = {
   tshirt:   250,
   hoodie:   600,
-  crewneck: 450,
+  longsleeve: 450,
   totebag:  200,
   bag:      200,
   mug:      350,
@@ -67,6 +67,11 @@ export function getItemWeight(item: CartItem): number {
   // Flyers: 5g par flyer
   if (id.startsWith('flyer-')) {
     return 5 * qty;
+  }
+
+  // Cartes d'affaires: 3g par carte (plus petit qu'un flyer)
+  if (id.startsWith('business-card-')) {
+    return 3 * qty;
   }
 
   // Fallback

@@ -22,7 +22,7 @@
     },
     "category": {
       "type": "enumeration",
-      "enum": ["stickers", "fine-art", "sublimation", "flyers", "design", "web", "pret-a-porter", "sticker-pack", "merch-tshirt", "merch-hoodie", "merch-crewneck", "merch-totebag"],
+      "enum": ["stickers", "fine-art", "sublimation", "flyers", "design", "web", "pret-a-porter", "sticker-pack", "merch-tshirt", "merch-hoodie", "merch-longsleeve", "merch-crewneck", "merch-totebag"],
       "required": true
     },
     "nameFr": {
