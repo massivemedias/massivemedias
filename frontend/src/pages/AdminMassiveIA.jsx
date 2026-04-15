@@ -629,7 +629,9 @@ function applyShader(ctx, shader, w, h) {
   }
 
   else if (shader === 'dots') {
-    // Dots FX: pastilles rondes transparentes blanches (film holo clear avec dots)
+    // Dots FX: simples points blancs de tailles variees
+    ctx.globalCompositeOperation = 'source-atop';
+
     let seed = ((w * 54321) ^ (h * 98765)) >>> 0;
     const rnd = () => {
       seed ^= seed << 13; seed ^= seed >>> 17; seed ^= seed << 5;
@@ -638,101 +640,26 @@ function applyShader(ctx, shader, w, h) {
 
     const refSize = Math.min(w, h);
 
-    // Canvas temporaire pour isoler les dots
-    const tmp = document.createElement('canvas');
-    tmp.width = w;
-    tmp.height = h;
-    const tc = tmp.getContext('2d');
-
-    // --- Couche 1: dots moyens transparents (masse principale, effet bulle)
-    const nMedium = 160;
-    for (let i = 0; i < nMedium; i++) {
+    // 280 points blancs de tailles variees, plus ou moins opaques
+    const n = 280;
+    for (let i = 0; i < n; i++) {
       const x = rnd() * w;
       const y = rnd() * h;
-      const r = refSize * (0.006 + rnd() * 0.012);
-      // Remplissage blanc tres leger (effet transparent)
-      const fillAlpha = 0.10 + rnd() * 0.20;
-      tc.save();
-      tc.globalAlpha = fillAlpha;
-      tc.fillStyle = 'rgba(255,255,255,1)';
-      tc.beginPath();
-      tc.arc(x, y, r, 0, Math.PI * 2);
-      tc.fill();
-      // Bord plus net (donne le look pastille transparente)
-      tc.globalAlpha = 0.35 + rnd() * 0.35;
-      tc.strokeStyle = 'rgba(255,255,255,1)';
-      tc.lineWidth = Math.max(0.6, r * 0.12);
-      tc.stroke();
-      tc.restore();
+      // Taille: majorite petite, quelques moyens, rares gros
+      const t = rnd();
+      let r;
+      if (t < 0.70) r = refSize * (0.0015 + rnd() * 0.0035); // petits
+      else if (t < 0.95) r = refSize * (0.005 + rnd() * 0.008); // moyens
+      else r = refSize * (0.013 + rnd() * 0.010); // gros
+      const alpha = 0.55 + rnd() * 0.40;
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = 'rgba(255,255,255,1)';
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
     }
-
-    // --- Couche 2: petits dots pleins (glitter fin)
-    const nSmall = 110;
-    for (let i = 0; i < nSmall; i++) {
-      const x = rnd() * w;
-      const y = rnd() * h;
-      const r = refSize * (0.0018 + rnd() * 0.0035);
-      const alpha = 0.40 + rnd() * 0.45;
-      tc.save();
-      tc.globalAlpha = alpha;
-      tc.fillStyle = 'rgba(255,255,255,1)';
-      tc.beginPath();
-      tc.arc(x, y, r, 0, Math.PI * 2);
-      tc.fill();
-      tc.restore();
-    }
-
-    // --- Couche 3: quelques gros dots (pastilles plus visibles avec halo)
-    const nBig = 14;
-    for (let i = 0; i < nBig; i++) {
-      const x = rnd() * w;
-      const y = rnd() * h;
-      const r = refSize * (0.014 + rnd() * 0.013);
-      tc.save();
-      // Remplissage doux
-      tc.globalAlpha = 0.20 + rnd() * 0.20;
-      tc.fillStyle = 'rgba(255,255,255,1)';
-      tc.beginPath();
-      tc.arc(x, y, r, 0, Math.PI * 2);
-      tc.fill();
-      // Bord net
-      tc.globalAlpha = 0.55 + rnd() * 0.30;
-      tc.strokeStyle = 'rgba(255,255,255,1)';
-      tc.lineWidth = Math.max(0.8, r * 0.10);
-      tc.stroke();
-      // Halo tres doux
-      tc.globalAlpha = 0.12;
-      const halo = tc.createRadialGradient(x, y, 0, x, y, r * 2.2);
-      halo.addColorStop(0, 'rgba(255,255,255,0.6)');
-      halo.addColorStop(1, 'rgba(255,255,255,0)');
-      tc.fillStyle = halo;
-      tc.beginPath();
-      tc.arc(x, y, r * 2.2, 0, Math.PI * 2);
-      tc.fill();
-      tc.restore();
-    }
-
-    // Iridescence TRES subtile (seulement un hint de couleur, dots restent blancs/transparents)
-    if (typeof tc.createConicGradient === 'function') {
-      tc.globalCompositeOperation = 'source-atop';
-      tc.globalAlpha = 0.16;
-      const holoGrad = tc.createConicGradient(Math.PI * 0.2, w * 0.3, h * 1.2);
-      holoGrad.addColorStop(0.00, '#ff00cc');
-      holoGrad.addColorStop(0.14, '#ff6600');
-      holoGrad.addColorStop(0.28, '#ffee00');
-      holoGrad.addColorStop(0.42, '#00ff88');
-      holoGrad.addColorStop(0.57, '#00ccff');
-      holoGrad.addColorStop(0.71, '#5500ff');
-      holoGrad.addColorStop(0.85, '#ff0088');
-      holoGrad.addColorStop(1.00, '#ff00cc');
-      tc.fillStyle = holoGrad;
-      tc.fillRect(0, 0, w, h);
-    }
-
-    // Composer sur le sticker principal
-    ctx.globalCompositeOperation = 'source-atop';
-    ctx.globalAlpha = 1;
-    ctx.drawImage(tmp, 0, 0);
   }
 
   ctx.restore();
