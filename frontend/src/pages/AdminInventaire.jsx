@@ -84,6 +84,8 @@ const CATEGORIES = [
   { value: 'print', label: 'Print' },
   { value: 'merch', label: 'Merch' },
   { value: 'equipment', label: 'Materiel' },
+  { value: 'flyer', label: 'Flyer' },
+  { value: 'business-card', label: 'Carte d\'affaires' },
   { value: 'web', label: 'Web' },
   { value: 'design', label: 'Design' },
   { value: 'photo', label: 'Photo' },
@@ -235,16 +237,16 @@ function ItemForm({ onClose, onSaved, tx, lang, editItem }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 flex items-start justify-center p-4 pt-20 overflow-y-auto" onClick={onClose}>
+    <div className="fixed inset-0 z-50 bg-black/70 flex items-start justify-center p-4 pt-12 overflow-y-auto" onClick={onClose}>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-lg rounded-2xl shadow-2xl p-6 space-y-4 border border-white/15"
+        className="w-full max-w-3xl rounded-2xl shadow-2xl p-8 space-y-6 border border-white/15"
         style={{ background: '#2a2040' }}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">
-          <h3 className="text-heading font-heading font-bold text-lg">
+          <h3 className="text-heading font-heading font-bold text-2xl">
             {isEdit
               ? tx({ fr: 'Modifier l\'item', en: 'Edit item', es: 'Editar item' })
               : tx({ fr: 'Ajouter au stock', en: 'Add to stock', es: 'Agregar al stock' })}
@@ -268,13 +270,13 @@ function ItemForm({ onClose, onSaved, tx, lang, editItem }) {
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Categorie */}
           <div>
-            <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-1">
+            <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-2">
               {tx({ fr: 'Categorie', en: 'Category', es: 'Categoria' })} *
             </label>
             <select
               value={form.category}
               onChange={(e) => { set('category', e.target.value); if (e.target.value !== 'equipment') { set('variant', ''); set('detail', ''); } }}
-              className="w-full rounded-lg bg-black/20 text-heading text-sm px-3 py-2.5 outline-none border border-white/5 focus:border-accent"
+              className="w-full rounded-lg bg-black/20 text-heading text-base px-4 py-3 outline-none border border-white/10 focus:border-accent"
             >
               {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
             </select>
@@ -283,7 +285,7 @@ function ItemForm({ onClose, onSaved, tx, lang, editItem }) {
           {/* Type pour Materiel */}
           {form.category === 'equipment' && (
             <div>
-              <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-1">
+              <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-2">
                 Type
               </label>
               <div className="flex flex-wrap gap-1.5 mb-2">
@@ -306,7 +308,7 @@ function ItemForm({ onClose, onSaved, tx, lang, editItem }) {
                 onChange={(e) => set('variant', e.target.value)}
                 onBlur={autoName}
                 placeholder="Ou saisir manuellement..."
-                className="w-full rounded-lg bg-black/20 text-heading text-sm px-3 py-2 outline-none border border-white/5 focus:border-accent placeholder:text-grey-muted/50"
+                className="w-full rounded-lg bg-black/20 text-heading text-base px-4 py-3 outline-none border border-white/10 focus:border-accent placeholder:text-grey-muted/50"
               />
             </div>
           )}
@@ -316,7 +318,7 @@ function ItemForm({ onClose, onSaved, tx, lang, editItem }) {
 
           {/* Variante (chips suggerees) */}
           <div>
-            <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-1">
+            <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-2">
               {tx({ fr: 'Variante / Type', en: 'Variant / Type', es: 'Variante / Tipo' })}
             </label>
             {variants.length > 0 && (
@@ -341,13 +343,13 @@ function ItemForm({ onClose, onSaved, tx, lang, editItem }) {
               onChange={(e) => set('variant', e.target.value)}
               onBlur={autoName}
               placeholder="Ex: Hoodie, T-Shirt, Black..."
-              className="w-full rounded-lg bg-black/20 text-heading text-sm px-3 py-2 outline-none border border-white/5 focus:border-accent placeholder:text-grey-muted/50"
+              className="w-full rounded-lg bg-black/20 text-heading text-base px-4 py-3 outline-none border border-white/10 focus:border-accent placeholder:text-grey-muted/50"
             />
           </div>
 
           {/* Taille / Detail (chips suggerees) */}
           <div>
-            <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-1">
+            <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-2">
               {tx({ fr: 'Taille / Detail', en: 'Size / Detail', es: 'Talla / Detalle' })}
             </label>
             {sizes.length > 0 && (
@@ -383,7 +385,7 @@ function ItemForm({ onClose, onSaved, tx, lang, editItem }) {
               onChange={(e) => set('detail', e.target.value)}
               onBlur={autoName}
               placeholder="Ex: L, XL, A4, 3&quot;..."
-              className="w-full rounded-lg bg-black/20 text-heading text-sm px-3 py-2 outline-none border border-white/5 focus:border-accent placeholder:text-grey-muted/50"
+              className="w-full rounded-lg bg-black/20 text-heading text-base px-4 py-3 outline-none border border-white/10 focus:border-accent placeholder:text-grey-muted/50"
             />
           </div>
 
@@ -405,7 +407,7 @@ function ItemForm({ onClose, onSaved, tx, lang, editItem }) {
 
           {/* Marque (cache pour cadre et materiel) */}
           {form.category !== 'frame' && form.category !== 'equipment' && (<div>
-            <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-1">
+            <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-2">
               {tx({ fr: 'Marque', en: 'Brand', es: 'Marca' })}
             </label>
             <input
@@ -421,7 +423,7 @@ function ItemForm({ onClose, onSaved, tx, lang, editItem }) {
               }}
               onBlur={autoName}
               placeholder="Ex: Gildan, Bella+Canvas, Stanley/Stella..."
-              className="w-full rounded-lg bg-black/20 text-heading text-sm px-3 py-2 outline-none border border-white/5 focus:border-accent placeholder:text-grey-muted/50"
+              className="w-full rounded-lg bg-black/20 text-heading text-base px-4 py-3 outline-none border border-white/10 focus:border-accent placeholder:text-grey-muted/50"
             />
           </div>)}
 
@@ -429,13 +431,13 @@ function ItemForm({ onClose, onSaved, tx, lang, editItem }) {
           {form.category !== 'equipment' && form.category !== 'frame' && (<>
           {/* Couleur (dropdown custom avec ronds de couleur) */}
           <div className="relative">
-            <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-1">
+            <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-2">
               {tx({ fr: 'Couleur', en: 'Color', es: 'Color' })}
             </label>
             <button
               type="button"
               onClick={() => set('_colorOpen', !form._colorOpen)}
-              className="w-full flex items-center gap-2.5 rounded-lg bg-black/20 text-sm px-3 py-2.5 outline-none border border-white/5 hover:border-white/15 transition-colors text-left"
+              className="w-full flex items-center gap-3 rounded-lg bg-black/20 text-base px-4 py-3 outline-none border border-white/10 hover:border-white/20 transition-colors text-left"
             >
               {form.color ? (
                 <>
@@ -508,7 +510,7 @@ function ItemForm({ onClose, onSaved, tx, lang, editItem }) {
           {/* Nom produit - cache pour textile (marque = nom) */}
           {form.category !== 'textile' && (
             <div>
-              <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-1">
+              <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-2">
                 {tx({ fr: 'Nom produit', en: 'Product name', es: 'Nombre producto' })} *
               </label>
               <input
@@ -517,7 +519,7 @@ function ItemForm({ onClose, onSaved, tx, lang, editItem }) {
                 onChange={(e) => set('nameFr', e.target.value)}
                 required
                 placeholder="Auto-genere ou saisir manuellement"
-                className="w-full rounded-lg bg-black/20 text-heading text-sm px-3 py-2 outline-none border border-white/5 focus:border-accent placeholder:text-grey-muted/50"
+                className="w-full rounded-lg bg-black/20 text-heading text-base px-4 py-3 outline-none border border-white/10 focus:border-accent placeholder:text-grey-muted/50"
               />
               <p className="text-grey-muted text-[10px] mt-1">Se remplit automatiquement depuis les champs ci-dessus</p>
             </div>
@@ -526,7 +528,7 @@ function ItemForm({ onClose, onSaved, tx, lang, editItem }) {
           {/* Quantite + Prix coutant */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-1">
+              <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-2">
                 {tx({ fr: 'Quantite', en: 'Quantity', es: 'Cantidad' })}
               </label>
               <input
@@ -534,11 +536,11 @@ function ItemForm({ onClose, onSaved, tx, lang, editItem }) {
                 min="0"
                 value={form.quantity}
                 onChange={(e) => set('quantity', e.target.value)}
-                className="w-full rounded-lg bg-black/20 text-heading text-sm px-3 py-2 outline-none border border-white/5 focus:border-accent"
+                className="w-full rounded-lg bg-black/20 text-heading text-base px-4 py-3 outline-none border border-white/10 focus:border-accent"
               />
             </div>
             <div>
-              <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-1">
+              <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-2">
                 {tx({ fr: 'Prix coutant ($)', en: 'Cost price ($)', es: 'Precio costo ($)' })}
               </label>
               <input
@@ -548,14 +550,14 @@ function ItemForm({ onClose, onSaved, tx, lang, editItem }) {
                 value={form.costPrice}
                 onChange={(e) => set('costPrice', e.target.value)}
                 placeholder="0.00"
-                className="w-full rounded-lg bg-black/20 text-heading text-sm px-3 py-2 outline-none border border-white/5 focus:border-accent placeholder:text-grey-muted/50"
+                className="w-full rounded-lg bg-black/20 text-heading text-base px-4 py-3 outline-none border border-white/10 focus:border-accent placeholder:text-grey-muted/50"
               />
             </div>
           </div>
 
           {/* Location + Notes */}
           <div>
-            <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-1">
+            <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-2">
               {tx({ fr: 'Emplacement', en: 'Location', es: 'Ubicacion' })}
             </label>
             <input
@@ -563,18 +565,18 @@ function ItemForm({ onClose, onSaved, tx, lang, editItem }) {
               value={form.location}
               onChange={(e) => set('location', e.target.value)}
               placeholder="Ex: Etagere A3, Bac 2..."
-              className="w-full rounded-lg bg-black/20 text-heading text-sm px-3 py-2 outline-none border border-white/5 focus:border-accent placeholder:text-grey-muted/50"
+              className="w-full rounded-lg bg-black/20 text-heading text-base px-4 py-3 outline-none border border-white/10 focus:border-accent placeholder:text-grey-muted/50"
             />
           </div>
 
           <div>
-            <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-1">Notes</label>
+            <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-2">Notes</label>
             <textarea
               value={form.notes}
               onChange={(e) => set('notes', e.target.value)}
               rows={2}
               placeholder={tx({ fr: 'Notes supplementaires...', en: 'Additional notes...', es: 'Notas adicionales...' })}
-              className="w-full rounded-lg bg-black/20 text-heading text-sm px-3 py-2 outline-none border border-white/5 focus:border-accent resize-none placeholder:text-grey-muted/50"
+              className="w-full rounded-lg bg-black/20 text-heading text-base px-4 py-3 outline-none border border-white/10 focus:border-accent resize-none placeholder:text-grey-muted/50"
             />
           </div>
 
@@ -582,7 +584,7 @@ function ItemForm({ onClose, onSaved, tx, lang, editItem }) {
           <button
             type="submit"
             disabled={!form.nameFr || !form.category || saving}
-            className="w-full py-3 rounded-xl bg-accent text-white font-semibold text-sm disabled:opacity-40 transition-opacity flex items-center justify-center gap-2"
+            className="w-full py-4 rounded-xl bg-accent text-white font-bold text-base disabled:opacity-40 transition-opacity flex items-center justify-center gap-2 hover:brightness-110"
           >
             {saving ? <Loader2 size={16} className="animate-spin" /> : isEdit ? <Save size={16} /> : <Plus size={16} />}
             {saving
