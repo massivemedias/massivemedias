@@ -387,15 +387,39 @@ function applyShader(ctx, shader, w, h) {
   }
 
   else if (shader === 'glossy') {
-    // Reflet brillant en haut
     ctx.globalCompositeOperation = 'source-atop';
-    const grad = ctx.createLinearGradient(0, 0, 0, h);
-    grad.addColorStop(0.0, 'rgba(255,255,255,0.75)');
-    grad.addColorStop(0.35, 'rgba(255,255,255,0.15)');
-    grad.addColorStop(0.5, 'rgba(255,255,255,0)');
-    grad.addColorStop(1.0, 'rgba(0,0,0,0.12)');
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, w, h);
+
+    // 1. Nappe de lumiere generale en haut (gradient vertical)
+    const topGrad = ctx.createLinearGradient(0, 0, 0, h * 0.55);
+    topGrad.addColorStop(0.0,  'rgba(255,255,255,0.60)');
+    topGrad.addColorStop(0.30, 'rgba(255,255,255,0.20)');
+    topGrad.addColorStop(0.55, 'rgba(255,255,255,0)');
+    ctx.fillStyle = topGrad;
+    ctx.fillRect(0, 0, w, h * 0.55);
+
+    // 2. Reflet ovale centre-haut (specular highlight - comme un reflet de lampe)
+    ctx.save();
+    const cx = w * 0.5;
+    const cy = h * 0.20;
+    const radX = w * 0.38;
+    const radY = h * 0.14;
+    ctx.scale(1, radY / radX); // transformer en ellipse
+    const ovalGrd = ctx.createRadialGradient(cx, cy * (radX / radY), 0, cx, cy * (radX / radY), radX);
+    ovalGrd.addColorStop(0,    'rgba(255,255,255,0.55)');
+    ovalGrd.addColorStop(0.45, 'rgba(255,255,255,0.18)');
+    ovalGrd.addColorStop(1,    'rgba(255,255,255,0)');
+    ctx.fillStyle = ovalGrd;
+    ctx.beginPath();
+    ctx.arc(cx, cy * (radX / radY), radX, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    // 3. Legere ombre en bas (profondeur)
+    const bottomGrad = ctx.createLinearGradient(0, h * 0.6, 0, h);
+    bottomGrad.addColorStop(0, 'rgba(0,0,0,0)');
+    bottomGrad.addColorStop(1, 'rgba(0,0,0,0.18)');
+    ctx.fillStyle = bottomGrad;
+    ctx.fillRect(0, h * 0.6, w, h * 0.4);
   }
 
   else if (shader === 'broken_glass') {
@@ -476,7 +500,6 @@ function applyShader(ctx, shader, w, h) {
   }
 
   else if (shader === 'stars') {
-    // Etoiles / glitter scintillantes - effet subtil 4 branches
     ctx.globalCompositeOperation = 'source-atop';
 
     let seed = ((w * 12345) ^ (h * 67890)) >>> 0;
@@ -486,45 +509,97 @@ function applyShader(ctx, shader, w, h) {
     };
 
     const refSize = Math.min(w, h);
-    const nStars = 20;
 
-    for (let i = 0; i < nStars; i++) {
+    // --- Couche 1: glitter (petits points brillants bien repartis)
+    const nGlitter = 50;
+    for (let i = 0; i < nGlitter; i++) {
       const x = rnd() * w;
       const y = rnd() * h;
-      // Taille proportionnelle a l'image, petite
-      const r = refSize * (0.006 + rnd() * 0.016);
-      const alpha = 0.35 + rnd() * 0.45; // 35-80% - subtil
+      const r = refSize * (0.003 + rnd() * 0.005);
+      const alpha = 0.25 + rnd() * 0.55;
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      // Petit halo
+      const grd = ctx.createRadialGradient(x, y, 0, x, y, r * 2.5);
+      grd.addColorStop(0, 'rgba(255,255,255,1)');
+      grd.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.fillStyle = grd;
+      ctx.beginPath();
+      ctx.arc(x, y, r * 2.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    // --- Couche 2: sparkles 4 branches (moy. taille, bien repartis)
+    const nSparkles = 18;
+    for (let i = 0; i < nSparkles; i++) {
+      const x = rnd() * w;
+      const y = rnd() * h;
+      const r = refSize * (0.009 + rnd() * 0.018);
+      const alpha = 0.45 + rnd() * 0.45;
 
       ctx.save();
 
       // Halo radial doux
-      const grd = ctx.createRadialGradient(x, y, 0, x, y, r * 3);
+      const grd = ctx.createRadialGradient(x, y, 0, x, y, r * 3.5);
       grd.addColorStop(0,   `rgba(255,255,255,${alpha})`);
-      grd.addColorStop(0.3, `rgba(255,250,200,${alpha * 0.5})`);
+      grd.addColorStop(0.35, `rgba(255,252,210,${alpha * 0.4})`);
       grd.addColorStop(1,   'rgba(255,255,255,0)');
       ctx.fillStyle = grd;
       ctx.beginPath();
-      ctx.arc(x, y, r * 3, 0, Math.PI * 2);
+      ctx.arc(x, y, r * 3.5, 0, Math.PI * 2);
       ctx.fill();
 
-      // Bras longs (4 pointes)
-      ctx.globalAlpha = alpha * 0.90;
+      // Bras longs (axes H+V)
+      ctx.globalAlpha = alpha;
       ctx.strokeStyle = 'rgba(255,255,255,1)';
-      ctx.lineWidth = Math.max(0.5, r * 0.22);
+      ctx.lineWidth = Math.max(0.5, r * 0.20);
       ctx.lineCap = 'round';
       ctx.beginPath();
-      ctx.moveTo(x - r * 2.4, y); ctx.lineTo(x + r * 2.4, y);
-      ctx.moveTo(x, y - r * 2.4); ctx.lineTo(x, y + r * 2.4);
+      ctx.moveTo(x - r * 3.0, y); ctx.lineTo(x + r * 3.0, y);
+      ctx.moveTo(x, y - r * 3.0); ctx.lineTo(x, y + r * 3.0);
       ctx.stroke();
 
-      // Bras diagonaux courts (45deg) - encore plus subtils
-      ctx.globalAlpha = alpha * 0.35;
-      ctx.lineWidth = Math.max(0.4, r * 0.14);
+      // Bras diagonaux (45deg) - plus courts, plus subtils
+      ctx.globalAlpha = alpha * 0.30;
+      ctx.lineWidth = Math.max(0.4, r * 0.13);
       ctx.beginPath();
-      ctx.moveTo(x - r * 1.1, y - r * 1.1); ctx.lineTo(x + r * 1.1, y + r * 1.1);
-      ctx.moveTo(x + r * 1.1, y - r * 1.1); ctx.lineTo(x - r * 1.1, y + r * 1.1);
+      ctx.moveTo(x - r * 1.4, y - r * 1.4); ctx.lineTo(x + r * 1.4, y + r * 1.4);
+      ctx.moveTo(x + r * 1.4, y - r * 1.4); ctx.lineTo(x - r * 1.4, y + r * 1.4);
       ctx.stroke();
 
+      ctx.restore();
+    }
+
+    // --- Couche 3: quelques grands sparkles brillants (focal points)
+    const nBig = 5;
+    for (let i = 0; i < nBig; i++) {
+      const x = rnd() * w;
+      const y = rnd() * h;
+      const r = refSize * (0.018 + rnd() * 0.014);
+      const alpha = 0.55 + rnd() * 0.35;
+      // Teinte legere (or, bleu glace, rose)
+      const tints = ['255,248,180', '200,230,255', '255,210,240', '255,255,255'];
+      const tint = tints[Math.floor(rnd() * tints.length)];
+
+      ctx.save();
+      const grd = ctx.createRadialGradient(x, y, 0, x, y, r * 4);
+      grd.addColorStop(0,   `rgba(255,255,255,${alpha})`);
+      grd.addColorStop(0.2, `rgba(${tint},${alpha * 0.6})`);
+      grd.addColorStop(1,   `rgba(${tint},0)`);
+      ctx.fillStyle = grd;
+      ctx.beginPath();
+      ctx.arc(x, y, r * 4, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.globalAlpha = alpha * 0.95;
+      ctx.strokeStyle = 'rgba(255,255,255,1)';
+      ctx.lineWidth = Math.max(0.7, r * 0.18);
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(x - r * 3.5, y); ctx.lineTo(x + r * 3.5, y);
+      ctx.moveTo(x, y - r * 3.5); ctx.lineTo(x, y + r * 3.5);
+      ctx.stroke();
       ctx.restore();
     }
   }
@@ -674,38 +749,34 @@ function StickersTab() {
 
       {/* Resultat */}
       <div
-        className="rounded-xl bg-black/20 p-4 flex items-center justify-center min-h-[300px]"
-        style={{
-          backgroundImage: result
-            ? 'linear-gradient(45deg, #1a1a1a 25%, transparent 25%), linear-gradient(-45deg, #1a1a1a 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #1a1a1a 75%), linear-gradient(-45deg, transparent 75%, #1a1a1a 75%)'
-            : undefined,
+        className={`rounded-xl overflow-hidden relative ${!result ? 'bg-black/20 p-4 flex items-center justify-center min-h-[300px]' : ''}`}
+        style={result ? {
+          backgroundImage: 'linear-gradient(45deg, #1a1a1a 25%, transparent 25%), linear-gradient(-45deg, #1a1a1a 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #1a1a1a 75%), linear-gradient(-45deg, transparent 75%, #1a1a1a 75%)',
           backgroundSize: '20px 20px',
           backgroundPosition: '0 0, 0 10px, 10px -10px, 10px 0px',
-        }}
+        } : undefined}
       >
         {error && (
-          <div className="flex items-center gap-2 text-red-400 text-sm">
+          <div className="flex items-center gap-2 text-red-400 text-sm p-4">
             <AlertCircle size={16} />
             {error}
           </div>
         )}
-        {result ? (
-          <div className="flex flex-col items-center gap-4">
-            <img
-              src={result}
-              alt="sticker"
-              className="max-w-full max-h-[500px] object-contain"
-            />
-            <a
-              href={result}
-              download={`sticker-${shader}.png`}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-accent/20 text-accent text-sm font-semibold hover:bg-accent/30 transition-colors"
-            >
-              <Download size={14} />
-              Telecharger
-            </a>
-          </div>
-        ) : !error && (
+        {result ? (<>
+          <img
+            src={result}
+            alt="sticker"
+            className="w-full h-auto block"
+          />
+          <a
+            href={result}
+            download={`sticker-${shader}.png`}
+            className="absolute bottom-3 right-3 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-black/60 backdrop-blur-sm text-white text-xs font-semibold hover:bg-black/80 transition-colors"
+          >
+            <Download size={12} />
+            Telecharger
+          </a>
+        </>) : !error && (
           <p className="text-grey-muted text-sm">Le resultat apparaitra ici</p>
         )}
       </div>
