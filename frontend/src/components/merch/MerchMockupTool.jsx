@@ -14,7 +14,7 @@
  * Les logos sont places en coordonnees relatives (0..1 de la box produit),
  * donc ils suivent quand on switche entre produits de ratios differents.
  */
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { Upload, Download, RotateCcw, X, Shirt } from 'lucide-react';
 
 // Catalogue des produits dispo. Chaque face a ses propres dimensions natives
@@ -327,17 +327,75 @@ function MerchMockupTool() {
   const frontImg = useImage(product.front.src);
   const backImg = useImage(product.back.src);
 
-  // Les logos sont partages entre produits (coordonnees relatives 0..1)
-  // donc quand on switche, les logos suivent visuellement au meme endroit
-  // proportionnel sur le nouveau produit.
-  const [frontLogos, setFrontLogos] = useState([]);
-  const [backLogos, setBackLogos] = useState([]);
+  // Structure: chaque logo est un "item" partage entre tous les produits
+  // (meme src, meme aspect) mais garde une position/taille independante
+  // pour chaque produit dans `placements`:
+  //   { id, src, aspect, placements: { hoodie: {x,y,width}, tshirt:..., longsleeve:... } }
+  // Quand on drag/resize sur hoodie, on modifie UNIQUEMENT placements.hoodie.
+  const [frontLogoItems, setFrontLogoItems] = useState([]);
+  const [backLogoItems, setBackLogoItems] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
   const [mobileSide, setMobileSide] = useState('front');
 
+  // Vue "flat" pour le produit courant (ce que ProductCanvas attend: {id, src, aspect, x, y, width})
+  const flattenForProduct = (items) => items.map(item => {
+    const p = item.placements[productKey] || item.placements.hoodie || { x: 0.35, y: 0.30, width: 0.30 };
+    return { id: item.id, src: item.src, aspect: item.aspect, x: p.x, y: p.y, width: p.width };
+  });
+  const frontLogos = useMemo(() => flattenForProduct(frontLogoItems), [frontLogoItems, productKey]);
+  const backLogos  = useMemo(() => flattenForProduct(backLogoItems),  [backLogoItems, productKey]);
+
+  // Quand ProductCanvas appelle onLogosChange avec un tableau de logos "flat" modifies,
+  // on applique les changements de position/taille UNIQUEMENT au produit courant.
+  const syncPlacements = (prevItems, updatedFlat) => {
+    const updatedIds = new Set(updatedFlat.map(l => l.id));
+    const afterDelete = prevItems.filter(item => updatedIds.has(item.id));
+    return afterDelete.map(item => {
+      const flat = updatedFlat.find(f => f.id === item.id);
+      if (!flat) return item;
+      return {
+        ...item,
+        placements: {
+          ...item.placements,
+          [productKey]: { x: flat.x, y: flat.y, width: flat.width },
+        },
+      };
+    });
+  };
+
+  const handleFrontLogosChange = (updatedFlat) => {
+    setFrontLogoItems(prev => syncPlacements(prev, updatedFlat));
+  };
+  const handleBackLogosChange = (updatedFlat) => {
+    setBackLogoItems(prev => syncPlacements(prev, updatedFlat));
+  };
+
+  // Quand on ajoute un logo, on initialise ses placements POUR TOUS les produits
+  // avec la meme position de depart (il apparait donc au meme endroit partout,
+  // jusqu'a ce que tu le bouges sur un produit specifique).
+  const createPlacements = (flat) => {
+    const placements = {};
+    Object.keys(PRODUCTS).forEach(k => {
+      placements[k] = { x: flat.x, y: flat.y, width: flat.width };
+    });
+    return placements;
+  };
+  const handleAddFrontLogo = (flat) => {
+    setFrontLogoItems(prev => [...prev, {
+      id: flat.id, src: flat.src, aspect: flat.aspect,
+      placements: createPlacements(flat),
+    }]);
+  };
+  const handleAddBackLogo = (flat) => {
+    setBackLogoItems(prev => [...prev, {
+      id: flat.id, src: flat.src, aspect: flat.aspect,
+      placements: createPlacements(flat),
+    }]);
+  };
+
   useEffect(() => {
     return () => {
-      [...frontLogos, ...backLogos].forEach(l => {
+      [...frontLogoItems, ...backLogoItems].forEach(l => {
         if (l.src.startsWith('blob:')) URL.revokeObjectURL(l.src);
       });
     };
@@ -345,15 +403,15 @@ function MerchMockupTool() {
   }, []);
 
   const handleReset = () => {
-    [...frontLogos, ...backLogos].forEach(l => {
+    [...frontLogoItems, ...backLogoItems].forEach(l => {
       if (l.src.startsWith('blob:')) URL.revokeObjectURL(l.src);
     });
-    setFrontLogos([]);
-    setBackLogos([]);
+    setFrontLogoItems([]);
+    setBackLogoItems([]);
     setSelectedId(null);
   };
 
-  const totalLogos = frontLogos.length + backLogos.length;
+  const totalLogos = frontLogoItems.length + backLogoItems.length;
   const productSlug = productKey; // hoodie / tshirt / longsleeve
 
   return (
@@ -445,10 +503,10 @@ function MerchMockupTool() {
             bgW={product.front.w}
             bgH={product.front.h}
             logos={frontLogos}
-            onLogosChange={setFrontLogos}
+            onLogosChange={handleFrontLogosChange}
             selectedId={selectedId}
             onSelect={setSelectedId}
-            onAddLogo={(logo) => setFrontLogos((prev) => [...prev, logo])}
+            onAddLogo={handleAddFrontLogo}
           />
         </div>
         <div className={mobileSide === 'back' ? 'block' : 'hidden md:block'}>
@@ -458,17 +516,17 @@ function MerchMockupTool() {
             bgW={product.back.w}
             bgH={product.back.h}
             logos={backLogos}
-            onLogosChange={setBackLogos}
+            onLogosChange={handleBackLogosChange}
             selectedId={selectedId}
             onSelect={setSelectedId}
-            onAddLogo={(logo) => setBackLogos((prev) => [...prev, logo])}
+            onAddLogo={handleAddBackLogo}
           />
         </div>
       </div>
 
       {/* Aide */}
       <div className="text-[11px] text-grey-muted/80 italic px-1">
-        Drag pour deplacer · poignee accent = resize (ratio garde) · X rouge = supprimer · switche de produit en haut pour voir ton design sur autre chose
+        Drag pour deplacer · poignee accent = resize (ratio garde) · X rouge = supprimer · chaque produit se souvient de sa propre position/taille de logo
       </div>
     </div>
   );
