@@ -2,15 +2,17 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import {
   MessageSquare, Sparkles, Image, Camera, Send, Plus, Settings2,
-  Upload, Download, Loader2, X, AlertCircle, ImageDown, QrCode,
+  Upload, Download, Loader2, X, AlertCircle, ImageDown, QrCode, Shirt,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import { chatStream, generateMockup, checkHealth } from '../services/iaService';
+import MerchMockupTool from '../components/merch/MerchMockupTool';
 
 const TABS = [
   { id: 'chat', icon: MessageSquare, label: 'Chat' },
   { id: 'stickers', icon: Sparkles, label: 'Stickers' },
   { id: 'prints', icon: Image, label: 'Prints' },
+  { id: 'merch', icon: Shirt, label: 'Merch' },
   { id: 'resize', icon: ImageDown, label: 'Resize' },
   { id: 'qrcode', icon: QrCode, label: 'QR Code' },
   { id: 'lens', icon: Camera, label: 'Lens' },
@@ -1793,6 +1795,7 @@ function AdminMassiveIA() {
         {activeTab === 'chat' && <ChatTab />}
         {activeTab === 'stickers' && <StickersTab />}
         {activeTab === 'prints' && <PrintsTab />}
+        {activeTab === 'merch' && <MerchMockupTool />}
         {activeTab === 'resize' && <ResizeTab />}
         {activeTab === 'qrcode' && <QRCodeTab />}
         {activeTab === 'lens' && <LensTab />}
