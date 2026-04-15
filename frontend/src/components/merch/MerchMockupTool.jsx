@@ -57,8 +57,9 @@ function useImage(src) {
 // Curseur rotation custom (SVG data URI). Le curseur natif n'existe pas.
 const ROTATE_CURSOR = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><g fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><path d='M3 12a9 9 0 1 0 3-6.7'/><polyline points='3 4 3 10 9 10'/></g></svg>") 12 12, alias`;
 
-// Distance (en pixels ecran) au bord du logo pour passer en mode rotation
-const ROTATE_EDGE_PX = 4;
+// Halo de rotation: bande de pixels a l'EXTERIEUR du logo (autour du carre rouge
+// du selection ring). Hover dans cette bande = rotation.
+const ROTATE_HALO_PX = 5;
 
 // ---------------------------------------------------------------------------
 // DraggableLogo - un logo superpose draggable + resizable + rotatable + removable
@@ -67,40 +68,10 @@ function DraggableLogo({ logo, onChange, onDelete, containerRef, selected, onSel
   const [dragging, setDragging] = useState(false);
   const [resizing, setResizing] = useState(false);
   const [rotating, setRotating] = useState(false);
-  const [hoverMode, setHoverMode] = useState('drag'); // 'drag' | 'rotate'
   const logoRef = useRef(null);
 
   const rotation = logo.rotation || 0;
   const aspect = logo.aspect || 1;
-
-  // Detection du bord: calcule la distance depuis le centre du logo en espace local
-  // (en tenant compte de la rotation pour que ca reste coherent quand le logo tourne)
-  const updateHoverMode = (clientX, clientY) => {
-    const el = logoRef.current;
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    const cx = rect.left + rect.width / 2;
-    const cy = rect.top + rect.height / 2;
-    // Un-rotate le point souris pour obtenir coords locales (non rotees)
-    const rad = -rotation * Math.PI / 180;
-    const dx = clientX - cx;
-    const dy = clientY - cy;
-    const lx = dx * Math.cos(rad) - dy * Math.sin(rad);
-    const ly = dx * Math.sin(rad) + dy * Math.cos(rad);
-    // Dimensions non rotees = offsetWidth/offsetHeight
-    const w = el.offsetWidth;
-    const h = el.offsetHeight;
-    // Distance depuis chaque bord dans l'espace local
-    const distEdge = Math.min(
-      w / 2 - Math.abs(lx),
-      h / 2 - Math.abs(ly)
-    );
-    if (distEdge >= 0 && distEdge <= ROTATE_EDGE_PX) {
-      setHoverMode('rotate');
-    } else {
-      setHoverMode('drag');
-    }
-  };
 
   const startDrag = (clientX, clientY) => {
     const rect = containerRef.current.getBoundingClientRect();
@@ -195,41 +166,9 @@ function DraggableLogo({ logo, onChange, onDelete, containerRef, selected, onSel
     window.addEventListener('touchend', end);
   };
 
-  const handleMouseMove = (e) => {
-    if (dragging || resizing || rotating) return;
-    updateHoverMode(e.clientX, e.clientY);
-  };
-
-  const handleMouseDown = (e) => {
-    if (e.button !== 0) return;
-    updateHoverMode(e.clientX, e.clientY);
-    // On relit le hover apres update (sync): la zone bord declenche rotation
-    const el = logoRef.current;
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    const cx = rect.left + rect.width / 2;
-    const cy = rect.top + rect.height / 2;
-    const rad = -rotation * Math.PI / 180;
-    const dx = e.clientX - cx;
-    const dy = e.clientY - cy;
-    const lx = dx * Math.cos(rad) - dy * Math.sin(rad);
-    const ly = dx * Math.sin(rad) + dy * Math.cos(rad);
-    const distEdge = Math.min(el.offsetWidth / 2 - Math.abs(lx), el.offsetHeight / 2 - Math.abs(ly));
-    if (distEdge >= 0 && distEdge <= ROTATE_EDGE_PX) {
-      startRotate(e.clientX, e.clientY);
-    } else {
-      startDrag(e.clientX, e.clientY);
-    }
-  };
-
-  const cursor = rotating ? ROTATE_CURSOR : (dragging || resizing ? 'grabbing' : (hoverMode === 'rotate' ? ROTATE_CURSOR : 'grab'));
-
   return (
     <div
       ref={logoRef}
-      onMouseMove={handleMouseMove}
-      onMouseDown={handleMouseDown}
-      onTouchStart={(e) => { const t = e.touches[0]; startDrag(t.clientX, t.clientY); }}
       className={`absolute select-none ${selected ? 'ring-2 ring-accent' : 'hover:ring-1 hover:ring-white/40'}`}
       style={{
         left: `${logo.x * 100}%`,
@@ -239,14 +178,29 @@ function DraggableLogo({ logo, onChange, onDelete, containerRef, selected, onSel
         touchAction: 'none',
         transform: `rotate(${rotation}deg)`,
         transformOrigin: 'center center',
-        cursor,
       }}
     >
+      {/* Halo de rotation - bande de 5px AUTOUR du logo (a l'exterieur du ring).
+          Comme l'image est un child plus petit (inset 0), les clics dans les 5px
+          exterieurs tombent sur ce halo, les clics sur l'image tombent sur l'image. */}
+      <div
+        onMouseDown={(e) => { if (e.button === 0) { e.stopPropagation(); startRotate(e.clientX, e.clientY); } }}
+        onTouchStart={(e) => { e.stopPropagation(); const t = e.touches[0]; startRotate(t.clientX, t.clientY); }}
+        className="absolute"
+        style={{
+          inset: -ROTATE_HALO_PX,
+          cursor: rotating ? ROTATE_CURSOR : ROTATE_CURSOR,
+        }}
+      />
+      {/* Image du logo - tout l'interieur = zone drag */}
       <img
         src={logo.src}
         alt=""
         draggable={false}
-        className="w-full h-full object-contain pointer-events-none"
+        onMouseDown={(e) => { if (e.button === 0) { e.stopPropagation(); startDrag(e.clientX, e.clientY); } }}
+        onTouchStart={(e) => { e.stopPropagation(); const t = e.touches[0]; startDrag(t.clientX, t.clientY); }}
+        className="absolute inset-0 w-full h-full object-contain"
+        style={{ cursor: dragging ? 'grabbing' : 'grab' }}
       />
       {selected && (
         <>
@@ -263,7 +217,7 @@ function DraggableLogo({ logo, onChange, onDelete, containerRef, selected, onSel
           </button>
           {/* Resize handle bottom-right */}
           <div
-            onMouseDown={(e) => startResize(e.clientX, e.clientY, e)}
+            onMouseDown={(e) => { e.stopPropagation(); startResize(e.clientX, e.clientY, e); }}
             onTouchStart={(e) => { e.stopPropagation(); const t = e.touches[0]; startResize(t.clientX, t.clientY, e); }}
             className="absolute -bottom-2 -right-2 w-5 h-5 rounded-full bg-accent border-2 border-white shadow-lg z-10"
             style={{ cursor: 'nwse-resize' }}
@@ -271,7 +225,7 @@ function DraggableLogo({ logo, onChange, onDelete, containerRef, selected, onSel
           />
           {/* Indicateur de rotation (affiche angle non nul) */}
           {rotation !== 0 && !rotating && (
-            <div className="absolute -top-6 left-1/2 -translate-x-1/2 px-1.5 py-0.5 rounded bg-black/70 text-white text-[10px] font-mono pointer-events-none whitespace-nowrap">
+            <div className="absolute -top-6 left-1/2 -translate-x-1/2 px-1.5 py-0.5 rounded bg-black/70 text-white text-[10px] font-mono pointer-events-none whitespace-nowrap z-10">
               {Math.round(rotation)}°
             </div>
           )}
@@ -651,7 +605,7 @@ function MerchMockupTool() {
 
       {/* Aide */}
       <div className="text-[11px] text-grey-muted/80 italic px-1">
-        Drag pour deplacer · <b>bord du logo</b> (4px) = rotation · poignee accent = resize · X rouge = supprimer · chaque produit se souvient de sa position/taille/rotation
+        Drag sur le logo pour deplacer · <b>juste a l'exterieur</b> du logo (5px) = rotation · poignee accent = resize · X rouge = supprimer · chaque produit se souvient de sa position/taille/rotation
       </div>
     </div>
   );
