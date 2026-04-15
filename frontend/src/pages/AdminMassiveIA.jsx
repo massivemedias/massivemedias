@@ -348,12 +348,13 @@ function applyShader(ctx, shader, w, h) {
   ctx.save();
 
   if (shader === 'holographic') {
-    // Gradient conique arc-en-ciel - opacite reduite pour laisser l'image visible
+    // Gradient conique arc-en-ciel - centre deplace hors du canvas pour eviter l'artefact central
     ctx.globalCompositeOperation = 'source-atop';
     ctx.globalAlpha = 0.28;
     let grad;
     if (typeof ctx.createConicGradient === 'function') {
-      grad = ctx.createConicGradient(0, w / 2, h / 2);
+      // Centre a w*1.3, -h*0.4 => hors du canvas, aucun point de convergence visible
+      grad = ctx.createConicGradient(Math.PI * 0.15, w * 1.3, -h * 0.4);
       grad.addColorStop(0.00, '#ff00cc');
       grad.addColorStop(0.14, '#ff6600');
       grad.addColorStop(0.28, '#ffee00');
@@ -500,8 +501,8 @@ function applyShader(ctx, shader, w, h) {
   }
 
   else if (shader === 'stars') {
-    // Etoiles 4 pointes SOLIDES multicolores - comme le vrai film FX stars holographique
-    ctx.globalCompositeOperation = 'source-atop';
+    // Stars FX: etoiles BLANCHES/ARGENTEES avec iridescence holographique
+    // Comme le vrai film FX stars: les etoiles sont blanches, c'est la refraction qui genere la couleur
 
     let seed = ((w * 12345) ^ (h * 67890)) >>> 0;
     const rnd = () => {
@@ -511,111 +512,120 @@ function applyShader(ctx, shader, w, h) {
 
     const refSize = Math.min(w, h);
 
-    // Palette arc-en-ciel saturee (comme le film FX stars)
-    const palette = [
-      '#ff1a1a', // rouge vif
-      '#ff5500', // orange
-      '#ffdd00', // jaune
-      '#00ee33', // vert
-      '#00ccff', // cyan
-      '#2244ff', // bleu
-      '#9900ee', // violet
-      '#ff00bb', // rose/magenta
-      '#ffffff', // blanc
-      '#ffff55', // jaune pale
-      '#55ffee', // cyan pale
-      '#ff88aa', // rose pale
-    ];
+    // Canvas temporaire pour dessiner les etoiles de facon isolee
+    const tmp = document.createElement('canvas');
+    tmp.width = w;
+    tmp.height = h;
+    const tc = tmp.getContext('2d');
 
-    // Dessine une etoile 4 pointes (polygone solide, pointes fines et allongees)
-    const draw4Star = (x, y, outerR, innerR, angle = -Math.PI / 4) => {
-      ctx.beginPath();
+    // Fonction dessiner etoile 4 pointes sur un contexte donne
+    const draw4Star = (c, x, y, outerR, innerR, angle = 0) => {
+      c.beginPath();
       for (let i = 0; i < 8; i++) {
         const a = angle + (i * Math.PI) / 4;
         const r = i % 2 === 0 ? outerR : innerR;
-        if (i === 0) ctx.moveTo(x + Math.cos(a) * r, y + Math.sin(a) * r);
-        else ctx.lineTo(x + Math.cos(a) * r, y + Math.sin(a) * r);
+        if (i === 0) c.moveTo(x + Math.cos(a) * r, y + Math.sin(a) * r);
+        else c.lineTo(x + Math.cos(a) * r, y + Math.sin(a) * r);
       }
-      ctx.closePath();
+      c.closePath();
     };
 
-    // --- Couche 1: etoiles 4 pointes regulieres (masse principale)
-    const nStars = 90;
+    // --- Couche 1: etoiles 4 pointes blanches/argentees (masse principale)
+    const nStars = 100;
     for (let i = 0; i < nStars; i++) {
       const x = rnd() * w;
       const y = rnd() * h;
-      const outerR = refSize * (0.007 + rnd() * 0.020);
-      const innerR = outerR * (0.14 + rnd() * 0.10); // pointes tres fines
-      const color = palette[Math.floor(rnd() * palette.length)];
-      const alpha = 0.55 + rnd() * 0.40;
-      const rot = rnd() * Math.PI * 0.5; // rotation aleatoire legere
-
-      ctx.save();
-      ctx.globalAlpha = alpha;
-      ctx.fillStyle = color;
-      draw4Star(x, y, outerR, innerR, rot);
-      ctx.fill();
-      ctx.restore();
+      const outerR = refSize * (0.007 + rnd() * 0.022);
+      const innerR = outerR * (0.13 + rnd() * 0.10);
+      const alpha = 0.60 + rnd() * 0.35;
+      const rot = rnd() * Math.PI * 0.5;
+      // Couleur: blanc pur ou argente leger
+      const brightness = Math.round(220 + rnd() * 35);
+      tc.save();
+      tc.globalAlpha = alpha;
+      tc.fillStyle = `rgb(${brightness},${brightness},${brightness})`;
+      draw4Star(tc, x, y, outerR, innerR, rot);
+      tc.fill();
+      tc.restore();
     }
 
-    // --- Couche 2: croix simples (+) pour varier les formes
-    const nCrosses = 30;
+    // --- Couche 2: croix fines (+) argentees pour varier
+    const nCrosses = 35;
     for (let i = 0; i < nCrosses; i++) {
       const x = rnd() * w;
       const y = rnd() * h;
       const r = refSize * (0.004 + rnd() * 0.010);
-      const t = Math.max(1, r * 0.28); // epaisseur bras
-      const color = palette[Math.floor(rnd() * palette.length)];
+      const t = Math.max(0.8, r * 0.25);
       const alpha = 0.45 + rnd() * 0.50;
-
-      ctx.save();
-      ctx.globalAlpha = alpha;
-      ctx.fillStyle = color;
-      ctx.fillRect(x - r, y - t / 2, r * 2, t);
-      ctx.fillRect(x - t / 2, y - r, t, r * 2);
-      ctx.restore();
+      tc.save();
+      tc.globalAlpha = alpha;
+      tc.fillStyle = 'rgba(255,255,255,1)';
+      tc.fillRect(x - r, y - t / 2, r * 2, t);
+      tc.fillRect(x - t / 2, y - r, t, r * 2);
+      tc.restore();
     }
 
-    // --- Couche 3: petits points ronds (glitter entre les etoiles)
-    const nDots = 45;
+    // --- Couche 3: petits points brillants (glitter)
+    const nDots = 50;
     for (let i = 0; i < nDots; i++) {
       const x = rnd() * w;
       const y = rnd() * h;
       const r = refSize * (0.002 + rnd() * 0.005);
-      const color = palette[Math.floor(rnd() * palette.length)];
-      const alpha = 0.40 + rnd() * 0.55;
-
-      ctx.save();
-      ctx.globalAlpha = alpha;
-      ctx.fillStyle = color;
-      ctx.beginPath();
-      ctx.arc(x, y, r, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.restore();
+      const alpha = 0.50 + rnd() * 0.45;
+      tc.save();
+      tc.globalAlpha = alpha;
+      tc.fillStyle = 'rgba(255,255,255,1)';
+      tc.beginPath();
+      tc.arc(x, y, r, 0, Math.PI * 2);
+      tc.fill();
+      tc.restore();
     }
 
-    // --- Couche 4: grandes etoiles accentuees (quelques points de brillance forts)
+    // --- Couche 4: grandes etoiles accentuees tres brillantes
     const nAccent = 10;
     for (let i = 0; i < nAccent; i++) {
       const x = rnd() * w;
       const y = rnd() * h;
-      const outerR = refSize * (0.020 + rnd() * 0.022);
-      const innerR = outerR * 0.15;
-      const color = palette[Math.floor(rnd() * palette.length)];
-      const alpha = 0.75 + rnd() * 0.20;
-
-      ctx.save();
-      ctx.globalAlpha = alpha;
-      ctx.fillStyle = color;
-      draw4Star(x, y, outerR, innerR, rnd() * Math.PI * 0.5);
-      ctx.fill();
-      // Halo blanc leger autour des grandes
-      ctx.globalAlpha = alpha * 0.30;
-      ctx.fillStyle = 'rgba(255,255,255,1)';
-      draw4Star(x, y, outerR * 1.5, innerR * 1.5, rnd() * Math.PI * 0.5);
-      ctx.fill();
-      ctx.restore();
+      const outerR = refSize * (0.022 + rnd() * 0.024);
+      const innerR = outerR * 0.14;
+      tc.save();
+      tc.globalAlpha = 0.85 + rnd() * 0.15;
+      tc.fillStyle = 'rgba(255,255,255,1)';
+      draw4Star(tc, x, y, outerR, innerR, rnd() * Math.PI * 0.5);
+      tc.fill();
+      // Halo diffus autour des grandes etoiles
+      tc.globalAlpha = 0.20;
+      const halo = tc.createRadialGradient(x, y, 0, x, y, outerR * 2.5);
+      halo.addColorStop(0, 'rgba(255,255,255,0.8)');
+      halo.addColorStop(1, 'rgba(255,255,255,0)');
+      tc.fillStyle = halo;
+      tc.beginPath();
+      tc.arc(x, y, outerR * 2.5, 0, Math.PI * 2);
+      tc.fill();
+      tc.restore();
     }
+
+    // Appliquer l'iridescence holographique SUR les etoiles seulement (source-atop sur le canvas temp)
+    if (typeof tc.createConicGradient === 'function') {
+      tc.globalCompositeOperation = 'source-atop';
+      tc.globalAlpha = 0.38; // subtil: les etoiles restent principalement blanches
+      const holoGrad = tc.createConicGradient(Math.PI * 0.3, w * 0.8, -h * 0.2);
+      holoGrad.addColorStop(0.00, '#ff00cc');
+      holoGrad.addColorStop(0.14, '#ff6600');
+      holoGrad.addColorStop(0.28, '#ffee00');
+      holoGrad.addColorStop(0.42, '#00ff88');
+      holoGrad.addColorStop(0.57, '#00ccff');
+      holoGrad.addColorStop(0.71, '#5500ff');
+      holoGrad.addColorStop(0.85, '#ff0088');
+      holoGrad.addColorStop(1.00, '#ff00cc');
+      tc.fillStyle = holoGrad;
+      tc.fillRect(0, 0, w, h);
+    }
+
+    // Composer les etoiles sur le sticker principal (source-atop = seulement sur pixels opaques du sticker)
+    ctx.globalCompositeOperation = 'source-atop';
+    ctx.globalAlpha = 1;
+    ctx.drawImage(tmp, 0, 0);
   }
 
   ctx.restore();
@@ -663,6 +673,15 @@ function StickersTab() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null); // Blob URL
   const [error, setError] = useState(null);
+  const [tilt, setTilt] = useState({ x: 0, y: 0 });
+
+  const handlePreviewMouseMove = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const dx = (e.clientX - (rect.left + rect.width / 2)) / (rect.width / 2);
+    const dy = (e.clientY - (rect.top + rect.height / 2)) / (rect.height / 2);
+    setTilt({ x: -dy * 14, y: dx * 14 });
+  };
+  const handlePreviewMouseLeave = () => setTilt({ x: 0, y: 0 });
 
   // Cleanup blob URL au unmount / changement de resultat
   useEffect(() => {
@@ -763,12 +782,16 @@ function StickersTab() {
 
       {/* Resultat */}
       <div
-        className={`rounded-xl overflow-hidden relative ${!result ? 'bg-black/20 p-4 flex items-center justify-center min-h-[300px]' : ''}`}
+        className={`rounded-xl relative ${!result ? 'bg-black/20 p-4 flex items-center justify-center min-h-[300px]' : 'overflow-visible'}`}
         style={result ? {
           backgroundImage: 'linear-gradient(45deg, #1a1a1a 25%, transparent 25%), linear-gradient(-45deg, #1a1a1a 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #1a1a1a 75%), linear-gradient(-45deg, transparent 75%, #1a1a1a 75%)',
           backgroundSize: '20px 20px',
           backgroundPosition: '0 0, 0 10px, 10px -10px, 10px 0px',
+          borderRadius: '0.75rem',
+          perspective: '900px',
         } : undefined}
+        onMouseMove={result ? handlePreviewMouseMove : undefined}
+        onMouseLeave={result ? handlePreviewMouseLeave : undefined}
       >
         {error && (
           <div className="flex items-center gap-2 text-red-400 text-sm p-4">
@@ -780,12 +803,20 @@ function StickersTab() {
           <img
             src={result}
             alt="sticker"
-            className="w-full h-auto block"
+            className="w-full h-auto block rounded-xl"
+            style={{
+              transform: `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg) scale(${tilt.x !== 0 || tilt.y !== 0 ? 1.03 : 1})`,
+              transition: tilt.x === 0 && tilt.y === 0 ? 'transform 0.55s cubic-bezier(0.25,0.8,0.25,1)' : 'transform 0.08s ease-out',
+              transformStyle: 'preserve-3d',
+              boxShadow: tilt.x !== 0 || tilt.y !== 0 ? `${-tilt.y * 1.5}px ${tilt.x * 1.5}px 28px rgba(0,0,0,0.5)` : '0 4px 16px rgba(0,0,0,0.3)',
+              willChange: 'transform',
+            }}
           />
           <a
             href={result}
             download={`sticker-${shader}.png`}
             className="absolute bottom-3 right-3 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-black/60 backdrop-blur-sm text-white text-xs font-semibold hover:bg-black/80 transition-colors"
+            style={{ zIndex: 10 }}
           >
             <Download size={12} />
             Telecharger
