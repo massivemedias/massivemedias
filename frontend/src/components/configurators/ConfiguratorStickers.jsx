@@ -128,6 +128,50 @@ function ConfiguratorStickers({ onFinishChange }) {
 
   return (
     <>
+      {/* Upload CTA en haut - premiere action du user */}
+      <div className="mb-4 md:mb-6">
+        <label
+          className={`group flex items-center gap-3 md:gap-4 w-full px-4 md:px-5 py-3 md:py-4 rounded-xl cursor-pointer transition-all border-2 border-dashed ${
+            localPreviewUrl
+              ? 'border-accent/40 bg-accent/5 hover:bg-accent/10'
+              : 'border-accent/50 bg-accent/10 hover:bg-accent/20 hover:border-accent'
+          }`}
+        >
+          <div className={`flex-shrink-0 w-10 h-10 md:w-12 md:h-12 rounded-lg flex items-center justify-center ${localPreviewUrl ? 'bg-accent/20 text-accent' : 'bg-accent text-white'}`}>
+            {localPreviewUrl ? <ImageIcon size={20} /> : <Upload size={20} />}
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="text-heading font-semibold text-sm md:text-base">
+              {localPreviewUrl
+                ? tx({ fr: 'Design charge ✓ - Essaie les finitions ci-dessous', en: 'Design loaded ✓ - Try the finishes below', es: 'Diseno cargado ✓ - Prueba los acabados' })
+                : tx({ fr: 'Upload ton design', en: 'Upload your design', es: 'Sube tu diseno' })}
+            </div>
+            <div className="text-grey-muted text-xs mt-0.5">
+              {localPreviewUrl
+                ? tx({ fr: 'Clique pour changer d\'image', en: 'Click to change image', es: 'Haz clic para cambiar' })
+                : tx({ fr: 'PNG, JPG, WebP, SVG - le preview se met a jour en direct', en: 'PNG, JPG, WebP, SVG - preview updates live', es: 'PNG, JPG, WebP, SVG - vista previa en vivo' })}
+            </div>
+          </div>
+          {localPreviewUrl && (
+            <button
+              type="button"
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleClearUpload(); }}
+              className="flex-shrink-0 p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 transition-colors"
+              title={tx({ fr: 'Retirer', en: 'Remove', es: 'Quitar' })}
+            >
+              <X size={16} />
+            </button>
+          )}
+          <input
+            ref={localFileRef}
+            type="file"
+            accept="image/png,image/jpeg,image/webp,image/svg+xml"
+            className="hidden"
+            onChange={handleLocalFileSelect}
+          />
+        </label>
+      </div>
+
       {/* Preview canvas + selectors */}
       <div className="flex flex-col md:flex-row gap-4 md:gap-6 mb-4 md:mb-6">
         {/* Preview (canvas avec FX live) */}
@@ -151,33 +195,8 @@ function ConfiguratorStickers({ onFinishChange }) {
               </span>
               {!localPreviewUrl && (
                 <span className="block text-grey-muted/70 text-[10px] mt-1.5 italic">
-                  {tx({ fr: 'Aperçu avec logo Massive - upload ton design pour voir ton sticker', en: 'Preview with Massive logo - upload your design', es: 'Vista previa con logo Massive - sube tu diseño' })}
+                  {tx({ fr: 'Aperçu avec logo Massive - upload ton design pour voir ton sticker', en: 'Preview with Massive logo - upload your design', es: 'Vista previa con logo Massive - sube tu diseno' })}
                 </span>
-              )}
-            </div>
-
-            {/* Quick upload pour preview instantane (separate du FileUpload en bas qui lui push vers Drive) */}
-            <div className="mt-3 flex items-center gap-2">
-              <label className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg bg-accent/10 hover:bg-accent/20 text-accent text-xs font-semibold cursor-pointer transition-colors border border-accent/30">
-                <Upload size={14} />
-                <span>{tx({ fr: 'Tester ton design', en: 'Try your design', es: 'Probar tu diseño' })}</span>
-                <input
-                  ref={localFileRef}
-                  type="file"
-                  accept="image/png,image/jpeg,image/webp,image/svg+xml"
-                  className="hidden"
-                  onChange={handleLocalFileSelect}
-                />
-              </label>
-              {localPreviewUrl && (
-                <button
-                  type="button"
-                  onClick={handleClearUpload}
-                  className="p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 transition-colors"
-                  title={tx({ fr: 'Retirer', en: 'Remove', es: 'Quitar' })}
-                >
-                  <X size={14} />
-                </button>
               )}
             </div>
 

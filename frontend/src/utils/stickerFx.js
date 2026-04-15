@@ -391,47 +391,53 @@ export function drawSticker(canvas, img, opts) {
     ctx.fillRect(0, 0, W, H);
   }
 
-  // Canvas intermediaire: on y dessine l'image + stroke, puis on clip selon la forme
-  // Cela nous permet d'appliquer le clip de forme sur (image + stroke) comme un seul calque
+  // Safe area: reserve une marge interieure pour que le stroke/stroke-ombre ne touche
+  // pas les bords du canvas (et donc du cadre affiche). Min 4% de la plus petite
+  // dimension, et au moins strokeWidth + 8px pour garantir l'espace du contour.
+  // A 800px, 4% = 32px canvas = ~10px affiche a 250px de large.
+  const safePad = Math.max(Math.round(Math.min(W, H) * 0.04), strokeWidth + 8);
+  const innerW = W - safePad * 2;
+  const innerH = H - safePad * 2;
+
+  // Canvas intermediaire aux dimensions reduites: on y dessine tout, puis on le place
+  // au centre du canvas final avec la safe area preservee tout autour.
   const inner = document.createElement('canvas');
-  inner.width = W;
-  inner.height = H;
+  inner.width = innerW;
+  inner.height = innerH;
   const ictx = inner.getContext('2d');
 
   // Clip selon la forme (sauf diecut qui suit la silhouette de l'image)
   ictx.save();
   if (shape === 'round') {
     ictx.beginPath();
-    ictx.arc(W / 2, H / 2, Math.min(W, H) / 2, 0, Math.PI * 2);
+    ictx.arc(innerW / 2, innerH / 2, Math.min(innerW, innerH) / 2, 0, Math.PI * 2);
     ictx.clip();
   } else if (shape === 'square') {
-    const radius = Math.min(W, H) * 0.06;
-    roundedRectPath(ictx, 0, 0, W, H, radius);
+    const radius = Math.min(innerW, innerH) * 0.06;
+    roundedRectPath(ictx, 0, 0, innerW, innerH, radius);
     ictx.clip();
   } else if (shape === 'rectangle') {
-    const radius = Math.min(W, H) * 0.04;
-    roundedRectPath(ictx, 0, 0, W, H, radius);
+    const radius = Math.min(innerW, innerH) * 0.04;
+    roundedRectPath(ictx, 0, 0, innerW, innerH, radius);
     ictx.clip();
   }
   // diecut: pas de clip, on laisse la transparence de l'image faire le die-cut
 
   if (shape === 'diecut') {
     // Diecut: image contain + stroke sur les pixels opaques
-    // On dessine dans un canvas aux dimensions naturelles de l'image, puis on le place "contain" dans inner
     const ratio = img.naturalWidth / img.naturalHeight;
-    const boxRatio = W / H;
+    const boxRatio = innerW / innerH;
     let drawW, drawH;
     if (ratio > boxRatio) {
-      drawW = W;
-      drawH = Math.round(W / ratio);
+      drawW = innerW;
+      drawH = Math.round(innerW / ratio);
     } else {
-      drawH = H;
-      drawW = Math.round(H * ratio);
+      drawH = innerH;
+      drawW = Math.round(innerH * ratio);
     }
-    const dx = Math.round((W - drawW) / 2);
-    const dy = Math.round((H - drawH) / 2);
+    const dx = Math.round((innerW - drawW) / 2);
+    const dy = Math.round((innerH - drawH) / 2);
 
-    // Canvas offscreen pour gerer le stroke proprement
     const off = document.createElement('canvas');
     off.width = drawW;
     off.height = drawH;
@@ -439,20 +445,18 @@ export function drawSticker(canvas, img, opts) {
     drawStickerWithStroke(octx, img, strokeColor, 0);
 
     if (strokeWidth > 0) {
-      // Redessiner avec stroke dans un canvas plus grand pour inclure le padding
       const pad = strokeWidth;
       const off2 = document.createElement('canvas');
       off2.width = drawW + pad * 2;
       off2.height = drawH + pad * 2;
       const o2ctx = off2.getContext('2d');
       drawStickerWithStroke(o2ctx, img, strokeColor, pad);
-      // Placer dans inner (contain, centre)
       const finalRatio = off2.width / off2.height;
       let fw, fh;
-      if (finalRatio > boxRatio) { fw = W; fh = Math.round(W / finalRatio); }
-      else { fh = H; fw = Math.round(H * finalRatio); }
-      const fx = Math.round((W - fw) / 2);
-      const fy = Math.round((H - fh) / 2);
+      if (finalRatio > boxRatio) { fw = innerW; fh = Math.round(innerW / finalRatio); }
+      else { fh = innerH; fw = Math.round(innerH * finalRatio); }
+      const fx = Math.round((innerW - fw) / 2);
+      const fy = Math.round((innerH - fh) / 2);
       ictx.drawImage(off2, fx, fy, fw, fh);
     } else {
       ictx.drawImage(off, dx, dy, drawW, drawH);
@@ -463,7 +467,7 @@ export function drawSticker(canvas, img, opts) {
     // on la pose sur un fond blanc pour que le sticker soit plein.
     const iw = img.naturalWidth;
     const ih = img.naturalHeight;
-    const boxRatio = W / H;
+    const boxRatio = innerW / innerH;
     const imgRatio = iw / ih;
 
     // Cover: on agrandit l'image pour remplir la forme
@@ -484,8 +488,8 @@ export function drawSticker(canvas, img, opts) {
     // Fond blanc (la forme prend la couleur du fond blanc)
     // Les clients s'attendent a un sticker opaque pour round/square/rectangle
     ictx.fillStyle = '#ffffff';
-    ictx.fillRect(0, 0, W, H);
-    ictx.drawImage(img, sx, sy, sw, sh, 0, 0, W, H);
+    ictx.fillRect(0, 0, innerW, innerH);
+    ictx.drawImage(img, sx, sy, sw, sh, 0, 0, innerW, innerH);
   }
   ictx.restore();
 
@@ -497,21 +501,21 @@ export function drawSticker(canvas, img, opts) {
     ictx.lineWidth = strokeWidth * 2; // x2 car la moitie sera clippee par le shape
     if (shape === 'round') {
       ictx.beginPath();
-      ictx.arc(W / 2, H / 2, Math.min(W, H) / 2, 0, Math.PI * 2);
+      ictx.arc(innerW / 2, innerH / 2, Math.min(innerW, innerH) / 2, 0, Math.PI * 2);
       ictx.stroke();
     } else {
-      const radius = shape === 'square' ? Math.min(W, H) * 0.06 : Math.min(W, H) * 0.04;
-      roundedRectPath(ictx, 0, 0, W, H, radius);
+      const radius = shape === 'square' ? Math.min(innerW, innerH) * 0.06 : Math.min(innerW, innerH) * 0.04;
+      roundedRectPath(ictx, 0, 0, innerW, innerH, radius);
       ictx.stroke();
     }
     ictx.restore();
   }
 
   // Appliquer le shader FX sur les pixels opaques du inner canvas
-  applyShader(ictx, shader, W, H);
+  applyShader(ictx, shader, innerW, innerH);
 
-  // Composer inner sur canvas cible
-  ctx.drawImage(inner, 0, 0);
+  // Composer inner au centre du canvas final avec la safe area preservee
+  ctx.drawImage(inner, safePad, safePad);
 }
 
 function roundedRectPath(ctx, x, y, w, h, r) {
