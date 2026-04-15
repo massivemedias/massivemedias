@@ -1,4 +1,5 @@
 import { factories } from '@strapi/strapi';
+import { sendPrivatePrintEmail } from '../../../utils/email';
 
 export default factories.createCoreController('api::artist.artist', ({ strapi }) => ({
   /**
@@ -91,6 +92,90 @@ export default factories.createCoreController('api::artist.artist', ({ strapi })
     });
 
     ctx.body = { data: sales, meta: { total: sales.length } };
+  },
+
+  /**
+   * Supprime une vente privee en attente (retire le print de l'artiste).
+   * L'image reste sur le stockage mais n'apparait plus dans prints[].
+   *
+   * POST /api/artists-private-sales/delete
+   * Body: { artistSlug: string, printId: string }
+   */
+  async deletePrivateSale(ctx) {
+    const { artistSlug, printId } = (ctx.request.body || {}) as any;
+    if (!artistSlug || !printId) {
+      return ctx.badRequest('artistSlug et printId sont requis');
+    }
+
+    const artists = await strapi.documents('api::artist.artist').findMany({
+      filters: { slug: artistSlug },
+      status: 'published',
+    });
+    const artist = artists[0];
+    if (!artist) return ctx.notFound(`Artiste '${artistSlug}' introuvable`);
+
+    const prints = Array.isArray(artist.prints) ? (artist.prints as any[]) : [];
+    const target = prints.find((p: any) => p?.id === printId);
+    if (!target) return ctx.notFound(`Print '${printId}' introuvable`);
+    if (!target.private) return ctx.badRequest(`Print '${printId}' n'est pas une vente privee`);
+
+    const filtered = prints.filter((p: any) => p?.id !== printId);
+
+    await strapi.documents('api::artist.artist').update({
+      documentId: artist.documentId,
+      data: { prints: filtered },
+      status: 'published',
+    });
+
+    strapi.log.info(`Vente privee supprimee: ${artistSlug} / ${printId}`);
+    ctx.body = { data: { deleted: true, artistSlug, printId } };
+  },
+
+  /**
+   * Renvoie le courriel de vente privee au client (et notification admin).
+   * Utile pour redeclencher l'envoi si le client a perdu/rate le courriel.
+   *
+   * POST /api/artists-private-sales/resend
+   * Body: { artistSlug: string, printId: string }
+   */
+  async resendPrivateSaleEmail(ctx) {
+    const { artistSlug, printId } = (ctx.request.body || {}) as any;
+    if (!artistSlug || !printId) {
+      return ctx.badRequest('artistSlug et printId sont requis');
+    }
+
+    const artists = await strapi.documents('api::artist.artist').findMany({
+      filters: { slug: artistSlug },
+      status: 'published',
+    });
+    const artist = artists[0];
+    if (!artist) return ctx.notFound(`Artiste '${artistSlug}' introuvable`);
+
+    const prints = Array.isArray(artist.prints) ? (artist.prints as any[]) : [];
+    const p = prints.find((pr: any) => pr?.id === printId);
+    if (!p) return ctx.notFound(`Print '${printId}' introuvable`);
+    if (!p.private) return ctx.badRequest(`Print '${printId}' n'est pas une vente privee`);
+    if (!p.clientEmail || !p.privateToken) {
+      return ctx.badRequest(`Print '${printId}' n'a pas de clientEmail/privateToken`);
+    }
+
+    const buyLink = `https://massivemedias.com/artistes/${artist.slug}?print=${p.id}&token=${p.privateToken}`;
+
+    try {
+      await sendPrivatePrintEmail({
+        clientEmail: p.clientEmail,
+        artistName: artist.name,
+        printTitle: p.titleFr || p.titleEn || 'Oeuvre',
+        printImage: p.fullImage || p.image || '',
+        buyLink,
+        price: typeof p.customPrice === 'number' ? p.customPrice : null,
+      });
+      strapi.log.info(`Email vente privee renvoye: ${artistSlug} / ${printId} -> ${p.clientEmail}`);
+      ctx.body = { data: { sent: true, clientEmail: p.clientEmail } };
+    } catch (err: any) {
+      strapi.log.warn(`Erreur renvoi email vente privee:`, err?.message || err);
+      return ctx.internalServerError(`Envoi du courriel echoue: ${err?.message || 'erreur inconnue'}`);
+    }
   },
 
   /**

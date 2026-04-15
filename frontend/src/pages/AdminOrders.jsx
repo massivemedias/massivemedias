@@ -5,10 +5,10 @@ import {
   Clock, Truck, Package, CreditCard, CheckCircle, XCircle,
   RotateCcw, Loader2, ExternalLink, MapPin, Save, Image,
   FileText, ChevronLeft, ChevronRight, Phone, Mail, Hash, Palette,
-  Download, Receipt, Trash2,
+  Download, Receipt, Trash2, Send, AlertTriangle,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
-import { getOrders, getOrderStats, updateOrderStatus, updateOrderNotes, updateOrderTracking, deleteOrder, getPrivateSales } from '../services/adminService';
+import { getOrders, getOrderStats, updateOrderStatus, updateOrderNotes, updateOrderTracking, deleteOrder, getPrivateSales, deletePrivateSale, resendPrivateSaleEmail } from '../services/adminService';
 import { generateInvoicePDF } from '../utils/generateInvoice';
 
 const ORDER_STATUS = {
@@ -58,6 +58,9 @@ function AdminOrders() {
   const [opError, setOpError] = useState('');
   const [privateSales, setPrivateSales] = useState([]);
   const [privateSalesLoading, setPrivateSalesLoading] = useState(false);
+  const [privateSaleBusyId, setPrivateSaleBusyId] = useState(null);
+  const [privateSaleConfirmDelete, setPrivateSaleConfirmDelete] = useState(null);
+  const [privateSaleFeedback, setPrivateSaleFeedback] = useState('');
 
   // Debounce search
   useEffect(() => {
@@ -243,80 +246,178 @@ function AdminOrders() {
               {privateSales.length}
             </span>
           </div>
+          {privateSaleFeedback && (
+            <div className="mb-3 px-3 py-2 rounded-lg text-xs bg-green-500/10 text-green-400">
+              {privateSaleFeedback}
+            </div>
+          )}
           {privateSalesLoading ? (
             <div className="flex items-center justify-center py-6">
               <Loader2 size={20} className="animate-spin text-purple-400" />
             </div>
           ) : (
             <div className="space-y-2">
-              {privateSales.map((sale) => (
-                <div
-                  key={`${sale.artistSlug}-${sale.id}`}
-                  className="flex items-center gap-3 p-3 rounded-lg bg-glass hover:bg-glass/80 transition-colors"
-                >
-                  {sale.image ? (
-                    <img src={sale.image} alt="" className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />
-                  ) : (
-                    <div className="w-12 h-12 rounded-lg bg-purple-500/10 flex items-center justify-center flex-shrink-0">
-                      <Palette size={18} className="text-purple-400/60" />
-                    </div>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-sm font-semibold text-heading truncate">{sale.artistName}</span>
-                      {sale.unique && (
-                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-400 font-semibold">
-                          {tx({ fr: 'Piece unique', en: 'Unique piece', es: 'Pieza unica' })}
+              {privateSales.map((sale) => {
+                const key = `${sale.artistSlug}-${sale.id}`;
+                const busy = privateSaleBusyId === key;
+                const confirmingDelete = privateSaleConfirmDelete === key;
+                const priceMissing = typeof sale.price !== 'number';
+
+                const handleResend = async () => {
+                  setPrivateSaleBusyId(key);
+                  setPrivateSaleFeedback('');
+                  try {
+                    await resendPrivateSaleEmail(sale.artistSlug, sale.id);
+                    setPrivateSaleFeedback(tx({
+                      fr: `Courriel renvoye a ${sale.clientEmail}`,
+                      en: `Email resent to ${sale.clientEmail}`,
+                      es: `Correo reenviado a ${sale.clientEmail}`,
+                    }));
+                    setTimeout(() => setPrivateSaleFeedback(''), 5000);
+                  } catch (err) {
+                    setOpError(tx({
+                      fr: 'Erreur lors du renvoi du courriel',
+                      en: 'Error resending email',
+                      es: 'Error al reenviar el correo',
+                    }));
+                    setTimeout(() => setOpError(''), 4000);
+                  } finally {
+                    setPrivateSaleBusyId(null);
+                  }
+                };
+
+                const handleDelete = async () => {
+                  setPrivateSaleBusyId(key);
+                  try {
+                    await deletePrivateSale(sale.artistSlug, sale.id);
+                    setPrivateSales(prev => prev.filter(s => !(s.artistSlug === sale.artistSlug && s.id === sale.id)));
+                    setPrivateSaleConfirmDelete(null);
+                  } catch (err) {
+                    setOpError(tx({
+                      fr: 'Erreur lors de la suppression',
+                      en: 'Error deleting',
+                      es: 'Error al eliminar',
+                    }));
+                    setTimeout(() => setOpError(''), 4000);
+                  } finally {
+                    setPrivateSaleBusyId(null);
+                  }
+                };
+
+                return (
+                  <div
+                    key={key}
+                    className="flex flex-col md:flex-row items-start md:items-center gap-3 p-3 rounded-lg bg-glass hover:bg-glass/80 transition-colors"
+                  >
+                    {sale.image ? (
+                      <img src={sale.image} alt="" className="w-14 h-14 rounded-lg object-cover flex-shrink-0" />
+                    ) : (
+                      <div className="w-14 h-14 rounded-lg bg-purple-500/10 flex items-center justify-center flex-shrink-0">
+                        <Palette size={18} className="text-purple-400/60" />
+                      </div>
+                    )}
+
+                    <div className="flex-1 min-w-0 w-full">
+                      <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                        <span className="text-sm font-semibold text-heading truncate">{sale.artistName}</span>
+                        {sale.title && <span className="text-xs text-grey-muted truncate">· {sale.title}</span>}
+                        {sale.unique && (
+                          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-400 font-semibold">
+                            {tx({ fr: 'Piece unique', en: 'Unique piece', es: 'Pieza unica' })}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-1.5">
+                        <span className="text-xs text-grey-muted flex items-center gap-1">
+                          <Mail size={11} /> {sale.clientEmail || tx({ fr: 'Pas de courriel', en: 'No email', es: 'Sin correo' })}
                         </span>
-                      )}
-                      {sale.title && <span className="text-xs text-grey-muted truncate">· {sale.title}</span>}
+                        {sale.fixedFormat && (
+                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-500/15 text-purple-300 uppercase font-semibold tracking-wider">
+                            {sale.fixedFormat}
+                          </span>
+                        )}
+                        {sale.fixedTier && (
+                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-500/15 text-purple-300 uppercase font-semibold tracking-wider">
+                            {sale.fixedTier}
+                          </span>
+                        )}
+                        {priceMissing ? (
+                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-red-500/15 text-red-400 flex items-center gap-1 font-semibold">
+                            <AlertTriangle size={10} />
+                            {tx({ fr: 'Prix non defini', en: 'No price set', es: 'Sin precio' })}
+                          </span>
+                        ) : (
+                          <span className="text-sm font-bold text-heading">{sale.price}$</span>
+                        )}
+                        {sale.createdAt && (
+                          <span className="text-xs text-grey-muted">
+                            {formatDateShort(sale.createdAt)}
+                          </span>
+                        )}
+                      </div>
                     </div>
-                    <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-0.5">
-                      <span className="text-xs text-grey-muted flex items-center gap-1">
-                        <Mail size={11} /> {sale.clientEmail || tx({ fr: 'Pas de courriel', en: 'No email', es: 'Sin correo' })}
+
+                    <div className="flex items-center gap-1.5 flex-shrink-0 w-full md:w-auto justify-end">
+                      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-semibold bg-yellow-500/20 text-yellow-400 mr-1">
+                        <Clock size={10} />
+                        {tx({ fr: 'Attente paiement', en: 'Awaiting payment', es: 'Esperando pago' })}
                       </span>
-                      {sale.fixedFormat && (
-                        <span className="text-[10px] text-grey-muted uppercase">{sale.fixedFormat}</span>
+                      {sale.clientLink && (
+                        <a
+                          href={sale.clientLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-1.5 rounded-lg bg-accent/20 text-accent hover:bg-accent/30 transition-colors"
+                          title={tx({ fr: 'Vue client (meme lien que le courriel)', en: 'Client view', es: 'Vista cliente' })}
+                        >
+                          <ExternalLink size={13} />
+                        </a>
                       )}
-                      {sale.fixedTier && (
-                        <span className="text-[10px] text-grey-muted capitalize">{sale.fixedTier}</span>
-                      )}
-                      {sale.createdAt && (
-                        <span className="text-xs text-grey-muted">
-                          {formatDateShort(sale.createdAt)}
-                        </span>
+                      <button
+                        onClick={handleResend}
+                        disabled={busy || !sale.clientEmail}
+                        className="p-1.5 rounded-lg bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 transition-colors disabled:opacity-40"
+                        title={tx({ fr: 'Renvoyer le courriel au client', en: 'Resend email to client', es: 'Reenviar correo al cliente' })}
+                      >
+                        {busy ? <Loader2 size={13} className="animate-spin" /> : <Send size={13} />}
+                      </button>
+                      {confirmingDelete ? (
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={handleDelete}
+                            disabled={busy}
+                            className="px-2 py-1 rounded-lg bg-red-500/30 text-red-400 text-[10px] font-semibold hover:bg-red-500/40 transition-colors disabled:opacity-40"
+                          >
+                            {busy ? <Loader2 size={11} className="animate-spin" /> : tx({ fr: 'Confirmer', en: 'Confirm', es: 'Confirmar' })}
+                          </button>
+                          <button
+                            onClick={() => setPrivateSaleConfirmDelete(null)}
+                            className="px-2 py-1 rounded-lg bg-glass text-grey-muted text-[10px] hover:text-heading transition-colors"
+                          >
+                            {tx({ fr: 'Annuler', en: 'Cancel', es: 'Cancelar' })}
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => setPrivateSaleConfirmDelete(key)}
+                          disabled={busy}
+                          className="p-1.5 rounded-lg bg-red-500/10 text-red-400/70 hover:bg-red-500/20 hover:text-red-400 transition-colors disabled:opacity-40"
+                          title={tx({ fr: 'Supprimer la demande', en: 'Delete request', es: 'Eliminar solicitud' })}
+                        >
+                          <Trash2 size={13} />
+                        </button>
                       )}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    {typeof sale.price === 'number' && (
-                      <span className="text-base font-bold text-heading">{sale.price}$</span>
-                    )}
-                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-semibold bg-yellow-500/20 text-yellow-400">
-                      <Clock size={10} />
-                      {tx({ fr: 'Attente paiement', en: 'Awaiting payment', es: 'Esperando pago' })}
-                    </span>
-                    {sale.clientLink && (
-                      <a
-                        href={sale.clientLink}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="p-1.5 rounded-lg bg-accent/20 text-accent hover:bg-accent/30 transition-colors"
-                        title={tx({ fr: 'Vue client', en: 'Client view', es: 'Vista cliente' })}
-                      >
-                        <ExternalLink size={12} />
-                      </a>
-                    )}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
           <p className="text-[10px] text-grey-muted mt-3">
             {tx({
-              fr: 'Quand le client paye, la vente apparaitra dans la liste des commandes ci-dessous.',
-              en: 'When the client pays, the sale will appear in the orders list below.',
-              es: 'Cuando el cliente pague, la venta aparecera en la lista de pedidos abajo.',
+              fr: 'Quand le client paye, la vente apparaitra dans la liste des commandes ci-dessous. Clique sur l\'icone avion pour renvoyer le courriel, sur la poubelle pour annuler la demande.',
+              en: 'When the client pays, the sale will appear in the orders list below. Click the plane icon to resend the email, the trash to cancel the request.',
+              es: 'Cuando el cliente pague, la venta aparecera en la lista de pedidos abajo. Click en el avion para reenviar correo, papelera para cancelar.',
             })}
           </p>
         </div>

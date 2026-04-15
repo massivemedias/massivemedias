@@ -20,5 +20,17 @@ export default {
       handler: 'artist.getPrivateSales',
       config: { auth: false },
     },
+    {
+      method: 'POST',
+      path: '/artists-private-sales/delete',
+      handler: 'artist.deletePrivateSale',
+      config: { auth: false },
+    },
+    {
+      method: 'POST',
+      path: '/artists-private-sales/resend',
+      handler: 'artist.resendPrivateSaleEmail',
+      config: { auth: false },
+    },
   ],
 };

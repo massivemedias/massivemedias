@@ -10,6 +10,10 @@ export const deleteOrder = (documentId) => api.delete(`/orders/${documentId}`);
 
 // --- Ventes privees (prints artistes) ---
 export const getPrivateSales = () => api.get('/artists-private-sales');
+export const deletePrivateSale = (artistSlug, printId) =>
+  api.post('/artists-private-sales/delete', { artistSlug, printId });
+export const resendPrivateSaleEmail = (artistSlug, printId) =>
+  api.post('/artists-private-sales/resend', { artistSlug, printId });
 
 // --- Messages contact ---
 export const getContactSubmissions = (params) => api.get('/contact-submissions/admin', { params });
