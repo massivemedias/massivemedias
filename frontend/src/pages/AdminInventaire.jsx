@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Package, AlertTriangle, XCircle, CheckCircle, Check, Search,
   Edit3, X, Save, Loader2, DollarSign, Archive, Plus, Trash2, ChevronDown,
+  Shirt, Layers, PackageOpen, Printer, Frame, ShoppingBag,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import api from '../services/api';
@@ -72,12 +73,12 @@ const CATEGORY_LABELS = {
 };
 
 const CATEGORIES = [
-  { value: 'textile',     emoji: '👕', label: 'Textile',      desc: 'T-Shirts, Hoodies, Crewnecks' },
-  { value: 'consommable', emoji: '🗂️',  label: 'Consommables', desc: 'Feuilles, papiers, encres, laminat' },
-  { value: 'emballage',   emoji: '📦', label: 'Emballage',    desc: 'Boites, enveloppes, protections' },
-  { value: 'equipment',   emoji: '🖨️',  label: 'Equipement',  desc: 'Imprimantes, decoupe, laminage' },
-  { value: 'frame',       emoji: '🖼️',  label: 'Cadre',       desc: 'Cadres photo et presentoir' },
-  { value: 'merch',       emoji: '🛍️',  label: 'Merch',       desc: 'Tote bags, mugs, accessoires' },
+  { value: 'textile',     icon: Shirt,       label: 'Textile',      desc: 'T-Shirts, Hoodies, Crewnecks' },
+  { value: 'consommable', icon: Layers,      label: 'Consommables', desc: 'Feuilles, papiers, encres, laminat' },
+  { value: 'emballage',   icon: PackageOpen, label: 'Emballage',    desc: 'Boites, enveloppes, protections' },
+  { value: 'equipment',   icon: Printer,     label: 'Equipement',   desc: 'Imprimantes, decoupe, laminage' },
+  { value: 'frame',       icon: Frame,       label: 'Cadre',        desc: 'Cadres photo et presentoir' },
+  { value: 'merch',       icon: ShoppingBag, label: 'Merch',        desc: 'Tote bags, mugs, accessoires' },
 ];
 
 // Sous-types par categorie (stockes dans le champ `variant`)
@@ -357,8 +358,7 @@ function ItemForm({ onClose, onSaved, tx, lang, editItem }) {
       </button>
       {form._colorOpen && (
         <div
-          className="absolute z-20 mt-1 w-full max-h-52 overflow-y-auto rounded-lg border border-white/10 shadow-xl"
-          style={{ background: '#2a2040' }}
+          className="absolute z-20 mt-1 w-full max-h-52 overflow-y-auto rounded-lg border border-white/10 shadow-xl card-bg"
         >
           <button
             type="button"
@@ -404,30 +404,29 @@ function ItemForm({ onClose, onSaved, tx, lang, editItem }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/70 flex items-start justify-center p-4 pt-8 overflow-y-auto"
+      className="fixed inset-0 z-50 bg-black/75 flex items-start justify-center p-4 pt-6 overflow-y-auto"
       onClick={onClose}
     >
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-3xl rounded-2xl shadow-2xl p-8 space-y-5 border border-white/15 mb-8"
-        style={{ background: '#2a2040' }}
+        className="w-full max-w-6xl rounded-2xl shadow-2xl border border-white/10 mb-8 card-bg"
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between px-8 pt-7 pb-5 border-b border-white/10">
           <h3 className="text-heading font-heading font-bold text-2xl">
             {isEdit
               ? tx({ fr: "Modifier l'item", en: 'Edit item', es: 'Editar item' })
               : tx({ fr: 'Ajouter au stock', en: 'Add to stock', es: 'Agregar al stock' })}
           </h3>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-white/10 text-grey-muted">
-            <X size={18} />
+          <button onClick={onClose} className="p-2 rounded-lg hover:bg-white/10 text-grey-muted transition-colors">
+            <X size={20} />
           </button>
         </div>
 
         {createdSku && (
-          <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center gap-2">
+          <div className="mx-8 mt-5 p-3 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center gap-2">
             <CheckCircle size={16} className="text-green-400" />
             <span className="text-green-400 text-sm">
               {tx({ fr: 'Cree!', en: 'Created!', es: 'Creado!' })}{' '}
@@ -435,12 +434,15 @@ function ItemForm({ onClose, onSaved, tx, lang, editItem }) {
             </span>
           </div>
         )}
-
         {error && (
-          <div className="p-3 rounded-lg bg-red-500/10 text-red-400 text-sm">{error}</div>
+          <div className="mx-8 mt-5 p-3 rounded-lg bg-red-500/10 text-red-400 text-sm">{error}</div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit}>
+          <div className="flex gap-0 divide-x divide-white/10">
+
+            {/* ===== COLONNE GAUCHE: specifique a la categorie ===== */}
+            <div className="flex-1 min-w-0 px-8 py-6 space-y-5">
 
           {/* ===== CATEGORIE ===== */}
           <div>
@@ -448,7 +450,9 @@ function ItemForm({ onClose, onSaved, tx, lang, editItem }) {
               {tx({ fr: 'Categorie', en: 'Category', es: 'Categoria' })} *
             </label>
             <div className="grid grid-cols-3 gap-2">
-              {CATEGORIES.map(cat => (
+              {CATEGORIES.map(cat => {
+                const CatIcon = cat.icon;
+                return (
                 <button
                   key={cat.value}
                   type="button"
@@ -459,11 +463,12 @@ function ItemForm({ onClose, onSaved, tx, lang, editItem }) {
                       : 'border-white/10 bg-black/20 hover:border-white/25 hover:bg-white/[0.02]'
                   }`}
                 >
-                  <div className="text-xl mb-1">{cat.emoji}</div>
-                  <div className="font-bold text-heading text-xs leading-tight">{cat.label}</div>
-                  <div className="text-grey-muted text-[9px] leading-tight mt-0.5 hidden sm:block">{cat.desc}</div>
+                  <CatIcon size={20} className={`mb-1.5 ${form.category === cat.value ? 'text-accent' : 'text-grey-muted'}`} />
+                  <div className="font-bold text-heading text-sm leading-tight">{cat.label}</div>
+                  <div className="text-grey-muted text-[10px] leading-tight mt-0.5">{cat.desc}</div>
                 </button>
-              ))}
+                );
+              })}
             </div>
           </div>
 
@@ -738,82 +743,79 @@ function ItemForm({ onClose, onSaved, tx, lang, editItem }) {
 
           </>)}
 
-          {/* ===== NOM PRODUIT (auto-genere, editable) ===== */}
-          <Field
-            label={tx({ fr: 'Nom produit', en: 'Product name', es: 'Nombre producto' }) + ' *'}
-            hint="Auto-genere depuis les champs - modifiable"
-          >
-            <InputText
-              value={form.nameFr}
-              onChange={v => set('nameFr', v)}
-              placeholder="Nom de l'item..."
-            />
-          </Field>
+            </div> {/* fin colonne gauche */}
 
-          {/* ===== QUANTITE + PRIX COUTANT ===== */}
-          <div className="grid grid-cols-2 gap-3">
-            <Field label={tx({ fr: 'Quantite', en: 'Quantity', es: 'Cantidad' })}>
-              <input
-                type="number"
-                min="0"
-                value={form.quantity}
-                onChange={e => set('quantity', e.target.value)}
-                className="w-full rounded-lg bg-black/20 text-heading text-sm px-4 py-2.5 outline-none border border-white/10 focus:border-accent"
-              />
-            </Field>
-            <Field label={tx({ fr: 'Prix coutant ($)', en: 'Cost price ($)', es: 'Costo ($)' })}>
-              <input
-                type="number"
-                min="0"
-                step="0.01"
-                value={form.costPrice}
-                onChange={e => set('costPrice', e.target.value)}
-                placeholder="0.00"
-                className="w-full rounded-lg bg-black/20 text-heading text-sm px-4 py-2.5 outline-none border border-white/10 focus:border-accent placeholder:text-grey-muted/50"
-              />
-            </Field>
-          </div>
+            {/* ===== COLONNE DROITE: champs communs ===== */}
+            <div className="w-80 flex-shrink-0 px-8 py-6 space-y-5 flex flex-col">
 
-          {/* ===== EMPLACEMENT ===== */}
-          <Field label={tx({ fr: 'Emplacement', en: 'Location', es: 'Ubicacion' })}>
-            <InputText
-              value={form.location}
-              onChange={v => set('location', v)}
-              placeholder="Ex: Etagere A3, Bac 2, Tiroir stickers..."
-            />
-          </Field>
+              <Field
+                label={tx({ fr: 'Nom produit', en: 'Product name', es: 'Nombre producto' }) + ' *'}
+                hint="Auto-genere - modifiable"
+              >
+                <InputText
+                  value={form.nameFr}
+                  onChange={v => set('nameFr', v)}
+                  placeholder="Nom de l'item..."
+                />
+              </Field>
 
-          {/* ===== NOTES ===== */}
-          <Field label="Notes">
-            <textarea
-              value={form.notes}
-              onChange={e => set('notes', e.target.value)}
-              rows={2}
-              placeholder={tx({ fr: 'Notes supplementaires...', en: 'Additional notes...', es: 'Notas adicionales...' })}
-              className="w-full rounded-lg bg-black/20 text-heading text-sm px-4 py-2.5 outline-none border border-white/10 focus:border-accent resize-none placeholder:text-grey-muted/50"
-            />
-          </Field>
+              <Field label={tx({ fr: 'Quantite initiale', en: 'Initial qty', es: 'Cantidad' })}>
+                <input
+                  type="number"
+                  min="0"
+                  value={form.quantity}
+                  onChange={e => set('quantity', e.target.value)}
+                  className="w-full rounded-lg bg-black/20 text-heading text-sm px-4 py-2.5 outline-none border border-white/10 focus:border-accent"
+                />
+              </Field>
 
-          {/* ===== SUBMIT ===== */}
-          <button
-            type="submit"
-            disabled={!form.nameFr || !form.category || saving}
-            className="w-full py-3.5 rounded-xl bg-accent text-white font-bold text-sm disabled:opacity-40 transition-opacity flex items-center justify-center gap-2 hover:brightness-110"
-          >
-            {saving ? (
-              <Loader2 size={16} className="animate-spin" />
-            ) : isEdit ? (
-              <Save size={16} />
-            ) : (
-              <Plus size={16} />
-            )}
-            {saving
-              ? tx({ fr: 'Sauvegarde...', en: 'Saving...', es: 'Guardando...' })
-              : isEdit
-                ? tx({ fr: 'Sauvegarder', en: 'Save', es: 'Guardar' })
-                : tx({ fr: "Creer l'item", en: 'Create item', es: 'Crear item' })}
-          </button>
+              <Field label={tx({ fr: 'Prix coutant ($)', en: 'Cost price ($)', es: 'Costo ($)' })}>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={form.costPrice}
+                  onChange={e => set('costPrice', e.target.value)}
+                  placeholder="0.00"
+                  className="w-full rounded-lg bg-black/20 text-heading text-sm px-4 py-2.5 outline-none border border-white/10 focus:border-accent placeholder:text-grey-muted/50"
+                />
+              </Field>
 
+              <Field label={tx({ fr: 'Emplacement', en: 'Location', es: 'Ubicacion' })}>
+                <InputText
+                  value={form.location}
+                  onChange={v => set('location', v)}
+                  placeholder="Ex: Etagere A3, Bac 2..."
+                />
+              </Field>
+
+              <Field label="Notes">
+                <textarea
+                  value={form.notes}
+                  onChange={e => set('notes', e.target.value)}
+                  rows={4}
+                  placeholder={tx({ fr: 'Notes supplementaires...', en: 'Additional notes...', es: 'Notas adicionales...' })}
+                  className="w-full rounded-lg bg-black/20 text-heading text-sm px-4 py-2.5 outline-none border border-white/10 focus:border-accent resize-none placeholder:text-grey-muted/50"
+                />
+              </Field>
+
+              <div className="pt-2 mt-auto">
+                <button
+                  type="submit"
+                  disabled={!form.nameFr || !form.category || saving}
+                  className="w-full py-4 rounded-xl bg-accent text-white font-bold text-base disabled:opacity-40 transition-opacity flex items-center justify-center gap-2 hover:brightness-110"
+                >
+                  {saving ? <Loader2 size={18} className="animate-spin" /> : isEdit ? <Save size={18} /> : <Plus size={18} />}
+                  {saving
+                    ? tx({ fr: 'Sauvegarde...', en: 'Saving...', es: 'Guardando...' })
+                    : isEdit
+                      ? tx({ fr: 'Sauvegarder', en: 'Save', es: 'Guardar' })
+                      : tx({ fr: "Creer l'item", en: 'Create item', es: 'Crear item' })}
+                </button>
+              </div>
+
+            </div> {/* fin colonne droite */}
+          </div> {/* fin flex */}
         </form>
       </motion.div>
     </div>
