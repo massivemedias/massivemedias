@@ -206,17 +206,21 @@ function ArtistGalleryManager() {
     setTimeout(() => setSuccess(''), 4000);
   };
 
-  // Prix minimum pour piece unique = prix studio du format choisi
-  const getMinPrice = (format) => {
+  // Prix minimum pour piece unique/privee = prix du format + tier choisis
+  // (pour une vente privee A2 museum, min = prix museum A2, pas studio A2)
+  const getMinPrice = (format, tier = 'studio') => {
     const artistData = artistsData[artistSlug];
-    if (artistData?.pricing?.studio?.[format] != null) return artistData.pricing.studio[format];
-    return 35; // fallback A4
+    const pricing = artistData?.pricing;
+    if (pricing?.[tier]?.[format] != null) return pricing[tier][format];
+    if (pricing?.studio?.[format] != null) return pricing.studio[format];
+    return 35; // fallback A4 studio
   };
 
   // Marquer comme piece unique
   const handleMarkUnique = async (itemId, category, itemTitle) => {
     const price = parseFloat(uniquePrice);
-    const minPrice = getMinPrice(uniqueFormat);
+    // mark-unique utilise toujours le tier studio
+    const minPrice = getMinPrice(uniqueFormat, 'studio');
     if (!price || price < minPrice) {
       setError(tx({ fr: `Le prix minimum est ${minPrice}$ pour ce format.`, en: `Minimum price is $${minPrice} for this format.`, es: `El precio minimo es $${minPrice} para este formato.` }));
       return;
@@ -277,6 +281,26 @@ function ArtistGalleryManager() {
     setSending(true);
     setError('');
     setSuccess('');
+
+    // Validation: pour une vente privee, le prix est obligatoire et >= prix du format+tier
+    for (let i = 0; i < uploadFiles.length; i++) {
+      const opts = uploadOptions[i] || { type: 'standard' };
+      if (opts.type === 'private') {
+        const fmt = opts.fixedFormat || 'a4';
+        const tier = opts.fixedTier || 'studio';
+        const minP = getMinPrice(fmt, tier);
+        const p = parseFloat(opts.customPrice);
+        if (!p || p < minP) {
+          setError(tx({
+            fr: `Vente privee image ${i + 1}: prix minimum ${minP}$ (${fmt.toUpperCase()} ${tier}). Le client paie ce montant, Massive garde le prix standard et tu recois le reste.`,
+            en: `Private sale image ${i + 1}: minimum price $${minP} (${fmt.toUpperCase()} ${tier}).`,
+            es: `Venta privada imagen ${i + 1}: precio minimo $${minP} (${fmt.toUpperCase()} ${tier}).`,
+          }));
+          setSending(false);
+          return;
+        }
+      }
+    }
 
     try {
       const cat = CATEGORIES.find(c => c.id === uploadCategory);
@@ -1014,18 +1038,36 @@ function ArtistGalleryManager() {
                             </div>
 
                             {/* Prix */}
-                            <div className="flex items-center gap-2">
-                              <span className="text-grey-muted text-[9px] uppercase w-14 flex-shrink-0">Prix</span>
-                              <input
-                                type="number"
-                                value={opts.customPrice || ''}
-                                onChange={(e) => setOpt('customPrice', e.target.value)}
-                                placeholder={tx({ fr: 'Prix ($)', en: 'Price ($)', es: 'Precio ($)' })}
-                                className="w-24 rounded-lg bg-black/20 text-heading text-xs px-2 py-1.5 outline-none border border-white/5"
-                                min="1"
-                              />
-                              <span className="text-grey-muted text-[9px]">{tx({ fr: 'Laisser vide = prix standard', en: 'Leave empty = standard price', es: 'Dejar vacio = precio estandar' })}</span>
-                            </div>
+                            {(() => {
+                              const minP = getMinPrice(opts.fixedFormat || 'a4', opts.fixedTier || 'studio');
+                              const isPrivate = opts.type === 'private';
+                              return (
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span className="text-grey-muted text-[9px] uppercase w-14 flex-shrink-0">Prix</span>
+                                  <input
+                                    type="number"
+                                    value={opts.customPrice || ''}
+                                    onChange={(e) => setOpt('customPrice', e.target.value)}
+                                    placeholder={String(minP)}
+                                    className={`w-24 rounded-lg bg-black/20 text-heading text-xs px-2 py-1.5 outline-none border ${
+                                      isPrivate && (!opts.customPrice || parseFloat(opts.customPrice) < minP)
+                                        ? 'border-red-500/40'
+                                        : 'border-white/5'
+                                    }`}
+                                    min={isPrivate ? minP : 1}
+                                  />
+                                  <span className="text-grey-muted text-[9px]">
+                                    {isPrivate
+                                      ? tx({
+                                          fr: `Min ${minP}$ (prix ${(opts.fixedTier || 'studio')} ${(opts.fixedFormat || 'a4').toUpperCase()}). Tout ce que tu mets en plus = ta part supplementaire.`,
+                                          en: `Min $${minP} (${(opts.fixedTier || 'studio')} ${(opts.fixedFormat || 'a4').toUpperCase()} price). Anything extra = your bonus.`,
+                                          es: `Min $${minP}. Extra = tu bono.`,
+                                        })
+                                      : tx({ fr: 'Laisser vide = prix standard', en: 'Leave empty = standard price', es: 'Dejar vacio = precio estandar' })}
+                                  </span>
+                                </div>
+                              );
+                            })()}
 
                             {/* Nombre d'exemplaires (edition limitee) */}
                             {opts.type === 'limited' && (

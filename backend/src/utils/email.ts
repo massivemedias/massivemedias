@@ -1227,6 +1227,28 @@ function buildPrivatePrintAdminHtml(data: PrivatePrintData): string {
   `);
 }
 
+// Version texte plain (obligatoire pour reduire le risque de spam)
+function buildPrivatePrintText(data: PrivatePrintData): string {
+  const priceText = data.price ? `Prix: ${data.price}$\n` : '';
+  return `Bonjour,
+
+${data.artistName} a prepare une oeuvre exclusive pour vous sur Massive Medias.
+
+Titre: ${data.printTitle}
+${priceText}
+Pour voir l'oeuvre et proceder a l'achat, cliquez sur le lien ci-dessous:
+${data.buyLink}
+
+Cette oeuvre est reservee pour votre adresse ${data.clientEmail}.
+
+Si vous n'avez pas demande cette oeuvre, vous pouvez ignorer ce courriel.
+
+Massive Medias
+https://massivemedias.com
+Pour toute question: massivemedias@gmail.com
+`;
+}
+
 export async function sendPrivatePrintEmail(data: PrivatePrintData): Promise<boolean> {
   const resend = getResend();
   if (!resend) { console.warn('[email] Resend non configure'); return false; }
@@ -1234,14 +1256,21 @@ export async function sendPrivatePrintEmail(data: PrivatePrintData): Promise<boo
   let clientOk = false;
   let adminOk = false;
 
-  // 1. Email au client
+  // 1. Email au client — anti-spam: reply_to vers massivemedias@gmail.com,
+  //    version texte + HTML, sujet naturel, headers List-Unsubscribe
   try {
     await resend.emails.send({
       from: 'Massive Medias <noreply@massivemedias.com>',
       to: data.clientEmail,
-      subject: `${data.artistName} a prepare une oeuvre pour vous - Massive Medias`,
+      reply_to: adminEmail,
+      subject: `${data.artistName} vous a envoye une oeuvre`,
       html: buildPrivatePrintHtml(data),
-    });
+      text: buildPrivatePrintText(data),
+      headers: {
+        'List-Unsubscribe': `<mailto:${adminEmail}?subject=Desabonnement>`,
+        'X-Entity-Ref-ID': `private-${Date.now()}`,
+      },
+    } as any);
     console.log('[email] Email piece privee envoye a', data.clientEmail);
     clientOk = true;
   } catch (err) {
@@ -1253,9 +1282,10 @@ export async function sendPrivatePrintEmail(data: PrivatePrintData): Promise<boo
     await resend.emails.send({
       from: 'Massive Medias <noreply@massivemedias.com>',
       to: adminEmail,
+      reply_to: adminEmail,
       subject: `[VENTE PRIVEE] ${data.artistName} -> ${data.clientEmail}`,
       html: buildPrivatePrintAdminHtml(data),
-    });
+    } as any);
     console.log('[email] Notification admin vente privee envoyee a', adminEmail);
     adminOk = true;
   } catch (err) {
