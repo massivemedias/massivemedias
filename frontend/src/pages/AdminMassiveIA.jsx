@@ -348,13 +348,12 @@ function applyShader(ctx, shader, w, h) {
   ctx.save();
 
   if (shader === 'holographic') {
-    // Gradient conique arc-en-ciel - centre deplace hors du canvas pour eviter l'artefact central
+    // Gradient conique arc-en-ciel centre - version originale qui fonctionnait bien
     ctx.globalCompositeOperation = 'source-atop';
     ctx.globalAlpha = 0.28;
     let grad;
     if (typeof ctx.createConicGradient === 'function') {
-      // Centre a w*1.3, -h*0.4 => hors du canvas, aucun point de convergence visible
-      grad = ctx.createConicGradient(Math.PI * 0.15, w * 1.3, -h * 0.4);
+      grad = ctx.createConicGradient(0, w / 2, h / 2);
       grad.addColorStop(0.00, '#ff00cc');
       grad.addColorStop(0.14, '#ff6600');
       grad.addColorStop(0.28, '#ffee00');
