@@ -28,6 +28,7 @@ const SHADERS = [
   { value: 'glossy', label: 'Glossy' },
   { value: 'broken_glass', label: 'Broken Glass' },
   { value: 'stars', label: 'Stars' },
+  { value: 'dots', label: 'Dots' },
 ];
 
 // ---------------------------------------------------------------------------
@@ -607,7 +608,7 @@ function applyShader(ctx, shader, w, h) {
     // Appliquer l'iridescence holographique SUR les etoiles seulement (source-atop sur le canvas temp)
     if (typeof tc.createConicGradient === 'function') {
       tc.globalCompositeOperation = 'source-atop';
-      tc.globalAlpha = 0.38; // subtil: les etoiles restent principalement blanches
+      tc.globalAlpha = 0.22; // tres subtil: les etoiles restent majoritairement blanches
       const holoGrad = tc.createConicGradient(Math.PI * 0.3, w * 0.8, -h * 0.2);
       holoGrad.addColorStop(0.00, '#ff00cc');
       holoGrad.addColorStop(0.14, '#ff6600');
@@ -622,6 +623,102 @@ function applyShader(ctx, shader, w, h) {
     }
 
     // Composer les etoiles sur le sticker principal (source-atop = seulement sur pixels opaques du sticker)
+    ctx.globalCompositeOperation = 'source-atop';
+    ctx.globalAlpha = 1;
+    ctx.drawImage(tmp, 0, 0);
+  }
+
+  else if (shader === 'dots') {
+    // Dots FX: pastilles rondes holographiques (confettis/sequins iridescents)
+    let seed = ((w * 54321) ^ (h * 98765)) >>> 0;
+    const rnd = () => {
+      seed ^= seed << 13; seed ^= seed >>> 17; seed ^= seed << 5;
+      return (seed >>> 0) / 4294967296;
+    };
+
+    const refSize = Math.min(w, h);
+
+    // Canvas temporaire pour isoler les dots
+    const tmp = document.createElement('canvas');
+    tmp.width = w;
+    tmp.height = h;
+    const tc = tmp.getContext('2d');
+
+    // --- Couche 1: dots moyens (masse principale)
+    const nMedium = 180;
+    for (let i = 0; i < nMedium; i++) {
+      const x = rnd() * w;
+      const y = rnd() * h;
+      const r = refSize * (0.005 + rnd() * 0.011);
+      const alpha = 0.65 + rnd() * 0.30;
+      tc.save();
+      tc.globalAlpha = alpha;
+      tc.fillStyle = 'rgba(255,255,255,1)';
+      tc.beginPath();
+      tc.arc(x, y, r, 0, Math.PI * 2);
+      tc.fill();
+      tc.restore();
+    }
+
+    // --- Couche 2: petits dots (glitter fin entre les moyens)
+    const nSmall = 140;
+    for (let i = 0; i < nSmall; i++) {
+      const x = rnd() * w;
+      const y = rnd() * h;
+      const r = refSize * (0.0018 + rnd() * 0.0040);
+      const alpha = 0.50 + rnd() * 0.45;
+      tc.save();
+      tc.globalAlpha = alpha;
+      tc.fillStyle = 'rgba(255,255,255,1)';
+      tc.beginPath();
+      tc.arc(x, y, r, 0, Math.PI * 2);
+      tc.fill();
+      tc.restore();
+    }
+
+    // --- Couche 3: gros dots accentues (peu nombreux, avec halo)
+    const nBig = 16;
+    for (let i = 0; i < nBig; i++) {
+      const x = rnd() * w;
+      const y = rnd() * h;
+      const r = refSize * (0.014 + rnd() * 0.012);
+      tc.save();
+      tc.globalAlpha = 0.82 + rnd() * 0.15;
+      tc.fillStyle = 'rgba(255,255,255,1)';
+      tc.beginPath();
+      tc.arc(x, y, r, 0, Math.PI * 2);
+      tc.fill();
+      // Halo diffus
+      tc.globalAlpha = 0.18;
+      const halo = tc.createRadialGradient(x, y, 0, x, y, r * 2.8);
+      halo.addColorStop(0, 'rgba(255,255,255,0.7)');
+      halo.addColorStop(1, 'rgba(255,255,255,0)');
+      tc.fillStyle = halo;
+      tc.beginPath();
+      tc.arc(x, y, r * 2.8, 0, Math.PI * 2);
+      tc.fill();
+      tc.restore();
+    }
+
+    // Iridescence holographique appliquee uniquement sur les dots (source-atop sur tmp)
+    // Plus saturee que les stars: les vrais dots FX sont tres colores
+    if (typeof tc.createConicGradient === 'function') {
+      tc.globalCompositeOperation = 'source-atop';
+      tc.globalAlpha = 0.55;
+      const holoGrad = tc.createConicGradient(Math.PI * 0.2, w * 0.3, h * 1.2);
+      holoGrad.addColorStop(0.00, '#ff00cc');
+      holoGrad.addColorStop(0.14, '#ff6600');
+      holoGrad.addColorStop(0.28, '#ffee00');
+      holoGrad.addColorStop(0.42, '#00ff88');
+      holoGrad.addColorStop(0.57, '#00ccff');
+      holoGrad.addColorStop(0.71, '#5500ff');
+      holoGrad.addColorStop(0.85, '#ff0088');
+      holoGrad.addColorStop(1.00, '#ff00cc');
+      tc.fillStyle = holoGrad;
+      tc.fillRect(0, 0, w, h);
+    }
+
+    // Composer sur le sticker principal
     ctx.globalCompositeOperation = 'source-atop';
     ctx.globalAlpha = 1;
     ctx.drawImage(tmp, 0, 0);
@@ -667,7 +764,7 @@ async function generateStickerBlob(file, { strokeColor, strokeWidth, shader }) {
 function StickersTab() {
   const [file, setFile] = useState(null);
   const [strokeColor, setStrokeColor] = useState('#FFFFFF');
-  const [strokeWidth, setStrokeWidth] = useState(3);
+  const [strokeWidth, setStrokeWidth] = useState(0);
   const [shader, setShader] = useState('none');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null); // Blob URL
