@@ -23,7 +23,7 @@ const SHOP_SECTIONS = [
     descFr: 'Stickers de tes designs. Prix standard, pas de rabais.',
     descEn: 'Stickers of your designs. Standard pricing, no discount.',
     discounted: false,
-    link: '/boutique/stickers',
+    link: '/services/stickers',
   },
   {
     key: 'merch',

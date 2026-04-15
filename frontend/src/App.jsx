@@ -30,7 +30,6 @@ const ServiceDetail = lazyWithRetry(() => import('./pages/ServiceDetail'));
 const Contact = lazyWithRetry(() => import('./pages/Contact'));
 const APropos = lazyWithRetry(() => import('./pages/APropos'));
 const Boutique = lazyWithRetry(() => import('./pages/Boutique'));
-const BoutiqueStickers = lazyWithRetry(() => import('./pages/BoutiqueStickers'));
 const BoutiqueFineArt = lazyWithRetry(() => import('./pages/BoutiqueFineArt'));
 const BoutiqueSublimation = lazyWithRetry(() => import('./pages/BoutiqueSublimation'));
 const BoutiqueDesign = lazyWithRetry(() => import('./pages/BoutiqueDesign'));
@@ -167,7 +166,7 @@ function App() {
 
             {/* Boutique */}
             <Route path="/boutique" element={<Boutique />} />
-            <Route path="/boutique/stickers" element={<BoutiqueStickers />} />
+            <Route path="/boutique/stickers" element={<Navigate to="/services/stickers" replace />} />
             <Route path="/boutique/fine-art" element={<BoutiqueFineArt />} />
             <Route path="/boutique/sublimation" element={<BoutiqueSublimation />} />
             <Route path="/boutique/flyers" element={<Navigate to="/boutique/fine-art" replace />} />

@@ -11,54 +11,54 @@ function BoutiqueFlyers() {
   const cmsImages = cmsProduct?.images?.length ? cmsProduct.images.map(img => mediaUrl(img)) : null;
   const trustItems = [
     { icon: FileText, fr: 'Papier premium 300g+', en: 'Premium 300g+ paper', es: 'Papel premium 300g+' },
-    { icon: Shield, fr: 'Qualit\u00e9 professionnelle', en: 'Professional quality', es: 'Calidad profesional' },
-    { icon: Sparkles, fr: 'Production locale', en: 'Local production', es: 'Producción local' },
+    { icon: Shield, fr: 'Qualite professionnelle', en: 'Professional quality', es: 'Calidad profesional' },
+    { icon: Sparkles, fr: 'Production locale', en: 'Local production', es: 'Produccion local' },
     { icon: Truck, fr: 'Pick-up gratuit Mile-End', en: 'Free pick-up Mile-End', es: 'Recogida gratis Mile-End' },
   ];
 
   const features = [
-    { icon: FileText, fr: 'Papier premium', en: 'Premium paper', es: 'Papel premium', descFr: 'Papier 300g+ en finition matte ou lustrée. Qualit\u00e9 sup\u00e9rieure \u00e0 l\'impression en ligne standard.', descEn: 'Premium 300g+ paper in matte or glossy finish. Quality superior to standard online printing.', descEs: 'Papel 300g+ en acabado mate o brillante. Calidad superior a la impresi\u00f3n en l\u00ednea est\u00e1ndar.' },
-    { icon: Shield, fr: 'Impression pro', en: 'Pro printing', es: 'Impresi\u00f3n profesional', descFr: 'Imprimante professionnelle 12 couleurs pigment\u00e9es. Couleurs vibrantes et pr\u00e9cises m\u00eame pour les flyers.', descEn: 'Professional 12-color pigmented printer. Vibrant and precise colors even for flyers.', descEs: 'Impresora profesional de 12 colores pigmentados. Colores vibrantes y precisos incluso para flyers.' },
-    { icon: Sparkles, fr: 'Service rapide', en: 'Fast service', es: 'Servicio r\u00e1pido', descFr: 'Production locale Mile-End. Service express disponible sur demande.', descEn: 'Local production Mile-End. Express service available on request.', descEs: 'Producción local Mile-End. Servicio express disponible bajo pedido.' },
+    { icon: FileText, fr: 'Papier premium', en: 'Premium paper', es: 'Papel premium', descFr: 'Papier 300g+ en finition matte ou lustree. Qualite superieure a l\'impression en ligne standard.', descEn: 'Premium 300g+ paper in matte or glossy finish. Quality superior to standard online printing.', descEs: 'Papel 300g+ en acabado mate o brillante. Calidad superior a la impresion en linea estandar.' },
+    { icon: Shield, fr: 'Impression pro', en: 'Pro printing', es: 'Impresion profesional', descFr: 'Imprimante professionnelle 12 couleurs pigmentees. Couleurs vibrantes et precises meme pour les flyers.', descEn: 'Professional 12-color pigmented printer. Vibrant and precise colors even for flyers.', descEs: 'Impresora profesional de 12 colores pigmentados. Colores vibrantes y precisos incluso para flyers.' },
+    { icon: Sparkles, fr: 'Service rapide', en: 'Fast service', es: 'Servicio rapido', descFr: 'Production locale Mile-End. Service express disponible sur demande.', descEn: 'Local production Mile-End. Express service available on request.', descEs: 'Produccion local Mile-End. Servicio express disponible bajo pedido.' },
   ];
 
   const useCases = [
-    { icon: Music, fr: 'Événements', en: 'Events', es: 'Eventos', descFr: 'Flyers de soirée, concert', descEn: 'Party flyers, concerts', descEs: 'Flyers de fiesta, conciertos' },
-    { icon: Briefcase, fr: 'Cartes d\'affaires', en: 'Business cards', es: 'Tarjetas de presentación', descFr: 'Cartes pros sur papier épais', descEn: 'Pro cards on thick paper', descEs: 'Tarjetas profesionales en papel grueso' },
+    { icon: Music, fr: 'Evenements', en: 'Events', es: 'Eventos', descFr: 'Flyers de soiree, concert', descEn: 'Party flyers, concerts', descEs: 'Flyers de fiesta, conciertos' },
+    { icon: Briefcase, fr: 'Cartes d\'affaires', en: 'Business cards', es: 'Tarjetas de presentacion', descFr: 'Cartes pros sur papier epais', descEn: 'Pro cards on thick paper', descEs: 'Tarjetas profesionales en papel grueso' },
     { icon: Megaphone, fr: 'Marketing', en: 'Marketing', es: 'Marketing', descFr: 'Prospectus et promos', descEn: 'Leaflets and promos', descEs: 'Folletos y promos' },
-    { icon: Users, fr: 'Networking', en: 'Networking', es: 'Networking', descFr: 'Distribution en main propre', descEn: 'Hand-to-hand distribution', descEs: 'Distribuci\u00f3n en mano' },
+    { icon: Users, fr: 'Networking', en: 'Networking', es: 'Networking', descFr: 'Distribution en main propre', descEn: 'Hand-to-hand distribution', descEs: 'Distribucion en mano' },
   ];
 
   const ctaLinks = [
-    { to: '/boutique/design', fr: 'Design Graphique', en: 'Graphic Design', es: 'Dise\u00f1o Gr\u00e1fico' },
-    { to: '/boutique/stickers', fr: 'Stickers Custom', en: 'Custom Stickers', es: 'Stickers Personalizados' },
-    { to: '/boutique/fine-art', fr: 'Impression Fine Art', en: 'Fine Art Print', es: 'Impresi\u00f3n Fine Art' },
+    { to: '/boutique/design', fr: 'Design Graphique', en: 'Graphic Design', es: 'Diseno Grafico' },
+    { to: '/services/stickers', fr: 'Stickers Custom', en: 'Custom Stickers', es: 'Stickers Personalizados' },
+    { to: '/boutique/fine-art', fr: 'Impression Fine Art', en: 'Fine Art Print', es: 'Impresion Fine Art' },
   ];
 
   return (
     <BoutiqueProductLayout
       serviceSlug="flyers-cartes"
       startingPrice={40}
-      pageTitle={{ fr: 'Impression Flyers & Cartes Montréal - Rapide et Pro | Massive', en: 'Flyers & Cards Printing Montreal - Fast & Pro | Massive', es: 'Impresion Flyers y Tarjetas Montreal - Rapido y Pro | Massive' }}
+      pageTitle={{ fr: 'Impression Flyers & Cartes Montreal - Rapide et Pro | Massive', en: 'Flyers & Cards Printing Montreal - Fast & Pro | Massive', es: 'Impresion Flyers y Tarjetas Montreal - Rapido y Pro | Massive' }}
       metaDescription={{
-        fr: 'Flyers, cartes postales, cartes d\'affaires. Impression rapide et locale \u00e0 Montr\u00e9al. Qualit\u00e9 pro.',
+        fr: 'Flyers, cartes postales, cartes d\'affaires. Impression rapide et locale a Montreal. Qualite pro.',
         en: 'Flyers, postcards, business cards. Fast local printing in Montreal. Pro quality.',
-        es: 'Flyers, postales, tarjetas de presentaci\u00f3n. Impresi\u00f3n r\u00e1pida y local en Montreal. Calidad profesional.',
+        es: 'Flyers, postales, tarjetas de presentacion. Impresion rapida y local en Montreal. Calidad profesional.',
       }}
       productTitle={{ fr: 'Flyers & Cartes', en: 'Flyers & Cards', es: 'Flyers y Tarjetas' }}
       productSubtitle={{
-        fr: 'Impression rapide pour \u00e9v\u00e9nements et promotions.',
+        fr: 'Impression rapide pour evenements et promotions.',
         en: 'Fast printing for events and promotions.',
-        es: 'Impresi\u00f3n r\u00e1pida para eventos y promociones.',
+        es: 'Impresion rapida para eventos y promociones.',
       }}
       badge={{ fr: 'Express', en: 'Express', es: 'Express', icon: Sparkles }}
       trustItems={trustItems}
       features={features}
-      featuresTitle={{ fr: 'Pourquoi nos flyers?', en: 'Why our flyers?', es: '\u00bfPor qu\u00e9 nuestros flyers?' }}
+      featuresTitle={{ fr: 'Pourquoi nos flyers?', en: 'Why our flyers?', es: 'Por que nuestros flyers?' }}
       featuresSubtitle={{
-        fr: 'Impression locale rapide, qualit\u00e9 professionnelle.',
+        fr: 'Impression locale rapide, qualite professionnelle.',
         en: 'Fast local printing, professional quality.',
-        es: 'Impresi\u00f3n local r\u00e1pida, calidad profesional.',
+        es: 'Impresion local rapida, calidad profesional.',
       }}
       useCases={useCases}
       images={cmsImages || flyerImages}

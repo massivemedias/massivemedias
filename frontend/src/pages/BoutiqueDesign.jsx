@@ -23,7 +23,7 @@ function BoutiqueDesign() {
   ];
 
   const ctaLinks = [
-    { to: '/boutique/stickers', fr: 'Stickers Custom', en: 'Custom Stickers', es: 'Stickers Personalizados' },
+    { to: '/services/stickers', fr: 'Stickers Custom', en: 'Custom Stickers', es: 'Stickers Personalizados' },
     { to: '/boutique/fine-art', fr: 'Impression Fine Art', en: 'Fine Art Print', es: 'Impresi\u00f3n Fine Art' },
     { to: '/boutique/merch', fr: 'Merch & Textile', en: 'Merch & Textile', es: 'Merch y Textil' },
   ];

@@ -627,7 +627,7 @@ function Artistes() {
                     <Link to="/boutique/fine-art" className="text-sm px-4 py-2 rounded-full bg-bg-elevated text-grey-light hover:text-accent hover:border-accent/30 border border-white/5 transition-colors">
                       {tx({ fr: 'Fine Art', en: 'Fine Art', es: 'Fine Art' })}
                     </Link>
-                    <Link to="/boutique/stickers" className="text-sm px-4 py-2 rounded-full bg-bg-elevated text-grey-light hover:text-accent hover:border-accent/30 border border-white/5 transition-colors">
+                    <Link to="/services/stickers" className="text-sm px-4 py-2 rounded-full bg-bg-elevated text-grey-light hover:text-accent hover:border-accent/30 border border-white/5 transition-colors">
                       {tx({ fr: 'Stickers', en: 'Stickers', es: 'Stickers' })}
                     </Link>
                     <Link to="/boutique/merch/tshirt" className="text-sm px-4 py-2 rounded-full bg-bg-elevated text-grey-light hover:text-accent hover:border-accent/30 border border-white/5 transition-colors">

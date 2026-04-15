@@ -40,7 +40,7 @@ function BoutiqueFineArt() {
   ];
 
   const ctaLinks = [
-    { to: '/boutique/stickers', fr: 'Stickers Custom', en: 'Custom Stickers', es: 'Stickers Personalizados' },
+    { to: '/services/stickers', fr: 'Stickers Custom', en: 'Custom Stickers', es: 'Stickers Personalizados' },
     { to: '/boutique/design', fr: 'Design', en: 'Design', es: 'Dise\u00f1o' },
     { to: '/boutique/sublimation', fr: 'Sublimation & Merch', en: 'Sublimation & Merch', es: 'Sublimaci\u00f3n y Merch' },
   ];

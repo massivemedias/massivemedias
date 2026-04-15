@@ -1,18 +1,21 @@
-import { useState } from 'react';
-import { ShoppingCart, Check, Sparkles } from 'lucide-react';
+import { useState, useMemo, useRef } from 'react';
+import { ShoppingCart, Check, Sparkles, Upload, X, Image as ImageIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../../contexts/CartContext';
 import { useLang } from '../../i18n/LanguageContext';
 import { useProduct } from '../../hooks/useProducts';
 import FileUpload from '../FileUpload';
+import StickerPreviewCanvas from '../StickerPreviewCanvas';
 import {
   stickerFinishes as defaultFinishes, stickerShapes as defaultShapes, stickerSizes as defaultSizes,
   stickerPriceTiers as defaultTiers, getStickerPrice as defaultGetPrice, stickerImages,
 } from '../../data/products';
 
+// Image par defaut quand le client n'a rien upload (logo Massive Medias)
+const DEFAULT_STICKER_URL = '/images/graphism/massive_sticker.webp';
+
 function ConfiguratorStickers({ onFinishChange }) {
-  const { lang, tx } = useLang();
+  const { tx } = useLang();
   const { addToCart } = useCart();
   const cmsProduct = useProduct('stickers');
   const pd = cmsProduct?.pricingData;
@@ -28,6 +31,11 @@ function ConfiguratorStickers({ onFinishChange }) {
   const [added, setAdded] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [notes, setNotes] = useState('');
+  const [strokeColor, setStrokeColor] = useState('#ffffff');
+  const [strokeWidth, setStrokeWidth] = useState(0);
+  const [localPreviewUrl, setLocalPreviewUrl] = useState(null); // preview local avant upload complet
+  const [thumbUrl, setThumbUrl] = useState(null); // thumb PNG genere par le canvas
+  const localFileRef = useRef(null);
 
   const getStickerPrice = pd?.tiers
     ? (f, s, qty) => {
@@ -46,19 +54,44 @@ function ConfiguratorStickers({ onFinishChange }) {
   const shapeLabel = stickerShapes.find(s => s.id === shape);
   const sizeLabel = stickerSizes.find(s => s.id === size)?.label;
 
-  // Preview image per finish type - cache bust avec build ID
-  const v = import.meta.env.VITE_BUILD_TIME ? `?v=${import.meta.env.VITE_BUILD_TIME}` : '';
-  const finishImages = {
-    clear: `/images/stickers/finish-matte.webp${v}`,
-    glossy: `/images/stickers/finish-glossy.webp${v}`,
-    holographic: `/images/stickers/finish-holographic.webp${v}`,
-    'broken-glass': `/images/stickers/finish-broken-glass.webp${v}`,
-    stars: `/images/stickers/finish-stars.webp${v}`,
-    dots: `/images/stickers/finish-dots-v2.webp${v}`,
-  };
-  const previewImage = finishImages[finish] || finishImages.clear;
+  // Image source du preview:
+  // 1. Si le client a upload un fichier (localPreviewUrl), on l'utilise
+  // 2. Sinon, sticker Massive Medias par defaut
+  const previewSource = useMemo(() => {
+    return localPreviewUrl || DEFAULT_STICKER_URL;
+  }, [localPreviewUrl]);
 
   const canAddToCart = uploadedFiles.length > 0 || notes.trim().length > 0;
+
+  // Capture le fichier local pour preview instantane (avant meme l'upload serveur)
+  const handleLocalFileSelect = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) return; // seules les images pour le preview
+    if (localPreviewUrl) URL.revokeObjectURL(localPreviewUrl);
+    const url = URL.createObjectURL(file);
+    setLocalPreviewUrl(url);
+  };
+
+  // Quand l'upload serveur des fichiers finit, on synchronise le preview local
+  // avec la premiere image upload (au cas ou le client draggait dans FileUpload directement)
+  const handleFilesChange = (files) => {
+    setUploadedFiles(files);
+    // Si aucun preview local + on a un fichier image upload, on l'utilise comme preview
+    if (!localPreviewUrl && files.length > 0) {
+      const firstImage = files.find(f => (f.type || '').startsWith('image/') || /\.(png|jpe?g|webp|svg)$/i.test(f.name || ''));
+      if (firstImage?.url) {
+        setLocalPreviewUrl(firstImage.url);
+      }
+    }
+  };
+
+  const handleClearUpload = () => {
+    if (localPreviewUrl) URL.revokeObjectURL(localPreviewUrl);
+    setLocalPreviewUrl(null);
+    setUploadedFiles([]);
+    if (localFileRef.current) localFileRef.current.value = '';
+  };
 
   const handleAddToCart = () => {
     if (!canAddToCart) return;
@@ -71,9 +104,18 @@ function ConfiguratorStickers({ onFinishChange }) {
       quantity: priceInfo.qty,
       unitPrice: priceInfo.unitPrice,
       totalPrice: priceInfo.price,
-      image: stickerImages[0],
+      // image = thumb PNG genere avec FX. Fallback sur une image statique si le canvas n'a pas encore produit.
+      image: thumbUrl || stickerImages[0],
       uploadedFiles,
       notes,
+      fxPreview: {
+        finish,
+        shape,
+        size,
+        strokeColor,
+        strokeWidth,
+        hasCustomDesign: !!localPreviewUrl,
+      },
     });
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
@@ -86,40 +128,83 @@ function ConfiguratorStickers({ onFinishChange }) {
 
   return (
     <>
-      {/* Desktop: two-column layout / Mobile: compact stacked */}
+      {/* Preview canvas + selectors */}
       <div className="flex flex-col md:flex-row gap-4 md:gap-6 mb-4 md:mb-6">
-        {/* Preview: horizontal strip on mobile, sidebar on desktop */}
-        <div className="flex md:flex-col items-center gap-3 md:gap-0 md:w-56 rounded-xl card-bg-bordered p-3 md:p-4 overflow-hidden md:self-start">
-          <AnimatePresence mode="wait">
-            <motion.img
-              key={finish}
-              src={previewImage}
-              alt={tx({ fr: finishLabel?.labelFr, en: finishLabel?.labelEn, es: finishLabel?.labelEn })}
-              className="w-20 h-20 md:w-full md:h-auto object-contain rounded-lg flex-shrink-0"
-              style={
-                finish === 'glossy' ? { filter: 'brightness(0.92) saturate(0.95)' } :
-                finish === 'stars' ? { filter: 'brightness(0.9) saturate(0.85)' } :
-                finish === 'dots' ? { filter: 'brightness(0.9) saturate(0.85)' } :
-                undefined
-              }
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
+        {/* Preview (canvas avec FX live) */}
+        <div className="md:w-72 flex-shrink-0 md:self-start">
+          <div className="rounded-xl card-bg-bordered p-3 md:p-4">
+            <StickerPreviewCanvas
+              imageUrl={previewSource}
+              shape={shape}
+              finish={finish}
+              strokeColor={strokeColor}
+              strokeWidth={strokeWidth}
+              onThumbChange={setThumbUrl}
+              className="w-full"
             />
-          </AnimatePresence>
-          <div className="text-left md:text-center md:mt-3">
-            <span className="text-heading text-sm font-semibold">
-              {tx({ fr: finishLabel?.labelFr, en: finishLabel?.labelEn, es: finishLabel?.labelEn })}
-            </span>
-            <span className="block text-grey-muted text-xs mt-0.5">
-              {sizeLabel} · {tx({ fr: shapeLabel?.labelFr, en: shapeLabel?.labelEn, es: shapeLabel?.labelEn })}
-            </span>
-            {(finish === 'holographic' || finish === 'broken-glass' || finish === 'stars' || finish === 'dots') && (
-              <span className="block text-grey-muted/60 text-[10px] mt-1.5 italic">
-                {tx({ fr: '* Image exageree pour illustrer l\'effet', en: '* Image exaggerated to illustrate the effect', es: '* Imagen exagerada para ilustrar el efecto' })}
+            <div className="mt-3 text-center">
+              <span className="text-heading text-sm font-semibold">
+                {tx({ fr: finishLabel?.labelFr, en: finishLabel?.labelEn, es: finishLabel?.labelEn })}
               </span>
-            )}
+              <span className="block text-grey-muted text-xs mt-0.5">
+                {sizeLabel} · {tx({ fr: shapeLabel?.labelFr, en: shapeLabel?.labelEn, es: shapeLabel?.labelEn })}
+              </span>
+              {!localPreviewUrl && (
+                <span className="block text-grey-muted/70 text-[10px] mt-1.5 italic">
+                  {tx({ fr: 'Aperçu avec logo Massive - upload ton design pour voir ton sticker', en: 'Preview with Massive logo - upload your design', es: 'Vista previa con logo Massive - sube tu diseño' })}
+                </span>
+              )}
+            </div>
+
+            {/* Quick upload pour preview instantane (separate du FileUpload en bas qui lui push vers Drive) */}
+            <div className="mt-3 flex items-center gap-2">
+              <label className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg bg-accent/10 hover:bg-accent/20 text-accent text-xs font-semibold cursor-pointer transition-colors border border-accent/30">
+                <Upload size={14} />
+                <span>{tx({ fr: 'Tester ton design', en: 'Try your design', es: 'Probar tu diseño' })}</span>
+                <input
+                  ref={localFileRef}
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                  className="hidden"
+                  onChange={handleLocalFileSelect}
+                />
+              </label>
+              {localPreviewUrl && (
+                <button
+                  type="button"
+                  onClick={handleClearUpload}
+                  className="p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 transition-colors"
+                  title={tx({ fr: 'Retirer', en: 'Remove', es: 'Quitar' })}
+                >
+                  <X size={14} />
+                </button>
+              )}
+            </div>
+
+            {/* Controles stroke (contour) - visible surtout sur diecut mais dispo partout */}
+            <div className="mt-3 p-2.5 rounded-lg bg-black/10 space-y-2">
+              <label className="block text-[10px] uppercase tracking-wider text-grey-muted font-semibold">
+                {tx({ fr: 'Contour (optionnel)', en: 'Outline (optional)', es: 'Contorno (opcional)' })}
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="color"
+                  value={strokeColor}
+                  onChange={(e) => setStrokeColor(e.target.value)}
+                  className="w-7 h-7 rounded cursor-pointer bg-transparent border border-white/10"
+                />
+                <input
+                  type="range"
+                  min="0"
+                  max="40"
+                  step="1"
+                  value={strokeWidth}
+                  onChange={(e) => setStrokeWidth(parseInt(e.target.value))}
+                  className="flex-1 accent-accent"
+                />
+                <span className="text-[10px] font-mono text-grey-muted w-6 text-right">{strokeWidth}</span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -135,7 +220,6 @@ function ConfiguratorStickers({ onFinishChange }) {
                 <button
                   key={f.id}
                   onClick={() => { setFinish(f.id); onFinishChange?.(f.id); }}
-                  title={['holographic', 'broken-glass', 'stars', 'dots'].includes(f.id) ? tx({ fr: 'Effet Fx - image exageree pour illustrer', en: 'Fx effect - image exaggerated to illustrate', es: 'Efecto Fx - imagen exagerada para ilustrar' }) : ''}
                   className={`flex flex-col items-center justify-center py-2 px-1.5 md:py-2 md:px-2.5 rounded-lg text-xs font-medium transition-all border-2 ${finish === f.id
                     ? 'border-accent option-selected'
                     : 'border-transparent hover:border-grey-muted/30 option-default'
@@ -157,7 +241,7 @@ function ConfiguratorStickers({ onFinishChange }) {
             </div>
           </div>
 
-          {/* Forme + Taille + Quantite: 3 cols on mobile, original on desktop */}
+          {/* Forme + Taille + Quantite */}
           <div className="grid grid-cols-3 gap-3 md:grid-cols-1 md:gap-5">
             {/* Shape selector */}
             <div>
@@ -237,12 +321,12 @@ function ConfiguratorStickers({ onFinishChange }) {
         </div>
       </div>
 
-      {/* File upload + Notes */}
+      {/* Upload fichier complet (workflow normal Google Drive) + Notes */}
       <div className="grid grid-cols-1 md:grid-cols-[2fr_3fr] gap-3 md:gap-4 mb-4 md:mb-5">
         <FileUpload
           files={uploadedFiles}
-          onFilesChange={setUploadedFiles}
-          label={tx({ fr: 'Votre design', en: 'Your design', es: 'Tu diseño' })}
+          onFilesChange={handleFilesChange}
+          label={tx({ fr: 'Votre design (haute def)', en: 'Your design (high res)', es: 'Tu diseño (alta res)' })}
           compact
         />
         <div>

@@ -1541,7 +1541,7 @@ function Account() {
                           </button>
                         ) : (
                           <Link
-                            to="/boutique/stickers"
+                            to="/services/stickers"
                             className="flex items-center gap-3 p-4 rounded-xl bg-purple-500/5 hover:bg-purple-500/10 transition-colors group"
                           >
                             <Heart size={20} className="text-purple-400" />

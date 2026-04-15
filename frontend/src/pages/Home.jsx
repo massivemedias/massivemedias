@@ -58,10 +58,10 @@ const fallbackFeaturedProjectImages = [
 ];
 const fallbackFeaturedProjectLinks = [
   '/boutique/fine-art',
-  '/boutique/stickers',
+  '/services/stickers',
   '/boutique/sublimation',
   '/services/design',
-  '/boutique/stickers',
+  '/services/stickers',
   '/boutique/sublimation',
 ];
 
