@@ -32,8 +32,8 @@ const ARTISTS = {
   'mok': { name: 'Mok', taglineFr: 'Photographie urbaine & lumiere', taglineEn: 'Urban Photography & Light' },
   'quentin-delobel': { name: 'Quentin Delobel', taglineFr: 'Photographie - lumiere, contrastes & intimite', taglineEn: 'Photography - Light, Contrasts & Intimacy' },
   'no-pixl': { name: 'No Pixl', taglineFr: 'Photographie evenementielle & paysages', taglineEn: 'Event Photography & Landscapes' },
-  'psyqu33n': { name: 'Psyqu33n', taglineFr: 'Ombre & lumiere - art visionnaire', taglineEn: 'Shadow & Light - Visionary Art' },
   'cornelia-rose': { name: 'Cornelia Rose', taglineFr: 'Art visionnaire & body painting', taglineEn: 'Visionary Art & Body Painting' },
+  'eric-sanchez': { name: 'Eric Sanchez', taglineFr: 'Photographie musicale & portrait', taglineEn: 'Music Photography & Portrait' },
 };
 
 // --- SEO Meta par route ---
@@ -119,6 +119,10 @@ const ROUTE_META = {
   '/boutique/merch/crewneck': {
     title: 'Crewnecks Personnalises Montreal | Massive Medias - Sublimation',
     description: 'Crewnecks personnalises par sublimation a Montreal. Impression all-over ou placement. Production locale, livraison rapide.',
+  },
+  '/boutique/flyers': {
+    title: 'Impression Flyers & Cartes d\'affaires Montreal | Massive Medias - Rapide & Pro',
+    description: 'Flyers et cartes d\'affaires a Montreal. Standard 14pt, lamine 16pt, Soft Touch 24pt premium. Recto-verso inclus. A partir de 55$ les 100 cartes. Production locale Mile-End.',
   },
   '/temoignage': {
     title: 'Temoignages Clients | Massive Medias - Avis & Reviews',
