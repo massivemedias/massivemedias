@@ -5,9 +5,7 @@ import {
   Upload, Download, Loader2, X, AlertCircle, ImageDown, QrCode,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
-import { chatStream, processSticker, generateMockup, checkHealth } from '../services/iaService';
-
-const AI_BASE_URL = 'https://ai.massivemedias.com';
+import { chatStream, generateMockup, checkHealth } from '../services/iaService';
 
 const TABS = [
   { id: 'chat', icon: MessageSquare, label: 'Chat' },
@@ -29,6 +27,7 @@ const SHADERS = [
   { value: 'holographic', label: 'Holographic' },
   { value: 'glossy', label: 'Glossy' },
   { value: 'broken_glass', label: 'Broken Glass' },
+  { value: 'stars', label: 'Stars' },
 ];
 
 // ---------------------------------------------------------------------------
@@ -287,30 +286,262 @@ function ChatTab() {
 }
 
 // ---------------------------------------------------------------------------
-// Stickers Tab
+// Stickers Tab - Generation 100% client-side via Canvas 2D
+// Applique stroke (contour) + shader FX (holographic/glossy/broken_glass/stars)
 // ---------------------------------------------------------------------------
+
+// Charge une File/Blob dans une HTMLImageElement
+function loadImageFromFile(file) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new window.Image();
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      resolve(img);
+    };
+    img.onerror = (e) => {
+      URL.revokeObjectURL(url);
+      reject(e);
+    };
+    img.src = url;
+  });
+}
+
+// Dessine le sticker avec un contour (stroke) autour des pixels non-transparents
+// Technique: on dessine la silhouette coloree decalee dans 8 directions, puis l'image originale par dessus
+function drawStickerWithStroke(ctx, img, strokeColor, strokeWidth) {
+  const w = ctx.canvas.width;
+  const h = ctx.canvas.height;
+  const drawW = w - strokeWidth * 2;
+  const drawH = h - strokeWidth * 2;
+
+  if (strokeWidth > 0) {
+    // Canvas temporaire pour dessiner l'image en silhouette coloree
+    const tmp = document.createElement('canvas');
+    tmp.width = drawW;
+    tmp.height = drawH;
+    const tctx = tmp.getContext('2d');
+    tctx.drawImage(img, 0, 0, drawW, drawH);
+    // Teinte la silhouette en strokeColor
+    tctx.globalCompositeOperation = 'source-in';
+    tctx.fillStyle = strokeColor;
+    tctx.fillRect(0, 0, drawW, drawH);
+
+    // Dilatation: dessiner le silhouette decalee dans 16 directions pour un contour rond
+    const steps = 16;
+    for (let i = 0; i < steps; i++) {
+      const angle = (i / steps) * Math.PI * 2;
+      const dx = Math.cos(angle) * strokeWidth;
+      const dy = Math.sin(angle) * strokeWidth;
+      ctx.drawImage(tmp, strokeWidth + dx, strokeWidth + dy, drawW, drawH);
+    }
+  }
+
+  // Dessiner l'image originale par dessus
+  ctx.drawImage(img, strokeWidth, strokeWidth, drawW, drawH);
+}
+
+// Applique un shader FX sur le canvas (les pixels opaques du sticker)
+function applyShader(ctx, shader, w, h) {
+  if (shader === 'none') return;
+
+  ctx.save();
+
+  if (shader === 'holographic') {
+    // Gradient conique arc-en-ciel (fallback linear si createConicGradient non supporte)
+    ctx.globalCompositeOperation = 'source-atop';
+    ctx.globalAlpha = 0.55;
+    let grad;
+    if (typeof ctx.createConicGradient === 'function') {
+      grad = ctx.createConicGradient(0, w / 2, h / 2);
+      grad.addColorStop(0.00, '#ff00cc');
+      grad.addColorStop(0.14, '#ff6600');
+      grad.addColorStop(0.28, '#ffee00');
+      grad.addColorStop(0.42, '#00ff88');
+      grad.addColorStop(0.57, '#00ccff');
+      grad.addColorStop(0.71, '#5500ff');
+      grad.addColorStop(0.85, '#ff0088');
+      grad.addColorStop(1.00, '#ff00cc');
+    } else {
+      grad = ctx.createLinearGradient(0, 0, w, h);
+      grad.addColorStop(0.0, '#ff00cc');
+      grad.addColorStop(0.2, '#ff6600');
+      grad.addColorStop(0.4, '#ffee00');
+      grad.addColorStop(0.6, '#00ff88');
+      grad.addColorStop(0.8, '#00ccff');
+      grad.addColorStop(1.0, '#5500ff');
+    }
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, w, h);
+
+    // Highlight diagonal blanc subtil
+    ctx.globalAlpha = 0.25;
+    const high = ctx.createLinearGradient(0, 0, w, h);
+    high.addColorStop(0.0, 'rgba(255,255,255,0)');
+    high.addColorStop(0.4, 'rgba(255,255,255,0.9)');
+    high.addColorStop(0.5, 'rgba(255,255,255,0)');
+    high.addColorStop(0.6, 'rgba(255,255,255,0.7)');
+    high.addColorStop(1.0, 'rgba(255,255,255,0)');
+    ctx.fillStyle = high;
+    ctx.fillRect(0, 0, w, h);
+  }
+
+  else if (shader === 'glossy') {
+    // Reflet brillant en haut
+    ctx.globalCompositeOperation = 'source-atop';
+    const grad = ctx.createLinearGradient(0, 0, 0, h);
+    grad.addColorStop(0.0, 'rgba(255,255,255,0.75)');
+    grad.addColorStop(0.35, 'rgba(255,255,255,0.15)');
+    grad.addColorStop(0.5, 'rgba(255,255,255,0)');
+    grad.addColorStop(1.0, 'rgba(0,0,0,0.12)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, w, h);
+  }
+
+  else if (shader === 'broken_glass') {
+    // Cracks aleatoires par dessus le sticker
+    ctx.globalCompositeOperation = 'source-atop';
+    ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+    ctx.lineCap = 'round';
+
+    // Creer quelques points de cracks
+    const nCracks = 4;
+    for (let c = 0; c < nCracks; c++) {
+      const cx = Math.random() * w;
+      const cy = Math.random() * h;
+      const branches = 5 + Math.floor(Math.random() * 4);
+      for (let b = 0; b < branches; b++) {
+        ctx.beginPath();
+        ctx.lineWidth = 0.5 + Math.random() * 1.5;
+        ctx.globalAlpha = 0.4 + Math.random() * 0.3;
+        let x = cx;
+        let y = cy;
+        const angle = Math.random() * Math.PI * 2;
+        const segments = 3 + Math.floor(Math.random() * 4);
+        ctx.moveTo(x, y);
+        for (let s = 0; s < segments; s++) {
+          const len = 20 + Math.random() * 60;
+          const jitter = (Math.random() - 0.5) * 0.8;
+          const a = angle + jitter * (s + 1);
+          x += Math.cos(a) * len;
+          y += Math.sin(a) * len;
+          ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+      }
+    }
+    // Ombre noire tenue pour effet verre
+    ctx.globalAlpha = 0.15;
+    ctx.fillStyle = 'rgba(30,30,40,1)';
+    ctx.fillRect(0, 0, w, h);
+  }
+
+  else if (shader === 'stars') {
+    // Etoiles scintillantes sur le sticker
+    ctx.globalCompositeOperation = 'source-atop';
+    const nStars = 28;
+    for (let i = 0; i < nStars; i++) {
+      const x = Math.random() * w;
+      const y = Math.random() * h;
+      const r = 3 + Math.random() * 8;
+      const grad = ctx.createRadialGradient(x, y, 0, x, y, r);
+      grad.addColorStop(0, 'rgba(255,255,255,1)');
+      grad.addColorStop(0.4, 'rgba(255,255,230,0.7)');
+      grad.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Petit trait cross pour donner un look d'etoile
+      ctx.globalAlpha = 0.9;
+      ctx.strokeStyle = 'rgba(255,255,255,0.9)';
+      ctx.lineWidth = 0.8;
+      ctx.beginPath();
+      ctx.moveTo(x - r * 1.3, y);
+      ctx.lineTo(x + r * 1.3, y);
+      ctx.moveTo(x, y - r * 1.3);
+      ctx.lineTo(x, y + r * 1.3);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  ctx.restore();
+}
+
+// Genere le sticker final dans un canvas off-screen et retourne un Blob URL
+async function generateStickerBlob(file, { strokeColor, strokeWidth, shader }) {
+  const img = await loadImageFromFile(file);
+  // Limite la taille max a 1200px pour performance / poids
+  const MAX = 1200;
+  let w = img.naturalWidth;
+  let h = img.naturalHeight;
+  const scale = Math.min(1, MAX / Math.max(w, h));
+  w = Math.round(w * scale);
+  h = Math.round(h * scale);
+
+  // Padding autour pour accommoder le stroke
+  const pad = strokeWidth || 0;
+  const canvas = document.createElement('canvas');
+  canvas.width = w + pad * 2;
+  canvas.height = h + pad * 2;
+  const ctx = canvas.getContext('2d');
+
+  // Dessiner sticker + stroke
+  // drawStickerWithStroke utilise (canvas.width - strokeWidth*2) pour calculer l'image
+  // donc on lui passe le canvas global avec le padding deja inclus
+  drawStickerWithStroke(ctx, img, strokeColor, pad);
+
+  // Appliquer shader
+  applyShader(ctx, shader, canvas.width, canvas.height);
+
+  return new Promise((resolve, reject) => {
+    canvas.toBlob((blob) => {
+      if (!blob) return reject(new Error('Impossible de generer le PNG'));
+      resolve(URL.createObjectURL(blob));
+    }, 'image/png');
+  });
+}
+
 function StickersTab() {
   const [file, setFile] = useState(null);
   const [strokeColor, setStrokeColor] = useState('#FFFFFF');
   const [strokeWidth, setStrokeWidth] = useState(3);
   const [shader, setShader] = useState('none');
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState(null);
+  const [result, setResult] = useState(null); // Blob URL
   const [error, setError] = useState(null);
+
+  // Cleanup blob URL au unmount / changement de resultat
+  useEffect(() => {
+    return () => {
+      if (result) URL.revokeObjectURL(result);
+    };
+  }, [result]);
 
   const handleGenerate = async () => {
     if (!file) return;
     setLoading(true);
     setError(null);
+    // Revoke l'ancien blob
+    if (result) URL.revokeObjectURL(result);
     setResult(null);
     try {
-      const data = await processSticker(file, { stroke_color: strokeColor, stroke_width: strokeWidth, shader });
-      setResult(data);
+      const blobUrl = await generateStickerBlob(file, { strokeColor, strokeWidth, shader });
+      setResult(blobUrl);
     } catch (err) {
-      setError(err.message);
+      setError(err?.message || 'Erreur lors de la generation');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleClearFile = () => {
+    setFile(null);
+    if (result) URL.revokeObjectURL(result);
+    setResult(null);
+    setError(null);
   };
 
   return (
@@ -319,8 +550,8 @@ function StickersTab() {
         <DropZone
           accept="image/*"
           file={file}
-          onFile={setFile}
-          onClear={() => { setFile(null); setResult(null); }}
+          onFile={(f) => { setFile(f); setError(null); }}
+          onClear={handleClearFile}
           label="Glisser une image ici (PNG, WebP, JPG)"
         />
 
@@ -339,11 +570,11 @@ function StickersTab() {
           </div>
 
           <div>
-            <label className="text-xs text-grey-muted block mb-1">Epaisseur stroke: {strokeWidth}mm</label>
+            <label className="text-xs text-grey-muted block mb-1">Epaisseur contour: {strokeWidth}px</label>
             <input
               type="range"
               min="0"
-              max="5"
+              max="30"
               step="1"
               value={strokeWidth}
               onChange={(e) => setStrokeWidth(parseInt(e.target.value))}
@@ -353,7 +584,7 @@ function StickersTab() {
 
           <div>
             <label className="text-xs text-grey-muted block mb-2">Shader</label>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               {SHADERS.map((s) => (
                 <button
                   key={s.value}
@@ -380,7 +611,16 @@ function StickersTab() {
       </div>
 
       {/* Resultat */}
-      <div className="rounded-xl bg-black/20 p-4 flex items-center justify-center min-h-[300px]">
+      <div
+        className="rounded-xl bg-black/20 p-4 flex items-center justify-center min-h-[300px]"
+        style={{
+          backgroundImage: result
+            ? 'linear-gradient(45deg, #1a1a1a 25%, transparent 25%), linear-gradient(-45deg, #1a1a1a 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #1a1a1a 75%), linear-gradient(-45deg, transparent 75%, #1a1a1a 75%)'
+            : undefined,
+          backgroundSize: '20px 20px',
+          backgroundPosition: '0 0, 0 10px, 10px -10px, 10px 0px',
+        }}
+      >
         {error && (
           <div className="flex items-center gap-2 text-red-400 text-sm">
             <AlertCircle size={16} />
@@ -390,13 +630,13 @@ function StickersTab() {
         {result ? (
           <div className="flex flex-col items-center gap-4">
             <img
-              src={`${AI_BASE_URL}${result.output_url}`}
+              src={result}
               alt="sticker"
-              className="max-h-64 object-contain"
+              className="max-h-72 object-contain"
             />
             <a
-              href={`${AI_BASE_URL}${result.output_url}`}
-              download
+              href={result}
+              download={`sticker-${shader}.png`}
               className="flex items-center gap-2 px-4 py-2 rounded-lg bg-accent/20 text-accent text-sm font-semibold hover:bg-accent/30 transition-colors"
             >
               <Download size={14} />
