@@ -1,8 +1,9 @@
 /**
  * InstantMockup v6 - Composant controle (sceneId en prop)
  *
- * Rendu canvas chroma-key pour un seul scene donne.
+ * Rendu canvas chroma-key pour un scene donne.
  * La navigation (fleches, dots) est geree par le parent (ArtisteDetail).
+ * Pour les prints paysage, utilise les mockups du dossier /landscape/.
  * Cliquer sur le canvas ouvre la lightbox haute resolution.
  */
 import { useState, useEffect, useRef, useCallback } from 'react';
@@ -31,9 +32,9 @@ function InstantMockup({ imageUrl, frameColor = 'black', isLandscape = false, sc
 
   const drawComposite = useCallback((canvas, targetWidth, sid, landscape, fc) => {
     if (!canvas || !userImgRef.current || !sid) return;
-    // Utilise la variante " 2" pour les prints paysage
-    const variant = landscape ? ' 2' : '';
-    const roomKey = `${sid}_${fc}${variant}`;
+
+    // Paysage: sous-dossier /landscape/ avec cadres horizontaux
+    const roomKey = landscape ? `landscape/${sid}_${fc}` : `${sid}_${fc}`;
     const roomSrc = `/images/mockups/${roomKey}.webp`;
 
     const doRender = (roomImg) => {
@@ -44,8 +45,10 @@ function InstantMockup({ imageUrl, frameColor = 'black', isLandscape = false, sc
       canvas.height = ch;
       const ctx = canvas.getContext('2d');
 
+      // 1. Dessiner la photo de la piece
       ctx.drawImage(roomImg, 0, 0, cw, ch);
 
+      // 2. Detecter la zone verte (#00FF00) = emplacement du cadre
       const imageData = ctx.getImageData(0, 0, cw, ch);
       const pixels = imageData.data;
       let minX = cw, minY = ch, maxX = 0, maxY = 0;
@@ -60,6 +63,7 @@ function InstantMockup({ imageUrl, frameColor = 'black', isLandscape = false, sc
             if (x > maxX) maxX = x;
             if (y < minY) minY = y;
             if (y > maxY) maxY = y;
+            // Remplacer le vert par la couleur du mat
             pixels[i] = MAT_COLOR.r;
             pixels[i + 1] = MAT_COLOR.g;
             pixels[i + 2] = MAT_COLOR.b;
@@ -70,6 +74,7 @@ function InstantMockup({ imageUrl, frameColor = 'black', isLandscape = false, sc
 
       if (maxX <= minX || maxY <= minY) return;
 
+      // 3. Zone d'impression avec marge interieure
       const margin = Math.max(4, Math.round(Math.min(maxX - minX, maxY - minY) * 0.02));
       const printX = minX + margin;
       const printY = minY + margin;
@@ -81,8 +86,8 @@ function InstantMockup({ imageUrl, frameColor = 'black', isLandscape = false, sc
       const userImg = userImgRef.current;
       const imgRatio = userImg.naturalWidth / userImg.naturalHeight;
 
-      // "Contain": l'image entiere est toujours visible, le mat remplit le reste.
-      // Comme en galerie: un tirage paysage dans un cadre portrait = mat en haut/bas.
+      // "Contain": image entiere toujours visible, mat remplit le reste.
+      // Un print paysage dans un cadre portrait = mat en haut/bas (comme en galerie).
       let destX = printX, destY = printY, destW = printW, destH = printH;
       if (imgRatio > printRatio) {
         // Image plus large que le cadre → contraindre par la largeur, centrer verticalement
@@ -109,7 +114,7 @@ function InstantMockup({ imageUrl, frameColor = 'black', isLandscape = false, sc
       img.crossOrigin = 'anonymous';
       img.onload = () => { roomImgCache.current[roomKey] = img; doRender(img); };
       img.onerror = () => {
-        // Fallback: si la variante landscape n'existe pas, tenter la version portrait
+        // Fallback portrait si le mockup paysage est absent
         if (landscape) {
           const fallbackKey = `${sid}_${fc}`;
           if (roomImgCache.current[fallbackKey]) {
@@ -126,13 +131,13 @@ function InstantMockup({ imageUrl, frameColor = 'black', isLandscape = false, sc
     }
   }, []);
 
-  // Dessiner quand scene, cadre ou image change
+  // Redessiner quand scene, orientation, cadre ou image change
   useEffect(() => {
     if (!ready || !sceneId) return;
     if (canvasRef.current) drawComposite(canvasRef.current, 800, sceneId, isLandscape, frameColor);
   }, [ready, sceneId, isLandscape, frameColor, drawComposite]);
 
-  // Lightbox
+  // Lightbox haute resolution
   useEffect(() => {
     if (lightboxOpen && lightboxCanvasRef.current && ready && sceneId) {
       drawComposite(lightboxCanvasRef.current, 1400, sceneId, isLandscape, frameColor);
