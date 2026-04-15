@@ -57,9 +57,15 @@ function useImage(src) {
 // Curseur rotation custom (SVG data URI). Le curseur natif n'existe pas.
 const ROTATE_CURSOR = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><g fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><path d='M3 12a9 9 0 1 0 3-6.7'/><polyline points='3 4 3 10 9 10'/></g></svg>") 12 12, alias`;
 
-// Halo de rotation: bande de pixels a l'EXTERIEUR du logo (autour du carre rouge
-// du selection ring). Hover dans cette bande = rotation.
-const ROTATE_HALO_PX = 5;
+// Halo de rotation: bande de pixels a l'EXTERIEUR du logo avec une "dead zone"
+// immediate (pour tolerance drag au bord), puis la zone rotation au-dela.
+//   [0 - 3px] dead zone (rien, pas de curseur, pas d'action)
+//   [3 - 10px] zone rotation (cursor rotate + click = rotation)
+const ROTATE_HALO_OUTER = 10;
+const ROTATE_HALO_INNER = 3;
+
+// Increment angulaire quand on tient Shift pendant la rotation (degres)
+const ROTATE_SHIFT_STEP = 25;
 
 // ---------------------------------------------------------------------------
 // DraggableLogo - un logo superpose draggable + resizable + rotatable + removable
@@ -119,10 +125,15 @@ function DraggableLogo({ logo, onChange, onDelete, containerRef, selected, onSel
       const my = e.touches ? e.touches[0].clientY : e.clientY;
       const angle = Math.atan2(my - cy, mx - cx) * 180 / Math.PI;
       let newRot = initialRotation + (angle - startAngle);
-      // Snap a 0/90/180/270 si on est a <=3 degres (utile pour aligner)
-      const snapTargets = [-360, -270, -180, -90, 0, 90, 180, 270, 360];
-      for (const target of snapTargets) {
-        if (Math.abs(newRot - target) <= 3) { newRot = target; break; }
+      if (e.shiftKey) {
+        // Shift: snap a des increments fixes (ex: 25 deg) pour alignement facile
+        newRot = Math.round(newRot / ROTATE_SHIFT_STEP) * ROTATE_SHIFT_STEP;
+      } else {
+        // Pas de shift: snap doux aux angles cardinaux (0/90/180/270) si proche
+        const snapTargets = [-360, -270, -180, -90, 0, 90, 180, 270, 360];
+        for (const target of snapTargets) {
+          if (Math.abs(newRot - target) <= 3) { newRot = target; break; }
+        }
       }
       onChange({ ...logo, rotation: newRot });
     };
@@ -180,17 +191,24 @@ function DraggableLogo({ logo, onChange, onDelete, containerRef, selected, onSel
         transformOrigin: 'center center',
       }}
     >
-      {/* Halo de rotation - bande de 5px AUTOUR du logo (a l'exterieur du ring).
-          Comme l'image est un child plus petit (inset 0), les clics dans les 5px
-          exterieurs tombent sur ce halo, les clics sur l'image tombent sur l'image. */}
+      {/* Halo rotation (outer) - zone 3 a 10px EXTERIEUR au logo, curseur rotation */}
       <div
         onMouseDown={(e) => { if (e.button === 0) { e.stopPropagation(); startRotate(e.clientX, e.clientY); } }}
         onTouchStart={(e) => { e.stopPropagation(); const t = e.touches[0]; startRotate(t.clientX, t.clientY); }}
         className="absolute"
         style={{
-          inset: -ROTATE_HALO_PX,
-          cursor: rotating ? ROTATE_CURSOR : ROTATE_CURSOR,
+          inset: -ROTATE_HALO_OUTER,
+          cursor: ROTATE_CURSOR,
         }}
+      />
+      {/* Dead zone (inner) - 0 a 3px exterieur, rien ne se passe (tolerance anti-mis-click).
+          Rendue APRES l'outer pour etre au-dessus, rendue AVANT l'image pour que
+          l'image garde son drag. */}
+      <div
+        onMouseDown={(e) => e.stopPropagation()}
+        onTouchStart={(e) => e.stopPropagation()}
+        className="absolute"
+        style={{ inset: -ROTATE_HALO_INNER, cursor: 'default' }}
       />
       {/* Image du logo - tout l'interieur = zone drag */}
       <img
@@ -605,7 +623,7 @@ function MerchMockupTool() {
 
       {/* Aide */}
       <div className="text-[11px] text-grey-muted/80 italic px-1">
-        Drag sur le logo pour deplacer · <b>juste a l'exterieur</b> du logo (5px) = rotation · poignee accent = resize · X rouge = supprimer · chaque produit se souvient de sa position/taille/rotation
+        Drag sur le logo pour deplacer · <b>autour</b> du logo = rotation (tiens <kbd className="px-1 rounded bg-white/10">Shift</kbd> pour snap par 25°) · poignee accent = resize · X rouge = supprimer · chaque produit se souvient de sa position/taille/rotation
       </div>
     </div>
   );
