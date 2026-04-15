@@ -3,7 +3,7 @@ import { useParams, Navigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingCart, Check, ArrowLeft, X, ZoomIn } from 'lucide-react';
 import SEO from '../components/SEO';
-import ColorDropdown from '../components/ColorDropdown';
+import ColorSwatches from '../components/ColorSwatches';
 import { useLang } from '../i18n/LanguageContext';
 import { useCart } from '../contexts/CartContext';
 import { useProduct } from '../hooks/useProducts';
@@ -19,18 +19,18 @@ const merchConfig = {
     sizes: merchSizes,
     price: merchTshirtPrice,
     getImage: getTshirtImage,
-    defaultColor: 'orchid',
+    defaultColor: 'black',
     cmsSlug: 'merch-tshirt',
     label: { fr: 'T-Shirt Massive', en: 'Massive T-Shirt', es: 'Camiseta Massive' },
     subtitle: {
-      fr: '60+ couleurs disponibles. Coton preshrunk, impression durable.',
-      en: '60+ colors available. Preshrunk cotton, durable print.',
-      es: '60+ colores disponibles. Algodón preencogido, impresión duradera.',
+      fr: 'Coton preshrunk, impression sublimation durable. 8 couleurs.',
+      en: 'Preshrunk cotton, durable sublimation print. 8 colors.',
+      es: 'Algodón preencogido, impresión duradera. 8 colores.',
     },
     seoDesc: {
-      fr: 'T-Shirt Massive. 60+ couleurs, tailles S à 3XL.',
-      en: 'Massive T-Shirt. 60+ colors, sizes S to 3XL.',
-      es: 'Camiseta Massive. 60+ colores, tallas S a 3XL.',
+      fr: 'T-Shirt Massive. 8 couleurs, tailles S à 3XL.',
+      en: 'Massive T-Shirt. 8 colors, sizes S to 3XL.',
+      es: 'Camiseta Massive. 8 colores, tallas S a 3XL.',
     },
   },
   hoodie: {
@@ -38,18 +38,18 @@ const merchConfig = {
     sizes: merchSizes,
     price: merchHoodiePrice,
     getImage: getHoodieImage,
-    defaultColor: 'mint-green',
+    defaultColor: 'black',
     cmsSlug: 'merch-hoodie',
     label: { fr: 'Hoodie Massive', en: 'Massive Hoodie', es: 'Sudadera Massive' },
     subtitle: {
-      fr: '40+ couleurs disponibles. Molleton épais, impression durable.',
-      en: '40+ colors available. Heavy fleece, durable print.',
-      es: '40+ colores disponibles. Forro polar grueso, impresión duradera.',
+      fr: 'Molleton epais, impression sublimation durable. 8 couleurs.',
+      en: 'Heavy fleece, durable sublimation print. 8 colors.',
+      es: 'Forro polar grueso, impresión duradera. 8 colores.',
     },
     seoDesc: {
-      fr: 'Hoodie Massive. 40+ couleurs, tailles S à 3XL.',
-      en: 'Massive Hoodie. 40+ colors, sizes S to 3XL.',
-      es: 'Sudadera Massive. 40+ colores, tallas S a 3XL.',
+      fr: 'Hoodie Massive. 8 couleurs, tailles S à 3XL.',
+      en: 'Massive Hoodie. 8 colors, sizes S to 3XL.',
+      es: 'Sudadera Massive. 8 colores, tallas S a 3XL.',
     },
   },
   longsleeve: {
@@ -57,18 +57,18 @@ const merchConfig = {
     sizes: merchSizes,
     price: merchLongSleevePrice,
     getImage: getLongSleeveImage,
-    defaultColor: 'light-pink',
+    defaultColor: 'black',
     cmsSlug: 'merch-longsleeve',
     label: { fr: 'Long Sleeve Massive', en: 'Massive Long Sleeve', es: 'Sudadera Massive' },
     subtitle: {
-      fr: '30+ couleurs disponibles. Molleton mi-poids, impression durable.',
-      en: '30+ colors available. Midweight fleece, durable print.',
-      es: '30+ colores disponibles. Forro polar de peso medio, impresión duradera.',
+      fr: 'Manches longues, impression sublimation durable. 8 couleurs.',
+      en: 'Long sleeve, durable sublimation print. 8 colors.',
+      es: 'Manga larga, impresión duradera. 8 colores.',
     },
     seoDesc: {
-      fr: 'Long Sleeve Massive. 30+ couleurs, tailles S à 3XL.',
-      en: 'Massive Long Sleeve. 30+ colors, sizes S to 3XL.',
-      es: 'Sudadera cuello redondo Massive. 30+ colores, tallas S a 3XL.',
+      fr: 'Long Sleeve Massive. 8 couleurs, tailles S à 3XL.',
+      en: 'Massive Long Sleeve. 8 colors, sizes S to 3XL.',
+      es: 'Sudadera manga larga Massive. 8 colores, tallas S a 3XL.',
     },
   },
 };
@@ -88,7 +88,7 @@ function MerchPage({ config, type }) {
   const cmsProduct = useProduct(config.cmsSlug);
   const pd = cmsProduct?.pricingData;
 
-  const colors = pd?.colors || config.colors;
+  const colors = config.colors;
   const sizes = pd?.sizes || config.sizes;
   const pricing = pd?.price || config.price;
 
@@ -193,7 +193,7 @@ function MerchPage({ config, type }) {
             transition={{ duration: 0.5, delay: 0.1 }}
             className="space-y-5"
           >
-            <ColorDropdown
+            <ColorSwatches
               colors={colors}
               selected={selectedColor}
               onChange={setSelectedColor}

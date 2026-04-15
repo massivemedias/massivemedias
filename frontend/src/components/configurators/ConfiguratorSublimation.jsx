@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingCart, Check, Palette } from 'lucide-react';
-import ColorDropdown from '../ColorDropdown';
+import ColorSwatches from '../ColorSwatches';
 import { Link } from 'react-router-dom';
 import { useCart } from '../../contexts/CartContext';
 import { useLang } from '../../i18n/LanguageContext';
@@ -50,7 +50,7 @@ function ConfiguratorSublimation() {
   const [added, setAdded] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [notes, setNotes] = useState('');
-  const [selectedColor, setSelectedColor] = useState('orchid');
+  const [selectedColor, setSelectedColor] = useState('black');
   const [selectedSize, setSelectedSize] = useState('M');
 
   const tiers = sublimationPriceTiers[product] || [];
@@ -66,7 +66,7 @@ function ConfiguratorSublimation() {
   const colorObj = currentColors.find(c => c.id === selectedColor) || currentColors[0];
 
   // Preferred default color per product type
-  const defaultColorMap = { tshirt: 'orchid', hoodie: 'orchid', longsleeve: 'orchid', totebag: 'lavender' };
+  const defaultColorMap = { tshirt: 'black', hoodie: 'black', longsleeve: 'black', totebag: 'lavender' };
 
   const handleProductChange = (p) => {
     setProduct(p);
@@ -169,7 +169,7 @@ function ConfiguratorSublimation() {
 
             {/* Color + Size selectors */}
             <div className="flex-1 min-w-0 space-y-3 md:space-y-4">
-              <ColorDropdown
+              <ColorSwatches
                 colors={currentColors}
                 selected={selectedColor}
                 onChange={setSelectedColor}

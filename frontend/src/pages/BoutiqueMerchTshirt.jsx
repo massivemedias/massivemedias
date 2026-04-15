@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ShoppingCart, Check, ArrowLeft } from 'lucide-react';
 import SEO from '../components/SEO';
-import ColorDropdown from '../components/ColorDropdown';
+import ColorSwatches from '../components/ColorSwatches';
 import { useLang } from '../i18n/LanguageContext';
 import { useCart } from '../contexts/CartContext';
 import { useProduct } from '../hooks/useProducts';
@@ -15,11 +15,11 @@ function BoutiqueMerchTshirt() {
   const cmsProduct = useProduct('merch-tshirt');
   const pd = cmsProduct?.pricingData;
 
-  const merchColors = pd?.colors || defaultColors;
+  const merchColors = defaultColors;
   const merchSizes = pd?.sizes || defaultSizes;
   const merchTshirtPrice = pd?.price || defaultPrice;
 
-  const [selectedColor, setSelectedColor] = useState('orchid');
+  const [selectedColor, setSelectedColor] = useState('black');
   const [selectedSize, setSelectedSize] = useState('M');
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
@@ -49,11 +49,11 @@ function BoutiqueMerchTshirt() {
   return (
     <>
       <SEO
-        title={tx({ fr: 'T-Shirt Sublimation Montréal - 60+ Couleurs | Massive', en: 'Sublimation T-Shirt Montreal - 60+ Colors | Massive', es: 'Camiseta Sublimacion Montreal - 60+ Colores | Massive' })}
+        title={tx({ fr: 'T-Shirt Sublimation Montréal | Massive', en: 'Sublimation T-Shirt Montreal | Massive', es: 'Camiseta Sublimacion Montreal | Massive' })}
         description={tx({
-          fr: 'T-Shirt sublimation all-over Massive à Montréal. 60+ couleurs, tailles S à 3XL. Impression full-color permanente. À partir de 30$. Production locale Mile-End.',
-          en: 'All-over sublimation T-Shirt by Massive in Montreal. 60+ colors, sizes S to 3XL. Permanent full-color print. From $30. Local production Mile-End.',
-          es: 'Camiseta sublimacion all-over de Massive en Montreal. 60+ colores, tallas S a 3XL. Impresion full-color permanente. Desde 30$. Produccion local Mile-End.',
+          fr: 'T-Shirt sublimation Massive à Montréal. 8 couleurs, tailles S à 3XL. Impression full-color permanente. Production locale Mile-End.',
+          en: 'Sublimation T-Shirt by Massive in Montreal. 8 colors, sizes S to 3XL. Permanent full-color print. Local production Mile-End.',
+          es: 'Camiseta sublimacion de Massive en Montreal. 8 colores, tallas S a 3XL. Impresion full-color permanente. Produccion local Mile-End.',
         })}
         breadcrumbs={[
           { name: tx({ fr: 'Accueil', en: 'Home', es: 'Inicio' }), url: '/' },
@@ -80,9 +80,9 @@ function BoutiqueMerchTshirt() {
             </h1>
             <p className="text-lg text-grey-light max-w-2xl">
               {tx({
-                fr: '60+ couleurs disponibles. Coton preshrunk, impression durable.',
-                en: '60+ colors available. Preshrunk cotton, durable print.',
-                es: '60+ colores disponibles. Algodón preencogido, impresión duradera.',
+                fr: 'Coton preshrunk, impression sublimation durable. 8 couleurs.',
+                en: 'Preshrunk cotton, durable sublimation print. 8 colors.',
+                es: 'Algodón preencogido, impresión duradera. 8 colores.',
               })}
             </p>
           </motion.div>
@@ -124,7 +124,7 @@ function BoutiqueMerchTshirt() {
             className="space-y-5"
           >
             {/* Color */}
-            <ColorDropdown
+            <ColorSwatches
               colors={merchColors}
               selected={selectedColor}
               onChange={setSelectedColor}
