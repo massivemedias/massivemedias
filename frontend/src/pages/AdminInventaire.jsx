@@ -2,14 +2,13 @@ import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Package, AlertTriangle, XCircle, CheckCircle, Check, Search,
-  Edit3, X, Save, Loader2, DollarSign, Archive, Plus, ArrowUpDown, Trash2, ChevronDown,
+  Edit3, X, Save, Loader2, DollarSign, Archive, Plus, Trash2, ChevronDown,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import api from '../services/api';
 import { merchColors } from '../data/merchData';
 
-// Couleurs triees du plus clair au plus fonce avec traductions
-// Luminance percue: 0.299*R + 0.587*G + 0.114*B
+// --- Helpers couleur ---
 function hexLuminance(hex) {
   const r = parseInt(hex.slice(1, 3), 16);
   const g = parseInt(hex.slice(3, 5), 16);
@@ -39,12 +38,9 @@ const COLOR_NAMES_FR = {
 };
 
 const COLOR_NAMES_ES = {
-  'White': 'Blanco', 'PFD White': 'Blanco PFD', 'Mint Green': 'Verde Menta', 'Natural': 'Natural',
-  'Cornsilk': 'Maiz', 'Light Pink': 'Rosa Claro', 'Light Blue': 'Azul Claro', 'Pistachio': 'Pistacho',
-  'Lime': 'Lima', 'Safety Green': 'Verde Fluo', 'Sky': 'Cielo', 'Azalea': 'Azalea',
-  'Ash': 'Ceniza', 'Ice Grey': 'Gris Hielo', 'Vegas Gold': 'Oro Vegas', 'Daisy': 'Margarita',
-  'Safety Pink': 'Rosa Fluo', 'Sand': 'Arena', 'Orchid': 'Orquidea', 'Sport Grey': 'Gris Sport',
-  'Tan': 'Bronceado', 'Carolina Blue': 'Azul Carolina', 'Gold': 'Oro',
+  'White': 'Blanco', 'Natural': 'Natural', 'Light Pink': 'Rosa Claro', 'Light Blue': 'Azul Claro',
+  'Safety Green': 'Verde Fluo', 'Safety Pink': 'Rosa Fluo', 'Sand': 'Arena', 'Orchid': 'Orquidea',
+  'Sport Grey': 'Gris Sport', 'Carolina Blue': 'Azul Carolina', 'Gold': 'Oro',
   'Safety Orange': 'Naranja Fluo', 'Tangerine': 'Mandarina', 'Orange': 'Naranja',
   'Irish Green': 'Verde Irlandes', 'Heliconia': 'Heliconia', 'Olive': 'Oliva',
   'Sapphire': 'Zafiro', 'Charcoal': 'Carbon', 'Cherry Red': 'Rojo Cereza',
@@ -60,174 +56,269 @@ const STATUS_CONFIG = {
   out: { label: { fr: 'Rupture', en: 'Out of stock', es: 'Agotado' }, icon: XCircle, color: 'bg-red-500/20 text-red-400' },
 };
 
+// =================== CONFIGURATION DES CATEGORIES ===================
+
 const CATEGORY_LABELS = {
-  textile: { fr: 'Textile', en: 'Textile', es: 'Textil' },
-  frame: { fr: 'Cadre', en: 'Frame', es: 'Marco' },
-  accessory: { fr: 'Accessoire', en: 'Accessory', es: 'Accesorio' },
-  sticker: 'Sticker',
-  print: 'Print',
-  merch: 'Merch',
-  equipment: { fr: 'Materiel', en: 'Equipment', es: 'Equipo' },
-  web: { fr: 'Web', en: 'Web', es: 'Web' },
-  design: { fr: 'Design', en: 'Design', es: 'Diseno' },
-  photo: { fr: 'Photo', en: 'Photo', es: 'Foto' },
-  video: { fr: 'Video', en: 'Video', es: 'Video' },
-  consulting: { fr: 'Consulting', en: 'Consulting', es: 'Consultoria' },
-  hosting: { fr: 'Hebergement', en: 'Hosting', es: 'Hosting' },
-  other: { fr: 'Autre', en: 'Other', es: 'Otro' },
+  textile:     { fr: 'Textile',      en: 'Textile',     es: 'Textil' },
+  consommable: { fr: 'Consommables', en: 'Consumables', es: 'Consumibles' },
+  emballage:   { fr: 'Emballage',    en: 'Packaging',   es: 'Embalaje' },
+  equipment:   { fr: 'Equipement',   en: 'Equipment',   es: 'Equipo' },
+  frame:       { fr: 'Cadre',        en: 'Frame',       es: 'Marco' },
+  merch:       { fr: 'Merch',        en: 'Merch',       es: 'Merch' },
+  // Legacy (compatibilite anciens items)
+  sticker:     'Sticker',
+  print:       'Print',
+  accessory:   { fr: 'Accessoire',   en: 'Accessory',   es: 'Accesorio' },
 };
 
 const CATEGORIES = [
-  { value: 'textile', label: 'Textile' },
-  { value: 'frame', label: 'Cadre' },
-  { value: 'sticker', label: 'Sticker' },
-  { value: 'print', label: 'Print' },
-  { value: 'merch', label: 'Merch' },
-  { value: 'equipment', label: 'Materiel' },
-  { value: 'flyer', label: 'Flyer' },
-  { value: 'business-card', label: 'Carte d\'affaires' },
-  { value: 'web', label: 'Web' },
-  { value: 'design', label: 'Design' },
-  { value: 'photo', label: 'Photo' },
-  { value: 'video', label: 'Video' },
-  { value: 'consulting', label: 'Consulting' },
-  { value: 'hosting', label: 'Hebergement' },
-  { value: 'other', label: 'Autre' },
+  { value: 'textile',     emoji: '👕', label: 'Textile',      desc: 'T-Shirts, Hoodies, Crewnecks' },
+  { value: 'consommable', emoji: '🗂️',  label: 'Consommables', desc: 'Feuilles, papiers, encres, laminat' },
+  { value: 'emballage',   emoji: '📦', label: 'Emballage',    desc: 'Boites, enveloppes, protections' },
+  { value: 'equipment',   emoji: '🖨️',  label: 'Equipement',  desc: 'Imprimantes, decoupe, laminage' },
+  { value: 'frame',       emoji: '🖼️',  label: 'Cadre',       desc: 'Cadres photo et presentoir' },
+  { value: 'merch',       emoji: '🛍️',  label: 'Merch',       desc: 'Tote bags, mugs, accessoires' },
 ];
 
-// Variantes suggerees par categorie
-const VARIANT_SUGGESTIONS = {
-  textile: ['Hoodie', 'T-Shirt', 'Crewneck'],
-  frame: ['Noir', 'Blanc', 'Gris'],
-  sticker: ['Clear', 'Glossy', 'Holographic', 'Broken Glass', 'Stars'],
-  print: ['Fine Art', 'Photo', 'Canvas', 'Metal'],
-  merch: ['Tote Bag', 'Mug', 'Tumbler', 'Fanny Pack', 'Pin'],
-  equipment: ['Imprimante', 'Decoupeuse', 'Lamineuse', 'Presse a chaud', 'Tete d\'impression', 'Massicot', 'Plastifieuse', 'Scanner'],
-  other: [],
+// Sous-types par categorie (stockes dans le champ `variant`)
+const CONSOMMABLE_GROUPS = [
+  {
+    group: 'Stickers',
+    items: [
+      'Feuilles sticker clear',
+      'Feuilles sticker blanc',
+      'Feuilles FX holographique',
+      'Feuilles FX glossy',
+      'Feuilles FX broken glass',
+      'Feuilles FX stars',
+    ],
+  },
+  {
+    group: 'Impression grand format',
+    items: [
+      'Papier fine art',
+      'Papier photo lustre',
+      'Papier photo brillant',
+      'Papier photo mat',
+      'Toile (canvas)',
+    ],
+  },
+  {
+    group: 'Supports rigides',
+    items: ['Forex / Mousse PVC', 'Dibond (allu)'],
+  },
+  {
+    group: 'Laminat',
+    items: [
+      'Rouleau laminat brillant',
+      'Rouleau laminat mat',
+      'Rouleau laminat satine',
+    ],
+  },
+  {
+    group: 'Machine',
+    items: ["Encre imprimante", "Tete d'impression", 'Vinyle de decoupe'],
+  },
+];
+
+const EMBALLAGE_TYPES = [
+  'Enveloppe rigide',
+  'Tube carton',
+  'Boite carton',
+  'Film a bulles',
+  'Ruban adhesif',
+  'Pochette de protection',
+  'Papier de soie',
+  'Sachet plastique',
+  'Coin de protection',
+];
+
+const EQUIPMENT_TYPES = [
+  'Imprimante',
+  'Lamineuse',
+  'Plotter / Decoupeuse',
+  'Presse a chaud',
+  'Massicot',
+  'Scanner',
+  'Ordinateur',
+  'Ecran / Moniteur',
+];
+
+const TEXTILE_VARIANTS = ['T-Shirt', 'Hoodie', 'Crewneck', 'Polo', 'Tank Top'];
+const TEXTILE_SIZES    = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL'];
+
+const MERCH_TYPES = ['Tote Bag', 'Mug', 'Tumbler', 'Fanny Pack', 'Casquette', 'Pin / Badge'];
+const MERCH_COLORS = ['Blanc', 'Noir', 'Natural', 'Gris', 'Beige', 'Rouge', 'Bleu', 'Rose', 'Vert'];
+
+const CONSOMMABLE_FORMATS = ['8.5x11', '11x17', '13x19', '17x22', 'A4', 'A3', 'A3+', 'A2', '24"', '36"', '44"'];
+const EMBALLAGE_SIZES     = ['A6', 'A5', 'A4', 'A3', '5x5', '10x10', '12x12', '4x4x40', '6x6x48'];
+const FRAME_SIZES         = ['A6', 'A5', 'A4', 'A3', 'A3+', 'A2', '11x14', '16x20'];
+const FRAME_COLORS        = ['Noir', 'Blanc', 'Argent', 'Chene naturel', 'Noyer', 'Gris'];
+
+const SKU_PREFIXES = {
+  textile: 'TXT', consommable: 'CSM', emballage: 'EMB',
+  equipment: 'EQP', frame: 'FRM', merch: 'MRC',
+  sticker: 'STK', print: 'PRT', other: 'OTH',
 };
 
-// Couleurs depuis merchData (memes que le configurateur merch)
+// =================== COMPOSANTS UTILITAIRES ===================
 
-const SIZE_SUGGESTIONS = {
-  textile: ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL'],
-  frame: ['A6', 'A4', 'A3', '11x17', 'A3+', '18x24', 'A2'],
-  sticker: ['2"', '3"', '4"', '5"'],
-  print: ['A6', 'A4', 'A3', 'A3+', 'A2'],
-  default: [],
-};
+function Chips({ options, value, onChange, className = '' }) {
+  return (
+    <div className={`flex flex-wrap gap-1.5 ${className}`}>
+      {options.map(opt => (
+        <button
+          key={opt}
+          type="button"
+          onClick={() => onChange(value === opt ? '' : opt)}
+          className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
+            value === opt
+              ? 'bg-accent text-white'
+              : 'bg-black/20 text-grey-muted hover:text-heading hover:bg-white/5'
+          }`}
+        >
+          {opt}
+        </button>
+      ))}
+    </div>
+  );
+}
 
-// ---- Formulaire creation / edition ----
+function Field({ label, children, hint }) {
+  return (
+    <div>
+      <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2">
+        {label}
+      </label>
+      {children}
+      {hint && <p className="text-grey-muted text-[10px] mt-1">{hint}</p>}
+    </div>
+  );
+}
+
+function InputText({ value, onChange, placeholder, className = '' }) {
+  return (
+    <input
+      type="text"
+      value={value}
+      onChange={e => onChange(e.target.value)}
+      placeholder={placeholder}
+      className={`w-full rounded-lg bg-black/20 text-heading text-sm px-4 py-2.5 outline-none border border-white/10 focus:border-accent placeholder:text-grey-muted/50 ${className}`}
+    />
+  );
+}
+
+// =================== FORMULAIRE ===================
+
 function ItemForm({ onClose, onSaved, tx, lang, editItem }) {
   const isEdit = !!editItem;
 
-  // Parser les infos depuis le nom pour pre-remplir en mode edition
-  const parseFromName = (name, variant) => {
-    if (!name) return { brand: '', color: '', detail: '', hasZip: false };
-    const words = name.split(' ');
-    const allColorNames = merchColors.map(c => c.name);
-    const allSizes = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', 'A6', 'A4', 'A3', 'A3+', 'A2'];
-    let color = '', detail = '', brand = '', hasZip = false;
-
-    for (const w of words) {
-      if (w.toLowerCase() === 'zip') { hasZip = true; continue; }
-      if (allSizes.includes(w.toUpperCase())) { detail = w.toUpperCase(); continue; }
-      if (allColorNames.includes(w)) { color = w; continue; }
-      // Le premier mot qui n'est ni variant, ni taille, ni couleur, ni zip = marque
-      if (w !== variant && !brand) { brand = w; }
-    }
-    return { brand, color, detail, hasZip };
-  };
-
-  // Priorite aux champs dedies du DB, fallback sur parsing du nom (compat legacy)
-  const parsed = isEdit ? parseFromName(editItem.nameFr, editItem.variant) : { brand: '', color: '', detail: '', hasZip: false };
-
   const [form, setForm] = useState({
-    nameFr: editItem?.nameFr || '', nameEn: editItem?.nameEn || '',
-    category: editItem?.category || 'textile',
-    variant: editItem?.variant || '',
-    detail: editItem?.detail ?? parsed.detail,
-    color: editItem?.color ?? parsed.color,
-    brand: editItem?.brand ?? parsed.brand,
-    hasZip: editItem?.hasZip ?? parsed.hasZip,
-    quantity: editItem?.quantity || 0,
+    nameFr:    editItem?.nameFr    || '',
+    nameEn:    editItem?.nameEn    || '',
+    category:  editItem?.category  || 'textile',
+    variant:   editItem?.variant   || '',
+    detail:    editItem?.detail    || '',
+    color:     editItem?.color     || '',
+    brand:     editItem?.brand     || '',
+    hasZip:    editItem?.hasZip    ?? false,
+    quantity:  editItem?.quantity  ?? 0,
     costPrice: editItem?.costPrice || '',
-    location: editItem?.location || '',
-    notes: editItem?.notes || '',
+    location:  editItem?.location  || '',
+    notes:     editItem?.notes     || '',
+    _colorOpen: false,
   });
+
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [createdSku, setCreatedSku] = useState('');
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
-  const variants = VARIANT_SUGGESTIONS[form.category] || [];
-  const sizes = SIZE_SUGGESTIONS[form.category] || SIZE_SUGGESTIONS.default;
-
-  // Auto-generer le nom FR depuis les champs
-  const autoName = () => {
-    if (form.category === 'textile') {
-      // Pour textile: marque = nom produit (on concatene variant + zip + couleur + taille)
-      const parts = [form.brand, form.variant, form.hasZip ? 'Zip' : '', form.color, form.detail].filter(Boolean);
-      if (parts.length > 0) set('nameFr', parts.join(' '));
-    } else if (form.category === 'equipment') {
-      const parts = [form.brand, form.variant].filter(Boolean);
-      if (parts.length > 0) set('nameFr', parts.join(' '));
-    } else {
-      const parts = [form.brand, form.variant, form.color, form.detail].filter(Boolean);
-      if (parts.length > 0) set('nameFr', parts.join(' '));
+  // Calcule le nom depuis les champs
+  const computeName = (f) => {
+    switch (f.category) {
+      case 'textile':
+        return [f.brand, f.variant, f.hasZip ? 'Zip' : '', f.color, f.detail].filter(Boolean).join(' ');
+      case 'consommable':
+        return [f.variant, f.brand, f.detail].filter(Boolean).join(' ');
+      case 'emballage':
+        return [f.variant, f.detail].filter(Boolean).join(' ');
+      case 'equipment':
+        return [f.brand, f.variant, f.detail].filter(Boolean).join(' ');
+      case 'frame':
+        return ['Cadre', f.color, f.detail].filter(Boolean).join(' ');
+      case 'merch':
+        return [f.variant, f.brand, f.color, f.detail].filter(Boolean).join(' ');
+      default:
+        return [f.brand, f.variant, f.detail].filter(Boolean).join(' ');
     }
+  };
+
+  // Met a jour un champ ET regenere le nom automatiquement
+  const upd = (updates) => {
+    setForm(f => {
+      const next = { ...f, ...updates };
+      const name = computeName(next);
+      if (name) next.nameFr = name;
+      return next;
+    });
+  };
+
+  const handleCategoryChange = (newCat) => {
+    setForm(f => ({
+      ...f,
+      category: newCat,
+      variant: '',
+      detail: '',
+      color: '',
+      hasZip: false,
+      nameFr: '',
+    }));
+  };
+
+  const getSKUPreview = () => {
+    const p = SKU_PREFIXES[form.category] || 'OTH';
+    const v = (form.variant || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8) || 'GEN';
+    const d = (form.detail || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+    return d ? `${p}-${v}-${d}-001` : `${p}-${v}-001`;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // Pour textile: TOUJOURS regenerer le nom depuis les champs pour eviter que
-    // la couleur/zip/taille soient oubliees si l'utilisateur les a changes apres coup
-    if (form.category === 'textile' && form.brand) {
-      form.nameFr = [form.brand, form.variant, form.hasZip ? 'Zip' : '', form.color, form.detail].filter(Boolean).join(' ');
-    }
     if (!form.nameFr || !form.category) return;
     setSaving(true);
     setError('');
     try {
+      const payload = {
+        nameFr:    form.nameFr,
+        nameEn:    form.nameEn || form.nameFr,
+        category:  form.category,
+        variant:   form.variant,
+        brand:     form.brand,
+        color:     form.color,
+        detail:    form.detail,
+        hasZip:    !!form.hasZip,
+        quantity:  Number(form.quantity) || 0,
+        costPrice: form.costPrice ? Number(form.costPrice) : 0,
+        location:  form.location,
+        notes:     form.notes,
+      };
       if (isEdit) {
-        // Mode edition: mettre a jour tous les champs (incluant brand/color/detail/hasZip)
-        await api.put(`/inventory-items/${editItem.documentId}/adjust`, {
-          nameFr: form.nameFr,
-          nameEn: form.nameEn || form.nameFr,
-          category: form.category,
-          variant: form.variant,
-          brand: form.brand,
-          color: form.color,
-          detail: form.detail,
-          hasZip: !!form.hasZip,
-          quantity: Number(form.quantity) || 0,
-          costPrice: form.costPrice ? Number(form.costPrice) : 0,
-          location: form.location,
-          notes: form.notes,
-        });
-        setCreatedSku('');
+        await api.put(`/inventory-items/${editItem.documentId}/adjust`, payload);
         onSaved();
         onClose();
       } else {
-        // Mode creation
-        const res = await api.post('/inventory-items/create', {
-          nameFr: form.nameFr,
-          nameEn: form.nameEn || form.nameFr,
-          category: form.category,
-          variant: form.variant,
-          brand: form.brand,
-          color: form.color,
-          detail: form.detail,
-          hasZip: !!form.hasZip,
-          quantity: Number(form.quantity) || 0,
-          costPrice: form.costPrice ? Number(form.costPrice) : 0,
-          location: form.location,
-          notes: form.notes,
-        });
+        const res = await api.post('/inventory-items/create', payload);
         setCreatedSku(res.data?.data?.sku || '');
         onSaved();
-        // Reset pour ajouter un autre
-        setForm(f => ({ ...f, nameFr: '', nameEn: '', variant: '', detail: '', color: '', brand: '', hasZip: false, quantity: 0, costPrice: '', notes: '' }));
+        // Reset pour ajouter un autre du meme type
+        setForm(f => ({
+          ...f,
+          variant: '', detail: '', color: '', brand: '', hasZip: false,
+          quantity: 0, costPrice: '', notes: '', nameFr: '', nameEn: '',
+          _colorOpen: false,
+        }));
       }
     } catch (err) {
       setError(err.response?.data?.error?.message || 'Erreur');
@@ -236,29 +327,111 @@ function ItemForm({ onClose, onSaved, tx, lang, editItem }) {
     }
   };
 
+  // Selecteur de couleur complet (gamme Merch) - pour Textile
+  const renderFullColorPicker = () => (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => set('_colorOpen', !form._colorOpen)}
+        className="w-full flex items-center gap-3 rounded-lg bg-black/20 text-sm px-4 py-2.5 outline-none border border-white/10 hover:border-white/20 transition-colors text-left"
+      >
+        {form.color ? (
+          <>
+            <span
+              className="w-4 h-4 rounded-full border border-white/20 flex-shrink-0"
+              style={{ backgroundColor: (merchColors.find(x => x.name === form.color) || {}).hex || '#888' }}
+            />
+            <span className="text-heading">
+              {lang === 'es'
+                ? (COLOR_NAMES_ES[form.color] || form.color)
+                : lang === 'fr'
+                  ? (COLOR_NAMES_FR[form.color] || form.color)
+                  : form.color}
+            </span>
+          </>
+        ) : (
+          <span className="text-grey-muted">
+            {tx({ fr: '-- Choisir une couleur --', en: '-- Choose a color --', es: '-- Elegir un color --' })}
+          </span>
+        )}
+      </button>
+      {form._colorOpen && (
+        <div
+          className="absolute z-20 mt-1 w-full max-h-52 overflow-y-auto rounded-lg border border-white/10 shadow-xl"
+          style={{ background: '#2a2040' }}
+        >
+          <button
+            type="button"
+            onClick={() => { upd({ color: '' }); set('_colorOpen', false); }}
+            className="w-full px-3 py-2 text-sm text-grey-muted hover:bg-white/5 text-left"
+          >
+            -- Aucune --
+          </button>
+          {SORTED_COLORS.map(c => {
+            const label = lang === 'es'
+              ? (COLOR_NAMES_ES[c.name] || c.name)
+              : lang === 'fr'
+                ? (COLOR_NAMES_FR[c.name] || c.name)
+                : c.name;
+            return (
+              <button
+                key={c.id}
+                type="button"
+                onClick={() => {
+                  setForm(f => {
+                    const next = { ...f, color: c.name, _colorOpen: false };
+                    const name = computeName(next);
+                    if (name) next.nameFr = name;
+                    return next;
+                  });
+                }}
+                className={`w-full flex items-center gap-2.5 px-3 py-2 text-sm text-left transition-colors ${
+                  form.color === c.name ? 'bg-accent/20 text-accent' : 'text-heading hover:bg-white/5'
+                }`}
+              >
+                <span
+                  className="w-4 h-4 rounded-full border border-white/15 flex-shrink-0"
+                  style={{ backgroundColor: c.hex }}
+                />
+                {label}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 flex items-start justify-center p-4 pt-12 overflow-y-auto" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-50 bg-black/70 flex items-start justify-center p-4 pt-8 overflow-y-auto"
+      onClick={onClose}
+    >
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-3xl rounded-2xl shadow-2xl p-8 space-y-6 border border-white/15"
+        className="w-full max-w-3xl rounded-2xl shadow-2xl p-8 space-y-5 border border-white/15 mb-8"
         style={{ background: '#2a2040' }}
-        onClick={(e) => e.stopPropagation()}
+        onClick={e => e.stopPropagation()}
       >
+        {/* Header */}
         <div className="flex items-center justify-between">
           <h3 className="text-heading font-heading font-bold text-2xl">
             {isEdit
-              ? tx({ fr: 'Modifier l\'item', en: 'Edit item', es: 'Editar item' })
+              ? tx({ fr: "Modifier l'item", en: 'Edit item', es: 'Editar item' })
               : tx({ fr: 'Ajouter au stock', en: 'Add to stock', es: 'Agregar al stock' })}
           </h3>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-white/10 text-grey-muted"><X size={18} /></button>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-white/10 text-grey-muted">
+            <X size={18} />
+          </button>
         </div>
 
         {createdSku && (
           <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center gap-2">
             <CheckCircle size={16} className="text-green-400" />
             <span className="text-green-400 text-sm">
-              {tx({ fr: 'Cree!', en: 'Created!', es: 'Creado!' })} SKU: <span className="font-mono font-bold">{createdSku}</span>
+              {tx({ fr: 'Cree!', en: 'Created!', es: 'Creado!' })}{' '}
+              SKU: <span className="font-mono font-bold">{createdSku}</span>
             </span>
           </div>
         )}
@@ -267,339 +440,388 @@ function ItemForm({ onClose, onSaved, tx, lang, editItem }) {
           <div className="p-3 rounded-lg bg-red-500/10 text-red-400 text-sm">{error}</div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Categorie */}
+        <form onSubmit={handleSubmit} className="space-y-5">
+
+          {/* ===== CATEGORIE ===== */}
           <div>
-            <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-2">
+            <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-3">
               {tx({ fr: 'Categorie', en: 'Category', es: 'Categoria' })} *
             </label>
-            <select
-              value={form.category}
-              onChange={(e) => { set('category', e.target.value); if (e.target.value !== 'equipment') { set('variant', ''); set('detail', ''); } }}
-              className="w-full rounded-lg bg-black/20 text-heading text-base px-4 py-3 outline-none border border-white/10 focus:border-accent"
-            >
-              {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
-            </select>
+            <div className="grid grid-cols-3 gap-2">
+              {CATEGORIES.map(cat => (
+                <button
+                  key={cat.value}
+                  type="button"
+                  onClick={() => handleCategoryChange(cat.value)}
+                  className={`p-3 rounded-xl border-2 text-left transition-all ${
+                    form.category === cat.value
+                      ? 'border-accent bg-accent/10'
+                      : 'border-white/10 bg-black/20 hover:border-white/25 hover:bg-white/[0.02]'
+                  }`}
+                >
+                  <div className="text-xl mb-1">{cat.emoji}</div>
+                  <div className="font-bold text-heading text-xs leading-tight">{cat.label}</div>
+                  <div className="text-grey-muted text-[9px] leading-tight mt-0.5 hidden sm:block">{cat.desc}</div>
+                </button>
+              ))}
+            </div>
           </div>
 
-          {/* Type pour Materiel */}
-          {form.category === 'equipment' && (
-            <div>
-              <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-2">
-                Type
-              </label>
-              <div className="flex flex-wrap gap-1.5 mb-2">
-                {VARIANT_SUGGESTIONS.equipment.map(v => (
-                  <button
-                    key={v}
-                    type="button"
-                    onClick={() => { set('variant', v); }}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
-                      form.variant === v ? 'bg-accent text-white' : 'bg-black/20 text-grey-muted hover:text-heading'
-                    }`}
-                  >
-                    {v}
-                  </button>
-                ))}
-              </div>
-              <input
-                type="text"
+          {/* ===== TEXTILE ===== */}
+          {form.category === 'textile' && (<>
+
+            <Field label="Type de vetement">
+              <Chips
+                options={TEXTILE_VARIANTS}
                 value={form.variant}
-                onChange={(e) => set('variant', e.target.value)}
-                onBlur={autoName}
-                placeholder="Ou saisir manuellement..."
-                className="w-full rounded-lg bg-black/20 text-heading text-base px-4 py-3 outline-none border border-white/10 focus:border-accent placeholder:text-grey-muted/50"
+                onChange={v => upd({ variant: v })}
               />
-            </div>
-          )}
+            </Field>
 
-          {/* --- Champs specifiques (caches pour Materiel) --- */}
-          {form.category !== 'equipment' && (<>
-
-          {/* Variante (chips suggerees) */}
-          <div>
-            <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-2">
-              {tx({ fr: 'Variante / Type', en: 'Variant / Type', es: 'Variante / Tipo' })}
-            </label>
-            {variants.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 mb-2">
-                {variants.map(v => (
-                  <button
-                    key={v}
-                    type="button"
-                    onClick={() => { set('variant', v); autoName(); }}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
-                      form.variant === v ? 'bg-accent text-white' : 'bg-black/20 text-grey-muted hover:text-heading'
-                    }`}
-                  >
-                    {v}
-                  </button>
-                ))}
-              </div>
-            )}
-            <input
-              type="text"
-              value={form.variant}
-              onChange={(e) => set('variant', e.target.value)}
-              onBlur={autoName}
-              placeholder="Ex: Hoodie, T-Shirt, Black..."
-              className="w-full rounded-lg bg-black/20 text-heading text-base px-4 py-3 outline-none border border-white/10 focus:border-accent placeholder:text-grey-muted/50"
-            />
-          </div>
-
-          {/* Taille / Detail (chips suggerees) */}
-          <div>
-            <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-2">
-              {tx({ fr: 'Taille / Detail', en: 'Size / Detail', es: 'Talla / Detalle' })}
-            </label>
-            {sizes.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 mb-2">
-                {sizes.map(s => (
-                  <button
-                    key={s}
-                    type="button"
-                    onClick={() => {
-                      // Maj detail + regenerer nameFr immediatement pour textile
-                      setForm(f => {
-                        const next = { ...f, detail: s };
-                        if (next.category === 'textile') {
-                          next.nameFr = [next.brand, next.variant, next.hasZip ? 'Zip' : '', next.color, next.detail].filter(Boolean).join(' ');
-                        } else {
-                          next.nameFr = [next.brand, next.variant, next.color, next.detail].filter(Boolean).join(' ');
-                        }
-                        return next;
-                      });
-                    }}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
-                      form.detail === s ? 'bg-accent text-white' : 'bg-black/20 text-grey-muted hover:text-heading'
-                    }`}
-                  >
-                    {s}
-                  </button>
-                ))}
-              </div>
-            )}
-            <input
-              type="text"
-              value={form.detail}
-              onChange={(e) => set('detail', e.target.value)}
-              onBlur={autoName}
-              placeholder="Ex: L, XL, A4, 3&quot;..."
-              className="w-full rounded-lg bg-black/20 text-heading text-base px-4 py-3 outline-none border border-white/10 focus:border-accent placeholder:text-grey-muted/50"
-            />
-          </div>
-
-          {/* SKU preview */}
-          <div className="p-3 rounded-lg bg-accent/5 border border-accent/20">
-            <span className="text-grey-muted text-xs">SKU auto-genere: </span>
-            <span className="font-mono text-accent text-sm font-bold">
-              {(() => {
-                const prefixes = { textile: 'TXT', frame: 'FRM', accessory: 'ACC', sticker: 'STK', print: 'PRT', merch: 'MRC', other: 'OTH' };
-                const p = prefixes[form.category] || 'OTH';
-                const v = (form.variant || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8) || 'GEN';
-                const d = (form.detail || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
-                return d ? `${p}-${v}-${d}-001` : `${p}-${v}-001`;
-              })()}
-            </span>
-          </div>
-
-          </>)}
-
-          {/* Marque (cache pour cadre et materiel) */}
-          {form.category !== 'frame' && form.category !== 'equipment' && (<div>
-            <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-2">
-              {tx({ fr: 'Marque', en: 'Brand', es: 'Marca' })}
-            </label>
-            <input
-              type="text"
-              value={form.brand}
-              onChange={(e) => {
-                set('brand', e.target.value);
-                // Pour textile, la marque = le nom, auto-update en temps reel
-                if (form.category === 'textile') {
-                  const parts = [e.target.value, form.variant, form.hasZip ? 'Zip' : '', form.color, form.detail].filter(Boolean);
-                  set('nameFr', parts.join(' '));
-                }
-              }}
-              onBlur={autoName}
-              placeholder="Ex: Gildan, Bella+Canvas, Stanley/Stella..."
-              className="w-full rounded-lg bg-black/20 text-heading text-base px-4 py-3 outline-none border border-white/10 focus:border-accent placeholder:text-grey-muted/50"
-            />
-          </div>)}
-
-          {/* Couleur + Zip (caches pour Materiel et Cadre) */}
-          {form.category !== 'equipment' && form.category !== 'frame' && (<>
-          {/* Couleur (dropdown custom avec ronds de couleur) */}
-          <div className="relative">
-            <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-2">
-              {tx({ fr: 'Couleur', en: 'Color', es: 'Color' })}
-            </label>
-            <button
-              type="button"
-              onClick={() => set('_colorOpen', !form._colorOpen)}
-              className="w-full flex items-center gap-3 rounded-lg bg-black/20 text-base px-4 py-3 outline-none border border-white/10 hover:border-white/20 transition-colors text-left"
-            >
-              {form.color ? (
-                <>
-                  <span className="w-4 h-4 rounded-full border border-white/20 flex-shrink-0" style={{ backgroundColor: (merchColors.find(x => x.name === form.color) || {}).hex || '#888' }} />
-                  <span className="text-heading">
-                    {lang === 'es' ? (COLOR_NAMES_ES[form.color] || form.color) : lang === 'fr' ? (COLOR_NAMES_FR[form.color] || form.color) : form.color}
-                  </span>
-                </>
-              ) : (
-                <span className="text-grey-muted">{tx({ fr: '-- Choisir une couleur --', en: '-- Choose a color --', es: '-- Elegir un color --' })}</span>
-              )}
-            </button>
-            {form._colorOpen && (
-              <div className="absolute z-20 mt-1 w-full max-h-52 overflow-y-auto rounded-lg border border-white/10 shadow-xl" style={{ background: '#2a2040' }}>
-                {SORTED_COLORS.map(c => {
-                  const label = lang === 'es' ? (COLOR_NAMES_ES[c.name] || c.name) : lang === 'fr' ? (COLOR_NAMES_FR[c.name] || c.name) : c.name;
-                  return (
-                    <button
-                      key={c.id}
-                      type="button"
-                      onClick={() => {
-                        // Maj couleur + regenerer nameFr immediatement pour textile
-                        setForm(f => {
-                          const next = { ...f, color: c.name, _colorOpen: false };
-                          if (next.category === 'textile') {
-                            next.nameFr = [next.brand, next.variant, next.hasZip ? 'Zip' : '', next.color, next.detail].filter(Boolean).join(' ');
-                          } else {
-                            next.nameFr = [next.brand, next.variant, next.color, next.detail].filter(Boolean).join(' ');
-                          }
-                          return next;
-                        });
-                      }}
-                      className={`w-full flex items-center gap-2.5 px-3 py-2 text-sm text-left transition-colors ${
-                        form.color === c.name ? 'bg-accent/20 text-accent' : 'text-heading hover:bg-white/5'
-                      }`}
-                    >
-                      <span className="w-4 h-4 rounded-full border border-white/15 flex-shrink-0" style={{ backgroundColor: c.hex }} />
-                      {label}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-
-          {/* Case Zip */}
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={form.hasZip}
-              onChange={(e) => {
-                // Maj hasZip + regenerer nameFr immediatement pour textile
-                setForm(f => {
-                  const next = { ...f, hasZip: e.target.checked };
-                  if (next.category === 'textile') {
-                    next.nameFr = [next.brand, next.variant, next.hasZip ? 'Zip' : '', next.color, next.detail].filter(Boolean).join(' ');
-                  }
-                  return next;
-                });
-              }}
-              className="sr-only"
-            />
-            <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${form.hasZip ? 'bg-accent border-accent' : 'border-grey-muted/50'}`}>
-              {form.hasZip && <Check size={14} className="text-white" />}
-            </div>
-            <span className="text-heading text-sm font-medium">Zip</span>
-          </label>
-          </>)}
-
-          {/* Nom produit - cache pour textile (marque = nom) */}
-          {form.category !== 'textile' && (
-            <div>
-              <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-2">
-                {tx({ fr: 'Nom produit', en: 'Product name', es: 'Nombre producto' })} *
-              </label>
+            <label className="flex items-center gap-3 cursor-pointer">
               <input
-                type="text"
-                value={form.nameFr}
-                onChange={(e) => set('nameFr', e.target.value)}
-                required
-                placeholder="Auto-genere ou saisir manuellement"
-                className="w-full rounded-lg bg-black/20 text-heading text-base px-4 py-3 outline-none border border-white/10 focus:border-accent placeholder:text-grey-muted/50"
+                type="checkbox"
+                checked={form.hasZip}
+                onChange={e => upd({ hasZip: e.target.checked })}
+                className="sr-only"
               />
-              <p className="text-grey-muted text-[10px] mt-1">Se remplit automatiquement depuis les champs ci-dessus</p>
-            </div>
-          )}
+              <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${form.hasZip ? 'bg-accent border-accent' : 'border-grey-muted/50'}`}>
+                {form.hasZip && <Check size={14} className="text-white" />}
+              </div>
+              <span className="text-heading text-sm font-medium">Zip</span>
+            </label>
 
-          {/* Quantite + Prix coutant */}
-          <div className="grid grid-cols-2 gap-3">
+            <Field label={tx({ fr: 'Marque', en: 'Brand', es: 'Marca' })}>
+              <InputText
+                value={form.brand}
+                onChange={v => upd({ brand: v })}
+                placeholder="Ex: Gildan, Bella+Canvas, Stanley/Stella..."
+              />
+            </Field>
+
+            <Field label={tx({ fr: 'Couleur', en: 'Color', es: 'Color' })}>
+              {renderFullColorPicker()}
+            </Field>
+
+            <Field label={tx({ fr: 'Taille', en: 'Size', es: 'Talla' })}>
+              <Chips
+                options={TEXTILE_SIZES}
+                value={form.detail}
+                onChange={v => upd({ detail: v })}
+                className="mb-2"
+              />
+              <InputText
+                value={form.detail}
+                onChange={v => upd({ detail: v })}
+                placeholder="XS, S, M, L, XL..."
+              />
+            </Field>
+
+            <div className="p-3 rounded-lg bg-accent/5 border border-accent/20">
+              <span className="text-grey-muted text-xs">SKU: </span>
+              <span className="font-mono text-accent text-sm font-bold">{getSKUPreview()}</span>
+            </div>
+
+          </>)}
+
+          {/* ===== CONSOMMABLES ===== */}
+          {form.category === 'consommable' && (<>
+
             <div>
-              <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-2">
-                {tx({ fr: 'Quantite', en: 'Quantity', es: 'Cantidad' })}
+              <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-3">
+                Type de consommable *
               </label>
+              <div className="space-y-3">
+                {CONSOMMABLE_GROUPS.map(group => (
+                  <div key={group.group}>
+                    <p className="text-grey-muted text-[10px] uppercase tracking-widest mb-1.5 pl-0.5">
+                      {group.group}
+                    </p>
+                    <Chips
+                      options={group.items}
+                      value={form.variant}
+                      onChange={v => upd({ variant: v })}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <Field
+              label={tx({ fr: 'Marque', en: 'Brand', es: 'Marca' })}
+              hint="Ex: Epson, Canon, Canson, Hahnemuhle, 3M..."
+            >
+              <InputText
+                value={form.brand}
+                onChange={v => upd({ brand: v })}
+                placeholder="Facultatif"
+              />
+            </Field>
+
+            <Field label="Format / Dimension">
+              <Chips
+                options={CONSOMMABLE_FORMATS}
+                value={form.detail}
+                onChange={v => upd({ detail: v })}
+                className="mb-2"
+              />
+              <InputText
+                value={form.detail}
+                onChange={v => upd({ detail: v })}
+                placeholder={`Ex: 13x19, A3, 24"...`}
+              />
+            </Field>
+
+            <div className="p-3 rounded-lg bg-accent/5 border border-accent/20">
+              <span className="text-grey-muted text-xs">SKU: </span>
+              <span className="font-mono text-accent text-sm font-bold">{getSKUPreview()}</span>
+            </div>
+
+          </>)}
+
+          {/* ===== EMBALLAGE ===== */}
+          {form.category === 'emballage' && (<>
+
+            <Field label="Type d'emballage *">
+              <Chips
+                options={EMBALLAGE_TYPES}
+                value={form.variant}
+                onChange={v => upd({ variant: v })}
+              />
+            </Field>
+
+            <Field label="Taille / Dimension">
+              <Chips
+                options={EMBALLAGE_SIZES}
+                value={form.detail}
+                onChange={v => upd({ detail: v })}
+                className="mb-2"
+              />
+              <InputText
+                value={form.detail}
+                onChange={v => upd({ detail: v })}
+                placeholder="Ex: A4, 6x6x48cm..."
+              />
+            </Field>
+
+            <div className="p-3 rounded-lg bg-accent/5 border border-accent/20">
+              <span className="text-grey-muted text-xs">SKU: </span>
+              <span className="font-mono text-accent text-sm font-bold">{getSKUPreview()}</span>
+            </div>
+
+          </>)}
+
+          {/* ===== EQUIPEMENT ===== */}
+          {form.category === 'equipment' && (<>
+
+            <Field label="Type d'equipement *">
+              <Chips
+                options={EQUIPMENT_TYPES}
+                value={form.variant}
+                onChange={v => upd({ variant: v })}
+                className="mb-2"
+              />
+              <InputText
+                value={form.variant}
+                onChange={v => upd({ variant: v })}
+                placeholder="Ou saisir manuellement..."
+              />
+            </Field>
+
+            <Field label={tx({ fr: 'Marque', en: 'Brand', es: 'Marca' })}>
+              <InputText
+                value={form.brand}
+                onChange={v => upd({ brand: v })}
+                placeholder="Ex: Canon, Epson, Roland, Graphtec..."
+              />
+            </Field>
+
+            <Field label="Modele / Detail">
+              <InputText
+                value={form.detail}
+                onChange={v => upd({ detail: v })}
+                placeholder="Ex: imagePROGRAF PRO-1000, GS-24..."
+              />
+            </Field>
+
+          </>)}
+
+          {/* ===== CADRE ===== */}
+          {form.category === 'frame' && (<>
+
+            <Field label={tx({ fr: 'Couleur', en: 'Color', es: 'Color' })}>
+              <Chips
+                options={FRAME_COLORS}
+                value={form.color}
+                onChange={v => upd({ color: v })}
+                className="mb-2"
+              />
+              <InputText
+                value={form.color}
+                onChange={v => upd({ color: v })}
+                placeholder="Ou saisir..."
+              />
+            </Field>
+
+            <Field label="Taille *">
+              <Chips
+                options={FRAME_SIZES}
+                value={form.detail}
+                onChange={v => upd({ detail: v })}
+                className="mb-2"
+              />
+              <InputText
+                value={form.detail}
+                onChange={v => upd({ detail: v })}
+                placeholder="Ex: A4, A3+, 11x14..."
+              />
+            </Field>
+
+            <div className="p-3 rounded-lg bg-accent/5 border border-accent/20">
+              <span className="text-grey-muted text-xs">SKU: </span>
+              <span className="font-mono text-accent text-sm font-bold">{getSKUPreview()}</span>
+            </div>
+
+          </>)}
+
+          {/* ===== MERCH ===== */}
+          {form.category === 'merch' && (<>
+
+            <Field label="Type de produit *">
+              <Chips
+                options={MERCH_TYPES}
+                value={form.variant}
+                onChange={v => upd({ variant: v })}
+                className="mb-2"
+              />
+              <InputText
+                value={form.variant}
+                onChange={v => upd({ variant: v })}
+                placeholder="Ou saisir..."
+              />
+            </Field>
+
+            <Field label={tx({ fr: 'Marque', en: 'Brand', es: 'Marca' })}>
+              <InputText
+                value={form.brand}
+                onChange={v => upd({ brand: v })}
+                placeholder="Facultatif"
+              />
+            </Field>
+
+            <Field label={tx({ fr: 'Couleur', en: 'Color', es: 'Color' })}>
+              <Chips
+                options={MERCH_COLORS}
+                value={form.color}
+                onChange={v => upd({ color: v })}
+                className="mb-2"
+              />
+              <InputText
+                value={form.color}
+                onChange={v => upd({ color: v })}
+                placeholder="Ou saisir..."
+              />
+            </Field>
+
+            <Field label="Detail">
+              <InputText
+                value={form.detail}
+                onChange={v => upd({ detail: v })}
+                placeholder="Taille, variante..."
+              />
+            </Field>
+
+            <div className="p-3 rounded-lg bg-accent/5 border border-accent/20">
+              <span className="text-grey-muted text-xs">SKU: </span>
+              <span className="font-mono text-accent text-sm font-bold">{getSKUPreview()}</span>
+            </div>
+
+          </>)}
+
+          {/* ===== NOM PRODUIT (auto-genere, editable) ===== */}
+          <Field
+            label={tx({ fr: 'Nom produit', en: 'Product name', es: 'Nombre producto' }) + ' *'}
+            hint="Auto-genere depuis les champs - modifiable"
+          >
+            <InputText
+              value={form.nameFr}
+              onChange={v => set('nameFr', v)}
+              placeholder="Nom de l'item..."
+            />
+          </Field>
+
+          {/* ===== QUANTITE + PRIX COUTANT ===== */}
+          <div className="grid grid-cols-2 gap-3">
+            <Field label={tx({ fr: 'Quantite', en: 'Quantity', es: 'Cantidad' })}>
               <input
                 type="number"
                 min="0"
                 value={form.quantity}
-                onChange={(e) => set('quantity', e.target.value)}
-                className="w-full rounded-lg bg-black/20 text-heading text-base px-4 py-3 outline-none border border-white/10 focus:border-accent"
+                onChange={e => set('quantity', e.target.value)}
+                className="w-full rounded-lg bg-black/20 text-heading text-sm px-4 py-2.5 outline-none border border-white/10 focus:border-accent"
               />
-            </div>
-            <div>
-              <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-2">
-                {tx({ fr: 'Prix coutant ($)', en: 'Cost price ($)', es: 'Precio costo ($)' })}
-              </label>
+            </Field>
+            <Field label={tx({ fr: 'Prix coutant ($)', en: 'Cost price ($)', es: 'Costo ($)' })}>
               <input
                 type="number"
                 min="0"
                 step="0.01"
                 value={form.costPrice}
-                onChange={(e) => set('costPrice', e.target.value)}
+                onChange={e => set('costPrice', e.target.value)}
                 placeholder="0.00"
-                className="w-full rounded-lg bg-black/20 text-heading text-base px-4 py-3 outline-none border border-white/10 focus:border-accent placeholder:text-grey-muted/50"
+                className="w-full rounded-lg bg-black/20 text-heading text-sm px-4 py-2.5 outline-none border border-white/10 focus:border-accent placeholder:text-grey-muted/50"
               />
-            </div>
+            </Field>
           </div>
 
-          {/* Location + Notes */}
-          <div>
-            <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-2">
-              {tx({ fr: 'Emplacement', en: 'Location', es: 'Ubicacion' })}
-            </label>
-            <input
-              type="text"
+          {/* ===== EMPLACEMENT ===== */}
+          <Field label={tx({ fr: 'Emplacement', en: 'Location', es: 'Ubicacion' })}>
+            <InputText
               value={form.location}
-              onChange={(e) => set('location', e.target.value)}
-              placeholder="Ex: Etagere A3, Bac 2..."
-              className="w-full rounded-lg bg-black/20 text-heading text-base px-4 py-3 outline-none border border-white/10 focus:border-accent placeholder:text-grey-muted/50"
+              onChange={v => set('location', v)}
+              placeholder="Ex: Etagere A3, Bac 2, Tiroir stickers..."
             />
-          </div>
+          </Field>
 
-          <div>
-            <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-2">Notes</label>
+          {/* ===== NOTES ===== */}
+          <Field label="Notes">
             <textarea
               value={form.notes}
-              onChange={(e) => set('notes', e.target.value)}
+              onChange={e => set('notes', e.target.value)}
               rows={2}
               placeholder={tx({ fr: 'Notes supplementaires...', en: 'Additional notes...', es: 'Notas adicionales...' })}
-              className="w-full rounded-lg bg-black/20 text-heading text-base px-4 py-3 outline-none border border-white/10 focus:border-accent resize-none placeholder:text-grey-muted/50"
+              className="w-full rounded-lg bg-black/20 text-heading text-sm px-4 py-2.5 outline-none border border-white/10 focus:border-accent resize-none placeholder:text-grey-muted/50"
             />
-          </div>
+          </Field>
 
-          {/* Submit */}
+          {/* ===== SUBMIT ===== */}
           <button
             type="submit"
             disabled={!form.nameFr || !form.category || saving}
-            className="w-full py-4 rounded-xl bg-accent text-white font-bold text-base disabled:opacity-40 transition-opacity flex items-center justify-center gap-2 hover:brightness-110"
+            className="w-full py-3.5 rounded-xl bg-accent text-white font-bold text-sm disabled:opacity-40 transition-opacity flex items-center justify-center gap-2 hover:brightness-110"
           >
-            {saving ? <Loader2 size={16} className="animate-spin" /> : isEdit ? <Save size={16} /> : <Plus size={16} />}
+            {saving ? (
+              <Loader2 size={16} className="animate-spin" />
+            ) : isEdit ? (
+              <Save size={16} />
+            ) : (
+              <Plus size={16} />
+            )}
             {saving
               ? tx({ fr: 'Sauvegarde...', en: 'Saving...', es: 'Guardando...' })
               : isEdit
                 ? tx({ fr: 'Sauvegarder', en: 'Save', es: 'Guardar' })
-                : tx({ fr: 'Creer l\'item', en: 'Create item', es: 'Crear item' })}
+                : tx({ fr: "Creer l'item", en: 'Create item', es: 'Crear item' })}
           </button>
+
         </form>
       </motion.div>
     </div>
   );
 }
 
-// ---- Page principale ----
+// =================== PAGE PRINCIPALE ===================
+
 function AdminInventaire() {
   const { tx, lang } = useLang();
   const [items, setItems] = useState([]);
@@ -607,14 +829,10 @@ function AdminInventaire() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
-  const [filterStatus, setFilterStatus] = useState('all');
   const [filterCategory, setFilterCategory] = useState('all');
-  const [showForm, setShowForm] = useState(false); // true = creation, item = edition
+  const [showForm, setShowForm] = useState(false);
   const [editItem, setEditItem] = useState(null);
-  const [sortKey, setSortKey] = useState('nameFr');
-  const [sortDir, setSortDir] = useState('asc');
   const [deleting, setDeleting] = useState(null);
-  // On stocke les sections OUVERTES (tout ferme par defaut)
   const [openCats, setOpenCats] = useState([]);
 
   const fetchData = useCallback(async () => {
@@ -624,24 +842,17 @@ function AdminInventaire() {
       setSummary(data.summary || null);
       setError('');
     } catch (err) {
-      setError(tx({ fr: 'Impossible de charger l\'inventaire', en: 'Unable to load inventory', es: 'No se puede cargar el inventario' }));
+      setError(tx({ fr: "Impossible de charger l'inventaire", en: 'Unable to load inventory', es: 'No se puede cargar el inventario' }));
       console.error(err);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  const openEdit = (item) => {
-    setEditItem(item);
-    setShowForm(true);
-  };
-
-  const openCreate = () => {
-    setEditItem(null);
-    setShowForm(true);
-  };
+  const openEdit   = (item) => { setEditItem(item); setShowForm(true); };
+  const openCreate = ()     => { setEditItem(null); setShowForm(true); };
 
   const handleDelete = async (documentId) => {
     try {
@@ -653,49 +864,14 @@ function AdminInventaire() {
     }
   };
 
-  const toggleSort = (key) => {
-    if (sortKey === key) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
-    else { setSortKey(key); setSortDir('asc'); }
-  };
-
   const getName = (item) => lang === 'en' ? (item.nameEn || item.nameFr) : item.nameFr;
 
-  const isConsommable = (item) => {
-    const name = (getName(item) || '').toLowerCase();
-    const sku = (item.sku || '').toLowerCase();
-    if (name.includes('vinyle') || name.includes('vinyl') || sku.includes('stk-')) return true;
-    const isPaper = name.includes('papier') || name.includes('paper') || sku.includes('paper') || sku.includes('papier');
-    if (!isPaper) return false;
-    const isLargeFormat = name.includes('grand format') || name.includes('large') || name.includes('13x19') || name.includes('17x') || name.includes('24x') || name.includes('a3') || name.includes('tabloid');
-    return !isLargeFormat;
-  };
-
-  const filtered = items.filter((item) => {
-    if (isConsommable(item)) return false;
-    const matchSearch = !search || getName(item).toLowerCase().includes(search.toLowerCase()) || (item.sku || '').toLowerCase().includes(search.toLowerCase());
-    const matchStatus = filterStatus === 'all' || item.status === filterStatus;
+  const filtered = items.filter(item => {
+    const matchSearch = !search
+      || getName(item).toLowerCase().includes(search.toLowerCase())
+      || (item.sku || '').toLowerCase().includes(search.toLowerCase());
     const matchCategory = filterCategory === 'all' || item.category === filterCategory;
-    return matchSearch && matchStatus && matchCategory;
-  });
-
-  // Tri
-  const sorted = [...filtered].sort((a, b) => {
-    let va, vb;
-    if (sortKey === 'nameFr') { va = getName(a).toLowerCase(); vb = getName(b).toLowerCase(); }
-    else if (sortKey === 'sku') { va = (a.sku || '').toLowerCase(); vb = (b.sku || '').toLowerCase(); }
-    else if (sortKey === 'category') { va = a.category || ''; vb = b.category || ''; }
-    else if (sortKey === 'variant') { va = (a.variant || '').toLowerCase(); vb = (b.variant || '').toLowerCase(); }
-    else if (sortKey === 'detail') {
-      const sizeOrder = ['XS','S','M','L','XL','2XL','3XL','A6','A4','A3','A3+','A2'];
-      const getSize = (item) => { const p = (item.sku||'').split('-'); const s = p.length >= 4 ? p[p.length-2] : ''; return sizeOrder.indexOf(s); };
-      va = getSize(a); vb = getSize(b);
-      if (va === -1) va = 99; if (vb === -1) vb = 99;
-    }
-    else if (sortKey === 'quantity') { va = a.quantity || 0; vb = b.quantity || 0; }
-    else if (sortKey === 'location') { va = (a.location || '').toLowerCase(); vb = (b.location || '').toLowerCase(); }
-    else { va = ''; vb = ''; }
-    if (typeof va === 'number') return sortDir === 'asc' ? va - vb : vb - va;
-    return sortDir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+    return matchSearch && matchCategory;
   });
 
   if (loading) {
@@ -722,12 +898,12 @@ function AdminInventaire() {
       </div>
 
       {error && (
-        <div className="p-4 rounded-lg bg-red-500/10 shadow-sm error-bg mb-6">
+        <div className="p-4 rounded-lg bg-red-500/10 mb-6">
           <p className="text-red-400">{error}</p>
         </div>
       )}
 
-      {/* Summary cards */}
+      {/* Cartes sommaire */}
       {summary && (
         <div className="grid grid-cols-2 gap-4 mb-8">
           {[
@@ -747,16 +923,14 @@ function AdminInventaire() {
                   <Icon size={18} className="text-accent" />
                   <span className="text-grey-muted text-xs uppercase">{card.label}</span>
                 </div>
-                <div className="text-2xl font-heading font-bold text-heading">
-                  {card.value}
-                </div>
+                <div className="text-2xl font-heading font-bold text-heading">{card.value}</div>
               </motion.div>
             );
           })}
         </div>
       )}
 
-      {/* Filters */}
+      {/* Filtres */}
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
         <div className="relative flex-1">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-grey-muted" />
@@ -764,23 +938,24 @@ function AdminInventaire() {
             type="text"
             placeholder={tx({ fr: 'Rechercher par nom ou SKU...', en: 'Search by name or SKU...', es: 'Buscar por nombre o SKU...' })}
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={e => setSearch(e.target.value)}
             className="w-full pl-10 pr-4 py-2.5 rounded-lg bg-glass text-heading placeholder-grey-muted text-sm focus:outline-none focus:ring-1 focus:ring-accent"
           />
         </div>
         <select
           value={filterCategory}
-          onChange={(e) => setFilterCategory(e.target.value)}
+          onChange={e => setFilterCategory(e.target.value)}
           className="rounded-lg bg-glass text-heading text-sm px-3 py-2.5 outline-none border border-white/5"
         >
           <option value="all">{tx({ fr: 'Toutes categories', en: 'All categories', es: 'Todas categorias' })}</option>
-          {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
+          {CATEGORIES.map(c => (
+            <option key={c.value} value={c.value}>{c.emoji} {c.label}</option>
+          ))}
         </select>
       </div>
 
       {/* Accordeons par categorie */}
       {(() => {
-        // Grouper par categorie
         const groups = {};
         filtered.forEach(item => {
           const cat = item.category || 'other';
@@ -788,14 +963,8 @@ function AdminInventaire() {
           groups[cat].push(item);
         });
 
-        const allSizes = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', 'A6', 'A4', 'A3', 'A3+', 'A2', '11X17', '18X24'];
-
         const renderItem = (item) => {
           const isDeleting2 = deleting === item.documentId;
-          const skuParts = (item.sku || '').split('-');
-          const sizeFromSku = skuParts.length >= 4 ? skuParts[skuParts.length - 2] : '';
-          const size = allSizes.includes(sizeFromSku) ? sizeFromSku : '';
-
           return (
             <div
               key={item.documentId}
@@ -803,43 +972,80 @@ function AdminInventaire() {
               className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/[0.03] cursor-pointer transition-colors group"
             >
               <span className="text-heading text-sm font-medium flex-1 truncate">{getName(item)}</span>
-              {size && <span className="text-grey-muted text-xs font-mono">{size}</span>}
-              <span className={`font-semibold text-sm w-8 text-center ${item.quantity === 0 ? 'text-yellow-400' : 'text-heading'}`}>{item.quantity}</span>
-              {item.location && <span className="text-grey-muted text-[10px] hidden sm:inline">{item.location}</span>}
-              <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
-                <button onClick={() => openEdit(item)} className="p-1 rounded text-grey-muted hover:text-accent"><Edit3 size={12} /></button>
+              {item.detail && (
+                <span className="text-grey-muted text-xs font-mono">{item.detail}</span>
+              )}
+              <span className={`font-semibold text-sm w-8 text-center ${item.quantity === 0 ? 'text-yellow-400' : 'text-heading'}`}>
+                {item.quantity}
+              </span>
+              {item.location && (
+                <span className="text-grey-muted text-[10px] hidden sm:inline">{item.location}</span>
+              )}
+              <div
+                className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                onClick={e => e.stopPropagation()}
+              >
+                <button
+                  onClick={() => openEdit(item)}
+                  className="p-1 rounded text-grey-muted hover:text-accent"
+                >
+                  <Edit3 size={12} />
+                </button>
                 {isDeleting2 ? (
                   <>
-                    <button onClick={() => handleDelete(item.documentId)} className="px-1.5 py-0.5 rounded bg-red-500/20 text-red-400 text-[9px] font-bold">OK</button>
-                    <button onClick={() => setDeleting(null)} className="p-1 text-grey-muted"><X size={10} /></button>
+                    <button
+                      onClick={() => handleDelete(item.documentId)}
+                      className="px-1.5 py-0.5 rounded bg-red-500/20 text-red-400 text-[9px] font-bold"
+                    >
+                      OK
+                    </button>
+                    <button
+                      onClick={() => setDeleting(null)}
+                      className="p-1 text-grey-muted"
+                    >
+                      <X size={10} />
+                    </button>
                   </>
                 ) : (
-                  <button onClick={() => setDeleting(item.documentId)} className="p-1 rounded text-grey-muted hover:text-red-400"><Trash2 size={12} /></button>
+                  <button
+                    onClick={() => setDeleting(item.documentId)}
+                    className="p-1 rounded text-grey-muted hover:text-red-400"
+                  >
+                    <Trash2 size={12} />
+                  </button>
                 )}
               </div>
             </div>
           );
         };
 
-        const catOrder = ['textile', 'frame', 'equipment', 'sticker', 'print', 'merch', 'other'];
-        const sortedCats = Object.keys(groups).sort((a, b) => catOrder.indexOf(a) - catOrder.indexOf(b));
-
-        if (sortedCats.length === 0) return (
-          <div className="p-12 text-center text-grey-muted">
-            <Package size={40} className="mx-auto mb-4 opacity-30" />
-            <p>{tx({ fr: 'Aucun item trouve', en: 'No items found', es: 'Ningun item encontrado' })}</p>
-          </div>
+        const catOrder = ['textile', 'consommable', 'emballage', 'equipment', 'frame', 'merch', 'sticker', 'print', 'other'];
+        const sortedCats = Object.keys(groups).sort(
+          (a, b) => (catOrder.indexOf(a) === -1 ? 99 : catOrder.indexOf(a)) - (catOrder.indexOf(b) === -1 ? 99 : catOrder.indexOf(b))
         );
+
+        if (sortedCats.length === 0) {
+          return (
+            <div className="p-12 text-center text-grey-muted">
+              <Package size={40} className="mx-auto mb-4 opacity-30" />
+              <p>{tx({ fr: 'Aucun item trouve', en: 'No items found', es: 'Ningun item encontrado' })}</p>
+            </div>
+          );
+        }
 
         return (
           <div className="space-y-2">
             {sortedCats.map(cat => {
               const catItems = groups[cat];
-              const catLabel = CATEGORY_LABELS[cat] ? (typeof CATEGORY_LABELS[cat] === 'string' ? CATEGORY_LABELS[cat] : tx(CATEGORY_LABELS[cat])) : cat;
+              const catCfg = CATEGORIES.find(c => c.value === cat);
+              const catLabelCfg = CATEGORY_LABELS[cat];
+              const catLabel = catLabelCfg
+                ? (typeof catLabelCfg === 'string' ? catLabelCfg : tx(catLabelCfg))
+                : cat;
               const totalQty = catItems.reduce((s, i) => s + (i.quantity || 0), 0);
               const isOpen = openCats.includes(cat);
 
-              // Pour textile: sous-grouper par variant (Hoodie, T-Shirt, Crewneck)
+              // Textile: sous-accordeons par variant (Hoodie, T-Shirt, etc.)
               const hasSubGroups = cat === 'textile';
               const subGroups = {};
               if (hasSubGroups) {
@@ -852,31 +1058,35 @@ function AdminInventaire() {
 
               return (
                 <div key={cat} className="rounded-xl card-bg shadow-lg shadow-black/20 overflow-hidden">
-                  {/* Header categorie */}
                   <button
-                    onClick={() => setOpenCats(prev => isOpen ? prev.filter(c => c !== cat) : [...prev, cat])}
+                    onClick={() => setOpenCats(prev =>
+                      isOpen ? prev.filter(c => c !== cat) : [...prev, cat]
+                    )}
                     className="w-full flex items-center justify-between px-4 py-3 hover:bg-white/[0.02] transition-colors"
                   >
                     <div className="flex items-center gap-2">
                       <ChevronDown size={16} className={`text-grey-muted transition-transform ${isOpen ? '' : '-rotate-90'}`} />
+                      {catCfg && <span>{catCfg.emoji}</span>}
                       <span className="text-heading font-heading font-bold text-base">{catLabel}</span>
                       <span className="text-grey-muted text-xs">({catItems.length})</span>
                     </div>
                     <span className="text-heading font-semibold text-sm">{totalQty}</span>
                   </button>
 
-                  {/* Contenu */}
                   {isOpen && (
                     <div className="px-2 pb-2">
                       {hasSubGroups ? (
-                        // Sous-accordeons par variant
                         Object.entries(subGroups).map(([variant, vItems]) => {
                           const vQty = vItems.reduce((s, i) => s + (i.quantity || 0), 0);
                           const vOpen = openCats.includes(`${cat}_${variant}`);
                           return (
                             <div key={variant} className="ml-2 mb-1">
                               <button
-                                onClick={() => setOpenCats(prev => vOpen ? prev.filter(c => c !== `${cat}_${variant}`) : [...prev, `${cat}_${variant}`])}
+                                onClick={() => setOpenCats(prev =>
+                                  vOpen
+                                    ? prev.filter(c => c !== `${cat}_${variant}`)
+                                    : [...prev, `${cat}_${variant}`]
+                                )}
                                 className="w-full flex items-center justify-between px-3 py-1.5 rounded-lg hover:bg-white/[0.02] transition-colors"
                               >
                                 <div className="flex items-center gap-2">
@@ -891,7 +1101,6 @@ function AdminInventaire() {
                           );
                         })
                       ) : (
-                        // Liste directe
                         catItems.map(renderItem)
                       )}
                     </div>
@@ -903,7 +1112,7 @@ function AdminInventaire() {
         );
       })()}
 
-      {/* Modal creation */}
+      {/* Modal creation / edition */}
       <AnimatePresence>
         {showForm && (
           <ItemForm
