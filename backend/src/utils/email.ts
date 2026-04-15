@@ -1212,9 +1212,9 @@ function buildPrivatePrintAdminHtml(data: PrivatePrintData): string {
       <strong>Prochaines etapes :</strong>
     </p>
     <ul style="color:#666;font-size:13px;margin:0 0 20px;padding-left:20px;line-height:1.7">
-      <li>Le client choisit la taille / qualite / cadre sur le site</li>
-      <li>Il paie via Stripe puis tu recois une notification de commande</li>
-      <li>Tu peux ensuite imprimer selon ses specifications</li>
+      <li>Le client voit l'oeuvre avec le format, qualite et cadre fixes par l'artiste (non modifiables)</li>
+      <li>Il paie directement via Stripe au prix fixe</li>
+      <li>Tu recois la notification de commande et tu executes selon la configuration deja etablie</li>
     </ul>
     <div style="text-align:center;margin:20px 0">
       <a href="${data.buyLink}" style="display:inline-block;background:#222;color:#fff;padding:10px 24px;border-radius:6px;text-decoration:none;font-size:13px;font-weight:600">

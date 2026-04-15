@@ -322,7 +322,12 @@ function ArtistGalleryManager() {
           // Options specifiques
           ...(opts.type === 'unique' ? { unique: true, noFrame: (opts.frameOption || 'none') === 'none' } : {}),
           ...(opts.type === 'limited' ? { limitedEdition: true, limitedQty: parseInt(opts.limitedQty) || 50 } : {}),
-          ...(opts.type === 'private' ? { private: true, clientEmail: opts.clientEmail || '' } : {}),
+          ...(opts.type === 'private' ? {
+            private: true,
+            clientEmail: opts.clientEmail || '',
+            noFrame: (opts.frameOption || 'none') === 'none',
+            ...(opts.frameOption === 'black' || opts.frameOption === 'white' ? { fixedFrame: opts.frameOption } : {}),
+          } : {}),
         };
       });
 

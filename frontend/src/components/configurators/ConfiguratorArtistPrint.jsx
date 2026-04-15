@@ -14,17 +14,21 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {}, onF
   const { artistSlug: loggedArtistSlug } = useUserRole();
 
   const isUnique = selectedPrint?.unique;
+  const isPrivate = selectedPrint?.private;
   const isSold = selectedPrint?.sold;
   const fixedFormat = selectedPrint?.fixedFormat;
   const fixedTier = selectedPrint?.fixedTier;
   const noFrame = selectedPrint?.noFrame;
+  const fixedFrame = selectedPrint?.fixedFrame; // 'black' | 'white' | undefined
   const customPrice = selectedPrint?.customPrice;
   const maxFormat = selectedPrint?.maxFormat; // ex: 'a3' = max A3, pas de A3+ ni A2
+  // Si customPrice set, tout est verrouille (piece unique ou vente privee)
+  const isLocked = customPrice != null;
 
   const [tier, setTier] = useState(fixedTier || 'studio');
   const [format, setFormat] = useState(fixedFormat || 'a4');
-  const [withFrame, setWithFrame] = useState(false);
-  const [frameColor, setFrameColor] = useState('black');
+  const [withFrame, setWithFrame] = useState(!!fixedFrame);
+  const [frameColor, setFrameColor] = useState(fixedFrame || 'black');
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
   const [notes, setNotes] = useState('');
@@ -58,9 +62,13 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {}, onF
       else setFormat('a4');
       if (selectedPrint?.fixedTier) setTier(selectedPrint.fixedTier);
       else setTier('studio');
-      if (selectedPrint?.noFrame) setWithFrame(false);
-      else setWithFrame(false);
-      setFrameColor('black');
+      if (selectedPrint?.fixedFrame) {
+        setWithFrame(true);
+        setFrameColor(selectedPrint.fixedFrame);
+      } else {
+        setWithFrame(false);
+        setFrameColor('black');
+      }
       if (selectedPrint?.unique) setQuantity(1);
       else setQuantity(1);
       setNotes('');
@@ -80,8 +88,8 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {}, onF
 
   const isArtistOwnPrint = loggedArtistSlug && loggedArtistSlug === artist?.slug;
 
-  // Prix effectif: customPrice pour pieces uniques, solde, ou prix standard
-  const basePrice = (isUnique && customPrice) ? customPrice : priceInfo?.price;
+  // Prix effectif: customPrice si setup par l'artiste (piece unique ou vente privee), sinon prix standard
+  const basePrice = customPrice != null ? customPrice : priceInfo?.price;
   const isOnSale = selectedPrint?.onSale && selectedPrint?.salePercent;
   const saleDiscount = isOnSale ? (1 - selectedPrint.salePercent / 100) : 1;
   const effectivePrice = basePrice ? Math.round(basePrice * saleDiscount * 100) / 100 : basePrice;
@@ -90,6 +98,7 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {}, onF
   const handleAddToCart = () => {
     if (!effectivePrice) return;
     try {
+      const effectiveQty = (isUnique || isPrivate) ? 1 : quantity;
       addToCart({
         productId: `artist-print-${artist.slug}-${selectedPrint.id}`,
         productName: `${artist.name} - ${printTitle}`,
@@ -104,13 +113,14 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {}, onF
             })
           : null,
         size: isUnique ? tx({ fr: 'Pièce unique', en: 'Unique piece', es: 'Pieza unica' }) : formatLabel?.label,
-        quantity: isUnique ? 1 : quantity,
+        quantity: effectiveQty,
         unitPrice: effectivePrice,
-        totalPrice: effectivePrice * (isUnique ? 1 : quantity),
+        totalPrice: effectivePrice * effectiveQty,
         image: selectedPrint.image,
         uploadedFiles: [],
         notes,
         isUnique: isUnique || false,
+        isPrivate: isPrivate || false,
         ...(isArtistOwnPrint ? { isArtistOwnPrint: true, artistSlug: artist.slug } : {}),
       });
       setAdded(true);
@@ -169,8 +179,34 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {}, onF
         </div>
       )}
 
+      {/* Vente privee info - config verrouillee par l'artiste */}
+      {isPrivate && !isUnique && isLocked && (
+        <div className="p-4 rounded-xl border border-accent/30 bg-accent/5 text-sm space-y-2">
+          <p className="text-heading font-medium">
+            {tx({
+              fr: `Oeuvre envoyee en privee par l'artiste. Format, qualite et cadre sont fixes - il te suffit de valider le paiement.`,
+              en: `Private artwork sent by the artist. Format, quality and frame are fixed - just complete the payment.`,
+              es: `Obra privada enviada por el artista. Formato, calidad y marco estan fijados - solo completa el pago.`,
+            })}
+          </p>
+          <ul className="text-grey-muted text-xs space-y-1 pl-4 list-disc">
+            <li>Format: <span className="text-heading font-semibold">{(fixedFormat || 'a4').toUpperCase()}</span></li>
+            <li>{tx({ fr: 'Qualite', en: 'Quality', es: 'Calidad' })}: <span className="text-heading font-semibold">{fixedTier === 'museum' ? tx({ fr: 'Musee', en: 'Museum', es: 'Museo' }) : 'Studio'}</span></li>
+            <li>{tx({ fr: 'Cadre', en: 'Frame', es: 'Marco' })}: <span className="text-heading font-semibold">{
+              noFrame
+                ? tx({ fr: 'Sans cadre', en: 'No frame', es: 'Sin marco' })
+                : fixedFrame === 'white'
+                  ? tx({ fr: 'Cadre blanc', en: 'White frame', es: 'Marco blanco' })
+                  : fixedFrame === 'black'
+                    ? tx({ fr: 'Cadre noir', en: 'Black frame', es: 'Marco negro' })
+                    : tx({ fr: 'Sans cadre', en: 'No frame', es: 'Sin marco' })
+            }</span></li>
+          </ul>
+        </div>
+      )}
+
       {/* Printer tier selector */}
-      {!fixedTier && !(isUnique && customPrice) && (
+      {!fixedTier && !isLocked && (
         <div>
           <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-1.5">
             {tx({ fr: 'Qualité d\'impression', en: 'Print Quality', es: 'Calidad de impresión' })}
@@ -200,7 +236,7 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {}, onF
       )}
 
       {/* Format selector */}
-      {!fixedFormat && !(isUnique && customPrice) && (
+      {!fixedFormat && !isLocked && (
         <div>
           <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-1.5">
             Format
@@ -270,7 +306,7 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {}, onF
       )}
 
       {/* Frame option */}
-      {!noFrame && !(isUnique && customPrice) && (
+      {!noFrame && !isLocked && (
         <div>
           <label className={`flex items-center gap-3 w-full p-4 rounded-lg cursor-pointer transition-all border-2 ${withFrame ? 'checkbox-active' : 'option-default'}`}>
             <input
@@ -332,18 +368,24 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {}, onF
       </div>
 
       {/* Price display */}
-      {isUnique && customPrice ? (
+      {isLocked ? (
         <div className="p-5 rounded-xl highlight-bordered">
           <div className="flex items-baseline gap-3">
             <span className="text-3xl font-heading font-bold text-heading">{customPrice}$</span>
           </div>
           <div className="flex items-center gap-2 mt-2">
             <span className="text-grey-muted text-xs">
-              {tx({
-                fr: 'Pièce unique - prix fixé par l\'artiste. Certificat d\'authenticité inclus.',
-                en: 'Unique piece - price set by the artist. Certificate of authenticity included.',
-                es: 'Pieza unica - precio fijado por el artista. Certificado de autenticidad incluido.',
-              })}
+              {isUnique
+                ? tx({
+                    fr: 'Pièce unique - prix fixé par l\'artiste. Certificat d\'authenticité inclus.',
+                    en: 'Unique piece - price set by the artist. Certificate of authenticity included.',
+                    es: 'Pieza unica - precio fijado por el artista. Certificado de autenticidad incluido.',
+                  })
+                : tx({
+                    fr: 'Vente privée - prix fixé par l\'artiste, configuration non modifiable.',
+                    en: 'Private sale - price set by the artist, configuration is not changeable.',
+                    es: 'Venta privada - precio fijado por el artista, configuracion no modificable.',
+                  })}
             </span>
           </div>
         </div>
@@ -380,7 +422,7 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {}, onF
                     </div>
                   )}
                 </div>
-                {!isUnique && (
+                {!isUnique && !isPrivate && (
                   <div className="flex items-center gap-2">
                     <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="w-8 h-8 rounded-lg border border-white/10 text-heading font-bold text-sm flex items-center justify-center hover:border-accent/50 transition-colors">-</button>
                     <span className="text-heading font-bold w-6 text-center">{quantity}</span>
