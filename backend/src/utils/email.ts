@@ -1180,9 +1180,61 @@ function buildPrivatePrintHtml(data: PrivatePrintData): string {
   `);
 }
 
+function buildPrivatePrintAdminHtml(data: PrivatePrintData): string {
+  const priceText = data.price ? `${data.price}$` : 'Non fixe';
+  return massiveEmailWrapper(`
+    <h2 style="color:#222;margin:0 0 16px;font-size:16px;">Nouvelle vente privee artiste</h2>
+    <p style="color:#666;font-size:13px;margin:0 0 16px">
+      Un artiste a cree une vente privee. Le client vient de recevoir le lien d'achat.
+    </p>
+    <table width="100%" cellpadding="0" cellspacing="0">
+      <tr>
+        <td style="padding:10px 14px;border-bottom:1px solid #eee;color:#666;font-size:13px;width:110px;">Artiste</td>
+        <td style="padding:10px 14px;border-bottom:1px solid #eee;color:#222;font-size:15px;font-weight:600;">${data.artistName}</td>
+      </tr>
+      <tr>
+        <td style="padding:10px 14px;border-bottom:1px solid #eee;color:#666;font-size:13px;">Client</td>
+        <td style="padding:10px 14px;border-bottom:1px solid #eee;color:#222;font-size:14px;">
+          <a href="mailto:${data.clientEmail}" style="color:#FF52A0;text-decoration:none;">${data.clientEmail}</a>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:10px 14px;border-bottom:1px solid #eee;color:#666;font-size:13px;">Oeuvre</td>
+        <td style="padding:10px 14px;border-bottom:1px solid #eee;color:#222;font-size:14px;">${data.printTitle}</td>
+      </tr>
+      <tr>
+        <td style="padding:10px 14px;border-bottom:1px solid #eee;color:#666;font-size:13px;">Prix fixe</td>
+        <td style="padding:10px 14px;border-bottom:1px solid #eee;color:#222;font-size:14px;font-weight:600;">${priceText}</td>
+      </tr>
+    </table>
+    ${data.printImage ? `<div style="text-align:center;margin:20px 0"><img src="${data.printImage}" alt="${data.printTitle}" style="max-width:100%;border-radius:8px;border:1px solid #eee" /></div>` : ''}
+    <p style="color:#666;font-size:13px;margin:20px 0 8px">
+      <strong>Prochaines etapes :</strong>
+    </p>
+    <ul style="color:#666;font-size:13px;margin:0 0 20px;padding-left:20px;line-height:1.7">
+      <li>Le client choisit la taille / qualite / cadre sur le site</li>
+      <li>Il paie via Stripe puis tu recois une notification de commande</li>
+      <li>Tu peux ensuite imprimer selon ses specifications</li>
+    </ul>
+    <div style="text-align:center;margin:20px 0">
+      <a href="${data.buyLink}" style="display:inline-block;background:#222;color:#fff;padding:10px 24px;border-radius:6px;text-decoration:none;font-size:13px;font-weight:600">
+        Voir le lien client
+      </a>
+      <a href="https://massivemedias.com/account" style="display:inline-block;background:#FF52A0;color:#fff;padding:10px 24px;border-radius:6px;text-decoration:none;font-size:13px;font-weight:600;margin-left:8px">
+        Panneau admin
+      </a>
+    </div>
+  `);
+}
+
 export async function sendPrivatePrintEmail(data: PrivatePrintData): Promise<boolean> {
   const resend = getResend();
   if (!resend) { console.warn('[email] Resend non configure'); return false; }
+  const adminEmail = process.env.ADMIN_EMAIL || 'massivemedias@gmail.com';
+  let clientOk = false;
+  let adminOk = false;
+
+  // 1. Email au client
   try {
     await resend.emails.send({
       from: 'Massive Medias <noreply@massivemedias.com>',
@@ -1191,9 +1243,24 @@ export async function sendPrivatePrintEmail(data: PrivatePrintData): Promise<boo
       html: buildPrivatePrintHtml(data),
     });
     console.log('[email] Email piece privee envoye a', data.clientEmail);
-    return true;
+    clientOk = true;
   } catch (err) {
-    console.error('[email] Erreur email piece privee:', err);
-    return false;
+    console.error('[email] Erreur email piece privee client:', err);
   }
+
+  // 2. Notification admin (separe, avec details internes)
+  try {
+    await resend.emails.send({
+      from: 'Massive Medias <noreply@massivemedias.com>',
+      to: adminEmail,
+      subject: `[VENTE PRIVEE] ${data.artistName} -> ${data.clientEmail}`,
+      html: buildPrivatePrintAdminHtml(data),
+    });
+    console.log('[email] Notification admin vente privee envoyee a', adminEmail);
+    adminOk = true;
+  } catch (err) {
+    console.error('[email] Erreur notification admin vente privee:', err);
+  }
+
+  return clientOk || adminOk;
 }
