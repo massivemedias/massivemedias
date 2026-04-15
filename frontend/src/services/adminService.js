@@ -8,6 +8,9 @@ export const updateOrderNotes = (documentId, notes) => api.put(`/orders/${docume
 export const updateOrderTracking = (documentId, trackingNumber, carrier) => api.put(`/orders/${documentId}/tracking`, { trackingNumber, carrier });
 export const deleteOrder = (documentId) => api.delete(`/orders/${documentId}`);
 
+// --- Ventes privees (prints artistes) ---
+export const getPrivateSales = () => api.get('/artists/private-sales');
+
 // --- Messages contact ---
 export const getContactSubmissions = (params) => api.get('/contact-submissions/admin', { params });
 export const updateContactStatus = (documentId, status, notes) => api.put(`/contact-submissions/${documentId}/status`, { status, notes });

@@ -14,5 +14,11 @@ exports.default = {
             handler: 'artist.updateBySlug',
             config: { auth: false },
         },
+        {
+            method: 'GET',
+            path: '/artists/private-sales',
+            handler: 'artist.getPrivateSales',
+            config: { auth: false },
+        },
     ],
 };

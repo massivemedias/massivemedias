@@ -37,6 +37,63 @@ export default factories.createCoreController('api::artist.artist', ({ strapi })
   },
 
   /**
+   * Liste toutes les ventes privees en attente (private: true && !paid).
+   * Retourne un tableau plat avec info artiste + print pour affichage
+   * dans le panneau admin Commandes.
+   *
+   * GET /api/artists/private-sales
+   */
+  async getPrivateSales(ctx) {
+    const artists = await strapi.documents('api::artist.artist').findMany({
+      filters: { active: true },
+      populate: { avatar: true },
+    });
+
+    const sales: any[] = [];
+    for (const artist of artists) {
+      const prints = Array.isArray(artist.prints) ? artist.prints : [];
+      for (const p of prints as any[]) {
+        if (!p?.private) continue;
+        if (p?.sold) continue; // Deja paye/vendu = retire de la liste attente
+
+        const price = typeof p.customPrice === 'number'
+          ? p.customPrice
+          : (typeof p.price === 'number' ? p.price : null);
+
+        const clientLink = p.privateToken
+          ? `https://massivemedias.com/artistes/${artist.slug}?print=${p.id}&token=${p.privateToken}`
+          : null;
+
+        sales.push({
+          id: p.id,
+          artistSlug: artist.slug,
+          artistName: artist.name,
+          artistAvatar: (artist as any).avatar?.url || null,
+          title: p.titleFr || p.titleEn || p.title || '',
+          image: p.thumbImage || p.image || p.fullImage || null,
+          clientEmail: p.clientEmail || '',
+          price,
+          fixedFormat: p.fixedFormat || null,
+          fixedTier: p.fixedTier || null,
+          unique: !!p.unique,
+          sold: !!p.sold,
+          createdAt: p.createdAt || null,
+          clientLink,
+        });
+      }
+    }
+
+    // Tri: plus recents en premier (createdAt)
+    sales.sort((a, b) => {
+      const ta = a.createdAt || '';
+      const tb = b.createdAt || '';
+      return String(tb).localeCompare(String(ta));
+    });
+
+    ctx.body = { data: sales, meta: { total: sales.length } };
+  },
+
+  /**
    * Met a jour les champs "display" d'un artiste par son slug
    * (name, taglineFr, taglineEn, bioFr, bioEn, bioEs).
    * Utilise pour renommer un artiste sans toucher au slug (qui sert a

@@ -8,7 +8,7 @@ import {
   Download, Receipt, Trash2,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
-import { getOrders, getOrderStats, updateOrderStatus, updateOrderNotes, updateOrderTracking, deleteOrder } from '../services/adminService';
+import { getOrders, getOrderStats, updateOrderStatus, updateOrderNotes, updateOrderTracking, deleteOrder, getPrivateSales } from '../services/adminService';
 import { generateInvoicePDF } from '../utils/generateInvoice';
 
 const ORDER_STATUS = {
@@ -56,6 +56,8 @@ function AdminOrders() {
   const [trackingCarrier, setTrackingCarrier] = useState({});
   const [savingTracking, setSavingTracking] = useState(null);
   const [opError, setOpError] = useState('');
+  const [privateSales, setPrivateSales] = useState([]);
+  const [privateSalesLoading, setPrivateSalesLoading] = useState(false);
 
   // Debounce search
   useEffect(() => {
@@ -84,6 +86,15 @@ function AdminOrders() {
   // Stats
   useEffect(() => {
     getOrderStats().then(({ data }) => setStats(data)).catch(() => {});
+  }, []);
+
+  // Ventes privees en attente (prints artistes avec private: true && !paid)
+  useEffect(() => {
+    setPrivateSalesLoading(true);
+    getPrivateSales()
+      .then(({ data }) => setPrivateSales(Array.isArray(data?.data) ? data.data : []))
+      .catch(() => setPrivateSales([]))
+      .finally(() => setPrivateSalesLoading(false));
   }, []);
 
   // Handlers
@@ -220,6 +231,97 @@ function AdminOrders() {
           {opError}
         </div>
       )}
+      {/* Ventes privees en attente (artistes) */}
+      {(privateSalesLoading || privateSales.length > 0) && (
+        <div className="rounded-xl card-bg shadow-lg shadow-black/20 p-4 md:p-5 border border-purple-500/20">
+          <div className="flex items-center gap-2 mb-3">
+            <Palette size={16} className="text-purple-400" />
+            <h3 className="text-sm font-heading font-bold text-heading">
+              {tx({ fr: 'Ventes privees en attente', en: 'Pending private sales', es: 'Ventas privadas pendientes' })}
+            </h3>
+            <span className="text-xs px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-400 font-semibold">
+              {privateSales.length}
+            </span>
+          </div>
+          {privateSalesLoading ? (
+            <div className="flex items-center justify-center py-6">
+              <Loader2 size={20} className="animate-spin text-purple-400" />
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {privateSales.map((sale) => (
+                <div
+                  key={`${sale.artistSlug}-${sale.id}`}
+                  className="flex items-center gap-3 p-3 rounded-lg bg-glass hover:bg-glass/80 transition-colors"
+                >
+                  {sale.image ? (
+                    <img src={sale.image} alt="" className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />
+                  ) : (
+                    <div className="w-12 h-12 rounded-lg bg-purple-500/10 flex items-center justify-center flex-shrink-0">
+                      <Palette size={18} className="text-purple-400/60" />
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-sm font-semibold text-heading truncate">{sale.artistName}</span>
+                      {sale.unique && (
+                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-400 font-semibold">
+                          {tx({ fr: 'Piece unique', en: 'Unique piece', es: 'Pieza unica' })}
+                        </span>
+                      )}
+                      {sale.title && <span className="text-xs text-grey-muted truncate">· {sale.title}</span>}
+                    </div>
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-0.5">
+                      <span className="text-xs text-grey-muted flex items-center gap-1">
+                        <Mail size={11} /> {sale.clientEmail || tx({ fr: 'Pas de courriel', en: 'No email', es: 'Sin correo' })}
+                      </span>
+                      {sale.fixedFormat && (
+                        <span className="text-[10px] text-grey-muted uppercase">{sale.fixedFormat}</span>
+                      )}
+                      {sale.fixedTier && (
+                        <span className="text-[10px] text-grey-muted capitalize">{sale.fixedTier}</span>
+                      )}
+                      {sale.createdAt && (
+                        <span className="text-xs text-grey-muted">
+                          {formatDateShort(sale.createdAt)}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    {typeof sale.price === 'number' && (
+                      <span className="text-base font-bold text-heading">{sale.price}$</span>
+                    )}
+                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-semibold bg-yellow-500/20 text-yellow-400">
+                      <Clock size={10} />
+                      {tx({ fr: 'Attente paiement', en: 'Awaiting payment', es: 'Esperando pago' })}
+                    </span>
+                    {sale.clientLink && (
+                      <a
+                        href={sale.clientLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-1.5 rounded-lg bg-accent/20 text-accent hover:bg-accent/30 transition-colors"
+                        title={tx({ fr: 'Vue client', en: 'Client view', es: 'Vista cliente' })}
+                      >
+                        <ExternalLink size={12} />
+                      </a>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          <p className="text-[10px] text-grey-muted mt-3">
+            {tx({
+              fr: 'Quand le client paye, la vente apparaitra dans la liste des commandes ci-dessous.',
+              en: 'When the client pays, the sale will appear in the orders list below.',
+              es: 'Cuando el cliente pague, la venta aparecera en la lista de pedidos abajo.',
+            })}
+          </p>
+        </div>
+      )}
+
       {/* Summary cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {summaryCards.map((card, i) => {
