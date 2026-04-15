@@ -51,9 +51,9 @@ function BoutiqueMerchTshirt() {
       <SEO
         title={tx({ fr: 'T-Shirt Sublimation Montréal | Massive', en: 'Sublimation T-Shirt Montreal | Massive', es: 'Camiseta Sublimacion Montreal | Massive' })}
         description={tx({
-          fr: 'T-Shirt sublimation Massive à Montréal. 8 couleurs, tailles S à 3XL. Impression full-color permanente. Production locale Mile-End.',
-          en: 'Sublimation T-Shirt by Massive in Montreal. 8 colors, sizes S to 3XL. Permanent full-color print. Local production Mile-End.',
-          es: 'Camiseta sublimacion de Massive en Montreal. 8 colores, tallas S a 3XL. Impresion full-color permanente. Produccion local Mile-End.',
+          fr: 'T-Shirt sublimation Massive à Montréal. 10 couleurs, tailles S à 3XL. Impression full-color permanente. Production locale Mile-End.',
+          en: 'Sublimation T-Shirt by Massive in Montreal. 10 colors, sizes S to 3XL. Permanent full-color print. Local production Mile-End.',
+          es: 'Camiseta sublimacion de Massive en Montreal. 10 colores, tallas S a 3XL. Impresion full-color permanente. Produccion local Mile-End.',
         })}
         breadcrumbs={[
           { name: tx({ fr: 'Accueil', en: 'Home', es: 'Inicio' }), url: '/' },
@@ -80,9 +80,9 @@ function BoutiqueMerchTshirt() {
             </h1>
             <p className="text-lg text-grey-light max-w-2xl">
               {tx({
-                fr: 'Coton preshrunk, impression sublimation durable. 8 couleurs.',
-                en: 'Preshrunk cotton, durable sublimation print. 8 colors.',
-                es: 'Algodón preencogido, impresión duradera. 8 colores.',
+                fr: 'Coton preshrunk, impression sublimation durable. 10 couleurs.',
+                en: 'Preshrunk cotton, durable sublimation print. 10 colors.',
+                es: 'Algodón preencogido, impresión duradera. 10 colores.',
               })}
             </p>
           </motion.div>

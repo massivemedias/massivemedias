@@ -23,14 +23,14 @@ const merchConfig = {
     cmsSlug: 'merch-tshirt',
     label: { fr: 'T-Shirt Massive', en: 'Massive T-Shirt', es: 'Camiseta Massive' },
     subtitle: {
-      fr: 'Coton preshrunk, impression sublimation durable. 8 couleurs.',
-      en: 'Preshrunk cotton, durable sublimation print. 8 colors.',
-      es: 'Algodón preencogido, impresión duradera. 8 colores.',
+      fr: 'Coton preshrunk, impression sublimation durable. 10 couleurs.',
+      en: 'Preshrunk cotton, durable sublimation print. 10 colors.',
+      es: 'Algodón preencogido, impresión duradera. 10 colores.',
     },
     seoDesc: {
-      fr: 'T-Shirt Massive. 8 couleurs, tailles S à 3XL.',
-      en: 'Massive T-Shirt. 8 colors, sizes S to 3XL.',
-      es: 'Camiseta Massive. 8 colores, tallas S a 3XL.',
+      fr: 'T-Shirt Massive. 10 couleurs, tailles S à 3XL.',
+      en: 'Massive T-Shirt. 10 colors, sizes S to 3XL.',
+      es: 'Camiseta Massive. 10 colores, tallas S a 3XL.',
     },
   },
   hoodie: {
@@ -42,14 +42,14 @@ const merchConfig = {
     cmsSlug: 'merch-hoodie',
     label: { fr: 'Hoodie Massive', en: 'Massive Hoodie', es: 'Sudadera Massive' },
     subtitle: {
-      fr: 'Molleton epais, impression sublimation durable. 8 couleurs.',
-      en: 'Heavy fleece, durable sublimation print. 8 colors.',
-      es: 'Forro polar grueso, impresión duradera. 8 colores.',
+      fr: 'Molleton epais, impression sublimation durable. 10 couleurs.',
+      en: 'Heavy fleece, durable sublimation print. 10 colors.',
+      es: 'Forro polar grueso, impresión duradera. 10 colores.',
     },
     seoDesc: {
-      fr: 'Hoodie Massive. 8 couleurs, tailles S à 3XL.',
-      en: 'Massive Hoodie. 8 colors, sizes S to 3XL.',
-      es: 'Sudadera Massive. 8 colores, tallas S a 3XL.',
+      fr: 'Hoodie Massive. 10 couleurs, tailles S à 3XL.',
+      en: 'Massive Hoodie. 10 colors, sizes S to 3XL.',
+      es: 'Sudadera Massive. 10 colores, tallas S a 3XL.',
     },
   },
   longsleeve: {
@@ -61,14 +61,14 @@ const merchConfig = {
     cmsSlug: 'merch-longsleeve',
     label: { fr: 'Long Sleeve Massive', en: 'Massive Long Sleeve', es: 'Sudadera Massive' },
     subtitle: {
-      fr: 'Manches longues, impression sublimation durable. 8 couleurs.',
-      en: 'Long sleeve, durable sublimation print. 8 colors.',
-      es: 'Manga larga, impresión duradera. 8 colores.',
+      fr: 'Manches longues, impression sublimation durable. 10 couleurs.',
+      en: 'Long sleeve, durable sublimation print. 10 colors.',
+      es: 'Manga larga, impresión duradera. 10 colores.',
     },
     seoDesc: {
-      fr: 'Long Sleeve Massive. 8 couleurs, tailles S à 3XL.',
-      en: 'Massive Long Sleeve. 8 colors, sizes S to 3XL.',
-      es: 'Sudadera manga larga Massive. 8 colores, tallas S a 3XL.',
+      fr: 'Long Sleeve Massive. 10 couleurs, tailles S à 3XL.',
+      en: 'Massive Long Sleeve. 10 colors, sizes S to 3XL.',
+      es: 'Sudadera manga larga Massive. 10 colores, tallas S a 3XL.',
     },
   },
 };

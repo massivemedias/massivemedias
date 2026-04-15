@@ -66,7 +66,7 @@ function ConfiguratorSublimation() {
   const colorObj = currentColors.find(c => c.id === selectedColor) || currentColors[0];
 
   // Preferred default color per product type
-  const defaultColorMap = { tshirt: 'black', hoodie: 'black', longsleeve: 'black', totebag: 'lavender' };
+  const defaultColorMap = { tshirt: 'black', hoodie: 'black', longsleeve: 'black', totebag: 'black' };
 
   const handleProductChange = (p) => {
     setProduct(p);
