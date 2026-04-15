@@ -14,7 +14,7 @@
  * Les logos sont places en coordonnees relatives (0..1 de la box produit),
  * donc ils suivent quand on switche entre produits de ratios differents.
  */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Upload, Download, RotateCcw, X, Shirt } from 'lucide-react';
 
 // Catalogue des produits dispo. Chaque face a ses propres dimensions natives
