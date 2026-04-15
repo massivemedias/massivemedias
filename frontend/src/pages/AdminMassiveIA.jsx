@@ -1094,7 +1094,9 @@ function ResizeTab() {
   const [quality, setQuality] = useState(80);
   const [formats, setFormats] = useState(null); // { png, jpg, webp, svg }
   const [processing, setProcessing] = useState(false);
+  const [livePreviewUrl, setLivePreviewUrl] = useState(null); // data URL mis a jour instantanement
   const processTimeout = useRef(null);
+  const imgRef = useRef(null); // HTMLImageElement cache pour renders rapides
 
   const fmtBytes = (b) => {
     if (!b && b !== 0) return '...';
@@ -1103,61 +1105,78 @@ function ResizeTab() {
     return (b / (1024 * 1024)).toFixed(2) + ' MB';
   };
 
-  const runProcess = (previewUrl, mw, q) => {
-    if (!previewUrl) return;
+  // Render instantane (synchrone) via toDataURL - pour le live preview
+  const renderLive = (mw, q) => {
+    const img = imgRef.current;
+    if (!img) return;
+    let w = img.naturalWidth, h = img.naturalHeight;
+    if (w > mw) { const r = mw / w; w = mw; h = Math.round(h * r); }
+    const canvas = document.createElement('canvas');
+    canvas.width = w; canvas.height = h;
+    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+    // toDataURL est synchrone - preview instantane
+    setLivePreviewUrl(canvas.toDataURL('image/webp', q / 100));
+  };
+
+  // Process complet (async blobs) pour les tailles des cartes format
+  const runProcess = (mw, q) => {
+    const img = imgRef.current;
+    if (!img) return;
     setProcessing(true);
     setFormats(null);
-    const img = new window.Image();
-    img.onload = () => {
-      let w = img.naturalWidth, h = img.naturalHeight;
-      if (w > mw) { const r = mw / w; w = mw; h = Math.round(h * r); }
-      const canvas = document.createElement('canvas');
-      canvas.width = w; canvas.height = h;
-      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+    let w = img.naturalWidth, h = img.naturalHeight;
+    if (w > mw) { const r = mw / w; w = mw; h = Math.round(h * r); }
+    const canvas = document.createElement('canvas');
+    canvas.width = w; canvas.height = h;
+    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
 
-      const toBlob = (mime, qv) => new Promise(res =>
-        canvas.toBlob(blob => res(blob ? { url: URL.createObjectURL(blob), bytes: blob.size, w, h } : null), mime, qv)
-      );
+    const toBlob = (mime, qv) => new Promise(res =>
+      canvas.toBlob(blob => res(blob ? { url: URL.createObjectURL(blob), bytes: blob.size, w, h } : null), mime, qv)
+    );
 
-      const makeSVG = () => {
-        const d = canvas.toDataURL('image/png');
-        const s = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"><image href="${d}" width="${w}" height="${h}"/></svg>`;
-        const b = new Blob([s], { type: 'image/svg+xml' });
-        return { url: URL.createObjectURL(b), bytes: b.size, w, h };
-      };
-
-      Promise.all([
-        toBlob('image/png'),
-        toBlob('image/jpeg', q / 100),
-        toBlob('image/webp', q / 100),
-      ]).then(([png, jpg, webp]) => {
-        setFormats({ png, jpg, webp, svg: makeSVG() });
-        setProcessing(false);
-      });
+    const makeSVG = () => {
+      const d = canvas.toDataURL('image/png');
+      const s = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"><image href="${d}" width="${w}" height="${h}"/></svg>`;
+      const b = new Blob([s], { type: 'image/svg+xml' });
+      return { url: URL.createObjectURL(b), bytes: b.size, w, h };
     };
-    img.src = previewUrl;
+
+    Promise.all([
+      toBlob('image/png'),
+      toBlob('image/jpeg', q / 100),
+      toBlob('image/webp', q / 100),
+    ]).then(([png, jpg, webp]) => {
+      setFormats({ png, jpg, webp, svg: makeSVG() });
+      setProcessing(false);
+    });
   };
 
   const handleFile = (f) => {
     setFile(f);
     setFormats(null);
+    setLivePreviewUrl(null);
     setOrigSize({ w: 0, h: 0, bytes: f.size });
     const url = URL.createObjectURL(f);
     setPreview(url);
     const img = new window.Image();
     img.onload = () => {
+      imgRef.current = img;
       setOrigSize(prev => ({ ...prev, w: img.naturalWidth, h: img.naturalHeight }));
+      renderLive(maxWidth, quality);
       clearTimeout(processTimeout.current);
-      processTimeout.current = setTimeout(() => runProcess(url, maxWidth, quality), 300);
+      processTimeout.current = setTimeout(() => runProcess(maxWidth, quality), 300);
     };
     img.src = url;
   };
 
   // Re-process quand les parametres changent
   useEffect(() => {
-    if (!preview) return;
+    if (!imgRef.current) return;
+    // Preview instantane
+    renderLive(maxWidth, quality);
+    // Blobs pour les tailles (debounce)
     clearTimeout(processTimeout.current);
-    processTimeout.current = setTimeout(() => runProcess(preview, maxWidth, quality), 500);
+    processTimeout.current = setTimeout(() => runProcess(maxWidth, quality), 500);
     return () => clearTimeout(processTimeout.current);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [maxWidth, quality]);
@@ -1194,7 +1213,11 @@ function ResizeTab() {
               <label className="text-xs text-grey-muted block mb-1">Largeur max: {maxWidth}px</label>
               <input
                 type="range" min="200" max="4000" step="100" value={maxWidth}
-                onChange={(e) => setMaxWidth(Number(e.target.value))}
+                onChange={(e) => {
+                  const v = Number(e.target.value);
+                  setMaxWidth(v);
+                  renderLive(v, quality); // preview instantane
+                }}
                 className="w-full accent-accent"
               />
               <div className="flex justify-between text-[9px] text-grey-muted mt-0.5">
@@ -1213,7 +1236,11 @@ function ResizeTab() {
               <label className="text-xs text-grey-muted block mb-1">Qualite JPG / WebP: {quality}%</label>
               <input
                 type="range" min="10" max="100" step="5" value={quality}
-                onChange={(e) => setQuality(Number(e.target.value))}
+                onChange={(e) => {
+                  const v = Number(e.target.value);
+                  setQuality(v);
+                  renderLive(maxWidth, v); // preview instantane
+                }}
                 className="w-full accent-accent"
               />
               <div className="flex justify-between text-[9px] text-grey-muted mt-0.5">
@@ -1234,13 +1261,22 @@ function ResizeTab() {
       {/* Colonne droite: cartes format */}
       <div className="space-y-3">
         {preview && origSize.w > 0 && (
-          <div className="rounded-xl overflow-hidden"
+          <div className="rounded-xl overflow-hidden relative"
             style={{
               backgroundImage: 'linear-gradient(45deg,#1a1a1a 25%,transparent 25%),linear-gradient(-45deg,#1a1a1a 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#1a1a1a 75%),linear-gradient(-45deg,transparent 75%,#1a1a1a 75%)',
               backgroundSize: '14px 14px',
               backgroundPosition: '0 0,0 7px,7px -7px,7px 0',
             }}>
-            <img src={preview} alt="apercu" className="max-h-[160px] w-full object-contain" />
+            <img
+              src={livePreviewUrl || preview}
+              alt="apercu"
+              className="max-h-[180px] w-full object-contain transition-none"
+            />
+            {livePreviewUrl && (
+              <span className="absolute bottom-2 right-2 text-[9px] font-mono bg-black/60 backdrop-blur-sm text-green-400 px-1.5 py-0.5 rounded">
+                WebP {quality}% - {Math.min(maxWidth, origSize.w)}px
+              </span>
+            )}
           </div>
         )}
 
