@@ -500,6 +500,7 @@ function applyShader(ctx, shader, w, h) {
   }
 
   else if (shader === 'stars') {
+    // Etoiles 4 pointes SOLIDES multicolores - comme le vrai film FX stars holographique
     ctx.globalCompositeOperation = 'source-atop';
 
     let seed = ((w * 12345) ^ (h * 67890)) >>> 0;
@@ -510,96 +511,109 @@ function applyShader(ctx, shader, w, h) {
 
     const refSize = Math.min(w, h);
 
-    // --- Couche 1: glitter (petits points brillants bien repartis)
-    const nGlitter = 50;
-    for (let i = 0; i < nGlitter; i++) {
+    // Palette arc-en-ciel saturee (comme le film FX stars)
+    const palette = [
+      '#ff1a1a', // rouge vif
+      '#ff5500', // orange
+      '#ffdd00', // jaune
+      '#00ee33', // vert
+      '#00ccff', // cyan
+      '#2244ff', // bleu
+      '#9900ee', // violet
+      '#ff00bb', // rose/magenta
+      '#ffffff', // blanc
+      '#ffff55', // jaune pale
+      '#55ffee', // cyan pale
+      '#ff88aa', // rose pale
+    ];
+
+    // Dessine une etoile 4 pointes (polygone solide, pointes fines et allongees)
+    const draw4Star = (x, y, outerR, innerR, angle = -Math.PI / 4) => {
+      ctx.beginPath();
+      for (let i = 0; i < 8; i++) {
+        const a = angle + (i * Math.PI) / 4;
+        const r = i % 2 === 0 ? outerR : innerR;
+        if (i === 0) ctx.moveTo(x + Math.cos(a) * r, y + Math.sin(a) * r);
+        else ctx.lineTo(x + Math.cos(a) * r, y + Math.sin(a) * r);
+      }
+      ctx.closePath();
+    };
+
+    // --- Couche 1: etoiles 4 pointes regulieres (masse principale)
+    const nStars = 90;
+    for (let i = 0; i < nStars; i++) {
       const x = rnd() * w;
       const y = rnd() * h;
-      const r = refSize * (0.003 + rnd() * 0.005);
-      const alpha = 0.25 + rnd() * 0.55;
+      const outerR = refSize * (0.007 + rnd() * 0.020);
+      const innerR = outerR * (0.14 + rnd() * 0.10); // pointes tres fines
+      const color = palette[Math.floor(rnd() * palette.length)];
+      const alpha = 0.55 + rnd() * 0.40;
+      const rot = rnd() * Math.PI * 0.5; // rotation aleatoire legere
+
       ctx.save();
       ctx.globalAlpha = alpha;
-      // Petit halo
-      const grd = ctx.createRadialGradient(x, y, 0, x, y, r * 2.5);
-      grd.addColorStop(0, 'rgba(255,255,255,1)');
-      grd.addColorStop(1, 'rgba(255,255,255,0)');
-      ctx.fillStyle = grd;
-      ctx.beginPath();
-      ctx.arc(x, y, r * 2.5, 0, Math.PI * 2);
+      ctx.fillStyle = color;
+      draw4Star(x, y, outerR, innerR, rot);
       ctx.fill();
       ctx.restore();
     }
 
-    // --- Couche 2: sparkles 4 branches (moy. taille, bien repartis)
-    const nSparkles = 18;
-    for (let i = 0; i < nSparkles; i++) {
+    // --- Couche 2: croix simples (+) pour varier les formes
+    const nCrosses = 30;
+    for (let i = 0; i < nCrosses; i++) {
       const x = rnd() * w;
       const y = rnd() * h;
-      const r = refSize * (0.009 + rnd() * 0.018);
-      const alpha = 0.45 + rnd() * 0.45;
+      const r = refSize * (0.004 + rnd() * 0.010);
+      const t = Math.max(1, r * 0.28); // epaisseur bras
+      const color = palette[Math.floor(rnd() * palette.length)];
+      const alpha = 0.45 + rnd() * 0.50;
 
       ctx.save();
-
-      // Halo radial doux
-      const grd = ctx.createRadialGradient(x, y, 0, x, y, r * 3.5);
-      grd.addColorStop(0,   `rgba(255,255,255,${alpha})`);
-      grd.addColorStop(0.35, `rgba(255,252,210,${alpha * 0.4})`);
-      grd.addColorStop(1,   'rgba(255,255,255,0)');
-      ctx.fillStyle = grd;
-      ctx.beginPath();
-      ctx.arc(x, y, r * 3.5, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Bras longs (axes H+V)
       ctx.globalAlpha = alpha;
-      ctx.strokeStyle = 'rgba(255,255,255,1)';
-      ctx.lineWidth = Math.max(0.5, r * 0.20);
-      ctx.lineCap = 'round';
-      ctx.beginPath();
-      ctx.moveTo(x - r * 3.0, y); ctx.lineTo(x + r * 3.0, y);
-      ctx.moveTo(x, y - r * 3.0); ctx.lineTo(x, y + r * 3.0);
-      ctx.stroke();
+      ctx.fillStyle = color;
+      ctx.fillRect(x - r, y - t / 2, r * 2, t);
+      ctx.fillRect(x - t / 2, y - r, t, r * 2);
+      ctx.restore();
+    }
 
-      // Bras diagonaux (45deg) - plus courts, plus subtils
+    // --- Couche 3: petits points ronds (glitter entre les etoiles)
+    const nDots = 45;
+    for (let i = 0; i < nDots; i++) {
+      const x = rnd() * w;
+      const y = rnd() * h;
+      const r = refSize * (0.002 + rnd() * 0.005);
+      const color = palette[Math.floor(rnd() * palette.length)];
+      const alpha = 0.40 + rnd() * 0.55;
+
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    // --- Couche 4: grandes etoiles accentuees (quelques points de brillance forts)
+    const nAccent = 10;
+    for (let i = 0; i < nAccent; i++) {
+      const x = rnd() * w;
+      const y = rnd() * h;
+      const outerR = refSize * (0.020 + rnd() * 0.022);
+      const innerR = outerR * 0.15;
+      const color = palette[Math.floor(rnd() * palette.length)];
+      const alpha = 0.75 + rnd() * 0.20;
+
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = color;
+      draw4Star(x, y, outerR, innerR, rnd() * Math.PI * 0.5);
+      ctx.fill();
+      // Halo blanc leger autour des grandes
       ctx.globalAlpha = alpha * 0.30;
-      ctx.lineWidth = Math.max(0.4, r * 0.13);
-      ctx.beginPath();
-      ctx.moveTo(x - r * 1.4, y - r * 1.4); ctx.lineTo(x + r * 1.4, y + r * 1.4);
-      ctx.moveTo(x + r * 1.4, y - r * 1.4); ctx.lineTo(x - r * 1.4, y + r * 1.4);
-      ctx.stroke();
-
-      ctx.restore();
-    }
-
-    // --- Couche 3: quelques grands sparkles brillants (focal points)
-    const nBig = 5;
-    for (let i = 0; i < nBig; i++) {
-      const x = rnd() * w;
-      const y = rnd() * h;
-      const r = refSize * (0.018 + rnd() * 0.014);
-      const alpha = 0.55 + rnd() * 0.35;
-      // Teinte legere (or, bleu glace, rose)
-      const tints = ['255,248,180', '200,230,255', '255,210,240', '255,255,255'];
-      const tint = tints[Math.floor(rnd() * tints.length)];
-
-      ctx.save();
-      const grd = ctx.createRadialGradient(x, y, 0, x, y, r * 4);
-      grd.addColorStop(0,   `rgba(255,255,255,${alpha})`);
-      grd.addColorStop(0.2, `rgba(${tint},${alpha * 0.6})`);
-      grd.addColorStop(1,   `rgba(${tint},0)`);
-      ctx.fillStyle = grd;
-      ctx.beginPath();
-      ctx.arc(x, y, r * 4, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255,255,255,1)';
+      draw4Star(x, y, outerR * 1.5, innerR * 1.5, rnd() * Math.PI * 0.5);
       ctx.fill();
-
-      ctx.globalAlpha = alpha * 0.95;
-      ctx.strokeStyle = 'rgba(255,255,255,1)';
-      ctx.lineWidth = Math.max(0.7, r * 0.18);
-      ctx.lineCap = 'round';
-      ctx.beginPath();
-      ctx.moveTo(x - r * 3.5, y); ctx.lineTo(x + r * 3.5, y);
-      ctx.moveTo(x, y - r * 3.5); ctx.lineTo(x, y + r * 3.5);
-      ctx.stroke();
       ctx.restore();
     }
   }
