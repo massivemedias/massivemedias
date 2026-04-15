@@ -664,7 +664,7 @@ function ArtisteDetail({ subdomainSlug }) {
               </div>
               <div className={
                 galleryView === 'list' ? 'grid grid-cols-1 sm:grid-cols-2 gap-3' :
-                galleryView === 'compact' ? 'grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-2' :
+                galleryView === 'compact' ? 'grid grid-cols-2 gap-3' :
                 'flex flex-wrap gap-4'
               }>
                 {artist.prints.map((print, index) => (
