@@ -1058,89 +1058,138 @@ function PrintsTab() {
 }
 
 // ---------------------------------------------------------------------------
-// Resize Tab - Redimensionner + compresser en WebP
+// Resize Tab - Redimensionner + convertir en PNG / JPG / WebP / SVG
+// Auto-conversion debounced au changement de parametres
 // ---------------------------------------------------------------------------
+
+const RESIZE_FORMATS = [
+  {
+    key: 'webp', label: 'WebP', ext: '.webp',
+    desc: 'Optimal pour le web', badge: 'Recommande',
+    badgeColor: 'bg-green-500/20 text-green-400',
+    color: 'text-green-400', border: 'border-green-500/20',
+  },
+  {
+    key: 'jpg', label: 'JPG', ext: '.jpg',
+    desc: 'Universel, compatible partout',
+    color: 'text-yellow-400', border: 'border-yellow-500/20',
+  },
+  {
+    key: 'png', label: 'PNG', ext: '.png',
+    desc: 'Lossless, supporte la transparence',
+    color: 'text-blue-400', border: 'border-blue-500/20',
+  },
+  {
+    key: 'svg', label: 'SVG', ext: '.svg',
+    desc: 'Image raster encapsulee dans SVG',
+    color: 'text-purple-400', border: 'border-purple-500/20',
+  },
+];
+
 function ResizeTab() {
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const [origSize, setOrigSize] = useState({ w: 0, h: 0, bytes: 0 });
   const [maxWidth, setMaxWidth] = useState(1600);
   const [quality, setQuality] = useState(80);
-  const [result, setResult] = useState(null); // { blob, url, w, h, bytes }
+  const [formats, setFormats] = useState(null); // { png, jpg, webp, svg }
   const [processing, setProcessing] = useState(false);
+  const processTimeout = useRef(null);
+
+  const fmtBytes = (b) => {
+    if (!b && b !== 0) return '...';
+    if (b < 1024) return b + ' B';
+    if (b < 1024 * 1024) return (b / 1024).toFixed(1) + ' KB';
+    return (b / (1024 * 1024)).toFixed(2) + ' MB';
+  };
+
+  const runProcess = (previewUrl, mw, q) => {
+    if (!previewUrl) return;
+    setProcessing(true);
+    setFormats(null);
+    const img = new window.Image();
+    img.onload = () => {
+      let w = img.naturalWidth, h = img.naturalHeight;
+      if (w > mw) { const r = mw / w; w = mw; h = Math.round(h * r); }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+
+      const toBlob = (mime, qv) => new Promise(res =>
+        canvas.toBlob(blob => res(blob ? { url: URL.createObjectURL(blob), bytes: blob.size, w, h } : null), mime, qv)
+      );
+
+      const makeSVG = () => {
+        const d = canvas.toDataURL('image/png');
+        const s = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"><image href="${d}" width="${w}" height="${h}"/></svg>`;
+        const b = new Blob([s], { type: 'image/svg+xml' });
+        return { url: URL.createObjectURL(b), bytes: b.size, w, h };
+      };
+
+      Promise.all([
+        toBlob('image/png'),
+        toBlob('image/jpeg', q / 100),
+        toBlob('image/webp', q / 100),
+      ]).then(([png, jpg, webp]) => {
+        setFormats({ png, jpg, webp, svg: makeSVG() });
+        setProcessing(false);
+      });
+    };
+    img.src = previewUrl;
+  };
 
   const handleFile = (f) => {
     setFile(f);
-    setResult(null);
+    setFormats(null);
     setOrigSize({ w: 0, h: 0, bytes: f.size });
     const url = URL.createObjectURL(f);
     setPreview(url);
     const img = new window.Image();
-    img.onload = () => setOrigSize(prev => ({ ...prev, w: img.naturalWidth, h: img.naturalHeight }));
+    img.onload = () => {
+      setOrigSize(prev => ({ ...prev, w: img.naturalWidth, h: img.naturalHeight }));
+      clearTimeout(processTimeout.current);
+      processTimeout.current = setTimeout(() => runProcess(url, maxWidth, quality), 300);
+    };
     img.src = url;
   };
 
-  const handleProcess = () => {
-    if (!file || !preview) return;
-    setProcessing(true);
-    setResult(null);
-    const img = new window.Image();
-    img.onload = () => {
-      let w = img.naturalWidth, h = img.naturalHeight;
-      if (w > maxWidth) {
-        const ratio = maxWidth / w;
-        w = maxWidth;
-        h = Math.round(h * ratio);
-      }
-      const canvas = document.createElement('canvas');
-      canvas.width = w;
-      canvas.height = h;
-      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-      canvas.toBlob((blob) => {
-        const url = URL.createObjectURL(blob);
-        setResult({ blob, url, w, h, bytes: blob.size });
-        setProcessing(false);
-      }, 'image/webp', quality / 100);
-    };
-    img.src = preview;
-  };
+  // Re-process quand les parametres changent
+  useEffect(() => {
+    if (!preview) return;
+    clearTimeout(processTimeout.current);
+    processTimeout.current = setTimeout(() => runProcess(preview, maxWidth, quality), 500);
+    return () => clearTimeout(processTimeout.current);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [maxWidth, quality]);
 
-  const handleDownload = () => {
-    if (!result) return;
-    const name = (file?.name || 'image').replace(/\.[^/.]+$/, '') + '.webp';
+  const download = (fmtData, ext) => {
+    if (!fmtData) return;
+    const base = (file?.name || 'image').replace(/\.[^/.]+$/, '');
     const a = document.createElement('a');
-    a.href = result.url;
-    a.download = name;
+    a.href = fmtData.url;
+    a.download = base + ext;
     a.click();
-  };
-
-  const fmt = (bytes) => {
-    if (bytes < 1024) return bytes + ' B';
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   };
 
   return (
     <div className="grid lg:grid-cols-2 gap-6">
+      {/* Colonne gauche: drop + controls */}
       <div className="space-y-4">
-        {/* Drop zone */}
         <DropZone
           accept="image/*"
           file={file}
           onFile={handleFile}
-          onClear={() => { setFile(null); setPreview(null); setResult(null); }}
-          label="Deposer une image a redimensionner"
+          onClear={() => { setFile(null); setPreview(null); setFormats(null); }}
+          label="Deposer une image a convertir (PNG, JPG, WebP, TIFF...)"
         />
 
-        {/* Info original */}
         {file && (
           <div className="rounded-xl bg-black/20 p-4 space-y-3">
             <div className="flex items-center justify-between text-sm">
               <span className="text-grey-muted">Original</span>
-              <span className="text-heading font-mono">{origSize.w}x{origSize.h} - {fmt(origSize.bytes)}</span>
+              <span className="text-heading font-mono">{origSize.w}x{origSize.h} &mdash; {fmtBytes(origSize.bytes)}</span>
             </div>
 
-            {/* Max width */}
             <div>
               <label className="text-xs text-grey-muted block mb-1">Largeur max: {maxWidth}px</label>
               <input
@@ -1148,76 +1197,120 @@ function ResizeTab() {
                 onChange={(e) => setMaxWidth(Number(e.target.value))}
                 className="w-full accent-accent"
               />
-              <div className="flex justify-between text-[9px] text-grey-muted">
+              <div className="flex justify-between text-[9px] text-grey-muted mt-0.5">
                 <span>200px</span>
-                <div className="flex gap-2">
+                <div className="flex gap-1.5">
                   {[800, 1200, 1600, 2400].map(v => (
                     <button key={v} onClick={() => setMaxWidth(v)}
-                      className={`px-1.5 py-0.5 rounded ${maxWidth === v ? 'bg-accent text-white' : 'hover:text-heading'}`}>{v}</button>
+                      className={`px-1.5 py-0.5 rounded transition-colors ${maxWidth === v ? 'bg-accent text-white' : 'hover:text-heading'}`}>{v}</button>
                   ))}
                 </div>
                 <span>4000px</span>
               </div>
             </div>
 
-            {/* Quality */}
             <div>
-              <label className="text-xs text-grey-muted block mb-1">Qualite WebP: {quality}%</label>
+              <label className="text-xs text-grey-muted block mb-1">Qualite JPG / WebP: {quality}%</label>
               <input
                 type="range" min="10" max="100" step="5" value={quality}
                 onChange={(e) => setQuality(Number(e.target.value))}
                 className="w-full accent-accent"
               />
-              <div className="flex justify-between text-[9px] text-grey-muted">
+              <div className="flex justify-between text-[9px] text-grey-muted mt-0.5">
                 <span>10%</span>
-                <div className="flex gap-2">
+                <div className="flex gap-1.5">
                   {[50, 70, 80, 90].map(v => (
                     <button key={v} onClick={() => setQuality(v)}
-                      className={`px-1.5 py-0.5 rounded ${quality === v ? 'bg-accent text-white' : 'hover:text-heading'}`}>{v}%</button>
+                      className={`px-1.5 py-0.5 rounded transition-colors ${quality === v ? 'bg-accent text-white' : 'hover:text-heading'}`}>{v}%</button>
                   ))}
                 </div>
                 <span>100%</span>
               </div>
             </div>
-
-            <button
-              onClick={handleProcess}
-              disabled={processing}
-              className="w-full py-3 rounded-xl bg-accent text-white font-semibold text-sm disabled:opacity-40 transition-opacity flex items-center justify-center gap-2"
-            >
-              {processing ? <Loader2 size={16} className="animate-spin" /> : <ImageDown size={16} />}
-              {processing ? 'Conversion...' : 'Convertir en WebP'}
-            </button>
           </div>
         )}
       </div>
 
-      {/* Resultat */}
-      <div className="rounded-xl bg-black/20 p-4 flex items-center justify-center min-h-[300px]">
-        {result ? (
-          <div className="flex flex-col items-center gap-4 w-full">
-            <img src={result.url} alt="result" className="max-h-[400px] rounded-lg object-contain w-full" />
-            <div className="flex items-center gap-4 text-sm">
-              <span className="text-heading font-mono">{result.w}x{result.h}</span>
-              <span className={`font-semibold ${result.bytes < origSize.bytes ? 'text-green-400' : 'text-orange-400'}`}>
-                {fmt(result.bytes)}
-              </span>
-              {result.bytes < origSize.bytes && (
-                <span className="text-green-400 text-xs">
-                  -{Math.round((1 - result.bytes / origSize.bytes) * 100)}%
-                </span>
-              )}
-            </div>
-            <button
-              onClick={handleDownload}
-              className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-accent text-white text-sm font-semibold hover:bg-accent/90 transition-colors"
-            >
-              <Download size={16} />
-              Telecharger .webp
-            </button>
+      {/* Colonne droite: cartes format */}
+      <div className="space-y-3">
+        {preview && origSize.w > 0 && (
+          <div className="rounded-xl overflow-hidden"
+            style={{
+              backgroundImage: 'linear-gradient(45deg,#1a1a1a 25%,transparent 25%),linear-gradient(-45deg,#1a1a1a 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#1a1a1a 75%),linear-gradient(-45deg,transparent 75%,#1a1a1a 75%)',
+              backgroundSize: '14px 14px',
+              backgroundPosition: '0 0,0 7px,7px -7px,7px 0',
+            }}>
+            <img src={preview} alt="apercu" className="max-h-[160px] w-full object-contain" />
+          </div>
+        )}
+
+        {file ? (
+          <div className="grid grid-cols-2 gap-2">
+            {RESIZE_FORMATS.map(fd => {
+              const fmtData = formats?.[fd.key];
+              const savings = fmtData && origSize.bytes > 0
+                ? Math.round((1 - fmtData.bytes / origSize.bytes) * 100)
+                : null;
+              return (
+                <div key={fd.key}
+                  className={`rounded-xl bg-black/20 border ${fd.border} p-3 flex flex-col gap-2`}>
+                  <div className="flex items-start justify-between gap-1">
+                    <span className={`text-sm font-bold ${fd.color}`}>{fd.label}</span>
+                    {fd.badge && (
+                      <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-semibold ${fd.badgeColor}`}>
+                        {fd.badge}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[10px] text-grey-muted leading-tight">{fd.desc}</p>
+
+                  {/* Taille */}
+                  <div className="flex items-center justify-between min-h-[20px]">
+                    {processing ? (
+                      <Loader2 size={11} className="animate-spin text-grey-muted" />
+                    ) : fmtData ? (
+                      <>
+                        <span className="text-sm font-mono font-semibold text-heading">
+                          {fmtBytes(fmtData.bytes)}
+                        </span>
+                        {savings !== null && (
+                          <span className={`text-[10px] font-bold ${
+                            savings > 5 ? 'text-green-400' :
+                            savings < -5 ? 'text-orange-400' :
+                            'text-grey-muted'
+                          }`}>
+                            {savings > 0 ? `-${savings}%` : savings < 0 ? `+${Math.abs(savings)}%` : '='}
+                          </span>
+                        )}
+                      </>
+                    ) : (
+                      <span className="text-grey-muted text-xs">-</span>
+                    )}
+                  </div>
+
+                  {/* Dimensions si disponibles */}
+                  {fmtData && (
+                    <span className="text-[9px] text-grey-muted font-mono">
+                      {fmtData.w}x{fmtData.h}px
+                    </span>
+                  )}
+
+                  <button
+                    onClick={() => download(fmtData, fd.ext)}
+                    disabled={!fmtData || processing}
+                    className={`w-full py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 disabled:opacity-30 bg-white/5 hover:bg-white/10 ${fd.color}`}
+                  >
+                    <Download size={11} />
+                    Telecharger
+                  </button>
+                </div>
+              );
+            })}
           </div>
         ) : (
-          <p className="text-grey-muted text-sm">Le resultat apparaitra ici</p>
+          <div className="rounded-xl bg-black/20 flex items-center justify-center min-h-[300px]">
+            <p className="text-grey-muted text-sm">Le resultat apparaitra ici</p>
+          </div>
         )}
       </div>
     </div>
