@@ -823,8 +823,7 @@ select.input-field option {
 }
 
 .card-bg-bordered {
-  background: var(--bg-card);
-  box-shadow: var(--card-shadow);
+  /* background removed - use explicit bg classes instead */
 }
 
 /* Glass with shadow */
