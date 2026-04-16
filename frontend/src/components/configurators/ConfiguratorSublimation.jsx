@@ -19,7 +19,7 @@ const productsWithColors = ['tshirt', 'hoodie', 'longsleeve', 'totebag'];
 // Products that also have size selection
 const productsWithSizes = ['tshirt', 'hoodie', 'longsleeve'];
 // Products with front/back views
-const productsWithSides = ['tshirt', 'hoodie', 'longsleeve'];
+const productsWithSides = ['tshirt', 'hoodie', 'longsleeve', 'totebag'];
 // Icons for product type selector
 const PRODUCT_ICONS = {
   tshirt: Shirt, longsleeve: Shirt, hoodie: Shirt,
@@ -27,6 +27,7 @@ const PRODUCT_ICONS = {
 };
 
 // Back view mockup images (noir - pas d'images couleur disponibles pour le dos)
+// totebag: pas de mockup back, utilise l'image couleur (fallback dans le JSX)
 const BACK_IMAGES = {
   tshirt: '/images/mockups/tshirt/back.webp',
   hoodie: '/images/mockups/hoodie/back.webp',
@@ -141,20 +142,6 @@ function ConfiguratorSublimation() {
 
   return (
     <>
-      {/* Custom design banner */}
-      {hasColors && (
-        <div className="mb-4 flex items-center gap-2.5 px-4 py-3 rounded-xl bg-accent/8 border border-accent/20">
-          <Sparkles size={18} className="text-accent flex-shrink-0" />
-          <p className="text-sm text-heading leading-snug">
-            {tx({
-              fr: 'Deposez votre design pour le voir directement sur le produit. Impression all-over sublimation permanente.',
-              en: 'Drop your design to see it on the product. Permanent all-over sublimation print.',
-              es: 'Suba su diseno para verlo en el producto. Impresion sublimacion permanente.',
-            })}
-          </p>
-        </div>
-      )}
-
       {/* Product type selector - icons + noms, une seule ligne scrollable */}
       <div className="mb-4 md:mb-5">
         <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-2">
@@ -180,40 +167,62 @@ function ConfiguratorSublimation() {
         </div>
       </div>
 
-      {/* Color + Size (toujours visible) */}
+      {/* Apercu produit + Color + Size (toujours visible) */}
       {hasColors && (
-        <div className="mb-4 md:mb-5 space-y-3">
-          <div className="flex flex-col sm:flex-row gap-3">
-            <div className="flex-1 min-w-0">
+        <div className="mb-4 md:mb-5">
+          <div className="flex flex-col md:flex-row gap-3 md:gap-4">
+            {/* Apercu produit compact */}
+            <div className="flex md:flex-col items-center gap-3 md:gap-2 md:w-40 flex-shrink-0">
+              <AnimatePresence mode="wait">
+                <motion.img
+                  key={`${product}-${selectedColor}`}
+                  src={currentGetImage(selectedColor)}
+                  alt={`${productLabel ? tx({ fr: productLabel.labelFr, en: productLabel.labelEn }) : product} ${colorObj.name}`}
+                  className="w-24 h-24 md:w-full md:h-auto object-contain rounded-lg flex-shrink-0"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.15 }}
+                />
+              </AnimatePresence>
+              <div className="text-left md:text-center">
+                <span className="text-heading text-sm font-semibold block">{colorObj.name}</span>
+                {hasSizes && <span className="text-grey-muted text-sm">{selectedSize}</span>}
+              </div>
+            </div>
+
+            {/* Couleur + Taille */}
+            <div className="flex-1 min-w-0 space-y-3">
               <ColorSwatches
                 colors={currentColors}
                 selected={selectedColor}
                 onChange={setSelectedColor}
                 label={tx({ fr: 'Couleur', en: 'Color', es: 'Color' })}
               />
-            </div>
-            {hasSizes && (
-              <div className="flex-shrink-0">
-                <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-1.5">
-                  {tx({ fr: 'Taille', en: 'Size', es: 'Talla' })}
-                </label>
-                <div className="flex flex-wrap gap-1.5">
-                  {merchSizes.map(size => (
-                    <button
-                      key={size}
-                      onClick={() => setSelectedSize(size)}
-                      className={`py-1.5 px-2.5 rounded-lg text-sm font-semibold transition-all border-2 ${
-                        selectedSize === size
-                          ? 'border-accent option-selected'
-                          : 'border-transparent hover:border-grey-muted/30 option-default'
-                      }`}
-                    >
-                      {size}
-                    </button>
-                  ))}
+
+              {hasSizes && (
+                <div>
+                  <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-1.5">
+                    {tx({ fr: 'Taille', en: 'Size', es: 'Talla' })}
+                  </label>
+                  <div className="flex flex-wrap gap-1.5">
+                    {merchSizes.map(size => (
+                      <button
+                        key={size}
+                        onClick={() => setSelectedSize(size)}
+                        className={`py-1.5 px-2.5 rounded-lg text-sm font-semibold transition-all border-2 ${
+                          selectedSize === size
+                            ? 'border-accent option-selected'
+                            : 'border-transparent hover:border-grey-muted/30 option-default'
+                        }`}
+                      >
+                        {size}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
       )}
