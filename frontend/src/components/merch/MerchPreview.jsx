@@ -152,9 +152,9 @@ function MerchPreview({ productImageUrl, logoUrl, logoPosition, onLogoPositionCh
               onLoad={handleImageLoad}
             />
 
-            {/* Resize handle bas-droite - visible seulement au hover du logo */}
+            {/* Resize handle bas-droite */}
             <div
-              className="absolute bottom-0 right-0 w-4 h-4 bg-accent rounded-tl-md cursor-nwse-resize opacity-0 group-hover:opacity-70 hover:!opacity-100 transition-opacity"
+              className="absolute -bottom-2 -right-2 w-6 h-6 bg-accent rounded-full cursor-nwse-resize opacity-50 group-hover:opacity-100 hover:scale-110 transition-all shadow-md"
               onMouseDown={(e) => { if (e.button === 0) startResize(e.clientX, e.clientY, e); }}
               onTouchStart={(e) => { const t = e.touches[0]; startResize(t.clientX, t.clientY, e); }}
             />
@@ -163,22 +163,23 @@ function MerchPreview({ productImageUrl, logoUrl, logoPosition, onLogoPositionCh
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); onLogoRemove?.(); }}
-              className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-red-500/80 hover:bg-red-500 text-white flex items-center justify-center transition-all opacity-0 group-hover:opacity-100"
+              className="absolute -top-3 -right-3 w-6 h-6 rounded-full bg-red-500/80 hover:bg-red-500 text-white flex items-center justify-center transition-all opacity-60 group-hover:opacity-100 shadow-md"
             >
-              <X size={12} />
+              <X size={13} />
             </button>
           </div>
         )}
 
         {/* Drop zone placeholder (quand pas de logo) */}
         {!logoUrl && (
-          <div className="absolute inset-x-0 bottom-0 flex flex-col items-center pb-3 gap-1 pointer-events-none">
-            <div className="w-8 h-8 rounded-full bg-accent/10 border border-accent/30 flex items-center justify-center">
-              <Upload size={14} className="text-accent" />
+          <div className="absolute inset-x-0 bottom-0 flex flex-col items-center pb-4 gap-1.5 pointer-events-none">
+            <div className="w-10 h-10 rounded-full bg-accent/15 border border-accent/40 flex items-center justify-center">
+              <Upload size={18} className="text-accent" />
             </div>
-            <span className="text-sm font-semibold text-accent/80">
+            <span className="text-sm font-bold text-accent">
               Deposez votre design
             </span>
+            <span className="text-xs text-accent/60">PNG, JPG, WebP</span>
           </div>
         )}
 
@@ -191,9 +192,9 @@ function MerchPreview({ productImageUrl, logoUrl, logoPosition, onLogoPositionCh
 
         {/* Hint drag quand logo present */}
         {logoUrl && !dragging && !resizing && (
-          <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/50 text-white/60 text-[9px] pointer-events-none">
-            <Move size={8} />
-            <span>Deplacer</span>
+          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/60 text-white/80 text-xs pointer-events-none whitespace-nowrap">
+            <Move size={11} />
+            <span>Glisser pour deplacer</span>
           </div>
         )}
 
@@ -211,7 +212,7 @@ function MerchPreview({ productImageUrl, logoUrl, logoPosition, onLogoPositionCh
         <button
           type="button"
           onClick={() => inputRef.current?.click()}
-          className="text-xs text-accent hover:text-accent/80 transition-colors mt-1"
+          className="text-sm text-accent hover:text-accent/80 transition-colors mt-1.5 font-medium"
         >
           Changer le design
         </button>

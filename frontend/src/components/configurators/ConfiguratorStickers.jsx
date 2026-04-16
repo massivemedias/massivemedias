@@ -278,10 +278,10 @@ function ConfiguratorStickers({ onFinishChange }) {
                   }`}
                 >
                   <span className={`mb-1.5 flex-shrink-0 ${
-                    s.id === 'round' ? 'w-4 h-4 rounded-full border-2 border-current' :
-                    s.id === 'square' ? 'w-4 h-4 rounded-sm border-2 border-current' :
-                    s.id === 'rectangle' ? 'w-5 h-3.5 rounded-sm border-2 border-current' :
-                    'w-5 h-4 border-2 border-current border-dashed rounded-lg'
+                    s.id === 'round' ? 'w-6 h-6 rounded-full border-2 border-current' :
+                    s.id === 'square' ? 'w-6 h-6 rounded-sm border-2 border-current' :
+                    s.id === 'rectangle' ? 'w-7 h-5 rounded-sm border-2 border-current' :
+                    'w-7 h-6 border-2 border-current border-dashed rounded-lg'
                   } text-grey-muted`} />
                   <span className="text-heading leading-tight text-center font-semibold text-sm">
                     {tx({ fr: s.labelFr, en: s.labelEn, es: s.labelEn })}
@@ -324,7 +324,7 @@ function ConfiguratorStickers({ onFinishChange }) {
                   <button
                     key={tier.qty}
                     onClick={() => setQtyIndex(i)}
-                    className={`flex flex-col items-center justify-center py-3 px-1 rounded-lg transition-all border-2 ${qtyIndex === i
+                    className={`flex flex-col items-center justify-center py-3 px-2 rounded-lg transition-all border-2 ${qtyIndex === i
                       ? 'border-accent option-selected'
                       : 'border-transparent hover:border-grey-muted/30 option-default'
                     }`}

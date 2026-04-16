@@ -147,14 +147,14 @@ function ConfiguratorSublimation() {
         <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-2">
           {tx({ fr: 'Produit', en: 'Product', es: 'Producto' })}
         </label>
-        <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1">
+        <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
           {sublimationProducts.map(p => {
             const Icon = PRODUCT_ICONS[p.id] || Package;
             return (
               <button
                 key={p.id}
                 onClick={() => handleProductChange(p.id)}
-                className={`flex items-center gap-1.5 py-2 px-3 rounded-lg text-sm font-semibold transition-all border-2 whitespace-nowrap flex-shrink-0 ${product === p.id
+                className={`flex items-center gap-2 py-2.5 px-3.5 rounded-lg text-sm font-semibold transition-all border-2 whitespace-nowrap flex-shrink-0 ${product === p.id
                   ? 'border-accent option-selected'
                   : 'border-transparent hover:border-grey-muted/30 option-default'
                 }`}
@@ -202,15 +202,15 @@ function ConfiguratorSublimation() {
 
               {hasSizes && (
                 <div>
-                  <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-1.5">
+                  <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-2">
                     {tx({ fr: 'Taille', en: 'Size', es: 'Talla' })}
                   </label>
-                  <div className="flex flex-wrap gap-1.5">
+                  <div className="flex flex-wrap gap-2">
                     {merchSizes.map(size => (
                       <button
                         key={size}
                         onClick={() => setSelectedSize(size)}
-                        className={`py-1.5 px-2.5 rounded-lg text-sm font-semibold transition-all border-2 ${
+                        className={`py-2 px-3 rounded-lg text-sm font-semibold transition-all border-2 ${
                           selectedSize === size
                             ? 'border-accent option-selected'
                             : 'border-transparent hover:border-grey-muted/30 option-default'

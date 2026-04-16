@@ -137,19 +137,19 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {}, onF
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {/* Selected print info */}
       <div className="p-3 rounded-xl bg-glass flex items-center gap-3">
         <img
           src={selectedPrint.image}
           alt={printTitle}
-          className="w-12 h-12 rounded-lg object-cover"
+          className="w-14 h-14 rounded-lg object-cover"
         />
         <div>
           <div className="text-heading font-heading font-bold text-sm leading-tight">{printTitle}</div>
           <div className="text-grey-muted text-xs">{artist.name}</div>
           {isUnique && (
-            <span className="inline-block mt-0.5 px-2 py-0.5 rounded-full bg-accent/20 text-accent text-[10px] font-bold uppercase tracking-wider">
+            <span className="inline-block mt-1 px-2.5 py-1 rounded-full bg-accent/20 text-accent text-xs font-bold uppercase tracking-wider">
               {tx({ fr: 'Pièce unique', en: 'One of a kind', es: 'Pieza única' })}
             </span>
           )}
@@ -208,10 +208,10 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {}, onF
       {/* Printer tier selector */}
       {!fixedTier && !isLocked && (
         <div>
-          <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-1.5">
+          <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-2">
             {tx({ fr: 'Qualité d\'impression', en: 'Print Quality', es: 'Calidad de impresión' })}
           </label>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-2 gap-3">
             {artistPrinterTiers.map(t => (
               <button
                 key={t.id}
@@ -220,7 +220,7 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {}, onF
                   const newPrices = t.id === 'museum' ? artist.pricing.museum : artist.pricing.studio;
                   if (newPrices[format] == null) setFormat('a4');
                 }}
-                className={`text-center py-2.5 px-3 rounded-lg text-xs font-medium transition-all border-2 ${tier === t.id
+                className={`text-center py-3 px-3 rounded-lg text-sm font-medium transition-all border-2 ${tier === t.id
                   ? 'border-accent option-selected'
                   : 'border-transparent hover:border-grey-muted/30 option-default'
                 }`}
@@ -228,7 +228,7 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {}, onF
                 <span className="text-heading font-semibold text-sm block">
                   {tx({ fr: t.labelFr, en: t.labelEn, es: t.labelEn })}
                 </span>
-                <span className="text-grey-muted text-[10px]">{t.desc}</span>
+                <span className="text-grey-muted text-xs">{t.desc}</span>
               </button>
             ))}
           </div>
@@ -238,19 +238,19 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {}, onF
       {/* Format selector */}
       {!fixedFormat && !isLocked && (
         <div>
-          <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-1.5">
+          <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-2">
             Format
           </label>
-          <div className="flex flex-wrap items-end gap-3 justify-center">
+          <div className="flex flex-wrap items-end gap-4 justify-center">
             {artistFormats.map(f => {
               const price = getFormatPrice(f.id);
               const hasPricing = price != null;
               const fmtAllowed = isFormatAvailable(f.id, maxFormat);
               const isAvailable = hasPricing && fmtAllowed;
-              // Taille proportionnelle: le plus grand (A2=24") = 80px de hauteur
-              const scale = 80 / 24;
-              const rectW = Math.max(28, Math.round(f.w * scale));
-              const rectH = Math.max(40, Math.round(f.h * scale));
+              // Taille proportionnelle: le plus grand (A2=24") = 96px de hauteur
+              const scale = 96 / 24;
+              const rectW = Math.max(34, Math.round(f.w * scale));
+              const rectH = Math.max(48, Math.round(f.h * scale));
               const formatDesc = lang === 'fr' ? f.descFr : f.descEn;
               return (
                 <button
@@ -273,10 +273,10 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {}, onF
                     </span>
                   </div>
                   <div className="text-center">
-                    <div className={`font-medium leading-tight ${format === f.id ? 'text-accent' : 'text-heading'}`} style={{ fontSize: '10px' }}>
+                    <div className={`font-medium leading-tight text-xs ${format === f.id ? 'text-accent' : 'text-heading'}`}>
                       {f.w}x{f.h}"
                     </div>
-                    <div className="text-grey-muted leading-tight" style={{ fontSize: '9px' }}>
+                    <div className="text-grey-muted leading-tight text-xs">
                       {!fmtAllowed ? 'N/A' : hasPricing ? `${price}$` : 'N/A'}
                     </div>
                   </div>
@@ -294,7 +294,7 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {}, onF
             ) : null;
           })()}
           {maxFormat && (
-            <p className="text-grey-muted text-[11px] mt-2 leading-snug">
+            <p className="text-grey-muted text-xs mt-2 leading-snug">
               {tx({
                 fr: `Cette oeuvre est disponible jusqu'au format ${artistFormats.find(f => f.id === maxFormat)?.label || maxFormat}.`,
                 en: `This artwork is available up to ${artistFormats.find(f => f.id === maxFormat)?.label || maxFormat} format.`,
@@ -355,7 +355,7 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {}, onF
 
       {/* Notes */}
       <div>
-        <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-1.5">
+        <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-2">
           {tx({ fr: 'Notes', en: 'Notes', es: 'Notas' })}
         </label>
         <textarea
@@ -424,9 +424,9 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {}, onF
                 </div>
                 {!isUnique && !isPrivate && (
                   <div className="flex items-center gap-2">
-                    <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="w-8 h-8 rounded-lg border border-white/10 text-heading font-bold text-sm flex items-center justify-center hover:border-accent/50 transition-colors">-</button>
-                    <span className="text-heading font-bold w-6 text-center">{quantity}</span>
-                    <button onClick={() => setQuantity(q => q + 1)} className="w-8 h-8 rounded-lg border border-white/10 text-heading font-bold text-sm flex items-center justify-center hover:border-accent/50 transition-colors">+</button>
+                    <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="w-10 h-10 rounded-lg border border-white/10 text-heading font-bold text-base flex items-center justify-center hover:border-accent/50 transition-colors">-</button>
+                    <span className="text-heading font-bold w-7 text-center text-base">{quantity}</span>
+                    <button onClick={() => setQuantity(q => q + 1)} className="w-10 h-10 rounded-lg border border-white/10 text-heading font-bold text-base flex items-center justify-center hover:border-accent/50 transition-colors">+</button>
                   </div>
                 )}
               </div>
@@ -447,7 +447,7 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {}, onF
         </div>
       ) : (
         <>
-          <button onClick={handleAddToCart} disabled={!effectivePrice} className={`btn-primary w-full justify-center text-xs py-2.5 ${!effectivePrice ? 'opacity-40 cursor-not-allowed' : ''}`}>
+          <button onClick={handleAddToCart} disabled={!effectivePrice} className={`btn-primary w-full justify-center text-sm py-3 ${!effectivePrice ? 'opacity-40 cursor-not-allowed' : ''}`}>
             {added ? (
               <><Check size={18} className="mr-2" />{tx({ fr: 'Ajoute!', en: 'Added!', es: 'Agregado!' })}</>
             ) : (
@@ -455,13 +455,13 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {}, onF
             )}
           </button>
 
-          <Link to="/panier" className="btn-outline w-full justify-center text-xs py-2.5">
+          <Link to="/panier" className="btn-outline w-full justify-center text-sm py-3">
             {tx({ fr: 'Voir le panier', en: 'View cart', es: 'Ver el carrito' })}
           </Link>
         </>
       )}
 
-      <p className="text-grey-muted text-[10px] text-center leading-tight">
+      <p className="text-grey-muted text-xs text-center leading-tight">
         {tx({
           fr: 'Impression pro par Massive. Soft proofing inclus.',
           en: 'Pro printing by Massive. Soft proofing included.',
