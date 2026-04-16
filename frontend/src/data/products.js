@@ -61,6 +61,27 @@ export function getStickerPrice(finish, shape, qty) {
   };
 }
 
+// Pack builder: calcule le prix proportionnel pour n'importe quelle quantite totale
+// Utilise le tarif du palier le plus eleve que la quantite atteint.
+// Ex: 90 stickers standard -> palier 50 (0.95$/u) -> 90 x 0.95 = 85.50$
+// Retourne null si total < 25 (minimum impression).
+export function getStickerPriceForTotal(finish, shape, total) {
+  if (!total || total < 25) return null;
+  const isSpecial = finish === 'holographic' || finish === 'broken-glass' || finish === 'stars';
+  const tiers = isSpecial ? holographicPriceTiers : stickerPriceTiers;
+  // Trouver le palier le plus eleve ou qty <= total
+  let tier = tiers[0];
+  for (const t of tiers) {
+    if (total >= t.qty) tier = t;
+  }
+  return {
+    qty: total,
+    unitPrice: tier.unitPrice,
+    price: Math.round(total * tier.unitPrice * 100) / 100,
+    tierQty: tier.qty, // palier utilise pour le calcul (info)
+  };
+}
+
 export const stickerImages = [
   img('/images/realisations/stickers/Stickers-Cosmo.webp'),
   img('/images/realisations/stickers/Stickers-Cosmovision.webp'),

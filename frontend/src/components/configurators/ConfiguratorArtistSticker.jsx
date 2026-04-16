@@ -1,18 +1,18 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
-import { ShoppingCart, Check, Sparkles, Shuffle, RotateCcw, Plus, Minus } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+import { ShoppingCart, Check, Sparkles, Shuffle, RotateCcw, Plus, Minus, AlertCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../../contexts/CartContext';
 import { useLang } from '../../i18n/LanguageContext';
 import { useUserRole } from '../../contexts/UserRoleContext';
 import {
   stickerFinishes as defaultFinishes, stickerShapes as defaultShapes, stickerSizes as defaultSizes,
-  stickerPriceTiers as defaultTiers, getStickerPrice as defaultGetPrice,
+  getStickerPriceForTotal,
 } from '../../data/products';
 
-const PACK_TIERS = [25, 50, 100, 250, 500];
+const MIN_TOTAL = 25; // Minimum d'impression
 
 function ConfiguratorArtistSticker({ artist, selectedSticker, allStickers = [] }) {
-  const { lang, tx } = useLang();
+  const { tx } = useLang();
   const { addToCart } = useCart();
   const { artistSlug: loggedArtistSlug } = useUserRole();
   const isArtistOwnPrint = loggedArtistSlug && loggedArtistSlug === artist?.slug;
@@ -24,10 +24,11 @@ function ConfiguratorArtistSticker({ artist, selectedSticker, allStickers = [] }
   const [size, setSize] = useState('3in');
   const [added, setAdded] = useState(false);
   const [notes, setNotes] = useState('');
-  const [selectedTier, setSelectedTier] = useState(25);
   const [previewSticker, setPreviewSticker] = useState(null);
-  // Pack: { stickerId: qty } ex: { 'psyqu33n-stk-001': 3, 'psyqu33n-stk-002': 5 }
+  // Composition du pack: { stickerId: qty_dans_UN_pack }
   const [pack, setPack] = useState({});
+  // Nombre de packs a imprimer
+  const [packCount, setPackCount] = useState(1);
 
   // Pre-selectionner le sticker clique
   useEffect(() => {
@@ -45,13 +46,15 @@ function ConfiguratorArtistSticker({ artist, selectedSticker, allStickers = [] }
     }
   }, [selectedSticker?.id]);
 
-  const totalQty = useMemo(() => Object.values(pack).reduce((s, q) => s + q, 0), [pack]);
+  // Taille d'un pack (somme des qty dans le pack)
+  const packSize = useMemo(() => Object.values(pack).reduce((s, q) => s + q, 0), [pack]);
+  // Total de stickers a imprimer
+  const totalQty = packSize * packCount;
 
-  const currentTier = selectedTier;
   const isSpecialFinish = finish === 'holographic' || finish === 'broken-glass' || finish === 'stars';
-  const priceInfo = totalQty > 0 ? defaultGetPrice(finish, shape, currentTier) : null;
-  const packComplete = totalQty === currentTier;
-  const canAddMore = totalQty < currentTier;
+  const priceInfo = totalQty > 0 ? getStickerPriceForTotal(finish, shape, totalQty) : null;
+  const canCheckout = totalQty >= MIN_TOTAL && packSize > 0;
+  const missing = Math.max(0, MIN_TOTAL - totalQty);
 
   const updateStickerQty = (id, delta) => {
     setPack(prev => {
@@ -64,41 +67,30 @@ function ConfiguratorArtistSticker({ artist, selectedSticker, allStickers = [] }
     });
   };
 
-  const setStickerQty = (id, qty) => {
-    setPack(prev => {
-      const updated = { ...prev };
-      if (qty <= 0) delete updated[id];
-      else updated[id] = qty;
-      return updated;
-    });
-  };
-
   const randomMix = () => {
     if (stickers.length === 0) return;
-    const target = Math.max(25, currentTier);
-    const perSticker = Math.floor(target / stickers.length);
-    const remainder = target % stickers.length;
+    // Un de chaque sticker disponible (pack complet)
     const newPack = {};
-    stickers.forEach((s, i) => {
-      newPack[s.id] = perSticker + (i < remainder ? 1 : 0);
-    });
+    stickers.forEach(s => { newPack[s.id] = 1; });
     setPack(newPack);
   };
 
-  const resetPack = () => setPack(selectedSticker ? { [selectedSticker.id]: 1 } : {});
+  const resetPack = () => {
+    setPack(selectedSticker ? { [selectedSticker.id]: 1 } : {});
+    setPackCount(1);
+  };
 
   if (!selectedSticker || !artist) return null;
 
-  const stickerTitle = tx({ fr: selectedSticker.titleFr, en: selectedSticker.titleEn, es: selectedSticker.titleEs || selectedSticker.titleEn });
-
   const handleAddToCart = () => {
-    if (!priceInfo || !packComplete) return;
+    if (!priceInfo || !canCheckout) return;
     const packDetails = stickers
       .filter(s => pack[s.id] > 0)
       .map(s => ({
         id: s.id,
         title: tx({ fr: s.titleFr, en: s.titleEn, es: s.titleEs || s.titleEn }),
-        qty: pack[s.id],
+        qty: pack[s.id] * packCount, // quantite totale par design
+        qtyPerPack: pack[s.id],
         image: s.image,
       }));
 
@@ -109,7 +101,11 @@ function ConfiguratorArtistSticker({ artist, selectedSticker, allStickers = [] }
     try {
       addToCart({
         productId: `artist-sticker-pack-${artist.slug}-${Date.now()}`,
-        productName: `${artist.name} - Pack Stickers (${totalQty}x)`,
+        productName: tx({
+          fr: `${artist.name} - ${packCount} pack${packCount > 1 ? 's' : ''} de ${packSize} stickers`,
+          en: `${artist.name} - ${packCount} pack${packCount > 1 ? 's' : ''} of ${packSize} stickers`,
+          es: `${artist.name} - ${packCount} pack${packCount > 1 ? 's' : ''} de ${packSize} stickers`,
+        }),
         finish: tx({ fr: finishLabel?.labelFr, en: finishLabel?.labelEn, es: finishLabel?.labelEn }),
         shape: tx({ fr: shapeLabel?.labelFr, en: shapeLabel?.labelEn, es: shapeLabel?.labelEn }),
         size: sizeLabel,
@@ -120,6 +116,7 @@ function ConfiguratorArtistSticker({ artist, selectedSticker, allStickers = [] }
         uploadedFiles: [],
         notes,
         packDetails,
+        packComposition: { packSize, packCount, total: totalQty },
         ...(isArtistOwnPrint ? { isArtistOwnPrint: true, artistSlug: artist.slug } : {}),
       });
       setAdded(true);
@@ -128,8 +125,6 @@ function ConfiguratorArtistSticker({ artist, selectedSticker, allStickers = [] }
       console.error('addToCart error:', err);
     }
   };
-
-  const remaining = Math.max(0, currentTier - totalQty);
 
   return (
     <div className="space-y-4">
@@ -142,10 +137,10 @@ function ConfiguratorArtistSticker({ artist, selectedSticker, allStickers = [] }
           <button
             onClick={randomMix}
             className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium bg-accent/15 text-accent hover:bg-accent/25 transition-colors"
-            title={tx({ fr: 'Mix aleatoire', en: 'Random mix', es: 'Mix aleatorio' })}
+            title={tx({ fr: 'Un de chaque', en: 'One of each', es: 'Uno de cada' })}
           >
             <Shuffle size={12} />
-            {tx({ fr: 'Random', en: 'Random', es: 'Random' })}
+            {tx({ fr: 'Un de chaque', en: 'One each', es: 'Uno cada' })}
           </button>
           <button
             onClick={resetPack}
@@ -155,43 +150,6 @@ function ConfiguratorArtistSticker({ artist, selectedSticker, allStickers = [] }
             <RotateCcw size={12} />
           </button>
         </div>
-      </div>
-
-      {/* Tier selector - toujours visible */}
-      <div className="grid grid-cols-5 gap-1.5">
-        {PACK_TIERS.map(tier => {
-          const p = defaultGetPrice(finish, shape, tier);
-          const isActive = tier === selectedTier;
-          return (
-            <button
-              key={tier}
-              onClick={() => {
-                setSelectedTier(tier);
-                // Si le pack depasse le nouveau tier, tronquer
-                if (totalQty > tier) {
-                  const newPack = { ...pack };
-                  let excess = totalQty - tier;
-                  const ids = Object.keys(newPack);
-                  for (let i = ids.length - 1; i >= 0 && excess > 0; i--) {
-                    const reduce = Math.min(newPack[ids[i]], excess);
-                    newPack[ids[i]] -= reduce;
-                    excess -= reduce;
-                    if (newPack[ids[i]] <= 0) delete newPack[ids[i]];
-                  }
-                  setPack(newPack);
-                }
-              }}
-              className={`flex flex-col items-center py-2 rounded-lg text-xs transition-all border-2 ${
-                isActive
-                  ? 'border-accent option-selected'
-                  : 'border-transparent hover:border-grey-muted/30 option-default'
-              }`}
-            >
-              <span className="text-heading font-bold text-sm">{tier}</span>
-              <span className="text-grey-muted text-[10px]">{p ? `${p.price}$` : ''}</span>
-            </button>
-          );
-        })}
       </div>
 
       {/* Apercu du sticker selectionne */}
@@ -231,19 +189,18 @@ function ConfiguratorArtistSticker({ artist, selectedSticker, allStickers = [] }
                 <button
                   onClick={() => updateStickerQty(s.id, -1)}
                   disabled={qty === 0}
-                  className="w-6 h-6 rounded-full flex items-center justify-center text-heading bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                  className="w-7 h-7 rounded-full flex items-center justify-center text-heading bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                 >
-                  <Minus size={12} />
+                  <Minus size={13} />
                 </button>
-                <span className={`w-7 text-center text-xs font-bold ${isSelected ? 'text-accent' : 'text-grey-muted'}`}>
+                <span className={`w-8 text-center text-sm font-bold ${isSelected ? 'text-accent' : 'text-grey-muted'}`}>
                   {qty}
                 </span>
                 <button
                   onClick={() => updateStickerQty(s.id, 1)}
-                  disabled={!canAddMore}
-                  className="w-6 h-6 rounded-full flex items-center justify-center text-heading bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                  className="w-7 h-7 rounded-full flex items-center justify-center text-heading bg-white/10 hover:bg-white/20 transition-colors"
                 >
-                  <Plus size={12} />
+                  <Plus size={13} />
                 </button>
               </div>
             </div>
@@ -251,28 +208,74 @@ function ConfiguratorArtistSticker({ artist, selectedSticker, allStickers = [] }
         })}
       </div>
 
-      {/* Pack total indicator */}
-      <div className={`p-3 rounded-xl text-center ${packComplete ? 'bg-green-500/10' : 'bg-accent/5'}`}>
-        <span className={`text-sm font-bold ${packComplete ? 'text-green-400' : 'text-heading'}`}>
-          {totalQty} stickers
+      {/* Pack size indicator */}
+      <div className="p-3 rounded-xl bg-accent/5 text-center">
+        <span className="text-sm font-bold text-heading">
+          {packSize} {packSize > 1
+            ? tx({ fr: 'stickers par pack', en: 'stickers per pack', es: 'stickers por pack' })
+            : tx({ fr: 'sticker par pack', en: 'sticker per pack', es: 'sticker por pack' })}
         </span>
-        {!packComplete && totalQty > 0 && (
-          <span className="text-grey-muted text-xs ml-2">
-            ({tx({ fr: `encore ${remaining} pour completer le pack de ${currentTier}`, en: `${remaining} more to complete the ${currentTier}-pack`, es: `${remaining} mas para completar el pack de ${currentTier}` })})
-          </span>
-        )}
-        {totalQty === 0 && (
-          <span className="text-grey-muted text-xs ml-2">
-            ({tx({ fr: `Selectionnez des stickers (pack de ${currentTier})`, en: `Select stickers (${currentTier}-pack)`, es: `Seleccione stickers (pack de ${currentTier})` })})
-          </span>
-        )}
-        {packComplete && (
-          <span className="text-green-400 text-xs ml-2">
-            {tx({ fr: 'Pack complet!', en: 'Pack complete!', es: 'Pack completo!' })}
+        {packSize === 0 && (
+          <span className="text-grey-muted text-xs block mt-1">
+            {tx({ fr: 'Cliquez + sur les stickers pour composer votre pack', en: 'Click + on stickers to build your pack', es: 'Haz clic + en los stickers para componer tu pack' })}
           </span>
         )}
       </div>
 
+      {/* Pack count multiplier */}
+      {packSize > 0 && (
+        <div className="p-4 rounded-xl highlight-bordered">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <div className="text-heading font-semibold text-xs uppercase tracking-wider mb-1">
+                {tx({ fr: 'Nombre de packs', en: 'Number of packs', es: 'Numero de packs' })}
+              </div>
+              <div className="text-grey-muted text-xs">
+                {tx({
+                  fr: `${packSize} × ${packCount} = ${totalQty} stickers`,
+                  en: `${packSize} × ${packCount} = ${totalQty} stickers`,
+                  es: `${packSize} × ${packCount} = ${totalQty} stickers`,
+                })}
+              </div>
+            </div>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <button
+                onClick={() => setPackCount(c => Math.max(1, c - 1))}
+                disabled={packCount <= 1}
+                className="w-10 h-10 rounded-lg border border-white/10 text-heading font-bold text-base flex items-center justify-center hover:border-accent/50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              >
+                -
+              </button>
+              <span className="text-heading font-bold w-10 text-center text-base">{packCount}</span>
+              <button
+                onClick={() => setPackCount(c => c + 1)}
+                className="w-10 h-10 rounded-lg border border-white/10 text-heading font-bold text-base flex items-center justify-center hover:border-accent/50 transition-colors"
+              >
+                +
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Alerte minimum */}
+      {packSize > 0 && !canCheckout && (
+        <div className="p-3 rounded-xl bg-yellow-500/10 border border-yellow-500/30 flex items-start gap-2">
+          <AlertCircle size={16} className="text-yellow-400 flex-shrink-0 mt-0.5" />
+          <div className="text-xs">
+            <p className="text-yellow-400 font-semibold">
+              {tx({ fr: `Minimum ${MIN_TOTAL} stickers pour imprimer`, en: `Minimum ${MIN_TOTAL} stickers to print`, es: `Minimo ${MIN_TOTAL} stickers para imprimir` })}
+            </p>
+            <p className="text-yellow-400/80 mt-0.5">
+              {tx({
+                fr: `Il manque ${missing} stickers. Augmentez le nombre de packs ou ajoutez des stickers au pack.`,
+                en: `${missing} more stickers needed. Increase pack count or add stickers to the pack.`,
+                es: `Faltan ${missing} stickers. Aumenta el numero de packs o agrega stickers al pack.`,
+              })}
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Finish selector */}
       <div>
@@ -369,7 +372,7 @@ function ConfiguratorArtistSticker({ artist, selectedSticker, allStickers = [] }
       </div>
 
       {/* Price display */}
-      {priceInfo && packComplete && (
+      {priceInfo && canCheckout && (
         <div className="p-4 rounded-xl highlight-bordered">
           <div className="flex items-baseline gap-3">
             <span className="text-2xl font-heading font-bold text-heading">{priceInfo.price}$</span>
@@ -377,7 +380,14 @@ function ConfiguratorArtistSticker({ artist, selectedSticker, allStickers = [] }
               ({priceInfo.unitPrice.toFixed(2)}$/sticker)
             </span>
           </div>
-          <div className="flex items-center gap-2 mt-1.5">
+          <div className="text-grey-muted text-xs mt-1">
+            {tx({
+              fr: `${packCount} pack${packCount > 1 ? 's' : ''} de ${packSize} = ${totalQty} stickers`,
+              en: `${packCount} pack${packCount > 1 ? 's' : ''} of ${packSize} = ${totalQty} stickers`,
+              es: `${packCount} pack${packCount > 1 ? 's' : ''} de ${packSize} = ${totalQty} stickers`,
+            })}
+          </div>
+          <div className="flex items-center gap-2 mt-1.5 flex-wrap">
             {isSpecialFinish && (
               <span className="text-accent text-xs font-medium">
                 {tx({ fr: 'Effets Speciaux', en: 'Special Effects', es: 'Efectos Especiales' })}
@@ -394,13 +404,19 @@ function ConfiguratorArtistSticker({ artist, selectedSticker, allStickers = [] }
       {/* Add to cart */}
       <button
         onClick={handleAddToCart}
-        disabled={!packComplete}
-        className={`btn-primary w-full justify-center text-sm py-3 ${!packComplete ? 'opacity-50 cursor-not-allowed' : ''}`}
+        disabled={!canCheckout}
+        className={`btn-primary w-full justify-center text-sm py-3 ${!canCheckout ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
         {added ? (
           <><Check size={18} className="mr-2" />{tx({ fr: 'Ajoute au panier!', en: 'Added to cart!', es: 'Agregado al carrito!' })}</>
         ) : (
-          <><ShoppingCart size={18} className="mr-2" />{tx({ fr: `Ajouter le pack (${totalQty}x)`, en: `Add pack (${totalQty}x)`, es: `Agregar pack (${totalQty}x)` })}</>
+          <><ShoppingCart size={18} className="mr-2" />{
+            packSize === 0
+              ? tx({ fr: 'Composez votre pack', en: 'Build your pack', es: 'Componga su pack' })
+              : !canCheckout
+                ? tx({ fr: `Minimum ${MIN_TOTAL} stickers`, en: `Minimum ${MIN_TOTAL} stickers`, es: `Minimo ${MIN_TOTAL} stickers` })
+                : tx({ fr: `Ajouter au panier (${totalQty} stickers)`, en: `Add to cart (${totalQty} stickers)`, es: `Agregar al carrito (${totalQty} stickers)` })
+          }</>
         )}
       </button>
 
@@ -410,9 +426,9 @@ function ConfiguratorArtistSticker({ artist, selectedSticker, allStickers = [] }
 
       <p className="text-grey-muted text-xs text-center">
         {tx({
-          fr: `Pack de ${totalQty} stickers vinyl, imprimes par Massive. Minimum 25.`,
-          en: `Pack of ${totalQty} vinyl stickers, printed by Massive. Minimum 25.`,
-          es: `Pack de ${totalQty} stickers vinyl, impresos por Massive. Minimo 25.`,
+          fr: `Stickers vinyl imprimes par Massive. Minimum ${MIN_TOTAL} par commande.`,
+          en: `Vinyl stickers printed by Massive. Minimum ${MIN_TOTAL} per order.`,
+          es: `Stickers vinyl impresos por Massive. Minimo ${MIN_TOTAL} por pedido.`,
         })}
       </p>
     </div>

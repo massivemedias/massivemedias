@@ -103,8 +103,12 @@ function Panier() {
               {/* Ligne 2: quantite + prix + supprimer */}
               <div className="flex items-center justify-between pl-0 sm:pl-[68px]">
                 <div className="flex items-center gap-2">
-                  {TIERED_PRODUCTS.includes(item.productId) ? (
-                    <span className="text-heading font-bold text-sm px-2">{item.quantity} {tx({ fr: 'unites', en: 'units', es: 'unidades' })}</span>
+                  {TIERED_PRODUCTS.includes(item.productId) || item.productId?.startsWith('artist-sticker-pack-') ? (
+                    <span className="text-heading font-bold text-sm px-2">
+                      {item.packComposition
+                        ? `${item.packComposition.packCount} × ${item.packComposition.packSize} = ${item.quantity} ${tx({ fr: 'stickers', en: 'stickers', es: 'stickers' })}`
+                        : `${item.quantity} ${tx({ fr: 'unites', en: 'units', es: 'unidades' })}`}
+                    </span>
                   ) : (
                   <>
                   <button
