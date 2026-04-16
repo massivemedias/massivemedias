@@ -132,10 +132,10 @@ function ConfiguratorStickers({ onFinishChange }) {
       {/* Upload CTA en haut - premiere action du user */}
       <div className="mb-4 md:mb-6">
         <label
-          className={`group flex items-center gap-3 md:gap-4 w-full px-4 md:px-5 py-3 md:py-4 rounded-xl cursor-pointer transition-all border-2 border-dashed ${
+          className={`group flex items-center gap-3 md:gap-4 w-full px-4 md:px-5 py-3 md:py-4 rounded-xl cursor-pointer transition-all ${
             localPreviewUrl
-              ? 'border-accent/40 bg-accent/5 hover:bg-accent/10'
-              : 'border-accent/50 bg-accent/10 hover:bg-accent/20 hover:border-accent'
+              ? 'bg-white/[0.02] hover:bg-white/[0.04] shadow-md shadow-black/20 hover:shadow-lg hover:shadow-black/30'
+              : 'bg-accent/10 hover:bg-accent/20 shadow-md shadow-accent/10 hover:shadow-lg hover:shadow-accent/20'
           }`}
         >
           <div className={`flex-shrink-0 w-10 h-10 md:w-12 md:h-12 rounded-lg flex items-center justify-center ${localPreviewUrl ? 'bg-accent/20 text-accent' : 'bg-accent text-white'}`}>

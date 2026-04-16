@@ -233,7 +233,7 @@ function ConfiguratorSublimation() {
           <button
             type="button"
             onClick={() => setShowMockup(!showMockup)}
-            className="w-full flex items-center justify-between py-3 px-4 rounded-xl border border-accent/30 bg-accent/5 hover:bg-accent/10 transition-colors"
+            className="w-full flex items-center justify-between py-3 px-4 rounded-xl bg-white/[0.02] hover:bg-white/[0.04] shadow-md shadow-black/20 hover:shadow-lg hover:shadow-black/30 transition-all"
           >
             <span className="flex items-center gap-2 text-sm font-semibold text-heading">
               <Upload size={16} className="text-accent" />
