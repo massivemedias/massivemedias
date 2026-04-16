@@ -138,14 +138,14 @@ function ProductLayout({
               )}
               <button
                 onClick={(e) => { e.stopPropagation(); prevImage(); }}
-                className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full flex items-center justify-center text-heading transition-colors card-bg card-border"
+                className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full flex items-center justify-center text-heading transition-colors bg-black/40 backdrop-blur-sm border border-white/10"
                 aria-label={tx({ fr: 'Image precedente', en: 'Previous image', es: 'Imagen anterior' })}
               >
                 <ChevronLeft size={20} />
               </button>
               <button
                 onClick={(e) => { e.stopPropagation(); nextImage(); }}
-                className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full flex items-center justify-center text-heading transition-colors card-bg card-border"
+                className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full flex items-center justify-center text-heading transition-colors bg-black/40 backdrop-blur-sm border border-white/10"
                 aria-label={tx({ fr: 'Image suivante', en: 'Next image', es: 'Siguiente imagen' })}
               >
                 <ChevronRight size={20} />
