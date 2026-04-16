@@ -1,6 +1,6 @@
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingCart, Check, Palette, Sparkles } from 'lucide-react';
+import { ShoppingCart, Check, Palette, Sparkles, Shirt, ShoppingBag, Coffee, Package } from 'lucide-react';
 import ColorSwatches from '../ColorSwatches';
 import MerchPreview from '../merch/MerchPreview';
 import { Link } from 'react-router-dom';
@@ -20,6 +20,12 @@ const productsWithColors = ['tshirt', 'hoodie', 'longsleeve', 'totebag'];
 const productsWithSizes = ['tshirt', 'hoodie', 'longsleeve'];
 // Products with front/back views
 const productsWithSides = ['tshirt', 'hoodie', 'longsleeve'];
+// Icons for product type selector
+const PRODUCT_ICONS = {
+  tshirt: Shirt, longsleeve: Shirt, hoodie: Shirt,
+  totebag: ShoppingBag, bag: Package, mug: Coffee, tumbler: Coffee,
+};
+
 // Static preview images for products without color picker
 const staticProductImages = {
   mug: '/images/mugs/mug-white.webp',
@@ -57,7 +63,6 @@ function ConfiguratorSublimation() {
   const [selectedSize, setSelectedSize] = useState('M');
 
   // Front / Back mockup state
-  const [side, setSide] = useState('front');
   const [frontLogoUrl, setFrontLogoUrl] = useState(null);
   const [backLogoUrl, setBackLogoUrl] = useState(null);
   const [frontLogoPos, setFrontLogoPos] = useState({ x: 0.28, y: 0.22, width: 0.35 });
@@ -76,17 +81,11 @@ function ConfiguratorSublimation() {
   const currentGetImage = imageMap[product] || getTshirtImage;
   const colorObj = currentColors.find(c => c.id === selectedColor) || currentColors[0];
 
-  // Current side state
-  const currentLogoUrl = side === 'front' ? frontLogoUrl : backLogoUrl;
-  const currentLogoPos = side === 'front' ? frontLogoPos : backLogoPos;
-  const setCurrentLogoPos = side === 'front' ? setFrontLogoPos : setBackLogoPos;
-
   const defaultColorMap = { tshirt: 'black', hoodie: 'black', longsleeve: 'black', totebag: 'black' };
 
   const handleProductChange = (p) => {
     setProduct(p);
     setQtyIndex(0);
-    setSide('front');
     const newColors = colorsMap[p] || merchColors;
     if (!newColors.find(c => c.id === selectedColor)) {
       const preferred = defaultColorMap[p];
@@ -94,28 +93,6 @@ function ConfiguratorSublimation() {
       setSelectedColor(hasPreferred ? preferred : newColors[0]?.id || 'black');
     }
   };
-
-  const handleFileForMockup = useCallback((file) => {
-    const url = URL.createObjectURL(file);
-    if (side === 'front') {
-      if (frontLogoUrl) URL.revokeObjectURL(frontLogoUrl);
-      setFrontLogoUrl(url);
-    } else {
-      if (backLogoUrl) URL.revokeObjectURL(backLogoUrl);
-      setBackLogoUrl(url);
-    }
-    setUploadedFiles(prev => [...prev, file]);
-  }, [side, frontLogoUrl, backLogoUrl]);
-
-  const handleRemoveLogo = useCallback(() => {
-    if (side === 'front') {
-      if (frontLogoUrl) URL.revokeObjectURL(frontLogoUrl);
-      setFrontLogoUrl(null);
-    } else {
-      if (backLogoUrl) URL.revokeObjectURL(backLogoUrl);
-      setBackLogoUrl(null);
-    }
-  }, [side, frontLogoUrl, backLogoUrl]);
 
   const canAddToCart = uploadedFiles.length > 0 || frontLogoUrl || backLogoUrl || notes.trim().length > 0;
 
@@ -170,121 +147,112 @@ function ConfiguratorSublimation() {
         </div>
       )}
 
-      {/* Product type selector */}
+      {/* Product type selector - icons + noms, une seule ligne scrollable */}
       <div className="mb-4 md:mb-5">
         <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-2">
           {tx({ fr: 'Produit', en: 'Product', es: 'Producto' })}
         </label>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:flex md:flex-wrap gap-1.5 md:gap-2">
-          {sublimationProducts.map(p => (
-            <button
-              key={p.id}
-              onClick={() => handleProductChange(p.id)}
-              className={`flex flex-col items-center justify-center py-2 px-2 md:min-w-[7rem] md:py-2.5 md:px-3 rounded-lg text-sm font-medium transition-all border-2 ${product === p.id
-                ? 'border-accent option-selected'
-                : 'border-transparent hover:border-grey-muted/30 option-default'
-              }`}
-            >
-              <span className="text-heading leading-tight text-center font-semibold text-sm">
+        <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1">
+          {sublimationProducts.map(p => {
+            const Icon = PRODUCT_ICONS[p.id] || Package;
+            return (
+              <button
+                key={p.id}
+                onClick={() => handleProductChange(p.id)}
+                className={`flex items-center gap-1.5 py-2 px-3 rounded-lg text-sm font-semibold transition-all border-2 whitespace-nowrap flex-shrink-0 ${product === p.id
+                  ? 'border-accent option-selected'
+                  : 'border-transparent hover:border-grey-muted/30 option-default'
+                }`}
+              >
+                <Icon size={15} className={product === p.id ? 'text-accent' : 'text-grey-muted'} />
                 {tx({ fr: p.labelFr, en: p.labelEn, es: p.labelEs || p.labelEn })}
-              </span>
-              {p.descFr && (
-                <span className="text-grey-muted mt-0.5 text-sm hidden sm:block">
-                  {tx({ fr: p.descFr, en: p.descEn, es: p.descEs || p.descEn })}
-                </span>
-              )}
-            </button>
-          ))}
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      {/* Mockup preview + Color + Size for textile products */}
+      {/* Front + Back mockups cote a cote + Color + Size */}
       {hasColors && (
-        <div className="mb-4 md:mb-5">
-          <div className="flex flex-col md:flex-row gap-3 md:gap-4">
-            {/* Preview mockup compact + front/back toggle */}
-            <div className="md:w-52 flex-shrink-0 space-y-2">
-              {/* Front/Back toggle */}
-              {hasSides && (
-                <div className="flex rounded-lg overflow-hidden border border-white/10">
-                  {['front', 'back'].map(s => (
-                    <button
-                      key={s}
-                      type="button"
-                      onClick={() => setSide(s)}
-                      className={`flex-1 py-1.5 text-sm font-semibold transition-colors ${
-                        side === s ? 'bg-accent text-white' : 'text-grey-muted hover:text-heading hover:bg-white/5'
-                      }`}
-                    >
-                      {s === 'front'
-                        ? tx({ fr: 'Devant', en: 'Front', es: 'Delante' })
-                        : tx({ fr: 'Dos', en: 'Back', es: 'Detras' })}
-                      {/* Indicateur de design present */}
-                      {((s === 'front' && frontLogoUrl) || (s === 'back' && backLogoUrl)) && (
-                        <span className="ml-1 inline-block w-1.5 h-1.5 rounded-full bg-green-400" />
-                      )}
-                    </button>
-                  ))}
-                </div>
-              )}
-
+        <div className="mb-4 md:mb-5 space-y-3">
+          {/* Mockups: front + back side by side (textiles) ou single (totebag) */}
+          <div className={`grid gap-3 ${hasSides ? 'grid-cols-2' : 'grid-cols-1 max-w-[250px]'}`}>
+            {/* FRONT */}
+            <div>
+              <span className="block text-sm font-semibold text-heading mb-1.5">
+                {hasSides ? tx({ fr: 'Devant', en: 'Front', es: 'Delante' }) : tx({ fr: 'Apercu', en: 'Preview', es: 'Vista previa' })}
+                {frontLogoUrl && <span className="ml-1.5 inline-block w-1.5 h-1.5 rounded-full bg-green-400 align-middle" />}
+              </span>
               <MerchPreview
                 productImageUrl={currentGetImage(selectedColor)}
-                logoUrl={currentLogoUrl}
-                logoPosition={currentLogoPos}
-                onLogoPositionChange={setCurrentLogoPos}
-                onFileSelect={handleFileForMockup}
-                onLogoRemove={handleRemoveLogo}
+                logoUrl={frontLogoUrl}
+                logoPosition={frontLogoPos}
+                onLogoPositionChange={setFrontLogoPos}
+                onFileSelect={(file) => {
+                  const url = URL.createObjectURL(file);
+                  if (frontLogoUrl) URL.revokeObjectURL(frontLogoUrl);
+                  setFrontLogoUrl(url);
+                  setUploadedFiles(prev => [...prev, file]);
+                }}
+                onLogoRemove={() => { if (frontLogoUrl) URL.revokeObjectURL(frontLogoUrl); setFrontLogoUrl(null); }}
               />
             </div>
+            {/* BACK (textiles only) */}
+            {hasSides && (
+              <div>
+                <span className="block text-sm font-semibold text-heading mb-1.5">
+                  {tx({ fr: 'Dos', en: 'Back', es: 'Detras' })}
+                  {backLogoUrl && <span className="ml-1.5 inline-block w-1.5 h-1.5 rounded-full bg-green-400 align-middle" />}
+                </span>
+                <MerchPreview
+                  productImageUrl={currentGetImage(selectedColor)}
+                  logoUrl={backLogoUrl}
+                  logoPosition={backLogoPos}
+                  onLogoPositionChange={setBackLogoPos}
+                  onFileSelect={(file) => {
+                    const url = URL.createObjectURL(file);
+                    if (backLogoUrl) URL.revokeObjectURL(backLogoUrl);
+                    setBackLogoUrl(url);
+                    setUploadedFiles(prev => [...prev, file]);
+                  }}
+                  onLogoRemove={() => { if (backLogoUrl) URL.revokeObjectURL(backLogoUrl); setBackLogoUrl(null); }}
+                />
+              </div>
+            )}
+          </div>
 
-            {/* Couleur + Taille */}
-            <div className="flex-1 min-w-0 space-y-3">
+          {/* Couleur + Taille */}
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex-1 min-w-0">
               <ColorSwatches
                 colors={currentColors}
                 selected={selectedColor}
                 onChange={setSelectedColor}
                 label={tx({ fr: 'Couleur', en: 'Color', es: 'Color' })}
               />
-
-              {hasSizes && (
-                <div>
-                  <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-1.5">
-                    {tx({ fr: 'Taille', en: 'Size', es: 'Talla' })}
-                  </label>
-                  <div className="grid grid-cols-6 md:flex md:flex-wrap gap-1.5">
-                    {merchSizes.map(size => (
-                      <button
-                        key={size}
-                        onClick={() => setSelectedSize(size)}
-                        className={`py-1.5 px-1 md:min-w-[3rem] md:py-2 md:px-2.5 rounded-lg text-sm font-semibold transition-all border-2 ${
-                          selectedSize === size
-                            ? 'border-accent option-selected'
-                            : 'border-transparent hover:border-grey-muted/30 option-default'
-                        }`}
-                      >
-                        {size}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Resume */}
-              <div className="text-sm text-grey-muted">
-                <span className="text-heading font-semibold">{colorObj.name}</span>
-                {hasSizes && <span> / {selectedSize}</span>}
-                {(frontLogoUrl || backLogoUrl) && (
-                  <span className="ml-2 text-accent">
-                    {frontLogoUrl && backLogoUrl
-                      ? tx({ fr: 'Design devant + dos', en: 'Front + back design', es: 'Diseno delante + detras' })
-                      : frontLogoUrl
-                        ? tx({ fr: 'Design devant', en: 'Front design', es: 'Diseno delante' })
-                        : tx({ fr: 'Design dos', en: 'Back design', es: 'Diseno detras' })}
-                  </span>
-                )}
-              </div>
             </div>
+            {hasSizes && (
+              <div className="flex-shrink-0">
+                <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-1.5">
+                  {tx({ fr: 'Taille', en: 'Size', es: 'Talla' })}
+                </label>
+                <div className="flex flex-wrap gap-1.5">
+                  {merchSizes.map(size => (
+                    <button
+                      key={size}
+                      onClick={() => setSelectedSize(size)}
+                      className={`py-1.5 px-2.5 rounded-lg text-sm font-semibold transition-all border-2 ${
+                        selectedSize === size
+                          ? 'border-accent option-selected'
+                          : 'border-transparent hover:border-grey-muted/30 option-default'
+                      }`}
+                    >
+                      {size}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
