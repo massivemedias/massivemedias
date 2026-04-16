@@ -311,8 +311,11 @@ function ConfiguratorFineArt() {
         {priceInfo && (
           <div className="flex items-center justify-end gap-3">
             <div className="flex-shrink-0 text-right">
-              <span className="text-xl font-heading font-bold text-heading">{priceInfo.price}$</span>
-              {withFrame && (
+              <span className="text-xl font-heading font-bold text-heading">{priceInfo.price * quantity}$</span>
+              {quantity > 1 && (
+                <span className="text-grey-muted text-xs ml-1">{quantity} × {priceInfo.price}$</span>
+              )}
+              {withFrame && quantity === 1 && (
                 <span className="text-grey-muted text-xs ml-1">
                   ({priceInfo.basePrice}+{priceInfo.framePrice})
                 </span>

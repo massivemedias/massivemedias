@@ -27,7 +27,10 @@ function Panier() {
   const hasArtistOwnPrintsOnly = items.some(i => i.isArtistOwnPrint && (i.productId || '').startsWith('artist-print-'));
   const artistDiscountTotal = items
     .filter(i => i.isArtistOwnPrint)
-    .reduce((sum, i) => sum + Math.round(i.totalPrice * ARTIST_DISCOUNT), 0);
+    .reduce((sum, i) => {
+      const lineTotal = i.unitPrice != null ? i.quantity * i.unitPrice : i.totalPrice;
+      return sum + Math.round((lineTotal || 0) * ARTIST_DISCOUNT);
+    }, 0);
   const adjustedTotal = cartTotal - artistDiscountTotal;
 
   // Empty cart
@@ -128,7 +131,7 @@ function Panier() {
                         {Math.round(item.totalPrice * (1 - ARTIST_DISCOUNT))}$
                       </p>
                       <p className="text-green-400 text-xs font-semibold flex items-center gap-1 justify-end">
-                        <Percent size={10} /> -30%
+                        <Percent size={10} /> -{Math.round(ARTIST_DISCOUNT * 100)}%
                       </p>
                     </>
                   ) : (

@@ -172,7 +172,11 @@ export function CartProvider({ children }) {
   }, []);
 
   const cartCount = items.length;
-  const cartTotal = items.reduce((sum, item) => sum + item.totalPrice, 0);
+  // Calculer le total depuis quantity * unitPrice (plus robuste que totalPrice stocke)
+  const cartTotal = items.reduce((sum, item) => {
+    const lineTotal = item.unitPrice != null ? item.quantity * item.unitPrice : item.totalPrice;
+    return sum + (lineTotal || 0);
+  }, 0);
   const discountAmount = discountPercent > 0 ? Math.round(cartTotal * discountPercent / 100) : 0;
 
   const value = useMemo(() => ({
