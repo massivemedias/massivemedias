@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingCart, Check, Palette } from 'lucide-react';
+import { ShoppingCart, Check, Palette, Sparkles } from 'lucide-react';
 import ColorSwatches from '../ColorSwatches';
 import MerchPreview from '../merch/MerchPreview';
 import { Link } from 'react-router-dom';
@@ -18,6 +18,8 @@ import { merchColors, merchSizes, getTshirtImage, hoodieColors, getHoodieImage, 
 const productsWithColors = ['tshirt', 'hoodie', 'longsleeve', 'totebag'];
 // Products that also have size selection
 const productsWithSizes = ['tshirt', 'hoodie', 'longsleeve'];
+// Products with front/back views
+const productsWithSides = ['tshirt', 'hoodie', 'longsleeve'];
 // Static preview images for products without color picker
 const staticProductImages = {
   mug: '/images/mugs/mug-white.webp',
@@ -53,8 +55,13 @@ function ConfiguratorSublimation() {
   const [notes, setNotes] = useState('');
   const [selectedColor, setSelectedColor] = useState('black');
   const [selectedSize, setSelectedSize] = useState('M');
-  const [localPreviewUrl, setLocalPreviewUrl] = useState(null);
-  const [logoPosition, setLogoPosition] = useState({ x: 0.28, y: 0.22, width: 0.35 });
+
+  // Front / Back mockup state
+  const [side, setSide] = useState('front');
+  const [frontLogoUrl, setFrontLogoUrl] = useState(null);
+  const [backLogoUrl, setBackLogoUrl] = useState(null);
+  const [frontLogoPos, setFrontLogoPos] = useState({ x: 0.28, y: 0.22, width: 0.35 });
+  const [backLogoPos, setBackLogoPos] = useState({ x: 0.28, y: 0.22, width: 0.35 });
 
   const tiers = sublimationPriceTiers[product] || [];
   const priceInfo = getSublimationPrice(product, qtyIndex, withDesign);
@@ -62,19 +69,24 @@ function ConfiguratorSublimation() {
 
   const hasColors = productsWithColors.includes(product);
   const hasSizes = productsWithSizes.includes(product);
+  const hasSides = productsWithSides.includes(product);
   const colorsMap = { tshirt: merchColors, hoodie: hoodieColors, longsleeve: longsleeveColors, totebag: totebagColors };
   const imageMap = { tshirt: getTshirtImage, hoodie: getHoodieImage, longsleeve: getLongSleeveImage, totebag: getTotebagImage };
   const currentColors = colorsMap[product] || merchColors;
   const currentGetImage = imageMap[product] || getTshirtImage;
   const colorObj = currentColors.find(c => c.id === selectedColor) || currentColors[0];
 
-  // Preferred default color per product type
+  // Current side state
+  const currentLogoUrl = side === 'front' ? frontLogoUrl : backLogoUrl;
+  const currentLogoPos = side === 'front' ? frontLogoPos : backLogoPos;
+  const setCurrentLogoPos = side === 'front' ? setFrontLogoPos : setBackLogoPos;
+
   const defaultColorMap = { tshirt: 'black', hoodie: 'black', longsleeve: 'black', totebag: 'black' };
 
   const handleProductChange = (p) => {
     setProduct(p);
     setQtyIndex(0);
-    // Reset color if not available in new product's palette
+    setSide('front');
     const newColors = colorsMap[p] || merchColors;
     if (!newColors.find(c => c.id === selectedColor)) {
       const preferred = defaultColorMap[p];
@@ -83,28 +95,40 @@ function ConfiguratorSublimation() {
     }
   };
 
-  // Fichier uploade via le mockup preview (textiles)
   const handleFileForMockup = useCallback((file) => {
-    if (localPreviewUrl) URL.revokeObjectURL(localPreviewUrl);
     const url = URL.createObjectURL(file);
-    setLocalPreviewUrl(url);
-    // Ajouter aussi aux uploadedFiles pour le backend
+    if (side === 'front') {
+      if (frontLogoUrl) URL.revokeObjectURL(frontLogoUrl);
+      setFrontLogoUrl(url);
+    } else {
+      if (backLogoUrl) URL.revokeObjectURL(backLogoUrl);
+      setBackLogoUrl(url);
+    }
     setUploadedFiles(prev => [...prev, file]);
-  }, [localPreviewUrl]);
+  }, [side, frontLogoUrl, backLogoUrl]);
 
   const handleRemoveLogo = useCallback(() => {
-    if (localPreviewUrl) URL.revokeObjectURL(localPreviewUrl);
-    setLocalPreviewUrl(null);
-  }, [localPreviewUrl]);
+    if (side === 'front') {
+      if (frontLogoUrl) URL.revokeObjectURL(frontLogoUrl);
+      setFrontLogoUrl(null);
+    } else {
+      if (backLogoUrl) URL.revokeObjectURL(backLogoUrl);
+      setBackLogoUrl(null);
+    }
+  }, [side, frontLogoUrl, backLogoUrl]);
 
-  const canAddToCart = uploadedFiles.length > 0 || localPreviewUrl || notes.trim().length > 0;
+  const canAddToCart = uploadedFiles.length > 0 || frontLogoUrl || backLogoUrl || notes.trim().length > 0;
 
   const handleAddToCart = () => {
     if (!priceInfo || !canAddToCart) return;
-    // Inclure la position du logo dans les notes si disponible
-    const placementNote = localPreviewUrl && logoPosition
-      ? `\n[Logo placement: x=${Math.round(logoPosition.x * 100)}% y=${Math.round(logoPosition.y * 100)}% w=${Math.round(logoPosition.width * 100)}%]`
-      : '';
+    const placements = [];
+    if (frontLogoUrl && frontLogoPos) {
+      placements.push(`Front: x=${Math.round(frontLogoPos.x * 100)}% y=${Math.round(frontLogoPos.y * 100)}% w=${Math.round(frontLogoPos.width * 100)}%`);
+    }
+    if (backLogoUrl && backLogoPos) {
+      placements.push(`Back: x=${Math.round(backLogoPos.x * 100)}% y=${Math.round(backLogoPos.y * 100)}% w=${Math.round(backLogoPos.width * 100)}%`);
+    }
+    const placementNote = placements.length ? `\n[${placements.join(' | ')}]` : '';
     addToCart({
       productId: `sublimation-${product}`,
       productName: tx({
@@ -115,13 +139,14 @@ function ConfiguratorSublimation() {
       finish: [
         withDesign ? tx({ fr: 'Avec design', en: 'With design', es: 'Con diseno' }) : tx({ fr: 'Design fourni', en: 'Design provided', es: 'Diseno proporcionado' }),
         hasColors ? colorObj.name : null,
+        frontLogoUrl && backLogoUrl ? tx({ fr: 'Devant + Dos', en: 'Front + Back', es: 'Delante + Detras' }) : frontLogoUrl ? tx({ fr: 'Devant', en: 'Front', es: 'Delante' }) : backLogoUrl ? tx({ fr: 'Dos', en: 'Back', es: 'Detras' }) : null,
       ].filter(Boolean).join(' - '),
       shape: null,
       size: hasSizes ? selectedSize : tx({ fr: productLabel?.labelFr, en: productLabel?.labelEn, es: productLabel?.labelEs || productLabel?.labelEn }),
       quantity: priceInfo.qty,
       unitPrice: priceInfo.unitPrice,
       totalPrice: priceInfo.price,
-      image: localPreviewUrl || sublimationImages[0],
+      image: frontLogoUrl || backLogoUrl || sublimationImages[0],
       uploadedFiles,
       notes: notes + placementNote,
     });
@@ -131,9 +156,23 @@ function ConfiguratorSublimation() {
 
   return (
     <>
+      {/* Custom design banner */}
+      {hasColors && (
+        <div className="mb-4 flex items-center gap-2.5 px-4 py-3 rounded-xl bg-accent/8 border border-accent/20">
+          <Sparkles size={18} className="text-accent flex-shrink-0" />
+          <p className="text-sm text-heading leading-snug">
+            {tx({
+              fr: 'Deposez votre design pour le voir directement sur le produit. Impression all-over sublimation permanente.',
+              en: 'Drop your design to see it on the product. Permanent all-over sublimation print.',
+              es: 'Suba su diseno para verlo en el producto. Impresion sublimacion permanente.',
+            })}
+          </p>
+        </div>
+      )}
+
       {/* Product type selector */}
       <div className="mb-4 md:mb-5">
-        <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2">
+        <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-2">
           {tx({ fr: 'Produit', en: 'Product', es: 'Producto' })}
         </label>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:flex md:flex-wrap gap-1.5 md:gap-2">
@@ -141,16 +180,16 @@ function ConfiguratorSublimation() {
             <button
               key={p.id}
               onClick={() => handleProductChange(p.id)}
-              className={`flex flex-col items-center justify-center py-2 px-2 md:min-w-[7rem] md:py-2.5 md:px-3 rounded-lg text-xs font-medium transition-all border-2 ${product === p.id
+              className={`flex flex-col items-center justify-center py-2 px-2 md:min-w-[7rem] md:py-2.5 md:px-3 rounded-lg text-sm font-medium transition-all border-2 ${product === p.id
                 ? 'border-accent option-selected'
                 : 'border-transparent hover:border-grey-muted/30 option-default'
               }`}
             >
-              <span className="text-heading leading-tight text-center font-semibold text-[13px] md:text-xs">
+              <span className="text-heading leading-tight text-center font-semibold text-sm">
                 {tx({ fr: p.labelFr, en: p.labelEn, es: p.labelEs || p.labelEn })}
               </span>
               {p.descFr && (
-                <span className="text-grey-muted mt-0.5 text-[9px] md:text-[10px] hidden sm:block">
+                <span className="text-grey-muted mt-0.5 text-sm hidden sm:block">
                   {tx({ fr: p.descFr, en: p.descEn, es: p.descEs || p.descEn })}
                 </span>
               )}
@@ -163,19 +202,43 @@ function ConfiguratorSublimation() {
       {hasColors && (
         <div className="mb-4 md:mb-5">
           <div className="flex flex-col md:flex-row gap-3 md:gap-4">
-            {/* Preview mockup compact */}
-            <div className="md:w-52 flex-shrink-0">
+            {/* Preview mockup compact + front/back toggle */}
+            <div className="md:w-52 flex-shrink-0 space-y-2">
+              {/* Front/Back toggle */}
+              {hasSides && (
+                <div className="flex rounded-lg overflow-hidden border border-white/10">
+                  {['front', 'back'].map(s => (
+                    <button
+                      key={s}
+                      type="button"
+                      onClick={() => setSide(s)}
+                      className={`flex-1 py-1.5 text-sm font-semibold transition-colors ${
+                        side === s ? 'bg-accent text-white' : 'text-grey-muted hover:text-heading hover:bg-white/5'
+                      }`}
+                    >
+                      {s === 'front'
+                        ? tx({ fr: 'Devant', en: 'Front', es: 'Delante' })
+                        : tx({ fr: 'Dos', en: 'Back', es: 'Detras' })}
+                      {/* Indicateur de design present */}
+                      {((s === 'front' && frontLogoUrl) || (s === 'back' && backLogoUrl)) && (
+                        <span className="ml-1 inline-block w-1.5 h-1.5 rounded-full bg-green-400" />
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+
               <MerchPreview
                 productImageUrl={currentGetImage(selectedColor)}
-                logoUrl={localPreviewUrl}
-                logoPosition={logoPosition}
-                onLogoPositionChange={setLogoPosition}
+                logoUrl={currentLogoUrl}
+                logoPosition={currentLogoPos}
+                onLogoPositionChange={setCurrentLogoPos}
                 onFileSelect={handleFileForMockup}
                 onLogoRemove={handleRemoveLogo}
               />
             </div>
 
-            {/* Couleur + Taille + info */}
+            {/* Couleur + Taille */}
             <div className="flex-1 min-w-0 space-y-3">
               <ColorSwatches
                 colors={currentColors}
@@ -186,7 +249,7 @@ function ConfiguratorSublimation() {
 
               {hasSizes && (
                 <div>
-                  <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-1.5">
+                  <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-1.5">
                     {tx({ fr: 'Taille', en: 'Size', es: 'Talla' })}
                   </label>
                   <div className="grid grid-cols-6 md:flex md:flex-wrap gap-1.5">
@@ -194,7 +257,7 @@ function ConfiguratorSublimation() {
                       <button
                         key={size}
                         onClick={() => setSelectedSize(size)}
-                        className={`py-1.5 px-1 md:min-w-[3rem] md:py-2 md:px-2.5 rounded-lg text-xs font-semibold transition-all border-2 ${
+                        className={`py-1.5 px-1 md:min-w-[3rem] md:py-2 md:px-2.5 rounded-lg text-sm font-semibold transition-all border-2 ${
                           selectedSize === size
                             ? 'border-accent option-selected'
                             : 'border-transparent hover:border-grey-muted/30 option-default'
@@ -207,10 +270,19 @@ function ConfiguratorSublimation() {
                 </div>
               )}
 
-              {/* Resume produit */}
-              <div className="text-xs text-grey-muted">
+              {/* Resume */}
+              <div className="text-sm text-grey-muted">
                 <span className="text-heading font-semibold">{colorObj.name}</span>
                 {hasSizes && <span> / {selectedSize}</span>}
+                {(frontLogoUrl || backLogoUrl) && (
+                  <span className="ml-2 text-accent">
+                    {frontLogoUrl && backLogoUrl
+                      ? tx({ fr: 'Design devant + dos', en: 'Front + back design', es: 'Diseno delante + detras' })
+                      : frontLogoUrl
+                        ? tx({ fr: 'Design devant', en: 'Front design', es: 'Diseno delante' })
+                        : tx({ fr: 'Design dos', en: 'Back design', es: 'Diseno detras' })}
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -244,27 +316,25 @@ function ConfiguratorSublimation() {
 
       {/* Quantity selector */}
       <div className="mb-4 md:mb-5">
-        <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-1.5 md:mb-2.5">
+        <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-1.5 md:mb-2.5">
           {tx({ fr: 'Quantite', en: 'Quantity', es: 'Cantidad' })}
         </label>
         <div className="grid grid-cols-4 md:flex md:flex-wrap gap-1.5 md:gap-2">
-          {tiers.map((tier, i) => {
-            return (
-              <button
-                key={tier.qty}
-                onClick={() => setQtyIndex(i)}
-                className={`flex flex-col items-center py-1.5 px-2 md:py-2.5 md:px-4 rounded-lg text-xs font-medium transition-all border-2 md:min-w-[5rem] ${qtyIndex === i
-                  ? 'border-accent option-selected'
-                  : 'border-transparent hover:border-grey-muted/30 option-default'
-                }`}
-              >
-                <span className="text-heading font-bold text-[15px] md:text-sm">{tier.qty}</span>
-                <span className="text-grey-muted mt-0.5 text-[10px] md:text-xs">
-                  {tier.surSoumission ? tx({ fr: 'Soumission', en: 'Quote', es: 'Cotizacion' }) : `${tier.unitPrice}$/u`}
-                </span>
-              </button>
-            );
-          })}
+          {tiers.map((tier, i) => (
+            <button
+              key={tier.qty}
+              onClick={() => setQtyIndex(i)}
+              className={`flex flex-col items-center py-1.5 px-2 md:py-2.5 md:px-4 rounded-lg text-sm font-medium transition-all border-2 md:min-w-[5rem] ${qtyIndex === i
+                ? 'border-accent option-selected'
+                : 'border-transparent hover:border-grey-muted/30 option-default'
+              }`}
+            >
+              <span className="text-heading font-bold text-base">{tier.qty}</span>
+              <span className="text-grey-muted mt-0.5 text-sm">
+                {tier.surSoumission ? tx({ fr: 'Soumission', en: 'Quote', es: 'Cotizacion' }) : `${tier.unitPrice}$/u`}
+              </span>
+            </button>
+          ))}
         </div>
       </div>
 
@@ -285,7 +355,7 @@ function ConfiguratorSublimation() {
               <Palette size={14} className="text-accent" />
               {tx({ fr: 'Creation graphique', en: 'Graphic design', es: 'Creacion grafica' })}
             </span>
-            <span className="text-grey-muted text-xs block mt-0.5">
+            <span className="text-grey-muted text-sm block mt-0.5">
               {tx({ fr: 'Si vous n\'avez pas de design pret', en: 'If you don\'t have a ready design', es: 'Si no tienes un diseno listo' })}
             </span>
           </div>
@@ -293,7 +363,7 @@ function ConfiguratorSublimation() {
         </label>
       </div>
 
-      {/* File upload (only for non-textile products - textiles use the mockup) + Notes */}
+      {/* File upload (non-textile only) + Notes */}
       <div className={`grid gap-3 md:gap-4 mb-4 md:mb-5 ${!hasColors ? 'grid-cols-1 md:grid-cols-[2fr_3fr]' : 'grid-cols-1'}`}>
         {!hasColors && (
           <FileUpload
@@ -304,14 +374,14 @@ function ConfiguratorSublimation() {
           />
         )}
         <div>
-          <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2">
+          <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-2">
             {tx({ fr: 'Notes / Description', en: 'Notes / Description', es: 'Notas / Descripcion' })}
           </label>
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             rows={hasColors ? 2 : 3}
-            placeholder={tx({ fr: 'Décrivez le produit souhaité (placement, details...)', en: 'Describe the desired product (placement, details...)', es: 'Describe el producto deseado (ubicacion, detalles...)' })}
+            placeholder={tx({ fr: 'Placement, details, instructions...', en: 'Placement, details, instructions...', es: 'Ubicacion, detalles, instrucciones...' })}
             className="w-full min-h-[60px] md:min-h-[80px] rounded-lg border-2 border-grey-muted/20 bg-transparent px-3 py-2.5 md:px-4 md:py-3 text-sm text-heading placeholder:text-grey-muted/50 focus:border-accent focus:outline-none transition-colors resize-none"
           />
         </div>
@@ -322,12 +392,12 @@ function ConfiguratorSublimation() {
         <div className="p-4 md:p-5 rounded-xl mb-4 md:mb-5 highlight-bordered">
           <div className="flex items-baseline gap-3">
             <span className="text-2xl md:text-3xl font-heading font-bold text-heading">{priceInfo.price}$</span>
-            <span className="text-grey-muted text-xs md:text-sm">
+            <span className="text-grey-muted text-sm">
               ({priceInfo.unitPrice.toFixed(2)}$/{tx({ fr: 'unite', en: 'unit', es: 'unidad' })})
             </span>
           </div>
           {withDesign && (
-            <div className="text-grey-muted text-xs mt-1">
+            <div className="text-grey-muted text-sm mt-1">
               {tx({
                 fr: `${priceInfo.qty}x ${productLabel?.labelFr} ${priceInfo.basePrice}$ + Design ${priceInfo.designPrice}$`,
                 en: `${priceInfo.qty}x ${productLabel?.labelEn} ${priceInfo.basePrice}$ + Design ${priceInfo.designPrice}$`,
@@ -336,11 +406,11 @@ function ConfiguratorSublimation() {
             </div>
           )}
           {hasColors && (
-            <div className="text-grey-muted text-xs mt-1">
+            <div className="text-grey-muted text-sm mt-1">
               {colorObj.name}{hasSizes ? ` / ${selectedSize}` : ''}
             </div>
           )}
-          <div className="text-grey-muted text-xs mt-2">
+          <div className="text-grey-muted text-sm mt-2">
             {tx({ fr: 'Impression permanente - resistant au lavage', en: 'Permanent print - wash resistant', es: 'Impresion permanente - resistente al lavado' })}
           </div>
         </div>
@@ -354,9 +424,9 @@ function ConfiguratorSublimation() {
               {tx({ fr: 'Sur soumission', en: 'On quote', es: 'Bajo cotizacion' })}
             </span>
           </div>
-          <div className="text-grey-muted text-xs mt-1">
+          <div className="text-grey-muted text-sm mt-1">
             {tx({
-              fr: `${priceInfo.qty}+ unités - à partir de ${priceInfo.unitPrice}$/unité`,
+              fr: `${priceInfo.qty}+ unites - a partir de ${priceInfo.unitPrice}$/unite`,
               en: `${priceInfo.qty}+ units - from ${priceInfo.unitPrice}$/unit`,
               es: `${priceInfo.qty}+ unidades - desde ${priceInfo.unitPrice}$/unidad`,
             })}
@@ -385,11 +455,11 @@ function ConfiguratorSublimation() {
         </Link>
       )}
 
-      <p className="text-grey-muted text-xs mt-2 md:mt-3 text-center">
+      <p className="text-grey-muted text-sm mt-2 md:mt-3 text-center">
         {tx({
-          fr: 'Massive vous contactera pour valider le rendu par photo ou video avant l\'envoi du produit.',
-          en: 'Massive will contact you to validate the result by photo or video before shipping.',
-          es: 'Massive te contactara para validar el resultado por foto o video antes del envio.',
+          fr: 'Massive vous contactera pour valider le rendu avant production.',
+          en: 'Massive will contact you to validate the result before production.',
+          es: 'Massive te contactara para validar el resultado antes de produccion.',
         })}
       </p>
     </>
