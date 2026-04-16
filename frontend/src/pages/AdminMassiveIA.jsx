@@ -835,29 +835,57 @@ function StickersTab() {
             {error}
           </div>
         )}
-        {result ? (<>
-          <img
-            src={result}
-            alt="sticker"
-            className="w-full h-auto block rounded-xl"
-            style={{
-              transform: `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg) scale(${tilt.x !== 0 || tilt.y !== 0 ? 1.03 : 1})`,
-              transition: tilt.x === 0 && tilt.y === 0 ? 'transform 0.55s cubic-bezier(0.25,0.8,0.25,1)' : 'transform 0.08s ease-out',
+        {result ? (() => {
+          const tilting = tilt.x !== 0 || tilt.y !== 0;
+          const fxName = (shader === 'none' || shader === 'clear' || shader === 'matte') ? null : shader.replace('_', '-');
+          const angle = Math.atan2(tilt.y, tilt.x) * 180 / Math.PI;
+          const px = 50 + tilt.y * 5;
+          const py = 50 - tilt.x * 5;
+          const fxOverlay = tilting && fxName ? (
+            fxName === 'holographic' ? {
+              background: `conic-gradient(from ${angle + 90}deg at ${px}% ${py}%, rgba(255,0,200,0.35), rgba(255,165,0,0.3), rgba(255,255,0,0.3), rgba(0,255,100,0.3), rgba(0,180,255,0.35), rgba(130,0,255,0.3), rgba(255,0,200,0.35))`,
+              mixBlendMode: 'color', opacity: 0.45,
+            } : fxName === 'glossy' ? {
+              background: `radial-gradient(ellipse 60% 40% at ${px}% ${py}%, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.08) 50%, transparent 70%)`,
+              mixBlendMode: 'overlay', opacity: 0.7,
+            } : (fxName === 'broken-glass' || fxName === 'broken_glass') ? {
+              background: `conic-gradient(from ${angle}deg at ${px}% ${py}%, rgba(200,230,255,0.15), rgba(255,200,255,0.1), rgba(200,255,230,0.15), rgba(200,230,255,0.15))`,
+              mixBlendMode: 'overlay', opacity: 0.5,
+            } : fxName === 'stars' ? {
+              background: `conic-gradient(from ${angle + 45}deg at ${px}% ${py}%, rgba(255,220,255,0.2), rgba(220,240,255,0.15), rgba(255,255,220,0.2), rgba(220,255,240,0.15), rgba(255,220,255,0.2))`,
+              mixBlendMode: 'color', opacity: 0.35,
+            } : null
+          ) : null;
+          return (<>
+            <div className="relative" style={{
+              transform: `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg) scale(${tilting ? 1.03 : 1})`,
+              transition: tilting ? 'transform 0.08s ease-out' : 'transform 0.55s cubic-bezier(0.25,0.8,0.25,1)',
               transformStyle: 'preserve-3d',
-              boxShadow: tilt.x !== 0 || tilt.y !== 0 ? `${-tilt.y * 1.5}px ${tilt.x * 1.5}px 28px rgba(0,0,0,0.5)` : '0 4px 16px rgba(0,0,0,0.3)',
+              boxShadow: tilting ? `${-tilt.y * 1.5}px ${tilt.x * 1.5}px 28px rgba(0,0,0,0.5)` : '0 4px 16px rgba(0,0,0,0.3)',
               willChange: 'transform',
-            }}
-          />
-          <a
-            href={result}
-            download={`sticker-${shader}.png`}
-            className="absolute bottom-3 right-3 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-black/60 backdrop-blur-sm text-white text-xs font-semibold hover:bg-black/80 transition-colors"
-            style={{ zIndex: 10 }}
-          >
-            <Download size={12} />
-            Telecharger
-          </a>
-        </>) : !error && (
+              borderRadius: '0.75rem',
+              overflow: 'hidden',
+            }}>
+              <img src={result} alt="sticker" className="w-full h-auto block" />
+              {fxOverlay && (
+                <div className="absolute inset-0 pointer-events-none" style={{
+                  ...fxOverlay,
+                  transition: 'background 0.1s ease-out',
+                  borderRadius: '0.75rem',
+                }} />
+              )}
+            </div>
+            <a
+              href={result}
+              download={`sticker-${shader}.png`}
+              className="absolute bottom-3 right-3 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-black/60 backdrop-blur-sm text-white text-xs font-semibold hover:bg-black/80 transition-colors"
+              style={{ zIndex: 10 }}
+            >
+              <Download size={12} />
+              Telecharger
+            </a>
+          </>);
+        })() : !error && (
           <p className="text-grey-muted text-sm">Le resultat apparaitra ici</p>
         )}
       </div>
