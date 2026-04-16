@@ -1044,6 +1044,13 @@ select.input-field option {
   }
 }
 
+/* Pas de fond card-bg dans le configurateur boutique */
+.sticky-config .card-bg,
+.sticky-config .card-bg-bordered {
+  background: transparent;
+  box-shadow: none;
+}
+
 /* Badge etape process */
 .process-step-number {
   width: 2.5rem;
