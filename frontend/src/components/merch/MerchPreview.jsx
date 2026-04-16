@@ -116,17 +116,16 @@ function MerchPreview({ productImageUrl, logoUrl, logoPosition, onLogoPositionCh
           ${dragOver ? 'border-accent bg-accent/5' : 'border-white/10 bg-white/[0.02]'}
           ${!logoUrl ? 'cursor-pointer' : ''}
         `}
-        style={{ aspectRatio: '4/5' }}
         onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
         onDragLeave={() => setDragOver(false)}
         onDrop={handleDrop}
         onClick={() => { if (!logoUrl) inputRef.current?.click(); }}
       >
-        {/* Product image background */}
+        {/* Product image - sets the natural height */}
         <img
           src={productImageUrl}
           alt=""
-          className="absolute inset-0 w-full h-full object-contain pointer-events-none"
+          className="w-full h-auto object-contain pointer-events-none"
           draggable={false}
         />
 
@@ -173,12 +172,12 @@ function MerchPreview({ productImageUrl, logoUrl, logoPosition, onLogoPositionCh
 
         {/* Drop zone placeholder (quand pas de logo) */}
         {!logoUrl && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-grey-muted/60 gap-2 pointer-events-none">
-            <div className="w-14 h-14 rounded-full bg-white/5 flex items-center justify-center">
-              <Upload size={24} />
+          <div className="absolute inset-0 flex flex-col items-center justify-end pb-4 text-grey-muted/50 gap-1.5 pointer-events-none">
+            <div className="w-9 h-9 rounded-full bg-white/5 flex items-center justify-center">
+              <Upload size={16} />
             </div>
-            <span className="text-xs font-medium text-center px-4">
-              Cliquez ou deposez votre design
+            <span className="text-[10px] font-medium text-center px-2 leading-tight">
+              Deposez votre design
             </span>
           </div>
         )}
@@ -192,9 +191,9 @@ function MerchPreview({ productImageUrl, logoUrl, logoPosition, onLogoPositionCh
 
         {/* Hint drag quand logo present */}
         {logoUrl && !dragging && !resizing && (
-          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/50 text-white/70 text-[10px] pointer-events-none">
-            <Move size={10} />
-            <span>Deplacez votre design</span>
+          <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/50 text-white/60 text-[9px] pointer-events-none">
+            <Move size={8} />
+            <span>Deplacer</span>
           </div>
         )}
 
