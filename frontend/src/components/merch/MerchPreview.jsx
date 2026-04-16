@@ -121,11 +121,11 @@ function MerchPreview({ productImageUrl, logoUrl, logoPosition, onLogoPositionCh
         onDrop={handleDrop}
         onClick={() => { if (!logoUrl) inputRef.current?.click(); }}
       >
-        {/* Product image - sets the natural height */}
+        {/* Product image - padded to leave room for CTA below */}
         <img
           src={productImageUrl}
           alt=""
-          className="w-full h-auto object-contain pointer-events-none"
+          className="w-[80%] mx-auto h-auto object-contain pointer-events-none pt-3 pb-10"
           draggable={false}
         />
 
@@ -172,11 +172,11 @@ function MerchPreview({ productImageUrl, logoUrl, logoPosition, onLogoPositionCh
 
         {/* Drop zone placeholder (quand pas de logo) */}
         {!logoUrl && (
-          <div className="absolute inset-0 flex flex-col items-center justify-end pb-4 text-grey-muted/50 gap-1.5 pointer-events-none">
-            <div className="w-9 h-9 rounded-full bg-white/5 flex items-center justify-center">
-              <Upload size={16} />
+          <div className="absolute inset-x-0 bottom-0 flex flex-col items-center pb-3 gap-1 pointer-events-none">
+            <div className="w-8 h-8 rounded-full bg-accent/10 border border-accent/30 flex items-center justify-center">
+              <Upload size={14} className="text-accent" />
             </div>
-            <span className="text-[10px] font-medium text-center px-2 leading-tight">
+            <span className="text-sm font-semibold text-accent/80">
               Deposez votre design
             </span>
           </div>
