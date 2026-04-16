@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingCart, Check, Palette } from 'lucide-react';
 import ColorSwatches from '../ColorSwatches';
+import MerchPreview from '../merch/MerchPreview';
 import { Link } from 'react-router-dom';
 import { useCart } from '../../contexts/CartContext';
 import { useLang } from '../../i18n/LanguageContext';
@@ -52,6 +53,8 @@ function ConfiguratorSublimation() {
   const [notes, setNotes] = useState('');
   const [selectedColor, setSelectedColor] = useState('black');
   const [selectedSize, setSelectedSize] = useState('M');
+  const [localPreviewUrl, setLocalPreviewUrl] = useState(null);
+  const [logoPosition, setLogoPosition] = useState({ x: 0.28, y: 0.22, width: 0.35 });
 
   const tiers = sublimationPriceTiers[product] || [];
   const priceInfo = getSublimationPrice(product, qtyIndex, withDesign);
@@ -80,10 +83,28 @@ function ConfiguratorSublimation() {
     }
   };
 
-  const canAddToCart = uploadedFiles.length > 0 || notes.trim().length > 0;
+  // Fichier uploade via le mockup preview (textiles)
+  const handleFileForMockup = useCallback((file) => {
+    if (localPreviewUrl) URL.revokeObjectURL(localPreviewUrl);
+    const url = URL.createObjectURL(file);
+    setLocalPreviewUrl(url);
+    // Ajouter aussi aux uploadedFiles pour le backend
+    setUploadedFiles(prev => [...prev, file]);
+  }, [localPreviewUrl]);
+
+  const handleRemoveLogo = useCallback(() => {
+    if (localPreviewUrl) URL.revokeObjectURL(localPreviewUrl);
+    setLocalPreviewUrl(null);
+  }, [localPreviewUrl]);
+
+  const canAddToCart = uploadedFiles.length > 0 || localPreviewUrl || notes.trim().length > 0;
 
   const handleAddToCart = () => {
     if (!priceInfo || !canAddToCart) return;
+    // Inclure la position du logo dans les notes si disponible
+    const placementNote = localPreviewUrl && logoPosition
+      ? `\n[Logo placement: x=${Math.round(logoPosition.x * 100)}% y=${Math.round(logoPosition.y * 100)}% w=${Math.round(logoPosition.width * 100)}%]`
+      : '';
     addToCart({
       productId: `sublimation-${product}`,
       productName: tx({
@@ -100,9 +121,9 @@ function ConfiguratorSublimation() {
       quantity: priceInfo.qty,
       unitPrice: priceInfo.unitPrice,
       totalPrice: priceInfo.price,
-      image: sublimationImages[0],
+      image: localPreviewUrl || sublimationImages[0],
       uploadedFiles,
-      notes,
+      notes: notes + placementNote,
     });
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
@@ -138,67 +159,53 @@ function ConfiguratorSublimation() {
         </div>
       </div>
 
-      {/* Color + Size + Preview for textile products */}
+      {/* Mockup preview + Color + Size for textile products */}
       {hasColors && (
-        <div className="mb-4 md:mb-5">
-          {/* Mobile: compact horizontal strip / Desktop: side by side */}
-          <div className="flex flex-col md:flex-row gap-3 md:gap-5">
-            {/* Product preview */}
-            <div className="flex md:flex-col items-center gap-3 md:gap-0 md:w-48 rounded-xl card-bg-bordered p-3 overflow-hidden md:self-start">
-              <AnimatePresence mode="wait">
-                <motion.img
-                  key={`${product}-${selectedColor}`}
-                  src={currentGetImage(selectedColor)}
-                  alt={`${productLabel ? tx({ fr: productLabel.labelFr, en: productLabel.labelEn, es: productLabel.labelEs || productLabel.labelEn }) : product} ${colorObj.name}`}
-                  className="w-32 h-32 md:w-full md:h-auto object-contain rounded-lg flex-shrink-0"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.2 }}
-                />
-              </AnimatePresence>
-              <div className="text-left md:text-center md:mt-3">
-                <span className="text-heading text-sm font-semibold">
-                  {colorObj.name}
-                </span>
-                <span className="block text-grey-muted text-xs mt-0.5">
-                  {hasSizes ? selectedSize : tx({ fr: productLabel?.labelFr, en: productLabel?.labelEn, es: productLabel?.labelEs || productLabel?.labelEn })}
-                </span>
-              </div>
-            </div>
+        <div className="mb-4 md:mb-5 space-y-3">
+          {/* Mockup preview pleine largeur */}
+          <MerchPreview
+            productImageUrl={currentGetImage(selectedColor)}
+            logoUrl={localPreviewUrl}
+            logoPosition={logoPosition}
+            onLogoPositionChange={setLogoPosition}
+            onFileSelect={handleFileForMockup}
+            onLogoRemove={handleRemoveLogo}
+            label={tx({ fr: 'Votre mockup', en: 'Your mockup', es: 'Tu mockup' })}
+          />
 
-            {/* Color + Size selectors */}
-            <div className="flex-1 min-w-0 space-y-3 md:space-y-4">
+          {/* Couleur + Taille en dessous */}
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex-1 min-w-0">
               <ColorSwatches
                 colors={currentColors}
                 selected={selectedColor}
                 onChange={setSelectedColor}
                 label={tx({ fr: 'Couleur', en: 'Color', es: 'Color' })}
               />
-
-              {hasSizes && (
-                <div>
-                  <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-1.5 md:mb-2">
-                    {tx({ fr: 'Taille', en: 'Size', es: 'Talla' })}
-                  </label>
-                  <div className="grid grid-cols-6 md:flex md:flex-wrap gap-1.5 md:gap-2">
-                    {merchSizes.map(size => (
-                      <button
-                        key={size}
-                        onClick={() => setSelectedSize(size)}
-                        className={`py-1.5 px-1 md:min-w-[3.5rem] md:py-2.5 md:px-3 rounded-lg text-xs font-semibold transition-all border-2 ${
-                          selectedSize === size
-                            ? 'border-accent option-selected'
-                            : 'border-transparent hover:border-grey-muted/30 option-default'
-                        }`}
-                      >
-                        {size}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
+
+            {hasSizes && (
+              <div className="flex-shrink-0">
+                <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2">
+                  {tx({ fr: 'Taille', en: 'Size', es: 'Talla' })}
+                </label>
+                <div className="flex flex-wrap gap-1.5">
+                  {merchSizes.map(size => (
+                    <button
+                      key={size}
+                      onClick={() => setSelectedSize(size)}
+                      className={`py-1.5 px-2.5 rounded-lg text-xs font-semibold transition-all border-2 ${
+                        selectedSize === size
+                          ? 'border-accent option-selected'
+                          : 'border-transparent hover:border-grey-muted/30 option-default'
+                      }`}
+                    >
+                      {size}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -279,14 +286,16 @@ function ConfiguratorSublimation() {
         </label>
       </div>
 
-      {/* File upload + Notes side by side */}
-      <div className="grid grid-cols-1 md:grid-cols-[2fr_3fr] gap-3 md:gap-4 mb-4 md:mb-5">
-        <FileUpload
-          files={uploadedFiles}
-          onFilesChange={setUploadedFiles}
-          label={tx({ fr: 'Votre design', en: 'Your design', es: 'Tu diseno' })}
-          compact
-        />
+      {/* File upload (only for non-textile products - textiles use the mockup) + Notes */}
+      <div className={`grid gap-3 md:gap-4 mb-4 md:mb-5 ${!hasColors ? 'grid-cols-1 md:grid-cols-[2fr_3fr]' : 'grid-cols-1'}`}>
+        {!hasColors && (
+          <FileUpload
+            files={uploadedFiles}
+            onFilesChange={setUploadedFiles}
+            label={tx({ fr: 'Votre design', en: 'Your design', es: 'Tu diseno' })}
+            compact
+          />
+        )}
         <div>
           <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2">
             {tx({ fr: 'Notes / Description', en: 'Notes / Description', es: 'Notas / Descripcion' })}
@@ -294,9 +303,9 @@ function ConfiguratorSublimation() {
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            rows={3}
-            placeholder={tx({ fr: 'Décrivez le produit souhaité (taille, couleur, placement...)', en: 'Describe the desired product (size, color, placement...)', es: 'Describe el producto deseado (talla, color, ubicacion...)' })}
-            className="w-full min-h-[80px] md:min-h-[100px] rounded-lg border-2 border-grey-muted/20 bg-transparent px-3 py-2.5 md:px-4 md:py-3 text-sm text-heading placeholder:text-grey-muted/50 focus:border-accent focus:outline-none transition-colors resize-none"
+            rows={hasColors ? 2 : 3}
+            placeholder={tx({ fr: 'Décrivez le produit souhaité (placement, details...)', en: 'Describe the desired product (placement, details...)', es: 'Describe el producto deseado (ubicacion, detalles...)' })}
+            className="w-full min-h-[60px] md:min-h-[80px] rounded-lg border-2 border-grey-muted/20 bg-transparent px-3 py-2.5 md:px-4 md:py-3 text-sm text-heading placeholder:text-grey-muted/50 focus:border-accent focus:outline-none transition-colors resize-none"
           />
         </div>
       </div>
