@@ -908,7 +908,7 @@ function ServiceDetail() {
                 <ShoppingCart size={28} className="text-accent" />
                 {tx({ fr: 'Commander en ligne', en: 'Order online', es: 'Pedir en línea' })}
               </h2>
-              <div className="rounded-2xl p-6 md:p-10 card-bg">
+              <div className="rounded-2xl p-6 md:p-10">
                 <Suspense fallback={
                   <div className="text-center py-8 text-grey-muted">
                     {tx({ fr: 'Chargement...', en: 'Loading...', es: 'Cargando...' })}

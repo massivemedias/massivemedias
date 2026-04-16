@@ -132,7 +132,7 @@ function MerchPreview({ productImageUrl, logoUrl, logoPosition, onLogoPositionCh
         {/* Logo overlay */}
         {logoUrl && logoPosition && (
           <div
-            className={`absolute select-none ${dragging || resizing ? '' : 'hover:ring-1 hover:ring-accent/50'}`}
+            className={`absolute select-none group ${dragging || resizing ? '' : 'hover:ring-1 hover:ring-accent/50'}`}
             style={{
               left: `${logoPosition.x * 100}%`,
               top: `${logoPosition.y * 100}%`,
@@ -152,9 +152,9 @@ function MerchPreview({ productImageUrl, logoUrl, logoPosition, onLogoPositionCh
               onLoad={handleImageLoad}
             />
 
-            {/* Resize handle bas-droite */}
+            {/* Resize handle bas-droite - visible seulement au hover du logo */}
             <div
-              className="absolute bottom-0 right-0 w-4 h-4 bg-accent rounded-tl-md cursor-nwse-resize opacity-70 hover:opacity-100 transition-opacity"
+              className="absolute bottom-0 right-0 w-4 h-4 bg-accent rounded-tl-md cursor-nwse-resize opacity-0 group-hover:opacity-70 hover:!opacity-100 transition-opacity"
               onMouseDown={(e) => { if (e.button === 0) startResize(e.clientX, e.clientY, e); }}
               onTouchStart={(e) => { const t = e.touches[0]; startResize(t.clientX, t.clientY, e); }}
             />
@@ -163,7 +163,7 @@ function MerchPreview({ productImageUrl, logoUrl, logoPosition, onLogoPositionCh
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); onLogoRemove?.(); }}
-              className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-red-500/80 hover:bg-red-500 text-white flex items-center justify-center transition-colors"
+              className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-red-500/80 hover:bg-red-500 text-white flex items-center justify-center transition-all opacity-0 group-hover:opacity-100"
             >
               <X size={12} />
             </button>

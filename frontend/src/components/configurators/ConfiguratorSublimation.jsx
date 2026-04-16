@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingCart, Check, Palette, Sparkles, Shirt, ShoppingBag, Coffee, Package } from 'lucide-react';
+import { ShoppingCart, Check, Palette, Sparkles, Shirt, ShoppingBag, Coffee, Package, ChevronDown, Upload } from 'lucide-react';
 import ColorSwatches from '../ColorSwatches';
 import MerchPreview from '../merch/MerchPreview';
 import { Link } from 'react-router-dom';
@@ -61,6 +61,7 @@ function ConfiguratorSublimation() {
   const [notes, setNotes] = useState('');
   const [selectedColor, setSelectedColor] = useState('black');
   const [selectedSize, setSelectedSize] = useState('M');
+  const [showMockup, setShowMockup] = useState(false);
 
   // Front / Back mockup state
   const [frontLogoUrl, setFrontLogoUrl] = useState(null);
@@ -172,56 +173,9 @@ function ConfiguratorSublimation() {
         </div>
       </div>
 
-      {/* Front + Back mockups cote a cote + Color + Size */}
+      {/* Color + Size (toujours visible) */}
       {hasColors && (
         <div className="mb-4 md:mb-5 space-y-3">
-          {/* Mockups: front + back side by side (textiles) ou single (totebag) */}
-          <div className={`grid gap-3 ${hasSides ? 'grid-cols-2' : 'grid-cols-1 max-w-[250px]'}`}>
-            {/* FRONT */}
-            <div>
-              <span className="block text-sm font-semibold text-heading mb-1.5">
-                {hasSides ? tx({ fr: 'Devant', en: 'Front', es: 'Delante' }) : tx({ fr: 'Apercu', en: 'Preview', es: 'Vista previa' })}
-                {frontLogoUrl && <span className="ml-1.5 inline-block w-1.5 h-1.5 rounded-full bg-green-400 align-middle" />}
-              </span>
-              <MerchPreview
-                productImageUrl={currentGetImage(selectedColor)}
-                logoUrl={frontLogoUrl}
-                logoPosition={frontLogoPos}
-                onLogoPositionChange={setFrontLogoPos}
-                onFileSelect={(file) => {
-                  const url = URL.createObjectURL(file);
-                  if (frontLogoUrl) URL.revokeObjectURL(frontLogoUrl);
-                  setFrontLogoUrl(url);
-                  setUploadedFiles(prev => [...prev, file]);
-                }}
-                onLogoRemove={() => { if (frontLogoUrl) URL.revokeObjectURL(frontLogoUrl); setFrontLogoUrl(null); }}
-              />
-            </div>
-            {/* BACK (textiles only) */}
-            {hasSides && (
-              <div>
-                <span className="block text-sm font-semibold text-heading mb-1.5">
-                  {tx({ fr: 'Dos', en: 'Back', es: 'Detras' })}
-                  {backLogoUrl && <span className="ml-1.5 inline-block w-1.5 h-1.5 rounded-full bg-green-400 align-middle" />}
-                </span>
-                <MerchPreview
-                  productImageUrl={currentGetImage(selectedColor)}
-                  logoUrl={backLogoUrl}
-                  logoPosition={backLogoPos}
-                  onLogoPositionChange={setBackLogoPos}
-                  onFileSelect={(file) => {
-                    const url = URL.createObjectURL(file);
-                    if (backLogoUrl) URL.revokeObjectURL(backLogoUrl);
-                    setBackLogoUrl(url);
-                    setUploadedFiles(prev => [...prev, file]);
-                  }}
-                  onLogoRemove={() => { if (backLogoUrl) URL.revokeObjectURL(backLogoUrl); setBackLogoUrl(null); }}
-                />
-              </div>
-            )}
-          </div>
-
-          {/* Couleur + Taille */}
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="flex-1 min-w-0">
               <ColorSwatches
@@ -254,6 +208,80 @@ function ConfiguratorSublimation() {
               </div>
             )}
           </div>
+        </div>
+      )}
+
+      {/* Bouton "Personnaliser" pour derouler les mockups front/back */}
+      {hasColors && (
+        <div className="mb-4 md:mb-5">
+          <button
+            type="button"
+            onClick={() => setShowMockup(!showMockup)}
+            className="w-full flex items-center justify-between py-3 px-4 rounded-xl border border-accent/30 bg-accent/5 hover:bg-accent/10 transition-colors"
+          >
+            <span className="flex items-center gap-2 text-sm font-semibold text-heading">
+              <Upload size={16} className="text-accent" />
+              {tx({
+                fr: `Personnaliser votre ${productLabel?.labelFr || 'produit'}`,
+                en: `Customize your ${productLabel?.labelEn || 'product'}`,
+                es: `Personalizar tu ${productLabel?.labelEs || productLabel?.labelEn || 'producto'}`,
+              })}
+              {(frontLogoUrl || backLogoUrl) && (
+                <span className="ml-1 inline-block w-2 h-2 rounded-full bg-green-400" />
+              )}
+            </span>
+            <ChevronDown size={18} className={`text-accent transition-transform ${showMockup ? 'rotate-180' : ''}`} />
+          </button>
+
+          {/* Mockups front + back (collapsible) */}
+          {showMockup && (
+            <div className="mt-3 space-y-2">
+              <div className={`grid gap-3 ${hasSides ? 'grid-cols-2' : 'grid-cols-1 max-w-[250px]'}`}>
+                {/* FRONT */}
+                <div>
+                  <span className="block text-sm font-semibold text-heading mb-1.5">
+                    {hasSides ? tx({ fr: 'Devant', en: 'Front', es: 'Delante' }) : tx({ fr: 'Apercu', en: 'Preview', es: 'Vista previa' })}
+                    {frontLogoUrl && <span className="ml-1.5 inline-block w-1.5 h-1.5 rounded-full bg-green-400 align-middle" />}
+                  </span>
+                  <MerchPreview
+                    productImageUrl={currentGetImage(selectedColor)}
+                    logoUrl={frontLogoUrl}
+                    logoPosition={frontLogoPos}
+                    onLogoPositionChange={setFrontLogoPos}
+                    onFileSelect={(file) => {
+                      const url = URL.createObjectURL(file);
+                      if (frontLogoUrl) URL.revokeObjectURL(frontLogoUrl);
+                      setFrontLogoUrl(url);
+                      setUploadedFiles(prev => [...prev, file]);
+                    }}
+                    onLogoRemove={() => { if (frontLogoUrl) URL.revokeObjectURL(frontLogoUrl); setFrontLogoUrl(null); }}
+                  />
+                </div>
+                {/* BACK (textiles only) */}
+                {hasSides && (
+                  <div>
+                    <span className="block text-sm font-semibold text-heading mb-1.5">
+                      {tx({ fr: 'Dos', en: 'Back', es: 'Detras' })}
+                      {backLogoUrl && <span className="ml-1.5 inline-block w-1.5 h-1.5 rounded-full bg-green-400 align-middle" />}
+                    </span>
+                    <MerchPreview
+                      productImageUrl={currentGetImage(selectedColor)}
+                      logoUrl={backLogoUrl}
+                      logoPosition={backLogoPos}
+                      onLogoPositionChange={setBackLogoPos}
+                      onFileSelect={(file) => {
+                        const url = URL.createObjectURL(file);
+                        if (backLogoUrl) URL.revokeObjectURL(backLogoUrl);
+                        setBackLogoUrl(url);
+                        setUploadedFiles(prev => [...prev, file]);
+                      }}
+                      onLogoRemove={() => { if (backLogoUrl) URL.revokeObjectURL(backLogoUrl); setBackLogoUrl(null); }}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
