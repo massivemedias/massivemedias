@@ -235,8 +235,8 @@ function ConfiguratorSublimation() {
             onClick={() => setShowMockup(!showMockup)}
             className="w-full flex items-center justify-between py-3 px-4 rounded-xl bg-white/[0.06] hover:bg-white/[0.09] shadow-md shadow-black/20 hover:shadow-lg hover:shadow-black/30 transition-all"
           >
-            <span className="flex items-center gap-2 text-sm font-semibold text-heading">
-              <Upload size={16} className="text-accent" />
+            <span className="flex items-center gap-2 text-base font-bold" style={{ color: 'var(--logo-accent, #ffcc02)' }}>
+              <Upload size={17} style={{ color: 'var(--logo-accent, #ffcc02)' }} />
               {tx({
                 fr: `Personnaliser votre ${productLabel?.labelFr || 'produit'}`,
                 en: `Customize your ${productLabel?.labelEn || 'product'}`,
