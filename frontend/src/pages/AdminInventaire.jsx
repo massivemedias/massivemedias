@@ -114,11 +114,30 @@ const CONSOMMABLE_GROUPS = [
       'Rouleau laminat brillant',
       'Rouleau laminat mat',
       'Rouleau laminat satine',
+      'Pochettes lamineuse A4',
+      'Pochettes lamineuse A3',
     ],
   },
   {
-    group: 'Machine',
-    items: ["Encre imprimante", "Tete d'impression", 'Vinyle de decoupe'],
+    group: 'Machine / Outils',
+    items: [
+      "Encre imprimante",
+      "Tete d'impression",
+      'Vinyle de decoupe',
+      'Tapis de decoupe (cutting mat)',
+      'Lame de rechange plotter',
+      'Ruban transfert',
+    ],
+  },
+  {
+    group: 'Accessoires',
+    items: [
+      'Spatule / raclette',
+      'Ciseaux',
+      'Regle de decoupe',
+      'Gants nitrile',
+      'Lingettes nettoyantes',
+    ],
   },
 ];
 
@@ -159,7 +178,14 @@ const FRAME_COLORS        = ['Noir', 'Blanc', 'Argent', 'Chene naturel', 'Noyer'
 const SKU_PREFIXES = {
   textile: 'TXT', consommable: 'CSM', emballage: 'EMB',
   equipment: 'EQP', frame: 'FRM', merch: 'MRC',
-  sticker: 'STK', print: 'PRT', other: 'OTH',
+  sticker: 'CSM', print: 'CSM', accessory: 'CSM', other: 'OTH',
+};
+
+// Remap legacy categories -> categories principales pour l'affichage
+const CATEGORY_REMAP = {
+  sticker: 'consommable',
+  print: 'consommable',
+  accessory: 'consommable',
 };
 
 // =================== COMPOSANTS UTILITAIRES ===================
@@ -874,7 +900,8 @@ function AdminInventaire() {
     const matchSearch = !search
       || getName(item).toLowerCase().includes(search.toLowerCase())
       || (item.sku || '').toLowerCase().includes(search.toLowerCase());
-    const matchCategory = filterCategory === 'all' || item.category === filterCategory;
+    const effectiveCat = CATEGORY_REMAP[item.category] || item.category;
+    const matchCategory = filterCategory === 'all' || effectiveCat === filterCategory;
     return matchSearch && matchCategory;
   });
 
@@ -962,7 +989,8 @@ function AdminInventaire() {
       {(() => {
         const groups = {};
         filtered.forEach(item => {
-          const cat = item.category || 'other';
+          const rawCat = item.category || 'other';
+          const cat = CATEGORY_REMAP[rawCat] || rawCat;
           if (!groups[cat]) groups[cat] = [];
           groups[cat].push(item);
         });
@@ -1049,12 +1077,12 @@ function AdminInventaire() {
               const totalQty = catItems.reduce((s, i) => s + (i.quantity || 0), 0);
               const isOpen = openCats.includes(cat);
 
-              // Textile: sous-accordeons par variant (Hoodie, T-Shirt, etc.)
-              const hasSubGroups = cat === 'textile';
+              // Textile + Consommable: sous-accordeons par variant
+              const hasSubGroups = cat === 'textile' || cat === 'consommable';
               const subGroups = {};
               if (hasSubGroups) {
                 catItems.forEach(item => {
-                  const variant = item.variant || 'Autre';
+                  const variant = item.variant || (cat === 'consommable' ? 'Autre' : 'Autre');
                   if (!subGroups[variant]) subGroups[variant] = [];
                   subGroups[variant].push(item);
                 });
