@@ -26,6 +26,13 @@ const PRODUCT_ICONS = {
   totebag: ShoppingBag, bag: Package, mug: Coffee, tumbler: Coffee,
 };
 
+// Back view mockup images (noir - pas d'images couleur disponibles pour le dos)
+const BACK_IMAGES = {
+  tshirt: '/images/mockups/tshirt/back.webp',
+  hoodie: '/images/mockups/hoodie/back.webp',
+  longsleeve: '/images/mockups/longsleeve/back.webp',
+};
+
 // Static preview images for products without color picker
 const staticProductImages = {
   mug: '/images/mugs/mug-white.webp',
@@ -265,7 +272,7 @@ function ConfiguratorSublimation() {
                       {backLogoUrl && <span className="ml-1.5 inline-block w-1.5 h-1.5 rounded-full bg-green-400 align-middle" />}
                     </span>
                     <MerchPreview
-                      productImageUrl={currentGetImage(selectedColor)}
+                      productImageUrl={BACK_IMAGES[product] || currentGetImage(selectedColor)}
                       logoUrl={backLogoUrl}
                       logoPosition={backLogoPos}
                       onLogoPositionChange={setBackLogoPos}
