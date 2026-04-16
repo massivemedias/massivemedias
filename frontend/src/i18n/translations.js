@@ -134,8 +134,8 @@ const translations = {
         title: 'Ce que nos clients disent',
         items: [
           { name: 'Jeremy G.', role: 'Client', text: "Je te jure ton site est crazy" },
-          { name: 'Samuel L.', role: 'Photographe', text: "Tirages fine art impeccables. La qualité des couleurs est fidèle à mes fichiers. Je recommande à tous les photographes de Montréal." },
-          { name: 'Marie-Ève D.', role: 'Promotrice d\'événements', text: "Stickers et affiches pour notre festival, qualité impeccable au rendez-vous. On revient chaque année!" },
+          { name: 'Mika', role: 'Omatoufaire', text: "Mon site est genial.. c'est normal c'est moi qui l'ai fait.. et il n'y a pas encore de testimonial de client .." },
+          { name: 'Maudite Machine', role: 'Inspecteur des pompes funebres', text: "Super site !!! Mika t'es le meilleur je t'aime tellement !!!!" },
         ],
       },
     },
@@ -495,8 +495,8 @@ const translations = {
         title: 'What Our Clients Say',
         items: [
           { name: 'Jeremy G.', role: 'Client', text: "I swear your site is crazy" },
-          { name: 'Samuel L.', role: 'Photographer', text: "Flawless fine art prints. Color quality is true to my files. I recommend to all Montreal photographers." },
-          { name: 'Marie-Eve D.', role: 'Event Promoter', text: "Stickers and posters for our festival, impeccable quality delivered. We come back every year!" },
+          { name: 'Mika', role: 'Omatoufaire', text: "My site is amazing.. obviously, I made it myself.. and there are no client testimonials yet .." },
+          { name: 'Maudite Machine', role: 'Funeral Home Inspector', text: "Amazing site!!! Mika you're the best I love you so much!!!!" },
         ],
       },
     },
@@ -855,9 +855,9 @@ const translations = {
       testimonials: {
         title: 'Lo que dicen nuestros clientes',
         items: [
-          { name: 'Samuel L.', role: 'Fotógrafo', text: 'Impresiones fine art impecables. La calidad de color es fiel a mis archivos. Lo recomiendo a todos los fotógrafos de Montreal.' },
-          { name: 'Marie-Eve D.', role: 'Promotora de eventos', text: 'Stickers y carteles para nuestro festival, calidad impecable garantizada. ¡Volvemos cada año!' },
-          { name: 'Julien P.', role: 'Músico', text: 'Merch para nuestra gira: camisetas, stickers, carteles. Todo perfecto y entregado a tiempo. La tienda ideal todo-en-uno.' },
+          { name: 'Jeremy G.', role: 'Cliente', text: "Te juro que tu sitio esta loco" },
+          { name: 'Mika', role: 'Omatoufaire', text: "Mi sitio es genial.. es normal porque yo lo hice.. y todavia no hay testimonios de clientes .." },
+          { name: 'Maudite Machine', role: 'Inspector de funerarias', text: "Super sitio!!! Mika eres el mejor te quiero muchisimo!!!!" },
         ],
       },
     },
