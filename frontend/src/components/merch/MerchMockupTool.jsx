@@ -14,8 +14,9 @@
  * Les logos sont places en coordonnees relatives (0..1 de la box produit),
  * donc ils suivent quand on switche entre produits de ratios differents.
  */
-import { useState, useEffect, useRef, useMemo } from 'react';
-import { Upload, Download, RotateCcw, X, Shirt } from 'lucide-react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { Upload, Download, RotateCcw, X, Shirt, Sparkles, Loader2, AlertCircle, Image as ImageIcon } from 'lucide-react';
+import { merchColors } from '../../data/merchData';
 
 // Catalogue des produits dispo. Chaque face a ses propres dimensions natives
 // pour un export HD fidele a l'image source.
@@ -415,9 +416,9 @@ async function composeAndDownload(bgImg, logos, filename, bgW, bgH) {
 }
 
 // ---------------------------------------------------------------------------
-// MerchMockupTool - composant exporte
+// MerchManualMockup - outil drag-and-drop sur fond noir
 // ---------------------------------------------------------------------------
-function MerchMockupTool() {
+function MerchManualMockup() {
   const [productKey, setProductKey] = useState('hoodie');
   const product = PRODUCTS[productKey];
 
@@ -625,6 +626,287 @@ function MerchMockupTool() {
       <div className="text-[11px] text-grey-muted/80 italic px-1">
         Drag sur le logo pour deplacer · <b>autour</b> du logo = rotation (tiens <kbd className="px-1 rounded bg-white/10">Shift</kbd> pour snap par 25°) · poignee accent = resize · X rouge = supprimer · chaque produit se souvient de sa position/taille/rotation
       </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// MerchAIMockup - Generateur de mannequin IA via Gemini
+// ---------------------------------------------------------------------------
+const AI_PRODUCTS = [
+  { id: 'tshirt', label: 'T-shirt' },
+  { id: 'hoodie', label: 'Hoodie' },
+  { id: 'longsleeve', label: 'Long Sleeve' },
+  { id: 'totebag', label: 'Tote Bag' },
+];
+
+function MerchAIMockup() {
+  const [product, setProduct] = useState('tshirt');
+  const [color, setColor] = useState(merchColors[9]); // black par defaut
+  const [logoFile, setLogoFile] = useState(null);
+  const [logoPreview, setLogoPreview] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState(null);
+  const [error, setError] = useState(null);
+  const [elapsed, setElapsed] = useState(0);
+  const timerRef = useRef(null);
+  const logoInputRef = useRef(null);
+
+  useEffect(() => {
+    if (loading) {
+      setElapsed(0);
+      timerRef.current = setInterval(() => setElapsed(e => e + 1), 1000);
+    } else {
+      clearInterval(timerRef.current);
+    }
+    return () => clearInterval(timerRef.current);
+  }, [loading]);
+
+  const handleLogoFile = (f) => {
+    if (logoPreview) URL.revokeObjectURL(logoPreview);
+    setLogoFile(f);
+    setLogoPreview(URL.createObjectURL(f));
+  };
+
+  const resizeFileToBase64 = (f) => new Promise((resolve, reject) => {
+    const img = new window.Image();
+    img.onload = () => {
+      const MAX = 1000;
+      let { naturalWidth: w, naturalHeight: h } = img;
+      if (w > MAX || h > MAX) {
+        const r = Math.min(MAX / w, MAX / h);
+        w = Math.round(w * r); h = Math.round(h * r);
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      resolve(canvas.toDataURL('image/webp', 0.85));
+    };
+    img.onerror = reject;
+    img.src = URL.createObjectURL(f);
+  });
+
+  const handleGenerate = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    setResult(null);
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:1337/api';
+      const body = {
+        product,
+        colorName: color.name,
+        colorHex: color.hex,
+      };
+      if (logoFile) {
+        body.logoBase64 = await resizeFileToBase64(logoFile);
+      }
+      const res = await fetch(`${apiUrl}/mockup/generate-textile`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) throw new Error(`Erreur ${res.status}`);
+      const data = await res.json();
+      if (data.success && data.image) {
+        setResult(`data:${data.image.mimeType};base64,${data.image.data}`);
+      } else {
+        throw new Error('Pas d\'image retournee');
+      }
+    } catch (err) {
+      setError(err.message || 'Erreur de generation');
+    } finally {
+      setLoading(false);
+    }
+  }, [product, color, logoFile]);
+
+  const handleDownload = () => {
+    if (!result) return;
+    const a = document.createElement('a');
+    a.href = result;
+    a.download = `mannequin-${product}-${color.id}-${Date.now()}.png`;
+    a.click();
+  };
+
+  return (
+    <div className="grid lg:grid-cols-[320px_1fr] gap-5">
+      {/* Colonne gauche: config */}
+      <div className="space-y-4">
+        {/* Produit */}
+        <div>
+          <span className="text-xs uppercase tracking-wider text-grey-muted font-semibold block mb-2">Produit</span>
+          <div className="flex flex-wrap gap-2">
+            {AI_PRODUCTS.map(p => (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => setProduct(p.id)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors border-2 ${
+                  product === p.id
+                    ? 'border-accent bg-accent/15 text-accent'
+                    : 'border-transparent bg-black/20 text-grey-muted hover:text-heading'
+                }`}
+              >
+                <Shirt size={13} />
+                {p.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Couleur */}
+        <div>
+          <span className="text-xs uppercase tracking-wider text-grey-muted font-semibold block mb-2">
+            Couleur - <span className="text-heading normal-case font-normal">{color.name}</span>
+          </span>
+          <div className="flex flex-wrap gap-2">
+            {merchColors.map(c => (
+              <button
+                key={c.id}
+                type="button"
+                onClick={() => setColor(c)}
+                title={c.name}
+                className={`w-9 h-9 rounded-xl transition-all shadow-sm ${
+                  color.id === c.id
+                    ? 'ring-2 ring-accent ring-offset-2 ring-offset-black scale-110'
+                    : 'hover:scale-105 hover:ring-1 hover:ring-white/30'
+                }`}
+                style={{
+                  backgroundColor: c.hex,
+                  border: c.id === 'white' ? '1px solid rgba(255,255,255,0.15)' : 'none',
+                }}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Logo (optionnel) */}
+        <div>
+          <span className="text-xs uppercase tracking-wider text-grey-muted font-semibold block mb-2">
+            Design sur le textile <span className="normal-case font-normal text-grey-muted">(optionnel)</span>
+          </span>
+          {logoPreview ? (
+            <div className="flex items-center gap-3 p-3 rounded-xl bg-black/20">
+              <img src={logoPreview} alt="design" className="w-14 h-14 object-contain rounded-lg bg-white/5 p-1" />
+              <div className="flex-1 min-w-0">
+                <p className="text-heading text-xs truncate">{logoFile?.name}</p>
+                <button
+                  type="button"
+                  onClick={() => { setLogoFile(null); if (logoPreview) URL.revokeObjectURL(logoPreview); setLogoPreview(null); }}
+                  className="text-red-400 text-[11px] hover:underline flex items-center gap-1 mt-1"
+                >
+                  <X size={10} /> Retirer
+                </button>
+              </div>
+            </div>
+          ) : (
+            <label
+              className="flex items-center gap-3 px-4 py-3 rounded-xl border-2 border-dashed border-white/10 hover:border-white/25 cursor-pointer transition-colors"
+              onClick={() => logoInputRef.current?.click()}
+            >
+              <ImageIcon size={20} className="text-grey-muted flex-shrink-0" />
+              <span className="text-grey-muted text-xs">Deposer un logo ou design (PNG, WebP...)</span>
+              <input ref={logoInputRef} type="file" accept="image/*" className="hidden"
+                onChange={e => { if (e.target.files[0]) handleLogoFile(e.target.files[0]); }} />
+            </label>
+          )}
+        </div>
+
+        {/* Bouton generer */}
+        <button
+          type="button"
+          onClick={handleGenerate}
+          disabled={loading}
+          className="w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+          style={{ background: 'var(--logo-accent, #ffcc02)', color: '#000' }}
+        >
+          {loading
+            ? <><Loader2 size={16} className="animate-spin" /> Generation... {elapsed}s</>
+            : <><Sparkles size={16} /> Generer le mannequin IA</>
+          }
+        </button>
+
+        <p className="text-grey-muted text-[11px] text-center">
+          ~10-20s - Gemini 2.5 Flash · ~0.02$/image
+        </p>
+      </div>
+
+      {/* Colonne droite: resultat */}
+      <div className="rounded-xl bg-black/20 flex items-center justify-center min-h-[420px] relative overflow-hidden">
+        {!loading && !result && !error && (
+          <div className="text-center text-grey-muted space-y-2">
+            <Shirt size={40} className="mx-auto opacity-30" />
+            <p className="text-sm">Choisis un produit et une couleur,<br />puis clique sur Generer</p>
+          </div>
+        )}
+        {loading && (
+          <div className="flex flex-col items-center gap-3">
+            <Loader2 size={36} className="animate-spin" style={{ color: 'var(--logo-accent, #ffcc02)' }} />
+            <p className="text-heading text-sm font-semibold">Generation en cours... {elapsed}s</p>
+            <p className="text-grey-muted text-xs">{color.name} {AI_PRODUCTS.find(p => p.id === product)?.label}</p>
+          </div>
+        )}
+        {error && !loading && (
+          <div className="flex flex-col items-center gap-2 text-red-400 text-sm p-6 text-center">
+            <AlertCircle size={24} />
+            <p>{error}</p>
+            <button onClick={handleGenerate} className="text-accent text-xs mt-1 hover:underline">Reessayer</button>
+          </div>
+        )}
+        {result && !loading && (
+          <>
+            <img src={result} alt={`${color.name} ${product}`} className="w-full h-full object-contain max-h-[600px]" />
+            <button
+              onClick={handleDownload}
+              className="absolute bottom-3 right-3 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-black/60 backdrop-blur-sm text-white text-xs font-semibold hover:bg-black/80 transition-colors"
+            >
+              <Download size={12} /> Telecharger
+            </button>
+            <button
+              onClick={handleGenerate}
+              className="absolute bottom-3 left-3 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-black/60 backdrop-blur-sm text-white text-xs font-semibold hover:bg-black/80 transition-colors"
+            >
+              <Sparkles size={12} /> Regenerer
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// MerchMockupTool - composant exporte (avec sous-tabs)
+// ---------------------------------------------------------------------------
+function MerchMockupTool() {
+  const [subTab, setSubTab] = useState('ai');
+  return (
+    <div className="space-y-4">
+      {/* Sous-tabs */}
+      <div className="flex gap-1 p-1 rounded-xl bg-black/20 w-fit">
+        <button
+          type="button"
+          onClick={() => setSubTab('ai')}
+          className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold transition-all ${
+            subTab === 'ai' ? 'bg-accent text-white' : 'text-grey-muted hover:text-heading'
+          }`}
+        >
+          <Sparkles size={13} />
+          Mannequin IA
+        </button>
+        <button
+          type="button"
+          onClick={() => setSubTab('manual')}
+          className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold transition-all ${
+            subTab === 'manual' ? 'bg-accent text-white' : 'text-grey-muted hover:text-heading'
+          }`}
+        >
+          <Shirt size={13} />
+          Mockup Manuel
+        </button>
+      </div>
+
+      {subTab === 'ai' && <MerchAIMockup />}
+      {subTab === 'manual' && <MerchManualMockup />}
     </div>
   );
 }
