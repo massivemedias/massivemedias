@@ -147,7 +147,7 @@ function ConfiguratorStickers({ onFinishChange }) {
                 ? tx({ fr: 'Design charge ✓ - Essaie les finitions ci-dessous', en: 'Design loaded ✓ - Try the finishes below', es: 'Diseno cargado ✓ - Prueba los acabados' })
                 : tx({ fr: 'Upload ton design', en: 'Upload your design', es: 'Sube tu diseno' })}
             </div>
-            <div className="text-grey-muted text-xs mt-0.5">
+            <div className="text-grey-muted text-sm mt-0.5">
               {localPreviewUrl
                 ? tx({ fr: 'Clique pour changer d\'image', en: 'Click to change image', es: 'Haz clic para cambiar' })
                 : tx({ fr: 'PNG, JPG, WebP, SVG - le preview se met a jour en direct', en: 'PNG, JPG, WebP, SVG - preview updates live', es: 'PNG, JPG, WebP, SVG - vista previa en vivo' })}
@@ -191,11 +191,11 @@ function ConfiguratorStickers({ onFinishChange }) {
               <span className="text-heading text-sm font-semibold">
                 {tx({ fr: finishLabel?.labelFr, en: finishLabel?.labelEn, es: finishLabel?.labelEn })}
               </span>
-              <span className="block text-grey-muted text-xs mt-0.5">
+              <span className="block text-grey-muted text-sm mt-0.5">
                 {sizeLabel} · {tx({ fr: shapeLabel?.labelFr, en: shapeLabel?.labelEn, es: shapeLabel?.labelEn })}
               </span>
               {!localPreviewUrl && (
-                <span className="block text-grey-muted/70 text-[10px] mt-1.5 italic">
+                <span className="block text-grey-muted/70 text-sm mt-1.5 italic">
                   {tx({ fr: 'Aperçu avec logo Massive - upload ton design pour voir ton sticker', en: 'Preview with Massive logo - upload your design', es: 'Vista previa con logo Massive - sube tu diseno' })}
                 </span>
               )}
@@ -203,7 +203,7 @@ function ConfiguratorStickers({ onFinishChange }) {
 
             {/* Controles stroke (contour) - visible surtout sur diecut mais dispo partout */}
             <div className="mt-3 p-2.5 rounded-lg bg-black/10 space-y-2">
-              <label className="block text-[10px] uppercase tracking-wider text-grey-muted font-semibold">
+              <label className="block text-sm uppercase tracking-wider text-grey-muted font-semibold">
                 {tx({ fr: 'Contour (optionnel)', en: 'Outline (optional)', es: 'Contorno (opcional)' })}
               </label>
               <div className="flex items-center gap-2">
@@ -222,7 +222,7 @@ function ConfiguratorStickers({ onFinishChange }) {
                   onChange={(e) => setStrokeWidth(parseInt(e.target.value))}
                   className="flex-1 accent-accent"
                 />
-                <span className="text-[10px] font-mono text-grey-muted w-6 text-right">{strokeWidth}</span>
+                <span className="text-sm font-mono text-grey-muted w-6 text-right">{strokeWidth}</span>
               </div>
             </div>
           </div>
@@ -232,7 +232,7 @@ function ConfiguratorStickers({ onFinishChange }) {
         <div className="flex-1 min-w-0 space-y-5">
           {/* Finish selector - grille 3 (mobile) / 6 (desktop) egale */}
           <div>
-            <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2.5">
+            <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-2.5">
               {tx({ fr: 'Finition', en: 'Finish', es: 'Acabado' })}
             </label>
             <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
@@ -240,7 +240,7 @@ function ConfiguratorStickers({ onFinishChange }) {
                 <button
                   key={f.id}
                   onClick={() => { setFinish(f.id); onFinishChange?.(f.id); }}
-                  className={`flex flex-col items-center justify-center py-3 px-2 rounded-lg text-xs font-medium transition-all border-2 ${finish === f.id
+                  className={`flex flex-col items-center justify-center py-3 px-2 rounded-lg text-sm font-medium transition-all border-2 ${finish === f.id
                     ? 'border-accent option-selected'
                     : 'border-transparent hover:border-grey-muted/30 option-default'
                   }`}
@@ -254,7 +254,7 @@ function ConfiguratorStickers({ onFinishChange }) {
                     f.id === 'dots' ? 'bg-gradient-to-br from-orange-200 via-rose-300 to-pink-400 border-rose-300' :
                     'bg-white/80 border-gray-300'
                   }`} />
-                  <span className="text-heading leading-tight text-center font-semibold text-[11px]">
+                  <span className="text-heading leading-tight text-center font-semibold text-sm">
                     {tx({ fr: f.labelFr.replace('Vinyle ', ''), en: f.labelEn.replace(' Vinyl', ''), es: f.labelEn.replace(' Vinyl', '') })}
                   </span>
                 </button>
@@ -264,7 +264,7 @@ function ConfiguratorStickers({ onFinishChange }) {
 
           {/* Forme - grille 4 egale */}
           <div>
-            <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2.5">
+            <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-2.5">
               {tx({ fr: 'Forme', en: 'Shape', es: 'Forma' })}
             </label>
             <div className="grid grid-cols-4 gap-2">
@@ -272,7 +272,7 @@ function ConfiguratorStickers({ onFinishChange }) {
                 <button
                   key={s.id}
                   onClick={() => handleShapeChange(s.id)}
-                  className={`flex flex-col items-center justify-center py-3 px-2 rounded-lg text-xs font-medium transition-all border-2 ${shape === s.id
+                  className={`flex flex-col items-center justify-center py-3 px-2 rounded-lg text-sm font-medium transition-all border-2 ${shape === s.id
                     ? 'border-accent option-selected'
                     : 'border-transparent hover:border-grey-muted/30 option-default'
                   }`}
@@ -283,7 +283,7 @@ function ConfiguratorStickers({ onFinishChange }) {
                     s.id === 'rectangle' ? 'w-5 h-3.5 rounded-sm border-2 border-current' :
                     'w-5 h-4 border-2 border-current border-dashed rounded-lg'
                   } text-grey-muted`} />
-                  <span className="text-heading leading-tight text-center font-semibold text-[11px]">
+                  <span className="text-heading leading-tight text-center font-semibold text-sm">
                     {tx({ fr: s.labelFr, en: s.labelEn, es: s.labelEn })}
                   </span>
                 </button>
@@ -293,7 +293,7 @@ function ConfiguratorStickers({ onFinishChange }) {
 
           {/* Taille - grille 4 egale */}
           <div>
-            <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2.5">
+            <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-2.5">
               {tx({ fr: 'Taille', en: 'Size', es: 'Tamaño' })}
             </label>
             <div className="grid grid-cols-4 gap-2">
@@ -314,7 +314,7 @@ function ConfiguratorStickers({ onFinishChange }) {
 
           {/* Quantite - grille 5 egale */}
           <div>
-            <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2.5">
+            <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-2.5">
               {tx({ fr: 'Quantité', en: 'Quantity', es: 'Cantidad' })}
             </label>
             <div className="grid grid-cols-5 gap-2">
@@ -330,7 +330,7 @@ function ConfiguratorStickers({ onFinishChange }) {
                     }`}
                   >
                     <span className="text-heading font-bold text-sm">{tier.qty}</span>
-                    <span className="text-grey-muted mt-0.5 text-[10px]">{p ? `${p.unitPrice.toFixed(2)}$/u` : ''}</span>
+                    <span className="text-grey-muted mt-0.5 text-sm">{p ? `${p.unitPrice.toFixed(2)}$/u` : ''}</span>
                   </button>
                 );
               })}
@@ -348,7 +348,7 @@ function ConfiguratorStickers({ onFinishChange }) {
           compact
         />
         <div>
-          <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2">
+          <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-2">
             {tx({ fr: 'Notes / Description', en: 'Notes / Description', es: 'Notas / Descripción' })}
           </label>
           <textarea
@@ -366,17 +366,17 @@ function ConfiguratorStickers({ onFinishChange }) {
         <div className="p-4 md:p-5 rounded-xl mb-4 md:mb-5 highlight-bordered">
           <div className="flex items-baseline gap-3">
             <span className="text-2xl md:text-3xl font-heading font-bold text-heading">{priceInfo.price}$</span>
-            <span className="text-grey-muted text-xs md:text-sm">
+            <span className="text-grey-muted text-sm md:text-sm">
               ({priceInfo.unitPrice.toFixed(2)}$/sticker)
             </span>
           </div>
           <div className="flex items-center gap-2 mt-1.5 md:mt-2">
             {(finish === 'holographic' || finish === 'broken-glass' || finish === 'stars' || finish === 'dots') && (
-              <span className="text-accent text-xs font-medium">
+              <span className="text-accent text-sm font-medium">
                 {tx({ fr: 'Effets Speciaux', en: 'Special Effects', es: 'Efectos Especiales' })}
               </span>
             )}
-            <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-accent/10 text-accent">
+            <span className="inline-flex items-center gap-1 text-sm font-medium px-2 py-0.5 rounded-full bg-accent/10 text-accent">
               <Sparkles size={12} />
               {tx({ fr: 'Design inclus', en: 'Design included', es: 'Diseño incluido' })}
             </span>
@@ -393,7 +393,7 @@ function ConfiguratorStickers({ onFinishChange }) {
         )}
       </button>
       {!canAddToCart && (
-        <p className="text-yellow-400 text-xs text-center">
+        <p className="text-yellow-400 text-sm text-center">
           {tx({ fr: 'Ajoutez votre design ou decrivez votre projet dans les notes', en: 'Upload your design or describe your project in the notes', es: 'Suba su diseno o describa su proyecto en las notas' })}
         </p>
       )}
@@ -402,7 +402,7 @@ function ConfiguratorStickers({ onFinishChange }) {
         {tx({ fr: 'Voir le panier', en: 'View cart', es: 'Ver el carrito' })}
       </Link>
 
-      <p className="text-grey-muted text-xs mt-2 md:mt-3 text-center">
+      <p className="text-grey-muted text-sm mt-2 md:mt-3 text-center">
         {tx({
           fr: 'Massive vous contactera pour valider le rendu par photo ou video avant l\'envoi du produit.',
           en: 'Massive will contact you to validate the result by photo or video before shipping.',
