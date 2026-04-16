@@ -177,7 +177,7 @@ function ConfiguratorStickers({ onFinishChange }) {
       <div className="flex flex-col md:flex-row gap-4 md:gap-6 mb-4 md:mb-6">
         {/* Preview (canvas avec FX live) */}
         <div className="md:w-72 flex-shrink-0 md:self-start">
-          <div className="rounded-xl card-bg-bordered p-3 md:p-4">
+          <div className="rounded-xl p-3 md:p-4">
             <StickerPreviewCanvas
               imageUrl={previewSource}
               shape={shape}

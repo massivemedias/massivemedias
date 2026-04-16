@@ -292,7 +292,7 @@ function ConfiguratorSublimation() {
       {/* Static preview for non-textile products (mug, tumbler, bag) */}
       {!hasColors && staticProductImages[product] && (
         <div className="mb-4 md:mb-5">
-          <div className="flex md:flex-col items-center gap-3 md:gap-0 md:w-48 rounded-xl card-bg-bordered p-3 overflow-hidden md:self-start">
+          <div className="flex md:flex-col items-center gap-3 md:gap-0 md:w-48 rounded-xl p-3 overflow-hidden md:self-start">
             <AnimatePresence mode="wait">
               <motion.img
                 key={product}
