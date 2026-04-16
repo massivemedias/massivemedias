@@ -12,7 +12,7 @@ import { toFull } from '../utils/paths';
 import getServicesData from '../data/getServicesData';
 import { useServicePages } from '../hooks/useServicePages';
 
-function BoutiqueProductLayout({
+function ProductLayout({
   serviceSlug,
   pageTitle,
   metaDescription,
@@ -538,4 +538,4 @@ function BoutiqueProductLayout({
   );
 }
 
-export default BoutiqueProductLayout;
+export default ProductLayout;

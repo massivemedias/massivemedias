@@ -1,11 +1,11 @@
 import { Shirt, Shield, Sparkles, Truck, Music, Users, Gift, Store } from 'lucide-react';
-import BoutiqueProductLayout from '../components/BoutiqueProductLayout';
+import ProductLayout from '../components/ProductLayout';
 import ConfiguratorSublimation from '../components/configurators/ConfiguratorSublimation';
 import { useProduct } from '../hooks/useProducts';
 import { mediaUrl } from '../utils/cms';
 import { sublimationImages, sublimationFaq as defaultFaq } from '../data/products';
 
-function BoutiqueSublimation() {
+function ServiceMerch() {
   const cmsProduct = useProduct('sublimation');
   const sublimationFaq = cmsProduct ? { fr: cmsProduct.faqFr || defaultFaq.fr, en: cmsProduct.faqEn || defaultFaq.en, es: cmsProduct?.faqEs || defaultFaq.es } : defaultFaq;
   const cmsImages = cmsProduct?.images?.length ? cmsProduct.images.map(img => mediaUrl(img)) : null;
@@ -36,7 +36,7 @@ function BoutiqueSublimation() {
   ];
 
   return (
-    <BoutiqueProductLayout
+    <ProductLayout
       serviceSlug="sublimation-merch"
       startingPrice={15}
       pageTitle={{ fr: 'Sublimation Textile Montréal - T-Shirts, Hoodies, Mugs | Massive', en: 'Textile Sublimation Montreal - T-Shirts, Hoodies, Mugs | Massive', es: 'Sublimacion Textil Montreal - Camisetas, Hoodies, Tazas | Massive' }}
@@ -66,8 +66,8 @@ function BoutiqueSublimation() {
       ctaLinks={ctaLinks}
     >
       <ConfiguratorSublimation />
-    </BoutiqueProductLayout>
+    </ProductLayout>
   );
 }
 
-export default BoutiqueSublimation;
+export default ServiceMerch;

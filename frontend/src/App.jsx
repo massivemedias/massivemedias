@@ -29,12 +29,12 @@ function lazyWithRetry(importFn) {
 const ServiceDetail = lazyWithRetry(() => import('./pages/ServiceDetail'));
 const Contact = lazyWithRetry(() => import('./pages/Contact'));
 const APropos = lazyWithRetry(() => import('./pages/APropos'));
-const Boutique = lazyWithRetry(() => import('./pages/Boutique'));
-const BoutiqueFineArt = lazyWithRetry(() => import('./pages/BoutiqueFineArt'));
-const BoutiqueSublimation = lazyWithRetry(() => import('./pages/BoutiqueSublimation'));
-const BoutiqueDesign = lazyWithRetry(() => import('./pages/BoutiqueDesign'));
-const BoutiqueWeb = lazyWithRetry(() => import('./pages/BoutiqueWeb'));
-const BoutiqueMerch = lazyWithRetry(() => import('./pages/BoutiqueMerch'));
+const Shop = lazyWithRetry(() => import('./pages/Shop'));
+const ServiceFineArt = lazyWithRetry(() => import('./pages/ServiceFineArt'));
+const ServiceMerch = lazyWithRetry(() => import('./pages/ServiceMerch'));
+const ServiceDesign = lazyWithRetry(() => import('./pages/ServiceDesign'));
+const ServiceWeb = lazyWithRetry(() => import('./pages/ServiceWeb'));
+const MerchDetail = lazyWithRetry(() => import('./pages/MerchDetail'));
 const Panier = lazyWithRetry(() => import('./pages/Panier'));
 const Login = lazyWithRetry(() => import('./pages/Login'));
 const Account = lazyWithRetry(() => import('./pages/Account'));
@@ -165,14 +165,14 @@ function App() {
             <Route path="/services/developpement-web" element={<Navigate to="/services/web" replace />} />
 
             {/* Boutique */}
-            <Route path="/boutique" element={<Boutique />} />
+            <Route path="/boutique" element={<Shop />} />
             <Route path="/boutique/stickers" element={<Navigate to="/services/stickers" replace />} />
-            <Route path="/boutique/fine-art" element={<BoutiqueFineArt />} />
-            <Route path="/boutique/sublimation" element={<BoutiqueSublimation />} />
+            <Route path="/boutique/fine-art" element={<ServiceFineArt />} />
+            <Route path="/boutique/sublimation" element={<ServiceMerch />} />
             <Route path="/boutique/flyers" element={<Navigate to="/boutique/fine-art" replace />} />
-            <Route path="/boutique/design" element={<BoutiqueDesign />} />
-            <Route path="/boutique/web" element={<BoutiqueWeb />} />
-            <Route path="/boutique/merch/:type" element={<BoutiqueMerch />} />
+            <Route path="/boutique/design" element={<ServiceDesign />} />
+            <Route path="/boutique/web" element={<ServiceWeb />} />
+            <Route path="/boutique/merch/:type" element={<MerchDetail />} />
             <Route path="/boutique/merch-tshirt" element={<Navigate to="/boutique/merch/tshirt" replace />} />
             <Route path="/panier" element={<Panier />} />
 

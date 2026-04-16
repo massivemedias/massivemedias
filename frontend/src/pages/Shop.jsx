@@ -52,7 +52,7 @@ const sidebarCategories = [
   { id: 'devenir-artiste', icon: Handshake, fr: 'Devenir artiste', en: 'Become an artist', es: 'Ser artista' },
 ];
 
-function Boutique() {
+function Shop() {
   const { tx } = useLang();
   const { addToCart } = useCart();
   const { products: cmsProducts } = useProducts();
@@ -1054,4 +1054,4 @@ function Boutique() {
   );
 }
 
-export default Boutique;
+export default Shop;

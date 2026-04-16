@@ -1,11 +1,11 @@
 import { FileText, Shield, Sparkles, Truck, Music, Users, Briefcase, Megaphone } from 'lucide-react';
-import BoutiqueProductLayout from '../components/BoutiqueProductLayout';
+import ProductLayout from '../components/ProductLayout';
 import ConfiguratorFlyers from '../components/configurators/ConfiguratorFlyers';
 import { useProduct } from '../hooks/useProducts';
 import { mediaUrl } from '../utils/cms';
 import { flyerImages, flyerFaq as defaultFaq } from '../data/products';
 
-function BoutiqueFlyers() {
+function ServiceFlyers() {
   const cmsProduct = useProduct('flyers');
   const flyerFaq = cmsProduct ? { fr: cmsProduct.faqFr || defaultFaq.fr, en: cmsProduct.faqEn || defaultFaq.en, es: cmsProduct?.faqEs || defaultFaq.es } : defaultFaq;
   const cmsImages = cmsProduct?.images?.length ? cmsProduct.images.map(img => mediaUrl(img)) : null;
@@ -36,7 +36,7 @@ function BoutiqueFlyers() {
   ];
 
   return (
-    <BoutiqueProductLayout
+    <ProductLayout
       serviceSlug="flyers-cartes"
       startingPrice={40}
       pageTitle={{ fr: 'Impression Flyers & Cartes Montreal - Rapide et Pro | Massive', en: 'Flyers & Cards Printing Montreal - Fast & Pro | Massive', es: 'Impresion Flyers y Tarjetas Montreal - Rapido y Pro | Massive' }}
@@ -66,8 +66,8 @@ function BoutiqueFlyers() {
       ctaLinks={ctaLinks}
     >
       <ConfiguratorFlyers />
-    </BoutiqueProductLayout>
+    </ProductLayout>
   );
 }
 
-export default BoutiqueFlyers;
+export default ServiceFlyers;

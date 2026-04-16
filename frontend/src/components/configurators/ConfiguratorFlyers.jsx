@@ -89,7 +89,7 @@ function ConfiguratorFlyers() {
       {/* Quantity selector */}
       <div className="mb-6">
         <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2.5">
-          {tx({ fr: 'Quantit\u00e9', en: 'Quantity', es: 'Cantidad' })}
+          {tx({ fr: 'Quantite', en: 'Quantity', es: 'Cantidad' })}
         </label>
         <div className="flex flex-wrap gap-2">
           {flyerPriceTiers.map((tier, i) => {
@@ -121,13 +121,13 @@ function ConfiguratorFlyers() {
         />
         <div>
           <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2.5">
-            {tx({ fr: 'Notes / Description', en: 'Notes / Description', es: 'Notas / Descripci\u00f3n' })}
+            {tx({ fr: 'Notes / Description', en: 'Notes / Description', es: 'Notas / Descripcion' })}
           </label>
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             rows={4}
-            placeholder={tx({ fr: 'Décrivez le produit souhaité (contenu, style, details...)', en: 'Describe the desired product (content, style, details...)', es: 'Describa el producto deseado (contenido, estilo, detalles...)' })}
+            placeholder={tx({ fr: 'Decrivez le produit souhaite (contenu, style, details...)', en: 'Describe the desired product (content, style, details...)', es: 'Describa el producto deseado (contenido, estilo, detalles...)' })}
             className="w-full min-h-[100px] rounded-lg border-2 border-grey-muted/20 bg-transparent px-4 py-3 text-sm text-heading placeholder:text-grey-muted/50 focus:border-accent focus:outline-none transition-colors resize-none"
           />
         </div>
@@ -139,11 +139,11 @@ function ConfiguratorFlyers() {
           <div className="flex items-baseline gap-3">
             <span className="text-3xl font-heading font-bold text-heading">{priceInfo.price}$</span>
             <span className="text-grey-muted text-sm">
-              ({priceInfo.unitPrice.toFixed(2)}$/{tx({ fr: 'unit\u00e9', en: 'unit', es: 'unidad' })})
+              ({priceInfo.unitPrice.toFixed(2)}$/{tx({ fr: 'unite', en: 'unit', es: 'unidad' })})
             </span>
           </div>
           <div className="text-grey-muted text-xs mt-2">
-            {tx({ fr: 'Papier premium 300g+ - Qualit\u00e9 professionnelle', en: 'Premium 300g+ paper - Professional quality', es: 'Papel premium 300g+ - Calidad profesional' })}
+            {tx({ fr: 'Papier premium 300g+ - Qualite professionnelle', en: 'Premium 300g+ paper - Professional quality', es: 'Papel premium 300g+ - Calidad profesional' })}
           </div>
         </div>
       )}
@@ -162,7 +162,7 @@ function ConfiguratorFlyers() {
       </Link>
 
       <p className="text-grey-muted text-xs mt-3 text-center">
-        {tx({ fr: 'Design graphique disponible en option. Service express disponible sur demande.', en: 'Graphic design available as an option. Express service available on request.', es: 'Diseño gráfico disponible como opción. Servicio express disponible bajo pedido.' })}
+        {tx({ fr: 'Design graphique disponible en option. Service express disponible sur demande.', en: 'Graphic design available as an option. Express service available on request.', es: 'Diseno grafico disponible como opcion. Servicio express disponible bajo pedido.' })}
       </p>
     </>
   );

@@ -508,6 +508,8 @@ function FacturesSortantes() {
                         <option value="web">Web</option>
                         <option value="design">Design</option>
                         <option value="print">Print</option>
+                        <option value="flyer">Flyer</option>
+                        <option value="business-card">{tx({ fr: 'Carte d\'affaires', en: 'Business Card', es: 'Tarjeta' })}</option>
                         <option value="sticker">Sticker</option>
                         <option value="merch">Merch</option>
                         <option value="photo">Photo</option>

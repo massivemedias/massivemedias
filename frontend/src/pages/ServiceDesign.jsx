@@ -1,11 +1,11 @@
 import { Palette, Shield, Sparkles, Truck } from 'lucide-react';
-import BoutiqueProductLayout from '../components/BoutiqueProductLayout';
+import ProductLayout from '../components/ProductLayout';
 import ConfiguratorDesign from '../components/configurators/ConfiguratorDesign';
 import { useProduct } from '../hooks/useProducts';
 import { mediaUrl } from '../utils/cms';
 import { designImages, designFaq as defaultFaq } from '../data/products';
 
-function BoutiqueDesign() {
+function ServiceDesign() {
   const cmsProduct = useProduct('design');
   const designFaq = cmsProduct ? { fr: cmsProduct.faqFr || defaultFaq.fr, en: cmsProduct.faqEn || defaultFaq.en, es: cmsProduct?.faqEs || defaultFaq.es } : defaultFaq;
   const cmsImages = cmsProduct?.images?.length ? cmsProduct.images.map(img => mediaUrl(img)) : null;
@@ -29,7 +29,7 @@ function BoutiqueDesign() {
   ];
 
   return (
-    <BoutiqueProductLayout
+    <ProductLayout
       serviceSlug="design-graphique"
       startingPrice={85}
       pageTitle={{ fr: 'Design Graphique Montréal - Logos, Affiches, Identité | Massive', en: 'Graphic Design Montreal - Logos, Posters, Identity | Massive', es: 'Diseno Grafico Montreal - Logos, Afiches, Identidad | Massive' }}
@@ -58,8 +58,8 @@ function BoutiqueDesign() {
       ctaLinks={ctaLinks}
     >
       <ConfiguratorDesign />
-    </BoutiqueProductLayout>
+    </ProductLayout>
   );
 }
 
-export default BoutiqueDesign;
+export default ServiceDesign;

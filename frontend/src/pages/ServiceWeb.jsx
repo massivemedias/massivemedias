@@ -1,11 +1,11 @@
 import { Code, Shield, Sparkles, Truck } from 'lucide-react';
-import BoutiqueProductLayout from '../components/BoutiqueProductLayout';
+import ProductLayout from '../components/ProductLayout';
 import ConfiguratorWeb from '../components/configurators/ConfiguratorWeb';
 import { useProduct } from '../hooks/useProducts';
 import { mediaUrl } from '../utils/cms';
 import { webImages, webFaq as defaultFaq } from '../data/products';
 
-function BoutiqueWeb() {
+function ServiceWeb() {
   const cmsProduct = useProduct('web');
   const webFaq = cmsProduct ? { fr: cmsProduct.faqFr || defaultFaq.fr, en: cmsProduct.faqEn || defaultFaq.en, es: cmsProduct?.faqEs || defaultFaq.es } : defaultFaq;
   const cmsImages = cmsProduct?.images?.length ? cmsProduct.images.map(img => mediaUrl(img)) : null;
@@ -29,7 +29,7 @@ function BoutiqueWeb() {
   ];
 
   return (
-    <BoutiqueProductLayout
+    <ProductLayout
       serviceSlug="developpement-web"
       startingPrice={85}
       pageTitle={{ fr: 'Développement Web Montréal - Sites, E-Commerce, SEO | Massive', en: 'Web Development Montreal - Sites, E-Commerce, SEO | Massive', es: 'Desarrollo Web Montreal - Sitios, E-Commerce, SEO | Massive' }}
@@ -58,8 +58,8 @@ function BoutiqueWeb() {
       ctaLinks={ctaLinks}
     >
       <ConfiguratorWeb />
-    </BoutiqueProductLayout>
+    </ProductLayout>
   );
 }
 
-export default BoutiqueWeb;
+export default ServiceWeb;

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Printer, Shield, Sparkles, Truck, Frame, Gift, Building2, Camera, FileText, Music, Users, Briefcase, Megaphone } from 'lucide-react';
-import BoutiqueProductLayout from '../components/BoutiqueProductLayout';
+import ProductLayout from '../components/ProductLayout';
 import ConfiguratorFineArt from '../components/configurators/ConfiguratorFineArt';
 import ConfiguratorFlyers from '../components/configurators/ConfiguratorFlyers';
 import { useProduct } from '../hooks/useProducts';
@@ -8,7 +8,7 @@ import { mediaUrl } from '../utils/cms';
 import { useLang } from '../i18n/LanguageContext';
 import { fineArtImages, fineArtFaq as defaultFineArtFaq, flyerImages, flyerFaq as defaultFlyerFaq } from '../data/products';
 
-function BoutiqueFineArt() {
+function ServiceFineArt() {
   const [tab, setTab] = useState('fineart');
   const { tx } = useLang();
   const cmsFineArt = useProduct('fine-art');
@@ -54,7 +54,7 @@ function BoutiqueFineArt() {
   };
 
   return (
-    <BoutiqueProductLayout
+    <ProductLayout
       serviceSlug="impression-fine-art"
       startingPrice={20}
       pageTitle={{ fr: 'Tirages Fine Art Montréal - Impression 12 Encres | Massive', en: 'Fine Art Prints Montreal - 12 Ink Printing | Massive', es: 'Impresiones Fine Art Montreal - 12 Tintas | Massive' }}
@@ -108,8 +108,8 @@ function BoutiqueFineArt() {
       </div>
 
       {tab === 'fineart' ? <ConfiguratorFineArt /> : <ConfiguratorFlyers />}
-    </BoutiqueProductLayout>
+    </ProductLayout>
   );
 }
 
-export default BoutiqueFineArt;
+export default ServiceFineArt;

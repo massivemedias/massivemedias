@@ -11,7 +11,7 @@ import { getStickerPrice } from '../data/products';
 
 const ARTIST_DISCOUNT = 0.25;
 // Produits a paliers fixes - pas de +/- libre
-const TIERED_PRODUCTS = ['sticker-custom', 'sticker-artist'];
+const TIERED_PRODUCTS = ['sticker-custom', 'sticker-artist', 'flyer-a6', 'business-card-standard', 'business-card-lamine', 'business-card-premium'];
 
 function Panier() {
   const { tx } = useLang();
