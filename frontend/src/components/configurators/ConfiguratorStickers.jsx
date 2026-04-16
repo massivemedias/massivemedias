@@ -134,7 +134,7 @@ function ConfiguratorStickers({ onFinishChange }) {
         <label
           className={`group flex items-center gap-3 md:gap-4 w-full px-4 md:px-5 py-3 md:py-4 rounded-xl cursor-pointer transition-all ${
             localPreviewUrl
-              ? 'bg-white/[0.02] hover:bg-white/[0.04] shadow-md shadow-black/20 hover:shadow-lg hover:shadow-black/30'
+              ? 'bg-white/[0.06] hover:bg-white/[0.09] shadow-md shadow-black/20 hover:shadow-lg hover:shadow-black/30'
               : 'bg-accent/10 hover:bg-accent/20 shadow-md shadow-accent/10 hover:shadow-lg hover:shadow-accent/20'
           }`}
         >

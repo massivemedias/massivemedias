@@ -158,7 +158,7 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {}, onF
 
       {/* Unique print info */}
       {isUnique && (
-        <div className="p-4 rounded-xl bg-white/[0.02] shadow-md shadow-black/20 text-sm space-y-2">
+        <div className="p-4 rounded-xl bg-white/[0.06] shadow-md shadow-black/20 text-sm space-y-2">
           <p className="text-heading font-medium">
             {customPrice
               ? tx({
@@ -181,7 +181,7 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {}, onF
 
       {/* Vente privee info - config verrouillee par l'artiste */}
       {isPrivate && !isUnique && isLocked && (
-        <div className="p-4 rounded-xl bg-white/[0.02] shadow-md shadow-black/20 text-sm space-y-2">
+        <div className="p-4 rounded-xl bg-white/[0.06] shadow-md shadow-black/20 text-sm space-y-2">
           <p className="text-heading font-medium">
             {tx({
               fr: `Oeuvre envoyee en privee par l'artiste. Format, qualite et cadre sont fixes - il te suffit de valider le paiement.`,

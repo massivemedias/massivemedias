@@ -113,7 +113,7 @@ function MerchPreview({ productImageUrl, logoUrl, logoPosition, onLogoPositionCh
         ref={containerRef}
         className={`
           relative overflow-hidden rounded-xl border-2 transition-colors select-none
-          ${dragOver ? 'border-accent bg-accent/5' : 'border-white/10 bg-white/[0.02]'}
+          ${dragOver ? 'border-accent bg-accent/5' : 'border-white/10 bg-white/[0.06]'}
           ${!logoUrl ? 'cursor-pointer' : ''}
         `}
         onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
