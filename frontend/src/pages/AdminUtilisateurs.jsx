@@ -84,6 +84,10 @@ function AdminUtilisateurs() {
   const formatDate = (d) => d ? new Date(d).toLocaleDateString('fr-CA', { day: 'numeric', month: 'short', year: 'numeric' }) : '-';
   const formatMoney = (v) => `${(parseFloat(v) || 0).toFixed(2)}$`;
 
+  // Un vrai acheteur a au moins 1 commande PAYEE (orderCount > 0 OU totalSpent > 0)
+  // Les clients avec 0 commande = checkouts abandonnes/brouillons, on ne les compte PAS
+  const isRealBuyer = (c) => c && ((c.orderCount || 0) > 0 || (parseFloat(c.totalSpent) || 0) > 0);
+
   // Build buyer map from clients data (email -> client info)
   const buyerMap = {};
   clients.forEach(c => {
@@ -95,7 +99,7 @@ function AdminUtilisateurs() {
     const buyer = buyerMap[(u.email || '').toLowerCase()];
     return {
       ...u,
-      isBuyer: !!buyer,
+      isBuyer: isRealBuyer(buyer),
       totalSpent: buyer?.totalSpent || 0,
       orderCount: buyer?.orderCount || 0,
       lastOrderDate: buyer?.lastOrderDate || null,
@@ -110,10 +114,10 @@ function AdminUtilisateurs() {
     };
   });
 
-  // Also add clients who are NOT registered users (guest checkout)
+  // Also add clients who are NOT registered users (guest checkout) - seulement les vrais acheteurs
   const registeredEmails = new Set(users.map(u => u.email?.toLowerCase()));
   const guestBuyers = clients
-    .filter(c => c.email && !registeredEmails.has(c.email.toLowerCase()))
+    .filter(c => c.email && !registeredEmails.has(c.email.toLowerCase()) && isRealBuyer(c))
     .map(c => ({
       id: `guest-${c.documentId}`,
       email: c.email,

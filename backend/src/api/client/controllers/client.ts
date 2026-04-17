@@ -1,9 +1,102 @@
 import { factories } from '@strapi/strapi';
 import { sendNewUserNotificationEmail } from '../../../utils/email';
 
+// Statuts de commande qui comptent comme "paye reellement"
+const PAID_STATUSES = ['paid', 'processing', 'shipped', 'delivered'];
+
+/**
+ * Reconcilie les clients avec les commandes reellement payees.
+ * Auto-cree les clients manquants, met a jour orderCount/totalSpent/lastOrderDate
+ * a partir des vraies commandes (evite les desyncs si un webhook a foire).
+ */
+async function reconcileClientsFromOrders(strapi: any) {
+  try {
+    const orders = await strapi.documents('api::order.order').findMany({
+      filters: { status: { $in: PAID_STATUSES } } as any,
+      limit: 10000,
+    });
+    // Grouper par email
+    const byEmail = new Map<string, { email: string; name: string; phone: string; totalSpent: number; orderCount: number; lastOrderDate: string | null; supabaseUserId: string }>();
+    for (const o of orders as any[]) {
+      const email = (o.customerEmail || '').toLowerCase();
+      if (!email) continue;
+      const total = (o.total || 0) / 100; // stocke en cents
+      const prev = byEmail.get(email);
+      const createdAt = o.createdAt || null;
+      if (prev) {
+        prev.totalSpent += total;
+        prev.orderCount += 1;
+        if (createdAt && (!prev.lastOrderDate || new Date(createdAt) > new Date(prev.lastOrderDate))) {
+          prev.lastOrderDate = createdAt;
+        }
+        if (!prev.name && o.customerName) prev.name = o.customerName;
+        if (!prev.phone && o.customerPhone) prev.phone = o.customerPhone;
+        if (!prev.supabaseUserId && o.supabaseUserId) prev.supabaseUserId = o.supabaseUserId;
+      } else {
+        byEmail.set(email, {
+          email,
+          name: o.customerName || '',
+          phone: o.customerPhone || '',
+          totalSpent: total,
+          orderCount: 1,
+          lastOrderDate: createdAt,
+          supabaseUserId: o.supabaseUserId || '',
+        });
+      }
+    }
+    // Upsert dans clients
+    const existingClients = await strapi.documents('api::client.client').findMany({ limit: 10000 });
+    const existingMap = new Map<string, any>();
+    for (const c of existingClients as any[]) {
+      if (c.email) existingMap.set(c.email.toLowerCase(), c);
+    }
+    for (const [email, stats] of byEmail) {
+      const existing = existingMap.get(email);
+      const roundedTotal = Math.round(stats.totalSpent * 100) / 100;
+      if (existing) {
+        // Update seulement si desync
+        const needsUpdate =
+          (existing.orderCount || 0) !== stats.orderCount ||
+          Math.abs((parseFloat(existing.totalSpent) || 0) - roundedTotal) > 0.01 ||
+          existing.lastOrderDate !== stats.lastOrderDate;
+        if (needsUpdate) {
+          await strapi.documents('api::client.client').update({
+            documentId: existing.documentId,
+            data: {
+              orderCount: stats.orderCount,
+              totalSpent: roundedTotal,
+              lastOrderDate: stats.lastOrderDate,
+              ...(stats.name && !existing.name ? { name: stats.name } : {}),
+              ...(stats.phone && !existing.phone ? { phone: stats.phone } : {}),
+              ...(stats.supabaseUserId && !existing.supabaseUserId ? { supabaseUserId: stats.supabaseUserId } : {}),
+            } as any,
+          });
+        }
+      } else {
+        // Auto-creer le client manquant
+        await strapi.documents('api::client.client').create({
+          data: {
+            email,
+            name: stats.name || email.split('@')[0],
+            phone: stats.phone,
+            supabaseUserId: stats.supabaseUserId,
+            orderCount: stats.orderCount,
+            totalSpent: roundedTotal,
+            lastOrderDate: stats.lastOrderDate,
+          } as any,
+        });
+      }
+    }
+  } catch (err) {
+    strapi.log.warn('reconcileClientsFromOrders failed:', err);
+  }
+}
+
 export default factories.createCoreController('api::client.client', ({ strapi }) => ({
 
   async findAll(ctx) {
+    // Auto-reconcile avec les vraies commandes avant de retourner (auto-cree les clients manquants, corrige les desyncs)
+    await reconcileClientsFromOrders(strapi);
     const sort = ((ctx.query.sort as string) || 'createdAt:desc') as any;
     const pageSize = parseInt((ctx.query as any)?.pagination?.pageSize || '100');
     const clients = await strapi.documents('api::client.client').findMany({ sort, limit: pageSize });
@@ -25,6 +118,9 @@ export default factories.createCoreController('api::client.client', ({ strapi })
   },
 
   async adminList(ctx) {
+    // Auto-reconcile avec les vraies commandes avant de retourner
+    await reconcileClientsFromOrders(strapi);
+
     const page = parseInt(ctx.query.page as string) || 1;
     const pageSize = parseInt(ctx.query.pageSize as string) || 25;
     const search = ctx.query.search as string;
