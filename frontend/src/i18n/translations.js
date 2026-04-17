@@ -50,7 +50,7 @@ const translations = {
       hero: {
         tagline: 'Create. Print. Repeat.',
         subtitle: 'Pour les artistes, créateurs et entrepreneurs de Montréal',
-        services: 'Fine Art · Stickers · Merch · Design · Web — tout sous un même toit',
+        services: 'Fine Art · Stickers · Merch · Design · Web, tout sous un même toit',
         cta1: 'Voir nos services',
         cta2: 'Demander une soumission',
       },
@@ -411,7 +411,7 @@ const translations = {
       hero: {
         tagline: 'Create. Print. Repeat.',
         subtitle: 'For artists, creators and entrepreneurs in Montreal',
-        services: 'Fine Art · Stickers · Merch · Design · Web — all under one roof',
+        services: 'Fine Art · Stickers · Merch · Design · Web, all under one roof',
         cta1: 'View Our Services',
         cta2: 'Request a Quote',
       },
@@ -772,7 +772,7 @@ const translations = {
       hero: {
         tagline: 'Create. Print. Repeat.',
         subtitle: 'Para artistas, creadores y emprendedores de Montreal',
-        services: 'Fine Art · Stickers · Merch · Diseño · Web — todo bajo un mismo techo',
+        services: 'Fine Art · Stickers · Merch · Diseño · Web, todo bajo un mismo techo',
         cta1: 'Ver nuestros servicios',
         cta2: 'Solicitar cotización',
       },

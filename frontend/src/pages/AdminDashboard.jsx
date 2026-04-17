@@ -76,7 +76,7 @@ function AdminDashboard() {
     visitorsToday: '-',
   });
 
-  // Notes inline — TOUS les hooks DOIVENT etre declares avant tout return conditionnel
+  // Notes inline - TOUS les hooks DOIVENT etre declares avant tout return conditionnel
   // (Rules of Hooks: https://react.dev/errors/310)
   const [notes, setNotes] = useState(() => {
     try { return JSON.parse(localStorage.getItem(NOTES_KEY) || '[]'); } catch { return []; }

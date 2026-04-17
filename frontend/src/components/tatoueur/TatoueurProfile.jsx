@@ -251,7 +251,7 @@ export default function TatoueurProfile({ tatoueur, setTatoueur }) {
             </div>
             <div className="pb-1">
               <p className="text-heading font-heading font-bold text-lg">{form.name || tx({ fr: 'Nom d\'artiste', en: 'Artist name', es: 'Nombre de artista' })}</p>
-              <p className="text-grey-muted text-sm">{form.city}{form.city && form.studio ? ' — ' : ''}{form.studio}</p>
+              <p className="text-grey-muted text-sm">{form.city}{form.city && form.studio ? ' - ' : ''}{form.studio}</p>
             </div>
           </div>
         </div>

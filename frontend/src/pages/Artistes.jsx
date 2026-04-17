@@ -613,11 +613,11 @@ function Artistes() {
                     {tx({ fr: 'Merch Massive - Bientot disponible!', en: 'Massive Merch - Coming Soon!', es: 'Merch Massive - Muy pronto!' })}
                   </h3>
                   <p className="text-accent text-sm font-semibold mb-4">
-                    {tx({ fr: 'Tres prochainement', en: 'Very soon', es: 'Muy pronto' })}
+                    {tx({ fr: 'Très prochainement', en: 'Very soon', es: 'Muy pronto' })}
                   </p>
                   <p className="text-grey-light text-base md:text-lg mb-6">
                     {tx({
-                      fr: "Prints personnalises, stickers exclusifs, t-shirts, hoodies et plus - tout designe par Massive Medias et produit a Montreal. Notre collection arrive tres bientot!",
+                      fr: "Prints personnalises, stickers exclusifs, t-shirts, hoodies et plus - tout designe par Massive Medias et produit a Montreal. Notre collection arrive très bientot!",
                       en: 'Custom prints, exclusive stickers, t-shirts, hoodies and more - all designed by Massive Medias and produced in Montreal. Our collection is coming very soon!',
                       es: 'Impresiones personalizadas, stickers exclusivos, camisetas, hoodies y más - todo diseñado por Massive Medias y producido en Montreal. Nuestra colección llega muy pronto!',
                     })}
