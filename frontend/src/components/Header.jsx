@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, ShoppingCart, LogIn, User, Printer, Sticker, Shirt, Globe, Monitor, Store, Info, Phone, ChevronRight, Bell, PenTool, Camera, Settings } from 'lucide-react';
+import { Menu, X, ShoppingCart, LogIn, User, Printer, Sticker, Shirt, Globe, Monitor, Store, Info, Phone, ChevronRight, ChevronDown, Bell, PenTool, Camera, Settings } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import MassiveLogo from './MassiveLogo';
 import { useLang } from '../i18n/LanguageContext';
@@ -33,6 +33,20 @@ function Header() {
   const services = t('nav.servicesList');
   const close = () => setMobileMenuOpen(false);
 
+  // Desktop: dropdown "Services"
+  const [servicesOpen, setServicesOpen] = useState(false);
+  const servicesTimeoutRef = useRef(null);
+  const openServices = () => {
+    clearTimeout(servicesTimeoutRef.current);
+    setServicesOpen(true);
+  };
+  const closeServices = () => {
+    clearTimeout(servicesTimeoutRef.current);
+    servicesTimeoutRef.current = setTimeout(() => setServicesOpen(false), 150);
+  };
+  // Fermer quand on change de page
+  useEffect(() => { setServicesOpen(false); }, [pathname]);
+
   return (
     <>
       {/* ── Header ── */}
@@ -45,19 +59,65 @@ function Header() {
             </Link>
 
             {/* Navigation Desktop */}
-            <div className="hidden lg:flex items-center gap-4 xl:gap-7">
-              {services.map((service) => (
-                <Link
-                  key={service.slug}
-                  to={`/services/${service.slug}`}
-                  className={`transition-colors duration-200 font-medium text-sm whitespace-nowrap ${isActive(`/services/${service.slug}`) ? 'text-accent' : 'nav-link'}`}
+            <div className="hidden lg:flex items-center gap-5 xl:gap-7">
+              {/* Services dropdown */}
+              <div
+                className="relative"
+                onMouseEnter={openServices}
+                onMouseLeave={closeServices}
+              >
+                <button
+                  type="button"
+                  onClick={() => setServicesOpen(v => !v)}
+                  className={`flex items-center gap-1 transition-colors duration-200 font-medium text-sm whitespace-nowrap ${pathname.startsWith('/services') ? 'text-accent' : 'nav-link'}`}
+                  aria-expanded={servicesOpen}
+                  aria-haspopup="true"
                 >
-                  {service.name}
-                </Link>
-              ))}
+                  {tx({ fr: 'Services', en: 'Services', es: 'Servicios' })}
+                  <ChevronDown size={14} className={`transition-transform ${servicesOpen ? 'rotate-180' : ''}`} />
+                </button>
+                <AnimatePresence>
+                  {servicesOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -8 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute top-full left-1/2 -translate-x-1/2 mt-2 min-w-[240px] rounded-xl shadow-2xl shadow-black/40 p-2 z-50"
+                      style={{ backgroundColor: 'var(--bg-body, #3D0079)', border: '1px solid rgba(255,255,255,0.08)' }}
+                    >
+                      {services.map((service, i) => {
+                        const Icon = SERVICE_ICONS[i];
+                        const active = isActive(`/services/${service.slug}`);
+                        return (
+                          <Link
+                            key={service.slug}
+                            to={`/services/${service.slug}`}
+                            onClick={() => setServicesOpen(false)}
+                            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${active ? 'bg-accent/15 text-accent' : 'nav-link hover:bg-white/5'}`}
+                          >
+                            {Icon && (
+                              <span className="w-8 h-8 rounded-lg flex items-center justify-center bg-accent/10 flex-shrink-0">
+                                <Icon size={16} className="text-accent" />
+                              </span>
+                            )}
+                            <span className="font-semibold text-sm">{service.name}</span>
+                          </Link>
+                        );
+                      })}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
 
-              <Link to="/artistes" className={`transition-colors duration-200 font-bold text-sm whitespace-nowrap ${(isActive('/artistes') || isActive('/tatoueurs') || isActive('/boutique')) ? 'text-accent brightness-125' : ''}`} style={{ color: 'var(--logo-accent, #FFCC02)' }}>
-                {tx({ fr: 'Artistes', en: 'Artists' })}
+              {/* Separateur visuel entre Services et Artistes (audit: "double identite") */}
+              <span aria-hidden="true" className="text-grey-muted/40 select-none">|</span>
+
+              <Link
+                to="/artistes"
+                className={`transition-colors duration-200 font-medium text-sm whitespace-nowrap ${isActive('/artistes') || isActive('/boutique') ? 'text-accent' : 'nav-link'}`}
+              >
+                {tx({ fr: 'Artistes', en: 'Artists', es: 'Artistas' })}
               </Link>
 
               <Link to="/a-propos" className={`transition-colors duration-200 font-medium text-sm whitespace-nowrap ${isActive('/a-propos') ? 'text-accent' : 'nav-link'}`}>
@@ -227,13 +287,13 @@ function Header() {
                 {/* Artistes - single link */}
                 <Link
                   to="/artistes"
-                  className={`flex items-center gap-3 px-3 py-2 rounded-xl mobile-drawer-item group transition-colors ${(isActive('/artistes') || isActive('/tatoueurs') || isActive('/boutique')) ? 'bg-accent/15 text-accent' : 'nav-link'}`}
+                  className={`flex items-center gap-3 px-3 py-2 rounded-xl mobile-drawer-item group transition-colors ${(isActive('/artistes') || isActive('/boutique')) ? 'bg-accent/15 text-accent' : 'nav-link'}`}
                   onClick={close}
                 >
                   <span className="w-7 h-7 rounded-lg flex items-center justify-center mobile-icon-bg flex-shrink-0">
                     <Camera size={14} className="text-accent" />
                   </span>
-                  <span className="font-bold text-[15px]" style={{ color: 'var(--logo-accent, #FFCC02)' }}>{tx({ fr: 'Artistes', en: 'Artists' })}</span>
+                  <span className="font-semibold text-[14px]">{tx({ fr: 'Artistes', en: 'Artists', es: 'Artistas' })}</span>
                   <ChevronRight size={14} className="ml-auto opacity-25 group-hover:opacity-50 transition-opacity" />
                 </Link>
 

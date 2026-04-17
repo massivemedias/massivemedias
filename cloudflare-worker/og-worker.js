@@ -23,7 +23,7 @@ const SITE_URL = 'https://massivemedias.com';
 const DEFAULT_OG_IMAGE = 'https://massivemedias.com/og-image.jpg';
 
 const TATOUEURS = {
-  'ginko-ink': { name: 'Ginko Ink', taglineFr: 'Tatouage fineline & botanique', taglineEn: 'Fineline & Botanical Tattoo' },
+  // Section tatoueurs desactivee - les entrees seront restaurees si la section revient
 };
 
 const ARTISTS = {
