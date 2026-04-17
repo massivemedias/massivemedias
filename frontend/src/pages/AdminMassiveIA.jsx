@@ -1748,7 +1748,7 @@ function LensTab() {
       <p className="text-sm text-grey-muted max-w-md mx-auto">
         Upload 3 a 5 brackets d'exposition pour generer une image HDR optimisee Centris.
       </p>
-      <p className="text-xs text-accent font-semibold uppercase tracking-wider">Bientot disponible</p>
+      <p className="text-xs text-accent font-semibold uppercase tracking-wider">Bientôt disponible</p>
 
       {/* Layout prevu */}
       <div className="mt-8 opacity-30 pointer-events-none space-y-4 max-w-lg mx-auto">

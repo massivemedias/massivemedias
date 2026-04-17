@@ -431,7 +431,7 @@ function Account() {
           icon={MapPin}
           label={tx({ fr: 'Ville', en: 'City', es: 'Ciudad' })}
           value={profileForm.city}
-          placeholder="Montreal"
+          placeholder="Montréal"
           onChange={v => setProfileForm(p => ({ ...p, city: v }))}
           autoComplete="address-level2"
         />

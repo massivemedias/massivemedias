@@ -280,7 +280,7 @@ function Boutique() {
                 ) : (
                   <div className="rounded-2xl border border-purple-main/20 p-8 text-center">
                     <p className="text-grey-muted text-sm">
-                      {tx({ fr: 'Prints bientot disponibles. Restez a l\'affut!', en: 'Prints coming soon. Stay tuned!', es: 'Impresiones disponibles pronto. Mantente atento!' })}
+                      {tx({ fr: 'Prints bientôt disponibles. Restez à l\'affût!', en: 'Prints coming soon. Stay tuned!', es: '¡Impresiones disponibles pronto. Mantente atento!' })}
                     </p>
                   </div>
                 )}
@@ -455,7 +455,7 @@ function Boutique() {
                                 <span className="text-white/75 text-[10px]">
                                   {printCount > 0
                                     ? `${printCount} ${tx({ fr: 'oeuvres', en: 'artworks', es: 'obras' })}`
-                                    : tx({ fr: 'Bientot', en: 'Soon', es: 'Pronto' })}
+                                    : tx({ fr: 'Bientôt', en: 'Soon', es: 'Pronto' })}
                                 </span>
                                 <ArrowRight size={12} className="text-accent md:opacity-0 md:group-hover:opacity-100 transition-opacity" />
                               </div>

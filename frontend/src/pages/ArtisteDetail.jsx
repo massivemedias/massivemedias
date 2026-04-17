@@ -53,7 +53,7 @@ function ContactArtisteForm({ artist, tx }) {
           {tx({ fr: 'Message envoye!', en: 'Message sent!', es: 'Mensaje enviado!' })}
         </p>
         <p className="text-grey-muted text-xs mt-1">
-          {tx({ fr: `${artist.name} vous repondra bientot.`, en: `${artist.name} will reply soon.`, es: `${artist.name} respondera pronto.` })}
+          {tx({ fr: `${artist.name} vous répondra bientôt.`, en: `${artist.name} will reply soon.`, es: `${artist.name} responderá pronto.` })}
         </p>
         <button onClick={() => setSent(false)} className="text-accent text-xs mt-3 hover:underline">
           {tx({ fr: 'Envoyer un autre message', en: 'Send another message', es: 'Enviar otro mensaje' })}
@@ -416,7 +416,7 @@ function ArtisteDetail({ subdomainSlug }) {
     fr: [
       { q: 'Comment se passe la commande?', a: 'Sélectionnez l\'oeuvre, la qualité d\'impression, le format et le cadre. Ajoutez au panier et procédez au paiement. Nous imprimons et préparons votre commande avec soin.' },
       { q: 'Quelle est la différence entre Studio et Musée?', a: 'La Série Studio utilise une imprimante 4 encres pigmentées, parfaite pour la décoration. La Série Musée utilise une imprimante 12 encres pigmentées pour une qualité galerie, idéale pour les collectionneurs.' },
-      { q: 'Puis-je récupérer sur place?', a: 'Oui! Pick-up gratuit au Plateau (5338 rue Marquette, Montreal). Livraison locale aussi disponible.' },
+      { q: 'Puis-je récupérer sur place?', a: 'Oui! Pick-up gratuit au Plateau (5338 rue Marquette, Montréal). Livraison locale aussi disponible.' },
       { q: 'Les tirages sont-ils signés?', a: 'Les tirages sont imprimés professionnellement par Massive en collaboration avec l\'artiste. Contactez-nous pour les tirages signés ou numérotés.' },
       { q: 'Offrez-vous l\'encadrement?', a: 'Oui, cadre noir ou blanc disponible. Ajoutez l\'option cadre directement dans le configurateur.' },
     ],
