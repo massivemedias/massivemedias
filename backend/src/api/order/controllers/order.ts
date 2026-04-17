@@ -277,18 +277,28 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
     };
 
     // Verifier le slug artiste du user pour valider isArtistOwnPrint (securite)
-    // artistSlug est stocke dans api::user-role, pas dans users-permissions.user
+    // artistSlug est stocke dans api::user-role. Lookup par supabaseUserId puis email fallback.
     let verifiedUserArtistSlug: string | null = null;
-    if (supabaseUserId) {
-      try {
-        const userRoles = await strapi.documents('api::user-role.user-role' as any).findMany({
+    try {
+      // Tentative 1: par supabaseUserId
+      if (supabaseUserId) {
+        const byId = await strapi.documents('api::user-role.user-role' as any).findMany({
           filters: { supabaseUserId } as any,
         });
-        if (userRoles.length > 0) {
-          verifiedUserArtistSlug = (userRoles[0] as any).artistSlug || null;
+        if (byId.length > 0) {
+          verifiedUserArtistSlug = (byId[0] as any).artistSlug || null;
         }
-      } catch (_) { /* ignore */ }
-    }
+      }
+      // Tentative 2: par email (fallback si supabaseUserId pas sync)
+      if (!verifiedUserArtistSlug && customerEmail) {
+        const byEmail = await strapi.documents('api::user-role.user-role' as any).findMany({
+          filters: { email: customerEmail.toLowerCase() } as any,
+        });
+        if (byEmail.length > 0) {
+          verifiedUserArtistSlug = (byEmail[0] as any).artistSlug || null;
+        }
+      }
+    } catch (_) { /* ignore */ }
 
     for (const item of items) {
       let validPrice = item.totalPrice || 0;
