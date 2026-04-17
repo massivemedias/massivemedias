@@ -1013,11 +1013,11 @@ select.input-field option {
 }
 
 .footer-links {
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.75);
 }
 
 .footer-muted {
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.7);
 }
 
 /* CPR tagline filter - utilise la variable --cpr-filter definie par le theme engine */

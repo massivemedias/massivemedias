@@ -1008,7 +1008,7 @@ function ServiceDetail() {
 
             {/* Indicateur */}
             {allImages.length > 1 && (
-              <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-[110] text-white/50 text-sm">
+              <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-[110] text-white/75 text-sm">
                 {lightboxIndex + 1} / {allImages.length}
               </div>
             )}

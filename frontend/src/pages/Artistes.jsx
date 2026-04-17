@@ -332,7 +332,7 @@ function Artistes() {
                         className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                         loading={index < 4 ? 'eager' : 'lazy'}
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent group-hover:from-black/90 transition-all duration-500" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent group-hover:from-black/95 transition-all duration-500" />
 
                       {/* Avatar rond en haut a gauche */}
                       {creator.avatar && (
@@ -361,11 +361,11 @@ function Artistes() {
                         <h3 className="font-heading font-bold text-white text-lg md:text-xl leading-tight mb-1 drop-shadow-lg">
                           {creator.name}
                         </h3>
-                        <p className="text-white/50 text-xs md:text-sm leading-snug line-clamp-1">
+                        <p className="text-white/85 text-xs md:text-sm leading-snug line-clamp-1">
                           {tagline}
                         </p>
                         <div className="flex items-center justify-between mt-2 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
-                          <span className="text-white/40 text-[10px] uppercase tracking-widest">
+                          <span className="text-white/75 text-[10px] uppercase tracking-widest">
                             {creator.isTatoueur
                               ? `${flashCount} ${tx({ fr: 'flashs', en: 'flash designs', es: 'flashs' })}`
                               : `${creator.prints?.length || 0} ${tx({ fr: 'oeuvres', en: 'artworks', es: 'obras' })}`
