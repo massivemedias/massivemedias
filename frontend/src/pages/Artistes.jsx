@@ -1,14 +1,12 @@
 import { useMemo, useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, MessageSquare, Camera, PenTool, Store, LayoutGrid, Grid3x3, List, ChevronDown, Paintbrush, Aperture } from 'lucide-react';
+import { ArrowRight, MessageSquare, Camera, Store, LayoutGrid, Grid3x3, List, ChevronDown, Paintbrush, Aperture } from 'lucide-react';
 import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
 import { useArtists } from '../hooks/useArtists';
-import { useTatoueurs } from '../hooks/useTatoueurs';
 import { mediaUrl } from '../utils/cms';
 import artistsData from '../data/artists';
-import tatoueursData from '../data/tatoueurs';
 
 // Type map for each artist slug
 const ARTIST_TYPES = {
@@ -20,26 +18,22 @@ const ARTIST_TYPES = {
   'no-pixl': 'photographe',
   'cornelia-rose': 'peintre',
   'eric-sanchez': 'photographe',
-  'ginko-ink': 'tatoueur',
 };
 
 const TYPE_LABELS = {
   photographe: { fr: 'Photographe', en: 'Photographer', es: 'Fotógrafo' },
   peintre: { fr: 'Peintre', en: 'Painter', es: 'Pintor' },
-  tatoueur: { fr: 'Tatoueur', en: 'Tattoo Artist', es: 'Tatuador' },
 };
 
 const FILTER_OPTIONS = [
   { key: 'all', fr: 'Tous', en: 'All', es: 'Todos' },
   { key: 'photographe', fr: 'Photographes', en: 'Photographers', es: 'Fotógrafos' },
   { key: 'peintre', fr: 'Peintres', en: 'Painters', es: 'Pintores' },
-  { key: 'tatoueur', fr: 'Tatoueurs', en: 'Tattoo Artists', es: 'Tatuadores' },
 ];
 
 function Artistes() {
   const { lang, tx } = useLang();
   const { artists: cmsArtists } = useArtists();
-  const { tatoueurs: cmsTatoueurs } = useTatoueurs();
   const location = useLocation();
 
   const [viewMode, setViewMode] = useState('large'); // 'large' | 'small' | 'list'
@@ -103,53 +97,9 @@ function Artistes() {
     return [...merged, ...cmsOnly];
   }, [cmsArtists]);
 
-  const tatoueurs = useMemo(() => {
-    const localList = Object.values(tatoueursData);
-    if (!cmsTatoueurs || cmsTatoueurs.length === 0) return localList;
-
-    const merged = localList.map(local => {
-      const cms = cmsTatoueurs.find(t => t.slug === local.slug);
-      if (!cms) return local;
-      return {
-        ...local,
-        name: cms.name || local.name,
-        bioFr: cms.bioFr || local.bioFr,
-        bioEn: cms.bioEn || local.bioEn,
-        studio: cms.studio || local.studio,
-        city: cms.city || local.city,
-        styles: cms.styles || local.styles,
-        instagramHandle: cms.instagramHandle || local.instagramHandle,
-        avatar: cms.avatar ? mediaUrl(cms.avatar) : local.avatar,
-        heroImage: cms.heroImage ? mediaUrl(cms.heroImage) : local.heroImage,
-        priceTattooMin: cms.priceTattooMin || local.priceTattooMin,
-        flashs: local.flashs,
-      };
-    });
-
-    const localSlugs = new Set(localList.map(t => t.slug));
-    const cmsOnly = cmsTatoueurs
-      .filter(t => !localSlugs.has(t.slug))
-      .map(cms => ({
-        slug: cms.slug,
-        name: cms.name,
-        bioFr: cms.bioFr || '',
-        bioEn: cms.bioEn || '',
-        studio: cms.studio || '',
-        city: cms.city || '',
-        styles: cms.styles || [],
-        instagramHandle: cms.instagramHandle || '',
-        avatar: mediaUrl(cms.avatar),
-        heroImage: mediaUrl(cms.heroImage),
-        priceTattooMin: cms.priceTattooMin,
-        flashs: cms.flashs || [],
-      }));
-
-    return [...merged, ...cmsOnly];
-  }, [cmsTatoueurs]);
-
   // Merge all creators into a single list with unified shape
   const allCreators = useMemo(() => {
-    const fromArtists = artists.map(a => ({
+    return artists.map(a => ({
       slug: a.slug,
       name: a.name,
       avatar: a.avatar,
@@ -159,38 +109,10 @@ function Artistes() {
       link: `/artistes/${a.slug}`,
       type: ARTIST_TYPES[a.slug] || 'peintre',
       prints: a.prints || [],
-      flashs: [],
-      isTatoueur: false,
       studio: null,
       city: null,
     }));
-
-    const fromTatoueurs = tatoueurs.map(t => ({
-      slug: t.slug,
-      name: t.name,
-      avatar: t.avatar,
-      heroImage: t.heroImage || t.avatar,
-      tagline: {
-        fr: t.studio ? `${t.studio} - ${t.city || ''}` : (t.bioFr || '').slice(0, 60),
-        en: t.studio ? `${t.studio} - ${t.city || ''}` : (t.bioEn || '').slice(0, 60),
-        es: t.studio ? `${t.studio} - ${t.city || ''}` : (t.bioEs || t.bioEn || '').slice(0, 60),
-      },
-      bio: {
-        fr: t.bioFr || '',
-        en: t.bioEn || '',
-        es: t.bioEs || t.bioEn || '',
-      },
-      link: `/tatoueurs/${t.slug}`,
-      type: 'tatoueur',
-      prints: [],
-      flashs: t.flashs || [],
-      isTatoueur: true,
-      studio: t.studio,
-      city: t.city,
-    }));
-
-    return [...fromArtists, ...fromTatoueurs];
-  }, [artists, tatoueurs]);
+  }, [artists]);
 
   const filteredCreators = useMemo(() => {
     if (filter === 'all') return allCreators;
@@ -207,7 +129,6 @@ function Artistes() {
     const config = {
       photographe: { Icon: Aperture, color: 'text-white/60' },
       peintre: { Icon: Paintbrush, color: 'text-white/60' },
-      tatoueur: { Icon: PenTool, color: 'text-white/60' },
     };
     const c = config[type] || config.peintre;
     return <c.Icon size={18} className={c.color} strokeWidth={1.5} />;
@@ -216,11 +137,11 @@ function Artistes() {
   return (
     <>
       <SEO
-        title={tx({ fr: 'Artistes - Photographes, Tatoueurs & Boutique | Massive', en: 'Artists - Photographers, Tattoo Artists & Shop | Massive', es: 'Artistas - Fotógrafos, Tatuadores & Tienda | Massive' })}
+        title={tx({ fr: 'Artistes - Photographes & Peintres | Massive', en: 'Artists - Photographers & Painters | Massive', es: 'Artistas - Fotógrafos & Pintores | Massive' })}
         description={tx({
-          fr: 'Decouvrez les artistes de Massive Medias. Photographes, peintres, tatoueurs. Tirages fine art, flashs originaux, boutique en ligne. Montreal.',
-          en: 'Discover Massive Medias artists. Photographers, painters, tattoo artists. Fine art prints, original flash designs, online shop. Montreal.',
-          es: 'Descubre los artistas de Massive Medias. Fotógrafos, pintores, tatuadores. Impresiones fine art, flashs originales, tienda en línea. Montreal.',
+          fr: 'Découvrez les artistes de Massive Medias. Photographes, peintres. Tirages fine art, impression et distribution en ligne. Montréal.',
+          en: 'Discover Massive Medias artists. Photographers, painters. Fine art prints, printing and online distribution. Montreal.',
+          es: 'Descubre los artistas de Massive Medias. Fotógrafos, pintores. Impresiones fine art, impresión y distribución en línea. Montreal.',
         })}
         breadcrumbs={[
           { name: tx({ fr: 'Accueil', en: 'Home', es: 'Inicio' }), url: '/' },
@@ -325,7 +246,6 @@ function Artistes() {
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4 mb-12">
               {filteredCreators.map((creator, index) => {
                 const tagline = tx({ fr: creator.tagline?.fr || '', en: creator.tagline?.en || '', es: creator.tagline?.es || '' });
-                const flashCount = creator.isTatoueur ? (creator.flashs || []).filter(f => f.status === 'disponible').length : 0;
 
                 return (
                   <motion.div
@@ -363,13 +283,6 @@ function Artistes() {
                         {getTypeBadge(creator.type)}
                       </div>
 
-                      {/* Badge flashs tatoueur */}
-                      {creator.isTatoueur && flashCount > 0 && (
-                        <div className="absolute top-12 right-3 bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg">
-                          {flashCount} flash{flashCount > 1 ? 's' : ''}
-                        </div>
-                      )}
-
                       <div className="absolute inset-0 flex flex-col justify-end p-4 md:p-5">
                         <h3 className="font-heading font-bold text-white text-lg md:text-xl leading-tight mb-1 drop-shadow-lg">
                           {creator.name}
@@ -379,10 +292,7 @@ function Artistes() {
                         </p>
                         <div className="flex items-center justify-between mt-2 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
                           <span className="text-white/75 text-[10px] uppercase tracking-widest">
-                            {creator.isTatoueur
-                              ? `${flashCount} ${tx({ fr: 'flashs', en: 'flash designs', es: 'flashs' })}`
-                              : `${creator.prints?.length || 0} ${tx({ fr: 'oeuvres', en: 'artworks', es: 'obras' })}`
-                            }
+                            {`${creator.prints?.length || 0} ${tx({ fr: 'oeuvres', en: 'artworks', es: 'obras' })}`}
                           </span>
                           <ArrowRight size={14} className="text-accent" />
                         </div>
@@ -439,7 +349,6 @@ function Artistes() {
               {filteredCreators.map((creator, index) => {
                 const isExpanded = expandedSlug === creator.slug;
                 const bio = tx({ fr: creator.bio?.fr || '', en: creator.bio?.en || '', es: creator.bio?.es || '' });
-                const flashCount = creator.isTatoueur ? (creator.flashs || []).filter(f => f.status === 'disponible').length : 0;
                 const printsCount = creator.prints?.length || 0;
 
                 return (
@@ -513,21 +422,9 @@ function Artistes() {
                                 <div className="flex flex-wrap items-center gap-3 mb-5">
                                   {getTypeBadge(creator.type)}
 
-                                  {!creator.isTatoueur && printsCount > 0 && (
+                                  {printsCount > 0 && (
                                     <span className="text-grey-muted text-xs">
                                       {printsCount} {tx({ fr: 'oeuvres disponibles', en: 'artworks available', es: 'obras disponibles' })}
-                                    </span>
-                                  )}
-
-                                  {creator.isTatoueur && flashCount > 0 && (
-                                    <span className="text-grey-muted text-xs">
-                                      {flashCount} flash{flashCount > 1 ? 's' : ''} {tx({ fr: 'disponibles', en: 'available', es: 'disponibles' })}
-                                    </span>
-                                  )}
-
-                                  {creator.studio && (
-                                    <span className="text-grey-muted text-xs">
-                                      {creator.studio}{creator.city ? ` - ${creator.city}` : ''}
                                     </span>
                                   )}
                                 </div>
@@ -676,9 +573,9 @@ function Artistes() {
           </h2>
           <p className="text-grey-light text-lg mb-8 max-w-2xl mx-auto">
             {tx({
-              fr: "Photographe, peintre, tatoueur - rejoins la plateforme Massive Medias. On s'occupe de tout.",
-              en: 'Photographer, painter, tattoo artist - join the Massive Medias platform. We handle everything.',
-              es: 'Fotógrafo, pintor, tatuador - únete a la plataforma Massive Medias. Nos encargamos de todo.',
+              fr: "Photographe, peintre, illustrateur - rejoins la plateforme Massive Medias. On s'occupe de tout.",
+              en: 'Photographer, painter, illustrator - join the Massive Medias platform. We handle everything.',
+              es: 'Fotógrafo, pintor, ilustrador - únete a la plataforma Massive Medias. Nos encargamos de todo.',
             })}
           </p>
           <Link to="/contact" className="btn-primary">

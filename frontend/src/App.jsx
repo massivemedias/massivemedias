@@ -7,7 +7,6 @@ import { useLang } from './i18n/LanguageContext';
 import ScrollToTop from './components/ScrollToTop';
 import ScrollToTopButton from './components/ScrollToTopButton';
 import './index.css';
-import tatoueursData from './data/tatoueurs';
 
 // Retry wrapper for lazy imports - retries up to 3 times on chunk load failure
 function lazyWithRetry(importFn) {
@@ -43,10 +42,6 @@ const CheckoutSuccess = lazyWithRetry(() => import('./pages/CheckoutSuccess'));
 const CheckoutCancel = lazyWithRetry(() => import('./pages/CheckoutCancel'));
 const Artistes = lazyWithRetry(() => import('./pages/Artistes'));
 const ArtisteDetail = lazyWithRetry(() => import('./pages/ArtisteDetail'));
-const Tatoueurs = lazyWithRetry(() => import('./pages/Tatoueurs'));
-const TatoueurDetail = lazyWithRetry(() => import('./pages/TatoueurDetail'));
-const TatoueurInscription = lazyWithRetry(() => import('./pages/TatoueurInscription'));
-const TatoueurDashboard = lazyWithRetry(() => import('./pages/TatoueurDashboard'));
 const Temoignage = lazyWithRetry(() => import('./pages/Temoignage'));
 const NotFound = lazyWithRetry(() => import('./pages/NotFound'));
 const MmAdmin = lazyWithRetry(() => import('./pages/MmAdmin'));
@@ -58,7 +53,6 @@ const AdminInventaire = lazyWithRetry(() => import('./pages/AdminInventaire'));
 const AdminMessages = lazyWithRetry(() => import('./pages/AdminMessages'));
 // AdminArtistes removed - redirect to messages
 const AdminCommissions = lazyWithRetry(() => import('./pages/AdminCommissions'));
-const AdminTatoueurs = lazyWithRetry(() => import('./pages/AdminTatoueurs'));
 // AdminClients merged into AdminUtilisateurs - redirect in routes
 const AdminDepenses = lazyWithRetry(() => import('./pages/AdminDepenses'));
 const AdminStats = lazyWithRetry(() => import('./pages/AdminStats'));
@@ -75,7 +69,6 @@ const AdminPromos = lazyWithRetry(() => import('./pages/AdminPromos'));
 // These are small wrappers - load eagerly to avoid lazy-loading auth guards
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminRoute from './components/AdminRoute';
-import TatoueurRoute from './components/TatoueurRoute';
 
 // Base path pour GitHub Pages
 const basename = import.meta.env.BASE_URL;
@@ -94,10 +87,6 @@ function getSubdomainSlug() {
   const match = host.match(/^([^.]+)\.massivemedias\.com$/);
   if (match && match[1] !== 'www') return match[1];
   return null;
-}
-
-function isTatoueurSlug(slug) {
-  return slug && !!tatoueursData[slug];
 }
 
 // Redirect to /login if recovery hash is detected on any page
@@ -144,9 +133,7 @@ function App() {
           <Route element={<MainLayout />}>
             <Route index element={
               subdomainSlug
-                ? (isTatoueurSlug(subdomainSlug)
-                    ? <TatoueurDetail subdomainSlug={subdomainSlug} />
-                    : <ArtisteDetail subdomainSlug={subdomainSlug} />)
+                ? <ArtisteDetail subdomainSlug={subdomainSlug} />
                 : <Home />
             } />
             <Route path="/services/:slug" element={<ServiceDetail />} />
@@ -187,11 +174,11 @@ function App() {
             <Route path="/artistes" element={<Artistes />} />
             <Route path="/artistes/:slug" element={<ArtisteDetail />} />
 
-            {/* Tatoueurs */}
-            <Route path="/tatoueurs" element={<Tatoueurs />} />
-            <Route path="/tatoueurs/:slug" element={<TatoueurDetail />} />
-            <Route path="/tatoueur/inscription" element={<TatoueurInscription />} />
-            <Route path="/tatoueur/dashboard" element={<TatoueurRoute><TatoueurDashboard /></TatoueurRoute>} />
+            {/* Tatoueurs - section desactivee, redirige vers Artistes */}
+            <Route path="/tatoueurs" element={<Navigate to="/artistes" replace />} />
+            <Route path="/tatoueurs/:slug" element={<Navigate to="/artistes" replace />} />
+            <Route path="/tatoueur/inscription" element={<Navigate to="/contact?tab=artiste" replace />} />
+            <Route path="/tatoueur/dashboard" element={<Navigate to="/account" replace />} />
 
             {/* Admin - redirige vers le dashboard */}
             <Route path="/mm-admin" element={<AdminRoute><MmAdmin /></AdminRoute>} />
@@ -210,7 +197,7 @@ function App() {
               <Route path="messages" element={<AdminMessages />} />
               <Route path="candidatures" element={<Navigate to="/admin/messages" replace />} />
               <Route path="artistes" element={<Navigate to="/admin/messages" replace />} />
-              <Route path="tatoueurs" element={<AdminTatoueurs />} />
+              <Route path="tatoueurs" element={<Navigate to="/admin/utilisateurs" replace />} />
               <Route path="clients" element={<Navigate to="/admin/utilisateurs" replace />} />
               <Route path="utilisateurs" element={<AdminUtilisateurs />} />
               <Route path="depenses" element={<Navigate to="/admin/factures" replace />} />

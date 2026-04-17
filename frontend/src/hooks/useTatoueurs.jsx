@@ -1,45 +1,18 @@
-import { createContext, useContext, useState, useEffect } from 'react';
-import api from '../services/api';
+// Stub désactivé - la section Tatoueurs a été retirée du site.
+// On garde le Provider/hook vides pour que les imports existants ne cassent pas.
+// À supprimer complètement quand toutes les references auront ete nettoyées.
+import { createContext, useContext } from 'react';
 
-const TatoueursContext = createContext(null);
+const TatoueursContext = createContext({ tatoueurs: [], loading: false });
 
 export function TatoueursProvider({ children }) {
-  const [tatoueurs, setTatoueurs] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let cancelled = false;
-    async function fetchTatoueurs() {
-      try {
-        const res = await api.get('/tatoueurs', {
-          params: {
-            populate: '*',
-            'filters[active][$eq]': true,
-            'filters[approved][$eq]': true,
-            'sort[0]': 'sortOrder:asc',
-            'pagination[pageSize]': 100,
-          },
-        });
-        if (!cancelled) {
-          setTatoueurs(res.data?.data || []);
-        }
-      } catch (err) {
-        console.warn('[useTatoueurs] CMS indisponible, fallback local:', err.message);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
-    fetchTatoueurs();
-    return () => { cancelled = true; };
-  }, []);
-
   return (
-    <TatoueursContext.Provider value={{ tatoueurs, loading }}>
+    <TatoueursContext.Provider value={{ tatoueurs: [], loading: false }}>
       {children}
     </TatoueursContext.Provider>
   );
 }
 
 export function useTatoueurs() {
-  return useContext(TatoueursContext) || { tatoueurs: null, loading: false };
+  return { tatoueurs: [], loading: false };
 }

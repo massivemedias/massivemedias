@@ -12,10 +12,8 @@ import { getClients, getArtistSubmissions } from '../services/adminService';
 import { getUserRoles, setUserRole } from '../services/userRoleService';
 import { useNotifications } from '../contexts/NotificationContext';
 import artistsData from '../data/artists';
-import tatoueursData from '../data/tatoueurs';
 
 const ARTIST_SLUGS = Object.keys(artistsData);
-const TATOUEUR_SLUGS = Object.keys(tatoueursData);
 const GA_PROPERTY_ID = '525792501';
 
 function AdminUtilisateurs() {
@@ -147,7 +145,7 @@ function AdminUtilisateurs() {
 
   const getUserArtistSlug = (email) => {
     const r = roles[(email || '').toLowerCase()];
-    return r?.artistSlug || r?.tatoueurSlug || null;
+    return r?.artistSlug || null;
   };
 
   const filtered = allUsers.filter(u => {
@@ -163,7 +161,7 @@ function AdminUtilisateurs() {
     const role = getUserRole(u.email);
     if (tab === 'buyers') return u.isBuyer;
     if (tab === 'visitors') return !u.isBuyer && role !== 'admin';
-    if (tab === 'artists') return role === 'artist' || role === 'tatoueur';
+    if (tab === 'artists') return role === 'artist';
     return true;
   }).sort((a, b) => {
     // Buyers first, then by date
@@ -175,7 +173,7 @@ function AdminUtilisateurs() {
   const totalUsers = allUsers.length;
   const totalBuyers = allUsers.filter(u => u.isBuyer).length;
   const totalVisitors = allUsers.filter(u => !u.isBuyer && getUserRole(u.email) !== 'admin').length;
-  const artistCount = Object.values(roles).filter(r => r.role === 'artist' || r.role === 'tatoueur').length;
+  const artistCount = Object.values(roles).filter(r => r.role === 'artist').length;
   const totalRevenue = allUsers.reduce((s, u) => s + (parseFloat(u.totalSpent) || 0), 0);
 
   const summaryCards = [
@@ -221,9 +219,6 @@ function AdminUtilisateurs() {
 
     if (selectedSlug === '__new__') {
       slug = customSlug.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-');
-    } else if (selectedSlug.startsWith('tatoueur:')) {
-      role = 'tatoueur';
-      slug = selectedSlug.replace('tatoueur:', '');
     } else if (selectedSlug.startsWith('artist:')) {
       role = 'artist';
       slug = selectedSlug.replace('artist:', '');
@@ -232,21 +227,19 @@ function AdminUtilisateurs() {
     if (!slug) return;
     setSaving(email);
     try {
-      const slugField = role === 'tatoueur' ? slug : slug;
-      await setUserRole(email, role, slugField, user.id, user.fullName);
+      await setUserRole(email, role, slug, user.id, user.fullName);
       setRoles(prev => ({
         ...prev,
         [email]: {
           role,
-          artistSlug: role === 'artist' ? slug : null,
-          tatoueurSlug: role === 'tatoueur' ? slug : null,
+          artistSlug: slug,
           email,
         },
       }));
       setEditingUser(null);
       setSelectedSlug('');
       setCustomSlug('');
-      const roleLabel = role === 'tatoueur' ? tx({ fr: 'tatoueur', en: 'tattoo artist', es: 'tatuador' }) : tx({ fr: 'artiste', en: 'artist', es: 'artista' });
+      const roleLabel = tx({ fr: 'artiste', en: 'artist', es: 'artista' });
       setToast(tx({ fr: `${user.fullName || email} est maintenant ${roleLabel} (${slug})`, en: `${user.fullName || email} is now ${roleLabel} (${slug})`, es: `${user.fullName || email} ahora es ${roleLabel} (${slug})` }));
       setTimeout(() => setToast(''), 3000);
     } catch {
@@ -293,7 +286,6 @@ function AdminUtilisateurs() {
   const getRoleBadge = (role, artistSlug) => {
     if (role === 'admin') return { label: 'Admin', slug: null, className: 'bg-yellow-500/20 text-yellow-400' };
     if (role === 'artist') return { label: tx({ fr: 'Artiste', en: 'Artist', es: 'Artista' }), slug: artistSlug || '?', className: 'bg-red-500/20 text-red-400' };
-    if (role === 'tatoueur') return { label: tx({ fr: 'Tatoueur', en: 'Tattoo Artist', es: 'Tatuador' }), slug: artistSlug || '?', className: 'bg-blue-500/20 text-blue-400' };
     return null;
   };
 
@@ -376,7 +368,6 @@ function AdminUtilisateurs() {
       <div className="flex flex-wrap items-center gap-4 text-xs text-grey-muted">
         <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-yellow-500/20 border border-yellow-400"></span> Admin</span>
         <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-red-500/20 border border-red-400"></span> {tx({ fr: 'Artiste', en: 'Artist', es: 'Artista' })}</span>
-        <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-blue-500/20 border border-blue-400"></span> {tx({ fr: 'Tatoueur', en: 'Tattoo Artist', es: 'Tatuador' })}</span>
         <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-green-500/20 border border-green-400"></span> {tx({ fr: 'Acheteur', en: 'Buyer', es: 'Comprador' })}</span>
         <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-purple-500/20 border border-purple-400"></span> {tx({ fr: 'Utilisateur', en: 'User', es: 'Usuario' })}</span>
       </div>
@@ -419,7 +410,6 @@ function AdminUtilisateurs() {
                     <div className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0 ${
                       role === 'admin' ? 'bg-yellow-500/20 text-yellow-400' :
                       role === 'artist' ? 'bg-red-500/20 text-red-400' :
-                      role === 'tatoueur' ? 'bg-blue-500/20 text-blue-400' :
                       user.isBuyer ? 'bg-green-500/20 text-green-400' :
                       'bg-purple-500/20 text-purple-400'
                     }`}>
@@ -429,15 +419,11 @@ function AdminUtilisateurs() {
                       <p className={`text-[15px] font-semibold truncate ${
                         role === 'admin' ? 'text-yellow-400' :
                         role === 'artist' ? 'text-red-400' :
-                        role === 'tatoueur' ? 'text-blue-400' :
                         'text-heading'
                       }`}>
                         {user.fullName || tx({ fr: 'Sans nom', en: 'No name', es: 'Sin nombre' })}
                         {role === 'artist' && artistSlug && (
                           <span className="text-[11px] text-red-400/60 font-normal ml-1.5">({artistSlug})</span>
-                        )}
-                        {role === 'tatoueur' && artistSlug && (
-                          <span className="text-[11px] text-blue-400/60 font-normal ml-1.5">({artistSlug})</span>
                         )}
                       </p>
                       <p className="text-[11px] text-grey-muted flex items-center gap-1">
@@ -492,7 +478,6 @@ function AdminUtilisateurs() {
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0 ${
                       role === 'admin' ? 'bg-yellow-500/20 text-yellow-400' :
                       role === 'artist' ? 'bg-red-500/20 text-red-400' :
-                      role === 'tatoueur' ? 'bg-blue-500/20 text-blue-400' :
                       user.isBuyer ? 'bg-green-500/20 text-green-400' :
                       'bg-purple-500/20 text-purple-400'
                     }`}>
@@ -502,7 +487,6 @@ function AdminUtilisateurs() {
                       <p className={`text-sm font-semibold truncate ${
                         role === 'admin' ? 'text-yellow-400' :
                         role === 'artist' ? 'text-red-400' :
-                        role === 'tatoueur' ? 'text-blue-400' :
                         'text-heading'
                       }`}>
                         {user.fullName || tx({ fr: 'Sans nom', en: 'No name', es: 'Sin nombre' })}
@@ -807,7 +791,7 @@ function AdminUtilisateurs() {
                     >
                       <div className="px-4 py-3 flex flex-wrap items-center gap-3 bg-accent/5 shadow-[0_-1px_0_rgba(255,255,255,0.04)]">
                         <span className="text-xs text-grey-muted whitespace-nowrap">
-                          {role === 'artist' || role === 'tatoueur'
+                          {role === 'artist'
                             ? tx({ fr: 'Changer le rôle:', en: 'Change role:', es: 'Cambiar rol:' })
                             : tx({ fr: 'Assigner un rôle:', en: 'Assign a role:', es: 'Asignar un rol:' })}
                         </span>
@@ -817,7 +801,7 @@ function AdminUtilisateurs() {
                           className="input-field text-sm py-1.5 px-3 max-w-xs"
                         >
                           <option value="">{tx({ fr: '-- Choisir --', en: '-- Choose --', es: '-- Elegir --' })}</option>
-                          {(role === 'artist' || role === 'tatoueur') && (
+                          {role === 'artist' && (
                             <option value="__downgrade__">{tx({ fr: 'Retirer le rôle (utilisateur normal)', en: 'Remove role (normal user)', es: 'Quitar rol (usuario normal)' })}</option>
                           )}
                           <option value="__new__">{tx({ fr: '+ Nouveau (slug personnalisé)', en: '+ New (custom slug)', es: '+ Nuevo (slug personalizado)' })}</option>
@@ -825,13 +809,6 @@ function AdminUtilisateurs() {
                             {ARTIST_SLUGS.map(slug => (
                               <option key={`artist-${slug}`} value={`artist:${slug}`}>
                                 {artistsData[slug]?.name || slug}
-                              </option>
-                            ))}
-                          </optgroup>
-                          <optgroup label={tx({ fr: 'Tatoueurs', en: 'Tattoo Artists', es: 'Tatuadores' })}>
-                            {TATOUEUR_SLUGS.map(slug => (
-                              <option key={`tatoueur-${slug}`} value={`tatoueur:${slug}`}>
-                                {tatoueursData[slug]?.name || slug}
                               </option>
                             ))}
                           </optgroup>

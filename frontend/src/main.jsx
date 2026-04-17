@@ -10,7 +10,6 @@ import { CookieProvider } from './contexts/CookieContext'
 import { SiteContentProvider } from './hooks/useSiteContent'
 import { ServicePagesProvider } from './hooks/useServicePages'
 import { ArtistsProvider } from './hooks/useArtists'
-import { TatoueursProvider } from './hooks/useTatoueurs'
 import { ProductsProvider } from './hooks/useProducts'
 import './index.css'
 import App from './App.jsx'
@@ -22,7 +21,6 @@ createRoot(document.getElementById('root')).render(
         <SiteContentProvider>
         <ServicePagesProvider>
         <ArtistsProvider>
-        <TatoueursProvider>
         <ProductsProvider>
         <CookieProvider>
           <AuthProvider>
@@ -36,7 +34,6 @@ createRoot(document.getElementById('root')).render(
           </AuthProvider>
         </CookieProvider>
         </ProductsProvider>
-        </TatoueursProvider>
         </ArtistsProvider>
         </ServicePagesProvider>
         </SiteContentProvider>
