@@ -49,8 +49,8 @@ const translations = {
       },
       hero: {
         tagline: 'Create. Print. Repeat.',
-        subtitle: 'Studio d\'impression, design et développement web à Montréal',
-        services: 'Fine Art · Stickers · Merch · Design Graphique · Développement Web',
+        subtitle: 'Pour les artistes, créateurs et entrepreneurs de Montréal',
+        services: 'Fine Art · Stickers · Merch · Design · Web — tout sous un même toit',
         cta1: 'Voir nos services',
         cta2: 'Demander une soumission',
       },
@@ -410,8 +410,8 @@ const translations = {
       },
       hero: {
         tagline: 'Create. Print. Repeat.',
-        subtitle: 'Printing, Design & Web Development Studio in Montreal',
-        services: 'Fine Art · Stickers · Merch · Graphic Design · Web Development',
+        subtitle: 'For artists, creators and entrepreneurs in Montreal',
+        services: 'Fine Art · Stickers · Merch · Design · Web — all under one roof',
         cta1: 'View Our Services',
         cta2: 'Request a Quote',
       },
@@ -771,8 +771,8 @@ const translations = {
       },
       hero: {
         tagline: 'Create. Print. Repeat.',
-        subtitle: 'Estudio de impresión, diseño y desarrollo web en Montreal',
-        services: 'Fine Art - Stickers - Merch - Diseño Gráfico - Desarrollo Web',
+        subtitle: 'Para artistas, creadores y emprendedores de Montreal',
+        services: 'Fine Art · Stickers · Merch · Diseño · Web — todo bajo un mismo techo',
         cta1: 'Ver nuestros servicios',
         cta2: 'Solicitar cotización',
       },

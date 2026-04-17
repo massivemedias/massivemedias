@@ -29,7 +29,6 @@ import { useSiteContent } from '../hooks/useSiteContent';
 import { bl, mediaUrl } from '../utils/cms';
 import { getIcon } from '../utils/iconMap';
 import api from '../services/api';
-import { useAuth } from '../contexts/AuthContext';
 
 // Fallback icons & data if CMS not available
 const fallbackServiceIcons = ['Printer', 'Sticker', 'Shirt', 'Palette', 'Globe'];
@@ -68,7 +67,6 @@ const fallbackFeaturedProjectLinks = [
 function Home() {
   const { t, lang, tx } = useLang();
   const { content } = useSiteContent();
-  const { user } = useAuth();
 
   // ── Service Cards (fallback si vide ou absent) ──
   const cmsServiceCards = content?.serviceCards?.length ? content.serviceCards : null;
@@ -225,40 +223,6 @@ function Home() {
                 {(content && bl(content, 'heroCta2', lang)) || t('home.hero.cta2')}
               </Link>
             </motion.div>
-
-            {/* Bouton connexion - visible surtout en mobile (le header cache le login derriere le menu) */}
-            {!user && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 1.2, duration: 0.5 }}
-                className="mt-4"
-              >
-                <button
-                  onClick={() => window.dispatchEvent(new Event('open-login-modal'))}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold text-heading/70 hover:text-heading transition-colors border border-white/15 hover:border-white/30 hover:bg-white/5"
-                >
-                  <Users size={16} />
-                  {tx({ fr: 'Se connecter / Creer un compte', en: 'Sign in / Create account', es: 'Conectarse / Crear cuenta' })}
-                </button>
-              </motion.div>
-            )}
-            {user && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 1.2, duration: 0.5 }}
-                className="mt-4"
-              >
-                <Link
-                  to="/account"
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold text-heading/70 hover:text-heading transition-colors border border-white/15 hover:border-white/30 hover:bg-white/5"
-                >
-                  <Users size={16} />
-                  {tx({ fr: 'Mon compte', en: 'My account', es: 'Mi cuenta' })}
-                </Link>
-              </motion.div>
-            )}
 
           </motion.div>
         </div>
