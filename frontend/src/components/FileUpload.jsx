@@ -91,6 +91,14 @@ function FileUpload({ files = [], onFilesChange, label, maxFiles = 5, compact = 
   const [uploadStatus, setUploadStatus] = useState('');
   const [dragOver, setDragOver] = useState(false);
   const [error, setError] = useState('');
+  // Tracks which file IDs have failed to load their preview image.
+  // When a preview fails, we fall back to the file-icon view.
+  const [brokenPreviews, setBrokenPreviews] = useState(new Set());
+  const markBroken = (id) => setBrokenPreviews(prev => {
+    const next = new Set(prev);
+    next.add(id);
+    return next;
+  });
 
   const handleFiles = async (fileList) => {
     setError('');
@@ -240,20 +248,31 @@ function FileUpload({ files = [], onFilesChange, label, maxFiles = 5, compact = 
         ) : (
           /* Has files: show previews or just names */
           <div className="space-y-2">
-            {files.map((file, i) => (
-              <div key={file.id || i} className="relative group">
-                {((isImage(file.mime) || (file.url && file.url.includes('.webp'))) && file.url && !hidePreview) ? (
-                  <div className="rounded-lg overflow-hidden bg-glass">
+            {files.map((file, i) => {
+              const fileKey = file.id || `${file.name}-${i}`;
+              const showPreview = (isImage(file.mime) || (file.url && file.url.includes('.webp')))
+                && file.url
+                && !hidePreview
+                && !brokenPreviews.has(fileKey);
+              return (
+              <div key={fileKey} className="relative group">
+                {showPreview ? (
+                  <div className="rounded-lg overflow-hidden bg-[#2a0050] border border-white/5">
                     <img
                       src={file.url}
-                      alt={file.name}
-                      className="w-full h-24 object-cover"
+                      alt=""
+                      aria-label={file.name}
+                      className="w-full h-24 object-contain"
+                      loading="lazy"
+                      onError={() => markBroken(fileKey)}
                     />
-                    <div className="px-2 py-1 flex items-center gap-1">
-                      <span className="text-heading text-[10px] truncate flex-1">{file.name}</span>
+                    <div className="px-2 py-1 flex items-center gap-1 bg-black/30">
+                      <FileText size={10} className="text-accent flex-shrink-0" />
+                      <span className="text-heading text-[10px] truncate flex-1" title={file.name}>{file.name}</span>
                       <button
                         type="button"
                         onClick={() => handleRemove(i)}
+                        aria-label={tx({ fr: 'Retirer', en: 'Remove', es: 'Quitar' })}
                         className="p-0.5 text-grey-muted hover:text-red-400 transition-colors flex-shrink-0"
                       >
                         <X size={12} />
@@ -263,13 +282,14 @@ function FileUpload({ files = [], onFilesChange, label, maxFiles = 5, compact = 
                 ) : (
                   <div className="flex items-center gap-2 p-2 rounded-lg bg-glass">
                     <FileText size={14} className="text-accent flex-shrink-0" />
-                    <span className="text-heading text-[10px] truncate flex-1">{file.name}</span>
+                    <span className="text-heading text-[11px] truncate flex-1" title={file.name}>{file.name}</span>
                     {file.size && (
-                      <span className="text-grey-muted text-[9px] flex-shrink-0">{formatSize(file.size * 1000)}</span>
+                      <span className="text-grey-muted text-[9px] flex-shrink-0">{formatSize(file.size)}</span>
                     )}
                     <button
                       type="button"
                       onClick={() => handleRemove(i)}
+                      aria-label={tx({ fr: 'Retirer', en: 'Remove', es: 'Quitar' })}
                       className="p-0.5 text-grey-muted hover:text-red-400 transition-colors flex-shrink-0"
                     >
                       <X size={12} />
@@ -277,7 +297,8 @@ function FileUpload({ files = [], onFilesChange, label, maxFiles = 5, compact = 
                   </div>
                 )}
               </div>
-            ))}
+              );
+            })}
             {canAddMore && (
               <button
                 type="button"
@@ -358,26 +379,37 @@ function FileUpload({ files = [], onFilesChange, label, maxFiles = 5, compact = 
 
       {/* File list with image previews */}
       {files.length > 0 && (() => {
-        const imageFiles = files.map((f, i) => ({ ...f, _idx: i })).filter(f => isImage(f.mime) && f.url);
-        const otherFiles = files.map((f, i) => ({ ...f, _idx: i })).filter(f => !isImage(f.mime) || !f.url);
+        const imageFiles = files.map((f, i) => ({ ...f, _idx: i })).filter(f => isImage(f.mime) && f.url && !brokenPreviews.has(f.id || `${f.name}-${i}`));
+        const otherFiles = files.map((f, i) => ({ ...f, _idx: i })).filter(f => !isImage(f.mime) || !f.url || brokenPreviews.has(f.id || `${f.name}-${i}`));
         return (
           <div className="mt-3 space-y-3">
             {/* Image grid */}
             {imageFiles.length > 0 && (
               <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
-                {imageFiles.map((file) => (
-                  <div key={file.id || file._idx} className="relative group aspect-square rounded-lg overflow-hidden bg-glass">
-                    <img src={file.url} alt={file.name} className="w-full h-full object-cover" />
+                {imageFiles.map((file) => {
+                  const fileKey = file.id || `${file.name}-${file._idx}`;
+                  return (
+                  <div key={fileKey} className="relative group aspect-square rounded-lg overflow-hidden bg-[#2a0050] border border-white/5">
+                    <img
+                      src={file.url}
+                      alt=""
+                      aria-label={file.name}
+                      className="w-full h-full object-contain"
+                      loading="lazy"
+                      onError={() => markBroken(fileKey)}
+                    />
                     <button
                       type="button"
                       onClick={(e) => { e.stopPropagation(); handleRemove(file._idx); }}
+                      aria-label={tx({ fr: 'Retirer', en: 'Remove', es: 'Quitar' })}
                       className="absolute top-1 right-1 p-1 rounded-full bg-red-500/90 text-white hover:bg-red-500 transition-colors z-10"
                     >
                       <X size={12} />
                     </button>
-                    <span className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-[9px] px-1 py-0.5 truncate">{file.name}</span>
+                    <span className="absolute bottom-0 left-0 right-0 bg-black/70 text-white text-[9px] px-1 py-0.5 truncate" title={file.name}>{file.name}</span>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             )}
             {/* Non-image files list */}
