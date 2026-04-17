@@ -508,7 +508,7 @@ function Home() {
         </div>
       </section>
 
-      {/* ============ TÉMOIGNAGES ============ */}
+      {/* ============ PROJETS RÉALISÉS ============ */}
       <section className="section-container">
         <motion.div
           initial={{ opacity: 0 }}
@@ -518,46 +518,93 @@ function Home() {
           className="text-center mb-12"
         >
           <h2 className="text-5xl md:text-6xl font-heading font-bold text-heading mb-4 hero-title">
-            {(content && bl(content, 'testimonialsTitle', lang)) || t('home.testimonials.title')}
+            {tx({ fr: 'Projets réalisés', en: 'Recent Work', es: 'Proyectos realizados' })}
           </h2>
+          <p className="text-grey-light max-w-2xl mx-auto">
+            {tx({
+              fr: 'Des clients, des produits, des vraies commandes qui partent de notre studio.',
+              en: 'Real clients, real products, real orders shipped from our studio.',
+              es: 'Clientes reales, productos reales, pedidos reales enviados desde nuestro estudio.',
+            })}
+          </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-          {(() => {
-            const all = testimonials || fbTestimonials;
-            // Jeremy G. toujours en premier
-            const jeremy = all.find(t => t.name === 'Jeremy G.');
-            const others = all.filter(t => t.name !== 'Jeremy G.');
-            return jeremy ? [jeremy, ...others].slice(0, 3) : all.slice(0, 3);
-          })().map((item, index) => (
-            <motion.div
-              key={item.name}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              viewport={{ once: true }}
-              className="p-8 rounded-xl transition-all duration-300 bg-glass card-shadow relative"
-            >
-              <Quote size={32} className="text-accent/20 absolute top-4 right-4" />
-              {item.rating && (
-                <div className="flex items-center gap-0.5 mb-3">
-                  {[1, 2, 3, 4, 5].map(s => (
-                    <svg key={s} className={`w-4 h-4 ${s <= item.rating ? 'text-yellow-400' : 'text-grey-muted/20'}`} fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </svg>
-                  ))}
-                </div>
-              )}
-              <p className="text-grey-light leading-relaxed mb-6 italic">
-                "{item.text}"
-              </p>
-              <div>
-                <div className="text-heading font-heading font-bold">{item.name}</div>
-                <div className="text-accent text-sm">{item.role}</div>
+        {/* Projet POGOs dans le Sirop */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true }}
+          className="max-w-6xl mx-auto"
+        >
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10 items-center">
+            {/* Galerie d'images - mosaic */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="col-span-2 rounded-xl overflow-hidden aspect-[4/3]">
+                <img
+                  src={thumb('/images/realisations/pogos/pogo2.webp')}
+                  alt="Étiquette Les Pogos dans le Sirop - format XL"
+                  loading="lazy"
+                  className="w-full h-full object-cover"
+                />
               </div>
-            </motion.div>
-          ))}
-        </div>
+              <div className="rounded-xl overflow-hidden aspect-square">
+                <img
+                  src={thumb('/images/realisations/pogos/pogo1.webp')}
+                  alt="Étiquettes Pogos format regular et petit"
+                  loading="lazy"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="rounded-xl overflow-hidden aspect-square">
+                <img
+                  src={thumb('/images/realisations/pogos/pogo3.webp')}
+                  alt="Étiquette Pogos appliquée sur bouteille"
+                  loading="lazy"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
+
+            {/* Story telling */}
+            <div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 text-accent text-xs font-semibold uppercase tracking-wider mb-4">
+                {tx({ fr: 'Stickers die-cut', en: 'Die-cut stickers', es: 'Stickers die-cut' })}
+              </div>
+              <h3 className="text-3xl md:text-4xl font-heading font-bold text-heading mb-3">
+                Les Pogos dans le Sirop
+              </h3>
+              <p className="text-accent text-sm font-semibold mb-6">
+                {tx({ fr: '1re Édition - Édition limitée', en: '1st Edition - Limited run', es: '1ª Edición - Edición limitada' })}
+              </p>
+              <div className="space-y-4 text-grey-light leading-relaxed">
+                <p>
+                  {tx({
+                    fr: 'Le client arrive avec une idée précise : créer des étiquettes rondes pour accompagner son sirop d\'érable artisanal. Un univers visuel décalé, des mascottes, un story telling local.',
+                    en: 'The client came in with a specific idea: create round labels for their artisanal maple syrup. A quirky visual universe, mascots, local storytelling.',
+                    es: 'El cliente llegó con una idea clara: crear etiquetas redondas para su jarabe de arce artesanal. Un universo visual original, mascotas, narrativa local.',
+                  })}
+                </p>
+                <p>
+                  {tx({
+                    fr: 'On a imprimé plusieurs formats die-cut (2 tailles d\'étiquettes rondes + une grosse étiquette de packaging) sur vinyle impermeable, finition matte pour un rendu doux au toucher. Le résultat : des étiquettes qui tiennent sur bouteilles, boîtes et contenants, sans décoller.',
+                    en: 'We printed multiple die-cut formats (two round label sizes + a large packaging label) on waterproof vinyl with a matte finish for a soft, tactile feel. The result: labels that stick perfectly to bottles, boxes and containers without peeling.',
+                    es: 'Imprimimos varios formatos die-cut (dos tamaños de etiquetas redondas + una etiqueta grande para packaging) en vinilo impermeable, acabado mate para un tacto suave. El resultado: etiquetas que se adhieren perfectamente a botellas, cajas y envases sin despegarse.',
+                  })}
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-3 mt-6">
+                <Link to="/services/stickers" className="btn-primary text-sm">
+                  {tx({ fr: 'Commander mes stickers', en: 'Order my stickers', es: 'Pedir mis stickers' })}
+                  <ArrowRight size={16} className="ml-2" />
+                </Link>
+                <Link to="/contact" className="btn-outline text-sm">
+                  {tx({ fr: 'Projet similaire ?', en: 'Similar project?', es: '¿Proyecto similar?' })}
+                </Link>
+              </div>
+            </div>
+          </div>
+        </motion.div>
       </section>
 
       {/* ============ TATOUEURS EN VEDETTE ============ */}
