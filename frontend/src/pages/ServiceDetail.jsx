@@ -1,6 +1,6 @@
 import { useParams, Link, Navigate } from 'react-router-dom';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
-import { ArrowRight, ArrowLeft, CheckCircle, Wrench, Users, ChevronLeft, ChevronRight, X, ExternalLink, Globe, Palette, Code as CodeIcon, Smartphone, Search, Gauge, Shield, ChevronDown, ShoppingCart, ArrowUp } from 'lucide-react';
+import { ArrowRight, ArrowLeft, CheckCircle, Wrench, Users, ChevronLeft, ChevronRight, X, ExternalLink, Globe, Palette, Code as CodeIcon, Smartphone, Search, Gauge, Shield, ChevronDown, ShoppingCart } from 'lucide-react';
 import { useState, useCallback, useEffect, useMemo, useRef, lazy, Suspense } from 'react';
 import { toFull } from '../utils/paths';
 import SEO from '../components/SEO';
@@ -221,14 +221,6 @@ function ServiceDetail() {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [lightboxImage, closeLightbox, goToPrevious, goToNext]);
-
-  // Track scroll position for scroll-to-top button
-  const [showScrollTop, setShowScrollTop] = useState(false);
-  useEffect(() => {
-    const onScroll = () => setShowScrollTop(window.scrollY > 600);
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
 
   const Icon = service.icon;
   const hasConfigurator = service.boutiqueSlug && configuratorMap[service.boutiqueSlug];
@@ -866,37 +858,32 @@ function ServiceDetail() {
           </motion.div>
         )}
 
-        {/* ============ CTA ============ */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8 }}
-          viewport={{ once: true }}
-          className="mb-20 p-12 rounded-2xl text-center border border-accent/30 transition-colors duration-300 cta-shadow"
-        >
-          <h2 className="text-3xl md:text-4xl font-heading font-bold text-heading mb-4">
-            {t('serviceDetail.ctaTitle')}
-          </h2>
-          <p className="text-grey-light text-lg mb-8 max-w-2xl mx-auto">
-            {t('serviceDetail.ctaSubtitle')}
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            {service.boutiqueSlug && configuratorMap[service.boutiqueSlug] && (
-              <button
-                onClick={openConfigurator}
-                className="btn-primary cursor-pointer"
-              >
-                <ShoppingCart className="mr-2" size={20} />
-                {tx({ fr: 'Commander en ligne', en: 'Order online', es: 'Pedir en línea' })}
+        {/* ============ CTA ============
+            Affiche seulement si PAS de configurateur (sinon le configurateur
+            ci-dessous fait office de CTA - evite la redondance "Commander en
+            ligne" 2-3 fois sur la meme page pointe par l'audit UX) */}
+        {!hasConfigurator && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+            className="mb-20 p-12 rounded-2xl text-center border border-accent/30 transition-colors duration-300 cta-shadow"
+          >
+            <h2 className="text-3xl md:text-4xl font-heading font-bold text-heading mb-4">
+              {t('serviceDetail.ctaTitle')}
+            </h2>
+            <p className="text-grey-light text-lg mb-8 max-w-2xl mx-auto">
+              {t('serviceDetail.ctaSubtitle')}
+            </p>
+            <div className="flex justify-center">
+              <Link to="/contact" className="btn-primary">
+                {t('serviceDetail.requestQuote')}
                 <ArrowRight className="ml-2" size={20} />
-              </button>
-            )}
-            <Link to="/contact" className={service.boutiqueSlug && configuratorMap[service.boutiqueSlug] ? 'btn-outline' : 'btn-primary'}>
-              {t('serviceDetail.requestQuote')}
-              <ArrowRight className="ml-2" size={20} />
-            </Link>
-          </div>
-        </motion.div>
+              </Link>
+            </div>
+          </motion.div>
+        )}
 
         {/* ============ CONFIGURATEUR (bas de page) ============ */}
         {hasConfigurator && (() => {
@@ -1016,27 +1003,12 @@ function ServiceDetail() {
         )}
       </AnimatePresence>
 
-      {/* ============ BOUTONS FIXES ============ */}
-      <div className="fixed bottom-6 right-20 z-50 flex items-center gap-3">
-        {/* Scroll to top */}
-        <AnimatePresence>
-          {showScrollTop && (
-            <motion.button
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
-              transition={{ duration: 0.2 }}
-              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-              className="w-11 h-11 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-grey-light hover:text-accent hover:border-accent/40 transition-all shadow-lg flex items-center justify-center"
-              aria-label="Scroll to top"
-            >
-              <ArrowUp size={20} />
-            </motion.button>
-          )}
-        </AnimatePresence>
-
-        {/* Commander en ligne - fixe */}
-        {hasConfigurator && (
+      {/* ============ BOUTON STICKY "Commander en ligne" ============
+          Audit UX: le bouton "retour en haut" a ete retire (redondant - les
+          users scrollent naturellement). Il reste seulement WhatsApp (global
+          via MainLayout) + Commander en ligne. */}
+      {hasConfigurator && (
+        <div className="fixed bottom-6 right-20 z-50">
           <button
             onClick={openConfigurator}
             className="btn-primary shadow-lg shadow-accent/20 flex items-center gap-2 py-2.5 px-5 text-sm"
@@ -1044,8 +1016,8 @@ function ServiceDetail() {
             <ShoppingCart size={18} />
             {tx({ fr: 'Commander en ligne', en: 'Order online', es: 'Pedir en línea' })}
           </button>
-        )}
-      </div>
+        </div>
+      )}
     </>
   );
 }
