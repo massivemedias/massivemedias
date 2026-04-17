@@ -176,6 +176,14 @@ function StickerPreviewCanvas({
     const rect = e.currentTarget.getBoundingClientRect();
     const dx = (e.clientX - (rect.left + rect.width / 2)) / (rect.width / 2);
     const dy = (e.clientY - (rect.top + rect.height / 2)) / (rect.height / 2);
+    // Pour les stickers ronds: ignorer les survols en dehors du cercle visible
+    if (shape === 'round') {
+      const distFromCenter = Math.sqrt(dx * dx + dy * dy);
+      if (distFromCenter > 1) {
+        setTilt({ x: 0, y: 0 });
+        return;
+      }
+    }
     setTilt({ x: -dy * 10, y: dx * 10 });
   };
   const handleMouseLeave = () => setTilt({ x: 0, y: 0 });

@@ -1,5 +1,5 @@
-import { useState, useMemo, useRef } from 'react';
-import { ShoppingCart, Check, Sparkles, Upload, X, Image as ImageIcon } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { ShoppingCart, Check, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../../contexts/CartContext';
 import { useLang } from '../../i18n/LanguageContext';
@@ -33,9 +33,8 @@ function ConfiguratorStickers({ onFinishChange }) {
   const [notes, setNotes] = useState('');
   const [strokeColor, setStrokeColor] = useState('#ffffff');
   const [strokeWidth, setStrokeWidth] = useState(0);
-  const [localPreviewUrl, setLocalPreviewUrl] = useState(null); // preview local avant upload complet
+  const [localPreviewUrl, setLocalPreviewUrl] = useState(null); // preview derive des fichiers upload
   const [thumbUrl, setThumbUrl] = useState(null); // thumb PNG genere par le canvas
-  const localFileRef = useRef(null);
 
   const getStickerPrice = pd?.tiers
     ? (f, s, qty) => {
@@ -64,34 +63,11 @@ function ConfiguratorStickers({ onFinishChange }) {
 
   const canAddToCart = uploadedFiles.length > 0 || notes.trim().length > 0;
 
-  // Capture le fichier local pour preview instantane (avant meme l'upload serveur)
-  const handleLocalFileSelect = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (!file.type.startsWith('image/')) return; // seules les images pour le preview
-    if (localPreviewUrl) URL.revokeObjectURL(localPreviewUrl);
-    const url = URL.createObjectURL(file);
-    setLocalPreviewUrl(url);
-  };
-
-  // Quand l'upload serveur des fichiers finit, on synchronise le preview local
-  // avec la premiere image upload (au cas ou le client draggait dans FileUpload directement)
+  // Sync du preview avec les fichiers upload
   const handleFilesChange = (files) => {
     setUploadedFiles(files);
-    // Si aucun preview local + on a un fichier image upload, on l'utilise comme preview
-    if (!localPreviewUrl && files.length > 0) {
-      const firstImage = files.find(f => (f.type || '').startsWith('image/') || /\.(png|jpe?g|webp|svg)$/i.test(f.name || ''));
-      if (firstImage?.url) {
-        setLocalPreviewUrl(firstImage.url);
-      }
-    }
-  };
-
-  const handleClearUpload = () => {
-    if (localPreviewUrl) URL.revokeObjectURL(localPreviewUrl);
-    setLocalPreviewUrl(null);
-    setUploadedFiles([]);
-    if (localFileRef.current) localFileRef.current.value = '';
+    const firstImage = files.find(f => (f.type || '').startsWith('image/') || /\.(png|jpe?g|webp|svg)$/i.test(f.name || ''));
+    setLocalPreviewUrl(firstImage?.url || null);
   };
 
   const handleAddToCart = () => {
@@ -124,50 +100,6 @@ function ConfiguratorStickers({ onFinishChange }) {
 
   return (
     <>
-      {/* Upload CTA en haut - premiere action du user */}
-      <div className="mb-4 md:mb-6">
-        <label
-          className={`group flex items-center gap-3 md:gap-4 w-full px-4 md:px-5 py-3 md:py-4 rounded-xl cursor-pointer transition-all ${
-            localPreviewUrl
-              ? 'bg-white/[0.06] hover:bg-white/[0.09] shadow-md shadow-black/20 hover:shadow-lg hover:shadow-black/30'
-              : 'bg-accent/10 hover:bg-accent/20 shadow-md shadow-accent/10 hover:shadow-lg hover:shadow-accent/20'
-          }`}
-        >
-          <div className={`flex-shrink-0 w-10 h-10 md:w-12 md:h-12 rounded-lg flex items-center justify-center ${localPreviewUrl ? 'bg-accent/20 text-accent' : 'bg-accent text-white'}`}>
-            {localPreviewUrl ? <ImageIcon size={20} /> : <Upload size={20} />}
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="text-heading font-semibold text-sm md:text-base">
-              {localPreviewUrl
-                ? tx({ fr: 'Design charge ✓ - Essaie les finitions ci-dessous', en: 'Design loaded ✓ - Try the finishes below', es: 'Diseno cargado ✓ - Prueba los acabados' })
-                : tx({ fr: 'Upload ton design', en: 'Upload your design', es: 'Sube tu diseno' })}
-            </div>
-            <div className="text-grey-muted text-sm mt-0.5">
-              {localPreviewUrl
-                ? tx({ fr: 'Clique pour changer d\'image', en: 'Click to change image', es: 'Haz clic para cambiar' })
-                : tx({ fr: 'PNG, JPG, WebP, SVG - le preview se met a jour en direct', en: 'PNG, JPG, WebP, SVG - preview updates live', es: 'PNG, JPG, WebP, SVG - vista previa en vivo' })}
-            </div>
-          </div>
-          {localPreviewUrl && (
-            <button
-              type="button"
-              onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleClearUpload(); }}
-              className="flex-shrink-0 p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 transition-colors"
-              title={tx({ fr: 'Retirer', en: 'Remove', es: 'Quitar' })}
-            >
-              <X size={16} />
-            </button>
-          )}
-          <input
-            ref={localFileRef}
-            type="file"
-            accept="image/png,image/jpeg,image/webp,image/svg+xml"
-            className="hidden"
-            onChange={handleLocalFileSelect}
-          />
-        </label>
-      </div>
-
       {/* Preview canvas + selectors */}
       <div className="flex flex-col md:flex-row gap-4 md:gap-6 mb-4 md:mb-6">
         {/* Preview (canvas avec FX live) */}
