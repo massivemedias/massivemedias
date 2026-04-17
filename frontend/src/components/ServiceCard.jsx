@@ -14,7 +14,10 @@ function ServiceCard({ icon: Icon, title, description, link, image, mirror }) {
       transition={{ duration: 0.3 }}
       className="h-full flex flex-col"
     >
-      <Link to={link} className={`block overflow-hidden h-full group transition-colors duration-300 card-bg-bordered ${theme === 'light' ? 'rounded-xl' : 'rounded-2xl'}`}>
+      <Link
+        to={link}
+        className={`block overflow-hidden h-full group transition-all duration-300 ${theme === 'light' ? 'rounded-xl bg-white shadow-md shadow-black/5 hover:shadow-lg hover:shadow-black/10' : 'rounded-2xl bg-white/[0.04] shadow-lg shadow-black/20 hover:shadow-xl hover:shadow-black/30 hover:bg-white/[0.06]'}`}
+      >
         {/* Image */}
         {image && (
           <div className="relative aspect-[2/1] overflow-hidden flex items-center justify-center">
