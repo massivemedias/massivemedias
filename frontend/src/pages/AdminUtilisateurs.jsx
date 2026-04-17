@@ -10,6 +10,7 @@ import { useLang } from '../i18n/LanguageContext';
 import api from '../services/api';
 import { getClients, getArtistSubmissions } from '../services/adminService';
 import { getUserRoles, setUserRole } from '../services/userRoleService';
+import { useNotifications } from '../contexts/NotificationContext';
 import artistsData from '../data/artists';
 import tatoueursData from '../data/tatoueurs';
 
@@ -19,6 +20,10 @@ const GA_PROPERTY_ID = '525792501';
 
 function AdminUtilisateurs() {
   const { tx } = useLang();
+  const { markUsersViewed } = useNotifications();
+
+  // Marquer les nouveaux utilisateurs comme vus au chargement de la page
+  useEffect(() => { markUsersViewed(); }, [markUsersViewed]);
 
   // Users from Supabase
   const [users, setUsers] = useState([]);

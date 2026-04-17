@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import { getOrders, getOrderStats, updateOrderStatus, updateOrderNotes, updateOrderTracking, deleteOrder, getPrivateSales, deletePrivateSale, resendPrivateSaleEmail } from '../services/adminService';
+import { useNotifications } from '../contexts/NotificationContext';
 import { generateInvoicePDF } from '../utils/generateInvoice';
 
 const ORDER_STATUS = {
@@ -38,6 +39,10 @@ const dollars = (v) => `${((v || 0) / 100).toFixed(2)}$`;
 
 function AdminOrders() {
   const { tx } = useLang();
+  const { markOrdersViewed } = useNotifications();
+
+  // Marquer les nouvelles commandes comme vues au chargement de la page
+  useEffect(() => { markOrdersViewed(); }, [markOrdersViewed]);
 
   const [orders, setOrders] = useState([]);
   const [meta, setMeta] = useState({ page: 1, pageSize: 25, total: 0, pageCount: 0 });
