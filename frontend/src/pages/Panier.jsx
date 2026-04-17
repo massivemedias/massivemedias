@@ -74,7 +74,21 @@ function Panier() {
             >
               {/* Ligne 1: image + nom */}
               <div className="flex items-center gap-3 mb-3">
-                <img src={item.image} alt={item.productName || ''} className="w-14 h-14 sm:w-16 sm:h-16 rounded-lg object-cover flex-shrink-0" />
+                <img
+                  src={item.image || '/massive-favicon.svg'}
+                  alt=""
+                  aria-label={item.productName || ''}
+                  className="w-14 h-14 sm:w-16 sm:h-16 rounded-lg object-cover flex-shrink-0 bg-purple-main/30"
+                  onError={(e) => {
+                    // Si l'image (ex: blob URL mort apres reload) echoue,
+                    // on bascule sur un fallback visuel discret plutot que
+                    // d'afficher une icone cassee + alt-text geant
+                    if (!e.target.dataset.fallback) {
+                      e.target.dataset.fallback = '1';
+                      e.target.src = '/massive-favicon.svg';
+                    }
+                  }}
+                />
                 <div className="flex-grow min-w-0">
                   <h3 className="font-semibold text-heading text-sm sm:text-base leading-tight">{item.productName}</h3>
                   <p className="text-grey-muted text-xs sm:text-sm truncate">

@@ -528,12 +528,37 @@ function roundedRectPath(ctx, x, y, w, h, r) {
   ctx.closePath();
 }
 
-// Exporte le canvas en blob PNG (pour panier/thumb)
+// Exporte le canvas en data URL PNG (pour panier/thumb/localStorage)
+// IMPORTANT: data URL au lieu de blob URL - les blob URLs meurent au changement
+// de page (session-scoped) ce qui cassait les images du panier quand le client
+// navigait depuis le configurateur vers /panier.
+// Data URL = base64 inline, survit au reload + navigation + serialization JSON.
+// On reduit la taille a 256px pour eviter d'exploser le localStorage (data URL
+// en base64 ~33% plus gros que binaire).
 export function canvasToBlobUrl(canvas) {
-  return new Promise((resolve, reject) => {
-    canvas.toBlob((blob) => {
-      if (!blob) return reject(new Error('Impossible de generer le PNG'));
-      resolve(URL.createObjectURL(blob));
-    }, 'image/png');
+  return new Promise((resolve) => {
+    try {
+      // Resize to thumbnail dims for storage efficiency (256x256 max)
+      const thumb = document.createElement('canvas');
+      const maxDim = 256;
+      const ratio = Math.min(maxDim / canvas.width, maxDim / canvas.height, 1);
+      thumb.width = Math.round(canvas.width * ratio);
+      thumb.height = Math.round(canvas.height * ratio);
+      const ctx = thumb.getContext('2d');
+      ctx.drawImage(canvas, 0, 0, thumb.width, thumb.height);
+      // toDataURL avec compression PNG (lossless pour stickers qui ont souvent
+      // peu de couleurs). Si c'est trop gros on bascule sur JPEG q=0.85.
+      let dataUrl = thumb.toDataURL('image/png');
+      if (dataUrl.length > 120 * 1024) {
+        dataUrl = thumb.toDataURL('image/jpeg', 0.85);
+      }
+      resolve(dataUrl);
+    } catch (e) {
+      // Fallback vers blob URL si toDataURL echoue (ex: canvas tainted)
+      canvas.toBlob((blob) => {
+        if (!blob) return resolve('');
+        resolve(URL.createObjectURL(blob));
+      }, 'image/png');
+    }
   });
 }
