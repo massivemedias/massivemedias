@@ -111,13 +111,20 @@ function FileUpload({ files = [], onFilesChange, label, maxFiles = 5, compact = 
     setUploading(true);
     try {
       const uploaded = [];
-      const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'unknown';
-      const folderName = window.__artistSlug || userName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+      const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'guest';
+      // Si pas d'artistSlug contextuel et pas d'utilisateur, on utilise 'client-uploads' comme dossier generique
+      // (evite 'unknown' qui pourrait creer des problemes de permissions Google Drive)
+      const defaultFolder = user ? userName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') : 'client-uploads';
+      const folderName = window.__artistSlug || defaultFolder;
 
       for (const file of toUpload) {
         // ALL files go to Google Drive via backend (originals preserved)
         // Backend also creates WebP for site display
-        setUploadStatus(tx({ fr: 'Upload vers le serveur securise...', en: 'Uploading to secure server...', es: 'Subiendo al servidor seguro...' }));
+        setUploadStatus(tx({
+          fr: `Upload de ${file.name}... (peut prendre 30s si serveur en veille)`,
+          en: `Uploading ${file.name}... (may take 30s if server is waking up)`,
+          es: `Subiendo ${file.name}... (puede tardar 30s si el servidor esta despertando)`,
+        }));
         const formData = new FormData();
         formData.append('file', file);
         formData.append('artistSlug', folderName);
@@ -140,7 +147,33 @@ function FileUpload({ files = [], onFilesChange, label, maxFiles = 5, compact = 
       setUploadStatus('');
       onFilesChange([...files, ...uploaded]);
     } catch (err) {
-      setError(tx({ fr: 'Erreur lors de l\'upload. Reessayez.', en: 'Upload failed. Please try again.', es: 'Error al subir. Intentalo de nuevo.' }));
+      // Log technique pour debug + message clair pour l'utilisateur
+      console.error('FileUpload error:', err);
+      const serverMsg = err?.response?.data?.error?.message || err?.response?.data?.message || err?.message || '';
+      const status = err?.response?.status;
+      let friendly;
+      if (err?.code === 'ECONNABORTED' || /timeout/i.test(err?.message || '')) {
+        friendly = tx({
+          fr: "Temps d'attente depassé. Le serveur se reveillait peut-etre - reessayez dans 10 secondes.",
+          en: 'Request timed out. Server may have been waking up - please try again in 10 seconds.',
+          es: 'Tiempo de espera agotado. Reintenta en 10 segundos.',
+        });
+      } else if (status === 413) {
+        friendly = tx({ fr: 'Fichier trop volumineux pour le serveur.', en: 'File too large for the server.', es: 'Archivo demasiado grande para el servidor.' });
+      } else if (status >= 500 || !status) {
+        friendly = tx({
+          fr: `Serveur injoignable. Contactez-nous directement: massivemedias@gmail.com ou WhatsApp +1 514 653 1423. ${serverMsg ? '(' + serverMsg + ')' : ''}`,
+          en: `Server unreachable. Contact us directly: massivemedias@gmail.com or WhatsApp +1 514 653 1423.`,
+          es: `Servidor inaccesible. Contactanos: massivemedias@gmail.com o WhatsApp +1 514 653 1423.`,
+        });
+      } else {
+        friendly = tx({
+          fr: `Erreur upload (${status || '?'}): ${serverMsg || 'Réessayez ou envoyez-nous votre fichier par courriel.'}`,
+          en: `Upload error (${status || '?'}): ${serverMsg || 'Retry or send us your file by email.'}`,
+          es: `Error de carga (${status || '?'}): ${serverMsg || 'Reintenta o envianos el archivo por correo.'}`,
+        });
+      }
+      setError(friendly);
     } finally {
       setUploading(false);
       setUploadStatus('');
