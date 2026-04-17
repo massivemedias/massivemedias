@@ -219,36 +219,44 @@ function ConfiguratorStickers({ onFinishChange }) {
         </div>
 
         {/* Right: Selectors */}
-        <div className="flex-1 min-w-0 space-y-5">
-          {/* Finish selector - grille 3 (mobile) / 6 (desktop) egale */}
-          <div>
-            <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-2.5">
-              {tx({ fr: 'Finition', en: 'Finish', es: 'Acabado' })}
-            </label>
-            <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
-              {stickerFinishes.map(f => (
-                <button
-                  key={f.id}
-                  onClick={() => { setFinish(f.id); onFinishChange?.(f.id); }}
-                  className={`flex flex-col items-center justify-center py-3 px-2 rounded-lg text-sm font-medium transition-all border-2 ${finish === f.id
-                    ? 'border-accent option-selected'
-                    : 'border-transparent hover:border-grey-muted/30 option-default'
-                  }`}
-                >
-                  <span className={`w-5 h-5 rounded-full mb-1.5 border ${
-                    f.id === 'matte' ? 'bg-gradient-to-br from-gray-300 to-gray-400 border-gray-500' :
-                    f.id === 'glossy' ? 'bg-white border-gray-300 shadow-sm' :
-                    f.id === 'holographic' ? 'bg-gradient-to-br from-pink-300 via-purple-300 to-cyan-300 border-transparent' :
-                    f.id === 'broken-glass' ? 'bg-gradient-to-br from-cyan-200 via-white to-cyan-400 border-cyan-300' :
-                    f.id === 'stars' ? 'bg-gradient-to-br from-yellow-200 via-amber-300 to-yellow-400 border-yellow-300' :
-                    f.id === 'dots' ? 'bg-gradient-to-br from-orange-200 via-rose-300 to-pink-400 border-rose-300' :
-                    'bg-white/80 border-gray-300'
-                  }`} />
-                  <span className="text-heading leading-tight text-center font-semibold text-sm">
-                    {tx({ fr: f.labelFr.replace('Vinyle ', ''), en: f.labelEn.replace(' Vinyl', ''), es: f.labelEn.replace(' Vinyl', '') })}
-                  </span>
-                </button>
-              ))}
+        <div className="flex-1 min-w-0 space-y-4 md:space-y-5">
+          {/* Votre design + Finition (cote a cote) */}
+          <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-3 md:gap-4 items-start">
+            <FileUpload
+              files={uploadedFiles}
+              onFilesChange={handleFilesChange}
+              label={tx({ fr: 'Votre design (haute def)', en: 'Your design (high res)', es: 'Tu diseño (alta res)' })}
+              compact
+            />
+            <div>
+              <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-2">
+                {tx({ fr: 'Finition', en: 'Finish', es: 'Acabado' })}
+              </label>
+              <div className="grid grid-cols-3 md:grid-cols-6 gap-1.5">
+                {stickerFinishes.map(f => (
+                  <button
+                    key={f.id}
+                    onClick={() => { setFinish(f.id); onFinishChange?.(f.id); }}
+                    className={`flex flex-col items-center justify-center py-1.5 px-1 rounded-lg text-xs font-medium transition-all border-2 ${finish === f.id
+                      ? 'border-accent option-selected'
+                      : 'border-transparent hover:border-grey-muted/30 option-default'
+                    }`}
+                  >
+                    <span className={`w-3.5 h-3.5 rounded-full mb-1 border ${
+                      f.id === 'matte' ? 'bg-gradient-to-br from-gray-300 to-gray-400 border-gray-500' :
+                      f.id === 'glossy' ? 'bg-white border-gray-300 shadow-sm' :
+                      f.id === 'holographic' ? 'bg-gradient-to-br from-pink-300 via-purple-300 to-cyan-300 border-transparent' :
+                      f.id === 'broken-glass' ? 'bg-gradient-to-br from-cyan-200 via-white to-cyan-400 border-cyan-300' :
+                      f.id === 'stars' ? 'bg-gradient-to-br from-yellow-200 via-amber-300 to-yellow-400 border-yellow-300' :
+                      f.id === 'dots' ? 'bg-gradient-to-br from-orange-200 via-rose-300 to-pink-400 border-rose-300' :
+                      'bg-white/80 border-gray-300'
+                    }`} />
+                    <span className="text-heading leading-tight text-center font-semibold text-[11px]">
+                      {tx({ fr: f.labelFr.replace('Vinyle ', ''), en: f.labelEn.replace(' Vinyl', ''), es: f.labelEn.replace(' Vinyl', '') })}
+                    </span>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -297,50 +305,44 @@ function ConfiguratorStickers({ onFinishChange }) {
               })}
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* Votre design + Notes + Prix cote a cote */}
-      <div className="grid grid-cols-1 md:grid-cols-[2fr_3fr_2fr] gap-3 md:gap-4 mb-4 md:mb-5 items-start">
-        <FileUpload
-          files={uploadedFiles}
-          onFilesChange={handleFilesChange}
-          label={tx({ fr: 'Votre design (haute def)', en: 'Your design (high res)', es: 'Tu diseño (alta res)' })}
-          compact
-        />
-        <div>
-          <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-2">
-            {tx({ fr: 'Notes / Description', en: 'Notes / Description', es: 'Notas / Descripción' })}
-          </label>
-          <textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            rows={3}
-            placeholder={tx({ fr: 'Décrivez le produit souhaité (couleurs, style, details...)', en: 'Describe the desired product (colors, style, details...)', es: 'Describe el producto deseado (colores, estilo, detalles...)' })}
-            className="w-full min-h-[80px] md:min-h-[100px] rounded-lg border-2 border-grey-muted/20 bg-transparent px-3 py-2.5 md:px-4 md:py-3 text-sm text-heading placeholder:text-grey-muted/50 focus:border-accent focus:outline-none transition-colors resize-none"
-          />
-        </div>
-        {priceInfo && (
-          <div className="p-4 rounded-xl highlight-bordered">
-            <div className="flex items-baseline gap-2 flex-wrap">
-              <span className="text-2xl md:text-3xl font-heading font-bold text-heading">{priceInfo.price}$</span>
-              <span className="text-grey-muted text-xs">
-                ({priceInfo.unitPrice.toFixed(2)}$/u)
-              </span>
+          {/* Notes + Prix cote a cote */}
+          <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-3 md:gap-4 items-start">
+            <div>
+              <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-2">
+                {tx({ fr: 'Notes / Description', en: 'Notes / Description', es: 'Notas / Descripción' })}
+              </label>
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                rows={3}
+                placeholder={tx({ fr: 'Décrivez le produit souhaité (couleurs, style, details...)', en: 'Describe the desired product (colors, style, details...)', es: 'Describe el producto deseado (colores, estilo, detalles...)' })}
+                className="w-full min-h-[80px] md:min-h-[100px] rounded-lg border-2 border-grey-muted/20 bg-transparent px-3 py-2.5 md:px-4 md:py-3 text-sm text-heading placeholder:text-grey-muted/50 focus:border-accent focus:outline-none transition-colors resize-none"
+              />
             </div>
-            <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-              {(finish === 'holographic' || finish === 'broken-glass' || finish === 'stars' || finish === 'dots') && (
-                <span className="text-accent text-xs font-medium">
-                  {tx({ fr: 'Effets Speciaux', en: 'Special Effects', es: 'Efectos Especiales' })}
-                </span>
-              )}
-              <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-accent/10 text-accent">
-                <Sparkles size={12} />
-                {tx({ fr: 'Design inclus', en: 'Design included', es: 'Diseño incluido' })}
-              </span>
-            </div>
+            {priceInfo && (
+              <div className="p-4 rounded-xl highlight-bordered">
+                <div className="flex items-baseline gap-2 flex-wrap">
+                  <span className="text-2xl md:text-3xl font-heading font-bold text-heading">{priceInfo.price}$</span>
+                  <span className="text-grey-muted text-xs">
+                    ({priceInfo.unitPrice.toFixed(2)}$/u)
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                  {(finish === 'holographic' || finish === 'broken-glass' || finish === 'stars' || finish === 'dots') && (
+                    <span className="text-accent text-xs font-medium">
+                      {tx({ fr: 'Effets Speciaux', en: 'Special Effects', es: 'Efectos Especiales' })}
+                    </span>
+                  )}
+                  <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-accent/10 text-accent">
+                    <Sparkles size={12} />
+                    {tx({ fr: 'Design inclus', en: 'Design included', es: 'Diseño incluido' })}
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
 
       {/* Add to cart */}
