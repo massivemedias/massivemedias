@@ -277,14 +277,15 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
     };
 
     // Verifier le slug artiste du user pour valider isArtistOwnPrint (securite)
+    // artistSlug est stocke dans api::user-role, pas dans users-permissions.user
     let verifiedUserArtistSlug: string | null = null;
     if (supabaseUserId) {
       try {
-        const users = await strapi.documents('plugin::users-permissions.user' as any).findMany({
+        const userRoles = await strapi.documents('api::user-role.user-role' as any).findMany({
           filters: { supabaseUserId } as any,
         });
-        if (users.length > 0) {
-          verifiedUserArtistSlug = (users[0] as any).artistSlug || null;
+        if (userRoles.length > 0) {
+          verifiedUserArtistSlug = (userRoles[0] as any).artistSlug || null;
         }
       } catch (_) { /* ignore */ }
     }
