@@ -122,11 +122,6 @@ function ConfiguratorStickers({ onFinishChange }) {
     setTimeout(() => setAdded(false), 2000);
   };
 
-  const handleShapeChange = (s) => {
-    setShape(s);
-    setQtyIndex(0);
-  };
-
   return (
     <>
       {/* Upload CTA en haut - premiere action du user */}
@@ -192,16 +187,21 @@ function ConfiguratorStickers({ onFinishChange }) {
                 {tx({ fr: finishLabel?.labelFr, en: finishLabel?.labelEn, es: finishLabel?.labelEn })}
               </span>
               <span className="block text-grey-muted text-sm mt-0.5">
-                {sizeLabel} · {tx({ fr: shapeLabel?.labelFr, en: shapeLabel?.labelEn, es: shapeLabel?.labelEn })}
+                {sizeLabel} · {tx({ fr: 'Die-cut', en: 'Die-cut', es: 'Die-cut' })}
               </span>
-              {!localPreviewUrl && (
-                <span className="block text-grey-muted/70 text-sm mt-1.5 italic">
-                  {tx({ fr: 'Aperçu avec logo Massive - upload ton design pour voir ton sticker', en: 'Preview with Massive logo - upload your design', es: 'Vista previa con logo Massive - sube tu diseno' })}
-                </span>
-              )}
             </div>
 
-            {/* Controles stroke (contour) - visible surtout sur diecut mais dispo partout */}
+            {/* Votre design (upload) - en haut du contour */}
+            <div className="mt-3">
+              <FileUpload
+                files={uploadedFiles}
+                onFilesChange={handleFilesChange}
+                label={tx({ fr: 'Votre design (haute def)', en: 'Your design (high res)', es: 'Tu diseño (alta res)' })}
+                compact
+              />
+            </div>
+
+            {/* Controles stroke (contour) */}
             <div className="mt-3 p-2.5 rounded-lg bg-black/10 space-y-2">
               <label className="block text-sm uppercase tracking-wider text-grey-muted font-semibold">
                 {tx({ fr: 'Contour (optionnel)', en: 'Outline (optional)', es: 'Contorno (opcional)' })}
@@ -262,35 +262,6 @@ function ConfiguratorStickers({ onFinishChange }) {
             </div>
           </div>
 
-          {/* Forme - grille 4 egale */}
-          <div>
-            <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-2.5">
-              {tx({ fr: 'Forme', en: 'Shape', es: 'Forma' })}
-            </label>
-            <div className="grid grid-cols-4 gap-2">
-              {stickerShapes.map(s => (
-                <button
-                  key={s.id}
-                  onClick={() => handleShapeChange(s.id)}
-                  className={`flex flex-col items-center justify-center py-3 px-2 rounded-lg text-sm font-medium transition-all border-2 ${shape === s.id
-                    ? 'border-accent option-selected'
-                    : 'border-transparent hover:border-grey-muted/30 option-default'
-                  }`}
-                >
-                  <span className={`mb-1.5 flex-shrink-0 ${
-                    s.id === 'round' ? 'w-6 h-6 rounded-full border-2 border-current' :
-                    s.id === 'square' ? 'w-6 h-6 rounded-sm border-2 border-current' :
-                    s.id === 'rectangle' ? 'w-7 h-5 rounded-sm border-2 border-current' :
-                    'w-7 h-6 border-2 border-current border-dashed rounded-lg'
-                  } text-grey-muted`} />
-                  <span className="text-heading leading-tight text-center font-semibold text-sm">
-                    {tx({ fr: s.labelFr, en: s.labelEn, es: s.labelEn })}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
-
           {/* Taille - grille 4 egale */}
           <div>
             <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-2.5">
@@ -339,14 +310,8 @@ function ConfiguratorStickers({ onFinishChange }) {
         </div>
       </div>
 
-      {/* Upload fichier complet (workflow normal Google Drive) + Notes */}
-      <div className="grid grid-cols-1 md:grid-cols-[2fr_3fr] gap-3 md:gap-4 mb-4 md:mb-5">
-        <FileUpload
-          files={uploadedFiles}
-          onFilesChange={handleFilesChange}
-          label={tx({ fr: 'Votre design (haute def)', en: 'Your design (high res)', es: 'Tu diseño (alta res)' })}
-          compact
-        />
+      {/* Notes + Prix cote a cote */}
+      <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-3 md:gap-4 mb-4 md:mb-5 items-start">
         <div>
           <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-2">
             {tx({ fr: 'Notes / Description', en: 'Notes / Description', es: 'Notas / Descripción' })}
@@ -359,30 +324,28 @@ function ConfiguratorStickers({ onFinishChange }) {
             className="w-full min-h-[80px] md:min-h-[100px] rounded-lg border-2 border-grey-muted/20 bg-transparent px-3 py-2.5 md:px-4 md:py-3 text-sm text-heading placeholder:text-grey-muted/50 focus:border-accent focus:outline-none transition-colors resize-none"
           />
         </div>
-      </div>
-
-      {/* Price display */}
-      {priceInfo && (
-        <div className="p-4 md:p-5 rounded-xl mb-4 md:mb-5 highlight-bordered">
-          <div className="flex items-baseline gap-3">
-            <span className="text-2xl md:text-3xl font-heading font-bold text-heading">{priceInfo.price}$</span>
-            <span className="text-grey-muted text-sm md:text-sm">
-              ({priceInfo.unitPrice.toFixed(2)}$/sticker)
-            </span>
-          </div>
-          <div className="flex items-center gap-2 mt-1.5 md:mt-2">
-            {(finish === 'holographic' || finish === 'broken-glass' || finish === 'stars' || finish === 'dots') && (
-              <span className="text-accent text-sm font-medium">
-                {tx({ fr: 'Effets Speciaux', en: 'Special Effects', es: 'Efectos Especiales' })}
+        {priceInfo && (
+          <div className="p-4 rounded-xl highlight-bordered">
+            <div className="flex items-baseline gap-2 flex-wrap">
+              <span className="text-2xl md:text-3xl font-heading font-bold text-heading">{priceInfo.price}$</span>
+              <span className="text-grey-muted text-xs">
+                ({priceInfo.unitPrice.toFixed(2)}$/u)
               </span>
-            )}
-            <span className="inline-flex items-center gap-1 text-sm font-medium px-2 py-0.5 rounded-full bg-accent/10 text-accent">
-              <Sparkles size={12} />
-              {tx({ fr: 'Design inclus', en: 'Design included', es: 'Diseño incluido' })}
-            </span>
+            </div>
+            <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+              {(finish === 'holographic' || finish === 'broken-glass' || finish === 'stars' || finish === 'dots') && (
+                <span className="text-accent text-xs font-medium">
+                  {tx({ fr: 'Effets Speciaux', en: 'Special Effects', es: 'Efectos Especiales' })}
+                </span>
+              )}
+              <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-accent/10 text-accent">
+                <Sparkles size={12} />
+                {tx({ fr: 'Design inclus', en: 'Design included', es: 'Diseño incluido' })}
+              </span>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Add to cart */}
       <button onClick={handleAddToCart} disabled={!canAddToCart} className={`btn-primary w-full justify-center text-sm md:text-base py-3 md:py-3.5 mb-2 md:mb-3 ${!canAddToCart ? 'opacity-40 cursor-not-allowed' : ''}`}>
