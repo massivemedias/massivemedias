@@ -17,6 +17,7 @@ const getStripe = () => {
 const STICKER_STANDARD_TIERS: Record<number, number> = { 25: 30, 50: 47.50, 100: 85, 250: 200, 500: 375 };
 const STICKER_FX_TIERS: Record<number, number> = { 25: 35, 50: 57.50, 100: 100, 250: 225, 500: 425 };
 const FX_FINISHES = ['holographic', 'broken-glass', 'stars'];
+const ARTIST_DISCOUNT = 0.25; // Rabais artiste sur ses propres produits
 
 // Business card pricing tiers for server-side validation
 const BUSINESS_CARD_TIERS: Record<string, Record<number, number>> = {
@@ -264,6 +265,7 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
     // ET validation des prix des artist-prints (anti-manipulation) + check sold/private token
     const FRAME_PRICES_FALLBACK: Record<string, number> = { postcard: 20, a4: 20, a3: 30, a3plus: 35, a2: 40 };
     let subtotal = 0;
+    let artistDiscountTotal = 0;
 
     // Charger une seule fois les artistes actifs pour valider les prints
     let cachedArtists: any[] | null = null;
@@ -273,6 +275,19 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
       }
       return cachedArtists;
     };
+
+    // Verifier le slug artiste du user pour valider isArtistOwnPrint (securite)
+    let verifiedUserArtistSlug: string | null = null;
+    if (supabaseUserId) {
+      try {
+        const users = await strapi.documents('plugin::users-permissions.user' as any).findMany({
+          filters: { supabaseUserId } as any,
+        });
+        if (users.length > 0) {
+          verifiedUserArtistSlug = (users[0] as any).artistSlug || null;
+        }
+      } catch (_) { /* ignore */ }
+    }
 
     for (const item of items) {
       let validPrice = item.totalPrice || 0;
@@ -355,7 +370,25 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
       }
 
       subtotal += validPrice;
+
+      // --- Rabais artiste 25% sur ses propres produits ---
+      // Securite: verifier que le user est bien l'artiste du produit (pas juste le flag client)
+      if (item.isArtistOwnPrint && verifiedUserArtistSlug) {
+        const pid = item.productId || '';
+        const claimedSlug = item.artistSlug || '';
+        const isLegitimate = claimedSlug === verifiedUserArtistSlug &&
+          (pid.startsWith(`artist-print-${verifiedUserArtistSlug}-`) ||
+           pid.startsWith(`artist-sticker-pack-${verifiedUserArtistSlug}-`));
+        if (isLegitimate) {
+          artistDiscountTotal += Math.round(validPrice * ARTIST_DISCOUNT);
+        } else {
+          strapi.log.warn(`isArtistOwnPrint rejete: user=${verifiedUserArtistSlug} claimed=${claimedSlug} pid=${pid}`);
+        }
+      }
     }
+
+    // Appliquer le rabais artiste sur le subtotal
+    subtotal = subtotal - artistDiscountTotal;
 
     // PROMO_CODES importe de src/utils/promo-codes.ts
     let promoDiscount = 0;

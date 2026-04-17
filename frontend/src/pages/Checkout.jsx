@@ -68,10 +68,13 @@ function Checkout() {
     if (error) setError('');
   };
 
-  // Rabais artiste 30% sur ses propres prints
+  // Rabais artiste 25% sur ses propres prints/stickers
   const artistDiscountTotal = items
     .filter(i => i.isArtistOwnPrint)
-    .reduce((sum, i) => sum + Math.round(i.totalPrice * ARTIST_DISCOUNT), 0);
+    .reduce((sum, i) => {
+      const lineTotal = i.unitPrice != null ? i.quantity * i.unitPrice : i.totalPrice;
+      return sum + Math.round((lineTotal || 0) * ARTIST_DISCOUNT);
+    }, 0);
   // Promo code discount applied on full cart total
   const promoDiscount = discountAmount || 0;
   const subtotal = cartTotal - artistDiscountTotal - promoDiscount;
@@ -436,7 +439,7 @@ function Checkout() {
                     </div>
                     {artistDiscountTotal > 0 && (
                       <div className="flex justify-between items-center text-sm">
-                        <span className="text-green-400">{tx({ fr: 'Rabais artiste (-30%)', en: 'Artist discount (-30%)', es: 'Descuento artista (-30%)' })}</span>
+                        <span className="text-green-400">{tx({ fr: `Rabais artiste (-${Math.round(ARTIST_DISCOUNT * 100)}%)`, en: `Artist discount (-${Math.round(ARTIST_DISCOUNT * 100)}%)`, es: `Descuento artista (-${Math.round(ARTIST_DISCOUNT * 100)}%)` })}</span>
                         <span className="text-green-400">-{artistDiscountTotal.toFixed(2)}$</span>
                       </div>
                     )}
