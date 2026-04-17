@@ -191,16 +191,6 @@ function ConfiguratorStickers({ onFinishChange }) {
               </span>
             </div>
 
-            {/* Votre design (upload) - en haut du contour */}
-            <div className="mt-3">
-              <FileUpload
-                files={uploadedFiles}
-                onFilesChange={handleFilesChange}
-                label={tx({ fr: 'Votre design (haute def)', en: 'Your design (high res)', es: 'Tu diseño (alta res)' })}
-                compact
-              />
-            </div>
-
             {/* Controles stroke (contour) */}
             <div className="mt-3 p-2.5 rounded-lg bg-black/10 space-y-2">
               <label className="block text-sm uppercase tracking-wider text-grey-muted font-semibold">
@@ -310,8 +300,14 @@ function ConfiguratorStickers({ onFinishChange }) {
         </div>
       </div>
 
-      {/* Notes + Prix cote a cote */}
-      <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-3 md:gap-4 mb-4 md:mb-5 items-start">
+      {/* Votre design + Notes + Prix cote a cote */}
+      <div className="grid grid-cols-1 md:grid-cols-[2fr_3fr_2fr] gap-3 md:gap-4 mb-4 md:mb-5 items-start">
+        <FileUpload
+          files={uploadedFiles}
+          onFilesChange={handleFilesChange}
+          label={tx({ fr: 'Votre design (haute def)', en: 'Your design (high res)', es: 'Tu diseño (alta res)' })}
+          compact
+        />
         <div>
           <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-2">
             {tx({ fr: 'Notes / Description', en: 'Notes / Description', es: 'Notas / Descripción' })}
