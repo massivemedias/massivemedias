@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import { MapPin } from 'lucide-react';
 import { thumb } from '../utils/paths';
 import SEO from '../components/SEO';
@@ -53,6 +54,15 @@ function APropos() {
             transition={{ duration: 0.8 }}
             className="max-w-4xl mx-auto"
           >
+            <div className="flex items-center justify-center gap-2 mb-3 text-sm">
+              <Link to="/" className="text-grey-muted hover:text-accent transition-colors">
+                {tx({ fr: 'Accueil', en: 'Home', es: 'Inicio' })}
+              </Link>
+              <span className="text-grey-muted">/</span>
+              <span className="text-accent">
+                {tx({ fr: 'À propos', en: 'About', es: 'Acerca' })}
+              </span>
+            </div>
             <h1 className="text-5xl md:text-7xl font-heading font-bold text-heading mb-6">
               {(content && bl(content, 'aboutHeroTitle', lang)) || t('aboutPage.hero.title')}
             </h1>
