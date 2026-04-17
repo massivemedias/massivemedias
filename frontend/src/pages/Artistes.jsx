@@ -250,13 +250,26 @@ function Artistes() {
               {tx({ fr: 'Artistes', en: 'Artists', es: 'Artistas' })}
             </h1>
 
-            <p className="text-base text-grey-light max-w-xl">
+            <p className="text-base md:text-lg text-grey-light max-w-2xl leading-relaxed mb-4">
               {tx({
-                fr: "Photographes, peintres, tatoueurs. Decouvrez les createurs de Massive Medias.",
-                en: 'Photographers, painters, tattoo artists. Discover the creators of Massive Medias.',
-                es: 'Fotógrafos, pintores, tatuadores. Descubre los creadores de Massive Medias.',
+                fr: "Ces artistes travaillent avec Massive pour imprimer, distribuer et promouvoir leur travail. Chaque print et sticker que vous voyez ici est produit dans notre studio au Mile-End.",
+                en: 'These artists work with Massive to print, distribute and promote their work. Every print and sticker you see here is produced in our Mile-End studio.',
+                es: 'Estos artistas trabajan con Massive para imprimir, distribuir y promover su trabajo. Cada print y sticker que ves aquí es producido en nuestro estudio del Mile-End.',
               })}
             </p>
+
+            {/* CTA Rejoindre la plateforme */}
+            <Link
+              to="/contact?tab=artiste"
+              className="inline-flex items-center gap-2 text-accent font-semibold text-sm hover:text-accent-hover transition-colors group"
+            >
+              {tx({
+                fr: 'Tu es artiste ? Rejoins la plateforme',
+                en: 'Are you an artist? Join the platform',
+                es: '¿Eres artista? Únete a la plataforma',
+              })}
+              <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
+            </Link>
 
           </motion.div>
         </div>
