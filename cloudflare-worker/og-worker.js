@@ -34,7 +34,11 @@ const ARTISTS = {
   'no-pixl': { name: 'No Pixl', taglineFr: 'Photographie evenementielle & paysages', taglineEn: 'Event Photography & Landscapes' },
   'cornelia-rose': { name: 'Cornelia Rose', taglineFr: 'Art visionnaire & body painting', taglineEn: 'Visionary Art & Body Painting' },
   'eric-sanchez': { name: 'Eric Sanchez', taglineFr: 'Photographie musicale & portrait', taglineEn: 'Music Photography & Portrait' },
+  'psyqu33n': { name: 'Psyqu33n', taglineFr: 'Ombre & lumiere - art visionnaire', taglineEn: 'Shadow & Light - Visionary Art' },
 };
+
+// Sous-domaines reserves qui ne doivent PAS rediriger (services internes)
+const RESERVED_SUBDOMAINS = new Set(['www', 'api', 'admin', 'mm-admin', 'cms', 'mail', 'dev', 'staging', 'preview']);
 
 // --- SEO Meta par route ---
 
@@ -544,6 +548,27 @@ export default {
     // Tatoueur subdomain for real users: redirect to main site tatoueur page
     if (subdomain && tatoueurData) {
       const targetUrl = `${SITE_URL}/tatoueurs/${subdomain}${url.pathname === '/' ? '' : url.pathname}${url.search}`;
+      return Response.redirect(targetUrl, 302);
+    }
+
+    // Fallback: tout sous-domaine non-reserve redirige vers /artistes/:slug
+    // Le site principal gere le 404 si l'artiste n'existe pas dans artists.js/CMS
+    // Evite le 404 GitHub Pages si un artiste est ajoute sans mise a jour du Worker
+    if (subdomain && !RESERVED_SUBDOMAINS.has(subdomain)) {
+      if (isCrawler(userAgent)) {
+        // Crawler sur subdomain inconnu: generer des meta OG generiques
+        const artistName = subdomain.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+        const genericArtist = {
+          name: artistName,
+          taglineFr: 'Artiste sur Massive Medias',
+          taglineEn: 'Artist on Massive Medias',
+        };
+        const html = buildOGPage(subdomain, genericArtist);
+        return new Response(html, {
+          headers: { 'Content-Type': 'text/html; charset=utf-8' },
+        });
+      }
+      const targetUrl = `${SITE_URL}/artistes/${subdomain}${url.pathname === '/' ? '' : url.pathname}${url.search}`;
       return Response.redirect(targetUrl, 302);
     }
 

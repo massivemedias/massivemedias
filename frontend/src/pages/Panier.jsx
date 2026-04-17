@@ -104,11 +104,16 @@ function Panier() {
               <div className="flex items-center justify-between pl-0 sm:pl-[68px]">
                 <div className="flex items-center gap-2">
                   {TIERED_PRODUCTS.includes(item.productId) || item.productId?.startsWith('artist-sticker-pack-') ? (
-                    <span className="text-heading font-bold text-sm px-2">
-                      {item.packComposition
-                        ? `${item.packComposition.packCount} × ${item.packComposition.packSize} = ${item.quantity} ${tx({ fr: 'stickers', en: 'stickers', es: 'stickers' })}`
-                        : `${item.quantity} ${tx({ fr: 'unites', en: 'units', es: 'unidades' })}`}
-                    </span>
+                    <div className="px-2 leading-tight">
+                      <span className="text-heading font-semibold text-sm">
+                        {item.quantity} {tx({ fr: 'stickers', en: 'stickers', es: 'stickers' })}
+                      </span>
+                      {item.packComposition && (
+                        <span className="block text-grey-muted text-xs">
+                          {item.packComposition.packCount} × {item.packComposition.packSize}
+                        </span>
+                      )}
+                    </div>
                   ) : (
                   <>
                   <button
@@ -134,8 +139,8 @@ function Panier() {
                         <span className="line-through text-grey-muted text-sm mr-1">{item.totalPrice}$</span>
                         {Math.round(item.totalPrice * (1 - ARTIST_DISCOUNT))}$
                       </p>
-                      <p className="text-green-400 text-xs font-semibold flex items-center gap-1 justify-end">
-                        <Percent size={10} /> -{Math.round(ARTIST_DISCOUNT * 100)}%
+                      <p className="text-green-400 text-xs font-semibold text-right">
+                        -{Math.round(ARTIST_DISCOUNT * 100)}%
                       </p>
                     </>
                   ) : (
