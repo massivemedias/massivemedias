@@ -538,12 +538,20 @@ function Home() {
           className="max-w-6xl mx-auto"
         >
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10 items-center">
-            {/* Galerie d'images - mosaic */}
+            {/* Galerie d'images - mosaic 4 photos */}
             <div className="grid grid-cols-2 gap-3">
               <div className="col-span-2 rounded-xl overflow-hidden aspect-[4/3]">
                 <img
                   src={thumb('/images/realisations/pogos/pogo2.webp')}
                   alt="Étiquette Les Pogos dans le Sirop - format XL"
+                  loading="lazy"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="rounded-xl overflow-hidden aspect-square">
+                <img
+                  src={thumb('/images/realisations/pogos/pogo4.webp')}
+                  alt="Packaging final Les Pogos avec étiquettes incluses"
                   loading="lazy"
                   className="w-full h-full object-cover"
                 />
@@ -556,12 +564,12 @@ function Home() {
                   className="w-full h-full object-cover"
                 />
               </div>
-              <div className="rounded-xl overflow-hidden aspect-square">
+              <div className="col-span-2 rounded-xl overflow-hidden aspect-[16/9]">
                 <img
                   src={thumb('/images/realisations/pogos/pogo3.webp')}
                   alt="Étiquette Pogos appliquée sur bouteille"
                   loading="lazy"
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover object-center"
                 />
               </div>
             </div>
