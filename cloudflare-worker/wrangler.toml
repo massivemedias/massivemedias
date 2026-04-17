@@ -7,3 +7,9 @@ routes = [
   { pattern = "*.massivemedias.com/*", zone_name = "massivemedias.com" },
   { pattern = "massivemedias.com/*", zone_name = "massivemedias.com" }
 ]
+
+# Cron trigger: ping le backend Render toutes les 5 minutes pour empecher
+# qu'il s'endorme (Render free tier sleep apres 15min d'inactivite).
+# Resultat: backend toujours eveille, aucun cold start pour les clients.
+[triggers]
+crons = ["*/5 * * * *"]
