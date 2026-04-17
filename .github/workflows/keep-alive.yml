@@ -12,8 +12,12 @@ jobs:
     steps:
       - name: Ping Strapi (3 tentatives espacees)
         run: |
-          curl -fsS -o /dev/null -w "Ping 1: %{http_code}\n" https://massivemedias-api.onrender.com/api/site-contents || true
+          # Utilise /api/artists (endpoint valide, retourne 200 rapidement)
+          # Note: GitHub Actions crons sont souvent delayes 20-60min. Le vrai
+          # keep-alive est le Cloudflare Worker Cron (*/5 * * * *, fiable).
+          # Ce workflow sert de double-filet au cas ou.
+          curl -fsS -o /dev/null -w "Ping 1: %{http_code} in %{time_total}s\n" https://massivemedias-api.onrender.com/api/artists || true
           sleep 120
-          curl -fsS -o /dev/null -w "Ping 2: %{http_code}\n" https://massivemedias-api.onrender.com/api/site-contents || true
+          curl -fsS -o /dev/null -w "Ping 2: %{http_code} in %{time_total}s\n" https://massivemedias-api.onrender.com/api/artists || true
           sleep 120
-          curl -fsS -o /dev/null -w "Ping 3: %{http_code}\n" https://massivemedias-api.onrender.com/api/site-contents || true
+          curl -fsS -o /dev/null -w "Ping 3: %{http_code} in %{time_total}s\n" https://massivemedias-api.onrender.com/api/artists || true
