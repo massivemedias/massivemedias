@@ -10,7 +10,14 @@ function BrightnessFader() {
   const { tx } = useLang();
   const [open, setOpen] = useState(false);
   const [showTip, setShowTip] = useState(false);
+  const [hoverTip, setHoverTip] = useState(false);
   const ref = useRef(null);
+
+  const tooltipLabel = tx({
+    fr: 'Change la palette du site',
+    en: 'Change the site palette',
+    es: 'Cambia la paleta del sitio',
+  });
 
   useEffect(() => {
     const key = 'mm-theme-tip-seen';
@@ -41,12 +48,19 @@ function BrightnessFader() {
   }, [open]);
 
   return (
-    <div className="relative" ref={ref} style={{ overflow: 'visible' }}>
+    <div
+      className="relative"
+      ref={ref}
+      style={{ overflow: 'visible' }}
+      onMouseEnter={() => setHoverTip(true)}
+      onMouseLeave={() => setHoverTip(false)}
+    >
       {/* Icone palette */}
       <button
-        onClick={() => { setOpen(!open); setShowTip(false); }}
+        onClick={() => { setOpen(!open); setShowTip(false); setHoverTip(false); }}
         className="p-2 rounded-lg hover:bg-white/10 transition-colors"
-        aria-label="Theme"
+        aria-label={tooltipLabel}
+        title={tooltipLabel}
       >
         <Paintbrush size={18} style={{ color: THEME_ACCENTS[step] }} />
       </button>
@@ -95,27 +109,27 @@ function BrightnessFader() {
         )}
       </AnimatePresence>
 
-      {/* Tooltip */}
+      {/* Tooltip - affiche au premier passage (anime) ET au hover */}
       <AnimatePresence>
-        {showTip && !open && (
+        {(showTip || hoverTip) && !open && (
           <motion.div
             initial={{ opacity: 0, y: -6, scale: 0.85 }}
             animate={{
               opacity: 1,
-              y: [0, -3, 0],
+              y: showTip ? [0, -3, 0] : 0,
               scale: 1,
             }}
             exit={{ opacity: 0, y: -6, scale: 0.85 }}
             transition={{
-              opacity: { duration: 0.3 },
-              y: { duration: 1.5, repeat: 2, ease: 'easeInOut' },
+              opacity: { duration: 0.2 },
+              y: showTip ? { duration: 1.5, repeat: 2, ease: 'easeInOut' } : { duration: 0 },
               scale: { type: 'spring', stiffness: 400, damping: 15 },
             }}
             className="absolute left-1/2 -translate-x-1/2 mt-2 px-3 py-1.5 rounded-lg bg-accent text-white text-[11px] font-medium whitespace-nowrap pointer-events-none"
             style={{ top: '100%', zIndex: 9999 }}
           >
             <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-accent rotate-45" />
-            {tx({ fr: 'Change le theme!', en: 'Try a theme!', es: 'Cambia el tema!' })}
+            {tooltipLabel}
           </motion.div>
         )}
       </AnimatePresence>
