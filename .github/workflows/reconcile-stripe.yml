@@ -1,9 +1,15 @@
 name: Reconcile Stripe Orders
 
+# CRON DESACTIVE: le webhook Stripe est maintenant correctement configure
+# (STRIPE_WEBHOOK_SECRET corrige le 17 avril 2026). Le cron n'est plus
+# necessaire en routine - il peut etre declenche manuellement via workflow_dispatch
+# si on veut forcer un rattrapage ponctuel. Pour reactiver le cron auto,
+# decommente la section 'schedule' ci-dessous ET configure le secret
+# RECONCILE_TOKEN dans repo Settings > Secrets and variables > Actions
+# (meme valeur que l'env var RECONCILE_TOKEN sur Render).
 on:
-  schedule:
-    # Toutes les heures a la minute 7 (decale pour eviter le rush d'heure pile)
-    - cron: '7 * * * *'
+  # schedule:
+  #   - cron: '7 * * * *'
   workflow_dispatch:
     inputs:
       sessionId:
@@ -20,9 +26,12 @@ jobs:
           RECONCILE_TOKEN: ${{ secrets.RECONCILE_TOKEN }}
           SESSION_ID: ${{ github.event.inputs.sessionId }}
         run: |
+          # Tolerant a l'absence de secret: warning + exit 0 (pas de mail d'erreur).
+          # Le cron est desactive par defaut de toute facon. Si qqn lance le workflow
+          # manuellement sans avoir configure RECONCILE_TOKEN, on l'informe sans spammer.
           if [ -z "$RECONCILE_TOKEN" ]; then
-            echo "::error::RECONCILE_TOKEN secret is not set. Add it in repo Settings > Secrets and variables > Actions."
-            exit 1
+            echo "::warning::RECONCILE_TOKEN secret not configured. Skipping. Add it in repo Settings > Secrets and variables > Actions."
+            exit 0
           fi
 
           URL="https://massivemedias-api.onrender.com/api/orders/reconcile-stripe"
@@ -33,10 +42,12 @@ jobs:
             echo "Reconciling all draft orders from last 72h"
           fi
 
+          # Tolerant aux erreurs reseau/deploiement: warning + exit 0.
+          # On ne fail que si on a des orders orphan non resolvables (cas rare).
           RESPONSE=$(curl -sS -X POST \
             -H "Authorization: Bearer ${RECONCILE_TOKEN}" \
             -H "Content-Type: application/json" \
-            "$URL")
+            "$URL" || echo '{"error":"network"}')
 
           echo "Response:"
           echo "$RESPONSE" | jq . 2>/dev/null || echo "$RESPONSE"
@@ -49,8 +60,10 @@ jobs:
           echo "Summary: fixed=$FIXED, unpaid=$UNPAID, errors=$ERRORS"
 
           if [ "$FIXED" != "0" ] && [ "$FIXED" != "null" ]; then
-            echo "::notice::✅ Reconciled $FIXED draft orders - check admin for new emails"
+            echo "::notice::Reconciled $FIXED draft orders - check admin for new emails"
           fi
+          # Errors deviennent un warning (pas un fail) pour ne pas spammer en cas de
+          # panne reseau transitoire. Les echecs reels sont dans les logs Render.
           if [ "$ERRORS" != "0" ] && [ "$ERRORS" != "null" ]; then
-            echo "::warning::⚠️ $ERRORS errors during reconciliation - check logs"
+            echo "::warning::$ERRORS errors during reconciliation - check Render logs"
           fi
