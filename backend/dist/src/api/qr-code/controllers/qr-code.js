@@ -128,10 +128,15 @@ exports.default = strapi_1.factories.createCoreController('api::qr-code.qr-code'
                 active: true,
             },
         });
+        // Strapi v5 preficxe automatiquement toutes les routes custom par /api/.
+        // La route est definie en path:'/qr/:shortId' dans custom-qr-code.ts, ce qui
+        // donne en realite /api/qr/:shortId une fois mountee. La trackingUrl qu'on
+        // encode dans le QR doit donc inclure /api/ pour pointer sur le bon endpoint.
         const trackingBase = process.env.QR_TRACKING_BASE_URL
             || process.env.PUBLIC_API_URL
             || 'https://massivemedias-api.onrender.com';
-        const trackingUrl = `${trackingBase.replace(/\/$/, '')}/qr/${shortId}`;
+        const normalizedBase = trackingBase.replace(/\/$/, '').replace(/\/api$/, '');
+        const trackingUrl = `${normalizedBase}/api/qr/${shortId}`;
         ctx.body = {
             id: entity.id,
             documentId: entity.documentId,
