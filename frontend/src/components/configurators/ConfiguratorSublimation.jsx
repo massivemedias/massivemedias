@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingCart, Check, Palette, Sparkles, Shirt, ShoppingBag, Coffee, Package, ChevronDown, Upload } from 'lucide-react';
 import ColorSwatches from '../ColorSwatches';
@@ -13,6 +13,7 @@ import { MERCH_PAUSED, blockIfMerchPaused } from '../../config/merchStatus';
 import {
   sublimationProducts as defaultProducts, sublimationPriceTiers as defaultPriceTiers, sublimationDesignPrice as defaultDesignPrice,
   getSublimationPrice as defaultGetPrice, sublimationImages,
+  canBringOwnGarment, sublimationBlankCost,
 } from '../../data/products';
 import { merchColors, merchSizes, getTshirtImage, hoodieColors, getHoodieImage, longsleeveColors, getLongSleeveImage, totebagColors, getTotebagImage } from '../../data/merchData';
 
@@ -53,19 +54,41 @@ function ConfiguratorSublimation() {
   const sublimationPriceTiers = pd?.priceTiers || defaultPriceTiers;
   const sublimationDesignPrice = pd?.designPrice ?? defaultDesignPrice;
 
+  // Le wrapper CMS gere aussi le BYOT (bring your own garment) pour rester
+  // coherent avec le helper par defaut qui est dans products.js
   const getSublimationPrice = pd?.priceTiers
-    ? (prod, qi, design) => {
+    ? (prod, qi, design, byot) => {
         const tiers = sublimationPriceTiers[prod];
         if (!tiers || !tiers[qi]) return null;
         const tier = tiers[qi];
-        if (tier.surSoumission) return { qty: tier.qty, unitPrice: tier.unitPrice, surSoumission: true };
-        return { qty: tier.qty, price: tier.price + (design ? sublimationDesignPrice : 0), basePrice: tier.price, unitPrice: tier.unitPrice, designPrice: design ? sublimationDesignPrice : 0 };
+        if (tier.surSoumission) {
+          return { qty: tier.qty, unitPrice: tier.unitPrice, surSoumission: true, byotEligible: canBringOwnGarment(prod) };
+        }
+        const blankUnit = sublimationBlankCost[prod] || 0;
+        const byotActive = !!byot && canBringOwnGarment(prod);
+        const byotDiscount = byotActive ? blankUnit * tier.qty : 0;
+        const finalPrice = Math.max(0, tier.price - byotDiscount + (design ? sublimationDesignPrice : 0));
+        const finalUnitPrice = tier.qty > 0 ? Math.round((finalPrice / tier.qty) * 100) / 100 : tier.unitPrice;
+        return {
+          qty: tier.qty,
+          price: finalPrice,
+          basePrice: tier.price,
+          unitPrice: finalUnitPrice,
+          designPrice: design ? sublimationDesignPrice : 0,
+          blankCostUnit: blankUnit,
+          blankCostTotal: blankUnit * tier.qty,
+          printFeeTotal: Math.max(0, tier.price - blankUnit * tier.qty),
+          byotActive,
+          byotDiscount,
+          byotEligible: canBringOwnGarment(prod),
+        };
       }
     : defaultGetPrice;
 
   const [product, setProduct] = useState('tshirt');
   const [qtyIndex, setQtyIndex] = useState(0);
   const [withDesign, setWithDesign] = useState(false);
+  const [bringOwnGarment, setBringOwnGarment] = useState(false);
   const [added, setAdded] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [notes, setNotes] = useState('');
@@ -80,8 +103,18 @@ function ConfiguratorSublimation() {
   const [backLogoPos, setBackLogoPos] = useState({ x: 0.28, y: 0.22, width: 0.35 });
 
   const tiers = sublimationPriceTiers[product] || [];
-  const priceInfo = getSublimationPrice(product, qtyIndex, withDesign);
+  // Si le produit selectionne ne supporte pas BYOT, on force-reset le toggle
+  // pour eviter d'appliquer une deduction a un produit non-eligible (ex: mug).
+  const byotAllowed = canBringOwnGarment(product);
+  const effectiveByot = bringOwnGarment && byotAllowed;
+  const priceInfo = getSublimationPrice(product, qtyIndex, withDesign, effectiveByot);
   const productLabel = sublimationProducts.find(p => p.id === product);
+
+  // Reset BYOT si on change vers un produit qui ne le supporte pas
+  // (ex: user coche BYOT sur tshirt, puis change vers mug -> on decoche)
+  useEffect(() => {
+    if (bringOwnGarment && !byotAllowed) setBringOwnGarment(false);
+  }, [product, bringOwnGarment, byotAllowed]);
 
   const hasColors = productsWithColors.includes(product);
   const hasSizes = productsWithSizes.includes(product);
@@ -119,16 +152,20 @@ function ConfiguratorSublimation() {
       placements.push(`Back: x=${Math.round(backLogoPos.x * 100)}% y=${Math.round(backLogoPos.y * 100)}% w=${Math.round(backLogoPos.width * 100)}%`);
     }
     const placementNote = placements.length ? `\n[${placements.join(' | ')}]` : '';
+    // Marque BYOT dans les notes pour que l'equipe impression sache qu'aucun
+    // blank n'est a commander pour cet item (le client fournit son textile).
+    const byotNote = effectiveByot ? `\n[BYOT - Client apporte son propre textile - print fee seul]` : '';
     addToCart({
-      productId: `sublimation-${product}`,
+      productId: `sublimation-${product}${effectiveByot ? '-byot' : ''}`,
       productName: tx({
-        fr: `${productLabel?.labelFr} Sublimation`,
-        en: `Sublimation ${productLabel?.labelEn}`,
-        es: `Sublimacion ${productLabel?.labelEs || productLabel?.labelEn}`,
+        fr: `${productLabel?.labelFr} Sublimation${effectiveByot ? ' (BYOT)' : ''}`,
+        en: `Sublimation ${productLabel?.labelEn}${effectiveByot ? ' (BYOT)' : ''}`,
+        es: `Sublimacion ${productLabel?.labelEs || productLabel?.labelEn}${effectiveByot ? ' (BYOT)' : ''}`,
       }),
       finish: [
         withDesign ? tx({ fr: 'Avec design', en: 'With design', es: 'Con diseno' }) : tx({ fr: 'Design fourni', en: 'Design provided', es: 'Diseno proporcionado' }),
-        hasColors ? colorObj.name : null,
+        hasColors && !effectiveByot ? colorObj.name : null,
+        effectiveByot ? tx({ fr: 'Textile client', en: 'Client textile', es: 'Textil cliente' }) : null,
         frontLogoUrl && backLogoUrl ? tx({ fr: 'Devant + Dos', en: 'Front + Back', es: 'Delante + Detras' }) : frontLogoUrl ? tx({ fr: 'Devant', en: 'Front', es: 'Delante' }) : backLogoUrl ? tx({ fr: 'Dos', en: 'Back', es: 'Detras' }) : null,
       ].filter(Boolean).join(' - '),
       shape: null,
@@ -138,7 +175,8 @@ function ConfiguratorSublimation() {
       totalPrice: priceInfo.price,
       image: frontLogoUrl || backLogoUrl || sublimationImages[0],
       uploadedFiles,
-      notes: notes + placementNote,
+      notes: notes + placementNote + byotNote,
+      bringOwnGarment: effectiveByot, // flag dans l'item pour validation serveur
     });
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
@@ -379,6 +417,54 @@ function ConfiguratorSublimation() {
         </label>
       </div>
 
+      {/* BYOT - J'apporte mon propre textile (disponible uniquement pour tshirt/hoodie/longsleeve/totebag).
+          Bloque visuellement quand MERCH_PAUSED - le bouton 'Ajouter au panier' est deja disabled
+          par la banniere de pause, donc cocher n'a aucun effet utilisateur pendant la pause. */}
+      {byotAllowed && (
+        <div className="mb-4 md:mb-6">
+          <label className={`flex items-center gap-2 md:gap-3 p-3 md:p-4 rounded-lg cursor-pointer transition-all border-2 ${bringOwnGarment ? 'checkbox-active' : 'option-default'} ${MERCH_PAUSED ? 'opacity-60' : ''}`}>
+            <input
+              type="checkbox"
+              checked={bringOwnGarment}
+              onChange={(e) => setBringOwnGarment(e.target.checked)}
+              className="sr-only"
+            />
+            <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${bringOwnGarment ? 'bg-accent border-accent' : 'border-grey-muted/50'}`}>
+              {bringOwnGarment && <Check size={14} className="text-white" />}
+            </div>
+            <div className="flex-1 min-w-0">
+              <span className="text-heading font-medium text-sm flex items-center gap-1.5">
+                <Shirt size={14} className="text-accent" />
+                {tx({ fr: "J'apporte mon propre vetement", en: 'I bring my own garment', es: 'Traigo mi propia prenda' })}
+              </span>
+              <span className="text-grey-muted text-sm block mt-0.5">
+                {tx({
+                  fr: `On ne facture que le print fee (economie de ${sublimationBlankCost[product] || 0}$/unite)`,
+                  en: `We only charge the print fee (save $${sublimationBlankCost[product] || 0}/unit)`,
+                  es: `Solo cobramos la impresion (ahorro ${sublimationBlankCost[product] || 0}$/u)`,
+                })}
+              </span>
+            </div>
+            {priceInfo && priceInfo.byotActive && priceInfo.byotDiscount > 0 && (
+              <span className="text-emerald-400 font-semibold text-sm flex-shrink-0">-{priceInfo.byotDiscount}$</span>
+            )}
+          </label>
+
+          {bringOwnGarment && (
+            <div className="mt-2 rounded-lg bg-accent/5 border border-accent/20 p-3 md:p-4 flex items-start gap-3">
+              <span className="text-xl md:text-2xl flex-shrink-0" aria-hidden="true">👕</span>
+              <p className="text-xs md:text-sm text-grey-muted leading-relaxed">
+                {tx({
+                  fr: "Option Locale : Deposez vos propres textiles directement a notre atelier ! Nous imprimerons votre design dessus. (Note : Vous recevrez les instructions de depot par courriel apres votre commande).",
+                  en: "Local Option: Drop off your own textiles directly at our workshop! We'll print your design on them. (Note: You'll receive drop-off instructions by email after your order).",
+                  es: "Opcion Local: Deja tus propios textiles directamente en nuestro taller! Imprimiremos tu diseno sobre ellos. (Nota: Recibiras las instrucciones de entrega por correo despues de tu pedido).",
+                })}
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* File upload (non-textile only) + Notes */}
       <div className={`grid gap-3 md:gap-4 mb-4 md:mb-5 ${!hasColors ? 'grid-cols-1 md:grid-cols-[2fr_3fr]' : 'grid-cols-1'}`}>
         {!hasColors && (
@@ -412,6 +498,16 @@ function ConfiguratorSublimation() {
               ({priceInfo.unitPrice.toFixed(2)}$/{tx({ fr: 'unite', en: 'unit', es: 'unidad' })})
             </span>
           </div>
+          {priceInfo.byotActive && priceInfo.byotDiscount > 0 && (
+            <div className="text-emerald-400 text-sm mt-1 flex items-center gap-1.5">
+              <Shirt size={12} />
+              {tx({
+                fr: `Textile client - ${priceInfo.basePrice}$ - ${priceInfo.byotDiscount}$ blank = ${priceInfo.basePrice - priceInfo.byotDiscount}$ print fee`,
+                en: `Client textile - $${priceInfo.basePrice} - $${priceInfo.byotDiscount} blank = $${priceInfo.basePrice - priceInfo.byotDiscount} print fee`,
+                es: `Textil cliente - ${priceInfo.basePrice}$ - ${priceInfo.byotDiscount}$ blank = ${priceInfo.basePrice - priceInfo.byotDiscount}$ impresion`,
+              })}
+            </div>
+          )}
           {withDesign && (
             <div className="text-grey-muted text-sm mt-1">
               {tx({
@@ -421,7 +517,7 @@ function ConfiguratorSublimation() {
               })}
             </div>
           )}
-          {hasColors && (
+          {hasColors && !priceInfo.byotActive && (
             <div className="text-grey-muted text-sm mt-1">
               {colorObj.name}{hasSizes ? ` / ${selectedSize}` : ''}
             </div>

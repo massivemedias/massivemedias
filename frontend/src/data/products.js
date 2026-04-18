@@ -347,7 +347,51 @@ export const sublimationPriceTiers = {
 
 export const sublimationDesignPrice = 125;
 
-export function getSublimationPrice(product, qtyIndex, withDesign) {
+/**
+ * Cout du vetement/objet vierge (blank) par unite.
+ * Utilise pour l'option "J'apporte mon propre textile" (BYOT = Bring Your Own Textile):
+ * si le client fournit son vetement, on deduit ce cout du prix total pour ne
+ * facturer que le "print fee" (travail d'impression + encre + main d'oeuvre).
+ *
+ * Ces valeurs doivent correspondre a notre cout d'achat blank moyen + marge
+ * raisonnable. Si un produit n'est pas dans cette table, BYOT est indisponible
+ * pour ce produit (ex: si on ne pense pas qu'un mug client puisse etre sublime
+ * sur notre equipement).
+ */
+export const sublimationBlankCost = {
+  tshirt: 12,     // Bella Canvas 3001 blanc equivalent
+  longsleeve: 18, // Bella Canvas 3501
+  hoodie: 28,     // Independent Trading SS4500
+  totebag: 6,     // BAGedge BE008
+  bag: 45,        // Sac grand format personnalise
+  mug: 4,         // 11oz blank
+  tumbler: 10,    // Polar Camel 20oz
+};
+
+/**
+ * Produits pour lesquels l'option BYOT est autorisee. Les autres (ex: mug,
+ * tumbler) necessitent un substrat specifique compatible sublimation que le
+ * client ne peut pas fournir = option masquee automatiquement.
+ */
+export const sublimationBYOTAllowed = new Set(['tshirt', 'longsleeve', 'hoodie', 'totebag']);
+
+export function canBringOwnGarment(product) {
+  return sublimationBYOTAllowed.has(product);
+}
+
+/**
+ * Retourne le prix d'un produit sublimation pour une quantite donnee.
+ *
+ * @param product         tshirt | longsleeve | hoodie | totebag | bag | mug | tumbler
+ * @param qtyIndex        index du palier dans sublimationPriceTiers[product]
+ * @param withDesign      true = ajouter le design fee fixe (125$)
+ * @param bringOwnGarment true = client apporte son propre textile (BYOT)
+ *                        -> deduit blankCost * qty du prix total
+ *                        -> ignore pour les produits hors sublimationBYOTAllowed
+ *
+ * Retourne aussi la decomposition { blankCost, printFee } pour affichage.
+ */
+export function getSublimationPrice(product, qtyIndex, withDesign, bringOwnGarment = false) {
   const tiers = sublimationPriceTiers[product];
   if (!tiers || !tiers[qtyIndex]) return null;
   const tier = tiers[qtyIndex];
@@ -356,14 +400,36 @@ export function getSublimationPrice(product, qtyIndex, withDesign) {
       qty: tier.qty,
       unitPrice: tier.unitPrice,
       surSoumission: true,
+      byotEligible: canBringOwnGarment(product),
     };
   }
+
+  // Prix de base du catalogue (blank + print combine)
+  const catalogPrice = tier.price;
+  const catalogUnitPrice = tier.unitPrice;
+
+  // Decomposition blank/print pour affichage + BYOT
+  const blankCostUnit = sublimationBlankCost[product] || 0;
+  const byotActive = !!bringOwnGarment && canBringOwnGarment(product);
+  const byotDiscount = byotActive ? blankCostUnit * tier.qty : 0;
+
+  const finalPrice = Math.max(0, catalogPrice - byotDiscount + (withDesign ? sublimationDesignPrice : 0));
+  const finalUnitPrice = tier.qty > 0 ? Math.round((finalPrice / tier.qty) * 100) / 100 : catalogUnitPrice;
+
   return {
     qty: tier.qty,
-    price: tier.price + (withDesign ? sublimationDesignPrice : 0),
-    basePrice: tier.price,
-    unitPrice: tier.unitPrice,
+    price: finalPrice,
+    basePrice: catalogPrice,
+    unitPrice: finalUnitPrice,
     designPrice: withDesign ? sublimationDesignPrice : 0,
+    // Decomposition detaillee pour transparence dans l'UI
+    blankCostUnit,
+    blankCostTotal: blankCostUnit * tier.qty,
+    printFeeUnit: Math.max(0, catalogUnitPrice - blankCostUnit),
+    printFeeTotal: Math.max(0, catalogPrice - blankCostUnit * tier.qty),
+    byotActive,
+    byotDiscount,
+    byotEligible: canBringOwnGarment(product),
   };
 }
 
