@@ -90,6 +90,14 @@ export default {
     },
     {
       method: 'PUT',
+      path: '/orders/:documentId/total',
+      handler: 'order.updateTotal',
+      config: {
+        auth: false,
+      },
+    },
+    {
+      method: 'PUT',
       path: '/orders/:documentId/tracking',
       handler: 'order.addTracking',
       config: {

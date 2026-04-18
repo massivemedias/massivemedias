@@ -5,12 +5,13 @@ import {
   Clock, Truck, Package, CreditCard, CheckCircle, XCircle,
   RotateCcw, Loader2, ExternalLink, MapPin, Save, Image,
   FileText, ChevronLeft, ChevronRight, Phone, Mail, Hash, Palette,
-  Download, Receipt, Trash2, Send, AlertTriangle,
+  Download, Receipt, Trash2, Send, AlertTriangle, Pencil,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import { getOrders, getOrderStats, updateOrderStatus, updateOrderNotes, updateOrderTracking, deleteOrder, getPrivateSales, deletePrivateSale, resendPrivateSaleEmail } from '../services/adminService';
 import { useNotifications } from '../contexts/NotificationContext';
 import { generateInvoicePDF } from '../utils/generateInvoice';
+import EditOrderTotalModal from '../components/EditOrderTotalModal';
 
 const ORDER_STATUS = {
   draft:      { fr: 'Brouillon',    en: 'Draft',      es: 'Borrador',     color: 'bg-gray-600/20 text-gray-500', icon: Clock },
@@ -66,6 +67,14 @@ function AdminOrders() {
   const [privateSaleBusyId, setPrivateSaleBusyId] = useState(null);
   const [privateSaleConfirmDelete, setPrivateSaleConfirmDelete] = useState(null);
   const [privateSaleFeedback, setPrivateSaleFeedback] = useState('');
+
+  // Modal d'edition du total d'une commande (ajustement rabais/balance)
+  const [editTotalOrder, setEditTotalOrder] = useState(null);
+  const onOrderTotalUpdated = useCallback((updatedOrder) => {
+    // Mise a jour optimiste locale: remplace la commande dans l'etat sans refetch complet
+    if (!updatedOrder) return;
+    setOrders((prev) => prev.map((o) => (o.documentId === updatedOrder.documentId ? { ...o, ...updatedOrder } : o)));
+  }, []);
 
   // Debounce search
   useEffect(() => {
@@ -535,7 +544,18 @@ function AdminOrders() {
                       </div>
                       <span className="text-xs text-grey-muted">{formatDateShort(order.createdAt)}</span>
                       <span className="text-sm text-heading">{items.length} {items.length > 1 ? 'items' : 'item'}</span>
-                      <span className="text-lg text-heading font-bold">{dollars(order.total)}</span>
+                      <span className="text-lg text-heading font-bold inline-flex items-center gap-1.5 group">
+                        {dollars(order.total)}
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); setEditTotalOrder(order); }}
+                          className="p-1 rounded hover:bg-white/10 text-grey-muted hover:text-accent transition-colors opacity-60 group-hover:opacity-100"
+                          title={tx({ fr: 'Ajuster le total', en: 'Adjust total', es: 'Ajustar total' })}
+                          aria-label={tx({ fr: 'Ajuster le total', en: 'Adjust total', es: 'Ajustar total' })}
+                        >
+                          <Pencil size={12} />
+                        </button>
+                      </span>
                       <div className="flex flex-wrap items-center gap-1.5">
                         <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold ${st.color}`}>
                           <StIcon size={12} />
@@ -557,7 +577,18 @@ function AdminOrders() {
                     <div className="md:hidden px-3 py-2.5">
                       <div className="flex items-center justify-between gap-2">
                         <p className="text-sm text-heading font-semibold truncate flex-1">{order.customerName}</p>
-                        <span className="text-base text-heading font-bold flex-shrink-0">{dollars(order.total)}</span>
+                        <span className="text-base text-heading font-bold flex-shrink-0 inline-flex items-center gap-1">
+                          {dollars(order.total)}
+                          <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); setEditTotalOrder(order); }}
+                            className="p-1 rounded text-grey-muted hover:text-accent transition-colors"
+                            title={tx({ fr: 'Ajuster le total', en: 'Adjust total', es: 'Ajustar total' })}
+                            aria-label={tx({ fr: 'Ajuster le total', en: 'Adjust total', es: 'Ajustar total' })}
+                          >
+                            <Pencil size={11} />
+                          </button>
+                        </span>
                         <span className="text-grey-muted flex-shrink-0">
                           {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                         </span>
@@ -826,9 +857,20 @@ function AdminOrders() {
                                     <span className="text-heading">{dollars(order.tvq)}</span>
                                   </div>
                                 )}
-                                <div className="flex justify-between shadow-[0_-1px_0_rgba(255,255,255,0.04)] pt-2 mt-2">
+                                <div className="flex justify-between items-center shadow-[0_-1px_0_rgba(255,255,255,0.04)] pt-2 mt-2">
                                   <span className="text-heading font-bold text-base">Total</span>
-                                  <span className="text-heading font-bold text-lg">{dollars(order.total)}</span>
+                                  <span className="inline-flex items-center gap-2">
+                                    <span className="text-heading font-bold text-lg">{dollars(order.total)}</span>
+                                    <button
+                                      type="button"
+                                      onClick={(e) => { e.stopPropagation(); setEditTotalOrder(order); }}
+                                      className="p-1.5 rounded-lg bg-white/5 hover:bg-accent/20 text-grey-muted hover:text-accent transition-colors"
+                                      title={tx({ fr: 'Ajuster le total (rabais/balance)', en: 'Adjust total (discount/balance)', es: 'Ajustar total' })}
+                                      aria-label={tx({ fr: 'Ajuster le total', en: 'Adjust total', es: 'Ajustar total' })}
+                                    >
+                                      <Pencil size={13} />
+                                    </button>
+                                  </span>
                                 </div>
                               </div>
                               {order.totalWeight > 0 && (
@@ -1025,6 +1067,15 @@ function AdminOrders() {
             <ChevronRight size={16} />
           </button>
         </div>
+      )}
+
+      {/* Modal d'ajustement manuel du total d'une commande */}
+      {editTotalOrder && (
+        <EditOrderTotalModal
+          order={editTotalOrder}
+          onClose={() => setEditTotalOrder(null)}
+          onUpdated={onOrderTotalUpdated}
+        />
       )}
     </div>
   );

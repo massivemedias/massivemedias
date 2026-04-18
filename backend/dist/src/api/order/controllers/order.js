@@ -1466,6 +1466,71 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
         });
         ctx.body = { data: updated };
     },
+    /**
+     * PUT /orders/:documentId/total
+     * Ajustement manuel admin du total d'une commande (rabais, balance, correction).
+     *
+     * Body:
+     *   - total: number (en DOLLARS, sera converti en cents en DB)
+     *   - reason: string (obligatoire - trace dans les notes admin)
+     *
+     * Append une ligne d'audit dans le champ notes:
+     *   [2026-04-18 12:34 par admin@exemple.com] Ajustement 68.99$ -> 100.60$ : Ajout balance 31.61$
+     *
+     * Le total Stripe original n'est PAS touche (garde trace du paiement reel).
+     * On modifie uniquement le champ `total` qui sert a l'affichage et aux factures.
+     */
+    async updateTotal(ctx) {
+        if (!(await requireAdminAuth(ctx)))
+            return;
+        const { documentId } = ctx.params;
+        const { total, reason } = ctx.request.body;
+        // Validation stricte: total en dollars, positif, raisonnable (max 100k$)
+        const newTotalDollars = Number(total);
+        if (!Number.isFinite(newTotalDollars) || newTotalDollars < 0 || newTotalDollars > 100000) {
+            return ctx.badRequest('total must be a positive number in dollars (max 100000)');
+        }
+        const newTotalCents = Math.round(newTotalDollars * 100);
+        const reasonTrim = String(reason || '').trim();
+        if (!reasonTrim) {
+            return ctx.badRequest('reason is required (explain why you are adjusting the total)');
+        }
+        if (reasonTrim.length > 500) {
+            return ctx.badRequest('reason max 500 chars');
+        }
+        const order = await strapi.documents('api::order.order').findFirst({
+            filters: { documentId },
+        });
+        if (!order)
+            return ctx.notFound('Commande introuvable');
+        const previousCents = Number(order.total) || 0;
+        const previousDollars = (previousCents / 100).toFixed(2);
+        const newDollarsFmt = (newTotalCents / 100).toFixed(2);
+        // Audit log: timestamp Montreal + admin email si dispo + old/new
+        const adminEmail = ctx.state.adminUserEmail || ctx.state.adminAuthMethod || 'admin';
+        const now = new Date().toLocaleString('fr-CA', {
+            day: '2-digit', month: '2-digit', year: 'numeric',
+            hour: '2-digit', minute: '2-digit',
+            timeZone: 'America/Toronto',
+        });
+        const auditLine = `[${now} par ${adminEmail}] Ajustement total ${previousDollars}$ -> ${newDollarsFmt}$ : ${reasonTrim}`;
+        const prevNotes = String(order.notes || '').trim();
+        const newNotes = prevNotes ? `${prevNotes}\n${auditLine}` : auditLine;
+        const updated = await strapi.documents('api::order.order').update({
+            documentId: order.documentId,
+            data: {
+                total: newTotalCents,
+                notes: newNotes,
+            },
+        });
+        strapi.log.info(`[updateTotal] Order ${documentId}: ${previousDollars}$ -> ${newDollarsFmt}$ by ${adminEmail} (reason: ${reasonTrim})`);
+        ctx.body = {
+            data: updated,
+            previousTotal: previousCents,
+            newTotal: newTotalCents,
+            auditLine,
+        };
+    },
     async addTracking(ctx) {
         if (!(await requireAdminAuth(ctx)))
             return;
