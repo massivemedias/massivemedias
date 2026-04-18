@@ -6,6 +6,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import { useLang } from './i18n/LanguageContext';
 import ScrollToTop from './components/ScrollToTop';
 import ScrollToTopButton from './components/ScrollToTopButton';
+import BackendHealthBanner from './components/BackendHealthBanner';
 import './index.css';
 
 // Retry wrapper for lazy imports - retries up to 3 times on chunk load failure
@@ -124,6 +125,7 @@ function App() {
 
   return (
     <BrowserRouter basename={basename}>
+      <BackendHealthBanner />
       <RecoveryRedirect />
       <ScrollToTop />
       <ScrollToTopButton />
