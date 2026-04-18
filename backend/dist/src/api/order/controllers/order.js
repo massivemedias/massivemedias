@@ -68,17 +68,34 @@ async function requireAdminAuth(ctx) {
         return true;
     }
     // Option B: Supabase JWT + email in ADMIN_EMAILS
+    let diag = {
+        supabaseUrlPresent: false,
+        supabaseKeyPresent: false,
+        supabaseError: null,
+        jwtEmail: null,
+        adminEmailsConfigured: false,
+        emailIsAdmin: false,
+    };
     try {
         const supabaseUrl = process.env.SUPABASE_URL || process.env.SUPABASE_API_URL;
         const supabaseKey = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_API_KEY;
+        diag.supabaseUrlPresent = !!supabaseUrl;
+        diag.supabaseKeyPresent = !!supabaseKey;
         if (supabaseUrl && supabaseKey) {
             const { createClient } = require('@supabase/supabase-js');
             const supabase = createClient(supabaseUrl, supabaseKey);
             const { data, error } = await supabase.auth.getUser(token);
-            if (!error && ((_a = data === null || data === void 0 ? void 0 : data.user) === null || _a === void 0 ? void 0 : _a.email)) {
+            if (error) {
+                diag.supabaseError = error.message || String(error);
+            }
+            else if ((_a = data === null || data === void 0 ? void 0 : data.user) === null || _a === void 0 ? void 0 : _a.email) {
+                diag.jwtEmail = data.user.email;
                 const adminEmailsRaw = process.env.ADMIN_EMAILS || process.env.ADMIN_EMAIL || '';
+                diag.adminEmailsConfigured = !!adminEmailsRaw.trim();
                 const adminEmails = adminEmailsRaw.split(',').map((s) => s.trim().toLowerCase()).filter(Boolean);
-                if (adminEmails.includes(data.user.email.toLowerCase())) {
+                const matchEmail = adminEmails.includes(data.user.email.toLowerCase());
+                diag.emailIsAdmin = matchEmail;
+                if (matchEmail) {
                     ctx.state.adminAuthMethod = 'supabase-jwt';
                     ctx.state.adminUserEmail = data.user.email;
                     return true;
@@ -87,18 +104,45 @@ async function requireAdminAuth(ctx) {
         }
     }
     catch (e) {
+        diag.supabaseError = (e === null || e === void 0 ? void 0 : e.message) || String(e);
         strapi.log.warn('requireAdminAuth: Supabase verification error', e);
     }
+    // Expose diagnostic info to caller via ctx.state so /admin-whoami can surface it.
+    ctx.state.__authDiag = diag;
     ctx.status = 401;
     ctx.body = { error: { status: 401, name: 'Unauthorized', message: 'Admin authentication required' } };
-    strapi.log.warn(`Admin-protected endpoint hit without valid auth: ${ctx.method} ${ctx.url}`);
+    strapi.log.warn(`Admin-protected endpoint hit without valid auth: ${ctx.method} ${ctx.url} - diag: ${JSON.stringify(diag)}`);
     return false;
 }
-// Sticker pricing tiers for server-side validation
+// Sticker pricing tiers for server-side validation (tarifs de REFERENCE 3")
 const STICKER_STANDARD_TIERS = { 25: 30, 50: 47.50, 100: 85, 250: 200, 500: 375 };
 const STICKER_FX_TIERS = { 25: 35, 50: 57.50, 100: 100, 250: 225, 500: 425 };
 const FX_FINISHES = ['holographic', 'broken-glass', 'stars'];
 const ARTIST_DISCOUNT = 0.25; // Rabais artiste sur ses propres produits
+// Size multipliers cote backend - DOIVENT matcher exactement frontend/src/data/products.js
+// Sinon le server va rejeter des commandes legitimes ou accepter du under-pricing.
+const SIZE_MULTIPLIERS = {
+    '2': 0.8,
+    '2.5': 0.9,
+    '3': 1.0,
+    '4': 1.5,
+    '5': 2.0,
+};
+/**
+ * Extrait le multiplier de taille depuis un champ size stocke dans l'order.
+ * Accepte tous formats: '3in', '3"', '3', number 3, etc. Fallback 1.0 (reference 3").
+ */
+function getSizeMultiplier(size) {
+    if (size === null || size === undefined)
+        return 1.0;
+    const match = String(size).match(/^\s*([\d.]+)/);
+    if (!match)
+        return 1.0;
+    const key = match[1];
+    return Object.prototype.hasOwnProperty.call(SIZE_MULTIPLIERS, key)
+        ? SIZE_MULTIPLIERS[key]
+        : 1.0;
+}
 // Business card pricing tiers for server-side validation
 const BUSINESS_CARD_TIERS = {
     'business-card-standard': { 100: 55, 250: 75, 500: 95, 1000: 130 },
@@ -134,12 +178,18 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
         let subtotal = 0;
         for (const item of items) {
             let validPrice = item.totalPrice || 0;
-            // Validate sticker pricing against tiers
+            // Validate sticker pricing against tiers (tarif 3" de reference) + size multiplier
             if (item.productId === 'sticker-custom' || item.productId === 'sticker-artist') {
-                const tiers = FX_FINISHES.includes(item.finish) ? STICKER_FX_TIERS : STICKER_STANDARD_TIERS;
+                const finishLower = String(item.finish || '').toLowerCase();
+                const isFx = FX_FINISHES.some((f) => finishLower.includes(f));
+                const tiers = isFx ? STICKER_FX_TIERS : STICKER_STANDARD_TIERS;
                 const tierPrice = tiers[item.quantity];
                 if (tierPrice) {
-                    validPrice = tierPrice; // Override with server-validated price
+                    // item.sizeId est prioritaire (id stable: '3in'), fallback sur item.size (label: '3"')
+                    const sizeKey = item.sizeId || item.size;
+                    const mult = getSizeMultiplier(sizeKey);
+                    validPrice = Math.round(tierPrice * mult * 100) / 100;
+                    strapi.log.info(`[sticker-validate] qty=${item.quantity} size=${sizeKey} mult=${mult} tier=${tierPrice}$ -> validated=${validPrice}$`);
                 }
                 else {
                     strapi.log.warn(`Invalid sticker tier: qty=${item.quantity}, using client price ${item.totalPrice}`);
@@ -360,12 +410,17 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
         catch (_) { /* ignore */ }
         for (const item of items) {
             let validPrice = item.totalPrice || 0;
-            // --- Stickers: validation par tier (existant) ---
+            // --- Stickers: validation par tier + size multiplier ---
             if (item.productId === 'sticker-custom' || item.productId === 'sticker-artist') {
-                const tiers = FX_FINISHES.includes(item.finish) ? STICKER_FX_TIERS : STICKER_STANDARD_TIERS;
+                const finishLower = String(item.finish || '').toLowerCase();
+                const isFx = FX_FINISHES.some((f) => finishLower.includes(f));
+                const tiers = isFx ? STICKER_FX_TIERS : STICKER_STANDARD_TIERS;
                 const tierPrice = tiers[item.quantity];
-                if (tierPrice)
-                    validPrice = tierPrice;
+                if (tierPrice) {
+                    const sizeKey = item.sizeId || item.size;
+                    const mult = getSizeMultiplier(sizeKey);
+                    validPrice = Math.round(tierPrice * mult * 100) / 100;
+                }
             }
             // --- Artist prints: validation serveur contre le CMS ---
             if (typeof item.productId === 'string' && item.productId.startsWith('artist-print-')) {

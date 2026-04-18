@@ -21,9 +21,12 @@ export const stickerSizes = [
   { id: '2.5in', label: '2.5"' },
   { id: '3in', label: '3"' },
   { id: '4in', label: '4"' },
+  { id: '5in', label: '5"' },
 ];
 
 // Prix Standard (Clear / Lustre) - alignes sur le tableau services.js
+// RAPPEL: ces tarifs sont pour le format DE REFERENCE 3" (multiplier 1.0).
+// Pour toute autre taille, appliquer getSizeMultiplier(size) sur le prix.
 export const stickerPriceTiers = [
   { qty: 25, price: 30, unitPrice: 1.20 },
   { qty: 50, price: 47.50, unitPrice: 0.95 },
@@ -44,41 +47,96 @@ export const holographicPriceTiers = [
 // Die-cut utilise les mêmes prix
 export const diecutPriceTiers = stickerPriceTiers;
 
-export function getStickerPrice(finish, shape, qty) {
+// -------------------------------------------------------------
+// SIZE MULTIPLIER (regle metier MassiveMedias)
+// Le prix de base des tiers est defini pour le format 3" (reference 1.0x).
+// Les autres tailles appliquent un facteur sur le prix unitaire et le prix total.
+// Regle imposee par le lead tech - ne pas modifier sans accord business.
+// -------------------------------------------------------------
+export const SIZE_MULTIPLIERS = {
+  '2': 0.8,
+  '2.5': 0.9,
+  '3': 1.0, // reference
+  '4': 1.5,
+  '5': 2.0,
+};
+
+/**
+ * Retourne le multiplier de taille pour un sticker.
+ * Accepte plusieurs formats en entree:
+ *   - id normalise:  '2in', '2.5in', '3in', '4in', '5in'
+ *   - label affichage: '2"', '2.5"', '3"', '4"', '5"'
+ *   - nombre brut: '2', '3', '4', '5'
+ *   - entier/float: 2, 3, 4.5
+ * Fallback: 1.0 si non reconnu (= prix de reference 3").
+ */
+export function getSizeMultiplier(size) {
+  if (size === null || size === undefined) return 1.0;
+  const match = String(size).match(/^\s*([\d.]+)/);
+  if (!match) return 1.0;
+  const key = match[1];
+  return Object.prototype.hasOwnProperty.call(SIZE_MULTIPLIERS, key)
+    ? SIZE_MULTIPLIERS[key]
+    : 1.0;
+}
+
+/**
+ * Calcule le prix pour une quantite EXACTE (palier defini) ET une taille donnee.
+ * Regle: les tailles differentes ne sont PAS cumulees entre elles pour debloquer
+ * un meilleur palier. Chaque item dans le panier est un SKU independant.
+ *
+ * @param finish   matte | glossy | holographic | broken-glass | stars | dots
+ * @param shape    round | square | rectangle | diecut
+ * @param qty      quantite EXACTEMENT dans un palier (25, 50, 100, 250, 500)
+ * @param size     '2in' | '2.5in' | '3in' | '4in' | '5in' | '2"' ... (opt, default 3")
+ * @returns {qty, price, unitPrice, sizeMultiplier} ou null si qty invalide
+ */
+export function getStickerPrice(finish, shape, qty, size) {
   let tiers;
   if (finish === 'holographic' || finish === 'broken-glass' || finish === 'stars') {
     tiers = holographicPriceTiers;
   } else {
-    // matte, glossy, dots = Standard pricing
     tiers = stickerPriceTiers;
   }
   const tier = tiers.find(t => t.qty === qty);
   if (!tier) return null;
+  const mult = getSizeMultiplier(size);
+  const unitPrice = Math.round(tier.unitPrice * mult * 100) / 100;
+  const price = Math.round(tier.qty * unitPrice * 100) / 100;
   return {
     qty: tier.qty,
-    price: tier.price,
-    unitPrice: tier.unitPrice,
+    price,
+    unitPrice,
+    sizeMultiplier: mult,
+    baseUnitPrice: tier.unitPrice, // info: prix unitaire 3" reference
   };
 }
 
-// Pack builder: calcule le prix proportionnel pour n'importe quelle quantite totale
-// Utilise le tarif du palier le plus eleve que la quantite atteint.
-// Ex: 90 stickers standard -> palier 50 (0.95$/u) -> 90 x 0.95 = 85.50$
-// Retourne null si total < 25 (minimum impression).
-export function getStickerPriceForTotal(finish, shape, total) {
+/**
+ * Calcule le prix proportionnel pour une quantite quelconque (pack builder).
+ * Utilise le palier le plus eleve que la quantite atteint, puis applique le
+ * multiplier de taille. Ne cumule PAS avec d'autres tailles - on traite cet
+ * item seul.
+ *
+ * Retourne null si total < 25 (minimum d'impression).
+ */
+export function getStickerPriceForTotal(finish, shape, total, size) {
   if (!total || total < 25) return null;
   const isSpecial = finish === 'holographic' || finish === 'broken-glass' || finish === 'stars';
   const tiers = isSpecial ? holographicPriceTiers : stickerPriceTiers;
-  // Trouver le palier le plus eleve ou qty <= total
   let tier = tiers[0];
   for (const t of tiers) {
     if (total >= t.qty) tier = t;
   }
+  const mult = getSizeMultiplier(size);
+  const unitPrice = Math.round(tier.unitPrice * mult * 100) / 100;
   return {
     qty: total,
-    unitPrice: tier.unitPrice,
-    price: Math.round(total * tier.unitPrice * 100) / 100,
-    tierQty: tier.qty, // palier utilise pour le calcul (info)
+    unitPrice,
+    price: Math.round(total * unitPrice * 100) / 100,
+    tierQty: tier.qty,
+    sizeMultiplier: mult,
+    baseUnitPrice: tier.unitPrice,
   };
 }
 

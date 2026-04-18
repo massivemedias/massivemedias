@@ -52,7 +52,9 @@ function ConfiguratorArtistSticker({ artist, selectedSticker, allStickers = [] }
   const totalQty = packSize * packCount;
 
   const isSpecialFinish = finish === 'holographic' || finish === 'broken-glass' || finish === 'stars';
-  const priceInfo = totalQty > 0 ? getStickerPriceForTotal(finish, shape, totalQty) : null;
+  // IMPORTANT: passer `size` pour que le size multiplier soit applique au prix
+  // du pack artiste (ex: un pack 4" coute 1.5x le meme pack en 3")
+  const priceInfo = totalQty > 0 ? getStickerPriceForTotal(finish, shape, totalQty, size) : null;
   const canCheckout = totalQty >= MIN_TOTAL && packSize > 0;
   const missing = Math.max(0, MIN_TOTAL - totalQty);
 
@@ -108,7 +110,8 @@ function ConfiguratorArtistSticker({ artist, selectedSticker, allStickers = [] }
         }),
         finish: tx({ fr: finishLabel?.labelFr, en: finishLabel?.labelEn, es: finishLabel?.labelEn }),
         shape: tx({ fr: shapeLabel?.labelFr, en: shapeLabel?.labelEn, es: shapeLabel?.labelEn }),
-        size: sizeLabel,
+        size: sizeLabel, // affichage label
+        sizeId: size,    // id stable pour recalcul (size multiplier)
         quantity: totalQty,
         unitPrice: priceInfo.unitPrice,
         totalPrice: priceInfo.price,
