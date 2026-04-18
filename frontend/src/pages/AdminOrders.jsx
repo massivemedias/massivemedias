@@ -687,6 +687,53 @@ function AdminOrders() {
                                         {item.notes && (
                                           <p className="text-sm text-grey-muted mt-2 italic bg-glass rounded px-2 py-1">"{item.notes}"</p>
                                         )}
+
+                                        {/* Pack details (artist sticker packs) - A IMPRIMER */}
+                                        {Array.isArray(item.packDetails) && item.packDetails.length > 0 && (
+                                          <div className="mt-3 p-3 rounded-lg bg-accent/5 border border-accent/20">
+                                            <div className="flex items-center justify-between mb-2">
+                                              <span className="text-xs text-accent font-semibold uppercase tracking-wide">
+                                                {tx({ fr: 'Stickers a imprimer', en: 'Stickers to print', es: 'Stickers a imprimir' })}
+                                              </span>
+                                              <span className="text-xs text-grey-muted">
+                                                {item.packDetails.reduce((acc, d) => acc + (Number(d.qty) || 0), 0)} {tx({ fr: 'par pack', en: 'per pack', es: 'por pack' })} x {item.quantity || 1} = <strong className="text-accent">{item.packDetails.reduce((acc, d) => acc + (Number(d.qty) || 0), 0) * (item.quantity || 1)} {tx({ fr: 'stickers total', en: 'stickers total', es: 'stickers total' })}</strong>
+                                              </span>
+                                            </div>
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                              {item.packDetails.map((detail, di) => {
+                                                const perPack = Number(detail.qty) || Number(detail.qtyPerPack) || 1;
+                                                const totalToPrint = perPack * (item.quantity || 1);
+                                                return (
+                                                  <a
+                                                    key={di}
+                                                    href={detail.image}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    onClick={(e) => e.stopPropagation()}
+                                                    className="flex items-center gap-2 p-2 rounded bg-glass hover:bg-accent/10 transition-colors group"
+                                                    title={tx({ fr: 'Ouvrir l\'image', en: 'Open image', es: 'Abrir imagen' })}
+                                                  >
+                                                    {detail.image && (
+                                                      <img
+                                                        src={detail.image}
+                                                        alt=""
+                                                        className="w-12 h-12 rounded object-cover flex-shrink-0 border border-accent/20"
+                                                        onError={(e) => { e.target.style.display = 'none'; }}
+                                                      />
+                                                    )}
+                                                    <div className="flex-1 min-w-0">
+                                                      <p className="text-xs font-semibold text-heading truncate">{detail.title || detail.id}</p>
+                                                      <p className="text-[11px] text-grey-muted">
+                                                        {perPack}/pack × {item.quantity || 1} = <strong className="text-accent">{totalToPrint}</strong>
+                                                      </p>
+                                                    </div>
+                                                    <ExternalLink size={12} className="text-grey-muted group-hover:text-accent flex-shrink-0" />
+                                                  </a>
+                                                );
+                                              })}
+                                            </div>
+                                          </div>
+                                        )}
                                       </div>
                                     </div>
 
