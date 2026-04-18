@@ -1156,7 +1156,7 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
 
   async updateStatus(ctx) {
     const { documentId } = ctx.params;
-    const { status: newStatus } = ctx.request.body as any;
+    const { status: newStatus, invoiceNumber, autoInvoice, sendEmails } = ctx.request.body as any;
 
     const validStatuses = ['draft', 'pending', 'paid', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded'];
     if (!newStatus || !validStatuses.includes(newStatus)) {
@@ -1171,10 +1171,99 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
       return ctx.notFound('Commande introuvable');
     }
 
+    // Compute updateData: status + optional invoice number (manual or auto-generated)
+    const updateData: any = { status: newStatus };
+    let assignedInvoice: string | null = null;
+    if (invoiceNumber && typeof invoiceNumber === 'string' && invoiceNumber.trim()) {
+      updateData.invoiceNumber = invoiceNumber.trim();
+      assignedInvoice = invoiceNumber.trim();
+    } else if (autoInvoice && newStatus === 'paid' && !(order as any).invoiceNumber) {
+      // Auto-generate next sequential MM-YYYY-NNNN
+      try {
+        const year = new Date().getFullYear();
+        const prefix = `MM-${year}-`;
+        const existing = await strapi.documents('api::order.order').findMany({
+          filters: { invoiceNumber: { $startsWith: prefix } } as any,
+          sort: { invoiceNumber: 'desc' } as any,
+          limit: 1,
+        });
+        let seq = 1;
+        if (existing.length > 0 && (existing[0] as any).invoiceNumber) {
+          const lastNum = (existing[0] as any).invoiceNumber.replace(prefix, '');
+          seq = (parseInt(lastNum, 10) || 0) + 1;
+        }
+        assignedInvoice = `${prefix}${String(seq).padStart(4, '0')}`;
+        updateData.invoiceNumber = assignedInvoice;
+      } catch (e) {
+        strapi.log.warn('Auto invoice generation failed:', e);
+      }
+    }
+
     const updated = await strapi.documents('api::order.order').update({
       documentId: order.documentId,
-      data: { status: newStatus },
+      data: updateData,
     });
+
+    // Optional: trigger confirmation + admin notification emails when flipping to paid
+    if (sendEmails && newStatus === 'paid') {
+      try {
+        const orderData = updated as any;
+        const orderItems: any[] = Array.isArray(orderData.items) ? orderData.items : [];
+        const sid = orderData.stripePaymentIntentId || '';
+        const orderRef = sid.slice(-8).toUpperCase();
+        const allUploadedFiles: { name: string; url: string }[] = [];
+        for (const it of orderItems) {
+          if (Array.isArray(it.uploadedFiles)) {
+            for (const f of it.uploadedFiles) {
+              if (f && (f.url || f.name)) allUploadedFiles.push({ name: f.name || f.url, url: f.url || '' });
+            }
+          }
+        }
+        const emailItems = orderItems.map((it: any) => ({
+          productName: it.productName || 'Produit',
+          quantity: it.quantity || 1,
+          totalPrice: it.totalPrice || 0,
+          size: it.size || '',
+          finish: it.finish || '',
+        }));
+        await sendOrderConfirmationEmail({
+          customerName: orderData.customerName,
+          customerEmail: orderData.customerEmail,
+          orderRef,
+          invoiceNumber: assignedInvoice || orderData.invoiceNumber || '',
+          items: emailItems,
+          subtotal: orderData.subtotal || 0,
+          shipping: orderData.shipping || 0,
+          tps: orderData.tps || 0,
+          tvq: orderData.tvq || 0,
+          total: orderData.total || 0,
+          shippingAddress: orderData.shippingAddress || null,
+          promoCode: orderData.promoCode || undefined,
+          promoDiscount: orderData.promoDiscount || undefined,
+          supabaseUserId: orderData.supabaseUserId || undefined,
+        });
+        await sendNewOrderNotificationEmail({
+          orderRef,
+          customerName: orderData.customerName,
+          customerEmail: orderData.customerEmail,
+          items: emailItems,
+          subtotal: orderData.subtotal || 0,
+          shipping: orderData.shipping || 0,
+          tps: orderData.tps || 0,
+          tvq: orderData.tvq || 0,
+          total: orderData.total || 0,
+          shippingAddress: orderData.shippingAddress || null,
+          uploadedFiles: allUploadedFiles.length > 0 ? allUploadedFiles : undefined,
+          notes: orderData.notes || undefined,
+          designReady: orderData.designReady !== false,
+          promoCode: orderData.promoCode || undefined,
+          promoDiscount: orderData.promoDiscount || undefined,
+        });
+        strapi.log.info(`[updateStatus] Emails (confirm+admin) envoyes pour ${orderData.customerEmail}`);
+      } catch (emailErr) {
+        strapi.log.warn('[updateStatus] Erreur envoi emails (non bloquant):', emailErr);
+      }
+    }
 
     strapi.log.info(`Commande ${documentId} status: ${(order as any).status} -> ${newStatus}`);
 
