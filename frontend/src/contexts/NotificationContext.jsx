@@ -28,7 +28,8 @@ function setLastViewed(key) {
 export function NotificationProvider({ children }) {
   const { user } = useAuth();
   const { isAdmin } = useUserRole();
-  const [adminMsgCount, setAdminMsgCount] = useState(0);
+  const [adminMsgCount, setAdminMsgCount] = useState(0); // total (messages + commandes + users)
+  const [messagesOnlyCount, setMessagesOnlyCount] = useState(0); // uniquement messages/soumissions/artist-msgs
   const [newUsersCount, setNewUsersCount] = useState(0);
   const [newOrdersCount, setNewOrdersCount] = useState(0);
   const prevCountRef = useRef(0);
@@ -74,17 +75,18 @@ export function NotificationProvider({ children }) {
       const nUsers = userRoles.filter(u => new Date(u.createdAt).getTime() > lastUsersAt).length;
       const nOrders = orders.filter(o => new Date(o.createdAt).getTime() > lastOrdersAt).length;
 
-      const count = contacts.filter(c => (c.status || 'new') === 'new').length
+      const msgsOnly = contacts.filter(c => (c.status || 'new') === 'new').length
         + artists.filter(a => (a.status || 'new') === 'new').length
-        + artistMsgs.filter(m => (m.status || 'new') === 'new').length
-        + nUsers
-        + nOrders;
+        + artistMsgs.filter(m => (m.status || 'new') === 'new').length;
+
+      const count = msgsOnly + nUsers + nOrders;
 
       if (count > prevCountRef.current) {
         playNotifSound();
       }
       prevCountRef.current = count;
       setAdminMsgCount(count);
+      setMessagesOnlyCount(msgsOnly);
       setNewUsersCount(nUsers);
       setNewOrdersCount(nOrders);
     } catch { /* ignore */ }
@@ -116,7 +118,7 @@ export function NotificationProvider({ children }) {
   }, [fetchNotifs]);
 
   return (
-    <NotificationContext.Provider value={{ adminMsgCount, newUsersCount, newOrdersCount, refreshNotifs, markUsersViewed, markOrdersViewed }}>
+    <NotificationContext.Provider value={{ adminMsgCount, messagesOnlyCount, newUsersCount, newOrdersCount, refreshNotifs, markUsersViewed, markOrdersViewed }}>
       {children}
     </NotificationContext.Provider>
   );
@@ -124,6 +126,6 @@ export function NotificationProvider({ children }) {
 
 export function useNotifications() {
   const ctx = useContext(NotificationContext);
-  if (!ctx) return { adminMsgCount: 0, newUsersCount: 0, newOrdersCount: 0, refreshNotifs: () => {}, markUsersViewed: () => {}, markOrdersViewed: () => {} };
+  if (!ctx) return { adminMsgCount: 0, messagesOnlyCount: 0, newUsersCount: 0, newOrdersCount: 0, refreshNotifs: () => {}, markUsersViewed: () => {}, markOrdersViewed: () => {} };
   return ctx;
 }

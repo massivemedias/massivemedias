@@ -6,7 +6,30 @@
 import { NavLink } from 'react-router-dom';
 import { Pencil } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
+import { useNotifications } from '../contexts/NotificationContext';
 import NAV_ITEMS from '../data/adminNav';
+
+/**
+ * Map route -> count key pour afficher un badge sur l'item de menu.
+ * messagesOnlyCount = contacts/artist-submissions/artist-msgs
+ * newOrdersCount = commandes depuis derniere visite
+ * newUsersCount = users depuis derniere visite
+ */
+function getBadgeCount(route, notifs) {
+  if (route === '/admin/messages') return notifs.messagesOnlyCount || 0;
+  if (route === '/admin/commandes') return notifs.newOrdersCount || 0;
+  if (route === '/admin/utilisateurs') return notifs.newUsersCount || 0;
+  return 0;
+}
+
+function NotifBadge({ count }) {
+  if (!count || count <= 0) return null;
+  return (
+    <span className="ml-auto flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-red-500 text-white text-[10px] font-bold shadow-lg shadow-red-500/40 animate-pulse">
+      {count}
+    </span>
+  );
+}
 
 const ACCOUNT_ITEMS = [
   { to: '/account?tab=profile', icon: Pencil, fr: 'Profil', en: 'Profile', es: 'Perfil' },
@@ -28,6 +51,7 @@ const ICON_SIZE = 16;
  */
 export function AdminSidebarNav({ currentPath, msgCount = 0 }) {
   const { tx } = useLang();
+  const notifs = useNotifications();
 
   return (
     <div className={SIDEBAR_CLASSES}>
@@ -54,7 +78,10 @@ export function AdminSidebarNav({ currentPath, msgCount = 0 }) {
       {NAV_ITEMS.map((item) => {
         const Icon = item.icon;
         const isActive = currentPath.startsWith(item.to);
-        const isMessages = item.to === '/admin/messages';
+        // Prop msgCount retrocompatible (utilise uniquement sur /admin/messages si fourni)
+        const badge = item.to === '/admin/messages' && msgCount
+          ? msgCount
+          : getBadgeCount(item.to, notifs);
         return (
           <NavLink
             key={item.to}
@@ -63,11 +90,7 @@ export function AdminSidebarNav({ currentPath, msgCount = 0 }) {
           >
             <Icon size={ICON_SIZE} />
             {tx({ fr: item.fr, en: item.en, es: item.es })}
-            {isMessages && msgCount > 0 && (
-              <span className="ml-auto flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-accent text-white text-[10px] font-bold animate-pulse">
-                {msgCount}
-              </span>
-            )}
+            <NotifBadge count={badge} />
           </NavLink>
         );
       })}
@@ -86,6 +109,7 @@ export function AdminSidebarNav({ currentPath, msgCount = 0 }) {
  */
 export function AccountSidebarNav({ activeTab, onSetTab, accountItems, adminItems, msgCount = 0 }) {
   const { tx } = useLang();
+  const notifs = useNotifications();
 
   return (
     <div className={SIDEBAR_CLASSES}>
@@ -112,7 +136,9 @@ export function AccountSidebarNav({ activeTab, onSetTab, accountItems, adminItem
       <h2 className={SECTION_TITLE_CLASSES}>Admin</h2>
       {adminItems.map((item) => {
         const Icon = item.icon;
-        const isMessages = item.to === '/admin/messages';
+        const badge = item.to === '/admin/messages' && msgCount
+          ? msgCount
+          : getBadgeCount(item.to, notifs);
         return (
           <NavLink
             key={item.to}
@@ -121,11 +147,7 @@ export function AccountSidebarNav({ activeTab, onSetTab, accountItems, adminItem
           >
             <Icon size={ICON_SIZE} />
             {tx({ fr: item.fr, en: item.en, es: item.es })}
-            {isMessages && msgCount > 0 && (
-              <span className="ml-auto flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-accent text-white text-[10px] font-bold animate-pulse">
-                {msgCount}
-              </span>
-            )}
+            <NotifBadge count={badge} />
           </NavLink>
         );
       })}

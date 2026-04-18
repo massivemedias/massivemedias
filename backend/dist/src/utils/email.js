@@ -83,10 +83,11 @@ function buildOrderConfirmationHtml(data) {
     const addressBlock = addr
         ? `${addr.address}<br>${addr.city}, ${addr.province} ${addr.postalCode}`
         : 'N/A';
-    // Date formatee en francais
-    const now = new Date();
-    const moisFr = ['janvier', 'f\u00e9vrier', 'mars', 'avril', 'mai', 'juin', 'juillet', 'ao\u00fbt', 'septembre', 'octobre', 'novembre', 'd\u00e9cembre'];
-    const dateFr = `${now.getDate()} ${moisFr[now.getMonth()]} ${now.getFullYear()}`;
+    // Date formatee en francais - en timezone Montreal (America/Toronto) pour eviter
+    // l'effet "serveur UTC" qui donnait des dates decalees de +4/+5h dans les emails.
+    const dateFr = new Date().toLocaleDateString('fr-CA', {
+        day: 'numeric', month: 'long', year: 'numeric', timeZone: 'America/Toronto'
+    });
     const content = `
     <!-- Titre document -->
     <h1 style="color:#FF52A0;margin:0 0 4px;font-size:13px;text-transform:uppercase;letter-spacing:2px;font-weight:700;">Confirmation de commande</h1>
@@ -312,7 +313,7 @@ async function sendOrderConfirmationEmail(data) {
 }
 exports.sendOrderConfirmationEmail = sendOrderConfirmationEmail;
 function buildContractSignedHtml(data, isForArtist) {
-    const date = new Date(data.signedAt).toLocaleDateString('fr-CA', { day: 'numeric', month: 'long', year: 'numeric' });
+    const date = new Date(data.signedAt).toLocaleDateString('fr-CA', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'America/Toronto' });
     const title = isForArtist ? 'Copie de ton contrat signe' : `Nouveau contrat signe - ${data.artistName}`;
     const content = `
     <h2 style="color:#222;margin:0 0 16px;font-size:16px;">${title}</h2>
@@ -410,7 +411,7 @@ async function sendContractSignedEmail(data) {
 }
 exports.sendContractSignedEmail = sendContractSignedEmail;
 function buildArtistSaleNotificationHtml(data) {
-    const date = new Date(data.orderDate).toLocaleDateString('fr-CA', { day: 'numeric', month: 'long', year: 'numeric' });
+    const date = new Date(data.orderDate).toLocaleDateString('fr-CA', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'America/Toronto' });
     const totalQty = data.items.reduce((s, i) => s + i.quantity, 0);
     const itemRows = data.items.map(item => `
     <tr>
@@ -488,7 +489,7 @@ async function sendArtistSaleNotificationEmail(data) {
 }
 exports.sendArtistSaleNotificationEmail = sendArtistSaleNotificationEmail;
 function buildNewOrderNotificationHtml(data) {
-    const date = new Date().toLocaleDateString('fr-CA', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    const date = new Date().toLocaleDateString('fr-CA', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'America/Toronto' });
     const itemCount = data.items.reduce((s, i) => s + i.quantity, 0);
     const itemRows = data.items.map(item => `
     <tr>
@@ -692,7 +693,7 @@ async function sendTrackingEmail(data) {
 }
 exports.sendTrackingEmail = sendTrackingEmail;
 function buildNewContactNotificationHtml(data) {
-    const date = new Date().toLocaleDateString('fr-CA', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    const date = new Date().toLocaleDateString('fr-CA', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'America/Toronto' });
     const detailRows = [
         { label: 'Nom', value: data.nom },
         { label: 'Courriel', value: data.email },
@@ -819,7 +820,7 @@ async function sendNewUserNotificationEmail(userName, userEmail, provider) {
         return false;
     const sender = getSender();
     const adminEmail = process.env.ADMIN_EMAIL || 'massivemedias@gmail.com';
-    const date = new Date().toLocaleDateString('fr-CA', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    const date = new Date().toLocaleDateString('fr-CA', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'America/Toronto' });
     const content = `
     <h2 style="color:#222;margin:0 0 16px;font-size:16px;">Nouvelle inscription</h2>
 
@@ -874,7 +875,7 @@ function buildReservationNotificationHtml(data) {
         { label: 'Flash', value: data.flashTitle },
         data.placement ? { label: 'Placement', value: data.placement } : null,
         data.size ? { label: 'Taille', value: data.size } : null,
-        data.requestedDate ? { label: 'Date souhaitee', value: new Date(data.requestedDate).toLocaleDateString('fr-CA', { day: 'numeric', month: 'long', year: 'numeric' }) } : null,
+        data.requestedDate ? { label: 'Date souhaitee', value: new Date(data.requestedDate).toLocaleDateString('fr-CA', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'America/Toronto' }) } : null,
         data.budget ? { label: 'Budget', value: data.budget } : null,
     ].filter(Boolean);
     const rows = detailRows.map(r => `

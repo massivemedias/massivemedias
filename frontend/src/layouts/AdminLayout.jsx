@@ -3,14 +3,23 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
 import { useLang } from '../i18n/LanguageContext';
+import { useNotifications } from '../contexts/NotificationContext';
 import Tooltip from '../components/Tooltip';
 import NAV_ITEMS from '../data/adminNav';
 import { AdminSidebarNav } from '../components/AdminSidebar';
+
+function getDrawerBadge(route, notifs) {
+  if (route === '/admin/messages') return notifs.messagesOnlyCount || 0;
+  if (route === '/admin/commandes') return notifs.newOrdersCount || 0;
+  if (route === '/admin/utilisateurs') return notifs.newUsersCount || 0;
+  return 0;
+}
 
 function AdminLayout() {
   const { tx } = useLang();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const notifs = useNotifications();
 
   const currentNav = NAV_ITEMS.find(item => location.pathname.startsWith(item.to));
   const pageTitle = currentNav ? tx({ fr: currentNav.fr, en: currentNav.en, es: currentNav.es }) : 'Admin';
@@ -102,6 +111,7 @@ function AdminLayout() {
                 {NAV_ITEMS.map((item) => {
                   const Icon = item.icon;
                   const isActive = location.pathname.startsWith(item.to);
+                  const badge = getDrawerBadge(item.to, notifs);
                   return (
                     <NavLink
                       key={item.to}
@@ -113,7 +123,13 @@ function AdminLayout() {
                         <Icon size={14} className="text-accent" />
                       </span>
                       <span className="font-semibold text-[13px]">{tx({ fr: item.fr, en: item.en, es: item.es })}</span>
-                      <ChevronRight size={12} className="ml-auto opacity-25" />
+                      {badge > 0 ? (
+                        <span className="ml-auto flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-red-500 text-white text-[10px] font-bold shadow-lg shadow-red-500/40 animate-pulse">
+                          {badge}
+                        </span>
+                      ) : (
+                        <ChevronRight size={12} className="ml-auto opacity-25" />
+                      )}
                     </NavLink>
                   );
                 })}
