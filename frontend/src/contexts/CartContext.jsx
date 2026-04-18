@@ -5,6 +5,30 @@ import { getStickerPrice } from '../data/products';
 
 const CartContext = createContext();
 
+/**
+ * cartId stable: identifiant aleatoire persiste dans localStorage, genere une
+ * seule fois au premier chargement. Utilise pour:
+ *   - Classer les uploads Google Drive du client dans un sous-dossier dedie
+ *   - Lier une session guest a une commande finale
+ *   - Tracker les paniers abandonnes sans compte
+ *
+ * Longueur 14 chars base36 (~72 bits entropie) - suffisant pour eviter les
+ * collisions sans etre inutilement long dans les URLs et noms de dossiers.
+ */
+function ensureCartId() {
+  try {
+    const existing = localStorage.getItem('massive-cart-id');
+    if (existing && /^[a-zA-Z0-9]{8,20}$/.test(existing)) return existing;
+    const fresh = (typeof crypto !== 'undefined' && crypto.randomUUID)
+      ? crypto.randomUUID().replace(/-/g, '').slice(0, 14)
+      : Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+    localStorage.setItem('massive-cart-id', fresh);
+    return fresh;
+  } catch {
+    return 'nocart';
+  }
+}
+
 function loadCart() {
   try {
     const saved = localStorage.getItem('massive-cart');
@@ -183,12 +207,15 @@ export function CartProvider({ children }) {
   }, 0);
   const discountAmount = discountPercent > 0 ? Math.round(cartTotal * discountPercent / 100) : 0;
 
+  // cartId stable pour classer les uploads dans un sous-dossier Google Drive dedie
+  const cartId = useMemo(() => ensureCartId(), []);
+
   const value = useMemo(() => ({
     items, addToCart, removeFromCart, updateQuantity, clearCart, cartCount, cartTotal,
     promoCode, discountPercent, discountAmount, promoLabel,
-    applyPromoCode, removePromoCode,
+    applyPromoCode, removePromoCode, cartId,
   }), [items, addToCart, removeFromCart, updateQuantity, clearCart, cartCount, cartTotal,
-    promoCode, discountPercent, discountAmount, promoLabel, applyPromoCode, removePromoCode]);
+    promoCode, discountPercent, discountAmount, promoLabel, applyPromoCode, removePromoCode, cartId]);
 
   return (
     <CartContext.Provider value={value}>

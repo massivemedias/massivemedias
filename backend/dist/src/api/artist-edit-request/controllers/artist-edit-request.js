@@ -542,14 +542,37 @@ exports.default = strapi_1.factories.createCoreController('api::artist-edit-requ
         let tmpWebp = null;
         try {
             const files = ctx.request.files;
-            const { artistSlug } = ctx.request.body;
-            strapi.log.info(`uploadDirect called - artistSlug: ${artistSlug}, hasFiles: ${!!files}, fileKeys: ${files ? Object.keys(files) : 'none'}`);
+            const { artistSlug, clientEmail, cartId, orderId } = ctx.request.body;
+            strapi.log.info(`uploadDirect called - artistSlug: ${artistSlug || '(none)'}, clientEmail: ${clientEmail || '(none)'}, cartId: ${cartId || '(none)'}, orderId: ${orderId || '(none)'}, hasFiles: ${!!files}`);
             if (!files || !files.file) {
                 return ctx.badRequest('No file provided');
             }
-            if (!artistSlug) {
-                return ctx.badRequest('artistSlug is required');
+            // NOMENCLATURE DOSSIER GOOGLE DRIVE (regle metier lead tech):
+            //   1. artistSlug (legacy override, utilise par l'admin artist-edit)
+            //   2. Si orderId fourni: "{email or Guest} - order-{orderId}"
+            //   3. Si clientEmail fourni: "{email} - cart-{cartId}"
+            //   4. Si cartId seul: "Guest_Cart_{cartId}"
+            //   5. Fallback hard rejet si aucun contexte (evite le vrac 'client-uploads' legacy)
+            let driveFolderName;
+            if (artistSlug && typeof artistSlug === 'string' && artistSlug.trim()) {
+                // Mode legacy admin: pas de changement, on utilise le slug directement
+                driveFolderName = artistSlug.trim();
             }
+            else if (orderId) {
+                const emailPart = clientEmail && typeof clientEmail === 'string' ? clientEmail.trim().toLowerCase() : 'Guest';
+                driveFolderName = `${emailPart} - order-${String(orderId).trim()}`;
+            }
+            else if (clientEmail && typeof clientEmail === 'string' && clientEmail.trim()) {
+                const cartPart = cartId && typeof cartId === 'string' ? cartId.trim() : 'unknown';
+                driveFolderName = `${clientEmail.trim().toLowerCase()} - cart-${cartPart}`;
+            }
+            else if (cartId && typeof cartId === 'string' && cartId.trim()) {
+                driveFolderName = `Guest_Cart_${cartId.trim()}`;
+            }
+            else {
+                return ctx.badRequest('Upload context missing: provide artistSlug OR clientEmail OR orderId OR cartId');
+            }
+            strapi.log.info(`uploadDirect -> Drive folder resolved: "${driveFolderName}"`);
             const file = Array.isArray(files.file) ? files.file[0] : files.file;
             filepath = file.filepath || file.path;
             const fileName = file.originalFilename || file.name || 'upload';
@@ -581,7 +604,13 @@ exports.default = strapi_1.factories.createCoreController('api::artist-edit-requ
                     const timestamp = Date.now();
                     const baseName = fileName.replace(/\.[^.]+$/, '');
                     const safeName = baseName.replace(/[^a-zA-Z0-9._-]/g, '_');
-                    const webpPath = `artist-submissions/${artistSlug}/${timestamp}-${safeName}.webp`;
+                    // Pour Supabase (URLs publiques), on normalise le folder en slug ASCII
+                    // pour eviter des URLs avec caracteres encodes type %40 et des blocages CDN.
+                    const supabaseFolderSlug = driveFolderName
+                        .replace(/[^a-zA-Z0-9._-]/g, '_')
+                        .replace(/_+/g, '_')
+                        .slice(0, 80);
+                    const webpPath = `client-submissions/${supabaseFolderSlug}/${timestamp}-${safeName}.webp`;
                     // Read WebP from disk as a Buffer for Supabase. WebP is much smaller than the
                     // original file so the RAM impact is negligible (typically < 200KB).
                     const webpBuffer = fs.readFileSync(tmpWebp);
@@ -612,12 +641,13 @@ exports.default = strapi_1.factories.createCoreController('api::artist-edit-requ
                 const { uploadStreamToGoogleDrive } = await Promise.resolve().then(() => __importStar(require('../../../utils/google-drive'))).catch(() => ({ uploadStreamToGoogleDrive: null }));
                 if (typeof uploadStreamToGoogleDrive === 'function') {
                     const readStream = fs.createReadStream(filepath);
-                    driveResult = await uploadStreamToGoogleDrive(readStream, fileName, artistSlug, mimeType, fileSize);
+                    // On passe driveFolderName (pas artistSlug) pour que le fichier aille
+                    // dans le dossier specifique au client/commande, pas en vrac a la racine.
+                    driveResult = await uploadStreamToGoogleDrive(readStream, fileName, driveFolderName, mimeType, fileSize);
                 }
                 else {
-                    // Fallback legacy buffer API - only used if the helper can't be loaded.
                     const fileBuffer = fs.readFileSync(filepath);
-                    driveResult = await tryUploadBufferToGoogleDrive(fileBuffer, fileName, artistSlug, mimeType);
+                    driveResult = await tryUploadBufferToGoogleDrive(fileBuffer, fileName, driveFolderName, mimeType);
                 }
             }
             catch (driveErr) {

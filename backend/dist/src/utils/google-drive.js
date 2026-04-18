@@ -3,7 +3,7 @@
 // OAuth2 avec refresh token - upload en tant que mauditemachine@gmail.com
 // Zero dependance externe - fetch natif + API Drive REST v3
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteFromGoogleDrive = exports.uploadBufferToFolder = exports.uploadStreamToGoogleDrive = exports.uploadBufferToGoogleDrive = exports.uploadToGoogleDrive = void 0;
+exports.deleteFromGoogleDrive = exports.uploadBufferToFolder = exports.uploadStreamToGoogleDrive = exports.uploadBufferToGoogleDrive = exports.uploadToGoogleDrive = exports.normalizeDriveFolderName = exports.getOrCreateFolder = void 0;
 const DRIVE_API = 'https://www.googleapis.com/upload/drive/v3/files';
 const DRIVE_API_META = 'https://www.googleapis.com/drive/v3/files';
 const TOKEN_URL = 'https://oauth2.googleapis.com/token';
@@ -35,9 +35,27 @@ async function getAccessToken() {
     cachedToken = { token: data.access_token, expiry: Date.now() + 3500 * 1000 };
     return data.access_token;
 }
-// Trouve ou cree un sous-dossier pour l'artiste
-async function getOrCreateArtistFolder(token, parentFolderId, artistSlug) {
-    const q = encodeURIComponent(`'${parentFolderId}' in parents and name='${artistSlug}' and mimeType='application/vnd.google-apps.folder' and trashed=false`);
+/**
+ * Echappe un nom de dossier pour l'utilisation dans une Google Drive `q` query.
+ * Drive API exige que les apostrophes soient doublees dans les valeurs quotees.
+ * Le reste des caracteres est autorise dans les noms Drive, mais on prend la
+ * precaution de trim pour eviter des fantomes avec espaces en debut/fin.
+ */
+function escapeForDriveQuery(name) {
+    return String(name).trim().replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+}
+/**
+ * Trouve ou cree un sous-dossier dans parentFolderId avec le nom donne.
+ * Idempotent: si le dossier existe deja (meme nom, meme parent, non-trashed),
+ * retourne son id sans dupliquer.
+ *
+ * Cette fonction etait precedemment privee sous le nom getOrCreateArtistFolder.
+ * Elle est maintenant exportee pour permettre aux callers (upload controller)
+ * de construire leurs propres regles de nomenclature de dossiers.
+ */
+async function getOrCreateFolder(token, parentFolderId, folderName) {
+    const escapedName = escapeForDriveQuery(folderName);
+    const q = encodeURIComponent(`'${parentFolderId}' in parents and name='${escapedName}' and mimeType='application/vnd.google-apps.folder' and trashed=false`);
     const searchRes = await fetch(`${DRIVE_API_META}?q=${q}&fields=files(id,name)`, {
         headers: { Authorization: `Bearer ${token}` },
     });
@@ -54,16 +72,39 @@ async function getOrCreateArtistFolder(token, parentFolderId, artistSlug) {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-            name: artistSlug,
+            name: String(folderName).trim(),
             mimeType: 'application/vnd.google-apps.folder',
             parents: [parentFolderId],
         }),
     });
     if (!createRes.ok)
-        throw new Error(`Failed to create folder: ${await createRes.text()}`);
+        throw new Error(`Failed to create folder '${folderName}': ${await createRes.text()}`);
     const folder = await createRes.json();
     return folder.id;
 }
+exports.getOrCreateFolder = getOrCreateFolder;
+/**
+ * Alias retro-compatible - les callers existants passent 'artistSlug' mais la
+ * fonction fait exactement le meme travail quel que soit le nom.
+ */
+async function getOrCreateArtistFolder(token, parentFolderId, artistSlug) {
+    return getOrCreateFolder(token, parentFolderId, artistSlug);
+}
+/**
+ * Helper public: normalise un nom de dossier pour Google Drive.
+ * - Trim
+ * - Remplace les caracteres de controle
+ * - Garde les accents et les espaces (Drive les supporte)
+ * - Tronque a 150 chars pour ne pas exploser les limites Drive
+ */
+function normalizeDriveFolderName(raw) {
+    return String(raw || '')
+        // eslint-disable-next-line no-control-regex
+        .replace(/[\u0000-\u001F\u007F]/g, '')
+        .trim()
+        .slice(0, 150);
+}
+exports.normalizeDriveFolderName = normalizeDriveFolderName;
 // Upload un fichier original vers Google Drive
 async function uploadToGoogleDrive(fileUrl, fileName, artistSlug, mimeType) {
     const parentFolderId = process.env.GOOGLE_DRIVE_FOLDER_ID;

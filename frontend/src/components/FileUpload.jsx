@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { Upload, X, FileText, Loader2, Plus } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useCart } from '../contexts/CartContext';
 import api, { uploadFile } from '../services/api';
 
 const MAX_SIZE = 500 * 1024 * 1024; // 500 MB - les originaux vont sur Google Drive
@@ -83,9 +84,18 @@ function formatSize(bytes) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-function FileUpload({ files = [], onFilesChange, label, maxFiles = 5, compact = false, uploadFn, hidePreview = false }) {
+/**
+ * Props pour classer les uploads Google Drive dans un sous-dossier dedie:
+ *   - orderId: si on upload pour une commande existante (prioritaire)
+ *   - contextLabel: override explicite du dossier (ex: 'psyqu33n' pour les edits artiste)
+ * Sinon, FileUpload deduit automatiquement le dossier via useAuth() (email) et useCart() (cartId):
+ *   - Logge: "{email} - cart-{cartId}"
+ *   - Anonyme: "Guest_Cart_{cartId}"
+ */
+function FileUpload({ files = [], onFilesChange, label, maxFiles = 5, compact = false, uploadFn, hidePreview = false, orderId, contextLabel }) {
   const { tx } = useLang();
   const { user } = useAuth();
+  const { cartId } = useCart();
   const inputRef = useRef(null);
   const [uploading, setUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState('');
@@ -119,15 +129,17 @@ function FileUpload({ files = [], onFilesChange, label, maxFiles = 5, compact = 
     setUploading(true);
     try {
       const uploaded = [];
-      const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'guest';
-      // Si pas d'artistSlug contextuel et pas d'utilisateur, on utilise 'client-uploads' comme dossier generique
-      // (evite 'unknown' qui pourrait creer des problemes de permissions Google Drive)
-      const defaultFolder = user ? userName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') : 'client-uploads';
-      const folderName = window.__artistSlug || defaultFolder;
+      // Contexte pour classement Google Drive - le backend utilise ces champs pour
+      // determiner le sous-dossier exact. Priorite:
+      //   1. contextLabel prop (explicite, ex: admin artist-edit)
+      //   2. window.__artistSlug legacy (panneau d'edition artist)
+      //   3. orderId prop (upload dans le contexte d'une commande existante)
+      //   4. email + cartId (logge client standard)
+      //   5. cartId seul (guest, non logge)
+      const clientEmail = user?.email || '';
+      const explicitFolder = contextLabel || window.__artistSlug || '';
 
       for (const file of toUpload) {
-        // ALL files go to Google Drive via backend (originals preserved)
-        // Backend also creates WebP for site display
         setUploadStatus(tx({
           fr: `Upload de ${file.name}... (peut prendre 30s si serveur en veille)`,
           en: `Uploading ${file.name}... (may take 30s if server is waking up)`,
@@ -135,7 +147,15 @@ function FileUpload({ files = [], onFilesChange, label, maxFiles = 5, compact = 
         }));
         const formData = new FormData();
         formData.append('file', file);
-        formData.append('artistSlug', folderName);
+        // Priorite 1-2: override explicite (garde compat avec l'edition artiste)
+        if (explicitFolder) {
+          formData.append('artistSlug', explicitFolder);
+        }
+        // Priorite 3-5: nouveaux champs pour classement automatique
+        if (orderId) formData.append('orderId', String(orderId));
+        if (clientEmail) formData.append('clientEmail', clientEmail);
+        if (cartId) formData.append('cartId', cartId);
+
         const { data: result } = await api.post('/artist-edit-requests/upload-direct', formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
           timeout: 600000,
