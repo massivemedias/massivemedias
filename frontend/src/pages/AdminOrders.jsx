@@ -690,12 +690,15 @@ function AdminOrders() {
 
                                         {/* Pack details (artist sticker packs) - A IMPRIMER */}
                                         {Array.isArray(item.packDetails) && item.packDetails.length > 0 && (() => {
-                                          // 1 pack = 1 pochette. qtyPerPack = nb de CE sticker dans 1 pochette.
-                                          // item.quantity = nb de pochettes commandees.
-                                          // Total a imprimer de CE sticker = qtyPerPack * item.quantity.
-                                          const packs = item.quantity || 1;
-                                          const stickersPerPack = item.packDetails.reduce((acc, d) => acc + (Number(d.qtyPerPack) || 1), 0);
-                                          const totalStickers = stickersPerPack * packs;
+                                          // Data source: ConfiguratorArtistSticker.jsx
+                                          // - detail.qty = TOTAL deja calcule de CE sticker pour toute la commande
+                                          // - detail.qtyPerPack = nb de CE sticker dans UN pack (pochette)
+                                          // - item.quantity = TOTAL de stickers dans toute la commande (= packCount x packSize)
+                                          // - packComposition = { packSize, packCount, total }
+                                          const composition = item.packComposition || {};
+                                          const packCount = Number(composition.packCount) || 0;
+                                          const packSize = Number(composition.packSize) || 0;
+                                          const totalStickers = Number(item.quantity) || item.packDetails.reduce((acc, d) => acc + (Number(d.qty) || 0), 0);
                                           return (
                                           <div className="mt-3 p-3 rounded-lg bg-accent/5 border border-accent/20">
                                             <div className="flex items-center justify-between mb-2 flex-wrap gap-1">
@@ -703,13 +706,16 @@ function AdminOrders() {
                                                 {tx({ fr: 'Stickers a imprimer', en: 'Stickers to print', es: 'Stickers a imprimir' })}
                                               </span>
                                               <span className="text-xs text-grey-muted">
-                                                {stickersPerPack} {tx({ fr: '/pack', en: '/pack', es: '/pack' })} × {packs} {tx({ fr: 'pack(s)', en: 'pack(s)', es: 'pack(s)' })} = <strong className="text-accent">{totalStickers} {tx({ fr: 'stickers au total', en: 'stickers total', es: 'stickers total' })}</strong>
+                                                {packCount > 0 && packSize > 0 ? (
+                                                  <>{packCount} pack(s) × {packSize} stickers = </>
+                                                ) : null}
+                                                <strong className="text-accent">{totalStickers} {tx({ fr: 'stickers au total', en: 'stickers total', es: 'stickers total' })}</strong>
                                               </span>
                                             </div>
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                               {item.packDetails.map((detail, di) => {
+                                                const totalToPrint = Number(detail.qty) || ((Number(detail.qtyPerPack) || 1) * (packCount || 1));
                                                 const perPack = Number(detail.qtyPerPack) || 1;
-                                                const totalToPrint = perPack * packs;
                                                 return (
                                                   <a
                                                     key={di}
@@ -731,7 +737,7 @@ function AdminOrders() {
                                                     <div className="flex-1 min-w-0">
                                                       <p className="text-xs font-semibold text-heading truncate">{detail.title || detail.id}</p>
                                                       <p className="text-[11px] text-grey-muted">
-                                                        {perPack}/pack × {packs} = <strong className="text-accent">{totalToPrint}</strong>
+                                                        {packCount > 0 ? <>{perPack}/pack × {packCount} = </> : null}<strong className="text-accent">{totalToPrint}</strong>
                                                       </p>
                                                     </div>
                                                     <ExternalLink size={12} className="text-grey-muted group-hover:text-accent flex-shrink-0" />
