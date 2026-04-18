@@ -8,8 +8,8 @@ routes = [
   { pattern = "massivemedias.com/*", zone_name = "massivemedias.com" }
 ]
 
-# Cron trigger: ping le backend Render toutes les 5 minutes pour empecher
-# qu'il s'endorme (Render free tier sleep apres 15min d'inactivite).
-# Resultat: backend toujours eveille, aucun cold start pour les clients.
-[triggers]
-crons = ["*/5 * * * *"]
+# Cron keep-alive retire: backend Render est maintenant sur plan payant "Always On"
+# (pas de sleep), plus besoin de pinger. La DB Neon est aussi "Always On".
+# Pour reactiver un cron Worker (ex: autre tache periodique), decommenter:
+# [triggers]
+# crons = ["*/5 * * * *"]

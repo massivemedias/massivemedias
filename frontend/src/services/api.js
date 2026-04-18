@@ -26,8 +26,9 @@ api.interceptors.request.use(
   }
 );
 
-// Retry automatique sur 503 (Render cold start) et erreurs reseau
-// Render free tier: hiberne apres 15min, reveil prend ~60s
+// Retry automatique sur erreurs transitoires (503 backend restart, erreurs reseau).
+// Le backend Render est sur plan "Always On" (pas de sleep), mais on garde un retry
+// court pour les redemarrages post-deploy et coupures reseau client.
 const MAX_RETRIES = 3;
 const RETRY_DELAYS = [4000, 8000, 15000]; // 4s, 8s, 15s - total ~27s de patience
 
@@ -40,7 +41,7 @@ function shouldRetry(error) {
   if (error.config?._retryCount >= MAX_RETRIES) return false;
   // Si serveur deja marque down, pas de retry du tout
   if (serverDown && Date.now() - serverDownSince < SERVER_DOWN_COOLDOWN) return false;
-  // 503 = Render en train de demarrer - retry normal
+  // 503 = backend en train de redemarrer (post-deploy ou incident) - retry normal
   if (error.response?.status === 503) return true;
   // Erreur reseau (pas de reponse = serveur down) - 1 seul retry puis on arrete
   if (!error.response && error.code !== 'ERR_CANCELED') {
@@ -64,19 +65,6 @@ function markServerUp() {
 
 function wait(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-// Ping de warmup: reveille le serveur Render des le chargement du site
-// Utilise fetch() direct (pas Axios) pour eviter les intercepteurs
-let warmupDone = false;
-function warmupServer() {
-  if (warmupDone) return;
-  warmupDone = true;
-  const url = API_URL.replace(/\/api\/?$/, '');
-  fetch(url, { method: 'HEAD', mode: 'no-cors' }).catch(() => {});
-}
-if (typeof window !== 'undefined') {
-  warmupServer();
 }
 
 // Intercepteur pour gerer les erreurs + retry

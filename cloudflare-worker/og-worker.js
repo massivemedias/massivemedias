@@ -21,14 +21,6 @@
 
 const SITE_URL = 'https://massivemedias.com';
 const DEFAULT_OG_IMAGE = 'https://massivemedias.com/og-image.jpg';
-const BACKEND_URL = 'https://massivemedias-api.onrender.com';
-
-// Endpoints legers a pinger pour empecher Render de s'endormir.
-// On ping plusieurs endpoints au cas ou l'un timeout - au moins un doit reveiller Render.
-const WAKE_ENDPOINTS = [
-  '/api/site-content',
-  '/api/artists',
-];
 
 const TATOUEURS = {
   // Section tatoueurs desactivee - les entrees seront restaurees si la section revient
@@ -510,27 +502,6 @@ function corsHeaders() {
 }
 
 export default {
-  // Cron trigger toutes les 5 minutes (configure dans wrangler.toml)
-  // Garde le backend Render reveille pour eviter les cold starts de 30-60s
-  // qui font perdre des clients sur les uploads / commandes.
-  async scheduled(event, env, ctx) {
-    const promises = WAKE_ENDPOINTS.map(async (endpoint) => {
-      try {
-        const url = `${BACKEND_URL}${endpoint}`;
-        const response = await fetch(url, {
-          method: 'GET',
-          headers: { 'User-Agent': 'Cloudflare-KeepAlive-Bot/1.0 (massivemedias.com)' },
-          cf: { cacheTtl: 0, cacheEverything: false },
-        });
-        return { endpoint, status: response.status, ok: response.ok };
-      } catch (err) {
-        return { endpoint, error: err.message };
-      }
-    });
-    const results = await Promise.all(promises);
-    console.log('[KeepAlive]', new Date().toISOString(), JSON.stringify(results));
-  },
-
   async fetch(request) {
     const url = new URL(request.url);
     const userAgent = request.headers.get('user-agent') || '';

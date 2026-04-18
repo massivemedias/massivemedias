@@ -12,7 +12,7 @@ Plateforme e-commerce et portfolio d'artistes, trilingue (FR/EN/ES), avec 10 the
 massivemedias/
 ├── frontend/              # React 19 + Vite + Tailwind CSS
 ├── backend/               # Strapi v5 (headless CMS)
-├── cloudflare-worker/     # Worker OG images + keep-alive cron
+├── cloudflare-worker/     # Worker OG images + proxy Instagram
 ├── scripts/               # Utilitaires (reconcile Stripe, Google Drive, etc.)
 ├── .github/workflows/     # CI/CD (GitHub Actions)
 └── _old/                  # Ancien site (archive)
@@ -45,7 +45,7 @@ massivemedias/
 Navigateur client
     │
     ▼
-Cloudflare (DNS + SSL + CDN + Worker cron)
+Cloudflare (DNS + SSL + CDN + Worker OG/SEO)
     │
     ├─► GitHub Pages (frontend statique React)
     │
@@ -146,7 +146,8 @@ NODE_OPTIONS='--max-old-space-size=1536 --expose-gc' strapi start
 **Worker `og-worker.js`:**
 - Route: `*.massivemedias.com/*`
 - Genere les images Open Graph dynamiques pour les pages artistes
-- Cron trigger `*/5 * * * *` - ping backend toutes les 5 min (defense en profondeur anti-OOM-restart)
+- Injecte les meta SEO page-specifiques via HTMLRewriter
+- Expose `/api/instagram/:handle` (proxy cache 1h pour les feeds publics)
 
 **Sous-domaines artistes:** CNAME `<slug>` -> `massivemedias.github.io` (proxied)
 
@@ -482,11 +483,11 @@ Cron horaire a `7 * * * *`:
 - Auto-genere facture + envoie emails
 - Tolerant aux erreurs de config (pas d'email d'echec sauf si vrai probleme business)
 
-### `.github/workflows/keep-alive.yml`
-Ping Render toutes les 10 min (backup du Cloudflare Worker cron). Endpoint `/api/artists`.
-
-### `cloudflare-worker/og-worker.js` (cron)
-Cron `*/5 * * * *` - ping 2 endpoints backend (`/api/site-content` + `/api/artists`) pour garder le conteneur chaud. Defense en profondeur anti-OOM-restart.
+### `cloudflare-worker/og-worker.js`
+Genere les meta tags Open Graph pour les sous-domaines artistes, injecte les meta SEO
+sur le domaine principal via HTMLRewriter, et expose un proxy Instagram pour les
+feeds publics (`/api/instagram/:handle`). Pas de cron keep-alive - le backend est
+"Always On" sur Render plan payant.
 
 ---
 
