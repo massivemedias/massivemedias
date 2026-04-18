@@ -1,0 +1,44 @@
+{
+  "kind": "collectionType",
+  "collectionName": "qr_codes",
+  "info": {
+    "singularName": "qr-code",
+    "pluralName": "qr-codes",
+    "displayName": "QR Code",
+    "description": "Dynamic QR codes with scan tracking"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "shortId": {
+      "type": "string",
+      "unique": true,
+      "required": true,
+      "minLength": 6,
+      "maxLength": 16
+    },
+    "destinationUrl": {
+      "type": "string",
+      "required": true,
+      "maxLength": 2000
+    },
+    "title": {
+      "type": "string",
+      "maxLength": 200
+    },
+    "createdByEmail": {
+      "type": "string"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true
+    },
+    "scans": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::qr-scan.qr-scan",
+      "mappedBy": "qrCode"
+    }
+  }
+}

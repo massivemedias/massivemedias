@@ -1,0 +1,37 @@
+{
+    "kind": "collectionType",
+    "collectionName": "qr_scans",
+    "info": {
+        "singularName": "qr-scan",
+        "pluralName": "qr-scans",
+        "displayName": "QR Scan",
+        "description": "Individual scan events on QR codes"
+    },
+    "options": {
+        "draftAndPublish": false
+    },
+    "attributes": {
+        "scannedAt": {
+            "type": "datetime",
+            "required": true
+        },
+        "ipAddress": {
+            "type": "string",
+            "maxLength": 64
+        },
+        "userAgent": {
+            "type": "string",
+            "maxLength": 500
+        },
+        "referer": {
+            "type": "string",
+            "maxLength": 500
+        },
+        "qrCode": {
+            "type": "relation",
+            "relation": "manyToOne",
+            "target": "api::qr-code.qr-code",
+            "inversedBy": "scans"
+        }
+    }
+}

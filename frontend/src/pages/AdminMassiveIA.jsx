@@ -3,10 +3,12 @@ import { motion } from 'framer-motion';
 import {
   MessageSquare, Sparkles, Image, Camera, Send, Plus, Settings2,
   Upload, Download, Loader2, X, AlertCircle, ImageDown, QrCode, Shirt,
+  BarChart3, Trash2, ExternalLink, Copy, Check,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import { chatStream, generateMockup, checkHealth } from '../services/iaService';
 import MerchMockupTool from '../components/merch/MerchMockupTool';
+import api from '../services/api';
 
 const TABS = [
   { id: 'chat', icon: MessageSquare, label: 'Chat' },
@@ -1418,34 +1420,146 @@ function ResizeTab() {
 }
 
 // ---------------------------------------------------------------------------
-// QR Code Tab - Generateur avance
+// QR Code Tab - Generateur avance + Tracking dynamique
 // ---------------------------------------------------------------------------
+// DEFAULTS (fixes par le lead tech - ne pas changer sans accord):
+//   - Taille = 1200px (qualite print/affiche sans pixellisation)
+//   - Style = 'square' (Simple, lisible par tous les readers)
+//   - Error Correction = 'L' (Low) par defaut
+//   - Error Correction = 'H' (High) FORCE automatiquement si logo present
+//     -> un logo occupe 20-25% de la surface, seul EC='H' (30% recovery) garantit
+//        la lisibilite par tous les scanners meme a mauvais angle
+// ---------------------------------------------------------------------------
+
+const QR_DEFAULT_SIZE = 1200;
+const QR_DEFAULT_STYLE = 'square';
+const QR_DEFAULT_EC = 'L';
+const QR_EC_WITH_LOGO = 'H';
+
 function QRCodeTab() {
   const [url, setUrl] = useState('https://massivemedias.com');
-  const [shortUrl, setShortUrl] = useState('');
-  const [qrTab, setQrTab] = useState('content'); // content | colors | design | logo
-  const [dotStyle, setDotStyle] = useState('rounded');
-  const [ecLevel, setEcLevel] = useState('L');
+  const [title, setTitle] = useState('');
+  const [trackingEnabled, setTrackingEnabled] = useState(true);
+  const [encodedUrl, setEncodedUrl] = useState(''); // URL que le QR encode VRAIMENT (tracking ou direct)
+  const [currentShortId, setCurrentShortId] = useState(''); // si tracking, le shortId du dernier QR cree
+  const [createLoading, setCreateLoading] = useState(false);
+  const [createError, setCreateError] = useState('');
+
+  const [qrTab, setQrTab] = useState('content'); // content | design | colors | logo | list
+  const [dotStyle, setDotStyle] = useState(QR_DEFAULT_STYLE);
+  const [ecLevel, setEcLevel] = useState(QR_DEFAULT_EC);
   const [fgColor, setFgColor] = useState('#000000');
   const [bgColor, setBgColor] = useState('#FFFFFF');
   const [transparentBg, setTransparentBg] = useState(false);
-  const [size, setSize] = useState(1000);
+  const [size, setSize] = useState(QR_DEFAULT_SIZE);
   const [logoFile, setLogoFile] = useState(null);
   const [logoUrl, setLogoUrl] = useState('');
   const canvasRef = useRef(null);
 
-  // URL effective: raccourcie si disponible, sinon originale
-  const effectiveUrl = shortUrl || url;
+  // Mes QR Codes list state
+  const [myList, setMyList] = useState([]);
+  const [listLoading, setListLoading] = useState(false);
+  const [copiedId, setCopiedId] = useState('');
+
+  // REGLE METIER: si logo present, force EC = 'H'. L'etat ecLevel reste utilisable
+  // par l'utilisateur pour son choix initial, mais effectiveEC prend le dessus pour
+  // la generation. Affichage informe aussi l'utilisateur que l'override est actif.
+  const effectiveEC = logoUrl ? QR_EC_WITH_LOGO : ecLevel;
+
+  // URL effectivement encodee dans le QR:
+  // - Si tracking ON et un QR a ete cree: utilise la trackingUrl retournee par l'API
+  // - Sinon: l'URL brute saisie par l'utilisateur
+  const effectiveUrl = (trackingEnabled && encodedUrl) ? encodedUrl : url;
+
+  /**
+   * Creation d'un QR tracke via l'API backend. Appele quand:
+   * - Tracking enabled ET l'url saisie change (debounced)
+   * - Ou via bouton manuel "Creer QR tracke"
+   */
+  const createTrackedQR = useCallback(async () => {
+    if (!url.trim() || !trackingEnabled) return;
+    setCreateLoading(true);
+    setCreateError('');
+    try {
+      const res = await api.post('/qr-codes/create', {
+        destinationUrl: url.trim(),
+        title: title.trim() || undefined,
+      });
+      setEncodedUrl(res.data.trackingUrl);
+      setCurrentShortId(res.data.shortId);
+      // Rafraichir la liste si on etait en train de la consulter
+      fetchMyList();
+    } catch (err) {
+      console.error('createTrackedQR error:', err);
+      setCreateError(err?.response?.data?.error?.message || err?.message || 'Erreur de creation');
+      // Fallback: encode direct pour que l'utilisateur ait quand meme un QR
+      setEncodedUrl('');
+      setCurrentShortId('');
+    } finally {
+      setCreateLoading(false);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [url, title, trackingEnabled]);
+
+  const fetchMyList = useCallback(async () => {
+    setListLoading(true);
+    try {
+      const res = await api.get('/qr-codes/list');
+      setMyList(res.data?.data || []);
+    } catch (err) {
+      console.error('fetchMyList error:', err);
+      setMyList([]);
+    } finally {
+      setListLoading(false);
+    }
+  }, []);
+
+  const deleteQr = useCallback(async (documentId) => {
+    if (!window.confirm('Supprimer ce QR code et tous ses scans?')) return;
+    try {
+      await api.delete(`/qr-codes/${documentId}`);
+      fetchMyList();
+    } catch (err) {
+      console.error('deleteQr error:', err);
+      window.alert('Erreur lors de la suppression');
+    }
+  }, [fetchMyList]);
+
+  const copyTrackingUrl = useCallback((shortId) => {
+    const backend = import.meta.env.VITE_API_URL || 'https://massivemedias-api.onrender.com';
+    const fullUrl = `${backend.replace(/\/api\/?$/, '').replace(/\/$/, '')}/api/qr/${shortId}`;
+    navigator.clipboard.writeText(fullUrl);
+    setCopiedId(shortId);
+    setTimeout(() => setCopiedId(''), 1800);
+  }, []);
+
+  useEffect(() => {
+    if (qrTab === 'list') fetchMyList();
+  }, [qrTab, fetchMyList]);
+
+  // Quand l'URL ou le titre change ET que le tracking est ON, on re-cree le QR (debounced).
+  // Si tracking OFF, on flush encodedUrl pour que le QR encode directement l'URL saisie.
+  useEffect(() => {
+    if (!trackingEnabled) {
+      setEncodedUrl('');
+      setCurrentShortId('');
+      return;
+    }
+    const t = setTimeout(() => { createTrackedQR(); }, 600);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [url, trackingEnabled]);
 
   const generateQR = useCallback(async () => {
     if (!effectiveUrl.trim() || !canvasRef.current) return;
     try {
       const QRCode = (await import('qrcode')).default;
       const canvas = canvasRef.current;
-      const ecl = logoUrl ? 'Q' : ecLevel; // Q minimum si logo
 
-      // Generer les modules
-      const qrData = await QRCode.create(effectiveUrl.trim(), { errorCorrectionLevel: ecl });
+      // REGLE METIER: logo present => EC='H' force. Si absent, EC utilisateur.
+      const ecForGeneration = effectiveEC;
+
+      const qrData = await QRCode.create(effectiveUrl.trim(), { errorCorrectionLevel: ecForGeneration });
       const modules = qrData.modules;
       const modSize = modules.size;
       const margin = 2;
@@ -1487,30 +1601,44 @@ function QRCodeTab() {
         }
       }
 
-      // Logo au centre
+      // Logo au centre - dessin ameliore:
+      // - Taille proportionnelle max 22% (sous les 25% recommandes pour EC='H' - 30% recovery)
+      // - Background blanc arrondi avec padding de 4% de la taille du logo (lisible + net)
+      // - Dessin direct dans le callback onload pour eviter la race avec le redessin des modules
       if (logoUrl) {
         const logo = new window.Image();
         logo.crossOrigin = 'anonymous';
         logo.onload = () => {
-          const logoSize = size * 0.25;
+          const logoRatio = 0.22; // max 22% - sous le seuil des 25%
+          const logoSize = size * logoRatio;
           const lx = (size - logoSize) / 2;
           const ly = (size - logoSize) / 2;
+          const padding = Math.round(logoSize * 0.12); // ~12% de la taille logo comme padding
+          const bgSize = logoSize + padding * 2;
+          const bgX = lx - padding;
+          const bgY = ly - padding;
+          const bgRadius = Math.round(bgSize * 0.18);
+
           if (transparentBg) {
-            ctx.clearRect(lx - 6, ly - 6, logoSize + 12, logoSize + 12);
+            ctx.clearRect(bgX, bgY, bgSize, bgSize);
           } else {
+            // Background rounded rectangle pour que le logo se detache des pixels QR
             ctx.fillStyle = bgColor;
             ctx.beginPath();
-            ctx.roundRect(lx - 6, ly - 6, logoSize + 12, logoSize + 12, 10);
+            ctx.roundRect(bgX, bgY, bgSize, bgSize, bgRadius);
             ctx.fill();
           }
+
+          // Dessin du logo lui-meme
           ctx.drawImage(logo, lx, ly, logoSize, logoSize);
         };
+        logo.onerror = () => { console.warn('Logo failed to load, QR generated without logo'); };
         logo.src = logoUrl;
       }
     } catch (err) {
       console.error('QR error:', err);
     }
-  }, [effectiveUrl, dotStyle, ecLevel, fgColor, bgColor, size, logoUrl, transparentBg]);
+  }, [effectiveUrl, dotStyle, effectiveEC, fgColor, bgColor, size, logoUrl, transparentBg]);
 
   useEffect(() => { const t = setTimeout(generateQR, 200); return () => clearTimeout(t); }, [generateQR]);
 
@@ -1518,7 +1646,8 @@ function QRCodeTab() {
     if (!canvasRef.current) return;
     const a = document.createElement('a');
     a.href = canvasRef.current.toDataURL('image/png');
-    a.download = `qr-${effectiveUrl.replace(/https?:\/\//, '').replace(/[^a-z0-9]/gi, '-').slice(0, 30)}.png`;
+    const labelUrl = effectiveUrl.replace(/https?:\/\//, '').replace(/[^a-z0-9]/gi, '-').slice(0, 30);
+    a.download = `qr-${labelUrl}.png`;
     a.click();
   };
 
@@ -1527,13 +1656,14 @@ function QRCodeTab() {
       const QRCode = (await import('qrcode')).default;
       const svg = await QRCode.toString(effectiveUrl.trim(), {
         type: 'svg', width: size, margin: 2,
-        errorCorrectionLevel: logoUrl ? 'Q' : ecLevel,
+        errorCorrectionLevel: effectiveEC,
         color: { dark: fgColor, light: bgColor },
       });
       const blob = new Blob([svg], { type: 'image/svg+xml' });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
-      a.download = `qr-${effectiveUrl.replace(/https?:\/\//, '').replace(/[^a-z0-9]/gi, '-').slice(0, 30)}.svg`;
+      const labelUrl = effectiveUrl.replace(/https?:\/\//, '').replace(/[^a-z0-9]/gi, '-').slice(0, 30);
+      a.download = `qr-${labelUrl}.svg`;
       a.click();
     } catch (err) { console.error('SVG error:', err); }
   };
@@ -1543,6 +1673,7 @@ function QRCodeTab() {
     { id: 'design', label: 'Design' },
     { id: 'colors', label: 'Couleurs' },
     { id: 'logo', label: 'Logo' },
+    { id: 'list', label: 'Mes QR' },
   ];
 
   return (
@@ -1563,43 +1694,165 @@ function QRCodeTab() {
         {qrTab === 'content' && (
           <div className="rounded-xl bg-black/20 p-4 space-y-4">
             <div>
-              <label className="text-xs text-grey-muted uppercase tracking-wider block mb-1">URL / Texte</label>
-              <input type="text" value={url} onChange={(e) => { setUrl(e.target.value); setShortUrl(''); }}
+              <label className="text-xs text-grey-muted uppercase tracking-wider block mb-1">URL de destination</label>
+              <input type="text" value={url} onChange={(e) => setUrl(e.target.value)}
                 placeholder="https://massivemedias.com"
                 className="w-full rounded-lg bg-black/30 text-heading text-sm px-3 py-2.5 outline-none border border-white/5 focus:border-accent" />
             </div>
             <div>
+              <label className="text-xs text-grey-muted uppercase tracking-wider block mb-1">Titre (optionnel)</label>
+              <input type="text" value={title} onChange={(e) => setTitle(e.target.value)}
+                placeholder="Ex: Carte affaires Michael"
+                className="w-full rounded-lg bg-black/30 text-heading text-sm px-3 py-2.5 outline-none border border-white/5 focus:border-accent" />
+            </div>
+
+            {/* Toggle tracking dynamique */}
+            <div className="rounded-lg bg-black/30 p-3 border border-accent/20">
+              <label className="flex items-start gap-3 cursor-pointer">
+                <div className="relative flex-shrink-0 mt-0.5">
+                  <div className={`w-9 h-5 rounded-full transition-colors flex items-center ${trackingEnabled ? 'bg-accent' : 'bg-white/10'}`}
+                    onClick={() => setTrackingEnabled(!trackingEnabled)}>
+                    <div className={`w-4 h-4 rounded-full bg-white shadow transition-transform ${trackingEnabled ? 'translate-x-4 ml-0.5' : 'ml-0.5'}`} />
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <p className="text-heading text-xs font-semibold flex items-center gap-1">
+                    <BarChart3 size={12} className="text-accent" />
+                    QR tracke (recommande)
+                  </p>
+                  <p className="text-grey-muted text-[10px] mt-0.5">
+                    Le QR encode une URL courte qui passe par notre serveur pour compter les scans,
+                    puis redirige vers ta destination. Tu peux voir les stats dans "Mes QR".
+                  </p>
+                  {trackingEnabled && currentShortId && (
+                    <p className="text-accent text-[10px] mt-1 font-mono">
+                      QR cree: /qr/{currentShortId}
+                    </p>
+                  )}
+                  {trackingEnabled && createLoading && (
+                    <p className="text-grey-muted text-[10px] mt-1 flex items-center gap-1">
+                      <Loader2 size={10} className="animate-spin" /> Creation en cours...
+                    </p>
+                  )}
+                  {createError && (
+                    <p className="text-red-400 text-[10px] mt-1">
+                      {createError}
+                    </p>
+                  )}
+                </div>
+              </label>
+            </div>
+
+            <div>
               <label className="text-xs text-grey-muted uppercase tracking-wider block mb-1">
                 Correction d'erreur
                 <span className="text-grey-muted/50 normal-case ml-1">(Low = moins de points)</span>
+                {logoUrl && (
+                  <span className="ml-2 px-1.5 py-0.5 rounded bg-accent/20 text-accent text-[9px] normal-case">
+                    force a HIGH (logo detecte)
+                  </span>
+                )}
               </label>
               <div className="flex gap-1.5">
                 {[
                   { id: 'L', label: 'Low', desc: 'Simple' },
                   { id: 'M', label: 'Medium', desc: 'Standard' },
-                  { id: 'Q', label: 'Quartile', desc: 'Logo' },
-                  { id: 'H', label: 'High', desc: 'Max' },
-                ].map(e => (
-                  <button key={e.id} onClick={() => setEcLevel(e.id)}
-                    className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-all ${
-                      ecLevel === e.id ? 'bg-accent text-white' : 'bg-black/20 text-grey-muted hover:text-heading'
-                    }`}>
-                    <span className="block">{e.label}</span>
-                    <span className="block text-[9px] opacity-60">{e.desc}</span>
-                  </button>
-                ))}
+                  { id: 'Q', label: 'Quartile', desc: 'Fiable' },
+                  { id: 'H', label: 'High', desc: 'Max / Logo' },
+                ].map(e => {
+                  const isActive = effectiveEC === e.id;
+                  const isDisabled = !!logoUrl && e.id !== 'H';
+                  return (
+                    <button key={e.id} onClick={() => !isDisabled && setEcLevel(e.id)}
+                      disabled={isDisabled}
+                      className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-all ${
+                        isActive ? 'bg-accent text-white' :
+                        isDisabled ? 'bg-black/10 text-grey-muted/40 cursor-not-allowed' :
+                        'bg-black/20 text-grey-muted hover:text-heading'
+                      }`}>
+                      <span className="block">{e.label}</span>
+                      <span className="block text-[9px] opacity-60">{e.desc}</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
             <div>
               <label className="text-xs text-grey-muted uppercase tracking-wider block mb-1">Taille: {size}px</label>
-              <input type="range" min="200" max="1200" step="50" value={size}
+              <input type="range" min="200" max="1600" step="50" value={size}
                 onChange={(e) => setSize(Number(e.target.value))} className="w-full accent-accent" />
               <div className="flex justify-between text-[9px] text-grey-muted mt-1">
-                {[200, 400, 600, 800, 1200].map(v => (
+                {[400, 600, 800, 1200, 1600].map(v => (
                   <button key={v} onClick={() => setSize(v)}
                     className={`px-1.5 py-0.5 rounded ${size === v ? 'bg-accent text-white' : 'hover:text-heading'}`}>{v}</button>
                 ))}
               </div>
+              <p className="text-[10px] text-grey-muted mt-1">Defaut: 1200px (qualite print)</p>
+            </div>
+          </div>
+        )}
+
+        {/* Tab: Mes QR Codes (liste + stats) */}
+        {qrTab === 'list' && (
+          <div className="rounded-xl bg-black/20 p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-heading text-sm font-semibold flex items-center gap-2">
+                <BarChart3 size={14} className="text-accent" />
+                Mes QR codes tracks
+              </h3>
+              <button onClick={fetchMyList} disabled={listLoading}
+                className="text-[10px] text-accent hover:underline disabled:opacity-50">
+                {listLoading ? 'Chargement...' : 'Rafraichir'}
+              </button>
+            </div>
+            {myList.length === 0 && !listLoading && (
+              <div className="text-center py-8 text-grey-muted text-xs">
+                Aucun QR tracke encore. Cree-en un dans l'onglet "Contenu" avec le tracking active.
+              </div>
+            )}
+            <div className="space-y-2 max-h-[400px] overflow-y-auto">
+              {myList.map((q) => (
+                <div key={q.documentId} className="rounded-lg bg-black/30 p-3 border border-white/5 hover:border-accent/30 transition-colors">
+                  <div className="flex items-start justify-between gap-2 mb-1">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-heading text-xs font-semibold truncate">{q.title || q.destinationUrl}</p>
+                      <a href={q.destinationUrl} target="_blank" rel="noopener noreferrer"
+                        className="text-grey-muted text-[10px] truncate block hover:text-accent"
+                        title={q.destinationUrl}>
+                        {q.destinationUrl}
+                      </a>
+                    </div>
+                    <div className="flex-shrink-0 flex items-center gap-1">
+                      <span className="px-2 py-0.5 rounded-full bg-accent/20 text-accent text-[10px] font-bold">
+                        {q.scansCount} scan{q.scansCount !== 1 ? 's' : ''}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between text-[10px] text-grey-muted">
+                    <span className="font-mono">/qr/{q.shortId}</span>
+                    <span>
+                      {new Date(q.createdAt).toLocaleDateString('fr-CA', { year: 'numeric', month: 'short', day: 'numeric' })}
+                      {q.lastScannedAt && ` · dernier: ${new Date(q.lastScannedAt).toLocaleDateString('fr-CA', { month: 'short', day: 'numeric' })}`}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1 mt-2">
+                    <button onClick={() => copyTrackingUrl(q.shortId)}
+                      className="flex-1 py-1.5 rounded text-[10px] bg-black/30 text-grey-muted hover:text-accent hover:bg-black/40 flex items-center justify-center gap-1">
+                      {copiedId === q.shortId ? <><Check size={10} /> Copie</> : <><Copy size={10} /> URL tracke</>}
+                    </button>
+                    <a href={q.destinationUrl} target="_blank" rel="noopener noreferrer"
+                      className="py-1.5 px-2 rounded text-[10px] bg-black/30 text-grey-muted hover:text-accent hover:bg-black/40 flex items-center gap-1"
+                      title="Ouvrir destination">
+                      <ExternalLink size={10} />
+                    </a>
+                    <button onClick={() => deleteQr(q.documentId)}
+                      className="py-1.5 px-2 rounded text-[10px] bg-black/30 text-grey-muted hover:text-red-400 hover:bg-black/40 flex items-center gap-1"
+                      title="Supprimer">
+                      <Trash2 size={10} />
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         )}
@@ -1699,7 +1952,7 @@ function QRCodeTab() {
                 }} />
               </label>
             )}
-            <p className="text-grey-muted text-[10px]">Le niveau de correction passe automatiquement a Quartile quand un logo est present</p>
+            <p className="text-grey-muted text-[10px]">Quand un logo est present, la correction d'erreur est automatiquement forcee a HIGH (30%) pour garantir la lisibilite du QR code meme avec le logo au centre.</p>
           </div>
         )}
 
@@ -1725,8 +1978,8 @@ function QRCodeTab() {
         }}>
           <canvas ref={canvasRef} style={{ width: '400px', height: '400px' }} />
         </div>
-        <p className="text-grey-muted text-[10px] text-center max-w-[300px]">
-          {effectiveUrl.length} caracteres | {ecLevel} correction | {size}px
+        <p className="text-grey-muted text-[10px] text-center max-w-[320px]">
+          {effectiveUrl.length} caracteres | {effectiveEC} correction{logoUrl ? ' (auto logo)' : ''} | {size}px{trackingEnabled && currentShortId ? ' | tracke' : ''}
         </p>
       </div>
     </div>
