@@ -689,20 +689,27 @@ function AdminOrders() {
                                         )}
 
                                         {/* Pack details (artist sticker packs) - A IMPRIMER */}
-                                        {Array.isArray(item.packDetails) && item.packDetails.length > 0 && (
+                                        {Array.isArray(item.packDetails) && item.packDetails.length > 0 && (() => {
+                                          // 1 pack = 1 pochette. qtyPerPack = nb de CE sticker dans 1 pochette.
+                                          // item.quantity = nb de pochettes commandees.
+                                          // Total a imprimer de CE sticker = qtyPerPack * item.quantity.
+                                          const packs = item.quantity || 1;
+                                          const stickersPerPack = item.packDetails.reduce((acc, d) => acc + (Number(d.qtyPerPack) || 1), 0);
+                                          const totalStickers = stickersPerPack * packs;
+                                          return (
                                           <div className="mt-3 p-3 rounded-lg bg-accent/5 border border-accent/20">
-                                            <div className="flex items-center justify-between mb-2">
+                                            <div className="flex items-center justify-between mb-2 flex-wrap gap-1">
                                               <span className="text-xs text-accent font-semibold uppercase tracking-wide">
                                                 {tx({ fr: 'Stickers a imprimer', en: 'Stickers to print', es: 'Stickers a imprimir' })}
                                               </span>
                                               <span className="text-xs text-grey-muted">
-                                                {item.packDetails.reduce((acc, d) => acc + (Number(d.qty) || 0), 0)} {tx({ fr: 'par pack', en: 'per pack', es: 'por pack' })} x {item.quantity || 1} = <strong className="text-accent">{item.packDetails.reduce((acc, d) => acc + (Number(d.qty) || 0), 0) * (item.quantity || 1)} {tx({ fr: 'stickers total', en: 'stickers total', es: 'stickers total' })}</strong>
+                                                {stickersPerPack} {tx({ fr: '/pack', en: '/pack', es: '/pack' })} × {packs} {tx({ fr: 'pack(s)', en: 'pack(s)', es: 'pack(s)' })} = <strong className="text-accent">{totalStickers} {tx({ fr: 'stickers au total', en: 'stickers total', es: 'stickers total' })}</strong>
                                               </span>
                                             </div>
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                               {item.packDetails.map((detail, di) => {
-                                                const perPack = Number(detail.qty) || Number(detail.qtyPerPack) || 1;
-                                                const totalToPrint = perPack * (item.quantity || 1);
+                                                const perPack = Number(detail.qtyPerPack) || 1;
+                                                const totalToPrint = perPack * packs;
                                                 return (
                                                   <a
                                                     key={di}
@@ -724,7 +731,7 @@ function AdminOrders() {
                                                     <div className="flex-1 min-w-0">
                                                       <p className="text-xs font-semibold text-heading truncate">{detail.title || detail.id}</p>
                                                       <p className="text-[11px] text-grey-muted">
-                                                        {perPack}/pack × {item.quantity || 1} = <strong className="text-accent">{totalToPrint}</strong>
+                                                        {perPack}/pack × {packs} = <strong className="text-accent">{totalToPrint}</strong>
                                                       </p>
                                                     </div>
                                                     <ExternalLink size={12} className="text-grey-muted group-hover:text-accent flex-shrink-0" />
@@ -733,7 +740,8 @@ function AdminOrders() {
                                               })}
                                             </div>
                                           </div>
-                                        )}
+                                          );
+                                        })()}
                                       </div>
                                     </div>
 
