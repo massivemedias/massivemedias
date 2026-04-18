@@ -1,15 +1,14 @@
 name: Reconcile Stripe Orders
 
-# CRON DESACTIVE: le webhook Stripe est maintenant correctement configure
-# (STRIPE_WEBHOOK_SECRET corrige le 17 avril 2026). Le cron n'est plus
-# necessaire en routine - il peut etre declenche manuellement via workflow_dispatch
-# si on veut forcer un rattrapage ponctuel. Pour reactiver le cron auto,
-# decommente la section 'schedule' ci-dessous ET configure le secret
-# RECONCILE_TOKEN dans repo Settings > Secrets and variables > Actions
-# (meme valeur que l'env var RECONCILE_TOKEN sur Render).
+# Cron horaire de reconciliation: filet de securite qui verifie toutes les heures
+# si des orders sont restees en "draft" alors que Stripe a confirme le paiement.
+# Il sert de backup au webhook Stripe en cas de defaillance transitoire (timeout,
+# signature rate, etc.). Meme si le webhook fonctionne, ce cron garantit qu'aucune
+# commande ne reste bloquee plus d'une heure maximum.
 on:
-  # schedule:
-  #   - cron: '7 * * * *'
+  schedule:
+    # Toutes les heures a la minute 7 (decale pour eviter le rush d'heure pile)
+    - cron: '7 * * * *'
   workflow_dispatch:
     inputs:
       sessionId:
@@ -26,44 +25,100 @@ jobs:
           RECONCILE_TOKEN: ${{ secrets.RECONCILE_TOKEN }}
           SESSION_ID: ${{ github.event.inputs.sessionId }}
         run: |
-          # Tolerant a l'absence de secret: warning + exit 0 (pas de mail d'erreur).
-          # Le cron est desactive par defaut de toute facon. Si qqn lance le workflow
-          # manuellement sans avoir configure RECONCILE_TOKEN, on l'informe sans spammer.
+          # Strategie de sortie:
+          # - exit 0 (success vert): tout va bien OU erreur de config tolerable
+          # - exit 1 (failure rouge + email): vrai probleme business detecte
+          #   (ex: orders orphan non-resolvables apres 72h = intervention humaine requise)
+
+          # === 1. Verification du secret ===
+          # Si RECONCILE_TOKEN n'est pas configure dans les secrets GitHub, on skip
+          # silencieusement avec un warning. Pas d'email (exit 0) car c'est un probleme
+          # de config qu'on ne veut pas spammer. Une fois configure, le workflow tourne.
           if [ -z "$RECONCILE_TOKEN" ]; then
-            echo "::warning::RECONCILE_TOKEN secret not configured. Skipping. Add it in repo Settings > Secrets and variables > Actions."
+            echo "::warning::RECONCILE_TOKEN secret not configured. Skipping."
+            echo "To activate: repo Settings > Secrets and variables > Actions > New repository secret > RECONCILE_TOKEN"
             exit 0
           fi
 
+          # === 2. Construction de l'URL ===
           URL="https://massivemedias-api.onrender.com/api/orders/reconcile-stripe"
           if [ -n "$SESSION_ID" ]; then
             URL="${URL}?sessionId=${SESSION_ID}"
-            echo "Reconciling specific session: $SESSION_ID"
+            echo "Mode: reconciliation d'une session specifique ($SESSION_ID)"
           else
-            echo "Reconciling all draft orders from last 72h"
+            echo "Mode: scan des drafts des 72 dernieres heures"
           fi
 
-          # Tolerant aux erreurs reseau/deploiement: warning + exit 0.
-          # On ne fail que si on a des orders orphan non resolvables (cas rare).
-          RESPONSE=$(curl -sS -X POST \
+          # === 3. Appel de l'endpoint avec capture du code HTTP ===
+          HTTP_CODE=$(curl -sS -o /tmp/response.json -w "%{http_code}" -X POST \
             -H "Authorization: Bearer ${RECONCILE_TOKEN}" \
             -H "Content-Type: application/json" \
-            "$URL" || echo '{"error":"network"}')
+            "$URL" || echo "000")
 
-          echo "Response:"
-          echo "$RESPONSE" | jq . 2>/dev/null || echo "$RESPONSE"
-
-          FIXED=$(echo "$RESPONSE" | jq -r '.fixed | length' 2>/dev/null || echo "0")
-          ERRORS=$(echo "$RESPONSE" | jq -r '.errors | length' 2>/dev/null || echo "0")
-          UNPAID=$(echo "$RESPONSE" | jq -r '.still_unpaid | length' 2>/dev/null || echo "0")
-
+          echo "HTTP: $HTTP_CODE"
+          echo "Response body:"
+          cat /tmp/response.json | jq . 2>/dev/null || cat /tmp/response.json
           echo ""
-          echo "Summary: fixed=$FIXED, unpaid=$UNPAID, errors=$ERRORS"
+
+          # === 4. Gestion des codes d'erreur reseau/config ===
+          # 000 = curl network error, 5xx = backend down, 401 = token mismatch
+          # Tous ces cas sont des erreurs transitoires ou de config. On log un warning
+          # mais on ne fail pas le workflow pour ne pas spammer d'emails - le vrai
+          # probleme sera detecte par le monitoring Render + alerte webhook Stripe.
+          if [ "$HTTP_CODE" = "000" ]; then
+            echo "::warning::Network error calling backend. Possibly Render is restarting."
+            exit 0
+          fi
+
+          if [ "$HTTP_CODE" = "401" ]; then
+            echo "::warning::401 from backend - RECONCILE_TOKEN sur Render ne matche pas avec GitHub Secret"
+            echo "Verifier: Render > Environment > RECONCILE_TOKEN doit egaler exactement le GitHub Secret."
+            exit 0
+          fi
+
+          if [ "$HTTP_CODE" -ge 500 ] 2>/dev/null; then
+            echo "::warning::Backend error $HTTP_CODE - probable probleme transitoire Render."
+            exit 0
+          fi
+
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "::warning::Unexpected HTTP code: $HTTP_CODE"
+            exit 0
+          fi
+
+          # === 5. Parsing du resultat (cas succes 200) ===
+          FIXED=$(jq -r '.fixed | length' /tmp/response.json 2>/dev/null || echo "0")
+          ERRORS=$(jq -r '.errors | length' /tmp/response.json 2>/dev/null || echo "0")
+          UNPAID=$(jq -r '.still_unpaid | length' /tmp/response.json 2>/dev/null || echo "0")
+          SCANNED=$(jq -r '.scanned' /tmp/response.json 2>/dev/null || echo "0")
+
+          echo "==============================="
+          echo "Reconciliation summary"
+          echo "  scanned:     $SCANNED drafts"
+          echo "  fixed:       $FIXED (now marked paid, invoices assigned, emails sent)"
+          echo "  still_unpaid: $UNPAID (legit drafts waiting for Stripe)"
+          echo "  errors:      $ERRORS (non-fatal per-order failures)"
+          echo "==============================="
 
           if [ "$FIXED" != "0" ] && [ "$FIXED" != "null" ]; then
-            echo "::notice::Reconciled $FIXED draft orders - check admin for new emails"
+            echo "::notice::✅ $FIXED orders auto-recovered from draft - admin + client emails sent"
+            jq -r '.fixed[] | "  - \(.email) | \(.invoice) | \(.stripeId[0:20])..."' /tmp/response.json 2>/dev/null || true
           fi
-          # Errors deviennent un warning (pas un fail) pour ne pas spammer en cas de
-          # panne reseau transitoire. Les echecs reels sont dans les logs Render.
+
+          # === 6. Decision finale de succes/echec ===
+          # Le workflow est VERT (succes) dans tous les cas ci-dessus. Il ne devient
+          # ROUGE (echec + email) QUE si des erreurs per-order non-transitoires sont
+          # detectees en nombre anormal (seuil = 5+ erreurs en un seul run). C'est
+          # le signal d'un probleme business qui merite une investigation humaine.
           if [ "$ERRORS" != "0" ] && [ "$ERRORS" != "null" ]; then
-            echo "::warning::$ERRORS errors during reconciliation - check Render logs"
+            if [ "$ERRORS" -ge 5 ] 2>/dev/null; then
+              echo "::error::$ERRORS per-order errors - threshold exceeded, human review required"
+              jq -r '.errors[] | "  - order \(.id): \(.reason)"' /tmp/response.json 2>/dev/null || true
+              exit 1
+            else
+              echo "::warning::$ERRORS per-order errors (under threshold of 5, not failing)"
+              jq -r '.errors[] | "  - order \(.id): \(.reason)"' /tmp/response.json 2>/dev/null || true
+            fi
           fi
+
+          echo "Reconciliation complete."
