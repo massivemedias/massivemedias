@@ -239,7 +239,9 @@ export const fineArtFormats = [
   { id: 'a2', label: 'A2 (18x24")', studioPrice: null, museumPrice: 110, w: 18, h: 24, typeName: 'Grand format' },
 ];
 
-export const fineArtFramePriceByFormat = { postcard: 20, a4: 20, a3: 30, a3plus: 35, a2: 40 };
+// Prix du cadre (frame) par format de print Fine Art. Aligne sur la FAQ et services.js.
+// A2 = 45$ depuis avril 2026 (stock du format grand cadre disponible desormais).
+export const fineArtFramePriceByFormat = { postcard: 20, a4: 20, a3: 30, a3plus: 35, a2: 45 };
 export const fineArtFramePrice = 30; // fallback
 
 export function getFineArtPrice(tier, format, withFrame) {

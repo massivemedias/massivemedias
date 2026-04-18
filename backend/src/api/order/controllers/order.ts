@@ -380,7 +380,9 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
 
     // Recalculate server-side with sticker tier validation
     // ET validation des prix des artist-prints (anti-manipulation) + check sold/private token
-    const FRAME_PRICES_FALLBACK: Record<string, number> = { postcard: 20, a4: 20, a3: 30, a3plus: 35, a2: 40 };
+    // Prix cadre par defaut - DOIT matcher frontend/src/data/products.js (fineArtFramePriceByFormat)
+    // sinon le backend rejette des commandes legitimes. A2 = 45$ depuis avril 2026.
+    const FRAME_PRICES_FALLBACK: Record<string, number> = { postcard: 20, a4: 20, a3: 30, a3plus: 35, a2: 45 };
     let subtotal = 0;
     let artistDiscountTotal = 0;
 
