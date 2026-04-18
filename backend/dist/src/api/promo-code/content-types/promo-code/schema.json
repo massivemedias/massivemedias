@@ -1,0 +1,45 @@
+{
+    "kind": "collectionType",
+    "collectionName": "promo_codes",
+    "info": {
+        "singularName": "promo-code",
+        "pluralName": "promo-codes",
+        "displayName": "Code Promo",
+        "description": "Codes promotionnels avec gestion admin"
+    },
+    "options": {
+        "draftAndPublish": false
+    },
+    "attributes": {
+        "code": {
+            "type": "string",
+            "required": true,
+            "unique": true
+        },
+        "discountPercent": {
+            "type": "integer",
+            "required": true,
+            "min": 1,
+            "max": 100
+        },
+        "label": {
+            "type": "string",
+            "required": true
+        },
+        "active": {
+            "type": "boolean",
+            "default": true
+        },
+        "expiresAt": {
+            "type": "datetime"
+        },
+        "maxUses": {
+            "type": "integer",
+            "default": 0
+        },
+        "currentUses": {
+            "type": "integer",
+            "default": 0
+        }
+    }
+}

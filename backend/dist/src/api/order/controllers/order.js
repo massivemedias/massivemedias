@@ -39,6 +39,61 @@ const getStripe = () => {
     }
     return new stripe_1.default(key);
 };
+/**
+ * Guard for destructive/admin-only endpoints.
+ * Accepts EITHER:
+ *   - Authorization: Bearer <ADMIN_API_TOKEN>   (service-to-service or trusted admin UI)
+ *   - Authorization: Bearer <Supabase JWT>      where the user's email is in ADMIN_EMAILS
+ *
+ * Returns true if authorized. If not authorized, sets 401 on ctx and returns false -
+ * callers MUST check the return value and exit early.
+ *
+ * CONFIG (on Render env vars):
+ *   ADMIN_API_TOKEN: long random string (service token)
+ *   ADMIN_EMAILS: comma-separated list of admin emails (defaults to ADMIN_EMAIL)
+ */
+async function requireAdminAuth(ctx) {
+    var _a;
+    const authHeader = ctx.request.headers['authorization'] || '';
+    const token = authHeader.replace(/^Bearer\s+/i, '').trim();
+    if (!token) {
+        ctx.status = 401;
+        ctx.body = { error: { status: 401, name: 'Unauthorized', message: 'Missing Authorization header' } };
+        return false;
+    }
+    // Option A: service token match
+    const adminApiToken = process.env.ADMIN_API_TOKEN;
+    if (adminApiToken && adminApiToken.length >= 16 && token === adminApiToken) {
+        ctx.state.adminAuthMethod = 'service-token';
+        return true;
+    }
+    // Option B: Supabase JWT + email in ADMIN_EMAILS
+    try {
+        const supabaseUrl = process.env.SUPABASE_URL || process.env.SUPABASE_API_URL;
+        const supabaseKey = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_API_KEY;
+        if (supabaseUrl && supabaseKey) {
+            const { createClient } = require('@supabase/supabase-js');
+            const supabase = createClient(supabaseUrl, supabaseKey);
+            const { data, error } = await supabase.auth.getUser(token);
+            if (!error && ((_a = data === null || data === void 0 ? void 0 : data.user) === null || _a === void 0 ? void 0 : _a.email)) {
+                const adminEmailsRaw = process.env.ADMIN_EMAILS || process.env.ADMIN_EMAIL || '';
+                const adminEmails = adminEmailsRaw.split(',').map((s) => s.trim().toLowerCase()).filter(Boolean);
+                if (adminEmails.includes(data.user.email.toLowerCase())) {
+                    ctx.state.adminAuthMethod = 'supabase-jwt';
+                    ctx.state.adminUserEmail = data.user.email;
+                    return true;
+                }
+            }
+        }
+    }
+    catch (e) {
+        strapi.log.warn('requireAdminAuth: Supabase verification error', e);
+    }
+    ctx.status = 401;
+    ctx.body = { error: { status: 401, name: 'Unauthorized', message: 'Admin authentication required' } };
+    strapi.log.warn(`Admin-protected endpoint hit without valid auth: ${ctx.method} ${ctx.url}`);
+    return false;
+}
 // Sticker pricing tiers for server-side validation
 const STICKER_STANDARD_TIERS = { 25: 30, 50: 47.50, 100: 85, 250: 200, 500: 375 };
 const STICKER_FX_TIERS = { 25: 35, 50: 57.50, 100: 100, 250: 225, 500: 425 };
@@ -483,7 +538,13 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
                 strapi.log.warn('Could not create/find client:', err);
             }
             const orderData = {
+                // IMPORTANT: stripePaymentIntentId is REQUIRED and UNIQUE. Checkout Sessions created in
+                // "payment" mode have no payment_intent until the customer pays. We temporarily store
+                // the session.id (cs_live_...) here to satisfy uniqueness, and ALSO in the dedicated
+                // stripeCheckoutSessionId column so the webhook can find the order regardless of which
+                // event (checkout.session.completed OR payment_intent.succeeded) arrives first.
                 stripePaymentIntentId: session.payment_intent || session.id,
+                stripeCheckoutSessionId: session.id,
                 customerEmail,
                 customerName,
                 customerPhone: customerPhone || '',
@@ -557,53 +618,54 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
         }
         catch (err) {
             strapi.log.error(`[webhook:${requestId}] SIGNATURE VERIFICATION FAILED:`, err.message);
-            // Alert admin IMMEDIATELY - this is how we missed 4 days of broken webhook in April 2026
-            // Cap at 1 alert per 10 min to avoid email storm if Stripe retries aggressively
+            // Alert admin IMMEDIATELY on EVERY failure.
+            // We intentionally do NOT throttle: the process restarts on OOM which would reset an
+            // in-memory throttle anyway, AND a handful of duplicate emails is MUCH less harmful than
+            // the 4-day silent failure we had in April 2026. If Stripe retry-storms, persistence
+            // throttling should be added via the DB, not in-process state.
             try {
-                const cacheKey = `__webhook_fail_alert_last__`;
-                const globalAny = global;
-                const lastAlert = Number(globalAny[cacheKey] || 0);
-                const now = Date.now();
-                if (now - lastAlert > 10 * 60 * 1000) {
-                    globalAny[cacheKey] = now;
-                    const { sendWebhookFailureAlert } = await Promise.resolve().then(() => __importStar(require('../../../utils/email')));
-                    await sendWebhookFailureAlert({
-                        reason: `Stripe signature verification failed: ${err.message}`,
-                        requestId,
-                        sigHeader: sig ? sig.substring(0, 80) : '(missing)',
-                        bodyPresent: !!ctx.request.body,
-                    });
-                    strapi.log.warn(`[webhook:${requestId}] Admin alert email dispatched`);
-                }
-                else {
-                    strapi.log.info(`[webhook:${requestId}] Alert throttled (${Math.round((now - lastAlert) / 1000)}s since last)`);
-                }
+                const { sendWebhookFailureAlert } = await Promise.resolve().then(() => __importStar(require('../../../utils/email')));
+                await sendWebhookFailureAlert({
+                    reason: `Stripe signature verification failed: ${err.message}`,
+                    requestId,
+                    sigHeader: sig ? sig.substring(0, 80) : '(missing)',
+                    bodyPresent: !!ctx.request.body,
+                });
+                strapi.log.warn(`[webhook:${requestId}] Admin alert email dispatched`);
             }
             catch (alertErr) {
                 strapi.log.error(`[webhook:${requestId}] Failed to send admin alert:`, alertErr === null || alertErr === void 0 ? void 0 : alertErr.message);
             }
             return ctx.badRequest(`Webhook Error: ${err.message}`);
         }
-        // Pour checkout sessions, recuperer le payment_intent_id
+        // Pour checkout sessions, recuperer le payment_intent_id et upgrader la colonne
+        // stripePaymentIntentId (qui contient peut-etre encore le cs_live_ temporaire).
         if (event.type === 'checkout.session.completed') {
             const session = event.data.object;
             if (session.payment_intent && session.payment_status === 'paid') {
-                // Trouver l'ordre par session ID ou payment intent
+                // Search by BOTH columns to handle both orders created pre-split (still storing cs_live
+                // in stripePaymentIntentId) AND orders created post-split (cs_live in stripeCheckoutSessionId).
                 const orders = await strapi.documents('api::order.order').findMany({
                     filters: {
                         $or: [
+                            { stripeCheckoutSessionId: session.id },
                             { stripePaymentIntentId: session.payment_intent },
                             { stripePaymentIntentId: session.id },
                         ],
                     },
                 });
                 if (orders.length > 0 && orders[0].status === 'draft') {
-                    // Mettre a jour avec le vrai payment intent ID
+                    // Normalize: store the real payment_intent in stripePaymentIntentId AND preserve the
+                    // checkout session id in its dedicated column. This makes subsequent searches by either
+                    // id deterministic and avoids the cs vs pi race that caused Cindy's order to stuck.
                     await strapi.documents('api::order.order').update({
                         documentId: orders[0].documentId,
-                        data: { stripePaymentIntentId: session.payment_intent },
+                        data: {
+                            stripePaymentIntentId: session.payment_intent,
+                            stripeCheckoutSessionId: session.id,
+                        },
                     });
-                    strapi.log.info(`Checkout session completed: updated order ${orders[0].documentId} with payment_intent ${session.payment_intent}`);
+                    strapi.log.info(`[webhook:${requestId}] checkout.session.completed: order ${orders[0].documentId} payment_intent=${session.payment_intent} session=${session.id}`);
                 }
             }
             // Le payment_intent.succeeded va suivre et gerer le reste
@@ -612,8 +674,28 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
         }
         if (event.type === 'payment_intent.succeeded') {
             const paymentIntent = event.data.object;
+            // Race fix: if payment_intent.succeeded arrives BEFORE checkout.session.completed,
+            // the order may still have its cs_live_ stored in stripePaymentIntentId. Retrieve the
+            // payment intent's checkout session id via Stripe API so we can match by either column.
+            let checkoutSessionId = null;
+            try {
+                const stripe = getStripe();
+                const sessions = await stripe.checkout.sessions.list({ payment_intent: paymentIntent.id, limit: 1 });
+                if (sessions.data.length > 0)
+                    checkoutSessionId = sessions.data[0].id;
+            }
+            catch (lookupErr) {
+                strapi.log.warn(`[webhook:${requestId}] Could not lookup session for ${paymentIntent.id}:`, lookupErr === null || lookupErr === void 0 ? void 0 : lookupErr.message);
+            }
+            const orFilters = [
+                { stripePaymentIntentId: paymentIntent.id },
+            ];
+            if (checkoutSessionId) {
+                orFilters.push({ stripeCheckoutSessionId: checkoutSessionId });
+                orFilters.push({ stripePaymentIntentId: checkoutSessionId });
+            }
             const orders = await strapi.documents('api::order.order').findMany({
-                filters: { stripePaymentIntentId: paymentIntent.id },
+                filters: { $or: orFilters },
             });
             if (orders.length > 0) {
                 const order = orders[0];
@@ -916,6 +998,8 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
     },
     // POST /orders/admin-create - Creer une commande manuellement (admin)
     async adminCreate(ctx) {
+        if (!(await requireAdminAuth(ctx)))
+            return;
         const data = ctx.request.body;
         if (!data.customerName || !data.total) {
             return ctx.badRequest('customerName and total are required');
@@ -1005,6 +1089,8 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
     },
     // POST /orders/:documentId/resend-emails - Renvoyer TOUS les emails (confirmation client + notification admin)
     async resendAdminNotification(ctx) {
+        if (!(await requireAdminAuth(ctx)))
+            return;
         const { documentId } = ctx.params;
         try {
             const order = await strapi.documents('api::order.order').findFirst({
@@ -1104,6 +1190,8 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
         }
     },
     async clients(ctx) {
+        if (!(await requireAdminAuth(ctx)))
+            return;
         // Read from Client collection (CRM)
         const clients = await strapi.documents('api::client.client').findMany({
             sort: 'totalSpent:desc',
@@ -1112,6 +1200,8 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
         ctx.body = { clients, total: clients.length };
     },
     async adminList(ctx) {
+        if (!(await requireAdminAuth(ctx)))
+            return;
         const page = parseInt(ctx.query.page) || 1;
         const pageSize = parseInt(ctx.query.pageSize) || 25;
         const status = ctx.query.status;
@@ -1155,6 +1245,8 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
         };
     },
     async updateStatus(ctx) {
+        if (!(await requireAdminAuth(ctx)))
+            return;
         const { documentId } = ctx.params;
         const { status: newStatus, invoiceNumber, autoInvoice, sendEmails } = ctx.request.body;
         const validStatuses = ['draft', 'pending', 'paid', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded'];
@@ -1303,6 +1395,8 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
         ctx.body = { data: updated };
     },
     async updateNotes(ctx) {
+        if (!(await requireAdminAuth(ctx)))
+            return;
         const { documentId } = ctx.params;
         const { notes } = ctx.request.body;
         const order = await strapi.documents('api::order.order').findFirst({
@@ -1318,6 +1412,8 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
         ctx.body = { data: updated };
     },
     async addTracking(ctx) {
+        if (!(await requireAdminAuth(ctx)))
+            return;
         const { documentId } = ctx.params;
         const { trackingNumber, carrier } = ctx.request.body;
         if (!trackingNumber) {
@@ -1356,6 +1452,8 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
         ctx.body = { data: updated };
     },
     async deleteOrder(ctx) {
+        if (!(await requireAdminAuth(ctx)))
+            return;
         const { documentId } = ctx.params;
         const order = await strapi.documents('api::order.order').findFirst({
             filters: { documentId },
@@ -1370,6 +1468,8 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
         ctx.body = { success: true };
     },
     async commissions(ctx) {
+        if (!(await requireAdminAuth(ctx)))
+            return;
         // 1. Fetch all active artists
         const artists = await strapi.documents('api::artist.artist').findMany({
             filters: { active: true },
@@ -1523,6 +1623,8 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
         };
     },
     async stats(ctx) {
+        if (!(await requireAdminAuth(ctx)))
+            return;
         // Fetch all non-cancelled orders
         const orders = await strapi.documents('api::order.order').findMany({
             filters: { status: { $ne: 'cancelled' } },

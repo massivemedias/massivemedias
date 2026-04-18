@@ -75,7 +75,91 @@ setInterval(() => {
             rateLimitMap.set(ip, recent);
     }
 }, 5 * 60 * 1000);
+// Labels produits pour les prompts
+const TEXTILE_LABELS = {
+    tshirt: 'crew-neck T-shirt',
+    hoodie: 'pullover hoodie with a front pouch pocket',
+    longsleeve: 'long-sleeve T-shirt',
+    totebag: 'canvas tote bag',
+};
 exports.default = {
+    async generateTextile(ctx) {
+        var _a, _b, _c;
+        const { product = 'tshirt', colorName = 'Black', colorHex = '#1A1A1A', logoBase64, } = ctx.request.body;
+        const apiKey = process.env.GEMINI_API_KEY;
+        if (!apiKey) {
+            return ctx.badRequest('GEMINI_API_KEY not configured');
+        }
+        const clientIp = ctx.request.ip || 'unknown';
+        if (!checkRateLimit(clientIp)) {
+            ctx.status = 429;
+            ctx.body = { error: 'Too many requests. Try again in a minute.' };
+            return;
+        }
+        const productLabel = TEXTILE_LABELS[product] || 'T-shirt';
+        try {
+            const parts = [];
+            if (logoBase64) {
+                const match = logoBase64.match(/^data:(image\/[^;]+);base64,(.+)$/);
+                if (!match)
+                    return ctx.badRequest('Invalid logo base64 format');
+                const prompt = [
+                    `Professional fashion product photography.`,
+                    `A ${colorName.toLowerCase()}-colored ${productLabel} (exact color hex: ${colorHex}) worn by a white plastic fashion mannequin standing in a neutral front-facing pose.`,
+                    `The artwork/logo shown in the reference image is printed prominently on the front chest of the garment.`,
+                    `Pure seamless white background. Soft diffused studio lighting from above. The garment fills 70-80% of the frame.`,
+                    `Ultra-realistic, high-end commercial product photography. No additional text or watermarks.`,
+                ].join(' ');
+                parts.push({ text: prompt }, { inlineData: { mimeType: match[1], data: match[2] } });
+            }
+            else {
+                const prompt = [
+                    `Professional fashion product photography.`,
+                    `A plain solid-color ${colorName.toLowerCase()} ${productLabel} (exact color hex: ${colorHex}) worn by a white plastic fashion mannequin in a neutral front-facing pose.`,
+                    `No design, no logo, no print on the garment - just the solid color.`,
+                    `Pure seamless white background. Soft diffused studio lighting from above. The garment fills 70-80% of the frame.`,
+                    `Ultra-realistic, high-end commercial product photography. No text or watermarks.`,
+                ].join(' ');
+                parts.push({ text: prompt });
+            }
+            strapi.log.info(`Textile mockup: product=${product}, color=${colorName}, withLogo=${!!logoBase64}`);
+            const geminiRes = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts }],
+                    generationConfig: { responseModalities: ['TEXT', 'IMAGE'] },
+                }),
+            });
+            if (!geminiRes.ok) {
+                const errText = await geminiRes.text();
+                strapi.log.error(`Gemini textile error: ${geminiRes.status} ${errText}`);
+                if (geminiRes.status === 429) {
+                    ctx.status = 429;
+                    ctx.body = { error: 'Gemini API rate limit reached' };
+                    return;
+                }
+                return ctx.badRequest(`Gemini API error: ${geminiRes.status}`);
+            }
+            const result = await geminiRes.json();
+            const resultParts = ((_c = (_b = (_a = result.candidates) === null || _a === void 0 ? void 0 : _a[0]) === null || _b === void 0 ? void 0 : _b.content) === null || _c === void 0 ? void 0 : _c.parts) || [];
+            const imagePart = resultParts.find((p) => { var _a, _b; return (_b = (_a = p.inlineData) === null || _a === void 0 ? void 0 : _a.mimeType) === null || _b === void 0 ? void 0 : _b.startsWith('image/'); });
+            if (!imagePart) {
+                strapi.log.warn('Gemini textile: no image returned');
+                return ctx.badRequest('No image returned from Gemini');
+            }
+            strapi.log.info(`Textile mockup generated: ${product} ${colorName}`);
+            ctx.body = {
+                success: true,
+                image: { mimeType: imagePart.inlineData.mimeType, data: imagePart.inlineData.data },
+                meta: { product, colorName, colorHex },
+            };
+        }
+        catch (err) {
+            strapi.log.error('Textile mockup error:', err === null || err === void 0 ? void 0 : err.message);
+            ctx.throw(500, 'Textile mockup generation failed');
+        }
+    },
     async generate(ctx) {
         var _a, _b, _c;
         const { imageUrl, scene = 'living_room', frameColor = 'black' } = ctx.request.body;

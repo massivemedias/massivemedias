@@ -1,0 +1,57 @@
+{
+  "kind": "collectionType",
+  "collectionName": "tatoueurs",
+  "info": {
+    "singularName": "tatoueur",
+    "pluralName": "tatoueurs",
+    "displayName": "Tatoueur",
+    "description": "Artistes tatoueurs partenaires"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "slug": { "type": "string", "unique": true, "required": true },
+    "name": { "type": "string", "required": true },
+    "email": { "type": "email" },
+    "bioFr": { "type": "text" },
+    "bioEn": { "type": "text" },
+    "avatar": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["images"]
+    },
+    "heroImage": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["images"]
+    },
+    "socials": { "type": "json" },
+    "styles": { "type": "json" },
+    "studio": { "type": "string" },
+    "city": { "type": "string" },
+    "priceTattooMin": { "type": "integer" },
+    "hourlyRate": { "type": "integer" },
+    "calendarSettings": { "type": "json" },
+    "instagramHandle": { "type": "string" },
+    "links": { "type": "json" },
+    "active": { "type": "boolean", "default": false },
+    "approved": { "type": "boolean", "default": false },
+    "featured": { "type": "boolean", "default": false },
+    "sortOrder": { "type": "integer", "default": 0 },
+    "supabaseUserId": { "type": "string" },
+    "discountRate": { "type": "decimal", "default": 0.30 },
+    "pageViews": { "type": "integer", "default": 0 },
+    "flashs": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::flash.flash",
+      "mappedBy": "tatoueur"
+    },
+    "realisationImages": {
+      "type": "media",
+      "multiple": true,
+      "allowedTypes": ["images"]
+    }
+  }
+}

@@ -153,28 +153,33 @@ async function uploadBufferToGoogleDrive(fileBuffer, fileName, artistSlug, mimeT
 }
 exports.uploadBufferToGoogleDrive = uploadBufferToGoogleDrive;
 // Upload un fichier en streaming depuis un Readable (pour eviter de charger le buffer en RAM).
-// Utilise le meme resumable upload que uploadBufferToGoogleDrive mais piepe le stream directement
-// sur la requete PUT - la memoire heap Node n'augmente pas proportionnellement a la taille du fichier.
+// Utilise le resumable upload de Google Drive avec transmission du Content-Length - exige
+// par l'API pour les gros fichiers et evite que undici/fetch ne bufferise le stream en RAM
+// pour calculer la taille lui-meme (ce qui ruinerait le benefice du streaming).
+//
+// contentLength est OBLIGATOIRE dans la pratique pour les fichiers > quelques MB. On throw
+// explicitement si absent pour ne pas risquer un upload qui finit par bufferiser tout le
+// fichier en RAM en silence.
 async function uploadStreamToGoogleDrive(readStream, fileName, artistSlug, mimeType = 'application/octet-stream', contentLength) {
     const parentFolderId = process.env.GOOGLE_DRIVE_FOLDER_ID;
     if (!parentFolderId)
         throw new Error('GOOGLE_DRIVE_FOLDER_ID env var not set');
+    if (!contentLength || contentLength <= 0) {
+        throw new Error('uploadStreamToGoogleDrive: contentLength is required (pass the file size in bytes)');
+    }
     const token = await getAccessToken();
     const artistFolderId = await getOrCreateArtistFolder(token, parentFolderId, artistSlug);
     const date = new Date().toISOString().split('T')[0];
     const safeName = `${date}_${fileName}`;
-    // Step 1: init resumable upload
-    const initHeaders = {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-        'X-Upload-Content-Type': mimeType,
-    };
-    if (contentLength && contentLength > 0) {
-        initHeaders['X-Upload-Content-Length'] = contentLength.toString();
-    }
+    // Step 1: init resumable upload - pre-declare size and mime type so Drive allocates correctly.
     const initRes = await fetch(`${DRIVE_API}?uploadType=resumable`, {
         method: 'POST',
-        headers: initHeaders,
+        headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json; charset=UTF-8',
+            'X-Upload-Content-Type': mimeType,
+            'X-Upload-Content-Length': String(contentLength),
+        },
         body: JSON.stringify({ name: safeName, parents: [artistFolderId] }),
     });
     if (!initRes.ok)
@@ -182,14 +187,16 @@ async function uploadStreamToGoogleDrive(readStream, fileName, artistSlug, mimeT
     const uploadUrl = initRes.headers.get('location');
     if (!uploadUrl)
         throw new Error('No upload URL returned');
-    // Step 2: PUT the stream. undici/fetch accepts ReadableStream as body.
-    // We pass duplex: 'half' for streamed request bodies.
-    const putHeaders = { 'Content-Type': mimeType };
-    if (contentLength && contentLength > 0)
-        putHeaders['Content-Length'] = contentLength.toString();
+    // Step 2: PUT the stream with an explicit Content-Length. undici/fetch accepts a
+    // Node Readable as body when duplex: 'half' is set. If we omit Content-Length here,
+    // undici is forced to collect the stream into a buffer to compute length - that's
+    // exactly the OOM behaviour we're trying to avoid.
     const uploadRes = await fetch(uploadUrl, {
         method: 'PUT',
-        headers: putHeaders,
+        headers: {
+            'Content-Type': mimeType,
+            'Content-Length': String(contentLength),
+        },
         body: readStream,
         duplex: 'half',
     });

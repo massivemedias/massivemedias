@@ -16,6 +16,9 @@
             "unique": true,
             "required": true
         },
+        "stripeCheckoutSessionId": {
+            "type": "string"
+        },
         "customerEmail": {
             "type": "email",
             "required": true

@@ -48,5 +48,13 @@ exports.default = {
                 auth: false,
             },
         },
+        {
+            method: 'POST',
+            path: '/inventory-items/sync-outgoing-invoice',
+            handler: 'inventory-item.syncOutgoingInvoice',
+            config: {
+                auth: false,
+            },
+        },
     ],
 };

@@ -531,6 +531,15 @@ exports.default = strapi_1.factories.createCoreController('api::artist-edit-requ
     },
     // POST /artist-edit-requests/upload-direct - Upload fichier direct vers Google Drive + conversion WebP
     async uploadDirect(ctx) {
+        const fs = require('fs');
+        const path = require('path');
+        const os = require('os');
+        // Track filepaths for guaranteed cleanup in the outer finally.
+        // Even if any step throws (sharp crash, supabase timeout, drive API down, OOM), these
+        // files MUST be removed to avoid filling Render's ephemeral disk (which would in turn
+        // cause secondary crashes).
+        let filepath = null;
+        let tmpWebp = null;
         try {
             const files = ctx.request.files;
             const { artistSlug } = ctx.request.body;
@@ -542,37 +551,23 @@ exports.default = strapi_1.factories.createCoreController('api::artist-edit-requ
                 return ctx.badRequest('artistSlug is required');
             }
             const file = Array.isArray(files.file) ? files.file[0] : files.file;
-            const filepath = file.filepath || file.path;
+            filepath = file.filepath || file.path;
             const fileName = file.originalFilename || file.name || 'upload';
             const mimeType = file.mimetype || file.type || 'application/octet-stream';
             const fileSize = Number(file.size) || 0;
             strapi.log.info(`uploadDirect file: ${fileName}, filepath: ${filepath}, size: ${(fileSize / (1024 * 1024)).toFixed(1)} MB, mime: ${mimeType}`);
-            // Hard limit to protect the instance from OOM: 50MB per file
+            // Hard limit to protect the instance from OOM and disk saturation: 50MB per file
             const MAX_FILE_SIZE = 50 * 1024 * 1024;
             if (fileSize > MAX_FILE_SIZE) {
-                // Cleanup tmp file to avoid leaking disk
-                try {
-                    require('fs').unlinkSync(filepath);
-                }
-                catch (_) { /* ignore */ }
                 return ctx.badRequest(`Fichier trop volumineux (${(fileSize / (1024 * 1024)).toFixed(1)} MB). Maximum: 50 MB. Contactez-nous pour les gros fichiers.`);
             }
-            const fs = require('fs');
-            const path = require('path');
-            const os = require('os');
-            // STREAMING approach: never load the full file into memory.
-            // - sharp reads from disk directly via input path, writes to disk (no buffer roundtrip)
-            // - Supabase upload reads from disk stream
-            // - Google Drive upload needs a buffer API still (TODO: migrate to stream API), we read
-            //   from disk ONLY when drive upload is actually invoked, and only once
             const memBefore = process.memoryUsage().rss / 1024 / 1024;
-            const tmpWebp = path.join(os.tmpdir(), `upload-${Date.now()}-${Math.random().toString(36).slice(2)}.webp`);
+            tmpWebp = path.join(os.tmpdir(), `upload-${Date.now()}-${Math.random().toString(36).slice(2)}.webp`);
             // 1. Convert to WebP (streaming disk to disk, no big buffer in RAM)
             let webpUrl = '';
             let webpSizeBytes = 0;
             try {
                 const sharp = require('sharp');
-                // sharp().input from file path + .toFile(path) avoids holding the full image in a JS buffer
                 const webpInfo = await sharp(filepath, { limitInputPixels: 100000000 })
                     .resize(1600, 1600, { fit: 'inside', withoutEnlargement: true })
                     .webp({ quality: 80 })
@@ -587,8 +582,8 @@ exports.default = strapi_1.factories.createCoreController('api::artist-edit-requ
                     const baseName = fileName.replace(/\.[^.]+$/, '');
                     const safeName = baseName.replace(/[^a-zA-Z0-9._-]/g, '_');
                     const webpPath = `artist-submissions/${artistSlug}/${timestamp}-${safeName}.webp`;
-                    // Read WebP from disk as a Buffer for Supabase (their SDK doesn't accept a Readable stream
-                    // in all versions). WebP is much smaller than original so memory impact is limited.
+                    // Read WebP from disk as a Buffer for Supabase. WebP is much smaller than the
+                    // original file so the RAM impact is negligible (typically < 200KB).
                     const webpBuffer = fs.readFileSync(tmpWebp);
                     const { data } = await supabase.storage.from('order-files').upload(webpPath, webpBuffer, {
                         contentType: 'image/webp',
@@ -607,25 +602,20 @@ exports.default = strapi_1.factories.createCoreController('api::artist-edit-requ
             catch (webpErr) {
                 strapi.log.warn('WebP conversion failed (non-blocking):', (webpErr === null || webpErr === void 0 ? void 0 : webpErr.message) || webpErr);
             }
-            finally {
-                // Always cleanup WebP temp file
-                try {
-                    fs.unlinkSync(tmpWebp);
-                }
-                catch (_) { /* ignore */ }
-            }
-            // 2. Upload original to Google Drive - read buffer from disk only here, just before use
-            // Note: googleapis drive.files.create can accept a Readable stream directly. Use the stream path
-            // to avoid loading the full original file into memory.
+            // NOTE: tmpWebp cleanup happens in the OUTER finally below.
+            // 2. Upload original to Google Drive using STREAM (no buffer in RAM).
+            // Pass fileSize explicitly so Drive's resumable upload can pre-allocate and use
+            // the correct Content-Length header - required by Drive for large files, and
+            // significantly more reliable than letting it auto-detect from the stream.
             let driveResult = {};
             try {
                 const { uploadStreamToGoogleDrive } = await Promise.resolve().then(() => __importStar(require('../../../utils/google-drive'))).catch(() => ({ uploadStreamToGoogleDrive: null }));
                 if (typeof uploadStreamToGoogleDrive === 'function') {
                     const readStream = fs.createReadStream(filepath);
-                    driveResult = await uploadStreamToGoogleDrive(readStream, fileName, artistSlug, mimeType);
+                    driveResult = await uploadStreamToGoogleDrive(readStream, fileName, artistSlug, mimeType, fileSize);
                 }
                 else {
-                    // Fallback: legacy buffer-based API (kept for compatibility until stream helper is merged)
+                    // Fallback legacy buffer API - only used if the helper can't be loaded.
                     const fileBuffer = fs.readFileSync(filepath);
                     driveResult = await tryUploadBufferToGoogleDrive(fileBuffer, fileName, artistSlug, mimeType);
                 }
@@ -634,11 +624,7 @@ exports.default = strapi_1.factories.createCoreController('api::artist-edit-requ
                 strapi.log.error('Google Drive upload error:', (driveErr === null || driveErr === void 0 ? void 0 : driveErr.message) || driveErr);
                 driveResult = { error: (driveErr === null || driveErr === void 0 ? void 0 : driveErr.message) || 'Drive upload failed' };
             }
-            // 3. Cleanup the multipart temp file (formidable doesn't always do this)
-            try {
-                fs.unlinkSync(filepath);
-            }
-            catch (_) { /* ignore */ }
+            // NOTE: filepath cleanup happens in the OUTER finally below.
             const memAfter = process.memoryUsage().rss / 1024 / 1024;
             strapi.log.info(`uploadDirect memory: before=${memBefore.toFixed(0)}MB, after=${memAfter.toFixed(0)}MB, delta=${(memAfter - memBefore).toFixed(0)}MB`);
             ctx.body = {
@@ -656,6 +642,24 @@ exports.default = strapi_1.factories.createCoreController('api::artist-edit-requ
         catch (err) {
             strapi.log.error('uploadDirect FATAL error:', (err === null || err === void 0 ? void 0 : err.message) || err, (err === null || err === void 0 ? void 0 : err.stack) || '');
             ctx.throw(500, (err === null || err === void 0 ? void 0 : err.message) || 'Upload failed');
+        }
+        finally {
+            // GUARANTEED cleanup of both temp files, no matter what happened above.
+            // These fs.unlinkSync calls are wrapped in try/catch because the files may not
+            // exist (e.g. validation rejected before creating tmpWebp, or formidable already
+            // cleaned up on its own). We never want a cleanup failure to mask the real error.
+            if (filepath) {
+                try {
+                    fs.unlinkSync(filepath);
+                }
+                catch (_) { /* ignore */ }
+            }
+            if (tmpWebp) {
+                try {
+                    fs.unlinkSync(tmpWebp);
+                }
+                catch (_) { /* ignore */ }
+            }
         }
     },
 }));

@@ -8,5 +8,11 @@ exports.default = {
             handler: 'mockup.generate',
             config: { auth: false },
         },
+        {
+            method: 'POST',
+            path: '/mockup/generate-textile',
+            handler: 'mockup.generateTextile',
+            config: { auth: false },
+        },
     ],
 };

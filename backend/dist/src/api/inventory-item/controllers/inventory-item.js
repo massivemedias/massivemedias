@@ -48,7 +48,7 @@ exports.default = strapi_1.factories.createCoreController('api::inventory-item.i
     },
     async adjustStock(ctx) {
         const { documentId } = ctx.params;
-        const { quantity, reserved, notes, nameFr, nameEn, costPrice, location, category, variant } = ctx.request.body;
+        const { quantity, reserved, notes, nameFr, nameEn, costPrice, location, category, variant, brand, color, detail, hasZip } = ctx.request.body;
         const item = await strapi.documents('api::inventory-item.inventory-item').findFirst({
             filters: { documentId },
         });
@@ -74,6 +74,14 @@ exports.default = strapi_1.factories.createCoreController('api::inventory-item.i
             updateData.category = category;
         if (variant !== undefined)
             updateData.variant = variant;
+        if (brand !== undefined)
+            updateData.brand = brand;
+        if (color !== undefined)
+            updateData.color = color;
+        if (detail !== undefined)
+            updateData.detail = detail;
+        if (hasZip !== undefined)
+            updateData.hasZip = !!hasZip;
         const updated = await strapi.documents('api::inventory-item.inventory-item').update({
             documentId: item.documentId,
             data: updateData,
@@ -87,11 +95,11 @@ exports.default = strapi_1.factories.createCoreController('api::inventory-item.i
      * Ex: TXT-HOODIE-L-001, FRM-BLACK-A4-001, STK-HOLO-3IN-001
      */
     async createItem(ctx) {
-        const { nameFr, nameEn, category, variant, detail, quantity, costPrice, location, notes, lowStockThreshold } = ctx.request.body;
+        const { nameFr, nameEn, category, variant, detail, brand, color, hasZip, quantity, costPrice, location, notes, lowStockThreshold } = ctx.request.body;
         if (!nameFr || !category) {
             return ctx.badRequest('nameFr and category are required');
         }
-        const VALID_CATEGORIES = ['textile', 'frame', 'accessory', 'sticker', 'print', 'merch', 'equipment', 'other'];
+        const VALID_CATEGORIES = ['textile', 'frame', 'accessory', 'sticker', 'print', 'merch', 'equipment', 'flyer', 'business-card', 'web', 'design', 'photo', 'video', 'consulting', 'hosting', 'other'];
         if (!VALID_CATEGORIES.includes(category)) {
             return ctx.badRequest(`Invalid category. Must be one of: ${VALID_CATEGORIES.join(', ')}`);
         }
@@ -104,6 +112,14 @@ exports.default = strapi_1.factories.createCoreController('api::inventory-item.i
             print: 'PRT',
             merch: 'MRC',
             equipment: 'EQP',
+            flyer: 'FLY',
+            'business-card': 'BCD',
+            web: 'WEB',
+            design: 'DSG',
+            photo: 'PHT',
+            video: 'VID',
+            consulting: 'CST',
+            hosting: 'HST',
             other: 'OTH',
         };
         const prefix = SKU_PREFIXES[category] || 'OTH';
@@ -155,6 +171,10 @@ exports.default = strapi_1.factories.createCoreController('api::inventory-item.i
                 sku,
                 category,
                 variant: variant || '',
+                brand: brand || '',
+                color: color || '',
+                detail: detail || '',
+                hasZip: !!hasZip,
                 quantity: quantity || 0,
                 reserved: 0,
                 lowStockThreshold: lowStockThreshold || 5,
@@ -192,7 +212,7 @@ exports.default = strapi_1.factories.createCoreController('api::inventory-item.i
         if ((!items || !Array.isArray(items) || items.length === 0) && !expense) {
             return ctx.badRequest('Au moins un item ou une depense est requis');
         }
-        const VALID_CATEGORIES = ['textile', 'frame', 'accessory', 'sticker', 'print', 'merch', 'equipment', 'other'];
+        const VALID_CATEGORIES = ['textile', 'frame', 'accessory', 'sticker', 'print', 'merch', 'equipment', 'flyer', 'business-card', 'web', 'design', 'photo', 'video', 'consulting', 'hosting', 'other'];
         const results = [];
         for (const item of items) {
             if (!item.nameFr || !item.category)
@@ -283,5 +303,98 @@ exports.default = strapi_1.factories.createCoreController('api::inventory-item.i
         }
         strapi.log.info(`Import facture: ${results.length} items, depense: ${(expense === null || expense === void 0 ? void 0 : expense.amount) || 0}$`);
         ctx.body = { data: { items: results, expense: expenseResult } };
+    },
+    /**
+     * Sync inventaire depuis une facture sortante (delta oldItems -> newItems).
+     * - Pour chaque item matche par sku/nameFr, calcule la difference de qty
+     *   entre l'ancienne version et la nouvelle, puis ajuste l'inventaire.
+     * - Items non matches sont ignores silencieusement (pas tous les items de
+     *   facture correspondent a de l'inventaire, ex: services web/design).
+     * - Safety: n'autorise jamais une quantite inventaire < 0.
+     *
+     * Request body:
+     *   { oldItems: Array<{ description, sku?, qty }>,
+     *     newItems: Array<{ description, sku?, qty }> }
+     *
+     * Algorithme:
+     *   1. Aggrege oldItems par cle (sku ou nameFr normalise) -> totalQty
+     *   2. Aggrege newItems pareil
+     *   3. Pour chaque cle, delta = newQty - oldQty
+     *   4. Match en inventaire, applique -delta sur quantity
+     *      (sortie = deduction = soustrait delta positif, ajoute si delta negatif)
+     */
+    async syncOutgoingInvoice(ctx) {
+        var _a, _b, _c, _d;
+        const { oldItems = [], newItems = [] } = ctx.request.body;
+        const normalize = (s) => (s || '').trim().toLowerCase();
+        const keyOf = (it) => (it.sku && it.sku.trim())
+            ? `sku:${normalize(it.sku)}`
+            : `name:${normalize(it.description || it.nameFr || '')}`;
+        const aggregate = (list) => {
+            const map = new Map();
+            for (const it of list || []) {
+                const key = keyOf(it);
+                if (!key || key === 'name:' || key === 'sku:')
+                    continue;
+                const qty = Number(it.qty) || 0;
+                if (qty <= 0)
+                    continue;
+                const existing = map.get(key);
+                if (existing) {
+                    existing.qty += qty;
+                }
+                else {
+                    map.set(key, { qty, raw: it });
+                }
+            }
+            return map;
+        };
+        const oldAgg = aggregate(oldItems);
+        const newAgg = aggregate(newItems);
+        const allKeys = new Set([...oldAgg.keys(), ...newAgg.keys()]);
+        const adjustments = [];
+        for (const key of allKeys) {
+            const oldQty = ((_a = oldAgg.get(key)) === null || _a === void 0 ? void 0 : _a.qty) || 0;
+            const newQty = ((_b = newAgg.get(key)) === null || _b === void 0 ? void 0 : _b.qty) || 0;
+            const raw = ((_c = newAgg.get(key)) === null || _c === void 0 ? void 0 : _c.raw) || ((_d = oldAgg.get(key)) === null || _d === void 0 ? void 0 : _d.raw);
+            const delta = newQty - oldQty; // positif = plus vendu, negatif = moins vendu
+            if (delta === 0)
+                continue;
+            // Match par sku exact en priorite, sinon fuzzy par nameFr
+            let existing = null;
+            if (raw === null || raw === void 0 ? void 0 : raw.sku) {
+                existing = await strapi.documents('api::inventory-item.inventory-item').findFirst({
+                    filters: { sku: raw.sku.trim() },
+                });
+            }
+            if (!existing && (raw === null || raw === void 0 ? void 0 : raw.description)) {
+                existing = await strapi.documents('api::inventory-item.inventory-item').findFirst({
+                    filters: { nameFr: { $containsi: raw.description.trim().slice(0, 60) } },
+                });
+            }
+            if (!existing) {
+                adjustments.push({ key, status: 'no-match', description: raw === null || raw === void 0 ? void 0 : raw.description, delta });
+                continue;
+            }
+            const currentQty = existing.quantity || 0;
+            const targetQty = Math.max(0, currentQty - delta);
+            await strapi.documents('api::inventory-item.inventory-item').update({
+                documentId: existing.documentId,
+                data: { quantity: targetQty },
+            });
+            adjustments.push({
+                key,
+                status: 'updated',
+                sku: existing.sku,
+                nameFr: existing.nameFr,
+                delta,
+                before: currentQty,
+                after: targetQty,
+            });
+        }
+        const matched = adjustments.filter(a => a.status === 'updated').length;
+        const skipped = adjustments.filter(a => a.status === 'no-match').length;
+        strapi.log.info(`Sync facture sortante: ${matched} items ajustes, ${skipped} sans match`);
+        ctx.body = { data: { adjustments, matched, skipped } };
     },
 }));
