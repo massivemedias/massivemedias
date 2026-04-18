@@ -1,4 +1,27 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -506,8 +529,18 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
         var _a;
         const sig = ctx.request.headers['stripe-signature'];
         const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+        const requestId = crypto_1.default.randomBytes(4).toString('hex');
         if (!endpointSecret || endpointSecret === 'whsec_REPLACE_ME') {
-            strapi.log.warn('Stripe webhook secret not configured');
+            strapi.log.warn(`[webhook:${requestId}] Stripe webhook secret not configured`);
+            // Alert admin immediately - config broken in prod
+            try {
+                const { sendWebhookFailureAlert } = await Promise.resolve().then(() => __importStar(require('../../../utils/email')));
+                await sendWebhookFailureAlert({
+                    reason: 'STRIPE_WEBHOOK_SECRET env var missing or placeholder',
+                    requestId,
+                });
+            }
+            catch (_) { /* non-blocking */ }
             return ctx.badRequest('Webhook not configured');
         }
         let event;
@@ -518,12 +551,37 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
             const unparsedBody = (_a = ctx.request.body) === null || _a === void 0 ? void 0 : _a[Symbol.for('unparsedBody')];
             const koaRawBody = ctx.request.rawBody;
             const rawBody = unparsedBody || koaRawBody || JSON.stringify(ctx.request.body);
-            strapi.log.info(`Webhook received - sig: ${sig ? 'present' : 'missing'}, rawBody type: ${typeof rawBody}, length: ${(rawBody === null || rawBody === void 0 ? void 0 : rawBody.length) || 0}, source: ${unparsedBody ? 'unparsed' : koaRawBody ? 'koa' : 'json-stringify'}`);
+            strapi.log.info(`[webhook:${requestId}] Received - sig: ${sig ? 'present' : 'missing'}, rawBody type: ${typeof rawBody}, length: ${(rawBody === null || rawBody === void 0 ? void 0 : rawBody.length) || 0}, source: ${unparsedBody ? 'unparsed' : koaRawBody ? 'koa' : 'json-stringify'}`);
             event = stripe.webhooks.constructEvent(rawBody, sig, endpointSecret);
-            strapi.log.info(`Webhook verified OK - event type: ${event.type}`);
+            strapi.log.info(`[webhook:${requestId}] Verified OK - event: ${event.type} id: ${event.id}`);
         }
         catch (err) {
-            strapi.log.error('Webhook signature verification failed:', err.message);
+            strapi.log.error(`[webhook:${requestId}] SIGNATURE VERIFICATION FAILED:`, err.message);
+            // Alert admin IMMEDIATELY - this is how we missed 4 days of broken webhook in April 2026
+            // Cap at 1 alert per 10 min to avoid email storm if Stripe retries aggressively
+            try {
+                const cacheKey = `__webhook_fail_alert_last__`;
+                const globalAny = global;
+                const lastAlert = Number(globalAny[cacheKey] || 0);
+                const now = Date.now();
+                if (now - lastAlert > 10 * 60 * 1000) {
+                    globalAny[cacheKey] = now;
+                    const { sendWebhookFailureAlert } = await Promise.resolve().then(() => __importStar(require('../../../utils/email')));
+                    await sendWebhookFailureAlert({
+                        reason: `Stripe signature verification failed: ${err.message}`,
+                        requestId,
+                        sigHeader: sig ? sig.substring(0, 80) : '(missing)',
+                        bodyPresent: !!ctx.request.body,
+                    });
+                    strapi.log.warn(`[webhook:${requestId}] Admin alert email dispatched`);
+                }
+                else {
+                    strapi.log.info(`[webhook:${requestId}] Alert throttled (${Math.round((now - lastAlert) / 1000)}s since last)`);
+                }
+            }
+            catch (alertErr) {
+                strapi.log.error(`[webhook:${requestId}] Failed to send admin alert:`, alertErr === null || alertErr === void 0 ? void 0 : alertErr.message);
+            }
             return ctx.badRequest(`Webhook Error: ${err.message}`);
         }
         // Pour checkout sessions, recuperer le payment_intent_id
@@ -1561,6 +1619,39 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
                 averageValue: paidOrders.length > 0 ? Math.round(totalRevenue / paidOrders.length) : 0,
             },
             topClients,
+        };
+    },
+    /**
+     * GET /orders/memory-health
+     * Returns current process memory stats to help diagnose OOM issues.
+     * Public endpoint (read-only diagnostic). Returns status WARNING/CRITICAL/OK.
+     */
+    async memoryHealth(ctx) {
+        const mem = process.memoryUsage();
+        const rssMB = mem.rss / 1024 / 1024;
+        const heapUsedMB = mem.heapUsed / 1024 / 1024;
+        const heapTotalMB = mem.heapTotal / 1024 / 1024;
+        const externalMB = mem.external / 1024 / 1024;
+        const arrayBuffersMB = (mem.arrayBuffers || 0) / 1024 / 1024;
+        // Render Standard = 2GB. Override via env var if plan changes.
+        const renderMemLimitMB = Number(process.env.RENDER_MEMORY_LIMIT_MB) || 2048;
+        const rssPct = (rssMB / renderMemLimitMB) * 100;
+        const status = rssPct > 85 ? 'CRITICAL' : rssPct > 70 ? 'WARNING' : 'OK';
+        ctx.body = {
+            status,
+            renderLimitMB: renderMemLimitMB,
+            uptime: Math.round(process.uptime()),
+            memory: {
+                rss: `${rssMB.toFixed(1)} MB`,
+                rssPctOfLimit: `${rssPct.toFixed(1)}%`,
+                heapUsed: `${heapUsedMB.toFixed(1)} MB`,
+                heapTotal: `${heapTotalMB.toFixed(1)} MB`,
+                external: `${externalMB.toFixed(1)} MB`,
+                arrayBuffers: `${arrayBuffersMB.toFixed(1)} MB`,
+            },
+            node: process.version,
+            pid: process.pid,
+            timestamp: new Date().toISOString(),
         };
     },
     /**

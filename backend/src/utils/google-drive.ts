@@ -193,6 +193,67 @@ export async function uploadBufferToGoogleDrive(
   };
 }
 
+// Upload un fichier en streaming depuis un Readable (pour eviter de charger le buffer en RAM).
+// Utilise le meme resumable upload que uploadBufferToGoogleDrive mais piepe le stream directement
+// sur la requete PUT - la memoire heap Node n'augmente pas proportionnellement a la taille du fichier.
+export async function uploadStreamToGoogleDrive(
+  readStream: NodeJS.ReadableStream,
+  fileName: string,
+  artistSlug: string,
+  mimeType: string = 'application/octet-stream',
+  contentLength?: number
+): Promise<DriveUploadResult> {
+  const parentFolderId = process.env.GOOGLE_DRIVE_FOLDER_ID;
+  if (!parentFolderId) throw new Error('GOOGLE_DRIVE_FOLDER_ID env var not set');
+
+  const token = await getAccessToken();
+  const artistFolderId = await getOrCreateArtistFolder(token, parentFolderId, artistSlug);
+
+  const date = new Date().toISOString().split('T')[0];
+  const safeName = `${date}_${fileName}`;
+
+  // Step 1: init resumable upload
+  const initHeaders: Record<string, string> = {
+    Authorization: `Bearer ${token}`,
+    'Content-Type': 'application/json',
+    'X-Upload-Content-Type': mimeType,
+  };
+  if (contentLength && contentLength > 0) {
+    initHeaders['X-Upload-Content-Length'] = contentLength.toString();
+  }
+
+  const initRes = await fetch(`${DRIVE_API}?uploadType=resumable`, {
+    method: 'POST',
+    headers: initHeaders,
+    body: JSON.stringify({ name: safeName, parents: [artistFolderId] }),
+  });
+  if (!initRes.ok) throw new Error(`Drive resumable init failed: ${await initRes.text()}`);
+  const uploadUrl = initRes.headers.get('location');
+  if (!uploadUrl) throw new Error('No upload URL returned');
+
+  // Step 2: PUT the stream. undici/fetch accepts ReadableStream as body.
+  // We pass duplex: 'half' for streamed request bodies.
+  const putHeaders: Record<string, string> = { 'Content-Type': mimeType };
+  if (contentLength && contentLength > 0) putHeaders['Content-Length'] = contentLength.toString();
+
+  const uploadRes = await fetch(uploadUrl, {
+    method: 'PUT',
+    headers: putHeaders,
+    body: readStream as any,
+    duplex: 'half',
+  } as any);
+
+  if (!uploadRes.ok) throw new Error(`Drive upload (stream) failed: ${await uploadRes.text()}`);
+  const file: any = await uploadRes.json();
+
+  return {
+    fileId: file.id,
+    fileName: file.name || safeName,
+    webViewLink: file.webViewLink || `https://drive.google.com/file/d/${file.id}/view`,
+    webContentLink: file.webContentLink || '',
+  };
+}
+
 // Upload un fichier directement dans un dossier Google Drive specifique (sans sous-dossier artiste)
 export async function uploadBufferToFolder(
   fileBuffer: Buffer,

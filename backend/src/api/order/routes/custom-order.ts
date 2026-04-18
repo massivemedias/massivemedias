@@ -144,6 +144,14 @@ export default {
         auth: false,
       },
     },
+    {
+      method: 'GET',
+      path: '/orders/memory-health',
+      handler: 'order.memoryHealth',
+      config: {
+        auth: false,
+      },
+    },
   ],
 };
 // Trigger redeploy 1774828260

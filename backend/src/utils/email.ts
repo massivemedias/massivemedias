@@ -930,6 +930,66 @@ export async function sendNewContactNotificationEmail(data: NewContactData): Pro
 }
 
 // -----------------------------------------------------------
+// Alerte critique: echec signature webhook Stripe (envoyee max 1x/10min)
+// -----------------------------------------------------------
+export async function sendWebhookFailureAlert(info: {
+  reason: string;
+  requestId: string;
+  sigHeader?: string;
+  bodyPresent?: boolean;
+}): Promise<boolean> {
+  const resend = getResend();
+  if (!resend) {
+    console.error('[email] sendWebhookFailureAlert: Resend not configured');
+    return false;
+  }
+  const sender = getSender();
+  const adminEmail = process.env.ADMIN_EMAIL || 'massivemedias@gmail.com';
+
+  const html = `
+    <div style="font-family:-apple-system,BlinkMacSystemFont,sans-serif;padding:20px;background:#1a0030;color:#fff;">
+      <h1 style="color:#ff3366;margin:0 0 12px;">🚨 WEBHOOK STRIPE EN ECHEC</h1>
+      <p style="color:#ffb3c6;font-size:14px;margin:0 0 20px;">
+        La verification de signature du webhook Stripe a echoue. Cela signifie qu'une ou plusieurs
+        commandes ne vont PAS etre marquees comme payees automatiquement. Action requise.
+      </p>
+      <table style="width:100%;background:#2a0050;padding:16px;border-radius:8px;font-size:13px;">
+        <tr><td style="padding:4px 0;color:#aaa;">Request ID:</td><td style="padding:4px 0;font-family:monospace;">${info.requestId}</td></tr>
+        <tr><td style="padding:4px 0;color:#aaa;">Raison:</td><td style="padding:4px 0;color:#ff8fa3;">${escapeHtml(info.reason)}</td></tr>
+        ${info.sigHeader ? `<tr><td style="padding:4px 0;color:#aaa;">Header sig (debut):</td><td style="padding:4px 0;font-family:monospace;font-size:11px;word-break:break-all;">${escapeHtml(info.sigHeader)}...</td></tr>` : ''}
+        ${typeof info.bodyPresent === 'boolean' ? `<tr><td style="padding:4px 0;color:#aaa;">Body present:</td><td style="padding:4px 0;">${info.bodyPresent ? 'Oui' : 'NON'}</td></tr>` : ''}
+        <tr><td style="padding:4px 0;color:#aaa;">Timestamp:</td><td style="padding:4px 0;">${new Date().toISOString()}</td></tr>
+      </table>
+      <div style="margin-top:20px;padding:12px;background:#ffe0e8;color:#660022;border-radius:6px;font-size:13px;">
+        <strong>Causes probables:</strong><br/>
+        1. STRIPE_WEBHOOK_SECRET sur Render ne correspond plus au secret actuel de l'endpoint Stripe.<br/>
+        2. Rotation de cle sur Stripe non repliquee sur Render.<br/>
+        3. Changement d'endpoint Stripe sans update du secret.<br/><br/>
+        <strong>Action:</strong> aller sur Stripe Dashboard > Webhooks > endpoint > "Clé secrète de signature" et comparer avec STRIPE_WEBHOOK_SECRET sur Render.
+      </div>
+    </div>
+  `;
+
+  try {
+    await resend.emails.send({
+      ...sender,
+      to: adminEmail,
+      subject: `🚨 [ALERTE CRITIQUE] Webhook Stripe signature failed - ${info.requestId}`,
+      html,
+    });
+    console.log(`[email] Webhook failure alert sent for request ${info.requestId}`);
+    return true;
+  } catch (err) {
+    console.error('[email] Failed to send webhook failure alert:', err);
+    return false;
+  }
+}
+
+function escapeHtml(s: string): string {
+  return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] as string));
+}
+
+// -----------------------------------------------------------
 // Email de notification de nouvelle inscription
 // -----------------------------------------------------------
 export async function sendNewUserNotificationEmail(userName: string, userEmail: string, provider: string): Promise<boolean> {

@@ -146,17 +146,18 @@ exports.default = strapi_1.factories.createCoreController('api::artist-edit-requ
                         const notifMessage = buildNotificationMessage(requestType, enrichedChangeData, artistName || artistSlug);
                         await resend.emails.send({
                             from: 'Massive Medias <noreply@massivemedias.com>',
-                            to: 'massivemedias44@gmail.com',
+                            to: process.env.ADMIN_EMAIL || 'massivemedias@gmail.com',
+                            replyTo: email || 'massivemedias@gmail.com',
                             subject: `[Demande artiste] ${TYPE_LABELS[requestType] || requestType} - ${artistName || artistSlug}`,
-                            html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:20px;background:#1a1030;color:#e0e0e0;border-radius:12px;">
-                <h2 style="color:#F00098;margin:0 0 16px;">Demande de modification</h2>
-                <p style="color:#aaa;font-size:13px;">Artiste: <strong style="color:#fff;">${artistName || artistSlug}</strong> (${email})</p>
-                <p style="color:#aaa;font-size:13px;">Type: <strong style="color:#F00098;">${TYPE_LABELS[requestType] || requestType}</strong></p>
-                <div style="background:#0a0618;padding:16px;border-radius:8px;margin:16px 0;">
-                  <p style="color:#ccc;font-size:14px;white-space:pre-wrap;margin:0;">${notifMessage}</p>
+                            html: `<div style="font-family:-apple-system,system-ui,sans-serif;max-width:600px;margin:0 auto;padding:32px;background:#ffffff;color:#222;border:1px solid #eee;border-radius:8px;">
+                <h2 style="color:#222;margin:0 0 16px;font-size:16px;font-weight:600;">Demande de modification artiste</h2>
+                <p style="color:#666;font-size:14px;margin:8px 0;">Artiste: <strong style="color:#222;">${artistName || artistSlug}</strong> (${email})</p>
+                <p style="color:#666;font-size:14px;margin:8px 0;">Type: <strong style="color:#FF0098;">${TYPE_LABELS[requestType] || requestType}</strong></p>
+                <div style="background:#f7f7f7;padding:16px;border-radius:6px;border-left:3px solid #FF0098;margin:16px 0;">
+                  <p style="color:#333;font-size:14px;white-space:pre-wrap;margin:0;line-height:1.6;">${notifMessage}</p>
                 </div>
-                <p style="color:#888;font-size:12px;">Connectez-vous au panneau admin pour approuver ou rejeter cette demande.</p>
-                <a href="https://massivemedias.com/admin/messages" style="display:inline-block;background:#F00098;color:#fff;padding:10px 24px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:14px;margin-top:8px;">Voir dans l'admin</a>
+                <p style="color:#666;font-size:13px;margin:16px 0 12px;">Connectez-vous au panneau admin pour approuver ou rejeter cette demande.</p>
+                <a href="https://massivemedias.com/admin/messages" style="display:inline-block;background:#222;color:#ffffff;padding:10px 24px;border-radius:6px;text-decoration:none;font-weight:600;font-size:13px;">Voir dans l'admin</a>
               </div>`,
                         });
                         strapi.log.info(`Email notification admin envoye pour ${requestType} de ${artistName}`);
@@ -541,20 +542,42 @@ exports.default = strapi_1.factories.createCoreController('api::artist-edit-requ
                 return ctx.badRequest('artistSlug is required');
             }
             const file = Array.isArray(files.file) ? files.file[0] : files.file;
-            strapi.log.info(`uploadDirect file: ${file.originalFilename || file.name || 'unknown'}, filepath: ${file.filepath || file.path || 'none'}, size: ${file.size || 'unknown'}`);
-            const fs = require('fs');
-            const fileBuffer = fs.readFileSync(file.filepath || file.path);
+            const filepath = file.filepath || file.path;
             const fileName = file.originalFilename || file.name || 'upload';
             const mimeType = file.mimetype || file.type || 'application/octet-stream';
-            // 1. Upload original vers Google Drive
-            const driveResult = await tryUploadBufferToGoogleDrive(fileBuffer, fileName, artistSlug, mimeType);
-            if (driveResult.error) {
-                strapi.log.error('Google Drive upload error:', driveResult.error);
+            const fileSize = Number(file.size) || 0;
+            strapi.log.info(`uploadDirect file: ${fileName}, filepath: ${filepath}, size: ${(fileSize / (1024 * 1024)).toFixed(1)} MB, mime: ${mimeType}`);
+            // Hard limit to protect the instance from OOM: 50MB per file
+            const MAX_FILE_SIZE = 50 * 1024 * 1024;
+            if (fileSize > MAX_FILE_SIZE) {
+                // Cleanup tmp file to avoid leaking disk
+                try {
+                    require('fs').unlinkSync(filepath);
+                }
+                catch (_) { /* ignore */ }
+                return ctx.badRequest(`Fichier trop volumineux (${(fileSize / (1024 * 1024)).toFixed(1)} MB). Maximum: 50 MB. Contactez-nous pour les gros fichiers.`);
             }
-            // 2. Convertir en WebP pour l'affichage sur le site et stocker sur Supabase
+            const fs = require('fs');
+            const path = require('path');
+            const os = require('os');
+            // STREAMING approach: never load the full file into memory.
+            // - sharp reads from disk directly via input path, writes to disk (no buffer roundtrip)
+            // - Supabase upload reads from disk stream
+            // - Google Drive upload needs a buffer API still (TODO: migrate to stream API), we read
+            //   from disk ONLY when drive upload is actually invoked, and only once
+            const memBefore = process.memoryUsage().rss / 1024 / 1024;
+            const tmpWebp = path.join(os.tmpdir(), `upload-${Date.now()}-${Math.random().toString(36).slice(2)}.webp`);
+            // 1. Convert to WebP (streaming disk to disk, no big buffer in RAM)
             let webpUrl = '';
+            let webpSizeBytes = 0;
             try {
                 const sharp = require('sharp');
+                // sharp().input from file path + .toFile(path) avoids holding the full image in a JS buffer
+                const webpInfo = await sharp(filepath, { limitInputPixels: 100000000 })
+                    .resize(1600, 1600, { fit: 'inside', withoutEnlargement: true })
+                    .webp({ quality: 80 })
+                    .toFile(tmpWebp);
+                webpSizeBytes = webpInfo.size;
                 const { createClient } = require('@supabase/supabase-js');
                 const supabaseUrl2 = process.env.SUPABASE_URL || process.env.SUPABASE_API_URL;
                 const supabaseKey = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_API_KEY;
@@ -563,12 +586,10 @@ exports.default = strapi_1.factories.createCoreController('api::artist-edit-requ
                     const timestamp = Date.now();
                     const baseName = fileName.replace(/\.[^.]+$/, '');
                     const safeName = baseName.replace(/[^a-zA-Z0-9._-]/g, '_');
-                    // Convert to WebP (max 1600px, quality 80)
-                    const webpBuffer = await sharp(fileBuffer)
-                        .resize(1600, 1600, { fit: 'inside', withoutEnlargement: true })
-                        .webp({ quality: 80 })
-                        .toBuffer();
                     const webpPath = `artist-submissions/${artistSlug}/${timestamp}-${safeName}.webp`;
+                    // Read WebP from disk as a Buffer for Supabase (their SDK doesn't accept a Readable stream
+                    // in all versions). WebP is much smaller than original so memory impact is limited.
+                    const webpBuffer = fs.readFileSync(tmpWebp);
                     const { data } = await supabase.storage.from('order-files').upload(webpPath, webpBuffer, {
                         contentType: 'image/webp',
                         upsert: false,
@@ -577,7 +598,7 @@ exports.default = strapi_1.factories.createCoreController('api::artist-edit-requ
                         const { data: urlData } = supabase.storage.from('order-files').getPublicUrl(data.path);
                         webpUrl = (urlData === null || urlData === void 0 ? void 0 : urlData.publicUrl) || '';
                     }
-                    strapi.log.info(`WebP created: ${webpPath} (${(webpBuffer.length / 1024).toFixed(0)} KB from ${(fileBuffer.length / (1024 * 1024)).toFixed(1)} MB original)`);
+                    strapi.log.info(`WebP created: ${webpPath} (${(webpSizeBytes / 1024).toFixed(0)} KB from ${(fileSize / (1024 * 1024)).toFixed(1)} MB original)`);
                 }
                 else {
                     strapi.log.warn('Supabase env vars missing - skipping WebP upload');
@@ -586,11 +607,45 @@ exports.default = strapi_1.factories.createCoreController('api::artist-edit-requ
             catch (webpErr) {
                 strapi.log.warn('WebP conversion failed (non-blocking):', (webpErr === null || webpErr === void 0 ? void 0 : webpErr.message) || webpErr);
             }
+            finally {
+                // Always cleanup WebP temp file
+                try {
+                    fs.unlinkSync(tmpWebp);
+                }
+                catch (_) { /* ignore */ }
+            }
+            // 2. Upload original to Google Drive - read buffer from disk only here, just before use
+            // Note: googleapis drive.files.create can accept a Readable stream directly. Use the stream path
+            // to avoid loading the full original file into memory.
+            let driveResult = {};
+            try {
+                const { uploadStreamToGoogleDrive } = await Promise.resolve().then(() => __importStar(require('../../../utils/google-drive'))).catch(() => ({ uploadStreamToGoogleDrive: null }));
+                if (typeof uploadStreamToGoogleDrive === 'function') {
+                    const readStream = fs.createReadStream(filepath);
+                    driveResult = await uploadStreamToGoogleDrive(readStream, fileName, artistSlug, mimeType);
+                }
+                else {
+                    // Fallback: legacy buffer-based API (kept for compatibility until stream helper is merged)
+                    const fileBuffer = fs.readFileSync(filepath);
+                    driveResult = await tryUploadBufferToGoogleDrive(fileBuffer, fileName, artistSlug, mimeType);
+                }
+            }
+            catch (driveErr) {
+                strapi.log.error('Google Drive upload error:', (driveErr === null || driveErr === void 0 ? void 0 : driveErr.message) || driveErr);
+                driveResult = { error: (driveErr === null || driveErr === void 0 ? void 0 : driveErr.message) || 'Drive upload failed' };
+            }
+            // 3. Cleanup the multipart temp file (formidable doesn't always do this)
+            try {
+                fs.unlinkSync(filepath);
+            }
+            catch (_) { /* ignore */ }
+            const memAfter = process.memoryUsage().rss / 1024 / 1024;
+            strapi.log.info(`uploadDirect memory: before=${memBefore.toFixed(0)}MB, after=${memAfter.toFixed(0)}MB, delta=${(memAfter - memBefore).toFixed(0)}MB`);
             ctx.body = {
                 success: true,
                 file: {
                     name: fileName,
-                    size: fileBuffer.length,
+                    size: fileSize,
                     mime: mimeType,
                     url: webpUrl,
                     driveFileId: driveResult.fileId || null,
