@@ -1,6 +1,7 @@
 import { Shirt, Shield, Sparkles, Truck, Music, Users, Gift, Store } from 'lucide-react';
 import ProductLayout from '../components/ProductLayout';
 import ConfiguratorSublimation from '../components/configurators/ConfiguratorSublimation';
+import MerchPauseBanner from '../components/MerchPauseBanner';
 import { useProduct } from '../hooks/useProducts';
 import { mediaUrl } from '../utils/cms';
 import { sublimationImages, sublimationFaq as defaultFaq } from '../data/products';
@@ -65,6 +66,7 @@ function ServiceMerch() {
       faq={sublimationFaq}
       ctaLinks={ctaLinks}
     >
+      <MerchPauseBanner />
       <ConfiguratorSublimation />
     </ProductLayout>
   );

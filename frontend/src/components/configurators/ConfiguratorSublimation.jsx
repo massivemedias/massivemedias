@@ -8,6 +8,8 @@ import { useCart } from '../../contexts/CartContext';
 import { useLang } from '../../i18n/LanguageContext';
 import { useProduct } from '../../hooks/useProducts';
 import FileUpload from '../FileUpload';
+import MerchPauseBanner from '../MerchPauseBanner';
+import { MERCH_PAUSED, blockIfMerchPaused } from '../../config/merchStatus';
 import {
   sublimationProducts as defaultProducts, sublimationPriceTiers as defaultPriceTiers, sublimationDesignPrice as defaultDesignPrice,
   getSublimationPrice as defaultGetPrice, sublimationImages,
@@ -106,6 +108,8 @@ function ConfiguratorSublimation() {
   const canAddToCart = uploadedFiles.length > 0 || frontLogoUrl || backLogoUrl || notes.trim().length > 0;
 
   const handleAddToCart = () => {
+    // Blocage service en pause: alert explicatif, pas d'ajout au panier
+    if (blockIfMerchPaused(tx)) return;
     if (!priceInfo || !canAddToCart) return;
     const placements = [];
     if (frontLogoUrl && frontLogoPos) {
@@ -449,9 +453,19 @@ function ConfiguratorSublimation() {
       {/* Add to cart or contact */}
       {priceInfo && !priceInfo.surSoumission ? (
         <>
-          <button onClick={handleAddToCart} disabled={!canAddToCart} className={`btn-primary w-full justify-center text-sm md:text-base py-3 md:py-3.5 mb-2 md:mb-3 ${!canAddToCart ? 'opacity-40 cursor-not-allowed' : ''}`}>
+          {/* Visuellement desactive quand MERCH_PAUSED. On garde onClick actif
+              pour afficher l'alert explicatif si le client clique quand meme. */}
+          <button
+            onClick={handleAddToCart}
+            disabled={!canAddToCart && !MERCH_PAUSED}
+            aria-disabled={MERCH_PAUSED ? 'true' : undefined}
+            title={MERCH_PAUSED ? tx({ fr: 'Service temporairement suspendu', en: 'Service temporarily suspended', es: 'Servicio temporalmente suspendido' }) : undefined}
+            className={`btn-primary w-full justify-center text-sm md:text-base py-3 md:py-3.5 mb-2 md:mb-3 ${(!canAddToCart || MERCH_PAUSED) ? 'opacity-40 cursor-not-allowed' : ''}`}
+          >
             {added ? (
               <><Check size={18} className="mr-2" />{tx({ fr: 'Ajoute!', en: 'Added!', es: 'Agregado!' })}</>
+            ) : MERCH_PAUSED ? (
+              <><Package size={18} className="mr-2" />{tx({ fr: 'Service en pause', en: 'Service paused', es: 'Servicio en pausa' })}</>
             ) : (
               <><ShoppingCart size={18} className="mr-2" />{tx({ fr: 'Ajouter au panier', en: 'Add to cart', es: 'Agregar al carrito' })}</>
             )}

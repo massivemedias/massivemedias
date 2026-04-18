@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { ShoppingCart, Check, ArrowLeft } from 'lucide-react';
+import { ShoppingCart, Check, ArrowLeft, Package } from 'lucide-react';
 import SEO from '../components/SEO';
 import ColorSwatches from '../components/ColorSwatches';
+import MerchPauseBanner from '../components/MerchPauseBanner';
+import { MERCH_PAUSED, blockIfMerchPaused } from '../config/merchStatus';
 import { useLang } from '../i18n/LanguageContext';
 import { useCart } from '../contexts/CartContext';
 import { useProduct } from '../hooks/useProducts';
@@ -30,6 +32,7 @@ function MerchTshirt() {
   const totalPrice = unitPrice * quantity;
 
   const handleAddToCart = () => {
+    if (blockIfMerchPaused(tx)) return;
     addToCart({
       productId: `merch-tshirt-${selectedColor}-${selectedSize}`,
       productName: tx({ fr: 'T-Shirt Massive', en: 'Massive T-Shirt', es: 'Camiseta Massive' }),
@@ -78,13 +81,14 @@ function MerchTshirt() {
             <h1 className="text-4xl md:text-5xl font-heading font-bold text-heading mb-3">
               T-Shirt Massive
             </h1>
-            <p className="text-lg text-grey-light max-w-2xl">
+            <p className="text-lg text-grey-light max-w-2xl mb-6">
               {tx({
                 fr: 'Coton preshrunk, impression sublimation durable. 10 couleurs.',
                 en: 'Preshrunk cotton, durable sublimation print. 10 colors.',
                 es: 'Algodón preencogido, impresión duradera. 10 colores.',
               })}
             </p>
+            <MerchPauseBanner />
           </motion.div>
         </div>
       </section>
@@ -205,9 +209,16 @@ function MerchTshirt() {
             </div>
 
             {/* Add to cart */}
-            <button onClick={handleAddToCart} className="btn-primary w-full justify-center text-base py-3.5">
+            <button
+              onClick={handleAddToCart}
+              aria-disabled={MERCH_PAUSED ? 'true' : undefined}
+              title={MERCH_PAUSED ? tx({ fr: 'Service temporairement suspendu', en: 'Service temporarily suspended', es: 'Servicio temporalmente suspendido' }) : undefined}
+              className={`btn-primary w-full justify-center text-base py-3.5 ${MERCH_PAUSED ? 'opacity-40 cursor-not-allowed' : ''}`}
+            >
               {added ? (
                 <><Check size={20} className="mr-2" />{tx({ fr: 'Ajouté au panier!', en: 'Added to cart!', es: 'Agregado al carrito!' })}</>
+              ) : MERCH_PAUSED ? (
+                <><Package size={20} className="mr-2" />{tx({ fr: 'Service en pause', en: 'Service paused', es: 'Servicio en pausa' })}</>
               ) : (
                 <><ShoppingCart size={20} className="mr-2" />{tx({ fr: 'Ajouter au panier', en: 'Add to cart', es: 'Agregar al carrito' })}</>
               )}

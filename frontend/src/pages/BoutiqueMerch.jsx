@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { useParams, Navigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingCart, Check, ArrowLeft, X, ZoomIn } from 'lucide-react';
+import { ShoppingCart, Check, ArrowLeft, X, ZoomIn, Package } from 'lucide-react';
 import SEO from '../components/SEO';
 import ColorDropdown from '../components/ColorDropdown';
+import MerchPauseBanner from '../components/MerchPauseBanner';
+import { MERCH_PAUSED, blockIfMerchPaused } from '../config/merchStatus';
 import { useLang } from '../i18n/LanguageContext';
 import { useCart } from '../contexts/CartContext';
 import { useProduct } from '../hooks/useProducts';
@@ -105,6 +107,7 @@ function MerchPage({ config, type }) {
   const productLabel = tx(config.label);
 
   const handleAddToCart = () => {
+    if (blockIfMerchPaused(tx)) return;
     addToCart({
       productId: `merch-${type}-${selectedColor}-${selectedSize}`,
       productName: productLabel,
@@ -148,9 +151,10 @@ function MerchPage({ config, type }) {
             <h1 className="text-4xl md:text-5xl font-heading font-bold text-heading mb-3">
               {productLabel}
             </h1>
-            <p className="text-lg text-grey-light max-w-2xl">
+            <p className="text-lg text-grey-light max-w-2xl mb-6">
               {tx(config.subtitle)}
             </p>
+            <MerchPauseBanner />
           </motion.div>
         </div>
       </section>
@@ -269,9 +273,16 @@ function MerchPage({ config, type }) {
               </div>
             </div>
 
-            <button onClick={handleAddToCart} className="btn-primary w-full justify-center text-base py-3.5">
+            <button
+              onClick={handleAddToCart}
+              aria-disabled={MERCH_PAUSED ? 'true' : undefined}
+              title={MERCH_PAUSED ? tx({ fr: 'Service temporairement suspendu', en: 'Service temporarily suspended', es: 'Servicio temporalmente suspendido' }) : undefined}
+              className={`btn-primary w-full justify-center text-base py-3.5 ${MERCH_PAUSED ? 'opacity-40 cursor-not-allowed' : ''}`}
+            >
               {added ? (
                 <><Check size={20} className="mr-2" />{tx({ fr: 'Ajouté au panier!', en: 'Added to cart!', es: 'Agregado al carrito!' })}</>
+              ) : MERCH_PAUSED ? (
+                <><Package size={20} className="mr-2" />{tx({ fr: 'Service en pause', en: 'Service paused', es: 'Servicio en pausa' })}</>
               ) : (
                 <><ShoppingCart size={20} className="mr-2" />{tx({ fr: 'Ajouter au panier', en: 'Add to cart', es: 'Agregar al carrito' })}</>
               )}
