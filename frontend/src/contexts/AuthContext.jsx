@@ -16,15 +16,29 @@ export function AuthProvider({ children }) {
       return;
     }
 
+    // Sync Supabase JWT to localStorage so axios interceptor in services/api.js can pick it up
+    // and attach Authorization: Bearer <jwt> to every request.
+    const syncToken = (s) => {
+      try {
+        if (s?.access_token) {
+          localStorage.setItem('token', s.access_token);
+        } else {
+          localStorage.removeItem('token');
+        }
+      } catch (e) { /* quota / private mode - ignore */ }
+    };
+
     supabase.auth.getSession().then(({ data: { session: s } }) => {
       setSession(s);
       setUser(s?.user ?? null);
+      syncToken(s);
       setLoading(false);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, s) => {
       setSession(s);
       setUser(s?.user ?? null);
+      syncToken(s);
 
       // Detect password recovery flow
       if (event === 'PASSWORD_RECOVERY') {
