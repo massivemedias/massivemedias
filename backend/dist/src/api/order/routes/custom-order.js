@@ -114,6 +114,38 @@ exports.default = {
                 auth: false,
             },
         },
+        {
+            method: 'POST',
+            path: '/orders/:documentId/resend-notification',
+            handler: 'order.resendAdminNotification',
+            config: {
+                auth: false,
+            },
+        },
+        {
+            method: 'GET',
+            path: '/orders/by-payment-intent/:paymentIntentId',
+            handler: 'order.getByPaymentIntent',
+            config: {
+                auth: false,
+            },
+        },
+        {
+            method: 'POST',
+            path: '/orders/link-by-email',
+            handler: 'order.linkByEmail',
+            config: {
+                auth: false,
+            },
+        },
+        {
+            method: 'POST',
+            path: '/orders/reconcile-stripe',
+            handler: 'order.reconcileStripe',
+            config: {
+                auth: false,
+            },
+        },
     ],
 };
 // Trigger redeploy 1774828260

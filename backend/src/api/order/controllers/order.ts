@@ -1579,4 +1579,228 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
       topClients,
     };
   },
+
+  /**
+   * POST /orders/reconcile-stripe
+   * Reconcile orders stuck in "draft" status with Stripe.
+   * For each draft order with a cs_live_* session id (or pi_*), queries Stripe
+   * to check if the payment actually succeeded. If yes, applies the same
+   * side-effects as the webhook would (set status=paid, invoice number, emails).
+   *
+   * Auth: requires RECONCILE_TOKEN in Authorization: Bearer header.
+   *
+   * Query params:
+   *   - sessionId: reconcile a single specific session (e.g. cs_live_xxxxx)
+   *   - hours: how many hours back to scan (default 72)
+   */
+  async reconcileStripe(ctx) {
+    // Security: shared secret via env var
+    const authHeader = (ctx.request.headers['authorization'] as string) || '';
+    const token = authHeader.replace(/^Bearer\s+/i, '').trim();
+    const expected = process.env.RECONCILE_TOKEN;
+    if (!expected || expected.length < 16) {
+      strapi.log.error('RECONCILE_TOKEN not configured (or too short)');
+      return ctx.internalServerError('Reconcile endpoint not configured');
+    }
+    if (token !== expected) {
+      return ctx.unauthorized('Invalid reconcile token');
+    }
+
+    const query = ctx.query as any;
+    const targetSessionId = typeof query.sessionId === 'string' ? query.sessionId.trim() : '';
+    const hours = Math.max(1, Math.min(720, parseInt(query.hours, 10) || 72));
+    const cutoff = new Date(Date.now() - hours * 60 * 60 * 1000);
+
+    const stripe = getStripe();
+
+    // Find candidate draft orders
+    const filters: any = { status: 'draft' };
+    if (targetSessionId) {
+      filters.stripePaymentIntentId = targetSessionId;
+    } else {
+      filters.createdAt = { $gte: cutoff.toISOString() };
+    }
+
+    const drafts = await strapi.documents('api::order.order').findMany({ filters });
+
+    const report = {
+      scanned: drafts.length,
+      fixed: [] as any[],
+      still_unpaid: [] as any[],
+      errors: [] as any[],
+    };
+
+    for (const order of drafts as any[]) {
+      const sid = order.stripePaymentIntentId || '';
+      if (!sid) {
+        report.errors.push({ id: order.id, email: order.customerEmail, reason: 'no stripe id' });
+        continue;
+      }
+
+      try {
+        let paymentIntentId: string | null = null;
+        let paymentStatus: string | null = null;
+        let paidAt: Date | null = null;
+
+        if (sid.startsWith('cs_')) {
+          const session = await stripe.checkout.sessions.retrieve(sid);
+          paymentStatus = session.payment_status;
+          paymentIntentId = typeof session.payment_intent === 'string'
+            ? session.payment_intent
+            : (session.payment_intent as any)?.id || null;
+          if (session.created) paidAt = new Date(session.created * 1000);
+        } else if (sid.startsWith('pi_')) {
+          const pi = await stripe.paymentIntents.retrieve(sid);
+          paymentStatus = pi.status === 'succeeded' ? 'paid' : pi.status;
+          paymentIntentId = pi.id;
+          if (pi.created) paidAt = new Date(pi.created * 1000);
+        } else {
+          report.errors.push({ id: order.id, email: order.customerEmail, reason: `unknown id format: ${sid}` });
+          continue;
+        }
+
+        if (paymentStatus !== 'paid') {
+          report.still_unpaid.push({ id: order.id, email: order.customerEmail, stripeStatus: paymentStatus, stripeId: sid });
+          continue;
+        }
+
+        // ---- Same logic as the webhook: generate invoice + update order + emails ----
+        let invoiceNumber = '';
+        try {
+          const now = new Date();
+          const year = now.getFullYear();
+          const prefix = `MM-${year}-`;
+          const existingOrders = await strapi.documents('api::order.order').findMany({
+            filters: { invoiceNumber: { $startsWith: prefix } } as any,
+            sort: { invoiceNumber: 'desc' } as any,
+            limit: 1,
+          });
+          let seq = 1;
+          if (existingOrders.length > 0 && (existingOrders[0] as any).invoiceNumber) {
+            const lastNum = (existingOrders[0] as any).invoiceNumber.replace(prefix, '');
+            seq = (parseInt(lastNum, 10) || 0) + 1;
+          }
+          invoiceNumber = `${prefix}${String(seq).padStart(4, '0')}`;
+        } catch (invoiceErr) {
+          strapi.log.warn('Erreur generation numero facture (reconcile):', invoiceErr);
+          invoiceNumber = `MM-${new Date().getFullYear()}-0000`;
+        }
+
+        await strapi.documents('api::order.order').update({
+          documentId: order.documentId,
+          data: {
+            status: 'paid',
+            invoiceNumber,
+            stripePaymentIntentId: paymentIntentId || sid,
+          } as any,
+        });
+        strapi.log.info(`[reconcile] Order ${order.documentId} -> paid (${invoiceNumber}) from ${sid}`);
+
+        // Email confirmation client
+        try {
+          const orderItems: any[] = Array.isArray(order.items) ? order.items : [];
+          const orderRef = (paymentIntentId || sid).slice(-8).toUpperCase();
+          await sendOrderConfirmationEmail({
+            customerName: order.customerName,
+            customerEmail: order.customerEmail,
+            orderRef,
+            invoiceNumber,
+            items: orderItems.map((item: any) => ({
+              productName: item.productName || 'Produit',
+              quantity: item.quantity || 1,
+              totalPrice: item.totalPrice || 0,
+              size: item.size || '',
+              finish: item.finish || '',
+            })),
+            subtotal: order.subtotal || 0,
+            shipping: order.shipping || 0,
+            tps: order.tps || 0,
+            tvq: order.tvq || 0,
+            total: order.total || 0,
+            shippingAddress: order.shippingAddress || null,
+            promoCode: order.promoCode || undefined,
+            promoDiscount: order.promoDiscount || undefined,
+            supabaseUserId: order.supabaseUserId || undefined,
+          });
+        } catch (emailErr) {
+          strapi.log.warn('[reconcile] Erreur email confirmation:', emailErr);
+        }
+
+        // Notification admin
+        try {
+          const orderItems2: any[] = Array.isArray(order.items) ? order.items : [];
+          const orderRef2 = (paymentIntentId || sid).slice(-8).toUpperCase();
+          const allUploadedFiles: { name: string; url: string }[] = [];
+          for (const item of orderItems2) {
+            if (Array.isArray(item.uploadedFiles)) {
+              for (const f of item.uploadedFiles) {
+                if (f && (f.url || f.name)) {
+                  allUploadedFiles.push({ name: f.name || f.url || 'Fichier', url: f.url || '' });
+                }
+              }
+            }
+          }
+          await sendNewOrderNotificationEmail({
+            orderRef: orderRef2,
+            customerName: order.customerName,
+            customerEmail: order.customerEmail,
+            items: orderItems2.map((item: any) => ({
+              productName: item.productName || 'Produit',
+              quantity: item.quantity || 1,
+              totalPrice: item.totalPrice || 0,
+              size: item.size || '',
+              finish: item.finish || '',
+            })),
+            subtotal: order.subtotal || 0,
+            shipping: order.shipping || 0,
+            tps: order.tps || 0,
+            tvq: order.tvq || 0,
+            total: order.total || 0,
+            shippingAddress: order.shippingAddress || null,
+            uploadedFiles: allUploadedFiles.length > 0 ? allUploadedFiles : undefined,
+            notes: order.notes || undefined,
+            designReady: order.designReady !== false,
+            promoCode: order.promoCode || undefined,
+            promoDiscount: order.promoDiscount || undefined,
+          });
+        } catch (adminEmailErr) {
+          strapi.log.warn('[reconcile] Erreur notification admin:', adminEmailErr);
+        }
+
+        // Update client stats
+        try {
+          const clients = await strapi.documents('api::client.client').findMany({
+            filters: { email: (order.customerEmail || '').toLowerCase() } as any,
+          });
+          if (clients.length > 0) {
+            const client = clients[0] as any;
+            await strapi.documents('api::client.client').update({
+              documentId: client.documentId,
+              data: {
+                totalSpent: (Number(client.totalSpent) || 0) + (order.total || 0) / 100,
+                orderCount: (client.orderCount || 0) + 1,
+                lastOrderDate: new Date().toISOString().split('T')[0],
+              } as any,
+            });
+          }
+        } catch (err) {
+          strapi.log.warn('[reconcile] Could not update client stats:', err);
+        }
+
+        report.fixed.push({
+          id: order.id,
+          email: order.customerEmail,
+          invoice: invoiceNumber,
+          total: order.total,
+          stripeId: sid,
+          paidAt: paidAt ? paidAt.toISOString() : null,
+        });
+      } catch (err: any) {
+        strapi.log.error(`[reconcile] Error on order ${order.id}:`, err);
+        report.errors.push({ id: order.id, email: order.customerEmail, reason: err.message });
+      }
+    }
+
+    ctx.body = report;
+  },
 }));

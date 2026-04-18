@@ -20,6 +20,16 @@ const getStripe = () => {
 const STICKER_STANDARD_TIERS = { 25: 30, 50: 47.50, 100: 85, 250: 200, 500: 375 };
 const STICKER_FX_TIERS = { 25: 35, 50: 57.50, 100: 100, 250: 225, 500: 425 };
 const FX_FINISHES = ['holographic', 'broken-glass', 'stars'];
+const ARTIST_DISCOUNT = 0.25; // Rabais artiste sur ses propres produits
+// Business card pricing tiers for server-side validation
+const BUSINESS_CARD_TIERS = {
+    'business-card-standard': { 100: 55, 250: 75, 500: 95, 1000: 130 },
+    'business-card-lamine': { 100: 70, 250: 95, 500: 120, 1000: 165 },
+    'business-card-premium': { 100: 120, 250: 175, 500: 250 },
+};
+// Flyer pricing tiers for server-side validation
+const FLYER_TIERS = { 50: 40, 100: 70, 150: 98, 250: 138, 500: 250 };
+const FLYER_RECTO_VERSO_MULTIPLIER = 1.3;
 exports.default = strapi_1.factories.createCoreController('api::order.order', ({ strapi }) => ({
     async uploadFile(ctx) {
         const { request: { files } } = ctx;
@@ -55,6 +65,31 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
                 }
                 else {
                     strapi.log.warn(`Invalid sticker tier: qty=${item.quantity}, using client price ${item.totalPrice}`);
+                }
+            }
+            // Validate business card pricing against tiers
+            if (item.productId && item.productId.startsWith('business-card-')) {
+                const cardTiers = BUSINESS_CARD_TIERS[item.productId];
+                if (cardTiers) {
+                    const tierPrice = cardTiers[item.quantity];
+                    if (tierPrice) {
+                        validPrice = tierPrice;
+                    }
+                    else {
+                        strapi.log.warn(`Invalid business card tier: ${item.productId} qty=${item.quantity}, using client price ${item.totalPrice}`);
+                    }
+                }
+            }
+            // Validate flyer pricing against tiers
+            if (item.productId === 'flyer-a6') {
+                const tierPrice = FLYER_TIERS[item.quantity];
+                if (tierPrice) {
+                    // Apply recto-verso multiplier if applicable
+                    const isRectoVerso = item.finish && (item.finish.toLowerCase().includes('recto-verso') || item.finish.toLowerCase().includes('double'));
+                    validPrice = isRectoVerso ? Math.round(tierPrice * FLYER_RECTO_VERSO_MULTIPLIER) : tierPrice;
+                }
+                else {
+                    strapi.log.warn(`Invalid flyer tier: qty=${item.quantity}, using client price ${item.totalPrice}`);
                 }
             }
             subtotal += validPrice;
@@ -200,6 +235,7 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
         }
     },
     async createCheckoutSession(ctx) {
+        var _a, _b;
         const { items, customerEmail, customerName, customerPhone, shippingAddress, promoCode, designReady, notes, supabaseUserId } = ctx.request.body;
         if (!items || !Array.isArray(items) || items.length === 0) {
             return ctx.badRequest('Cart is empty');
@@ -208,17 +244,138 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
             return ctx.badRequest('Customer email and name are required');
         }
         // Recalculate server-side with sticker tier validation
+        // ET validation des prix des artist-prints (anti-manipulation) + check sold/private token
+        const FRAME_PRICES_FALLBACK = { postcard: 20, a4: 20, a3: 30, a3plus: 35, a2: 40 };
         let subtotal = 0;
+        let artistDiscountTotal = 0;
+        // Charger une seule fois les artistes actifs pour valider les prints
+        let cachedArtists = null;
+        const getArtists = async () => {
+            if (cachedArtists === null) {
+                cachedArtists = await strapi.documents('api::artist.artist').findMany({ filters: { active: true } });
+            }
+            return cachedArtists;
+        };
+        // Verifier le slug artiste du user pour valider isArtistOwnPrint (securite)
+        // artistSlug est stocke dans api::user-role. Lookup par supabaseUserId puis email fallback.
+        let verifiedUserArtistSlug = null;
+        try {
+            // Tentative 1: par supabaseUserId
+            if (supabaseUserId) {
+                const byId = await strapi.documents('api::user-role.user-role').findMany({
+                    filters: { supabaseUserId },
+                });
+                if (byId.length > 0) {
+                    verifiedUserArtistSlug = byId[0].artistSlug || null;
+                }
+            }
+            // Tentative 2: par email (fallback si supabaseUserId pas sync)
+            if (!verifiedUserArtistSlug && customerEmail) {
+                const byEmail = await strapi.documents('api::user-role.user-role').findMany({
+                    filters: { email: customerEmail.toLowerCase() },
+                });
+                if (byEmail.length > 0) {
+                    verifiedUserArtistSlug = byEmail[0].artistSlug || null;
+                }
+            }
+        }
+        catch (_) { /* ignore */ }
         for (const item of items) {
             let validPrice = item.totalPrice || 0;
+            // --- Stickers: validation par tier (existant) ---
             if (item.productId === 'sticker-custom' || item.productId === 'sticker-artist') {
                 const tiers = FX_FINISHES.includes(item.finish) ? STICKER_FX_TIERS : STICKER_STANDARD_TIERS;
                 const tierPrice = tiers[item.quantity];
                 if (tierPrice)
                     validPrice = tierPrice;
             }
+            // --- Artist prints: validation serveur contre le CMS ---
+            if (typeof item.productId === 'string' && item.productId.startsWith('artist-print-')) {
+                try {
+                    const pid = item.productId;
+                    const artists = await getArtists();
+                    // Trouver artiste + printId (slug le plus long gagne)
+                    let matchedArtist = null;
+                    let printId = '';
+                    for (const a of artists) {
+                        if (pid.startsWith(`artist-print-${a.slug}-`)) {
+                            if (!matchedArtist || a.slug.length > matchedArtist.slug.length) {
+                                matchedArtist = a;
+                                printId = pid.replace(`artist-print-${a.slug}-`, '');
+                            }
+                        }
+                    }
+                    if (!matchedArtist || !printId) {
+                        return ctx.badRequest(`Print introuvable: ${pid}`);
+                    }
+                    const prints = Array.isArray(matchedArtist.prints) ? matchedArtist.prints : [];
+                    const print = prints.find((p) => p.id === printId);
+                    if (!print) {
+                        return ctx.badRequest(`Print ${printId} introuvable chez ${matchedArtist.slug}`);
+                    }
+                    // Refuser si deja vendu (unique ou private)
+                    if (print.sold === true) {
+                        return ctx.badRequest(`Cette oeuvre a deja ete vendue et n'est plus disponible.`);
+                    }
+                    // Recalculer le prix attendu a partir du CMS
+                    const pricing = matchedArtist.pricing || {};
+                    // Prix de base selon tier/format (fige pour les pieces privees)
+                    const tier = print.fixedTier || 'studio';
+                    const format = print.fixedFormat || 'a4';
+                    const tierPrices = tier === 'museum' ? (pricing.museum || {}) : (pricing.studio || {});
+                    const basePrice = tierPrices[format] || 0;
+                    // Cadre: lire depuis pricing.framePriceByFormat sinon fallback
+                    const frameMap = pricing.framePriceByFormat || {};
+                    const expectedFramePrice = (print.withFrame || item.shape)
+                        ? ((_b = (_a = frameMap[format]) !== null && _a !== void 0 ? _a : FRAME_PRICES_FALLBACK[format]) !== null && _b !== void 0 ? _b : 30)
+                        : 0;
+                    // Prix unique: customPrice si defini (pour unique: true)
+                    let expectedUnitPrice;
+                    if (print.unique === true && typeof print.customPrice === 'number') {
+                        expectedUnitPrice = print.customPrice;
+                    }
+                    else {
+                        expectedUnitPrice = basePrice + expectedFramePrice;
+                    }
+                    // Solde (onSale): appliquer le discount
+                    if (print.onSale && typeof print.salePercent === 'number') {
+                        expectedUnitPrice = Math.round(expectedUnitPrice * (1 - print.salePercent / 100) * 100) / 100;
+                    }
+                    const qty = (print.unique === true || print.private === true) ? 1 : (item.quantity || 1);
+                    const expectedTotal = Math.round(expectedUnitPrice * qty * 100) / 100;
+                    // Tolerance 1 cent pour les arrondis
+                    if (Math.abs((item.totalPrice || 0) - expectedTotal) > 0.01) {
+                        strapi.log.warn(`Prix manipule detecte: ${pid} client=${item.totalPrice} expected=${expectedTotal}`);
+                        validPrice = expectedTotal;
+                    }
+                    else {
+                        validPrice = item.totalPrice;
+                    }
+                }
+                catch (validationErr) {
+                    strapi.log.error(`Erreur validation artist-print ${item.productId}:`, validationErr);
+                    return ctx.badRequest('Validation du prix impossible, reessayez plus tard');
+                }
+            }
             subtotal += validPrice;
+            // --- Rabais artiste 25% sur ses propres produits ---
+            // Securite: verifier que le user est bien l'artiste du produit (pas juste le flag client)
+            if (item.isArtistOwnPrint && verifiedUserArtistSlug) {
+                const pid = item.productId || '';
+                const claimedSlug = item.artistSlug || '';
+                const isLegitimate = claimedSlug === verifiedUserArtistSlug &&
+                    (pid.startsWith(`artist-print-${verifiedUserArtistSlug}-`) ||
+                        pid.startsWith(`artist-sticker-pack-${verifiedUserArtistSlug}-`));
+                if (isLegitimate) {
+                    artistDiscountTotal += Math.round(validPrice * ARTIST_DISCOUNT);
+                }
+                else {
+                    strapi.log.warn(`isArtistOwnPrint rejete: user=${verifiedUserArtistSlug} claimed=${claimedSlug} pid=${pid}`);
+                }
+            }
         }
+        // Appliquer le rabais artiste sur le subtotal
+        subtotal = subtotal - artistDiscountTotal;
         // PROMO_CODES importe de src/utils/promo-codes.ts
         let promoDiscount = 0;
         let appliedPromoCode = '';
@@ -561,6 +718,26 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
                         artistMap[a.slug] = a;
                     }
                     const slugs = Object.keys(artistMap);
+                    // Charger TOUS les user-roles artist pour avoir un fallback email par slug
+                    // (le champ artist.email peut etre null dans le CMS, l'email reel est dans user-role)
+                    const userRoleEmailBySlug = {};
+                    try {
+                        const artistRoles = await strapi.documents('api::user-role.user-role').findMany({
+                            filters: { role: 'artist' },
+                        });
+                        for (const ur of artistRoles) {
+                            const slug = ur.artistSlug;
+                            if (slug && ur.email) {
+                                // Premier email trouve pour ce slug (ou le plus recent selon ordre de findMany)
+                                if (!userRoleEmailBySlug[slug]) {
+                                    userRoleEmailBySlug[slug] = ur.email;
+                                }
+                            }
+                        }
+                    }
+                    catch (urErr) {
+                        strapi.log.warn('Could not load user-roles for artist email fallback:', urErr);
+                    }
                     // Grouper les items par artiste
                     for (const item of orderItems) {
                         const pid = item.productId || '';
@@ -590,43 +767,44 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
                     const customerCity = (shippingAddr === null || shippingAddr === void 0 ? void 0 : shippingAddr.city) || '';
                     for (const [slug, items] of Object.entries(artistItemsMap)) {
                         const artist = artistMap[slug];
-                        if (!(artist === null || artist === void 0 ? void 0 : artist.email)) {
-                            strapi.log.info(`Artiste ${slug} n'a pas d'email configure, notification non envoyee`);
+                        // Email prioritaire: artist.email, sinon fallback user-role.email
+                        const artistEmail = (artist === null || artist === void 0 ? void 0 : artist.email) || userRoleEmailBySlug[slug] || null;
+                        if (!artistEmail) {
+                            strapi.log.warn(`Artiste ${slug}: aucun email trouve (ni CMS ni user-role), notification non envoyee`);
                             continue;
                         }
-                        (0, email_1.sendArtistSaleNotificationEmail)({
-                            artistName: artist.name,
-                            artistEmail: artist.email,
-                            items,
-                            orderDate: new Date().toISOString(),
-                            customerCity,
-                        }).catch(err => {
-                            strapi.log.warn(`Notification vente artiste ${slug} non envoyee:`, err);
-                        });
+                        // IMPORTANT: await pour que l'erreur soit visible dans les logs au lieu d'un .catch silencieux
+                        try {
+                            await (0, email_1.sendArtistSaleNotificationEmail)({
+                                artistName: (artist === null || artist === void 0 ? void 0 : artist.name) || slug,
+                                artistEmail,
+                                items,
+                                orderDate: new Date().toISOString(),
+                                customerCity,
+                            });
+                            strapi.log.info(`Notification vente artiste ${slug} envoyee a ${artistEmail}`);
+                        }
+                        catch (err) {
+                            strapi.log.error(`ECHEC notification vente artiste ${slug} (${artistEmail}):`, err);
+                        }
                     }
                 }
                 catch (err) {
                     strapi.log.warn('Could not notify artists:', err);
                 }
-                // Marquer les pieces uniques comme vendues dans le CMS artiste
+                // Marquer les pieces uniques ET privees comme vendues dans le CMS artiste
                 try {
                     const orderItems = Array.isArray(order.items) ? order.items : [];
+                    // Charger une fois tous les artistes
+                    const allArtists = await strapi.documents('api::artist.artist').findMany({ filters: { active: true } });
                     for (const item of orderItems) {
-                        if (!item.isUnique)
-                            continue;
                         const pid = item.productId || '';
                         if (!pid.startsWith('artist-print-'))
                             continue;
-                        // Extraire le slug artiste et l'id du print
-                        // Format productId: artist-print-{slug}-{printId}
-                        const parts = pid.replace('artist-print-', '').split('-');
-                        if (parts.length < 2)
-                            continue;
-                        // Trouver le slug le plus long qui match un artiste
-                        const artists = await strapi.documents('api::artist.artist').findMany({ filters: { active: true } });
+                        // Trouver l'artiste et l'id du print
                         let matchedArtist = null;
                         let printId = '';
-                        for (const a of artists) {
+                        for (const a of allArtists) {
                             if (pid.startsWith(`artist-print-${a.slug}-`)) {
                                 if (!matchedArtist || a.slug.length > matchedArtist.slug.length) {
                                     matchedArtist = a;
@@ -640,17 +818,26 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
                         const idx = prints.findIndex((p) => p.id === printId);
                         if (idx === -1)
                             continue;
-                        // Marquer comme vendu avec la date
-                        prints[idx] = { ...prints[idx], sold: true, soldAt: new Date().toISOString() };
+                        const print = prints[idx];
+                        // Marquer comme vendu si: unique OU private (piece sur commande)
+                        // Les prints non-uniques / non-prives (editions multiples) ne sont pas marques
+                        const shouldMarkSold = print.unique === true || print.private === true || item.isUnique === true;
+                        if (!shouldMarkSold)
+                            continue;
+                        if (print.sold === true) {
+                            strapi.log.warn(`Piece ${printId} de ${matchedArtist.slug} deja marquee vendue (race condition?)`);
+                            continue;
+                        }
+                        prints[idx] = { ...print, sold: true, soldAt: new Date().toISOString() };
                         await strapi.documents('api::artist.artist').update({
                             documentId: matchedArtist.documentId,
                             data: { prints },
                         });
-                        strapi.log.info(`Piece unique ${printId} de ${matchedArtist.slug} marquee comme vendue`);
+                        strapi.log.info(`Piece ${print.unique ? 'unique' : 'privee'} ${printId} de ${matchedArtist.slug} marquee comme vendue`);
                     }
                 }
                 catch (err) {
-                    strapi.log.warn('Could not mark unique pieces as sold:', err);
+                    strapi.log.error('Could not mark unique/private pieces as sold:', err);
                 }
             }
         }
@@ -681,6 +868,180 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
         }
         catch (err) {
             strapi.log.error('adminCreate error:', err);
+            return ctx.badRequest(err.message);
+        }
+    },
+    // GET /orders/by-payment-intent/:paymentIntentId - Recupere infos minimales d'une commande pour CheckoutSuccess
+    async getByPaymentIntent(ctx) {
+        const { paymentIntentId } = ctx.params;
+        if (!paymentIntentId)
+            return ctx.badRequest('paymentIntentId required');
+        try {
+            const order = await strapi.documents('api::order.order').findFirst({
+                filters: { stripePaymentIntentId: paymentIntentId },
+            });
+            if (!order)
+                return ctx.notFound('Order not found');
+            // Retourner SEULEMENT les infos non-sensibles necessaires au signup
+            ctx.body = {
+                customerName: order.customerName || '',
+                customerEmail: order.customerEmail || '',
+                customerPhone: order.customerPhone || '',
+                total: order.total || 0,
+                invoiceNumber: order.invoiceNumber || null,
+                hasUserAccount: !!(order.supabaseUserId && order.supabaseUserId !== ''),
+            };
+        }
+        catch (err) {
+            strapi.log.error('getByPaymentIntent error:', err);
+            return ctx.badRequest(err.message);
+        }
+    },
+    // POST /orders/link-by-email - Lier les guest orders au nouveau compte par email match
+    async linkByEmail(ctx) {
+        const { email, supabaseUserId } = ctx.request.body;
+        if (!email || !supabaseUserId)
+            return ctx.badRequest('email and supabaseUserId required');
+        try {
+            const orders = await strapi.documents('api::order.order').findMany({
+                filters: {
+                    customerEmail: email.toLowerCase(),
+                    $or: [
+                        { supabaseUserId: '' },
+                        { supabaseUserId: { $null: true } },
+                    ],
+                },
+            });
+            let count = 0;
+            for (const order of orders) {
+                await strapi.documents('api::order.order').update({
+                    documentId: order.documentId,
+                    data: { supabaseUserId },
+                });
+                count++;
+            }
+            // Aussi update le client record
+            try {
+                const clients = await strapi.documents('api::client.client').findMany({
+                    filters: { email: email.toLowerCase() },
+                });
+                for (const client of clients) {
+                    if (!client.supabaseUserId || client.supabaseUserId === '') {
+                        await strapi.documents('api::client.client').update({
+                            documentId: client.documentId,
+                            data: { supabaseUserId },
+                        });
+                    }
+                }
+            }
+            catch (clientErr) {
+                strapi.log.warn('Could not update client supabaseUserId:', clientErr);
+            }
+            strapi.log.info(`Linked ${count} orders to user ${supabaseUserId} (email: ${email})`);
+            ctx.body = { success: true, linkedCount: count };
+        }
+        catch (err) {
+            strapi.log.error('linkByEmail error:', err);
+            return ctx.badRequest(err.message);
+        }
+    },
+    // POST /orders/:documentId/resend-emails - Renvoyer TOUS les emails (confirmation client + notification admin)
+    async resendAdminNotification(ctx) {
+        const { documentId } = ctx.params;
+        try {
+            const order = await strapi.documents('api::order.order').findFirst({
+                filters: { documentId },
+            });
+            if (!order)
+                return ctx.notFound('Order not found');
+            const orderItems = Array.isArray(order.items) ? order.items : [];
+            const orderRef = (order.stripePaymentIntentId || order.documentId || '').slice(-8).toUpperCase();
+            const allUploadedFiles = [];
+            for (const item of orderItems) {
+                if (Array.isArray(item.uploadedFiles)) {
+                    for (const f of item.uploadedFiles) {
+                        if (f && (f.url || f.name)) {
+                            allUploadedFiles.push({ name: f.name || f.url || 'Fichier', url: f.url || '' });
+                        }
+                    }
+                }
+            }
+            await (0, email_1.sendNewOrderNotificationEmail)({
+                orderRef,
+                customerName: order.customerName,
+                customerEmail: order.customerEmail,
+                items: orderItems.map((item) => ({
+                    productName: item.productName || 'Produit',
+                    quantity: item.quantity || 1,
+                    totalPrice: item.totalPrice || 0,
+                    size: item.size || '',
+                    finish: item.finish || '',
+                })),
+                subtotal: order.subtotal || 0,
+                shipping: order.shipping || 0,
+                tps: order.tps || 0,
+                tvq: order.tvq || 0,
+                total: order.total || 0,
+                shippingAddress: order.shippingAddress || null,
+                uploadedFiles: allUploadedFiles.length > 0 ? allUploadedFiles : undefined,
+                notes: order.notes || undefined,
+                designReady: order.designReady !== false,
+                promoCode: order.promoCode || undefined,
+                promoDiscount: order.promoDiscount || undefined,
+            });
+            // Aussi envoyer la confirmation au client
+            try {
+                // Generer invoiceNumber si manquant
+                if (!order.invoiceNumber) {
+                    const year = new Date().getFullYear();
+                    const prefix = `MM-${year}-`;
+                    const existingOrders = await strapi.documents('api::order.order').findMany({
+                        filters: { invoiceNumber: { $startsWith: prefix } },
+                        sort: { invoiceNumber: 'desc' },
+                        limit: 1,
+                    });
+                    let seq = 1;
+                    if (existingOrders.length > 0 && existingOrders[0].invoiceNumber) {
+                        seq = (parseInt(existingOrders[0].invoiceNumber.replace(prefix, ''), 10) || 0) + 1;
+                    }
+                    const invoiceNumber = `${prefix}${String(seq).padStart(4, '0')}`;
+                    await strapi.documents('api::order.order').update({
+                        documentId: order.documentId,
+                        data: { invoiceNumber },
+                    });
+                    order.invoiceNumber = invoiceNumber;
+                }
+                await (0, email_1.sendOrderConfirmationEmail)({
+                    customerName: order.customerName,
+                    customerEmail: order.customerEmail,
+                    orderRef,
+                    invoiceNumber: order.invoiceNumber,
+                    items: orderItems.map((item) => ({
+                        productName: item.productName || 'Produit',
+                        quantity: item.quantity || 1,
+                        totalPrice: item.totalPrice || 0,
+                        size: item.size || '',
+                        finish: item.finish || '',
+                    })),
+                    subtotal: order.subtotal || 0,
+                    shipping: order.shipping || 0,
+                    tps: order.tps || 0,
+                    tvq: order.tvq || 0,
+                    total: order.total || 0,
+                    shippingAddress: order.shippingAddress || null,
+                    promoCode: order.promoCode || undefined,
+                    promoDiscount: order.promoDiscount || undefined,
+                    supabaseUserId: order.supabaseUserId || undefined,
+                });
+                strapi.log.info(`Email confirmation renvoye a ${order.customerEmail}`);
+            }
+            catch (clientEmailErr) {
+                strapi.log.warn('Erreur renvoi email client (non bloquant):', clientEmailErr);
+            }
+            ctx.body = { success: true, message: 'Notification admin + confirmation client envoyees' };
+        }
+        catch (err) {
+            strapi.log.error('resendAdminNotification error:', err);
             return ctx.badRequest(err.message);
         }
     },
@@ -1110,5 +1471,223 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
             },
             topClients,
         };
+    },
+    /**
+     * POST /orders/reconcile-stripe
+     * Reconcile orders stuck in "draft" status with Stripe.
+     * For each draft order with a cs_live_* session id (or pi_*), queries Stripe
+     * to check if the payment actually succeeded. If yes, applies the same
+     * side-effects as the webhook would (set status=paid, invoice number, emails).
+     *
+     * Auth: requires RECONCILE_TOKEN in Authorization: Bearer header.
+     *
+     * Query params:
+     *   - sessionId: reconcile a single specific session (e.g. cs_live_xxxxx)
+     *   - hours: how many hours back to scan (default 72)
+     */
+    async reconcileStripe(ctx) {
+        var _a;
+        // Security: shared secret via env var
+        const authHeader = ctx.request.headers['authorization'] || '';
+        const token = authHeader.replace(/^Bearer\s+/i, '').trim();
+        const expected = process.env.RECONCILE_TOKEN;
+        if (!expected || expected.length < 16) {
+            strapi.log.error('RECONCILE_TOKEN not configured (or too short)');
+            return ctx.internalServerError('Reconcile endpoint not configured');
+        }
+        if (token !== expected) {
+            return ctx.unauthorized('Invalid reconcile token');
+        }
+        const query = ctx.query;
+        const targetSessionId = typeof query.sessionId === 'string' ? query.sessionId.trim() : '';
+        const hours = Math.max(1, Math.min(720, parseInt(query.hours, 10) || 72));
+        const cutoff = new Date(Date.now() - hours * 60 * 60 * 1000);
+        const stripe = getStripe();
+        // Find candidate draft orders
+        const filters = { status: 'draft' };
+        if (targetSessionId) {
+            filters.stripePaymentIntentId = targetSessionId;
+        }
+        else {
+            filters.createdAt = { $gte: cutoff.toISOString() };
+        }
+        const drafts = await strapi.documents('api::order.order').findMany({ filters });
+        const report = {
+            scanned: drafts.length,
+            fixed: [],
+            still_unpaid: [],
+            errors: [],
+        };
+        for (const order of drafts) {
+            const sid = order.stripePaymentIntentId || '';
+            if (!sid) {
+                report.errors.push({ id: order.id, email: order.customerEmail, reason: 'no stripe id' });
+                continue;
+            }
+            try {
+                let paymentIntentId = null;
+                let paymentStatus = null;
+                let paidAt = null;
+                if (sid.startsWith('cs_')) {
+                    const session = await stripe.checkout.sessions.retrieve(sid);
+                    paymentStatus = session.payment_status;
+                    paymentIntentId = typeof session.payment_intent === 'string'
+                        ? session.payment_intent
+                        : ((_a = session.payment_intent) === null || _a === void 0 ? void 0 : _a.id) || null;
+                    if (session.created)
+                        paidAt = new Date(session.created * 1000);
+                }
+                else if (sid.startsWith('pi_')) {
+                    const pi = await stripe.paymentIntents.retrieve(sid);
+                    paymentStatus = pi.status === 'succeeded' ? 'paid' : pi.status;
+                    paymentIntentId = pi.id;
+                    if (pi.created)
+                        paidAt = new Date(pi.created * 1000);
+                }
+                else {
+                    report.errors.push({ id: order.id, email: order.customerEmail, reason: `unknown id format: ${sid}` });
+                    continue;
+                }
+                if (paymentStatus !== 'paid') {
+                    report.still_unpaid.push({ id: order.id, email: order.customerEmail, stripeStatus: paymentStatus, stripeId: sid });
+                    continue;
+                }
+                // ---- Same logic as the webhook: generate invoice + update order + emails ----
+                let invoiceNumber = '';
+                try {
+                    const now = new Date();
+                    const year = now.getFullYear();
+                    const prefix = `MM-${year}-`;
+                    const existingOrders = await strapi.documents('api::order.order').findMany({
+                        filters: { invoiceNumber: { $startsWith: prefix } },
+                        sort: { invoiceNumber: 'desc' },
+                        limit: 1,
+                    });
+                    let seq = 1;
+                    if (existingOrders.length > 0 && existingOrders[0].invoiceNumber) {
+                        const lastNum = existingOrders[0].invoiceNumber.replace(prefix, '');
+                        seq = (parseInt(lastNum, 10) || 0) + 1;
+                    }
+                    invoiceNumber = `${prefix}${String(seq).padStart(4, '0')}`;
+                }
+                catch (invoiceErr) {
+                    strapi.log.warn('Erreur generation numero facture (reconcile):', invoiceErr);
+                    invoiceNumber = `MM-${new Date().getFullYear()}-0000`;
+                }
+                await strapi.documents('api::order.order').update({
+                    documentId: order.documentId,
+                    data: {
+                        status: 'paid',
+                        invoiceNumber,
+                        stripePaymentIntentId: paymentIntentId || sid,
+                    },
+                });
+                strapi.log.info(`[reconcile] Order ${order.documentId} -> paid (${invoiceNumber}) from ${sid}`);
+                // Email confirmation client
+                try {
+                    const orderItems = Array.isArray(order.items) ? order.items : [];
+                    const orderRef = (paymentIntentId || sid).slice(-8).toUpperCase();
+                    await (0, email_1.sendOrderConfirmationEmail)({
+                        customerName: order.customerName,
+                        customerEmail: order.customerEmail,
+                        orderRef,
+                        invoiceNumber,
+                        items: orderItems.map((item) => ({
+                            productName: item.productName || 'Produit',
+                            quantity: item.quantity || 1,
+                            totalPrice: item.totalPrice || 0,
+                            size: item.size || '',
+                            finish: item.finish || '',
+                        })),
+                        subtotal: order.subtotal || 0,
+                        shipping: order.shipping || 0,
+                        tps: order.tps || 0,
+                        tvq: order.tvq || 0,
+                        total: order.total || 0,
+                        shippingAddress: order.shippingAddress || null,
+                        promoCode: order.promoCode || undefined,
+                        promoDiscount: order.promoDiscount || undefined,
+                        supabaseUserId: order.supabaseUserId || undefined,
+                    });
+                }
+                catch (emailErr) {
+                    strapi.log.warn('[reconcile] Erreur email confirmation:', emailErr);
+                }
+                // Notification admin
+                try {
+                    const orderItems2 = Array.isArray(order.items) ? order.items : [];
+                    const orderRef2 = (paymentIntentId || sid).slice(-8).toUpperCase();
+                    const allUploadedFiles = [];
+                    for (const item of orderItems2) {
+                        if (Array.isArray(item.uploadedFiles)) {
+                            for (const f of item.uploadedFiles) {
+                                if (f && (f.url || f.name)) {
+                                    allUploadedFiles.push({ name: f.name || f.url || 'Fichier', url: f.url || '' });
+                                }
+                            }
+                        }
+                    }
+                    await (0, email_1.sendNewOrderNotificationEmail)({
+                        orderRef: orderRef2,
+                        customerName: order.customerName,
+                        customerEmail: order.customerEmail,
+                        items: orderItems2.map((item) => ({
+                            productName: item.productName || 'Produit',
+                            quantity: item.quantity || 1,
+                            totalPrice: item.totalPrice || 0,
+                            size: item.size || '',
+                            finish: item.finish || '',
+                        })),
+                        subtotal: order.subtotal || 0,
+                        shipping: order.shipping || 0,
+                        tps: order.tps || 0,
+                        tvq: order.tvq || 0,
+                        total: order.total || 0,
+                        shippingAddress: order.shippingAddress || null,
+                        uploadedFiles: allUploadedFiles.length > 0 ? allUploadedFiles : undefined,
+                        notes: order.notes || undefined,
+                        designReady: order.designReady !== false,
+                        promoCode: order.promoCode || undefined,
+                        promoDiscount: order.promoDiscount || undefined,
+                    });
+                }
+                catch (adminEmailErr) {
+                    strapi.log.warn('[reconcile] Erreur notification admin:', adminEmailErr);
+                }
+                // Update client stats
+                try {
+                    const clients = await strapi.documents('api::client.client').findMany({
+                        filters: { email: (order.customerEmail || '').toLowerCase() },
+                    });
+                    if (clients.length > 0) {
+                        const client = clients[0];
+                        await strapi.documents('api::client.client').update({
+                            documentId: client.documentId,
+                            data: {
+                                totalSpent: (Number(client.totalSpent) || 0) + (order.total || 0) / 100,
+                                orderCount: (client.orderCount || 0) + 1,
+                                lastOrderDate: new Date().toISOString().split('T')[0],
+                            },
+                        });
+                    }
+                }
+                catch (err) {
+                    strapi.log.warn('[reconcile] Could not update client stats:', err);
+                }
+                report.fixed.push({
+                    id: order.id,
+                    email: order.customerEmail,
+                    invoice: invoiceNumber,
+                    total: order.total,
+                    stripeId: sid,
+                    paidAt: paidAt ? paidAt.toISOString() : null,
+                });
+            }
+            catch (err) {
+                strapi.log.error(`[reconcile] Error on order ${order.id}:`, err);
+                report.errors.push({ id: order.id, email: order.customerEmail, reason: err.message });
+            }
+        }
+        ctx.body = report;
     },
 }));

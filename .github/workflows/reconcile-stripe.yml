@@ -1,0 +1,56 @@
+name: Reconcile Stripe Orders
+
+on:
+  schedule:
+    # Toutes les heures a la minute 7 (decale pour eviter le rush d'heure pile)
+    - cron: '7 * * * *'
+  workflow_dispatch:
+    inputs:
+      sessionId:
+        description: 'Session Stripe specifique a reconcilier (ex: cs_live_xxx). Laisser vide pour scan 72h.'
+        required: false
+        default: ''
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Reconcile draft orders with Stripe
+        env:
+          RECONCILE_TOKEN: ${{ secrets.RECONCILE_TOKEN }}
+          SESSION_ID: ${{ github.event.inputs.sessionId }}
+        run: |
+          if [ -z "$RECONCILE_TOKEN" ]; then
+            echo "::error::RECONCILE_TOKEN secret is not set. Add it in repo Settings > Secrets and variables > Actions."
+            exit 1
+          fi
+
+          URL="https://massivemedias-api.onrender.com/api/orders/reconcile-stripe"
+          if [ -n "$SESSION_ID" ]; then
+            URL="${URL}?sessionId=${SESSION_ID}"
+            echo "Reconciling specific session: $SESSION_ID"
+          else
+            echo "Reconciling all draft orders from last 72h"
+          fi
+
+          RESPONSE=$(curl -sS -X POST \
+            -H "Authorization: Bearer ${RECONCILE_TOKEN}" \
+            -H "Content-Type: application/json" \
+            "$URL")
+
+          echo "Response:"
+          echo "$RESPONSE" | jq . 2>/dev/null || echo "$RESPONSE"
+
+          FIXED=$(echo "$RESPONSE" | jq -r '.fixed | length' 2>/dev/null || echo "0")
+          ERRORS=$(echo "$RESPONSE" | jq -r '.errors | length' 2>/dev/null || echo "0")
+          UNPAID=$(echo "$RESPONSE" | jq -r '.still_unpaid | length' 2>/dev/null || echo "0")
+
+          echo ""
+          echo "Summary: fixed=$FIXED, unpaid=$UNPAID, errors=$ERRORS"
+
+          if [ "$FIXED" != "0" ] && [ "$FIXED" != "null" ]; then
+            echo "::notice::✅ Reconciled $FIXED draft orders - check admin for new emails"
+          fi
+          if [ "$ERRORS" != "0" ] && [ "$ERRORS" != "null" ]; then
+            echo "::warning::⚠️ $ERRORS errors during reconciliation - check logs"
+          fi

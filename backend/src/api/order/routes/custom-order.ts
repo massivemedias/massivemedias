@@ -136,6 +136,14 @@ export default {
         auth: false,
       },
     },
+    {
+      method: 'POST',
+      path: '/orders/reconcile-stripe',
+      handler: 'order.reconcileStripe',
+      config: {
+        auth: false,
+      },
+    },
   ],
 };
 // Trigger redeploy 1774828260
