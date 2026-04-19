@@ -754,13 +754,17 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
 
     if (!endpointSecret || endpointSecret === 'whsec_REPLACE_ME') {
       strapi.log.warn(`[webhook:${requestId}] Stripe webhook secret not configured`);
-      // Alert admin immediately - config broken in prod
+      // Alert admin - config broken en prod. STRIPE-03 : throttle 60min
+      // persistant via DB pour eviter le spam si Stripe retry 20x.
       try {
-        const { sendWebhookFailureAlert } = await import('../../../utils/email');
-        await sendWebhookFailureAlert({
-          reason: 'STRIPE_WEBHOOK_SECRET env var missing or placeholder',
-          requestId,
-        });
+        const { shouldSendThrottledAlert } = await import('../../../utils/webhook-alert-throttle');
+        if (await shouldSendThrottledAlert('stripe_webhook_secret_missing', 60)) {
+          const { sendWebhookFailureAlert } = await import('../../../utils/email');
+          await sendWebhookFailureAlert({
+            reason: 'STRIPE_WEBHOOK_SECRET env var missing or placeholder',
+            requestId,
+          });
+        }
       } catch (_) { /* non-blocking */ }
       return ctx.badRequest('Webhook not configured');
     }
@@ -778,20 +782,25 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
       strapi.log.info(`[webhook:${requestId}] Verified OK - event: ${event.type} id: ${event.id}`);
     } catch (err: any) {
       strapi.log.error(`[webhook:${requestId}] SIGNATURE VERIFICATION FAILED:`, err.message);
-      // Alert admin IMMEDIATELY on EVERY failure.
-      // We intentionally do NOT throttle: the process restarts on OOM which would reset an
-      // in-memory throttle anyway, AND a handful of duplicate emails is MUCH less harmful than
-      // the 4-day silent failure we had in April 2026. If Stripe retry-storms, persistence
-      // throttling should be added via the DB, not in-process state.
+      // STRIPE-03: alerte admin avec throttle 60min persistant via DB.
+      // Ancien comportement "send on EVERY failure" causait 20 emails si
+      // Stripe retry un webhook casse 20 fois. Maintenant: 1 email max par
+      // heure par type de failure. Le sendCount en DB trace les retries
+      // supprimes pour visibilite a posteriori.
       try {
-        const { sendWebhookFailureAlert } = await import('../../../utils/email');
-        await sendWebhookFailureAlert({
-          reason: `Stripe signature verification failed: ${err.message}`,
-          requestId,
-          sigHeader: sig ? sig.substring(0, 80) : '(missing)',
-          bodyPresent: !!(ctx.request as any).body,
-        });
-        strapi.log.warn(`[webhook:${requestId}] Admin alert email dispatched`);
+        const { shouldSendThrottledAlert } = await import('../../../utils/webhook-alert-throttle');
+        if (await shouldSendThrottledAlert('stripe_signature_failure', 60)) {
+          const { sendWebhookFailureAlert } = await import('../../../utils/email');
+          await sendWebhookFailureAlert({
+            reason: `Stripe signature verification failed: ${err.message}`,
+            requestId,
+            sigHeader: sig ? sig.substring(0, 80) : '(missing)',
+            bodyPresent: !!(ctx.request as any).body,
+          });
+          strapi.log.warn(`[webhook:${requestId}] Admin alert email dispatched`);
+        } else {
+          strapi.log.warn(`[webhook:${requestId}] Admin alert throttled (already sent within 60min)`);
+        }
       } catch (alertErr: any) {
         strapi.log.error(`[webhook:${requestId}] Failed to send admin alert:`, alertErr?.message);
       }
