@@ -2154,6 +2154,81 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
   },
 
   /**
+   * GET /sitemap.xml
+   * SEO-01: sitemap dynamique genere depuis CMS. Inclut les pages fixes
+   * + tous les artistes publies (updatedAt -> lastmod). Cache 1h.
+   */
+  async sitemap(ctx) {
+    const SITE_URL = process.env.PUBLIC_SITE_URL || 'https://massivemedias.com';
+    const escape = (s: string) =>
+      String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;' }[c] as string));
+
+    // Pages statiques coeur du site. changefreq/priority suivent les
+    // conventions sitemap.org : homepage = 1.0, pages de service = 0.8,
+    // legal/contact = 0.3.
+    const today = new Date().toISOString().slice(0, 10);
+    const staticUrls = [
+      { loc: '/', priority: 1.0, changefreq: 'weekly' },
+      { loc: '/a-propos', priority: 0.7, changefreq: 'monthly' },
+      { loc: '/contact', priority: 0.6, changefreq: 'monthly' },
+      { loc: '/artistes', priority: 0.9, changefreq: 'weekly' },
+      { loc: '/boutique', priority: 0.9, changefreq: 'weekly' },
+      { loc: '/services', priority: 0.8, changefreq: 'monthly' },
+      { loc: '/services/prints', priority: 0.8, changefreq: 'monthly' },
+      { loc: '/services/stickers', priority: 0.8, changefreq: 'monthly' },
+      { loc: '/services/merch', priority: 0.8, changefreq: 'monthly' },
+      { loc: '/services/design', priority: 0.8, changefreq: 'monthly' },
+      { loc: '/services/web', priority: 0.8, changefreq: 'monthly' },
+      { loc: '/cgv', priority: 0.3, changefreq: 'yearly' },
+      { loc: '/politique-confidentialite', priority: 0.3, changefreq: 'yearly' },
+    ];
+
+    let dynamicUrls: Array<{ loc: string; lastmod: string; priority: number; changefreq: string }> = [];
+    try {
+      const artists = await strapi.documents('api::artist.artist').findMany({
+        filters: { publishedAt: { $notNull: true } } as any,
+        fields: ['slug', 'updatedAt'] as any,
+        limit: 200,
+      });
+      dynamicUrls = (artists as any[])
+        .filter((a) => a.slug)
+        .map((a) => ({
+          loc: `/artistes/${a.slug}`,
+          lastmod: (a.updatedAt ? new Date(a.updatedAt) : new Date()).toISOString().slice(0, 10),
+          priority: 0.7,
+          changefreq: 'weekly',
+        }));
+    } catch (err: any) {
+      strapi.log.warn(`[sitemap] Could not load artists dynamically: ${err?.message}`);
+      // On continue avec juste les pages statiques plutot que de 500.
+    }
+
+    const allUrls = [
+      ...staticUrls.map((u) => ({ ...u, lastmod: today })),
+      ...dynamicUrls,
+    ];
+
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${allUrls
+  .map(
+    (u) => `  <url>
+    <loc>${escape(SITE_URL + u.loc)}</loc>
+    <lastmod>${u.lastmod}</lastmod>
+    <changefreq>${u.changefreq}</changefreq>
+    <priority>${u.priority.toFixed(1)}</priority>
+  </url>`,
+  )
+  .join('\n')}
+</urlset>
+`;
+
+    ctx.set('Content-Type', 'application/xml; charset=utf-8');
+    ctx.set('Cache-Control', 'public, max-age=3600, s-maxage=3600'); // 1h CDN + browser
+    ctx.body = xml;
+  },
+
+  /**
    * GET /orders/memory-health
    * Returns current process memory stats to help diagnose OOM issues.
    * Public endpoint (read-only diagnostic). Returns status WARNING/CRITICAL/OK.
