@@ -639,6 +639,14 @@ export default factories.createCoreController('api::artist-edit-request.artist-e
           // dans le dossier specifique au client/commande, pas en vrac a la racine.
           driveResult = await (uploadStreamToGoogleDrive as any)(readStream, fileName, driveFolderName, mimeType, fileSize);
         } else {
+          // UPLOAD-02: fallback buffer defensif - NE DEVRAIT JAMAIS triggerer puisque
+          // uploadStreamToGoogleDrive est export du meme repo. Si ce warning apparait en
+          // prod c'est qu'il y a un vrai bug d'import a corriger. On garde le fallback pour
+          // ne pas bloquer un upload legitime, mais en loggant tres fort.
+          strapi.log.warn(
+            `UPLOAD-02: uploadStreamToGoogleDrive not importable, falling back to buffer ` +
+            `(RAM spike ${(fileSize / (1024 * 1024)).toFixed(1)} MB). This path is expected dead - investigate.`
+          );
           const fileBuffer = fs.readFileSync(filepath);
           driveResult = await tryUploadBufferToGoogleDrive(fileBuffer, fileName, driveFolderName, mimeType);
         }
