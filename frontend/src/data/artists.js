@@ -83,8 +83,8 @@ const artistsData = {
       { id: 'adrift-014', titleFr: 'Print 14', titleEn: 'Print 14', titleEs: 'Print 14', image: thumb('/images/prints/Adrift16.webp'), fullImage: img('/images/prints/Adrift16.webp'), limited: false },
     ],
     pricing: {
-      studio: { postcard: 15, a4: 35, a3: 50, a3plus: 65, a2: 85 },
-      museum: { postcard: 25, a4: 75, a3: 120, a3plus: 160, a2: 190 },
+      studio: { postcard: 25, a4: 35, a3: 50, a3plus: 65, a2: 85 },
+      museum: { postcard: 50, a4: 75, a3: 120, a3plus: 160, a2: 190 },
       framePrice: 30,
     },
   },
@@ -111,8 +111,8 @@ const artistsData = {
       { id: 'gemini-004', titleFr: 'Vendre ou perir', titleEn: 'Vendre ou perir', titleEs: 'Vendre ou perir', image: thumb('/images/prints/Gemini4.webp'), fullImage: img('/images/prints/Gemini4.webp'), limited: false, unique: true, fixedFormat: 'a2', fixedTier: 'studio', noFrame: true },
     ],
     pricing: {
-      studio: { postcard: 15, a4: 35, a3: 50, a3plus: 65, a2: 85 },
-      museum: { postcard: 25, a4: 75, a3: 120, a3plus: 160, a2: 190 },
+      studio: { postcard: 25, a4: 35, a3: 50, a3plus: 65, a2: 85 },
+      museum: { postcard: 50, a4: 75, a3: 120, a3plus: 160, a2: 190 },
       framePrice: 30,
     },
   },
@@ -170,8 +170,8 @@ const artistsData = {
       { id: 'mok-036', titleFr: 'Sahara 39', titleEn: 'Sahara 39', titleEs: 'Sahara 39', image: thumb('/images/prints/Mok-Sahara-39.webp'), fullImage: img('/images/prints/Mok-Sahara-39.webp'), limited: false },
     ],
     pricing: {
-      studio: { postcard: 15, a4: 35, a3: 50, a3plus: 65, a2: 85 },
-      museum: { postcard: 25, a4: 75, a3: 120, a3plus: 160, a2: 190 },
+      studio: { postcard: 25, a4: 35, a3: 50, a3plus: 65, a2: 85 },
+      museum: { postcard: 50, a4: 75, a3: 120, a3plus: 160, a2: 190 },
       framePrice: 30,
     },
   },
@@ -213,8 +213,8 @@ const artistsData = {
       { id: 'qd-020', titleFr: 'Photo 20', titleEn: 'Photo 20', titleEs: 'Foto 20', image: thumb('/images/prints/QuentinDelobel20.webp'), fullImage: img('/images/prints/QuentinDelobel20.webp'), limited: false },
     ],
     pricing: {
-      studio: { postcard: 15, a4: 35, a3: 50, a3plus: 65, a2: 85 },
-      museum: { postcard: 25, a4: 75, a3: 120, a3plus: 160, a2: 190 },
+      studio: { postcard: 25, a4: 35, a3: 50, a3plus: 65, a2: 85 },
+      museum: { postcard: 50, a4: 75, a3: 120, a3plus: 160, a2: 190 },
       framePrice: 30,
     },
     socials: {
@@ -260,8 +260,8 @@ const artistsData = {
       { id: 'nopixl-016', titleFr: 'Plongeurs', titleEn: 'Divers', titleEs: 'Buzos', image: thumb('/images/prints/NoPixl16.webp'), fullImage: img('/images/prints/NoPixl16.webp'), limited: false },
     ],
     pricing: {
-      studio: { postcard: 15, a4: 35, a3: 50, a3plus: 65, a2: 85 },
-      museum: { postcard: 25, a4: 75, a3: 120, a3plus: 160, a2: 190 },
+      studio: { postcard: 25, a4: 35, a3: 50, a3plus: 65, a2: 85 },
+      museum: { postcard: 50, a4: 75, a3: 120, a3plus: 160, a2: 190 },
       framePrice: 30,
     },
   },
@@ -325,8 +325,8 @@ const artistsData = {
       { id: 'psyqu33n-022', titleFr: "Queen d'Asie", titleEn: 'Queen of Asia', titleEs: 'Reina de Asia', image: thumb('/images/prints/Psyqu33n22.webp'), fullImage: img('/images/prints/Psyqu33n22.webp'), limited: false },
     ],
     pricing: {
-      studio: { postcard: 15, a4: 35, a3: 50, a3plus: 65, a2: 85 },
-      museum: { postcard: 25, a4: 75, a3: 120, a3plus: 160, a2: 190 },
+      studio: { postcard: 25, a4: 35, a3: 50, a3plus: 65, a2: 85 },
+      museum: { postcard: 50, a4: 75, a3: 120, a3plus: 160, a2: 190 },
       framePrice: 30,
     },
   },
@@ -365,8 +365,8 @@ const artistsData = {
       { id: 'cr-013', titleFr: 'Sans titre VII', titleEn: 'Untitled VII', titleEs: 'Sin titulo VII', image: thumb('/images/prints/CorneliaRose13.webp'), fullImage: img('/images/prints/CorneliaRose13.webp'), limited: false },
     ],
     pricing: {
-      studio: { postcard: 15, a4: 35, a3: 50, a3plus: 65, a2: 85 },
-      museum: { postcard: 25, a4: 75, a3: 120, a3plus: 160, a2: 190 },
+      studio: { postcard: 25, a4: 35, a3: 50, a3plus: 65, a2: 85 },
+      museum: { postcard: 50, a4: 75, a3: 120, a3plus: 160, a2: 190 },
       framePrice: 30,
     },
   },
@@ -419,8 +419,8 @@ const artistsData = {
       { id: 'es-031', titleFr: '004', titleEn: '004', image: thumb('/images/prints/EricSanchez-004.webp'), fullImage: img('/images/prints/EricSanchez-004.webp'), limited: false },
     ],
     pricing: {
-      studio: { postcard: 15, a4: 35, a3: 50, a3plus: 65, a2: 85 },
-      museum: { postcard: 25, a4: 75, a3: 120, a3plus: 160, a2: 190 },
+      studio: { postcard: 25, a4: 35, a3: 50, a3plus: 65, a2: 85 },
+      museum: { postcard: 50, a4: 75, a3: 120, a3plus: 160, a2: 190 },
       framePrice: 30,
     },
   },
