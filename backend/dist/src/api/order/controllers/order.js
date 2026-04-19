@@ -82,6 +82,142 @@ const BUSINESS_CARD_TIERS = {
 // Flyer pricing tiers for server-side validation
 const FLYER_TIERS = { 50: 40, 100: 70, 150: 98, 250: 138, 500: 250 };
 const FLYER_RECTO_VERSO_MULTIPLIER = 1.3;
+// --- RACE-01 : reservation de pieces unique/privees pendant le checkout Stripe ---
+// Entre la validation du panier (verif sold=false) et le webhook qui marque sold=true,
+// il y a une fenetre de plusieurs minutes ou un second client peut aussi checkout la
+// meme piece. On bloque la piece avec un lock TTL le temps du checkout.
+//
+// Model:
+//   - reservedUntil (ISO) et reservedByOrderId (session.id Stripe) sur chaque print
+//     dans artist.prints[] (champ json, donc pas de modif schema)
+//   - Validation refuse toute nouvelle session si sold=true OU reservedUntil>now par un autre
+//   - Liberation: webhook payment_intent.payment_failed OU expiry passif apres 30 min
+//
+// Pas de row-lock DB (Strapi document service n'expose pas SELECT FOR UPDATE). Le re-read
+// frais avant ecriture reduit la fenetre de race de minutes a ~50ms (un roundtrip DB).
+// Pour du gros volume, migrer vers un lock explicite via strapi.db.query.
+const UNIQUE_PIECE_RESERVATION_MS = 30 * 60 * 1000; // 30 min
+/**
+ * Identifie les pieces unique/private dans les items d'un panier. Utilise la meme
+ * logique de matching artiste+printId que le webhook mark-sold pour rester coherent.
+ */
+function extractUniquePieces(items, artists) {
+    const out = [];
+    for (const item of items) {
+        const pid = String(item.productId || '');
+        if (!pid.startsWith('artist-print-'))
+            continue;
+        let matched = null;
+        let printId = '';
+        for (const a of artists) {
+            if (pid.startsWith(`artist-print-${a.slug}-`)) {
+                if (!matched || a.slug.length > matched.slug.length) {
+                    matched = a;
+                    printId = pid.replace(`artist-print-${a.slug}-`, '');
+                }
+            }
+        }
+        if (!matched || !printId)
+            continue;
+        const prints = Array.isArray(matched.prints) ? matched.prints : [];
+        const print = prints.find((p) => p.id === printId);
+        if (!print)
+            continue;
+        const shouldReserve = print.unique === true || print.private === true || item.isUnique === true;
+        if (shouldReserve) {
+            out.push({ artistDocId: matched.documentId, printId, artistSlug: matched.slug, title: print.title });
+        }
+    }
+    return out;
+}
+/**
+ * Reserve les pieces listees avec reservedUntil=expiresAtIso et reservedByOrderId=reservationId.
+ * Jette une erreur descriptive si une piece est deja vendue ou reservee par une autre session
+ * encore active. Re-read frais de chaque artiste avant ecriture pour minimiser la fenetre
+ * de race (pas row-lock, mais fenetre reduite a ~50ms).
+ */
+async function reserveUniquePieces(strapiInstance, pieces, reservationId, expiresAtIso) {
+    if (pieces.length === 0)
+        return;
+    const now = Date.now();
+    const byArtist = new Map();
+    for (const p of pieces) {
+        if (!byArtist.has(p.artistDocId))
+            byArtist.set(p.artistDocId, []);
+        byArtist.get(p.artistDocId).push({ printId: p.printId, title: p.title });
+    }
+    for (const [artistDocId, printRefs] of byArtist) {
+        const artist = await strapiInstance.documents('api::artist.artist').findFirst({
+            filters: { documentId: artistDocId },
+        });
+        if (!artist)
+            throw new Error('Artiste introuvable lors de la reservation');
+        const prints = Array.isArray(artist.prints) ? [...artist.prints] : [];
+        for (const { printId, title } of printRefs) {
+            const idx = prints.findIndex((p) => p.id === printId);
+            if (idx === -1)
+                throw new Error(`Piece introuvable chez ${artist.slug}`);
+            const print = prints[idx];
+            if (print.sold === true) {
+                throw new Error(`La piece "${print.title || title || printId}" a ete vendue pendant votre checkout.`);
+            }
+            const existingUntil = print.reservedUntil ? new Date(print.reservedUntil).getTime() : 0;
+            if (existingUntil > now && print.reservedByOrderId && print.reservedByOrderId !== reservationId) {
+                const minsLeft = Math.max(1, Math.ceil((existingUntil - now) / 60000));
+                throw new Error(`La piece "${print.title || title || printId}" est reservee par un autre client (disponible dans ${minsLeft} min).`);
+            }
+            prints[idx] = { ...print, reservedUntil: expiresAtIso, reservedByOrderId: reservationId };
+        }
+        await strapiInstance.documents('api::artist.artist').update({
+            documentId: artistDocId,
+            data: { prints },
+        });
+    }
+}
+/**
+ * Libere les reservations matchees par reservationId. No-op silencieux pour les prints
+ * deja liberees ou reservees par un autre order (edge case timing). Ne touche JAMAIS
+ * les prints sold=true (la vente est definitive, pas annulable par une release).
+ */
+async function releaseUniquePieceReservations(strapiInstance, pieces, reservationId) {
+    if (pieces.length === 0)
+        return;
+    const byArtist = new Map();
+    for (const p of pieces) {
+        if (!byArtist.has(p.artistDocId))
+            byArtist.set(p.artistDocId, []);
+        byArtist.get(p.artistDocId).push(p.printId);
+    }
+    for (const [artistDocId, printIds] of byArtist) {
+        const artist = await strapiInstance.documents('api::artist.artist').findFirst({
+            filters: { documentId: artistDocId },
+        });
+        if (!artist)
+            continue;
+        const prints = Array.isArray(artist.prints) ? [...artist.prints] : [];
+        let mutated = false;
+        for (const printId of printIds) {
+            const idx = prints.findIndex((p) => p.id === printId);
+            if (idx === -1)
+                continue;
+            const print = prints[idx];
+            if (print.sold === true)
+                continue; // ne touche jamais une piece vendue
+            if (print.reservedByOrderId === reservationId) {
+                // Strip les champs de reservation mais garde le reste intact
+                const { reservedUntil: _ru, reservedByOrderId: _rb, ...rest } = print;
+                prints[idx] = rest;
+                mutated = true;
+            }
+        }
+        if (mutated) {
+            await strapiInstance.documents('api::artist.artist').update({
+                documentId: artistDocId,
+                data: { prints },
+            });
+        }
+    }
+}
 exports.default = strapi_1.factories.createCoreController('api::order.order', ({ strapi }) => ({
     async uploadFile(ctx) {
         const { request: { files } } = ctx;
@@ -382,6 +518,14 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
                     if (print.sold === true) {
                         return ctx.badRequest(`Cette oeuvre a deja ete vendue et n'est plus disponible.`);
                     }
+                    // RACE-01: refuser si reservee par un autre checkout actif. A ce point on n'a
+                    // pas encore cree la session Stripe, donc toute reservation active ici appartient
+                    // forcement a un AUTRE client. Notre propre reservation sera posee plus loin.
+                    const reservedUntilTs = print.reservedUntil ? new Date(print.reservedUntil).getTime() : 0;
+                    if (reservedUntilTs > Date.now()) {
+                        const minsLeft = Math.max(1, Math.ceil((reservedUntilTs - Date.now()) / 60000));
+                        return ctx.badRequest(`Cette oeuvre est actuellement reservee par un autre client (dispo dans ${minsLeft} min si le paiement echoue).`);
+                    }
                     // Recalculer le prix attendu a partir du CMS
                     const pricing = matchedArtist.pricing || {};
                     // Prix de base selon tier/format (fige pour les pieces privees)
@@ -507,6 +651,27 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
                 success_url: `https://massivemedias.com/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
                 cancel_url: `https://massivemedias.com/checkout/cancel`,
             });
+            // RACE-01: reserver les pieces unique/private pour cette session. Entre la validation
+            // au debut de ce handler et maintenant, ~1-2s ont passe (appel Stripe). Un autre client
+            // a pu aussi passer sa validation pendant ce temps. reserveUniquePieces re-lit les
+            // artistes et refuse si une piece a ete prise - on expire alors NOTRE session Stripe
+            // pour etre certain que le client ne puisse pas etre charge.
+            try {
+                const uniquePieces = extractUniquePieces(items, await getArtists());
+                if (uniquePieces.length > 0) {
+                    const expiresAt = new Date(Date.now() + UNIQUE_PIECE_RESERVATION_MS).toISOString();
+                    await reserveUniquePieces(strapi, uniquePieces, session.id, expiresAt);
+                    strapi.log.info(`createCheckoutSession: reserved ${uniquePieces.length} unique piece(s) for session ${session.id}`);
+                }
+            }
+            catch (reserveErr) {
+                try {
+                    await stripe.checkout.sessions.expire(session.id);
+                }
+                catch (_) { /* ignore */ }
+                strapi.log.warn(`createCheckoutSession: reservation conflict after Stripe, session expired: ${reserveErr === null || reserveErr === void 0 ? void 0 : reserveErr.message}`);
+                return ctx.badRequest((reserveErr === null || reserveErr === void 0 ? void 0 : reserveErr.message) || 'Une piece unique du panier est devenue indisponible. Re-essayez.');
+            }
             // Create order in Strapi with draft status (not yet paid)
             const itemsWithFiles = items.map((item) => ({
                 ...item,
@@ -955,7 +1120,10 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
                             strapi.log.warn(`Piece ${printId} de ${matchedArtist.slug} deja marquee vendue (race condition?)`);
                             continue;
                         }
-                        prints[idx] = { ...print, sold: true, soldAt: new Date().toISOString() };
+                        // RACE-01: strip les champs de reservation quand on marque sold - la reservation
+                        // est consommee, inutile de laisser reservedUntil/reservedByOrderId trainer.
+                        const { reservedUntil: _ru, reservedByOrderId: _rb, ...restPrint } = print;
+                        prints[idx] = { ...restPrint, sold: true, soldAt: new Date().toISOString() };
                         await strapi.documents('api::artist.artist').update({
                             documentId: matchedArtist.documentId,
                             data: { prints },
@@ -974,11 +1142,28 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
                 filters: { stripePaymentIntentId: paymentIntent.id },
             });
             if (orders.length > 0) {
+                const order = orders[0];
                 await strapi.documents('api::order.order').update({
-                    documentId: orders[0].documentId,
+                    documentId: order.documentId,
                     data: { status: 'cancelled' },
                 });
-                strapi.log.info(`Order ${orders[0].documentId} marked as cancelled (payment failed)`);
+                strapi.log.info(`Order ${order.documentId} marked as cancelled (payment failed)`);
+                // RACE-01: liberer les reservations de pieces unique/privees pour que
+                // d'autres clients puissent retenter l'achat sans attendre l'expiry de 30 min.
+                // reservationId = session.id (stockee dans stripeCheckoutSessionId). Fallback
+                // sur paymentIntent.id pour les commandes pre-RACE-01 ou edge cases.
+                try {
+                    const reservationId = order.stripeCheckoutSessionId || paymentIntent.id;
+                    const allArtists = await strapi.documents('api::artist.artist').findMany({ filters: { active: true } });
+                    const uniquePieces = extractUniquePieces(Array.isArray(order.items) ? order.items : [], allArtists);
+                    if (uniquePieces.length > 0) {
+                        await releaseUniquePieceReservations(strapi, uniquePieces, reservationId);
+                        strapi.log.info(`Released ${uniquePieces.length} piece reservation(s) for failed payment ${paymentIntent.id}`);
+                    }
+                }
+                catch (err) {
+                    strapi.log.warn('Could not release reservations on payment failure:', err);
+                }
             }
         }
         ctx.body = { received: true };
