@@ -1881,82 +1881,97 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
     async stats(ctx) {
         if (!(await (0, auth_1.requireAdminAuth)(ctx)))
             return;
-        // Fetch all non-cancelled orders
-        const orders = await strapi.documents('api::order.order').findMany({
-            filters: { status: { $ne: 'cancelled' } },
-            sort: 'createdAt:desc',
-        });
-        // Fetch all expenses
-        const expenses = await strapi.documents('api::expense.expense').findMany({
-            sort: 'date:desc',
-        });
-        // Revenue calculations (order totals are in cents)
-        const paidOrders = orders.filter((o) => o.status !== 'pending');
-        const totalRevenue = paidOrders.reduce((sum, o) => sum + (o.total || 0), 0);
-        // Monthly revenue breakdown
-        const monthlyRevenue = {};
-        for (const order of paidOrders) {
-            const month = order.createdAt.slice(0, 7); // "YYYY-MM"
-            if (!monthlyRevenue[month]) {
-                monthlyRevenue[month] = { revenue: 0, orders: 0 };
-            }
-            monthlyRevenue[month].revenue += order.total;
-            monthlyRevenue[month].orders += 1;
+        // PERF-03: Aggregations SQL au lieu de findMany -> JS. Avant, on chargeait TOUTES
+        // les orders + expenses en memoire et iterait en JS. A 10 000+ orders c'etait ~10K
+        // objets en heap + CPU iteration. Maintenant 5 GROUP BY renvoient juste les stats
+        // dont on a besoin - RAM O(months + categories) au lieu de O(orders + expenses).
+        const knex = strapi.db.connection;
+        // Query 1: order counts + sums by status (pour orderStats + revenue paid)
+        // Considere 'paid' tout ce qui n'est ni 'cancelled' ni 'pending' - meme regle que l'ancien code
+        const orderByStatus = await knex('orders')
+            .select('status')
+            .count({ count: '*' })
+            .sum({ total_cents: 'total' })
+            .whereNot('status', 'cancelled')
+            .groupBy('status');
+        const statusBreakdown = {};
+        let totalOrders = 0;
+        let totalRevenue = 0;
+        for (const row of orderByStatus) {
+            const count = Number(row.count) || 0;
+            const total = Number(row.total_cents) || 0;
+            statusBreakdown[row.status] = count;
+            totalOrders += count;
+            if (row.status !== 'pending')
+                totalRevenue += total;
         }
-        // Expense calculations (amounts are in dollars)
-        const totalExpenses = expenses.reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
-        const totalTpsPaid = expenses.reduce((sum, e) => sum + (parseFloat(e.tpsAmount) || 0), 0);
-        const totalTvqPaid = expenses.reduce((sum, e) => sum + (parseFloat(e.tvqAmount) || 0), 0);
-        // Monthly expenses breakdown
-        const monthlyExpenses = {};
+        const paidOrdersCount = totalOrders - (statusBreakdown.pending || 0);
+        // Query 2: monthly revenue breakdown (paid only, meme filtre que l'ancien code)
+        const monthlyRevenueRows = await knex('orders')
+            .select(knex.raw(`TO_CHAR(created_at, 'YYYY-MM') AS month`))
+            .count({ orders: '*' })
+            .sum({ revenue: 'total' })
+            .whereNotIn('status', ['cancelled', 'pending'])
+            .groupByRaw(`TO_CHAR(created_at, 'YYYY-MM')`)
+            .orderByRaw(`TO_CHAR(created_at, 'YYYY-MM') ASC`);
+        const monthlyRevenue = monthlyRevenueRows.map((r) => ({
+            month: r.month,
+            orders: Number(r.orders) || 0,
+            revenue: Number(r.revenue) || 0,
+        }));
+        // Query 3: top 10 clients par revenu cumule (paid only)
+        const topClientRows = await knex('orders')
+            .select(knex.raw('MAX(customer_email) AS email'), knex.raw('MAX(customer_name) AS name'))
+            .count({ order_count: '*' })
+            .sum({ total_spent: 'total' })
+            .whereNotIn('status', ['cancelled', 'pending'])
+            .groupByRaw('LOWER(customer_email)')
+            .orderByRaw('SUM(total) DESC')
+            .limit(10);
+        const topClients = topClientRows.map((r) => ({
+            email: r.email,
+            name: r.name,
+            totalSpent: Number(r.total_spent) || 0,
+            orderCount: Number(r.order_count) || 0,
+        }));
+        // Query 4: expenses totals (sum amount + TPS/TVQ paid)
+        const [expenseTotals] = await knex('expenses')
+            .sum({ total: 'amount' })
+            .sum({ tps_paid: 'tps_amount' })
+            .sum({ tvq_paid: 'tvq_amount' });
+        const totalExpenses = Number(expenseTotals === null || expenseTotals === void 0 ? void 0 : expenseTotals.total) || 0;
+        const totalTpsPaid = Number(expenseTotals === null || expenseTotals === void 0 ? void 0 : expenseTotals.tps_paid) || 0;
+        const totalTvqPaid = Number(expenseTotals === null || expenseTotals === void 0 ? void 0 : expenseTotals.tvq_paid) || 0;
+        // Query 5: monthly expenses + by category (un seul GROUP BY month,category)
+        const expenseBreakdown = await knex('expenses')
+            .select(knex.raw(`TO_CHAR(date, 'YYYY-MM') AS month`), 'category')
+            .sum({ amount: 'amount' })
+            .groupByRaw(`TO_CHAR(date, 'YYYY-MM'), category`);
+        const monthlyExpensesMap = {};
         const expensesByCategory = {};
-        for (const expense of expenses) {
-            const month = expense.date.slice(0, 7);
-            const amount = Number(expense.amount) || 0;
-            monthlyExpenses[month] = (monthlyExpenses[month] || 0) + amount;
-            expensesByCategory[expense.category] = (expensesByCategory[expense.category] || 0) + amount;
+        for (const row of expenseBreakdown) {
+            const amt = Number(row.amount) || 0;
+            monthlyExpensesMap[row.month] = (monthlyExpensesMap[row.month] || 0) + amt;
+            if (row.category) {
+                expensesByCategory[row.category] = (expensesByCategory[row.category] || 0) + amt;
+            }
         }
+        const monthlyExpenses = Object.entries(monthlyExpensesMap)
+            .map(([month, amount]) => ({ month, amount }))
+            .sort((a, b) => a.month.localeCompare(b.month));
         // Tax calculations (TPS 5%, TVQ 9.975% on revenue in dollars)
         const revenueInDollars = totalRevenue / 100;
         const tpsCollected = revenueInDollars * 0.05;
         const tvqCollected = revenueInDollars * 0.09975;
-        // Order status breakdown
-        const statusBreakdown = {};
-        for (const order of orders) {
-            statusBreakdown[order.status] = (statusBreakdown[order.status] || 0) + 1;
-        }
-        // Top clients
-        const clientMap = new Map();
-        for (const order of paidOrders) {
-            const key = order.customerEmail.toLowerCase();
-            if (clientMap.has(key)) {
-                const c = clientMap.get(key);
-                c.totalSpent += order.total;
-                c.orderCount += 1;
-            }
-            else {
-                clientMap.set(key, {
-                    email: order.customerEmail,
-                    name: order.customerName,
-                    totalSpent: order.total,
-                    orderCount: 1,
-                });
-            }
-        }
-        const topClients = Array.from(clientMap.values()).sort((a, b) => b.totalSpent - a.totalSpent).slice(0, 10);
         ctx.body = {
             revenue: {
                 total: totalRevenue,
                 totalDollars: revenueInDollars,
-                monthly: Object.entries(monthlyRevenue)
-                    .map(([month, data]) => ({ month, ...data }))
-                    .sort((a, b) => a.month.localeCompare(b.month)),
+                monthly: monthlyRevenue, // deja trie par month ASC
             },
             expenses: {
                 total: totalExpenses,
-                monthly: Object.entries(monthlyExpenses)
-                    .map(([month, amount]) => ({ month, amount }))
-                    .sort((a, b) => a.month.localeCompare(b.month)),
+                monthly: monthlyExpenses, // deja trie par month ASC
                 byCategory: expensesByCategory,
             },
             taxes: {
@@ -1972,9 +1987,9 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
                 net: Math.round((revenueInDollars - totalExpenses - (tpsCollected - totalTpsPaid) - (tvqCollected - totalTvqPaid)) * 100) / 100,
             },
             orderStats: {
-                total: orders.length,
+                total: totalOrders,
                 byStatus: statusBreakdown,
-                averageValue: paidOrders.length > 0 ? Math.round(totalRevenue / paidOrders.length) : 0,
+                averageValue: paidOrdersCount > 0 ? Math.round(totalRevenue / paidOrdersCount) : 0,
             },
             topClients,
         };
