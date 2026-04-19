@@ -61,8 +61,11 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
-          # Format: YYYY-MM-DD.sql.gz - un fichier par jour, ecrase si re-run
-          # le meme jour (ex: workflow_dispatch manuel).
+          # pipefail : sans ca, un pg_dump qui echoue passe sous le radar car
+          # `gzip > file` retourne 0 meme avec stdin vide. Ancien bug decouvert
+          # au premier run BACKUP-01 -> fichier de 4KB contenant rien.
+          set -eo pipefail
+
           STAMP=$(date -u +%Y-%m-%d)
           FILE="massivemedias-${STAMP}.sql.gz"
           echo "file=$FILE" >> $GITHUB_OUTPUT
@@ -70,16 +73,30 @@ jobs:
           # --no-owner --no-privileges : backup portable entre environnements
           # (permet restore dans un Neon fresh sans conflicts d'ownership).
           # --format=plain + gzip = restore facile avec `gunzip | psql`.
+          # -d = connection string explicite (plus robuste que positional arg
+          # quand l'URL contient des & non quotes dans le YAML).
           pg_dump \
             --no-owner \
             --no-privileges \
             --format=plain \
-            "$DATABASE_URL" \
+            -d "$DATABASE_URL" \
             | gzip -9 > "$FILE"
 
           SIZE=$(du -h "$FILE" | awk '{print $1}')
-          echo "Created $FILE ($SIZE)"
+          BYTES=$(stat -c%s "$FILE")
+          echo "Created $FILE ($SIZE / $BYTES bytes)"
           echo "size=$SIZE" >> $GITHUB_OUTPUT
+
+          # Sanity check: un dump valide contient au minimum les directives
+          # pg_dump de header (SET statement_timeout, CREATE TABLE, etc). On
+          # verifie que le fichier decompresse fait au moins 500 bytes de SQL
+          # reel -> protection contre dump vide malgre exit code 0.
+          DECOMPRESSED_SIZE=$(gunzip -c "$FILE" | wc -c)
+          echo "Decompressed size: $DECOMPRESSED_SIZE bytes"
+          if [ "$DECOMPRESSED_SIZE" -lt 500 ]; then
+            echo "::error::Backup looks empty (< 500 bytes decompressed). Aborting upload."
+            exit 1
+          fi
 
       - name: Upload to R2 (S3-compatible)
         if: steps.check-secrets.outputs.configured == 'true'
