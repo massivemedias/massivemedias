@@ -2,8 +2,11 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const strapi_1 = require("@strapi/strapi");
 const email_1 = require("../../../utils/email");
+const auth_1 = require("../../../utils/auth");
 exports.default = strapi_1.factories.createCoreController('api::contact-submission.contact-submission', ({ strapi }) => ({
     async adminList(ctx) {
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
+            return;
         const page = parseInt(ctx.query.page) || 1;
         const pageSize = parseInt(ctx.query.pageSize) || 25;
         const status = ctx.query.status;
@@ -34,6 +37,8 @@ exports.default = strapi_1.factories.createCoreController('api::contact-submissi
         };
     },
     async updateStatus(ctx) {
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
+            return;
         const { documentId } = ctx.params;
         const { status: newStatus, notes } = ctx.request.body;
         const validStatuses = ['new', 'read', 'replied', 'archived'];
@@ -57,6 +62,8 @@ exports.default = strapi_1.factories.createCoreController('api::contact-submissi
         ctx.body = { data: updated };
     },
     async reply(ctx) {
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
+            return;
         const { documentId } = ctx.params;
         const { replyMessage, subject } = ctx.request.body;
         if (!replyMessage) {
@@ -90,6 +97,8 @@ exports.default = strapi_1.factories.createCoreController('api::contact-submissi
         ctx.body = { success: true, notes: updatedNotes };
     },
     async deleteSubmission(ctx) {
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
+            return;
         const { documentId } = ctx.params;
         const item = await strapi.documents('api::contact-submission.contact-submission').findFirst({
             filters: { documentId },

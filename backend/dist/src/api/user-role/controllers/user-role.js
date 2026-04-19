@@ -1,9 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const strapi_1 = require("@strapi/strapi");
+const auth_1 = require("../../../utils/auth");
 exports.default = strapi_1.factories.createCoreController('api::user-role.user-role', ({ strapi }) => ({
-    // GET /user-roles/list - Liste tous les roles
+    // GET /user-roles/list - Liste tous les roles (admin only)
     async list(ctx) {
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
+            return;
         try {
             const entries = await strapi.documents('api::user-role.user-role').findMany({
                 sort: { createdAt: 'desc' },
@@ -25,8 +28,14 @@ exports.default = strapi_1.factories.createCoreController('api::user-role.user-r
         }
     },
     // GET /user-roles/by-email?email=xxx - Role d'un user par email
+    // Accessible au user lui-meme (pour lire son propre role apres connexion)
+    // OU a un admin (pour voir les roles des autres). Bloque si email != JWT et pas admin.
     async byEmail(ctx) {
+        if (!(await (0, auth_1.requireUserAuth)(ctx)))
+            return;
         const { email } = ctx.query;
+        if (!(await (0, auth_1.assertOwnershipOrAdmin)(ctx, email)))
+            return;
         if (!email) {
             ctx.throw(400, 'Email required');
             return;
@@ -59,6 +68,8 @@ exports.default = strapi_1.factories.createCoreController('api::user-role.user-r
     // PUT /user-roles/set - Definir le role d'un user
     // Body: { email, role, artistSlug?, supabaseUserId?, displayName? }
     async setRole(ctx) {
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
+            return;
         const { email, role, artistSlug, tatoueurSlug, supabaseUserId, displayName } = ctx.request.body;
         if (!email || !role) {
             ctx.throw(400, 'Email and role required');
@@ -116,12 +127,18 @@ exports.default = strapi_1.factories.createCoreController('api::user-role.user-r
         }
     },
     // PUT /user-roles/artist-data - Sauvegarder renames et hero pour un artiste
+    // User connecte peut modifier SES donnees, admin peut modifier les donnees
+    // de n'importe quel artiste.
     async updateArtistData(ctx) {
+        if (!(await (0, auth_1.requireUserAuth)(ctx)))
+            return;
         const { email, itemRenames, heroImageId } = ctx.request.body;
         if (!email) {
             ctx.throw(400, 'Email required');
             return;
         }
+        if (!(0, auth_1.assertOwnershipOrAdmin)(ctx, email))
+            return;
         try {
             const existing = await strapi.documents('api::user-role.user-role').findMany({
                 filters: { email: { $eqi: email } },
@@ -172,6 +189,8 @@ exports.default = strapi_1.factories.createCoreController('api::user-role.user-r
     },
     // DELETE /user-roles/:documentId - Supprimer un role (remet en user)
     async removeRole(ctx) {
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
+            return;
         const { documentId } = ctx.params;
         try {
             await strapi.documents('api::user-role.user-role').delete({

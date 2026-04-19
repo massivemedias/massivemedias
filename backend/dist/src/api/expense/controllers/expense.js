@@ -1,9 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const strapi_1 = require("@strapi/strapi");
+const auth_1 = require("../../../utils/auth");
 const VALID_CATEGORIES = ['consommables', 'materiel', 'shipping', 'software', 'marketing', 'equipment', 'taxes', 'other'];
 exports.default = strapi_1.factories.createCoreController('api::expense.expense', ({ strapi }) => ({
     async adminList(ctx) {
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
+            return;
         const page = parseInt(ctx.query.page) || 1;
         const pageSize = parseInt(ctx.query.pageSize) || 25;
         const category = ctx.query.category;
@@ -42,6 +45,8 @@ exports.default = strapi_1.factories.createCoreController('api::expense.expense'
         };
     },
     async createExpense(ctx) {
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
+            return;
         const { description, amount, category, date, vendor, receiptNumber, receiptUrl, taxDeductible, tpsAmount, tvqAmount, notes } = ctx.request.body;
         if (!description || !amount || !category || !date) {
             return ctx.badRequest('Description, montant, categorie et date sont requis');
@@ -67,6 +72,8 @@ exports.default = strapi_1.factories.createCoreController('api::expense.expense'
         ctx.body = { data: expense };
     },
     async updateExpense(ctx) {
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
+            return;
         const { documentId } = ctx.params;
         const body = ctx.request.body;
         const item = await strapi.documents('api::expense.expense').findFirst({
@@ -107,6 +114,8 @@ exports.default = strapi_1.factories.createCoreController('api::expense.expense'
         ctx.body = { data: updated };
     },
     async deleteExpense(ctx) {
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
+            return;
         const { documentId } = ctx.params;
         const item = await strapi.documents('api::expense.expense').findFirst({
             filters: { documentId },
@@ -120,6 +129,8 @@ exports.default = strapi_1.factories.createCoreController('api::expense.expense'
         ctx.body = { success: true };
     },
     async yearSummary(ctx) {
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
+            return;
         const year = parseInt(ctx.params.year) || new Date().getFullYear();
         const startDate = `${year}-01-01`;
         const endDate = `${year}-12-31`;

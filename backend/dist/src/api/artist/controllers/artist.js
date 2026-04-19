@@ -2,12 +2,15 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const strapi_1 = require("@strapi/strapi");
 const email_1 = require("../../../utils/email");
+const auth_1 = require("../../../utils/auth");
 exports.default = strapi_1.factories.createCoreController('api::artist.artist', ({ strapi }) => ({
     /**
      * Nettoyer les pieces uniques vendues depuis plus de 7 jours
      * Les retire du tableau prints de l'artiste (l'image reste sur Google Drive)
      */
     async cleanupSoldUniques(ctx) {
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
+            return;
         const DAYS = 7;
         const cutoff = new Date(Date.now() - DAYS * 24 * 60 * 60 * 1000).toISOString();
         let cleaned = 0;
@@ -43,6 +46,8 @@ exports.default = strapi_1.factories.createCoreController('api::artist.artist', 
      */
     async getPrivateSales(ctx) {
         var _a;
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
+            return;
         const artists = await strapi.documents('api::artist.artist').findMany({
             filters: { active: true },
             populate: { avatar: true },
@@ -95,6 +100,8 @@ exports.default = strapi_1.factories.createCoreController('api::artist.artist', 
      * Body: { artistSlug: string, printId: string }
      */
     async deletePrivateSale(ctx) {
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
+            return;
         const { artistSlug, printId } = (ctx.request.body || {});
         if (!artistSlug || !printId) {
             return ctx.badRequest('artistSlug et printId sont requis');
@@ -129,6 +136,8 @@ exports.default = strapi_1.factories.createCoreController('api::artist.artist', 
      * Body: { artistSlug: string, printId: string }
      */
     async resendPrivateSaleEmail(ctx) {
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
+            return;
         const { artistSlug, printId } = (ctx.request.body || {});
         if (!artistSlug || !printId) {
             return ctx.badRequest('artistSlug et printId sont requis');
@@ -177,6 +186,11 @@ exports.default = strapi_1.factories.createCoreController('api::artist.artist', 
      * Body: { slug: string, name?, taglineFr?, taglineEn?, bioFr?, bioEn?, bioEs? }
      */
     async updateBySlug(ctx) {
+        // TODO SEC-01-FOLLOWUP: assouplir en requireUserAuth + check que l'artiste
+        // connecte modifie son propre slug (ownership). Pour l'instant admin only
+        // pour eviter tout risque d'ecrasement malveillant des bios/taglines.
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
+            return;
         const { slug, ...fields } = ctx.request.body;
         if (!slug)
             return ctx.badRequest('slug est requis');
