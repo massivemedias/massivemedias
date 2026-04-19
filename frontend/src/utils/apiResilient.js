@@ -1,21 +1,18 @@
 /**
  * Resilient API client with automatic retry + backoff + backend availability tracking.
  *
- * Philosophie: le client ne doit JAMAIS perdre son travail parce que le backend crash.
- * Si une requete echoue avec un status reseau (timeout, 500, 502, 503, 504), on retry
- * automatiquement avec backoff exponentiel. On expose aussi un status global
- * "backend up/down" que les composants peuvent ecouter pour afficher un banner.
+ * FRONT-01 scope clarification (avril 2026):
+ * Ce module a initialement ete cree pour un usage large, mais en pratique il n'est
+ * importe QUE par `BackendHealthBanner.jsx` pour les pings de sante globaux
+ * (pingBackend, onBackendStatusChange). Le reste de l'app utilise `services/api.js`
+ * (axios) qui a son propre retry interceptor - desormais elargi pour couvrir 500-504
+ * (pas seulement 503) pour matcher le comportement de ce module.
  *
- * Usage:
- *   import { apiFetch, onBackendStatusChange } from '@/utils/apiResilient';
+ * Nouveau code: PREFER `services/api.js` (axios + auth + retry). Ce module reste
+ * reserve pour BackendHealthBanner + eventuels futurs probes de sante fetch-based.
  *
- *   const res = await apiFetch('/api/orders/my-orders', { method: 'GET' });
- *
- *   // Pour afficher un banner global:
- *   onBackendStatusChange((status) => {
- *     if (status === 'down') showBanner('Backend temporairement indisponible...');
- *     else hideBanner();
- *   });
+ * Usage (limite au health banner):
+ *   import { pingBackend, onBackendStatusChange } from '@/utils/apiResilient';
  */
 
 const API_BASE = import.meta.env.VITE_API_URL || 'https://massivemedias-api.onrender.com';

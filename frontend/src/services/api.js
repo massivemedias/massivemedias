@@ -41,8 +41,18 @@ function shouldRetry(error) {
   if (error.config?._retryCount >= MAX_RETRIES) return false;
   // Si serveur deja marque down, pas de retry du tout
   if (serverDown && Date.now() - serverDownSince < SERVER_DOWN_COOLDOWN) return false;
-  // 503 = backend en train de redemarrer (post-deploy ou incident) - retry normal
-  if (error.response?.status === 503) return true;
+
+  // FRONT-01: retry sur toute la fenetre 500-504 (pas seulement 503).
+  //   500 = crash transitoire (OOM en cours, exception non gere)
+  //   502 = Bad Gateway (conteneur Render en train de redemarrer)
+  //   503 = Service Unavailable (maintenance / load)
+  //   504 = Gateway Timeout (DB slow / API externe lente)
+  // Tous ces statuts sont des "rests quelques secondes et re-essaye" legitimes
+  // pour un SPA qui enchaine checkout/upload/admin. Avant ce fix, seul 503
+  // re-essayait - un 502 pendant un deploy Render plantait le checkout.
+  const status = error.response?.status;
+  if (status >= 500 && status <= 504) return true;
+
   // Erreur reseau (pas de reponse = serveur down) - 1 seul retry puis on arrete
   if (!error.response && error.code !== 'ERR_CANCELED') {
     if (error.config?._retryCount >= 1) {
