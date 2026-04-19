@@ -122,14 +122,29 @@ export default factories.createCoreController('api::qr-code.qr-code', ({ strapi 
       limit: 500,
     });
 
-    // Efficient scan counting: one findMany per code. For low counts this is fine;
-    // if the list grows past a few hundred QR codes, we should move to an aggregate
-    // query (strapi.db.query) with GROUP BY for speed.
-    const result = await Promise.all(codes.map(async (c: any) => {
-      const scans = await strapi.documents('api::qr-scan.qr-scan').findMany({
-        filters: { qrCode: { documentId: c.documentId } } as any,
-        limit: 100000,
-      });
+    // PERF-01 : aggregate en une seule query au lieu du N+1 precedent. On
+    // fetch TOUS les scans en une fois avec le qrCode relation populate (pour
+    // connaitre le documentId parent), puis on group-by en memoire. Ancien
+    // code lancait 1 query par QR code -> explosait a 500 QR codes ou plus.
+    const allScans = await strapi.db.query('api::qr-scan.qr-scan').findMany({
+      populate: ['qrCode'],
+      select: ['scannedAt'],
+    });
+
+    const scansByQrCodeId = new Map<number, { count: number; lastScannedAt: string | null }>();
+    for (const scan of allScans as any[]) {
+      const qrCodeId = scan.qrCode?.id;
+      if (!qrCodeId) continue;
+      const existing = scansByQrCodeId.get(qrCodeId) || { count: 0, lastScannedAt: null };
+      existing.count++;
+      if (!existing.lastScannedAt || scan.scannedAt > existing.lastScannedAt) {
+        existing.lastScannedAt = scan.scannedAt;
+      }
+      scansByQrCodeId.set(qrCodeId, existing);
+    }
+
+    const result = codes.map((c: any) => {
+      const agg = scansByQrCodeId.get(c.id) || { count: 0, lastScannedAt: null };
       return {
         id: c.id,
         documentId: c.documentId,
@@ -139,12 +154,10 @@ export default factories.createCoreController('api::qr-code.qr-code', ({ strapi 
         createdByEmail: c.createdByEmail || null,
         createdAt: c.createdAt,
         active: c.active !== false,
-        scansCount: scans.length,
-        lastScannedAt: scans.length > 0
-          ? scans.reduce((acc: string, s: any) => (s.scannedAt > acc ? s.scannedAt : acc), '1970-01-01T00:00:00.000Z')
-          : null,
+        scansCount: agg.count,
+        lastScannedAt: agg.lastScannedAt,
       };
-    }));
+    });
 
     ctx.body = { data: result, total: result.length };
   },
