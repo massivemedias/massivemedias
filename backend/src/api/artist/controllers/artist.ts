@@ -1,5 +1,6 @@
 import { factories } from '@strapi/strapi';
 import { sendPrivatePrintEmail } from '../../../utils/email';
+import { requireAdminAuth } from '../../../utils/auth';
 
 export default factories.createCoreController('api::artist.artist', ({ strapi }) => ({
   /**
@@ -7,6 +8,7 @@ export default factories.createCoreController('api::artist.artist', ({ strapi })
    * Les retire du tableau prints de l'artiste (l'image reste sur Google Drive)
    */
   async cleanupSoldUniques(ctx) {
+    if (!(await requireAdminAuth(ctx))) return;
     const DAYS = 7;
     const cutoff = new Date(Date.now() - DAYS * 24 * 60 * 60 * 1000).toISOString();
     let cleaned = 0;
@@ -45,6 +47,7 @@ export default factories.createCoreController('api::artist.artist', ({ strapi })
    * GET /api/artists/private-sales
    */
   async getPrivateSales(ctx) {
+    if (!(await requireAdminAuth(ctx))) return;
     const artists = await strapi.documents('api::artist.artist').findMany({
       filters: { active: true },
       populate: { avatar: true },
@@ -102,6 +105,7 @@ export default factories.createCoreController('api::artist.artist', ({ strapi })
    * Body: { artistSlug: string, printId: string }
    */
   async deletePrivateSale(ctx) {
+    if (!(await requireAdminAuth(ctx))) return;
     const { artistSlug, printId } = (ctx.request.body || {}) as any;
     if (!artistSlug || !printId) {
       return ctx.badRequest('artistSlug et printId sont requis');
@@ -139,6 +143,7 @@ export default factories.createCoreController('api::artist.artist', ({ strapi })
    * Body: { artistSlug: string, printId: string }
    */
   async resendPrivateSaleEmail(ctx) {
+    if (!(await requireAdminAuth(ctx))) return;
     const { artistSlug, printId } = (ctx.request.body || {}) as any;
     if (!artistSlug || !printId) {
       return ctx.badRequest('artistSlug et printId sont requis');
@@ -188,6 +193,10 @@ export default factories.createCoreController('api::artist.artist', ({ strapi })
    * Body: { slug: string, name?, taglineFr?, taglineEn?, bioFr?, bioEn?, bioEs? }
    */
   async updateBySlug(ctx) {
+    // TODO SEC-01-FOLLOWUP: assouplir en requireUserAuth + check que l'artiste
+    // connecte modifie son propre slug (ownership). Pour l'instant admin only
+    // pour eviter tout risque d'ecrasement malveillant des bios/taglines.
+    if (!(await requireAdminAuth(ctx))) return;
     const { slug, ...fields } = ctx.request.body as any;
     if (!slug) return ctx.badRequest('slug est requis');
 

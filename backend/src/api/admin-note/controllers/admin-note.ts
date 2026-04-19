@@ -1,8 +1,10 @@
 import { factories } from '@strapi/strapi';
+import { requireAdminAuth } from '../../../utils/auth';
 
 export default factories.createCoreController('api::admin-note.admin-note' as any, ({ strapi }) => ({
 
   async list(ctx) {
+    if (!(await requireAdminAuth(ctx))) return;
     const search = ctx.query.search as string;
 
     const filters: any = {};
@@ -22,6 +24,7 @@ export default factories.createCoreController('api::admin-note.admin-note' as an
   },
 
   async createNote(ctx) {
+    if (!(await requireAdminAuth(ctx))) return;
     const { title, body, color, pinned } = ctx.request.body as any;
 
     const note = await (strapi.documents as any)('api::admin-note.admin-note').create({
@@ -37,6 +40,7 @@ export default factories.createCoreController('api::admin-note.admin-note' as an
   },
 
   async updateNote(ctx) {
+    if (!(await requireAdminAuth(ctx))) return;
     const { documentId } = ctx.params;
     const bodyData = ctx.request.body as any;
 
@@ -60,6 +64,7 @@ export default factories.createCoreController('api::admin-note.admin-note' as an
   },
 
   async deleteNote(ctx) {
+    if (!(await requireAdminAuth(ctx))) return;
     const { documentId } = ctx.params;
 
     const item = await (strapi.documents as any)('api::admin-note.admin-note').findFirst({

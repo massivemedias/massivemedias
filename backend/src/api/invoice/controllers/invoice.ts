@@ -1,9 +1,11 @@
 import { factories } from '@strapi/strapi';
 import { uploadBufferToFolder } from '../../../utils/google-drive';
+import { requireAdminAuth } from '../../../utils/auth';
 
 export default factories.createCoreController('api::invoice.invoice', ({ strapi }) => ({
 
   async findAll(ctx) {
+    if (!(await requireAdminAuth(ctx))) return;
     const sort = ((ctx.query.sort as string) || 'date:desc') as any;
     const pageSize = parseInt((ctx.query as any)?.pagination?.pageSize || '100');
     const invoices = await strapi.documents('api::invoice.invoice').findMany({
@@ -17,6 +19,7 @@ export default factories.createCoreController('api::invoice.invoice', ({ strapi 
   },
 
   async createOne(ctx) {
+    if (!(await requireAdminAuth(ctx))) return;
     const { data } = ctx.request.body as any;
     if (!data) return ctx.badRequest('data is required');
     const invoice = await strapi.documents('api::invoice.invoice').create({ data });
@@ -24,6 +27,7 @@ export default factories.createCoreController('api::invoice.invoice', ({ strapi 
   },
 
   async updateOne(ctx) {
+    if (!(await requireAdminAuth(ctx))) return;
     const { documentId } = ctx.params;
     const { data } = ctx.request.body as any;
     if (!data) return ctx.badRequest('data is required');
@@ -35,12 +39,14 @@ export default factories.createCoreController('api::invoice.invoice', ({ strapi 
   },
 
   async deleteOne(ctx) {
+    if (!(await requireAdminAuth(ctx))) return;
     const { documentId } = ctx.params;
     await strapi.documents('api::invoice.invoice').delete({ documentId });
     ctx.body = { success: true };
   },
 
   async uploadPdf(ctx) {
+    if (!(await requireAdminAuth(ctx))) return;
     const { request: { files } } = ctx as any;
 
     if (!files || !files.file) {

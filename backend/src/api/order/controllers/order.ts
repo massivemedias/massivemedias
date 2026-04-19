@@ -4,6 +4,7 @@ import { calculateShipping } from '../../../utils/shipping';
 import { sendOrderConfirmationEmail, sendTestimonialRequestEmail, sendArtistSaleNotificationEmail, sendNewOrderNotificationEmail, sendTrackingEmail } from '../../../utils/email';
 import crypto from 'crypto';
 import { PROMO_CODES } from '../../../utils/promo-codes';
+import { requireAdminAuth } from '../../../utils/auth';
 
 const getStripe = () => {
   const key = process.env.STRIPE_SECRET_KEY;
@@ -13,92 +14,10 @@ const getStripe = () => {
   return new Stripe(key);
 };
 
-/**
- * Guard for destructive/admin-only endpoints.
- * Accepts EITHER:
- *   - Authorization: Bearer <ADMIN_API_TOKEN>   (service-to-service or trusted admin UI)
- *   - Authorization: Bearer <Supabase JWT>      where the user's email is in ADMIN_EMAILS
- *
- * Returns true if authorized. If not authorized, sets 401 on ctx and returns false -
- * callers MUST check the return value and exit early.
- *
- * CONFIG (on Render env vars):
- *   ADMIN_API_TOKEN: long random string (service token)
- *   ADMIN_EMAILS: comma-separated list of admin emails (defaults to ADMIN_EMAIL)
- */
-async function requireAdminAuth(ctx: any): Promise<boolean> {
-  const authHeader = (ctx.request.headers['authorization'] as string) || '';
-  const token = authHeader.replace(/^Bearer\s+/i, '').trim();
-
-  if (!token) {
-    ctx.status = 401;
-    ctx.body = { error: { status: 401, name: 'Unauthorized', message: 'Missing Authorization header' } };
-    return false;
-  }
-
-  // Option A: service token match
-  const adminApiToken = process.env.ADMIN_API_TOKEN;
-  if (adminApiToken && adminApiToken.length >= 16 && token === adminApiToken) {
-    (ctx.state as any).adminAuthMethod = 'service-token';
-    return true;
-  }
-
-  // Option B: Supabase JWT + email in ADMIN_EMAILS
-  let diag: {
-    supabaseUrlPresent: boolean;
-    supabaseKeyPresent: boolean;
-    supabaseError: string | null;
-    jwtEmail: string | null;
-    adminEmailsConfigured: boolean;
-    emailIsAdmin: boolean;
-  } = {
-    supabaseUrlPresent: false,
-    supabaseKeyPresent: false,
-    supabaseError: null,
-    jwtEmail: null,
-    adminEmailsConfigured: false,
-    emailIsAdmin: false,
-  };
-
-  try {
-    const supabaseUrl = process.env.SUPABASE_URL || process.env.SUPABASE_API_URL;
-    const supabaseKey = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_API_KEY;
-    diag.supabaseUrlPresent = !!supabaseUrl;
-    diag.supabaseKeyPresent = !!supabaseKey;
-
-    if (supabaseUrl && supabaseKey) {
-      const { createClient } = require('@supabase/supabase-js');
-      const supabase = createClient(supabaseUrl, supabaseKey);
-      const { data, error } = await supabase.auth.getUser(token);
-      if (error) {
-        diag.supabaseError = error.message || String(error);
-      } else if (data?.user?.email) {
-        diag.jwtEmail = data.user.email;
-        const adminEmailsRaw = process.env.ADMIN_EMAILS || process.env.ADMIN_EMAIL || '';
-        diag.adminEmailsConfigured = !!adminEmailsRaw.trim();
-        const adminEmails = adminEmailsRaw.split(',').map((s) => s.trim().toLowerCase()).filter(Boolean);
-        const matchEmail = adminEmails.includes(data.user.email.toLowerCase());
-        diag.emailIsAdmin = matchEmail;
-        if (matchEmail) {
-          (ctx.state as any).adminAuthMethod = 'supabase-jwt';
-          (ctx.state as any).adminUserEmail = data.user.email;
-          return true;
-        }
-      }
-    }
-  } catch (e: any) {
-    diag.supabaseError = e?.message || String(e);
-    strapi.log.warn('requireAdminAuth: Supabase verification error', e);
-  }
-
-  // Expose diagnostic info to caller via ctx.state so /admin-whoami can surface it.
-  (ctx.state as any).__authDiag = diag;
-
-  ctx.status = 401;
-  ctx.body = { error: { status: 401, name: 'Unauthorized', message: 'Admin authentication required' } };
-  strapi.log.warn(`Admin-protected endpoint hit without valid auth: ${ctx.method} ${ctx.url} - diag: ${JSON.stringify(diag)}`);
-  return false;
-}
+// requireAdminAuth a ete extrait dans backend/src/utils/auth.ts (SEC-01, 2026-04-18).
+// L'import est en haut du fichier. Le comportement est identique, seul le diagnostic
+// __authDiag n'est plus expose (il etait utilise par /admin-whoami, endpoint de debug
+// retire depuis). Aucune regression fonctionnelle sur order.ts.
 
 // Sticker pricing tiers for server-side validation (tarifs de REFERENCE 3")
 const STICKER_STANDARD_TIERS: Record<number, number> = { 25: 30, 50: 47.50, 100: 85, 250: 200, 500: 375 };
