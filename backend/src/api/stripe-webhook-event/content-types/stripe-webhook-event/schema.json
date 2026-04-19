@@ -1,0 +1,28 @@
+{
+  "kind": "collectionType",
+  "collectionName": "stripe_webhook_events",
+  "info": {
+    "singularName": "stripe-webhook-event",
+    "pluralName": "stripe-webhook-events",
+    "displayName": "Stripe Webhook Event",
+    "description": "Journal d'idempotency pour les webhooks Stripe (STRIPE-01). Evite de re-traiter un event.id deja vu sur retry."
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "eventId": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "eventType": {
+      "type": "string",
+      "required": true
+    },
+    "processedAt": {
+      "type": "datetime",
+      "required": true
+    }
+  }
+}

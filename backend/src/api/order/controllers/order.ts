@@ -798,6 +798,32 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
       return ctx.badRequest(`Webhook Error: ${err.message}`);
     }
 
+    // STRIPE-01: idempotency check. Stripe retry le meme event.id sur echec
+    // reseau. On ecrit dans stripe_webhook_events avec unique constraint sur
+    // eventId -> la 2eme insertion throw et on return 200 fast sans re-run
+    // les queries downstream.
+    try {
+      await strapi.db.query('api::stripe-webhook-event.stripe-webhook-event').create({
+        data: {
+          eventId: event.id,
+          eventType: event.type,
+          processedAt: new Date().toISOString(),
+        },
+      });
+    } catch (dupErr: any) {
+      // Unique constraint violation = event deja traite. Log + return 200
+      // pour que Stripe arrete son retry loop.
+      const msg = String(dupErr?.message || '').toLowerCase();
+      if (msg.includes('unique') || msg.includes('duplicate') || dupErr?.code === '23505') {
+        strapi.log.info(`[webhook:${requestId}] DUPLICATE event ${event.id} (${event.type}) - skipping, returning 200`);
+        ctx.body = { received: true, duplicate: true };
+        return;
+      }
+      // Autre erreur DB = on log mais on continue (mieux traiter en double
+      // qu'ignorer un event valide a cause d'un probleme DB transient).
+      strapi.log.warn(`[webhook:${requestId}] idempotency log insert failed (non-unique): ${dupErr?.message}`);
+    }
+
     // Pour checkout sessions, recuperer le payment_intent_id et upgrader la colonne
     // stripePaymentIntentId (qui contient peut-etre encore le cs_live_ temporaire).
     if (event.type === 'checkout.session.completed') {
