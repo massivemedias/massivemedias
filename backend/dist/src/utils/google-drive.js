@@ -147,7 +147,13 @@ async function uploadToGoogleDrive(fileUrl, fileName, artistSlug, mimeType) {
     };
 }
 exports.uploadToGoogleDrive = uploadToGoogleDrive;
-// Upload un fichier directement depuis un Buffer (pour les uploads directs du frontend)
+/**
+ * @deprecated UPLOAD-02: charge tout le fichier en RAM avant l'upload. Pour les fichiers
+ * > quelques MB, prefer `uploadStreamToGoogleDrive` (lit depuis fs.createReadStream ou
+ * autre Readable avec contentLength explicite). Cette fonction reste disponible pour
+ * retro-compatibilite et fallbacks defensifs mais NE DOIT PAS etre utilisee dans de
+ * nouveaux handlers.
+ */
 async function uploadBufferToGoogleDrive(fileBuffer, fileName, artistSlug, mimeType = 'application/octet-stream') {
     const parentFolderId = process.env.GOOGLE_DRIVE_FOLDER_ID;
     if (!parentFolderId)
@@ -252,7 +258,12 @@ async function uploadStreamToGoogleDrive(readStream, fileName, artistSlug, mimeT
     };
 }
 exports.uploadStreamToGoogleDrive = uploadStreamToGoogleDrive;
-// Upload un fichier directement dans un dossier Google Drive specifique (sans sous-dossier artiste)
+/**
+ * @deprecated UPLOAD-02: charge tout le fichier en RAM avant l'upload. Pour tout nouveau
+ * handler, utiliser `uploadStreamToFolder(readStream, fileName, folderId, mimeType, contentLength)`
+ * qui stream depuis disque. Invoice controller a deja migre (UPLOAD-01). Pas d'autre caller
+ * actif au 19 avril 2026. Laissee pour retro-compat au cas ou, mais a retirer quand 0 callers.
+ */
 async function uploadBufferToFolder(fileBuffer, fileName, folderId, mimeType = 'application/octet-stream') {
     const token = await getAccessToken();
     const date = new Date().toISOString().split('T')[0];

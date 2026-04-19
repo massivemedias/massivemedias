@@ -178,7 +178,13 @@ export async function uploadToGoogleDrive(
   };
 }
 
-// Upload un fichier directement depuis un Buffer (pour les uploads directs du frontend)
+/**
+ * @deprecated UPLOAD-02: charge tout le fichier en RAM avant l'upload. Pour les fichiers
+ * > quelques MB, prefer `uploadStreamToGoogleDrive` (lit depuis fs.createReadStream ou
+ * autre Readable avec contentLength explicite). Cette fonction reste disponible pour
+ * retro-compatibilite et fallbacks defensifs mais NE DOIT PAS etre utilisee dans de
+ * nouveaux handlers.
+ */
 export async function uploadBufferToGoogleDrive(
   fileBuffer: Buffer,
   fileName: string,
@@ -303,7 +309,12 @@ export async function uploadStreamToGoogleDrive(
   };
 }
 
-// Upload un fichier directement dans un dossier Google Drive specifique (sans sous-dossier artiste)
+/**
+ * @deprecated UPLOAD-02: charge tout le fichier en RAM avant l'upload. Pour tout nouveau
+ * handler, utiliser `uploadStreamToFolder(readStream, fileName, folderId, mimeType, contentLength)`
+ * qui stream depuis disque. Invoice controller a deja migre (UPLOAD-01). Pas d'autre caller
+ * actif au 19 avril 2026. Laissee pour retro-compat au cas ou, mais a retirer quand 0 callers.
+ */
 export async function uploadBufferToFolder(
   fileBuffer: Buffer,
   fileName: string,
