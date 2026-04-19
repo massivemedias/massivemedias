@@ -3,68 +3,117 @@
 /**
  * PERF-04: index Postgres explicites sur les colonnes frequemment filtrees.
  *
- * Strapi ajoute automatiquement un index sur `id`, `document_id` et les attributs
- * `unique: true` (donc stripe_payment_intent_id deja couvert). Les autres colonnes
- * utilisees dans les filtres/sorts/joins n'ont aucun index - a 50K+ rows un
- * findMany({ filters: { customerEmail: 'x' } }) peut prendre 500ms+.
+ * V2 (hotfix 2026-04-19 post-deploy): chaque CREATE INDEX est wrappe dans un
+ * bloc DO qui verifie que la colonne existe via information_schema.columns.
+ * La v1 avait ete naive sur qr_scans.qr_code_id: Strapi v5 route les relations
+ * manyToOne via une TABLE DE LIAISON (qr_scans_qr_code_lnk ou similaire), pas
+ * une FK directe. Le CREATE INDEX plantait, la migration throw, Strapi crash
+ * au boot -> tous les deploys subsequents cascade-failed.
  *
- * Les indexes sont crees avec IF NOT EXISTS pour l'idempotence (la migration peut
- * etre re-executee sans exploser). Strapi wrappe la migration dans une transaction
- * knex - CREATE INDEX CONCURRENTLY n'est pas compatible, on utilise la forme simple
- * (volume actuel permet un brief lock table).
+ * Design v2:
+ *   - DO $$ ... END $$ par index, check colonne avant CREATE
+ *   - pg_class.reltype lookup pour les tables (eviter table inexistante)
+ *   - IF NOT EXISTS sur le CREATE INDEX pour idempotence cross-retry
+ *   - Tout passe dans UNE SEULE transaction knex (pas CONCURRENTLY)
+ *   - Silent skip si une table/colonne manque -> pas de crash deploy
+ *
+ * Pour les relations via link table: on skippe pour l'instant, chantier
+ * separé PERF-04b qui identifiera les tables _lnk et les indexera correctement.
  */
+
+// Helper: genere le SQL defensif pour creer un index seulement si toutes
+// les colonnes referencees existent dans la table cible.
+function safeCreateIndex(indexName, tableName, columns) {
+  // columns peut etre une string simple ("status") ou une expression ("LOWER(email)")
+  // Pour le check information_schema, on extrait les identifiants alphanumeriques.
+  const colNames = Array.isArray(columns) ? columns : [columns];
+  const rawColumnExprs = colNames.map((c) => String(c));
+  const columnList = rawColumnExprs.join(', ');
+
+  // Extraire les noms de colonnes purs pour le check. "LOWER(customer_email)" -> "customer_email".
+  // "status, created_at DESC" -> ["status", "created_at"].
+  const identifiersToCheck = new Set();
+  for (const expr of rawColumnExprs) {
+    const matches = expr.match(/[a-z_][a-z0-9_]*/gi) || [];
+    for (const m of matches) {
+      const lower = m.toLowerCase();
+      // Skippe les mots-cles SQL pour garder juste les identifiants colonne.
+      if (!['lower', 'upper', 'desc', 'asc', 'nulls', 'first', 'last'].includes(lower)) {
+        identifiersToCheck.add(lower);
+      }
+    }
+  }
+
+  const existenceChecks = Array.from(identifiersToCheck)
+    .map((col) => `column_name = '${col}'`)
+    .join(' OR ');
+
+  const expectedCount = identifiersToCheck.size;
+
+  return `
+    DO $$
+    BEGIN
+      IF (
+        SELECT COUNT(*) FROM information_schema.columns
+        WHERE table_schema = current_schema()
+          AND table_name = '${tableName}'
+          AND (${existenceChecks})
+      ) = ${expectedCount} THEN
+        EXECUTE 'CREATE INDEX IF NOT EXISTS ${indexName} ON ${tableName}(${columnList})';
+      ELSE
+        RAISE NOTICE 'Skipping index ${indexName}: column(s) missing on ${tableName}';
+      END IF;
+    END $$;
+  `;
+}
+
 module.exports = {
   async up(knex) {
     // --- orders ---
-    // Hot paths:
-    //   - stats() GROUP BY status (PERF-03)
-    //   - adminList ORDER BY created_at DESC + filter status
-    //   - myOrders WHERE supabase_user_id = ?
-    //   - webhook lookup by stripe_checkout_session_id
-    //   - reconcile-stripe cron filtering by status + created_at
-    await knex.raw('CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status)');
-    await knex.raw('CREATE INDEX IF NOT EXISTS idx_orders_status_created_at ON orders(status, created_at DESC)');
-    await knex.raw('CREATE INDEX IF NOT EXISTS idx_orders_customer_email ON orders(LOWER(customer_email))');
-    await knex.raw('CREATE INDEX IF NOT EXISTS idx_orders_stripe_checkout_session_id ON orders(stripe_checkout_session_id)');
-    await knex.raw('CREATE INDEX IF NOT EXISTS idx_orders_created_at_desc ON orders(created_at DESC)');
-    await knex.raw('CREATE INDEX IF NOT EXISTS idx_orders_supabase_user_id ON orders(supabase_user_id)');
+    await knex.raw(safeCreateIndex('idx_orders_status', 'orders', 'status'));
+    await knex.raw(safeCreateIndex('idx_orders_status_created_at', 'orders', 'status, created_at DESC'));
+    await knex.raw(safeCreateIndex('idx_orders_customer_email', 'orders', 'LOWER(customer_email)'));
+    await knex.raw(safeCreateIndex('idx_orders_stripe_checkout_session_id', 'orders', 'stripe_checkout_session_id'));
+    await knex.raw(safeCreateIndex('idx_orders_created_at_desc', 'orders', 'created_at DESC'));
+    await knex.raw(safeCreateIndex('idx_orders_supabase_user_id', 'orders', 'supabase_user_id'));
 
     // --- qr_scans ---
-    // listWithScans fait N+1 findMany({ qrCode: { documentId: X } }) - meme avec
-    // l'eventuelle refacto future vers GROUP BY, un index sur la FK est requis.
-    await knex.raw('CREATE INDEX IF NOT EXISTS idx_qr_scans_qr_code_id ON qr_scans(qr_code_id)');
-    await knex.raw('CREATE INDEX IF NOT EXISTS idx_qr_scans_scanned_at_desc ON qr_scans(scanned_at DESC)');
+    // qr_code_id: FK potentielle si Strapi utilise FK directe, absent si via table de
+    // liaison. Le safeCreateIndex skip automatiquement si la colonne n'existe pas.
+    await knex.raw(safeCreateIndex('idx_qr_scans_qr_code_id', 'qr_scans', 'qr_code_id'));
+    await knex.raw(safeCreateIndex('idx_qr_scans_scanned_at_desc', 'qr_scans', 'scanned_at DESC'));
 
     // --- qr_codes ---
-    // redirect() fait findFirst by short_id sur tous les scans - index pour le
-    // hot path public /api/qr/:shortId
-    await knex.raw('CREATE INDEX IF NOT EXISTS idx_qr_codes_short_id ON qr_codes(short_id)');
+    await knex.raw(safeCreateIndex('idx_qr_codes_short_id', 'qr_codes', 'short_id'));
 
     // --- withdrawal_requests ---
-    // myRequests filter par email + status IN ('pending', 'processing')
-    await knex.raw('CREATE INDEX IF NOT EXISTS idx_withdrawal_requests_email ON withdrawal_requests(LOWER(email))');
-    await knex.raw('CREATE INDEX IF NOT EXISTS idx_withdrawal_requests_status ON withdrawal_requests(status)');
+    await knex.raw(safeCreateIndex('idx_withdrawal_requests_email', 'withdrawal_requests', 'LOWER(email)'));
+    await knex.raw(safeCreateIndex('idx_withdrawal_requests_status', 'withdrawal_requests', 'status'));
 
     // --- user_roles ---
-    // byEmail + setRole lookup par email (case-insensitive)
-    await knex.raw('CREATE INDEX IF NOT EXISTS idx_user_roles_email ON user_roles(LOWER(email))');
-    await knex.raw('CREATE INDEX IF NOT EXISTS idx_user_roles_supabase_user_id ON user_roles(supabase_user_id)');
+    await knex.raw(safeCreateIndex('idx_user_roles_email', 'user_roles', 'LOWER(email)'));
+    await knex.raw(safeCreateIndex('idx_user_roles_supabase_user_id', 'user_roles', 'supabase_user_id'));
   },
 
   async down(knex) {
     // Rollback - DROP IF EXISTS pour ne pas crasher si l'index n'a jamais ete cree
-    await knex.raw('DROP INDEX IF EXISTS idx_orders_status');
-    await knex.raw('DROP INDEX IF EXISTS idx_orders_status_created_at');
-    await knex.raw('DROP INDEX IF EXISTS idx_orders_customer_email');
-    await knex.raw('DROP INDEX IF EXISTS idx_orders_stripe_checkout_session_id');
-    await knex.raw('DROP INDEX IF EXISTS idx_orders_created_at_desc');
-    await knex.raw('DROP INDEX IF EXISTS idx_orders_supabase_user_id');
-    await knex.raw('DROP INDEX IF EXISTS idx_qr_scans_qr_code_id');
-    await knex.raw('DROP INDEX IF EXISTS idx_qr_scans_scanned_at_desc');
-    await knex.raw('DROP INDEX IF EXISTS idx_qr_codes_short_id');
-    await knex.raw('DROP INDEX IF EXISTS idx_withdrawal_requests_email');
-    await knex.raw('DROP INDEX IF EXISTS idx_withdrawal_requests_status');
-    await knex.raw('DROP INDEX IF EXISTS idx_user_roles_email');
-    await knex.raw('DROP INDEX IF EXISTS idx_user_roles_supabase_user_id');
+    const indexes = [
+      'idx_orders_status',
+      'idx_orders_status_created_at',
+      'idx_orders_customer_email',
+      'idx_orders_stripe_checkout_session_id',
+      'idx_orders_created_at_desc',
+      'idx_orders_supabase_user_id',
+      'idx_qr_scans_qr_code_id',
+      'idx_qr_scans_scanned_at_desc',
+      'idx_qr_codes_short_id',
+      'idx_withdrawal_requests_email',
+      'idx_withdrawal_requests_status',
+      'idx_user_roles_email',
+      'idx_user_roles_supabase_user_id',
+    ];
+    for (const name of indexes) {
+      await knex.raw(`DROP INDEX IF EXISTS ${name}`);
+    }
   },
 };
