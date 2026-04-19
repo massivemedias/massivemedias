@@ -33,8 +33,25 @@ export function loadImage(source) {
   });
 }
 
-// Dessine l'image dans ctx avec un contour (stroke) autour des pixels non-transparents
-// Technique: on dessine la silhouette coloree decalee dans 16 directions, puis l'image par dessus
+// Dessine l'image dans ctx avec un contour (stroke) autour des pixels non-transparents.
+//
+// Version LISSEE (2026-04): plus strokeWidth est grand, plus la silhouette est
+// arrondie pour obtenir un contour type "die-cut" adapte a la decoupe Cameo.
+// Les details fins (meches de cheveux, eclats d'eau, pointes de cristaux) sont
+// enveloppes dans une forme lisible au lieu d'etre suivis au pixel.
+//
+// Technique:
+//   1. Silhouette coloree (source-in) sur un canvas temporaire
+//   2. Application d'un filter CSS `blur(Npx) contrast(30)` pour lisser les
+//      points de masse faible (detail fin = peu de pixels opaques = le blur
+//      les fait tomber sous le seuil du contrast et ils disparaissent) tout
+//      en preservant les grandes zones.
+//   3. Dilation par 16 stamps angulaires sur cette silhouette lissee.
+//   4. L'image originale est dessinee par-dessus (non affectee par le lissage).
+//
+// Le rayon de blur est proportionnel a strokeWidth (facteur 0.6) - a
+// strokeWidth=0 on ne blur pas du tout, a strokeWidth=30 le blur fait 18px
+// ce qui efface tous les details < 18px.
 export function drawStickerWithStroke(ctx, img, strokeColor, strokeWidth) {
   const w = ctx.canvas.width;
   const h = ctx.canvas.height;
@@ -42,24 +59,40 @@ export function drawStickerWithStroke(ctx, img, strokeColor, strokeWidth) {
   const drawH = h - strokeWidth * 2;
 
   if (strokeWidth > 0) {
-    const tmp = document.createElement('canvas');
-    tmp.width = drawW;
-    tmp.height = drawH;
-    const tctx = tmp.getContext('2d');
-    tctx.drawImage(img, 0, 0, drawW, drawH);
-    tctx.globalCompositeOperation = 'source-in';
-    tctx.fillStyle = strokeColor;
-    tctx.fillRect(0, 0, drawW, drawH);
+    // Etape 1: silhouette coloree nette depuis l'image source
+    const sharp = document.createElement('canvas');
+    sharp.width = drawW;
+    sharp.height = drawH;
+    const sharpCtx = sharp.getContext('2d');
+    sharpCtx.drawImage(img, 0, 0, drawW, drawH);
+    sharpCtx.globalCompositeOperation = 'source-in';
+    sharpCtx.fillStyle = strokeColor;
+    sharpCtx.fillRect(0, 0, drawW, drawH);
 
+    // Etape 2: silhouette LISSEE via blur+contrast. Le contrast agressif
+    // "durcit" le degrade de blur et supprime les zones de faible opacite
+    // (donc les petits details).
+    const blurPx = Math.max(1, Math.round(strokeWidth * 0.6));
+    const smooth = document.createElement('canvas');
+    smooth.width = drawW;
+    smooth.height = drawH;
+    const smoothCtx = smooth.getContext('2d');
+    // filter CSS est supporte par tous les browsers modernes (Canvas 2D)
+    smoothCtx.filter = `blur(${blurPx}px) contrast(30)`;
+    smoothCtx.drawImage(sharp, 0, 0);
+    smoothCtx.filter = 'none';
+
+    // Etape 3: dilation par stamps angulaires sur la silhouette lissee
     const steps = 16;
     for (let i = 0; i < steps; i++) {
       const angle = (i / steps) * Math.PI * 2;
       const dx = Math.cos(angle) * strokeWidth;
       const dy = Math.sin(angle) * strokeWidth;
-      ctx.drawImage(tmp, strokeWidth + dx, strokeWidth + dy, drawW, drawH);
+      ctx.drawImage(smooth, strokeWidth + dx, strokeWidth + dy, drawW, drawH);
     }
   }
 
+  // Etape 4: image originale dessinee par-dessus, nette
   ctx.drawImage(img, strokeWidth, strokeWidth, drawW, drawH);
 }
 
