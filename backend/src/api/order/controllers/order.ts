@@ -871,28 +871,40 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
     if (event.type === 'payment_intent.succeeded') {
       const paymentIntent = event.data.object as Stripe.PaymentIntent;
 
-      // Race fix: if payment_intent.succeeded arrives BEFORE checkout.session.completed,
-      // the order may still have its cs_live_ stored in stripePaymentIntentId. Retrieve the
-      // payment intent's checkout session id via Stripe API so we can match by either column.
-      let checkoutSessionId: string | null = null;
-      try {
-        const stripe = getStripe();
-        const sessions = await stripe.checkout.sessions.list({ payment_intent: paymentIntent.id, limit: 1 });
-        if (sessions.data.length > 0) checkoutSessionId = sessions.data[0].id;
-      } catch (lookupErr: any) {
-        strapi.log.warn(`[webhook:${requestId}] Could not lookup session for ${paymentIntent.id}:`, lookupErr?.message);
-      }
-
-      const orFilters: any[] = [
-        { stripePaymentIntentId: paymentIntent.id },
-      ];
-      if (checkoutSessionId) {
-        orFilters.push({ stripeCheckoutSessionId: checkoutSessionId });
-        orFilters.push({ stripePaymentIntentId: checkoutSessionId });
-      }
-      const orders = await strapi.documents('api::order.order').findMany({
-        filters: { $or: orFilters } as any,
+      // STRIPE-02: early-return DB lookup avant d'appeler Stripe. Depuis commit
+      // 15a34e1, createCheckoutSession stocke stripeCheckoutSessionId ET
+      // stripePaymentIntentId des le debut. Donc pour les orders post-avril-2026,
+      // un simple findMany sur stripePaymentIntentId trouve l'order sans avoir
+      // besoin de sessions.list() cote Stripe (100-300ms economises + rate
+      // limit menage + pas de timeout si Stripe API lente).
+      let orders = await strapi.documents('api::order.order').findMany({
+        filters: { stripePaymentIntentId: paymentIntent.id } as any,
       });
+
+      // Fallback pour les orders pre-avril 2026 (pas de stripeCheckoutSessionId
+      // separe, le cs_live_ est dans stripePaymentIntentId). On resout via
+      // Stripe seulement dans ce cas.
+      if (orders.length === 0) {
+        let checkoutSessionId: string | null = null;
+        try {
+          const stripe = getStripe();
+          const sessions = await stripe.checkout.sessions.list({ payment_intent: paymentIntent.id, limit: 1 });
+          if (sessions.data.length > 0) checkoutSessionId = sessions.data[0].id;
+        } catch (lookupErr: any) {
+          strapi.log.warn(`[webhook:${requestId}] Could not lookup session for ${paymentIntent.id}:`, lookupErr?.message);
+        }
+
+        if (checkoutSessionId) {
+          orders = await strapi.documents('api::order.order').findMany({
+            filters: {
+              $or: [
+                { stripeCheckoutSessionId: checkoutSessionId },
+                { stripePaymentIntentId: checkoutSessionId },
+              ],
+            } as any,
+          });
+        }
+      }
 
       if (orders.length > 0) {
         const order = orders[0] as any;
