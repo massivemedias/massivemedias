@@ -991,6 +991,59 @@ function escapeHtml(s: string): string {
 }
 
 // -----------------------------------------------------------
+// BACKUP-02 : alerte Google Drive OAuth casse (refresh token expire/revoke)
+// -----------------------------------------------------------
+export async function sendDriveFailureAlert(info: {
+  reason: string;
+  context?: string;
+}): Promise<boolean> {
+  const resend = getResend();
+  if (!resend) {
+    console.error('[email] sendDriveFailureAlert: Resend not configured');
+    return false;
+  }
+  const sender = getSender();
+  const adminEmail = process.env.ADMIN_EMAIL || 'massivemedias@gmail.com';
+
+  const html = `
+    <div style="font-family:-apple-system,BlinkMacSystemFont,sans-serif;padding:20px;background:#2a1500;color:#fff;">
+      <h1 style="color:#ffb347;margin:0 0 12px;">Google Drive OAuth en echec</h1>
+      <p style="color:#ffdfb8;font-size:14px;margin:0 0 20px;">
+        L'acces Google Drive ne fonctionne plus. Tous les uploads artistes (originaux TIF, photos flash, etc) sont bloques jusqu'a regeneration du refresh token.
+      </p>
+      <table style="width:100%;background:#3a2510;padding:16px;border-radius:8px;font-size:13px;">
+        <tr><td style="padding:4px 0;color:#aaa;">Raison:</td><td style="padding:4px 0;color:#ffcc88;">${escapeHtml(info.reason)}</td></tr>
+        ${info.context ? `<tr><td style="padding:4px 0;color:#aaa;">Contexte:</td><td style="padding:4px 0;font-family:monospace;font-size:11px;">${escapeHtml(info.context)}</td></tr>` : ''}
+        <tr><td style="padding:4px 0;color:#aaa;">Timestamp:</td><td style="padding:4px 0;">${new Date().toISOString()}</td></tr>
+      </table>
+      <div style="margin-top:20px;padding:12px;background:#ffe8d0;color:#5a3a00;border-radius:6px;font-size:13px;">
+        <strong>Causes probables:</strong><br/>
+        1. Refresh token revoke manuellement sur Google Account (security.google.com).<br/>
+        2. Refresh token expire (6 mois d'inactivite).<br/>
+        3. Changement de mot de passe du compte mauditemachine@gmail.com.<br/>
+        4. Client secret rotate cote Google Cloud Console.<br/><br/>
+        <strong>Procedure de regeneration:</strong><br/>
+        Executer <code>node backend/scripts/get-drive-token.js</code> et suivre l'URL d'autorisation. Copier le nouveau GOOGLE_DRIVE_REFRESH_TOKEN dans les env Render.
+      </div>
+    </div>
+  `;
+
+  try {
+    await resend.emails.send({
+      ...sender,
+      to: adminEmail,
+      subject: 'ALERTE : Google Drive OAuth failed - uploads artistes bloques',
+      html,
+    });
+    console.log('[email] Drive failure alert sent');
+    return true;
+  } catch (err) {
+    console.error('[email] Failed to send drive failure alert:', err);
+    return false;
+  }
+}
+
+// -----------------------------------------------------------
 // Email de notification de nouvelle inscription
 // -----------------------------------------------------------
 export async function sendNewUserNotificationEmail(userName: string, userEmail: string, provider: string): Promise<boolean> {

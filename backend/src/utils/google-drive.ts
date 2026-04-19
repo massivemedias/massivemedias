@@ -16,6 +16,19 @@ const TOKEN_URL = 'https://oauth2.googleapis.com/token';
 // Cache du token (valide ~1h)
 let cachedToken: { token: string; expiry: number } | null = null;
 
+// BACKUP-02 : si le refresh token Drive expire ou est revoque, on envoie
+// une alerte email admin throttlee a 60min. Sans ca, tous les uploads
+// artistes casseraient en silence (meme profil que le webhook Stripe casse
+// d'avril 2026 qui est passe inapercu 4 jours).
+async function notifyDriveFailure(reason: string, context: string): Promise<void> {
+  try {
+    const { shouldSendThrottledAlert } = await import('./webhook-alert-throttle');
+    if (!(await shouldSendThrottledAlert('drive_oauth_failure', 60))) return;
+    const { sendDriveFailureAlert } = await import('./email');
+    await sendDriveFailureAlert({ reason, context });
+  } catch (_) { /* non-blocking : l'alerte ne doit pas masquer l'erreur originale */ }
+}
+
 async function getAccessToken(): Promise<string> {
   if (cachedToken && Date.now() < cachedToken.expiry) {
     return cachedToken.token;
@@ -29,7 +42,9 @@ async function getAccessToken(): Promise<string> {
     const hasClientId = !!clientId;
     const hasSecret = !!clientSecret;
     const hasRefresh = !!refreshToken;
-    throw new Error(`Google Drive OAuth2 env vars not set - CLIENT_ID:${hasClientId} SECRET:${hasSecret} REFRESH:${hasRefresh}`);
+    const reason = `Google Drive OAuth2 env vars not set - CLIENT_ID:${hasClientId} SECRET:${hasSecret} REFRESH:${hasRefresh}`;
+    await notifyDriveFailure(reason, 'getAccessToken: env check');
+    throw new Error(reason);
   }
 
   const res = await fetch(TOKEN_URL, {
@@ -40,7 +55,14 @@ async function getAccessToken(): Promise<string> {
 
   if (!res.ok) {
     const err = await res.text();
-    throw new Error(`Token refresh failed: ${err}`);
+    const reason = `Token refresh failed: ${err}`;
+    // Invalidate le cache : si l'erreur est "invalid_grant" (refresh revoke),
+    // on ne veut pas continuer a reutiliser un token valide en cache qui
+    // pourrait expirer juste apres. On force une nouvelle tentative sur le
+    // prochain appel pour que l'alerte se redeclenche si besoin.
+    cachedToken = null;
+    await notifyDriveFailure(reason, `getAccessToken: http ${res.status}`);
+    throw new Error(reason);
   }
 
   const data: any = await res.json();
