@@ -1,8 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const strapi_1 = require("@strapi/strapi");
+const auth_1 = require("../../../utils/auth");
 exports.default = strapi_1.factories.createCoreController('api::admin-note.admin-note', ({ strapi }) => ({
     async list(ctx) {
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
+            return;
         const search = ctx.query.search;
         const filters = {};
         if (search) {
@@ -18,6 +21,8 @@ exports.default = strapi_1.factories.createCoreController('api::admin-note.admin
         ctx.body = { data: items };
     },
     async createNote(ctx) {
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
+            return;
         const { title, body, color, pinned } = ctx.request.body;
         const note = await strapi.documents('api::admin-note.admin-note').create({
             data: {
@@ -30,6 +35,8 @@ exports.default = strapi_1.factories.createCoreController('api::admin-note.admin
         ctx.body = { data: note };
     },
     async updateNote(ctx) {
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
+            return;
         const { documentId } = ctx.params;
         const bodyData = ctx.request.body;
         const item = await strapi.documents('api::admin-note.admin-note').findFirst({
@@ -53,6 +60,8 @@ exports.default = strapi_1.factories.createCoreController('api::admin-note.admin
         ctx.body = { data: updated };
     },
     async deleteNote(ctx) {
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
+            return;
         const { documentId } = ctx.params;
         const item = await strapi.documents('api::admin-note.admin-note').findFirst({
             filters: { documentId },

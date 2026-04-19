@@ -1,10 +1,15 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const strapi_1 = require("@strapi/strapi");
+const auth_1 = require("../../../utils/auth");
 exports.default = strapi_1.factories.createCoreController('api::artist-message.artist-message', ({ strapi }) => ({
-    // POST /artist-messages/send - Artiste envoie un message
+    // POST /artist-messages/send - Artiste connecte envoie un message a l'admin
     async send(ctx) {
+        if (!(await (0, auth_1.requireUserAuth)(ctx)))
+            return;
         const { artistSlug, artistName, email, subject, message, category, attachments } = ctx.request.body;
+        if (email && !(0, auth_1.assertOwnershipOrAdmin)(ctx, email))
+            return;
         if (!email || !subject || !message) {
             ctx.throw(400, 'Email, subject and message required');
             return;
@@ -67,6 +72,8 @@ exports.default = strapi_1.factories.createCoreController('api::artist-message.a
     },
     // PUT /artist-messages/:documentId/artist-reply - Artiste repond a un message public
     async artistReply(ctx) {
+        if (!(await (0, auth_1.requireUserAuth)(ctx)))
+            return;
         const { documentId } = ctx.params;
         const { artistReply } = ctx.request.body;
         if (!artistReply) {
@@ -90,6 +97,8 @@ exports.default = strapi_1.factories.createCoreController('api::artist-message.a
     },
     // GET /artist-messages/inbox?artistSlug=xxx - Messages recus par un artiste (du public)
     async inbox(ctx) {
+        if (!(await (0, auth_1.requireUserAuth)(ctx)))
+            return;
         const { artistSlug } = ctx.query;
         if (!artistSlug) {
             ctx.throw(400, 'artistSlug required');
@@ -122,6 +131,8 @@ exports.default = strapi_1.factories.createCoreController('api::artist-message.a
     },
     // GET /artist-messages/my-messages?email=xxx - Messages d'un artiste (envoyes par l'artiste)
     async myMessages(ctx) {
+        if (!(await (0, auth_1.requireUserAuth)(ctx)))
+            return;
         const { email } = ctx.query;
         if (!email) {
             ctx.throw(400, 'Email required');
@@ -159,6 +170,8 @@ exports.default = strapi_1.factories.createCoreController('api::artist-message.a
     },
     // GET /artist-messages/admin - Tous les messages (admin)
     async adminList(ctx) {
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
+            return;
         try {
             const entries = await strapi.documents('api::artist-message.artist-message').findMany({
                 sort: { createdAt: 'desc' },
@@ -187,6 +200,8 @@ exports.default = strapi_1.factories.createCoreController('api::artist-message.a
     },
     // PUT /artist-messages/:documentId/reply - Admin repond
     async reply(ctx) {
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
+            return;
         const { documentId } = ctx.params;
         const { adminReply } = ctx.request.body;
         if (!adminReply) {
@@ -210,6 +225,8 @@ exports.default = strapi_1.factories.createCoreController('api::artist-message.a
     },
     // PUT /artist-messages/:documentId/status - Changer le status
     async updateStatus(ctx) {
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
+            return;
         const { documentId } = ctx.params;
         const { status } = ctx.request.body;
         try {
@@ -225,6 +242,8 @@ exports.default = strapi_1.factories.createCoreController('api::artist-message.a
     },
     // DELETE /artist-messages/:documentId - Supprimer un message
     async deleteMessage(ctx) {
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
+            return;
         const { documentId } = ctx.params;
         try {
             await strapi.documents('api::artist-message.artist-message').delete({ documentId });

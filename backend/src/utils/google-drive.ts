@@ -348,6 +348,70 @@ export async function uploadBufferToFolder(
   };
 }
 
+// Variante streaming de uploadBufferToFolder - depose un fichier dans un dossier Drive
+// specifique sans jamais materialiser tout le contenu en RAM. Meme contrat que
+// uploadStreamToGoogleDrive mais sans le detour par getOrCreateArtistFolder: le caller
+// fournit directement l'id du dossier cible (ex: GOOGLE_DRIVE_INVOICES_FOLDER_ID).
+//
+// contentLength est OBLIGATOIRE: sans header Content-Length explicite, undici/fetch
+// bufferise tout le stream pour calculer la taille lui-meme, ce qui annule le benefice
+// du streaming et peut provoquer un OOM sur des gros fichiers. Passer la taille recue
+// de formidable (file.size) resout le probleme.
+export async function uploadStreamToFolder(
+  readStream: NodeJS.ReadableStream,
+  fileName: string,
+  folderId: string,
+  mimeType: string = 'application/octet-stream',
+  contentLength?: number
+): Promise<DriveUploadResult> {
+  if (!contentLength || contentLength <= 0) {
+    throw new Error('uploadStreamToFolder: contentLength is required (pass the file size in bytes)');
+  }
+
+  const token = await getAccessToken();
+
+  const date = new Date().toISOString().split('T')[0];
+  const safeName = `${date}_${fileName}`;
+
+  // Step 1: init resumable upload - pre-declare size and mime type so Drive alloue
+  // correctement le slot cote serveur avant qu'on commence a pousser les octets.
+  const initRes = await fetch(`${DRIVE_API}?uploadType=resumable`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json; charset=UTF-8',
+      'X-Upload-Content-Type': mimeType,
+      'X-Upload-Content-Length': String(contentLength),
+    },
+    body: JSON.stringify({ name: safeName, parents: [folderId] }),
+  });
+  if (!initRes.ok) throw new Error(`Drive resumable init failed: ${await initRes.text()}`);
+  const uploadUrl = initRes.headers.get('location');
+  if (!uploadUrl) throw new Error('No upload URL returned');
+
+  // Step 2: PUT du stream avec Content-Length explicite + duplex:'half' pour
+  // que undici accepte un Node Readable comme body sans tout bufferiser.
+  const uploadRes = await fetch(uploadUrl, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': mimeType,
+      'Content-Length': String(contentLength),
+    },
+    body: readStream as any,
+    duplex: 'half',
+  } as any);
+
+  if (!uploadRes.ok) throw new Error(`Drive upload (stream) failed: ${await uploadRes.text()}`);
+  const file: any = await uploadRes.json();
+
+  return {
+    fileId: file.id,
+    fileName: file.name || safeName,
+    webViewLink: file.webViewLink || `https://drive.google.com/file/d/${file.id}/view`,
+    webContentLink: file.webContentLink || '',
+  };
+}
+
 export async function deleteFromGoogleDrive(fileId: string): Promise<boolean> {
   try {
     const token = await getAccessToken();

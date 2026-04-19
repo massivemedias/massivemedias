@@ -1,14 +1,21 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const strapi_1 = require("@strapi/strapi");
+const auth_1 = require("../../../utils/auth");
 exports.default = strapi_1.factories.createCoreController('api::withdrawal-request.withdrawal-request', ({ strapi }) => ({
-    // POST /withdrawal-requests/create - Artiste demande un retrait
+    // POST /withdrawal-requests/create - Artiste demande un retrait (pour lui-meme)
     async createRequest(ctx) {
+        if (!(await (0, auth_1.requireUserAuth)(ctx)))
+            return;
         const { artistSlug, artistName, email, paypalEmail, amount, notes } = ctx.request.body;
         if (!email || !paypalEmail || !amount) {
             ctx.throw(400, 'Email, PayPal email and amount required');
             return;
         }
+        // Anti-fraud: un artiste ne peut pas creer de demande de retrait au nom
+        // d'un autre artiste. L'email du body DOIT matcher le JWT (ou etre admin).
+        if (!(0, auth_1.assertOwnershipOrAdmin)(ctx, email))
+            return;
         if (amount <= 0) {
             ctx.throw(400, 'Amount must be positive');
             return;
@@ -54,11 +61,15 @@ exports.default = strapi_1.factories.createCoreController('api::withdrawal-reque
     },
     // GET /withdrawal-requests/my-requests?email=xxx - Retraits d'un artiste
     async myRequests(ctx) {
+        if (!(await (0, auth_1.requireUserAuth)(ctx)))
+            return;
         const { email } = ctx.query;
         if (!email) {
             ctx.throw(400, 'Email required');
             return;
         }
+        if (!(0, auth_1.assertOwnershipOrAdmin)(ctx, email))
+            return;
         try {
             const entries = await strapi.documents('api::withdrawal-request.withdrawal-request').findMany({
                 filters: { email: { $eqi: email } },
@@ -84,6 +95,8 @@ exports.default = strapi_1.factories.createCoreController('api::withdrawal-reque
     },
     // GET /withdrawal-requests/admin - Toutes les demandes (admin)
     async adminList(ctx) {
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
+            return;
         try {
             const entries = await strapi.documents('api::withdrawal-request.withdrawal-request').findMany({
                 sort: { createdAt: 'desc' },
@@ -112,6 +125,8 @@ exports.default = strapi_1.factories.createCoreController('api::withdrawal-reque
     },
     // PUT /withdrawal-requests/:documentId/process - Admin traite la demande
     async processRequest(ctx) {
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
+            return;
         const { documentId } = ctx.params;
         const { status, adminNotes, paypalTransactionId } = ctx.request.body;
         if (!status || !['processing', 'completed', 'rejected'].includes(status)) {

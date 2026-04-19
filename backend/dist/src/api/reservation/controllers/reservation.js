@@ -2,7 +2,9 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const strapi_1 = require("@strapi/strapi");
 const email_1 = require("../../../utils/email");
+const auth_1 = require("../../../utils/auth");
 exports.default = strapi_1.factories.createCoreController('api::reservation.reservation', ({ strapi }) => ({
+    // submit reste public (formulaire client)
     async submit(ctx) {
         const { tatoueurDocumentId, flashDocumentId, clientName, clientEmail, clientPhone, placement, size, messageDuClient, requestedDate, budget, supabaseUserId, } = ctx.request.body;
         if (!clientName || !clientEmail || !tatoueurDocumentId) {
@@ -68,6 +70,8 @@ exports.default = strapi_1.factories.createCoreController('api::reservation.rese
     },
     async updateStatus(ctx) {
         var _a, _b, _c;
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
+            return;
         const { documentId } = ctx.params;
         const { status: newStatus, notes, confirmedDate } = ctx.request.body;
         const validStatuses = ['demandee', 'confirmee', 'planifiee', 'realisee', 'annulee'];

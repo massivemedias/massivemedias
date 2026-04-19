@@ -1,8 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const strapi_1 = require("@strapi/strapi");
+const auth_1 = require("../../../utils/auth");
 exports.default = strapi_1.factories.createCoreController('api::inventory-item.inventory-item', ({ strapi }) => ({
     async lowStock(ctx) {
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
+            return;
         const items = await strapi.documents('api::inventory-item.inventory-item').findMany({
             filters: { active: true },
             populate: ['image', 'product'],
@@ -11,6 +14,8 @@ exports.default = strapi_1.factories.createCoreController('api::inventory-item.i
         ctx.body = { data: lowStockItems };
     },
     async dashboard(ctx) {
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
+            return;
         const items = await strapi.documents('api::inventory-item.inventory-item').findMany({
             filters: { active: true },
             populate: ['image', 'product'],
@@ -47,6 +52,8 @@ exports.default = strapi_1.factories.createCoreController('api::inventory-item.i
         ctx.body = { data: enriched, summary };
     },
     async adjustStock(ctx) {
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
+            return;
         const { documentId } = ctx.params;
         const { quantity, reserved, notes, nameFr, nameEn, costPrice, location, category, variant, brand, color, detail, hasZip } = ctx.request.body;
         const item = await strapi.documents('api::inventory-item.inventory-item').findFirst({
@@ -95,6 +102,8 @@ exports.default = strapi_1.factories.createCoreController('api::inventory-item.i
      * Ex: TXT-HOODIE-L-001, FRM-BLACK-A4-001, STK-HOLO-3IN-001
      */
     async createItem(ctx) {
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
+            return;
         const { nameFr, nameEn, category, variant, detail, brand, color, hasZip, quantity, costPrice, location, notes, lowStockThreshold } = ctx.request.body;
         if (!nameFr || !category) {
             return ctx.badRequest('nameFr and category are required');
@@ -191,6 +200,8 @@ exports.default = strapi_1.factories.createCoreController('api::inventory-item.i
      * Supprimer (desactiver) un item d'inventaire
      */
     async deleteItem(ctx) {
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
+            return;
         const { documentId } = ctx.params;
         const item = await strapi.documents('api::inventory-item.inventory-item').findFirst({
             filters: { documentId },
@@ -208,6 +219,8 @@ exports.default = strapi_1.factories.createCoreController('api::inventory-item.i
      * + cree une depense automatiquement
      */
     async importInvoice(ctx) {
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
+            return;
         const { items, expense } = ctx.request.body;
         if ((!items || !Array.isArray(items) || items.length === 0) && !expense) {
             return ctx.badRequest('Au moins un item ou une depense est requis');
@@ -325,6 +338,8 @@ exports.default = strapi_1.factories.createCoreController('api::inventory-item.i
      */
     async syncOutgoingInvoice(ctx) {
         var _a, _b, _c, _d;
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
+            return;
         const { oldItems = [], newItems = [] } = ctx.request.body;
         const normalize = (s) => (s || '').trim().toLowerCase();
         const keyOf = (it) => (it.sku && it.sku.trim())

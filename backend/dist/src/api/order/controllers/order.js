@@ -32,6 +32,7 @@ const shipping_1 = require("../../../utils/shipping");
 const email_1 = require("../../../utils/email");
 const crypto_1 = __importDefault(require("crypto"));
 const promo_codes_1 = require("../../../utils/promo-codes");
+const auth_1 = require("../../../utils/auth");
 const getStripe = () => {
     const key = process.env.STRIPE_SECRET_KEY;
     if (!key || key === 'sk_test_REPLACE_ME') {
@@ -39,81 +40,10 @@ const getStripe = () => {
     }
     return new stripe_1.default(key);
 };
-/**
- * Guard for destructive/admin-only endpoints.
- * Accepts EITHER:
- *   - Authorization: Bearer <ADMIN_API_TOKEN>   (service-to-service or trusted admin UI)
- *   - Authorization: Bearer <Supabase JWT>      where the user's email is in ADMIN_EMAILS
- *
- * Returns true if authorized. If not authorized, sets 401 on ctx and returns false -
- * callers MUST check the return value and exit early.
- *
- * CONFIG (on Render env vars):
- *   ADMIN_API_TOKEN: long random string (service token)
- *   ADMIN_EMAILS: comma-separated list of admin emails (defaults to ADMIN_EMAIL)
- */
-async function requireAdminAuth(ctx) {
-    var _a;
-    const authHeader = ctx.request.headers['authorization'] || '';
-    const token = authHeader.replace(/^Bearer\s+/i, '').trim();
-    if (!token) {
-        ctx.status = 401;
-        ctx.body = { error: { status: 401, name: 'Unauthorized', message: 'Missing Authorization header' } };
-        return false;
-    }
-    // Option A: service token match
-    const adminApiToken = process.env.ADMIN_API_TOKEN;
-    if (adminApiToken && adminApiToken.length >= 16 && token === adminApiToken) {
-        ctx.state.adminAuthMethod = 'service-token';
-        return true;
-    }
-    // Option B: Supabase JWT + email in ADMIN_EMAILS
-    let diag = {
-        supabaseUrlPresent: false,
-        supabaseKeyPresent: false,
-        supabaseError: null,
-        jwtEmail: null,
-        adminEmailsConfigured: false,
-        emailIsAdmin: false,
-    };
-    try {
-        const supabaseUrl = process.env.SUPABASE_URL || process.env.SUPABASE_API_URL;
-        const supabaseKey = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_API_KEY;
-        diag.supabaseUrlPresent = !!supabaseUrl;
-        diag.supabaseKeyPresent = !!supabaseKey;
-        if (supabaseUrl && supabaseKey) {
-            const { createClient } = require('@supabase/supabase-js');
-            const supabase = createClient(supabaseUrl, supabaseKey);
-            const { data, error } = await supabase.auth.getUser(token);
-            if (error) {
-                diag.supabaseError = error.message || String(error);
-            }
-            else if ((_a = data === null || data === void 0 ? void 0 : data.user) === null || _a === void 0 ? void 0 : _a.email) {
-                diag.jwtEmail = data.user.email;
-                const adminEmailsRaw = process.env.ADMIN_EMAILS || process.env.ADMIN_EMAIL || '';
-                diag.adminEmailsConfigured = !!adminEmailsRaw.trim();
-                const adminEmails = adminEmailsRaw.split(',').map((s) => s.trim().toLowerCase()).filter(Boolean);
-                const matchEmail = adminEmails.includes(data.user.email.toLowerCase());
-                diag.emailIsAdmin = matchEmail;
-                if (matchEmail) {
-                    ctx.state.adminAuthMethod = 'supabase-jwt';
-                    ctx.state.adminUserEmail = data.user.email;
-                    return true;
-                }
-            }
-        }
-    }
-    catch (e) {
-        diag.supabaseError = (e === null || e === void 0 ? void 0 : e.message) || String(e);
-        strapi.log.warn('requireAdminAuth: Supabase verification error', e);
-    }
-    // Expose diagnostic info to caller via ctx.state so /admin-whoami can surface it.
-    ctx.state.__authDiag = diag;
-    ctx.status = 401;
-    ctx.body = { error: { status: 401, name: 'Unauthorized', message: 'Admin authentication required' } };
-    strapi.log.warn(`Admin-protected endpoint hit without valid auth: ${ctx.method} ${ctx.url} - diag: ${JSON.stringify(diag)}`);
-    return false;
-}
+// requireAdminAuth a ete extrait dans backend/src/utils/auth.ts (SEC-01, 2026-04-18).
+// L'import est en haut du fichier. Le comportement est identique, seul le diagnostic
+// __authDiag n'est plus expose (il etait utilise par /admin-whoami, endpoint de debug
+// retire depuis). Aucune regression fonctionnelle sur order.ts.
 // Sticker pricing tiers for server-side validation (tarifs de REFERENCE 3")
 const STICKER_STANDARD_TIERS = { 25: 30, 50: 47.50, 100: 85, 250: 200, 500: 375 };
 const STICKER_FX_TIERS = { 25: 35, 50: 57.50, 100: 100, 250: 225, 500: 425 };
@@ -1055,7 +985,7 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
     },
     // POST /orders/admin-create - Creer une commande manuellement (admin)
     async adminCreate(ctx) {
-        if (!(await requireAdminAuth(ctx)))
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
             return;
         const data = ctx.request.body;
         if (!data.customerName || !data.total) {
@@ -1146,7 +1076,7 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
     },
     // POST /orders/:documentId/resend-emails - Renvoyer TOUS les emails (confirmation client + notification admin)
     async resendAdminNotification(ctx) {
-        if (!(await requireAdminAuth(ctx)))
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
             return;
         const { documentId } = ctx.params;
         try {
@@ -1247,7 +1177,7 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
         }
     },
     async clients(ctx) {
-        if (!(await requireAdminAuth(ctx)))
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
             return;
         // Read from Client collection (CRM)
         const clients = await strapi.documents('api::client.client').findMany({
@@ -1257,7 +1187,7 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
         ctx.body = { clients, total: clients.length };
     },
     async adminList(ctx) {
-        if (!(await requireAdminAuth(ctx)))
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
             return;
         const page = parseInt(ctx.query.page) || 1;
         const pageSize = parseInt(ctx.query.pageSize) || 25;
@@ -1302,7 +1232,7 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
         };
     },
     async updateStatus(ctx) {
-        if (!(await requireAdminAuth(ctx)))
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
             return;
         const { documentId } = ctx.params;
         const { status: newStatus, invoiceNumber, autoInvoice, sendEmails } = ctx.request.body;
@@ -1452,7 +1382,7 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
         ctx.body = { data: updated };
     },
     async updateNotes(ctx) {
-        if (!(await requireAdminAuth(ctx)))
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
             return;
         const { documentId } = ctx.params;
         const { notes } = ctx.request.body;
@@ -1483,7 +1413,7 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
      * On modifie uniquement le champ `total` qui sert a l'affichage et aux factures.
      */
     async updateTotal(ctx) {
-        if (!(await requireAdminAuth(ctx)))
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
             return;
         const { documentId } = ctx.params;
         const { total, reason } = ctx.request.body;
@@ -1534,7 +1464,7 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
         };
     },
     async addTracking(ctx) {
-        if (!(await requireAdminAuth(ctx)))
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
             return;
         const { documentId } = ctx.params;
         const { trackingNumber, carrier } = ctx.request.body;
@@ -1574,7 +1504,7 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
         ctx.body = { data: updated };
     },
     async deleteOrder(ctx) {
-        if (!(await requireAdminAuth(ctx)))
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
             return;
         const { documentId } = ctx.params;
         const order = await strapi.documents('api::order.order').findFirst({
@@ -1590,7 +1520,7 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
         ctx.body = { success: true };
     },
     async commissions(ctx) {
-        if (!(await requireAdminAuth(ctx)))
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
             return;
         // 1. Fetch all active artists
         const artists = await strapi.documents('api::artist.artist').findMany({
@@ -1745,7 +1675,7 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
         };
     },
     async stats(ctx) {
-        if (!(await requireAdminAuth(ctx)))
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
             return;
         // Fetch all non-cancelled orders
         const orders = await strapi.documents('api::order.order').findMany({

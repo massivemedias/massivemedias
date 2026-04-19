@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const strapi_1 = require("@strapi/strapi");
 const crypto_1 = __importDefault(require("crypto"));
+const auth_1 = require("../../../utils/auth");
 /**
  * Generates a URL-safe short id for the trackable QR redirect endpoint.
  * Uses crypto.randomBytes for unpredictability (prevents enumeration of existing QR codes)
@@ -35,51 +36,7 @@ function isSafeHttpUrl(u) {
         return false;
     }
 }
-/**
- * Admin-auth guard. Accepts either:
- *  - Authorization: Bearer <ADMIN_API_TOKEN>        (service token)
- *  - Authorization: Bearer <Supabase JWT>, email in ADMIN_EMAILS
- * Mirrors the helper in the order controller to keep auth behaviour consistent.
- */
-async function requireAdminAuth(ctx) {
-    var _a;
-    const authHeader = ctx.request.headers['authorization'] || '';
-    const token = authHeader.replace(/^Bearer\s+/i, '').trim();
-    if (!token) {
-        ctx.status = 401;
-        ctx.body = { error: { status: 401, name: 'Unauthorized', message: 'Missing Authorization header' } };
-        return false;
-    }
-    const adminApiToken = process.env.ADMIN_API_TOKEN;
-    if (adminApiToken && adminApiToken.length >= 16 && token === adminApiToken) {
-        ctx.state.adminAuthMethod = 'service-token';
-        return true;
-    }
-    try {
-        const supabaseUrl = process.env.SUPABASE_URL || process.env.SUPABASE_API_URL;
-        const supabaseKey = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_API_KEY;
-        if (supabaseUrl && supabaseKey) {
-            const { createClient } = require('@supabase/supabase-js');
-            const supabase = createClient(supabaseUrl, supabaseKey);
-            const { data, error } = await supabase.auth.getUser(token);
-            if (!error && ((_a = data === null || data === void 0 ? void 0 : data.user) === null || _a === void 0 ? void 0 : _a.email)) {
-                const adminEmailsRaw = process.env.ADMIN_EMAILS || process.env.ADMIN_EMAIL || '';
-                const adminEmails = adminEmailsRaw.split(',').map((s) => s.trim().toLowerCase()).filter(Boolean);
-                if (adminEmails.includes(data.user.email.toLowerCase())) {
-                    ctx.state.adminAuthMethod = 'supabase-jwt';
-                    ctx.state.adminUserEmail = data.user.email;
-                    return true;
-                }
-            }
-        }
-    }
-    catch (e) {
-        strapi.log.warn('qr-code requireAdminAuth: Supabase verification error', (e === null || e === void 0 ? void 0 : e.message) || e);
-    }
-    ctx.status = 401;
-    ctx.body = { error: { status: 401, name: 'Unauthorized', message: 'Admin authentication required' } };
-    return false;
-}
+// requireAdminAuth importe depuis ../../../utils/auth (SEC-01, 2026-04-18).
 exports.default = strapi_1.factories.createCoreController('api::qr-code.qr-code', ({ strapi }) => ({
     /**
      * POST /api/qr-codes
@@ -89,7 +46,7 @@ exports.default = strapi_1.factories.createCoreController('api::qr-code.qr-code'
      * trackingUrl is what the frontend should encode visually in the QR image.
      */
     async createDynamic(ctx) {
-        if (!(await requireAdminAuth(ctx)))
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
             return;
         const { destinationUrl, title } = (ctx.request.body || {});
         if (!destinationUrl || typeof destinationUrl !== 'string') {
@@ -154,7 +111,7 @@ exports.default = strapi_1.factories.createCoreController('api::qr-code.qr-code'
      * Sorted by most-recent first. No pagination yet (low volume expected).
      */
     async listWithScans(ctx) {
-        if (!(await requireAdminAuth(ctx)))
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
             return;
         const codes = await strapi.documents('api::qr-code.qr-code').findMany({
             sort: { createdAt: 'desc' },
@@ -190,7 +147,7 @@ exports.default = strapi_1.factories.createCoreController('api::qr-code.qr-code'
      * Deletes a QR code (and cascades to scans via Strapi relation cleanup).
      */
     async deleteQr(ctx) {
-        if (!(await requireAdminAuth(ctx)))
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
             return;
         const { documentId } = ctx.params;
         const entity = await strapi.documents('api::qr-code.qr-code').findFirst({
@@ -269,7 +226,7 @@ exports.default = strapi_1.factories.createCoreController('api::qr-code.qr-code'
      * Returns the raw scan list for a given QR code (for drilldown in the admin UI).
      */
     async listScans(ctx) {
-        if (!(await requireAdminAuth(ctx)))
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
             return;
         const { documentId } = ctx.params;
         const qr = await strapi.documents('api::qr-code.qr-code').findFirst({
