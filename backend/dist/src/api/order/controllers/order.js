@@ -739,7 +739,7 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
         ctx.body = orders;
     },
     async handleStripeWebhook(ctx) {
-        var _a;
+        var _a, _b;
         const sig = ctx.request.headers['stripe-signature'];
         const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
         const requestId = crypto_1.default.randomBytes(4).toString('hex');
@@ -972,25 +972,44 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
                 catch (err) {
                     strapi.log.warn('Could not update client stats:', err);
                 }
-                // Decrement inventory stock for each item in the order
+                // RACE-02: decrement inventory stock ATOMIQUEMENT pour chaque item. L'ancienne
+                // version faisait findMany -> max(0, qty-n) -> update : si deux webhooks arrivaient
+                // simultanement pour le meme SKU, le read pouvait donner la meme valeur aux deux
+                // avant qu'aucun write ne soit fait (stock surestime silencieusement).
+                //
+                // La solution: UPDATE inventory_items SET quantity=quantity-? WHERE sku=? AND
+                // active=true AND quantity>=? via knex. Postgres garantit l'atomicite de l'UPDATE
+                // sur une seule ligne. Si rowCount=0 c'est soit SKU inconnu (skip silencieux
+                // comme avant) soit stock insuffisant (log LOUD pour traitement manuel puisque
+                // le paiement est deja passe cote Stripe).
                 try {
+                    const knex = strapi.db.connection;
                     const orderItems = Array.isArray(order.items) ? order.items : [];
                     for (const item of orderItems) {
                         const qty = item.quantity || 1;
                         const sku = item.sku || item.slug;
                         if (!sku)
                             continue;
-                        const inventoryItems = await strapi.documents('api::inventory-item.inventory-item').findMany({
-                            filters: { sku, active: true },
-                        });
-                        if (inventoryItems.length > 0) {
-                            const inv = inventoryItems[0];
-                            const newQty = Math.max(0, (inv.quantity || 0) - qty);
-                            await strapi.documents('api::inventory-item.inventory-item').update({
-                                documentId: inv.documentId,
-                                data: { quantity: newQty },
-                            });
-                            strapi.log.info(`Inventory ${sku}: ${inv.quantity} -> ${newQty} (-${qty})`);
+                        const rowsAffected = await knex('inventory_items')
+                            .where({ sku, active: true })
+                            .andWhere('quantity', '>=', qty)
+                            .update({ quantity: knex.raw('quantity - ?', [qty]) });
+                        if (rowsAffected > 0) {
+                            const row = await knex('inventory_items')
+                                .where({ sku, active: true })
+                                .first('quantity');
+                            strapi.log.info(`Inventory ${sku}: -${qty} -> ${(_b = row === null || row === void 0 ? void 0 : row.quantity) !== null && _b !== void 0 ? _b : '?'} (atomic)`);
+                        }
+                        else {
+                            // Disambiguate: SKU non-tracked (silent skip, comportement avant) vs stock insuffisant (loud)
+                            const existing = await knex('inventory_items')
+                                .where({ sku, active: true })
+                                .first('quantity');
+                            if (existing !== undefined) {
+                                strapi.log.warn(`RACE-02: inventory insuffisant pour SKU "${sku}" (en stock: ${existing.quantity}, ` +
+                                    `demande: ${qty}). Order ${order.documentId} paye mais stock non decremente. ` +
+                                    `A traiter manuellement (rupture de stock non detectee lors de l'achat).`);
+                            }
                         }
                     }
                 }
