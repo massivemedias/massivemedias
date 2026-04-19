@@ -32,6 +32,7 @@ const shipping_1 = require("../../../utils/shipping");
 const email_1 = require("../../../utils/email");
 const crypto_1 = __importDefault(require("crypto"));
 const promo_codes_1 = require("../../../utils/promo-codes");
+const pricing_config_1 = require("../../../utils/pricing-config");
 const auth_1 = require("../../../utils/auth");
 const getStripe = () => {
     const key = process.env.STRIPE_SECRET_KEY;
@@ -44,20 +45,11 @@ const getStripe = () => {
 // L'import est en haut du fichier. Le comportement est identique, seul le diagnostic
 // __authDiag n'est plus expose (il etait utilise par /admin-whoami, endpoint de debug
 // retire depuis). Aucune regression fonctionnelle sur order.ts.
-// Sticker pricing tiers for server-side validation (tarifs de REFERENCE 3")
-const STICKER_STANDARD_TIERS = { 25: 30, 50: 47.50, 100: 85, 250: 200, 500: 375 };
-const STICKER_FX_TIERS = { 25: 35, 50: 57.50, 100: 100, 250: 225, 500: 425 };
-const FX_FINISHES = ['holographic', 'broken-glass', 'stars'];
-const ARTIST_DISCOUNT = 0.25; // Rabais artiste sur ses propres produits
-// Size multipliers cote backend - DOIVENT matcher exactement frontend/src/data/products.js
-// Sinon le server va rejeter des commandes legitimes ou accepter du under-pricing.
-const SIZE_MULTIPLIERS = {
-    '2': 0.8,
-    '2.5': 0.9,
-    '3': 1.0,
-    '4': 1.5,
-    '5': 2.0,
-};
+// PRIX-02: les constantes de pricing (STICKER_*, SIZE_MULTIPLIERS, BUSINESS_CARD_TIERS,
+// FLYER_TIERS, FLYER_RECTO_VERSO_MULTIPLIER, ARTIST_DISCOUNT, FX_FINISHES) sont
+// maintenant importees depuis utils/pricing-config.ts pour que le backend ait une seule
+// source de verite et que GET /api/pricing-config puisse exposer les memes valeurs au
+// frontend sans duplication.
 /**
  * Extrait le multiplier de taille depuis un champ size stocke dans l'order.
  * Accepte tous formats: '3in', '3"', '3', number 3, etc. Fallback 1.0 (reference 3").
@@ -69,19 +61,10 @@ function getSizeMultiplier(size) {
     if (!match)
         return 1.0;
     const key = match[1];
-    return Object.prototype.hasOwnProperty.call(SIZE_MULTIPLIERS, key)
-        ? SIZE_MULTIPLIERS[key]
+    return Object.prototype.hasOwnProperty.call(pricing_config_1.SIZE_MULTIPLIERS, key)
+        ? pricing_config_1.SIZE_MULTIPLIERS[key]
         : 1.0;
 }
-// Business card pricing tiers for server-side validation
-const BUSINESS_CARD_TIERS = {
-    'business-card-standard': { 100: 55, 250: 75, 500: 95, 1000: 130 },
-    'business-card-lamine': { 100: 70, 250: 95, 500: 120, 1000: 165 },
-    'business-card-premium': { 100: 120, 250: 175, 500: 250 },
-};
-// Flyer pricing tiers for server-side validation
-const FLYER_TIERS = { 50: 40, 100: 70, 150: 98, 250: 138, 500: 250 };
-const FLYER_RECTO_VERSO_MULTIPLIER = 1.3;
 // --- RACE-01 : reservation de pieces unique/privees pendant le checkout Stripe ---
 // Entre la validation du panier (verif sold=false) et le webhook qui marque sold=true,
 // il y a une fenetre de plusieurs minutes ou un second client peut aussi checkout la
@@ -247,8 +230,8 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
             // Validate sticker pricing against tiers (tarif 3" de reference) + size multiplier
             if (item.productId === 'sticker-custom' || item.productId === 'sticker-artist') {
                 const finishLower = String(item.finish || '').toLowerCase();
-                const isFx = FX_FINISHES.some((f) => finishLower.includes(f));
-                const tiers = isFx ? STICKER_FX_TIERS : STICKER_STANDARD_TIERS;
+                const isFx = pricing_config_1.FX_FINISHES.some((f) => finishLower.includes(f));
+                const tiers = isFx ? pricing_config_1.STICKER_FX_TIERS : pricing_config_1.STICKER_STANDARD_TIERS;
                 const tierPrice = tiers[item.quantity];
                 if (tierPrice) {
                     // item.sizeId est prioritaire (id stable: '3in'), fallback sur item.size (label: '3"')
@@ -263,7 +246,7 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
             }
             // Validate business card pricing against tiers
             if (item.productId && item.productId.startsWith('business-card-')) {
-                const cardTiers = BUSINESS_CARD_TIERS[item.productId];
+                const cardTiers = pricing_config_1.BUSINESS_CARD_TIERS[item.productId];
                 if (cardTiers) {
                     const tierPrice = cardTiers[item.quantity];
                     if (tierPrice) {
@@ -276,11 +259,11 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
             }
             // Validate flyer pricing against tiers
             if (item.productId === 'flyer-a6') {
-                const tierPrice = FLYER_TIERS[item.quantity];
+                const tierPrice = pricing_config_1.FLYER_TIERS[item.quantity];
                 if (tierPrice) {
                     // Apply recto-verso multiplier if applicable
                     const isRectoVerso = item.finish && (item.finish.toLowerCase().includes('recto-verso') || item.finish.toLowerCase().includes('double'));
-                    validPrice = isRectoVerso ? Math.round(tierPrice * FLYER_RECTO_VERSO_MULTIPLIER) : tierPrice;
+                    validPrice = isRectoVerso ? Math.round(tierPrice * pricing_config_1.FLYER_RECTO_VERSO_MULTIPLIER) : tierPrice;
                 }
                 else {
                     strapi.log.warn(`Invalid flyer tier: qty=${item.quantity}, using client price ${item.totalPrice}`);
@@ -437,11 +420,8 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
         if (!customerEmail || !customerName) {
             return ctx.badRequest('Customer email and name are required');
         }
-        // Recalculate server-side with sticker tier validation
-        // ET validation des prix des artist-prints (anti-manipulation) + check sold/private token
-        // Prix cadre par defaut - DOIT matcher frontend/src/data/products.js (fineArtFramePriceByFormat)
-        // sinon le backend rejette des commandes legitimes. A2 = 45$ depuis avril 2026.
-        const FRAME_PRICES_FALLBACK = { postcard: 20, a4: 20, a3: 30, a3plus: 35, a2: 45 };
+        // PRIX-02: FRAME_PRICES_FALLBACK importe depuis utils/pricing-config.ts (single source
+        // of truth). Le frontend peut desormais tirer les memes valeurs via /api/pricing-config.
         let subtotal = 0;
         let artistDiscountTotal = 0;
         // Charger une seule fois les artistes actifs pour valider les prints
@@ -481,8 +461,8 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
             // --- Stickers: validation par tier + size multiplier ---
             if (item.productId === 'sticker-custom' || item.productId === 'sticker-artist') {
                 const finishLower = String(item.finish || '').toLowerCase();
-                const isFx = FX_FINISHES.some((f) => finishLower.includes(f));
-                const tiers = isFx ? STICKER_FX_TIERS : STICKER_STANDARD_TIERS;
+                const isFx = pricing_config_1.FX_FINISHES.some((f) => finishLower.includes(f));
+                const tiers = isFx ? pricing_config_1.STICKER_FX_TIERS : pricing_config_1.STICKER_STANDARD_TIERS;
                 const tierPrice = tiers[item.quantity];
                 if (tierPrice) {
                     const sizeKey = item.sizeId || item.size;
@@ -536,7 +516,7 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
                     // Cadre: lire depuis pricing.framePriceByFormat sinon fallback
                     const frameMap = pricing.framePriceByFormat || {};
                     const expectedFramePrice = (print.withFrame || item.shape)
-                        ? ((_b = (_a = frameMap[format]) !== null && _a !== void 0 ? _a : FRAME_PRICES_FALLBACK[format]) !== null && _b !== void 0 ? _b : 30)
+                        ? ((_b = (_a = frameMap[format]) !== null && _a !== void 0 ? _a : pricing_config_1.FRAME_PRICES_FALLBACK[format]) !== null && _b !== void 0 ? _b : 30)
                         : 0;
                     // Prix unique: customPrice si defini (pour unique: true)
                     let expectedUnitPrice;
@@ -576,7 +556,7 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
                     (pid.startsWith(`artist-print-${verifiedUserArtistSlug}-`) ||
                         pid.startsWith(`artist-sticker-pack-${verifiedUserArtistSlug}-`));
                 if (isLegitimate) {
-                    artistDiscountTotal += Math.round(validPrice * ARTIST_DISCOUNT);
+                    artistDiscountTotal += Math.round(validPrice * pricing_config_1.ARTIST_DISCOUNT);
                 }
                 else {
                     strapi.log.warn(`isArtistOwnPrint rejete: user=${verifiedUserArtistSlug} claimed=${claimedSlug} pid=${pid}`);
@@ -2005,6 +1985,17 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
             },
             topClients,
         };
+    },
+    /**
+     * GET /pricing-config
+     * PRIX-02: source de verite unique pour les prix backend, exposee au frontend.
+     * Endpoint public sans auth - les prix ne sont pas sensibles (AdminTarifs les affiche
+     * deja publiquement) et le frontend boutique en a besoin pour calculer les prix
+     * affiches. Le backend reste strict cote validation (recalcul serveur dans
+     * createCheckoutSession).
+     */
+    async pricingConfig(ctx) {
+        ctx.body = (0, pricing_config_1.getPricingConfigPayload)();
     },
     /**
      * GET /orders/memory-health
