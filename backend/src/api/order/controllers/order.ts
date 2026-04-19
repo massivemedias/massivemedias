@@ -4,6 +4,18 @@ import { calculateShipping } from '../../../utils/shipping';
 import { sendOrderConfirmationEmail, sendTestimonialRequestEmail, sendArtistSaleNotificationEmail, sendNewOrderNotificationEmail, sendTrackingEmail } from '../../../utils/email';
 import crypto from 'crypto';
 import { PROMO_CODES } from '../../../utils/promo-codes';
+import {
+  FRAME_PRICES_FALLBACK,
+  STICKER_STANDARD_TIERS,
+  STICKER_FX_TIERS,
+  FX_FINISHES,
+  SIZE_MULTIPLIERS,
+  BUSINESS_CARD_TIERS,
+  FLYER_TIERS,
+  FLYER_RECTO_VERSO_MULTIPLIER,
+  ARTIST_DISCOUNT,
+  getPricingConfigPayload,
+} from '../../../utils/pricing-config';
 import { requireAdminAuth } from '../../../utils/auth';
 
 const getStripe = () => {
@@ -19,21 +31,11 @@ const getStripe = () => {
 // __authDiag n'est plus expose (il etait utilise par /admin-whoami, endpoint de debug
 // retire depuis). Aucune regression fonctionnelle sur order.ts.
 
-// Sticker pricing tiers for server-side validation (tarifs de REFERENCE 3")
-const STICKER_STANDARD_TIERS: Record<number, number> = { 25: 30, 50: 47.50, 100: 85, 250: 200, 500: 375 };
-const STICKER_FX_TIERS: Record<number, number> = { 25: 35, 50: 57.50, 100: 100, 250: 225, 500: 425 };
-const FX_FINISHES = ['holographic', 'broken-glass', 'stars'];
-const ARTIST_DISCOUNT = 0.25; // Rabais artiste sur ses propres produits
-
-// Size multipliers cote backend - DOIVENT matcher exactement frontend/src/data/products.js
-// Sinon le server va rejeter des commandes legitimes ou accepter du under-pricing.
-const SIZE_MULTIPLIERS: Record<string, number> = {
-  '2': 0.8,
-  '2.5': 0.9,
-  '3': 1.0,
-  '4': 1.5,
-  '5': 2.0,
-};
+// PRIX-02: les constantes de pricing (STICKER_*, SIZE_MULTIPLIERS, BUSINESS_CARD_TIERS,
+// FLYER_TIERS, FLYER_RECTO_VERSO_MULTIPLIER, ARTIST_DISCOUNT, FX_FINISHES) sont
+// maintenant importees depuis utils/pricing-config.ts pour que le backend ait une seule
+// source de verite et que GET /api/pricing-config puisse exposer les memes valeurs au
+// frontend sans duplication.
 
 /**
  * Extrait le multiplier de taille depuis un champ size stocke dans l'order.
@@ -48,17 +50,6 @@ function getSizeMultiplier(size: any): number {
     ? SIZE_MULTIPLIERS[key]
     : 1.0;
 }
-
-// Business card pricing tiers for server-side validation
-const BUSINESS_CARD_TIERS: Record<string, Record<number, number>> = {
-  'business-card-standard': { 100: 55, 250: 75, 500: 95, 1000: 130 },
-  'business-card-lamine':   { 100: 70, 250: 95, 500: 120, 1000: 165 },
-  'business-card-premium':  { 100: 120, 250: 175, 500: 250 },
-};
-
-// Flyer pricing tiers for server-side validation
-const FLYER_TIERS: Record<number, number> = { 50: 40, 100: 70, 150: 98, 250: 138, 500: 250 };
-const FLYER_RECTO_VERSO_MULTIPLIER = 1.3;
 
 // --- RACE-01 : reservation de pieces unique/privees pendant le checkout Stripe ---
 // Entre la validation du panier (verif sold=false) et le webhook qui marque sold=true,
@@ -439,11 +430,8 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
       return ctx.badRequest('Customer email and name are required');
     }
 
-    // Recalculate server-side with sticker tier validation
-    // ET validation des prix des artist-prints (anti-manipulation) + check sold/private token
-    // Prix cadre par defaut - DOIT matcher frontend/src/data/products.js (fineArtFramePriceByFormat)
-    // sinon le backend rejette des commandes legitimes. A2 = 45$ depuis avril 2026.
-    const FRAME_PRICES_FALLBACK: Record<string, number> = { postcard: 20, a4: 20, a3: 30, a3plus: 35, a2: 45 };
+    // PRIX-02: FRAME_PRICES_FALLBACK importe depuis utils/pricing-config.ts (single source
+    // of truth). Le frontend peut desormais tirer les memes valeurs via /api/pricing-config.
     let subtotal = 0;
     let artistDiscountTotal = 0;
 
@@ -2103,6 +2091,18 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
       },
       topClients,
     };
+  },
+
+  /**
+   * GET /pricing-config
+   * PRIX-02: source de verite unique pour les prix backend, exposee au frontend.
+   * Endpoint public sans auth - les prix ne sont pas sensibles (AdminTarifs les affiche
+   * deja publiquement) et le frontend boutique en a besoin pour calculer les prix
+   * affiches. Le backend reste strict cote validation (recalcul serveur dans
+   * createCheckoutSession).
+   */
+  async pricingConfig(ctx) {
+    ctx.body = getPricingConfigPayload();
   },
 
   /**

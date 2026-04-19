@@ -162,6 +162,14 @@ exports.default = {
                 auth: false,
             },
         },
+        {
+            method: 'GET',
+            path: '/pricing-config',
+            handler: 'order.pricingConfig',
+            config: {
+                auth: false,
+            },
+        },
     ],
 };
 // Trigger redeploy 1774828260
