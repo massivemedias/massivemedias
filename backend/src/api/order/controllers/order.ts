@@ -2411,6 +2411,39 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
       }
     }
 
+    // RACE-03 : cleanup des drafts abandonnees > 7j en meme temps que le
+    // reconcile (les 2 tournent en cron, autant piggy-back). Les drafts
+    // jeunes (< 7j) restent car le client peut encore completer son paiement
+    // via un lien cs_live_ (qui expirent a 24h Stripe-side mais on garde
+    // une marge). Au-dela de 7j, l'order est morte : delete pour eviter la
+    // croissance infinie de la table orders.
+    try {
+      const draftCutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      const oldDrafts = await strapi.documents('api::order.order').findMany({
+        filters: {
+          status: 'draft',
+          createdAt: { $lt: draftCutoff.toISOString() },
+        } as any,
+        limit: 500,
+      });
+      let cleanupCount = 0;
+      for (const draft of oldDrafts as any[]) {
+        try {
+          await strapi.documents('api::order.order').delete({ documentId: draft.documentId });
+          cleanupCount++;
+        } catch (delErr: any) {
+          strapi.log.warn(`[reconcile:cleanup] Could not delete draft ${draft.id}: ${delErr?.message}`);
+        }
+      }
+      if (cleanupCount > 0) {
+        strapi.log.info(`[reconcile:cleanup] Deleted ${cleanupCount} draft orders older than 7 days`);
+      }
+      (report as any).cleanedUpDrafts = cleanupCount;
+    } catch (cleanupErr: any) {
+      strapi.log.error('[reconcile:cleanup] Error:', cleanupErr?.message);
+      (report as any).cleanedUpDrafts = -1;
+    }
+
     ctx.body = report;
   },
 }));
