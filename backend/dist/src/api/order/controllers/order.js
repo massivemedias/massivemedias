@@ -739,7 +739,7 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
         ctx.body = orders;
     },
     async handleStripeWebhook(ctx) {
-        var _a, _b;
+        var _a, _b, _c, _d;
         const sig = ctx.request.headers['stripe-signature'];
         const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
         const requestId = crypto_1.default.randomBytes(4).toString('hex');
@@ -878,44 +878,18 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
                     data: { status: 'paid', invoiceNumber },
                 });
                 strapi.log.info(`Order ${order.documentId} marked as paid (${invoiceNumber})`);
-                // Envoyer email de confirmation
-                try {
+                // STRIPE-04: emails admin + client en parallele via Promise.allSettled.
+                // Avant: sequential await - si l'un timeout (ex: Resend down 5s), l'autre
+                // attend avant de partir, doublant potentiellement le temps total du webhook.
+                // Maintenant: parallele + log structure error-level avec orderId+recipient
+                // pour qu'on puisse retracer un echec dans les logs Render.
+                // TODO STRIPE-04b: persister les echecs dans une table email_retry_queue
+                // avec cron horaire. Deferre pour rester dans le scope RACE/perf Vague 2.
+                {
                     const orderItems = Array.isArray(order.items) ? order.items : [];
                     const orderRef = paymentIntent.id.slice(-8).toUpperCase();
-                    await (0, email_1.sendOrderConfirmationEmail)({
-                        customerName: order.customerName,
-                        customerEmail: order.customerEmail,
-                        orderRef,
-                        invoiceNumber,
-                        items: orderItems.map((item) => ({
-                            productName: item.productName || 'Produit',
-                            quantity: item.quantity || 1,
-                            totalPrice: item.totalPrice || 0,
-                            size: item.size || '',
-                            finish: item.finish || '',
-                        })),
-                        subtotal: order.subtotal || 0,
-                        shipping: order.shipping || 0,
-                        tps: order.tps || 0,
-                        tvq: order.tvq || 0,
-                        total: order.total || 0,
-                        shippingAddress: order.shippingAddress || null,
-                        promoCode: order.promoCode || undefined,
-                        promoDiscount: order.promoDiscount || undefined,
-                        supabaseUserId: order.supabaseUserId || undefined,
-                    });
-                    strapi.log.info(`Email de confirmation envoye a ${order.customerEmail}`);
-                }
-                catch (emailErr) {
-                    strapi.log.warn('Erreur envoi email confirmation (non bloquant):', emailErr);
-                }
-                // Notifier l'admin de la nouvelle vente
-                try {
-                    const orderItems2 = Array.isArray(order.items) ? order.items : [];
-                    const orderRef2 = paymentIntent.id.slice(-8).toUpperCase();
-                    // Collecter tous les fichiers uploades de tous les items
                     const allUploadedFiles = [];
-                    for (const item of orderItems2) {
+                    for (const item of orderItems) {
                         if (Array.isArray(item.uploadedFiles)) {
                             for (const f of item.uploadedFiles) {
                                 if (f && (f.url || f.name)) {
@@ -924,33 +898,64 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
                             }
                         }
                     }
-                    await (0, email_1.sendNewOrderNotificationEmail)({
-                        orderRef: orderRef2,
-                        customerName: order.customerName,
-                        customerEmail: order.customerEmail,
-                        items: orderItems2.map((item) => ({
-                            productName: item.productName || 'Produit',
-                            quantity: item.quantity || 1,
-                            totalPrice: item.totalPrice || 0,
-                            size: item.size || '',
-                            finish: item.finish || '',
-                        })),
-                        subtotal: order.subtotal || 0,
-                        shipping: order.shipping || 0,
-                        tps: order.tps || 0,
-                        tvq: order.tvq || 0,
-                        total: order.total || 0,
-                        shippingAddress: order.shippingAddress || null,
-                        uploadedFiles: allUploadedFiles.length > 0 ? allUploadedFiles : undefined,
-                        notes: order.notes || undefined,
-                        designReady: order.designReady !== false,
-                        promoCode: order.promoCode || undefined,
-                        promoDiscount: order.promoDiscount || undefined,
-                    });
-                    strapi.log.info(`Notification vente admin envoyee pour commande ${orderRef2}`);
-                }
-                catch (adminEmailErr) {
-                    strapi.log.warn('Erreur envoi notification vente admin (non bloquant):', adminEmailErr);
+                    const itemsForEmail = orderItems.map((item) => ({
+                        productName: item.productName || 'Produit',
+                        quantity: item.quantity || 1,
+                        totalPrice: item.totalPrice || 0,
+                        size: item.size || '',
+                        finish: item.finish || '',
+                    }));
+                    const [confirmRes, adminRes] = await Promise.allSettled([
+                        (0, email_1.sendOrderConfirmationEmail)({
+                            customerName: order.customerName,
+                            customerEmail: order.customerEmail,
+                            orderRef,
+                            invoiceNumber,
+                            items: itemsForEmail,
+                            subtotal: order.subtotal || 0,
+                            shipping: order.shipping || 0,
+                            tps: order.tps || 0,
+                            tvq: order.tvq || 0,
+                            total: order.total || 0,
+                            shippingAddress: order.shippingAddress || null,
+                            promoCode: order.promoCode || undefined,
+                            promoDiscount: order.promoDiscount || undefined,
+                            supabaseUserId: order.supabaseUserId || undefined,
+                        }),
+                        (0, email_1.sendNewOrderNotificationEmail)({
+                            orderRef,
+                            customerName: order.customerName,
+                            customerEmail: order.customerEmail,
+                            items: itemsForEmail,
+                            subtotal: order.subtotal || 0,
+                            shipping: order.shipping || 0,
+                            tps: order.tps || 0,
+                            tvq: order.tvq || 0,
+                            total: order.total || 0,
+                            shippingAddress: order.shippingAddress || null,
+                            uploadedFiles: allUploadedFiles.length > 0 ? allUploadedFiles : undefined,
+                            notes: order.notes || undefined,
+                            designReady: order.designReady !== false,
+                            promoCode: order.promoCode || undefined,
+                            promoDiscount: order.promoDiscount || undefined,
+                        }),
+                    ]);
+                    if (confirmRes.status === 'fulfilled') {
+                        strapi.log.info(`Email confirmation envoye a ${order.customerEmail} (${invoiceNumber})`);
+                    }
+                    else {
+                        strapi.log.error(`STRIPE-04: ECHEC email confirmation client. ` +
+                            `orderId=${order.documentId} orderRef=${orderRef} invoice=${invoiceNumber} ` +
+                            `recipient=${order.customerEmail} err=${((_b = confirmRes.reason) === null || _b === void 0 ? void 0 : _b.message) || confirmRes.reason}`);
+                    }
+                    if (adminRes.status === 'fulfilled') {
+                        strapi.log.info(`Notification vente admin envoyee pour commande ${orderRef}`);
+                    }
+                    else {
+                        strapi.log.error(`STRIPE-04: ECHEC notification vente admin. ` +
+                            `orderId=${order.documentId} orderRef=${orderRef} invoice=${invoiceNumber} ` +
+                            `err=${((_c = adminRes.reason) === null || _c === void 0 ? void 0 : _c.message) || adminRes.reason}`);
+                    }
                 }
                 // Update client stats
                 try {
@@ -998,7 +1003,7 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
                             const row = await knex('inventory_items')
                                 .where({ sku, active: true })
                                 .first('quantity');
-                            strapi.log.info(`Inventory ${sku}: -${qty} -> ${(_b = row === null || row === void 0 ? void 0 : row.quantity) !== null && _b !== void 0 ? _b : '?'} (atomic)`);
+                            strapi.log.info(`Inventory ${sku}: -${qty} -> ${(_d = row === null || row === void 0 ? void 0 : row.quantity) !== null && _d !== void 0 ? _d : '?'} (atomic)`);
                         }
                         else {
                             // Disambiguate: SKU non-tracked (silent skip, comportement avant) vs stock insuffisant (loud)
@@ -1073,18 +1078,20 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
                             quantity: item.quantity || 1,
                         });
                     }
-                    // Envoyer un email a chaque artiste concerne
+                    // STRIPE-04: envoi parallele aux artistes via Promise.allSettled.
+                    // Avant: for-loop avec await sequentiel - si 10 artistes et Resend lent,
+                    // le webhook pouvait prendre 10*latency. Maintenant tout part en parallele,
+                    // chaque echec est logge error-level avec le contexte artist+order.
                     const shippingAddr = order.shippingAddress;
                     const customerCity = (shippingAddr === null || shippingAddr === void 0 ? void 0 : shippingAddr.city) || '';
-                    for (const [slug, items] of Object.entries(artistItemsMap)) {
+                    const artistEntries = Object.entries(artistItemsMap);
+                    const artistSendPromises = artistEntries.map(async ([slug, items]) => {
                         const artist = artistMap[slug];
-                        // Email prioritaire: artist.email, sinon fallback user-role.email
                         const artistEmail = (artist === null || artist === void 0 ? void 0 : artist.email) || userRoleEmailBySlug[slug] || null;
                         if (!artistEmail) {
                             strapi.log.warn(`Artiste ${slug}: aucun email trouve (ni CMS ni user-role), notification non envoyee`);
-                            continue;
+                            return { slug, skipped: true };
                         }
-                        // IMPORTANT: await pour que l'erreur soit visible dans les logs au lieu d'un .catch silencieux
                         try {
                             await (0, email_1.sendArtistSaleNotificationEmail)({
                                 artistName: (artist === null || artist === void 0 ? void 0 : artist.name) || slug,
@@ -1094,11 +1101,16 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
                                 customerCity,
                             });
                             strapi.log.info(`Notification vente artiste ${slug} envoyee a ${artistEmail}`);
+                            return { slug, sent: true };
                         }
                         catch (err) {
-                            strapi.log.error(`ECHEC notification vente artiste ${slug} (${artistEmail}):`, err);
+                            strapi.log.error(`STRIPE-04: ECHEC notification vente artiste. ` +
+                                `orderId=${order.documentId} artistSlug=${slug} recipient=${artistEmail} ` +
+                                `err=${(err === null || err === void 0 ? void 0 : err.message) || err}`);
+                            return { slug, error: (err === null || err === void 0 ? void 0 : err.message) || String(err) };
                         }
-                    }
+                    });
+                    await Promise.allSettled(artistSendPromises);
                 }
                 catch (err) {
                     strapi.log.warn('Could not notify artists:', err);
