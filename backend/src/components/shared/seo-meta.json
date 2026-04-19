@@ -3,12 +3,14 @@
   "info": {
     "displayName": "SEO Meta",
     "icon": "search",
-    "description": "SEO title and description bilingual"
+    "description": "SEO title and description trilingual FR/EN/ES"
   },
   "attributes": {
     "titleFr": { "type": "string", "required": true },
     "titleEn": { "type": "string", "required": true },
+    "titleEs": { "type": "string" },
     "descriptionFr": { "type": "text", "required": true },
-    "descriptionEn": { "type": "text", "required": true }
+    "descriptionEn": { "type": "text", "required": true },
+    "descriptionEs": { "type": "text" }
   }
 }
