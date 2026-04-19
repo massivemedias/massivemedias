@@ -1488,7 +1488,12 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
       ];
     }
 
-    const [orders, allFiltered] = await Promise.all([
+    // PERF-02 : count() au lieu de findMany() pour le total. L'ancien code
+    // faisait 2 findMany identiques (une paginee + une full pour compter),
+    // donc a 10 000 orders on chargait tout en memoire juste pour obtenir
+    // un length. count() laisse Postgres faire l'aggregate et retourne juste
+    // un integer, bien plus rapide + pas de heap pressure.
+    const [orders, total] = await Promise.all([
       strapi.documents('api::order.order').findMany({
         filters,
         sort: 'createdAt:desc',
@@ -1496,12 +1501,8 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
         start: (page - 1) * pageSize,
         populate: ['client'],
       }),
-      strapi.documents('api::order.order').findMany({
-        filters,
-      }),
+      strapi.db.query('api::order.order').count({ where: filters }),
     ]);
-
-    const total = allFiltered.length;
 
     ctx.body = {
       data: orders,
