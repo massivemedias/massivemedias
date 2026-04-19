@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import {
   MessageSquare, Sparkles, Image, Camera, Send, Plus, Settings2,
@@ -8,6 +8,7 @@ import {
 import { useLang } from '../i18n/LanguageContext';
 import { chatStream, generateMockup, checkHealth } from '../services/iaService';
 import MerchMockupTool from '../components/merch/MerchMockupTool';
+import StickerPreviewCanvas from '../components/StickerPreviewCanvas';
 import api from '../services/api';
 
 const TABS = [
@@ -708,49 +709,42 @@ function StickersTab() {
   const [strokeColor, setStrokeColor] = useState('#FFFFFF');
   const [strokeWidth, setStrokeWidth] = useState(0);
   const [shader, setShader] = useState('none');
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState(null); // Blob URL
+  const [livePngUrl, setLivePngUrl] = useState(null); // Blob URL exporte par le canvas live (pour telechargement)
   const [error, setError] = useState(null);
-  const [tilt, setTilt] = useState({ x: 0, y: 0 });
 
-  const handlePreviewMouseMove = (e) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const dx = (e.clientX - (rect.left + rect.width / 2)) / (rect.width / 2);
-    const dy = (e.clientY - (rect.top + rect.height / 2)) / (rect.height / 2);
-    setTilt({ x: -dy * 14, y: dx * 14 });
-  };
-  const handlePreviewMouseLeave = () => setTilt({ x: 0, y: 0 });
+  // Converti le fichier File -> object URL stable pour StickerPreviewCanvas.
+  // Revoque l'ancienne URL quand on change de fichier pour eviter les fuites.
+  const imageUrl = useMemo(() => {
+    if (!file) return null;
+    try { return URL.createObjectURL(file); } catch { return null; }
+  }, [file]);
 
-  // Cleanup blob URL au unmount / changement de resultat
   useEffect(() => {
     return () => {
-      if (result) URL.revokeObjectURL(result);
+      if (imageUrl) {
+        try { URL.revokeObjectURL(imageUrl); } catch { /* ignore */ }
+      }
     };
-  }, [result]);
+  }, [imageUrl]);
 
-  const handleGenerate = async () => {
-    if (!file) return;
-    setLoading(true);
-    setError(null);
-    // Revoke l'ancien blob
-    if (result) URL.revokeObjectURL(result);
-    setResult(null);
-    try {
-      const blobUrl = await generateStickerBlob(file, { strokeColor, strokeWidth, shader });
-      setResult(blobUrl);
-    } catch (err) {
-      setError(err?.message || 'Erreur lors de la generation');
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Le canvas live appelle ce callback a chaque redraw (a chaque changement de stroke/shader).
+  // On stocke le blob URL pour que le bouton "Telecharger" soit toujours a jour sans click "Generer".
+  const handleLiveThumb = useCallback((blobUrl) => {
+    setLivePngUrl(blobUrl);
+  }, []);
 
   const handleClearFile = () => {
     setFile(null);
-    if (result) URL.revokeObjectURL(result);
-    setResult(null);
+    setLivePngUrl(null);
     setError(null);
   };
+
+  // Reset du stroke/shader quand on change de fichier pour eviter confusion
+  useEffect(() => {
+    if (!file) {
+      setLivePngUrl(null);
+    }
+  }, [file]);
 
   return (
     <div className="grid lg:grid-cols-2 gap-6">
@@ -808,28 +802,36 @@ function StickersTab() {
           </div>
         </div>
 
-        <button
-          onClick={handleGenerate}
-          disabled={!file || loading}
-          className="w-full py-3 rounded-xl bg-accent text-white font-semibold text-sm disabled:opacity-40 transition-opacity flex items-center justify-center gap-2"
-        >
-          {loading ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
-          {loading ? 'Generation...' : 'Generer le sticker'}
-        </button>
+        {/* Bouton telecharger - actif des qu'un preview live est genere */}
+        {livePngUrl ? (
+          <a
+            href={livePngUrl}
+            download={`sticker-${shader}.png`}
+            className="w-full py-3 rounded-xl bg-accent text-white font-semibold text-sm flex items-center justify-center gap-2 hover:brightness-110 transition-all"
+          >
+            <Download size={16} />
+            Telecharger PNG
+          </a>
+        ) : (
+          <button
+            disabled
+            className="w-full py-3 rounded-xl bg-accent/40 text-white/60 font-semibold text-sm cursor-not-allowed flex items-center justify-center gap-2"
+          >
+            <Sparkles size={16} />
+            {file ? 'Preparation du preview...' : 'Deposer une image pour commencer'}
+          </button>
+        )}
       </div>
 
-      {/* Resultat */}
+      {/* Preview LIVE - se met a jour en temps reel quand on change stroke/shader */}
       <div
-        className={`rounded-xl relative ${!result ? 'bg-black/20 p-4 flex items-center justify-center min-h-[300px]' : 'overflow-visible'}`}
-        style={result ? {
+        className={`rounded-xl relative ${!imageUrl ? 'bg-black/20 p-4 flex items-center justify-center min-h-[300px]' : 'overflow-visible p-4'}`}
+        style={imageUrl ? {
           backgroundImage: 'linear-gradient(45deg, #1a1a1a 25%, transparent 25%), linear-gradient(-45deg, #1a1a1a 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #1a1a1a 75%), linear-gradient(-45deg, transparent 75%, #1a1a1a 75%)',
           backgroundSize: '20px 20px',
           backgroundPosition: '0 0, 0 10px, 10px -10px, 10px 0px',
           borderRadius: '0.75rem',
-          perspective: '900px',
         } : undefined}
-        onMouseMove={result ? handlePreviewMouseMove : undefined}
-        onMouseLeave={result ? handlePreviewMouseLeave : undefined}
       >
         {error && (
           <div className="flex items-center gap-2 text-red-400 text-sm p-4">
@@ -837,58 +839,19 @@ function StickersTab() {
             {error}
           </div>
         )}
-        {result ? (() => {
-          const tilting = tilt.x !== 0 || tilt.y !== 0;
-          const fxName = (shader === 'none' || shader === 'clear' || shader === 'matte') ? null : shader.replace('_', '-');
-          const angle = Math.atan2(tilt.y, tilt.x) * 180 / Math.PI;
-          const px = 50 + tilt.y * 5;
-          const py = 50 - tilt.x * 5;
-          const fxOverlay = tilting && fxName ? (
-            fxName === 'holographic' ? {
-              background: `conic-gradient(from ${angle + 90}deg at ${px}% ${py}%, rgba(255,0,200,0.35), rgba(255,165,0,0.3), rgba(255,255,0,0.3), rgba(0,255,100,0.3), rgba(0,180,255,0.35), rgba(130,0,255,0.3), rgba(255,0,200,0.35))`,
-              mixBlendMode: 'color', opacity: 0.45,
-            } : fxName === 'glossy' ? {
-              background: `radial-gradient(ellipse 60% 40% at ${px}% ${py}%, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.08) 50%, transparent 70%)`,
-              mixBlendMode: 'overlay', opacity: 0.7,
-            } : (fxName === 'broken-glass' || fxName === 'broken_glass') ? {
-              background: `conic-gradient(from ${angle}deg at ${px}% ${py}%, rgba(200,230,255,0.15), rgba(255,200,255,0.1), rgba(200,255,230,0.15), rgba(200,230,255,0.15))`,
-              mixBlendMode: 'overlay', opacity: 0.5,
-            } : fxName === 'stars' ? {
-              background: `conic-gradient(from ${angle + 45}deg at ${px}% ${py}%, rgba(255,220,255,0.2), rgba(220,240,255,0.15), rgba(255,255,220,0.2), rgba(220,255,240,0.15), rgba(255,220,255,0.2))`,
-              mixBlendMode: 'color', opacity: 0.35,
-            } : null
-          ) : null;
-          return (<>
-            <div className="relative" style={{
-              transform: `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg) scale(${tilting ? 1.03 : 1})`,
-              transition: tilting ? 'transform 0.08s ease-out' : 'transform 0.55s cubic-bezier(0.25,0.8,0.25,1)',
-              transformStyle: 'preserve-3d',
-              boxShadow: tilting ? `${-tilt.y * 1.5}px ${tilt.x * 1.5}px 28px rgba(0,0,0,0.5)` : '0 4px 16px rgba(0,0,0,0.3)',
-              willChange: 'transform',
-              borderRadius: '0.75rem',
-              overflow: 'hidden',
-            }}>
-              <img src={result} alt="sticker" className="w-full h-auto block" />
-              {fxOverlay && (
-                <div className="absolute inset-0 pointer-events-none" style={{
-                  ...fxOverlay,
-                  transition: 'background 0.1s ease-out',
-                  borderRadius: '0.75rem',
-                }} />
-              )}
-            </div>
-            <a
-              href={result}
-              download={`sticker-${shader}.png`}
-              className="absolute bottom-3 right-3 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-black/60 backdrop-blur-sm text-white text-xs font-semibold hover:bg-black/80 transition-colors"
-              style={{ zIndex: 10 }}
-            >
-              <Download size={12} />
-              Telecharger
-            </a>
-          </>);
-        })() : !error && (
-          <p className="text-grey-muted text-sm">Le resultat apparaitra ici</p>
+        {imageUrl ? (
+          <StickerPreviewCanvas
+            imageUrl={imageUrl}
+            shape="diecut"
+            finish={shader === 'dots' ? 'glossy' : shader}
+            strokeColor={strokeColor}
+            strokeWidth={strokeWidth}
+            onThumbChange={handleLiveThumb}
+            enableTilt={true}
+            className="w-full"
+          />
+        ) : !error && (
+          <p className="text-grey-muted text-sm">Le preview apparaitra ici une fois l'image deposee</p>
         )}
       </div>
     </div>
