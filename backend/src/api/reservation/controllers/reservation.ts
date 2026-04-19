@@ -1,8 +1,10 @@
 import { factories } from '@strapi/strapi';
 import { sendReservationNotificationEmail } from '../../../utils/email';
+import { requireAdminAuth } from '../../../utils/auth';
 
 export default factories.createCoreController('api::reservation.reservation', ({ strapi }) => ({
 
+  // submit reste public (formulaire client)
   async submit(ctx) {
     const {
       tatoueurDocumentId,
@@ -88,6 +90,7 @@ export default factories.createCoreController('api::reservation.reservation', ({
   },
 
   async updateStatus(ctx) {
+    if (!(await requireAdminAuth(ctx))) return;
     const { documentId } = ctx.params;
     const { status: newStatus, notes, confirmedDate } = ctx.request.body as any;
 

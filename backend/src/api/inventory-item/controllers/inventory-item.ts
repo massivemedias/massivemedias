@@ -1,7 +1,9 @@
 import { factories } from '@strapi/strapi';
+import { requireAdminAuth } from '../../../utils/auth';
 
 export default factories.createCoreController('api::inventory-item.inventory-item', ({ strapi }) => ({
   async lowStock(ctx) {
+    if (!(await requireAdminAuth(ctx))) return;
     const items = await strapi.documents('api::inventory-item.inventory-item').findMany({
       filters: { active: true },
       populate: ['image', 'product'],
@@ -15,6 +17,7 @@ export default factories.createCoreController('api::inventory-item.inventory-ite
   },
 
   async dashboard(ctx) {
+    if (!(await requireAdminAuth(ctx))) return;
     const items = await strapi.documents('api::inventory-item.inventory-item').findMany({
       filters: { active: true },
       populate: ['image', 'product'],
@@ -57,6 +60,7 @@ export default factories.createCoreController('api::inventory-item.inventory-ite
   },
 
   async adjustStock(ctx) {
+    if (!(await requireAdminAuth(ctx))) return;
     const { documentId } = ctx.params;
     const { quantity, reserved, notes, nameFr, nameEn, costPrice, location, category, variant, brand, color, detail, hasZip } = ctx.request.body as any;
 
@@ -98,6 +102,7 @@ export default factories.createCoreController('api::inventory-item.inventory-ite
    * Ex: TXT-HOODIE-L-001, FRM-BLACK-A4-001, STK-HOLO-3IN-001
    */
   async createItem(ctx) {
+    if (!(await requireAdminAuth(ctx))) return;
     const { nameFr, nameEn, category, variant, detail, brand, color, hasZip, quantity, costPrice, location, notes, lowStockThreshold } = ctx.request.body as any;
 
     if (!nameFr || !category) {
@@ -204,6 +209,7 @@ export default factories.createCoreController('api::inventory-item.inventory-ite
    * Supprimer (desactiver) un item d'inventaire
    */
   async deleteItem(ctx) {
+    if (!(await requireAdminAuth(ctx))) return;
     const { documentId } = ctx.params;
     const item = await strapi.documents('api::inventory-item.inventory-item').findFirst({
       filters: { documentId },
@@ -223,6 +229,7 @@ export default factories.createCoreController('api::inventory-item.inventory-ite
    * + cree une depense automatiquement
    */
   async importInvoice(ctx) {
+    if (!(await requireAdminAuth(ctx))) return;
     const { items, expense } = ctx.request.body as any;
 
     if ((!items || !Array.isArray(items) || items.length === 0) && !expense) {
@@ -344,6 +351,7 @@ export default factories.createCoreController('api::inventory-item.inventory-ite
    *      (sortie = deduction = soustrait delta positif, ajoute si delta negatif)
    */
   async syncOutgoingInvoice(ctx) {
+    if (!(await requireAdminAuth(ctx))) return;
     const { oldItems = [], newItems = [] } = ctx.request.body as any;
 
     const normalize = (s: string) => (s || '').trim().toLowerCase();

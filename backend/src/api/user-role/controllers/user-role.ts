@@ -1,9 +1,11 @@
 import { factories } from '@strapi/strapi';
+import { requireAdminAuth, requireUserAuth, assertOwnershipOrAdmin } from '../../../utils/auth';
 
 export default factories.createCoreController('api::user-role.user-role', ({ strapi }) => ({
 
-  // GET /user-roles/list - Liste tous les roles
+  // GET /user-roles/list - Liste tous les roles (admin only)
   async list(ctx) {
+    if (!(await requireAdminAuth(ctx))) return;
     try {
       const entries = await strapi.documents('api::user-role.user-role').findMany({
         sort: { createdAt: 'desc' },
@@ -26,8 +28,12 @@ export default factories.createCoreController('api::user-role.user-role', ({ str
   },
 
   // GET /user-roles/by-email?email=xxx - Role d'un user par email
+  // Accessible au user lui-meme (pour lire son propre role apres connexion)
+  // OU a un admin (pour voir les roles des autres). Bloque si email != JWT et pas admin.
   async byEmail(ctx) {
+    if (!(await requireUserAuth(ctx))) return;
     const { email } = ctx.query;
+    if (!(await assertOwnershipOrAdmin(ctx, email as string))) return;
     if (!email) {
       ctx.throw(400, 'Email required');
       return;
@@ -63,6 +69,7 @@ export default factories.createCoreController('api::user-role.user-role', ({ str
   // PUT /user-roles/set - Definir le role d'un user
   // Body: { email, role, artistSlug?, supabaseUserId?, displayName? }
   async setRole(ctx) {
+    if (!(await requireAdminAuth(ctx))) return;
     const { email, role, artistSlug, tatoueurSlug, supabaseUserId, displayName } = ctx.request.body as any;
 
     if (!email || !role) {
@@ -125,9 +132,13 @@ export default factories.createCoreController('api::user-role.user-role', ({ str
   },
 
   // PUT /user-roles/artist-data - Sauvegarder renames et hero pour un artiste
+  // User connecte peut modifier SES donnees, admin peut modifier les donnees
+  // de n'importe quel artiste.
   async updateArtistData(ctx) {
+    if (!(await requireUserAuth(ctx))) return;
     const { email, itemRenames, heroImageId } = ctx.request.body as any;
     if (!email) { ctx.throw(400, 'Email required'); return; }
+    if (!assertOwnershipOrAdmin(ctx, email)) return;
 
     try {
       const existing = await strapi.documents('api::user-role.user-role').findMany({
@@ -177,6 +188,7 @@ export default factories.createCoreController('api::user-role.user-role', ({ str
 
   // DELETE /user-roles/:documentId - Supprimer un role (remet en user)
   async removeRole(ctx) {
+    if (!(await requireAdminAuth(ctx))) return;
     const { documentId } = ctx.params;
 
     try {

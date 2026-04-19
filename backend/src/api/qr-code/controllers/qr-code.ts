@@ -1,5 +1,6 @@
 import { factories } from '@strapi/strapi';
 import crypto from 'crypto';
+import { requireAdminAuth } from '../../../utils/auth';
 
 /**
  * Generates a URL-safe short id for the trackable QR redirect endpoint.
@@ -32,52 +33,7 @@ function isSafeHttpUrl(u: string): boolean {
   }
 }
 
-/**
- * Admin-auth guard. Accepts either:
- *  - Authorization: Bearer <ADMIN_API_TOKEN>        (service token)
- *  - Authorization: Bearer <Supabase JWT>, email in ADMIN_EMAILS
- * Mirrors the helper in the order controller to keep auth behaviour consistent.
- */
-async function requireAdminAuth(ctx: any): Promise<boolean> {
-  const authHeader = (ctx.request.headers['authorization'] as string) || '';
-  const token = authHeader.replace(/^Bearer\s+/i, '').trim();
-  if (!token) {
-    ctx.status = 401;
-    ctx.body = { error: { status: 401, name: 'Unauthorized', message: 'Missing Authorization header' } };
-    return false;
-  }
-
-  const adminApiToken = process.env.ADMIN_API_TOKEN;
-  if (adminApiToken && adminApiToken.length >= 16 && token === adminApiToken) {
-    (ctx.state as any).adminAuthMethod = 'service-token';
-    return true;
-  }
-
-  try {
-    const supabaseUrl = process.env.SUPABASE_URL || process.env.SUPABASE_API_URL;
-    const supabaseKey = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_API_KEY;
-    if (supabaseUrl && supabaseKey) {
-      const { createClient } = require('@supabase/supabase-js');
-      const supabase = createClient(supabaseUrl, supabaseKey);
-      const { data, error } = await supabase.auth.getUser(token);
-      if (!error && data?.user?.email) {
-        const adminEmailsRaw = process.env.ADMIN_EMAILS || process.env.ADMIN_EMAIL || '';
-        const adminEmails = adminEmailsRaw.split(',').map((s) => s.trim().toLowerCase()).filter(Boolean);
-        if (adminEmails.includes(data.user.email.toLowerCase())) {
-          (ctx.state as any).adminAuthMethod = 'supabase-jwt';
-          (ctx.state as any).adminUserEmail = data.user.email;
-          return true;
-        }
-      }
-    }
-  } catch (e: any) {
-    strapi.log.warn('qr-code requireAdminAuth: Supabase verification error', e?.message || e);
-  }
-
-  ctx.status = 401;
-  ctx.body = { error: { status: 401, name: 'Unauthorized', message: 'Admin authentication required' } };
-  return false;
-}
+// requireAdminAuth importe depuis ../../../utils/auth (SEC-01, 2026-04-18).
 
 export default factories.createCoreController('api::qr-code.qr-code', ({ strapi }) => ({
 

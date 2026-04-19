@@ -1,10 +1,12 @@
 import { factories } from '@strapi/strapi';
+import { requireAdminAuth } from '../../../utils/auth';
 
 const VALID_CATEGORIES = ['consommables', 'materiel', 'shipping', 'software', 'marketing', 'equipment', 'taxes', 'other'];
 
 export default factories.createCoreController('api::expense.expense', ({ strapi }) => ({
 
   async adminList(ctx) {
+    if (!(await requireAdminAuth(ctx))) return;
     const page = parseInt(ctx.query.page as string) || 1;
     const pageSize = parseInt(ctx.query.pageSize as string) || 25;
     const category = ctx.query.category as string;
@@ -47,6 +49,7 @@ export default factories.createCoreController('api::expense.expense', ({ strapi 
   },
 
   async createExpense(ctx) {
+    if (!(await requireAdminAuth(ctx))) return;
     const { description, amount, category, date, vendor, receiptNumber, receiptUrl, taxDeductible, tpsAmount, tvqAmount, notes } = ctx.request.body as any;
 
     if (!description || !amount || !category || !date) {
@@ -77,6 +80,7 @@ export default factories.createCoreController('api::expense.expense', ({ strapi 
   },
 
   async updateExpense(ctx) {
+    if (!(await requireAdminAuth(ctx))) return;
     const { documentId } = ctx.params;
     const body = ctx.request.body as any;
 
@@ -111,6 +115,7 @@ export default factories.createCoreController('api::expense.expense', ({ strapi 
   },
 
   async deleteExpense(ctx) {
+    if (!(await requireAdminAuth(ctx))) return;
     const { documentId } = ctx.params;
 
     const item = await strapi.documents('api::expense.expense').findFirst({
@@ -127,6 +132,7 @@ export default factories.createCoreController('api::expense.expense', ({ strapi 
   },
 
   async yearSummary(ctx) {
+    if (!(await requireAdminAuth(ctx))) return;
     const year = parseInt(ctx.params.year as string) || new Date().getFullYear();
     const startDate = `${year}-01-01`;
     const endDate = `${year}-12-31`;

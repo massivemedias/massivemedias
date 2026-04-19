@@ -1,9 +1,11 @@
 import { factories } from '@strapi/strapi';
 import { sendContactReplyEmail, sendNewContactNotificationEmail } from '../../../utils/email';
+import { requireAdminAuth } from '../../../utils/auth';
 
 export default factories.createCoreController('api::contact-submission.contact-submission', ({ strapi }) => ({
 
   async adminList(ctx) {
+    if (!(await requireAdminAuth(ctx))) return;
     const page = parseInt(ctx.query.page as string) || 1;
     const pageSize = parseInt(ctx.query.pageSize as string) || 25;
     const status = ctx.query.status as string;
@@ -37,6 +39,7 @@ export default factories.createCoreController('api::contact-submission.contact-s
   },
 
   async updateStatus(ctx) {
+    if (!(await requireAdminAuth(ctx))) return;
     const { documentId } = ctx.params;
     const { status: newStatus, notes } = ctx.request.body as any;
 
@@ -63,6 +66,7 @@ export default factories.createCoreController('api::contact-submission.contact-s
   },
 
   async reply(ctx) {
+    if (!(await requireAdminAuth(ctx))) return;
     const { documentId } = ctx.params;
     const { replyMessage, subject } = ctx.request.body as any;
 
@@ -103,6 +107,7 @@ export default factories.createCoreController('api::contact-submission.contact-s
   },
 
   async deleteSubmission(ctx) {
+    if (!(await requireAdminAuth(ctx))) return;
     const { documentId } = ctx.params;
     const item = await strapi.documents('api::contact-submission.contact-submission').findFirst({
       filters: { documentId },

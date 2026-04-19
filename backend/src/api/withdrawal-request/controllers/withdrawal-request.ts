@@ -1,15 +1,21 @@
 import { factories } from '@strapi/strapi';
+import { requireAdminAuth, requireUserAuth, assertOwnershipOrAdmin } from '../../../utils/auth';
 
 export default factories.createCoreController('api::withdrawal-request.withdrawal-request' as any, ({ strapi }) => ({
 
-  // POST /withdrawal-requests/create - Artiste demande un retrait
+  // POST /withdrawal-requests/create - Artiste demande un retrait (pour lui-meme)
   async createRequest(ctx) {
+    if (!(await requireUserAuth(ctx))) return;
     const { artistSlug, artistName, email, paypalEmail, amount, notes } = ctx.request.body as any;
 
     if (!email || !paypalEmail || !amount) {
       ctx.throw(400, 'Email, PayPal email and amount required');
       return;
     }
+
+    // Anti-fraud: un artiste ne peut pas creer de demande de retrait au nom
+    // d'un autre artiste. L'email du body DOIT matcher le JWT (ou etre admin).
+    if (!assertOwnershipOrAdmin(ctx, email)) return;
 
     if (amount <= 0) {
       ctx.throw(400, 'Amount must be positive');
@@ -59,11 +65,13 @@ export default factories.createCoreController('api::withdrawal-request.withdrawa
 
   // GET /withdrawal-requests/my-requests?email=xxx - Retraits d'un artiste
   async myRequests(ctx) {
+    if (!(await requireUserAuth(ctx))) return;
     const { email } = ctx.query;
     if (!email) {
       ctx.throw(400, 'Email required');
       return;
     }
+    if (!assertOwnershipOrAdmin(ctx, email as string)) return;
 
     try {
       const entries = await strapi.documents('api::withdrawal-request.withdrawal-request' as any).findMany({
@@ -91,6 +99,7 @@ export default factories.createCoreController('api::withdrawal-request.withdrawa
 
   // GET /withdrawal-requests/admin - Toutes les demandes (admin)
   async adminList(ctx) {
+    if (!(await requireAdminAuth(ctx))) return;
     try {
       const entries = await strapi.documents('api::withdrawal-request.withdrawal-request' as any).findMany({
         sort: { createdAt: 'desc' } as any,
@@ -120,6 +129,7 @@ export default factories.createCoreController('api::withdrawal-request.withdrawa
 
   // PUT /withdrawal-requests/:documentId/process - Admin traite la demande
   async processRequest(ctx) {
+    if (!(await requireAdminAuth(ctx))) return;
     const { documentId } = ctx.params;
     const { status, adminNotes, paypalTransactionId } = ctx.request.body as any;
 
