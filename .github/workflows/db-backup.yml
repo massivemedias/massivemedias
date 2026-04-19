@@ -52,8 +52,9 @@ jobs:
         run: |
           # Neon tourne sur Postgres 17, donc pg_dump 17 minimum (sinon
           # pg_dump refuse de dumper une version superieure a la sienne).
-          # Le package est dans le repo PGDG officiel, pas dans Ubuntu par
-          # defaut -> on ajoute le repo avant apt install.
+          # Le package est dans le repo PGDG officiel.
+          # On retire d'abord la version 16 pre-installee sinon le wrapper
+          # /usr/bin/pg_dump pointe toujours sur la 16.
           sudo apt-get update
           sudo apt-get install -y curl ca-certificates gnupg gzip
           sudo install -d /usr/share/postgresql-common/pgdg
@@ -64,7 +65,10 @@ jobs:
             | sudo tee /etc/apt/sources.list.d/pgdg.list
           sudo apt-get update
           sudo apt-get install -y postgresql-client-17
-          pg_dump --version
+          # Chemin explicite vers la binary 17 (bypass le wrapper qui peut
+          # resoudre vers la 16 si les 2 sont installees).
+          echo "PG_DUMP=/usr/lib/postgresql/17/bin/pg_dump" >> $GITHUB_ENV
+          /usr/lib/postgresql/17/bin/pg_dump --version
 
       - name: Dump database to compressed file
         if: steps.check-secrets.outputs.configured == 'true'
@@ -86,7 +90,7 @@ jobs:
           # --format=plain + gzip = restore facile avec `gunzip | psql`.
           # -d = connection string explicite (plus robuste que positional arg
           # quand l'URL contient des & non quotes dans le YAML).
-          pg_dump \
+          "$PG_DUMP" \
             --no-owner \
             --no-privileges \
             --format=plain \
