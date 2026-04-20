@@ -934,12 +934,17 @@ function AdminInventaire() {
 
         const renderItem = (item) => {
           const isDeleting2 = deleting === item.documentId;
+          // Icone de la categorie effective de l'item (apres remap legacy)
+          const effectiveCat = CATEGORY_REMAP[item.category] || item.category;
+          const catCfg = CATEGORIES.find(c => c.value === effectiveCat);
+          const ItemIcon = catCfg?.icon || Package;
           return (
             <div
               key={item.documentId}
               onClick={() => openEdit(item)}
               className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/[0.03] cursor-pointer transition-colors group"
             >
+              <ItemIcon size={14} className="text-grey-muted flex-shrink-0 group-hover:text-accent transition-colors" />
               <span className="text-heading text-sm font-medium flex-1 truncate">{getName(item)}</span>
               {item.detail && (
                 <span className="text-grey-muted text-xs font-mono">{item.detail}</span>
@@ -1033,9 +1038,12 @@ function AdminInventaire() {
                     )}
                     className="w-full flex items-center justify-between px-4 py-3 hover:bg-white/[0.02] transition-colors"
                   >
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2.5">
                       <ChevronDown size={16} className={`text-grey-muted transition-transform ${isOpen ? '' : '-rotate-90'}`} />
-                      {catCfg && <span>{catCfg.emoji}</span>}
+                      {catCfg && (() => {
+                        const CatIcon = catCfg.icon;
+                        return <CatIcon size={18} className="text-accent flex-shrink-0" />;
+                      })()}
                       <span className="text-heading font-heading font-bold text-base">{catLabel}</span>
                       <span className="text-grey-muted text-xs">({catItems.length})</span>
                     </div>
@@ -1059,11 +1067,11 @@ function AdminInventaire() {
                                 className="w-full flex items-center justify-between px-3 py-1.5 rounded-lg hover:bg-white/[0.02] transition-colors"
                               >
                                 <div className="flex items-center gap-2">
-                                  <ChevronDown size={12} className={`text-grey-muted transition-transform ${vOpen ? '' : '-rotate-90'}`} />
-                                  <span className="text-heading text-xs font-semibold">{variant}</span>
-                                  <span className="text-grey-muted text-[10px]">({vItems.length})</span>
+                                  <ChevronDown size={14} className={`text-grey-muted transition-transform ${vOpen ? '' : '-rotate-90'}`} />
+                                  <span className="text-heading text-sm font-semibold">{variant}</span>
+                                  <span className="text-grey-muted text-xs">({vItems.length})</span>
                                 </div>
-                                <span className="text-heading text-xs font-semibold">{vQty}</span>
+                                <span className="text-heading text-sm font-semibold">{vQty}</span>
                               </button>
                               {vOpen && <div className="ml-4">{vItems.map(renderItem)}</div>}
                             </div>
