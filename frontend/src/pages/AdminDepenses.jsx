@@ -5,6 +5,7 @@ import {
   ChevronLeft, ChevronRight, CheckCircle, ChevronDown, ChevronUp,
   Trash2, Upload, ExternalLink, BarChart3, TrendingUp, TrendingDown,
   Edit3, Image as ImageIcon, FileText, Package, Download,
+  Layers, Truck, Code2, Megaphone, Printer, MoreHorizontal,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import { getExpenses, createExpense, updateExpense, deleteExpense, getExpenseSummary } from '../services/adminService';
@@ -35,6 +36,29 @@ const CATEGORY_COLORS = {
   equipment: 'bg-yellow-500/20 text-yellow-400',
   taxes: 'bg-red-500/20 text-red-400',
   other: 'bg-gray-500/20 text-gray-400',
+};
+
+// Cartes de categorie pour le formulaire d'ajout/edition (meme pattern que
+// AdminInventaire "Ajouter au stock").
+const EXPENSE_CATEGORY_CARDS = [
+  { value: 'consommables', icon: Layers,          label: 'Consommables', desc: 'Papiers, encres, stickers' },
+  { value: 'materiel',     icon: Package,         label: 'Materiel',     desc: 'Materiel de production' },
+  { value: 'shipping',     icon: Truck,           label: 'Expedition',   desc: 'Livraison, envois' },
+  { value: 'software',     icon: Code2,           label: 'Logiciel',     desc: 'Abonnements, licences' },
+  { value: 'marketing',    icon: Megaphone,       label: 'Marketing',    desc: 'Pub, promotion' },
+  { value: 'equipment',    icon: Printer,         label: 'Equipement',   desc: 'Imprimantes, decoupe' },
+  { value: 'taxes',        icon: Receipt,         label: 'Taxes',        desc: 'TPS, TVQ, impots' },
+  { value: 'other',        icon: MoreHorizontal,  label: 'Autre',        desc: 'Divers' },
+];
+
+// Accepte "215.12" ou "215,12" ou "215". Retourne Number ou null.
+// Utilise sur Montant/TPS/TVQ : les users quebecois tapent naturellement
+// la virgule decimale, mais parseFloat natif ne la comprend pas.
+const normalizeAmount = (value) => {
+  if (value === '' || value == null) return null;
+  const normalized = String(value).trim().replace(',', '.');
+  const parsed = parseFloat(normalized);
+  return isNaN(parsed) ? null : parsed;
 };
 
 const MONTH_NAMES = {
@@ -75,7 +99,7 @@ const INVENTORY_CATEGORY_LABELS = {
 
 const emptyForm = {
   description: '', amount: '', category: 'consommables', date: new Date().toISOString().split('T')[0],
-  vendor: '', receiptNumber: '', receiptUrl: '', taxDeductible: false, tpsAmount: '', tvqAmount: '', notes: '',
+  vendor: '', receiptNumber: '', receiptUrl: '', tpsAmount: '', tvqAmount: '', notes: '',
 };
 
 function AdminDepenses() {
@@ -94,6 +118,8 @@ function AdminDepenses() {
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({ ...emptyForm });
   const [uploadingReceipt, setUploadingReceipt] = useState(false);
+  const [formAmountError, setFormAmountError] = useState('');
+  const [editAmountError, setEditAmountError] = useState('');
   const fileInputRef = useRef(null);
 
   // Expand / Edit / Delete
@@ -315,7 +341,6 @@ function AdminDepenses() {
           vendor: invoiceData.vendor || '',
           receiptNumber: invoiceData.invoiceNumber || '',
           receiptUrl: receiptUrl || '',
-          taxDeductible: true,
           tpsAmount: itemTps,
           tvqAmount: itemTvq,
           notes: `Facture ${invoiceData.invoiceNumber || ''} - ${item.description}`,
@@ -331,7 +356,6 @@ function AdminDepenses() {
         vendor: invoiceData.vendor || '',
         receiptNumber: invoiceData.invoiceNumber || '',
         receiptUrl: receiptUrl || '',
-        taxDeductible: true,
         tpsAmount: totalTps,
         tvqAmount: totalTvq,
         notes: 'Import automatique',
@@ -370,10 +394,37 @@ function AdminDepenses() {
 
   const handleCreate = async (e) => {
     e.preventDefault();
-    if (!formData.description || !formData.amount || !formData.date) return;
+    setFormAmountError('');
+    if (!formData.description || !formData.date) return;
+
+    // Normalise avant envoi : accepte virgule OU point. Amount obligatoire,
+    // TPS/TVQ optionnels (null = 0 cote backend).
+    const normalizedAmount = normalizeAmount(formData.amount);
+    if (normalizedAmount === null) {
+      setFormAmountError(tx({ fr: 'Montant invalide', en: 'Invalid amount', es: 'Monto invalido' }));
+      return;
+    }
+    const normalizedTps = normalizeAmount(formData.tpsAmount);
+    const normalizedTvq = normalizeAmount(formData.tvqAmount);
+
     setSaving(true);
     try {
-      await createExpense(formData);
+      // Payload explicite en Number -> pas de surprise cote parseFloat backend
+      // avec une virgule decimale. taxDeductible retire du payload (backend
+      // conserve le champ dans le schema mais on ne l'envoie plus).
+      const payload = {
+        description: formData.description,
+        amount: normalizedAmount,
+        category: formData.category,
+        date: formData.date,
+        vendor: formData.vendor,
+        receiptNumber: formData.receiptNumber,
+        receiptUrl: formData.receiptUrl,
+        tpsAmount: normalizedTps == null ? 0 : normalizedTps,
+        tvqAmount: normalizedTvq == null ? 0 : normalizedTvq,
+        notes: formData.notes,
+      };
+      await createExpense(payload);
 
       // Auto-sync inventaire pour les achats de materiel/consommables/equipment
       const physicalCategories = ['materiel', 'equipment', 'consommables'];
@@ -387,7 +438,7 @@ function AdminDepenses() {
               nameEn: formData.description,
               category: catMap[formData.category] || 'other',
               quantity: 1,
-              costPrice: parseFloat(formData.amount) || 0,
+              costPrice: normalizedAmount,
               notes: `Achat ${formData.vendor || ''} ${formData.date} - ${formData.receiptNumber || ''}`.trim(),
               matchMode: 'link',
             }],
@@ -412,6 +463,7 @@ function AdminDepenses() {
 
   const startEdit = (item) => {
     setEditingId(item.documentId);
+    setEditAmountError('');
     setEditData({
       description: item.description || '',
       amount: item.amount || '',
@@ -420,7 +472,6 @@ function AdminDepenses() {
       vendor: item.vendor || '',
       receiptNumber: item.receiptNumber || '',
       receiptUrl: item.receiptUrl || '',
-      taxDeductible: item.taxDeductible || false,
       tpsAmount: item.tpsAmount || '',
       tvqAmount: item.tvqAmount || '',
       notes: item.notes || '',
@@ -428,9 +479,31 @@ function AdminDepenses() {
   };
 
   const handleUpdate = async (documentId) => {
+    setEditAmountError('');
+    const normalizedAmount = normalizeAmount(editData.amount);
+    if (normalizedAmount === null) {
+      setEditAmountError(tx({ fr: 'Montant invalide', en: 'Invalid amount', es: 'Monto invalido' }));
+      return;
+    }
+    const normalizedTps = normalizeAmount(editData.tpsAmount);
+    const normalizedTvq = normalizeAmount(editData.tvqAmount);
+
     setUpdatingId(documentId);
     try {
-      const { data } = await updateExpense(documentId, editData);
+      // taxDeductible retire du payload (voir handleCreate).
+      const payload = {
+        description: editData.description,
+        amount: normalizedAmount,
+        category: editData.category,
+        date: editData.date,
+        vendor: editData.vendor,
+        receiptNumber: editData.receiptNumber,
+        receiptUrl: editData.receiptUrl,
+        tpsAmount: normalizedTps == null ? 0 : normalizedTps,
+        tvqAmount: normalizedTvq == null ? 0 : normalizedTvq,
+        notes: editData.notes,
+      };
+      const { data } = await updateExpense(documentId, payload);
       setItems(prev => prev.map(i => i.documentId === documentId ? { ...i, ...data.data } : i));
       setEditingId(null);
       fetchItems(); // refresh summary too
@@ -449,13 +522,18 @@ function AdminDepenses() {
   };
 
   const formatDate = (d) => d ? new Date(d).toLocaleDateString('fr-CA', { day: 'numeric', month: 'short', year: 'numeric' }) : '-';
-  const fmt = (v) => parseFloat(v || 0).toFixed(2);
+  // Affichage des montants : fr-CA donne la virgule decimale naturelle au Quebec
+  // (ex: 215,12). Les inputs du formulaire normalisent virgule->point avant envoi
+  // backend, donc on peut se permettre le format localise ici sans casser le flow.
+  const fmt = (v) => {
+    const n = parseFloat(v || 0) || 0;
+    return n.toLocaleString('fr-CA', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  };
 
   const summaryCards = [
     { label: tx({ fr: 'Total dépenses', en: 'Total expenses', es: 'Total gastos' }), value: summary ? `${fmt(summary.total)}$` : '-', icon: Receipt, accent: 'text-accent' },
     { label: tx({ fr: 'TPS payée', en: 'GST paid', es: 'TPS pagado' }), value: summary ? `${fmt(summary.tps)}$` : '-', icon: DollarSign, accent: 'text-blue-400' },
     { label: tx({ fr: 'TVQ payée', en: 'QST paid', es: 'TVQ pagado' }), value: summary ? `${fmt(summary.tvq)}$` : '-', icon: DollarSign, accent: 'text-purple-400' },
-    { label: tx({ fr: 'Déductible', en: 'Deductible', es: 'Deducible' }), value: summary ? `${fmt(summary.deductible)}$` : '-', icon: CheckCircle, accent: 'text-green-400' },
   ];
 
   return (
@@ -968,19 +1046,56 @@ function AdminDepenses() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <input type="text" value={formData.description} onChange={(e) => setFormData(p => ({ ...p, description: e.target.value }))}
                 placeholder={tx({ fr: 'Description *', en: 'Description *', es: 'Descripcion *' })} className="input-field text-sm" required />
-              <input type="number" step="0.01" value={formData.amount} onChange={(e) => setFormData(p => ({ ...p, amount: e.target.value }))}
-                placeholder={tx({ fr: 'Montant $ *', en: 'Amount $ *', es: 'Monto $ *' })} className="input-field text-sm" required />
+              <div>
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  value={formData.amount}
+                  onChange={(e) => { setFormData(p => ({ ...p, amount: e.target.value })); if (formAmountError) setFormAmountError(''); }}
+                  placeholder={tx({ fr: 'Montant $ *', en: 'Amount $ *', es: 'Monto $ *' })}
+                  className={`input-field text-sm w-full ${formAmountError ? 'ring-1 ring-red-400/60' : ''}`}
+                  required
+                />
+                {formAmountError && <p className="text-red-400 text-xs mt-1">{formAmountError}</p>}
+              </div>
               <input type="date" value={formData.date} onChange={(e) => setFormData(p => ({ ...p, date: e.target.value }))} className="input-field text-sm" required />
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-              <select value={formData.category} onChange={(e) => setFormData(p => ({ ...p, category: e.target.value }))} className="input-field text-sm">
-                {Object.entries(CATEGORY_LABELS).map(([k, v]) => <option key={k} value={k}>{tx(v)}</option>)}
-              </select>
+
+            {/* Categorie : cartes avec icones (pattern AdminInventaire) */}
+            <div>
+              <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2">
+                {tx({ fr: 'Categorie', en: 'Category', es: 'Categoria' })} *
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                {EXPENSE_CATEGORY_CARDS.map(cat => {
+                  const CatIcon = cat.icon;
+                  const selected = formData.category === cat.value;
+                  return (
+                    <button
+                      key={cat.value}
+                      type="button"
+                      onClick={() => setFormData(p => ({ ...p, category: cat.value }))}
+                      className={`p-3 rounded-xl border-2 text-left transition-all ${
+                        selected
+                          ? 'border-accent bg-accent/10'
+                          : 'border-white/10 bg-black/20 hover:border-white/25 hover:bg-white/[0.02]'
+                      }`}
+                    >
+                      <CatIcon size={20} className={`mb-1.5 ${selected ? 'text-accent' : 'text-grey-muted'}`} />
+                      <div className="font-bold text-heading text-sm leading-tight">{cat.label}</div>
+                      <div className="text-grey-muted text-[10px] leading-tight mt-0.5">{cat.desc}</div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <input type="text" value={formData.vendor} onChange={(e) => setFormData(p => ({ ...p, vendor: e.target.value }))}
                 placeholder={tx({ fr: 'Fournisseur', en: 'Vendor', es: 'Proveedor' })} className="input-field text-sm" />
-              <input type="number" step="0.01" value={formData.tpsAmount} onChange={(e) => setFormData(p => ({ ...p, tpsAmount: e.target.value }))}
+              <input type="text" inputMode="decimal" value={formData.tpsAmount} onChange={(e) => setFormData(p => ({ ...p, tpsAmount: e.target.value }))}
                 placeholder="TPS $" className="input-field text-sm" />
-              <input type="number" step="0.01" value={formData.tvqAmount} onChange={(e) => setFormData(p => ({ ...p, tvqAmount: e.target.value }))}
+              <input type="text" inputMode="decimal" value={formData.tvqAmount} onChange={(e) => setFormData(p => ({ ...p, tvqAmount: e.target.value }))}
                 placeholder="TVQ $" className="input-field text-sm" />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -990,11 +1105,6 @@ function AdminDepenses() {
                 placeholder={tx({ fr: 'Notes', en: 'Notes', es: 'Notas' })} rows={1} className="input-field text-sm resize-none" />
             </div>
             <div className="flex items-center gap-4 flex-wrap">
-              <label className="flex items-center gap-2 text-sm text-heading cursor-pointer">
-                <input type="checkbox" checked={formData.taxDeductible} onChange={(e) => setFormData(p => ({ ...p, taxDeductible: e.target.checked }))} className="w-4 h-4 accent-accent" />
-                {tx({ fr: 'Déductible d\'impôt', en: 'Tax deductible', es: 'Deducible' })}
-              </label>
-
               {/* Receipt upload */}
               <input type="file" ref={fileInputRef} onChange={handleReceiptUpload} accept="image/*,.pdf" className="hidden" />
               <button type="button" onClick={() => fileInputRef.current?.click()} disabled={uploadingReceipt}
@@ -1025,7 +1135,7 @@ function AdminDepenses() {
       ) : (
         <div className="rounded-xl card-bg shadow-lg shadow-black/20 overflow-hidden">
           {/* Desktop header */}
-          <div className="hidden md:grid grid-cols-[90px_1fr_120px_110px_80px_55px_55px_30px_30px] gap-3 px-4 py-3 text-xs font-semibold text-grey-muted uppercase tracking-wider shadow-[0_1px_0_rgba(255,255,255,0.04)]">
+          <div className="hidden md:grid grid-cols-[90px_1fr_120px_110px_80px_55px_55px_30px] gap-3 px-4 py-3 text-xs font-semibold text-grey-muted uppercase tracking-wider shadow-[0_1px_0_rgba(255,255,255,0.04)]">
             <span>Date</span>
             <span>Description</span>
             <span>{tx({ fr: 'Fournisseur', en: 'Vendor', es: 'Proveedor' })}</span>
@@ -1033,7 +1143,6 @@ function AdminDepenses() {
             <span>{tx({ fr: 'Montant', en: 'Amount', es: 'Monto' })}</span>
             <span>TPS</span>
             <span>TVQ</span>
-            <span></span>
             <span></span>
           </div>
 
@@ -1047,7 +1156,7 @@ function AdminDepenses() {
                 <motion.div key={item.documentId} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="">
                   {/* Desktop row */}
                   <div onClick={() => toggleExpand(item.documentId)}
-                    className="hidden md:grid grid-cols-[90px_1fr_120px_110px_80px_55px_55px_30px_30px] gap-3 px-4 py-3 items-center cursor-pointer hover:bg-accent/5 transition-colors">
+                    className="hidden md:grid grid-cols-[90px_1fr_120px_110px_80px_55px_55px_30px] gap-3 px-4 py-3 items-center cursor-pointer hover:bg-accent/5 transition-colors">
                     <span className="text-xs text-grey-muted">{formatDate(item.date)}</span>
                     <span className="text-sm text-heading font-medium truncate flex items-center gap-1.5">
                       {item.receiptUrl && <ImageIcon size={12} className="text-accent flex-shrink-0" />}
@@ -1060,7 +1169,6 @@ function AdminDepenses() {
                     <span className="text-sm text-heading font-semibold">{fmt(item.amount)}$</span>
                     <span className="text-xs text-grey-muted">{fmt(item.tpsAmount)}</span>
                     <span className="text-xs text-grey-muted">{fmt(item.tvqAmount)}</span>
-                    <span className="text-xs">{item.taxDeductible ? <CheckCircle size={12} className="text-green-400" /> : ''}</span>
                     <span className="text-grey-muted justify-self-end">{isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}</span>
                   </div>
 
@@ -1081,7 +1189,6 @@ function AdminDepenses() {
                         {CATEGORY_LABELS[item.category] ? tx(CATEGORY_LABELS[item.category]) : item.category}
                       </span>
                       {item.vendor && <span className="text-[11px] text-grey-muted truncate">{item.vendor}</span>}
-                      {item.taxDeductible && <CheckCircle size={10} className="text-green-400" />}
                     </div>
                   </div>
 
@@ -1097,19 +1204,55 @@ function AdminDepenses() {
                               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                                 <input type="text" value={editData.description} onChange={(e) => setEditData(p => ({ ...p, description: e.target.value }))}
                                   placeholder={tx({ fr: 'Description *', en: 'Description *', es: 'Descripcion *' })} className="input-field text-sm" />
-                                <input type="number" step="0.01" value={editData.amount} onChange={(e) => setEditData(p => ({ ...p, amount: e.target.value }))}
-                                  placeholder={tx({ fr: 'Montant $ *', en: 'Amount $ *', es: 'Monto $ *' })} className="input-field text-sm" />
+                                <div>
+                                  <input
+                                    type="text"
+                                    inputMode="decimal"
+                                    value={editData.amount}
+                                    onChange={(e) => { setEditData(p => ({ ...p, amount: e.target.value })); if (editAmountError) setEditAmountError(''); }}
+                                    placeholder={tx({ fr: 'Montant $ *', en: 'Amount $ *', es: 'Monto $ *' })}
+                                    className={`input-field text-sm w-full ${editAmountError ? 'ring-1 ring-red-400/60' : ''}`}
+                                  />
+                                  {editAmountError && <p className="text-red-400 text-xs mt-1">{editAmountError}</p>}
+                                </div>
                                 <input type="date" value={editData.date} onChange={(e) => setEditData(p => ({ ...p, date: e.target.value }))} className="input-field text-sm" />
                               </div>
-                              <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-                                <select value={editData.category} onChange={(e) => setEditData(p => ({ ...p, category: e.target.value }))} className="input-field text-sm">
-                                  {Object.entries(CATEGORY_LABELS).map(([k, v]) => <option key={k} value={k}>{tx(v)}</option>)}
-                                </select>
+
+                              {/* Categorie : cartes avec icones */}
+                              <div>
+                                <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2">
+                                  {tx({ fr: 'Categorie', en: 'Category', es: 'Categoria' })} *
+                                </label>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                                  {EXPENSE_CATEGORY_CARDS.map(cat => {
+                                    const CatIcon = cat.icon;
+                                    const selected = editData.category === cat.value;
+                                    return (
+                                      <button
+                                        key={cat.value}
+                                        type="button"
+                                        onClick={() => setEditData(p => ({ ...p, category: cat.value }))}
+                                        className={`p-3 rounded-xl border-2 text-left transition-all ${
+                                          selected
+                                            ? 'border-accent bg-accent/10'
+                                            : 'border-white/10 bg-black/20 hover:border-white/25 hover:bg-white/[0.02]'
+                                        }`}
+                                      >
+                                        <CatIcon size={20} className={`mb-1.5 ${selected ? 'text-accent' : 'text-grey-muted'}`} />
+                                        <div className="font-bold text-heading text-sm leading-tight">{cat.label}</div>
+                                        <div className="text-grey-muted text-[10px] leading-tight mt-0.5">{cat.desc}</div>
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                                 <input type="text" value={editData.vendor} onChange={(e) => setEditData(p => ({ ...p, vendor: e.target.value }))}
                                   placeholder={tx({ fr: 'Fournisseur', en: 'Vendor', es: 'Proveedor' })} className="input-field text-sm" />
-                                <input type="number" step="0.01" value={editData.tpsAmount} onChange={(e) => setEditData(p => ({ ...p, tpsAmount: e.target.value }))}
+                                <input type="text" inputMode="decimal" value={editData.tpsAmount} onChange={(e) => setEditData(p => ({ ...p, tpsAmount: e.target.value }))}
                                   placeholder="TPS $" className="input-field text-sm" />
-                                <input type="number" step="0.01" value={editData.tvqAmount} onChange={(e) => setEditData(p => ({ ...p, tvqAmount: e.target.value }))}
+                                <input type="text" inputMode="decimal" value={editData.tvqAmount} onChange={(e) => setEditData(p => ({ ...p, tvqAmount: e.target.value }))}
                                   placeholder="TVQ $" className="input-field text-sm" />
                               </div>
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -1119,10 +1262,6 @@ function AdminDepenses() {
                                   placeholder={tx({ fr: 'Notes', en: 'Notes', es: 'Notas' })} rows={1} className="input-field text-sm resize-none" />
                               </div>
                               <div className="flex items-center gap-3 flex-wrap">
-                                <label className="flex items-center gap-2 text-sm text-heading cursor-pointer">
-                                  <input type="checkbox" checked={editData.taxDeductible} onChange={(e) => setEditData(p => ({ ...p, taxDeductible: e.target.checked }))} className="w-4 h-4 accent-accent" />
-                                  {tx({ fr: 'Déductible', en: 'Deductible', es: 'Deducible' })}
-                                </label>
                                 <input type="file" ref={editFileRef} onChange={handleEditReceiptUpload} accept="image/*,.pdf" className="hidden" />
                                 <button type="button" onClick={() => editFileRef.current?.click()} disabled={uploadingEditReceipt}
                                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg card-bg shadow-lg shadow-black/20 text-xs text-grey-muted hover:text-heading transition-colors disabled:opacity-50">
