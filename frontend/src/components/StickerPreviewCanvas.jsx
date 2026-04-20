@@ -176,7 +176,9 @@ function StickerPreviewCanvas({
     const rect = e.currentTarget.getBoundingClientRect();
     const dx = (e.clientX - (rect.left + rect.width / 2)) / (rect.width / 2);
     const dy = (e.clientY - (rect.top + rect.height / 2)) / (rect.height / 2);
-    // Pour les stickers ronds: ignorer les survols en dehors du cercle visible
+
+    // Pour les stickers ronds: hit-test rapide via distance au centre
+    // (cercle parfait, pas besoin de sampler le canvas).
     if (shape === 'round') {
       const distFromCenter = Math.sqrt(dx * dx + dy * dy);
       if (distFromCenter > 1) {
@@ -184,6 +186,32 @@ function StickerPreviewCanvas({
         return;
       }
     }
+
+    // Pour diecut: le PNG a sa propre alpha (forme libre, rond/etoile/custom).
+    // On sample le pixel du canvas a la position du curseur - si transparent,
+    // le curseur est en dehors de la silhouette visible -> pas de tilt.
+    // getImageData marche car loadImage pose crossOrigin='anonymous'.
+    if (shape === 'diecut') {
+      const canvas = canvasRef.current;
+      if (canvas) {
+        const px = Math.floor(((e.clientX - rect.left) / rect.width) * canvas.width);
+        const py = Math.floor(((e.clientY - rect.top) / rect.height) * canvas.height);
+        if (px >= 0 && py >= 0 && px < canvas.width && py < canvas.height) {
+          try {
+            const ctx = canvas.getContext('2d');
+            const alpha = ctx.getImageData(px, py, 1, 1).data[3];
+            if (alpha < 16) {
+              setTilt({ x: 0, y: 0 });
+              return;
+            }
+          } catch (_) {
+            // Canvas tainted (image sans CORS) -> fallback silencieux sur le
+            // comportement precedent (tilt sur toute la zone).
+          }
+        }
+      }
+    }
+
     setTilt({ x: -dy * 10, y: dx * 10 });
   };
   const handleMouseLeave = () => setTilt({ x: 0, y: 0 });
@@ -204,20 +232,34 @@ function StickerPreviewCanvas({
         className="relative"
         style={{
           transform: `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg) scale(${tilting ? 1.02 : 1})`,
-          transition: tilting ? 'transform 0.08s ease-out' : 'transform 0.55s cubic-bezier(0.25,0.8,0.25,1)',
+          transition: tilting ? 'transform 0.08s ease-out, filter 0.08s ease-out' : 'transform 0.55s cubic-bezier(0.25,0.8,0.25,1), filter 0.55s cubic-bezier(0.25,0.8,0.25,1)',
           transformStyle: 'preserve-3d',
-          borderRadius: shapeRadius,
-          overflow: 'hidden',
-          boxShadow: tilting
-            ? `${-tilt.y * 1.5}px ${tilt.x * 1.5}px 28px rgba(0,0,0,0.35)`
-            : '0 4px 16px rgba(0,0,0,0.18)',
-          willChange: 'transform',
+          // Diecut : on clippe physiquement la zone qui tilt via clip-path
+          // circle(50%) -> la div devient un disque rond, donc la rotation
+          // 3D est un disque qui tilt, pas un carre. Le drop-shadow respecte
+          // le clip -> ombre ronde. Zero trace de carre.
+          // round/square/rectangle : contour rectangulaire defini, on garde
+          // le box-shadow + overflow:hidden classiques.
+          clipPath: shape === 'diecut' ? 'circle(50%)' : undefined,
+          borderRadius: shape === 'diecut' ? undefined : shapeRadius,
+          overflow: shape === 'diecut' ? 'visible' : 'hidden',
+          boxShadow: shape === 'diecut'
+            ? 'none'
+            : (tilting
+              ? `${-tilt.y * 1.5}px ${tilt.x * 1.5}px 28px rgba(0,0,0,0.35)`
+              : '0 4px 16px rgba(0,0,0,0.18)'),
+          filter: shape === 'diecut'
+            ? (tilting
+              ? `drop-shadow(${-tilt.y * 1.5}px ${tilt.x * 1.5 + 6}px 14px rgba(0,0,0,0.45))`
+              : 'drop-shadow(0 4px 10px rgba(0,0,0,0.35))')
+            : undefined,
+          willChange: 'transform, filter',
         }}
       >
         <canvas
           ref={canvasRef}
           className="w-full h-auto block"
-          style={{ borderRadius: shapeRadius }}
+          style={{ borderRadius: shape === 'diecut' ? undefined : shapeRadius }}
         />
 
         {/* FX overlay dynamique - suit le curseur */}
@@ -226,7 +268,7 @@ function StickerPreviewCanvas({
             className="absolute inset-0 pointer-events-none"
             style={{
               ...fxOverlay,
-              borderRadius: shapeRadius,
+              borderRadius: shape === 'diecut' ? undefined : shapeRadius,
               transition: 'background 0.1s ease-out, opacity 0.1s ease-out',
             }}
           />
