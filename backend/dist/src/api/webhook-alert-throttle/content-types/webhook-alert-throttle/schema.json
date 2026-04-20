@@ -1,0 +1,28 @@
+{
+    "kind": "collectionType",
+    "collectionName": "webhook_alert_throttles",
+    "info": {
+        "singularName": "webhook-alert-throttle",
+        "pluralName": "webhook-alert-throttles",
+        "displayName": "Webhook Alert Throttle",
+        "description": "Throttle persistant pour les emails d'alerte webhook (STRIPE-03). Une ligne par cle d'alerte, mise a jour a chaque envoi."
+    },
+    "options": {
+        "draftAndPublish": false
+    },
+    "attributes": {
+        "alertKey": {
+            "type": "string",
+            "required": true,
+            "unique": true
+        },
+        "lastSentAt": {
+            "type": "datetime",
+            "required": true
+        },
+        "sendCount": {
+            "type": "integer",
+            "default": 0
+        }
+    }
+}

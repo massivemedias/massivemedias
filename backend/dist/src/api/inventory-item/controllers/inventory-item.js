@@ -55,7 +55,7 @@ exports.default = strapi_1.factories.createCoreController('api::inventory-item.i
         if (!(await (0, auth_1.requireAdminAuth)(ctx)))
             return;
         const { documentId } = ctx.params;
-        const { quantity, reserved, notes, nameFr, nameEn, costPrice, location, category, variant, brand, color, detail, hasZip } = ctx.request.body;
+        const { quantity, reserved, notes, nameFr, nameEn, costPrice, location, category, variant, brand, color, detail, hasZip, stickerFormat, stickerType, finitionPapier, fx, taillePapier, } = ctx.request.body;
         const item = await strapi.documents('api::inventory-item.inventory-item').findFirst({
             filters: { documentId },
         });
@@ -89,6 +89,18 @@ exports.default = strapi_1.factories.createCoreController('api::inventory-item.i
             updateData.detail = detail;
         if (hasZip !== undefined)
             updateData.hasZip = !!hasZip;
+        // Champs conditionnels par categorie : null = effacer (cas ou l'utilisateur
+        // switch de Stickers vers une autre categorie qui n'utilise pas ces champs).
+        if (stickerFormat !== undefined)
+            updateData.stickerFormat = stickerFormat || null;
+        if (stickerType !== undefined)
+            updateData.stickerType = stickerType || null;
+        if (finitionPapier !== undefined)
+            updateData.finitionPapier = finitionPapier || null;
+        if (fx !== undefined)
+            updateData.fx = fx || null;
+        if (taillePapier !== undefined)
+            updateData.taillePapier = taillePapier || null;
         const updated = await strapi.documents('api::inventory-item.inventory-item').update({
             documentId: item.documentId,
             data: updateData,
@@ -104,23 +116,38 @@ exports.default = strapi_1.factories.createCoreController('api::inventory-item.i
     async createItem(ctx) {
         if (!(await (0, auth_1.requireAdminAuth)(ctx)))
             return;
-        const { nameFr, nameEn, category, variant, detail, brand, color, hasZip, quantity, costPrice, location, notes, lowStockThreshold } = ctx.request.body;
+        const { nameFr, nameEn, category, variant, detail, brand, color, hasZip, quantity, costPrice, location, notes, lowStockThreshold, stickerFormat, stickerType, finitionPapier, fx, taillePapier, } = ctx.request.body;
         if (!nameFr || !category) {
             return ctx.badRequest('nameFr and category are required');
         }
-        const VALID_CATEGORIES = ['textile', 'frame', 'accessory', 'sticker', 'print', 'merch', 'equipment', 'flyer', 'business-card', 'web', 'design', 'photo', 'video', 'consulting', 'hosting', 'other'];
+        // Nouveau schema inventaire (7 categories principales) + aliases legacy
+        // pour les items crees avant la refonte.
+        const VALID_CATEGORIES = [
+            'stickers', 'papiers', 'textile', 'consommables', 'materiel', 'cadre', 'merch',
+            // Legacy (items existants)
+            'frame', 'accessory', 'sticker', 'print', 'equipment', 'consommable', 'emballage',
+            'flyer', 'business-card', 'web', 'design', 'photo', 'video', 'consulting', 'hosting', 'other',
+        ];
         if (!VALID_CATEGORIES.includes(category)) {
             return ctx.badRequest(`Invalid category. Must be one of: ${VALID_CATEGORIES.join(', ')}`);
         }
-        // Prefixes SKU par categorie
+        // Prefixes SKU par categorie (nouveaux + legacy pour compat SKU existants).
         const SKU_PREFIXES = {
+            stickers: 'STK',
+            papiers: 'PAP',
             textile: 'TXT',
+            consommables: 'CON',
+            materiel: 'MAT',
+            cadre: 'CAD',
+            merch: 'MER',
+            // Legacy
             frame: 'FRM',
             accessory: 'ACC',
             sticker: 'STK',
             print: 'PRT',
-            merch: 'MRC',
             equipment: 'EQP',
+            consommable: 'CSM',
+            emballage: 'EMB',
             flyer: 'FLY',
             'business-card': 'BCD',
             web: 'WEB',
@@ -184,6 +211,11 @@ exports.default = strapi_1.factories.createCoreController('api::inventory-item.i
                 color: color || '',
                 detail: detail || '',
                 hasZip: !!hasZip,
+                stickerFormat: stickerFormat || null,
+                stickerType: stickerType || null,
+                finitionPapier: finitionPapier || null,
+                fx: fx || null,
+                taillePapier: taillePapier || null,
                 quantity: quantity || 0,
                 reserved: 0,
                 lowStockThreshold: lowStockThreshold || 5,

@@ -26,8 +26,41 @@
     },
     "category": {
       "type": "enumeration",
-      "enum": ["textile", "frame", "sticker", "merch", "equipment", "consommable", "emballage"],
+      "enum": [
+        "stickers",
+        "papiers",
+        "textile",
+        "consommables",
+        "materiel",
+        "cadre",
+        "merch",
+        "sticker",
+        "consommable",
+        "emballage",
+        "equipment",
+        "frame"
+      ],
       "required": true
+    },
+    "stickerFormat": {
+      "type": "enumeration",
+      "enum": ["rouleau", "feuille"]
+    },
+    "stickerType": {
+      "type": "enumeration",
+      "enum": ["transparent", "blanc", "holographique", "glossy"]
+    },
+    "finitionPapier": {
+      "type": "enumeration",
+      "enum": ["matte", "glossy", "luster"]
+    },
+    "fx": {
+      "type": "enumeration",
+      "enum": ["clear", "holographique", "broken_glass", "dots", "stars", "divers"]
+    },
+    "taillePapier": {
+      "type": "enumeration",
+      "enum": ["8.5x11", "11x17", "13x19"]
     },
     "variant": {
       "type": "string"

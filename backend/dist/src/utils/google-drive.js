@@ -2,6 +2,29 @@
 // Upload de fichiers originaux artistes vers Google Drive
 // OAuth2 avec refresh token - upload en tant que mauditemachine@gmail.com
 // Zero dependance externe - fetch natif + API Drive REST v3
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteFromGoogleDrive = exports.uploadStreamToFolder = exports.uploadBufferToFolder = exports.uploadStreamToGoogleDrive = exports.uploadBufferToGoogleDrive = exports.uploadToGoogleDrive = exports.normalizeDriveFolderName = exports.getOrCreateFolder = void 0;
 const DRIVE_API = 'https://www.googleapis.com/upload/drive/v3/files';
@@ -9,6 +32,20 @@ const DRIVE_API_META = 'https://www.googleapis.com/drive/v3/files';
 const TOKEN_URL = 'https://oauth2.googleapis.com/token';
 // Cache du token (valide ~1h)
 let cachedToken = null;
+// BACKUP-02 : si le refresh token Drive expire ou est revoque, on envoie
+// une alerte email admin throttlee a 60min. Sans ca, tous les uploads
+// artistes casseraient en silence (meme profil que le webhook Stripe casse
+// d'avril 2026 qui est passe inapercu 4 jours).
+async function notifyDriveFailure(reason, context) {
+    try {
+        const { shouldSendThrottledAlert } = await Promise.resolve().then(() => __importStar(require('./webhook-alert-throttle')));
+        if (!(await shouldSendThrottledAlert('drive_oauth_failure', 60)))
+            return;
+        const { sendDriveFailureAlert } = await Promise.resolve().then(() => __importStar(require('./email')));
+        await sendDriveFailureAlert({ reason, context });
+    }
+    catch (_) { /* non-blocking : l'alerte ne doit pas masquer l'erreur originale */ }
+}
 async function getAccessToken() {
     if (cachedToken && Date.now() < cachedToken.expiry) {
         return cachedToken.token;
@@ -20,7 +57,9 @@ async function getAccessToken() {
         const hasClientId = !!clientId;
         const hasSecret = !!clientSecret;
         const hasRefresh = !!refreshToken;
-        throw new Error(`Google Drive OAuth2 env vars not set - CLIENT_ID:${hasClientId} SECRET:${hasSecret} REFRESH:${hasRefresh}`);
+        const reason = `Google Drive OAuth2 env vars not set - CLIENT_ID:${hasClientId} SECRET:${hasSecret} REFRESH:${hasRefresh}`;
+        await notifyDriveFailure(reason, 'getAccessToken: env check');
+        throw new Error(reason);
     }
     const res = await fetch(TOKEN_URL, {
         method: 'POST',
@@ -29,7 +68,14 @@ async function getAccessToken() {
     });
     if (!res.ok) {
         const err = await res.text();
-        throw new Error(`Token refresh failed: ${err}`);
+        const reason = `Token refresh failed: ${err}`;
+        // Invalidate le cache : si l'erreur est "invalid_grant" (refresh revoke),
+        // on ne veut pas continuer a reutiliser un token valide en cache qui
+        // pourrait expirer juste apres. On force une nouvelle tentative sur le
+        // prochain appel pour que l'alerte se redeclenche si besoin.
+        cachedToken = null;
+        await notifyDriveFailure(reason, `getAccessToken: http ${res.status}`);
+        throw new Error(reason);
     }
     const data = await res.json();
     cachedToken = { token: data.access_token, expiry: Date.now() + 3500 * 1000 };

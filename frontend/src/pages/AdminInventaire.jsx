@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Package, AlertTriangle, XCircle, CheckCircle, Check, Search,
   Edit3, X, Save, Loader2, DollarSign, Archive, Plus, Trash2, ChevronDown,
-  Shirt, Layers, PackageOpen, Printer, Frame, ShoppingBag,
+  Shirt, Layers, Frame, ShoppingBag,
+  Sticker, FileText, Wrench,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import api from '../services/api';
@@ -59,133 +60,84 @@ const STATUS_CONFIG = {
 
 // =================== CONFIGURATION DES CATEGORIES ===================
 
+// Nouvelle structure inventaire (avril 2026) : 7 categories principales.
+// Les anciennes valeurs (emballage/equipment/consommable singulier/sticker/frame/accessory)
+// sont remappees via CATEGORY_REMAP pour que les items pre-refonte s'affichent
+// toujours sans erreur.
 const CATEGORY_LABELS = {
-  textile:     { fr: 'Textile',      en: 'Textile',     es: 'Textil' },
-  consommable: { fr: 'Consommables', en: 'Consumables', es: 'Consumibles' },
-  emballage:   { fr: 'Emballage',    en: 'Packaging',   es: 'Embalaje' },
-  equipment:   { fr: 'Equipement',   en: 'Equipment',   es: 'Equipo' },
-  frame:       { fr: 'Cadre',        en: 'Frame',       es: 'Marco' },
-  merch:       { fr: 'Merch',        en: 'Merch',       es: 'Merch' },
-  // Legacy (compatibilite anciens items)
-  sticker:     'Sticker',
-  print:       'Print',
-  accessory:   { fr: 'Accessoire',   en: 'Accessory',   es: 'Accesorio' },
+  stickers:     { fr: 'Stickers',     en: 'Stickers',    es: 'Stickers' },
+  papiers:      { fr: 'Papiers',      en: 'Papers',      es: 'Papeles' },
+  textile:      { fr: 'Textile',      en: 'Textile',     es: 'Textil' },
+  consommables: { fr: 'Consommables', en: 'Consumables', es: 'Consumibles' },
+  materiel:     { fr: 'Materiel',     en: 'Materials',   es: 'Materiales' },
+  cadre:        { fr: 'Cadre',        en: 'Frame',       es: 'Marco' },
+  merch:        { fr: 'Merch',        en: 'Merch',       es: 'Merch' },
+  // Legacy (items crees avant la refonte, lecture seule)
+  consommable:  { fr: 'Consommables', en: 'Consumables', es: 'Consumibles' },
+  emballage:    { fr: 'Consommables', en: 'Consumables', es: 'Consumibles' },
+  equipment:    { fr: 'Materiel',     en: 'Materials',   es: 'Materiales' },
+  frame:        { fr: 'Cadre',        en: 'Frame',       es: 'Marco' },
+  sticker:      { fr: 'Stickers',     en: 'Stickers',    es: 'Stickers' },
+  print:        { fr: 'Papiers',      en: 'Papers',      es: 'Papeles' },
+  accessory:    { fr: 'Materiel',     en: 'Materials',   es: 'Materiales' },
 };
 
 const CATEGORIES = [
-  { value: 'textile',     icon: Shirt,       label: 'Textile',      desc: 'T-Shirts, Hoodies, Long Sleeves' },
-  { value: 'consommable', icon: Layers,      label: 'Consommables', desc: 'Feuilles, papiers, encres, laminat' },
-  { value: 'emballage',   icon: PackageOpen, label: 'Emballage',    desc: 'Boites, enveloppes, protections' },
-  { value: 'equipment',   icon: Printer,     label: 'Equipement',   desc: 'Imprimantes, decoupe, laminage' },
-  { value: 'frame',       icon: Frame,       label: 'Cadre',        desc: 'Cadres photo et presentoir' },
-  { value: 'merch',       icon: ShoppingBag, label: 'Merch',        desc: 'Tote bags, mugs, accessoires' },
+  { value: 'stickers',     icon: Sticker,     label: 'Stickers',     desc: 'Rouleaux, feuilles, FX' },
+  { value: 'papiers',      icon: FileText,    label: 'Papiers',      desc: 'Matte, Glossy, Luster' },
+  { value: 'textile',      icon: Shirt,       label: 'Textile',      desc: 'T-Shirts, Hoodies, Long Sleeves' },
+  { value: 'consommables', icon: Layers,      label: 'Consommables', desc: 'Encres, emballage, divers' },
+  { value: 'materiel',     icon: Wrench,      label: 'Materiel',     desc: 'Outils, accessoires' },
+  { value: 'cadre',        icon: Frame,       label: 'Cadre',        desc: 'Cadres photo et presentoir' },
+  { value: 'merch',        icon: ShoppingBag, label: 'Merch',        desc: 'Tote bags, mugs, accessoires' },
 ];
 
-// Sous-types par categorie (stockes dans le champ `variant`)
-const CONSOMMABLE_GROUPS = [
-  {
-    group: 'Stickers',
-    items: [
-      'Feuilles sticker clear',
-      'Feuilles sticker blanc',
-      'Feuilles FX holographique',
-      'Feuilles FX glossy',
-      'Feuilles FX broken glass',
-      'Feuilles FX stars',
-    ],
-  },
-  {
-    group: 'Impression grand format',
-    items: [
-      'Papier fine art',
-      'Papier photo lustre',
-      'Papier photo brillant',
-      'Papier photo mat',
-      'Toile (canvas)',
-    ],
-  },
-  {
-    group: 'Supports rigides',
-    items: ['Forex / Mousse PVC', 'Dibond (allu)'],
-  },
-  {
-    group: 'Laminat',
-    items: [
-      'Rouleau laminat brillant',
-      'Rouleau laminat mat',
-      'Rouleau laminat satine',
-      'Pochettes lamineuse A4',
-      'Pochettes lamineuse A3',
-    ],
-  },
-  {
-    group: 'Machine / Outils',
-    items: [
-      "Encre imprimante",
-      "Tete d'impression",
-      'Vinyle de decoupe',
-      'Tapis de decoupe (cutting mat)',
-      'Lame de rechange plotter',
-      'Ruban transfert',
-    ],
-  },
-  {
-    group: 'Accessoires',
-    items: [
-      'Spatule / raclette',
-      'Ciseaux',
-      'Regle de decoupe',
-      'Gants nitrile',
-      'Lingettes nettoyantes',
-    ],
-  },
+// Options des champs conditionnels (nouveau systeme).
+const STICKER_FORMATS    = [{ value: 'rouleau', label: 'Rouleau' }, { value: 'feuille', label: 'Feuille' }];
+const STICKER_TYPES      = [
+  { value: 'transparent',   label: 'Transparent' },
+  { value: 'blanc',         label: 'Blanc' },
+  { value: 'holographique', label: 'Holographique' },
+  { value: 'glossy',        label: 'Glossy' },
 ];
-
-const EMBALLAGE_TYPES = [
-  'Enveloppe rigide',
-  'Tube carton',
-  'Boite carton',
-  'Film a bulles',
-  'Ruban adhesif',
-  'Pochette de protection',
-  'Papier de soie',
-  'Sachet plastique',
-  'Coin de protection',
+const FINITION_PAPIER    = [
+  { value: 'matte',  label: 'Matte' },
+  { value: 'glossy', label: 'Glossy' },
+  { value: 'luster', label: 'Luster' },
 ];
-
-const EQUIPMENT_TYPES = [
-  'Imprimante',
-  'Lamineuse',
-  'Plotter / Decoupeuse',
-  'Presse a chaud',
-  'Massicot',
-  'Scanner',
-  'Ordinateur',
-  'Ecran / Moniteur',
+const FX_OPTIONS         = [
+  { value: 'clear',         label: 'Clear' },
+  { value: 'holographique', label: 'Holographique' },
+  { value: 'broken_glass',  label: 'Broken Glass' },
+  { value: 'dots',          label: 'Dots' },
+  { value: 'stars',         label: 'Stars' },
+  { value: 'divers',        label: 'Divers' },
 ];
+const TAILLE_PAPIER_OPTIONS = ['8.5x11', '11x17', '13x19'];
 
-const TEXTILE_VARIANTS = ['T-Shirt', 'Hoodie', 'Long Sleeve', 'Polo', 'Tank Top'];
+const TEXTILE_VARIANTS = ['T-Shirt', 'Hoodie', 'Long Sleeve'];
 const TEXTILE_SIZES    = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL'];
 
-const MERCH_TYPES = ['Tote Bag', 'Mug', 'Tumbler', 'Fanny Pack', 'Casquette', 'Pin / Badge'];
-const MERCH_COLORS = ['Blanc', 'Noir', 'Natural', 'Gris', 'Beige', 'Rouge', 'Bleu', 'Rose', 'Vert'];
-
-const CONSOMMABLE_FORMATS = ['8.5x11', '11x17', '13x19', '17x22', 'A4', 'A3', 'A3+', 'A2', '24"', '36"', '44"'];
-const EMBALLAGE_SIZES     = ['A6', 'A5', 'A4', 'A3', '5x5', '10x10', '12x12', '4x4x40', '6x6x48'];
-const FRAME_SIZES         = ['A6', 'A5', 'A4', 'A3', 'A3+', 'A2', '11x14', '16x20'];
-const FRAME_COLORS        = ['Noir', 'Blanc', 'Argent', 'Chene naturel', 'Noyer', 'Gris'];
-
 const SKU_PREFIXES = {
-  textile: 'TXT', consommable: 'CSM', emballage: 'EMB',
-  equipment: 'EQP', frame: 'FRM', merch: 'MRC',
-  sticker: 'CSM', print: 'CSM', accessory: 'CSM', other: 'OTH',
+  stickers: 'STK', papiers: 'PAP', textile: 'TXT',
+  consommables: 'CON', materiel: 'MAT', cadre: 'CAD', merch: 'MER',
+  // Legacy
+  consommable: 'CSM', emballage: 'EMB', equipment: 'EQP',
+  frame: 'FRM', sticker: 'STK', print: 'PRT', accessory: 'ACC', other: 'OTH',
 };
 
-// Remap legacy categories -> categories principales pour l'affichage
+// Remap legacy categories -> categories principales pour l'affichage.
+// Regle prudente demandee par le lead : pas de reclassement automatique par
+// contenu (ex: noms contenant "cadre"), tout l'existant va dans la categorie
+// proche et sera reclasse manuellement si besoin.
 const CATEGORY_REMAP = {
-  sticker: 'consommable',
-  print: 'consommable',
-  accessory: 'consommable',
+  sticker:     'stickers',
+  print:       'papiers',
+  emballage:   'consommables',
+  consommable: 'consommables',
+  equipment:   'materiel',
+  accessory:   'materiel',
+  frame:       'cadre',
 };
 
 // =================== COMPOSANTS UTILITAIRES ===================
@@ -235,24 +187,55 @@ function InputText({ value, onChange, placeholder, className = '' }) {
   );
 }
 
+// Select style aligne sur InputText : meme bg, bord, focus accent.
+// Accepte options = [{ value, label }] ou [string].
+function Select({ value, onChange, options, placeholder = '' }) {
+  return (
+    <select
+      value={value || ''}
+      onChange={e => onChange(e.target.value)}
+      className="w-full rounded-lg bg-black/20 text-heading text-sm px-4 py-2.5 outline-none border border-white/10 focus:border-accent"
+    >
+      <option value="">{placeholder}</option>
+      {options.map(opt => {
+        const o = typeof opt === 'string' ? { value: opt, label: opt } : opt;
+        return <option key={o.value} value={o.value}>{o.label}</option>;
+      })}
+    </select>
+  );
+}
+
 // =================== FORMULAIRE ===================
 
 function ItemForm({ onClose, onSaved, tx, lang, editItem }) {
   const isEdit = !!editItem;
 
+  // Si on edite un item legacy, on remappe sa categorie vers le nouveau systeme
+  // pour que la grille de cartes preselectionne la bonne case.
+  const initialCategory = editItem?.category
+    ? (CATEGORY_REMAP[editItem.category] || editItem.category)
+    : 'stickers';
+
   const [form, setForm] = useState({
-    nameFr:    editItem?.nameFr    || '',
-    nameEn:    editItem?.nameEn    || '',
-    category:  editItem?.category  || 'textile',
-    variant:   editItem?.variant   || '',
-    detail:    editItem?.detail    || '',
-    color:     editItem?.color     || '',
-    brand:     editItem?.brand     || '',
-    hasZip:    editItem?.hasZip    ?? false,
-    quantity:  editItem?.quantity  ?? 0,
-    costPrice: editItem?.costPrice || '',
-    location:  editItem?.location  || '',
-    notes:     editItem?.notes     || '',
+    nameFr:         editItem?.nameFr    || '',
+    nameEn:         editItem?.nameEn    || '',
+    category:       initialCategory,
+    variant:        editItem?.variant   || '',
+    detail:         editItem?.detail    || '',
+    color:          editItem?.color     || '',
+    brand:          editItem?.brand     || '',
+    hasZip:         editItem?.hasZip    ?? false,
+    // Nouveaux champs conditionnels
+    stickerFormat:  editItem?.stickerFormat  || '',
+    stickerType:    editItem?.stickerType    || '',
+    finitionPapier: editItem?.finitionPapier || '',
+    fx:             editItem?.fx             || '',
+    taillePapier:   editItem?.taillePapier   || '',
+    // Commons
+    quantity:       editItem?.quantity  ?? 0,
+    costPrice:      editItem?.costPrice || '',
+    location:       editItem?.location  || '',
+    notes:          editItem?.notes     || '',
     _colorOpen: false,
   });
 
@@ -264,16 +247,28 @@ function ItemForm({ onClose, onSaved, tx, lang, editItem }) {
 
   // Calcule le nom depuis les champs
   const computeName = (f) => {
+    const labelOf = (val, opts) => opts.find(o => o.value === val)?.label || '';
     switch (f.category) {
+      case 'stickers':
+        return [
+          labelOf(f.stickerFormat, STICKER_FORMATS),
+          labelOf(f.stickerType, STICKER_TYPES),
+          labelOf(f.fx, FX_OPTIONS),
+          labelOf(f.finitionPapier, FINITION_PAPIER),
+        ].filter(Boolean).join(' ');
+      case 'papiers':
+        return [
+          f.brand,
+          labelOf(f.finitionPapier, FINITION_PAPIER),
+          f.taillePapier,
+        ].filter(Boolean).join(' ');
       case 'textile':
         return [f.brand, f.variant, f.hasZip ? 'Zip' : '', f.color, f.detail].filter(Boolean).join(' ');
-      case 'consommable':
-        return [f.variant, f.brand, f.detail].filter(Boolean).join(' ');
-      case 'emballage':
-        return [f.variant, f.detail].filter(Boolean).join(' ');
-      case 'equipment':
-        return [f.brand, f.variant, f.detail].filter(Boolean).join(' ');
-      case 'frame':
+      case 'consommables':
+        return [f.brand, f.detail].filter(Boolean).join(' ');
+      case 'materiel':
+        return [f.brand, f.detail].filter(Boolean).join(' ');
+      case 'cadre':
         return ['Cadre', f.color, f.detail].filter(Boolean).join(' ');
       case 'merch':
         return [f.variant, f.brand, f.color, f.detail].filter(Boolean).join(' ');
@@ -282,7 +277,9 @@ function ItemForm({ onClose, onSaved, tx, lang, editItem }) {
     }
   };
 
-  // Met a jour un champ ET regenere le nom automatiquement
+  // Met a jour un champ ET regenere le nom automatiquement.
+  // Le nameFr est ecrase SEULEMENT si l'utilisateur ne l'a pas deja edite
+  // manuellement vers une valeur differente.
   const upd = (updates) => {
     setForm(f => {
       const next = { ...f, ...updates };
@@ -292,16 +289,16 @@ function ItemForm({ onClose, onSaved, tx, lang, editItem }) {
     });
   };
 
+  // Switch categorie SANS effacer les autres champs : l'user peut naviguer
+  // entre categories sans perdre sa saisie tant que la modale reste ouverte.
+  // Les champs non-pertinents sont juste masques, leur state vit toujours.
   const handleCategoryChange = (newCat) => {
-    setForm(f => ({
-      ...f,
-      category: newCat,
-      variant: '',
-      detail: '',
-      color: '',
-      hasZip: false,
-      nameFr: '',
-    }));
+    setForm(f => {
+      const next = { ...f, category: newCat };
+      const name = computeName(next);
+      if (name) next.nameFr = name;
+      return next;
+    });
   };
 
   const getSKUPreview = () => {
@@ -318,18 +315,23 @@ function ItemForm({ onClose, onSaved, tx, lang, editItem }) {
     setError('');
     try {
       const payload = {
-        nameFr:    form.nameFr,
-        nameEn:    form.nameEn || form.nameFr,
-        category:  form.category,
-        variant:   form.variant,
-        brand:     form.brand,
-        color:     form.color,
-        detail:    form.detail,
-        hasZip:    !!form.hasZip,
-        quantity:  Number(form.quantity) || 0,
-        costPrice: form.costPrice ? Number(form.costPrice) : 0,
-        location:  form.location,
-        notes:     form.notes,
+        nameFr:         form.nameFr,
+        nameEn:         form.nameEn || form.nameFr,
+        category:       form.category,
+        variant:        form.variant,
+        brand:          form.brand,
+        color:          form.color,
+        detail:         form.detail,
+        hasZip:         !!form.hasZip,
+        stickerFormat:  form.stickerFormat  || null,
+        stickerType:    form.stickerType    || null,
+        finitionPapier: form.finitionPapier || null,
+        fx:             form.fx             || null,
+        taillePapier:   form.taillePapier   || null,
+        quantity:       Number(form.quantity) || 0,
+        costPrice:      form.costPrice ? Number(form.costPrice) : 0,
+        location:       form.location,
+        notes:          form.notes,
       };
       if (isEdit) {
         await api.put(`/inventory-items/${editItem.documentId}/adjust`, payload);
@@ -339,10 +341,13 @@ function ItemForm({ onClose, onSaved, tx, lang, editItem }) {
         const res = await api.post('/inventory-items/create', payload);
         setCreatedSku(res.data?.data?.sku || '');
         onSaved();
-        // Reset pour ajouter un autre du meme type
+        // Reset pour ajouter un autre du meme type (on conserve la categorie
+        // mais on reset les valeurs pour eviter d'ecraser un dupliquc sans
+        // s'en apercevoir).
         setForm(f => ({
           ...f,
           variant: '', detail: '', color: '', brand: '', hasZip: false,
+          stickerFormat: '', stickerType: '', finitionPapier: '', fx: '', taillePapier: '',
           quantity: 0, costPrice: '', notes: '', nameFr: '', nameEn: '',
           _colorOpen: false,
         }));
@@ -477,7 +482,7 @@ function ItemForm({ onClose, onSaved, tx, lang, editItem }) {
             <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-3">
               {tx({ fr: 'Categorie', en: 'Category', es: 'Categoria' })} *
             </label>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
               {CATEGORIES.map(cat => {
                 const CatIcon = cat.icon;
                 return (
@@ -500,6 +505,97 @@ function ItemForm({ onClose, onSaved, tx, lang, editItem }) {
             </div>
           </div>
 
+          {/* ===== STICKERS ===== */}
+          {form.category === 'stickers' && (<>
+
+            <Field label="Format">
+              <div className="flex gap-2 flex-wrap">
+                {STICKER_FORMATS.map(opt => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => upd({ stickerFormat: form.stickerFormat === opt.value ? '' : opt.value })}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                      form.stickerFormat === opt.value
+                        ? 'bg-accent text-white'
+                        : 'bg-black/20 text-grey-muted hover:text-heading hover:bg-white/5'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </Field>
+
+            <Field label="Type de sticker">
+              <Select
+                value={form.stickerType}
+                onChange={v => upd({ stickerType: v })}
+                options={STICKER_TYPES}
+                placeholder={tx({ fr: '-- Choisir --', en: '-- Choose --', es: '-- Elegir --' })}
+              />
+            </Field>
+
+            <Field label="Finition papier">
+              <Select
+                value={form.finitionPapier}
+                onChange={v => upd({ finitionPapier: v })}
+                options={FINITION_PAPIER}
+                placeholder={tx({ fr: '-- Choisir --', en: '-- Choose --', es: '-- Elegir --' })}
+              />
+            </Field>
+
+            <Field label="FX">
+              <Select
+                value={form.fx}
+                onChange={v => upd({ fx: v })}
+                options={FX_OPTIONS}
+                placeholder={tx({ fr: '-- Choisir --', en: '-- Choose --', es: '-- Elegir --' })}
+              />
+            </Field>
+
+            <div className="p-3 rounded-lg bg-accent/5 border border-accent/20">
+              <span className="text-grey-muted text-xs">SKU: </span>
+              <span className="font-mono text-accent text-sm font-bold">{getSKUPreview()}</span>
+            </div>
+
+          </>)}
+
+          {/* ===== PAPIERS ===== */}
+          {form.category === 'papiers' && (<>
+
+            <Field label="Finition">
+              <Select
+                value={form.finitionPapier}
+                onChange={v => upd({ finitionPapier: v })}
+                options={FINITION_PAPIER}
+                placeholder={tx({ fr: '-- Choisir --', en: '-- Choose --', es: '-- Elegir --' })}
+              />
+            </Field>
+
+            <Field label="Taille">
+              <Chips
+                options={TAILLE_PAPIER_OPTIONS}
+                value={form.taillePapier}
+                onChange={v => upd({ taillePapier: v })}
+              />
+            </Field>
+
+            <Field label={tx({ fr: 'Marque', en: 'Brand', es: 'Marca' })}>
+              <InputText
+                value={form.brand}
+                onChange={v => upd({ brand: v })}
+                placeholder="Ex: Epson, Canon, Ilford, Hammermill, A-SUB, Koala..."
+              />
+            </Field>
+
+            <div className="p-3 rounded-lg bg-accent/5 border border-accent/20">
+              <span className="text-grey-muted text-xs">SKU: </span>
+              <span className="font-mono text-accent text-sm font-bold">{getSKUPreview()}</span>
+            </div>
+
+          </>)}
+
           {/* ===== TEXTILE ===== */}
           {form.category === 'textile' && (<>
 
@@ -511,18 +607,21 @@ function ItemForm({ onClose, onSaved, tx, lang, editItem }) {
               />
             </Field>
 
-            <label className="flex items-center gap-3 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={form.hasZip}
-                onChange={e => upd({ hasZip: e.target.checked })}
-                className="sr-only"
-              />
-              <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${form.hasZip ? 'bg-accent border-accent' : 'border-grey-muted/50'}`}>
-                {form.hasZip && <Check size={14} className="text-white" />}
-              </div>
-              <span className="text-heading text-sm font-medium">Zip</span>
-            </label>
+            {/* Zip : visible uniquement si Hoodie selectionne */}
+            {form.variant === 'Hoodie' && (
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={form.hasZip}
+                  onChange={e => upd({ hasZip: e.target.checked })}
+                  className="sr-only"
+                />
+                <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${form.hasZip ? 'bg-accent border-accent' : 'border-grey-muted/50'}`}>
+                  {form.hasZip && <Check size={14} className="text-white" />}
+                </div>
+                <span className="text-heading text-sm font-medium">Zip</span>
+              </label>
+            )}
 
             <Field label={tx({ fr: 'Marque', en: 'Brand', es: 'Marca' })}>
               <InputText
@@ -558,218 +657,50 @@ function ItemForm({ onClose, onSaved, tx, lang, editItem }) {
           </>)}
 
           {/* ===== CONSOMMABLES ===== */}
-          {form.category === 'consommable' && (<>
-
-            <div>
-              <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-3">
-                Type de consommable *
-              </label>
-              <div className="space-y-3">
-                {CONSOMMABLE_GROUPS.map(group => (
-                  <div key={group.group}>
-                    <p className="text-grey-muted text-[10px] uppercase tracking-widest mb-1.5 pl-0.5">
-                      {group.group}
-                    </p>
-                    <Chips
-                      options={group.items}
-                      value={form.variant}
-                      onChange={v => upd({ variant: v })}
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <Field
-              label={tx({ fr: 'Marque', en: 'Brand', es: 'Marca' })}
-              hint="Ex: Epson, Canon, Canson, Hahnemuhle, 3M..."
-            >
-              <InputText
-                value={form.brand}
-                onChange={v => upd({ brand: v })}
-                placeholder="Facultatif"
-              />
-            </Field>
-
-            <Field label="Format / Dimension">
-              <Chips
-                options={CONSOMMABLE_FORMATS}
-                value={form.detail}
-                onChange={v => upd({ detail: v })}
-                className="mb-2"
-              />
-              <InputText
-                value={form.detail}
-                onChange={v => upd({ detail: v })}
-                placeholder={`Ex: 13x19, A3, 24"...`}
-              />
-            </Field>
-
+          {form.category === 'consommables' && (
             <div className="p-3 rounded-lg bg-accent/5 border border-accent/20">
+              <p className="text-grey-muted text-xs mb-2">
+                {tx({
+                  fr: 'Pas de champ structure : decris librement dans Notes (a droite). Les detail d\'encre, volume, couleur, imprimante cible, etc vont la.',
+                  en: 'No structured field: describe freely in Notes (right). Ink type, volume, color, target printer, etc go there.',
+                  es: 'Sin campos estructurados: describe en Notas (derecha).',
+                })}
+              </p>
               <span className="text-grey-muted text-xs">SKU: </span>
               <span className="font-mono text-accent text-sm font-bold">{getSKUPreview()}</span>
             </div>
+          )}
 
-          </>)}
-
-          {/* ===== EMBALLAGE ===== */}
-          {form.category === 'emballage' && (<>
-
-            <Field label="Type d'emballage *">
-              <Chips
-                options={EMBALLAGE_TYPES}
-                value={form.variant}
-                onChange={v => upd({ variant: v })}
-              />
-            </Field>
-
-            <Field label="Taille / Dimension">
-              <Chips
-                options={EMBALLAGE_SIZES}
-                value={form.detail}
-                onChange={v => upd({ detail: v })}
-                className="mb-2"
-              />
-              <InputText
-                value={form.detail}
-                onChange={v => upd({ detail: v })}
-                placeholder="Ex: A4, 6x6x48cm..."
-              />
-            </Field>
-
+          {/* ===== MATERIEL ===== */}
+          {form.category === 'materiel' && (
             <div className="p-3 rounded-lg bg-accent/5 border border-accent/20">
+              <p className="text-grey-muted text-xs mb-2">
+                {tx({
+                  fr: 'Outils et accessoires. Detaille dans Notes (a droite) si besoin : reference, modele, marque.',
+                  en: 'Tools and accessories. Detail in Notes (right) if needed: reference, model, brand.',
+                  es: 'Herramientas y accesorios. Detalla en Notas (derecha).',
+                })}
+              </p>
               <span className="text-grey-muted text-xs">SKU: </span>
               <span className="font-mono text-accent text-sm font-bold">{getSKUPreview()}</span>
             </div>
-
-          </>)}
-
-          {/* ===== EQUIPEMENT ===== */}
-          {form.category === 'equipment' && (<>
-
-            <Field label="Type d'equipement *">
-              <Chips
-                options={EQUIPMENT_TYPES}
-                value={form.variant}
-                onChange={v => upd({ variant: v })}
-                className="mb-2"
-              />
-              <InputText
-                value={form.variant}
-                onChange={v => upd({ variant: v })}
-                placeholder="Ou saisir manuellement..."
-              />
-            </Field>
-
-            <Field label={tx({ fr: 'Marque', en: 'Brand', es: 'Marca' })}>
-              <InputText
-                value={form.brand}
-                onChange={v => upd({ brand: v })}
-                placeholder="Ex: Canon, Epson, Roland, Graphtec..."
-              />
-            </Field>
-
-            <Field label="Modele / Detail">
-              <InputText
-                value={form.detail}
-                onChange={v => upd({ detail: v })}
-                placeholder="Ex: imagePROGRAF PRO-1000, GS-24..."
-              />
-            </Field>
-
-          </>)}
+          )}
 
           {/* ===== CADRE ===== */}
-          {form.category === 'frame' && (<>
-
-            <Field label={tx({ fr: 'Couleur', en: 'Color', es: 'Color' })}>
-              <Chips
-                options={FRAME_COLORS}
-                value={form.color}
-                onChange={v => upd({ color: v })}
-                className="mb-2"
-              />
-              <InputText
-                value={form.color}
-                onChange={v => upd({ color: v })}
-                placeholder="Ou saisir..."
-              />
-            </Field>
-
-            <Field label="Taille *">
-              <Chips
-                options={FRAME_SIZES}
-                value={form.detail}
-                onChange={v => upd({ detail: v })}
-                className="mb-2"
-              />
-              <InputText
-                value={form.detail}
-                onChange={v => upd({ detail: v })}
-                placeholder="Ex: A4, A3+, 11x14..."
-              />
-            </Field>
-
+          {form.category === 'cadre' && (
             <div className="p-3 rounded-lg bg-accent/5 border border-accent/20">
               <span className="text-grey-muted text-xs">SKU: </span>
               <span className="font-mono text-accent text-sm font-bold">{getSKUPreview()}</span>
             </div>
-
-          </>)}
+          )}
 
           {/* ===== MERCH ===== */}
-          {form.category === 'merch' && (<>
-
-            <Field label="Type de produit *">
-              <Chips
-                options={MERCH_TYPES}
-                value={form.variant}
-                onChange={v => upd({ variant: v })}
-                className="mb-2"
-              />
-              <InputText
-                value={form.variant}
-                onChange={v => upd({ variant: v })}
-                placeholder="Ou saisir..."
-              />
-            </Field>
-
-            <Field label={tx({ fr: 'Marque', en: 'Brand', es: 'Marca' })}>
-              <InputText
-                value={form.brand}
-                onChange={v => upd({ brand: v })}
-                placeholder="Facultatif"
-              />
-            </Field>
-
-            <Field label={tx({ fr: 'Couleur', en: 'Color', es: 'Color' })}>
-              <Chips
-                options={MERCH_COLORS}
-                value={form.color}
-                onChange={v => upd({ color: v })}
-                className="mb-2"
-              />
-              <InputText
-                value={form.color}
-                onChange={v => upd({ color: v })}
-                placeholder="Ou saisir..."
-              />
-            </Field>
-
-            <Field label="Detail">
-              <InputText
-                value={form.detail}
-                onChange={v => upd({ detail: v })}
-                placeholder="Taille, variante..."
-              />
-            </Field>
-
+          {form.category === 'merch' && (
             <div className="p-3 rounded-lg bg-accent/5 border border-accent/20">
               <span className="text-grey-muted text-xs">SKU: </span>
               <span className="font-mono text-accent text-sm font-bold">{getSKUPreview()}</span>
             </div>
-
-          </>)}
+          )}
 
             </div> {/* fin colonne gauche */}
 
@@ -821,8 +752,14 @@ function ItemForm({ onClose, onSaved, tx, lang, editItem }) {
                 <textarea
                   value={form.notes}
                   onChange={e => set('notes', e.target.value)}
-                  rows={4}
-                  placeholder={tx({ fr: 'Notes supplementaires...', en: 'Additional notes...', es: 'Notas adicionales...' })}
+                  rows={form.category === 'consommables' || form.category === 'materiel' ? 6 : 4}
+                  placeholder={
+                    form.category === 'consommables'
+                      ? 'Ex : Hiipoo sublimation cyan 100ml pour ET-2803, ou enveloppes bulle 6x10 lot de 50'
+                      : form.category === 'materiel'
+                        ? 'Ex : Regle carree 300mm acier inox, ou AutoBlade Type B Silhouette Cameo 5'
+                        : tx({ fr: 'Notes supplementaires...', en: 'Additional notes...', es: 'Notas adicionales...' })
+                  }
                   className="w-full rounded-lg bg-black/20 text-heading text-sm px-4 py-2.5 outline-none border border-white/10 focus:border-accent resize-none placeholder:text-grey-muted/50"
                 />
               </Field>
@@ -980,7 +917,7 @@ function AdminInventaire() {
         >
           <option value="all">{tx({ fr: 'Toutes categories', en: 'All categories', es: 'Todas categorias' })}</option>
           {CATEGORIES.map(c => (
-            <option key={c.value} value={c.value}>{c.emoji} {c.label}</option>
+            <option key={c.value} value={c.value}>{c.label}</option>
           ))}
         </select>
       </div>
@@ -1077,12 +1014,12 @@ function AdminInventaire() {
               const totalQty = catItems.reduce((s, i) => s + (i.quantity || 0), 0);
               const isOpen = openCats.includes(cat);
 
-              // Textile + Consommable: sous-accordeons par variant
-              const hasSubGroups = cat === 'textile' || cat === 'consommable';
+              // Textile + Consommables : sous-accordeons par variant
+              const hasSubGroups = cat === 'textile' || cat === 'consommables';
               const subGroups = {};
               if (hasSubGroups) {
                 catItems.forEach(item => {
-                  const variant = item.variant || (cat === 'consommable' ? 'Autre' : 'Autre');
+                  const variant = item.variant || 'Autre';
                   if (!subGroups[variant]) subGroups[variant] = [];
                   subGroups[variant].push(item);
                 });

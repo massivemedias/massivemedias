@@ -170,6 +170,17 @@ exports.default = {
                 auth: false,
             },
         },
+        // SEO-01 : sitemap dynamique. Sert au path /api/sitemap.xml par
+        // defaut Strapi (prefix api:: auto). Si besoin du path /sitemap.xml
+        // sans prefix, Cloudflare Worker reecrit /sitemap.xml -> /api/sitemap.xml.
+        {
+            method: 'GET',
+            path: '/sitemap.xml',
+            handler: 'order.sitemap',
+            config: {
+                auth: false,
+            },
+        },
     ],
 };
 // Trigger redeploy 1774828260

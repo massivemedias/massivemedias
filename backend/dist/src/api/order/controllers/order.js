@@ -725,13 +725,17 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
         const requestId = crypto_1.default.randomBytes(4).toString('hex');
         if (!endpointSecret || endpointSecret === 'whsec_REPLACE_ME') {
             strapi.log.warn(`[webhook:${requestId}] Stripe webhook secret not configured`);
-            // Alert admin immediately - config broken in prod
+            // Alert admin - config broken en prod. STRIPE-03 : throttle 60min
+            // persistant via DB pour eviter le spam si Stripe retry 20x.
             try {
-                const { sendWebhookFailureAlert } = await Promise.resolve().then(() => __importStar(require('../../../utils/email')));
-                await sendWebhookFailureAlert({
-                    reason: 'STRIPE_WEBHOOK_SECRET env var missing or placeholder',
-                    requestId,
-                });
+                const { shouldSendThrottledAlert } = await Promise.resolve().then(() => __importStar(require('../../../utils/webhook-alert-throttle')));
+                if (await shouldSendThrottledAlert('stripe_webhook_secret_missing', 60)) {
+                    const { sendWebhookFailureAlert } = await Promise.resolve().then(() => __importStar(require('../../../utils/email')));
+                    await sendWebhookFailureAlert({
+                        reason: 'STRIPE_WEBHOOK_SECRET env var missing or placeholder',
+                        requestId,
+                    });
+                }
             }
             catch (_) { /* non-blocking */ }
             return ctx.badRequest('Webhook not configured');
@@ -750,25 +754,57 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
         }
         catch (err) {
             strapi.log.error(`[webhook:${requestId}] SIGNATURE VERIFICATION FAILED:`, err.message);
-            // Alert admin IMMEDIATELY on EVERY failure.
-            // We intentionally do NOT throttle: the process restarts on OOM which would reset an
-            // in-memory throttle anyway, AND a handful of duplicate emails is MUCH less harmful than
-            // the 4-day silent failure we had in April 2026. If Stripe retry-storms, persistence
-            // throttling should be added via the DB, not in-process state.
+            // STRIPE-03: alerte admin avec throttle 60min persistant via DB.
+            // Ancien comportement "send on EVERY failure" causait 20 emails si
+            // Stripe retry un webhook casse 20 fois. Maintenant: 1 email max par
+            // heure par type de failure. Le sendCount en DB trace les retries
+            // supprimes pour visibilite a posteriori.
             try {
-                const { sendWebhookFailureAlert } = await Promise.resolve().then(() => __importStar(require('../../../utils/email')));
-                await sendWebhookFailureAlert({
-                    reason: `Stripe signature verification failed: ${err.message}`,
-                    requestId,
-                    sigHeader: sig ? sig.substring(0, 80) : '(missing)',
-                    bodyPresent: !!ctx.request.body,
-                });
-                strapi.log.warn(`[webhook:${requestId}] Admin alert email dispatched`);
+                const { shouldSendThrottledAlert } = await Promise.resolve().then(() => __importStar(require('../../../utils/webhook-alert-throttle')));
+                if (await shouldSendThrottledAlert('stripe_signature_failure', 60)) {
+                    const { sendWebhookFailureAlert } = await Promise.resolve().then(() => __importStar(require('../../../utils/email')));
+                    await sendWebhookFailureAlert({
+                        reason: `Stripe signature verification failed: ${err.message}`,
+                        requestId,
+                        sigHeader: sig ? sig.substring(0, 80) : '(missing)',
+                        bodyPresent: !!ctx.request.body,
+                    });
+                    strapi.log.warn(`[webhook:${requestId}] Admin alert email dispatched`);
+                }
+                else {
+                    strapi.log.warn(`[webhook:${requestId}] Admin alert throttled (already sent within 60min)`);
+                }
             }
             catch (alertErr) {
                 strapi.log.error(`[webhook:${requestId}] Failed to send admin alert:`, alertErr === null || alertErr === void 0 ? void 0 : alertErr.message);
             }
             return ctx.badRequest(`Webhook Error: ${err.message}`);
+        }
+        // STRIPE-01: idempotency check. Stripe retry le meme event.id sur echec
+        // reseau. On ecrit dans stripe_webhook_events avec unique constraint sur
+        // eventId -> la 2eme insertion throw et on return 200 fast sans re-run
+        // les queries downstream.
+        try {
+            await strapi.db.query('api::stripe-webhook-event.stripe-webhook-event').create({
+                data: {
+                    eventId: event.id,
+                    eventType: event.type,
+                    processedAt: new Date().toISOString(),
+                },
+            });
+        }
+        catch (dupErr) {
+            // Unique constraint violation = event deja traite. Log + return 200
+            // pour que Stripe arrete son retry loop.
+            const msg = String((dupErr === null || dupErr === void 0 ? void 0 : dupErr.message) || '').toLowerCase();
+            if (msg.includes('unique') || msg.includes('duplicate') || (dupErr === null || dupErr === void 0 ? void 0 : dupErr.code) === '23505') {
+                strapi.log.info(`[webhook:${requestId}] DUPLICATE event ${event.id} (${event.type}) - skipping, returning 200`);
+                ctx.body = { received: true, duplicate: true };
+                return;
+            }
+            // Autre erreur DB = on log mais on continue (mieux traiter en double
+            // qu'ignorer un event valide a cause d'un probleme DB transient).
+            strapi.log.warn(`[webhook:${requestId}] idempotency log insert failed (non-unique): ${dupErr === null || dupErr === void 0 ? void 0 : dupErr.message}`);
         }
         // Pour checkout sessions, recuperer le payment_intent_id et upgrader la colonne
         // stripePaymentIntentId (qui contient peut-etre encore le cs_live_ temporaire).
@@ -806,29 +842,40 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
         }
         if (event.type === 'payment_intent.succeeded') {
             const paymentIntent = event.data.object;
-            // Race fix: if payment_intent.succeeded arrives BEFORE checkout.session.completed,
-            // the order may still have its cs_live_ stored in stripePaymentIntentId. Retrieve the
-            // payment intent's checkout session id via Stripe API so we can match by either column.
-            let checkoutSessionId = null;
-            try {
-                const stripe = getStripe();
-                const sessions = await stripe.checkout.sessions.list({ payment_intent: paymentIntent.id, limit: 1 });
-                if (sessions.data.length > 0)
-                    checkoutSessionId = sessions.data[0].id;
-            }
-            catch (lookupErr) {
-                strapi.log.warn(`[webhook:${requestId}] Could not lookup session for ${paymentIntent.id}:`, lookupErr === null || lookupErr === void 0 ? void 0 : lookupErr.message);
-            }
-            const orFilters = [
-                { stripePaymentIntentId: paymentIntent.id },
-            ];
-            if (checkoutSessionId) {
-                orFilters.push({ stripeCheckoutSessionId: checkoutSessionId });
-                orFilters.push({ stripePaymentIntentId: checkoutSessionId });
-            }
-            const orders = await strapi.documents('api::order.order').findMany({
-                filters: { $or: orFilters },
+            // STRIPE-02: early-return DB lookup avant d'appeler Stripe. Depuis commit
+            // 15a34e1, createCheckoutSession stocke stripeCheckoutSessionId ET
+            // stripePaymentIntentId des le debut. Donc pour les orders post-avril-2026,
+            // un simple findMany sur stripePaymentIntentId trouve l'order sans avoir
+            // besoin de sessions.list() cote Stripe (100-300ms economises + rate
+            // limit menage + pas de timeout si Stripe API lente).
+            let orders = await strapi.documents('api::order.order').findMany({
+                filters: { stripePaymentIntentId: paymentIntent.id },
             });
+            // Fallback pour les orders pre-avril 2026 (pas de stripeCheckoutSessionId
+            // separe, le cs_live_ est dans stripePaymentIntentId). On resout via
+            // Stripe seulement dans ce cas.
+            if (orders.length === 0) {
+                let checkoutSessionId = null;
+                try {
+                    const stripe = getStripe();
+                    const sessions = await stripe.checkout.sessions.list({ payment_intent: paymentIntent.id, limit: 1 });
+                    if (sessions.data.length > 0)
+                        checkoutSessionId = sessions.data[0].id;
+                }
+                catch (lookupErr) {
+                    strapi.log.warn(`[webhook:${requestId}] Could not lookup session for ${paymentIntent.id}:`, lookupErr === null || lookupErr === void 0 ? void 0 : lookupErr.message);
+                }
+                if (checkoutSessionId) {
+                    orders = await strapi.documents('api::order.order').findMany({
+                        filters: {
+                            $or: [
+                                { stripeCheckoutSessionId: checkoutSessionId },
+                                { stripePaymentIntentId: checkoutSessionId },
+                            ],
+                        },
+                    });
+                }
+            }
             if (orders.length > 0) {
                 const order = orders[0];
                 // Generer le numero de facture sequentiel MM-AAAA-XXXX
@@ -1404,7 +1451,12 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
                 { stripePaymentIntentId: { $containsi: search } },
             ];
         }
-        const [orders, allFiltered] = await Promise.all([
+        // PERF-02 : count() au lieu de findMany() pour le total. L'ancien code
+        // faisait 2 findMany identiques (une paginee + une full pour compter),
+        // donc a 10 000 orders on chargait tout en memoire juste pour obtenir
+        // un length. count() laisse Postgres faire l'aggregate et retourne juste
+        // un integer, bien plus rapide + pas de heap pressure.
+        const [orders, total] = await Promise.all([
             strapi.documents('api::order.order').findMany({
                 filters,
                 sort: 'createdAt:desc',
@@ -1412,11 +1464,8 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
                 start: (page - 1) * pageSize,
                 populate: ['client'],
             }),
-            strapi.documents('api::order.order').findMany({
-                filters,
-            }),
+            strapi.db.query('api::order.order').count({ where: filters }),
         ]);
-        const total = allFiltered.length;
         ctx.body = {
             data: orders,
             meta: {
@@ -1998,6 +2047,73 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
         ctx.body = (0, pricing_config_1.getPricingConfigPayload)();
     },
     /**
+     * GET /sitemap.xml
+     * SEO-01: sitemap dynamique genere depuis CMS. Inclut les pages fixes
+     * + tous les artistes publies (updatedAt -> lastmod). Cache 1h.
+     */
+    async sitemap(ctx) {
+        const SITE_URL = process.env.PUBLIC_SITE_URL || 'https://massivemedias.com';
+        const escape = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;' }[c]));
+        // Pages statiques coeur du site. changefreq/priority suivent les
+        // conventions sitemap.org : homepage = 1.0, pages de service = 0.8,
+        // legal/contact = 0.3.
+        const today = new Date().toISOString().slice(0, 10);
+        const staticUrls = [
+            { loc: '/', priority: 1.0, changefreq: 'weekly' },
+            { loc: '/a-propos', priority: 0.7, changefreq: 'monthly' },
+            { loc: '/contact', priority: 0.6, changefreq: 'monthly' },
+            { loc: '/artistes', priority: 0.9, changefreq: 'weekly' },
+            { loc: '/boutique', priority: 0.9, changefreq: 'weekly' },
+            { loc: '/services', priority: 0.8, changefreq: 'monthly' },
+            { loc: '/services/prints', priority: 0.8, changefreq: 'monthly' },
+            { loc: '/services/stickers', priority: 0.8, changefreq: 'monthly' },
+            { loc: '/services/merch', priority: 0.8, changefreq: 'monthly' },
+            { loc: '/services/design', priority: 0.8, changefreq: 'monthly' },
+            { loc: '/services/web', priority: 0.8, changefreq: 'monthly' },
+            { loc: '/cgv', priority: 0.3, changefreq: 'yearly' },
+            { loc: '/politique-confidentialite', priority: 0.3, changefreq: 'yearly' },
+        ];
+        let dynamicUrls = [];
+        try {
+            const artists = await strapi.documents('api::artist.artist').findMany({
+                filters: { publishedAt: { $notNull: true } },
+                fields: ['slug', 'updatedAt'],
+                limit: 200,
+            });
+            dynamicUrls = artists
+                .filter((a) => a.slug)
+                .map((a) => ({
+                loc: `/artistes/${a.slug}`,
+                lastmod: (a.updatedAt ? new Date(a.updatedAt) : new Date()).toISOString().slice(0, 10),
+                priority: 0.7,
+                changefreq: 'weekly',
+            }));
+        }
+        catch (err) {
+            strapi.log.warn(`[sitemap] Could not load artists dynamically: ${err === null || err === void 0 ? void 0 : err.message}`);
+            // On continue avec juste les pages statiques plutot que de 500.
+        }
+        const allUrls = [
+            ...staticUrls.map((u) => ({ ...u, lastmod: today })),
+            ...dynamicUrls,
+        ];
+        const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${allUrls
+            .map((u) => `  <url>
+    <loc>${escape(SITE_URL + u.loc)}</loc>
+    <lastmod>${u.lastmod}</lastmod>
+    <changefreq>${u.changefreq}</changefreq>
+    <priority>${u.priority.toFixed(1)}</priority>
+  </url>`)
+            .join('\n')}
+</urlset>
+`;
+        ctx.set('Content-Type', 'application/xml; charset=utf-8');
+        ctx.set('Cache-Control', 'public, max-age=3600, s-maxage=3600'); // 1h CDN + browser
+        ctx.body = xml;
+    },
+    /**
      * GET /orders/memory-health
      * Returns current process memory stats to help diagnose OOM issues.
      * Public endpoint (read-only diagnostic). Returns status WARNING/CRITICAL/OK.
@@ -2245,6 +2361,40 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
                 strapi.log.error(`[reconcile] Error on order ${order.id}:`, err);
                 report.errors.push({ id: order.id, email: order.customerEmail, reason: err.message });
             }
+        }
+        // RACE-03 : cleanup des drafts abandonnees > 7j en meme temps que le
+        // reconcile (les 2 tournent en cron, autant piggy-back). Les drafts
+        // jeunes (< 7j) restent car le client peut encore completer son paiement
+        // via un lien cs_live_ (qui expirent a 24h Stripe-side mais on garde
+        // une marge). Au-dela de 7j, l'order est morte : delete pour eviter la
+        // croissance infinie de la table orders.
+        try {
+            const draftCutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+            const oldDrafts = await strapi.documents('api::order.order').findMany({
+                filters: {
+                    status: 'draft',
+                    createdAt: { $lt: draftCutoff.toISOString() },
+                },
+                limit: 500,
+            });
+            let cleanupCount = 0;
+            for (const draft of oldDrafts) {
+                try {
+                    await strapi.documents('api::order.order').delete({ documentId: draft.documentId });
+                    cleanupCount++;
+                }
+                catch (delErr) {
+                    strapi.log.warn(`[reconcile:cleanup] Could not delete draft ${draft.id}: ${delErr === null || delErr === void 0 ? void 0 : delErr.message}`);
+                }
+            }
+            if (cleanupCount > 0) {
+                strapi.log.info(`[reconcile:cleanup] Deleted ${cleanupCount} draft orders older than 7 days`);
+            }
+            report.cleanedUpDrafts = cleanupCount;
+        }
+        catch (cleanupErr) {
+            strapi.log.error('[reconcile:cleanup] Error:', cleanupErr === null || cleanupErr === void 0 ? void 0 : cleanupErr.message);
+            report.cleanedUpDrafts = -1;
         }
         ctx.body = report;
     },
