@@ -255,6 +255,7 @@ function ItemForm({ onClose, onSaved, tx, lang, editItem }) {
           labelOf(f.stickerType, STICKER_TYPES),
           labelOf(f.fx, FX_OPTIONS),
           labelOf(f.finitionPapier, FINITION_PAPIER),
+          f.taillePapier,
         ].filter(Boolean).join(' ');
       case 'papiers':
         return [
@@ -527,6 +528,14 @@ function ItemForm({ onClose, onSaved, tx, lang, editItem }) {
               </div>
             </Field>
 
+            <Field label="Taille">
+              <Chips
+                options={TAILLE_PAPIER_OPTIONS}
+                value={form.taillePapier}
+                onChange={v => upd({ taillePapier: v })}
+              />
+            </Field>
+
             <Field label="Type de sticker">
               <Select
                 value={form.stickerType}
@@ -545,13 +554,26 @@ function ItemForm({ onClose, onSaved, tx, lang, editItem }) {
               />
             </Field>
 
-            <Field label="FX">
-              <Select
-                value={form.fx}
-                onChange={v => upd({ fx: v })}
-                options={FX_OPTIONS}
-                placeholder={tx({ fr: '-- Choisir --', en: '-- Choose --', es: '-- Elegir --' })}
-              />
+            {/* FX en pills/cartes pour le detacher visuellement des autres
+                specs sticker (format/type/finition/taille decrivent l'objet,
+                FX decrit l'effet visuel applique dessus -> choix a part). */}
+            <Field label="FX" hint="Effet visuel optionnel">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+                {FX_OPTIONS.map(opt => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => upd({ fx: form.fx === opt.value ? '' : opt.value })}
+                    className={`px-3 py-2 rounded-lg text-xs font-medium transition-all ${
+                      form.fx === opt.value
+                        ? 'bg-accent text-white'
+                        : 'bg-black/20 text-grey-muted hover:text-heading hover:bg-white/5'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
             </Field>
 
             <div className="p-3 rounded-lg bg-accent/5 border border-accent/20">
@@ -1089,10 +1111,15 @@ function AdminInventaire() {
         );
       })()}
 
-      {/* Modal creation / edition */}
+      {/* Modal creation / edition
+          key={documentId} force un remount du form quand on passe d'un item
+          a un autre SANS fermer la modale. Sans ca, React reutilise
+          l'instance existante et useState({}) ne re-initialise pas -> les
+          champs restent figes sur l'item precedent. */}
       <AnimatePresence>
         {showForm && (
           <ItemForm
+            key={editItem?.documentId || 'new'}
             onClose={() => { setShowForm(false); setEditItem(null); }}
             onSaved={() => fetchData()}
             tx={tx}
