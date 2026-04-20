@@ -59,8 +59,7 @@
       "enum": ["clear", "holographique", "broken_glass", "dots", "stars", "divers"]
     },
     "taillePapier": {
-      "type": "enumeration",
-      "enum": ["8.5x11", "11x17", "13x19"]
+      "type": "string"
     },
     "variant": {
       "type": "string"
