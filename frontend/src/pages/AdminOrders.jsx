@@ -236,15 +236,40 @@ function AdminOrders() {
   }, []);
 
   // Handlers
-  const handleStatusChange = async (documentId, newStatus) => {
+  const handleStatusChange = async (documentId, newStatus, currentStatus) => {
+    if (!newStatus || newStatus === currentStatus) return;
     setUpdatingId(documentId);
+    setActionToast(null);
+    // Optimistic update
+    const snapshot = orders;
+    setOrders(prev => prev.map(o => o.documentId === documentId ? { ...o, status: newStatus } : o));
     try {
       await updateOrderStatus(documentId, newStatus);
-      setOrders(prev => prev.map(o =>
-        o.documentId === documentId ? { ...o, status: newStatus } : o
-      ));
-    } catch {
-      // silent
+      const label = ORDER_STATUS[newStatus];
+      const labelTxt = label ? tx({ fr: label.fr, en: label.en, es: label.es }) : newStatus;
+      setActionToast({
+        type: 'success',
+        message: tx({
+          fr: `Statut change vers "${labelTxt}".`,
+          en: `Status changed to "${labelTxt}".`,
+          es: `Estado cambiado a "${labelTxt}".`,
+        }),
+      });
+    } catch (err) {
+      // Rollback
+      setOrders(snapshot);
+      const backendMsg = err?.response?.data?.error?.message
+        || err?.response?.data?.message
+        || err?.message
+        || 'Erreur inconnue';
+      setActionToast({
+        type: 'error',
+        message: tx({
+          fr: `Changement de statut refuse : ${backendMsg}`,
+          en: `Status change rejected: ${backendMsg}`,
+          es: `Cambio de estado rechazado: ${backendMsg}`,
+        }),
+      });
     } finally {
       setUpdatingId(null);
     }
@@ -907,29 +932,47 @@ function AdminOrders() {
                             </div>
                           </div>
 
-                          {/* Status actions */}
-                          {nextStatuses.length > 0 && (
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <span className="text-xs text-grey-muted mr-1">
-                                {tx({ fr: 'Changer le status:', en: 'Change status:', es: 'Cambiar estado:' })}
-                              </span>
-                              {nextStatuses.map((ns) => {
-                                const nst = ORDER_STATUS[ns];
-                                const NsIcon = nst.icon;
-                                return (
-                                  <button
-                                    key={ns}
-                                    onClick={(e) => { e.stopPropagation(); handleStatusChange(order.documentId, ns); }}
-                                    disabled={updatingId === order.documentId}
-                                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${nst.color} hover:scale-105 disabled:opacity-50`}
-                                  >
-                                    {updatingId === order.documentId ? <Loader2 size={12} className="animate-spin" /> : <NsIcon size={12} />}
-                                    {tx({ fr: nst.fr, en: nst.en, es: nst.es })}
-                                  </button>
-                                );
-                              })}
+                          {/* Status dropdown - admin peut passer a n'importe quel statut */}
+                          <div className="flex items-center gap-3 flex-wrap" onClick={(e) => e.stopPropagation()}>
+                            <span className="text-xs text-grey-muted">
+                              {tx({ fr: 'Statut de la commande:', en: 'Order status:', es: 'Estado del pedido:' })}
+                            </span>
+                            <div className="relative inline-block">
+                              <select
+                                value={order.status || 'pending'}
+                                onChange={(e) => handleStatusChange(order.documentId, e.target.value, order.status)}
+                                disabled={updatingId === order.documentId}
+                                className={`appearance-none cursor-pointer pl-3 pr-8 py-1.5 rounded-lg text-xs font-semibold border-2 border-white/10 hover:border-accent/50 focus:border-accent focus:outline-none transition-colors disabled:opacity-50 ${ORDER_STATUS[order.status]?.color || 'bg-gray-500/20 text-gray-400'}`}
+                              >
+                                <option value="pending">{tx({ fr: 'En attente', en: 'Pending', es: 'Pendiente' })}</option>
+                                <option value="paid">{tx({ fr: 'Paye / En production', en: 'Paid / In production', es: 'Pagado / En produccion' })}</option>
+                                <option value="processing">{tx({ fr: 'En production', en: 'Processing', es: 'En proceso' })}</option>
+                                <option value="ready">{tx({ fr: 'Pret', en: 'Ready', es: 'Listo' })}</option>
+                                <option value="shipped">{tx({ fr: 'Expedie', en: 'Shipped', es: 'Enviado' })}</option>
+                                <option value="delivered">{tx({ fr: 'Livre', en: 'Delivered', es: 'Entregado' })}</option>
+                                <option value="cancelled">{tx({ fr: 'Annule', en: 'Cancelled', es: 'Cancelado' })}</option>
+                                <option value="refunded">{tx({ fr: 'Rembourse', en: 'Refunded', es: 'Reembolsado' })}</option>
+                              </select>
+                              <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-current opacity-60" />
                             </div>
-                          )}
+                            {updatingId === order.documentId && <Loader2 size={12} className="animate-spin text-accent" />}
+
+                            {/* Lien rapide Stripe Dashboard (visible si stripePaymentIntentId present) */}
+                            {order.stripePaymentIntentId && (
+                              <a
+                                href={`https://dashboard.stripe.com/payments/${order.stripePaymentIntentId}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={(e) => e.stopPropagation()}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 transition-colors border border-indigo-500/30 ml-auto"
+                                title={tx({ fr: 'Ouvrir la transaction dans Stripe', en: 'Open transaction in Stripe', es: 'Abrir transaccion en Stripe' })}
+                              >
+                                <CreditCard size={12} />
+                                {tx({ fr: 'Voir dans Stripe', en: 'View in Stripe', es: 'Ver en Stripe' })}
+                                <ExternalLink size={10} />
+                              </a>
+                            )}
+                          </div>
 
                           {/* Items - avec images bien visibles */}
                           <div>
