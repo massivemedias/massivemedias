@@ -64,9 +64,12 @@ function ArtistPrintCard({ print, minPrice, pricing, selected, onClick, onZoom }
         {onZoom && (
           <div
             onClick={handleZoom}
-            className="absolute top-3 left-3 p-1.5 rounded-full bg-black/50 hover:bg-black/70 text-white md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 cursor-pointer"
+            // Mobile : loupe discrete flottante en bas a droite, sans fond, avec
+            // drop-shadow fort pour rester visible sur images claires.
+            // Desktop (md+) : comportement original (haut gauche, fond noir, fade au hover).
+            className="absolute bottom-2 right-2 md:bottom-auto md:right-auto md:top-3 md:left-3 md:p-1.5 md:rounded-full md:bg-black/50 md:hover:bg-black/70 text-white md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 cursor-pointer"
           >
-            <ZoomIn size={16} />
+            <ZoomIn className="w-5 h-5 md:w-4 md:h-4 drop-shadow-[0_2px_3px_rgba(0,0,0,0.7)] md:drop-shadow-none" />
           </div>
         )}
         {selected && (

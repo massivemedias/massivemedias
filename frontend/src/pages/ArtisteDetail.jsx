@@ -818,8 +818,8 @@ function ArtisteDetail({ subdomainSlug }) {
                   alt={tx({ fr: selectedSticker.titleFr, en: selectedSticker.titleEn, es: selectedSticker.titleEs || selectedSticker.titleEn })}
                   className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105 sticker-diecut"
                 />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
-                  <ZoomIn size={32} className="text-white md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 drop-shadow-lg" />
+                <div className="absolute inset-0 pointer-events-none md:bg-black/0 md:group-hover:bg-black/20 transition-colors duration-300 md:flex md:items-center md:justify-center">
+                  <ZoomIn className="w-5 h-5 md:w-8 md:h-8 absolute bottom-3 right-3 md:static text-white md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 drop-shadow-[0_2px_3px_rgba(0,0,0,0.7)] md:drop-shadow-lg" />
                 </div>
               </div>
 
@@ -876,8 +876,8 @@ function ArtisteDetail({ subdomainSlug }) {
                           className="max-w-full max-h-[70vh] object-contain"
                           onLoad={(e) => setIsLandscape(e.target.naturalWidth > e.target.naturalHeight)}
                         />
-                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                          <ZoomIn size={32} className="text-white md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 drop-shadow-lg" />
+                        <div className="absolute inset-0 pointer-events-none md:flex md:items-center md:justify-center">
+                          <ZoomIn className="w-5 h-5 md:w-8 md:h-8 absolute bottom-3 right-3 md:static text-white md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 drop-shadow-[0_2px_3px_rgba(0,0,0,0.7)] md:drop-shadow-lg" />
                         </div>
                       </div>
                     ) : (
