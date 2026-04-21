@@ -18,17 +18,8 @@ const ROUTES = {
     description: 'Studio de production creative a Montreal, Mile-End. Impression fine art sur papier Hahnemuhle, stickers die-cut personnalises, sublimation textile, design graphique et developpement web. Commandez en ligne, livraison rapide au Quebec.',
   },
   '/artistes': {
-    title: 'Artistes Montreal | Photographes, Peintres & Tatoueurs - Massive Medias',
-    description: 'Decouvrez les artistes de Massive Medias a Montreal. Photographes, peintres et tatoueurs. Achetez des tirages fine art, flashs de tatouage et oeuvres originales en ligne. Livraison au Canada.',
-  },
-  '/tatoueurs': {
-    title: 'Tatoueurs Montreal | Flash Tattoo & Reservations en Ligne - Massive Medias',
-    description: 'Reservez un flash de tatouage unique aupres de nos tatoueurs partenaires a Montreal. Fineline, botanique, blackwork. Consultez les disponibilites et reservez votre piece en ligne.',
-  },
-  '/tatoueurs/ginko-ink': {
-    title: 'Ginko Ink | Tatoueuse Fineline Montreal - Flashs Botaniques & Reservations',
-    description: 'Myriam Rivest (Ginko Ink), tatoueuse fineline a Montreal. Flashs botaniques, creatures feeriques et personnages. Reservez votre piece unique en ligne. Disponibilites et tarifs.',
-    ogImage: `${BASE_URL}/images/tatoueurs/ginko-ink/hero.webp`,
+    title: 'Artistes Montreal | Photographes, Peintres & Artistes Visuels - Massive Medias',
+    description: 'Decouvrez les artistes de Massive Medias a Montreal. Photographes, peintres et artistes visuels. Achetez des tirages fine art et oeuvres originales en ligne. Livraison au Canada.',
   },
   '/boutique': {
     title: 'Boutique en Ligne | Prints Fine Art, Stickers & Merch - Massive Medias Montreal',

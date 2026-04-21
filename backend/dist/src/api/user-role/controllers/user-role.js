@@ -17,7 +17,6 @@ exports.default = strapi_1.factories.createCoreController('api::user-role.user-r
                     email: e.email,
                     role: e.role,
                     artistSlug: e.artistSlug,
-                    tatoueurSlug: e.tatoueurSlug || null,
                     supabaseUserId: e.supabaseUserId,
                     displayName: e.displayName,
                 })),
@@ -56,7 +55,6 @@ exports.default = strapi_1.factories.createCoreController('api::user-role.user-r
                     email: e.email,
                     role: e.role,
                     artistSlug: e.artistSlug,
-                    tatoueurSlug: e.tatoueurSlug || null,
                     displayName: e.displayName,
                 },
             };
@@ -70,13 +68,13 @@ exports.default = strapi_1.factories.createCoreController('api::user-role.user-r
     async setRole(ctx) {
         if (!(await (0, auth_1.requireAdminAuth)(ctx)))
             return;
-        const { email, role, artistSlug, tatoueurSlug, supabaseUserId, displayName } = ctx.request.body;
+        const { email, role, artistSlug, supabaseUserId, displayName } = ctx.request.body;
         if (!email || !role) {
             ctx.throw(400, 'Email and role required');
             return;
         }
-        if (!['user', 'artist', 'tatoueur'].includes(role)) {
-            ctx.throw(400, 'Role must be "user", "artist" or "tatoueur"');
+        if (!['user', 'artist'].includes(role)) {
+            ctx.throw(400, 'Role must be "user" or "artist"');
             return;
         }
         try {
@@ -93,7 +91,6 @@ exports.default = strapi_1.factories.createCoreController('api::user-role.user-r
                     data: {
                         role,
                         artistSlug: artistSlug || null,
-                        tatoueurSlug: tatoueurSlug || null,
                         supabaseUserId: supabaseUserId || existing[0].supabaseUserId,
                         displayName: displayName || existing[0].displayName,
                     },
@@ -106,7 +103,6 @@ exports.default = strapi_1.factories.createCoreController('api::user-role.user-r
                         email: email.toLowerCase().trim(),
                         role,
                         artistSlug: artistSlug || null,
-                        tatoueurSlug: tatoueurSlug || null,
                         supabaseUserId: supabaseUserId || null,
                         displayName: displayName || null,
                     },
@@ -118,7 +114,6 @@ exports.default = strapi_1.factories.createCoreController('api::user-role.user-r
                     email: entry.email,
                     role: entry.role,
                     artistSlug: entry.artistSlug,
-                    tatoueurSlug: entry.tatoueurSlug,
                 },
             };
         }
@@ -168,12 +163,7 @@ exports.default = strapi_1.factories.createCoreController('api::user-role.user-r
         const { slug } = ctx.params;
         try {
             const entries = await strapi.documents('api::user-role.user-role').findMany({
-                filters: {
-                    $or: [
-                        { artistSlug: slug },
-                        { tatoueurSlug: slug },
-                    ],
-                },
+                filters: { artistSlug: slug },
                 limit: 1,
             });
             if (!entries || entries.length === 0) {

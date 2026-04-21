@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const strapi_1 = require("@strapi/strapi");
 const email_1 = require("../../../utils/email");
 // Statuts de commande qui comptent comme "paye reellement"
-const PAID_STATUSES = ['paid', 'processing', 'shipped', 'delivered'];
+const PAID_STATUSES = ['paid', 'processing', 'ready', 'shipped', 'delivered'];
 /**
  * Reconcilie les clients avec les commandes reellement payees.
  * Auto-cree les clients manquants, met a jour orderCount/totalSpent/lastOrderDate

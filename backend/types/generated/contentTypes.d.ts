@@ -762,49 +762,6 @@ export interface ApiBoutiqueItemBoutiqueItem
   };
 }
 
-export interface ApiCalendarEventCalendarEvent
-  extends Struct.CollectionTypeSchema {
-  collectionName: 'calendar_events';
-  info: {
-    description: 'Evenements du calendrier tatoueur';
-    displayName: 'Evenement Calendrier';
-    pluralName: 'calendar-events';
-    singularName: 'calendar-event';
-  };
-  options: {
-    draftAndPublish: false;
-  };
-  attributes: {
-    color: Schema.Attribute.String & Schema.Attribute.DefaultTo<'#FFCC02'>;
-    createdAt: Schema.Attribute.DateTime;
-    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-    endTime: Schema.Attribute.DateTime & Schema.Attribute.Required;
-    locale: Schema.Attribute.String & Schema.Attribute.Private;
-    localizations: Schema.Attribute.Relation<
-      'oneToMany',
-      'api::calendar-event.calendar-event'
-    > &
-      Schema.Attribute.Private;
-    notes: Schema.Attribute.Text;
-    publishedAt: Schema.Attribute.DateTime;
-    reservation: Schema.Attribute.Relation<
-      'manyToOne',
-      'api::reservation.reservation'
-    >;
-    startTime: Schema.Attribute.DateTime & Schema.Attribute.Required;
-    tatoueur: Schema.Attribute.Relation<'manyToOne', 'api::tatoueur.tatoueur'>;
-    title: Schema.Attribute.String & Schema.Attribute.Required;
-    type: Schema.Attribute.Enumeration<
-      ['rendez-vous', 'flash-day', 'conge', 'personnel', 'bloque']
-    > &
-      Schema.Attribute.DefaultTo<'rendez-vous'>;
-    updatedAt: Schema.Attribute.DateTime;
-    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-  };
-}
-
 export interface ApiClientClient extends Struct.CollectionTypeSchema {
   collectionName: 'clients';
   info: {
@@ -946,53 +903,6 @@ export interface ApiExpenseExpense extends Struct.CollectionTypeSchema {
   };
 }
 
-export interface ApiFlashFlash extends Struct.CollectionTypeSchema {
-  collectionName: 'flashs';
-  info: {
-    description: 'Dessins de tatouage (flashs)';
-    displayName: 'Flash Tattoo';
-    pluralName: 'flashs';
-    singularName: 'flash';
-  };
-  options: {
-    draftAndPublish: false;
-  };
-  attributes: {
-    approved: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
-    bodyPlacement: Schema.Attribute.String;
-    createdAt: Schema.Attribute.DateTime;
-    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-    descriptionEn: Schema.Attribute.Text;
-    descriptionFr: Schema.Attribute.Text;
-    image: Schema.Attribute.Media<'images'> & Schema.Attribute.Required;
-    isUnique: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
-    locale: Schema.Attribute.String & Schema.Attribute.Private;
-    localizations: Schema.Attribute.Relation<'oneToMany', 'api::flash.flash'> &
-      Schema.Attribute.Private;
-    pricePrint: Schema.Attribute.Integer;
-    priceTattoo: Schema.Attribute.Integer;
-    printAvailable: Schema.Attribute.Boolean &
-      Schema.Attribute.DefaultTo<false>;
-    publishedAt: Schema.Attribute.DateTime;
-    size: Schema.Attribute.Enumeration<
-      ['petit', 'moyen', 'grand', 'tres-grand']
-    > &
-      Schema.Attribute.DefaultTo<'moyen'>;
-    sortOrder: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
-    status: Schema.Attribute.Enumeration<['disponible', 'reserve', 'tatoue']> &
-      Schema.Attribute.DefaultTo<'disponible'>;
-    style: Schema.Attribute.String;
-    tatoueur: Schema.Attribute.Relation<'manyToOne', 'api::tatoueur.tatoueur'>;
-    titleEn: Schema.Attribute.String;
-    titleFr: Schema.Attribute.String;
-    updatedAt: Schema.Attribute.DateTime;
-    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-    visible: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
-  };
-}
-
 export interface ApiInventoryItemInventoryItem
   extends Struct.CollectionTypeSchema {
   collectionName: 'inventory_items';
@@ -1010,13 +920,18 @@ export interface ApiInventoryItemInventoryItem
     brand: Schema.Attribute.String;
     category: Schema.Attribute.Enumeration<
       [
+        'stickers',
+        'papiers',
         'textile',
-        'frame',
-        'sticker',
+        'consommables',
+        'materiel',
+        'cadre',
         'merch',
-        'equipment',
+        'sticker',
         'consommable',
         'emballage',
+        'equipment',
+        'frame',
       ]
     > &
       Schema.Attribute.Required;
@@ -1026,6 +941,10 @@ export interface ApiInventoryItemInventoryItem
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     detail: Schema.Attribute.String;
+    finitionPapier: Schema.Attribute.Enumeration<['matte', 'glossy', 'luster']>;
+    fx: Schema.Attribute.Enumeration<
+      ['clear', 'holographique', 'broken_glass', 'dots', 'stars', 'divers']
+    >;
     hasZip: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     image: Schema.Attribute.Media<'images'>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
@@ -1046,6 +965,11 @@ export interface ApiInventoryItemInventoryItem
       Schema.Attribute.DefaultTo<0>;
     reserved: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
     sku: Schema.Attribute.String & Schema.Attribute.Unique;
+    stickerFormat: Schema.Attribute.Enumeration<['rouleau', 'feuille']>;
+    stickerType: Schema.Attribute.Enumeration<
+      ['transparent', 'blanc', 'holographique', 'glossy']
+    >;
+    taillePapier: Schema.Attribute.String;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -1196,6 +1120,7 @@ export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
         'pending',
         'paid',
         'processing',
+        'ready',
         'shipped',
         'delivered',
         'cancelled',
@@ -1204,6 +1129,7 @@ export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
     > &
       Schema.Attribute.Required &
       Schema.Attribute.DefaultTo<'draft'>;
+    stripeCheckoutSessionId: Schema.Attribute.String;
     stripePaymentIntentId: Schema.Attribute.String &
       Schema.Attribute.Required &
       Schema.Attribute.Unique;
@@ -1333,50 +1259,92 @@ export interface ApiPromoCodePromoCode extends Struct.CollectionTypeSchema {
   };
 }
 
-export interface ApiReservationReservation extends Struct.CollectionTypeSchema {
-  collectionName: 'reservations';
+export interface ApiQrCodeQrCode extends Struct.CollectionTypeSchema {
+  collectionName: 'qr_codes';
   info: {
-    description: 'Reservations de flash pour tatouage';
-    displayName: 'Reservation Tattoo';
-    pluralName: 'reservations';
-    singularName: 'reservation';
+    description: 'Dynamic QR codes with scan tracking';
+    displayName: 'QR Code';
+    pluralName: 'qr-codes';
+    singularName: 'qr-code';
   };
   options: {
     draftAndPublish: false;
   };
   attributes: {
-    budget: Schema.Attribute.String;
-    client: Schema.Attribute.Relation<'manyToOne', 'api::client.client'>;
-    clientEmail: Schema.Attribute.Email & Schema.Attribute.Required;
-    clientName: Schema.Attribute.String & Schema.Attribute.Required;
-    clientPhone: Schema.Attribute.String;
-    confirmedDate: Schema.Attribute.DateTime;
+    active: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    flash: Schema.Attribute.Relation<'manyToOne', 'api::flash.flash'>;
+    createdByEmail: Schema.Attribute.String;
+    destinationUrl: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 2000;
+      }>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
-      'api::reservation.reservation'
+      'api::qr-code.qr-code'
     > &
       Schema.Attribute.Private;
-    messageDuClient: Schema.Attribute.Text;
-    notes: Schema.Attribute.Text;
-    placement: Schema.Attribute.String;
     publishedAt: Schema.Attribute.DateTime;
-    referenceImages: Schema.Attribute.Media<'images', true>;
-    requestedDate: Schema.Attribute.Date;
-    size: Schema.Attribute.String;
-    status: Schema.Attribute.Enumeration<
-      ['demandee', 'confirmee', 'planifiee', 'realisee', 'annulee']
-    > &
-      Schema.Attribute.DefaultTo<'demandee'>;
-    supabaseUserId: Schema.Attribute.String;
-    tatoueur: Schema.Attribute.Relation<'manyToOne', 'api::tatoueur.tatoueur'>;
+    scans: Schema.Attribute.Relation<'oneToMany', 'api::qr-scan.qr-scan'>;
+    shortId: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 16;
+        minLength: 6;
+      }>;
+    title: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 200;
+      }>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+  };
+}
+
+export interface ApiQrScanQrScan extends Struct.CollectionTypeSchema {
+  collectionName: 'qr_scans';
+  info: {
+    description: 'Individual scan events on QR codes';
+    displayName: 'QR Scan';
+    pluralName: 'qr-scans';
+    singularName: 'qr-scan';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    ipAddress: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 64;
+      }>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::qr-scan.qr-scan'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    qrCode: Schema.Attribute.Relation<'manyToOne', 'api::qr-code.qr-code'>;
+    referer: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 500;
+      }>;
+    scannedAt: Schema.Attribute.DateTime & Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    userAgent: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 500;
+      }>;
   };
 }
 
@@ -1646,104 +1614,34 @@ export interface ApiSiteContentSiteContent extends Struct.SingleTypeSchema {
   };
 }
 
-export interface ApiTatoueurTatoueur extends Struct.CollectionTypeSchema {
-  collectionName: 'tatoueurs';
-  info: {
-    description: 'Artistes tatoueurs partenaires';
-    displayName: 'Tatoueur';
-    pluralName: 'tatoueurs';
-    singularName: 'tatoueur';
-  };
-  options: {
-    draftAndPublish: true;
-  };
-  attributes: {
-    active: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
-    approved: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
-    avatar: Schema.Attribute.Media<'images'>;
-    bioEn: Schema.Attribute.Text;
-    bioFr: Schema.Attribute.Text;
-    calendarSettings: Schema.Attribute.JSON;
-    city: Schema.Attribute.String;
-    createdAt: Schema.Attribute.DateTime;
-    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-    discountRate: Schema.Attribute.Decimal & Schema.Attribute.DefaultTo<0.3>;
-    email: Schema.Attribute.Email;
-    featured: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
-    flashs: Schema.Attribute.Relation<'oneToMany', 'api::flash.flash'>;
-    heroImage: Schema.Attribute.Media<'images'>;
-    hourlyRate: Schema.Attribute.Integer;
-    instagramHandle: Schema.Attribute.String;
-    links: Schema.Attribute.JSON;
-    locale: Schema.Attribute.String & Schema.Attribute.Private;
-    localizations: Schema.Attribute.Relation<
-      'oneToMany',
-      'api::tatoueur.tatoueur'
-    > &
-      Schema.Attribute.Private;
-    name: Schema.Attribute.String & Schema.Attribute.Required;
-    pageViews: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
-    priceTattooMin: Schema.Attribute.Integer;
-    publishedAt: Schema.Attribute.DateTime;
-    realisationImages: Schema.Attribute.Media<'images', true>;
-    slug: Schema.Attribute.String &
-      Schema.Attribute.Required &
-      Schema.Attribute.Unique;
-    socials: Schema.Attribute.JSON;
-    sortOrder: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
-    studio: Schema.Attribute.String;
-    styles: Schema.Attribute.JSON;
-    supabaseUserId: Schema.Attribute.String;
-    updatedAt: Schema.Attribute.DateTime;
-    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-  };
-}
-
-export interface ApiTattooMessageTattooMessage
+export interface ApiStripeWebhookEventStripeWebhookEvent
   extends Struct.CollectionTypeSchema {
-  collectionName: 'tattoo_messages';
+  collectionName: 'stripe_webhook_events';
   info: {
-    description: 'Messages entre clients et tatoueurs';
-    displayName: 'Message Tatoueur';
-    pluralName: 'tattoo-messages';
-    singularName: 'tattoo-message';
+    description: "Journal d'idempotency pour les webhooks Stripe (STRIPE-01). Evite de re-traiter un event.id deja vu sur retry.";
+    displayName: 'Stripe Webhook Event';
+    pluralName: 'stripe-webhook-events';
+    singularName: 'stripe-webhook-event';
   };
   options: {
     draftAndPublish: false;
   };
   attributes: {
-    attachments: Schema.Attribute.Media<'images', true>;
-    content: Schema.Attribute.Text & Schema.Attribute.Required;
-    conversationId: Schema.Attribute.String;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    eventId: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    eventType: Schema.Attribute.String & Schema.Attribute.Required;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
-      'api::tattoo-message.tattoo-message'
+      'api::stripe-webhook-event.stripe-webhook-event'
     > &
       Schema.Attribute.Private;
+    processedAt: Schema.Attribute.DateTime & Schema.Attribute.Required;
     publishedAt: Schema.Attribute.DateTime;
-    readByRecipient: Schema.Attribute.Boolean &
-      Schema.Attribute.DefaultTo<false>;
-    relatedFlash: Schema.Attribute.Relation<'manyToOne', 'api::flash.flash'>;
-    relatedReservation: Schema.Attribute.Relation<
-      'manyToOne',
-      'api::reservation.reservation'
-    >;
-    senderEmail: Schema.Attribute.Email & Schema.Attribute.Required;
-    senderName: Schema.Attribute.String & Schema.Attribute.Required;
-    senderType: Schema.Attribute.Enumeration<['client', 'tatoueur', 'admin']> &
-      Schema.Attribute.DefaultTo<'client'>;
-    status: Schema.Attribute.Enumeration<
-      ['new', 'read', 'replied', 'archived']
-    > &
-      Schema.Attribute.DefaultTo<'new'>;
-    supabaseUserId: Schema.Attribute.String;
-    tatoueur: Schema.Attribute.Relation<'manyToOne', 'api::tatoueur.tatoueur'>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -1827,11 +1725,44 @@ export interface ApiUserRoleUserRole extends Struct.CollectionTypeSchema {
     > &
       Schema.Attribute.Private;
     publishedAt: Schema.Attribute.DateTime;
-    role: Schema.Attribute.Enumeration<['user', 'artist', 'tatoueur']> &
+    role: Schema.Attribute.Enumeration<['user', 'artist']> &
       Schema.Attribute.Required &
       Schema.Attribute.DefaultTo<'user'>;
     supabaseUserId: Schema.Attribute.String;
-    tatoueurSlug: Schema.Attribute.String;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiWebhookAlertThrottleWebhookAlertThrottle
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'webhook_alert_throttles';
+  info: {
+    description: "Throttle persistant pour les emails d'alerte webhook (STRIPE-03). Une ligne par cle d'alerte, mise a jour a chaque envoi.";
+    displayName: 'Webhook Alert Throttle';
+    pluralName: 'webhook-alert-throttles';
+    singularName: 'webhook-alert-throttle';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    alertKey: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    lastSentAt: Schema.Attribute.DateTime & Schema.Attribute.Required;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::webhook-alert-throttle.webhook-alert-throttle'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    sendCount: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -2398,25 +2329,24 @@ declare module '@strapi/strapi' {
       'api::artist-submission.artist-submission': ApiArtistSubmissionArtistSubmission;
       'api::artist.artist': ApiArtistArtist;
       'api::boutique-item.boutique-item': ApiBoutiqueItemBoutiqueItem;
-      'api::calendar-event.calendar-event': ApiCalendarEventCalendarEvent;
       'api::client.client': ApiClientClient;
       'api::contact-submission.contact-submission': ApiContactSubmissionContactSubmission;
       'api::expense.expense': ApiExpenseExpense;
-      'api::flash.flash': ApiFlashFlash;
       'api::inventory-item.inventory-item': ApiInventoryItemInventoryItem;
       'api::invoice.invoice': ApiInvoiceInvoice;
       'api::news-article.news-article': ApiNewsArticleNewsArticle;
       'api::order.order': ApiOrderOrder;
       'api::product.product': ApiProductProduct;
       'api::promo-code.promo-code': ApiPromoCodePromoCode;
-      'api::reservation.reservation': ApiReservationReservation;
+      'api::qr-code.qr-code': ApiQrCodeQrCode;
+      'api::qr-scan.qr-scan': ApiQrScanQrScan;
       'api::service-package.service-package': ApiServicePackageServicePackage;
       'api::service-page.service-page': ApiServicePageServicePage;
       'api::site-content.site-content': ApiSiteContentSiteContent;
-      'api::tatoueur.tatoueur': ApiTatoueurTatoueur;
-      'api::tattoo-message.tattoo-message': ApiTattooMessageTattooMessage;
+      'api::stripe-webhook-event.stripe-webhook-event': ApiStripeWebhookEventStripeWebhookEvent;
       'api::testimonial.testimonial': ApiTestimonialTestimonial;
       'api::user-role.user-role': ApiUserRoleUserRole;
+      'api::webhook-alert-throttle.webhook-alert-throttle': ApiWebhookAlertThrottleWebhookAlertThrottle;
       'api::withdrawal-request.withdrawal-request': ApiWithdrawalRequestWithdrawalRequest;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;

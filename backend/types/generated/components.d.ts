@@ -177,14 +177,16 @@ export interface HomeTestimonial extends Struct.ComponentSchema {
 export interface SharedSeoMeta extends Struct.ComponentSchema {
   collectionName: 'components_shared_seo_metas';
   info: {
-    description: 'SEO title and description bilingual';
+    description: 'SEO title and description trilingual FR/EN/ES';
     displayName: 'SEO Meta';
     icon: 'search';
   };
   attributes: {
     descriptionEn: Schema.Attribute.Text & Schema.Attribute.Required;
+    descriptionEs: Schema.Attribute.Text;
     descriptionFr: Schema.Attribute.Text & Schema.Attribute.Required;
     titleEn: Schema.Attribute.String & Schema.Attribute.Required;
+    titleEs: Schema.Attribute.String;
     titleFr: Schema.Attribute.String & Schema.Attribute.Required;
   };
 }

@@ -51,7 +51,7 @@
         },
         "status": {
             "type": "enumeration",
-            "enum": ["draft", "pending", "paid", "processing", "shipped", "delivered", "cancelled", "refunded"],
+            "enum": ["draft", "pending", "paid", "processing", "ready", "shipped", "delivered", "cancelled", "refunded"],
             "default": "draft",
             "required": true
         },

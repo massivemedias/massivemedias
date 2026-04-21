@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sendPrivatePrintEmail = exports.sendTattooMessageEmail = exports.sendReservationNotificationEmail = exports.sendNewUserNotificationEmail = exports.sendDriveFailureAlert = exports.sendWebhookFailureAlert = exports.sendNewContactNotificationEmail = exports.sendTrackingEmail = exports.sendNewOrderNotificationEmail = exports.sendArtistSaleNotificationEmail = exports.sendContractSignedEmail = exports.sendOrderConfirmationEmail = exports.sendTestimonialRequestEmail = exports.sendContactReplyEmail = void 0;
+exports.sendPrivatePrintEmail = exports.sendNewUserNotificationEmail = exports.sendDriveFailureAlert = exports.sendWebhookFailureAlert = exports.sendNewContactNotificationEmail = exports.sendTrackingEmail = exports.sendNewOrderNotificationEmail = exports.sendArtistSaleNotificationEmail = exports.sendContractSignedEmail = exports.sendOrderConfirmationEmail = exports.sendTestimonialRequestEmail = exports.sendContactReplyEmail = void 0;
 // Email transactionnels Massive Medias via Resend
 const resend_1 = require("resend");
 let resendInstance = null;
@@ -917,125 +917,6 @@ async function sendNewUserNotificationEmail(userName, userEmail, provider) {
     }
 }
 exports.sendNewUserNotificationEmail = sendNewUserNotificationEmail;
-function buildReservationNotificationHtml(data) {
-    const detailRows = [
-        { label: 'Client', value: data.clientName },
-        { label: 'Courriel', value: data.clientEmail },
-        { label: 'Flash', value: data.flashTitle },
-        data.placement ? { label: 'Placement', value: data.placement } : null,
-        data.size ? { label: 'Taille', value: data.size } : null,
-        data.requestedDate ? { label: 'Date souhaitee', value: new Date(data.requestedDate).toLocaleDateString('fr-CA', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'America/Toronto' }) } : null,
-        data.budget ? { label: 'Budget', value: data.budget } : null,
-    ].filter(Boolean);
-    const rows = detailRows.map(r => `
-    <tr>
-      <td style="padding:8px 14px;border-bottom:1px solid #eee;color:#666;font-size:13px;width:120px;">${r.label}</td>
-      <td style="padding:8px 14px;border-bottom:1px solid #eee;color:#222;font-size:14px;font-weight:600;">${r.value}</td>
-    </tr>
-  `).join('');
-    const content = `
-    <h2 style="color:#222;margin:0 0 16px;font-size:16px;">Nouvelle reservation</h2>
-    <p style="color:#666;margin:0 0 20px;font-size:15px;line-height:1.5;">
-      Salut ${data.tatoueurName}, <strong style="color:#222;">${data.clientName}</strong> veut reserver ton flash <strong style="color:#FF52A0;">${data.flashTitle}</strong>.
-    </p>
-
-    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px;">
-      ${rows}
-    </table>
-
-    ${data.messageDuClient ? `
-    <!-- Message du client -->
-    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
-      <tr><td style="padding:16px;background:#f7f7f7;border-radius:8px;border:1px solid #eee;border-left:3px solid #FF52A0;">
-        <p style="margin:0 0 6px;color:#666;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">Message du client</p>
-        <p style="margin:0;color:#222;font-size:14px;line-height:1.6;white-space:pre-wrap;">${data.messageDuClient}</p>
-      </td></tr>
-    </table>
-    ` : ''}
-
-    <!-- CTA -->
-    <table width="100%" cellpadding="0" cellspacing="0" style="margin:24px 0 0;">
-      <tr><td align="center">
-        <a href="https://massivemedias.com/tatoueur/dashboard?tab=reservations" style="display:inline-block;background:linear-gradient(135deg,#FF52A0,#6B21A8);color:#ffffff;text-decoration:none;padding:14px 32px;border-radius:10px;font-size:16px;font-weight:700;letter-spacing:0.3px;box-shadow:0 4px 16px rgba(255,82,160,0.3);">
-          Voir dans mon dashboard
-        </a>
-      </td></tr>
-    </table>
-  `;
-    return massiveEmailWrapper(content);
-}
-async function sendReservationNotificationEmail(data) {
-    const resend = getResend();
-    if (!resend) {
-        console.warn('[email] Resend non configure, notification reservation non envoyee');
-        return false;
-    }
-    const sender = getSender();
-    try {
-        await resend.emails.send({
-            ...sender,
-            to: data.tatoueurEmail,
-            subject: `[RESERVATION] ${data.clientName} veut reserver - ${data.flashTitle}`,
-            html: buildReservationNotificationHtml(data),
-        });
-        console.log('[email] Notification reservation envoyee a', data.tatoueurEmail);
-        return true;
-    }
-    catch (err) {
-        console.error('[email] Erreur notification reservation:', err);
-        return false;
-    }
-}
-exports.sendReservationNotificationEmail = sendReservationNotificationEmail;
-function buildTattooMessageHtml(data) {
-    const content = `
-    <h2 style="color:#222;margin:0 0 16px;font-size:16px;">Nouveau message</h2>
-    <p style="color:#666;margin:0 0 20px;font-size:15px;line-height:1.5;">
-      <strong style="color:#222;">${data.senderName}</strong> t'a envoye un message${data.flashTitle ? ` concernant le flash <strong style="color:#FF52A0;">${data.flashTitle}</strong>` : ''}.
-    </p>
-
-    <!-- Message -->
-    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
-      <tr><td style="padding:16px;background:#f7f7f7;border-radius:8px;border:1px solid #eee;border-left:3px solid #FF52A0;">
-        <p style="margin:0 0 6px;color:#666;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">Message</p>
-        <p style="margin:0;color:#222;font-size:14px;line-height:1.6;white-space:pre-wrap;">${data.messageContent}</p>
-      </td></tr>
-    </table>
-
-    <!-- CTA -->
-    <table width="100%" cellpadding="0" cellspacing="0" style="margin:24px 0 0;">
-      <tr><td align="center">
-        <a href="${data.dashboardUrl}" style="display:inline-block;background:linear-gradient(135deg,#FF52A0,#6B21A8);color:#ffffff;text-decoration:none;padding:14px 32px;border-radius:10px;font-size:16px;font-weight:700;letter-spacing:0.3px;box-shadow:0 4px 16px rgba(255,82,160,0.3);">
-          ${data.ctaLabel}
-        </a>
-      </td></tr>
-    </table>
-  `;
-    return massiveEmailWrapper(content);
-}
-async function sendTattooMessageEmail(data) {
-    const resend = getResend();
-    if (!resend) {
-        console.warn('[email] Resend non configure, notification message tattoo non envoyee');
-        return false;
-    }
-    const sender = getSender();
-    try {
-        await resend.emails.send({
-            ...sender,
-            to: data.recipientEmail,
-            subject: `[MESSAGE] Nouveau message de ${data.senderName}`,
-            html: buildTattooMessageHtml(data),
-        });
-        console.log('[email] Notification message tattoo envoyee a', data.recipientEmail);
-        return true;
-    }
-    catch (err) {
-        console.error('[email] Erreur notification message tattoo:', err);
-        return false;
-    }
-}
-exports.sendTattooMessageEmail = sendTattooMessageEmail;
 function buildPrivatePrintHtml(data) {
     const priceText = data.price ? `${data.price}$` : '';
     return massiveEmailWrapper(`
