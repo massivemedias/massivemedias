@@ -161,7 +161,7 @@ function AdminDashboard() {
         const d = statsRes.data;
         const artists = commRes.data?.artists || [];
         const totalCommissions = artists.reduce((s, a) => s + (a.totalCommission || 0), 0);
-        const paidOrders = (d.orderStats?.byStatus?.paid || 0) + (d.orderStats?.byStatus?.processing || 0) + (d.orderStats?.byStatus?.shipped || 0) + (d.orderStats?.byStatus?.delivered || 0);
+        const paidOrders = (d.orderStats?.byStatus?.paid || 0) + (d.orderStats?.byStatus?.processing || 0) + (d.orderStats?.byStatus?.ready || 0) + (d.orderStats?.byStatus?.shipped || 0) + (d.orderStats?.byStatus?.delivered || 0);
         setRevenue({
           total: d.revenue?.totalDollars || 0,
           orders: paidOrders || d.orderStats?.total || 0,

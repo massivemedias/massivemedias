@@ -142,6 +142,7 @@ function AdminStats() {
     pending:    { color: colors.yellow,  label: tx({ fr: 'En attente', en: 'Pending', es: 'Pendiente' }) },
     paid:       { color: colors.green,   label: tx({ fr: 'Payé', en: 'Paid', es: 'Pagado' }) },
     processing: { color: colors.blue,    label: tx({ fr: 'En production', en: 'Processing', es: 'En proceso' }) },
+    ready:      { color: colors.orange,  label: tx({ fr: 'Prêt', en: 'Ready', es: 'Listo' }) },
     shipped:    { color: colors.purple,  label: tx({ fr: 'Expédié', en: 'Shipped', es: 'Enviado' }) },
     delivered:  { color: colors.emerald, label: tx({ fr: 'Livré', en: 'Delivered', es: 'Entregado' }) },
     cancelled:  { color: colors.red,     label: tx({ fr: 'Annulé', en: 'Cancelled', es: 'Cancelado' }) },

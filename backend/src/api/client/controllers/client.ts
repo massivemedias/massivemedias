@@ -2,7 +2,7 @@ import { factories } from '@strapi/strapi';
 import { sendNewUserNotificationEmail } from '../../../utils/email';
 
 // Statuts de commande qui comptent comme "paye reellement"
-const PAID_STATUSES = ['paid', 'processing', 'shipped', 'delivered'];
+const PAID_STATUSES = ['paid', 'processing', 'ready', 'shipped', 'delivered'];
 
 /**
  * Reconcilie les clients avec les commandes reellement payees.

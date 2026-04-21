@@ -1532,7 +1532,7 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
     const { documentId } = ctx.params;
     const { status: newStatus, invoiceNumber, autoInvoice, sendEmails } = ctx.request.body as any;
 
-    const validStatuses = ['draft', 'pending', 'paid', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded'];
+    const validStatuses = ['draft', 'pending', 'paid', 'processing', 'ready', 'shipped', 'delivered', 'cancelled', 'refunded'];
     if (!newStatus || !validStatuses.includes(newStatus)) {
       return ctx.badRequest(`Status invalide. Valeurs acceptees: ${validStatuses.join(', ')}`);
     }
@@ -1860,7 +1860,7 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
     const slugs = Object.keys(artistMap);
 
     // 2. Fetch completed orders
-    const validStatuses = ['paid', 'processing', 'shipped', 'delivered'] as const;
+    const validStatuses = ['paid', 'processing', 'ready', 'shipped', 'delivered'] as const;
     const orders = await strapi.documents('api::order.order').findMany({
       filters: { status: { $in: validStatuses as any } },
       sort: 'createdAt:desc',
