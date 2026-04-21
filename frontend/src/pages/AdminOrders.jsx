@@ -76,12 +76,12 @@ function AdminOrders() {
 
   // Envoi facture par courriel - etat par commande + toast global
   const [sendingInvoiceId, setSendingInvoiceId] = useState(null);
-  const [invoiceToast, setInvoiceToast] = useState(null); // { type: 'success'|'error', message: '...' }
+  const [actionToast, setInvoiceToast] = useState(null); // { type: 'success'|'error', message: '...' }
   useEffect(() => {
-    if (!invoiceToast) return;
-    const t = setTimeout(() => setInvoiceToast(null), invoiceToast.type === 'error' ? 7000 : 4500);
+    if (!actionToast) return;
+    const t = setTimeout(() => setInvoiceToast(null), actionToast.type === 'error' ? 7000 : 4500);
     return () => clearTimeout(t);
-  }, [invoiceToast]);
+  }, [actionToast]);
 
   const handleSendInvoice = async (order) => {
     if (!order?.documentId) return;
@@ -236,16 +236,50 @@ function AdminOrders() {
     }
   };
 
-  const handleDelete = async (documentId) => {
+  const handleDelete = async (order) => {
+    const documentId = order?.documentId;
+    if (!documentId) return;
+
+    // Confirmation native window.confirm - impossible a skipper par accident.
+    const ref = order.orderRef || documentId.slice(0, 8).toUpperCase();
+    const who = order.customerName || order.customerEmail || '(client inconnu)';
+    const amt = ((order.total || 0) / 100).toFixed(2);
+    const confirmMsg = tx({
+      fr: `Supprimer DEFINITIVEMENT la commande ${ref}\n(${who}, ${amt}$) ?\n\nCette action est irreversible.`,
+      en: `PERMANENTLY delete order ${ref}\n(${who}, $${amt}) ?\n\nThis cannot be undone.`,
+      es: `Eliminar DEFINITIVAMENTE el pedido ${ref}\n(${who}, ${amt}$) ?\n\nEsta accion es irreversible.`,
+    });
+    if (!window.confirm(confirmMsg)) return;
+
     setDeletingId(documentId);
+    setActionToast(null);
     try {
       await deleteOrder(documentId);
       setOrders(prev => prev.filter(o => o.documentId !== documentId));
       setExpandedId(null);
       setConfirmDeleteId(null);
-    } catch {
-      setOpError(tx({ fr: 'Erreur suppression commande', en: 'Error deleting order', es: 'Error eliminando orden' }));
-      setTimeout(() => setOpError(''), 4000);
+      setActionToast({
+        type: 'success',
+        message: tx({
+          fr: `Commande ${ref} supprimee definitivement.`,
+          en: `Order ${ref} permanently deleted.`,
+          es: `Pedido ${ref} eliminado definitivamente.`,
+        }),
+      });
+    } catch (err) {
+      console.error('deleteOrder failed:', err);
+      const backendMsg = err?.response?.data?.error?.message
+        || err?.response?.data?.message
+        || err?.message
+        || 'Erreur inconnue';
+      setActionToast({
+        type: 'error',
+        message: tx({
+          fr: `Echec suppression : ${backendMsg}`,
+          en: `Delete failed: ${backendMsg}`,
+          es: `Error de eliminacion: ${backendMsg}`,
+        }),
+      });
     } finally {
       setDeletingId(null);
     }
@@ -325,27 +359,27 @@ function AdminOrders() {
 
       {/* Toast global envoi facture (bas droite, auto-dismiss) */}
       <AnimatePresence>
-        {invoiceToast && (
+        {actionToast && (
           <motion.div
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             className={`fixed bottom-6 right-6 z-[9999] max-w-sm rounded-xl shadow-2xl px-4 py-3 flex items-start gap-3 border ${
-              invoiceToast.type === 'success'
+              actionToast.type === 'success'
                 ? 'bg-green-600/95 border-green-400/60'
                 : 'bg-red-600/95 border-red-400/60'
             }`}
           >
-            {invoiceToast.type === 'success'
+            {actionToast.type === 'success'
               ? <CheckCircle size={20} className="text-white flex-shrink-0 mt-0.5" />
               : <AlertTriangle size={20} className="text-white flex-shrink-0 mt-0.5" />}
             <div className="flex-1">
               <p className="text-white font-semibold text-sm">
-                {invoiceToast.type === 'success'
+                {actionToast.type === 'success'
                   ? tx({ fr: 'Courriel envoye', en: 'Email sent', es: 'Correo enviado' })
                   : tx({ fr: 'Erreur', en: 'Error', es: 'Error' })}
               </p>
-              <p className="text-white/90 text-xs mt-0.5 whitespace-pre-wrap">{invoiceToast.message}</p>
+              <p className="text-white/90 text-xs mt-0.5 whitespace-pre-wrap">{actionToast.message}</p>
             </div>
             <button onClick={() => setInvoiceToast(null)} className="text-white/70 hover:text-white transition-colors">
               <XCircle size={16} />
@@ -1148,35 +1182,22 @@ function AdminOrders() {
                               </div>
                             </div>
 
-                            {/* Delete button */}
+                            {/* Delete button (hard delete + window.confirm) */}
                             <div className="flex-shrink-0 self-end">
-                              {confirmDeleteId === order.documentId ? (
-                                <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                                  <span className="text-xs text-red-400">{tx({ fr: 'Confirmer?', en: 'Confirm?', es: 'Confirmar?' })}</span>
-                                  <button
-                                    onClick={() => handleDelete(order.documentId)}
-                                    disabled={deletingId === order.documentId}
-                                    className="px-3 py-2 rounded-lg bg-red-500/20 text-red-400 text-xs font-semibold hover:bg-red-500/30 transition-colors disabled:opacity-50 flex items-center gap-1"
-                                  >
-                                    {deletingId === order.documentId ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
-                                    {tx({ fr: 'Supprimer', en: 'Delete', es: 'Eliminar' })}
-                                  </button>
-                                  <button
-                                    onClick={() => setConfirmDeleteId(null)}
-                                    className="px-3 py-2 rounded-lg bg-glass text-grey-muted text-xs font-semibold hover:text-heading transition-colors"
-                                  >
-                                    {tx({ fr: 'Annuler', en: 'Cancel', es: 'Cancelar' })}
-                                  </button>
-                                </div>
-                              ) : (
-                                <button
-                                  onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(order.documentId); }}
-                                  className="px-3 py-2 rounded-lg bg-red-500/10 text-red-400/60 text-xs font-semibold hover:bg-red-500/20 hover:text-red-400 transition-colors flex items-center gap-1"
-                                >
-                                  <Trash2 size={12} />
-                                  {tx({ fr: 'Supprimer', en: 'Delete', es: 'Eliminar' })}
-                                </button>
-                              )}
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleDelete(order); }}
+                                disabled={deletingId === order.documentId}
+                                title={tx({
+                                  fr: 'Supprimer definitivement cette commande',
+                                  en: 'Permanently delete this order',
+                                  es: 'Eliminar definitivamente este pedido',
+                                })}
+                                className="px-3 py-2 rounded-lg bg-red-500/10 text-red-400 text-xs font-semibold hover:bg-red-500/30 transition-colors flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed border border-red-500/20 hover:border-red-500/50"
+                              >
+                                {deletingId === order.documentId
+                                  ? <><Loader2 size={12} className="animate-spin" /> {tx({ fr: 'Suppression...', en: 'Deleting...', es: 'Eliminando...' })}</>
+                                  : <><Trash2 size={12} /> {tx({ fr: 'Supprimer la commande', en: 'Delete order', es: 'Eliminar pedido' })}</>}
+                              </button>
                             </div>
                           </div>
 
