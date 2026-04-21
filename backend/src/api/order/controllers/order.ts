@@ -2,6 +2,7 @@ import { factories } from '@strapi/strapi';
 import Stripe from 'stripe';
 import { calculateShipping } from '../../../utils/shipping';
 import { sendOrderConfirmationEmail, sendTestimonialRequestEmail, sendArtistSaleNotificationEmail, sendNewOrderNotificationEmail, sendTrackingEmail, sendInvoiceEmail } from '../../../utils/email';
+import { getTrackingStatus } from '../../../utils/tracking-provider';
 import crypto from 'crypto';
 import { PROMO_CODES } from '../../../utils/promo-codes';
 import {
@@ -2160,6 +2161,50 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
       newTotal: newTotalCents,
       auditLine,
     };
+  },
+
+  // GET /orders/:documentId/tracking - Recupere le statut de livraison via le provider
+  // (mock intelligent par defaut, branchement futur 17Track/Shippo via TRACKING_API_KEY).
+  // Retourne aussi un `suggestStatusChange` si l'etat propose un changement automatique
+  // du statut de la commande (ex: delivered -> passer la commande en "delivered").
+  async trackingStatus(ctx) {
+    if (!(await requireAdminAuth(ctx))) return;
+    const { documentId } = ctx.params;
+    if (!documentId) return ctx.badRequest('documentId requis');
+
+    try {
+      const order = await strapi.documents('api::order.order').findOne({ documentId }) as any;
+      if (!order) return ctx.notFound(`Commande ${documentId} introuvable`);
+
+      const trackingNumber = (order.trackingNumber || '').trim();
+      const carrier = (order.carrier || 'postes-canada').toLowerCase();
+
+      if (!trackingNumber) {
+        return ctx.badRequest('Cette commande n\'a pas de numero de suivi enregistre.');
+      }
+
+      const result = await getTrackingStatus(trackingNumber, carrier);
+
+      // Si l'API dit "delivered" mais la commande n'est PAS marquee livree, on suggere
+      // le changement de statut. Le frontend affiche un prompt que l'admin peut accepter.
+      let shouldSuggestDelivered: boolean = false;
+      if (result.delivered && order.status !== 'delivered') {
+        shouldSuggestDelivered = true;
+      }
+
+      strapi.log.info(`[tracking] Order ${documentId} (${carrier}/${trackingNumber}): ${result.status} - ${result.events.length} event(s) - provider=${result.providerUsed}`);
+
+      ctx.body = {
+        data: {
+          ...result,
+          currentOrderStatus: order.status,
+          suggestStatusChange: shouldSuggestDelivered ? 'delivered' : result.suggestStatusChange,
+        },
+      };
+    } catch (err: any) {
+      strapi.log.error('trackingStatus error:', err?.message || err);
+      return ctx.throw(500, err?.message || 'Echec recuperation tracking');
+    }
   },
 
   async addTracking(ctx) {

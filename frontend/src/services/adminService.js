@@ -42,6 +42,15 @@ export const getOrderStats = () => api.get('/orders/stats');
 export const updateOrderStatus = (documentId, status) => api.put(`/orders/${documentId}/status`, { status });
 export const updateOrderNotes = (documentId, notes) => api.put(`/orders/${documentId}/notes`, { notes });
 export const updateOrderTracking = (documentId, trackingNumber, carrier) => api.put(`/orders/${documentId}/tracking`, { trackingNumber, carrier });
+
+/**
+ * Interroge le provider de tracking (mock intelligent / 17Track / Shippo).
+ * Retourne { status, statusLabel, events[], delivered, deliveredAt, suggestStatusChange }.
+ */
+export const getOrderTracking = (documentId) => {
+  if (!documentId) throw new Error('getOrderTracking: documentId requis');
+  return api.get(`/orders/${documentId}/tracking`);
+};
 export const deleteOrder = (documentId) => api.delete(`/orders/${documentId}`);
 
 /**

@@ -107,6 +107,14 @@ exports.default = {
             },
         },
         {
+            method: 'GET',
+            path: '/orders/:documentId/tracking',
+            handler: 'order.trackingStatus',
+            config: {
+                auth: false,
+            },
+        },
+        {
             method: 'DELETE',
             path: '/orders/:documentId',
             handler: 'order.deleteOrder',

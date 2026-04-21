@@ -8,7 +8,7 @@ import {
   Download, Receipt, Trash2, Send, AlertTriangle, Pencil, Plus,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
-import { getOrders, getOrderStats, updateOrderStatus, updateOrderNotes, updateOrderTracking, deleteOrder, getPrivateSales, deletePrivateSale, resendPrivateSaleEmail, sendOrderInvoice } from '../services/adminService';
+import { getOrders, getOrderStats, updateOrderStatus, updateOrderNotes, updateOrderTracking, deleteOrder, getPrivateSales, deletePrivateSale, resendPrivateSaleEmail, sendOrderInvoice, getOrderTracking } from '../services/adminService';
 import { useNotifications } from '../contexts/NotificationContext';
 import { generateInvoicePDF } from '../utils/generateInvoice';
 import EditOrderTotalModal from '../components/EditOrderTotalModal';
@@ -73,6 +73,51 @@ function AdminOrders() {
 
   // Modal creation commande manuelle + facture + lien Stripe
   const [showManualModal, setShowManualModal] = useState(false);
+
+  // Tracking live : etat par commande - { [documentId]: { loading, data, error } }
+  const [trackingState, setTrackingState] = useState({});
+
+  const refreshTracking = async (order) => {
+    const documentId = order?.documentId;
+    if (!documentId) return;
+    setTrackingState(prev => ({ ...prev, [documentId]: { ...prev[documentId], loading: true, error: null } }));
+    try {
+      const { data } = await getOrderTracking(documentId);
+      const payload = data?.data || null;
+      setTrackingState(prev => ({ ...prev, [documentId]: { loading: false, data: payload, error: null } }));
+
+      // Si le provider suggere "delivered" et la commande n'est pas livree, demander confirmation
+      if (payload?.suggestStatusChange === 'delivered' && order.status !== 'delivered') {
+        const msg = tx({
+          fr: `Le transporteur confirme que le colis a ete livre.\nMarquer la commande #${(order.orderRef || order.documentId.slice(0, 8))} comme "Livree" ?`,
+          en: `The carrier confirms the package has been delivered.\nMark order #${(order.orderRef || order.documentId.slice(0, 8))} as "Delivered"?`,
+          es: `El transportista confirma la entrega.\nMarcar pedido #${(order.orderRef || order.documentId.slice(0, 8))} como "Entregado"?`,
+        });
+        if (window.confirm(msg)) {
+          try {
+            await updateOrderStatus(documentId, 'delivered');
+            setOrders(prev => prev.map(o => o.documentId === documentId ? { ...o, status: 'delivered' } : o));
+            setActionToast({
+              type: 'success',
+              message: tx({
+                fr: 'Commande marquee comme livree.',
+                en: 'Order marked as delivered.',
+                es: 'Pedido marcado como entregado.',
+              }),
+            });
+          } catch (err) {
+            setActionToast({
+              type: 'error',
+              message: (err?.response?.data?.error?.message || err?.message || 'Erreur changement statut'),
+            });
+          }
+        }
+      }
+    } catch (err) {
+      const backendMsg = err?.response?.data?.error?.message || err?.message || 'Erreur tracking';
+      setTrackingState(prev => ({ ...prev, [documentId]: { loading: false, data: null, error: backendMsg } }));
+    }
+  };
 
   // Envoi facture par courriel - etat par commande + toast global
   const [sendingInvoiceId, setSendingInvoiceId] = useState(null);
@@ -1086,35 +1131,92 @@ function AdminOrders() {
                             </div>
                           </div>
 
-                          {/* Suivi de colis */}
+                          {/* Expedition & Suivi (tracking live via provider) */}
                           <div className="rounded-lg bg-glass p-4">
                             <h4 className="text-xs font-semibold text-grey-muted uppercase tracking-wider mb-3 flex items-center gap-1.5">
                               <Truck size={12} />
-                              {tx({ fr: 'Suivi de colis', en: 'Package tracking', es: 'Seguimiento de paquete' })}
+                              {tx({ fr: 'Expedition & Suivi', en: 'Shipping & Tracking', es: 'Envio y Seguimiento' })}
                             </h4>
                             {order.trackingNumber ? (
-                              <div className="space-y-2">
-                                <div className="flex items-center gap-3">
+                              <div className="space-y-3">
+                                <div className="flex items-center gap-3 flex-wrap">
                                   <span className="text-sm text-heading font-mono font-bold">{order.trackingNumber}</span>
                                   <span className="text-xs text-grey-muted">
                                     {order.carrier === 'purolator' ? 'Purolator' : order.carrier === 'ups' ? 'UPS' : 'Postes Canada'}
                                   </span>
+                                  <a
+                                    href={order.carrier === 'purolator'
+                                      ? `https://www.purolator.com/en/shipping/tracker?pin=${order.trackingNumber}`
+                                      : order.carrier === 'ups'
+                                      ? `https://www.ups.com/track?tracknum=${order.trackingNumber}`
+                                      : `https://www.canadapost-postescanada.ca/track-reperage/fr#/search?searchFor=${order.trackingNumber}`
+                                    }
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-accent/10 text-accent hover:bg-accent/20"
+                                  >
+                                    <ExternalLink size={12} />
+                                    {tx({ fr: 'Site transporteur', en: 'Carrier site', es: 'Sitio transportista' })}
+                                  </a>
+                                  <button
+                                    onClick={(e) => { e.stopPropagation(); refreshTracking(order); }}
+                                    disabled={trackingState[order.documentId]?.loading}
+                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-accent text-white hover:bg-accent/80 transition-colors disabled:opacity-50"
+                                  >
+                                    {trackingState[order.documentId]?.loading
+                                      ? <><Loader2 size={12} className="animate-spin" /> {tx({ fr: 'Verification...', en: 'Checking...', es: 'Verificando...' })}</>
+                                      : <><RotateCcw size={12} /> {tx({ fr: 'Verifier le statut de livraison', en: 'Check delivery status', es: 'Verificar estado' })}</>}
+                                  </button>
                                 </div>
-                                <a
-                                  href={order.carrier === 'purolator'
-                                    ? `https://www.purolator.com/en/shipping/tracker?pin=${order.trackingNumber}`
-                                    : order.carrier === 'ups'
-                                    ? `https://www.ups.com/track?tracknum=${order.trackingNumber}`
-                                    : `https://www.canadapost-postescanada.ca/track-reperage/fr#/search?searchFor=${order.trackingNumber}`
-                                  }
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  onClick={(e) => e.stopPropagation()}
-                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-accent/20 text-accent hover:bg-accent/30 transition-colors"
-                                >
-                                  <ExternalLink size={12} />
-                                  {tx({ fr: 'Suivre le colis', en: 'Track package', es: 'Rastrear paquete' })}
-                                </a>
+
+                                {/* Radar timeline (apres clic sur "Verifier") */}
+                                {trackingState[order.documentId]?.error && (
+                                  <div className="rounded-lg bg-red-500/10 border border-red-500/30 px-3 py-2 text-xs text-red-400 flex items-center gap-2">
+                                    <AlertTriangle size={12} />
+                                    {trackingState[order.documentId].error}
+                                  </div>
+                                )}
+                                {trackingState[order.documentId]?.data && (() => {
+                                  const td = trackingState[order.documentId].data;
+                                  const statusColor = td.status === 'delivered' ? 'bg-emerald-500/20 text-emerald-400'
+                                    : td.status === 'out_for_delivery' ? 'bg-orange-500/20 text-orange-400'
+                                    : td.status === 'in_transit' ? 'bg-blue-500/20 text-blue-400'
+                                    : td.status === 'exception' ? 'bg-red-500/20 text-red-400'
+                                    : 'bg-gray-500/20 text-gray-400';
+                                  return (
+                                    <div className="rounded-lg bg-black/20 p-3 space-y-3 border border-white/5">
+                                      <div className="flex items-center justify-between flex-wrap gap-2">
+                                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${statusColor}`}>
+                                          {td.status === 'delivered' && <CheckCircle size={12} />}
+                                          {td.status === 'out_for_delivery' && <Truck size={12} />}
+                                          {td.status === 'in_transit' && <Package size={12} />}
+                                          {td.statusLabel}
+                                        </span>
+                                        <span className="text-[10px] text-grey-muted">
+                                          {tx({ fr: 'Source', en: 'Source', es: 'Fuente' })}: {td.providerUsed}
+                                          {td.providerUsed === 'mock' && (
+                                            <span className="ml-1 text-yellow-400">({tx({ fr: 'mode demo', en: 'demo mode', es: 'demo' })})</span>
+                                          )}
+                                        </span>
+                                      </div>
+
+                                      {Array.isArray(td.events) && td.events.length > 0 && (
+                                        <ol className="relative border-l-2 border-white/10 ml-1 space-y-3">
+                                          {td.events.map((ev, i) => (
+                                            <li key={i} className="ml-4 pl-0">
+                                              <span className="absolute -left-[7px] w-3 h-3 rounded-full bg-[#1a0030] border-2 border-accent/50 mt-1" />
+                                              <p className="text-sm text-heading">{ev.description}</p>
+                                              <p className="text-[10px] text-grey-muted mt-0.5">
+                                                {ev.location} · {ev.date ? new Date(ev.date).toLocaleString('fr-CA', { dateStyle: 'short', timeStyle: 'short' }) : '-'}
+                                              </p>
+                                            </li>
+                                          ))}
+                                        </ol>
+                                      )}
+                                    </div>
+                                  );
+                                })()}
                               </div>
                             ) : (
                               <div className="space-y-3" onClick={(e) => e.stopPropagation()}>

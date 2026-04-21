@@ -30,6 +30,7 @@ const strapi_1 = require("@strapi/strapi");
 const stripe_1 = __importDefault(require("stripe"));
 const shipping_1 = require("../../../utils/shipping");
 const email_1 = require("../../../utils/email");
+const tracking_provider_1 = require("../../../utils/tracking-provider");
 const crypto_1 = __importDefault(require("crypto"));
 const promo_codes_1 = require("../../../utils/promo-codes");
 const pricing_config_1 = require("../../../utils/pricing-config");
@@ -2056,6 +2057,46 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
             newTotal: newTotalCents,
             auditLine,
         };
+    },
+    // GET /orders/:documentId/tracking - Recupere le statut de livraison via le provider
+    // (mock intelligent par defaut, branchement futur 17Track/Shippo via TRACKING_API_KEY).
+    // Retourne aussi un `suggestStatusChange` si l'etat propose un changement automatique
+    // du statut de la commande (ex: delivered -> passer la commande en "delivered").
+    async trackingStatus(ctx) {
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
+            return;
+        const { documentId } = ctx.params;
+        if (!documentId)
+            return ctx.badRequest('documentId requis');
+        try {
+            const order = await strapi.documents('api::order.order').findOne({ documentId });
+            if (!order)
+                return ctx.notFound(`Commande ${documentId} introuvable`);
+            const trackingNumber = (order.trackingNumber || '').trim();
+            const carrier = (order.carrier || 'postes-canada').toLowerCase();
+            if (!trackingNumber) {
+                return ctx.badRequest('Cette commande n\'a pas de numero de suivi enregistre.');
+            }
+            const result = await (0, tracking_provider_1.getTrackingStatus)(trackingNumber, carrier);
+            // Si l'API dit "delivered" mais la commande n'est PAS marquee livree, on suggere
+            // le changement de statut. Le frontend affiche un prompt que l'admin peut accepter.
+            let shouldSuggestDelivered = false;
+            if (result.delivered && order.status !== 'delivered') {
+                shouldSuggestDelivered = true;
+            }
+            strapi.log.info(`[tracking] Order ${documentId} (${carrier}/${trackingNumber}): ${result.status} - ${result.events.length} event(s) - provider=${result.providerUsed}`);
+            ctx.body = {
+                data: {
+                    ...result,
+                    currentOrderStatus: order.status,
+                    suggestStatusChange: shouldSuggestDelivered ? 'delivered' : result.suggestStatusChange,
+                },
+            };
+        }
+        catch (err) {
+            strapi.log.error('trackingStatus error:', (err === null || err === void 0 ? void 0 : err.message) || err);
+            return ctx.throw(500, (err === null || err === void 0 ? void 0 : err.message) || 'Echec recuperation tracking');
+        }
     },
     async addTracking(ctx) {
         if (!(await (0, auth_1.requireAdminAuth)(ctx)))
