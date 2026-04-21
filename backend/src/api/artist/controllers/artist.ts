@@ -303,6 +303,143 @@ export default factories.createCoreController('api::artist.artist', ({ strapi })
       });
       if (!artists || artists.length === 0) return ctx.notFound(`Artiste ${slug} introuvable`);
       const a = artists[0] as any;
+
+      // ============================================================
+      // FINANCIALS : agreger les ventes et commissions pour CET artiste
+      // (logique inline identique a la route /orders/commissions mais filtree par slug)
+      // ============================================================
+      const validStatuses = ['paid', 'processing', 'ready', 'shipped', 'delivered'] as const;
+      const orders = await strapi.documents('api::order.order').findMany({
+        filters: { status: { $in: validStatuses as any } } as any,
+        sort: 'createdAt:desc' as any,
+        limit: 500,
+      });
+
+      const DEFAULT_COSTS: Record<string, any> = {
+        studio: { a4: 12, a3: 16, a3plus: 20, a2: 28 },
+        museum: { a4: 25, a3: 38, a3plus: 48, a2: 65 },
+        frame: 8,
+      };
+      const STICKER_PROD_COSTS: Record<number, number> = {
+        25: 8, 50: 12, 100: 15, 250: 30, 500: 50,
+      };
+      function getProductionCost(artist: any, item: any): number {
+        const pid = item.productId || '';
+        if (pid.startsWith('artist-sticker-pack-')) {
+          const qty = item.quantity || 100;
+          const tiers = Object.keys(STICKER_PROD_COSTS).map(Number).sort((a, b) => a - b);
+          let cost = STICKER_PROD_COSTS[100];
+          for (const t of tiers) { if (qty >= t) cost = STICKER_PROD_COSTS[t]; }
+          return cost;
+        }
+        const costs = artist.productionCosts || DEFAULT_COSTS;
+        const tier = (item.finish || 'studio').toLowerCase().includes('museum') ? 'museum' : 'studio';
+        const format = (item.size || 'a4').toLowerCase().replace(/[^a-z0-9]/g, '');
+        const tierCosts = costs[tier] || DEFAULT_COSTS[tier];
+        let cost = (tierCosts && tierCosts[format]) || 15;
+        if (item.withFrame || (item.productName || '').toLowerCase().includes('cadre')) {
+          cost += (costs.frame ?? DEFAULT_COSTS.frame);
+        }
+        return cost;
+      }
+
+      const rate = parseFloat(a.commissionRate) || 0.5;
+      const relatedOrders: any[] = [];
+      let totalSales = 0, totalProduction = 0, totalNetProfit = 0, totalCommission = 0;
+      for (const order of (orders || [])) {
+        const items: any[] = Array.isArray((order as any).items) ? (order as any).items : [];
+        for (const item of items) {
+          const pid = item.productId || '';
+          if (!(pid.startsWith(`artist-print-${slug}-`) || pid.startsWith(`artist-sticker-pack-${slug}-`))) continue;
+          if (item.isArtistOwnPrint) continue;
+          const qty = item.quantity || 1;
+          const salePrice = item.totalPrice || (item.unitPrice || 0) * qty;
+          const prodCost = getProductionCost(a, item) * qty;
+          const netProfit = Math.max(0, salePrice - prodCost);
+          const commission = Math.round(netProfit * rate * 100) / 100;
+          totalSales += salePrice;
+          totalProduction += prodCost;
+          totalNetProfit += netProfit;
+          totalCommission += commission;
+          relatedOrders.push({
+            orderId: (order as any).documentId,
+            orderDate: (order as any).createdAt,
+            customerName: (order as any).customerName,
+            productName: item.productName || pid,
+            size: item.size || '',
+            finish: item.finish || '',
+            quantity: qty,
+            salePrice: Math.round(salePrice * 100) / 100,
+            productionCost: Math.round(prodCost * 100) / 100,
+            netProfit: Math.round(netProfit * 100) / 100,
+            commission,
+          });
+        }
+      }
+
+      // Paiements deja verses a cet artiste
+      let payments: any[] = [];
+      try {
+        payments = await strapi.documents('api::artist-payment.artist-payment' as any).findMany({
+          filters: { artistSlug: { $eq: slug } } as any,
+          sort: 'date:desc' as any,
+        });
+      } catch { /* content type peut ne pas exister */ }
+      const totalPaid = payments.reduce((s, p: any) => s + (parseFloat(p.amount) || 0), 0);
+
+      const financials = {
+        commissionRate: rate,
+        totalSales: Math.round(totalSales * 100) / 100,
+        totalProduction: Math.round(totalProduction * 100) / 100,
+        totalNetProfit: Math.round(totalNetProfit * 100) / 100,
+        totalCommission: Math.round(totalCommission * 100) / 100,
+        totalPaid: Math.round(totalPaid * 100) / 100,
+        balance: Math.round((totalCommission - totalPaid) * 100) / 100,
+        orders: relatedOrders,
+        payments: (payments || []).map((p: any) => ({
+          documentId: p.documentId,
+          amount: parseFloat(p.amount) || 0,
+          method: p.method,
+          date: p.date,
+          period: p.period || '',
+          notes: p.notes || '',
+        })),
+      };
+
+      // ============================================================
+      // WITHDRAWALS : demandes de retrait PayPal de cet artiste
+      // ============================================================
+      let withdrawals: any[] = [];
+      try {
+        const emailToQuery = (a.email || '').toLowerCase().trim();
+        if (emailToQuery) {
+          withdrawals = await strapi.documents('api::withdrawal-request.withdrawal-request' as any).findMany({
+            filters: { email: { $eqi: emailToQuery } } as any,
+            sort: 'createdAt:desc' as any,
+            limit: 50,
+          });
+        }
+      } catch { /* content type peut ne pas etre sync */ }
+      const paypalEmail = withdrawals[0]?.paypalEmail || '';
+
+      // ============================================================
+      // STATS : vues totales + par oeuvre. Le champ `views` n'est pas encore
+      // tracke en prod (tracking a implementer separement). On expose les
+      // compteurs a 0 avec la structure finale pour que l'UI soit prete.
+      // Format retourne : { profileViews, itemsViews: [{id, views}] }
+      // ============================================================
+      const prints = Array.isArray(a.prints) ? a.prints : [];
+      const stickers = Array.isArray(a.stickers) ? a.stickers : [];
+      const itemsViews = [
+        ...prints.map((p: any) => ({ id: p.id, category: 'prints', title: p.titleFr || p.titleEn || p.id, views: Number(p.views) || 0 })),
+        ...stickers.map((s: any) => ({ id: s.id, category: 'stickers', title: s.titleFr || s.titleEn || s.id, views: Number(s.views) || 0 })),
+      ];
+      const stats = {
+        profileViews: Number(a.profileViews) || 0,
+        itemsViews,
+        totalItemViews: itemsViews.reduce((s, it) => s + it.views, 0),
+      };
+
       ctx.body = {
         data: {
           documentId: a.documentId,
@@ -317,11 +454,26 @@ export default factories.createCoreController('api::artist.artist', ({ strapi })
           bioEs: a.bioEs || '',
           socials: a.socials || {},
           pricing: a.pricing || null,
-          commissionRate: a.commissionRate ?? 0.5,
+          commissionRate: rate,
           active: a.active,
           sortOrder: a.sortOrder ?? 0,
-          prints: Array.isArray(a.prints) ? a.prints : [],
-          stickers: Array.isArray(a.stickers) ? a.stickers : [],
+          prints,
+          stickers,
+          // NOUVEAUX blocs agreges
+          financials,
+          withdrawals: (withdrawals || []).map((w: any) => ({
+            documentId: w.documentId,
+            amount: parseFloat(w.amount) || 0,
+            paypalEmail: w.paypalEmail,
+            status: w.status,
+            notes: w.notes || '',
+            adminNotes: w.adminNotes || '',
+            paypalTransactionId: w.paypalTransactionId || '',
+            createdAt: w.createdAt,
+            processedAt: w.processedAt || null,
+          })),
+          paypalEmail,
+          stats,
         },
       };
     } catch (err: any) {
