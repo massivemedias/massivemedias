@@ -129,6 +129,18 @@ function AdminMessages() {
   const [replySuccess, setReplySuccess] = useState(null);
   const [processingEditReq, setProcessingEditReq] = useState(null);
   const [editReqError, setEditReqError] = useState(null);
+  // Toast de succes apres approve/reject - reset auto apres 4s
+  const [editReqSuccess, setEditReqSuccess] = useState(null);
+  useEffect(() => {
+    if (!editReqSuccess) return;
+    const t = setTimeout(() => setEditReqSuccess(null), 4000);
+    return () => clearTimeout(t);
+  }, [editReqSuccess]);
+  useEffect(() => {
+    if (!editReqError) return;
+    const t = setTimeout(() => setEditReqError(null), 6000);
+    return () => clearTimeout(t);
+  }, [editReqError]);
 
   useEffect(() => {
     const t = setTimeout(() => setSearchDebounce(search), 400);
@@ -250,6 +262,46 @@ function AdminMessages() {
 
   return (
     <div className="space-y-6">
+      {/* Toasts globaux approve/reject edit requests (fixed bottom-right) */}
+      <AnimatePresence>
+        {editReqSuccess && (
+          <motion.div
+            key="success"
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            className="fixed bottom-6 right-6 z-[9999] max-w-sm rounded-xl bg-green-600/95 border border-green-400/60 shadow-2xl px-4 py-3 flex items-start gap-3"
+          >
+            <CheckCircle size={20} className="text-white flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-white font-semibold text-sm">{tx({ fr: 'Succes', en: 'Success', es: 'Exito' })}</p>
+              <p className="text-white/90 text-xs mt-0.5">{editReqSuccess}</p>
+            </div>
+            <button onClick={() => setEditReqSuccess(null)} className="text-white/70 hover:text-white transition-colors">
+              <X size={16} />
+            </button>
+          </motion.div>
+        )}
+        {editReqError && (
+          <motion.div
+            key="error"
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            className="fixed bottom-6 right-6 z-[9999] max-w-sm rounded-xl bg-red-600/95 border border-red-400/60 shadow-2xl px-4 py-3 flex items-start gap-3"
+          >
+            <XCircle size={20} className="text-white flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-white font-semibold text-sm">{tx({ fr: 'Erreur', en: 'Error', es: 'Error' })}</p>
+              <p className="text-white/90 text-xs mt-0.5">{editReqError}</p>
+            </div>
+            <button onClick={() => setEditReqError(null)} className="text-white/70 hover:text-white transition-colors">
+              <X size={16} />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Summary cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {summaryCards.map((card, i) => {
@@ -519,11 +571,13 @@ function AdminMessages() {
                                               e.stopPropagation();
                                               setProcessingEditReq(editReqId);
                                               setEditReqError(null);
+                                              setEditReqSuccess(null);
                                               try {
                                                 await rejectEditRequest(editReqId, replyText);
                                                 setItems(prev => prev.map(i => i._uid === item._uid ? { ...i, status: 'replied', adminReply: replyText || 'Demande refusee.' } : i));
                                                 setReplyingTo(null);
                                                 setReplyText('');
+                                                setEditReqSuccess(tx({ fr: 'Demande rejetee et artiste notifie.', en: 'Request rejected, artist notified.', es: 'Solicitud rechazada, artista notificado.' }));
                                               } catch (err) {
                                                 console.error('Reject failed:', err);
                                                 setEditReqError(err?.response?.data?.error?.message || err?.message || 'Erreur inconnue');
@@ -556,9 +610,16 @@ function AdminMessages() {
                                               e.stopPropagation();
                                               setProcessingEditReq(editReqId);
                                               setEditReqError(null);
+                                              setEditReqSuccess(null);
                                               try {
-                                                await approveEditRequest(editReqId);
-                                                setItems(prev => prev.map(i => i._uid === item._uid ? { ...i, status: 'replied', adminReply: 'Modifications approuvees et appliquees.' } : i));
+                                                const res = await approveEditRequest(editReqId);
+                                                const detail = res?.data?.data?.execResult?.detail || 'Modifications appliquees';
+                                                setItems(prev => prev.map(i => i._uid === item._uid ? { ...i, status: 'replied', adminReply: `Approuve (${detail}).` } : i));
+                                                setEditReqSuccess(tx({
+                                                  fr: `Approuve - ${detail}`,
+                                                  en: `Approved - ${detail}`,
+                                                  es: `Aprobado - ${detail}`,
+                                                }));
                                               } catch (err) {
                                                 console.error('Approve failed:', err);
                                                 setEditReqError(err?.response?.data?.error?.message || err?.message || 'Erreur inconnue');

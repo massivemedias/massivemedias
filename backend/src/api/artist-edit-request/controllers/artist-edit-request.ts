@@ -53,6 +53,16 @@ export default factories.createCoreController('api::artist-edit-request.artist-e
       return;
     }
 
+    // AUDIT-01 (avril 2026) - Validations strictes par type de requete.
+    // Avant: un payload incomplet passait -> CMS creait une demande "fantome"
+    // que l'admin approuvait dans le vide car aucun itemId/image reel.
+    // Maintenant: 400 Bad Request explicite, le frontend sait pourquoi ca a foire.
+    const payloadErr = validateChangeDataForType(requestType, changeData);
+    if (payloadErr) {
+      ctx.throw(400, `Payload invalide pour ${requestType}: ${payloadErr}`);
+      return;
+    }
+
     try {
       // Upload des originaux sur Google Drive (pour les ajouts d'images)
       let enrichedChangeData = { ...changeData };
@@ -271,30 +281,58 @@ export default factories.createCoreController('api::artist-edit-request.artist-e
 
       const artist = artists[0] as any;
 
-      // Appliquer les changements selon le type
+      // AUDIT-01: revalider le payload avant d'appliquer. Si la demande a ete creee
+      // avant l'ajout de la validation OU si changeData a ete altere en BDD,
+      // on bloque l'approbation avec 422 plutot que de sembler "reussir dans le vide".
+      const payloadErr = validateChangeDataForType(requestType, changeData);
+      if (payloadErr) {
+        ctx.throw(422, `Impossible d'approuver - payload corrompu: ${payloadErr}`);
+        return;
+      }
+
+      // Appliquer les changements selon le type et recuperer un resume d'execution
+      let execResult: { applied: boolean; detail: string } = { applied: false, detail: 'no-op' };
       switch (requestType) {
         case 'add-prints':
         case 'add-stickers':
         case 'add-merch': {
-          await handleAddImages(strapi, artist, requestType, changeData);
+          const added = await handleAddImages(strapi, artist, requestType, changeData);
+          execResult = { applied: added > 0, detail: `${added} image(s) ajoutee(s)` };
           break;
         }
         case 'remove-prints':
         case 'remove-stickers':
         case 'remove-merch': {
-          await handleRemoveImages(strapi, artist, requestType, changeData);
+          const removed = await handleRemoveImages(strapi, artist, requestType, changeData);
+          if (removed === 0) {
+            // La demande existe mais aucune des cibles n'a matche les items actuels
+            ctx.throw(422, `Aucun element supprime - les IDs demandes n'existent plus sur ${artist.slug}`);
+            return;
+          }
+          execResult = { applied: true, detail: `${removed} element(s) supprime(s)` };
           break;
         }
         case 'mark-unique': {
-          await handleMarkUnique(strapi, artist, changeData);
+          const ok = await handleMarkUnique(strapi, artist, changeData);
+          if (!ok) {
+            ctx.throw(422, `Item ${changeData?.itemId} introuvable chez ${artist.slug}`);
+            return;
+          }
+          execResult = { applied: true, detail: `Type de ${changeData?.itemId} mis a jour` };
           break;
         }
         case 'unmark-unique': {
-          await handleUnmarkUnique(strapi, artist, changeData);
+          const ok = await handleUnmarkUnique(strapi, artist, changeData);
+          if (!ok) {
+            ctx.throw(422, `Item ${changeData?.itemId} introuvable chez ${artist.slug}`);
+            return;
+          }
+          execResult = { applied: true, detail: `Statut special de ${changeData?.itemId} retire` };
           break;
         }
         default: {
           // Profile types - auto-applied deja dans createRequest
+          execResult = { applied: true, detail: 'auto-applied a la creation' };
           break;
         }
       }
@@ -305,15 +343,16 @@ export default factories.createCoreController('api::artist-edit-request.artist-e
         data: { status: 'approved', processedAt: new Date().toISOString() },
       });
 
-      // Mettre a jour le message lie
+      // Mettre a jour le message lie avec le detail de l'execution
       if (request.linkedMessageId) {
         await strapi.documents('api::artist-message.artist-message').update({
           documentId: request.linkedMessageId,
-          data: { status: 'replied', adminReply: 'Modifications approuvees et appliquees.', repliedAt: new Date().toISOString() },
+          data: { status: 'replied', adminReply: `Approuve et applique (${execResult.detail}).`, repliedAt: new Date().toISOString() },
         });
       }
 
-      ctx.body = { data: { documentId, status: 'approved' } };
+      strapi.log.info(`[approve] ${requestType} pour ${artist.slug} -> ${execResult.detail}`);
+      ctx.body = { data: { documentId, status: 'approved', execResult } };
     } catch (err: any) {
       if (err.status) throw err;
       ctx.throw(500, err.message);
@@ -855,9 +894,9 @@ async function applyProfileChange(strapi: any, artistSlug: string, requestType: 
   }
 }
 
-async function handleAddImages(strapi: any, artist: any, requestType: string, changeData: any) {
+async function handleAddImages(strapi: any, artist: any, requestType: string, changeData: any): Promise<number> {
   const images = changeData?.images || [];
-  if (images.length === 0) return;
+  if (images.length === 0) return 0;
 
   // Determiner quel champ JSON mettre a jour
   const isStickers = requestType === 'add-stickers';
@@ -939,6 +978,8 @@ async function handleAddImages(strapi: any, artist: any, requestType: string, ch
     status: 'published',
   });
 
+  const added = images.length;
+
   // Envoyer un email au client pour les pieces privees
   for (const item of currentItems) {
     if (item.private && item.clientEmail && item.privateToken) {
@@ -958,17 +999,19 @@ async function handleAddImages(strapi: any, artist: any, requestType: string, ch
       }
     }
   }
+
+  return added;
 }
 
-async function handleMarkUnique(strapi: any, artist: any, changeData: any) {
+async function handleMarkUnique(strapi: any, artist: any, changeData: any): Promise<boolean> {
   const { itemId, customPrice, fixedFormat, fixedTier, category } = changeData || {};
-  if (!itemId) return;
+  if (!itemId) return false;
 
   const fieldName = category === 'stickers' ? 'stickers' : category === 'merch' ? 'merch' : 'prints';
   const items = Array.isArray(artist[fieldName]) ? [...artist[fieldName]] : [];
   const idx = items.findIndex((it: any) => it.id === itemId);
 
-  if (idx < 0) return;
+  if (idx < 0) return false;
 
   const printType = changeData.printType || 'unique';
 
@@ -1023,15 +1066,82 @@ async function handleMarkUnique(strapi: any, artist: any, changeData: any) {
       strapi.log.warn(`Email piece privee non envoye:`, emailErr);
     }
   }
+
+  return true;
 }
 
-async function handleUnmarkUnique(strapi: any, artist: any, changeData: any) {
+async function handleUnmarkUnique(strapi: any, artist: any, changeData: any): Promise<boolean> {
   // handleMarkUnique gere aussi le type 'standard' (nettoyage)
-  // On redirige vers handleMarkUnique avec printType standard
-  await handleMarkUnique(strapi, artist, { ...changeData, printType: 'standard', customPrice: 0 });
+  return await handleMarkUnique(strapi, artist, { ...changeData, printType: 'standard', customPrice: 0 });
 }
 
-async function handleRemoveImages(strapi: any, artist: any, requestType: string, changeData: any) {
+/**
+ * Valide la coherence d'un payload changeData pour un requestType donne.
+ * Retourne null si OK, ou un message d'erreur si le payload est incomplet.
+ * Cette fonction est la PREMIERE ligne de defense contre les demandes fantomes.
+ */
+function validateChangeDataForType(requestType: string, changeData: any): string | null {
+  if (!changeData || typeof changeData !== 'object') {
+    return 'changeData doit etre un objet';
+  }
+  switch (requestType) {
+    case 'add-prints':
+    case 'add-stickers':
+    case 'add-merch': {
+      const images = changeData.images;
+      if (!Array.isArray(images) || images.length === 0) {
+        return 'changeData.images[] requis et non-vide';
+      }
+      // Chaque image doit avoir au moins une URL source
+      const missing = images.findIndex((img: any) => !img?.originalUrl && !img?.driveViewLink && !img?.url);
+      if (missing >= 0) {
+        return `changeData.images[${missing}] doit avoir originalUrl, driveViewLink ou url`;
+      }
+      return null;
+    }
+    case 'remove-prints':
+    case 'remove-stickers':
+    case 'remove-merch': {
+      const items = Array.isArray(changeData.items) ? changeData.items : [];
+      const ids = Array.isArray(changeData.itemIds) ? changeData.itemIds : [];
+      if (items.length === 0 && ids.length === 0) {
+        return 'changeData.items[] ou changeData.itemIds[] requis et non-vide';
+      }
+      // Au moins un id exploitable
+      const idsFromItems = items.map((it: any) => it?.id).filter(Boolean);
+      if (ids.length === 0 && idsFromItems.length === 0) {
+        return 'aucun id exploitable dans items[].id';
+      }
+      return null;
+    }
+    case 'rename-item': {
+      if (!changeData.itemId) return 'changeData.itemId requis';
+      if (!changeData.newTitle || !String(changeData.newTitle).trim()) return 'changeData.newTitle requis';
+      if (!changeData.field) return 'changeData.field requis (prints|stickers|merch)';
+      return null;
+    }
+    case 'mark-unique':
+    case 'unmark-unique': {
+      if (!changeData.itemId) return 'changeData.itemId requis';
+      return null;
+    }
+    case 'update-bio':
+    case 'update-socials':
+    case 'update-avatar':
+    case 'update-profile':
+      // Ces types sont auto-applied, la validation precise se fait dans applyProfileChange.
+      // On exige juste que changeData ne soit pas completement vide.
+      if (Object.keys(changeData).length === 0) {
+        return 'changeData vide';
+      }
+      return null;
+    default:
+      // Type inconnu: on laisse passer avec un warning plutot que de bloquer une feature future
+      return null;
+  }
+}
+
+async function handleRemoveImages(strapi: any, artist: any, requestType: string, changeData: any): Promise<number> {
   // Accepter les deux formats : legacy (itemIds: string[]) et nouveau (items: [{id,name,image}]).
   const items = Array.isArray(changeData?.items) ? changeData.items : [];
   const itemIds: string[] = Array.isArray(changeData?.itemIds) && changeData.itemIds.length > 0
@@ -1040,7 +1150,7 @@ async function handleRemoveImages(strapi: any, artist: any, requestType: string,
 
   if (itemIds.length === 0) {
     strapi.log.warn(`[handleRemoveImages] Aucun itemId a supprimer pour ${artist?.slug || '?'} (requestType=${requestType}). changeData=${JSON.stringify(changeData)}`);
-    return;
+    return 0;
   }
 
   const isStickers = requestType === 'remove-stickers';
@@ -1052,6 +1162,11 @@ async function handleRemoveImages(strapi: any, artist: any, requestType: string,
   const filtered = currentItems.filter((item: any) => !itemIds.includes(item.id));
   const removedCount = beforeCount - filtered.length;
 
+  if (removedCount === 0) {
+    strapi.log.warn(`[handleRemoveImages] Artiste ${artist.slug} - ${fieldName}: aucun match pour IDs [${itemIds.join(', ')}] (items existants: ${currentItems.length})`);
+    return 0;
+  }
+
   await strapi.documents('api::artist.artist').update({
     documentId: artist.documentId,
     data: { [fieldName]: filtered },
@@ -1059,4 +1174,5 @@ async function handleRemoveImages(strapi: any, artist: any, requestType: string,
   });
 
   strapi.log.info(`[handleRemoveImages] Artiste ${artist.slug} - ${fieldName}: ${removedCount}/${itemIds.length} element(s) supprime(s). IDs demandes: ${itemIds.join(', ')}`);
+  return removedCount;
 }

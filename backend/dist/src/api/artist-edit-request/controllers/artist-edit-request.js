@@ -75,6 +75,15 @@ exports.default = strapi_1.factories.createCoreController('api::artist-edit-requ
             ctx.throw(400, 'Email, requestType and changeData required');
             return;
         }
+        // AUDIT-01 (avril 2026) - Validations strictes par type de requete.
+        // Avant: un payload incomplet passait -> CMS creait une demande "fantome"
+        // que l'admin approuvait dans le vide car aucun itemId/image reel.
+        // Maintenant: 400 Bad Request explicite, le frontend sait pourquoi ca a foire.
+        const payloadErr = validateChangeDataForType(requestType, changeData);
+        if (payloadErr) {
+            ctx.throw(400, `Payload invalide pour ${requestType}: ${payloadErr}`);
+            return;
+        }
         try {
             // Upload des originaux sur Google Drive (pour les ajouts d'images)
             let enrichedChangeData = { ...changeData };
@@ -274,30 +283,57 @@ exports.default = strapi_1.factories.createCoreController('api::artist-edit-requ
                 return;
             }
             const artist = artists[0];
-            // Appliquer les changements selon le type
+            // AUDIT-01: revalider le payload avant d'appliquer. Si la demande a ete creee
+            // avant l'ajout de la validation OU si changeData a ete altere en BDD,
+            // on bloque l'approbation avec 422 plutot que de sembler "reussir dans le vide".
+            const payloadErr = validateChangeDataForType(requestType, changeData);
+            if (payloadErr) {
+                ctx.throw(422, `Impossible d'approuver - payload corrompu: ${payloadErr}`);
+                return;
+            }
+            // Appliquer les changements selon le type et recuperer un resume d'execution
+            let execResult = { applied: false, detail: 'no-op' };
             switch (requestType) {
                 case 'add-prints':
                 case 'add-stickers':
                 case 'add-merch': {
-                    await handleAddImages(strapi, artist, requestType, changeData);
+                    const added = await handleAddImages(strapi, artist, requestType, changeData);
+                    execResult = { applied: added > 0, detail: `${added} image(s) ajoutee(s)` };
                     break;
                 }
                 case 'remove-prints':
                 case 'remove-stickers':
                 case 'remove-merch': {
-                    await handleRemoveImages(strapi, artist, requestType, changeData);
+                    const removed = await handleRemoveImages(strapi, artist, requestType, changeData);
+                    if (removed === 0) {
+                        // La demande existe mais aucune des cibles n'a matche les items actuels
+                        ctx.throw(422, `Aucun element supprime - les IDs demandes n'existent plus sur ${artist.slug}`);
+                        return;
+                    }
+                    execResult = { applied: true, detail: `${removed} element(s) supprime(s)` };
                     break;
                 }
                 case 'mark-unique': {
-                    await handleMarkUnique(strapi, artist, changeData);
+                    const ok = await handleMarkUnique(strapi, artist, changeData);
+                    if (!ok) {
+                        ctx.throw(422, `Item ${changeData === null || changeData === void 0 ? void 0 : changeData.itemId} introuvable chez ${artist.slug}`);
+                        return;
+                    }
+                    execResult = { applied: true, detail: `Type de ${changeData === null || changeData === void 0 ? void 0 : changeData.itemId} mis a jour` };
                     break;
                 }
                 case 'unmark-unique': {
-                    await handleUnmarkUnique(strapi, artist, changeData);
+                    const ok = await handleUnmarkUnique(strapi, artist, changeData);
+                    if (!ok) {
+                        ctx.throw(422, `Item ${changeData === null || changeData === void 0 ? void 0 : changeData.itemId} introuvable chez ${artist.slug}`);
+                        return;
+                    }
+                    execResult = { applied: true, detail: `Statut special de ${changeData === null || changeData === void 0 ? void 0 : changeData.itemId} retire` };
                     break;
                 }
                 default: {
                     // Profile types - auto-applied deja dans createRequest
+                    execResult = { applied: true, detail: 'auto-applied a la creation' };
                     break;
                 }
             }
@@ -306,14 +342,15 @@ exports.default = strapi_1.factories.createCoreController('api::artist-edit-requ
                 documentId,
                 data: { status: 'approved', processedAt: new Date().toISOString() },
             });
-            // Mettre a jour le message lie
+            // Mettre a jour le message lie avec le detail de l'execution
             if (request.linkedMessageId) {
                 await strapi.documents('api::artist-message.artist-message').update({
                     documentId: request.linkedMessageId,
-                    data: { status: 'replied', adminReply: 'Modifications approuvees et appliquees.', repliedAt: new Date().toISOString() },
+                    data: { status: 'replied', adminReply: `Approuve et applique (${execResult.detail}).`, repliedAt: new Date().toISOString() },
                 });
             }
-            ctx.body = { data: { documentId, status: 'approved' } };
+            strapi.log.info(`[approve] ${requestType} pour ${artist.slug} -> ${execResult.detail}`);
+            ctx.body = { data: { documentId, status: 'approved', execResult } };
         }
         catch (err) {
             if (err.status)
@@ -871,7 +908,7 @@ async function applyProfileChange(strapi, artistSlug, requestType, changeData) {
 async function handleAddImages(strapi, artist, requestType, changeData) {
     const images = (changeData === null || changeData === void 0 ? void 0 : changeData.images) || [];
     if (images.length === 0)
-        return;
+        return 0;
     // Determiner quel champ JSON mettre a jour
     const isStickers = requestType === 'add-stickers';
     const isMerch = requestType === 'add-merch';
@@ -940,6 +977,7 @@ async function handleAddImages(strapi, artist, requestType, changeData) {
         data: { [fieldName]: currentItems },
         status: 'published',
     });
+    const added = images.length;
     // Envoyer un email au client pour les pieces privees
     for (const item of currentItems) {
         if (item.private && item.clientEmail && item.privateToken) {
@@ -960,16 +998,17 @@ async function handleAddImages(strapi, artist, requestType, changeData) {
             }
         }
     }
+    return added;
 }
 async function handleMarkUnique(strapi, artist, changeData) {
     const { itemId, customPrice, fixedFormat, fixedTier, category } = changeData || {};
     if (!itemId)
-        return;
+        return false;
     const fieldName = category === 'stickers' ? 'stickers' : category === 'merch' ? 'merch' : 'prints';
     const items = Array.isArray(artist[fieldName]) ? [...artist[fieldName]] : [];
     const idx = items.findIndex((it) => it.id === itemId);
     if (idx < 0)
-        return;
+        return false;
     const printType = changeData.printType || 'unique';
     // Nettoyer les anciens flags
     const { unique: _u, customPrice: _cp, fixedFormat: _ff, fixedTier: _ft, noFrame: _nf, limitedEdition: _le, limitedQty: _lq, private: _p, clientEmail: _ce, privateToken: _pt, onSale: _os, salePercent: _sp, sold: _so, soldAt: _sa, ...cleanItem } = items[idx];
@@ -1018,11 +1057,80 @@ async function handleMarkUnique(strapi, artist, changeData) {
             strapi.log.warn(`Email piece privee non envoye:`, emailErr);
         }
     }
+    return true;
 }
 async function handleUnmarkUnique(strapi, artist, changeData) {
     // handleMarkUnique gere aussi le type 'standard' (nettoyage)
-    // On redirige vers handleMarkUnique avec printType standard
-    await handleMarkUnique(strapi, artist, { ...changeData, printType: 'standard', customPrice: 0 });
+    return await handleMarkUnique(strapi, artist, { ...changeData, printType: 'standard', customPrice: 0 });
+}
+/**
+ * Valide la coherence d'un payload changeData pour un requestType donne.
+ * Retourne null si OK, ou un message d'erreur si le payload est incomplet.
+ * Cette fonction est la PREMIERE ligne de defense contre les demandes fantomes.
+ */
+function validateChangeDataForType(requestType, changeData) {
+    if (!changeData || typeof changeData !== 'object') {
+        return 'changeData doit etre un objet';
+    }
+    switch (requestType) {
+        case 'add-prints':
+        case 'add-stickers':
+        case 'add-merch': {
+            const images = changeData.images;
+            if (!Array.isArray(images) || images.length === 0) {
+                return 'changeData.images[] requis et non-vide';
+            }
+            // Chaque image doit avoir au moins une URL source
+            const missing = images.findIndex((img) => !(img === null || img === void 0 ? void 0 : img.originalUrl) && !(img === null || img === void 0 ? void 0 : img.driveViewLink) && !(img === null || img === void 0 ? void 0 : img.url));
+            if (missing >= 0) {
+                return `changeData.images[${missing}] doit avoir originalUrl, driveViewLink ou url`;
+            }
+            return null;
+        }
+        case 'remove-prints':
+        case 'remove-stickers':
+        case 'remove-merch': {
+            const items = Array.isArray(changeData.items) ? changeData.items : [];
+            const ids = Array.isArray(changeData.itemIds) ? changeData.itemIds : [];
+            if (items.length === 0 && ids.length === 0) {
+                return 'changeData.items[] ou changeData.itemIds[] requis et non-vide';
+            }
+            // Au moins un id exploitable
+            const idsFromItems = items.map((it) => it === null || it === void 0 ? void 0 : it.id).filter(Boolean);
+            if (ids.length === 0 && idsFromItems.length === 0) {
+                return 'aucun id exploitable dans items[].id';
+            }
+            return null;
+        }
+        case 'rename-item': {
+            if (!changeData.itemId)
+                return 'changeData.itemId requis';
+            if (!changeData.newTitle || !String(changeData.newTitle).trim())
+                return 'changeData.newTitle requis';
+            if (!changeData.field)
+                return 'changeData.field requis (prints|stickers|merch)';
+            return null;
+        }
+        case 'mark-unique':
+        case 'unmark-unique': {
+            if (!changeData.itemId)
+                return 'changeData.itemId requis';
+            return null;
+        }
+        case 'update-bio':
+        case 'update-socials':
+        case 'update-avatar':
+        case 'update-profile':
+            // Ces types sont auto-applied, la validation precise se fait dans applyProfileChange.
+            // On exige juste que changeData ne soit pas completement vide.
+            if (Object.keys(changeData).length === 0) {
+                return 'changeData vide';
+            }
+            return null;
+        default:
+            // Type inconnu: on laisse passer avec un warning plutot que de bloquer une feature future
+            return null;
+    }
 }
 async function handleRemoveImages(strapi, artist, requestType, changeData) {
     // Accepter les deux formats : legacy (itemIds: string[]) et nouveau (items: [{id,name,image}]).
@@ -1032,7 +1140,7 @@ async function handleRemoveImages(strapi, artist, requestType, changeData) {
         : items.map((it) => it === null || it === void 0 ? void 0 : it.id).filter(Boolean);
     if (itemIds.length === 0) {
         strapi.log.warn(`[handleRemoveImages] Aucun itemId a supprimer pour ${(artist === null || artist === void 0 ? void 0 : artist.slug) || '?'} (requestType=${requestType}). changeData=${JSON.stringify(changeData)}`);
-        return;
+        return 0;
     }
     const isStickers = requestType === 'remove-stickers';
     const isMerch = requestType === 'remove-merch';
@@ -1041,10 +1149,15 @@ async function handleRemoveImages(strapi, artist, requestType, changeData) {
     const beforeCount = currentItems.length;
     const filtered = currentItems.filter((item) => !itemIds.includes(item.id));
     const removedCount = beforeCount - filtered.length;
+    if (removedCount === 0) {
+        strapi.log.warn(`[handleRemoveImages] Artiste ${artist.slug} - ${fieldName}: aucun match pour IDs [${itemIds.join(', ')}] (items existants: ${currentItems.length})`);
+        return 0;
+    }
     await strapi.documents('api::artist.artist').update({
         documentId: artist.documentId,
         data: { [fieldName]: filtered },
         status: 'published',
     });
     strapi.log.info(`[handleRemoveImages] Artiste ${artist.slug} - ${fieldName}: ${removedCount}/${itemIds.length} element(s) supprime(s). IDs demandes: ${itemIds.join(', ')}`);
+    return removedCount;
 }
