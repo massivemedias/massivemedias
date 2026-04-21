@@ -47,43 +47,17 @@ const staticProductImages = {
 function ConfiguratorSublimation() {
   const { lang, tx } = useLang();
   const { addToCart } = useCart();
+  // PRIX-HARDCODE : on IGNORE les champs de pricing du CMS.
+  // La grille officielle vit uniquement dans utils/pricingData.js (SUBLIMATION_UNIT_PRICES).
   const cmsProduct = useProduct('sublimation');
   const pd = cmsProduct?.pricingData;
 
+  // Seuls les labels (products list UI) peuvent venir du CMS. Les prix sont hardcoded.
   const sublimationProducts = pd?.products || defaultProducts;
-  const sublimationPriceTiers = pd?.priceTiers || defaultPriceTiers;
-  const sublimationDesignPrice = pd?.designPrice ?? defaultDesignPrice;
+  const sublimationPriceTiers = defaultPriceTiers;
+  const sublimationDesignPrice = defaultDesignPrice;
 
-  // Le wrapper CMS gere aussi le BYOT (bring your own garment) pour rester
-  // coherent avec le helper par defaut qui est dans products.js
-  const getSublimationPrice = pd?.priceTiers
-    ? (prod, qi, design, byot) => {
-        const tiers = sublimationPriceTiers[prod];
-        if (!tiers || !tiers[qi]) return null;
-        const tier = tiers[qi];
-        if (tier.surSoumission) {
-          return { qty: tier.qty, unitPrice: tier.unitPrice, surSoumission: true, byotEligible: canBringOwnGarment(prod) };
-        }
-        const blankUnit = sublimationBlankCost[prod] || 0;
-        const byotActive = !!byot && canBringOwnGarment(prod);
-        const byotDiscount = byotActive ? blankUnit * tier.qty : 0;
-        const finalPrice = Math.max(0, tier.price - byotDiscount + (design ? sublimationDesignPrice : 0));
-        const finalUnitPrice = tier.qty > 0 ? Math.round((finalPrice / tier.qty) * 100) / 100 : tier.unitPrice;
-        return {
-          qty: tier.qty,
-          price: finalPrice,
-          basePrice: tier.price,
-          unitPrice: finalUnitPrice,
-          designPrice: design ? sublimationDesignPrice : 0,
-          blankCostUnit: blankUnit,
-          blankCostTotal: blankUnit * tier.qty,
-          printFeeTotal: Math.max(0, tier.price - blankUnit * tier.qty),
-          byotActive,
-          byotDiscount,
-          byotEligible: canBringOwnGarment(prod),
-        };
-      }
-    : defaultGetPrice;
+  const getSublimationPrice = defaultGetPrice;
 
   const [product, setProduct] = useState('tshirt');
   const [qtyIndex, setQtyIndex] = useState(0);

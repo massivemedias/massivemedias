@@ -12,6 +12,7 @@ import {
   SIZE_MULTIPLIERS,
   BUSINESS_CARD_TIERS,
   FLYER_TIERS,
+  FLYER_RECTO_VERSO_TIERS,
   FLYER_RECTO_VERSO_MULTIPLIER,
   ARTIST_DISCOUNT,
   getPricingConfigPayload,
@@ -253,15 +254,15 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
         }
       }
 
-      // Validate flyer pricing against tiers
+      // Validate flyer pricing against official grid (HARDCODED 2026 - lookup strict).
       if (item.productId === 'flyer-a6') {
-        const tierPrice = FLYER_TIERS[item.quantity];
+        const isRectoVerso = item.finish && (item.finish.toLowerCase().includes('recto-verso') || item.finish.toLowerCase().includes('double'));
+        const grid = isRectoVerso ? FLYER_RECTO_VERSO_TIERS : FLYER_TIERS;
+        const tierPrice = grid[item.quantity];
         if (tierPrice) {
-          // Apply recto-verso multiplier if applicable
-          const isRectoVerso = item.finish && (item.finish.toLowerCase().includes('recto-verso') || item.finish.toLowerCase().includes('double'));
-          validPrice = isRectoVerso ? Math.round(tierPrice * FLYER_RECTO_VERSO_MULTIPLIER) : tierPrice;
+          validPrice = tierPrice;
         } else {
-          strapi.log.warn(`Invalid flyer tier: qty=${item.quantity}, using client price ${item.totalPrice}`);
+          strapi.log.warn(`Invalid flyer tier: qty=${item.quantity} rectoVerso=${isRectoVerso}, using client price ${item.totalPrice}`);
         }
       }
       subtotal += validPrice;

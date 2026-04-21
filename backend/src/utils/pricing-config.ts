@@ -70,9 +70,36 @@ export const BUSINESS_CARD_TIERS: Record<string, Record<number, number>> = {
   'business-card-premium':  { 100: 120, 250: 175, 500: 250 },
 };
 
-// --- Flyers ---
+// DO NOT MODIFY THESE PRICES. OFFICIAL GRID 2026. NO DYNAMIC MATH FORMULAS ALLOWED HERE WITHOUT EXPLICIT BOSS APPROVAL.
+// Grille officielle Flyers - prix fixe recto et recto-verso (pas un multiplier).
 export const FLYER_TIERS: Record<number, number> = { 50: 40, 100: 70, 150: 98, 250: 138, 500: 250 };
+export const FLYER_RECTO_VERSO_TIERS: Record<number, number> = { 50: 52, 100: 91, 150: 127, 250: 179, 500: 325 };
+
+// DEPRECATED (avril 2026): utiliser FLYER_RECTO_VERSO_TIERS a la place.
+// Conserve pour ne pas casser d'eventuels consommateurs historiques.
 export const FLYER_RECTO_VERSO_MULTIPLIER = 1.3;
+
+// DO NOT MODIFY THESE PRICES. OFFICIAL GRID 2026.
+// Grille officielle Fine Art par format (Studio / Musee).
+export const FINE_ART_STUDIO_PRICES: Record<string, number | null> = {
+  postcard: 15, a4: 20, a3: 25, a3plus: 35, a2: null,
+};
+export const FINE_ART_MUSEUM_PRICES: Record<string, number> = {
+  postcard: 30, a4: 40, a3: 55, a3plus: 95, a2: 110,
+};
+
+// DO NOT MODIFY THESE PRICES. OFFICIAL GRID 2026.
+// Grille officielle Sublimation - prix unitaires par produit et palier.
+export const SUBLIMATION_UNIT_PRICES: Record<string, Record<number, number>> = {
+  tshirt:     { 1: 30, 5: 27, 10: 25, 25: 23 },
+  longsleeve: { 1: 40, 5: 37, 10: 35, 25: 33 },
+  hoodie:     { 1: 50, 5: 45, 10: 42, 25: 40 },
+  totebag:    { 1: 15, 10: 13, 25: 12, 50: 10 },
+  mug:        { 1: 15, 5: 13, 10: 12, 25: 10 },
+  tumbler:    { 1: 25, 5: 22, 10: 20, 25: 18 },
+  bag:        { 1: 80, 5: 75, 10: 70 },
+};
+export const SUBLIMATION_DESIGN_FEE = 125;
 
 // --- Rabais artiste sur ses propres produits ---
 export const ARTIST_DISCOUNT = 0.25;
@@ -91,11 +118,16 @@ export function getPricingConfigPayload() {
     sizeMultipliers: SIZE_MULTIPLIERS,
     businessCardTiers: BUSINESS_CARD_TIERS,
     flyerTiers: FLYER_TIERS,
+    flyerRectoVersoTiers: FLYER_RECTO_VERSO_TIERS,
     flyerRectoVersoMultiplier: FLYER_RECTO_VERSO_MULTIPLIER,
+    fineArtStudioPrices: FINE_ART_STUDIO_PRICES,
+    fineArtMuseumPrices: FINE_ART_MUSEUM_PRICES,
+    sublimationUnitPrices: SUBLIMATION_UNIT_PRICES,
+    sublimationDesignFee: SUBLIMATION_DESIGN_FEE,
     artistDiscount: ARTIST_DISCOUNT,
     // Metadata pour que le frontend puisse decider de rafraichir ou pas
     _meta: {
-      version: '1',
+      version: '2',
       updatedAt: new Date().toISOString(),
     },
   };

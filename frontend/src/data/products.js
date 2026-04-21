@@ -1,4 +1,21 @@
 import { img } from '../utils/paths';
+// PRIX-HARDCODE (avril 2026): toutes les grilles tarifaires vivent dans pricingData.js.
+// Ce fichier ne fait que les re-exporter sous l'ancienne forme pour compat retroactive.
+import {
+  STICKER_GRID_STANDARD,
+  STICKER_GRID_FX,
+  STICKER_FX_FINISHES,
+  FINE_ART_GRID,
+  FLYER_GRID,
+  SUBLIMATION_UNIT_PRICES,
+  SUBLIMATION_DESIGN_FEE,
+  SUBLIMATION_BLANK_COST,
+  SUBLIMATION_BYOT_ALLOWED,
+  lookupStickerPrice,
+  lookupFineArtPrice,
+  lookupFlyerPrice,
+  lookupSublimationPrice,
+} from '../utils/pricingData';
 
 export const stickerFinishes = [
   { id: 'matte', labelFr: 'Matte', labelEn: 'Matte', labelEs: 'Mate', descFr: 'Fini mat naturel, sans reflets', descEn: 'Natural matte finish, no shine', descEs: 'Acabado mate natural, sin reflejos' },
@@ -24,29 +41,21 @@ export const stickerSizes = [
   { id: '5in', label: '5"' },
 ];
 
-// DO NOT MODIFY THESE PRICES. OFFICIAL GRID. NO DYNAMIC MATH FORMULAS ALLOWED HERE WITHOUT EXPLICIT BOSS APPROVAL.
-// Grille tarifaire officielle Standard (Matte / Lustre / Die-Cut).
-// Prix fixe par palier de quantite, quelle que soit la taille du sticker.
-export const stickerPriceTiers = [
-  { qty: 25, price: 30, unitPrice: 1.20 },
-  { qty: 50, price: 47.50, unitPrice: 0.95 },
-  { qty: 100, price: 85, unitPrice: 0.85 },
-  { qty: 250, price: 200, unitPrice: 0.80 },
-  { qty: 500, price: 375, unitPrice: 0.75 },
-];
+// Tiers sticker derives AUTOMATIQUEMENT depuis pricingData.STICKER_GRID_STANDARD.
+// Ne jamais editer ici, modifier pricingData.js (source unique de verite).
+function gridToTiers(grid) {
+  return Object.keys(grid)
+    .map(Number)
+    .sort((a, b) => a - b)
+    .map(qty => ({
+      qty,
+      price: grid[qty],
+      unitPrice: Math.round((grid[qty] / qty) * 100) / 100,
+    }));
+}
 
-// DO NOT MODIFY THESE PRICES. OFFICIAL GRID. NO DYNAMIC MATH FORMULAS ALLOWED HERE WITHOUT EXPLICIT BOSS APPROVAL.
-// Grille tarifaire officielle FX (Holographique / Broken Glass / Stars).
-// Prix fixe par palier de quantite, quelle que soit la taille du sticker.
-export const holographicPriceTiers = [
-  { qty: 25, price: 35, unitPrice: 1.40 },
-  { qty: 50, price: 57.50, unitPrice: 1.15 },
-  { qty: 100, price: 100, unitPrice: 1.00 },
-  { qty: 250, price: 225, unitPrice: 0.90 },
-  { qty: 500, price: 425, unitPrice: 0.85 },
-];
-
-// Die-cut utilise les mêmes prix
+export const stickerPriceTiers = gridToTiers(STICKER_GRID_STANDARD);
+export const holographicPriceTiers = gridToTiers(STICKER_GRID_FX);
 export const diecutPriceTiers = stickerPriceTiers;
 
 // -------------------------------------------------------------
@@ -69,53 +78,33 @@ export function getSizeMultiplier(size) {
   return 1.0;
 }
 
-// DO NOT MODIFY THESE PRICES. OFFICIAL GRID. NO DYNAMIC MATH FORMULAS ALLOWED HERE WITHOUT EXPLICIT BOSS APPROVAL.
-// Lookup table inline, zero dependance backend/CMS/API. Source unique de verite frontend.
-const HARDCODED_STICKER_GRID = {
-  standard: { 25: 30, 50: 47.50, 100: 85, 250: 200, 500: 375 },
-  fx:       { 25: 35, 50: 57.50, 100: 100, 250: 225, 500: 425 },
-};
-
 /**
  * Calcule le prix d'un palier sticker STRICTEMENT depuis la grille hardcoded.
- * Ne lit AUCUNE source dynamique (pas de CMS, pas de backend, pas de API).
+ * Proxy vers lookupStickerPrice de pricingData.js (source unique de verite).
  * La taille du sticker n'impacte PAS le prix.
- *
- * @param finish   matte | glossy | holographic | broken-glass | stars | dots
- * @param shape    round | square | rectangle | diecut (non utilise)
- * @param qty      quantite EXACTEMENT dans un palier (25, 50, 100, 250, 500)
- * @param size     ignore (conserve pour compat signature)
- * @returns {qty, price, unitPrice, sizeMultiplier, baseUnitPrice} ou null si qty invalide
  */
 export function getStickerPrice(finish, shape, qty, size) {
-  const type = (finish === 'holographic' || finish === 'broken-glass' || finish === 'stars')
-    ? 'fx'
-    : 'standard';
-  const price = HARDCODED_STICKER_GRID[type][qty];
-  if (price == null) return null;
-  const unitPrice = Math.round((price / qty) * 100) / 100;
+  const r = lookupStickerPrice(finish, qty);
+  if (!r) return null;
   return {
-    qty,
-    price,
-    unitPrice,
+    qty: r.qty,
+    price: r.price,
+    unitPrice: r.unitPrice,
     sizeMultiplier: 1.0,
-    baseUnitPrice: unitPrice,
+    baseUnitPrice: r.unitPrice,
   };
 }
 
 /**
  * Calcule le prix proportionnel pour une quantite quelconque (pack builder).
  * Utilise le unitPrice du palier le plus eleve que la quantite atteint.
- * HARDCODED - aucune lecture dynamique. La taille n'est PAS utilisee.
+ * HARDCODED via pricingData.STICKER_GRID_*. La taille n'est PAS utilisee.
  *
  * Retourne null si total < 25 (minimum d'impression).
  */
 export function getStickerPriceForTotal(finish, shape, total, size) {
   if (!total || total < 25) return null;
-  const type = (finish === 'holographic' || finish === 'broken-glass' || finish === 'stars')
-    ? 'fx'
-    : 'standard';
-  const grid = HARDCODED_STICKER_GRID[type];
+  const grid = STICKER_FX_FINISHES.includes(finish) ? STICKER_GRID_FX : STICKER_GRID_STANDARD;
   const tierQtys = Object.keys(grid).map(Number).sort((a, b) => a - b);
   let tierQty = tierQtys[0];
   for (const q of tierQtys) {
@@ -223,25 +212,25 @@ export const fineArtPrinterTiers = [
   { id: 'museum', labelFr: 'Serie Musee', labelEn: 'Museum Series', labelEs: 'Serie Museo', desc: '', descFr: '12 encres pigmentees', descEn: '12 pigmented inks', descEs: '12 tintas pigmentadas' },
 ];
 
-export const fineArtFormats = [
-  { id: 'postcard', label: 'A6 (4x6")', studioPrice: 15, museumPrice: 30, w: 4, h: 6, typeName: 'Carte postale' },
-  { id: 'a4', label: 'A4 (8.5x11")', studioPrice: 20, museumPrice: 40, w: 8.5, h: 11, typeName: 'Affiche' },
-  { id: 'a3', label: 'A3 (11x17")', studioPrice: 25, museumPrice: 55, w: 11, h: 17, typeName: 'Affiche' },
-  { id: 'a3plus', label: 'A3+ (13x19")', studioPrice: 35, museumPrice: 95, w: 13, h: 19, typeName: 'Poster' },
-  { id: 'a2', label: 'A2 (18x24")', studioPrice: null, museumPrice: 110, w: 18, h: 24, typeName: 'Grand format' },
-];
+// Derive depuis FINE_ART_GRID (pricingData.js). Source unique de verite.
+export const fineArtFormats = Object.keys(FINE_ART_GRID).map(id => ({
+  id,
+  label: FINE_ART_GRID[id].label,
+  studioPrice: FINE_ART_GRID[id].studio,
+  museumPrice: FINE_ART_GRID[id].museum,
+  w: FINE_ART_GRID[id].w,
+  h: FINE_ART_GRID[id].h,
+  typeName: FINE_ART_GRID[id].typeName,
+}));
 
-// Prix du cadre (frame) par format de print Fine Art. Aligne sur la FAQ et services.js.
-// A2 = 45$ depuis avril 2026 (stock du format grand cadre disponible desormais).
-export const fineArtFramePriceByFormat = { postcard: 20, a4: 20, a3: 30, a3plus: 35, a2: 45 };
-export const fineArtFramePrice = 30; // fallback
+// Prix du cadre derive depuis FINE_ART_GRID (source unique de verite).
+export const fineArtFramePriceByFormat = Object.fromEntries(
+  Object.keys(FINE_ART_GRID).map(id => [id, FINE_ART_GRID[id].frame])
+);
+export const fineArtFramePrice = 30; // fallback si format inconnu
 
 export function getFineArtPrice(tier, format, withFrame) {
-  const fmt = fineArtFormats.find(f => f.id === format);
-  if (!fmt) return null;
-  const base = tier === 'museum' ? fmt.museumPrice : fmt.studioPrice;
-  const framePrice = withFrame ? (fineArtFramePriceByFormat[format] || fineArtFramePrice) : 0;
-  return { price: base + framePrice, basePrice: base, framePrice };
+  return lookupFineArtPrice(tier, format, withFrame);
 }
 
 export const fineArtImages = [
@@ -295,51 +284,23 @@ export const sublimationProducts = [
   { id: 'tumbler', labelFr: 'Tumbler', labelEn: 'Tumbler', labelEs: 'Tumbler', descFr: 'Bouteille isotherme', descEn: 'Insulated bottle', descEs: 'Botella térmica' },
 ];
 
-export const sublimationPriceTiers = {
-  tshirt: [
-    { qty: 1, unitPrice: 30, price: 30 },
-    { qty: 5, unitPrice: 27, price: 135 },
-    { qty: 10, unitPrice: 25, price: 250 },
-    { qty: 25, unitPrice: 23, price: null, surSoumission: true },
-  ],
-  longsleeve: [
-    { qty: 1, unitPrice: 40, price: 40 },
-    { qty: 5, unitPrice: 37, price: 185 },
-    { qty: 10, unitPrice: 35, price: 350 },
-    { qty: 25, unitPrice: 33, price: null, surSoumission: true },
-  ],
-  hoodie: [
-    { qty: 1, unitPrice: 50, price: 50 },
-    { qty: 5, unitPrice: 45, price: 225 },
-    { qty: 10, unitPrice: 42, price: 420 },
-    { qty: 25, unitPrice: 40, price: null, surSoumission: true },
-  ],
-  totebag: [
-    { qty: 1, unitPrice: 15, price: 15 },
-    { qty: 10, unitPrice: 13, price: 130 },
-    { qty: 25, unitPrice: 12, price: 300 },
-    { qty: 50, unitPrice: 10, price: 500 },
-  ],
-  bag: [
-    { qty: 1, unitPrice: 80, price: 80 },
-    { qty: 5, unitPrice: 75, price: 375 },
-    { qty: 10, unitPrice: 70, price: 700 },
-  ],
-  mug: [
-    { qty: 1, unitPrice: 15, price: 15 },
-    { qty: 5, unitPrice: 13, price: 65 },
-    { qty: 10, unitPrice: 12, price: 120 },
-    { qty: 25, unitPrice: 10, price: 250 },
-  ],
-  tumbler: [
-    { qty: 1, unitPrice: 25, price: 25 },
-    { qty: 5, unitPrice: 22, price: 110 },
-    { qty: 10, unitPrice: 20, price: 200 },
-    { qty: 25, unitPrice: 18, price: 450 },
-  ],
-};
+// Derive depuis SUBLIMATION_UNIT_PRICES (pricingData.js). Grille officielle 2026,
+// tous les paliers sont fermes (plus de "sur soumission") et le prix total est calcule.
+export const sublimationPriceTiers = Object.fromEntries(
+  Object.entries(SUBLIMATION_UNIT_PRICES).map(([productId, grid]) => [
+    productId,
+    Object.keys(grid)
+      .map(Number)
+      .sort((a, b) => a - b)
+      .map(qty => ({
+        qty,
+        unitPrice: grid[qty],
+        price: grid[qty] * qty,
+      })),
+  ])
+);
 
-export const sublimationDesignPrice = 125;
+export const sublimationDesignPrice = SUBLIMATION_DESIGN_FEE;
 
 /**
  * Cout du vetement/objet vierge (blank) par unite.
@@ -352,22 +313,11 @@ export const sublimationDesignPrice = 125;
  * pour ce produit (ex: si on ne pense pas qu'un mug client puisse etre sublime
  * sur notre equipement).
  */
-export const sublimationBlankCost = {
-  tshirt: 12,     // Bella Canvas 3001 blanc equivalent
-  longsleeve: 18, // Bella Canvas 3501
-  hoodie: 28,     // Independent Trading SS4500
-  totebag: 6,     // BAGedge BE008
-  bag: 45,        // Sac grand format personnalise
-  mug: 4,         // 11oz blank
-  tumbler: 10,    // Polar Camel 20oz
-};
+// Derive depuis SUBLIMATION_BLANK_COST (pricingData.js).
+export const sublimationBlankCost = SUBLIMATION_BLANK_COST;
 
-/**
- * Produits pour lesquels l'option BYOT est autorisee. Les autres (ex: mug,
- * tumbler) necessitent un substrat specifique compatible sublimation que le
- * client ne peut pas fournir = option masquee automatiquement.
- */
-export const sublimationBYOTAllowed = new Set(['tshirt', 'longsleeve', 'hoodie', 'totebag']);
+// Derive depuis SUBLIMATION_BYOT_ALLOWED (pricingData.js).
+export const sublimationBYOTAllowed = new Set(SUBLIMATION_BYOT_ALLOWED);
 
 export function canBringOwnGarment(product) {
   return sublimationBYOTAllowed.has(product);
@@ -375,55 +325,32 @@ export function canBringOwnGarment(product) {
 
 /**
  * Retourne le prix d'un produit sublimation pour une quantite donnee.
+ * Proxy vers lookupSublimationPrice de pricingData.js (source unique de verite).
  *
  * @param product         tshirt | longsleeve | hoodie | totebag | bag | mug | tumbler
  * @param qtyIndex        index du palier dans sublimationPriceTiers[product]
  * @param withDesign      true = ajouter le design fee fixe (125$)
  * @param bringOwnGarment true = client apporte son propre textile (BYOT)
- *                        -> deduit blankCost * qty du prix total
- *                        -> ignore pour les produits hors sublimationBYOTAllowed
- *
- * Retourne aussi la decomposition { blankCost, printFee } pour affichage.
  */
 export function getSublimationPrice(product, qtyIndex, withDesign, bringOwnGarment = false) {
   const tiers = sublimationPriceTiers[product];
   if (!tiers || !tiers[qtyIndex]) return null;
   const tier = tiers[qtyIndex];
-  if (tier.surSoumission) {
-    return {
-      qty: tier.qty,
-      unitPrice: tier.unitPrice,
-      surSoumission: true,
-      byotEligible: canBringOwnGarment(product),
-    };
-  }
-
-  // Prix de base du catalogue (blank + print combine)
-  const catalogPrice = tier.price;
-  const catalogUnitPrice = tier.unitPrice;
-
-  // Decomposition blank/print pour affichage + BYOT
-  const blankCostUnit = sublimationBlankCost[product] || 0;
-  const byotActive = !!bringOwnGarment && canBringOwnGarment(product);
-  const byotDiscount = byotActive ? blankCostUnit * tier.qty : 0;
-
-  const finalPrice = Math.max(0, catalogPrice - byotDiscount + (withDesign ? sublimationDesignPrice : 0));
-  const finalUnitPrice = tier.qty > 0 ? Math.round((finalPrice / tier.qty) * 100) / 100 : catalogUnitPrice;
-
+  const r = lookupSublimationPrice(product, tier.qty, { withDesign, byot: bringOwnGarment });
+  if (!r) return null;
   return {
-    qty: tier.qty,
-    price: finalPrice,
-    basePrice: catalogPrice,
-    unitPrice: finalUnitPrice,
-    designPrice: withDesign ? sublimationDesignPrice : 0,
-    // Decomposition detaillee pour transparence dans l'UI
-    blankCostUnit,
-    blankCostTotal: blankCostUnit * tier.qty,
-    printFeeUnit: Math.max(0, catalogUnitPrice - blankCostUnit),
-    printFeeTotal: Math.max(0, catalogPrice - blankCostUnit * tier.qty),
-    byotActive,
-    byotDiscount,
-    byotEligible: canBringOwnGarment(product),
+    qty: r.qty,
+    price: r.price,
+    basePrice: r.basePrice,
+    unitPrice: r.unitPrice,
+    designPrice: r.designPrice,
+    blankCostUnit: r.blankCostUnit,
+    blankCostTotal: r.blankCostTotal,
+    printFeeUnit: Math.max(0, r.catalogUnitPrice - r.blankCostUnit),
+    printFeeTotal: r.printFeeTotal,
+    byotActive: r.byotActive,
+    byotDiscount: r.byotDiscount,
+    byotEligible: r.byotEligible,
   };
 }
 
@@ -469,29 +396,27 @@ export const sublimationFaq = {
 // FLYERS & CARTES
 // =============================================
 
+// Note: `multiplier` conserve pour l'affichage UI (badge "+30%") mais n'est PLUS
+// utilise pour calculer le prix. Le prix Recto-Verso est hardcoded dans FLYER_GRID.
 export const flyerSides = [
   { id: 'recto', labelFr: 'Recto', labelEn: 'Single-sided', labelEs: 'Una cara', multiplier: 1.0 },
   { id: 'recto-verso', labelFr: 'Recto-verso', labelEn: 'Double-sided', labelEs: 'Doble cara', multiplier: 1.3 },
 ];
 
-export const flyerPriceTiers = [
-  { qty: 50, price: 40, unitPrice: 0.80 },
-  { qty: 100, price: 70, unitPrice: 0.70 },
-  { qty: 150, price: 98, unitPrice: 0.65 },
-  { qty: 250, price: 138, unitPrice: 0.55 },
-  { qty: 500, price: 250, unitPrice: 0.50 },
-];
+// Derive depuis FLYER_GRID (pricingData.js). Prix Recto uniquement pour la liste des tiers.
+export const flyerPriceTiers = Object.keys(FLYER_GRID)
+  .map(Number)
+  .sort((a, b) => a - b)
+  .map(qty => ({
+    qty,
+    price: FLYER_GRID[qty].recto,
+    unitPrice: Math.round((FLYER_GRID[qty].recto / qty) * 100) / 100,
+  }));
 
 export function getFlyerPrice(side, qtyIndex) {
   const tier = flyerPriceTiers[qtyIndex];
   if (!tier) return null;
-  const sideOpt = flyerSides.find(s => s.id === side);
-  const multiplier = sideOpt ? sideOpt.multiplier : 1.0;
-  return {
-    qty: tier.qty,
-    price: Math.round(tier.price * multiplier),
-    unitPrice: +(tier.unitPrice * multiplier).toFixed(2),
-  };
+  return lookupFlyerPrice(side, tier.qty);
 }
 
 

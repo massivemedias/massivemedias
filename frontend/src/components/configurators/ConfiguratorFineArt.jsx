@@ -91,12 +91,14 @@ function FramePreview({ image, withFrame, frameColor, format, formats, tx, isLan
 function ConfiguratorFineArt() {
   const { lang, tx } = useLang();
   const { addToCart } = useCart();
+  // PRIX-HARDCODE : on IGNORE les champs de pricing du CMS.
+  // La grille officielle vit uniquement dans utils/pricingData.js.
   const cmsProduct = useProduct('fine-art');
   const pd = cmsProduct?.pricingData;
 
-  const fineArtPrinterTiers = pd?.tiers || defaultTiers;
-  const fineArtFormats = pd?.formats || defaultFormats;
-  const fineArtFramePrice = pd?.framePrice ?? defaultFramePrice;
+  const fineArtPrinterTiers = defaultTiers;
+  const fineArtFormats = defaultFormats;
+  const fineArtFramePrice = defaultFramePrice;
 
   const [tier, setTier] = useState('studio');
   const [format, setFormat] = useState('a4');
@@ -108,15 +110,8 @@ function ConfiguratorFineArt() {
   const [notes, setNotes] = useState('');
   const [lightboxOpen, setLightboxOpen] = useState(false);
 
-  const getFineArtPrice = pd?.formats
-    ? (t, f, frame) => {
-        const fmt = fineArtFormats.find(x => x.id === f);
-        if (!fmt) return null;
-        const base = t === 'museum' ? fmt.museumPrice : fmt.studioPrice;
-        const fp = frame ? (fineArtFramePriceByFormat[f] || fineArtFramePrice) : 0;
-        return { price: base + fp, basePrice: base, framePrice: fp };
-      }
-    : defaultGetPrice;
+  // PRIX-HARDCODE : lookup strict dans pricingData.FINE_ART_GRID via defaultGetPrice.
+  const getFineArtPrice = defaultGetPrice;
 
   const priceInfo = getFineArtPrice(tier, format, withFrame);
   const tierLabel = fineArtPrinterTiers.find(t => t.id === tier);

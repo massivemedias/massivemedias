@@ -12,11 +12,12 @@ import {
 function ConfiguratorFlyers() {
   const { lang, tx } = useLang();
   const { addToCart } = useCart();
-  const cmsProduct = useProduct('flyers');
-  const pd = cmsProduct?.pricingData;
+  // PRIX-HARDCODE : on IGNORE les champs de pricing du CMS.
+  // La grille officielle vit uniquement dans utils/pricingData.js (FLYER_GRID).
+  useProduct('flyers'); // kept for cache warmup only
 
-  const flyerSides = pd?.sides || defaultSides;
-  const flyerPriceTiers = pd?.priceTiers || defaultTiers;
+  const flyerSides = defaultSides;
+  const flyerPriceTiers = defaultTiers;
 
   const [side, setSide] = useState('recto');
   const [qtyIndex, setQtyIndex] = useState(0);
@@ -24,15 +25,7 @@ function ConfiguratorFlyers() {
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [notes, setNotes] = useState('');
 
-  const getFlyerPrice = pd?.priceTiers
-    ? (s, qi) => {
-        const tier = flyerPriceTiers[qi];
-        if (!tier) return null;
-        const sideOpt = flyerSides.find(x => x.id === s);
-        const multiplier = sideOpt ? sideOpt.multiplier : 1.0;
-        return { qty: tier.qty, price: Math.round(tier.price * multiplier), unitPrice: +(tier.unitPrice * multiplier).toFixed(2) };
-      }
-    : defaultGetPrice;
+  const getFlyerPrice = defaultGetPrice;
 
   const priceInfo = getFlyerPrice(side, qtyIndex);
   const sideLabel = flyerSides.find(s => s.id === side);

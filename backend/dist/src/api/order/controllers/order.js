@@ -254,16 +254,16 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
                     }
                 }
             }
-            // Validate flyer pricing against tiers
+            // Validate flyer pricing against official grid (HARDCODED 2026 - lookup strict).
             if (item.productId === 'flyer-a6') {
-                const tierPrice = pricing_config_1.FLYER_TIERS[item.quantity];
+                const isRectoVerso = item.finish && (item.finish.toLowerCase().includes('recto-verso') || item.finish.toLowerCase().includes('double'));
+                const grid = isRectoVerso ? pricing_config_1.FLYER_RECTO_VERSO_TIERS : pricing_config_1.FLYER_TIERS;
+                const tierPrice = grid[item.quantity];
                 if (tierPrice) {
-                    // Apply recto-verso multiplier if applicable
-                    const isRectoVerso = item.finish && (item.finish.toLowerCase().includes('recto-verso') || item.finish.toLowerCase().includes('double'));
-                    validPrice = isRectoVerso ? Math.round(tierPrice * pricing_config_1.FLYER_RECTO_VERSO_MULTIPLIER) : tierPrice;
+                    validPrice = tierPrice;
                 }
                 else {
-                    strapi.log.warn(`Invalid flyer tier: qty=${item.quantity}, using client price ${item.totalPrice}`);
+                    strapi.log.warn(`Invalid flyer tier: qty=${item.quantity} rectoVerso=${isRectoVerso}, using client price ${item.totalPrice}`);
                 }
             }
             subtotal += validPrice;
