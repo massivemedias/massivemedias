@@ -35,9 +35,13 @@ export function AuthProvider({ children }) {
     };
 
     supabase.auth.getSession().then(({ data: { session: s } }) => {
+      // IMPORTANT : syncToken AVANT les setState. Les setState declenchent
+      // des re-renders qui peuvent causer des navigations (Login -> /admin),
+      // lesquelles montent des composants qui firent des API calls. Si le
+      // token n'est pas deja dans localStorage, ces calls partent sans auth.
+      syncToken(s);
       setSession(s);
       setUser(s?.user ?? null);
-      syncToken(s);
       setIsInitializing(false);
       markAuthInitialized();
     }).catch(() => {
@@ -48,9 +52,12 @@ export function AuthProvider({ children }) {
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, s) => {
+      // syncToken AVANT setState (voir commentaire ci-dessus). Critique apres
+      // SIGNED_IN : Login.jsx navigate('/admin') des que session est truthy,
+      // donc il faut que localStorage.token soit deja ecrit au moment du render.
+      syncToken(s);
       setSession(s);
       setUser(s?.user ?? null);
-      syncToken(s);
 
       // Detect password recovery flow
       if (event === 'PASSWORD_RECOVERY') {

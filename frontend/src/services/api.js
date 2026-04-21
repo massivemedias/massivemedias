@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { isAuthInitialized } from './authState';
+import { supabase } from '../lib/supabase';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:1337/api';
 
@@ -11,10 +12,31 @@ const api = axios.create({
   },
 });
 
-// Intercepteur pour ajouter le token d'authentification
+// Helper : recupere le token d'auth le plus frais possible.
+// Priorite a supabase.auth.getSession() (source de verite, auto-refresh si expire)
+// avec fallback localStorage pour les cas edge (supabase pas dispo, offline).
+async function getFreshToken() {
+  if (supabase) {
+    try {
+      const { data } = await supabase.auth.getSession();
+      const supabaseToken = data?.session?.access_token;
+      if (supabaseToken) return supabaseToken;
+    } catch { /* fall through to localStorage */ }
+  }
+  try {
+    return localStorage.getItem('token') || null;
+  } catch {
+    return null;
+  }
+}
+
+// Intercepteur REQUETE : async, pull le token frais de Supabase a chaque call.
+// Elimine la race post-signIn ou le navigate vers /admin se declenchait AVANT
+// que onAuthStateChange ait sync le token dans localStorage -> 1ere requete
+// partait sans Authorization -> 401 -> logout instantane.
 api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token');
+  async (config) => {
+    const token = await getFreshToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -103,21 +125,36 @@ api.interceptors.response.use(
       markServerDown();
     }
 
-    // 401 = token expire OU race condition pendant l'init auth.
-    // Strategie evenementielle (remplace l'ancien window.location.href qui
-    // causait une boucle infinie : reload brutal -> AuthContext reinit avec
-    // session Supabase en cache -> token re-synchronise dans localStorage ->
-    // nouveau 401 -> boucle).
+    // 401 = token expire OU race condition pendant l'init auth OU token stale
+    // (requete partie avec un ancien token alors que Supabase a refresh entre-temps).
     //
-    // - Pendant init : swallow, laisse AuthContext finir
-    // - Apres init : dispatch 'auth:expired'. AuthContext ecoute, appelle
-    //   supabase.auth.signOut() (detruit la session Supabase, pas juste notre
-    //   token), met user a null. React Router redirige ensuite proprement
-    //   via les garde AdminRoute/ProtectedRoute, sans reload brutal.
+    // Strategie a trois niveaux pour eviter le faux-positif logout :
+    //   1. Auth pas encore initialisee : swallow, laisse AuthContext finir
+    //   2. Requete partie avec un token DIFFERENT du token Supabase actuel :
+    //      retry une fois avec le token frais (un seul retry via _tokenRetry)
+    //   3. Meme token Supabase refuse par le backend : vraie expiration ->
+    //      dispatch 'auth:expired'. AuthContext ecoute, appelle signOut().
     if (error.response?.status === 401 && error.config?.headers?.Authorization) {
       if (!isAuthInitialized()) {
         return Promise.reject(error);
       }
+
+      // Protection faux-positif : si le token utilise n'est plus le token actuel,
+      // c'est une race (signIn -> navigate -> 1er call avec ancien token).
+      // On retry UNE SEULE fois avec le token frais avant de declarer la session morte.
+      if (!error.config._tokenRetry && supabase) {
+        try {
+          const { data } = await supabase.auth.getSession();
+          const currentToken = data?.session?.access_token;
+          const requestToken = String(error.config.headers.Authorization || '').replace(/^Bearer\s+/i, '');
+          if (currentToken && currentToken !== requestToken) {
+            error.config._tokenRetry = true;
+            error.config.headers.Authorization = `Bearer ${currentToken}`;
+            return api.request(error.config);
+          }
+        } catch { /* fallthrough vers auth:expired */ }
+      }
+
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('auth:expired'));
       }
