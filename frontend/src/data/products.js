@@ -69,9 +69,17 @@ export function getSizeMultiplier(size) {
   return 1.0;
 }
 
+// DO NOT MODIFY THESE PRICES. OFFICIAL GRID. NO DYNAMIC MATH FORMULAS ALLOWED HERE WITHOUT EXPLICIT BOSS APPROVAL.
+// Lookup table inline, zero dependance backend/CMS/API. Source unique de verite frontend.
+const HARDCODED_STICKER_GRID = {
+  standard: { 25: 30, 50: 47.50, 100: 85, 250: 200, 500: 375 },
+  fx:       { 25: 35, 50: 57.50, 100: 100, 250: 225, 500: 425 },
+};
+
 /**
- * Calcule le prix pour une quantite EXACTE (palier defini).
- * Strict lookup dans la grille officielle. La taille n'est PAS utilisee.
+ * Calcule le prix d'un palier sticker STRICTEMENT depuis la grille hardcoded.
+ * Ne lit AUCUNE source dynamique (pas de CMS, pas de backend, pas de API).
+ * La taille du sticker n'impacte PAS le prix.
  *
  * @param finish   matte | glossy | holographic | broken-glass | stars | dots
  * @param shape    round | square | rectangle | diecut (non utilise)
@@ -80,45 +88,47 @@ export function getSizeMultiplier(size) {
  * @returns {qty, price, unitPrice, sizeMultiplier, baseUnitPrice} ou null si qty invalide
  */
 export function getStickerPrice(finish, shape, qty, size) {
-  let tiers;
-  if (finish === 'holographic' || finish === 'broken-glass' || finish === 'stars') {
-    tiers = holographicPriceTiers;
-  } else {
-    tiers = stickerPriceTiers;
-  }
-  const tier = tiers.find(t => t.qty === qty);
-  if (!tier) return null;
+  const type = (finish === 'holographic' || finish === 'broken-glass' || finish === 'stars')
+    ? 'fx'
+    : 'standard';
+  const price = HARDCODED_STICKER_GRID[type][qty];
+  if (price == null) return null;
+  const unitPrice = Math.round((price / qty) * 100) / 100;
   return {
-    qty: tier.qty,
-    price: tier.price,
-    unitPrice: tier.unitPrice,
+    qty,
+    price,
+    unitPrice,
     sizeMultiplier: 1.0,
-    baseUnitPrice: tier.unitPrice,
+    baseUnitPrice: unitPrice,
   };
 }
 
 /**
  * Calcule le prix proportionnel pour une quantite quelconque (pack builder).
  * Utilise le unitPrice du palier le plus eleve que la quantite atteint.
- * La taille n'est PAS utilisee.
+ * HARDCODED - aucune lecture dynamique. La taille n'est PAS utilisee.
  *
  * Retourne null si total < 25 (minimum d'impression).
  */
 export function getStickerPriceForTotal(finish, shape, total, size) {
   if (!total || total < 25) return null;
-  const isSpecial = finish === 'holographic' || finish === 'broken-glass' || finish === 'stars';
-  const tiers = isSpecial ? holographicPriceTiers : stickerPriceTiers;
-  let tier = tiers[0];
-  for (const t of tiers) {
-    if (total >= t.qty) tier = t;
+  const type = (finish === 'holographic' || finish === 'broken-glass' || finish === 'stars')
+    ? 'fx'
+    : 'standard';
+  const grid = HARDCODED_STICKER_GRID[type];
+  const tierQtys = Object.keys(grid).map(Number).sort((a, b) => a - b);
+  let tierQty = tierQtys[0];
+  for (const q of tierQtys) {
+    if (total >= q) tierQty = q;
   }
+  const tierUnitPrice = Math.round((grid[tierQty] / tierQty) * 100) / 100;
   return {
     qty: total,
-    unitPrice: tier.unitPrice,
-    price: Math.round(total * tier.unitPrice * 100) / 100,
-    tierQty: tier.qty,
+    unitPrice: tierUnitPrice,
+    price: Math.round(total * tierUnitPrice * 100) / 100,
+    tierQty,
     sizeMultiplier: 1.0,
-    baseUnitPrice: tier.unitPrice,
+    baseUnitPrice: tierUnitPrice,
   };
 }
 

@@ -17,6 +17,9 @@ const DEFAULT_STICKER_URL = '/images/graphism/massive_sticker.webp';
 function ConfiguratorStickers({ onFinishChange }) {
   const { tx } = useLang();
   const { addToCart } = useCart();
+  // PRIX-HARDCODE : on lit UNIQUEMENT les labels (finitions, formes, tailles) depuis le CMS.
+  // Les prix et paliers sont STRICTEMENT hardcodes dans data/products.js pour que le
+  // frontend soit totalement decouple du backend/CMS sur la grille tarifaire.
   const cmsProduct = useProduct('stickers');
   const pd = cmsProduct?.pricingData;
 
@@ -36,22 +39,10 @@ function ConfiguratorStickers({ onFinishChange }) {
   const [localPreviewUrl, setLocalPreviewUrl] = useState(null); // preview derive des fichiers upload
   const [thumbUrl, setThumbUrl] = useState(null); // thumb PNG genere par le canvas
 
-  // Wrapper qui lit les tiers du CMS si fournis, sinon fallback sur products.js.
-  // La grille officielle est fixe par palier, la taille n'impacte PAS le prix.
-  const getStickerPrice = pd?.tiers
-    ? (f, s, qty) => {
-        const isSpecial = f === 'holographic' || f === 'broken-glass' || f === 'stars' || f === 'dots';
-        const tiers = isSpecial ? (pd.tiers.holographic || pd.tiers.standard) : pd.tiers.standard;
-        const tier = tiers?.find(t => t.qty === qty);
-        if (!tier) return null;
-        const price = tier.price != null
-          ? tier.price
-          : Math.round(tier.qty * tier.unitPrice * 100) / 100;
-        return { qty: tier.qty, price, unitPrice: tier.unitPrice, sizeMultiplier: 1.0, baseUnitPrice: tier.unitPrice };
-      }
-    : defaultGetPrice;
-
-  const tiers = pd?.tiers?.standard || defaultTiers;
+  // PRIX-HARDCODE : on IGNORE pd?.tiers. La grille officielle vit uniquement dans
+  // data/products.js. Aucun override CMS/API possible depuis avril 2026.
+  const getStickerPrice = defaultGetPrice;
+  const tiers = defaultTiers;
   const currentTier = tiers[qtyIndex] || tiers[0];
   const priceInfo = getStickerPrice(finish, shape, currentTier.qty);
 
