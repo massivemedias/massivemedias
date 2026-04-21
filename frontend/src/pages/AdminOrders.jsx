@@ -1156,6 +1156,114 @@ function AdminOrders() {
                             )}
                           </div>
 
+                          {/* Historique / journal des evenements de la commande */}
+                          <div className="rounded-lg bg-glass p-4">
+                            <h4 className="text-xs font-semibold text-grey-muted uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                              <Clock size={12} />
+                              {tx({ fr: 'Historique', en: 'History', es: 'Historial' })}
+                            </h4>
+                            {(() => {
+                              const events = [];
+                              // Creation
+                              if (order.createdAt) {
+                                events.push({
+                                  ts: order.createdAt,
+                                  label: order.isManual
+                                    ? tx({ fr: 'Commande manuelle creee', en: 'Manual order created', es: 'Pedido manual creado' })
+                                    : tx({ fr: 'Commande creee', en: 'Order created', es: 'Pedido creado' }),
+                                  icon: Plus,
+                                  color: 'text-grey-muted',
+                                });
+                              }
+                              // Lien Stripe genere (pour les commandes manuelles)
+                              if (order.isManual && order.invoiceNumber) {
+                                events.push({
+                                  ts: order.createdAt,
+                                  label: tx({
+                                    fr: `Facture ${order.invoiceNumber} + lien Stripe genere`,
+                                    en: `Invoice ${order.invoiceNumber} + Stripe link generated`,
+                                    es: `Factura ${order.invoiceNumber} + enlace Stripe generado`,
+                                  }),
+                                  icon: FileText,
+                                  color: 'text-accent',
+                                });
+                              }
+                              // Paiement recu
+                              if (order.status === 'paid' || order.status === 'processing' || order.status === 'ready' || order.status === 'shipped' || order.status === 'delivered') {
+                                events.push({
+                                  ts: order.paidAt || order.updatedAt,
+                                  label: tx({ fr: 'Paiement recu', en: 'Payment received', es: 'Pago recibido' }),
+                                  icon: CreditCard,
+                                  color: 'text-green-400',
+                                });
+                              }
+                              // Expedition
+                              if (order.trackingNumber) {
+                                events.push({
+                                  ts: order.shippedAt || order.updatedAt,
+                                  label: tx({
+                                    fr: `Expedie (${order.carrier || 'postes-canada'}) - ${order.trackingNumber}`,
+                                    en: `Shipped (${order.carrier || 'postes-canada'}) - ${order.trackingNumber}`,
+                                    es: `Enviado (${order.carrier || 'postes-canada'}) - ${order.trackingNumber}`,
+                                  }),
+                                  icon: Truck,
+                                  color: 'text-purple-400',
+                                });
+                              }
+                              // Livraison
+                              if (order.status === 'delivered') {
+                                events.push({
+                                  ts: order.deliveredAt || order.updatedAt,
+                                  label: tx({ fr: 'Livree au client', en: 'Delivered to customer', es: 'Entregado al cliente' }),
+                                  icon: CheckCircle,
+                                  color: 'text-emerald-400',
+                                });
+                              }
+                              // Annulation
+                              if (order.status === 'cancelled') {
+                                events.push({
+                                  ts: order.updatedAt,
+                                  label: tx({ fr: 'Commande annulee', en: 'Order cancelled', es: 'Pedido cancelado' }),
+                                  icon: XCircle,
+                                  color: 'text-red-400',
+                                });
+                              }
+                              // Remboursement
+                              if (order.status === 'refunded') {
+                                events.push({
+                                  ts: order.refundedAt || order.updatedAt,
+                                  label: tx({ fr: 'Remboursee', en: 'Refunded', es: 'Reembolsado' }),
+                                  icon: RotateCcw,
+                                  color: 'text-gray-400',
+                                });
+                              }
+
+                              if (events.length === 0) {
+                                return <p className="text-xs text-grey-muted">{tx({ fr: 'Aucun evenement.', en: 'No events.', es: 'Sin eventos.' })}</p>;
+                              }
+
+                              return (
+                                <ol className="relative border-l-2 border-white/10 ml-1 space-y-3">
+                                  {events.map((ev, i) => {
+                                    const Ic = ev.icon;
+                                    return (
+                                      <li key={i} className="ml-4 pl-0">
+                                        <span className="absolute -left-[7px] w-3 h-3 rounded-full bg-[#1a0030] border-2 border-white/20 mt-1" />
+                                        <div className="flex items-center gap-2">
+                                          <Ic size={13} className={ev.color} />
+                                          <span className="text-sm text-heading">{ev.label}</span>
+                                        </div>
+                                        <span className="text-[10px] text-grey-muted ml-[21px]">
+                                          {ev.ts ? formatDate(ev.ts) : '-'}
+                                        </span>
+                                      </li>
+                                    );
+                                  })}
+                                </ol>
+                              );
+                            })()}
+                          </div>
+
                           {/* Admin notes + delete */}
                           <div className="flex flex-col md:flex-row gap-4">
                             <div className="flex-1">

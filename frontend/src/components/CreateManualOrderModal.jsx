@@ -61,6 +61,15 @@ function CreateManualOrderModal({ onClose, onCreated }) {
   // par l'admin EST le subtotal. La quantity est purement descriptive.
   const subtotal = parsedItems.reduce((s, it) => s + it.lineTotal, 0);
 
+  // FIX-TAXES (avril 2026): calcul TPS/TVQ cote client + affichage du breakdown.
+  // Le backend recalcule de toute facon, mais on envoie les bons chiffres pour
+  // que l'UI admin corresponde a ce que le client verra sur Stripe.
+  const TPS_RATE = 0.05;
+  const TVQ_RATE = 0.09975;
+  const tps = Math.round(subtotal * TPS_RATE * 100) / 100;
+  const tvq = Math.round(subtotal * TVQ_RATE * 100) / 100;
+  const grandTotal = Math.round((subtotal + tps + tvq) * 100) / 100;
+
   const submit = async (e) => {
     e?.preventDefault?.();
     setError('');
@@ -97,7 +106,11 @@ function CreateManualOrderModal({ onClose, onCreated }) {
         customerPhone: customerPhone.trim() || undefined,
         items: payloadItems,
         subtotal,
-        total: subtotal,
+        tps,
+        tvq,
+        // Le backend recalcule total = subtotal + shipping + tps + tvq, on envoie la
+        // valeur UI pour trace/coherence mais le serveur reste la source de verite.
+        total: grandTotal,
         notes: notes.trim() || undefined,
       });
       setResult(data);
@@ -357,15 +370,40 @@ function CreateManualOrderModal({ onClose, onCreated }) {
                 </p>
               </div>
 
-              {/* Total preview */}
-              <div className="rounded-lg bg-black/30 px-4 py-3 flex items-center justify-between border border-white/5">
-                <span className="text-grey-muted text-xs uppercase tracking-wider">
-                  {tx({ fr: 'Total (avant taxes)', en: 'Total (pre-tax)', es: 'Total (antes de impuestos)' })}
-                </span>
-                <span className="text-heading text-xl font-heading font-bold">
-                  {subtotal.toFixed(2)}$
-                </span>
+              {/* Breakdown financier strict : sous-total + TPS + TVQ + Grand Total */}
+              <div className="rounded-lg bg-black/30 border border-white/5 overflow-hidden">
+                <div className="flex items-center justify-between px-4 py-2 border-b border-white/5">
+                  <span className="text-grey-muted text-xs uppercase tracking-wider">
+                    {tx({ fr: 'Sous-total', en: 'Subtotal', es: 'Subtotal' })}
+                  </span>
+                  <span className="text-heading text-sm font-semibold">{subtotal.toFixed(2)}$</span>
+                </div>
+                <div className="flex items-center justify-between px-4 py-2 border-b border-white/5">
+                  <span className="text-grey-muted text-xs">
+                    {tx({ fr: 'TPS (5%)', en: 'GST (5%)', es: 'TPS (5%)' })}
+                  </span>
+                  <span className="text-heading text-sm">{tps.toFixed(2)}$</span>
+                </div>
+                <div className="flex items-center justify-between px-4 py-2 border-b border-white/5">
+                  <span className="text-grey-muted text-xs">
+                    {tx({ fr: 'TVQ (9.975%)', en: 'QST (9.975%)', es: 'TVQ (9.975%)' })}
+                  </span>
+                  <span className="text-heading text-sm">{tvq.toFixed(2)}$</span>
+                </div>
+                <div className="flex items-center justify-between px-4 py-3 bg-accent/10">
+                  <span className="text-heading text-xs uppercase tracking-wider font-bold">
+                    {tx({ fr: 'Grand Total (TTC)', en: 'Grand Total (with tax)', es: 'Total con impuestos' })}
+                  </span>
+                  <span className="text-accent text-xl font-heading font-bold">{grandTotal.toFixed(2)}$</span>
+                </div>
               </div>
+              <p className="text-[10px] text-grey-muted mt-1.5 text-right">
+                {tx({
+                  fr: 'Montant facture au client sur Stripe = Grand Total (TTC).',
+                  en: 'Amount charged to client on Stripe = Grand Total (tax included).',
+                  es: 'Monto cobrado al cliente en Stripe = Total con impuestos.',
+                })}
+              </p>
 
               {/* Notes */}
               <div>

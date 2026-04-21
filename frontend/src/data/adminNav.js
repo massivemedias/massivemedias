@@ -17,7 +17,9 @@ const ADMIN_NAV_ITEMS = [
   { to: '/admin/inventaire', icon: Package, fr: 'Inventaire', en: 'Inventory', es: 'Inventario', tooltip: { fr: 'Gestion du stock (textiles, cadres, materiel)', en: 'Stock management (textiles, frames, equipment)', es: 'Gestion de stock' } },
   { to: '/admin/messages', icon: MessageSquare, fr: 'Messages', en: 'Messages', es: 'Mensajes', tooltip: { fr: 'Messages des artistes et clients', en: 'Artist and client messages', es: 'Mensajes de artistas y clientes' } },
   { to: '/admin/utilisateurs', icon: Users, fr: 'Utilisateurs', en: 'Users', es: 'Usuarios', tooltip: { fr: 'Gestion des comptes (admin, artistes, clients)', en: 'Account management (admin, artists, clients)', es: 'Gestion de cuentas' } },
-  { to: '/admin/factures', icon: FileText, fr: 'Factures', en: 'Invoices', es: 'Facturas', tooltip: { fr: 'Factures sortantes (ventes) et entrantes (achats)', en: 'Outgoing (sales) and incoming (purchases) invoices', es: 'Facturas salientes (ventas) y entrantes (compras)' } },
+  // Factures supprime (avril 2026) : workflow unifie dans /admin/commandes.
+  // Les depenses (achats) ont leur propre onglet dedie ci-dessous.
+  { to: '/admin/depenses', icon: FileText, fr: 'Depenses', en: 'Expenses', es: 'Gastos', tooltip: { fr: 'Factures d\'achat et depenses operationnelles', en: 'Purchase invoices and operating expenses', es: 'Facturas de compra y gastos' } },
   { to: '/admin/temoignages', icon: Star, fr: 'Temoignages', en: 'Testimonials', es: 'Testimonios', tooltip: { fr: 'Temoignages clients affiches sur le site', en: 'Client testimonials shown on website', es: 'Testimonios de clientes' } },
   { to: '/admin/stats', icon: BarChart3, fr: 'Stats', en: 'Stats', es: 'Stats', tooltip: { fr: 'Statistiques de ventes et revenus', en: 'Sales and revenue statistics', es: 'Estadisticas de ventas' } },
   { to: '/admin/tarifs', icon: DollarSign, fr: 'Tarifs', en: 'Pricing', es: 'Precios', tooltip: { fr: 'Gestion des prix (CMS)', en: 'Price management (CMS)', es: 'Gestion de precios' } },

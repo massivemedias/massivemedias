@@ -59,7 +59,9 @@ const AdminDepenses = lazyWithRetry(() => import('./pages/AdminDepenses'));
 const AdminStats = lazyWithRetry(() => import('./pages/AdminStats'));
 const AdminTarifs = lazyWithRetry(() => import('./pages/AdminTarifs'));
 const AdminTemoignages = lazyWithRetry(() => import('./pages/AdminTemoignages'));
-const AdminFactures = lazyWithRetry(() => import('./pages/AdminFactures'));
+// AdminFactures supprime (refactor avril 2026) - doublon avec AdminOrders.
+// Toute la gestion factures passe par /admin/commandes (centralise). Les anciennes
+// URLs /admin/factures redirigent vers /admin/commandes.
 const AdminUtilisateurs = lazyWithRetry(() => import('./pages/AdminUtilisateurs'));
 const AdminDashboard = lazyWithRetry(() => import('./pages/AdminDashboard'));
 const AdminNotes = lazyWithRetry(() => import('./pages/AdminNotes'));
@@ -187,7 +189,8 @@ function App() {
               <Route path="dashboard" element={<AdminDashboard />} />
               <Route path="notes" element={<AdminNotes />} />
               <Route path="commandes" element={<AdminOrders />} />
-              <Route path="factures" element={<AdminFactures />} />
+              {/* /admin/factures -> commandes (ancien doublon supprime avril 2026) */}
+              <Route path="factures" element={<Navigate to="/admin/commandes" replace />} />
               <Route path="commissions" element={<AdminCommissions />} />
               <Route path="inventaire" element={<AdminInventaire />} />
               <Route path="messages" element={<AdminMessages />} />
@@ -195,7 +198,8 @@ function App() {
               <Route path="artistes" element={<Navigate to="/admin/messages" replace />} />
               <Route path="clients" element={<Navigate to="/admin/utilisateurs" replace />} />
               <Route path="utilisateurs" element={<AdminUtilisateurs />} />
-              <Route path="depenses" element={<Navigate to="/admin/factures" replace />} />
+              {/* Depenses redirige vers sa propre page dediee (ancien flow passait par Factures) */}
+              <Route path="depenses" element={<AdminDepenses />} />
               <Route path="temoignages" element={<AdminTemoignages />} />
               <Route path="stats" element={<AdminStats />} />
               <Route path="tarifs" element={<AdminTarifs />} />

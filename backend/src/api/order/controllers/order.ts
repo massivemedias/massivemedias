@@ -1336,22 +1336,60 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
   },
 
   // POST /orders/manual - Creer une Order manuelle + Invoice + Stripe Payment Link
-  // Body: { customerName, customerEmail?, customerPhone?, items, subtotal, total,
+  // Body: { customerName, customerEmail?, customerPhone?, items, subtotal, total?,
   //         shipping?, tps?, tvq?, notes?, lang?: 'fr'|'en' }
   // items: [{ description, quantity, unitPrice }] (montants en dollars, convertis en cents Stripe)
+  //
+  // FIX-TAXES (avril 2026): si tps/tvq fournis, on RECALCULE le total cote serveur
+  // (total = subtotal + shipping + tps + tvq) pour garantir que Stripe Payment Link
+  // facture le montant TTC exact. Avant ce fix, le frontend envoyait souvent total=subtotal
+  // -> Stripe percevait HT -> factures sous-facturees sans TPS/TVQ.
   async manualCreate(ctx) {
     if (!(await requireAdminAuth(ctx))) return;
     const body = ctx.request.body as any;
     const {
       customerName, customerEmail, customerPhone,
-      items, subtotal, total,
-      shipping = 0, tps = 0, tvq = 0,
+      items,
+      shipping = 0,
       notes, lang = 'fr',
       currency = 'cad',
     } = body || {};
+    let { subtotal, total, tps = 0, tvq = 0 } = body || {};
 
-    if (!customerName || !Array.isArray(items) || items.length === 0 || !total) {
-      return ctx.badRequest('customerName, items[] et total requis');
+    if (!customerName || !Array.isArray(items) || items.length === 0) {
+      return ctx.badRequest('customerName et items[] requis');
+    }
+
+    // Normaliser les montants numeriques (accepter strings avec virgules)
+    const toNum = (v: any) => {
+      const n = typeof v === 'string' ? parseFloat(v.replace(',', '.')) : Number(v);
+      return Number.isFinite(n) ? n : 0;
+    };
+    subtotal = toNum(subtotal);
+    tps = toNum(tps);
+    tvq = toNum(tvq);
+    const shippingNum = toNum(shipping);
+
+    // Si tps/tvq non fournis mais subtotal > 0, les calculer automatiquement
+    // (taxes QC standard : TPS 5%, TVQ 9.975%). L'admin peut override en les fournissant.
+    if (subtotal > 0 && tps === 0 && tvq === 0) {
+      tps = Math.round(subtotal * 0.05 * 100) / 100;
+      tvq = Math.round(subtotal * 0.09975 * 100) / 100;
+    }
+
+    // FIX-TAXES : le total TTC reel est TOUJOURS subtotal + shipping + tps + tvq.
+    // On ignore le `total` client pour eviter les incoherences / sous-facturation Stripe.
+    const computedTotal = Math.round((subtotal + shippingNum + tps + tvq) * 100) / 100;
+    const providedTotal = toNum(total);
+
+    // Warning si le client a envoye un total divergent (bug frontend potentiel)
+    if (providedTotal > 0 && Math.abs(providedTotal - computedTotal) > 0.01) {
+      strapi.log.warn(`[manualCreate] Total client ${providedTotal}$ diverge du recalcul serveur ${computedTotal}$ (subtotal=${subtotal}, tps=${tps}, tvq=${tvq}). Utilisation du recalcul serveur.`);
+    }
+    total = computedTotal;
+
+    if (total <= 0) {
+      return ctx.badRequest('Total calcule invalide (0 ou negatif). Verifier subtotal et taxes.');
     }
 
     try {
@@ -1377,6 +1415,8 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
       }
 
       // 2. Creer l'Order (isManual, stripePaymentIntentId nullable grace au schema patch)
+      // FIX-TAXES : les montants stockes en cents utilisent le total TTC recalcule
+      // (subtotal + shipping + tps + tvq) pour garantir la coherence avec Stripe.
       const order = await strapi.documents('api::order.order').create({
         data: {
           isManual: true,
@@ -1385,11 +1425,11 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
           customerEmail: customerEmail || null,
           customerPhone: customerPhone || null,
           items,
-          subtotal: Math.round(Number(subtotal ?? total) * 100),
-          total: Math.round(Number(total) * 100),
-          shipping: Math.round(Number(shipping) * 100),
-          tps: Math.round(Number(tps) * 100),
-          tvq: Math.round(Number(tvq) * 100),
+          subtotal: Math.round(subtotal * 100),
+          total: Math.round(total * 100),
+          shipping: Math.round(shippingNum * 100),
+          tps: Math.round(tps * 100),
+          tvq: Math.round(tvq * 100),
           currency,
           notes: notes || null,
           client: clientDocId ? { connect: [clientDocId] } : undefined,
@@ -1411,7 +1451,7 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
       }
       const invoiceNumber = `${prefix}${String(seq).padStart(4, '0')}`;
 
-      // 4. Creer l'Invoice liee a l'Order + Client
+      // 4. Creer l'Invoice liee a l'Order + Client (montants TTC en dollars dans l'invoice)
       const invoice = await strapi.documents('api::invoice.invoice').create({
         data: {
           invoiceNumber,
@@ -1420,10 +1460,10 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
           customerEmail: customerEmail || null,
           customerPhone: customerPhone || null,
           items,
-          subtotal: Number(subtotal ?? total),
-          tps: Number(tps),
-          tvq: Number(tvq),
-          total: Number(total),
+          subtotal,
+          tps,
+          tvq,
+          total,
           status: 'draft',
           paymentStatus: 'pending',
           lang,
@@ -1433,20 +1473,64 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
         } as any,
       });
 
-      // 5. Stripe Payment Link : un seul line_item englobant le total
+      // 5. Stripe Payment Link : line_items detailles (sous-total + TPS + TVQ + shipping)
+      // pour que le client VOIE le breakdown des taxes sur la page de paiement Stripe.
+      // Chaque ligne a son propre Product+Price Stripe avec un label parlant.
       const stripe = getStripe();
-      const amountCents = Math.round(Number(total) * 100);
-      const product = await stripe.products.create({
-        name: `Facture ${invoiceNumber} - ${customerName}`,
-        metadata: { invoiceNumber, orderId: order.documentId },
-      });
-      const price = await stripe.prices.create({
-        product: product.id,
-        unit_amount: amountCents,
-        currency: (currency || 'cad').toLowerCase(),
-      });
+      const currencyLower = (currency || 'cad').toLowerCase();
+      const amountCents = Math.round(total * 100);
+
+      async function makeLineItem(name: string, amountDollars: number): Promise<any | null> {
+        const cents = Math.round(amountDollars * 100);
+        if (cents <= 0) return null;
+        const prod = await stripe.products.create({
+          name,
+          metadata: { invoiceNumber, orderId: order.documentId },
+        });
+        const pr = await stripe.prices.create({
+          product: prod.id,
+          unit_amount: cents,
+          currency: currencyLower,
+        });
+        return { price: pr.id, quantity: 1 };
+      }
+
+      const lineItems: any[] = [];
+      const subtotalItem = await makeLineItem(
+        `Facture ${invoiceNumber} - Sous-total`,
+        subtotal,
+      );
+      if (subtotalItem) lineItems.push(subtotalItem);
+
+      if (shippingNum > 0) {
+        const shippingItem = await makeLineItem(`Livraison - ${invoiceNumber}`, shippingNum);
+        if (shippingItem) lineItems.push(shippingItem);
+      }
+
+      if (tps > 0) {
+        const tpsItem = await makeLineItem(`TPS (5%) - ${invoiceNumber}`, tps);
+        if (tpsItem) lineItems.push(tpsItem);
+      }
+
+      if (tvq > 0) {
+        const tvqItem = await makeLineItem(`TVQ (9.975%) - ${invoiceNumber}`, tvq);
+        if (tvqItem) lineItems.push(tvqItem);
+      }
+
+      // Fallback defensif : si pour une raison quelconque aucun line_item n'a ete cree,
+      // on bascule sur un line_item unique pour le total (plutot que d'echouer).
+      if (lineItems.length === 0) {
+        const fallback = await makeLineItem(`Facture ${invoiceNumber} - ${customerName}`, total);
+        if (fallback) lineItems.push(fallback);
+      }
+
+      // Garde-fou : verifier que la somme des line_items correspond au total attendu.
+      // Evite qu'un bug de calcul ne facture le client a cote.
+      // (Stripe re-additionne de toute facon, mais on log pour trace audit.)
+      strapi.log.info(`[manualCreate] Stripe line_items : ${lineItems.length} lignes pour ${amountCents} cents (subtotal=${subtotal}, shipping=${shippingNum}, tps=${tps}, tvq=${tvq})`);
+
       const paymentLink = await stripe.paymentLinks.create({
-        line_items: [{ price: price.id, quantity: 1 }],
+        line_items: lineItems,
         metadata: {
           orderId: order.documentId,
           invoiceId: invoice.documentId,
