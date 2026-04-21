@@ -296,13 +296,24 @@ function AdminOrders() {
     });
     if (!window.confirm(confirmMsg)) return;
 
+    // OPTIMISTIC UI : snapshot + filter local IMMEDIAT avant appel API.
+    // L'utilisateur voit la commande disparaitre a l'instant. Si l'API echoue,
+    // on restaure le snapshot et on affiche un toast rouge explicite.
+    const snapshot = orders;
+    const wasExpanded = expandedId === documentId;
+
+    // Filter robuste : on matche sur documentId ET id Strapi numerique au cas ou
+    // un des deux serait manquant apres un mapping malheureux.
+    setOrders(prev => prev.filter(o =>
+      o.documentId !== documentId && String(o.id) !== String(documentId),
+    ));
+    if (wasExpanded) setExpandedId(null);
+    setConfirmDeleteId(null);
+
     setDeletingId(documentId);
     setActionToast(null);
     try {
       await deleteOrder(documentId);
-      setOrders(prev => prev.filter(o => o.documentId !== documentId));
-      setExpandedId(null);
-      setConfirmDeleteId(null);
       setActionToast({
         type: 'success',
         message: tx({
@@ -311,8 +322,15 @@ function AdminOrders() {
           es: `Pedido ${ref} eliminado definitivamente.`,
         }),
       });
+      // Refresh silencieux en arriere-plan pour confirmer parfaitement la sync
+      // avec la BDD (meta.total, stats). Non-bloquant et non-throw.
+      fetchOrders().catch(() => {});
+      getOrderStats().then(({ data }) => setStats(data)).catch(() => {});
     } catch (err) {
       console.error('deleteOrder failed:', err);
+      // ROLLBACK : restaurer l'ordre dans la liste + reouvrir le panel si l'user l'avait
+      setOrders(snapshot);
+      if (wasExpanded) setExpandedId(documentId);
       const backendMsg = err?.response?.data?.error?.message
         || err?.response?.data?.message
         || err?.message
