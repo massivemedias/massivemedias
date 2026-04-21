@@ -2236,24 +2236,69 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
         }
         const orderId = order.id;
         const stripeLinkNote = order.stripePaymentIntentId || '(aucun)';
-        // 2. Cascade : supprimer l'Invoice liee si elle existe
+        // 2. Cascade : detacher/supprimer TOUTES les relations qui pointent sur l'order
+        // (Strapi ne cascade pas automatiquement - une FK non-nettoyee bloque le DELETE
+        // Postgres avec "violates foreign key constraint"). On nettoie dans l'ordre :
+        //   - Invoices (FK order) : hard delete
+        //   - Testimonials (FK order) : detach (mettre order=null) puis garder l'entite
+        //   - Client : la relation est cote order, pas cote client -> pas de nettoyage requis
+        // 2.a Invoices
         try {
             const invoices = await strapi.documents('api::invoice.invoice').findMany({
                 filters: { order: { documentId: { $eq: documentId } } },
-                limit: 5,
+                limit: 10,
             });
             for (const inv of invoices) {
                 try {
                     await strapi.documents('api::invoice.invoice').delete({ documentId: inv.documentId });
-                    strapi.log.info(`[DELETE ORDER] Invoice ${inv.invoiceNumber || inv.documentId} supprimee (cascade)`);
+                    strapi.log.info(`[DELETE ORDER] Cascade invoice ${inv.invoiceNumber || inv.documentId} supprimee`);
                 }
                 catch (invErr) {
-                    strapi.log.warn(`[DELETE ORDER] Echec suppression invoice ${inv.documentId}: ${invErr === null || invErr === void 0 ? void 0 : invErr.message}`);
+                    // Fallback db.query si Documents.delete ne cascade pas
+                    try {
+                        await strapi.db.query('api::invoice.invoice').delete({ where: { id: inv.id } });
+                        strapi.log.info(`[DELETE ORDER] Cascade invoice ${inv.documentId} supprimee via db.query fallback`);
+                    }
+                    catch (fbErr) {
+                        strapi.log.error(`[DELETE ORDER] Cascade invoice ECHEC definitif ${inv.documentId}: ${fbErr === null || fbErr === void 0 ? void 0 : fbErr.message}`);
+                    }
                 }
             }
         }
         catch (cascadeErr) {
             strapi.log.warn(`[DELETE ORDER] Cascade invoices failed (non-bloquant): ${cascadeErr === null || cascadeErr === void 0 ? void 0 : cascadeErr.message}`);
+        }
+        // 2.b Testimonials (detach pour ne pas perdre les avis du site public)
+        try {
+            const testimonials = await strapi.documents('api::testimonial.testimonial').findMany({
+                filters: { order: { documentId: { $eq: documentId } } },
+                limit: 10,
+            });
+            for (const t of testimonials) {
+                try {
+                    // Detach la relation order (mettre a null) via Documents API
+                    await strapi.documents('api::testimonial.testimonial').update({
+                        documentId: t.documentId,
+                        data: { order: null },
+                    });
+                    strapi.log.info(`[DELETE ORDER] Testimonial ${t.documentId} detache de order ${documentId}`);
+                }
+                catch (tErr) {
+                    // Fallback via db.query pour clear la FK directement
+                    try {
+                        await strapi.db.query('api::testimonial.testimonial').update({
+                            where: { id: t.id },
+                            data: { order: null },
+                        });
+                    }
+                    catch (fbErr) {
+                        strapi.log.warn(`[DELETE ORDER] Detach testimonial ${t.documentId} echoue: ${fbErr === null || fbErr === void 0 ? void 0 : fbErr.message}`);
+                    }
+                }
+            }
+        }
+        catch (cascadeErr) {
+            strapi.log.warn(`[DELETE ORDER] Cascade testimonials failed (non-bloquant): ${cascadeErr === null || cascadeErr === void 0 ? void 0 : cascadeErr.message}`);
         }
         // 3. Suppression principale via Documents API
         let deletePrimaryOk = false;

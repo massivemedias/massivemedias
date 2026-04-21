@@ -121,6 +121,8 @@ function AdminOrders() {
 
   // Envoi facture par courriel - etat par commande + toast global
   const [sendingInvoiceId, setSendingInvoiceId] = useState(null);
+  // Modal de previsualisation avant envoi facture (controle admin)
+  const [previewInvoiceOrder, setPreviewInvoiceOrder] = useState(null);
   const [actionToast, setInvoiceToast] = useState(null); // { type: 'success'|'error', message: '...' }
   useEffect(() => {
     if (!actionToast) return;
@@ -888,11 +890,11 @@ function AdminOrders() {
                                   {tx({ fr: 'Reçu', en: 'Receipt', es: 'Recibo' })}
                                 </button>
                                 <button
-                                  onClick={(e) => { e.stopPropagation(); handleSendInvoice(order); }}
+                                  onClick={(e) => { e.stopPropagation(); setPreviewInvoiceOrder(order); }}
                                   disabled={sendingInvoiceId === order.documentId || !order.customerEmail}
                                   title={!order.customerEmail
                                     ? tx({ fr: 'Aucun email client', en: 'No customer email', es: 'Sin email del cliente' })
-                                    : tx({ fr: 'Envoyer la facture par courriel (PDF + lien Stripe)', en: 'Email invoice (PDF + Stripe link)', es: 'Enviar factura por correo (PDF + enlace Stripe)' })}
+                                    : tx({ fr: 'Previsualiser avant envoi (PDF + lien Stripe)', en: 'Preview before sending (PDF + Stripe link)', es: 'Previsualizar antes de enviar' })}
                                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                                 >
                                   {sendingInvoiceId === order.documentId ? (
@@ -1471,6 +1473,138 @@ function AdminOrders() {
           onUpdated={onOrderTotalUpdated}
         />
       )}
+
+      {/* Modal de PREVISUALISATION avant envoi facture - admin doit confirmer */}
+      <AnimatePresence>
+        {previewInvoiceOrder && (() => {
+          const po = previewInvoiceOrder;
+          const invNum = po.invoiceNumber || po.orderRef || (po.documentId?.slice(0, 8).toUpperCase() || '');
+          const refShort = po.orderRef || po.documentId?.slice(0, 8).toUpperCase() || '';
+          const totalDollars = ((po.total || 0) / 100).toFixed(2);
+          const isSending = sendingInvoiceId === po.documentId;
+          return (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => !isSending && setPreviewInvoiceOrder(null)}
+              className="fixed inset-0 z-[9500] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto"
+            >
+              <motion.div
+                initial={{ scale: 0.95, y: 20 }}
+                animate={{ scale: 1, y: 0 }}
+                exit={{ scale: 0.95, y: 20 }}
+                onClick={(e) => e.stopPropagation()}
+                className="bg-[#1a0030] rounded-2xl border border-white/10 shadow-2xl max-w-lg w-full my-8 overflow-hidden"
+              >
+                <div className="flex items-center justify-between px-5 py-4 border-b border-white/10">
+                  <h3 className="text-heading font-heading font-bold text-lg flex items-center gap-2">
+                    <Mail size={16} className="text-accent" />
+                    {tx({ fr: 'Envoyer la facture', en: 'Send invoice', es: 'Enviar factura' })}
+                  </h3>
+                  <button
+                    onClick={() => !isSending && setPreviewInvoiceOrder(null)}
+                    disabled={isSending}
+                    className="p-1.5 rounded-lg text-grey-muted hover:text-heading hover:bg-white/5 disabled:opacity-40"
+                  >
+                    <XCircle size={18} />
+                  </button>
+                </div>
+
+                <div className="px-5 py-5 space-y-4 text-sm">
+                  {/* Destinataire */}
+                  <div>
+                    <label className="text-[10px] text-grey-muted uppercase tracking-wider block mb-1">
+                      {tx({ fr: 'Destinataire', en: 'Recipient', es: 'Destinatario' })}
+                    </label>
+                    <div className="rounded-lg bg-black/30 px-3 py-2.5 border border-white/10">
+                      <p className="text-heading font-semibold">{po.customerName || 'Client'}</p>
+                      <p className="text-grey-muted text-xs font-mono mt-0.5">{po.customerEmail}</p>
+                    </div>
+                  </div>
+
+                  {/* BCC admin (info) */}
+                  <div className="rounded-lg bg-accent/5 border border-accent/20 px-3 py-2 text-xs text-accent flex items-center gap-2">
+                    <CheckCircle size={12} />
+                    {tx({
+                      fr: 'BCC automatique : massivemedias@gmail.com (copie admin)',
+                      en: 'Auto BCC: massivemedias@gmail.com (admin copy)',
+                      es: 'BCC automatico: massivemedias@gmail.com',
+                    })}
+                  </div>
+
+                  {/* Sujet */}
+                  <div>
+                    <label className="text-[10px] text-grey-muted uppercase tracking-wider block mb-1">
+                      {tx({ fr: 'Sujet', en: 'Subject', es: 'Asunto' })}
+                    </label>
+                    <p className="rounded-lg bg-black/30 px-3 py-2.5 border border-white/10 text-heading text-xs">
+                      Facture pour la commande #{invNum} - {po.customerName || 'Client'}
+                    </p>
+                  </div>
+
+                  {/* Apercu message */}
+                  <div>
+                    <label className="text-[10px] text-grey-muted uppercase tracking-wider block mb-1">
+                      {tx({ fr: 'Apercu du message', en: 'Message preview', es: 'Vista previa' })}
+                    </label>
+                    <div className="rounded-lg bg-black/30 px-3 py-2.5 border border-white/10 text-xs text-grey-muted space-y-1.5">
+                      <p className="text-heading">{tx({ fr: `Bonjour ${po.customerName || 'client'},`, en: `Hi ${po.customerName || 'client'},`, es: `Hola ${po.customerName || 'cliente'},` })}</p>
+                      <p>{tx({
+                        fr: `Voici votre facture pour la commande #${refShort} (total ${totalDollars}$).`,
+                        en: `Here is your invoice for order #${refShort} (total $${totalDollars}).`,
+                        es: `Aqui esta tu factura del pedido #${refShort} (total ${totalDollars}$).`,
+                      })}</p>
+                      <p>{tx({
+                        fr: 'Vous pouvez regler en ligne via le lien de paiement securise Stripe inclus.',
+                        en: 'You can pay online via the secure Stripe payment link included.',
+                        es: 'Puede pagar en linea mediante el enlace Stripe incluido.',
+                      })}</p>
+                      <p className="text-grey-muted">{tx({ fr: 'Cordialement,\nMassive Medias', en: 'Best regards,\nMassive Medias', es: 'Saludos,\nMassive Medias' })}</p>
+                    </div>
+                  </div>
+
+                  {/* Piece jointe */}
+                  <div>
+                    <label className="text-[10px] text-grey-muted uppercase tracking-wider block mb-1">
+                      {tx({ fr: 'Piece jointe', en: 'Attachment', es: 'Adjunto' })}
+                    </label>
+                    <div className="rounded-lg bg-black/30 px-3 py-2.5 border border-white/10 flex items-center gap-2">
+                      <FileText size={14} className="text-accent" />
+                      <span className="text-heading text-xs font-mono">facture-{invNum}.pdf</span>
+                      <span className="text-[10px] text-grey-muted ml-auto">
+                        {tx({ fr: 'genere au moment de l\'envoi', en: 'generated on send', es: 'generado al enviar' })}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 px-5 py-3 bg-black/30 border-t border-white/5">
+                  <button
+                    onClick={() => !isSending && setPreviewInvoiceOrder(null)}
+                    disabled={isSending}
+                    className="flex-1 py-2 rounded-lg bg-white/5 text-grey-muted font-semibold text-sm hover:bg-white/10 transition-colors disabled:opacity-50"
+                  >
+                    {tx({ fr: 'Annuler', en: 'Cancel', es: 'Cancelar' })}
+                  </button>
+                  <button
+                    onClick={async () => {
+                      await handleSendInvoice(po);
+                      setPreviewInvoiceOrder(null);
+                    }}
+                    disabled={isSending}
+                    className="flex-[2] py-2 rounded-lg bg-accent text-white font-semibold text-sm hover:bg-accent/80 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    {isSending
+                      ? <><Loader2 size={14} className="animate-spin" /> {tx({ fr: 'Envoi en cours...', en: 'Sending...', es: 'Enviando...' })}</>
+                      : <><Send size={14} /> {tx({ fr: 'Confirmer l\'envoi', en: 'Confirm send', es: 'Confirmar envio' })}</>}
+                  </button>
+                </div>
+              </motion.div>
+            </motion.div>
+          );
+        })()}
+      </AnimatePresence>
     </div>
   );
 }

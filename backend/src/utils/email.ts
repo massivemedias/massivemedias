@@ -1368,7 +1368,10 @@ export async function sendInvoiceEmail(data: ManualInvoiceEmailData): Promise<bo
   }
 
   const { from, replyTo } = getSender();
-  const subject = `Facture Massive Medias - Commande #${data.invoiceNumber}`;
+  // FIX-ERP : sujet explicite pour l'admin qui recoit le BCC
+  //   "Facture pour la commande #MM-2026-0001 - Jean Tremblay"
+  const subject = `Facture pour la commande #${data.invoiceNumber} - ${data.customerName || 'Client'}`;
+  const bcc = getAdminBcc();
 
   const attachments: any[] = [];
   if (data.pdfBase64) {
@@ -1382,12 +1385,13 @@ export async function sendInvoiceEmail(data: ManualInvoiceEmailData): Promise<bo
     const res = await resend.emails.send({
       from,
       to: data.customerEmail,
+      bcc: bcc.length > 0 ? bcc : undefined,  // BCC explicite admin (sur TOUTES les factures)
       reply_to: replyTo,
       subject,
       html: buildManualInvoiceHtml(data),
       attachments: attachments.length > 0 ? attachments : undefined,
     } as any);
-    console.log(`[email] Facture ${data.invoiceNumber} envoyee a ${data.customerEmail}`, res?.data?.id || '');
+    console.log(`[email] Facture ${data.invoiceNumber} envoyee a ${data.customerEmail} (bcc: ${bcc.join(', ') || 'none'})`, res?.data?.id || '');
     return true;
   } catch (err: any) {
     console.error('[email] Erreur envoi facture:', err?.message || err);

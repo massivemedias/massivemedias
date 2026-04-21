@@ -1149,7 +1149,10 @@ async function sendInvoiceEmail(data) {
         throw new Error('invoiceNumber requis');
     }
     const { from, replyTo } = getSender();
-    const subject = `Facture Massive Medias - Commande #${data.invoiceNumber}`;
+    // FIX-ERP : sujet explicite pour l'admin qui recoit le BCC
+    //   "Facture pour la commande #MM-2026-0001 - Jean Tremblay"
+    const subject = `Facture pour la commande #${data.invoiceNumber} - ${data.customerName || 'Client'}`;
+    const bcc = getAdminBcc();
     const attachments = [];
     if (data.pdfBase64) {
         attachments.push({
@@ -1161,12 +1164,13 @@ async function sendInvoiceEmail(data) {
         const res = await resend.emails.send({
             from,
             to: data.customerEmail,
+            bcc: bcc.length > 0 ? bcc : undefined, // BCC explicite admin (sur TOUTES les factures)
             reply_to: replyTo,
             subject,
             html: buildManualInvoiceHtml(data),
             attachments: attachments.length > 0 ? attachments : undefined,
         });
-        console.log(`[email] Facture ${data.invoiceNumber} envoyee a ${data.customerEmail}`, ((_a = res === null || res === void 0 ? void 0 : res.data) === null || _a === void 0 ? void 0 : _a.id) || '');
+        console.log(`[email] Facture ${data.invoiceNumber} envoyee a ${data.customerEmail} (bcc: ${bcc.join(', ') || 'none'})`, ((_a = res === null || res === void 0 ? void 0 : res.data) === null || _a === void 0 ? void 0 : _a.id) || '');
         return true;
     }
     catch (err) {
