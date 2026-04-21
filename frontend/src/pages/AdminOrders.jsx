@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search, ChevronDown, ChevronUp, ShoppingBag, DollarSign,
@@ -220,6 +220,81 @@ function AdminOrders() {
   }, [meta.page, filterStatus, searchDebounce]);
 
   useEffect(() => { fetchOrders(); }, [fetchOrders]);
+
+  // POLLING LIVE (avril 2026) : refresh silencieux toutes les 30s pour detecter
+  // les nouveaux paiements Stripe arrivant via webhook. Si une nouvelle commande
+  // `paid` apparait (ou une commande change de status vers `paid`), on affiche
+  // un toast special "Nouveau paiement valide" pour alerter l'admin.
+  const lastPaidKeysRef = useRef(null);
+  useEffect(() => {
+    // Snapshot initial des commandes paid/processing/ready/shipped/delivered deja connues
+    if (lastPaidKeysRef.current === null && Array.isArray(orders)) {
+      const known = new Set(orders
+        .filter(o => ['paid','processing','ready','shipped','delivered'].includes(o.status))
+        .map(o => o.documentId));
+      lastPaidKeysRef.current = known;
+    }
+  }, [orders]);
+
+  useEffect(() => {
+    // Si l'admin change de page/filter/search, on ne veut pas re-flasher le toast
+    // pour les commandes deja vues. On reset le snapshot au prochain render.
+    lastPaidKeysRef.current = null;
+  }, [meta.page, filterStatus, searchDebounce]);
+
+  useEffect(() => {
+    const POLL_MS = 30_000;
+    const intervalId = setInterval(async () => {
+      // Skip le polling si admin est en pleine mutation (evite concurrence visuelle)
+      if (updatingId || deletingId || sendingInvoiceId) return;
+      try {
+        const params = { page: meta.page, pageSize: meta.pageSize };
+        if (filterStatus !== 'all') params.status = filterStatus;
+        if (searchDebounce) params.search = searchDebounce;
+        const { data } = await getOrders(params);
+        const fresh = data?.data || [];
+
+        // Detection des nouveaux paiements : doc IDs paid/... absents du snapshot
+        const currentPaid = fresh.filter(o => ['paid','processing','ready','shipped','delivered'].includes(o.status));
+        const known = lastPaidKeysRef.current || new Set();
+        const justPaid = currentPaid.filter(o => !known.has(o.documentId));
+
+        if (justPaid.length > 0) {
+          const first = justPaid[0];
+          const ref = first.orderRef || first.documentId?.slice(0, 8).toUpperCase() || '';
+          const amt = ((first.total || 0) / 100).toFixed(2);
+          setActionToast({
+            type: 'success',
+            message: tx({
+              fr: `Nouveau paiement valide ! Commande #${ref} - ${amt}$${justPaid.length > 1 ? ` (+${justPaid.length - 1} autres)` : ''}`,
+              en: `New payment validated! Order #${ref} - $${amt}${justPaid.length > 1 ? ` (+${justPaid.length - 1} more)` : ''}`,
+              es: `Nuevo pago validado! Pedido #${ref} - ${amt}$${justPaid.length > 1 ? ` (+${justPaid.length - 1} mas)` : ''}`,
+            }),
+          });
+          // Beep discret pour attirer l'attention si l'onglet est en arriere-plan
+          try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain); gain.connect(ctx.destination);
+            osc.type = 'sine'; osc.frequency.value = 880;
+            gain.gain.setValueAtTime(0.15, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
+            osc.start(); osc.stop(ctx.currentTime + 0.2);
+          } catch { /* audio non supporte - OK */ }
+        }
+
+        // Mettre a jour le snapshot + la liste affichee (uniquement si pas de diff majeur)
+        lastPaidKeysRef.current = new Set(currentPaid.map(o => o.documentId));
+        // Update list seulement si le count total a change ou si de nouveaux paid
+        if (justPaid.length > 0 || fresh.length !== orders.length) {
+          setOrders(fresh);
+          if (data.meta) setMeta(data.meta);
+        }
+      } catch { /* silent polling - ne pas flood de toasts */ }
+    }, POLL_MS);
+    return () => clearInterval(intervalId);
+  }, [meta.page, meta.pageSize, filterStatus, searchDebounce, orders.length, updatingId, deletingId, sendingInvoiceId, tx]);
 
   // Stats
   useEffect(() => {

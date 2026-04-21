@@ -596,11 +596,11 @@ function buildNewOrderNotificationHtml(data) {
       </tr>
     </table>
 
-    <!-- CTA -->
+    <!-- CTA Admin : lien direct vers la commande dans le panneau admin -->
     <table width="100%" cellpadding="0" cellspacing="0" style="margin:24px 0 0;">
       <tr><td align="center">
-        <a href="https://massivemedias.com/account?tab=commandes" style="display:inline-block;color:#FF52A0;text-decoration:none;font-size:13px;font-weight:600;">
-          Voir ma commande &rarr;
+        <a href="https://massivemedias.com/admin/commandes?ref=${encodeURIComponent(data.orderRef)}" style="display:inline-block;background:#222;color:#ffffff;padding:10px 22px;border-radius:6px;text-decoration:none;font-size:13px;font-weight:700;">
+          Ouvrir dans l'admin
         </a>
       </td></tr>
     </table>
@@ -617,7 +617,9 @@ async function sendNewOrderNotificationEmail(data) {
         await resend.emails.send({
             ...sender,
             to: adminEmail,
-            subject: `[VENTE] ${formatPrice(data.total)}$ - ${data.customerName} (${data.orderRef})`,
+            // FIX-ERP (avril 2026) : sujet standardise "PAIEMENT RECU" avec montant
+            // en dollars (data.total est en cents) + ref commande pour tri email rapide.
+            subject: `PAIEMENT RECU : Commande #${data.orderRef} - ${formatPrice(data.total)}$`,
             html: buildNewOrderNotificationHtml(data),
         });
         console.log('[email] Notification nouvelle vente envoyee a', adminEmail);
