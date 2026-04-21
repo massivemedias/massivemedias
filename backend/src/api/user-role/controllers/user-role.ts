@@ -17,7 +17,6 @@ export default factories.createCoreController('api::user-role.user-role', ({ str
           email: e.email,
           role: e.role,
           artistSlug: e.artistSlug,
-          tatoueurSlug: e.tatoueurSlug || null,
           supabaseUserId: e.supabaseUserId,
           displayName: e.displayName,
         })),
@@ -57,7 +56,6 @@ export default factories.createCoreController('api::user-role.user-role', ({ str
           email: e.email,
           role: e.role,
           artistSlug: e.artistSlug,
-          tatoueurSlug: e.tatoueurSlug || null,
           displayName: e.displayName,
         },
       };
@@ -70,15 +68,15 @@ export default factories.createCoreController('api::user-role.user-role', ({ str
   // Body: { email, role, artistSlug?, supabaseUserId?, displayName? }
   async setRole(ctx) {
     if (!(await requireAdminAuth(ctx))) return;
-    const { email, role, artistSlug, tatoueurSlug, supabaseUserId, displayName } = ctx.request.body as any;
+    const { email, role, artistSlug, supabaseUserId, displayName } = ctx.request.body as any;
 
     if (!email || !role) {
       ctx.throw(400, 'Email and role required');
       return;
     }
 
-    if (!['user', 'artist', 'tatoueur'].includes(role)) {
-      ctx.throw(400, 'Role must be "user", "artist" or "tatoueur"');
+    if (!['user', 'artist'].includes(role)) {
+      ctx.throw(400, 'Role must be "user" or "artist"');
       return;
     }
 
@@ -98,7 +96,6 @@ export default factories.createCoreController('api::user-role.user-role', ({ str
           data: {
             role,
             artistSlug: artistSlug || null,
-            tatoueurSlug: tatoueurSlug || null,
             supabaseUserId: supabaseUserId || existing[0].supabaseUserId,
             displayName: displayName || existing[0].displayName,
           },
@@ -110,7 +107,6 @@ export default factories.createCoreController('api::user-role.user-role', ({ str
             email: email.toLowerCase().trim(),
             role,
             artistSlug: artistSlug || null,
-            tatoueurSlug: tatoueurSlug || null,
             supabaseUserId: supabaseUserId || null,
             displayName: displayName || null,
           },
@@ -123,7 +119,6 @@ export default factories.createCoreController('api::user-role.user-role', ({ str
           email: entry.email,
           role: entry.role,
           artistSlug: entry.artistSlug,
-          tatoueurSlug: entry.tatoueurSlug,
         },
       };
     } catch (err: any) {
@@ -167,12 +162,7 @@ export default factories.createCoreController('api::user-role.user-role', ({ str
     const { slug } = ctx.params;
     try {
       const entries = await strapi.documents('api::user-role.user-role').findMany({
-        filters: {
-          $or: [
-            { artistSlug: slug },
-            { tatoueurSlug: slug },
-          ],
-        } as any,
+        filters: { artistSlug: slug },
         limit: 1,
       });
       if (!entries || entries.length === 0) {

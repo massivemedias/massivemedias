@@ -176,12 +176,6 @@ function App() {
             <Route path="/artistes" element={<Artistes />} />
             <Route path="/artistes/:slug" element={<ArtisteDetail />} />
 
-            {/* Tatoueurs - section desactivee, redirige vers Artistes */}
-            <Route path="/tatoueurs" element={<Navigate to="/artistes" replace />} />
-            <Route path="/tatoueurs/:slug" element={<Navigate to="/artistes" replace />} />
-            <Route path="/tatoueur/inscription" element={<Navigate to="/contact?tab=artiste" replace />} />
-            <Route path="/tatoueur/dashboard" element={<Navigate to="/account" replace />} />
-
             {/* Admin - redirige vers le dashboard */}
             <Route path="/mm-admin" element={<AdminRoute><MmAdmin /></AdminRoute>} />
           </Route>
@@ -199,7 +193,6 @@ function App() {
               <Route path="messages" element={<AdminMessages />} />
               <Route path="candidatures" element={<Navigate to="/admin/messages" replace />} />
               <Route path="artistes" element={<Navigate to="/admin/messages" replace />} />
-              <Route path="tatoueurs" element={<Navigate to="/admin/utilisateurs" replace />} />
               <Route path="clients" element={<Navigate to="/admin/utilisateurs" replace />} />
               <Route path="utilisateurs" element={<AdminUtilisateurs />} />
               <Route path="depenses" element={<Navigate to="/admin/factures" replace />} />

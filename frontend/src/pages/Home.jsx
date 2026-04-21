@@ -17,7 +17,6 @@ import {
   ShoppingBag,
 } from 'lucide-react';
 import artistsData from '../data/artists';
-import tatoueursData from '../data/tatoueurs';
 import ServiceCard from '../components/ServiceCard';
 import Counter from '../components/Counter';
 import SEO from '../components/SEO';

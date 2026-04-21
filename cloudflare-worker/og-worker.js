@@ -1,6 +1,5 @@
 /**
  * Cloudflare Worker - OG Meta Tags pour sous-domaines artistes
- * + Proxy Instagram pour feeds tatoueurs
  * + SEO meta injection pour toutes les pages du site principal
  *
  * Detecte les crawlers (Facebook, Twitter, etc.) sur les sous-domaines artistes
@@ -10,9 +9,6 @@
  * Pour le domaine principal, injecte les meta tags SEO page-specifiques
  * dans le HTML via HTMLRewriter (streaming).
  *
- * Endpoint Instagram: /api/instagram/:handle
- * Retourne les posts publics d'un profil Instagram (cache 1h)
- *
  * Deploiement:
  * 1. Aller sur Cloudflare Dashboard > Workers & Pages > Create
  * 2. Coller ce script
@@ -21,10 +17,6 @@
 
 const SITE_URL = 'https://massivemedias.com';
 const DEFAULT_OG_IMAGE = 'https://massivemedias.com/og-image.jpg';
-
-const TATOUEURS = {
-  // Section tatoueurs desactivee - les entrees seront restaurees si la section revient
-};
 
 const ARTISTS = {
   'adrift': { name: 'Adrift Vision', taglineFr: 'Art numerique & univers immersifs', taglineEn: 'Digital Art & Immersive Worlds' },
@@ -48,17 +40,8 @@ const ROUTE_META = {
     description: 'Massive Medias - Imprimeur a Montreal. Impression fine art, stickers personnalises die-cut, sublimation textile, design graphique, developpement web et webmastering. Studio creatif au Mile-End. Print Montreal.',
   },
   '/artistes': {
-    title: 'Artistes | Massive Medias - Photographes, Peintres & Tatoueurs',
-    description: 'Decouvrez nos artistes partenaires. Photographes, peintres, artistes visuels et tatoueurs. Prints, stickers et merch disponibles.',
-  },
-  '/tatoueurs': {
-    title: 'Tatoueurs | Massive Medias - Flashs & Reservations Montreal',
-    description: 'Reservez un flash de tatouage unique aupres de nos tatoueurs partenaires a Montreal. Fineline, botanique, blackwork et plus.',
-  },
-  '/tatoueurs/ginko-ink': {
-    title: 'Ginko Ink | Tatoueuse Fineline Montreal - Flashs Disponibles',
-    description: 'Myriam Rivest, tatoueuse fineline a Montreal. Flashs botaniques, creatures feeriques et personnages. Reservez votre piece unique.',
-    ogImage: 'https://massivemedias.com/images/tatoueurs/ginko-ink/hero.webp',
+    title: 'Artistes | Massive Medias - Photographes, Peintres & Artistes Visuels',
+    description: 'Decouvrez nos artistes partenaires. Photographes, peintres et artistes visuels. Prints, stickers et merch disponibles.',
   },
   '/boutique': {
     title: 'Boutique | Massive Medias - Prints, Stickers & Merch',
@@ -162,22 +145,6 @@ function getMetaForPath(pathname) {
       description: `Decouvrez les oeuvres de ${artistName} sur Massive Medias. Prints fine art disponibles en plusieurs formats.`,
       ogImage: artist ? `${SITE_URL}/images/og/og-${slug}.jpg` : DEFAULT_OG_IMAGE,
       canonicalUrl: `${SITE_URL}/artistes/${slug}`,
-    };
-  }
-
-  // Pages tatoueurs dynamiques: /tatoueurs/:slug (non listees dans ROUTE_META)
-  const tatoueurMatch = path.match(/^\/tatoueurs\/([a-z0-9-]+)$/);
-  if (tatoueurMatch) {
-    const slug = tatoueurMatch[1];
-    const tatoueur = TATOUEURS[slug];
-    // Si la route est dans ROUTE_META, on l'a deja gere plus haut
-    // Sinon, fallback generique
-    const tatoueurName = tatoueur ? tatoueur.name : slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-    return {
-      title: `${tatoueurName} | Massive Medias - Flashs & Reservations`,
-      description: `Decouvrez les flashs de ${tatoueurName} sur Massive Medias. Reservez votre piece de tatouage unique a Montreal.`,
-      ogImage: DEFAULT_OG_IMAGE,
-      canonicalUrl: `${SITE_URL}/tatoueurs/${slug}`,
     };
   }
 
@@ -527,13 +494,11 @@ export default {
       });
     }
 
-    // Only intercept crawlers on artist/tatoueur subdomains
+    // Only intercept crawlers on artist subdomains
     const artistData = ARTISTS[subdomain] || null;
-    const tatoueurData = TATOUEURS[subdomain] || null;
-    const subdomainData = artistData || tatoueurData;
 
-    if (subdomain && subdomainData && isCrawler(userAgent)) {
-      const html = buildOGPage(subdomain, subdomainData);
+    if (subdomain && artistData && isCrawler(userAgent)) {
+      const html = buildOGPage(subdomain, artistData);
       return new Response(html, {
         headers: { 'Content-Type': 'text/html; charset=utf-8' },
       });
@@ -542,12 +507,6 @@ export default {
     // Artist subdomain for real users: redirect to main site artist page
     if (subdomain && artistData) {
       const targetUrl = `${SITE_URL}/artistes/${subdomain}${url.pathname === '/' ? '' : url.pathname}${url.search}`;
-      return Response.redirect(targetUrl, 302);
-    }
-
-    // Tatoueur subdomain for real users: redirect to main site tatoueur page
-    if (subdomain && tatoueurData) {
-      const targetUrl = `${SITE_URL}/tatoueurs/${subdomain}${url.pathname === '/' ? '' : url.pathname}${url.search}`;
       return Response.redirect(targetUrl, 302);
     }
 

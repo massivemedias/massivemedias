@@ -11,7 +11,6 @@ export const setUserRole = (email, role, slug, supabaseUserId, displayName) =>
   api.put('/user-roles/set', {
     email, role, supabaseUserId, displayName,
     artistSlug: role === 'artist' ? slug : null,
-    tatoueurSlug: role === 'tatoueur' ? slug : null,
   });
 
 // Supprimer un role (remet en user)

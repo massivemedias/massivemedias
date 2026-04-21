@@ -147,7 +147,7 @@ export default factories.createCoreController('api::expense.expense', ({ strapi 
     // Revenus: commandes payees de l'annee
     const orders = await strapi.documents('api::order.order').findMany({
       filters: {
-        status: { $in: ['paid', 'processing', 'ready', 'shipped', 'delivered'] },
+        status: { $in: ['paid', 'processing', 'ready', 'shipped', 'delivered'] as any },
         createdAt: { $gte: `${startDate}T00:00:00.000Z`, $lte: `${endDate}T23:59:59.999Z` },
       },
     });

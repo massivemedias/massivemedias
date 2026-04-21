@@ -61,3 +61,19 @@ cloudflare-worker/.wrangler/
 
 # Images originales (garder seulement les WebP dans frontend/public)
 images/
+
+# Section Tatoueurs - supprimee definitivement (commit bdd3d16). Bloque iCloud de les ressusciter
+frontend/src/pages/Tatoueurs.jsx
+frontend/src/pages/TatoueurDetail.jsx
+frontend/src/pages/TatoueurDashboard.jsx
+frontend/src/pages/TatoueurInscription.jsx
+frontend/src/pages/AdminTatoueurs.jsx
+frontend/src/components/TatoueurRoute.jsx
+frontend/src/components/FlashCard.jsx
+frontend/src/components/FlashLightbox.jsx
+frontend/src/components/tatoueur/
+frontend/src/components/AccountTatoueurDashboard.jsx
+backend/src/api/tatoueur/
+backend/src/api/flash/
+backend/src/api/reservation/
+backend/src/api/tattoo-message/
