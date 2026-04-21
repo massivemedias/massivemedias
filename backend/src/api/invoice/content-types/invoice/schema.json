@@ -77,7 +77,14 @@
     "order": {
       "type": "relation",
       "relation": "oneToOne",
-      "target": "api::order.order"
+      "target": "api::order.order",
+      "inversedBy": "invoice"
+    },
+    "client": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::client.client",
+      "inversedBy": "invoices"
     },
     "paidAt": {
       "type": "datetime"
@@ -87,6 +94,14 @@
     },
     "pdfFileId": {
       "type": "string"
+    },
+    "stripePaymentLink": {
+      "type": "string"
+    },
+    "paymentStatus": {
+      "type": "enumeration",
+      "enum": ["pending", "paid", "cancelled"],
+      "default": "pending"
     }
   }
 }

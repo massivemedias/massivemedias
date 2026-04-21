@@ -13,8 +13,7 @@
     "attributes": {
         "stripePaymentIntentId": {
             "type": "string",
-            "unique": true,
-            "required": true
+            "unique": true
         },
         "stripeCheckoutSessionId": {
             "type": "string"
@@ -110,6 +109,16 @@
             "relation": "manyToOne",
             "target": "api::client.client",
             "inversedBy": "orders"
+        },
+        "isManual": {
+            "type": "boolean",
+            "default": false
+        },
+        "invoice": {
+            "type": "relation",
+            "relation": "oneToOne",
+            "target": "api::invoice.invoice",
+            "mappedBy": "order"
         }
     }
 }

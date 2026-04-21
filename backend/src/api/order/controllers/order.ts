@@ -881,6 +881,27 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
         filters: { stripePaymentIntentId: paymentIntent.id } as any,
       });
 
+      // Fallback manual payment link : metadata.orderId propagee depuis paymentLinks.create.
+      // On retrouve directement l'Order par documentId sans faire d'appel Stripe.
+      const manualOrderId = (paymentIntent.metadata || {}).orderId;
+      if (orders.length === 0 && manualOrderId) {
+        const manualOrder = await strapi.documents('api::order.order').findFirst({
+          filters: { documentId: manualOrderId } as any,
+        });
+        if (manualOrder) {
+          orders = [manualOrder as any];
+          // On stocke le payment_intent definitif pour les webhooks retry et la reconciliation
+          try {
+            await strapi.documents('api::order.order').update({
+              documentId: manualOrder.documentId,
+              data: { stripePaymentIntentId: paymentIntent.id } as any,
+            });
+          } catch (updateErr: any) {
+            strapi.log.warn(`[webhook:${requestId}] Could not stamp PI on manual order ${manualOrder.documentId}: ${updateErr?.message}`);
+          }
+        }
+      }
+
       // Fallback pour les orders pre-avril 2026 (pas de stripeCheckoutSessionId
       // separe, le cs_live_ est dans stripePaymentIntentId). On resout via
       // Stripe seulement dans ce cas.
@@ -935,6 +956,32 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
           data: { status: 'paid', invoiceNumber },
         });
         strapi.log.info(`Order ${order.documentId} marked as paid (${invoiceNumber})`);
+
+        // ERP manual orders : flip l'Invoice liee (paymentStatus + paidAt).
+        // Detection: metadata.invoiceId direct OU relation order.invoice si isManual.
+        try {
+          const metaInvoiceId = (paymentIntent.metadata || {}).invoiceId;
+          let invoiceDocId: string | null = metaInvoiceId || null;
+          if (!invoiceDocId) {
+            const linked = await strapi.documents('api::invoice.invoice').findFirst({
+              filters: { order: { documentId: order.documentId } } as any,
+            });
+            if (linked) invoiceDocId = (linked as any).documentId;
+          }
+          if (invoiceDocId) {
+            await strapi.documents('api::invoice.invoice').update({
+              documentId: invoiceDocId,
+              data: {
+                paymentStatus: 'paid',
+                status: 'paid',
+                paidAt: new Date().toISOString(),
+              } as any,
+            });
+            strapi.log.info(`[webhook:${requestId}] Invoice ${invoiceDocId} flipped to paid`);
+          }
+        } catch (invFlipErr: any) {
+          strapi.log.warn(`[webhook:${requestId}] Could not flip invoice paymentStatus: ${invFlipErr?.message}`);
+        }
 
         // STRIPE-04: emails admin + client en parallele via Promise.allSettled.
         // Avant: sequential await - si l'un timeout (ex: Resend down 5s), l'autre
@@ -1289,6 +1336,155 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
     } catch (err: any) {
       strapi.log.error('adminCreate error:', err);
       return ctx.badRequest(err.message);
+    }
+  },
+
+  // POST /orders/manual - Creer une Order manuelle + Invoice + Stripe Payment Link
+  // Body: { customerName, customerEmail?, customerPhone?, items, subtotal, total,
+  //         shipping?, tps?, tvq?, notes?, lang?: 'fr'|'en' }
+  // items: [{ description, quantity, unitPrice }] (montants en dollars, convertis en cents Stripe)
+  async manualCreate(ctx) {
+    if (!(await requireAdminAuth(ctx))) return;
+    const body = ctx.request.body as any;
+    const {
+      customerName, customerEmail, customerPhone,
+      items, subtotal, total,
+      shipping = 0, tps = 0, tvq = 0,
+      notes, lang = 'fr',
+      currency = 'cad',
+    } = body || {};
+
+    if (!customerName || !Array.isArray(items) || items.length === 0 || !total) {
+      return ctx.badRequest('customerName, items[] et total requis');
+    }
+
+    try {
+      // 1. Resoudre ou creer le Client (lookup par email si fourni)
+      let clientDocId: string | null = null;
+      if (customerEmail) {
+        const existing = await strapi.documents('api::client.client').findMany({
+          filters: { email: { $eqi: customerEmail } } as any,
+          limit: 1,
+        });
+        if (existing.length > 0) {
+          clientDocId = existing[0].documentId;
+        } else {
+          const created = await strapi.documents('api::client.client').create({
+            data: {
+              email: customerEmail,
+              name: customerName,
+              phone: customerPhone || undefined,
+            } as any,
+          });
+          clientDocId = created.documentId;
+        }
+      }
+
+      // 2. Creer l'Order (isManual, stripePaymentIntentId nullable grace au schema patch)
+      const order = await strapi.documents('api::order.order').create({
+        data: {
+          isManual: true,
+          status: 'pending',
+          customerName,
+          customerEmail: customerEmail || null,
+          customerPhone: customerPhone || null,
+          items,
+          subtotal: Math.round(Number(subtotal ?? total) * 100),
+          total: Math.round(Number(total) * 100),
+          shipping: Math.round(Number(shipping) * 100),
+          tps: Math.round(Number(tps) * 100),
+          tvq: Math.round(Number(tvq) * 100),
+          currency,
+          notes: notes || null,
+          client: clientDocId ? { connect: [clientDocId] } : undefined,
+        } as any,
+      });
+
+      // 3. Numero de facture sequentiel MM-AAAA-XXXX (meme logique que webhook)
+      const year = new Date().getFullYear();
+      const prefix = `MM-${year}-`;
+      const lastInvoice = await strapi.documents('api::invoice.invoice').findMany({
+        filters: { invoiceNumber: { $startsWith: prefix } } as any,
+        sort: { invoiceNumber: 'desc' } as any,
+        limit: 1,
+      });
+      let seq = 1;
+      if (lastInvoice.length > 0 && (lastInvoice[0] as any).invoiceNumber) {
+        const lastNum = (lastInvoice[0] as any).invoiceNumber.replace(prefix, '');
+        seq = (parseInt(lastNum, 10) || 0) + 1;
+      }
+      const invoiceNumber = `${prefix}${String(seq).padStart(4, '0')}`;
+
+      // 4. Creer l'Invoice liee a l'Order + Client
+      const invoice = await strapi.documents('api::invoice.invoice').create({
+        data: {
+          invoiceNumber,
+          date: new Date().toISOString().slice(0, 10),
+          customerName,
+          customerEmail: customerEmail || null,
+          customerPhone: customerPhone || null,
+          items,
+          subtotal: Number(subtotal ?? total),
+          tps: Number(tps),
+          tvq: Number(tvq),
+          total: Number(total),
+          status: 'draft',
+          paymentStatus: 'pending',
+          lang,
+          notes: notes || null,
+          order: { connect: [order.documentId] },
+          client: clientDocId ? { connect: [clientDocId] } : undefined,
+        } as any,
+      });
+
+      // 5. Stripe Payment Link : un seul line_item englobant le total
+      const stripe = getStripe();
+      const amountCents = Math.round(Number(total) * 100);
+      const product = await stripe.products.create({
+        name: `Facture ${invoiceNumber} - ${customerName}`,
+        metadata: { invoiceNumber, orderId: order.documentId },
+      });
+      const price = await stripe.prices.create({
+        product: product.id,
+        unit_amount: amountCents,
+        currency: (currency || 'cad').toLowerCase(),
+      });
+      const paymentLink = await stripe.paymentLinks.create({
+        line_items: [{ price: price.id, quantity: 1 }],
+        metadata: {
+          orderId: order.documentId,
+          invoiceId: invoice.documentId,
+          invoiceNumber,
+          type: 'manual',
+        },
+        payment_intent_data: {
+          metadata: {
+            orderId: order.documentId,
+            invoiceId: invoice.documentId,
+            invoiceNumber,
+            type: 'manual',
+          },
+        },
+      });
+
+      // 6. Patch Invoice.stripePaymentLink
+      await strapi.documents('api::invoice.invoice').update({
+        documentId: invoice.documentId,
+        data: { stripePaymentLink: paymentLink.url } as any,
+      });
+
+      strapi.log.info(`[manualCreate] Order ${order.documentId} + Invoice ${invoiceNumber} + PaymentLink ${paymentLink.id}`);
+
+      ctx.body = {
+        success: true,
+        orderId: order.documentId,
+        invoiceId: invoice.documentId,
+        invoiceNumber,
+        paymentUrl: paymentLink.url,
+      };
+    } catch (err: any) {
+      strapi.log.error('manualCreate error:', err);
+      return ctx.badRequest(err.message || 'Erreur creation commande manuelle');
     }
   },
 

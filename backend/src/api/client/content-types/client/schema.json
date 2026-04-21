@@ -61,6 +61,12 @@
       "target": "api::order.order",
       "mappedBy": "client"
     },
+    "invoices": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::invoice.invoice",
+      "mappedBy": "client"
+    },
     "preferredStyles": {
       "type": "json"
     },

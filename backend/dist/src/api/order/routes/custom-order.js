@@ -124,6 +124,14 @@ exports.default = {
         },
         {
             method: 'POST',
+            path: '/orders/manual',
+            handler: 'order.manualCreate',
+            config: {
+                auth: false,
+            },
+        },
+        {
+            method: 'POST',
             path: '/orders/:documentId/resend-notification',
             handler: 'order.resendAdminNotification',
             config: {

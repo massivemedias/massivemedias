@@ -783,6 +783,7 @@ export interface ApiClientClient extends Struct.CollectionTypeSchema {
       Schema.Attribute.Required &
       Schema.Attribute.Unique;
     files: Schema.Attribute.Media<'images' | 'files', true>;
+    invoices: Schema.Attribute.Relation<'oneToMany', 'api::invoice.invoice'>;
     lastOrderDate: Schema.Attribute.Date;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
@@ -989,6 +990,7 @@ export interface ApiInvoiceInvoice extends Struct.CollectionTypeSchema {
     draftAndPublish: false;
   };
   attributes: {
+    client: Schema.Attribute.Relation<'manyToOne', 'api::client.client'>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -1016,6 +1018,10 @@ export interface ApiInvoiceInvoice extends Struct.CollectionTypeSchema {
     notes: Schema.Attribute.Text;
     order: Schema.Attribute.Relation<'oneToOne', 'api::order.order'>;
     paidAt: Schema.Attribute.DateTime;
+    paymentStatus: Schema.Attribute.Enumeration<
+      ['pending', 'paid', 'cancelled']
+    > &
+      Schema.Attribute.DefaultTo<'pending'>;
     pdfFileId: Schema.Attribute.String;
     pdfUrl: Schema.Attribute.String;
     publishedAt: Schema.Attribute.DateTime;
@@ -1023,6 +1029,7 @@ export interface ApiInvoiceInvoice extends Struct.CollectionTypeSchema {
       ['draft', 'sent', 'paid', 'cancelled']
     > &
       Schema.Attribute.DefaultTo<'draft'>;
+    stripePaymentLink: Schema.Attribute.String;
     subtotal: Schema.Attribute.Decimal & Schema.Attribute.Required;
     total: Schema.Attribute.Decimal & Schema.Attribute.Required;
     tps: Schema.Attribute.Decimal;
@@ -1103,7 +1110,9 @@ export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
     customerPhone: Schema.Attribute.String;
     designReady: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
     files: Schema.Attribute.Media<'images' | 'files', true>;
+    invoice: Schema.Attribute.Relation<'oneToOne', 'api::invoice.invoice'>;
     invoiceNumber: Schema.Attribute.String & Schema.Attribute.Unique;
+    isManual: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     items: Schema.Attribute.JSON & Schema.Attribute.Required;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<'oneToMany', 'api::order.order'> &
@@ -1130,9 +1139,7 @@ export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
       Schema.Attribute.Required &
       Schema.Attribute.DefaultTo<'draft'>;
     stripeCheckoutSessionId: Schema.Attribute.String;
-    stripePaymentIntentId: Schema.Attribute.String &
-      Schema.Attribute.Required &
-      Schema.Attribute.Unique;
+    stripePaymentIntentId: Schema.Attribute.String & Schema.Attribute.Unique;
     subtotal: Schema.Attribute.Integer & Schema.Attribute.Required;
     supabaseUserId: Schema.Attribute.String;
     total: Schema.Attribute.Integer & Schema.Attribute.Required;
