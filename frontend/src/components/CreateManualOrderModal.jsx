@@ -18,7 +18,10 @@ function CreateManualOrderModal({ onClose, onCreated }) {
   const [customerName, setCustomerName] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
-  const [items, setItems] = useState([{ description: '', quantity: 1, unitPrice: '' }]);
+  // Note: le champ "lineTotal" est le prix TOTAL de la ligne (pas un prix unitaire).
+  // Le calcul ne multiplie plus par quantity - la quantity sert uniquement de
+  // descriptif ("100x Stickers") sur la facture et le paiement Stripe.
+  const [items, setItems] = useState([{ description: '', quantity: 1, lineTotal: '' }]);
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -41,7 +44,7 @@ function CreateManualOrderModal({ onClose, onCreated }) {
   };
 
   const addItem = () => {
-    setItems(prev => [...prev, { description: '', quantity: 1, unitPrice: '' }]);
+    setItems(prev => [...prev, { description: '', quantity: 1, lineTotal: '' }]);
   };
 
   const removeItem = (idx) => {
@@ -51,10 +54,12 @@ function CreateManualOrderModal({ onClose, onCreated }) {
   const parsedItems = items.map(it => ({
     description: String(it.description || '').trim(),
     quantity: parseInt(it.quantity, 10) || 0,
-    unitPrice: parseFloat(String(it.unitPrice).replace(',', '.')) || 0,
+    lineTotal: parseFloat(String(it.lineTotal).replace(',', '.')) || 0,
   }));
 
-  const subtotal = parsedItems.reduce((s, it) => s + (it.quantity * it.unitPrice), 0);
+  // IMPORTANT: on NE multiplie PAS par quantity. La somme des "Prix total" saisis
+  // par l'admin EST le subtotal. La quantity est purement descriptive.
+  const subtotal = parsedItems.reduce((s, it) => s + it.lineTotal, 0);
 
   const submit = async (e) => {
     e?.preventDefault?.();
@@ -64,7 +69,7 @@ function CreateManualOrderModal({ onClose, onCreated }) {
       setError(tx({ fr: 'Nom du client requis', en: 'Customer name required', es: 'Nombre del cliente requerido' }));
       return;
     }
-    const validItems = parsedItems.filter(it => it.description && it.quantity > 0 && it.unitPrice > 0);
+    const validItems = parsedItems.filter(it => it.description && it.quantity > 0 && it.lineTotal > 0);
     if (validItems.length === 0) {
       setError(tx({
         fr: 'Au moins une ligne avec description, quantite et prix requise',
@@ -74,13 +79,23 @@ function CreateManualOrderModal({ onClose, onCreated }) {
       return;
     }
 
+    // Payload vers le backend: on envoie `lineTotal` (nouveau champ clair) ET
+    // `unitPrice` calcule = lineTotal / quantity pour compat avec le rendu existant
+    // des factures ("100 x 0.85$ = 85$") sans casser les templates PDF.
+    const payloadItems = validItems.map(it => ({
+      description: it.description,
+      quantity: it.quantity,
+      unitPrice: it.quantity > 0 ? Math.round((it.lineTotal / it.quantity) * 100) / 100 : it.lineTotal,
+      lineTotal: it.lineTotal,
+    }));
+
     setLoading(true);
     try {
       const { data } = await api.post('/orders/manual', {
         customerName: customerName.trim(),
         customerEmail: customerEmail.trim() || undefined,
         customerPhone: customerPhone.trim() || undefined,
-        items: validItems,
+        items: payloadItems,
         subtotal,
         total: subtotal,
         notes: notes.trim() || undefined,
@@ -269,6 +284,19 @@ function CreateManualOrderModal({ onClose, onCreated }) {
                     {tx({ fr: 'Ajouter', en: 'Add', es: 'Anadir' })}
                   </button>
                 </div>
+                {/* Colonnes headers pour clarifier Quantite vs Prix total */}
+                <div className="grid grid-cols-[1fr_70px_90px_32px] gap-2 mb-1 px-0.5">
+                  <span className="text-[10px] text-grey-muted uppercase tracking-wider">
+                    {tx({ fr: 'Description', en: 'Description', es: 'Descripcion' })}
+                  </span>
+                  <span className="text-[10px] text-grey-muted uppercase tracking-wider text-center">
+                    {tx({ fr: 'Quantite', en: 'Quantity', es: 'Cantidad' })}
+                  </span>
+                  <span className="text-[10px] text-grey-muted uppercase tracking-wider text-right">
+                    {tx({ fr: 'Prix total ($)', en: 'Line total ($)', es: 'Precio total ($)' })}
+                  </span>
+                  <span></span>
+                </div>
                 <div className="space-y-2">
                   {items.map((it, idx) => (
                     <div key={idx} className="grid grid-cols-[1fr_70px_90px_32px] gap-2 items-start">
@@ -276,7 +304,7 @@ function CreateManualOrderModal({ onClose, onCreated }) {
                         type="text"
                         value={it.description}
                         onChange={(e) => updateItem(idx, 'description', e.target.value)}
-                        placeholder={tx({ fr: 'Design sur mesure', en: 'Custom design', es: 'Diseno a medida' })}
+                        placeholder={tx({ fr: '100x Stickers Standard', en: '100x Standard Stickers', es: '100x Stickers Standard' })}
                         className="rounded-lg bg-black/30 text-heading text-sm px-3 py-2 outline-none border border-white/10 focus:border-accent"
                       />
                       <input
@@ -284,16 +312,26 @@ function CreateManualOrderModal({ onClose, onCreated }) {
                         min="1"
                         value={it.quantity}
                         onChange={(e) => updateItem(idx, 'quantity', e.target.value)}
-                        placeholder="Qte"
+                        placeholder="100"
+                        title={tx({
+                          fr: 'Quantite (descriptive uniquement - ne multiplie PAS le prix)',
+                          en: 'Quantity (descriptive only - does NOT multiply the price)',
+                          es: 'Cantidad (solo descriptiva - NO multiplica el precio)',
+                        })}
                         className="rounded-lg bg-black/30 text-heading text-sm px-2 py-2 outline-none border border-white/10 focus:border-accent text-center"
                       />
                       <div className="relative">
                         <input
                           type="text"
                           inputMode="decimal"
-                          value={it.unitPrice}
-                          onChange={(e) => updateItem(idx, 'unitPrice', e.target.value)}
-                          placeholder="0.00"
+                          value={it.lineTotal}
+                          onChange={(e) => updateItem(idx, 'lineTotal', e.target.value)}
+                          placeholder="85.00"
+                          title={tx({
+                            fr: 'Prix TOTAL de la ligne (pas par unite)',
+                            en: 'TOTAL line price (not per unit)',
+                            es: 'Precio TOTAL de la linea (no por unidad)',
+                          })}
                           className="w-full rounded-lg bg-black/30 text-heading text-sm px-2 py-2 pr-6 outline-none border border-white/10 focus:border-accent text-right"
                         />
                         <span className="absolute right-2 top-1/2 -translate-y-1/2 text-grey-muted text-xs">$</span>
@@ -310,6 +348,13 @@ function CreateManualOrderModal({ onClose, onCreated }) {
                     </div>
                   ))}
                 </div>
+                <p className="text-[10px] text-grey-muted mt-2 leading-relaxed">
+                  {tx({
+                    fr: 'Saisis le prix TOTAL de la ligne (ex: 100 stickers = 85$, pas 0.85$). La quantite est purement descriptive.',
+                    en: 'Enter the TOTAL line price (ex: 100 stickers = $85, not $0.85). Quantity is purely descriptive.',
+                    es: 'Ingresa el precio TOTAL de la linea (ej: 100 stickers = 85$, no 0.85$). La cantidad es solo descriptiva.',
+                  })}
+                </p>
               </div>
 
               {/* Total preview */}
