@@ -104,21 +104,22 @@ api.interceptors.response.use(
     }
 
     // 401 = token expire OU race condition pendant l'init auth.
-    // Si AuthContext n'a PAS ENCORE fini getSession(), on swallow le 401 : c'est
-    // probablement le token localStorage stale qu'on est justement en train de
-    // revalider cote Supabase. Rediriger ici causait le bounce /admin -> /login
-    // -> / (index) observe au hard refresh.
+    // Strategie evenementielle (remplace l'ancien window.location.href qui
+    // causait une boucle infinie : reload brutal -> AuthContext reinit avec
+    // session Supabase en cache -> token re-synchronise dans localStorage ->
+    // nouveau 401 -> boucle).
+    //
+    // - Pendant init : swallow, laisse AuthContext finir
+    // - Apres init : dispatch 'auth:expired'. AuthContext ecoute, appelle
+    //   supabase.auth.signOut() (detruit la session Supabase, pas juste notre
+    //   token), met user a null. React Router redirige ensuite proprement
+    //   via les garde AdminRoute/ProtectedRoute, sans reload brutal.
     if (error.response?.status === 401 && error.config?.headers?.Authorization) {
       if (!isAuthInitialized()) {
         return Promise.reject(error);
       }
-      localStorage.removeItem('token');
-      const protectedPaths = ['/account', '/checkout', '/mm-admin', '/admin'];
-      if (protectedPaths.some(p => window.location.pathname.startsWith(p))) {
-        // Preserve le chemin courant pour que Login puisse y retourner apres re-auth.
-        const currentPath = window.location.pathname + window.location.search;
-        const redirectParam = encodeURIComponent(currentPath);
-        window.location.href = `/login?expired=1&redirect=${redirectParam}`;
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('auth:expired'));
       }
     }
     return Promise.reject(error);

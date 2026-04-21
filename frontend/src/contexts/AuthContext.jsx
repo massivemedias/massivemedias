@@ -61,6 +61,36 @@ export function AuthProvider({ children }) {
     return () => subscription.unsubscribe();
   }, []);
 
+  // Ecoute l'evenement 'auth:expired' emis par l'intercepteur axios quand le
+  // backend renvoie 401 sur un call authentifie. Plutot qu'un reload brutal
+  // (ancien window.location.href qui boucle parce que Supabase remet le token
+  // en cache a chaque reboot), on appelle supabase.auth.signOut() : detruit
+  // la session, fire SIGNED_OUT, user -> null. Les AdminRoute/ProtectedRoute
+  // redirigent alors vers /login via Navigate (React Router, pas reload).
+  const handlingExpiredRef = useRef(false);
+  useEffect(() => {
+    if (!supabase) return;
+    const onExpired = async () => {
+      if (handlingExpiredRef.current) return; // de-dup : plusieurs 401 en rafale
+      handlingExpiredRef.current = true;
+      try {
+        await supabase.auth.signOut();
+        setUser(null);
+        setSession(null);
+      } catch (e) {
+        // Meme si signOut fail (reseau), on force l'etat local a signed-out
+        setUser(null);
+        setSession(null);
+      } finally {
+        try { localStorage.removeItem('token'); } catch {}
+        // Reset la garde apres un court delai pour absorber la prochaine session
+        setTimeout(() => { handlingExpiredRef.current = false; }, 1500);
+      }
+    };
+    window.addEventListener('auth:expired', onExpired);
+    return () => window.removeEventListener('auth:expired', onExpired);
+  }, []);
+
   const signUp = useCallback(async (email, password, fullName, referredBy) => {
     if (!supabase) return { error: { message: 'Supabase not configured' } };
     const meta = { full_name: fullName };
