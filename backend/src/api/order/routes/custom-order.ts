@@ -137,6 +137,14 @@ export default {
       },
     },
     {
+      method: 'POST',
+      path: '/orders/:documentId/send-invoice',
+      handler: 'order.sendInvoice',
+      config: {
+        auth: false,
+      },
+    },
+    {
       method: 'GET',
       path: '/orders/by-payment-intent/:paymentIntentId',
       handler: 'order.getByPaymentIntent',

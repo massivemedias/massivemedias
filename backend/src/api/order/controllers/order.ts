@@ -1,7 +1,7 @@
 import { factories } from '@strapi/strapi';
 import Stripe from 'stripe';
 import { calculateShipping } from '../../../utils/shipping';
-import { sendOrderConfirmationEmail, sendTestimonialRequestEmail, sendArtistSaleNotificationEmail, sendNewOrderNotificationEmail, sendTrackingEmail } from '../../../utils/email';
+import { sendOrderConfirmationEmail, sendTestimonialRequestEmail, sendArtistSaleNotificationEmail, sendNewOrderNotificationEmail, sendTrackingEmail, sendInvoiceEmail } from '../../../utils/email';
 import crypto from 'crypto';
 import { PROMO_CODES } from '../../../utils/promo-codes';
 import {
@@ -1481,6 +1481,111 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
     } catch (err: any) {
       strapi.log.error('manualCreate error:', err);
       return ctx.badRequest(err.message || 'Erreur creation commande manuelle');
+    }
+  },
+
+  // POST /orders/:documentId/send-invoice - Envoyer la facture par courriel au client
+  // Body optionnel: { pdfBase64?: string, pdfFilename?: string, customerEmail?: string (override) }
+  // Validations strictes: retourne 400 si email/paymentUrl absent au lieu de 200 silencieux.
+  async sendInvoice(ctx) {
+    if (!(await requireAdminAuth(ctx))) return;
+    const { documentId } = ctx.params;
+    const body = (ctx.request.body as any) || {};
+    const pdfBase64: string | undefined = body.pdfBase64;
+    const pdfFilename: string | undefined = body.pdfFilename;
+    const overrideEmail: string | undefined = body.customerEmail;
+
+    if (!documentId) {
+      return ctx.badRequest('documentId requis');
+    }
+
+    try {
+      // 1. Recuperer la commande
+      const order = await strapi.documents('api::order.order').findOne({ documentId }) as any;
+      if (!order) {
+        return ctx.notFound(`Commande ${documentId} introuvable`);
+      }
+
+      // 2. Retrouver l'invoice liee pour obtenir invoiceNumber + stripePaymentLink
+      // Les invoices manuelles sont creees par manualCreate avec connect sur l'order.
+      const invoices = await strapi.documents('api::invoice.invoice').findMany({
+        filters: { order: { documentId: { $eq: documentId } } } as any,
+        limit: 1,
+      }) as any[];
+      const invoice = invoices && invoices.length > 0 ? invoices[0] : null;
+
+      // 3. Resoudre email client (body override > invoice > order)
+      const customerEmail = (overrideEmail || invoice?.customerEmail || order.customerEmail || '').trim();
+      if (!customerEmail) {
+        return ctx.badRequest('Email client manquant sur la commande et non fourni en body');
+      }
+
+      // 4. Resoudre paymentUrl (invoice.stripePaymentLink fourni par manualCreate)
+      const paymentUrl = invoice?.stripePaymentLink || '';
+      if (!paymentUrl) {
+        return ctx.badRequest('Lien de paiement Stripe manquant sur la facture. Utilisez une commande manuelle avec lien Stripe genere.');
+      }
+
+      // 5. Resoudre montants (stockes en cents dans order, en dollars dans invoice)
+      const subtotal = Number(invoice?.subtotal ?? (order.subtotal || 0) / 100) || 0;
+      const tps = Number(invoice?.tps ?? (order.tps || 0) / 100) || 0;
+      const tvq = Number(invoice?.tvq ?? (order.tvq || 0) / 100) || 0;
+      const shipping = Number(invoice?.shipping ?? (order.shipping || 0) / 100) || 0;
+      const total = Number(invoice?.total ?? (order.total || 0) / 100) || 0;
+
+      if (total <= 0) {
+        return ctx.badRequest('Total de la facture invalide (0 ou negatif)');
+      }
+
+      const invoiceNumber = invoice?.invoiceNumber || `CMD-${String(documentId).slice(0, 8)}`;
+
+      // 6. Envoyer le courriel (sendInvoiceEmail throw si erreur Resend)
+      await sendInvoiceEmail({
+        customerName: order.customerName || 'client',
+        customerEmail,
+        invoiceNumber,
+        orderId: documentId,
+        subtotal,
+        tps,
+        tvq,
+        shipping,
+        total,
+        currency: (order.currency || 'cad').toUpperCase(),
+        paymentUrl,
+        pdfBase64: pdfBase64 || undefined,
+        pdfFilename: pdfFilename || `facture-${invoiceNumber}.pdf`,
+      });
+
+      // 7. Marquer l'invoice comme envoyee (date + status)
+      if (invoice?.documentId) {
+        try {
+          await strapi.documents('api::invoice.invoice').update({
+            documentId: invoice.documentId,
+            data: {
+              status: 'sent',
+              sentAt: new Date().toISOString(),
+            } as any,
+          });
+        } catch (_) { /* champ sentAt peut ne pas exister dans le schema - non-bloquant */ }
+      }
+
+      strapi.log.info(`[sendInvoice] Facture ${invoiceNumber} envoyee a ${customerEmail} (order ${documentId})`);
+
+      ctx.body = {
+        success: true,
+        data: {
+          invoiceNumber,
+          customerEmail,
+          paymentUrl,
+          total,
+          sentAt: new Date().toISOString(),
+        },
+      };
+    } catch (err: any) {
+      strapi.log.error('sendInvoice error:', err?.message || err);
+      // Renvoyer un 500 avec le message d'erreur reel pour que le frontend puisse
+      // l'afficher en toast rouge. Pas de succes silencieux.
+      return ctx.throw(500, err?.message || 'Echec envoi facture');
     }
   },
 

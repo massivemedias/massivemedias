@@ -8,7 +8,7 @@ import {
   Download, Receipt, Trash2, Send, AlertTriangle, Pencil, Plus,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
-import { getOrders, getOrderStats, updateOrderStatus, updateOrderNotes, updateOrderTracking, deleteOrder, getPrivateSales, deletePrivateSale, resendPrivateSaleEmail } from '../services/adminService';
+import { getOrders, getOrderStats, updateOrderStatus, updateOrderNotes, updateOrderTracking, deleteOrder, getPrivateSales, deletePrivateSale, resendPrivateSaleEmail, sendOrderInvoice } from '../services/adminService';
 import { useNotifications } from '../contexts/NotificationContext';
 import { generateInvoicePDF } from '../utils/generateInvoice';
 import EditOrderTotalModal from '../components/EditOrderTotalModal';
@@ -73,6 +73,74 @@ function AdminOrders() {
 
   // Modal creation commande manuelle + facture + lien Stripe
   const [showManualModal, setShowManualModal] = useState(false);
+
+  // Envoi facture par courriel - etat par commande + toast global
+  const [sendingInvoiceId, setSendingInvoiceId] = useState(null);
+  const [invoiceToast, setInvoiceToast] = useState(null); // { type: 'success'|'error', message: '...' }
+  useEffect(() => {
+    if (!invoiceToast) return;
+    const t = setTimeout(() => setInvoiceToast(null), invoiceToast.type === 'error' ? 7000 : 4500);
+    return () => clearTimeout(t);
+  }, [invoiceToast]);
+
+  const handleSendInvoice = async (order) => {
+    if (!order?.documentId) return;
+
+    // Validation pre-envoi cote UI pour UX claire (en plus du blindage backend)
+    if (!order.customerEmail) {
+      setInvoiceToast({ type: 'error', message: tx({
+        fr: 'Impossible d\'envoyer: aucun email client sur cette commande.',
+        en: 'Cannot send: no customer email on this order.',
+        es: 'No se puede enviar: sin email del cliente.',
+      }) });
+      return;
+    }
+
+    setSendingInvoiceId(order.documentId);
+    setInvoiceToast(null);
+    try {
+      // Generer le PDF cote client et l'envoyer en base64 au backend.
+      // Le backend fallback sur pas-de-PDF si base64 absent, mais on le fournit toujours.
+      let pdfBase64;
+      let pdfFilename;
+      try {
+        const result = generateInvoicePDF(order, 'invoice', { returnBase64: true });
+        if (result && typeof result === 'object' && result.base64) {
+          pdfBase64 = result.base64;
+          pdfFilename = result.fileName;
+        }
+      } catch (pdfErr) {
+        console.warn('PDF generation failed, sending email without attachment:', pdfErr);
+      }
+
+      const res = await sendOrderInvoice(order.documentId, { pdfBase64, pdfFilename });
+      const sentTo = res?.data?.data?.customerEmail || order.customerEmail;
+      setInvoiceToast({
+        type: 'success',
+        message: tx({
+          fr: `Courriel envoye avec succes a ${sentTo}`,
+          en: `Email sent successfully to ${sentTo}`,
+          es: `Correo enviado con exito a ${sentTo}`,
+        }),
+      });
+    } catch (err) {
+      console.error('sendInvoice failed:', err);
+      const backendMsg = err?.response?.data?.error?.message
+        || err?.response?.data?.message
+        || err?.message
+        || 'Erreur inconnue';
+      setInvoiceToast({
+        type: 'error',
+        message: tx({
+          fr: `Echec envoi : ${backendMsg}`,
+          en: `Send failed: ${backendMsg}`,
+          es: `Error de envio: ${backendMsg}`,
+        }),
+      });
+    } finally {
+      setSendingInvoiceId(null);
+    }
+  };
 
   // Modal d'edition du total d'une commande (ajustement rabais/balance)
   const [editTotalOrder, setEditTotalOrder] = useState(null);
@@ -254,6 +322,37 @@ function AdminOrders() {
           {opError}
         </div>
       )}
+
+      {/* Toast global envoi facture (bas droite, auto-dismiss) */}
+      <AnimatePresence>
+        {invoiceToast && (
+          <motion.div
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            className={`fixed bottom-6 right-6 z-[9999] max-w-sm rounded-xl shadow-2xl px-4 py-3 flex items-start gap-3 border ${
+              invoiceToast.type === 'success'
+                ? 'bg-green-600/95 border-green-400/60'
+                : 'bg-red-600/95 border-red-400/60'
+            }`}
+          >
+            {invoiceToast.type === 'success'
+              ? <CheckCircle size={20} className="text-white flex-shrink-0 mt-0.5" />
+              : <AlertTriangle size={20} className="text-white flex-shrink-0 mt-0.5" />}
+            <div className="flex-1">
+              <p className="text-white font-semibold text-sm">
+                {invoiceToast.type === 'success'
+                  ? tx({ fr: 'Courriel envoye', en: 'Email sent', es: 'Correo enviado' })
+                  : tx({ fr: 'Erreur', en: 'Error', es: 'Error' })}
+              </p>
+              <p className="text-white/90 text-xs mt-0.5 whitespace-pre-wrap">{invoiceToast.message}</p>
+            </div>
+            <button onClick={() => setInvoiceToast(null)} className="text-white/70 hover:text-white transition-colors">
+              <XCircle size={16} />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* CTA: creer une commande manuelle + facture + lien Stripe */}
       <div className="flex items-center justify-end">
@@ -676,7 +775,7 @@ function AdminOrders() {
                             {/* Boutons facture / recu */}
                             <div className="space-y-1">
                               <h4 className="text-xs font-semibold text-grey-muted uppercase tracking-wider">Documents</h4>
-                              <div className="flex gap-2">
+                              <div className="flex gap-2 flex-wrap">
                                 <button
                                   onClick={(e) => { e.stopPropagation(); generateInvoicePDF(order, 'invoice'); }}
                                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-accent/20 text-accent hover:bg-accent/30 transition-colors"
@@ -690,6 +789,20 @@ function AdminOrders() {
                                 >
                                   <Receipt size={12} />
                                   {tx({ fr: 'Reçu', en: 'Receipt', es: 'Recibo' })}
+                                </button>
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); handleSendInvoice(order); }}
+                                  disabled={sendingInvoiceId === order.documentId || !order.customerEmail}
+                                  title={!order.customerEmail
+                                    ? tx({ fr: 'Aucun email client', en: 'No customer email', es: 'Sin email del cliente' })
+                                    : tx({ fr: 'Envoyer la facture par courriel (PDF + lien Stripe)', en: 'Email invoice (PDF + Stripe link)', es: 'Enviar factura por correo (PDF + enlace Stripe)' })}
+                                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                                >
+                                  {sendingInvoiceId === order.documentId ? (
+                                    <><Loader2 size={12} className="animate-spin" /> {tx({ fr: 'Envoi...', en: 'Sending...', es: 'Enviando...' })}</>
+                                  ) : (
+                                    <><Mail size={12} /> {tx({ fr: 'Envoyer la facture', en: 'Email invoice', es: 'Enviar factura' })}</>
+                                  )}
                                 </button>
                               </div>
                             </div>

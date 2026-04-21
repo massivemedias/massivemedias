@@ -1422,6 +1422,102 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
             return ctx.badRequest(err.message || 'Erreur creation commande manuelle');
         }
     },
+    // POST /orders/:documentId/send-invoice - Envoyer la facture par courriel au client
+    // Body optionnel: { pdfBase64?: string, pdfFilename?: string, customerEmail?: string (override) }
+    // Validations strictes: retourne 400 si email/paymentUrl absent au lieu de 200 silencieux.
+    async sendInvoice(ctx) {
+        var _a, _b, _c, _d, _e;
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
+            return;
+        const { documentId } = ctx.params;
+        const body = ctx.request.body || {};
+        const pdfBase64 = body.pdfBase64;
+        const pdfFilename = body.pdfFilename;
+        const overrideEmail = body.customerEmail;
+        if (!documentId) {
+            return ctx.badRequest('documentId requis');
+        }
+        try {
+            // 1. Recuperer la commande
+            const order = await strapi.documents('api::order.order').findOne({ documentId });
+            if (!order) {
+                return ctx.notFound(`Commande ${documentId} introuvable`);
+            }
+            // 2. Retrouver l'invoice liee pour obtenir invoiceNumber + stripePaymentLink
+            // Les invoices manuelles sont creees par manualCreate avec connect sur l'order.
+            const invoices = await strapi.documents('api::invoice.invoice').findMany({
+                filters: { order: { documentId: { $eq: documentId } } },
+                limit: 1,
+            });
+            const invoice = invoices && invoices.length > 0 ? invoices[0] : null;
+            // 3. Resoudre email client (body override > invoice > order)
+            const customerEmail = (overrideEmail || (invoice === null || invoice === void 0 ? void 0 : invoice.customerEmail) || order.customerEmail || '').trim();
+            if (!customerEmail) {
+                return ctx.badRequest('Email client manquant sur la commande et non fourni en body');
+            }
+            // 4. Resoudre paymentUrl (invoice.stripePaymentLink fourni par manualCreate)
+            const paymentUrl = (invoice === null || invoice === void 0 ? void 0 : invoice.stripePaymentLink) || '';
+            if (!paymentUrl) {
+                return ctx.badRequest('Lien de paiement Stripe manquant sur la facture. Utilisez une commande manuelle avec lien Stripe genere.');
+            }
+            // 5. Resoudre montants (stockes en cents dans order, en dollars dans invoice)
+            const subtotal = Number((_a = invoice === null || invoice === void 0 ? void 0 : invoice.subtotal) !== null && _a !== void 0 ? _a : (order.subtotal || 0) / 100) || 0;
+            const tps = Number((_b = invoice === null || invoice === void 0 ? void 0 : invoice.tps) !== null && _b !== void 0 ? _b : (order.tps || 0) / 100) || 0;
+            const tvq = Number((_c = invoice === null || invoice === void 0 ? void 0 : invoice.tvq) !== null && _c !== void 0 ? _c : (order.tvq || 0) / 100) || 0;
+            const shipping = Number((_d = invoice === null || invoice === void 0 ? void 0 : invoice.shipping) !== null && _d !== void 0 ? _d : (order.shipping || 0) / 100) || 0;
+            const total = Number((_e = invoice === null || invoice === void 0 ? void 0 : invoice.total) !== null && _e !== void 0 ? _e : (order.total || 0) / 100) || 0;
+            if (total <= 0) {
+                return ctx.badRequest('Total de la facture invalide (0 ou negatif)');
+            }
+            const invoiceNumber = (invoice === null || invoice === void 0 ? void 0 : invoice.invoiceNumber) || `CMD-${String(documentId).slice(0, 8)}`;
+            // 6. Envoyer le courriel (sendInvoiceEmail throw si erreur Resend)
+            await (0, email_1.sendInvoiceEmail)({
+                customerName: order.customerName || 'client',
+                customerEmail,
+                invoiceNumber,
+                orderId: documentId,
+                subtotal,
+                tps,
+                tvq,
+                shipping,
+                total,
+                currency: (order.currency || 'cad').toUpperCase(),
+                paymentUrl,
+                pdfBase64: pdfBase64 || undefined,
+                pdfFilename: pdfFilename || `facture-${invoiceNumber}.pdf`,
+            });
+            // 7. Marquer l'invoice comme envoyee (date + status)
+            if (invoice === null || invoice === void 0 ? void 0 : invoice.documentId) {
+                try {
+                    await strapi.documents('api::invoice.invoice').update({
+                        documentId: invoice.documentId,
+                        data: {
+                            status: 'sent',
+                            sentAt: new Date().toISOString(),
+                        },
+                    });
+                }
+                catch (_) { /* champ sentAt peut ne pas exister dans le schema - non-bloquant */ }
+            }
+            strapi.log.info(`[sendInvoice] Facture ${invoiceNumber} envoyee a ${customerEmail} (order ${documentId})`);
+            ctx.body = {
+                success: true,
+                data: {
+                    invoiceNumber,
+                    customerEmail,
+                    paymentUrl,
+                    total,
+                    sentAt: new Date().toISOString(),
+                },
+            };
+        }
+        catch (err) {
+            strapi.log.error('sendInvoice error:', (err === null || err === void 0 ? void 0 : err.message) || err);
+            // Renvoyer un 500 avec le message d'erreur reel pour que le frontend puisse
+            // l'afficher en toast rouge. Pas de succes silencieux.
+            return ctx.throw(500, (err === null || err === void 0 ? void 0 : err.message) || 'Echec envoi facture');
+        }
+    },
     // GET /orders/by-payment-intent/:paymentIntentId - Recupere infos minimales d'une commande pour CheckoutSuccess
     async getByPaymentIntent(ctx) {
         const { paymentIntentId } = ctx.params;

@@ -8,6 +8,24 @@ export const updateOrderNotes = (documentId, notes) => api.put(`/orders/${docume
 export const updateOrderTracking = (documentId, trackingNumber, carrier) => api.put(`/orders/${documentId}/tracking`, { trackingNumber, carrier });
 export const deleteOrder = (documentId) => api.delete(`/orders/${documentId}`);
 
+/**
+ * Envoyer la facture par courriel au client avec lien Stripe + PDF.
+ * Validation pre-envoi stricte : throw AVANT l'appel reseau si donnees critiques absentes.
+ * @param {string} documentId - ID Strapi de la commande
+ * @param {object} options
+ * @param {string} [options.pdfBase64] - PDF genere cote client (sans prefix data:...)
+ * @param {string} [options.pdfFilename]
+ * @param {string} [options.customerEmail] - Override email (defaut = email de l'order)
+ */
+export const sendOrderInvoice = (documentId, { pdfBase64, pdfFilename, customerEmail } = {}) => {
+  if (!documentId) throw new Error('sendOrderInvoice: documentId requis');
+  return api.post(`/orders/${documentId}/send-invoice`, {
+    pdfBase64: pdfBase64 || undefined,
+    pdfFilename: pdfFilename || undefined,
+    customerEmail: customerEmail || undefined,
+  });
+};
+
 // --- Ventes privees (prints artistes) ---
 export const getPrivateSales = () => api.get('/artists-private-sales');
 export const deletePrivateSale = (artistSlug, printId) =>

@@ -51,7 +51,7 @@ const generateInvoiceNumber = (order) => {
  * @param {Object} order - L'objet commande complet depuis l'API
  * @param {'invoice'|'receipt'} type - Type de document
  */
-export function generateInvoicePDF(order, type = 'invoice') {
+export function generateInvoicePDF(order, type = 'invoice', options = {}) {
   const doc = new jsPDF({ unit: 'mm', format: 'a4' });
   const pageWidth = doc.internal.pageSize.getWidth();
   const margin = 15;
@@ -311,10 +311,18 @@ export function generateInvoicePDF(order, type = 'invoice') {
     { align: 'center' }
   );
 
-  // ==================== TELECHARGER ====================
+  // ==================== TELECHARGER OU RETOURNER ====================
   const fileName = `${title.toLowerCase()}-${invoiceNum}.pdf`;
-  doc.save(fileName);
 
+  // Si appele avec { returnBase64: true } on retourne la donnee pour envoi courriel
+  // au lieu de declencher le download navigateur. Signature retrocompatible : les
+  // callers existants (bouton Download) continuent de recevoir juste le fileName.
+  if (options?.returnBase64) {
+    const base64 = doc.output('datauristring').split(',')[1];
+    return { fileName, base64 };
+  }
+
+  doc.save(fileName);
   return fileName;
 }
 

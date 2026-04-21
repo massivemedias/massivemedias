@@ -1252,3 +1252,128 @@ export async function sendPrivatePrintEmail(data: PrivatePrintData): Promise<boo
 
   return clientOk || adminOk;
 }
+
+// -----------------------------------------------------------
+// Facture manuelle avec lien Stripe + PDF attache
+// -----------------------------------------------------------
+interface ManualInvoiceEmailData {
+  customerName: string;
+  customerEmail: string;
+  invoiceNumber: string;
+  orderId: string;
+  subtotal: number;       // en dollars
+  tps: number;            // en dollars
+  tvq: number;            // en dollars
+  shipping?: number;      // en dollars
+  total: number;          // en dollars
+  currency?: string;
+  paymentUrl: string;     // lien Stripe payment link
+  pdfBase64?: string;     // PDF en base64 (sans le prefix data:application/pdf;base64,)
+  pdfFilename?: string;
+}
+
+function fmt(n: number | undefined | null): string {
+  const v = typeof n === 'number' && !isNaN(n) ? n : 0;
+  return v.toFixed(2);
+}
+
+function buildManualInvoiceHtml(data: ManualInvoiceEmailData): string {
+  const cur = (data.currency || 'CAD').toUpperCase();
+  const shippingRow = data.shipping && data.shipping > 0
+    ? `<tr><td style="padding:8px 12px;color:#666;font-size:13px;">Livraison</td><td style="padding:8px 12px;text-align:right;color:#222;font-size:13px;">${fmt(data.shipping)} ${cur}</td></tr>`
+    : '';
+
+  const content = `
+    <h1 style="color:#222;font-size:22px;font-weight:700;margin:0 0 8px;">Facture ${data.invoiceNumber}</h1>
+    <p style="color:#666;font-size:14px;margin:0 0 20px;">Bonjour ${data.customerName || 'client'},</p>
+    <p style="color:#444;font-size:14px;line-height:1.6;margin:0 0 24px;">
+      Merci pour votre commande. Vous trouverez ci-dessous le detail de votre facture Massive Medias.
+      Pour regler en ligne de maniere securisee (carte de credit, Apple Pay, Google Pay), cliquez sur le bouton ci-dessous.
+    </p>
+
+    <!-- Tableau recap -->
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:#fafafa;border-radius:6px;border:1px solid #eee;margin:0 0 24px;">
+      <tr><td style="padding:8px 12px;color:#666;font-size:13px;">Sous-total</td><td style="padding:8px 12px;text-align:right;color:#222;font-size:13px;">${fmt(data.subtotal)} ${cur}</td></tr>
+      ${shippingRow}
+      <tr><td style="padding:8px 12px;color:#666;font-size:13px;">TPS (5%)</td><td style="padding:8px 12px;text-align:right;color:#222;font-size:13px;">${fmt(data.tps)} ${cur}</td></tr>
+      <tr><td style="padding:8px 12px;color:#666;font-size:13px;border-bottom:1px solid #eee;">TVQ (9.975%)</td><td style="padding:8px 12px;text-align:right;color:#222;font-size:13px;border-bottom:1px solid #eee;">${fmt(data.tvq)} ${cur}</td></tr>
+      <tr><td style="padding:14px 12px;color:#222;font-size:15px;font-weight:700;">Total</td><td style="padding:14px 12px;text-align:right;color:#FF0098;font-size:18px;font-weight:700;">${fmt(data.total)} ${cur}</td></tr>
+    </table>
+
+    <!-- CTA Stripe -->
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 24px;">
+      <tr><td align="center">
+        <a href="${data.paymentUrl}" style="display:inline-block;background:#FF0098;color:#ffffff;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:700;font-size:15px;">
+          Payer ma facture en ligne
+        </a>
+      </td></tr>
+    </table>
+
+    <p style="color:#888;font-size:12px;line-height:1.6;margin:0 0 8px;text-align:center;">
+      Paiement securise via Stripe. Vous recevrez un recu automatique par courriel apres le paiement.
+    </p>
+    <p style="color:#888;font-size:12px;line-height:1.6;margin:0;text-align:center;">
+      Le PDF de votre facture est attache a ce courriel pour vos archives.
+    </p>
+
+    <hr style="border:none;border-top:1px solid #eee;margin:24px 0;" />
+    <p style="color:#666;font-size:13px;line-height:1.6;margin:0;">
+      Pour toute question, repondez simplement a ce courriel ou ecrivez-nous a
+      <a href="mailto:massivemedias@gmail.com" style="color:#FF0098;">massivemedias@gmail.com</a>.
+    </p>
+  `;
+  return massiveEmailWrapper(content);
+}
+
+/**
+ * Envoie une facture manuelle par courriel au client avec :
+ * - Tableau recapitulatif (sous-total, TPS, TVQ, total)
+ * - Bouton lien de paiement Stripe
+ * - PDF attache (si pdfBase64 fourni)
+ *
+ * Retourne true en cas de succes, throw Error explicite en cas d'echec.
+ * Ne mange AUCUNE erreur silencieusement (le caller doit savoir si ca a marche).
+ */
+export async function sendInvoiceEmail(data: ManualInvoiceEmailData): Promise<boolean> {
+  const resend = getResend();
+  if (!resend) {
+    throw new Error('RESEND_API_KEY non configure sur le serveur');
+  }
+  if (!data.customerEmail) {
+    throw new Error('customerEmail requis');
+  }
+  if (!data.paymentUrl) {
+    throw new Error('paymentUrl Stripe requis');
+  }
+  if (!data.invoiceNumber) {
+    throw new Error('invoiceNumber requis');
+  }
+
+  const { from, replyTo } = getSender();
+  const subject = `Facture Massive Medias - Commande #${data.invoiceNumber}`;
+
+  const attachments: any[] = [];
+  if (data.pdfBase64) {
+    attachments.push({
+      filename: data.pdfFilename || `facture-${data.invoiceNumber}.pdf`,
+      content: data.pdfBase64, // Resend accepte base64 string
+    });
+  }
+
+  try {
+    const res = await resend.emails.send({
+      from,
+      to: data.customerEmail,
+      reply_to: replyTo,
+      subject,
+      html: buildManualInvoiceHtml(data),
+      attachments: attachments.length > 0 ? attachments : undefined,
+    } as any);
+    console.log(`[email] Facture ${data.invoiceNumber} envoyee a ${data.customerEmail}`, res?.data?.id || '');
+    return true;
+  } catch (err: any) {
+    console.error('[email] Erreur envoi facture:', err?.message || err);
+    // Relancer avec un message clair plutot qu'un boolean false silencieux.
+    throw new Error(err?.message || 'Echec envoi courriel (Resend)');
+  }
+}
