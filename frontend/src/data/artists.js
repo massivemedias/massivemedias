@@ -299,6 +299,7 @@ const artistsData = {
       { id: 'psyqu33n-stk-009', titleFr: 'Psyqu33n', titleEn: 'Psyqu33n', titleEs: 'Psyqu33n', image: img('/images/stickers/Stickers-Psyqu33n9.webp'), fullImage: img('/images/stickers/Stickers-Psyqu33n9.webp') },
       { id: 'psyqu33n-stk-010', titleFr: 'New Sticker', titleEn: 'New Sticker', titleEs: 'New Sticker', image: img('/images/stickers/Stickers-Psyqu33n10.webp'), fullImage: img('/images/stickers/Stickers-Psyqu33n10.webp') },
       { id: 'psyqu33n-stk-011', titleFr: 'Psyqu33n Sticker', titleEn: 'Psyqu33n Sticker', titleEs: 'Psyqu33n Sticker', image: img('/images/stickers/Stickers-Psyqu33n11.webp'), fullImage: img('/images/stickers/Stickers-Psyqu33n11.webp') },
+      { id: 'psyqu33n-stk-012', titleFr: 'Bob', titleEn: 'Bob', titleEs: 'Bob', image: img('/images/stickers/Stickers-Psyqu33n15.webp'), fullImage: img('/images/stickers/Stickers-Psyqu33n15.webp') },
     ],
     prints: [
       { id: 'psyqu33n-001', titleFr: "Accepter ses parts d'ombres et de lumiere", titleEn: 'Embracing Shadow and Light', titleEs: 'Aceptar sus partes de sombra y luz', image: thumb('/images/prints/Psyqu33n1.webp'), fullImage: img('/images/prints/Psyqu33n1.webp'), limited: false },
