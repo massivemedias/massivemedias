@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { isAuthInitialized } from './authState';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:1337/api';
 
@@ -102,12 +103,22 @@ api.interceptors.response.use(
       markServerDown();
     }
 
-    // 401 = token expire
+    // 401 = token expire OU race condition pendant l'init auth.
+    // Si AuthContext n'a PAS ENCORE fini getSession(), on swallow le 401 : c'est
+    // probablement le token localStorage stale qu'on est justement en train de
+    // revalider cote Supabase. Rediriger ici causait le bounce /admin -> /login
+    // -> / (index) observe au hard refresh.
     if (error.response?.status === 401 && error.config?.headers?.Authorization) {
+      if (!isAuthInitialized()) {
+        return Promise.reject(error);
+      }
       localStorage.removeItem('token');
       const protectedPaths = ['/account', '/checkout', '/mm-admin', '/admin'];
       if (protectedPaths.some(p => window.location.pathname.startsWith(p))) {
-        window.location.href = '/login?expired=1';
+        // Preserve le chemin courant pour que Login puisse y retourner apres re-auth.
+        const currentPath = window.location.pathname + window.location.search;
+        const redirectParam = encodeURIComponent(currentPath);
+        window.location.href = `/login?expired=1&redirect=${redirectParam}`;
       }
     }
     return Promise.reject(error);

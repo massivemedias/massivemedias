@@ -1,18 +1,24 @@
 import { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import api from '../services/api';
+import { markAuthInitialized } from '../services/authState';
 
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [session, setSession] = useState(null);
-  const [loading, setLoading] = useState(true);
+  // isInitializing = on attend la reponse initiale de supabase.auth.getSession().
+  // Pendant cette fenetre, les routes protegees affichent un spinner et NE redirigent
+  // JAMAIS (c'est la source principale du bug race-condition admin->index).
+  // Expose aussi `loading` comme alias backward-compat pour le code existant.
+  const [isInitializing, setIsInitializing] = useState(true);
   const [passwordRecovery, setPasswordRecovery] = useState(false);
 
   useEffect(() => {
     if (!supabase) {
-      setLoading(false);
+      setIsInitializing(false);
+      markAuthInitialized();
       return;
     }
 
@@ -32,7 +38,13 @@ export function AuthProvider({ children }) {
       setSession(s);
       setUser(s?.user ?? null);
       syncToken(s);
-      setLoading(false);
+      setIsInitializing(false);
+      markAuthInitialized();
+    }).catch(() => {
+      // Session fetch failed (reseau, supabase down) : on debloquer quand meme l'UI
+      // sinon le spinner reste coince a vie. Les routes protegees redirigeront vers /login.
+      setIsInitializing(false);
+      markAuthInitialized();
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, s) => {
@@ -132,9 +144,13 @@ export function AuthProvider({ children }) {
   }, []);
 
   const value = useMemo(() => ({
-    user, session, loading, passwordRecovery,
+    user, session,
+    // Alias pour retrocompat (plein de code lit `loading`). Nouveau nom explicite : isInitializing.
+    loading: isInitializing,
+    isInitializing,
+    passwordRecovery,
     signUp, signIn, signInWithOAuth, signOut, resetPassword, updatePassword, updateProfile, verifyOtp,
-  }), [user, session, loading, passwordRecovery, signUp, signIn, signInWithOAuth, signOut, resetPassword, updatePassword, updateProfile, verifyOtp]);
+  }), [user, session, isInitializing, passwordRecovery, signUp, signIn, signInWithOAuth, signOut, resetPassword, updatePassword, updateProfile, verifyOtp]);
 
   return (
     <AuthContext.Provider value={value}>

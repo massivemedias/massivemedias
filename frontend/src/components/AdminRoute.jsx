@@ -1,4 +1,5 @@
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
+import { Loader2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useLang } from '../i18n/LanguageContext';
 
@@ -7,24 +8,39 @@ const ADMIN_EMAILS = (import.meta.env.VITE_ADMIN_EMAILS || 'massivemedias@gmail.
   .split(',')
   .map((e) => e.trim().toLowerCase());
 
+/**
+ * Route protegee admin. Contrat d'ordre strict pour empecher le bug race
+ * condition observe au hard refresh (/admin/* -> / index) :
+ *
+ *   1. Si isInitializing : render spinner, JAMAIS de redirect
+ *   2. Si !user : redirect vers /login avec ?redirect=<chemin courant>
+ *   3. Si email pas admin : ecran "access denied" (pas de redirect automatique)
+ *   4. Sinon : render children
+ *
+ * Le step 1 est critique : tant que AuthContext n'a pas resolu getSession(),
+ * on ne peut pas savoir si le user est connecte ou non, donc on attend.
+ */
 function AdminRoute({ children }) {
-  const { user, loading } = useAuth();
+  const { user, isInitializing } = useAuth();
   const { tx } = useLang();
+  const location = useLocation();
 
-  if (loading) {
+  // STEP 1 : auth encore en cours d'initialisation. On attend, on ne redirige pas.
+  if (isInitializing) {
     return (
-      <div className="section-container pt-32 text-center">
-        <div className="animate-pulse text-grey-muted text-lg">...</div>
+      <div className="section-container pt-32 pb-20 flex items-center justify-center min-h-[60vh]">
+        <Loader2 size={24} className="animate-spin text-accent" />
       </div>
     );
   }
 
-  // Pas connecte -> page login
+  // STEP 2 : auth resolue, user null -> login (en preservant le chemin cible)
   if (!user) {
-    return <Navigate to="/login" replace />;
+    const redirectParam = encodeURIComponent(location.pathname + location.search);
+    return <Navigate to={`/login?redirect=${redirectParam}`} replace />;
   }
 
-  // Connecte mais pas admin -> acces refuse
+  // STEP 3 : user connecte mais pas dans la whitelist admin
   const email = (user.email || '').toLowerCase();
   if (!ADMIN_EMAILS.includes(email)) {
     return (
@@ -49,6 +65,7 @@ function AdminRoute({ children }) {
     );
   }
 
+  // STEP 4 : admin authentifie -> render
   return children;
 }
 
