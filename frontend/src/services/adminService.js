@@ -1,5 +1,41 @@
 import api from './api';
 
+// --- GOD MODE artistes (mutations directes, bypass edit-requests) ---
+// Toutes ces fonctions validen les params AVANT appel reseau.
+
+export const getAdminArtistsList = () => api.get('/admin/artists-list');
+
+export const getAdminArtistDetail = (slug) => {
+  if (!slug) throw new Error('getAdminArtistDetail: slug requis');
+  return api.get(`/admin/artists-detail/${encodeURIComponent(slug)}`);
+};
+
+export const updateAdminArtistProfile = (slug, fields) => {
+  if (!slug) throw new Error('updateAdminArtistProfile: slug requis');
+  if (!fields || typeof fields !== 'object' || Object.keys(fields).length === 0) {
+    throw new Error('updateAdminArtistProfile: fields[] vide');
+  }
+  return api.put(`/admin/artists-profile/${encodeURIComponent(slug)}`, fields);
+};
+
+export const updateAdminArtistItem = (slug, itemId, { category = 'prints', ...patch }) => {
+  if (!slug || !itemId) throw new Error('updateAdminArtistItem: slug et itemId requis');
+  if (Object.keys(patch).length === 0) {
+    throw new Error('updateAdminArtistItem: aucun champ a modifier');
+  }
+  return api.put(`/admin/artists-item/${encodeURIComponent(slug)}/${encodeURIComponent(itemId)}`, {
+    category,
+    ...patch,
+  });
+};
+
+export const deleteAdminArtistItem = (slug, itemId, category = 'prints') => {
+  if (!slug || !itemId) throw new Error('deleteAdminArtistItem: slug et itemId requis');
+  return api.delete(`/admin/artists-item/${encodeURIComponent(slug)}/${encodeURIComponent(itemId)}`, {
+    params: { category },
+  });
+};
+
 // --- Commandes ---
 export const getOrders = (params) => api.get('/orders/admin', { params });
 export const getOrderStats = () => api.get('/orders/stats');

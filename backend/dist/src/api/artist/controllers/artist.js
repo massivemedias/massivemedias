@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const strapi_1 = require("@strapi/strapi");
 const email_1 = require("../../../utils/email");
 const auth_1 = require("../../../utils/auth");
+const image_processor_1 = require("../../../utils/image-processor");
 exports.default = strapi_1.factories.createCoreController('api::artist.artist', ({ strapi }) => ({
     /**
      * Nettoyer les pieces uniques vendues depuis plus de 7 jours
@@ -248,5 +249,238 @@ exports.default = strapi_1.factories.createCoreController('api::artist.artist', 
                 refetchedName: refetched === null || refetched === void 0 ? void 0 : refetched.name,
             },
         };
+    },
+    // ============================================================
+    // GOD MODE ADMIN (avril 2026) - Mutations directes sans passer
+    // par le systeme de edit-requests. Reserve a l'admin strict.
+    // ============================================================
+    // GET /admin/artists-list - Liste compacte de tous les artistes avec counts
+    async adminListAll(ctx) {
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
+            return;
+        try {
+            const artists = await strapi.documents('api::artist.artist').findMany({
+                sort: { name: 'asc' },
+                limit: 200,
+            });
+            const list = (artists || []).map((a) => {
+                var _a, _b;
+                return ({
+                    documentId: a.documentId,
+                    slug: a.slug,
+                    name: a.name,
+                    email: a.email || '',
+                    active: a.active,
+                    commissionRate: (_a = a.commissionRate) !== null && _a !== void 0 ? _a : 0.5,
+                    printsCount: Array.isArray(a.prints) ? a.prints.length : 0,
+                    stickersCount: Array.isArray(a.stickers) ? a.stickers.length : 0,
+                    taglineFr: a.taglineFr || '',
+                    sortOrder: (_b = a.sortOrder) !== null && _b !== void 0 ? _b : 0,
+                });
+            });
+            ctx.body = { data: list };
+        }
+        catch (err) {
+            ctx.throw(500, err.message);
+        }
+    },
+    // GET /admin/artists-detail/:slug - Profil complet + toutes les oeuvres (admin)
+    async adminGetDetail(ctx) {
+        var _a, _b;
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
+            return;
+        const { slug } = ctx.params;
+        if (!slug)
+            return ctx.badRequest('slug requis');
+        try {
+            const artists = await strapi.documents('api::artist.artist').findMany({
+                filters: { slug: { $eq: slug } },
+                limit: 1,
+            });
+            if (!artists || artists.length === 0)
+                return ctx.notFound(`Artiste ${slug} introuvable`);
+            const a = artists[0];
+            ctx.body = {
+                data: {
+                    documentId: a.documentId,
+                    slug: a.slug,
+                    name: a.name,
+                    email: a.email || '',
+                    taglineFr: a.taglineFr || '',
+                    taglineEn: a.taglineEn || '',
+                    taglineEs: a.taglineEs || '',
+                    bioFr: a.bioFr || '',
+                    bioEn: a.bioEn || '',
+                    bioEs: a.bioEs || '',
+                    socials: a.socials || {},
+                    pricing: a.pricing || null,
+                    commissionRate: (_a = a.commissionRate) !== null && _a !== void 0 ? _a : 0.5,
+                    active: a.active,
+                    sortOrder: (_b = a.sortOrder) !== null && _b !== void 0 ? _b : 0,
+                    prints: Array.isArray(a.prints) ? a.prints : [],
+                    stickers: Array.isArray(a.stickers) ? a.stickers : [],
+                },
+            };
+        }
+        catch (err) {
+            ctx.throw(500, err.message);
+        }
+    },
+    // PUT /admin/artists-profile/:slug - Update profil (bio/tagline/socials/commission/active)
+    async adminUpdateProfile(ctx) {
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
+            return;
+        const { slug } = ctx.params;
+        if (!slug)
+            return ctx.badRequest('slug requis');
+        const body = ctx.request.body || {};
+        // Whitelist stricte : seuls ces champs peuvent etre modifies ici.
+        // Les items (prints/stickers) passent par les routes dediees ci-dessous.
+        const ALLOWED = ['name', 'email', 'taglineFr', 'taglineEn', 'taglineEs',
+            'bioFr', 'bioEn', 'bioEs', 'socials', 'commissionRate', 'active', 'sortOrder'];
+        const data = {};
+        for (const key of ALLOWED) {
+            if (body[key] !== undefined)
+                data[key] = body[key];
+        }
+        if (Object.keys(data).length === 0) {
+            return ctx.badRequest('Aucun champ valide a mettre a jour. Champs autorises: ' + ALLOWED.join(', '));
+        }
+        if (data.commissionRate !== undefined) {
+            const cr = Number(data.commissionRate);
+            if (!Number.isFinite(cr) || cr < 0 || cr > 1) {
+                return ctx.badRequest('commissionRate doit etre un decimal entre 0 et 1 (ex: 0.5 = 50%)');
+            }
+            data.commissionRate = cr;
+        }
+        try {
+            const artists = await strapi.documents('api::artist.artist').findMany({
+                filters: { slug: { $eq: slug } },
+                limit: 1,
+            });
+            if (!artists || artists.length === 0)
+                return ctx.notFound(`Artiste ${slug} introuvable`);
+            const existing = artists[0];
+            // Merger socials au lieu d'ecraser (preserve avatarUrl)
+            if (data.socials && typeof data.socials === 'object') {
+                data.socials = { ...(existing.socials || {}), ...data.socials };
+            }
+            const updated = await strapi.documents('api::artist.artist').update({
+                documentId: existing.documentId,
+                data,
+                status: 'published',
+            });
+            try {
+                await strapi.documents('api::artist.artist').publish({ documentId: existing.documentId });
+            }
+            catch (_) { /* non-bloquant */ }
+            strapi.log.info(`[god-mode] Artiste ${slug} profil mis a jour: ${Object.keys(data).join(', ')}`);
+            ctx.body = { success: true, data: updated };
+        }
+        catch (err) {
+            strapi.log.error('adminUpdateProfile error:', err);
+            ctx.throw(500, err.message);
+        }
+    },
+    // PUT /admin/artists-item/:slug/:itemId - Update une oeuvre (titre/prix) dans prints ou stickers
+    // Body: { category: 'prints'|'stickers', titleFr?, titleEn?, titleEs?, customPrice? }
+    async adminUpdateItem(ctx) {
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
+            return;
+        const { slug, itemId } = ctx.params;
+        if (!slug || !itemId)
+            return ctx.badRequest('slug et itemId requis');
+        const body = ctx.request.body || {};
+        const category = body.category === 'stickers' ? 'stickers' : 'prints';
+        const ITEM_FIELDS = ['titleFr', 'titleEn', 'titleEs', 'customPrice', 'limited', 'limitedQty', 'onSale', 'salePercent', 'unique', 'noFrame'];
+        const patch = {};
+        for (const k of ITEM_FIELDS) {
+            if (body[k] !== undefined)
+                patch[k] = body[k];
+        }
+        if (Object.keys(patch).length === 0) {
+            return ctx.badRequest('Aucun champ valide a mettre a jour sur l\'item. Champs: ' + ITEM_FIELDS.join(', '));
+        }
+        if (patch.customPrice !== undefined) {
+            const p = parseFloat(String(patch.customPrice));
+            if (!Number.isFinite(p) || p < 0) {
+                return ctx.badRequest('customPrice doit etre un nombre positif');
+            }
+            patch.customPrice = p;
+        }
+        try {
+            const artists = await strapi.documents('api::artist.artist').findMany({
+                filters: { slug: { $eq: slug } },
+                limit: 1,
+            });
+            if (!artists || artists.length === 0)
+                return ctx.notFound(`Artiste ${slug} introuvable`);
+            const existing = artists[0];
+            const items = Array.isArray(existing[category]) ? [...existing[category]] : [];
+            const idx = items.findIndex((it) => (it === null || it === void 0 ? void 0 : it.id) === itemId);
+            if (idx < 0)
+                return ctx.notFound(`Item ${itemId} introuvable dans ${category} de ${slug}`);
+            items[idx] = { ...items[idx], ...patch };
+            await strapi.documents('api::artist.artist').update({
+                documentId: existing.documentId,
+                data: { [category]: items },
+                status: 'published',
+            });
+            strapi.log.info(`[god-mode] ${slug}.${category}[${itemId}] patch: ${Object.keys(patch).join(', ')}`);
+            ctx.body = { success: true, data: items[idx] };
+        }
+        catch (err) {
+            strapi.log.error('adminUpdateItem error:', err);
+            ctx.throw(500, err.message);
+        }
+    },
+    // DELETE /admin/artists-item/:slug/:itemId?category=prints|stickers
+    // Hard delete d'une oeuvre + nettoyage des images Supabase associees.
+    async adminDeleteItem(ctx) {
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
+            return;
+        const { slug, itemId } = ctx.params;
+        if (!slug || !itemId)
+            return ctx.badRequest('slug et itemId requis');
+        const category = ctx.query.category === 'stickers' ? 'stickers' : 'prints';
+        try {
+            const artists = await strapi.documents('api::artist.artist').findMany({
+                filters: { slug: { $eq: slug } },
+                limit: 1,
+            });
+            if (!artists || artists.length === 0)
+                return ctx.notFound(`Artiste ${slug} introuvable`);
+            const existing = artists[0];
+            const items = Array.isArray(existing[category]) ? [...existing[category]] : [];
+            const target = items.find((it) => (it === null || it === void 0 ? void 0 : it.id) === itemId);
+            if (!target)
+                return ctx.notFound(`Item ${itemId} introuvable dans ${category} de ${slug}`);
+            // Nettoyage images Supabase (les images locales /images/... sont preservees).
+            // On tente best-effort - les erreurs ne bloquent pas la suppression DB.
+            const urlsToClean = [target.image, target.fullImage, target.thumbImage].filter(Boolean);
+            for (const url of urlsToClean) {
+                if (typeof url === 'string' && url.includes('supabase')) {
+                    try {
+                        await (0, image_processor_1.deleteFromSupabase)(url);
+                        strapi.log.info(`[god-mode] Image supprimee de Supabase: ${url}`);
+                    }
+                    catch (cleanupErr) {
+                        strapi.log.warn(`[god-mode] Echec nettoyage ${url}: ${cleanupErr === null || cleanupErr === void 0 ? void 0 : cleanupErr.message}`);
+                    }
+                }
+            }
+            const filtered = items.filter((it) => (it === null || it === void 0 ? void 0 : it.id) !== itemId);
+            await strapi.documents('api::artist.artist').update({
+                documentId: existing.documentId,
+                data: { [category]: filtered },
+                status: 'published',
+            });
+            strapi.log.info(`[god-mode] ${slug}.${category}: item ${itemId} supprime definitivement`);
+            ctx.body = { success: true, data: { deletedId: itemId, remainingCount: filtered.length } };
+        }
+        catch (err) {
+            strapi.log.error('adminDeleteItem error:', err);
+            ctx.throw(500, err.message);
+        }
     },
 }));

@@ -32,5 +32,37 @@ export default {
       handler: 'artist.resendPrivateSaleEmail',
       config: { auth: false },
     },
+    // ---- GOD MODE admin (bypass edit-request) - avril 2026 ----
+    // Toutes ces routes verifient requireAdminAuth en interne avant toute mutation.
+    {
+      method: 'GET',
+      path: '/admin/artists-list',
+      handler: 'artist.adminListAll',
+      config: { auth: false },
+    },
+    {
+      method: 'GET',
+      path: '/admin/artists-detail/:slug',
+      handler: 'artist.adminGetDetail',
+      config: { auth: false },
+    },
+    {
+      method: 'PUT',
+      path: '/admin/artists-profile/:slug',
+      handler: 'artist.adminUpdateProfile',
+      config: { auth: false },
+    },
+    {
+      method: 'PUT',
+      path: '/admin/artists-item/:slug/:itemId',
+      handler: 'artist.adminUpdateItem',
+      config: { auth: false },
+    },
+    {
+      method: 'DELETE',
+      path: '/admin/artists-item/:slug/:itemId',
+      handler: 'artist.adminDeleteItem',
+      config: { auth: false },
+    },
   ],
 };

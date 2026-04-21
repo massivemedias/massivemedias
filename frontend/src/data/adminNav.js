@@ -5,7 +5,7 @@
  */
 import {
   LayoutDashboard, Bot, StickyNote, ShoppingBag, Banknote, Package,
-  MessageSquare, Users, FileText, Star, BarChart3, DollarSign, Tag,
+  MessageSquare, Users, FileText, Star, BarChart3, DollarSign, Tag, Palette,
 } from 'lucide-react';
 
 const ADMIN_NAV_ITEMS = [
@@ -17,6 +17,7 @@ const ADMIN_NAV_ITEMS = [
   { to: '/admin/inventaire', icon: Package, fr: 'Inventaire', en: 'Inventory', es: 'Inventario', tooltip: { fr: 'Gestion du stock (textiles, cadres, materiel)', en: 'Stock management (textiles, frames, equipment)', es: 'Gestion de stock' } },
   { to: '/admin/messages', icon: MessageSquare, fr: 'Messages', en: 'Messages', es: 'Mensajes', tooltip: { fr: 'Messages des artistes et clients', en: 'Artist and client messages', es: 'Mensajes de artistas y clientes' } },
   { to: '/admin/utilisateurs', icon: Users, fr: 'Utilisateurs', en: 'Users', es: 'Usuarios', tooltip: { fr: 'Gestion des comptes (admin, artistes, clients)', en: 'Account management (admin, artists, clients)', es: 'Gestion de cuentas' } },
+  { to: '/admin/artists', icon: Palette, fr: 'Artistes (God)', en: 'Artists (God)', es: 'Artistas (God)', tooltip: { fr: 'God Mode: mutations directes sur les profils et oeuvres artistes', en: 'God Mode: direct mutations on artist profiles and artworks', es: 'God Mode: mutaciones directas en perfiles y obras' } },
   // Factures supprime (avril 2026) : workflow unifie dans /admin/commandes.
   // Les depenses (achats) ont leur propre onglet dedie ci-dessous.
   { to: '/admin/depenses', icon: FileText, fr: 'Depenses', en: 'Expenses', es: 'Gastos', tooltip: { fr: 'Factures d\'achat et depenses operationnelles', en: 'Purchase invoices and operating expenses', es: 'Facturas de compra y gastos' } },

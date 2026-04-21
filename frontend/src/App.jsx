@@ -68,6 +68,7 @@ const AdminNotes = lazyWithRetry(() => import('./pages/AdminNotes'));
 const AdminSystemStatus = lazyWithRetry(() => import('./pages/AdminSystemStatus'));
 const AdminMassiveIA = lazyWithRetry(() => import('./pages/AdminMassiveIA'));
 const AdminPromos = lazyWithRetry(() => import('./pages/AdminPromos'));
+const AdminArtistManager = lazyWithRetry(() => import('./pages/AdminArtistManager'));
 
 // These are small wrappers - load eagerly to avoid lazy-loading auth guards
 import ProtectedRoute from './components/ProtectedRoute';
@@ -189,13 +190,16 @@ function App() {
               <Route path="dashboard" element={<AdminDashboard />} />
               <Route path="notes" element={<AdminNotes />} />
               <Route path="commandes" element={<AdminOrders />} />
+              <Route path="artists" element={<AdminArtistManager />} />
+              {/* Alias FR pour rester coherent avec le reste du menu */}
+              <Route path="artistes" element={<Navigate to="/admin/artists" replace />} />
               {/* /admin/factures -> commandes (ancien doublon supprime avril 2026) */}
               <Route path="factures" element={<Navigate to="/admin/commandes" replace />} />
               <Route path="commissions" element={<AdminCommissions />} />
               <Route path="inventaire" element={<AdminInventaire />} />
               <Route path="messages" element={<AdminMessages />} />
               <Route path="candidatures" element={<Navigate to="/admin/messages" replace />} />
-              <Route path="artistes" element={<Navigate to="/admin/messages" replace />} />
+              {/* /admin/artistes historique : redirige vers le nouveau hub artist-manager */}
               <Route path="clients" element={<Navigate to="/admin/utilisateurs" replace />} />
               <Route path="utilisateurs" element={<AdminUtilisateurs />} />
               {/* Depenses redirige vers sa propre page dediee (ancien flow passait par Factures) */}
