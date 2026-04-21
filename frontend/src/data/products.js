@@ -24,9 +24,9 @@ export const stickerSizes = [
   { id: '5in', label: '5"' },
 ];
 
-// Prix Standard (Clear / Lustre) - alignes sur le tableau services.js
-// RAPPEL: ces tarifs sont pour le format DE REFERENCE 3" (multiplier 1.0).
-// Pour toute autre taille, appliquer getSizeMultiplier(size) sur le prix.
+// DO NOT MODIFY THESE PRICES. OFFICIAL GRID. NO DYNAMIC MATH FORMULAS ALLOWED HERE WITHOUT EXPLICIT BOSS APPROVAL.
+// Grille tarifaire officielle Standard (Matte / Lustre / Die-Cut).
+// Prix fixe par palier de quantite, quelle que soit la taille du sticker.
 export const stickerPriceTiers = [
   { qty: 25, price: 30, unitPrice: 1.20 },
   { qty: 50, price: 47.50, unitPrice: 0.95 },
@@ -35,7 +35,9 @@ export const stickerPriceTiers = [
   { qty: 500, price: 375, unitPrice: 0.75 },
 ];
 
-// Fx (Holo, Verre Brisé, Étoiles) - alignes sur le tableau services.js
+// DO NOT MODIFY THESE PRICES. OFFICIAL GRID. NO DYNAMIC MATH FORMULAS ALLOWED HERE WITHOUT EXPLICIT BOSS APPROVAL.
+// Grille tarifaire officielle FX (Holographique / Broken Glass / Stars).
+// Prix fixe par palier de quantite, quelle que soit la taille du sticker.
 export const holographicPriceTiers = [
   { qty: 25, price: 35, unitPrice: 1.40 },
   { qty: 50, price: 57.50, unitPrice: 1.15 },
@@ -48,48 +50,34 @@ export const holographicPriceTiers = [
 export const diecutPriceTiers = stickerPriceTiers;
 
 // -------------------------------------------------------------
-// SIZE MULTIPLIER (regle metier MassiveMedias)
-// Le prix de base des tiers est defini pour le format 3" (reference 1.0x).
-// Les autres tailles appliquent un facteur sur le prix unitaire et le prix total.
-// Regle imposee par le lead tech - ne pas modifier sans accord business.
+// SIZE MULTIPLIERS - DEPRECATED (avril 2026)
+// La grille officielle impose un prix fixe par palier, peu importe la taille.
+// Gardes a 1.0 pour ne rien casser chez les eventuels consommateurs (exports
+// API pricing-config, admin UI). NE PAS reintroduire de multiplier != 1.0.
 // -------------------------------------------------------------
 export const SIZE_MULTIPLIERS = {
-  '2': 0.8,
-  '2.5': 0.9,
-  '3': 1.0, // reference
-  '4': 1.5,
-  '5': 2.0,
+  '2': 1.0,
+  '2.5': 1.0,
+  '3': 1.0,
+  '4': 1.0,
+  '5': 1.0,
 };
 
-/**
- * Retourne le multiplier de taille pour un sticker.
- * Accepte plusieurs formats en entree:
- *   - id normalise:  '2in', '2.5in', '3in', '4in', '5in'
- *   - label affichage: '2"', '2.5"', '3"', '4"', '5"'
- *   - nombre brut: '2', '3', '4', '5'
- *   - entier/float: 2, 3, 4.5
- * Fallback: 1.0 si non reconnu (= prix de reference 3").
- */
+// DEPRECATED (avril 2026): la grille officielle est fixe, la taille n'impacte plus le prix.
+// Conserve pour ne pas casser les imports existants. Retourne toujours 1.0.
 export function getSizeMultiplier(size) {
-  if (size === null || size === undefined) return 1.0;
-  const match = String(size).match(/^\s*([\d.]+)/);
-  if (!match) return 1.0;
-  const key = match[1];
-  return Object.prototype.hasOwnProperty.call(SIZE_MULTIPLIERS, key)
-    ? SIZE_MULTIPLIERS[key]
-    : 1.0;
+  return 1.0;
 }
 
 /**
- * Calcule le prix pour une quantite EXACTE (palier defini) ET une taille donnee.
- * Regle: les tailles differentes ne sont PAS cumulees entre elles pour debloquer
- * un meilleur palier. Chaque item dans le panier est un SKU independant.
+ * Calcule le prix pour une quantite EXACTE (palier defini).
+ * Strict lookup dans la grille officielle. La taille n'est PAS utilisee.
  *
  * @param finish   matte | glossy | holographic | broken-glass | stars | dots
- * @param shape    round | square | rectangle | diecut
+ * @param shape    round | square | rectangle | diecut (non utilise)
  * @param qty      quantite EXACTEMENT dans un palier (25, 50, 100, 250, 500)
- * @param size     '2in' | '2.5in' | '3in' | '4in' | '5in' | '2"' ... (opt, default 3")
- * @returns {qty, price, unitPrice, sizeMultiplier} ou null si qty invalide
+ * @param size     ignore (conserve pour compat signature)
+ * @returns {qty, price, unitPrice, sizeMultiplier, baseUnitPrice} ou null si qty invalide
  */
 export function getStickerPrice(finish, shape, qty, size) {
   let tiers;
@@ -100,23 +88,19 @@ export function getStickerPrice(finish, shape, qty, size) {
   }
   const tier = tiers.find(t => t.qty === qty);
   if (!tier) return null;
-  const mult = getSizeMultiplier(size);
-  const unitPrice = Math.round(tier.unitPrice * mult * 100) / 100;
-  const price = Math.round(tier.qty * unitPrice * 100) / 100;
   return {
     qty: tier.qty,
-    price,
-    unitPrice,
-    sizeMultiplier: mult,
-    baseUnitPrice: tier.unitPrice, // info: prix unitaire 3" reference
+    price: tier.price,
+    unitPrice: tier.unitPrice,
+    sizeMultiplier: 1.0,
+    baseUnitPrice: tier.unitPrice,
   };
 }
 
 /**
  * Calcule le prix proportionnel pour une quantite quelconque (pack builder).
- * Utilise le palier le plus eleve que la quantite atteint, puis applique le
- * multiplier de taille. Ne cumule PAS avec d'autres tailles - on traite cet
- * item seul.
+ * Utilise le unitPrice du palier le plus eleve que la quantite atteint.
+ * La taille n'est PAS utilisee.
  *
  * Retourne null si total < 25 (minimum d'impression).
  */
@@ -128,14 +112,12 @@ export function getStickerPriceForTotal(finish, shape, total, size) {
   for (const t of tiers) {
     if (total >= t.qty) tier = t;
   }
-  const mult = getSizeMultiplier(size);
-  const unitPrice = Math.round(tier.unitPrice * mult * 100) / 100;
   return {
     qty: total,
-    unitPrice,
-    price: Math.round(total * unitPrice * 100) / 100,
+    unitPrice: tier.unitPrice,
+    price: Math.round(total * tier.unitPrice * 100) / 100,
     tierQty: tier.qty,
-    sizeMultiplier: mult,
+    sizeMultiplier: 1.0,
     baseUnitPrice: tier.unitPrice,
   };
 }

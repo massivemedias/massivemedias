@@ -31,8 +31,8 @@ exports.FRAME_PRICES_FALLBACK = {
     a3plus: 35,
     a2: 45,
 };
-// --- Sticker pricing tiers (reference 3") ---
-// Multiplier via SIZE_MULTIPLIERS pour 2", 4", 5" etc.
+// DO NOT MODIFY THESE PRICES. OFFICIAL GRID. NO DYNAMIC MATH FORMULAS ALLOWED HERE WITHOUT EXPLICIT BOSS APPROVAL.
+// Grille officielle Standard (Matte / Lustre / Die-Cut) - prix fixe par palier.
 exports.STICKER_STANDARD_TIERS = {
     25: 30,
     50: 47.50,
@@ -40,6 +40,8 @@ exports.STICKER_STANDARD_TIERS = {
     250: 200,
     500: 375,
 };
+// DO NOT MODIFY THESE PRICES. OFFICIAL GRID. NO DYNAMIC MATH FORMULAS ALLOWED HERE WITHOUT EXPLICIT BOSS APPROVAL.
+// Grille officielle FX (Holographique / Broken Glass / Stars) - prix fixe par palier.
 exports.STICKER_FX_TIERS = {
     25: 35,
     50: 57.50,
@@ -48,13 +50,15 @@ exports.STICKER_FX_TIERS = {
     500: 425,
 };
 exports.FX_FINISHES = ['holographic', 'broken-glass', 'stars'];
-// --- Size multipliers stickers (DOIT matcher products.js) ---
+// DEPRECATED (avril 2026): la grille officielle impose un prix fixe par palier.
+// La taille n'impacte plus le prix. Valeurs forcees a 1.0 pour ne rien casser
+// chez les consommateurs existants (GET /api/pricing-config, admin UI).
 exports.SIZE_MULTIPLIERS = {
-    '2': 0.8,
-    '2.5': 0.9,
+    '2': 1.0,
+    '2.5': 1.0,
     '3': 1.0,
-    '4': 1.5,
-    '5': 2.0,
+    '4': 1.0,
+    '5': 1.0,
 };
 // --- Business cards ---
 exports.BUSINESS_CARD_TIERS = {

@@ -9,7 +9,6 @@ import StickerPreviewCanvas from '../StickerPreviewCanvas';
 import {
   stickerFinishes as defaultFinishes, stickerShapes as defaultShapes, stickerSizes as defaultSizes,
   stickerPriceTiers as defaultTiers, getStickerPrice as defaultGetPrice, stickerImages,
-  getSizeMultiplier,
 } from '../../data/products';
 
 // Image par defaut quand le client n'a rien upload (logo Massive Medias)
@@ -37,29 +36,24 @@ function ConfiguratorStickers({ onFinishChange }) {
   const [localPreviewUrl, setLocalPreviewUrl] = useState(null); // preview derive des fichiers upload
   const [thumbUrl, setThumbUrl] = useState(null); // thumb PNG genere par le canvas
 
-  // Wrapper qui applique AUSSI le size multiplier quand on utilise les tiers du CMS.
-  // Le defaultGetPrice de products.js gere deja ca nativement via son parametre size.
-  // Wrapper qui applique AUSSI le size multiplier quand on utilise les tiers du CMS.
-  // Le defaultGetPrice de products.js gere deja ca nativement via son parametre size.
+  // Wrapper qui lit les tiers du CMS si fournis, sinon fallback sur products.js.
+  // La grille officielle est fixe par palier, la taille n'impacte PAS le prix.
   const getStickerPrice = pd?.tiers
-    ? (f, s, qty, sizeArg) => {
+    ? (f, s, qty) => {
         const isSpecial = f === 'holographic' || f === 'broken-glass' || f === 'stars' || f === 'dots';
         const tiers = isSpecial ? (pd.tiers.holographic || pd.tiers.standard) : pd.tiers.standard;
         const tier = tiers?.find(t => t.qty === qty);
         if (!tier) return null;
-        const mult = getSizeMultiplier(sizeArg);
-        const unitPrice = Math.round(tier.unitPrice * mult * 100) / 100;
-        const price = Math.round(tier.qty * unitPrice * 100) / 100;
-        return { qty: tier.qty, price, unitPrice, sizeMultiplier: mult, baseUnitPrice: tier.unitPrice };
+        const price = tier.price != null
+          ? tier.price
+          : Math.round(tier.qty * tier.unitPrice * 100) / 100;
+        return { qty: tier.qty, price, unitPrice: tier.unitPrice, sizeMultiplier: 1.0, baseUnitPrice: tier.unitPrice };
       }
     : defaultGetPrice;
 
   const tiers = pd?.tiers?.standard || defaultTiers;
   const currentTier = tiers[qtyIndex] || tiers[0];
-  // IMPORTANT: on passe `size` (l'id, ex: '3in') a getStickerPrice pour que le
-  // multiplier de taille soit applique. L'ancien appel sans size donnait toujours
-  // le prix de reference 3" meme pour un sticker 4" -> bug facturation.
-  const priceInfo = getStickerPrice(finish, shape, currentTier.qty, size);
+  const priceInfo = getStickerPrice(finish, shape, currentTier.qty);
 
   const finishLabel = stickerFinishes.find(f => f.id === finish);
   const shapeLabel = stickerShapes.find(s => s.id === shape);
@@ -232,7 +226,7 @@ function ConfiguratorStickers({ onFinishChange }) {
             </label>
             <div className="grid grid-cols-5 gap-2">
               {tiers.map((tier, i) => {
-                const p = getStickerPrice(finish, shape, tier.qty, size);
+                const p = getStickerPrice(finish, shape, tier.qty);
                 return (
                   <button
                     key={tier.qty}

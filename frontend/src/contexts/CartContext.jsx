@@ -159,11 +159,8 @@ export function CartProvider({ children }) {
         let finalUnitPrice = unitPrice;
         let finalTotal = quantity * unitPrice;
         if (item.productId === 'sticker-custom' || item.productId === 'sticker-artist') {
-          // IMPORTANT: on passe item.sizeId (ou item.size en fallback) pour que le
-          // size multiplier soit applique au recalcul. Sans ca, changer la quantite
-          // d'un sticker 4" dans le panier revenait au prix 3" et sous-facturait.
-          const sizeKey = item.sizeId || item.size;
-          const priceInfo = getStickerPrice(item.finish, item.shape, quantity, sizeKey);
+          // Grille officielle fixe par palier. La taille n'impacte plus le prix.
+          const priceInfo = getStickerPrice(item.finish, item.shape, quantity);
           if (priceInfo) {
             finalUnitPrice = priceInfo.unitPrice;
             finalTotal = priceInfo.price;
