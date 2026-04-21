@@ -2318,24 +2318,104 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
     ctx.body = { data: updated };
   },
 
+  // DELETE /orders/:documentId
+  // FIX-ERP (avril 2026) : hard delete VERIFIE avec :
+  //   1. Logs entree + resultat + verification re-query
+  //   2. Cascade : supprime aussi l'Invoice liee (sinon orphan dans Strapi)
+  //   3. Fallback db.query si documents().delete() ne retourne rien (edge case Strapi v5
+  //      sur les content-types avec draftAndPublish=false)
+  //   4. Best-effort : archive le Stripe Product/PaymentLink (pas de vrai delete possible
+  //      cote Stripe sur les Payment Links, on log juste le lien orphelin)
+  //   5. Retourne 500 si la re-query confirme que la commande existe TOUJOURS apres delete
   async deleteOrder(ctx) {
     if (!(await requireAdminAuth(ctx))) return;
     const { documentId } = ctx.params;
 
+    strapi.log.info(`[DELETE ORDER] Request received for documentId=${documentId}`);
+
+    if (!documentId) {
+      return ctx.badRequest('documentId requis');
+    }
+
+    // 1. Fetch pour confirmer existence + recuperer l'ID numerique en fallback
     const order = await strapi.documents('api::order.order').findFirst({
       filters: { documentId },
-    });
+    }) as any;
 
     if (!order) {
+      strapi.log.warn(`[DELETE ORDER] ${documentId} introuvable`);
       return ctx.notFound('Commande introuvable');
     }
 
-    await strapi.documents('api::order.order').delete({
-      documentId: order.documentId,
+    const orderId = order.id;
+    const stripeLinkNote = order.stripePaymentIntentId || '(aucun)';
+
+    // 2. Cascade : supprimer l'Invoice liee si elle existe
+    try {
+      const invoices = await strapi.documents('api::invoice.invoice').findMany({
+        filters: { order: { documentId: { $eq: documentId } } } as any,
+        limit: 5,
+      }) as any[];
+      for (const inv of invoices) {
+        try {
+          await strapi.documents('api::invoice.invoice').delete({ documentId: inv.documentId });
+          strapi.log.info(`[DELETE ORDER] Invoice ${inv.invoiceNumber || inv.documentId} supprimee (cascade)`);
+        } catch (invErr: any) {
+          strapi.log.warn(`[DELETE ORDER] Echec suppression invoice ${inv.documentId}: ${invErr?.message}`);
+        }
+      }
+    } catch (cascadeErr: any) {
+      strapi.log.warn(`[DELETE ORDER] Cascade invoices failed (non-bloquant): ${cascadeErr?.message}`);
+    }
+
+    // 3. Suppression principale via Documents API
+    let deletePrimaryOk = false;
+    try {
+      await strapi.documents('api::order.order').delete({ documentId: order.documentId });
+      deletePrimaryOk = true;
+      strapi.log.info(`[DELETE ORDER] ID: ${documentId} (numeric: ${orderId}) - Documents.delete() OK`);
+    } catch (primaryErr: any) {
+      strapi.log.error(`[DELETE ORDER] Documents.delete() ECHEC: ${primaryErr?.message || primaryErr}`);
+    }
+
+    // 4. Verification re-query : est-ce que le document existe toujours en BDD ?
+    const stillThere = await strapi.documents('api::order.order').findFirst({
+      filters: { documentId },
     });
 
-    strapi.log.info(`Commande ${documentId} supprimee`);
-    ctx.body = { success: true };
+    if (stillThere) {
+      strapi.log.warn(`[DELETE ORDER] ${documentId} encore present apres Documents.delete(), fallback db.query`);
+      // 4.bis Fallback : suppression directe via query engine (bypass Documents API)
+      try {
+        const deleted = await strapi.db.query('api::order.order').delete({
+          where: { id: orderId },
+        });
+        strapi.log.info(`[DELETE ORDER] Fallback db.query.delete() result: ${JSON.stringify(deleted)?.slice(0, 200)}`);
+      } catch (fallbackErr: any) {
+        strapi.log.error(`[DELETE ORDER] Fallback db.query ECHEC: ${fallbackErr?.message}`);
+        return ctx.throw(500, `Suppression impossible (Documents + db.query echoues): ${fallbackErr?.message}`);
+      }
+
+      // 4.ter Confirmation finale
+      const finalCheck = await strapi.documents('api::order.order').findFirst({
+        filters: { documentId },
+      });
+      if (finalCheck) {
+        strapi.log.error(`[DELETE ORDER] ${documentId} PERSISTE apres fallback - bug severe`);
+        return ctx.throw(500, 'La commande persiste en BDD apres tentative de suppression');
+      }
+    }
+
+    strapi.log.info(`[DELETE ORDER] ID: ${documentId} Result: SUCCESS (stripe: ${stripeLinkNote})`);
+    ctx.body = {
+      success: true,
+      data: {
+        deletedDocumentId: documentId,
+        deletedNumericId: orderId,
+        primaryDeleteOk: deletePrimaryOk,
+        verifiedAbsent: true,
+      },
+    };
   },
 
   async commissions(ctx) {
