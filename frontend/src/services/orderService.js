@@ -26,10 +26,13 @@ export async function validatePromoCode(code) {
   return data;
 }
 
-export async function getMyOrders(supabaseUserId) {
-  const { data } = await api.get('/orders/my-orders', {
-    params: { supabaseUserId },
-  });
+export async function getMyOrders(supabaseUserId, email) {
+  // Envoie aussi l'email pour rattraper les commandes invitees / manuelles
+  // creees avant que le client s'inscrive au portail.
+  const params = {};
+  if (supabaseUserId) params.supabaseUserId = supabaseUserId;
+  if (email) params.email = email;
+  const { data } = await api.get('/orders/my-orders', { params });
   return data;
 }
 

@@ -731,15 +731,52 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
 
   async myOrders(ctx) {
     const supabaseUserId = ctx.query.supabaseUserId as string;
+    const email = (ctx.query.email as string || '').trim().toLowerCase();
 
-    if (!supabaseUserId) {
-      return ctx.badRequest('Missing user ID');
+    if (!supabaseUserId && !email) {
+      return ctx.badRequest('Missing user ID or email');
     }
 
+    // FIX-ERP (avril 2026) : filtrer par supabaseUserId ET/OU email pour rattraper
+    // les commandes creees avant l'inscription du client au portail (commandes
+    // e-commerce invitee ou commandes manuelles avec email).
+    const orFilters: any[] = [];
+    if (supabaseUserId) orFilters.push({ supabaseUserId });
+    if (email) orFilters.push({ customerEmail: { $eqi: email } });
+
     const orders = await strapi.documents('api::order.order').findMany({
-      filters: { supabaseUserId, status: { $ne: 'draft' as any } },
+      filters: {
+        $or: orFilters,
+        status: { $ne: 'draft' as any },
+      } as any,
       sort: 'createdAt:desc',
-    });
+    }) as any[];
+
+    // Enrichir avec stripePaymentLink + invoiceNumber de l'invoice liee
+    // (comme adminList) pour que le PDF client puisse inclure le lien de paiement.
+    try {
+      const orderDocIds = orders.map(o => o.documentId).filter(Boolean);
+      if (orderDocIds.length > 0) {
+        const invoices = await strapi.documents('api::invoice.invoice').findMany({
+          filters: { order: { documentId: { $in: orderDocIds } } } as any,
+          limit: orderDocIds.length * 2,
+        }) as any[];
+        const invoiceByOrder: Record<string, any> = {};
+        for (const inv of invoices) {
+          const oid = (inv as any).order?.documentId || (inv as any).orderDocumentId;
+          if (oid) invoiceByOrder[oid] = inv;
+        }
+        for (const o of orders) {
+          const inv = invoiceByOrder[o.documentId];
+          if (inv) {
+            o.stripePaymentLink = inv.stripePaymentLink || '';
+            o.invoiceNumber = o.invoiceNumber || inv.invoiceNumber || '';
+          }
+        }
+      }
+    } catch (enrichErr: any) {
+      strapi.log.warn(`[myOrders] Enrichment invoices echoue (non-bloquant): ${enrichErr?.message || enrichErr}`);
+    }
 
     ctx.body = orders;
   },
@@ -1897,6 +1934,34 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
       }),
       strapi.db.query('api::order.order').count({ where: filters }),
     ]);
+
+    // FIX-PDF (avril 2026) : enrichir chaque order avec le stripePaymentLink et
+    // l'invoiceNumber de l'Invoice liee. Permet au frontend d'injecter le lien
+    // Stripe dans le PDF et l'email de facture pour les commandes non-payees.
+    try {
+      const orderDocIds = (orders || []).map((o: any) => o.documentId).filter(Boolean);
+      if (orderDocIds.length > 0) {
+        const invoices = await strapi.documents('api::invoice.invoice').findMany({
+          filters: { order: { documentId: { $in: orderDocIds } } } as any,
+          limit: orderDocIds.length * 2,
+        }) as any[];
+        const invoiceByOrder: Record<string, any> = {};
+        for (const inv of (invoices || [])) {
+          // Strapi populate can return either order.documentId or order.id - on best-effort
+          const oid = (inv as any).order?.documentId || (inv as any).orderDocumentId;
+          if (oid) invoiceByOrder[oid] = inv;
+        }
+        for (const o of (orders || []) as any[]) {
+          const inv = invoiceByOrder[o.documentId];
+          if (inv) {
+            o.stripePaymentLink = inv.stripePaymentLink || '';
+            o.invoiceNumber = o.invoiceNumber || inv.invoiceNumber || '';
+          }
+        }
+      }
+    } catch (enrichErr: any) {
+      strapi.log.warn(`[adminList] Enrichment invoices echoue (non-bloquant): ${enrichErr?.message || enrichErr}`);
+    }
 
     ctx.body = {
       data: orders,

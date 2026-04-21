@@ -54,12 +54,29 @@ function massiveEmailWrapper(content: string): string {
 </html>`;
 }
 
-// Expediteur et replyTo constants
+/**
+ * Adresse admin qui recoit une copie BCC de tous les emails client
+ * (confirmations de commande, tracking, factures, tracking, etc.).
+ * Surcharge possible via ADMIN_BCC_EMAIL pour dev/staging.
+ *
+ * Set a empty string pour desactiver globalement le BCC.
+ */
+function getAdminBcc(): string[] {
+  const bcc = process.env.ADMIN_BCC_EMAIL ?? 'massivemedias@gmail.com';
+  if (!bcc || !bcc.trim()) return [];
+  return [bcc.trim()];
+}
+
+// Expediteur + replyTo + bcc admin par defaut pour tous les emails client.
+// FIX-ERP (avril 2026) : l'admin est automatiquement en BCC sur chaque email
+// transactionnel client pour etre au courant de toutes les etapes du workflow
+// (creation commande, paiement, expedition, livraison, facture envoyee).
 function getSender() {
   const fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
   return {
     from: `Massive Medias <${fromEmail}>`,
     replyTo: 'massivemedias@gmail.com',
+    bcc: getAdminBcc(),
   };
 }
 
@@ -1220,6 +1237,7 @@ export async function sendPrivatePrintEmail(data: PrivatePrintData): Promise<boo
     await resend.emails.send({
       from: 'Massive Medias <noreply@massivemedias.com>',
       to: data.clientEmail,
+      bcc: getAdminBcc(),
       reply_to: adminEmail,
       subject: `${data.artistName} vous a envoye une oeuvre`,
       html: buildPrivatePrintHtml(data),

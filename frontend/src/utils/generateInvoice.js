@@ -182,14 +182,29 @@ export function generateInvoicePDF(order, type = 'invoice', options = {}) {
   const items = Array.isArray(order.items) ? order.items : [];
 
   const tableData = items.map((item) => {
-    const name = item.productName || 'Produit';
+    // FIX-PDF (avril 2026): lire le nom sur tous les champs possibles selon la source.
+    // Commandes e-commerce : productName
+    // Commandes manuelles : description (saisi par l'admin dans CreateManualOrderModal)
+    // Items CMS legacy : name / title
+    const name = item.productName || item.description || item.name || item.title || 'Produit';
     const details = [item.size, item.finish, item.shape].filter(Boolean).join(' / ');
     const fullName = details ? `${name}\n${details}` : name;
-    const qty = item.quantity || 1;
-    const unitPrice = item.unitPrice
-      ? `${Number(item.unitPrice).toFixed(2)} $`
-      : (item.totalPrice ? `${(Number(item.totalPrice) / qty).toFixed(2)} $` : '-');
-    const total = item.totalPrice ? `${Number(item.totalPrice).toFixed(2)} $` : '-';
+    const qty = Number(item.quantity) || 1;
+
+    // Resolution prix unitaire : unitPrice direct > lineTotal/qty > totalPrice/qty
+    let unit = Number(item.unitPrice);
+    if (!Number.isFinite(unit) || unit <= 0) {
+      const lineT = Number(item.lineTotal) || Number(item.totalPrice) || 0;
+      unit = qty > 0 ? lineT / qty : lineT;
+    }
+    const unitPrice = Number.isFinite(unit) && unit > 0 ? `${unit.toFixed(2)} $` : '-';
+
+    // Resolution total ligne : lineTotal > totalPrice > qty * unitPrice (calcul)
+    let lineTotal = Number(item.lineTotal);
+    if (!Number.isFinite(lineTotal) || lineTotal <= 0) lineTotal = Number(item.totalPrice);
+    if (!Number.isFinite(lineTotal) || lineTotal <= 0) lineTotal = qty * (Number(item.unitPrice) || 0);
+    const total = Number.isFinite(lineTotal) && lineTotal > 0 ? `${lineTotal.toFixed(2)} $` : '-';
+
     return [fullName, qty, unitPrice, total];
   });
 
@@ -274,6 +289,46 @@ export function generateInvoicePDF(order, type = 'invoice', options = {}) {
 
   // Total final
   drawTotalLine('TOTAL', dollars(order.total), true);
+
+  // ==================== LIEN DE PAIEMENT STRIPE (si facture non payee) ====================
+  // FIX-PDF : injection du lien de paiement Stripe directement dans le PDF pour que
+  // le client puisse cliquer et payer en ligne. Visible uniquement si :
+  //   - Ce n'est pas un recu (recu = deja paye)
+  //   - La commande a un stripePaymentLink ou paymentUrl
+  //   - Le statut n'est pas "paid" ou "delivered"
+  const paymentUrl = order.stripePaymentLink
+    || order.paymentUrl
+    || order.invoice?.stripePaymentLink
+    || options?.paymentUrl
+    || '';
+  const isPaid = ['paid', 'processing', 'ready', 'shipped', 'delivered'].includes(order.status);
+  if (!isReceipt && paymentUrl && !isPaid) {
+    y += 10;
+    // Encadre accent
+    const boxPadding = 5;
+    const boxH = 24;
+    doc.setFillColor(...accentColor);
+    doc.roundedRect(margin, y, pageWidth - 2 * margin, boxH, 3, 3, 'F');
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.setTextColor(255, 255, 255);
+    doc.text('Payer cette facture en ligne', margin + boxPadding, y + 9);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.text('Paiement securise via Stripe (carte de credit, Apple Pay, Google Pay).',
+      margin + boxPadding, y + 15);
+
+    // URL cliquable (jsPDF supporte doc.link pour rendre une zone cliquable)
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    const urlDisplay = paymentUrl.length > 90 ? paymentUrl.slice(0, 87) + '...' : paymentUrl;
+    doc.textWithLink(urlDisplay, margin + boxPadding, y + 21, { url: paymentUrl });
+
+    y += boxH + 4;
+  }
 
   // ==================== FOOTER ====================
   y += 10;

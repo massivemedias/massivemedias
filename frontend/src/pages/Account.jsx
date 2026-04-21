@@ -250,7 +250,9 @@ function Account() {
     let cancelled = false;
     async function fetchOrders() {
       try {
-        const data = await getMyOrders(user.id);
+        // Passer aussi l'email pour rattraper les commandes invitees /
+        // manuelles avec le meme email mais sans supabaseUserId.
+        const data = await getMyOrders(user.id, user.email || user.user_metadata?.email);
         if (!cancelled) setOrders(Array.isArray(data) ? data : []);
       } catch {
         if (!cancelled) setOrdersError(true);
