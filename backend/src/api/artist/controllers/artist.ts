@@ -2,6 +2,7 @@ import { factories } from '@strapi/strapi';
 import { sendPrivatePrintEmail } from '../../../utils/email';
 import { requireAdminAuth } from '../../../utils/auth';
 import { deleteFromSupabase } from '../../../utils/image-processor';
+import { invalidateArtistCache } from '../../../utils/cache-invalidator';
 
 export default factories.createCoreController('api::artist.artist', ({ strapi }) => ({
   /**
@@ -531,7 +532,10 @@ export default factories.createCoreController('api::artist.artist', ({ strapi })
       } catch (_) { /* non-bloquant */ }
 
       strapi.log.info(`[god-mode] Artiste ${slug} profil mis a jour: ${Object.keys(data).join(', ')}`);
-      ctx.body = { success: true, data: updated };
+
+      // Invalidation cache Cloudflare (best-effort, non-bloquant)
+      const cacheResult = await invalidateArtistCache(slug, strapi.log);
+      ctx.body = { success: true, data: updated, cacheInvalidation: cacheResult };
     } catch (err: any) {
       strapi.log.error('adminUpdateProfile error:', err);
       ctx.throw(500, err.message);
@@ -584,7 +588,9 @@ export default factories.createCoreController('api::artist.artist', ({ strapi })
       });
 
       strapi.log.info(`[god-mode] ${slug}.${category}[${itemId}] patch: ${Object.keys(patch).join(', ')}`);
-      ctx.body = { success: true, data: items[idx] };
+
+      const cacheResult = await invalidateArtistCache(slug, strapi.log);
+      ctx.body = { success: true, data: items[idx], cacheInvalidation: cacheResult };
     } catch (err: any) {
       strapi.log.error('adminUpdateItem error:', err);
       ctx.throw(500, err.message);
@@ -634,7 +640,13 @@ export default factories.createCoreController('api::artist.artist', ({ strapi })
       });
 
       strapi.log.info(`[god-mode] ${slug}.${category}: item ${itemId} supprime definitivement`);
-      ctx.body = { success: true, data: { deletedId: itemId, remainingCount: filtered.length } };
+
+      const cacheResult = await invalidateArtistCache(slug, strapi.log);
+      ctx.body = {
+        success: true,
+        data: { deletedId: itemId, remainingCount: filtered.length },
+        cacheInvalidation: cacheResult,
+      };
     } catch (err: any) {
       strapi.log.error('adminDeleteItem error:', err);
       ctx.throw(500, err.message);

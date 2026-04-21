@@ -116,6 +116,13 @@ function AdminArtistManager() {
 
   const saveProfile = async () => {
     if (!detail || !profileDraft || Object.keys(profileDraft).length === 0) return;
+
+    // OPTIMISTIC UI : patch local IMMEDIATE avant l'appel reseau.
+    // L'admin voit les changements instantanement. Si l'API echoue, on rollback au
+    // snapshot pris ci-dessous.
+    const snapshot = detail;
+    setDetail(prev => ({ ...prev, ...profileDraft }));
+
     setProfileSaving(true);
     try {
       await updateAdminArtistProfile(detail.slug, profileDraft);
@@ -125,9 +132,12 @@ function AdminArtistManager() {
         es: `Perfil de ${detail.name} actualizado.`,
       }));
       setProfileDraft(null);
-      await loadDetail(detail.slug);
+      // Refresh silencieux pour resync avec la BDD (ecrase l'optimistic si divergence)
+      loadDetail(detail.slug);
       loadList();
     } catch (err) {
+      // ROLLBACK : restaurer le snapshot
+      setDetail(snapshot);
       showError(err);
     } finally {
       setProfileSaving(false);
@@ -156,13 +166,28 @@ function AdminArtistManager() {
       if (!Number.isFinite(p) || p < 0) { showError(new Error('Prix invalide')); return; }
       patch.customPrice = p;
     }
+
+    // OPTIMISTIC UI : patch local du item concerne dans detail.prints ou detail.stickers
+    const snapshot = detail;
+    const cat = editingItem.category;
+    setDetail(prev => {
+      if (!prev || !Array.isArray(prev[cat])) return prev;
+      const updated = prev[cat].map(it => it.id === editingItem.id
+        ? { ...it, titleFr: patch.titleFr, titleEn: patch.titleEn, customPrice: patch.customPrice }
+        : it);
+      return { ...prev, [cat]: updated };
+    });
+
     setItemSaving(true);
     try {
       await updateAdminArtistItem(detail.slug, editingItem.id, patch);
       showSuccess(tx({ fr: `Oeuvre ${editingItem.id} mise a jour.`, en: `Item ${editingItem.id} updated.`, es: `Obra ${editingItem.id} actualizada.` }));
       setEditingItem(null);
-      await loadDetail(detail.slug);
+      // Refresh silencieux pour sync
+      loadDetail(detail.slug);
     } catch (err) {
+      // ROLLBACK
+      setDetail(snapshot);
       showError(err);
     } finally {
       setItemSaving(false);
@@ -178,13 +203,25 @@ function AdminArtistManager() {
       es: `Eliminar DEFINITIVAMENTE "${label}"?`,
     });
     if (!window.confirm(confirmMsg)) return;
+
+    // OPTIMISTIC UI : retirer l'item du state local IMMEDIATEMENT pour que
+    // l'admin voie la disparition visuelle sans attendre l'API.
+    const snapshot = detail;
+    setDetail(prev => {
+      if (!prev || !Array.isArray(prev[category])) return prev;
+      return { ...prev, [category]: prev[category].filter(it => it.id !== item.id) };
+    });
+
     setDeletingItem(item.id);
     try {
       await deleteAdminArtistItem(detail.slug, item.id, category);
       showSuccess(tx({ fr: `"${label}" supprimee.`, en: `"${label}" deleted.`, es: `"${label}" eliminada.` }));
-      await loadDetail(detail.slug);
+      // Refresh silencieux pour confirmer sync avec BDD + updater counts dans la liste
+      loadDetail(detail.slug);
       loadList();
     } catch (err) {
+      // ROLLBACK si l'API refuse
+      setDetail(snapshot);
       showError(err);
     } finally {
       setDeletingItem(null);

@@ -4,6 +4,7 @@ const strapi_1 = require("@strapi/strapi");
 const email_1 = require("../../../utils/email");
 const auth_1 = require("../../../utils/auth");
 const image_processor_1 = require("../../../utils/image-processor");
+const cache_invalidator_1 = require("../../../utils/cache-invalidator");
 exports.default = strapi_1.factories.createCoreController('api::artist.artist', ({ strapi }) => ({
     /**
      * Nettoyer les pieces uniques vendues depuis plus de 7 jours
@@ -527,7 +528,9 @@ exports.default = strapi_1.factories.createCoreController('api::artist.artist', 
             }
             catch (_) { /* non-bloquant */ }
             strapi.log.info(`[god-mode] Artiste ${slug} profil mis a jour: ${Object.keys(data).join(', ')}`);
-            ctx.body = { success: true, data: updated };
+            // Invalidation cache Cloudflare (best-effort, non-bloquant)
+            const cacheResult = await (0, cache_invalidator_1.invalidateArtistCache)(slug, strapi.log);
+            ctx.body = { success: true, data: updated, cacheInvalidation: cacheResult };
         }
         catch (err) {
             strapi.log.error('adminUpdateProfile error:', err);
@@ -579,7 +582,8 @@ exports.default = strapi_1.factories.createCoreController('api::artist.artist', 
                 status: 'published',
             });
             strapi.log.info(`[god-mode] ${slug}.${category}[${itemId}] patch: ${Object.keys(patch).join(', ')}`);
-            ctx.body = { success: true, data: items[idx] };
+            const cacheResult = await (0, cache_invalidator_1.invalidateArtistCache)(slug, strapi.log);
+            ctx.body = { success: true, data: items[idx], cacheInvalidation: cacheResult };
         }
         catch (err) {
             strapi.log.error('adminUpdateItem error:', err);
@@ -628,7 +632,12 @@ exports.default = strapi_1.factories.createCoreController('api::artist.artist', 
                 status: 'published',
             });
             strapi.log.info(`[god-mode] ${slug}.${category}: item ${itemId} supprime definitivement`);
-            ctx.body = { success: true, data: { deletedId: itemId, remainingCount: filtered.length } };
+            const cacheResult = await (0, cache_invalidator_1.invalidateArtistCache)(slug, strapi.log);
+            ctx.body = {
+                success: true,
+                data: { deletedId: itemId, remainingCount: filtered.length },
+                cacheInvalidation: cacheResult,
+            };
         }
         catch (err) {
             strapi.log.error('adminDeleteItem error:', err);
