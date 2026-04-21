@@ -1,0 +1,377 @@
+import { useState, useEffect, useRef } from 'react';
+import { X, Loader2, AlertCircle, CheckCircle, Copy, ExternalLink, Plus, Trash2 } from 'lucide-react';
+import { useLang } from '../i18n/LanguageContext';
+import api from '../services/api';
+
+/**
+ * Modal de creation d'une commande manuelle + facture + lien de paiement Stripe.
+ * Appele POST /api/orders/manual. Le backend cree Client (si email), Order (isManual),
+ * Invoice, puis genere un Stripe Payment Link. Retourne { orderId, invoiceId,
+ * invoiceNumber, paymentUrl }.
+ *
+ * Props:
+ *   onClose(): ferme le modal
+ *   onCreated(result): appele apres succes pour refresh la liste parent
+ */
+function CreateManualOrderModal({ onClose, onCreated }) {
+  const { tx } = useLang();
+  const [customerName, setCustomerName] = useState('');
+  const [customerEmail, setCustomerEmail] = useState('');
+  const [customerPhone, setCustomerPhone] = useState('');
+  const [items, setItems] = useState([{ description: '', quantity: 1, unitPrice: '' }]);
+  const [notes, setNotes] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [result, setResult] = useState(null);
+  const [copied, setCopied] = useState(false);
+  const firstInputRef = useRef(null);
+
+  useEffect(() => {
+    setTimeout(() => firstInputRef.current?.focus(), 50);
+  }, []);
+
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
+  const updateItem = (idx, field, value) => {
+    setItems(prev => prev.map((it, i) => i === idx ? { ...it, [field]: value } : it));
+  };
+
+  const addItem = () => {
+    setItems(prev => [...prev, { description: '', quantity: 1, unitPrice: '' }]);
+  };
+
+  const removeItem = (idx) => {
+    setItems(prev => prev.length > 1 ? prev.filter((_, i) => i !== idx) : prev);
+  };
+
+  const parsedItems = items.map(it => ({
+    description: String(it.description || '').trim(),
+    quantity: parseInt(it.quantity, 10) || 0,
+    unitPrice: parseFloat(String(it.unitPrice).replace(',', '.')) || 0,
+  }));
+
+  const subtotal = parsedItems.reduce((s, it) => s + (it.quantity * it.unitPrice), 0);
+
+  const submit = async (e) => {
+    e?.preventDefault?.();
+    setError('');
+
+    if (!customerName.trim()) {
+      setError(tx({ fr: 'Nom du client requis', en: 'Customer name required', es: 'Nombre del cliente requerido' }));
+      return;
+    }
+    const validItems = parsedItems.filter(it => it.description && it.quantity > 0 && it.unitPrice > 0);
+    if (validItems.length === 0) {
+      setError(tx({
+        fr: 'Au moins une ligne avec description, quantite et prix requise',
+        en: 'At least one line with description, quantity and price required',
+        es: 'Al menos una linea con descripcion, cantidad y precio requerida',
+      }));
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { data } = await api.post('/orders/manual', {
+        customerName: customerName.trim(),
+        customerEmail: customerEmail.trim() || undefined,
+        customerPhone: customerPhone.trim() || undefined,
+        items: validItems,
+        subtotal,
+        total: subtotal,
+        notes: notes.trim() || undefined,
+      });
+      setResult(data);
+      onCreated?.(data);
+    } catch (err) {
+      console.error('manualCreate error:', err);
+      const msg = err?.response?.data?.error?.message
+        || err?.response?.data?.message
+        || err?.message
+        || tx({ fr: 'Erreur inconnue', en: 'Unknown error', es: 'Error desconocido' });
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const copyLink = async () => {
+    if (!result?.paymentUrl) return;
+    try {
+      await navigator.clipboard.writeText(result.paymentUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Fallback: select text
+      const el = document.createElement('textarea');
+      el.value = result.paymentUrl;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-[9000] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto"
+      onClick={onClose}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-xl my-8 rounded-2xl bg-[#1a0030] border border-white/10 shadow-2xl overflow-hidden"
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-4 border-b border-white/10">
+          <h3 className="text-heading font-heading font-bold text-lg">
+            {result
+              ? tx({ fr: 'Facture creee', en: 'Invoice created', es: 'Factura creada' })
+              : tx({ fr: 'Nouvelle commande manuelle', en: 'New manual order', es: 'Nuevo pedido manual' })}
+          </h3>
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-1.5 rounded-lg text-grey-muted hover:text-heading hover:bg-white/5 transition-colors"
+            aria-label="Fermer"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        {/* Success view : payment URL + copy */}
+        {result ? (
+          <div className="px-5 py-6 space-y-4">
+            <div className="flex items-start gap-3 rounded-xl bg-green-500/10 border border-green-500/30 px-4 py-3">
+              <CheckCircle size={20} className="text-green-400 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-heading font-semibold text-sm">
+                  {tx({ fr: 'Commande et facture creees', en: 'Order and invoice created', es: 'Pedido y factura creados' })}
+                </p>
+                <p className="text-grey-muted text-xs mt-0.5">
+                  {tx({ fr: 'Numero de facture', en: 'Invoice number', es: 'Numero de factura' })}:{' '}
+                  <span className="text-heading font-mono font-bold">{result.invoiceNumber}</span>
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs text-grey-muted uppercase tracking-wider block mb-1.5">
+                {tx({ fr: 'Lien de paiement Stripe', en: 'Stripe payment link', es: 'Enlace de pago Stripe' })}
+              </label>
+              <div className="flex items-stretch gap-2">
+                <div className="flex-1 rounded-lg bg-black/30 border border-white/10 px-3 py-2.5 text-sm text-heading font-mono truncate">
+                  {result.paymentUrl}
+                </div>
+                <button
+                  type="button"
+                  onClick={copyLink}
+                  className={`px-3 rounded-lg font-semibold text-sm transition-all flex items-center gap-1.5 ${
+                    copied ? 'bg-green-500/20 text-green-400' : 'bg-accent text-white hover:brightness-110'
+                  }`}
+                >
+                  {copied ? <CheckCircle size={14} /> : <Copy size={14} />}
+                  {copied
+                    ? tx({ fr: 'Copie', en: 'Copied', es: 'Copiado' })
+                    : tx({ fr: 'Copier', en: 'Copy', es: 'Copiar' })}
+                </button>
+              </div>
+              <a
+                href={result.paymentUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 mt-2 text-xs text-accent hover:brightness-110"
+              >
+                <ExternalLink size={12} />
+                {tx({ fr: 'Ouvrir le lien dans un nouvel onglet', en: 'Open link in new tab', es: 'Abrir en nueva pestana' })}
+              </a>
+              <p className="text-[11px] text-grey-muted mt-2 leading-relaxed">
+                {tx({
+                  fr: 'Envoie ce lien au client par courriel ou WhatsApp. Quand il paie, la commande passera automatiquement en "paye" et la facture sera marquee comme reglee.',
+                  en: 'Send this link to the customer by email or WhatsApp. When they pay, the order will auto-flip to "paid" and the invoice to "settled".',
+                  es: 'Envia este enlace al cliente por correo o WhatsApp. Cuando pague, el pedido pasara a "pagado" y la factura a "liquidada".',
+                })}
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2 pt-2">
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex-1 py-2 rounded-lg bg-accent text-white font-semibold text-sm hover:brightness-110 transition-all"
+              >
+                {tx({ fr: 'Fermer', en: 'Close', es: 'Cerrar' })}
+              </button>
+            </div>
+          </div>
+        ) : (
+          /* Form view */
+          <form onSubmit={submit}>
+            <div className="px-5 py-5 space-y-4 max-h-[65vh] overflow-y-auto">
+              {/* Client info */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs text-grey-muted uppercase tracking-wider block mb-1">
+                    {tx({ fr: 'Nom du client', en: 'Customer name', es: 'Nombre del cliente' })} *
+                  </label>
+                  <input
+                    ref={firstInputRef}
+                    type="text"
+                    value={customerName}
+                    onChange={(e) => setCustomerName(e.target.value)}
+                    className="w-full rounded-lg bg-black/30 text-heading text-sm px-3 py-2.5 outline-none border border-white/10 focus:border-accent"
+                    placeholder="Cindy Deroeux"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-grey-muted uppercase tracking-wider block mb-1">
+                    {tx({ fr: 'Courriel', en: 'Email', es: 'Correo' })}
+                  </label>
+                  <input
+                    type="email"
+                    value={customerEmail}
+                    onChange={(e) => setCustomerEmail(e.target.value)}
+                    className="w-full rounded-lg bg-black/30 text-heading text-sm px-3 py-2.5 outline-none border border-white/10 focus:border-accent"
+                    placeholder="client@example.com"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="text-xs text-grey-muted uppercase tracking-wider block mb-1">
+                  {tx({ fr: 'Telephone (optionnel)', en: 'Phone (optional)', es: 'Telefono (opcional)' })}
+                </label>
+                <input
+                  type="tel"
+                  value={customerPhone}
+                  onChange={(e) => setCustomerPhone(e.target.value)}
+                  className="w-full rounded-lg bg-black/30 text-heading text-sm px-3 py-2.5 outline-none border border-white/10 focus:border-accent"
+                  placeholder="514 555 1234"
+                />
+              </div>
+
+              {/* Items lines */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-xs text-grey-muted uppercase tracking-wider">
+                    {tx({ fr: 'Lignes de facture', en: 'Invoice lines', es: 'Lineas de factura' })} *
+                  </label>
+                  <button
+                    type="button"
+                    onClick={addItem}
+                    className="flex items-center gap-1 px-2 py-1 rounded-md bg-white/5 text-accent hover:bg-white/10 text-[11px] font-semibold transition-colors"
+                  >
+                    <Plus size={12} />
+                    {tx({ fr: 'Ajouter', en: 'Add', es: 'Anadir' })}
+                  </button>
+                </div>
+                <div className="space-y-2">
+                  {items.map((it, idx) => (
+                    <div key={idx} className="grid grid-cols-[1fr_70px_90px_32px] gap-2 items-start">
+                      <input
+                        type="text"
+                        value={it.description}
+                        onChange={(e) => updateItem(idx, 'description', e.target.value)}
+                        placeholder={tx({ fr: 'Design sur mesure', en: 'Custom design', es: 'Diseno a medida' })}
+                        className="rounded-lg bg-black/30 text-heading text-sm px-3 py-2 outline-none border border-white/10 focus:border-accent"
+                      />
+                      <input
+                        type="number"
+                        min="1"
+                        value={it.quantity}
+                        onChange={(e) => updateItem(idx, 'quantity', e.target.value)}
+                        placeholder="Qte"
+                        className="rounded-lg bg-black/30 text-heading text-sm px-2 py-2 outline-none border border-white/10 focus:border-accent text-center"
+                      />
+                      <div className="relative">
+                        <input
+                          type="text"
+                          inputMode="decimal"
+                          value={it.unitPrice}
+                          onChange={(e) => updateItem(idx, 'unitPrice', e.target.value)}
+                          placeholder="0.00"
+                          className="w-full rounded-lg bg-black/30 text-heading text-sm px-2 py-2 pr-6 outline-none border border-white/10 focus:border-accent text-right"
+                        />
+                        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-grey-muted text-xs">$</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeItem(idx)}
+                        disabled={items.length <= 1}
+                        className="h-9 w-8 rounded-lg text-grey-muted hover:text-red-400 hover:bg-red-500/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
+                        aria-label="Supprimer ligne"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Total preview */}
+              <div className="rounded-lg bg-black/30 px-4 py-3 flex items-center justify-between border border-white/5">
+                <span className="text-grey-muted text-xs uppercase tracking-wider">
+                  {tx({ fr: 'Total (avant taxes)', en: 'Total (pre-tax)', es: 'Total (antes de impuestos)' })}
+                </span>
+                <span className="text-heading text-xl font-heading font-bold">
+                  {subtotal.toFixed(2)}$
+                </span>
+              </div>
+
+              {/* Notes */}
+              <div>
+                <label className="text-xs text-grey-muted uppercase tracking-wider block mb-1">
+                  {tx({ fr: 'Notes internes (optionnel)', en: 'Internal notes (optional)', es: 'Notas internas (opcional)' })}
+                </label>
+                <textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  rows={2}
+                  maxLength={500}
+                  className="w-full rounded-lg bg-black/30 text-heading text-sm px-3 py-2 outline-none border border-white/10 focus:border-accent resize-none"
+                />
+              </div>
+
+              {error && (
+                <div className="flex items-start gap-2 rounded-lg bg-red-500/10 border border-red-500/30 px-3 py-2 text-xs text-red-400">
+                  <AlertCircle size={14} className="flex-shrink-0 mt-0.5" />
+                  <span>{error}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="flex items-center gap-2 px-5 py-3 bg-black/30 border-t border-white/5">
+              <button
+                type="button"
+                onClick={onClose}
+                disabled={loading}
+                className="flex-1 py-2 rounded-lg bg-white/5 text-grey-muted font-semibold text-sm hover:bg-white/10 transition-colors disabled:opacity-50"
+              >
+                {tx({ fr: 'Annuler', en: 'Cancel', es: 'Cancelar' })}
+              </button>
+              <button
+                type="submit"
+                disabled={loading || subtotal <= 0}
+                className="flex-[2] py-2 rounded-lg bg-accent text-white font-semibold text-sm hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {loading && <Loader2 size={14} className="animate-spin" />}
+                {tx({
+                  fr: 'Creer et generer lien Stripe',
+                  en: 'Create and generate Stripe link',
+                  es: 'Crear y generar enlace Stripe',
+                })}
+              </button>
+            </div>
+          </form>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default CreateManualOrderModal;

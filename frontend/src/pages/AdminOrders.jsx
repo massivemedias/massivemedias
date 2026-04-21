@@ -5,13 +5,14 @@ import {
   Clock, Truck, Package, CreditCard, CheckCircle, XCircle,
   RotateCcw, Loader2, ExternalLink, MapPin, Save, Image,
   FileText, ChevronLeft, ChevronRight, Phone, Mail, Hash, Palette,
-  Download, Receipt, Trash2, Send, AlertTriangle, Pencil,
+  Download, Receipt, Trash2, Send, AlertTriangle, Pencil, Plus,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import { getOrders, getOrderStats, updateOrderStatus, updateOrderNotes, updateOrderTracking, deleteOrder, getPrivateSales, deletePrivateSale, resendPrivateSaleEmail } from '../services/adminService';
 import { useNotifications } from '../contexts/NotificationContext';
 import { generateInvoicePDF } from '../utils/generateInvoice';
 import EditOrderTotalModal from '../components/EditOrderTotalModal';
+import CreateManualOrderModal from '../components/CreateManualOrderModal';
 
 const ORDER_STATUS = {
   draft:      { fr: 'Brouillon',    en: 'Draft',      es: 'Borrador',     color: 'bg-gray-600/20 text-gray-500', icon: Clock },
@@ -69,6 +70,9 @@ function AdminOrders() {
   const [privateSaleBusyId, setPrivateSaleBusyId] = useState(null);
   const [privateSaleConfirmDelete, setPrivateSaleConfirmDelete] = useState(null);
   const [privateSaleFeedback, setPrivateSaleFeedback] = useState('');
+
+  // Modal creation commande manuelle + facture + lien Stripe
+  const [showManualModal, setShowManualModal] = useState(false);
 
   // Modal d'edition du total d'une commande (ajustement rabais/balance)
   const [editTotalOrder, setEditTotalOrder] = useState(null);
@@ -249,6 +253,32 @@ function AdminOrders() {
         <div className="p-3 rounded-lg bg-red-500/10 text-red-400 text-sm">
           {opError}
         </div>
+      )}
+
+      {/* CTA: creer une commande manuelle + facture + lien Stripe */}
+      <div className="flex items-center justify-end">
+        <button
+          type="button"
+          onClick={() => setShowManualModal(true)}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-accent text-white font-semibold text-sm hover:brightness-110 transition-all shadow-lg shadow-accent/20"
+        >
+          <Plus size={16} />
+          {tx({
+            fr: 'Creer une commande / facture manuelle',
+            en: 'Create manual order / invoice',
+            es: 'Crear pedido / factura manual',
+          })}
+        </button>
+      </div>
+
+      {showManualModal && (
+        <CreateManualOrderModal
+          onClose={() => setShowManualModal(false)}
+          onCreated={() => {
+            fetchOrders();
+            getOrderStats().then(({ data }) => setStats(data)).catch(() => {});
+          }}
+        />
       )}
       {/* Ventes privees en attente (artistes) */}
       {(privateSalesLoading || privateSales.length > 0) && (
