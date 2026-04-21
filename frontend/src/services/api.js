@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { isAuthInitialized } from './authState';
 import { supabase } from '../lib/supabase';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:1337/api';
@@ -125,40 +124,11 @@ api.interceptors.response.use(
       markServerDown();
     }
 
-    // 401 = token expire OU race condition pendant l'init auth OU token stale
-    // (requete partie avec un ancien token alors que Supabase a refresh entre-temps).
-    //
-    // Strategie a trois niveaux pour eviter le faux-positif logout :
-    //   1. Auth pas encore initialisee : swallow, laisse AuthContext finir
-    //   2. Requete partie avec un token DIFFERENT du token Supabase actuel :
-    //      retry une fois avec le token frais (un seul retry via _tokenRetry)
-    //   3. Meme token Supabase refuse par le backend : vraie expiration ->
-    //      dispatch 'auth:expired'. AuthContext ecoute, appelle signOut().
-    if (error.response?.status === 401 && error.config?.headers?.Authorization) {
-      if (!isAuthInitialized()) {
-        return Promise.reject(error);
-      }
-
-      // Protection faux-positif : si le token utilise n'est plus le token actuel,
-      // c'est une race (signIn -> navigate -> 1er call avec ancien token).
-      // On retry UNE SEULE fois avec le token frais avant de declarer la session morte.
-      if (!error.config._tokenRetry && supabase) {
-        try {
-          const { data } = await supabase.auth.getSession();
-          const currentToken = data?.session?.access_token;
-          const requestToken = String(error.config.headers.Authorization || '').replace(/^Bearer\s+/i, '');
-          if (currentToken && currentToken !== requestToken) {
-            error.config._tokenRetry = true;
-            error.config.headers.Authorization = `Bearer ${currentToken}`;
-            return api.request(error.config);
-          }
-        } catch { /* fallthrough vers auth:expired */ }
-      }
-
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('auth:expired'));
-      }
-    }
+    // OPTION NUCLEAIRE : l'auto-logout sur 401 etait trop agressif et causait
+    // des faux-positifs qui deconnectaient l'admin au changement de route.
+    // On rejette simplement la promesse. La gestion du 401 remonte au composant
+    // qui peut afficher une erreur UX sans detruire la session. Pas de redirect,
+    // pas de signOut, pas d'event auth:expired.
     return Promise.reject(error);
   }
 );

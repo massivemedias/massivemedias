@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
 import api from '../services/api';
 import { markAuthInitialized } from '../services/authState';
@@ -68,31 +68,17 @@ export function AuthProvider({ children }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Ecoute l'evenement 'auth:expired' emis par l'intercepteur axios quand le
-  // backend renvoie 401 sur un call authentifie. Plutot qu'un reload brutal
-  // (ancien window.location.href qui boucle parce que Supabase remet le token
-  // en cache a chaque reboot), on appelle supabase.auth.signOut() : detruit
-  // la session, fire SIGNED_OUT, user -> null. Les AdminRoute/ProtectedRoute
-  // redirigent alors vers /login via Navigate (React Router, pas reload).
-  const handlingExpiredRef = useRef(false);
+  // OPTION NUCLEAIRE : listener 'auth:expired' neutralise.
+  // Les faux-positifs 401 deconnectaient l'admin instantanement apres signIn.
+  // On garde l'ecoute pour tracer dans la console, mais on NE TOUCHE PLUS a
+  // la session : pas de signOut, pas de setUser(null). La session Supabase
+  // reste active. L'intercepteur axios ne dispatch plus cet event non plus
+  // (voir services/api.js), donc ce listener ne devrait plus fire - mais on
+  // le garde comme filet de securite tant qu'une autre partie du code pourrait
+  // le dispatcher.
   useEffect(() => {
-    if (!supabase) return;
-    const onExpired = async () => {
-      if (handlingExpiredRef.current) return; // de-dup : plusieurs 401 en rafale
-      handlingExpiredRef.current = true;
-      try {
-        await supabase.auth.signOut();
-        setUser(null);
-        setSession(null);
-      } catch (e) {
-        // Meme si signOut fail (reseau), on force l'etat local a signed-out
-        setUser(null);
-        setSession(null);
-      } finally {
-        try { localStorage.removeItem('token'); } catch {}
-        // Reset la garde apres un court delai pour absorber la prochaine session
-        setTimeout(() => { handlingExpiredRef.current = false; }, 1500);
-      }
+    const onExpired = () => {
+      console.error('[auth] 401 Intercepte - Auto-logout desactive pour la stabilite');
     };
     window.addEventListener('auth:expired', onExpired);
     return () => window.removeEventListener('auth:expired', onExpired);

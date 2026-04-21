@@ -8,7 +8,7 @@ import { useAuth } from '../contexts/AuthContext';
 
 function Login() {
   const { t, lang, tx } = useLang();
-  const { signIn, signUp, signInWithOAuth, resetPassword, updatePassword, verifyOtp, session, passwordRecovery } = useAuth();
+  const { signIn, signUp, signInWithOAuth, resetPassword, updatePassword, verifyOtp, user, session, passwordRecovery } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const sessionExpired = searchParams.get('expired') === '1';
@@ -31,12 +31,18 @@ function Login() {
     return window.location.hash.includes('type=recovery');
   });
 
-  // Redirect if already logged in (but NOT during password recovery flow)
+  // Redirect quand AuthContext confirme un user valide (pas juste une session raw).
+  // On ecoute `user` plutot que faire navigate() inline apres signIn : garantit
+  // que l'app attend la propagation complete de l'etat Supabase avant de charger
+  // les pages privees, evitant la race token/cookie post-login.
+  // Deps garde la meme SIZE que la version precedente (user/passwordRecovery/isRecoveryFlow)
+  // pour eviter le warning React "deps array size changed between renders" en dev HMR.
   useEffect(() => {
-    if (session && !passwordRecovery && !passwordUpdated && !isRecoveryFlow) {
+    if (user && !passwordRecovery && !passwordUpdated && !isRecoveryFlow) {
       navigate(redirectTo);
     }
-  }, [session, passwordRecovery, isRecoveryFlow]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, passwordRecovery, isRecoveryFlow]);
 
   // Detect password recovery event from Supabase
   useEffect(() => {
@@ -115,7 +121,7 @@ function Login() {
         }
         const { error: err } = await verifyOtp(email, otpCode);
         if (err) { setError(translateSupabaseError(err)); return; }
-        navigate(redirectTo);
+        // Pas de navigate direct : le useEffect [user] redirige quand AuthContext propage
         return;
       }
 
@@ -166,15 +172,16 @@ function Login() {
           setOtpCode('');
           return;
         }
-        // Si confirmation desactivee ou deja confirmee, naviguer directement
-        navigate(redirectTo);
+        // Si confirmation desactivee ou deja confirmee : le useEffect [user]
+        // redirigera quand AuthContext propage le nouveau user.
         return;
       }
 
-      // Login
+      // Login : pas de navigate direct - le useEffect [user] ci-dessus ecoute
+      // et redirige quand Supabase a propage l'etat au AuthContext (evite la
+      // race ou la requete partait avec un token pas encore synchro).
       const { error: err } = await signIn(email, password);
       if (err) { setError(translateSupabaseError(err)); return; }
-      navigate(redirectTo);
     } finally {
       setLoading(false);
     }
