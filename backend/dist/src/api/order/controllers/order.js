@@ -2208,141 +2208,117 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
         }
         ctx.body = { data: updated };
     },
-    // DELETE /orders/:documentId
-    // FIX-ERP (avril 2026) : hard delete VERIFIE avec :
-    //   1. Logs entree + resultat + verification re-query
-    //   2. Cascade : supprime aussi l'Invoice liee (sinon orphan dans Strapi)
-    //   3. Fallback db.query si documents().delete() ne retourne rien (edge case Strapi v5
-    //      sur les content-types avec draftAndPublish=false)
-    //   4. Best-effort : archive le Stripe Product/PaymentLink (pas de vrai delete possible
-    //      cote Stripe sur les Payment Links, on log juste le lien orphelin)
-    //   5. Retourne 500 si la re-query confirme que la commande existe TOUJOURS apres delete
+    // DELETE /orders/:idParam
+    // FORCE DELETE BRUT (avril 2026) : strategie "raw query first" pour contourner
+    // les comportements opaques de Documents API sur draft/published/lifecycles.
+    //
+    // Strategie :
+    //   1. Accepte documentId (string) OU id numerique en url param
+    //   2. Find preventif pour capter les 2 IDs + 404 si introuvable
+    //   3. Cascade RAW : db.query.delete sur invoices (FK order) + detach testimonials
+    //   4. db.query('api::order.order').delete({ where: { documentId } }) DIRECT
+    //      (bypass Documents API + bypass lifecycles qui peuvent repopuler la ligne)
+    //   5. Verification re-query : 500 avec err.message SQL exact si ca persiste
+    //
+    // Aucun try/catch ne masque l'erreur SQL : si FK constraint viole, l'admin
+    // voit dans le toast rouge le message exact Postgres / Better-SQLite3.
     async deleteOrder(ctx) {
         var _a;
         if (!(await (0, auth_1.requireAdminAuth)(ctx)))
             return;
-        const { documentId } = ctx.params;
-        strapi.log.info(`[DELETE ORDER] Request received for documentId=${documentId}`);
-        if (!documentId) {
-            return ctx.badRequest('documentId requis');
+        const idParam = ctx.params.documentId || ctx.params.id;
+        strapi.log.info(`[DELETE ORDER] === START === idParam=${idParam}`);
+        if (!idParam) {
+            return ctx.badRequest('id ou documentId requis dans l\'URL');
         }
-        // 1. Fetch pour confirmer existence + recuperer l'ID numerique en fallback
-        const order = await strapi.documents('api::order.order').findFirst({
-            filters: { documentId },
-        });
+        // 1. Find preventif : supporte les 2 formats (documentId alphanumerique OU id numerique)
+        const isNumeric = /^\d+$/.test(String(idParam));
+        const filters = isNumeric
+            ? { $or: [{ id: Number(idParam) }, { documentId: String(idParam) }] }
+            : { documentId: String(idParam) };
+        const order = await strapi.documents('api::order.order').findFirst({ filters });
         if (!order) {
-            strapi.log.warn(`[DELETE ORDER] ${documentId} introuvable`);
-            return ctx.notFound('Commande introuvable');
+            strapi.log.warn(`[DELETE ORDER] ${idParam} introuvable - return 404`);
+            return ctx.notFound(`Commande ${idParam} introuvable`);
         }
-        const orderId = order.id;
-        const stripeLinkNote = order.stripePaymentIntentId || '(aucun)';
-        // 2. Cascade : detacher/supprimer TOUTES les relations qui pointent sur l'order
-        // (Strapi ne cascade pas automatiquement - une FK non-nettoyee bloque le DELETE
-        // Postgres avec "violates foreign key constraint"). On nettoie dans l'ordre :
-        //   - Invoices (FK order) : hard delete
-        //   - Testimonials (FK order) : detach (mettre order=null) puis garder l'entite
-        //   - Client : la relation est cote order, pas cote client -> pas de nettoyage requis
-        // 2.a Invoices
+        const numericId = order.id;
+        const docId = order.documentId;
+        const stripeNote = order.stripePaymentIntentId || '(none)';
+        strapi.log.info(`[DELETE ORDER] Found: id=${numericId} documentId=${docId} stripe=${stripeNote}`);
+        // 2. Cascade RAW : nettoyer les FK entrantes AVANT le delete de l'order.
+        // On attaque le query engine directement pour bypass les lifecycles Strapi
+        // qui pourraient intercepter.
         try {
-            const invoices = await strapi.documents('api::invoice.invoice').findMany({
-                filters: { order: { documentId: { $eq: documentId } } },
-                limit: 10,
+            // 2.a Invoices liees : hard delete raw
+            const invoices = await strapi.db.query('api::invoice.invoice').findMany({
+                where: { order: numericId },
+                select: ['id', 'documentId', 'invoiceNumber'],
             });
             for (const inv of invoices) {
                 try {
-                    await strapi.documents('api::invoice.invoice').delete({ documentId: inv.documentId });
-                    strapi.log.info(`[DELETE ORDER] Cascade invoice ${inv.invoiceNumber || inv.documentId} supprimee`);
+                    await strapi.db.query('api::invoice.invoice').delete({ where: { id: inv.id } });
+                    strapi.log.info(`[DELETE ORDER] Cascade RAW: invoice id=${inv.id} (${inv.invoiceNumber || '-'}) supprimee`);
                 }
                 catch (invErr) {
-                    // Fallback db.query si Documents.delete ne cascade pas
-                    try {
-                        await strapi.db.query('api::invoice.invoice').delete({ where: { id: inv.id } });
-                        strapi.log.info(`[DELETE ORDER] Cascade invoice ${inv.documentId} supprimee via db.query fallback`);
-                    }
-                    catch (fbErr) {
-                        strapi.log.error(`[DELETE ORDER] Cascade invoice ECHEC definitif ${inv.documentId}: ${fbErr === null || fbErr === void 0 ? void 0 : fbErr.message}`);
-                    }
+                    strapi.log.error(`[DELETE ORDER] Cascade RAW invoice id=${inv.id} ECHEC: ${invErr === null || invErr === void 0 ? void 0 : invErr.message}`);
+                    // On remonte l'erreur SQL brute plutot que de continuer sur une DB dans un etat bancal
+                    return ctx.throw(500, `Cascade invoice echoue: ${invErr === null || invErr === void 0 ? void 0 : invErr.message}`);
                 }
             }
-        }
-        catch (cascadeErr) {
-            strapi.log.warn(`[DELETE ORDER] Cascade invoices failed (non-bloquant): ${cascadeErr === null || cascadeErr === void 0 ? void 0 : cascadeErr.message}`);
-        }
-        // 2.b Testimonials (detach pour ne pas perdre les avis du site public)
-        try {
-            const testimonials = await strapi.documents('api::testimonial.testimonial').findMany({
-                filters: { order: { documentId: { $eq: documentId } } },
-                limit: 10,
+            // 2.b Testimonials : detach (preserver l'avis public)
+            const testimonials = await strapi.db.query('api::testimonial.testimonial').findMany({
+                where: { order: numericId },
+                select: ['id'],
             });
             for (const t of testimonials) {
                 try {
-                    // Detach la relation order (mettre a null) via Documents API
-                    await strapi.documents('api::testimonial.testimonial').update({
-                        documentId: t.documentId,
+                    await strapi.db.query('api::testimonial.testimonial').update({
+                        where: { id: t.id },
                         data: { order: null },
                     });
-                    strapi.log.info(`[DELETE ORDER] Testimonial ${t.documentId} detache de order ${documentId}`);
+                    strapi.log.info(`[DELETE ORDER] Cascade RAW: testimonial id=${t.id} detache`);
                 }
                 catch (tErr) {
-                    // Fallback via db.query pour clear la FK directement
-                    try {
-                        await strapi.db.query('api::testimonial.testimonial').update({
-                            where: { id: t.id },
-                            data: { order: null },
-                        });
-                    }
-                    catch (fbErr) {
-                        strapi.log.warn(`[DELETE ORDER] Detach testimonial ${t.documentId} echoue: ${fbErr === null || fbErr === void 0 ? void 0 : fbErr.message}`);
-                    }
+                    // Non-bloquant : si detach echoue, on log mais on tente quand meme le delete order
+                    strapi.log.warn(`[DELETE ORDER] Detach testimonial id=${t.id} echoue: ${tErr === null || tErr === void 0 ? void 0 : tErr.message}`);
                 }
             }
         }
-        catch (cascadeErr) {
-            strapi.log.warn(`[DELETE ORDER] Cascade testimonials failed (non-bloquant): ${cascadeErr === null || cascadeErr === void 0 ? void 0 : cascadeErr.message}`);
+        catch (cascadePrepErr) {
+            strapi.log.error(`[DELETE ORDER] Cascade preparation ECHEC: ${cascadePrepErr === null || cascadePrepErr === void 0 ? void 0 : cascadePrepErr.message}`);
+            return ctx.throw(500, `Preparation cascade echoue: ${cascadePrepErr === null || cascadePrepErr === void 0 ? void 0 : cascadePrepErr.message}`);
         }
-        // 3. Suppression principale via Documents API
-        let deletePrimaryOk = false;
+        // 3. FORCE DELETE : raw db.query direct (PAS de documents().delete qui peut gerer
+        // silencieusement les drafts/publishes via lifecycles).
+        let deletedRow = null;
         try {
-            await strapi.documents('api::order.order').delete({ documentId: order.documentId });
-            deletePrimaryOk = true;
-            strapi.log.info(`[DELETE ORDER] ID: ${documentId} (numeric: ${orderId}) - Documents.delete() OK`);
+            deletedRow = await strapi.db.query('api::order.order').delete({
+                where: { documentId: docId },
+            });
+            strapi.log.info(`[DELETE ORDER] RAW delete result: ${(_a = JSON.stringify(deletedRow)) === null || _a === void 0 ? void 0 : _a.slice(0, 200)}`);
         }
-        catch (primaryErr) {
-            strapi.log.error(`[DELETE ORDER] Documents.delete() ECHEC: ${(primaryErr === null || primaryErr === void 0 ? void 0 : primaryErr.message) || primaryErr}`);
+        catch (delErr) {
+            // ON NE MASQUE PAS. L'erreur SQL remonte telle quelle au frontend.
+            // Exemple typique : "update or delete on table "orders" violates foreign key
+            // constraint "xxx" on table "yyy""
+            strapi.log.error(`[DELETE ORDER] RAW delete ECHEC: ${delErr === null || delErr === void 0 ? void 0 : delErr.message}`, delErr);
+            return ctx.throw(500, `Suppression BDD refusee: ${(delErr === null || delErr === void 0 ? void 0 : delErr.message) || 'erreur inconnue'}`);
         }
-        // 4. Verification re-query : est-ce que le document existe toujours en BDD ?
-        const stillThere = await strapi.documents('api::order.order').findFirst({
-            filters: { documentId },
+        // 4. Verification finale : la ligne a-t-elle disparu ?
+        const stillThere = await strapi.db.query('api::order.order').findOne({
+            where: { documentId: docId },
         });
         if (stillThere) {
-            strapi.log.warn(`[DELETE ORDER] ${documentId} encore present apres Documents.delete(), fallback db.query`);
-            // 4.bis Fallback : suppression directe via query engine (bypass Documents API)
-            try {
-                const deleted = await strapi.db.query('api::order.order').delete({
-                    where: { id: orderId },
-                });
-                strapi.log.info(`[DELETE ORDER] Fallback db.query.delete() result: ${(_a = JSON.stringify(deleted)) === null || _a === void 0 ? void 0 : _a.slice(0, 200)}`);
-            }
-            catch (fallbackErr) {
-                strapi.log.error(`[DELETE ORDER] Fallback db.query ECHEC: ${fallbackErr === null || fallbackErr === void 0 ? void 0 : fallbackErr.message}`);
-                return ctx.throw(500, `Suppression impossible (Documents + db.query echoues): ${fallbackErr === null || fallbackErr === void 0 ? void 0 : fallbackErr.message}`);
-            }
-            // 4.ter Confirmation finale
-            const finalCheck = await strapi.documents('api::order.order').findFirst({
-                filters: { documentId },
-            });
-            if (finalCheck) {
-                strapi.log.error(`[DELETE ORDER] ${documentId} PERSISTE apres fallback - bug severe`);
-                return ctx.throw(500, 'La commande persiste en BDD apres tentative de suppression');
-            }
+            strapi.log.error(`[DELETE ORDER] ZOMBIE confirme : documentId=${docId} encore present apres RAW delete. Row: ${JSON.stringify(stillThere).slice(0, 300)}`);
+            return ctx.throw(500, `La commande persiste en BDD apres DELETE raw. Contacter le dev - possible lifecycle Strapi qui re-cree la ligne.`);
         }
-        strapi.log.info(`[DELETE ORDER] ID: ${documentId} Result: SUCCESS (stripe: ${stripeLinkNote})`);
+        strapi.log.info(`[DELETE ORDER] === SUCCESS === documentId=${docId} id=${numericId} stripe=${stripeNote}`);
         ctx.body = {
             success: true,
             data: {
-                deletedDocumentId: documentId,
-                deletedNumericId: orderId,
-                primaryDeleteOk: deletePrimaryOk,
+                deletedDocumentId: docId,
+                deletedNumericId: numericId,
+                method: 'db.query.delete (raw)',
                 verifiedAbsent: true,
             },
         };
