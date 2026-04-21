@@ -160,11 +160,18 @@ function ArtistGalleryManager() {
 
   // Supprimer une image
   const [removingId, setRemovingId] = useState(null);
-  const handleRemove = async (itemId, category) => {
-    if (pendingRemovalIds.includes(itemId)) return;
+  const handleRemove = async (item, category) => {
+    const itemId = typeof item === 'string' ? item : item?.id;
+    if (!itemId || pendingRemovalIds.includes(itemId)) return;
 
     const cat = CATEGORIES.find(c => c.id === category);
     if (!cat) return;
+
+    // Construire le descripteur complet de l'item pour que l'admin voit
+    // exactement quelle oeuvre est demandee en suppression.
+    const fullItem = typeof item === 'object' ? item : null;
+    const itemName = fullItem?.titleFr || fullItem?.titleEn || fullItem?.titleEs || itemId;
+    const itemImage = fullItem?.image || fullItem?.fullImage || null;
 
     setRemovingId(itemId);
     try {
@@ -173,7 +180,12 @@ function ArtistGalleryManager() {
         artistName,
         email,
         requestType: cat.requestRemove,
-        changeData: { itemIds: [itemId] },
+        changeData: {
+          // Legacy - conserve pour compat retroactive (backend handleRemoveImages)
+          itemIds: [itemId],
+          // Nouveau format detaille - utilise par l'UI admin pour afficher les noms
+          items: [{ id: itemId, name: itemName, image: itemImage, category }],
+        },
       });
       const newReq = res.data?.data;
       if (newReq) {
@@ -547,7 +559,7 @@ function ArtistGalleryManager() {
                       </button>
                     )}
                     {!isPendingRemoval && (
-                      <button onClick={() => handleRemove(item.id, category)}
+                      <button onClick={() => handleRemove(item, category)}
                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-500/10 text-red-400 text-xs font-medium hover:bg-red-500/20 transition-colors">
                         <Trash2 size={14} /> {tx({ fr: 'Supprimer', en: 'Delete', es: 'Eliminar' })}
                       </button>

@@ -749,8 +749,19 @@ function buildNotificationMessage(requestType, changeData, artistName) {
         case 'remove-prints':
         case 'remove-stickers':
         case 'remove-merch': {
-            const ids = (changeData === null || changeData === void 0 ? void 0 : changeData.itemIds) || [];
-            return `${name} souhaite supprimer ${ids.length} element(s). Type: ${label}. En attente de validation.`;
+            const items = Array.isArray(changeData === null || changeData === void 0 ? void 0 : changeData.items) ? changeData.items : [];
+            const ids = (changeData === null || changeData === void 0 ? void 0 : changeData.itemIds) || items.map((it) => it === null || it === void 0 ? void 0 : it.id).filter(Boolean);
+            const count = Math.max(items.length, ids.length);
+            if (items.length > 0) {
+                const lines = items.map((it, i) => {
+                    const nm = (it === null || it === void 0 ? void 0 : it.name) || (it === null || it === void 0 ? void 0 : it.id) || `Item ${i + 1}`;
+                    const id = (it === null || it === void 0 ? void 0 : it.id) || '';
+                    return `  ${i + 1}. ${nm}${id && nm !== id ? ` (${id})` : ''}`;
+                }).join('\n');
+                return `${name} souhaite supprimer ${count} oeuvre(s). Type: ${label}. En attente de validation.\n\nOeuvres a supprimer:\n${lines}`;
+            }
+            // Fallback legacy : seulement les IDs
+            return `${name} souhaite supprimer ${count} element(s). Type: ${label}. En attente de validation.\n\nIDs:\n${ids.map((id, i) => `  ${i + 1}. ${id}`).join('\n')}`;
         }
         case 'update-bio':
             return `${name} a mis a jour sa bio. Applique automatiquement.\n\nNouvelle bio:\n${(changeData === null || changeData === void 0 ? void 0 : changeData.bioFr) || '(vide)'}`;
@@ -1014,17 +1025,26 @@ async function handleUnmarkUnique(strapi, artist, changeData) {
     await handleMarkUnique(strapi, artist, { ...changeData, printType: 'standard', customPrice: 0 });
 }
 async function handleRemoveImages(strapi, artist, requestType, changeData) {
-    const itemIds = (changeData === null || changeData === void 0 ? void 0 : changeData.itemIds) || [];
-    if (itemIds.length === 0)
+    // Accepter les deux formats : legacy (itemIds: string[]) et nouveau (items: [{id,name,image}]).
+    const items = Array.isArray(changeData === null || changeData === void 0 ? void 0 : changeData.items) ? changeData.items : [];
+    const itemIds = Array.isArray(changeData === null || changeData === void 0 ? void 0 : changeData.itemIds) && changeData.itemIds.length > 0
+        ? changeData.itemIds
+        : items.map((it) => it === null || it === void 0 ? void 0 : it.id).filter(Boolean);
+    if (itemIds.length === 0) {
+        strapi.log.warn(`[handleRemoveImages] Aucun itemId a supprimer pour ${(artist === null || artist === void 0 ? void 0 : artist.slug) || '?'} (requestType=${requestType}). changeData=${JSON.stringify(changeData)}`);
         return;
+    }
     const isStickers = requestType === 'remove-stickers';
     const isMerch = requestType === 'remove-merch';
     const fieldName = isStickers ? 'stickers' : isMerch ? 'merch' : 'prints';
     const currentItems = Array.isArray(artist[fieldName]) ? [...artist[fieldName]] : [];
+    const beforeCount = currentItems.length;
     const filtered = currentItems.filter((item) => !itemIds.includes(item.id));
+    const removedCount = beforeCount - filtered.length;
     await strapi.documents('api::artist.artist').update({
         documentId: artist.documentId,
         data: { [fieldName]: filtered },
         status: 'published',
     });
+    strapi.log.info(`[handleRemoveImages] Artiste ${artist.slug} - ${fieldName}: ${removedCount}/${itemIds.length} element(s) supprime(s). IDs demandes: ${itemIds.join(', ')}`);
 }

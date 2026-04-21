@@ -421,7 +421,10 @@ function AdminMessages() {
                                 if (!isActionable || isAlreadyProcessed) return null;
 
                                 const images = changeData.images || [];
-                                const itemIds = changeData.itemIds || [];
+                                // Nouveau format detaille: items[{id, name, image}]. Fallback sur
+                                // itemIds legacy + artistsData local pour les anciennes demandes.
+                                const detailedItems = Array.isArray(changeData.items) ? changeData.items : [];
+                                const itemIds = changeData.itemIds || detailedItems.map(it => it.id);
 
                                 return (
                                   <div className="rounded-lg bg-purple-main/5 p-4 space-y-3" onClick={(e) => e.stopPropagation()}>
@@ -443,32 +446,57 @@ function AdminMessages() {
                                       </div>
                                     )}
 
-                                    {/* Vignettes for remove requests */}
+                                    {/* Vignettes for remove requests - ALERTE ROUGE avec liste explicite */}
                                     {itemIds.length > 0 && (() => {
                                       const artistLocal = Object.values(artistsData).find(a => a.slug === item.artistSlug);
-                                      const allItems = [...(artistLocal?.prints || []), ...(artistLocal?.stickers || [])];
+                                      const allItems = [...(artistLocal?.prints || []), ...(artistLocal?.stickers || []), ...(artistLocal?.merch || [])];
+
+                                      // Resolution item : priorite au payload detaille, fallback local
+                                      const resolvedItems = itemIds.map(id => {
+                                        const detailed = detailedItems.find(di => di.id === id);
+                                        const local = allItems.find(p => p.id === id);
+                                        return {
+                                          id,
+                                          name: detailed?.name || local?.titleFr || local?.titleEn || id,
+                                          image: detailed?.image || local?.image || null,
+                                          category: detailed?.category || null,
+                                        };
+                                      });
+
                                       return (
-                                        <div>
-                                          <p className="text-sm text-heading mb-2">
-                                            {tx({ fr: `Suppression de ${itemIds.length} element(s):`, en: `Removal of ${itemIds.length} item(s):`, es: `Eliminacion de ${itemIds.length} elemento(s):` })}
-                                          </p>
-                                          <div className="flex flex-wrap gap-3">
-                                            {itemIds.map(id => {
-                                              const found = allItems.find(p => p.id === id);
-                                              return (
-                                                <div key={id} className="relative rounded-lg overflow-hidden bg-black/20 shadow-md">
-                                                  {found?.image ? (
-                                                    <img src={found.image} alt={found.titleFr || id} className="w-20 h-20 object-cover" />
-                                                  ) : (
-                                                    <div className="w-20 h-20 flex items-center justify-center text-grey-muted text-xs">{id}</div>
-                                                  )}
-                                                  <div className="absolute inset-0 bg-red-500/30 flex items-center justify-center">
-                                                    <Trash2 size={20} className="text-white drop-shadow-lg" />
-                                                  </div>
-                                                  <p className="text-[9px] text-center text-grey-muted truncate px-1 py-0.5 bg-black/50">{found?.titleFr || id}</p>
-                                                </div>
-                                              );
+                                        <div className="rounded-lg bg-red-500/10 border-2 border-red-500/40 p-3">
+                                          <p className="text-sm text-red-300 font-semibold mb-2 flex items-center gap-1.5">
+                                            <Trash2 size={14} />
+                                            {tx({
+                                              fr: `ATTENTION - Suppression definitive de ${itemIds.length} oeuvre(s) :`,
+                                              en: `WARNING - Permanent deletion of ${itemIds.length} artwork(s):`,
+                                              es: `ATENCION - Eliminacion permanente de ${itemIds.length} obra(s):`,
                                             })}
+                                          </p>
+                                          {/* Liste textuelle claire (noms + IDs) */}
+                                          <ul className="list-disc list-inside text-sm text-heading space-y-0.5 mb-3 pl-1">
+                                            {resolvedItems.map(it => (
+                                              <li key={it.id}>
+                                                <span className="font-semibold">{it.name}</span>
+                                                <span className="text-grey-muted text-xs ml-2">({it.id})</span>
+                                              </li>
+                                            ))}
+                                          </ul>
+                                          {/* Vignettes visuelles */}
+                                          <div className="flex flex-wrap gap-3">
+                                            {resolvedItems.map(it => (
+                                              <div key={it.id} className="relative rounded-lg overflow-hidden bg-black/20 shadow-md">
+                                                {it.image ? (
+                                                  <img src={it.image} alt={it.name} className="w-20 h-20 object-cover" />
+                                                ) : (
+                                                  <div className="w-20 h-20 flex items-center justify-center text-grey-muted text-xs text-center px-1">{it.id}</div>
+                                                )}
+                                                <div className="absolute inset-0 bg-red-500/40 flex items-center justify-center">
+                                                  <Trash2 size={20} className="text-white drop-shadow-lg" />
+                                                </div>
+                                                <p className="text-[9px] text-center text-white truncate px-1 py-0.5 bg-black/70">{it.name}</p>
+                                              </div>
+                                            ))}
                                           </div>
                                         </div>
                                       );
