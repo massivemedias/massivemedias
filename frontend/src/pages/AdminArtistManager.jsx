@@ -359,12 +359,12 @@ function AdminArtistManager() {
               {tx({ fr: 'Gestion Artistes (God Mode)', en: 'Artist Management (God Mode)', es: 'Gestion Artistas' })}
             </h2>
           </div>
-          {/* FIX-UI (avril 2026 v2) : design sleek minimaliste. L'ancienne version
-              or/amber + emoji couronne jurait avec le theme sombre et faisait "jeu
-              video". On remplace par une icone ShieldCheck (securite) + palette
-              neutre (bg-white/5, border-white/10, text-white/80). Discret mais clair. */}
-          <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold bg-white/5 text-white/80 border border-white/10 px-2.5 py-1 rounded-lg backdrop-blur-sm">
-            <ShieldCheck size={13} className="text-white/70" strokeWidth={2.2} />
+          {/* Badge "acces admin" : design sleek, fond semi-transparent tres sombre
+              (bg-black/40), bordure subtile (border-white/10), texte gris clair
+              (text-slate-200), icone ShieldCheck neutre. Zero emoji, zero couleur
+              or/jaune, s'integre parfaitement au theme sombre Massive. */}
+          <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold bg-black/40 text-slate-200 border border-white/10 px-2.5 py-1 rounded-lg backdrop-blur-sm">
+            <ShieldCheck size={13} className="text-slate-300" strokeWidth={2} />
             {tx({
               fr: 'Acces Administrateur Total',
               en: 'Total Admin Access',
