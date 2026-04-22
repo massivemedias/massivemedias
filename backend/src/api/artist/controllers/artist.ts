@@ -1,5 +1,6 @@
 import { factories } from '@strapi/strapi';
 import Stripe from 'stripe';
+import crypto from 'crypto';
 import { sendPrivatePrintEmail } from '../../../utils/email';
 import { requireAdminAuth } from '../../../utils/auth';
 import { deleteFromSupabase } from '../../../utils/image-processor';
@@ -780,6 +781,126 @@ export default factories.createCoreController('api::artist.artist', ({ strapi })
     } catch (err: any) {
       strapi.log.error('adminUpdateItem error:', err);
       ctx.throw(500, err.message);
+    }
+  },
+
+  /**
+   * POST /admin/artists-item/:slug/:itemId/private-sale
+   *
+   * Activation atomique d'une vente privee sur une oeuvre (print ou sticker).
+   * Une seule requete = un seul clic admin :
+   *   1. valide clientEmail + basePrice
+   *   2. genere un privateToken cryptographique si absent (32 hex chars)
+   *   3. patche l'item avec { private: true, clientEmail, basePrice,
+   *      allowCustomPrice, privateToken, privateSaleActivatedAt }
+   *   4. envoie le courriel tutoriel au client + notif admin (buildPrivatePrintHtml)
+   *   5. retourne { token, clientLink, emailSent }
+   *
+   * Body : { clientEmail: string, basePrice: number, allowCustomPrice?: boolean,
+   *          category?: 'prints'|'stickers' (default 'prints') }
+   *
+   * Idempotence : si l'item a deja un privateToken, on le reutilise (on ne
+   * casse pas les liens deja envoyes). Les autres champs sont ecrases par la
+   * nouvelle saisie admin. L'email est TOUJOURS renvoye (permet de re-trigger
+   * l'envoi sans separate endpoint).
+   */
+  async activatePrivateSale(ctx) {
+    if (!(await requireAdminAuth(ctx))) return;
+    const { slug, itemId } = ctx.params;
+    const body = (ctx.request.body as any) || {};
+    const category = body.category === 'stickers' ? 'stickers' : 'prints';
+    const clientEmail = String(body.clientEmail || '').trim().toLowerCase();
+    const basePrice = Number(body.basePrice);
+    const allowCustomPrice = !!body.allowCustomPrice;
+
+    if (!slug || !itemId) return ctx.badRequest('slug et itemId requis');
+    if (!clientEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clientEmail)) {
+      return ctx.badRequest('clientEmail invalide');
+    }
+    if (!Number.isFinite(basePrice) || basePrice <= 0) {
+      return ctx.badRequest('basePrice doit etre un nombre > 0');
+    }
+
+    try {
+      const artists = await strapi.documents('api::artist.artist').findMany({
+        filters: { slug: { $eq: slug } } as any,
+        limit: 1,
+      });
+      if (!artists || artists.length === 0) return ctx.notFound(`Artiste ${slug} introuvable`);
+      const artist = artists[0] as any;
+
+      const items = Array.isArray(artist[category]) ? [...artist[category]] : [];
+      const idx = items.findIndex((it: any) => it?.id === itemId);
+      if (idx < 0) return ctx.notFound(`Item ${itemId} introuvable dans ${category} de ${slug}`);
+
+      const target = items[idx];
+      if (target.sold) return ctx.badRequest('Cette oeuvre a deja ete vendue');
+
+      // Conserve le token existant si deja cree (evite de casser un lien deja envoye).
+      // Sinon genere un nouveau token cryptographique (32 hex chars = 16 bytes).
+      const privateToken = target.privateToken && typeof target.privateToken === 'string' && target.privateToken.length >= 16
+        ? target.privateToken
+        : crypto.randomBytes(16).toString('hex');
+
+      items[idx] = {
+        ...target,
+        private: true,
+        clientEmail,
+        basePrice,
+        allowCustomPrice,
+        privateToken,
+        privateSaleActivatedAt: target.privateSaleActivatedAt || new Date().toISOString(),
+      };
+
+      await strapi.documents('api::artist.artist').update({
+        documentId: artist.documentId,
+        data: { [category]: items } as any,
+        status: 'published',
+      });
+
+      strapi.log.info(`[private-sale] Activated ${slug}.${category}[${itemId}] -> ${clientEmail} (base=${basePrice}$, custom=${allowCustomPrice})`);
+
+      const clientLink = `https://massivemedias.com/vente-privee/${privateToken}`;
+
+      // Envoi courriel tutoriel au client + notif admin (non-bloquant : en cas
+      // d'echec de l'email, la vente reste activee, l'admin peut re-trigger via
+      // le bouton "Renvoyer" dans AdminOrders).
+      let emailSent = false;
+      try {
+        emailSent = await sendPrivatePrintEmail({
+          clientEmail,
+          artistName: artist.name,
+          printTitle: items[idx].titleFr || items[idx].titleEn || items[idx].title || 'Oeuvre',
+          printImage: items[idx].fullImage || items[idx].image || '',
+          buyLink: clientLink,
+          price: null, // on n'utilise plus le champ price historique, on passe par basePrice
+          basePrice,
+          allowCustomPrice,
+        });
+      } catch (emailErr: any) {
+        strapi.log.warn(`[private-sale] Email envoi echec (vente quand meme activee):`, emailErr?.message);
+      }
+
+      // Invalide le cache pour que /vente-privee/:token retourne le nouvel etat tout de suite
+      const cacheResult = await invalidateArtistCache(slug, strapi.log);
+
+      ctx.body = {
+        success: true,
+        data: {
+          artistSlug: slug,
+          itemId,
+          token: privateToken,
+          clientLink,
+          clientEmail,
+          basePrice,
+          allowCustomPrice,
+          emailSent,
+        },
+        cacheInvalidation: cacheResult,
+      };
+    } catch (err: any) {
+      strapi.log.error('[private-sale] activatePrivateSale error:', err);
+      ctx.throw(500, err?.message || 'Erreur activation vente privee');
     }
   },
 

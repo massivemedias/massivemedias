@@ -81,5 +81,13 @@ export default {
       handler: 'artist.adminDeleteItem',
       config: { auth: false },
     },
+    // Activation one-shot d'une vente privee depuis l'UI admin (AdminArtistManager)
+    // Protegee par requireAdminAuth dans le controller. Envoie le courriel au client.
+    {
+      method: 'POST',
+      path: '/admin/artists-item/:slug/:itemId/private-sale',
+      handler: 'artist.activatePrivateSale',
+      config: { auth: false },
+    },
   ],
 };

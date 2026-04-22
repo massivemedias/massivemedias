@@ -14,7 +14,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search, Users, Loader2, ChevronLeft, Trash2, Save, CheckCircle,
   XCircle, Image as ImageIcon, Pencil, DollarSign, Sparkles, TrendingUp,
-  BarChart3, Banknote, Eye, Plus, Wallet,
+  BarChart3, Banknote, Eye, Plus, Wallet, Lock,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import {
@@ -22,6 +22,7 @@ import {
   updateAdminArtistProfile, updateAdminArtistItem, deleteAdminArtistItem,
   createArtistPayment,
 } from '../services/adminService';
+import ActivatePrivateSaleModal from '../components/ActivatePrivateSaleModal';
 
 function AdminArtistManager() {
   const { tx } = useLang();
@@ -144,10 +145,12 @@ function AdminArtistManager() {
     }
   };
 
-  // ------- Items (edit + delete) -------
+  // ------- Items (edit + delete + private sale) -------
   const [editingItem, setEditingItem] = useState(null);
   const [itemSaving, setItemSaving] = useState(false);
   const [deletingItem, setDeletingItem] = useState(null);
+  // Private sale modal : { item, category } OU null
+  const [privateSaleTarget, setPrivateSaleTarget] = useState(null);
 
   const openEditItem = (item, category) => {
     setEditingItem({
@@ -422,9 +425,13 @@ function AdminArtistManager() {
                 </div>
               </div>
               <ItemsGrid category="prints" items={detail.prints} onEdit={(it) => openEditItem(it, 'prints')}
-                onDelete={(it) => deleteItem(it, 'prints')} deletingItemId={deletingItem} tx={tx} />
+                onDelete={(it) => deleteItem(it, 'prints')}
+                onPrivateSale={(it) => setPrivateSaleTarget({ item: it, category: 'prints' })}
+                deletingItemId={deletingItem} tx={tx} />
               <ItemsGrid category="stickers" items={detail.stickers} onEdit={(it) => openEditItem(it, 'stickers')}
-                onDelete={(it) => deleteItem(it, 'stickers')} deletingItemId={deletingItem} tx={tx} />
+                onDelete={(it) => deleteItem(it, 'stickers')}
+                onPrivateSale={(it) => setPrivateSaleTarget({ item: it, category: 'stickers' })}
+                deletingItemId={deletingItem} tx={tx} />
             </div>
           )}
 
@@ -479,6 +486,39 @@ function AdminArtistManager() {
               </motion.div>
             )}
           </AnimatePresence>
+
+          {/* Modal activation vente privee (3 clics : email + prix + checkbox) */}
+          {privateSaleTarget && (
+            <ActivatePrivateSaleModal
+              artistSlug={detail.slug}
+              item={privateSaleTarget.item}
+              category={privateSaleTarget.category}
+              onClose={() => setPrivateSaleTarget(null)}
+              onActivated={(result) => {
+                // Optimistic update : marquer l'item comme prive dans le state local
+                setDetail(prev => {
+                  if (!prev || !Array.isArray(prev[privateSaleTarget.category])) return prev;
+                  const updated = prev[privateSaleTarget.category].map(it => it.id === privateSaleTarget.item.id
+                    ? { ...it, private: true, clientEmail: result.clientEmail, basePrice: result.basePrice, allowCustomPrice: result.allowCustomPrice, privateToken: result.token }
+                    : it);
+                  return { ...prev, [privateSaleTarget.category]: updated };
+                });
+                showSuccess(result.emailSent
+                  ? tx({
+                      fr: `Vente privee activee - courriel envoye a ${result.clientEmail}.`,
+                      en: `Private sale activated - email sent to ${result.clientEmail}.`,
+                      es: `Venta privada activada - correo enviado.`,
+                    })
+                  : tx({
+                      fr: `Vente activee mais l'envoi de courriel a echoue. Copiez le lien et envoyez-le manuellement.`,
+                      en: `Sale activated but email failed. Copy the link and send manually.`,
+                      es: `Venta activada pero el correo fallo.`,
+                    }));
+                // Refresh silencieux (ne touche pas au privateSaleTarget - on reste sur l'ecran de succes du modal)
+                loadDetail(detail.slug);
+              }}
+            />
+          )}
         </>
       )}
     </div>
@@ -522,7 +562,7 @@ function TextareaField({ label, value, onChange }) {
   );
 }
 
-function ItemsGrid({ category, items, onEdit, onDelete, deletingItemId, tx }) {
+function ItemsGrid({ category, items, onEdit, onDelete, onPrivateSale, deletingItemId, tx }) {
   if (!Array.isArray(items) || items.length === 0) {
     return (
       <div className="card-bg rounded-xl p-4">
@@ -546,10 +586,35 @@ function ItemsGrid({ category, items, onEdit, onDelete, deletingItemId, tx }) {
               <p className="text-[11px] text-heading font-semibold truncate">{item.titleFr || item.titleEn || item.id}</p>
               <p className="text-[9px] text-grey-muted font-mono truncate">{item.id}</p>
               {item.customPrice != null && <p className="text-[10px] text-accent mt-0.5">{item.customPrice}$</p>}
-              {item.unique && <span className="inline-block text-[9px] bg-purple-500/20 text-purple-400 px-1.5 py-0.5 rounded mt-1">unique</span>}
-              {item.sold && <span className="inline-block text-[9px] bg-red-500/20 text-red-400 px-1.5 py-0.5 rounded mt-1 ml-1">sold</span>}
+              <div className="flex flex-wrap gap-1 mt-1">
+                {item.unique && <span className="inline-block text-[9px] bg-purple-500/20 text-purple-400 px-1.5 py-0.5 rounded">unique</span>}
+                {item.sold && <span className="inline-block text-[9px] bg-red-500/20 text-red-400 px-1.5 py-0.5 rounded">sold</span>}
+                {item.private && !item.sold && (
+                  <span className="inline-flex items-center gap-0.5 text-[9px] bg-accent/20 text-accent px-1.5 py-0.5 rounded font-semibold">
+                    <Lock size={8} /> {tx({ fr: 'prive', en: 'private', es: 'privado' })}
+                  </span>
+                )}
+              </div>
             </div>
+            {/* Hover overlay : Edit / Private Sale / Delete. Sur mobile on affiche
+                en permanence (touch-only) via opacity conditionnelle sur le groupe. */}
             <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              {/* Bouton Create/Edit Private Sale - masque si deja vendu */}
+              {onPrivateSale && !item.sold && (
+                <button
+                  onClick={() => onPrivateSale(item)}
+                  title={item.private
+                    ? tx({ fr: 'Modifier la vente privee', en: 'Edit private sale', es: 'Editar venta privada' })
+                    : tx({ fr: 'Creer une vente privee', en: 'Create private sale', es: 'Crear venta privada' })}
+                  className={`p-1.5 rounded-lg text-white shadow-lg transition-colors ${
+                    item.private
+                      ? 'bg-accent/90 hover:bg-accent'
+                      : 'bg-purple-500/80 hover:bg-purple-500'
+                  }`}
+                >
+                  <Lock size={11} />
+                </button>
+              )}
               <button onClick={() => onEdit(item)} title={tx({ fr: 'Editer', en: 'Edit', es: 'Editar' })}
                 className="p-1.5 rounded-lg bg-accent/80 text-white hover:bg-accent shadow-lg">
                 <Pencil size={11} />

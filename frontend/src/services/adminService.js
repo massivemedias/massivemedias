@@ -47,6 +47,40 @@ export const deleteAdminArtistItem = (slug, itemId, category = 'prints') => {
   });
 };
 
+/**
+ * Active une vente privee sur une oeuvre en un seul appel :
+ *   - patch artist.prints[itemId] avec private=true + clientEmail + basePrice + allowCustomPrice
+ *   - genere un privateToken cryptographique si absent
+ *   - envoie le courriel tutoriel au client + notif admin
+ *
+ * Utilise par AdminArtistManager / ActivatePrivateSaleModal.
+ *
+ * @param {string} slug - artist slug
+ * @param {string} itemId - print/sticker id
+ * @param {object} payload
+ * @param {string} payload.clientEmail - email du client acheteur (valide serveur-side)
+ * @param {number} payload.basePrice   - prix minimum en dollars (> 0)
+ * @param {boolean} [payload.allowCustomPrice=false] - si true, le client peut payer plus
+ * @param {'prints'|'stickers'} [payload.category='prints']
+ * @returns Promise<{ data: { success, data: { token, clientLink, emailSent, ... } } }>
+ */
+export const activatePrivateSale = (slug, itemId, payload) => {
+  if (!slug || !itemId) throw new Error('activatePrivateSale: slug et itemId requis');
+  if (!payload?.clientEmail) throw new Error('activatePrivateSale: clientEmail requis');
+  if (!Number.isFinite(payload.basePrice) || payload.basePrice <= 0) {
+    throw new Error('activatePrivateSale: basePrice invalide');
+  }
+  return api.post(
+    `/admin/artists-item/${encodeURIComponent(slug)}/${encodeURIComponent(itemId)}/private-sale`,
+    {
+      clientEmail: String(payload.clientEmail).trim().toLowerCase(),
+      basePrice: Number(payload.basePrice),
+      allowCustomPrice: !!payload.allowCustomPrice,
+      category: payload.category === 'stickers' ? 'stickers' : 'prints',
+    },
+  );
+};
+
 // --- Commandes ---
 export const getOrders = (params) => api.get('/orders/admin', { params });
 export const getOrderStats = () => api.get('/orders/stats');
