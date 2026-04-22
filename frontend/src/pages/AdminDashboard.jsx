@@ -10,6 +10,7 @@ import {
 import { useLang } from '../i18n/LanguageContext';
 import { getOrders, getContactSubmissions, getExpenses, getAnalytics } from '../services/adminService';
 import api from '../services/api';
+import AnnualBalanceCard from '../components/AnnualBalanceCard';
 
 const NOTES_KEY = 'mm-admin-notes';
 
@@ -381,6 +382,11 @@ function AdminDashboard() {
           </div>
         )}
       </div>
+
+      {/* ===== BILAN ANNUEL (revenus + depenses + taxes + net a remettre) ===== */}
+      {/* Deplace depuis AdminDepenses (avril 2026) : sa place naturelle est ici
+          car il melange revenus et depenses. Inclut le Guide Express finances. */}
+      <AnnualBalanceCard />
 
       {/* ===== NOTES ===== */}
       <div className="rounded-2xl p-4 md:p-5 card-bg">

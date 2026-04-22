@@ -3,12 +3,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search, Receipt, DollarSign, Loader2, Plus, X, Save,
   ChevronLeft, ChevronRight, CheckCircle, ChevronDown, ChevronUp,
-  Trash2, Upload, ExternalLink, BarChart3, TrendingUp, TrendingDown,
+  Trash2, Upload, ExternalLink, TrendingUp, TrendingDown,
   Edit3, Image as ImageIcon, FileText, Package, Download,
   Layers, Truck, Code2, Megaphone, Printer, MoreHorizontal,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
-import { getExpenses, createExpense, updateExpense, deleteExpense, getExpenseSummary } from '../services/adminService';
+import { getExpenses, createExpense, updateExpense, deleteExpense } from '../services/adminService';
 import api, { uploadFile } from '../services/api';
 import {
   findBestMatch,
@@ -61,11 +61,8 @@ const normalizeAmount = (value) => {
   return isNaN(parsed) ? null : parsed;
 };
 
-const MONTH_NAMES = {
-  fr: ['Jan', 'Fev', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aou', 'Sep', 'Oct', 'Nov', 'Dec'],
-  en: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-  es: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
-};
+// MONTH_NAMES supprime (avril 2026) : etait utilise uniquement par le bilan
+// annuel qui a migre dans AnnualBalanceCard (utilise dans Dashboard).
 
 function downloadCSV(filename, csvContent) {
   const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -147,11 +144,10 @@ function AdminDepenses() {
   // Inventory items (pour le fuzzy matching sur l'import de facture)
   const [inventoryItems, setInventoryItems] = useState([]);
 
-  // Year summary
-  const [showSummary, setShowSummary] = useState(false);
-  const [summaryYear, setSummaryYear] = useState(new Date().getFullYear());
-  const [yearData, setYearData] = useState(null);
-  const [loadingSummary, setLoadingSummary] = useState(false);
+  // Le bilan annuel (revenus + depenses + taxes + net a remettre) est deplace
+  // dans AdminDashboard via AnnualBalanceCard. Les states showSummary/yearData/
+  // summaryYear/loadingSummary + leurs effects sont supprimes ici. Le panneau
+  // Depenses ne gere plus que la liste + la creation/edition des depenses.
 
   useEffect(() => {
     const t = setTimeout(() => setSearchDebounce(search), 400);
@@ -172,18 +168,6 @@ function AdminDepenses() {
   }, [meta.page, filterCat, searchDebounce]);
 
   useEffect(() => { fetchItems(); }, [fetchItems]);
-
-  const fetchYearSummary = useCallback(async () => {
-    setLoadingSummary(true);
-    try {
-      const { data } = await getExpenseSummary(summaryYear);
-      setYearData(data);
-    } catch { /* silent */ } finally { setLoadingSummary(false); }
-  }, [summaryYear]);
-
-  useEffect(() => {
-    if (showSummary) fetchYearSummary();
-  }, [showSummary, fetchYearSummary]);
 
   // Receipt upload for create form
   const handleReceiptUpload = async (e) => {
@@ -551,167 +535,11 @@ function AdminDepenses() {
         })}
       </div>
 
-      {/* Year summary toggle */}
-      <button onClick={() => setShowSummary(!showSummary)}
-        className="flex items-center gap-2 px-4 py-2.5 rounded-lg card-bg shadow-lg shadow-black/20 text-sm font-semibold text-heading hover:bg-accent/10 transition-colors w-full md:w-auto">
-        <BarChart3 size={16} className="text-accent" />
-        {tx({ fr: 'Etat des comptes', en: 'Financial statement', es: 'Estado de cuentas' })}
-        {showSummary ? <ChevronUp size={14} className="ml-auto md:ml-2" /> : <ChevronDown size={14} className="ml-auto md:ml-2" />}
-      </button>
-
-      {/* Year summary panel */}
-      <AnimatePresence>
-        {showSummary && (
-          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
-            <div className="rounded-xl card-bg shadow-lg shadow-black/20 p-4 space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-heading uppercase tracking-wider flex items-center gap-2">
-                  <BarChart3 size={14} className="text-accent" />
-                  {tx({ fr: 'Bilan annuel', en: 'Annual summary', es: 'Resumen anual' })}
-                </h3>
-                <div className="flex items-center gap-2">
-                  <button onClick={() => setSummaryYear(y => y - 1)} className="p-1 rounded bg-glass text-grey-muted hover:text-heading"><ChevronLeft size={14} /></button>
-                  <span className="text-sm font-bold text-heading min-w-[4ch] text-center">{summaryYear}</span>
-                  <button onClick={() => setSummaryYear(y => y + 1)} className="p-1 rounded bg-glass text-grey-muted hover:text-heading"><ChevronRight size={14} /></button>
-                  {yearData && (
-                    <button
-                      onClick={() => {
-                        const months = Object.entries(yearData.months);
-                        const mNames = MONTH_NAMES.fr;
-                        const lines = [
-                          `Massive Medias - Bilan annuel ${summaryYear}`,
-                          `NEQ: 2269057891 | TPS: 732457635RT0001 | TVQ: 4012577678TQ0001`,
-                          '',
-                          'Mois,Revenus,Dépenses,TPS payée,TVQ payée,Bilan',
-                          ...months.map(([key, m]) => {
-                            const balance = m.revenue - m.expenses;
-                            return `${mNames[parseInt(key) - 1]},${fmt(m.revenue)},${fmt(m.expenses)},${fmt(m.tps)},${fmt(m.tvq)},${fmt(balance)}`;
-                          }),
-                          `Total,${fmt(yearData.totals.revenue)},${fmt(yearData.totals.expenses)},${fmt(yearData.totals.tps)},${fmt(yearData.totals.tvq)},${fmt(yearData.totals.revenue - yearData.totals.expenses)}`,
-                          '',
-                          'Taxes',
-                          `,TPS (5%),TVQ (9.975%)`,
-                          `Percue sur ventes,${fmt(yearData.totals.revenueTps)},${fmt(yearData.totals.revenueTvq)}`,
-                          `Payee sur achats,${fmt(yearData.totals.tps)},${fmt(yearData.totals.tvq)}`,
-                          `Net a remettre,${fmt(yearData.totals.revenueTps - yearData.totals.tps)},${fmt(yearData.totals.revenueTvq - yearData.totals.tvq)}`,
-                          '',
-                          `Dépenses déductibles,${fmt(yearData.totals.deductible)}`,
-                        ];
-                        downloadCSV(`massive-bilan-${summaryYear}.csv`, lines.join('\n'));
-                      }}
-                      className="p-1.5 rounded bg-green-500/20 text-green-400 hover:bg-green-500/30 transition-colors"
-                      title={tx({ fr: 'Exporter CSV', en: 'Export CSV', es: 'Exportar CSV' })}
-                    >
-                      <Download size={14} />
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              {loadingSummary ? (
-                <div className="flex justify-center py-8"><Loader2 size={24} className="animate-spin text-accent" /></div>
-              ) : yearData ? (
-                <>
-                  <div className="overflow-x-auto -mx-4 px-4">
-                    <table className="w-full text-xs min-w-[600px]">
-                      <thead>
-                        <tr className="shadow-[0_1px_0_rgba(255,255,255,0.04)]">
-                          <th className="text-left py-2 text-grey-muted font-semibold">{tx({ fr: 'Mois', en: 'Month', es: 'Mes' })}</th>
-                          <th className="text-right py-2 text-green-400 font-semibold">{tx({ fr: 'Revenus', en: 'Revenue', es: 'Ingresos' })}</th>
-                          <th className="text-right py-2 text-red-400 font-semibold">{tx({ fr: 'Dépenses', en: 'Expenses', es: 'Gastos' })}</th>
-                          <th className="text-right py-2 text-blue-400 font-semibold">TPS</th>
-                          <th className="text-right py-2 text-purple-400 font-semibold">TVQ</th>
-                          <th className="text-right py-2 text-heading font-semibold">{tx({ fr: 'Bilan', en: 'Balance', es: 'Balance' })}</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {Object.entries(yearData.months).map(([key, m]) => {
-                          const balance = m.revenue - m.expenses;
-                          const hasData = m.revenue > 0 || m.expenses > 0;
-                          if (!hasData) return (
-                            <tr key={key} className="shadow-[0_1px_0_rgba(255,255,255,0.04)] opacity-30">
-                              <td className="py-2 text-grey-muted">{(MONTH_NAMES[lang] || MONTH_NAMES.fr)[parseInt(key) - 1]}</td>
-                              <td className="text-right py-2 text-grey-muted">-</td>
-                              <td className="text-right py-2 text-grey-muted">-</td>
-                              <td className="text-right py-2 text-grey-muted">-</td>
-                              <td className="text-right py-2 text-grey-muted">-</td>
-                              <td className="text-right py-2 text-grey-muted">-</td>
-                            </tr>
-                          );
-                          return (
-                            <tr key={key} className="shadow-[0_1px_0_rgba(255,255,255,0.04)]">
-                              <td className="py-2 text-heading font-medium">{(MONTH_NAMES[lang] || MONTH_NAMES.fr)[parseInt(key) - 1]}</td>
-                              <td className="text-right py-2 text-green-400">{fmt(m.revenue)}$</td>
-                              <td className="text-right py-2 text-red-400">{fmt(m.expenses)}$</td>
-                              <td className="text-right py-2 text-blue-400">{fmt(m.tps)}$</td>
-                              <td className="text-right py-2 text-purple-400">{fmt(m.tvq)}$</td>
-                              <td className={`text-right py-2 font-semibold ${balance >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                                {balance >= 0 ? '+' : ''}{fmt(balance)}$
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                      <tfoot>
-                        <tr className="shadow-[0_-2px_0_rgba(255,82,160,0.2)]">
-                          <td className="py-3 text-heading font-bold">Total {summaryYear}</td>
-                          <td className="text-right py-3 text-green-400 font-bold">{fmt(yearData.totals.revenue)}$</td>
-                          <td className="text-right py-3 text-red-400 font-bold">{fmt(yearData.totals.expenses)}$</td>
-                          <td className="text-right py-3 text-blue-400 font-bold">{fmt(yearData.totals.tps)}$</td>
-                          <td className="text-right py-3 text-purple-400 font-bold">{fmt(yearData.totals.tvq)}$</td>
-                          <td className={`text-right py-3 font-bold text-lg ${(yearData.totals.revenue - yearData.totals.expenses) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                            {(yearData.totals.revenue - yearData.totals.expenses) >= 0 ? '+' : ''}{fmt(yearData.totals.revenue - yearData.totals.expenses)}$
-                          </td>
-                        </tr>
-                      </tfoot>
-                    </table>
-                  </div>
-
-                  {/* Tax summary */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-2">
-                    <div className="rounded-lg bg-accent/5 p-3">
-                      <p className="text-[10px] text-grey-muted uppercase tracking-wider mb-1">{tx({ fr: 'TPS percue', en: 'GST collected', es: 'TPS cobrado' })}</p>
-                      <p className="text-sm font-bold text-green-400">{fmt(yearData.totals.revenueTps)}$</p>
-                    </div>
-                    <div className="rounded-lg bg-accent/5 p-3">
-                      <p className="text-[10px] text-grey-muted uppercase tracking-wider mb-1">{tx({ fr: 'TPS payée', en: 'GST paid', es: 'TPS pagado' })}</p>
-                      <p className="text-sm font-bold text-red-400">{fmt(yearData.totals.tps)}$</p>
-                    </div>
-                    <div className="rounded-lg bg-accent/5 p-3">
-                      <p className="text-[10px] text-grey-muted uppercase tracking-wider mb-1">{tx({ fr: 'TVQ percue', en: 'QST collected', es: 'TVQ cobrado' })}</p>
-                      <p className="text-sm font-bold text-green-400">{fmt(yearData.totals.revenueTvq)}$</p>
-                    </div>
-                    <div className="rounded-lg bg-accent/5 p-3">
-                      <p className="text-[10px] text-grey-muted uppercase tracking-wider mb-1">{tx({ fr: 'TVQ payée', en: 'QST paid', es: 'TVQ pagado' })}</p>
-                      <p className="text-sm font-bold text-red-400">{fmt(yearData.totals.tvq)}$</p>
-                    </div>
-                  </div>
-
-                  {/* Net tax owing */}
-                  <div className="flex flex-col md:flex-row gap-3">
-                    <div className="flex-1 rounded-lg bg-blue-500/5 p-3">
-                      <p className="text-[10px] text-grey-muted uppercase tracking-wider mb-1">{tx({ fr: 'TPS nette a remettre', en: 'Net GST owing', es: 'TPS neto a remitir' })}</p>
-                      <p className={`text-lg font-bold ${(yearData.totals.revenueTps - yearData.totals.tps) >= 0 ? 'text-red-400' : 'text-green-400'}`}>
-                        {fmt(yearData.totals.revenueTps - yearData.totals.tps)}$
-                      </p>
-                    </div>
-                    <div className="flex-1 rounded-lg bg-purple-500/5 p-3">
-                      <p className="text-[10px] text-grey-muted uppercase tracking-wider mb-1">{tx({ fr: 'TVQ nette a remettre', en: 'Net QST owing', es: 'TVQ neto a remitir' })}</p>
-                      <p className={`text-lg font-bold ${(yearData.totals.revenueTvq - yearData.totals.tvq) >= 0 ? 'text-red-400' : 'text-green-400'}`}>
-                        {fmt(yearData.totals.revenueTvq - yearData.totals.tvq)}$
-                      </p>
-                    </div>
-                    <div className="flex-1 rounded-lg bg-accent/5 p-3">
-                      <p className="text-[10px] text-grey-muted uppercase tracking-wider mb-1">{tx({ fr: 'Dépenses déductibles', en: 'Deductible expenses', es: 'Gastos deducibles' })}</p>
-                      <p className="text-lg font-bold text-green-400">{fmt(yearData.totals.deductible)}$</p>
-                    </div>
-                  </div>
-                </>
-              ) : null}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Le bloc "Etat des comptes / Bilan annuel" a ete deplace dans le
+          Dashboard (AnnualBalanceCard) car il melange revenus ET depenses -
+          sa place naturelle est dans la vue d'ensemble business, pas dans
+          l'ecran "Depenses". Voir /admin/dashboard pour la version enrichie
+          avec le Guide Express finances. */}
 
       {/* Search + filter + add button */}
       <div className="flex flex-col md:flex-row gap-3">
