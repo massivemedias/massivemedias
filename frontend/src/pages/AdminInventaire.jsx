@@ -8,7 +8,26 @@ import {
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import api from '../services/api';
+import { createExpense } from '../services/adminService';
 import { merchColors } from '../data/merchData';
+
+// FIX-LINK-EXPENSE (avril 2026) : mapping inventaire -> categorie de depense
+// valide cote backend (`['consommables', 'materiel', 'shipping', 'software',
+// 'marketing', 'equipment', 'taxes', 'other']`). Utilise quand l'admin active
+// la checkbox "Creer automatiquement la depense" lors d'un restock.
+const INVENTORY_TO_EXPENSE_CATEGORY = {
+  stickers:     'consommables',
+  papiers:      'consommables',
+  textile:      'consommables',
+  consommables: 'consommables',
+  consumables:  'consommables',
+  packaging:    'consommables',
+  merch:        'consommables',
+  cadre:        'consommables',
+  materiel:     'materiel',
+  equipment:    'equipment',
+  software:     'software',
+};
 
 // --- Helpers couleur ---
 function hexLuminance(hex) {
@@ -255,6 +274,11 @@ function ItemForm({ onClose, onSaved, tx, lang, editItem }) {
     location:       editItem?.location  || '',
     notes:          editItem?.notes     || '',
     _colorOpen: false,
+    // FIX-LINK-EXPENSE (avril 2026) : champs non persistes en inventaire,
+    // utilises uniquement pour declencher la creation d'une depense liee
+    // au moment du submit.
+    totalPurchaseCost: '',
+    createExpenseOnSave: true,
   });
 
   const [saving, setSaving] = useState(false);
@@ -354,20 +378,56 @@ function ItemForm({ onClose, onSaved, tx, lang, editItem }) {
       };
       if (isEdit) {
         await api.put(`/inventory-items/${editItem.documentId}/adjust`, payload);
-        onSaved();
-        onClose();
       } else {
         const res = await api.post('/inventory-items/create', payload);
         setCreatedSku(res.data?.data?.sku || '');
+      }
+
+      // FIX-LINK-EXPENSE (avril 2026) : creation automatique de la depense liee.
+      // Se declenche SEULEMENT si la checkbox est cochee ET un cout total > 0
+      // a ete saisi. L'echec de la creation de depense ne rollback PAS la
+      // mise a jour inventaire : l'admin recoit un warning mais l'item reste
+      // cree/ajuste (moindre mal, evite la perte de saisie).
+      const purchaseCost = Number(form.totalPurchaseCost);
+      if (form.createExpenseOnSave && Number.isFinite(purchaseCost) && purchaseCost > 0) {
+        try {
+          const expenseCategory = INVENTORY_TO_EXPENSE_CATEGORY[form.category] || 'other';
+          const today = new Date().toISOString().slice(0, 10);
+          await createExpense({
+            description: `Achat de stock : ${payload.nameFr}`,
+            amount: purchaseCost,
+            category: expenseCategory,
+            date: today,
+            vendor: payload.brand || '',
+            notes: `Inventaire: ${payload.nameFr} | Qte: ${payload.quantity} | Cat: ${form.category}${payload.location ? ` | Lieu: ${payload.location}` : ''}`,
+            taxDeductible: true,
+          });
+        } catch (expErr) {
+          // On n'echoue PAS la commande inventaire : depense en erreur seulement.
+          console.warn('[Inventaire] Creation depense automatique echouee :', expErr);
+          setError(tx({
+            fr: `Inventaire sauve, mais creation depense echouee : ${expErr?.response?.data?.error?.message || expErr?.message || 'erreur'}`,
+            en: `Inventory saved, but expense creation failed: ${expErr?.response?.data?.error?.message || expErr?.message || 'error'}`,
+            es: `Inventario guardado, pero creacion de gasto fallo.`,
+          }));
+          // On n'arrete pas le flux : on laisse l'admin fermer / continuer
+        }
+      }
+
+      if (isEdit) {
+        onSaved();
+        onClose();
+      } else {
         onSaved();
         // Reset pour ajouter un autre du meme type (on conserve la categorie
-        // mais on reset les valeurs pour eviter d'ecraser un dupliquc sans
+        // mais on reset les valeurs pour eviter d'ecraser un duplicata sans
         // s'en apercevoir).
         setForm(f => ({
           ...f,
           variant: '', detail: '', color: '', brand: '', hasZip: false,
           stickerFormat: '', stickerType: '', finitionPapier: '', fx: '', taillePapier: '',
           quantity: 0, costPrice: '', notes: '', nameFr: '', nameEn: '',
+          totalPurchaseCost: '', createExpenseOnSave: true,
           _colorOpen: false,
         }));
       }
@@ -779,6 +839,48 @@ function ItemForm({ onClose, onSaved, tx, lang, editItem }) {
                   className="w-full rounded-lg bg-black/20 text-heading text-sm px-4 py-2.5 outline-none border border-white/10 focus:border-accent placeholder:text-grey-muted/50"
                 />
               </Field>
+
+              {/* FIX-LINK-EXPENSE (avril 2026) : cout total de l'achat + toggle
+                  pour creer automatiquement la depense liee. Evite la double
+                  saisie Inventaire / Depenses. Laisser vide = pas de depense. */}
+              <Field
+                label={tx({
+                  fr: "Cout total de l'achat ($)",
+                  en: 'Total purchase cost ($)',
+                  es: 'Costo total de compra ($)',
+                })}
+                hint={tx({
+                  fr: 'Optionnel. Laisser vide si pas de facture a enregistrer.',
+                  en: 'Optional. Leave empty if no invoice to record.',
+                  es: 'Opcional. Vacio si no hay factura.',
+                })}
+              >
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={form.totalPurchaseCost}
+                  onChange={e => set('totalPurchaseCost', e.target.value)}
+                  placeholder="0.00"
+                  className="w-full rounded-lg bg-black/20 text-heading text-sm px-4 py-2.5 outline-none border border-white/10 focus:border-accent placeholder:text-grey-muted/50"
+                />
+              </Field>
+
+              <label className="flex items-start gap-2.5 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  checked={form.createExpenseOnSave}
+                  onChange={e => set('createExpenseOnSave', e.target.checked)}
+                  className="mt-0.5 w-4 h-4 accent-accent flex-shrink-0 cursor-pointer"
+                />
+                <span className="text-xs text-grey-muted group-hover:text-heading transition-colors leading-snug">
+                  {tx({
+                    fr: 'Creer automatiquement la depense dans la comptabilite',
+                    en: 'Automatically create expense in accounting',
+                    es: 'Crear automaticamente el gasto en contabilidad',
+                  })}
+                </span>
+              </label>
 
               <Field label={tx({ fr: 'Emplacement', en: 'Location', es: 'Ubicacion' })}>
                 <InputText
