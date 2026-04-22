@@ -52,6 +52,33 @@ const generateInvoiceNumber = (order) => {
  * @param {'invoice'|'receipt'} type - Type de document
  */
 export function generateInvoicePDF(order, type = 'invoice', options = {}) {
+  // FIX-BILLING (avril 2026) : les infos Massive Medias et les coordonnees
+  // bancaires peuvent etre overridees via options.settings (fetchees depuis
+  // /billing-settings backend). Si absentes, les defauts hardcoded sont
+  // utilises pour ne pas casser la retro-compat.
+  const S = options?.settings || {};
+  const company = {
+    name:     S.companyName    || COMPANY.name,
+    owner:    S.companyOwner   || COMPANY.owner,
+    neq:      S.neq            || COMPANY.neq,
+    tps:      S.tps            || COMPANY.tps,
+    tvq:      S.tvq            || COMPANY.tvq,
+    address:  S.companyAddress || COMPANY.address,
+    city:     S.companyCity    || COMPANY.city,
+    phone:    S.companyPhone   || COMPANY.phone,
+    email:    S.companyEmail   || COMPANY.email,
+    website:  S.companyWebsite || COMPANY.website,
+  };
+  const paymentInfo = {
+    interacEmail: S.interacEmail    || PAYMENT_INFO.interacEmail,
+    bankName:     S.bankName        || PAYMENT_INFO.bankName,
+    accountHolder: S.companyOwner   || PAYMENT_INFO.accountHolder,
+    transit:      S.bankTransit     || PAYMENT_INFO.transit,
+    institution:  S.bankInstitution || PAYMENT_INFO.institution,
+    account:      S.bankAccount     || PAYMENT_INFO.account,
+    notes:        S.paymentNotes    || '',
+  };
+
   const doc = new jsPDF({ unit: 'mm', format: 'a4' });
   const pageWidth = doc.internal.pageSize.getWidth();
   const margin = 15;
@@ -82,9 +109,9 @@ export function generateInvoicePDF(order, type = 'invoice', options = {}) {
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8);
   doc.setTextColor(...greyText);
-  doc.text(COMPANY.address, margin, y + logoH + 4);
-  doc.text(COMPANY.city, margin, y + logoH + 8);
-  doc.text(`${COMPANY.phone}  |  ${COMPANY.email}`, margin, y + logoH + 12);
+  doc.text(company.address, margin, y + logoH + 4);
+  doc.text(company.city, margin, y + logoH + 8);
+  doc.text(`${company.phone || ''}  |  ${company.email}`, margin, y + logoH + 12);
 
   // Document type - right aligned
   doc.setFont('helvetica', 'bold');
@@ -156,9 +183,9 @@ export function generateInvoicePDF(order, type = 'invoice', options = {}) {
   const details = [
     ['Paiement', isReceipt ? 'Confirmé' : 'Stripe'],
     ['Devise', (order.currency || 'cad').toUpperCase()],
-    ['NEQ', COMPANY.neq],
-    ['TPS', COMPANY.tps],
-    ['TVQ', COMPANY.tvq],
+    ['NEQ', company.neq],
+    ['TPS', company.tps],
+    ['TVQ', company.tvq],
   ];
   if (order.stripePaymentIntentId) {
     const ref = order.stripePaymentIntentId;
@@ -273,11 +300,11 @@ export function generateInvoicePDF(order, type = 'invoice', options = {}) {
   }
 
   if (order.tps > 0) {
-    drawTotalLine(`TPS (5%) - ${COMPANY.tps}`, dollars(order.tps));
+    drawTotalLine(`TPS (5%) - ${company.tps}`, dollars(order.tps));
   }
 
   if (order.tvq > 0) {
-    drawTotalLine(`TVQ (9.975%) - ${COMPANY.tvq}`, dollars(order.tvq));
+    drawTotalLine(`TVQ (9.975%) - ${company.tvq}`, dollars(order.tvq));
   }
 
   // Separator
@@ -330,6 +357,68 @@ export function generateInvoicePDF(order, type = 'invoice', options = {}) {
     y += boxH + 4;
   }
 
+  // ==================== MODALITES DE PAIEMENT (B2B / factures non payees) ====================
+  // Affichee sur toutes les factures NON-payees pour donner au client les options
+  // de paiement alternatives au Stripe Payment Link (qui est affiche juste au-dessus).
+  // Inclut : Interac e-Transfer + depot direct si coordonnees bancaires configurees
+  // dans /billing-settings.
+  if (!isReceipt && !isPaid) {
+    y += 8;
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.setTextColor(...darkText);
+    doc.text('MODALITES DE PAIEMENT', margin, y);
+    y += 4;
+    doc.setDrawColor(...accentColor);
+    doc.setLineWidth(0.3);
+    doc.line(margin, y, margin + 45, y);
+    y += 4;
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8.5);
+    doc.setTextColor(...darkText);
+
+    // Interac
+    if (paymentInfo.interacEmail) {
+      doc.setFont('helvetica', 'bold');
+      doc.text('Virement Interac : ', margin, y);
+      doc.setFont('helvetica', 'normal');
+      doc.text(paymentInfo.interacEmail, margin + 32, y);
+      y += 5;
+    }
+
+    // Depot direct : tous les champs banque doivent etre renseignes pour etre affiche
+    if (paymentInfo.bankName && paymentInfo.transit && paymentInfo.institution && paymentInfo.account) {
+      doc.setFont('helvetica', 'bold');
+      doc.text('Depot direct : ', margin, y);
+      doc.setFont('helvetica', 'normal');
+      doc.text(
+        `${paymentInfo.bankName}  |  Transit: ${paymentInfo.transit}  |  Inst: ${paymentInfo.institution}  |  Compte: ${paymentInfo.account}`,
+        margin + 28, y,
+      );
+      y += 5;
+      if (paymentInfo.accountHolder) {
+        doc.setFontSize(7.5);
+        doc.setTextColor(...greyText);
+        doc.text(`Titulaire : ${paymentInfo.accountHolder}`, margin + 28, y);
+        y += 5;
+      }
+    }
+
+    // Notes libres admin (delai de paiement, penalites, etc.)
+    if (paymentInfo.notes) {
+      doc.setFontSize(8);
+      doc.setTextColor(...greyText);
+      const noteLines = doc.splitTextToSize(paymentInfo.notes, pageWidth - 2 * margin);
+      for (const line of noteLines) {
+        doc.text(line, margin, y);
+        y += 4;
+      }
+    }
+
+    y += 2;
+  }
+
   // ==================== FOOTER ====================
   y += 10;
 
@@ -356,12 +445,12 @@ export function generateInvoicePDF(order, type = 'invoice', options = {}) {
   doc.setFontSize(7);
   doc.setTextColor(...greyText);
   doc.text(
-    `${COMPANY.name}  |  ${COMPANY.address}, ${COMPANY.city}  |  ${COMPANY.email}  |  ${COMPANY.website}`,
+    `${company.name}  |  ${company.address}, ${company.city}  |  ${company.email}  |  ${company.website}`,
     pageWidth / 2, footerY - 3,
     { align: 'center' }
   );
   doc.text(
-    `NEQ: ${COMPANY.neq}  |  TPS: ${COMPANY.tps}  |  TVQ: ${COMPANY.tvq}`,
+    `NEQ: ${company.neq}  |  TPS: ${company.tps}  |  TVQ: ${company.tvq}`,
     pageWidth / 2, footerY + 1,
     { align: 'center' }
   );

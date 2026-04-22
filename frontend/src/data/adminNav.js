@@ -5,7 +5,7 @@
  */
 import {
   LayoutDashboard, Bot, StickyNote, ShoppingBag, Banknote, Package,
-  MessageSquare, Users, FileText, Star, BarChart3, DollarSign, Tag, Palette,
+  MessageSquare, Users, FileText, Star, BarChart3, DollarSign, Tag, Palette, Receipt,
 } from 'lucide-react';
 
 const ADMIN_NAV_ITEMS = [
@@ -25,6 +25,7 @@ const ADMIN_NAV_ITEMS = [
   { to: '/admin/temoignages', icon: Star, fr: 'Temoignages', en: 'Testimonials', es: 'Testimonios', tooltip: { fr: 'Temoignages clients affiches sur le site', en: 'Client testimonials shown on website', es: 'Testimonios de clientes' } },
   { to: '/admin/stats', icon: BarChart3, fr: 'Stats', en: 'Stats', es: 'Stats', tooltip: { fr: 'Statistiques de ventes et revenus', en: 'Sales and revenue statistics', es: 'Estadisticas de ventas' } },
   { to: '/admin/tarifs', icon: DollarSign, fr: 'Tarifs', en: 'Pricing', es: 'Precios', tooltip: { fr: 'Gestion des prix (CMS)', en: 'Price management (CMS)', es: 'Gestion de precios' } },
+  { to: '/admin/reglages-facturation', icon: Receipt, fr: 'Facturation', en: 'Billing', es: 'Facturacion', tooltip: { fr: 'TPS/TVQ, Interac, coordonnees bancaires', en: 'Tax numbers, Interac, bank info', es: 'Impuestos, Interac, banco' } },
   { to: '/admin/promos', icon: Tag, fr: 'Codes Promo', en: 'Promo Codes', es: 'Codigos Promo', tooltip: { fr: 'Gestion des codes promotionnels', en: 'Promo code management', es: 'Gestion de codigos promocionales' } },
 ];
 

@@ -1,5 +1,15 @@
 import api from './api';
 
+// --- Reglages Facturation (TPS/TVQ, bancaire, Interac) ---
+export const getBillingSettings = () => api.get('/billing-settings');
+
+export const updateBillingSettings = (fields) => {
+  if (!fields || typeof fields !== 'object') {
+    throw new Error('updateBillingSettings: fields requis');
+  }
+  return api.put('/billing-settings', fields);
+};
+
 // --- GOD MODE artistes (mutations directes, bypass edit-requests) ---
 // Toutes ces fonctions validen les params AVANT appel reseau.
 

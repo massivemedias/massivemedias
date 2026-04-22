@@ -8,7 +8,7 @@ import {
   Download, Receipt, Trash2, Send, AlertTriangle, Pencil, Plus,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
-import { getOrders, getOrderStats, updateOrderStatus, updateOrderNotes, updateOrderTracking, deleteOrder, getPrivateSales, deletePrivateSale, resendPrivateSaleEmail, sendOrderInvoice, getOrderTracking } from '../services/adminService';
+import { getOrders, getOrderStats, updateOrderStatus, updateOrderNotes, updateOrderTracking, deleteOrder, getPrivateSales, deletePrivateSale, resendPrivateSaleEmail, sendOrderInvoice, getOrderTracking, getBillingSettings } from '../services/adminService';
 import { useNotifications } from '../contexts/NotificationContext';
 import { generateInvoicePDF } from '../utils/generateInvoice';
 import EditOrderTotalModal from '../components/EditOrderTotalModal';
@@ -123,6 +123,16 @@ function AdminOrders() {
   const [sendingInvoiceId, setSendingInvoiceId] = useState(null);
   // Modal de previsualisation avant envoi facture (controle admin)
   const [previewInvoiceOrder, setPreviewInvoiceOrder] = useState(null);
+
+  // Billing settings (TPS/TVQ/bancaire/Interac) charges une fois au mount
+  // et passes en options au generateInvoicePDF pour que toutes les factures
+  // incluent les modalites de paiement et les bons numeros de taxes.
+  const [billingSettings, setBillingSettings] = useState(null);
+  useEffect(() => {
+    getBillingSettings()
+      .then(({ data }) => setBillingSettings(data?.data || {}))
+      .catch(() => setBillingSettings({})); // fallback silencieux -> PDF utilise defaults
+  }, []);
   const [actionToast, setInvoiceToast] = useState(null); // { type: 'success'|'error', message: '...' }
   useEffect(() => {
     if (!actionToast) return;
@@ -151,7 +161,7 @@ function AdminOrders() {
       let pdfBase64;
       let pdfFilename;
       try {
-        const result = generateInvoicePDF(order, 'invoice', { returnBase64: true });
+        const result = generateInvoicePDF(order, 'invoice', { returnBase64: true, settings: billingSettings || {} });
         if (result && typeof result === 'object' && result.base64) {
           pdfBase64 = result.base64;
           pdfFilename = result.fileName;
@@ -976,14 +986,14 @@ function AdminOrders() {
                               <h4 className="text-xs font-semibold text-grey-muted uppercase tracking-wider">Documents</h4>
                               <div className="flex gap-2 flex-wrap">
                                 <button
-                                  onClick={(e) => { e.stopPropagation(); generateInvoicePDF(order, 'invoice'); }}
+                                  onClick={(e) => { e.stopPropagation(); generateInvoicePDF(order, 'invoice', { settings: billingSettings || {} }); }}
                                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-accent/20 text-accent hover:bg-accent/30 transition-colors"
                                 >
                                   <Download size={12} />
                                   {tx({ fr: 'Facture', en: 'Invoice', es: 'Factura' })}
                                 </button>
                                 <button
-                                  onClick={(e) => { e.stopPropagation(); generateInvoicePDF(order, 'receipt'); }}
+                                  onClick={(e) => { e.stopPropagation(); generateInvoicePDF(order, 'receipt', { settings: billingSettings || {} }); }}
                                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-green-500/20 text-green-400 hover:bg-green-500/30 transition-colors"
                                 >
                                   <Receipt size={12} />

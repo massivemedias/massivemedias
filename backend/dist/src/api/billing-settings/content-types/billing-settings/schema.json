@@ -1,0 +1,31 @@
+{
+    "kind": "singleType",
+    "collectionName": "billing_settings",
+    "info": {
+        "singularName": "billing-settings",
+        "pluralName": "billing-settings",
+        "displayName": "Reglages Facturation",
+        "description": "Numeros de taxes (TPS/TVQ), NEQ, coordonnees bancaires et modalites de paiement"
+    },
+    "options": {
+        "draftAndPublish": false
+    },
+    "attributes": {
+        "companyName": { "type": "string", "default": "Massive Medias" },
+        "companyOwner": { "type": "string", "default": "Michael Sanchez" },
+        "companyAddress": { "type": "string", "default": "5338 rue Marquette" },
+        "companyCity": { "type": "string", "default": "Montreal (QC) H2J 3Z3" },
+        "companyPhone": { "type": "string" },
+        "companyEmail": { "type": "string", "default": "massivemedias@gmail.com" },
+        "companyWebsite": { "type": "string", "default": "massivemedias.com" },
+        "neq": { "type": "string", "default": "2269057891" },
+        "tps": { "type": "string", "default": "732457635RT0001" },
+        "tvq": { "type": "string", "default": "4012577678TQ0001" },
+        "interacEmail": { "type": "string", "default": "massivemedias@gmail.com" },
+        "bankName": { "type": "string" },
+        "bankTransit": { "type": "string" },
+        "bankInstitution": { "type": "string" },
+        "bankAccount": { "type": "string" },
+        "paymentNotes": { "type": "text" }
+    }
+}
