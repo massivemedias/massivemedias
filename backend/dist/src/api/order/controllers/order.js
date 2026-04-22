@@ -1824,7 +1824,11 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
         if (!(await (0, auth_1.requireAdminAuth)(ctx)))
             return;
         const page = parseInt(ctx.query.page) || 1;
-        const pageSize = parseInt(ctx.query.pageSize) || 25;
+        // FIX-ADMIN (avril 2026) : default 500 au lieu de 25 pour que tout
+        // l'historique de commandes soit disponible en une seule page. L'admin
+        // peut toujours passer pageSize=N pour reduire. Pas de cap max cote
+        // serveur : si Massive depasse un jour 10k orders, on mettra un slider.
+        const pageSize = parseInt(ctx.query.pageSize) || 500;
         const status = ctx.query.status;
         const search = ctx.query.search;
         const filters = {};

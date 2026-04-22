@@ -50,7 +50,12 @@ function AdminOrders() {
   useEffect(() => { markOrdersViewed(); }, [markOrdersViewed]);
 
   const [orders, setOrders] = useState([]);
-  const [meta, setMeta] = useState({ page: 1, pageSize: 25, total: 0, pageCount: 0 });
+  // FIX-ADMIN (avril 2026) : pageSize BUMPE de 25 a 500 pour que tout
+  // l'historique tienne en une seule page. La limite default Strapi/controller
+  // etait silencieusement a 25 -> les commandes legacy (les plus anciennes
+  // apres sort createdAt:desc) tombaient en page 2+ et semblaient disparues.
+  // 500 couvre largement l'historique Massive Medias sans overkill.
+  const [meta, setMeta] = useState({ page: 1, pageSize: 500, total: 0, pageCount: 0 });
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -220,20 +225,36 @@ function AdminOrders() {
   }, [search]);
 
   const fetchOrders = useCallback(async () => {
+    // Preuve que la donnee arrive : compte d'orders + debug pagination dans la console.
+    // Si le nombre affiche ici diverge de l'UI, c'est que le filtrage frontend
+    // (activeTab ou searchDebounce) cache des orders. Jamais que le backend.
     setLoading(true);
     try {
       const params = { page: meta.page, pageSize: meta.pageSize };
       if (filterStatus !== 'all') params.status = filterStatus;
       if (searchDebounce) params.search = searchDebounce;
       const { data } = await getOrders(params);
-      setOrders(data.data);
-      setMeta(data.meta);
-    } catch {
-      // silent
+      const received = Array.isArray(data?.data) ? data.data : [];
+      // LOG DE PREUVE : on verifie ici que toute la data traverse bien le tuyau.
+      console.log(
+        '[AdminOrders] Nombre TOTAL de commandes recues du serveur :',
+        received.length,
+        '(meta.total backend:', data?.meta?.total, '| pageSize:', meta.pageSize, '| page:', meta.page, ')',
+      );
+      if (data?.meta?.total > received.length) {
+        console.warn(
+          '[AdminOrders] ATTENTION : le backend indique', data.meta.total,
+          'orders mais seulement', received.length, 'sont retournees. Augmenter pageSize.',
+        );
+      }
+      setOrders(received);
+      setMeta(data.meta || { page: 1, pageSize: meta.pageSize, total: received.length, pageCount: 1 });
+    } catch (err) {
+      console.error('[AdminOrders] fetchOrders failed:', err?.message || err);
     } finally {
       setLoading(false);
     }
-  }, [meta.page, filterStatus, searchDebounce]);
+  }, [meta.page, meta.pageSize, filterStatus, searchDebounce]);
 
   useEffect(() => { fetchOrders(); }, [fetchOrders]);
 
