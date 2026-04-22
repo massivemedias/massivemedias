@@ -4,7 +4,7 @@ import {
   Package, AlertTriangle, XCircle, CheckCircle, Check, Search,
   Edit3, X, Save, Loader2, DollarSign, Archive, Plus, Trash2, ChevronDown,
   Shirt, Layers, Frame, ShoppingBag,
-  Sticker, FileText, Wrench,
+  Sticker, FileText, Wrench, Printer, Boxes, Monitor, Sparkles,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import api from '../services/api';
@@ -65,31 +65,43 @@ const STATUS_CONFIG = {
 // sont remappees via CATEGORY_REMAP pour que les items pre-refonte s'affichent
 // toujours sans erreur.
 const CATEGORY_LABELS = {
-  stickers:     { fr: 'Stickers',     en: 'Stickers',    es: 'Stickers' },
-  papiers:      { fr: 'Papiers',      en: 'Papers',      es: 'Papeles' },
-  textile:      { fr: 'Textile',      en: 'Textile',     es: 'Textil' },
-  consommables: { fr: 'Consommables', en: 'Consumables', es: 'Consumibles' },
-  materiel:     { fr: 'Materiel',     en: 'Materials',   es: 'Materiales' },
-  cadre:        { fr: 'Cadre',        en: 'Frame',       es: 'Marco' },
-  merch:        { fr: 'Merch',        en: 'Merch',       es: 'Merch' },
-  // Legacy (items crees avant la refonte, lecture seule)
-  consommable:  { fr: 'Consommables', en: 'Consumables', es: 'Consumibles' },
-  emballage:    { fr: 'Consommables', en: 'Consumables', es: 'Consumibles' },
-  equipment:    { fr: 'Materiel',     en: 'Materials',   es: 'Materiales' },
-  frame:        { fr: 'Cadre',        en: 'Frame',       es: 'Marco' },
-  sticker:      { fr: 'Stickers',     en: 'Stickers',    es: 'Stickers' },
-  print:        { fr: 'Papiers',      en: 'Papers',      es: 'Papeles' },
-  accessory:    { fr: 'Materiel',     en: 'Materials',   es: 'Materiales' },
+  // Categories metier (historiques)
+  stickers:     { fr: 'Stickers',                en: 'Stickers',                es: 'Stickers' },
+  papiers:      { fr: 'Papiers',                 en: 'Papers',                  es: 'Papeles' },
+  textile:      { fr: 'Textile',                 en: 'Textile',                 es: 'Textil' },
+  cadre:        { fr: 'Cadres photo',            en: 'Photo frames',            es: 'Marcos' },
+  merch:        { fr: 'Merch',                   en: 'Merch',                   es: 'Merch' },
+  // Nouvelle taxonomie stricte (avril 2026)
+  equipment:    { fr: 'Equipement & Machines',   en: 'Equipment & Machines',    es: 'Equipo y Maquinas' },
+  consumables:  { fr: 'Consommables',            en: 'Consumables',             es: 'Consumibles' },
+  packaging:    { fr: 'Emballage & Expedition',  en: 'Packaging & Shipping',    es: 'Embalaje y Envio' },
+  software:     { fr: 'Logiciels',               en: 'Software',                es: 'Software' },
+  // Legacy avant refonte - remappes visuellement via CATEGORY_REMAP
+  consommables: { fr: 'Consommables',            en: 'Consumables',             es: 'Consumibles' },
+  materiel:     { fr: 'Equipement & Machines',   en: 'Equipment & Machines',    es: 'Equipo y Maquinas' },
+  consommable:  { fr: 'Consommables',            en: 'Consumables',             es: 'Consumibles' },
+  emballage:    { fr: 'Emballage & Expedition',  en: 'Packaging & Shipping',    es: 'Embalaje y Envio' },
+  frame:        { fr: 'Cadres photo',            en: 'Photo frames',            es: 'Marcos' },
+  sticker:      { fr: 'Stickers',                en: 'Stickers',                es: 'Stickers' },
+  print:        { fr: 'Papiers',                 en: 'Papers',                  es: 'Papeles' },
+  accessory:    { fr: 'Equipement & Machines',   en: 'Equipment & Machines',    es: 'Equipo y Maquinas' },
 };
 
+// Liste ordonnee pour l'UI (dropdown de filtre + radios de selection dans le form).
+// Les 4 categories generiques strictes (equipment/consumables/packaging/software) sont
+// mises en premier car elles sont la NOUVELLE taxonomie logique. Les categories metier
+// restent disponibles pour les items specialises (stickers/textile/cadres).
 const CATEGORIES = [
-  { value: 'stickers',     icon: Sticker,     label: 'Stickers',     desc: 'Rouleaux, feuilles, FX' },
-  { value: 'papiers',      icon: FileText,    label: 'Papiers',      desc: 'Matte, Glossy, Luster' },
-  { value: 'textile',      icon: Shirt,       label: 'Textile',      desc: 'T-Shirts, Hoodies, Long Sleeves' },
-  { value: 'consommables', icon: Layers,      label: 'Consommables', desc: 'Encres, emballage, divers' },
-  { value: 'materiel',     icon: Wrench,      label: 'Materiel',     desc: 'Outils, accessoires' },
-  { value: 'cadre',        icon: Frame,       label: 'Cadre',        desc: 'Cadres photo et presentoir' },
-  { value: 'merch',        icon: ShoppingBag, label: 'Merch',        desc: 'Tote bags, mugs, accessoires' },
+  { value: 'equipment',    icon: Printer,     label: 'Equipement & Machines',  desc: 'Epson, Cameo, Fellowes, outils durables' },
+  { value: 'consumables',  icon: FileText,    label: 'Consommables',           desc: 'Papier, encre, pochettes, cartouches' },
+  { value: 'packaging',    icon: Boxes,       label: 'Emballage & Expedition', desc: 'Tubes, boites, adhesif, enveloppes' },
+  { value: 'software',     icon: Monitor,     label: 'Logiciels',              desc: 'Silhouette Connect, licences, apps' },
+  // Categories metier
+  { value: 'stickers',     icon: Sticker,     label: 'Stickers',               desc: 'Rouleaux, feuilles, FX' },
+  { value: 'papiers',      icon: FileText,    label: 'Papiers',                desc: 'Matte, Glossy, Luster' },
+  { value: 'textile',      icon: Shirt,       label: 'Textile',                desc: 'T-Shirts, Hoodies, Long Sleeves' },
+  { value: 'cadre',        icon: Frame,       label: 'Cadres photo',           desc: 'Cadres prets-a-poser' },
+  { value: 'merch',        icon: ShoppingBag, label: 'Merch',                  desc: 'Tote bags, mugs, accessoires' },
 ];
 
 // Options des champs conditionnels (nouveau systeme).
@@ -119,25 +131,31 @@ const TEXTILE_VARIANTS = ['T-Shirt', 'Hoodie', 'Long Sleeve'];
 const TEXTILE_SIZES    = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL'];
 
 const SKU_PREFIXES = {
-  stickers: 'STK', papiers: 'PAP', textile: 'TXT',
-  consommables: 'CON', materiel: 'MAT', cadre: 'CAD', merch: 'MER',
+  // Nouvelle taxonomie
+  equipment: 'EQP', consumables: 'CSM', packaging: 'PKG', software: 'SFT',
+  // Categories metier
+  stickers: 'STK', papiers: 'PAP', textile: 'TXT', cadre: 'CAD', merch: 'MER',
   // Legacy
-  consommable: 'CSM', emballage: 'EMB', equipment: 'EQP',
-  frame: 'FRM', sticker: 'STK', print: 'PRT', accessory: 'ACC', other: 'OTH',
+  consommables: 'CSM', materiel: 'EQP',
+  consommable: 'CSM', emballage: 'PKG',
+  frame: 'CAD', sticker: 'STK', print: 'PAP', accessory: 'EQP', other: 'OTH',
 };
 
-// Remap legacy categories -> categories principales pour l'affichage.
-// Regle prudente demandee par le lead : pas de reclassement automatique par
-// contenu (ex: noms contenant "cadre"), tout l'existant va dans la categorie
-// proche et sera reclasse manuellement si besoin.
+// Remap legacy/ambigu -> nouvelle taxonomie stricte pour l'affichage groupe.
+// Les items anciens avec materiel/equipment/consommable vont dans les nouvelles
+// categories generiques. Le backend peut les reclasser finement via
+// /inventory-items/reclassify-taxonomy (heuristique nom-based).
 const CATEGORY_REMAP = {
   sticker:     'stickers',
   print:       'papiers',
-  emballage:   'consommables',
-  consommable: 'consommables',
-  equipment:   'materiel',
-  accessory:   'materiel',
   frame:       'cadre',
+  // Legacy -> nouvelle taxonomie generique
+  materiel:    'equipment',
+  equipment:   'equipment',
+  accessory:   'equipment',
+  consommables: 'consumables',
+  consommable: 'consumables',
+  emballage:   'packaging',
 };
 
 // =================== COMPOSANTS UTILITAIRES ===================
@@ -823,6 +841,49 @@ function AdminInventaire() {
   const [editItem, setEditItem] = useState(null);
   const [deleting, setDeleting] = useState(null);
   const [openCats, setOpenCats] = useState([]);
+  const [reclassifying, setReclassifying] = useState(false);
+
+  // Reclassification auto des items materiel/consommables vers la nouvelle
+  // taxonomie stricte (equipment/consumables/packaging/software) via heuristique
+  // sur le nom. Flow : dry-run d'abord -> confirmation utilisateur -> execution.
+  const handleReclassify = async () => {
+    if (reclassifying) return;
+    setReclassifying(true);
+    try {
+      // 1. Dry run : preview sans ecrire
+      const preview = await api.post('/inventory-items/reclassify-taxonomy', { dryRun: true });
+      const plan = preview?.data?.data?.plan || [];
+      if (plan.length === 0) {
+        window.alert(tx({
+          fr: 'Rien a reclasser. Tous les items sont deja dans la bonne categorie.',
+          en: 'Nothing to reclassify. All items are already in correct categories.',
+          es: 'Nada que reclasificar.',
+        }));
+        return;
+      }
+      const confirmMsg = tx({
+        fr: `${plan.length} item(s) vont etre reclasses selon leur nom :\n\n${plan.slice(0, 10).map(p => `• ${p.name} : ${p.oldCategory} -> ${p.newCategory}`).join('\n')}${plan.length > 10 ? `\n... et ${plan.length - 10} autres.` : ''}\n\nConfirmer la reclassification ?`,
+        en: `${plan.length} item(s) will be reclassified:\n\n${plan.slice(0, 10).map(p => `• ${p.name}: ${p.oldCategory} -> ${p.newCategory}`).join('\n')}${plan.length > 10 ? `\n... and ${plan.length - 10} more.` : ''}\n\nConfirm?`,
+        es: `${plan.length} elementos seran reclasificados. Confirmar?`,
+      });
+      if (!window.confirm(confirmMsg)) return;
+      // 2. Execution reelle
+      const exec = await api.post('/inventory-items/reclassify-taxonomy', { dryRun: false });
+      const applied = exec?.data?.data?.applied || 0;
+      const errors = exec?.data?.data?.errors || [];
+      window.alert(tx({
+        fr: `${applied} item(s) reclasses.${errors.length > 0 ? `\n${errors.length} erreurs.` : ''}`,
+        en: `${applied} item(s) reclassified.${errors.length > 0 ? `\n${errors.length} errors.` : ''}`,
+        es: `${applied} reclasificados.`,
+      }));
+      await fetchData();
+    } catch (err) {
+      const msg = err?.response?.data?.error?.message || err?.message || 'Erreur';
+      window.alert(tx({ fr: `Echec reclassification : ${msg}`, en: `Reclassify failed: ${msg}`, es: `Error: ${msg}` }));
+    } finally {
+      setReclassifying(false);
+    }
+  };
 
   const fetchData = useCallback(async () => {
     try {
@@ -874,17 +935,32 @@ function AdminInventaire() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-6 gap-2 flex-wrap">
         <p className="text-grey-muted">
           {tx({ fr: 'Gestion du stock en temps reel', en: 'Real-time stock management', es: 'Gestion de stock en tiempo real' })}
         </p>
-        <button
-          onClick={openCreate}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-accent text-white text-sm font-semibold hover:bg-accent/90 transition-colors"
-        >
-          <Plus size={16} />
-          {tx({ fr: 'Ajouter', en: 'Add', es: 'Agregar' })}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleReclassify}
+            disabled={reclassifying}
+            title={tx({
+              fr: 'Reclasser automatiquement les items materiel/consommables vers equipment/consumables/packaging/software selon leur nom',
+              en: 'Auto-reclassify materiel/consommables items to equipment/consumables/packaging/software based on name',
+              es: 'Reclasificar automaticamente segun nombre',
+            })}
+            className="flex items-center gap-2 px-3 py-2 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 text-xs font-semibold hover:bg-indigo-500/20 transition-colors disabled:opacity-50"
+          >
+            {reclassifying ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
+            {tx({ fr: 'Reclasser auto', en: 'Auto-reclassify', es: 'Reclasificar auto' })}
+          </button>
+          <button
+            onClick={openCreate}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-accent text-white text-sm font-semibold hover:bg-accent/90 transition-colors"
+          >
+            <Plus size={16} />
+            {tx({ fr: 'Ajouter', en: 'Add', es: 'Agregar' })}
+          </button>
+        </div>
       </div>
 
       {error && (
@@ -1015,10 +1091,20 @@ function AdminInventaire() {
           );
         };
 
-        const catOrder = ['textile', 'consommable', 'emballage', 'equipment', 'frame', 'merch', 'sticker', 'print', 'other'];
+        // Ordre d'affichage (avril 2026) : nouvelle taxonomie stricte en premier,
+        // categories metier ensuite. Les items avec une categorie hors liste sont en fin.
+        const catOrder = [
+          'equipment', 'consumables', 'packaging', 'software',
+          'stickers', 'papiers', 'textile', 'cadre', 'merch',
+          'other',
+        ];
         const sortedCats = Object.keys(groups).sort(
           (a, b) => (catOrder.indexOf(a) === -1 ? 99 : catOrder.indexOf(a)) - (catOrder.indexOf(b) === -1 ? 99 : catOrder.indexOf(b))
         );
+        // Tri ALPHABETIQUE des items a l'interieur de chaque categorie (case-insensitive)
+        for (const c of sortedCats) {
+          groups[c].sort((a, b) => getName(a).localeCompare(getName(b), undefined, { sensitivity: 'base' }));
+        }
 
         if (sortedCats.length === 0) {
           return (

@@ -54,5 +54,13 @@ export default {
         auth: false,
       },
     },
+    {
+      method: 'POST',
+      path: '/inventory-items/reclassify-taxonomy',
+      handler: 'inventory-item.reclassifyTaxonomy',
+      config: {
+        auth: false,
+      },
+    },
   ],
 };

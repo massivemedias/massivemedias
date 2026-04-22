@@ -34,10 +34,13 @@
                 "materiel",
                 "cadre",
                 "merch",
+                "equipment",
+                "consumables",
+                "packaging",
+                "software",
                 "sticker",
                 "consommable",
                 "emballage",
-                "equipment",
                 "frame"
             ],
             "required": true

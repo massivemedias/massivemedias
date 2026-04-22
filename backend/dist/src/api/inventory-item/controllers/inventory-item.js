@@ -444,4 +444,94 @@ exports.default = strapi_1.factories.createCoreController('api::inventory-item.i
         strapi.log.info(`Sync facture sortante: ${matched} items ajustes, ${skipped} sans match`);
         ctx.body = { data: { adjustments, matched, skipped } };
     },
+    // POST /inventory-items/reclassify-taxonomy - One-shot migration script (avril 2026)
+    // Reclassifie les items dans les categories generiques strictes :
+    //   - equipment   : machines/outils durables (Epson, Cameo, Fellowes, regle, etc.)
+    //   - consumables : papier, encre, pochettes, cartouches
+    //   - packaging   : tubes, boites, ruban, adhesif
+    //   - software    : licences, logiciels (Silhouette Connect, etc.)
+    //
+    // Cible uniquement les items avec category dans [materiel, equipment, consommables,
+    // consommable, emballage] pour eviter de toucher aux categories metier
+    // (stickers, papiers, textile, cadre, merch) qui sont deja correctement rangees.
+    //
+    // Body optionnel : { dryRun?: boolean } pour preview sans ecrire.
+    // Admin only. Retourne le diff detaille pour audit.
+    async reclassifyTaxonomy(ctx) {
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
+            return;
+        const body = ctx.request.body || {};
+        const dryRun = !!body.dryRun;
+        const SOURCE_CATEGORIES = ['materiel', 'equipment', 'consommables', 'consommable', 'emballage'];
+        const items = await strapi.documents('api::inventory-item.inventory-item').findMany({
+            filters: { category: { $in: SOURCE_CATEGORIES } },
+            limit: 500,
+        });
+        // Heuristiques par mot-cle. Ordre : plus specifique en premier.
+        function classify(nameFr, nameEn) {
+            const s = `${nameFr || ''} ${nameEn || ''}`.toLowerCase();
+            // Software : logiciels, licences
+            if (/\b(silhouette\s*connect|logiciel|license|licence|software|app\s+design|adobe)\b/.test(s)) {
+                return 'software';
+            }
+            // Packaging : tubes, boites, emballage, adhesif
+            if (/\b(tube|boite|boîte|box|ruban|adhesif|adhésif|tape|sleeve|pochette\s+envoi|enveloppe|carton|bulle|mailer)\b/.test(s)) {
+                return 'packaging';
+            }
+            // Consumables : papier, encre, cartouche, pochettes lamin
+            if (/\b(papier|paper|encre|ink|cartouche|toner|pochette|lamin|film|bobine|feuille\s+vinyl)\b/.test(s)) {
+                return 'consumables';
+            }
+            // Equipment : machines lourdes, outils
+            if (/\b(epson|silhouette\s*cameo|cameo|fellowes|règle|regle|ruler|printer|plotter|decoup|machine|heat\s*press|presse)\b/.test(s)) {
+                return 'equipment';
+            }
+            // Fallback generique pour categorie materiel/equipment : equipment si dur, consumable sinon
+            return null;
+        }
+        const plan = [];
+        for (const item of items) {
+            const target = classify(item.nameFr, item.nameEn);
+            if (!target || target === item.category)
+                continue;
+            plan.push({
+                id: item.id,
+                documentId: item.documentId,
+                sku: item.sku || '',
+                name: item.nameFr || item.nameEn || '(sans nom)',
+                oldCategory: item.category,
+                newCategory: target,
+            });
+        }
+        if (dryRun) {
+            strapi.log.info(`[reclassifyTaxonomy] DRY RUN : ${plan.length} items seraient reclasses`);
+            ctx.body = { data: { dryRun: true, plan, plannedCount: plan.length, totalScanned: items.length } };
+            return;
+        }
+        // Execution reelle
+        let applied = 0;
+        const errors = [];
+        for (const change of plan) {
+            try {
+                await strapi.documents('api::inventory-item.inventory-item').update({
+                    documentId: change.documentId,
+                    data: { category: change.newCategory },
+                });
+                applied++;
+            }
+            catch (err) {
+                errors.push({ documentId: change.documentId, sku: change.sku, error: err === null || err === void 0 ? void 0 : err.message });
+            }
+        }
+        strapi.log.info(`[reclassifyTaxonomy] ${applied}/${plan.length} items reclasses (${errors.length} erreurs)`);
+        ctx.body = {
+            data: {
+                dryRun: false,
+                plan,
+                applied,
+                errors,
+                totalScanned: items.length,
+            },
+        };
+    },
 }));
