@@ -146,6 +146,17 @@ function CreateManualOrderModal({ onClose, onCreated }) {
     }
   };
 
+  // FIX-UI (avril 2026) : styles theme-adaptatifs. On utilise les CSS variables
+  // globales (--bg-card-solid / --bg-input / --bg-input-border / --color-heading)
+  // definies dans index.css pour que la modale suive automatiquement le theme
+  // actif (Creme clair ou Massive sombre).
+  const modalBg = { background: 'var(--bg-card-solid)', borderColor: 'var(--bg-input-border)' };
+  const inputBg = { background: 'var(--bg-input)', borderColor: 'var(--bg-input-border)', color: 'var(--color-heading)' };
+  const dividerBorder = { borderColor: 'var(--bg-input-border)' };
+  const sectionBg = { background: 'var(--bg-glass)', borderColor: 'var(--bg-input-border)' };
+  const footerBg = { background: 'var(--bg-glass-alt, var(--bg-glass))', borderColor: 'var(--bg-input-border)' };
+  const cancelBtnStyle = { background: 'var(--bg-glass)', color: 'var(--color-grey-muted)' };
+
   return (
     <div
       className="fixed inset-0 z-[9000] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto"
@@ -153,10 +164,11 @@ function CreateManualOrderModal({ onClose, onCreated }) {
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-xl my-8 rounded-2xl bg-[#1a0030] border border-white/10 shadow-2xl overflow-hidden"
+        className="w-full max-w-xl my-8 rounded-2xl border shadow-2xl overflow-hidden"
+        style={modalBg}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-white/10">
+        <div className="flex items-center justify-between px-5 py-4 border-b" style={dividerBorder}>
           <h3 className="text-heading font-heading font-bold text-lg">
             {result
               ? tx({ fr: 'Facture creee', en: 'Invoice created', es: 'Factura creada' })
@@ -165,7 +177,10 @@ function CreateManualOrderModal({ onClose, onCreated }) {
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg text-grey-muted hover:text-heading hover:bg-white/5 transition-colors"
+            className="p-1.5 rounded-lg text-grey-muted hover:text-heading transition-colors"
+            style={{ background: 'transparent' }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--bg-glass)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
             aria-label="Fermer"
           >
             <X size={18} />
@@ -193,7 +208,7 @@ function CreateManualOrderModal({ onClose, onCreated }) {
                 {tx({ fr: 'Lien de paiement Stripe', en: 'Stripe payment link', es: 'Enlace de pago Stripe' })}
               </label>
               <div className="flex items-stretch gap-2">
-                <div className="flex-1 rounded-lg bg-black/30 border border-white/10 px-3 py-2.5 text-sm text-heading font-mono truncate">
+                <div className="flex-1 rounded-lg border px-3 py-2.5 text-sm text-heading font-mono truncate" style={inputBg}>
                   {result.paymentUrl}
                 </div>
                 <button
@@ -252,7 +267,7 @@ function CreateManualOrderModal({ onClose, onCreated }) {
                     type="text"
                     value={customerName}
                     onChange={(e) => setCustomerName(e.target.value)}
-                    className="w-full rounded-lg bg-black/30 text-heading text-sm px-3 py-2.5 outline-none border border-white/10 focus:border-accent"
+                    className="w-full rounded-lg text-sm px-3 py-2.5 outline-none border focus:border-accent" style={inputBg}
                     placeholder="Cindy Deroeux"
                   />
                 </div>
@@ -264,7 +279,7 @@ function CreateManualOrderModal({ onClose, onCreated }) {
                     type="email"
                     value={customerEmail}
                     onChange={(e) => setCustomerEmail(e.target.value)}
-                    className="w-full rounded-lg bg-black/30 text-heading text-sm px-3 py-2.5 outline-none border border-white/10 focus:border-accent"
+                    className="w-full rounded-lg text-sm px-3 py-2.5 outline-none border focus:border-accent" style={inputBg}
                     placeholder="client@example.com"
                   />
                 </div>
@@ -277,7 +292,7 @@ function CreateManualOrderModal({ onClose, onCreated }) {
                   type="tel"
                   value={customerPhone}
                   onChange={(e) => setCustomerPhone(e.target.value)}
-                  className="w-full rounded-lg bg-black/30 text-heading text-sm px-3 py-2.5 outline-none border border-white/10 focus:border-accent"
+                  className="w-full rounded-lg text-sm px-3 py-2.5 outline-none border focus:border-accent" style={inputBg}
                   placeholder="514 555 1234"
                 />
               </div>
@@ -291,7 +306,8 @@ function CreateManualOrderModal({ onClose, onCreated }) {
                   <button
                     type="button"
                     onClick={addItem}
-                    className="flex items-center gap-1 px-2 py-1 rounded-md bg-white/5 text-accent hover:bg-white/10 text-[11px] font-semibold transition-colors"
+                    className="flex items-center gap-1 px-2 py-1 rounded-md text-accent text-[11px] font-semibold transition-colors border"
+                    style={{ background: 'var(--bg-glass)', borderColor: 'var(--bg-input-border)' }}
                   >
                     <Plus size={12} />
                     {tx({ fr: 'Ajouter', en: 'Add', es: 'Anadir' })}
@@ -318,7 +334,8 @@ function CreateManualOrderModal({ onClose, onCreated }) {
                         value={it.description}
                         onChange={(e) => updateItem(idx, 'description', e.target.value)}
                         placeholder={tx({ fr: '100x Stickers Standard', en: '100x Standard Stickers', es: '100x Stickers Standard' })}
-                        className="rounded-lg bg-black/30 text-heading text-sm px-3 py-2 outline-none border border-white/10 focus:border-accent"
+                        className="rounded-lg text-sm px-3 py-2 outline-none border focus:border-accent"
+                        style={inputBg}
                       />
                       <input
                         type="number"
@@ -331,7 +348,8 @@ function CreateManualOrderModal({ onClose, onCreated }) {
                           en: 'Quantity (descriptive only - does NOT multiply the price)',
                           es: 'Cantidad (solo descriptiva - NO multiplica el precio)',
                         })}
-                        className="rounded-lg bg-black/30 text-heading text-sm px-2 py-2 outline-none border border-white/10 focus:border-accent text-center"
+                        className="rounded-lg text-sm px-2 py-2 outline-none border focus:border-accent text-center"
+                        style={inputBg}
                       />
                       <div className="relative">
                         <input
@@ -345,7 +363,8 @@ function CreateManualOrderModal({ onClose, onCreated }) {
                             en: 'TOTAL line price (not per unit)',
                             es: 'Precio TOTAL de la linea (no por unidad)',
                           })}
-                          className="w-full rounded-lg bg-black/30 text-heading text-sm px-2 py-2 pr-6 outline-none border border-white/10 focus:border-accent text-right"
+                          className="w-full rounded-lg text-sm px-2 py-2 pr-6 outline-none border focus:border-accent text-right"
+                          style={inputBg}
                         />
                         <span className="absolute right-2 top-1/2 -translate-y-1/2 text-grey-muted text-xs">$</span>
                       </div>
@@ -371,20 +390,20 @@ function CreateManualOrderModal({ onClose, onCreated }) {
               </div>
 
               {/* Breakdown financier strict : sous-total + TPS + TVQ + Grand Total */}
-              <div className="rounded-lg bg-black/30 border border-white/5 overflow-hidden">
-                <div className="flex items-center justify-between px-4 py-2 border-b border-white/5">
+              <div className="rounded-lg border overflow-hidden" style={sectionBg}>
+                <div className="flex items-center justify-between px-4 py-2 border-b" style={dividerBorder}>
                   <span className="text-grey-muted text-xs uppercase tracking-wider">
                     {tx({ fr: 'Sous-total', en: 'Subtotal', es: 'Subtotal' })}
                   </span>
                   <span className="text-heading text-sm font-semibold">{subtotal.toFixed(2)}$</span>
                 </div>
-                <div className="flex items-center justify-between px-4 py-2 border-b border-white/5">
+                <div className="flex items-center justify-between px-4 py-2 border-b" style={dividerBorder}>
                   <span className="text-grey-muted text-xs">
                     {tx({ fr: 'TPS (5%)', en: 'GST (5%)', es: 'TPS (5%)' })}
                   </span>
                   <span className="text-heading text-sm">{tps.toFixed(2)}$</span>
                 </div>
-                <div className="flex items-center justify-between px-4 py-2 border-b border-white/5">
+                <div className="flex items-center justify-between px-4 py-2 border-b" style={dividerBorder}>
                   <span className="text-grey-muted text-xs">
                     {tx({ fr: 'TVQ (9.975%)', en: 'QST (9.975%)', es: 'TVQ (9.975%)' })}
                   </span>
@@ -415,7 +434,8 @@ function CreateManualOrderModal({ onClose, onCreated }) {
                   onChange={(e) => setNotes(e.target.value)}
                   rows={2}
                   maxLength={500}
-                  className="w-full rounded-lg bg-black/30 text-heading text-sm px-3 py-2 outline-none border border-white/10 focus:border-accent resize-none"
+                  className="w-full rounded-lg text-sm px-3 py-2 outline-none border focus:border-accent resize-none"
+                  style={inputBg}
                 />
               </div>
 
@@ -428,12 +448,13 @@ function CreateManualOrderModal({ onClose, onCreated }) {
             </div>
 
             {/* Footer */}
-            <div className="flex items-center gap-2 px-5 py-3 bg-black/30 border-t border-white/5">
+            <div className="flex items-center gap-2 px-5 py-3 border-t" style={footerBg}>
               <button
                 type="button"
                 onClick={onClose}
                 disabled={loading}
-                className="flex-1 py-2 rounded-lg bg-white/5 text-grey-muted font-semibold text-sm hover:bg-white/10 transition-colors disabled:opacity-50"
+                className="flex-1 py-2 rounded-lg font-semibold text-sm transition-colors disabled:opacity-50 border"
+                style={{ ...cancelBtnStyle, borderColor: 'var(--bg-input-border)' }}
               >
                 {tx({ fr: 'Annuler', en: 'Cancel', es: 'Cancelar' })}
               </button>
