@@ -1,83 +1,80 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
-  ShoppingBag, Package, MessageSquare, Users, Receipt,
-  BarChart3, DollarSign, Banknote, Star, AlertCircle,
+  ShoppingBag, Package, MessageSquare, Receipt,
+  BarChart3, DollarSign, Banknote, AlertCircle,
   Loader2, ArrowRight, StickyNote, Clock, CheckCircle, Truck, Activity,
+  UserPlus, Eye, Users, Globe, Zap, TrendingUp, AlertTriangle, ChevronDown, ChevronUp,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import { getOrders, getContactSubmissions, getExpenses, getAnalytics } from '../services/adminService';
 import api from '../services/api';
-import { UserPlus, Eye } from 'lucide-react';
+
 const NOTES_KEY = 'mm-admin-notes';
 
-function DashboardNotes() {
-  const { tx } = useLang();
-  const notes = (() => {
-    try { return JSON.parse(localStorage.getItem(NOTES_KEY) || '[]'); } catch { return []; }
-  })();
-  const sorted = notes.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+// Montants stockes en cents dans Strapi - afficher en dollars
+const dollars = (v) => `${((v || 0) / 100).toFixed(2)}$`;
 
-  if (sorted.length === 0) {
-    return (
-      <div className="text-center py-6 text-grey-muted text-xs">
-        <StickyNote size={24} className="mx-auto mb-2 opacity-30" />
-        {tx({ fr: 'Aucune note', en: 'No notes', es: 'Sin notas' })}
-      </div>
-    );
-  }
+// FIX-DASH (avril 2026) : Dashboard enrichi en centre de controle ultra-actionnable.
+// Les stats detaillees (AdminStats) sont desormais integrees au bas de la page via
+// un toggle "Afficher les statistiques detaillees" qui lazy-charge le composant.
+const AdminStats = lazy(() => import('./AdminStats'));
 
-  return (
-    <div className="space-y-0.5 max-h-[280px] overflow-y-auto scrollbar-thin">
-      {sorted.slice(0, 5).map((n, i) => (
-        <Link
-          key={n.id}
-          to="/admin/notes"
-          className="block px-3 py-2.5 rounded-lg hover:bg-black/10 transition-colors"
-        >
-          <p className="text-sm text-heading truncate font-medium">
-            {n.title || tx({ fr: 'Sans titre', en: 'Untitled', es: 'Sin titulo' })}
-          </p>
-          {i === 0 && n.body && (
-            <p className="text-xs text-grey-muted mt-1 line-clamp-2">{n.body.replace(/<[^>]*>/g, '').slice(0, 120)}</p>
-          )}
-        </Link>
-      ))}
-    </div>
-  );
-}
-
-function StatCard({ icon: Icon, label, value, color, to }) {
+// --- StatCard reutilisable (accepte maintenant un subValue optionnel) ---
+function StatCard({ icon: Icon, label, value, subValue, color, to, highlight }) {
   const content = (
-    <div className="flex items-center gap-3 p-4 rounded-xl bg-black/20 hover:bg-black/25 transition-all group">
+    <div className={`flex items-center gap-3 p-4 rounded-xl bg-black/20 hover:bg-black/25 transition-all group ${highlight ? 'ring-1 ring-accent/30' : ''}`}>
       <div className={`p-2.5 rounded-lg ${color}`}>
         <Icon size={20} />
       </div>
-      <div className="min-w-0">
-        <p className="text-xl font-bold text-heading">{value}</p>
-        <p className="text-xs text-grey-muted">{label}</p>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-baseline gap-1.5 flex-wrap">
+          <span className="text-xl font-bold text-heading leading-tight">{value}</span>
+          {subValue && (
+            <span className={`text-xs font-semibold ${color.includes('text-') ? color.split(' ').find(c => c.startsWith('text-')) : 'text-grey-muted'}`}>
+              {subValue}
+            </span>
+          )}
+        </div>
+        <p className="text-xs text-grey-muted truncate">{label}</p>
       </div>
-      {to && <ArrowRight size={14} className="ml-auto text-grey-muted opacity-0 group-hover:opacity-100 transition-opacity" />}
+      {to && <ArrowRight size={14} className="ml-auto text-grey-muted opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />}
     </div>
   );
   return to ? <Link to={to}>{content}</Link> : content;
 }
 
+// --- Alerte compacte cliquable ---
+function AlertRow({ icon: Icon, iconColor, text, sub, to }) {
+  const body = (
+    <div className="flex items-start gap-3 px-3 py-2.5 rounded-lg hover:bg-black/20 transition-colors group">
+      <Icon size={16} className={`flex-shrink-0 mt-0.5 ${iconColor}`} />
+      <div className="flex-1 min-w-0">
+        <p className="text-sm text-heading leading-snug">{text}</p>
+        {sub && <p className="text-[11px] text-grey-muted mt-0.5">{sub}</p>}
+      </div>
+      {to && <ArrowRight size={14} className="text-grey-muted opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 mt-0.5" />}
+    </div>
+  );
+  return to ? <Link to={to}>{body}</Link> : body;
+}
+
 function AdminDashboard() {
   const { tx } = useLang();
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState({
-    orders: 0, pending: 0, processing: 0, shipped: 0,
-    messages: 0, unreadMessages: 0,
-    inventoryLow: 0,
-    expenses: 0,
-    newUsers3d: 0,
-    visitorsToday: '-',
-  });
 
-  // Notes inline - TOUS les hooks DOIVENT etre declares avant tout return conditionnel
-  // (Rules of Hooks: https://react.dev/errors/310)
+  // Donnees brutes utilisees par KPIs + section Alertes
+  const [orders, setOrders] = useState([]);
+  const [messages, setMessages] = useState([]);
+  const [inventory, setInventory] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [analytics, setAnalytics] = useState(null);
+
+  // Revenue agrege
+  const [revenue, setRevenue] = useState({ total: 0, orders: 0, commissions: 0 });
+
+  // Notes (localStorage)
   const [notes, setNotes] = useState(() => {
     try { return JSON.parse(localStorage.getItem(NOTES_KEY) || '[]'); } catch { return []; }
   });
@@ -85,8 +82,8 @@ function AdminDashboard() {
   const [noteTitle, setNoteTitle] = useState('');
   const [noteBody, setNoteBody] = useState('');
 
-  // Revenue from stats + commissions APIs
-  const [revenue, setRevenue] = useState({ total: 0, orders: 0, commissions: 0 });
+  // Toggle stats detaillees (lazy-loaded)
+  const [showStats, setShowStats] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -95,7 +92,7 @@ function AdminDashboard() {
       const withTimeout = (p) => Promise.race([p, timeout(8000)]);
       try {
         const [ordersRes, messagesRes, inventoryRes, expensesRes, usersRes, analyticsRes] = await Promise.allSettled([
-          withTimeout(getOrders()),
+          withTimeout(getOrders({ pageSize: 500 })),
           withTimeout(getContactSubmissions()),
           withTimeout(api.get('/inventory-items/dashboard')),
           withTimeout(getExpenses()),
@@ -105,42 +102,11 @@ function AdminDashboard() {
 
         if (cancelled) return;
 
-        const orders = ordersRes.status === 'fulfilled' ? (ordersRes.value?.data || []) : [];
-        const messages = messagesRes.status === 'fulfilled' ? (messagesRes.value?.data || []) : [];
-        const inventory = inventoryRes.status === 'fulfilled' ? (inventoryRes.value?.data || []) : [];
-        const expenses = expensesRes.status === 'fulfilled' ? (expensesRes.value?.data || []) : [];
-
-        const pending = orders.filter(o => o.status === 'pending' || o.status === 'paid').length;
-        const processing = orders.filter(o => o.status === 'processing').length;
-        const shipped = orders.filter(o => o.status === 'shipped').length;
-        const unread = messages.filter(m => m.status === 'new' || m.status === 'unread').length;
-        const lowStock = inventory.filter(i => i.quantity !== undefined && i.quantity <= (i.lowStockThreshold || 5)).length;
-        const users = usersRes.status === 'fulfilled' ? (usersRes.value?.data || []) : [];
-        const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
-        const newUsers3d = users.filter(u => new Date(u.createdAt) >= threeDaysAgo).length;
-        const analytics = analyticsRes.status === 'fulfilled' ? (analyticsRes.value?.data || {}) : {};
-        const rawVisitors = analytics.visitorsToday ?? analytics.uniqueVisitors ?? '-';
-        const visitorsToday = typeof rawVisitors === 'object' ? JSON.stringify(rawVisitors) : String(rawVisitors);
-        const monthExpenses = expenses
-          .filter(e => {
-            const d = new Date(e.date || e.createdAt);
-            const now = new Date();
-            return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-          })
-          .reduce((sum, e) => sum + (e.amount || 0), 0);
-
-        setStats({
-          orders: orders.length,
-          pending,
-          processing,
-          shipped,
-          messages: messages.length,
-          unreadMessages: unread,
-          inventoryLow: lowStock,
-          expenses: monthExpenses,
-          newUsers3d,
-          visitorsToday,
-        });
+        setOrders(ordersRes.status === 'fulfilled' ? (ordersRes.value?.data?.data || ordersRes.value?.data || []) : []);
+        setMessages(messagesRes.status === 'fulfilled' ? (messagesRes.value?.data || []) : []);
+        setInventory(inventoryRes.status === 'fulfilled' ? (inventoryRes.value?.data || []) : []);
+        setUsers(usersRes.status === 'fulfilled' ? (usersRes.value?.data || []) : []);
+        setAnalytics(analyticsRes.status === 'fulfilled' ? (analyticsRes.value?.data?.data || analyticsRes.value?.data || null) : null);
       } catch (err) {
         console.error('Dashboard fetch error:', err);
       } finally {
@@ -148,7 +114,7 @@ function AdminDashboard() {
       }
     }
     fetchAll();
-    const interval = setInterval(fetchAll, 60000); // refresh toutes les 60s
+    const interval = setInterval(fetchAll, 60000);
     return () => { cancelled = true; clearInterval(interval); };
   }, []);
 
@@ -174,7 +140,44 @@ function AdminDashboard() {
     return () => clearInterval(interval);
   }, []);
 
-  // Handlers notes (pas des hooks, peuvent rester apres le return conditionnel)
+  // ---------- Derived KPIs (useMemo pour eviter les recalculs a chaque render) ----------
+  const kpis = useMemo(() => {
+    const pendingOrders = orders.filter(o => o.status === 'pending' || o.status === 'paid');
+    const pendingAmountCents = pendingOrders.reduce((s, o) => s + (Number(o.total) || 0), 0);
+    const processing = orders.filter(o => o.status === 'processing').length;
+    const ready = orders.filter(o => o.status === 'ready');
+    const unreadMessages = messages.filter(m => m.status === 'new' || m.status === 'unread').length;
+    const lowStockItems = inventory.filter(i => typeof i.quantity === 'number' && i.quantity <= (i.lowStockThreshold || 5));
+    const outOfStockItems = inventory.filter(i => typeof i.quantity === 'number' && i.quantity === 0);
+    const threeDaysAgo = Date.now() - 3 * 24 * 60 * 60 * 1000;
+    const newUsers3d = users.filter(u => new Date(u.createdAt).getTime() >= threeDaysAgo).length;
+
+    // Analytics champs bien connus (GA4 via backend /analytics/stats) :
+    //   overview.activeUsers | overview.realtimeUsers | realtimeUsers
+    //   pages[0] = { path, views }
+    const realtimeUsers = analytics?.realtimeUsers ?? analytics?.overview?.realtimeUsers ?? analytics?.overview?.activeUsers ?? 0;
+    const visitorsTodayRaw = analytics?.visitorsToday ?? analytics?.uniqueVisitors ?? analytics?.overview?.activeUsers ?? '-';
+    const visitorsToday = typeof visitorsTodayRaw === 'object' ? '-' : String(visitorsTodayRaw);
+    const pagesArr = Array.isArray(analytics?.pages) ? analytics.pages : [];
+    const topPage = pagesArr[0] || null;
+
+    return {
+      pendingCount: pendingOrders.length,
+      pendingAmountCents,
+      processing,
+      readyOrders: ready,
+      unreadMessages,
+      lowStockItems,
+      outOfStockItems,
+      newUsers3d,
+      totalUsers: users.length,
+      realtimeUsers,
+      visitorsToday,
+      topPage,
+    };
+  }, [orders, messages, inventory, users, analytics]);
+
+  // Notes handlers
   const saveNotes = (updated) => { setNotes(updated); localStorage.setItem(NOTES_KEY, JSON.stringify(updated)); };
   const addNote = () => {
     const n = { id: Date.now(), title: '', body: '', updatedAt: Date.now() };
@@ -189,7 +192,6 @@ function AdminDashboard() {
   };
   const deleteNote = (id) => { saveNotes(notes.filter(n => n.id !== id)); if (editingNote === id) setEditingNote(null); };
 
-  // Early return AFTER all hooks are declared (Rules of Hooks compliance)
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -198,25 +200,189 @@ function AdminDashboard() {
     );
   }
 
+  // ---------- Alertes et actions du jour ----------
+  const hasAlerts = kpis.readyOrders.length > 0 || kpis.outOfStockItems.length > 0 || kpis.lowStockItems.length > 0;
+
   return (
     <div className="space-y-5">
-      {/* Ventes + Stats */}
+      {/* ===== RANGEE 1 : KPIs business (revenus / ventes / commissions) ===== */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <StatCard icon={ShoppingBag} label={tx({ fr: 'Ventes', en: 'Sales', es: 'Ventas' })} value={revenue.orders || 0} color="bg-green-500/15 text-green-400" to="/admin/commandes" />
-        <StatCard icon={DollarSign} label={tx({ fr: 'Revenus', en: 'Revenue', es: 'Ingresos' })} value={`${(revenue.total || 0).toFixed(0)}$`} color="bg-accent/15 text-accent" to="/admin/commandes" />
-        <StatCard icon={Banknote} label={tx({ fr: 'Commissions artistes', en: 'Artist commissions', es: 'Comisiones' })} value={`${(revenue.commissions || 0).toFixed(0)}$`} color="bg-blue-500/15 text-blue-400" to="/admin/commissions" />
-        <StatCard icon={Eye} label={tx({ fr: 'Visiteurs uniques', en: 'Unique visitors', es: 'Visitantes' })} value={stats.visitorsToday} color="bg-cyan-500/15 text-cyan-400" to="/admin/stats" />
+        <StatCard
+          icon={ShoppingBag}
+          label={tx({ fr: 'Ventes', en: 'Sales', es: 'Ventas' })}
+          value={revenue.orders || 0}
+          color="bg-green-500/15 text-green-400"
+          to="/admin/commandes"
+        />
+        <StatCard
+          icon={DollarSign}
+          label={tx({ fr: 'Revenus', en: 'Revenue', es: 'Ingresos' })}
+          value={`${(revenue.total || 0).toFixed(0)}$`}
+          color="bg-accent/15 text-accent"
+          to="/admin/commandes"
+        />
+        <StatCard
+          icon={Banknote}
+          label={tx({ fr: 'Commissions artistes', en: 'Artist commissions', es: 'Comisiones' })}
+          value={`${(revenue.commissions || 0).toFixed(0)}$`}
+          color="bg-blue-500/15 text-blue-400"
+          to="/admin/artists"
+        />
+        <StatCard
+          icon={Clock}
+          label={tx({ fr: 'En attente', en: 'Pending', es: 'Pendientes' })}
+          value={kpis.pendingCount}
+          subValue={kpis.pendingAmountCents > 0 ? `(${dollars(kpis.pendingAmountCents)})` : null}
+          color="bg-yellow-500/15 text-yellow-400"
+          to="/admin/commandes"
+          highlight={kpis.pendingCount > 0}
+        />
       </div>
 
-      {/* Status commandes + Messages */}
+      {/* ===== RANGEE 2 : operations + messages + utilisateurs ===== */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <StatCard icon={Clock} label={tx({ fr: 'En attente', en: 'Pending', es: 'Pendientes' })} value={stats.pending} color="bg-yellow-500/15 text-yellow-400" to="/admin/commandes" />
-        <StatCard icon={Package} label={tx({ fr: 'En production', en: 'Processing', es: 'En produccion' })} value={stats.processing} color="bg-blue-500/15 text-blue-400" to="/admin/commandes" />
-        <StatCard icon={MessageSquare} label={tx({ fr: 'Messages', en: 'Messages', es: 'Mensajes' })} value={stats.unreadMessages > 0 ? stats.unreadMessages : '0'} color={stats.unreadMessages > 0 ? 'bg-red-500/15 text-red-400' : 'bg-white/5 text-grey-muted'} to="/admin/messages" />
-        <StatCard icon={UserPlus} label={tx({ fr: 'Nouveaux (3j)', en: 'New (3d)', es: 'Nuevos (3d)' })} value={stats.newUsers3d} color={stats.newUsers3d > 0 ? 'bg-purple-500/15 text-purple-400' : 'bg-white/5 text-grey-muted'} to="/admin/utilisateurs" />
+        <StatCard
+          icon={Package}
+          label={tx({ fr: 'En production', en: 'Processing', es: 'En produccion' })}
+          value={kpis.processing}
+          color="bg-blue-500/15 text-blue-400"
+          to="/admin/commandes"
+        />
+        <StatCard
+          icon={MessageSquare}
+          label={tx({ fr: 'Messages', en: 'Messages', es: 'Mensajes' })}
+          value={kpis.unreadMessages || '0'}
+          color={kpis.unreadMessages > 0 ? 'bg-red-500/15 text-red-400' : 'bg-white/5 text-grey-muted'}
+          to="/admin/messages"
+        />
+        <StatCard
+          icon={Users}
+          label={tx({ fr: 'Utilisateurs totaux', en: 'Total users', es: 'Usuarios totales' })}
+          value={kpis.totalUsers}
+          subValue={kpis.newUsers3d > 0 ? `+${kpis.newUsers3d} 3j` : null}
+          color="bg-purple-500/15 text-purple-400"
+          to="/admin/utilisateurs"
+        />
+        <StatCard
+          icon={UserPlus}
+          label={tx({ fr: 'Nouveaux (3j)', en: 'New (3d)', es: 'Nuevos (3d)' })}
+          value={kpis.newUsers3d}
+          color={kpis.newUsers3d > 0 ? 'bg-purple-500/15 text-purple-400' : 'bg-white/5 text-grey-muted'}
+          to="/admin/utilisateurs"
+        />
       </div>
 
-      {/* Notes inline */}
+      {/* ===== RANGEE 3 : trafic en direct ===== */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <StatCard
+          icon={Zap}
+          label={tx({ fr: 'Actifs maintenant', en: 'Active now', es: 'Activos ahora' })}
+          value={kpis.realtimeUsers}
+          color={kpis.realtimeUsers > 0 ? 'bg-green-500/15 text-green-400' : 'bg-white/5 text-grey-muted'}
+        />
+        <StatCard
+          icon={Eye}
+          label={tx({ fr: 'Visiteurs uniques', en: 'Unique visitors', es: 'Visitantes' })}
+          value={kpis.visitorsToday}
+          color="bg-cyan-500/15 text-cyan-400"
+        />
+        <StatCard
+          icon={TrendingUp}
+          label={tx({ fr: 'Page la plus vue', en: 'Top page', es: 'Pagina mas vista' })}
+          value={kpis.topPage ? (kpis.topPage.path || kpis.topPage.pagePath || '-') : '-'}
+          subValue={kpis.topPage?.views ? `${kpis.topPage.views} vues` : null}
+          color="bg-pink-500/15 text-pink-400"
+        />
+        <StatCard
+          icon={Globe}
+          label={tx({ fr: 'Stock faible', en: 'Low stock', es: 'Stock bajo' })}
+          value={kpis.lowStockItems.length}
+          color={kpis.lowStockItems.length > 0 ? 'bg-orange-500/15 text-orange-400' : 'bg-white/5 text-grey-muted'}
+          to="/admin/inventaire"
+        />
+      </div>
+
+      {/* ===== ALERTES & ACTIONS DU JOUR ===== */}
+      <div className="rounded-2xl p-4 md:p-5 card-bg">
+        <h3 className="text-heading font-heading font-bold text-base flex items-center gap-2 mb-3">
+          <AlertTriangle size={18} className={hasAlerts ? 'text-yellow-400' : 'text-green-400'} />
+          {tx({
+            fr: `Alertes & actions du jour`,
+            en: 'Alerts & actions for today',
+            es: 'Alertas & acciones del dia',
+          })}
+          {hasAlerts && (
+            <span className="ml-auto text-[11px] bg-yellow-500/15 text-yellow-400 px-2 py-0.5 rounded-full font-semibold">
+              {kpis.readyOrders.length + kpis.outOfStockItems.length + kpis.lowStockItems.length}
+            </span>
+          )}
+        </h3>
+
+        {!hasAlerts ? (
+          <div className="flex items-center gap-2 px-3 py-4 text-sm text-grey-muted">
+            <CheckCircle size={16} className="text-green-400 flex-shrink-0" />
+            {tx({
+              fr: 'Rien d\'urgent. Les commandes sont a jour, le stock est OK. Profite de ta journee.',
+              en: 'Nothing urgent. Orders are up to date, stock is fine. Enjoy your day.',
+              es: 'Nada urgente. Pedidos al dia, stock OK.',
+            })}
+          </div>
+        ) : (
+          <div className="space-y-1">
+            {/* Commandes pretes a remettre (local pickup) */}
+            {kpis.readyOrders.map(o => (
+              <AlertRow
+                key={o.documentId || o.id}
+                icon={Package}
+                iconColor="text-orange-400"
+                text={tx({
+                  fr: `La commande de ${o.customerName || 'client inconnu'} est prete pour la cueillette.`,
+                  en: `${o.customerName || 'unknown client'}'s order is ready for pickup.`,
+                  es: `El pedido de ${o.customerName || 'cliente'} esta listo para recoger.`,
+                })}
+                sub={o.total ? `${dollars(o.total)} - ${o.customerEmail || ''}` : (o.customerEmail || '')}
+                to={`/admin/commandes`}
+              />
+            ))}
+
+            {/* Ruptures de stock (qty = 0) */}
+            {kpis.outOfStockItems.map(it => (
+              <AlertRow
+                key={`oos-${it.documentId || it.id}`}
+                icon={AlertCircle}
+                iconColor="text-red-400"
+                text={tx({
+                  fr: `Rupture de stock : ${it.nameFr || it.nameEn || it.sku || 'item'}.`,
+                  en: `Out of stock: ${it.nameEn || it.nameFr || it.sku || 'item'}.`,
+                  es: `Sin stock: ${it.nameFr || it.nameEn || it.sku}.`,
+                })}
+                sub={it.category ? `Cat: ${it.category}${it.location ? ` - ${it.location}` : ''}` : null}
+                to="/admin/inventaire"
+              />
+            ))}
+
+            {/* Stock faible (qty > 0 mais <= threshold) */}
+            {kpis.lowStockItems
+              .filter(it => it.quantity > 0) // exclure ruptures deja listees
+              .map(it => (
+                <AlertRow
+                  key={`low-${it.documentId || it.id}`}
+                  icon={AlertTriangle}
+                  iconColor="text-yellow-400"
+                  text={tx({
+                    fr: `Stock faible : ${it.nameFr || it.nameEn || it.sku} (${it.quantity} restant${it.quantity > 1 ? 's' : ''}).`,
+                    en: `Low stock: ${it.nameEn || it.nameFr || it.sku} (${it.quantity} left).`,
+                    es: `Stock bajo: ${it.nameFr || it.nameEn || it.sku}.`,
+                  })}
+                  sub={it.category ? `Cat: ${it.category}` : null}
+                  to="/admin/inventaire"
+                />
+              ))}
+          </div>
+        )}
+      </div>
+
+      {/* ===== NOTES ===== */}
       <div className="rounded-2xl p-4 md:p-5 card-bg">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-heading font-heading font-bold text-sm flex items-center gap-2">
@@ -252,8 +418,45 @@ function AdminDashboard() {
         </div>
       </div>
 
-      {/* Systeme */}
+      {/* ===== SYSTEMES ===== */}
       <SystemStatusWidget tx={tx} />
+
+      {/* ===== TOGGLE STATS DETAILLEES (lazy-loaded) ===== */}
+      <div>
+        <button
+          type="button"
+          onClick={() => setShowStats(v => !v)}
+          className="w-full flex items-center justify-center gap-2.5 py-4 rounded-2xl card-bg hover:bg-black/30 transition-colors border border-white/5"
+        >
+          <BarChart3 size={18} className="text-accent" />
+          <span className="text-heading font-heading font-bold text-sm">
+            {showStats
+              ? tx({ fr: 'Masquer les statistiques detaillees', en: 'Hide detailed statistics', es: 'Ocultar estadisticas' })
+              : tx({ fr: 'Afficher les statistiques detaillees', en: 'Show detailed statistics', es: 'Mostrar estadisticas' })}
+          </span>
+          {showStats ? <ChevronUp size={16} className="text-grey-muted" /> : <ChevronDown size={16} className="text-grey-muted" />}
+        </button>
+
+        <AnimatePresence initial={false}>
+          {showStats && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.3, ease: 'easeInOut' }}
+              className="overflow-hidden mt-4"
+            >
+              <Suspense fallback={
+                <div className="flex items-center justify-center py-12 card-bg rounded-2xl">
+                  <Loader2 size={28} className="animate-spin text-accent" />
+                </div>
+              }>
+                <AdminStats />
+              </Suspense>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
     </div>
   );
 }
@@ -272,7 +475,6 @@ function SystemStatusWidget({ tx }) {
     setChecking(true);
     const results = [];
 
-    // Render (Strapi API)
     try {
       const start = Date.now();
       const res = await fetch(`${import.meta.env.VITE_API_URL || 'https://massivemedias-api.onrender.com/api'}/artists?pagination[pageSize]=1`, { signal: AbortSignal.timeout(8000) });
@@ -281,13 +483,9 @@ function SystemStatusWidget({ tx }) {
       results.push({ name: 'Render', ok: false, ms: 0 });
     }
 
-    // Strapi CMS (implied by Render)
     results.push({ name: 'Strapi', ok: results[0]?.ok });
-
-    // Neon DB (implied by Strapi working)
     results.push({ name: 'Neon DB', ok: results[0]?.ok });
 
-    // Cloudflare Pages (frontend)
     try {
       const start = Date.now();
       await fetch('https://massivemedias.com/', { mode: 'no-cors', signal: AbortSignal.timeout(5000) });
@@ -296,16 +494,10 @@ function SystemStatusWidget({ tx }) {
       results.push({ name: 'Cloudflare Pages', ok: false, ms: 0 });
     }
 
-    // Supabase
     results.push({ name: 'Supabase', ok: !!import.meta.env.VITE_SUPABASE_URL });
-
-    // Stripe
     results.push({ name: 'Stripe', ok: !!import.meta.env.VITE_STRIPE_PUBLIC_KEY });
-
-    // Google Analytics
     results.push({ name: 'Analytics', ok: !!import.meta.env.VITE_GA_ID });
 
-    // Last deploy info from GitHub
     try {
       const ghRes = await fetch('https://api.github.com/repos/massivemedias/massivemedias/commits?per_page=1', { signal: AbortSignal.timeout(5000) });
       if (ghRes.ok) {

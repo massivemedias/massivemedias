@@ -5,7 +5,7 @@
  */
 import {
   LayoutDashboard, Bot, StickyNote, ShoppingBag, Banknote, Package,
-  MessageSquare, Users, FileText, Star, BarChart3, DollarSign, Tag, Palette, Receipt,
+  MessageSquare, Users, FileText, Star, DollarSign, Tag, Palette, Receipt,
 } from 'lucide-react';
 
 const ADMIN_NAV_ITEMS = [
@@ -23,7 +23,9 @@ const ADMIN_NAV_ITEMS = [
   // Les depenses (achats) ont leur propre onglet dedie ci-dessous.
   { to: '/admin/depenses', icon: FileText, fr: 'Depenses', en: 'Expenses', es: 'Gastos', tooltip: { fr: 'Factures d\'achat et depenses operationnelles', en: 'Purchase invoices and operating expenses', es: 'Facturas de compra y gastos' } },
   { to: '/admin/temoignages', icon: Star, fr: 'Temoignages', en: 'Testimonials', es: 'Testimonios', tooltip: { fr: 'Temoignages clients affiches sur le site', en: 'Client testimonials shown on website', es: 'Testimonios de clientes' } },
-  { to: '/admin/stats', icon: BarChart3, fr: 'Stats', en: 'Stats', es: 'Stats', tooltip: { fr: 'Statistiques de ventes et revenus', en: 'Sales and revenue statistics', es: 'Estadisticas de ventas' } },
+  // Onglet Stats supprime (avril 2026) : integre au Dashboard via toggle
+  // "Afficher les statistiques detaillees". Les deep-links /admin/stats
+  // redirigent vers /admin/dashboard (voir App.jsx).
   { to: '/admin/tarifs', icon: DollarSign, fr: 'Tarifs', en: 'Pricing', es: 'Precios', tooltip: { fr: 'Gestion des prix (CMS)', en: 'Price management (CMS)', es: 'Gestion de precios' } },
   // Facturation : onglet integre dans /admin/commandes (avril 2026) pour centraliser le workflow.
   { to: '/admin/promos', icon: Tag, fr: 'Codes Promo', en: 'Promo Codes', es: 'Codigos Promo', tooltip: { fr: 'Gestion des codes promotionnels', en: 'Promo code management', es: 'Gestion de codigos promocionales' } },

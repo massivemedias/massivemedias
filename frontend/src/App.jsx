@@ -57,7 +57,9 @@ const AdminMessages = lazyWithRetry(() => import('./pages/AdminMessages'));
 // AdminCommissions supprime (avril 2026) - fusionne dans AdminArtistManager (God Mode, tab Finances).
 // AdminClients merged into AdminUtilisateurs - redirect in routes
 const AdminDepenses = lazyWithRetry(() => import('./pages/AdminDepenses'));
-const AdminStats = lazyWithRetry(() => import('./pages/AdminStats'));
+// AdminStats n'est plus une route propre (avril 2026) - il est lazy-imported
+// directement dans AdminDashboard via le toggle "Afficher les statistiques detaillees".
+// Le path /admin/stats redirige vers /admin/dashboard pour compat retroactive.
 const AdminTarifs = lazyWithRetry(() => import('./pages/AdminTarifs'));
 const AdminTemoignages = lazyWithRetry(() => import('./pages/AdminTemoignages'));
 // AdminFactures supprime (refactor avril 2026) - doublon avec AdminOrders.
@@ -213,7 +215,8 @@ function App() {
               {/* Depenses redirige vers sa propre page dediee (ancien flow passait par Factures) */}
               <Route path="depenses" element={<AdminDepenses />} />
               <Route path="temoignages" element={<AdminTemoignages />} />
-              <Route path="stats" element={<AdminStats />} />
+              {/* /admin/stats -> integre au Dashboard (toggle). Redirection pour backward compat. */}
+              <Route path="stats" element={<Navigate to="/admin/dashboard" replace />} />
               <Route path="tarifs" element={<AdminTarifs />} />
               <Route path="promos" element={<AdminPromos />} />
               {/* /admin/reglages-facturation -> onglet integre dans /admin/commandes (avril 2026) */}
