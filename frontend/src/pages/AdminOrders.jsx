@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Search, ChevronDown, ChevronUp, ShoppingBag, DollarSign,
+  Search, ChevronDown, ChevronUp, ShoppingBag, DollarSign, Settings, Briefcase, Layers,
   Clock, Truck, Package, CreditCard, CheckCircle, XCircle,
   RotateCcw, Loader2, ExternalLink, MapPin, Save, Image,
   FileText, ChevronLeft, ChevronRight, Phone, Mail, Hash, Palette,
@@ -13,6 +13,7 @@ import { useNotifications } from '../contexts/NotificationContext';
 import { generateInvoicePDF } from '../utils/generateInvoice';
 import EditOrderTotalModal from '../components/EditOrderTotalModal';
 import CreateManualOrderModal from '../components/CreateManualOrderModal';
+import AdminReglagesFacturation from './AdminReglagesFacturation';
 
 const ORDER_STATUS = {
   draft:      { fr: 'Brouillon',    en: 'Draft',      es: 'Borrador',     color: 'bg-gray-600/20 text-gray-500', icon: Clock },
@@ -123,6 +124,11 @@ function AdminOrders() {
   const [sendingInvoiceId, setSendingInvoiceId] = useState(null);
   // Modal de previsualisation avant envoi facture (controle admin)
   const [previewInvoiceOrder, setPreviewInvoiceOrder] = useState(null);
+
+  // FIX-ADMIN (avril 2026) : onglets de categorisation + integration Reglages.
+  // "all" affiche TOUS les orders (y compris les anciennes sans isManual).
+  // Les onglets "boutique" et "b2b" ont un fallback safe pour les legacy.
+  const [activeTab, setActiveTab] = useState('all'); // 'all' | 'boutique' | 'b2b' | 'settings'
 
   // Billing settings (TPS/TVQ/bancaire/Interac) charges une fois au mount
   // et passes en options au generateInvoicePDF pour que toutes les factures
@@ -488,6 +494,22 @@ function AdminOrders() {
     return new Date(d).toLocaleDateString('fr-CA', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
   };
 
+  // FIX-LEGACY (avril 2026) : filtre safe pour onglets Boutique / B2B.
+  // Regle critique : l'onglet "all" affiche 100% des orders tels que retournes
+  // par l'API. Les onglets secondaires ont un fallback pour les anciennes
+  // commandes qui n'ont pas le champ isManual :
+  //   - boutique : isManual falsy (undefined, false, null) -> par defaut
+  //   - b2b      : isManual === true (explicit seulement)
+  // Aucune commande ne peut "disparaitre" via ce filtrage - chaque order
+  // trouve toujours sa place dans "all", et les orders sans isManual sont
+  // considerees comme boutique (le defaut historique).
+  const displayedOrders = (() => {
+    if (activeTab === 'b2b') return orders.filter(o => o?.isManual === true);
+    if (activeTab === 'boutique') return orders.filter(o => !o?.isManual);
+    // 'all' ou inconnu -> 100% des orders, pas de filter
+    return orders;
+  })();
+
   const formatDateShort = (d) => {
     if (!d) return '-';
     return new Date(d).toLocaleDateString('fr-CA', { day: 'numeric', month: 'short' });
@@ -563,20 +585,56 @@ function AdminOrders() {
         )}
       </AnimatePresence>
 
-      {/* CTA: creer une commande manuelle + facture + lien Stripe */}
-      <div className="flex items-center justify-end">
-        <button
-          type="button"
-          onClick={() => setShowManualModal(true)}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-accent text-white font-semibold text-sm hover:brightness-110 transition-all shadow-lg shadow-accent/20"
-        >
-          <Plus size={16} />
-          {tx({
-            fr: 'Creer une commande / facture manuelle',
-            en: 'Create manual order / invoice',
-            es: 'Crear pedido / factura manual',
+      {/* Barre de tabs : categorisation + settings integre */}
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex items-center gap-1 card-bg rounded-xl p-1 shadow-sm">
+          {[
+            { id: 'all',      label: tx({ fr: 'Toutes les commandes', en: 'All orders', es: 'Todos los pedidos' }), icon: Layers },
+            { id: 'boutique', label: tx({ fr: 'Boutique', en: 'Shop', es: 'Tienda' }),                              icon: ShoppingBag },
+            { id: 'b2b',      label: tx({ fr: 'Factures B2B', en: 'B2B invoices', es: 'Facturas B2B' }),           icon: Briefcase },
+            { id: 'settings', label: tx({ fr: 'Reglages Facturation', en: 'Billing Settings', es: 'Ajustes' }),   icon: Settings },
+          ].map(t => {
+            const Ic = t.icon;
+            const isActive = activeTab === t.id;
+            const count = t.id === 'all'      ? orders.length
+                        : t.id === 'boutique' ? orders.filter(o => !o?.isManual).length
+                        : t.id === 'b2b'      ? orders.filter(o => o?.isManual === true).length
+                        : null;
+            return (
+              <button
+                key={t.id}
+                onClick={() => setActiveTab(t.id)}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
+                  isActive ? 'bg-accent text-white shadow' : 'text-grey-muted hover:text-heading hover:bg-white/5'
+                }`}
+              >
+                <Ic size={13} />
+                <span>{t.label}</span>
+                {count !== null && (
+                  <span className={`ml-1 px-1.5 py-0.5 rounded-full text-[10px] ${isActive ? 'bg-white/20' : 'bg-black/20'}`}>
+                    {count}
+                  </span>
+                )}
+              </button>
+            );
           })}
-        </button>
+        </div>
+
+        {/* CTA: creer une commande manuelle + facture + lien Stripe (masque en Reglages) */}
+        {activeTab !== 'settings' && (
+          <button
+            type="button"
+            onClick={() => setShowManualModal(true)}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-accent text-white font-semibold text-sm hover:brightness-110 transition-all shadow-lg shadow-accent/20"
+          >
+            <Plus size={16} />
+            {tx({
+              fr: 'Creer une commande / facture manuelle',
+              en: 'Create manual order / invoice',
+              es: 'Crear pedido / factura manual',
+            })}
+          </button>
+        )}
       </div>
 
       {showManualModal && (
@@ -832,12 +890,21 @@ function AdminOrders() {
         </div>
       </div>
 
+      {/* SETTINGS TAB : on escamote le tableau et on affiche le form de
+          Reglages Facturation integre. Aucun fetch additionel necessaire,
+          le composant gere son propre load state. */}
+      {activeTab === 'settings' ? (
+        <div className="rounded-xl card-bg shadow-lg shadow-black/20 p-5">
+          <AdminReglagesFacturation />
+        </div>
+      ) : (
+      <>
       {/* Table */}
       {loading ? (
         <div className="flex items-center justify-center py-20">
           <Loader2 size={32} className="animate-spin text-accent" />
         </div>
-      ) : orders.length === 0 ? (
+      ) : displayedOrders.length === 0 ? (
         <div className="text-center py-20 text-grey-muted">
           {tx({ fr: 'Aucune commande trouvée', en: 'No orders found', es: 'No se encontraron pedidos' })}
         </div>
@@ -855,7 +922,7 @@ function AdminOrders() {
 
           {/* Rows */}
           <AnimatePresence>
-            {orders.map((order) => {
+            {displayedOrders.map((order) => {
               const st = ORDER_STATUS[order.status] || ORDER_STATUS.pending;
               const StIcon = st.icon;
               const isExpanded = expandedId === order.documentId;
@@ -1591,6 +1658,8 @@ function AdminOrders() {
             <ChevronRight size={16} />
           </button>
         </div>
+      )}
+      </>
       )}
 
       {/* Modal d'ajustement manuel du total d'une commande */}
