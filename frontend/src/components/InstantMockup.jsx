@@ -48,10 +48,20 @@ function InstantMockup({ imageUrl, frameColor = 'black', isLandscape = false, sc
       // 1. Dessiner la photo de la piece
       ctx.drawImage(roomImg, 0, 0, cw, ch);
 
-      // 2. Detecter la zone verte (#00FF00) = emplacement du cadre
+      // 2. Detecter la zone verte (#00FF00) = emplacement du cadre.
+      //    FIX PERSPECTIVE (avril 2026) : le bounding box rectangulaire droit ne
+      //    suffit pas si le cadre est en perspective (le polygone vert est alors
+      //    un quadrilatere deforme, pas un rectangle). On construit en parallele
+      //    un MASQUE BITMAP pixel-parfait des zones vertes pour clipper l'image
+      //    utilisateur avec un globalCompositeOperation = 'destination-in'.
+      //    Resultat : meme si destX/destY/destW/destH deborde un peu du vrai
+      //    polygone, le mask garantit qu'AUCUN pixel ne sort du cadre reel.
       const imageData = ctx.getImageData(0, 0, cw, ch);
       const pixels = imageData.data;
+      const maskData = ctx.createImageData(cw, ch);
+      const maskPixels = maskData.data;
       let minX = cw, minY = ch, maxX = 0, maxY = 0;
+      let greenCount = 0;
 
       for (let y = 0; y < ch; y++) {
         for (let x = 0; x < cw; x++) {
@@ -63,23 +73,29 @@ function InstantMockup({ imageUrl, frameColor = 'black', isLandscape = false, sc
             if (x > maxX) maxX = x;
             if (y < minY) minY = y;
             if (y > maxY) maxY = y;
-            // Remplacer le vert par la couleur du mat
+            // Remplacer le vert par la couleur du mat sur le canvas principal
             pixels[i] = MAT_COLOR.r;
             pixels[i + 1] = MAT_COLOR.g;
             pixels[i + 2] = MAT_COLOR.b;
+            // Marquer dans le mask bitmap : pixel opaque = zone ou le print est autorise
+            maskPixels[i + 3] = 255;
+            greenCount++;
           }
         }
       }
       ctx.putImageData(imageData, 0, 0);
 
-      if (maxX <= minX || maxY <= minY) return;
+      if (maxX <= minX || maxY <= minY || greenCount === 0) return;
 
-      // 3. Zone d'impression avec marge interieure
-      const margin = Math.max(4, Math.round(Math.min(maxX - minX, maxY - minY) * 0.02));
-      const printX = minX + margin;
-      const printY = minY + margin;
-      const printW = maxX - minX + 1 - margin * 2;
-      const printH = maxY - minY + 1 - margin * 2;
+      // 3. Zone d'impression : on utilise le bounding box pour POSITIONNER l'image
+      //    (centrage, contain, etc.) mais le clip final sera fait via le mask bitmap
+      //    pour respecter la forme exacte du quadrilatere en perspective.
+      //    On retire la marge interieure classique car le mask epouse deja le bord
+      //    vert exact et une marge en plus rognerait visiblement le print.
+      const printX = minX;
+      const printY = minY;
+      const printW = maxX - minX + 1;
+      const printH = maxY - minY + 1;
       if (printW <= 0 || printH <= 0) return;
 
       const printRatio = printW / printH;
@@ -87,24 +103,47 @@ function InstantMockup({ imageUrl, frameColor = 'black', isLandscape = false, sc
       const imgRatio = userImg.naturalWidth / userImg.naturalHeight;
 
       // "Contain": image entiere toujours visible, mat remplit le reste.
-      // Un print paysage dans un cadre portrait = mat en haut/bas (comme en galerie).
       let destX = printX, destY = printY, destW = printW, destH = printH;
       if (imgRatio > printRatio) {
-        // Image plus large que le cadre → contraindre par la largeur, centrer verticalement
         destH = Math.round(printW / imgRatio);
         destY = printY + Math.round((printH - destH) / 2);
       } else {
-        // Image plus haute que le cadre → contraindre par la hauteur, centrer horizontalement
         destW = Math.round(printH * imgRatio);
         destX = printX + Math.round((printW - destW) / 2);
       }
 
-      ctx.save();
-      ctx.beginPath();
-      ctx.rect(printX, printY, printW, printH);
-      ctx.clip();
-      ctx.drawImage(userImg, 0, 0, userImg.naturalWidth, userImg.naturalHeight, destX, destY, destW, destH);
-      ctx.restore();
+      // 4. CLIPPING VIA MASK BITMAP (chroma-key strict).
+      //    - On dessine d'abord l'image utilisateur dans un canvas offscreen
+      //      aux coordonnees destX/destY/destW/destH (qui peuvent deborder).
+      //    - Puis on applique le mask avec destination-in : seuls les pixels
+      //      du print qui correspondent a un pixel vert d'origine restent.
+      //    - Enfin on compose le resultat sur le canvas principal.
+      //    Cette approche elimine 100% des debordements, meme sur cadres
+      //    quadrilateres deformes (perspective), sans avoir besoin de warp
+      //    matrix3d complexe.
+      const offCanvas = document.createElement('canvas');
+      offCanvas.width = cw;
+      offCanvas.height = ch;
+      const offCtx = offCanvas.getContext('2d');
+      offCtx.drawImage(
+        userImg,
+        0, 0, userImg.naturalWidth, userImg.naturalHeight,
+        destX, destY, destW, destH,
+      );
+
+      // putImageData ignore globalCompositeOperation, donc on passe par un
+      // canvas intermediaire pour que le mask s'applique comme une image.
+      const maskCanvas = document.createElement('canvas');
+      maskCanvas.width = cw;
+      maskCanvas.height = ch;
+      maskCanvas.getContext('2d').putImageData(maskData, 0, 0);
+
+      offCtx.globalCompositeOperation = 'destination-in';
+      offCtx.drawImage(maskCanvas, 0, 0);
+      offCtx.globalCompositeOperation = 'source-over';
+
+      // Compose le print clippe sur le canvas principal (par-dessus le mat beige)
+      ctx.drawImage(offCanvas, 0, 0);
     };
 
     if (roomImgCache.current[roomKey]) {
