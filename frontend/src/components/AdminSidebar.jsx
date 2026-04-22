@@ -36,7 +36,13 @@ const ACCOUNT_ITEMS = [
 ];
 
 // --- Styles constants (single source of truth) ---
-const SIDEBAR_CLASSES = 'sticky top-20 rounded-xl bg-glass p-3 space-y-1';
+// FIX-UX (avril 2026) : le `sticky top-20` etait applique ICI (sur le wrapper
+// visuel interne) mais ne fonctionnait pas toujours car la containing-block de
+// sticky etait l'aside flex-stretch (sans max-h) -> les items du bas sortaient
+// du viewport sans possibilite de scroll. On deplace le comportement sticky
+// sur l'aside elle-meme (voir AdminLayout.jsx / Account.jsx) avec self-start
+// et max-h + overflow-y-auto. Cette classe ne gere plus que le visuel.
+const SIDEBAR_CLASSES = 'rounded-xl bg-glass p-3 space-y-1';
 const SECTION_TITLE_CLASSES = 'text-[11px] font-semibold text-grey-muted uppercase tracking-wider px-2.5 py-1.5';
 const LINK_BASE_CLASSES = 'flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-all duration-200';
 const LINK_ACTIVE_CLASSES = 'bg-[var(--active-tab-bg)] text-white';

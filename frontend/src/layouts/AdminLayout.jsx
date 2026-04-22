@@ -163,9 +163,15 @@ function AdminLayout() {
         )}
       </AnimatePresence>
 
-      <div className="flex gap-6 max-w-7xl mx-auto">
-        {/* Sidebar desktop - composant partage */}
-        <aside className="hidden lg:block w-48 flex-shrink-0">
+      <div className="flex items-start gap-6 max-w-7xl mx-auto">
+        {/* Sidebar desktop - composant partage.
+            FIX-UX (avril 2026) : sidebar sticky au scroll pour que l'admin garde
+            toujours le menu a porte, meme sur une page longue. `self-start` pour
+            que l'aside ne s'etire pas a la hauteur de main (sinon sticky n'a plus
+            de sens), `max-h-[calc(100vh-7rem)]` pour qu'elle tienne dans le
+            viewport sous le header fixe, `overflow-y-auto` pour scroller a
+            l'interieur si la liste est plus longue que l'ecran. */}
+        <aside className="hidden lg:block w-48 flex-shrink-0 lg:sticky lg:top-24 lg:self-start lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto">
           <AdminSidebarNav currentPath={location.pathname} />
         </aside>
 

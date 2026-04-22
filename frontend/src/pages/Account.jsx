@@ -795,9 +795,15 @@ function Account() {
             </motion.div>
           )}
 
-          <div className="flex gap-6 max-w-7xl mx-auto">
-            {/* Sidebar desktop - composant partage */}
-            <aside className="hidden lg:block w-48 flex-shrink-0">
+          <div className="flex items-start gap-6 max-w-7xl mx-auto">
+            {/* Sidebar desktop - composant partage.
+                FIX-UX (avril 2026) : sticky au scroll (meme pattern que
+                AdminLayout) pour que le menu reste visible sur les pages longues.
+                Le sticky top-20 etait auparavant sur le wrapper interne
+                SIDEBAR_CLASSES mais tombait en defaut quand la liste etait plus
+                haute que le viewport. On deplace sur l'aside avec max-h +
+                overflow interne. */}
+            <aside className="hidden lg:block w-48 flex-shrink-0 lg:sticky lg:top-24 lg:self-start lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto">
               <AccountSidebarNav
                 activeTab={activeTab}
                 onSetTab={handleSetTab}
