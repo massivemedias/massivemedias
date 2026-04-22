@@ -130,10 +130,12 @@ function AdminOrders() {
   // Modal de previsualisation avant envoi facture (controle admin)
   const [previewInvoiceOrder, setPreviewInvoiceOrder] = useState(null);
 
-  // FIX-ADMIN (avril 2026) : onglets de categorisation + integration Reglages.
-  // "all" affiche TOUS les orders (y compris les anciennes sans isManual).
-  // Les onglets "boutique" et "b2b" ont un fallback safe pour les legacy.
-  const [activeTab, setActiveTab] = useState('all'); // 'all' | 'boutique' | 'b2b' | 'settings'
+  // FIX-ADMIN (avril 2026) : interface minimaliste a 2 onglets seulement.
+  // - 'all'      : tableau complet sans aucun filtre (recupere tout l'historique)
+  // - 'settings' : affiche AdminReglagesFacturation inline
+  // Les anciens onglets Boutique/B2B ont ete supprimes : l'admin peut toujours
+  // distinguer manuel vs e-commerce via la colonne / badge dans le tableau.
+  const [activeTab, setActiveTab] = useState('all'); // 'all' | 'settings'
 
   // Billing settings (TPS/TVQ/bancaire/Interac) charges une fois au mount
   // et passes en options au generateInvoicePDF pour que toutes les factures
@@ -515,21 +517,9 @@ function AdminOrders() {
     return new Date(d).toLocaleDateString('fr-CA', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
   };
 
-  // FIX-LEGACY (avril 2026) : filtre safe pour onglets Boutique / B2B.
-  // Regle critique : l'onglet "all" affiche 100% des orders tels que retournes
-  // par l'API. Les onglets secondaires ont un fallback pour les anciennes
-  // commandes qui n'ont pas le champ isManual :
-  //   - boutique : isManual falsy (undefined, false, null) -> par defaut
-  //   - b2b      : isManual === true (explicit seulement)
-  // Aucune commande ne peut "disparaitre" via ce filtrage - chaque order
-  // trouve toujours sa place dans "all", et les orders sans isManual sont
-  // considerees comme boutique (le defaut historique).
-  const displayedOrders = (() => {
-    if (activeTab === 'b2b') return orders.filter(o => o?.isManual === true);
-    if (activeTab === 'boutique') return orders.filter(o => !o?.isManual);
-    // 'all' ou inconnu -> 100% des orders, pas de filter
-    return orders;
-  })();
+  // Interface minimaliste : "all" affiche TOUTES les orders, sans filtre.
+  // Les anciens onglets Boutique/B2B ont ete supprimes.
+  const displayedOrders = orders;
 
   const formatDateShort = (d) => {
     if (!d) return '-';
@@ -606,21 +596,16 @@ function AdminOrders() {
         )}
       </AnimatePresence>
 
-      {/* Barre de tabs : categorisation + settings integre */}
+      {/* Barre de tabs minimaliste (2 onglets) : commandes + reglages integres */}
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-1 card-bg rounded-xl p-1 shadow-sm">
           {[
-            { id: 'all',      label: tx({ fr: 'Toutes les commandes', en: 'All orders', es: 'Todos los pedidos' }), icon: Layers },
-            { id: 'boutique', label: tx({ fr: 'Boutique', en: 'Shop', es: 'Tienda' }),                              icon: ShoppingBag },
-            { id: 'b2b',      label: tx({ fr: 'Factures B2B', en: 'B2B invoices', es: 'Facturas B2B' }),           icon: Briefcase },
-            { id: 'settings', label: tx({ fr: 'Reglages Facturation', en: 'Billing Settings', es: 'Ajustes' }),   icon: Settings },
+            { id: 'all',      label: tx({ fr: 'Toutes les commandes', en: 'All orders', es: 'Todos los pedidos' }),    icon: ShoppingBag },
+            { id: 'settings', label: tx({ fr: 'Reglages Facturation', en: 'Billing Settings', es: 'Ajustes' }),        icon: Settings },
           ].map(t => {
             const Ic = t.icon;
             const isActive = activeTab === t.id;
-            const count = t.id === 'all'      ? orders.length
-                        : t.id === 'boutique' ? orders.filter(o => !o?.isManual).length
-                        : t.id === 'b2b'      ? orders.filter(o => o?.isManual === true).length
-                        : null;
+            const count = t.id === 'all' ? orders.length : null;
             return (
               <button
                 key={t.id}

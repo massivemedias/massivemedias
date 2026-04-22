@@ -13,11 +13,37 @@ import {
 import { useLang } from '../i18n/LanguageContext';
 import { getBillingSettings, updateBillingSettings } from '../services/adminService';
 
+// FIX-ADMIN (avril 2026) : valeurs par defaut Massive Medias pre-remplies
+// dans le formulaire. Meme si l'API /billing-settings retourne vide (premiere
+// utilisation) ou plante, l'admin voit des champs remplis qu'il peut valider
+// en un click. Le merge se fait au fetch : API > defaults.
+const DEFAULT_SETTINGS = Object.freeze({
+  companyName: 'Massive Medias',
+  companyOwner: 'Michael Sanchez',
+  companyAddress: '5338 rue Marquette',
+  companyCity: 'Montreal (QC) H2J 3Z3',
+  companyPhone: '+1 514 653 1423',
+  companyEmail: 'massivemedias@gmail.com',
+  companyWebsite: 'massivemedias.com',
+  neq: '2269057891',
+  tps: '732457635RT0001',
+  tvq: '4012577678TQ0001',
+  interacEmail: 'massivemedias@gmail.com',
+  bankName: 'RBC Banque Royale',
+  bankTransit: '03981',
+  bankInstitution: '003',
+  bankAccount: '5129614',
+  paymentNotes: '',
+});
+
 function AdminReglagesFacturation() {
   const { tx } = useLang();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [settings, setSettings] = useState({});
+  // Initialisation avec les defaults Massive : l'admin voit IMMEDIATEMENT
+  // les valeurs utiles, meme avant le fetch API. Si l'API renvoie quelque
+  // chose, on merge (API a priorite sur defaults).
+  const [settings, setSettings] = useState({ ...DEFAULT_SETTINGS });
   const [toast, setToast] = useState(null);
 
   useEffect(() => {
@@ -29,9 +55,21 @@ function AdminReglagesFacturation() {
   const load = async () => {
     try {
       const { data } = await getBillingSettings();
-      setSettings(data?.data || {});
+      // MERGE : les defaults Massive restent en fond, l'API override si presente.
+      // Un champ vide cote API (string '' ou null) n'ecrase PAS le default -
+      // l'admin voit toujours au moins les valeurs Massive pre-remplies.
+      const apiData = data?.data || {};
+      const merged = { ...DEFAULT_SETTINGS };
+      for (const k of Object.keys(DEFAULT_SETTINGS)) {
+        if (apiData[k] !== undefined && apiData[k] !== null && apiData[k] !== '') {
+          merged[k] = apiData[k];
+        }
+      }
+      setSettings(merged);
     } catch (err) {
-      setToast({ type: 'error', message: err?.message || 'Erreur chargement' });
+      // Pas de toast d'erreur ici : l'admin voit quand meme les defaults
+      // pre-remplis. On log juste pour le debug.
+      console.warn('[billing-settings] load failed, using defaults:', err?.message);
     } finally {
       setLoading(false);
     }
