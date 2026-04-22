@@ -75,9 +75,12 @@ function AdminDashboard() {
   // Revenue agrege
   const [revenue, setRevenue] = useState({ total: 0, orders: 0, commissions: 0 });
 
-  // Notes (localStorage)
+  // Notes (localStorage) - toujours un array meme si le JSON localStorage est corrompu
   const [notes, setNotes] = useState(() => {
-    try { return JSON.parse(localStorage.getItem(NOTES_KEY) || '[]'); } catch { return []; }
+    try {
+      const parsed = JSON.parse(localStorage.getItem(NOTES_KEY) || '[]');
+      return Array.isArray(parsed) ? parsed : [];
+    } catch { return []; }
   });
   const [editingNote, setEditingNote] = useState(null);
   const [noteTitle, setNoteTitle] = useState('');
@@ -103,10 +106,27 @@ function AdminDashboard() {
 
         if (cancelled) return;
 
-        setOrders(ordersRes.status === 'fulfilled' ? (ordersRes.value?.data?.data || ordersRes.value?.data || []) : []);
-        setMessages(messagesRes.status === 'fulfilled' ? (messagesRes.value?.data || []) : []);
-        setInventory(inventoryRes.status === 'fulfilled' ? (inventoryRes.value?.data || []) : []);
-        setUsers(usersRes.status === 'fulfilled' ? (usersRes.value?.data || []) : []);
+        // FIX-CRASH (avril 2026) : certaines reponses API remontent un objet
+        // wrapper {data: [...], meta: {...}} (Strapi) au lieu d'un array direct.
+        // Si on laissait passer l'objet, .filter() crashait avec
+        // "TypeError: u.filter is not a function" au premier render.
+        // Helper qui deballe jusqu'a trouver un array, sinon retourne [].
+        const toArray = (val) => {
+          if (Array.isArray(val)) return val;
+          if (val && typeof val === 'object') {
+            if (Array.isArray(val.data)) return val.data;
+            if (Array.isArray(val.data?.data)) return val.data.data;
+            if (Array.isArray(val.items)) return val.items;
+            if (Array.isArray(val.results)) return val.results;
+          }
+          return [];
+        };
+
+        setOrders(ordersRes.status === 'fulfilled' ? toArray(ordersRes.value?.data) : []);
+        setMessages(messagesRes.status === 'fulfilled' ? toArray(messagesRes.value?.data) : []);
+        setInventory(inventoryRes.status === 'fulfilled' ? toArray(inventoryRes.value?.data) : []);
+        setUsers(usersRes.status === 'fulfilled' ? toArray(usersRes.value?.data) : []);
+        // Analytics reste un object (pas un array) : structure { overview, pages, sources, ... }
         setAnalytics(analyticsRes.status === 'fulfilled' ? (analyticsRes.value?.data?.data || analyticsRes.value?.data || null) : null);
       } catch (err) {
         console.error('Dashboard fetch error:', err);
@@ -142,16 +162,26 @@ function AdminDashboard() {
   }, []);
 
   // ---------- Derived KPIs (useMemo pour eviter les recalculs a chaque render) ----------
+  // FIX-CRASH (avril 2026) : defense a deux niveaux pour eviter les
+  // "TypeError: filter is not a function" si une reponse API arrive sous
+  // forme d'object wrapper inattendu. Les setters force-array deja, mais on
+  // double-garde ici avec Array.isArray + fallback [] au cas ou le state
+  // initial serait patche par un code externe.
   const kpis = useMemo(() => {
-    const pendingOrders = orders.filter(o => o.status === 'pending' || o.status === 'paid');
-    const pendingAmountCents = pendingOrders.reduce((s, o) => s + (Number(o.total) || 0), 0);
-    const processing = orders.filter(o => o.status === 'processing').length;
-    const ready = orders.filter(o => o.status === 'ready');
-    const unreadMessages = messages.filter(m => m.status === 'new' || m.status === 'unread').length;
-    const lowStockItems = inventory.filter(i => typeof i.quantity === 'number' && i.quantity <= (i.lowStockThreshold || 5));
-    const outOfStockItems = inventory.filter(i => typeof i.quantity === 'number' && i.quantity === 0);
+    const safeOrders    = Array.isArray(orders)    ? orders    : [];
+    const safeMessages  = Array.isArray(messages)  ? messages  : [];
+    const safeInventory = Array.isArray(inventory) ? inventory : [];
+    const safeUsers     = Array.isArray(users)     ? users     : [];
+
+    const pendingOrders = safeOrders.filter(o => o && (o.status === 'pending' || o.status === 'paid'));
+    const pendingAmountCents = pendingOrders.reduce((s, o) => s + (Number(o?.total) || 0), 0);
+    const processing = safeOrders.filter(o => o?.status === 'processing').length;
+    const ready = safeOrders.filter(o => o?.status === 'ready');
+    const unreadMessages = safeMessages.filter(m => m && (m.status === 'new' || m.status === 'unread')).length;
+    const lowStockItems = safeInventory.filter(i => i && typeof i.quantity === 'number' && i.quantity <= (i.lowStockThreshold || 5));
+    const outOfStockItems = safeInventory.filter(i => i && typeof i.quantity === 'number' && i.quantity === 0);
     const threeDaysAgo = Date.now() - 3 * 24 * 60 * 60 * 1000;
-    const newUsers3d = users.filter(u => new Date(u.createdAt).getTime() >= threeDaysAgo).length;
+    const newUsers3d = safeUsers.filter(u => u?.createdAt && new Date(u.createdAt).getTime() >= threeDaysAgo).length;
 
     // Analytics champs bien connus (GA4 via backend /analytics/stats) :
     //   overview.activeUsers | overview.realtimeUsers | realtimeUsers
@@ -171,27 +201,35 @@ function AdminDashboard() {
       lowStockItems,
       outOfStockItems,
       newUsers3d,
-      totalUsers: users.length,
+      totalUsers: safeUsers.length,
       realtimeUsers,
       visitorsToday,
       topPage,
     };
   }, [orders, messages, inventory, users, analytics]);
 
-  // Notes handlers
-  const saveNotes = (updated) => { setNotes(updated); localStorage.setItem(NOTES_KEY, JSON.stringify(updated)); };
+  // Notes handlers (FIX-CRASH : on manipule toujours un array meme si un
+  // renderer/extension a corrompu le state notes en non-array).
+  const saveNotes = (updated) => {
+    const safe = Array.isArray(updated) ? updated : [];
+    setNotes(safe);
+    localStorage.setItem(NOTES_KEY, JSON.stringify(safe));
+  };
   const addNote = () => {
     const n = { id: Date.now(), title: '', body: '', updatedAt: Date.now() };
-    const updated = [n, ...notes];
-    saveNotes(updated);
+    saveNotes([n, ...(Array.isArray(notes) ? notes : [])]);
     setEditingNote(n.id); setNoteTitle(''); setNoteBody('');
   };
   const saveEdit = () => {
-    const updated = notes.map(n => n.id === editingNote ? { ...n, title: noteTitle, body: noteBody, updatedAt: Date.now() } : n);
-    saveNotes(updated);
+    const base = Array.isArray(notes) ? notes : [];
+    saveNotes(base.map(n => n.id === editingNote ? { ...n, title: noteTitle, body: noteBody, updatedAt: Date.now() } : n));
     setEditingNote(null);
   };
-  const deleteNote = (id) => { saveNotes(notes.filter(n => n.id !== id)); if (editingNote === id) setEditingNote(null); };
+  const deleteNote = (id) => {
+    const base = Array.isArray(notes) ? notes : [];
+    saveNotes(base.filter(n => n.id !== id));
+    if (editingNote === id) setEditingNote(null);
+  };
 
   if (loading) {
     return (
@@ -398,7 +436,7 @@ function AdminDashboard() {
           <button onClick={addNote} className="text-xs text-accent hover:underline">+ {tx({ fr: 'Ajouter', en: 'Add', es: 'Agregar' })}</button>
         </div>
         <div className="space-y-2 max-h-[300px] overflow-y-auto">
-          {notes.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0)).map(n => (
+          {(Array.isArray(notes) ? [...notes] : []).sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0)).map(n => (
             <div key={n.id} className="rounded-lg bg-black/20 p-3">
               {editingNote === n.id ? (
                 <div className="space-y-2">
@@ -420,7 +458,7 @@ function AdminDashboard() {
               )}
             </div>
           ))}
-          {notes.length === 0 && <p className="text-grey-muted text-xs text-center py-4">{tx({ fr: 'Aucune note', en: 'No notes', es: 'Sin notas' })}</p>}
+          {(!Array.isArray(notes) || notes.length === 0) && <p className="text-grey-muted text-xs text-center py-4">{tx({ fr: 'Aucune note', en: 'No notes', es: 'Sin notas' })}</p>}
         </div>
       </div>
 
