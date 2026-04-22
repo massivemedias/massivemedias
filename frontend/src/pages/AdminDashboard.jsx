@@ -8,11 +8,37 @@ import {
   UserPlus, Eye, Users, Globe, Zap, TrendingUp, AlertTriangle, ChevronDown, ChevronUp,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
-import { getOrders, getContactSubmissions, getExpenses, getAnalytics } from '../services/adminService';
+import { getOrders, getContactSubmissions, getExpenses, getAnalytics, getAdminNotes } from '../services/adminService';
 import api from '../services/api';
 import AnnualBalanceCard from '../components/AnnualBalanceCard';
 
-const NOTES_KEY = 'mm-admin-notes';
+// FIX-NOTES (avril 2026) : le widget Notes lisait localStorage qui etait quasi
+// toujours vide -> affichait "Aucune note". On branche maintenant sur le content-type
+// admin-note (meme source que la page complete /admin/notes) via getAdminNotes().
+
+/**
+ * Calcule un texte "il y a X" a partir d'un timestamp.
+ * Retourne : "a l'instant" | "il y a Xm" | "il y a Xh" | "il y a Xj" | "il y a Xsem".
+ */
+function timeAgo(ts, tx) {
+  if (!ts) return '';
+  const diffMs = Date.now() - ts;
+  const mins = Math.floor(diffMs / 60000);
+  if (mins < 1) return tx({ fr: "a l'instant", en: 'just now', es: 'ahora' });
+  if (mins < 60) return tx({ fr: `il y a ${mins}m`, en: `${mins}m ago`, es: `hace ${mins}m` });
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return tx({ fr: `il y a ${hours}h`, en: `${hours}h ago`, es: `hace ${hours}h` });
+  const days = Math.floor(hours / 24);
+  if (days < 7) return tx({ fr: `il y a ${days}j`, en: `${days}d ago`, es: `hace ${days}d` });
+  const weeks = Math.floor(days / 7);
+  return tx({ fr: `il y a ${weeks}sem`, en: `${weeks}w ago`, es: `hace ${weeks}sem` });
+}
+
+/** Deballe le body richtext (peut contenir HTML) en texte plain pour l'excerpt. */
+function stripHtml(html) {
+  if (!html) return '';
+  return String(html).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+}
 
 // Montants stockes en cents dans Strapi - afficher en dollars
 const dollars = (v) => `${((v || 0) / 100).toFixed(2)}$`;
@@ -75,16 +101,11 @@ function AdminDashboard() {
   // Revenue agrege
   const [revenue, setRevenue] = useState({ total: 0, orders: 0, commissions: 0 });
 
-  // Notes (localStorage) - toujours un array meme si le JSON localStorage est corrompu
-  const [notes, setNotes] = useState(() => {
-    try {
-      const parsed = JSON.parse(localStorage.getItem(NOTES_KEY) || '[]');
-      return Array.isArray(parsed) ? parsed : [];
-    } catch { return []; }
-  });
-  const [editingNote, setEditingNote] = useState(null);
-  const [noteTitle, setNoteTitle] = useState('');
-  const [noteBody, setNoteBody] = useState('');
+  // Notes (CMS admin-note, pas localStorage).
+  // Le widget Dashboard affiche uniquement les 3 plus recentes en preview,
+  // l'edition complete se fait dans /admin/notes.
+  const [notes, setNotes] = useState([]);
+  const [notesLoading, setNotesLoading] = useState(true);
 
   // Toggle stats detaillees (lazy-loaded)
   const [showStats, setShowStats] = useState(false);
@@ -136,6 +157,47 @@ function AdminDashboard() {
     }
     fetchAll();
     const interval = setInterval(fetchAll, 60000);
+    return () => { cancelled = true; clearInterval(interval); };
+  }, []);
+
+  // Fetch notes (API admin-note) separe des autres data pour un refresh rapide
+  // independant. On mappe {title, body, updatedAt, createdAt, documentId} pour
+  // la preview. Fallback localStorage si l'API est down.
+  useEffect(() => {
+    let cancelled = false;
+    async function fetchNotes() {
+      setNotesLoading(true);
+      try {
+        const res = await getAdminNotes();
+        if (cancelled) return;
+        const raw = res?.data?.data || [];
+        const mapped = (Array.isArray(raw) ? raw : []).map(n => ({
+          id: n.documentId || n.id,
+          title: n.title || '',
+          body: n.body || '',
+          updatedAt: n.updatedAt ? new Date(n.updatedAt).getTime() : 0,
+          createdAt: n.createdAt ? new Date(n.createdAt).getTime() : 0,
+        }));
+        setNotes(mapped);
+      } catch (err) {
+        console.warn('[Dashboard] Notes fetch failed, fallback localStorage:', err?.message);
+        if (cancelled) return;
+        try {
+          const parsed = JSON.parse(localStorage.getItem('mm-admin-notes') || '[]');
+          setNotes(Array.isArray(parsed) ? parsed.map(n => ({
+            id: n.id,
+            title: n.title || '',
+            body: n.body || '',
+            updatedAt: n.updatedAt || 0,
+            createdAt: n.createdAt || 0,
+          })) : []);
+        } catch { setNotes([]); }
+      } finally {
+        if (!cancelled) setNotesLoading(false);
+      }
+    }
+    fetchNotes();
+    const interval = setInterval(fetchNotes, 60000);
     return () => { cancelled = true; clearInterval(interval); };
   }, []);
 
@@ -208,28 +270,16 @@ function AdminDashboard() {
     };
   }, [orders, messages, inventory, users, analytics]);
 
-  // Notes handlers (FIX-CRASH : on manipule toujours un array meme si un
-  // renderer/extension a corrompu le state notes en non-array).
-  const saveNotes = (updated) => {
-    const safe = Array.isArray(updated) ? updated : [];
-    setNotes(safe);
-    localStorage.setItem(NOTES_KEY, JSON.stringify(safe));
-  };
-  const addNote = () => {
-    const n = { id: Date.now(), title: '', body: '', updatedAt: Date.now() };
-    saveNotes([n, ...(Array.isArray(notes) ? notes : [])]);
-    setEditingNote(n.id); setNoteTitle(''); setNoteBody('');
-  };
-  const saveEdit = () => {
-    const base = Array.isArray(notes) ? notes : [];
-    saveNotes(base.map(n => n.id === editingNote ? { ...n, title: noteTitle, body: noteBody, updatedAt: Date.now() } : n));
-    setEditingNote(null);
-  };
-  const deleteNote = (id) => {
-    const base = Array.isArray(notes) ? notes : [];
-    saveNotes(base.filter(n => n.id !== id));
-    if (editingNote === id) setEditingNote(null);
-  };
+  // L'edition des notes est desormais deportee dans /admin/notes (CRUD complet).
+  // Le widget Dashboard est purement en lecture pour preview rapide.
+
+  // Top 3 notes triees par updatedAt desc (fallback createdAt si updatedAt=0)
+  const topNotes = useMemo(() => {
+    const safe = Array.isArray(notes) ? notes : [];
+    return [...safe]
+      .sort((a, b) => (b.updatedAt || b.createdAt || 0) - (a.updatedAt || a.createdAt || 0))
+      .slice(0, 3);
+  }, [notes]);
 
   if (loading) {
     return (
@@ -426,40 +476,82 @@ function AdminDashboard() {
           car il melange revenus et depenses. Inclut le Guide Express finances. */}
       <AnnualBalanceCard />
 
-      {/* ===== NOTES ===== */}
+      {/* ===== NOTES (widget preview - 3 plus recentes, edition dans /admin/notes) ===== */}
       <div className="rounded-2xl p-4 md:p-5 card-bg">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-heading font-heading font-bold text-sm flex items-center gap-2">
             <StickyNote size={16} className="text-accent" />
-            Notes
+            {tx({ fr: 'Notes recentes', en: 'Recent notes', es: 'Notas recientes' })}
           </h3>
-          <button onClick={addNote} className="text-xs text-accent hover:underline">+ {tx({ fr: 'Ajouter', en: 'Add', es: 'Agregar' })}</button>
+          <Link to="/admin/notes" className="text-xs text-accent hover:underline inline-flex items-center gap-1">
+            <Plus size={12} />
+            {tx({ fr: 'Nouvelle', en: 'New', es: 'Nueva' })}
+          </Link>
         </div>
-        <div className="space-y-2 max-h-[300px] overflow-y-auto">
-          {(Array.isArray(notes) ? [...notes] : []).sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0)).map(n => (
-            <div key={n.id} className="rounded-lg bg-black/20 p-3">
-              {editingNote === n.id ? (
-                <div className="space-y-2">
-                  <input value={noteTitle} onChange={e => setNoteTitle(e.target.value)} placeholder={tx({ fr: 'Titre', en: 'Title', es: 'Titulo' })}
-                    className="w-full bg-black/30 text-heading text-sm px-2 py-1.5 rounded border border-white/10 focus:outline-none focus:border-accent" autoFocus />
-                  <textarea value={noteBody} onChange={e => setNoteBody(e.target.value)} placeholder="..." rows={3}
-                    className="w-full bg-black/30 text-heading text-xs px-2 py-1.5 rounded border border-white/10 focus:outline-none focus:border-accent resize-none" />
-                  <div className="flex gap-2">
-                    <button onClick={saveEdit} className="px-3 py-1 rounded bg-green-500/20 text-green-400 text-xs font-semibold"><CheckCircle size={12} className="inline mr-1" />OK</button>
-                    <button onClick={() => setEditingNote(null)} className="px-3 py-1 rounded bg-white/10 text-grey-muted text-xs">Annuler</button>
-                    <button onClick={() => deleteNote(n.id)} className="px-3 py-1 rounded bg-red-500/10 text-red-400 text-xs ml-auto">Supprimer</button>
-                  </div>
-                </div>
-              ) : (
-                <div className="cursor-pointer" onClick={() => { setEditingNote(n.id); setNoteTitle(n.title || ''); setNoteBody(n.body || ''); }}>
-                  <p className="text-heading text-sm font-medium">{n.title || tx({ fr: 'Sans titre', en: 'Untitled', es: 'Sin titulo' })}</p>
-                  {n.body && <p className="text-grey-muted text-xs mt-1 line-clamp-2">{n.body.replace(/<[^>]*>/g, '').slice(0, 150)}</p>}
-                </div>
-              )}
+
+        {notesLoading ? (
+          <div className="flex items-center justify-center py-6">
+            <Loader2 size={16} className="animate-spin text-accent" />
+          </div>
+        ) : topNotes.length === 0 ? (
+          <Link to="/admin/notes" className="block text-center py-6 rounded-lg bg-black/10 hover:bg-black/20 transition-colors">
+            <StickyNote size={20} className="mx-auto mb-1.5 text-grey-muted opacity-50" />
+            <p className="text-xs text-grey-muted">
+              {tx({ fr: 'Aucune note pour l\'instant', en: 'No notes yet', es: 'Aun no hay notas' })}
+            </p>
+            <p className="text-[11px] text-accent mt-1">
+              {tx({ fr: 'Cliquer pour creer la premiere', en: 'Click to create first one', es: 'Clic para crear' })}
+            </p>
+          </Link>
+        ) : (
+          <>
+            <div className="space-y-2">
+              {topNotes.map((n) => {
+                const excerpt = stripHtml(n.body);
+                const truncated = excerpt.length > 120 ? excerpt.slice(0, 120) + '...' : excerpt;
+                const when = timeAgo(n.updatedAt || n.createdAt, tx);
+                return (
+                  <Link
+                    key={n.id}
+                    to="/admin/notes"
+                    className="block rounded-lg bg-black/20 hover:bg-black/30 transition-colors p-3 group"
+                  >
+                    <div className="flex items-baseline justify-between gap-2 mb-1">
+                      <p className="text-heading text-sm font-bold truncate flex-1">
+                        {n.title || tx({ fr: 'Sans titre', en: 'Untitled', es: 'Sin titulo' })}
+                      </p>
+                      {when && (
+                        <span className="text-[10px] text-grey-muted flex-shrink-0 font-mono">
+                          {when}
+                        </span>
+                      )}
+                    </div>
+                    {truncated && (
+                      <p className="text-grey-muted text-xs line-clamp-2 leading-relaxed">
+                        {truncated}
+                      </p>
+                    )}
+                  </Link>
+                );
+              })}
             </div>
-          ))}
-          {(!Array.isArray(notes) || notes.length === 0) && <p className="text-grey-muted text-xs text-center py-4">{tx({ fr: 'Aucune note', en: 'No notes', es: 'Sin notas' })}</p>}
-        </div>
+
+            {/* Lien "Voir toutes les notes" si > 3 notes totales */}
+            {notes.length > 3 && (
+              <Link
+                to="/admin/notes"
+                className="flex items-center justify-center gap-1.5 mt-3 py-2 rounded-lg text-xs text-grey-muted hover:text-accent hover:bg-black/10 transition-colors"
+              >
+                {tx({
+                  fr: `Voir toutes les notes (${notes.length})`,
+                  en: `View all notes (${notes.length})`,
+                  es: `Ver todas (${notes.length})`,
+                })}
+                <ArrowRight size={12} />
+              </Link>
+            )}
+          </>
+        )}
       </div>
 
       {/* ===== SYSTEMES ===== */}

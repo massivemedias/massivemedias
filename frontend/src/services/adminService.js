@@ -1,5 +1,9 @@
 import api from './api';
 
+// --- Notes admin (content-type admin-note, stockees en BDD) ---
+// Utilise par AdminNotes.jsx (page complete) ET AdminDashboard.jsx (widget 3 recentes).
+export const getAdminNotes = () => api.get('/admin-notes/list');
+
 // --- Reglages Facturation (TPS/TVQ, bancaire, Interac) ---
 export const getBillingSettings = () => api.get('/billing-settings');
 
