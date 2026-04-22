@@ -138,7 +138,7 @@ function AdminOrders() {
           try {
             await updateOrderStatus(documentId, 'delivered');
             setOrders(prev => prev.map(o => o.documentId === documentId ? { ...o, status: 'delivered' } : o));
-            setActionToast({
+            setInvoiceToast({
               type: 'success',
               message: tx({
                 fr: 'Commande marquee comme livree.',
@@ -147,7 +147,7 @@ function AdminOrders() {
               }),
             });
           } catch (err) {
-            setActionToast({
+            setInvoiceToast({
               type: 'error',
               message: (err?.response?.data?.error?.message || err?.message || 'Erreur changement statut'),
             });
@@ -337,7 +337,7 @@ function AdminOrders() {
           const first = justPaid[0];
           const ref = first.orderRef || first.documentId?.slice(0, 8).toUpperCase() || '';
           const amt = ((first.total || 0) / 100).toFixed(2);
-          setActionToast({
+          setInvoiceToast({
             type: 'success',
             message: tx({
               fr: `Nouveau paiement valide ! Commande #${ref} - ${amt}$${justPaid.length > 1 ? ` (+${justPaid.length - 1} autres)` : ''}`,
@@ -396,7 +396,7 @@ function AdminOrders() {
   const handleStatusChange = async (documentId, newStatus, currentStatus) => {
     if (!newStatus || newStatus === currentStatus) return;
     setUpdatingId(documentId);
-    setActionToast(null);
+    setInvoiceToast(null);
     // Optimistic update
     const snapshot = orders;
     setOrders(prev => prev.map(o => o.documentId === documentId ? { ...o, status: newStatus } : o));
@@ -408,7 +408,7 @@ function AdminOrders() {
       timedOut = true;
       setUpdatingId(null);
       setOrders(snapshot);
-      setActionToast({
+      setInvoiceToast({
         type: 'error',
         message: tx({
           fr: `Le serveur ne repond pas (timeout 20s). Le statut n'a pas ete change. Verifie la connexion.`,
@@ -423,7 +423,7 @@ function AdminOrders() {
       if (timedOut) return; // Le timer a deja rollback et affiche l'erreur
       const label = ORDER_STATUS[newStatus];
       const labelTxt = label ? tx({ fr: label.fr, en: label.en, es: label.es }) : newStatus;
-      setActionToast({
+      setInvoiceToast({
         type: 'success',
         message: tx({
           fr: `Statut change vers "${labelTxt}".`,
@@ -439,7 +439,7 @@ function AdminOrders() {
         || err?.response?.data?.message
         || err?.message
         || tx({ fr: 'Erreur inconnue', en: 'Unknown error', es: 'Error desconocido' });
-      setActionToast({
+      setInvoiceToast({
         type: 'error',
         message: tx({
           fr: `Changement de statut refuse : ${backendMsg}`,
@@ -518,10 +518,10 @@ function AdminOrders() {
     setConfirmDeleteId(null);
 
     setDeletingId(documentId);
-    setActionToast(null);
+    setInvoiceToast(null);
     try {
       await deleteOrder(documentId);
-      setActionToast({
+      setInvoiceToast({
         type: 'success',
         message: tx({
           fr: `Commande ${ref} supprimee definitivement.`,
@@ -542,7 +542,7 @@ function AdminOrders() {
         || err?.response?.data?.message
         || err?.message
         || 'Erreur inconnue';
-      setActionToast({
+      setInvoiceToast({
         type: 'error',
         message: tx({
           fr: `Echec suppression : ${backendMsg}`,
