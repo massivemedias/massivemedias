@@ -32,6 +32,23 @@ export default {
       handler: 'artist.resendPrivateSaleEmail',
       config: { auth: false },
     },
+    // ---- Flux public "vente privee" (token exclusif, pas d'auth) ----
+    // Le token dans l'URL EST le secret. Le backend valide qu'il existe
+    // et retourne uniquement les champs d'affichage (pas le clientEmail complet).
+    {
+      method: 'GET',
+      path: '/artists-private-sales/token/:token',
+      handler: 'artist.getPrivateSaleByToken',
+      config: { auth: false },
+    },
+    // Creation de la session Stripe Checkout avec montant dynamique.
+    // Body : { amount?: number } - optionnel si allowCustomPrice=false.
+    {
+      method: 'POST',
+      path: '/artists-private-sales/token/:token/checkout',
+      handler: 'artist.createPrivateSaleCheckout',
+      config: { auth: false },
+    },
     // ---- GOD MODE admin (bypass edit-request) - avril 2026 ----
     // Toutes ces routes verifient requireAdminAuth en interne avant toute mutation.
     {

@@ -44,6 +44,7 @@ const CheckoutCancel = lazyWithRetry(() => import('./pages/CheckoutCancel'));
 const Artistes = lazyWithRetry(() => import('./pages/Artistes'));
 const ArtisteDetail = lazyWithRetry(() => import('./pages/ArtisteDetail'));
 const Temoignage = lazyWithRetry(() => import('./pages/Temoignage'));
+const VentePrivee = lazyWithRetry(() => import('./pages/VentePrivee'));
 const NotFound = lazyWithRetry(() => import('./pages/NotFound'));
 const MmAdmin = lazyWithRetry(() => import('./pages/MmAdmin'));
 // AdminLayout est importe STATIQUEMENT (pas lazy) pour eviter les problemes
@@ -177,6 +178,9 @@ function App() {
 
             {/* Temoignage */}
             <Route path="/temoignage" element={<Temoignage />} />
+
+            {/* Vente privee (acces exclusif par token) - pas d'auth */}
+            <Route path="/vente-privee/:token" element={<VentePrivee />} />
 
             {/* Artistes */}
             <Route path="/artistes" element={<Artistes />} />

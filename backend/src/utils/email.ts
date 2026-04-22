@@ -1131,28 +1131,91 @@ interface PrivatePrintData {
   printImage: string;
   buyLink: string;
   price: number | null;
+  // FIX-PRIVATE-SALE (avril 2026) : champs optionnels pour le template
+  // tutoriel "Prix libre" (Pay What You Want). Le prix affiche dans le courriel
+  // est alors un minimum, pas un montant fixe.
+  basePrice?: number | null;
+  allowCustomPrice?: boolean;
 }
 
 function buildPrivatePrintHtml(data: PrivatePrintData): string {
-  const priceText = data.price ? `${data.price}$` : '';
+  const base = typeof data.basePrice === 'number' ? data.basePrice : data.price;
+  const allowCustom = !!data.allowCustomPrice;
+  const priceBlock = base
+    ? allowCustom
+      ? `<p style="color:#F00098;font-size:14px;font-weight:600;margin:4px 0;letter-spacing:0.02em">Prix libre - minimum ${base}$</p>`
+      : `<p style="color:#F00098;font-size:16px;font-weight:bold;margin:4px 0">${base}$</p>`
+    : '';
+  const step3Text = allowCustom
+    ? `Fixez votre prix (minimum ${base}$) et finalisez l'acquisition en toute securite via Stripe.`
+    : `Finalisez votre acquisition en toute securite via Stripe.`;
+
   return massiveEmailWrapper(`
-    <h1 style="color:#F00098;font-size:24px;margin:0 0 16px">Une oeuvre vous attend</h1>
-    <p style="color:#ccc;font-size:15px;line-height:1.6">
-      <strong>${data.artistName}</strong> a prepare une oeuvre exclusive pour vous:
+    <!-- En-tete exclusive -->
+    <p style="color:#F00098;font-size:11px;margin:0 0 4px;letter-spacing:0.18em;text-transform:uppercase;font-weight:700">
+      Acces exclusif
     </p>
-    <h2 style="color:#fff;font-size:16px;margin:16px 0 8px">${data.printTitle}</h2>
-    ${data.printImage ? `<img src="${data.printImage}" alt="${data.printTitle}" style="max-width:100%;border-radius:8px;margin:16px 0" />` : ''}
-    ${priceText ? `<p style="color:#F00098;font-size:16px;font-weight:bold;margin:8px 0">${priceText}</p>` : ''}
-    <p style="color:#999;font-size:13px;margin:16px 0">
-      Cette oeuvre est reservee exclusivement pour vous. Cliquez sur le bouton ci-dessous pour la voir et l'acheter.
+    <h1 style="color:#fff;font-size:26px;margin:0 0 16px;line-height:1.25">
+      Une oeuvre vous a ete reservee
+    </h1>
+    <p style="color:#ccc;font-size:15px;line-height:1.6;margin:0 0 20px">
+      <strong style="color:#fff">${data.artistName}</strong> a prepare une piece unique disponible
+      uniquement pour vous via un lien prive. Ce courriel contient tout ce qu'il faut pour finaliser
+      l'acquisition en moins de deux minutes.
     </p>
-    <div style="text-align:center;margin:24px 0">
-      <a href="${data.buyLink}" style="display:inline-block;background:#F00098;color:#fff;padding:14px 32px;border-radius:12px;text-decoration:none;font-weight:bold;font-size:16px">
-        Voir et acheter
+
+    <!-- Carte oeuvre -->
+    <div style="background:#1a0030;border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:20px;margin:0 0 24px">
+      <h2 style="color:#fff;font-size:17px;margin:0 0 6px">${data.printTitle}</h2>
+      ${priceBlock}
+      ${data.printImage ? `<img src="${data.printImage}" alt="${data.printTitle}" style="display:block;max-width:100%;border-radius:8px;margin:14px 0 4px" />` : ''}
+    </div>
+
+    <!-- Tutoriel 3 etapes -->
+    <p style="color:#fff;font-size:13px;font-weight:600;margin:0 0 12px;letter-spacing:0.04em;text-transform:uppercase">
+      Comment proceder
+    </p>
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:0 0 24px">
+      <tr>
+        <td style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.06);vertical-align:top;width:40px">
+          <span style="display:inline-block;width:28px;height:28px;line-height:28px;border-radius:999px;background:#F00098;color:#fff;text-align:center;font-weight:700;font-size:13px">1</span>
+        </td>
+        <td style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.06);color:#ddd;font-size:14px;line-height:1.5">
+          Cliquez sur votre lien prive et unique ci-dessous.
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.06);vertical-align:top">
+          <span style="display:inline-block;width:28px;height:28px;line-height:28px;border-radius:999px;background:#F00098;color:#fff;text-align:center;font-weight:700;font-size:13px">2</span>
+        </td>
+        <td style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.06);color:#ddd;font-size:14px;line-height:1.5">
+          Decouvrez les details de votre oeuvre (format, finition, cadre).
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:10px 0;vertical-align:top">
+          <span style="display:inline-block;width:28px;height:28px;line-height:28px;border-radius:999px;background:#F00098;color:#fff;text-align:center;font-weight:700;font-size:13px">3</span>
+        </td>
+        <td style="padding:10px 0;color:#ddd;font-size:14px;line-height:1.5">
+          ${step3Text}
+        </td>
+      </tr>
+    </table>
+
+    <!-- CTA principal -->
+    <div style="text-align:center;margin:28px 0 16px">
+      <a href="${data.buyLink}" style="display:inline-block;background:#F00098;color:#fff;padding:16px 40px;border-radius:12px;text-decoration:none;font-weight:700;font-size:16px;letter-spacing:0.02em">
+        Acceder a mon oeuvre
       </a>
     </div>
-    <p style="color:#666;font-size:11px;margin-top:24px">
-      Vous devrez vous connecter avec l'adresse ${data.clientEmail} pour acceder a cette oeuvre.
+    <p style="text-align:center;color:#888;font-size:11px;margin:0 0 24px;word-break:break-all">
+      ${data.buyLink}
+    </p>
+
+    <p style="color:#777;font-size:11px;line-height:1.5;margin:24px 0 0;border-top:1px solid rgba(255,255,255,0.06);padding-top:16px">
+      Ce lien est personnel et reserve a l'adresse <strong style="color:#aaa">${data.clientEmail}</strong>.
+      Il peut etre expire ou reattribue si l'oeuvre n'est pas acquise. Si vous n'avez pas sollicite ce
+      courriel, vous pouvez l'ignorer.
     </p>
   `);
 }
@@ -1206,19 +1269,34 @@ function buildPrivatePrintAdminHtml(data: PrivatePrintData): string {
 
 // Version texte plain (obligatoire pour reduire le risque de spam)
 function buildPrivatePrintText(data: PrivatePrintData): string {
-  const priceText = data.price ? `Prix: ${data.price}$\n` : '';
+  const base = typeof data.basePrice === 'number' ? data.basePrice : data.price;
+  const allowCustom = !!data.allowCustomPrice;
+  const priceText = base
+    ? allowCustom
+      ? `Prix libre (minimum ${base}$)\n`
+      : `Prix: ${base}$\n`
+    : '';
+  const step3 = allowCustom
+    ? `3. Fixez votre prix (minimum ${base}$) et finalisez le paiement via Stripe.`
+    : `3. Finalisez le paiement en toute securite via Stripe.`;
+
   return `Bonjour,
 
-${data.artistName} a prepare une oeuvre exclusive pour vous sur Massive Medias.
+ACCES EXCLUSIF - Une oeuvre vous a ete reservee
+
+${data.artistName} a prepare une piece unique disponible uniquement pour vous
+via un lien prive sur Massive Medias.
 
 Titre: ${data.printTitle}
 ${priceText}
-Pour voir l'oeuvre et proceder a l'achat, cliquez sur le lien ci-dessous:
-${data.buyLink}
+Comment proceder :
+1. Cliquez sur votre lien prive et unique : ${data.buyLink}
+2. Decouvrez les details de votre oeuvre (format, finition, cadre).
+${step3}
 
-Cette oeuvre est reservee pour votre adresse ${data.clientEmail}.
+Ce lien est reserve a votre adresse ${data.clientEmail}.
 
-Si vous n'avez pas demande cette oeuvre, vous pouvez ignorer ce courriel.
+Si vous n'avez pas sollicite ce courriel, vous pouvez l'ignorer.
 
 Massive Medias
 https://massivemedias.com

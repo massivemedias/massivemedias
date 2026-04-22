@@ -867,6 +867,55 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
       strapi.log.warn(`[webhook:${requestId}] idempotency log insert failed (non-unique): ${dupErr?.message}`);
     }
 
+    // FIX-PRIVATE-SALE (avril 2026) : handler dedie pour les ventes privees
+    // d'oeuvres artistes (flux /vente-privee/:token). Metadata.type === 'private-sale'
+    // signale ce flux. On marque le print comme sold=true dans artist.prints[]
+    // sans creer d'Order (les ventes privees ne vont pas dans la table orders).
+    if (event.type === 'checkout.session.completed' || event.type === 'payment_intent.succeeded') {
+      const obj = event.data.object as any;
+      const meta = obj?.metadata || {};
+      if (meta.type === 'private-sale' && meta.privateSaleToken && meta.artistSlug && meta.printId) {
+        try {
+          const artists = await strapi.documents('api::artist.artist').findMany({
+            filters: { slug: meta.artistSlug } as any,
+            status: 'published',
+          });
+          const artist = artists[0];
+          if (artist) {
+            const prints = Array.isArray(artist.prints) ? (artist.prints as any[]) : [];
+            const updated = prints.map((p: any) => {
+              if (p?.id === meta.printId && p?.privateToken === meta.privateSaleToken) {
+                return {
+                  ...p,
+                  sold: true,
+                  soldAt: new Date().toISOString(),
+                  soldAmount: typeof obj.amount_total === 'number'
+                    ? obj.amount_total / 100
+                    : (typeof obj.amount === 'number' ? obj.amount / 100 : null),
+                  stripePaymentIntentId: obj.payment_intent || obj.id || null,
+                };
+              }
+              return p;
+            });
+            await strapi.documents('api::artist.artist').update({
+              documentId: artist.documentId,
+              data: { prints: updated } as any,
+              status: 'published',
+            });
+            strapi.log.info(`[webhook:${requestId}] private-sale SOLD: ${meta.artistSlug}/${meta.printId} token=${meta.privateSaleToken.slice(0, 8)}...`);
+          } else {
+            strapi.log.warn(`[webhook:${requestId}] private-sale: artist ${meta.artistSlug} introuvable`);
+          }
+        } catch (err: any) {
+          strapi.log.error(`[webhook:${requestId}] private-sale update ECHEC:`, err?.message);
+        }
+        // On laisse le flow continuer pour NE PAS casser les orders regulieres
+        // qui partagent le meme event - mais comme le metadata est private-sale,
+        // les lookups orders plus bas ne trouveront rien et le handler retournera
+        // gracefully.
+      }
+    }
+
     // Pour checkout sessions, recuperer le payment_intent_id et upgrader la colonne
     // stripePaymentIntentId (qui contient peut-etre encore le cs_live_ temporaire).
     if (event.type === 'checkout.session.completed') {

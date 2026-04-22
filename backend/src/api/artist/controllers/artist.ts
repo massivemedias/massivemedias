@@ -1,8 +1,38 @@
 import { factories } from '@strapi/strapi';
+import Stripe from 'stripe';
 import { sendPrivatePrintEmail } from '../../../utils/email';
 import { requireAdminAuth } from '../../../utils/auth';
 import { deleteFromSupabase } from '../../../utils/image-processor';
 import { invalidateArtistCache } from '../../../utils/cache-invalidator';
+
+// Stripe lazy getter (identique au pattern d'order.ts)
+const getStripe = () => {
+  const key = process.env.STRIPE_SECRET_KEY;
+  if (!key || key === 'sk_test_REPLACE_ME') {
+    throw new Error('STRIPE_SECRET_KEY is not configured');
+  }
+  return new Stripe(key);
+};
+
+// Helper : retrouve une vente privee par son token public.
+// Parcourt tous les artistes actifs et renvoie { artist, print } ou null.
+// Utilise par GET /token/:token et POST /token/:token/checkout.
+async function findPrivateSaleByToken(strapi: any, token: string): Promise<{ artist: any; print: any } | null> {
+  if (!token || typeof token !== 'string' || token.length < 8) return null;
+  const artists = await strapi.documents('api::artist.artist').findMany({
+    filters: { active: true },
+    populate: { avatar: true },
+  });
+  for (const artist of artists) {
+    const prints = Array.isArray(artist.prints) ? artist.prints : [];
+    for (const p of prints as any[]) {
+      if (p?.private && p?.privateToken === token) {
+        return { artist, print: p };
+      }
+    }
+  }
+  return null;
+}
 
 export default factories.createCoreController('api::artist.artist', ({ strapi }) => ({
   /**
@@ -66,8 +96,12 @@ export default factories.createCoreController('api::artist.artist', ({ strapi })
           ? p.customPrice
           : (typeof p.price === 'number' ? p.price : null);
 
+        // FIX-PRIVATE-SALE (avril 2026) : nouvelle URL dediee /vente-privee/:token
+        // qui pointe sur une page client premium (VentePrivee.jsx). La vieille
+        // URL /artistes/:slug?print=X&token=Y reste fonctionnelle (ArtisteDetail
+        // lit encore ces parametres) mais n'est plus envoyee par email.
         const clientLink = p.privateToken
-          ? `https://massivemedias.com/artistes/${artist.slug}?print=${p.id}&token=${p.privateToken}`
+          ? `https://massivemedias.com/vente-privee/${p.privateToken}`
           : null;
 
         sales.push({
@@ -166,7 +200,7 @@ export default factories.createCoreController('api::artist.artist', ({ strapi })
       return ctx.badRequest(`Print '${printId}' n'a pas de clientEmail/privateToken`);
     }
 
-    const buyLink = `https://massivemedias.com/artistes/${artist.slug}?print=${p.id}&token=${p.privateToken}`;
+    const buyLink = `https://massivemedias.com/vente-privee/${p.privateToken}`;
 
     try {
       await sendPrivatePrintEmail({
@@ -176,12 +210,164 @@ export default factories.createCoreController('api::artist.artist', ({ strapi })
         printImage: p.fullImage || p.image || '',
         buyLink,
         price: typeof p.customPrice === 'number' ? p.customPrice : null,
+        basePrice: typeof p.basePrice === 'number'
+          ? p.basePrice
+          : (typeof p.customPrice === 'number' ? p.customPrice : (typeof p.price === 'number' ? p.price : null)),
+        allowCustomPrice: !!p.allowCustomPrice,
       });
       strapi.log.info(`Email vente privee renvoye: ${artistSlug} / ${printId} -> ${p.clientEmail}`);
       ctx.body = { data: { sent: true, clientEmail: p.clientEmail } };
     } catch (err: any) {
       strapi.log.warn(`Erreur renvoi email vente privee:`, err?.message || err);
       return ctx.internalServerError(`Envoi du courriel echoue: ${err?.message || 'erreur inconnue'}`);
+    }
+  },
+
+  /**
+   * GET /api/artists-private-sales/token/:token (PUBLIC)
+   * Retourne les infos d'affichage d'une vente privee a partir du token
+   * exclusif envoye par email. Pas d'auth : le token EST le secret.
+   *
+   * Response: { artistName, artistSlug, title, description, image, fullImage,
+   *   basePrice, allowCustomPrice, currency, sold, fixedFormat }
+   *
+   * Note : on ne retourne PAS le clientEmail complet (protection PII).
+   */
+  async getPrivateSaleByToken(ctx) {
+    const { token } = ctx.params;
+    const found = await findPrivateSaleByToken(strapi, token);
+    if (!found) return ctx.notFound('Vente privee introuvable ou lien expire');
+    const { artist, print: p } = found;
+
+    // basePrice : priorite customPrice legacy > basePrice explicite > price artist
+    const basePrice = typeof p.basePrice === 'number'
+      ? p.basePrice
+      : (typeof p.customPrice === 'number' ? p.customPrice : (typeof p.price === 'number' ? p.price : null));
+
+    ctx.body = {
+      data: {
+        token,
+        artistName: artist.name,
+        artistSlug: artist.slug,
+        artistAvatar: (artist as any).avatar?.url || null,
+        title: p.titleFr || p.titleEn || p.title || 'Oeuvre exclusive',
+        titleFr: p.titleFr || null,
+        titleEn: p.titleEn || null,
+        description: p.descriptionFr || p.descriptionEn || p.description || '',
+        image: p.fullImage || p.image || p.thumbImage || null,
+        thumbImage: p.thumbImage || p.image || null,
+        basePrice,
+        allowCustomPrice: !!p.allowCustomPrice,
+        currency: 'cad',
+        sold: !!p.sold,
+        fixedFormat: p.fixedFormat || null,
+        fixedFrame: p.fixedFrame || null,
+      },
+    };
+  },
+
+  /**
+   * POST /api/artists-private-sales/token/:token/checkout (PUBLIC)
+   * Cree une session Stripe Checkout pour finaliser l'achat.
+   *
+   * Body: { amount?: number }
+   *   - Si allowCustomPrice=true : le client fournit `amount` en dollars
+   *     (valide >= basePrice). Rejet 400 si amount < basePrice.
+   *   - Si allowCustomPrice=false : le backend force amount = basePrice,
+   *     ignore le body.
+   *
+   * Response: { sessionUrl, sessionId, amount }
+   */
+  async createPrivateSaleCheckout(ctx) {
+    const { token } = ctx.params;
+    const body = (ctx.request.body as any) || {};
+    const found = await findPrivateSaleByToken(strapi, token);
+    if (!found) return ctx.notFound('Vente privee introuvable ou lien expire');
+
+    const { artist, print: p } = found;
+    if (p.sold) return ctx.badRequest('Cette oeuvre a deja ete vendue');
+
+    const basePrice = typeof p.basePrice === 'number'
+      ? p.basePrice
+      : (typeof p.customPrice === 'number' ? p.customPrice : (typeof p.price === 'number' ? p.price : 0));
+
+    if (!basePrice || basePrice <= 0) {
+      return ctx.badRequest('Prix de base invalide pour cette oeuvre');
+    }
+
+    // Resolution montant final (dollars)
+    let finalAmount: number;
+    if (p.allowCustomPrice) {
+      const clientAmount = Number(body.amount);
+      if (!Number.isFinite(clientAmount) || clientAmount <= 0) {
+        return ctx.badRequest('Montant requis pour cette oeuvre (prix libre)');
+      }
+      if (clientAmount < basePrice) {
+        return ctx.badRequest(
+          `Le montant minimum pour cette oeuvre est de ${basePrice}$`
+        );
+      }
+      finalAmount = Math.round(clientAmount * 100) / 100;
+    } else {
+      finalAmount = basePrice;
+    }
+
+    const amountCents = Math.round(finalAmount * 100);
+    const title = p.titleFr || p.titleEn || p.title || 'Oeuvre exclusive';
+
+    try {
+      const stripe = getStripe();
+      const baseUrl = process.env.FRONTEND_URL || 'https://massivemedias.com';
+
+      const session = await stripe.checkout.sessions.create({
+        mode: 'payment',
+        payment_method_types: ['card'],
+        line_items: [{
+          price_data: {
+            currency: 'cad',
+            unit_amount: amountCents,
+            product_data: {
+              name: `${title} - ${artist.name}`,
+              description: p.fixedFormat ? `Format ${p.fixedFormat}${p.fixedFrame ? ` / Cadre ${p.fixedFrame}` : ''}` : undefined,
+              images: p.fullImage ? [p.fullImage] : undefined,
+            },
+          },
+          quantity: 1,
+        }],
+        // Customer email prerempli par le token proprio (on ne l'envoie pas au client via API)
+        customer_email: p.clientEmail || undefined,
+        metadata: {
+          type: 'private-sale',
+          artistSlug: artist.slug,
+          artistId: String((artist as any).id || ''),
+          printId: p.id,
+          privateSaleToken: token,
+          clientEmail: p.clientEmail || '',
+        },
+        payment_intent_data: {
+          metadata: {
+            type: 'private-sale',
+            artistSlug: artist.slug,
+            printId: p.id,
+            privateSaleToken: token,
+            clientEmail: p.clientEmail || '',
+          },
+        },
+        success_url: `${baseUrl}/vente-privee/${token}?status=success&session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${baseUrl}/vente-privee/${token}?status=cancel`,
+      });
+
+      strapi.log.info(`[privateSale] Checkout cree: artist=${artist.slug} print=${p.id} amount=${finalAmount}$ session=${session.id}`);
+      ctx.body = {
+        data: {
+          sessionId: session.id,
+          sessionUrl: session.url,
+          amount: finalAmount,
+        },
+      };
+    } catch (err: any) {
+      strapi.log.error('[privateSale] Erreur creation checkout:', err);
+      return ctx.internalServerError(err?.message || 'Erreur creation session de paiement');
     }
   },
 
