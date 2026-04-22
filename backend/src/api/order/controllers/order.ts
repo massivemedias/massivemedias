@@ -2332,7 +2332,21 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
   async updateStatus(ctx) {
     if (!(await requireAdminAuth(ctx))) return;
     const { documentId } = ctx.params;
-    const { status: newStatus, invoiceNumber, autoInvoice, sendEmails } = ctx.request.body as any;
+    const body = ctx.request.body as any;
+    const { status: newStatus, invoiceNumber, autoInvoice } = body;
+
+    // FIX-EMAIL-CONTROL (avril 2026) : le client exige un controle manuel
+    // explicite sur les courriels envoyes aux changements de statut. Avant
+    // ce fix, le status 'delivered' declenchait TOUJOURS le courriel temoignage
+    // (non controle). Maintenant :
+    //   - sendEmail=true   -> envoie les courriels prevus pour ce statut
+    //   - sendEmail=false  -> aucun courriel (meme 'delivered')
+    //   - absent           -> fallback sur legacy `sendEmails` pour compat
+    //                          retro ; si ni l'un ni l'autre fourni -> false
+    //                          (default = silencieux, principe de moindre surprise)
+    const sendEmail = typeof body.sendEmail === 'boolean'
+      ? body.sendEmail
+      : (typeof body.sendEmails === 'boolean' ? body.sendEmails : false);
 
     const validStatuses = ['draft', 'pending', 'paid', 'processing', 'ready', 'shipped', 'delivered', 'cancelled', 'refunded'];
     if (!newStatus || !validStatuses.includes(newStatus)) {
@@ -2380,8 +2394,8 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
       data: updateData,
     });
 
-    // Optional: trigger confirmation + admin notification emails when flipping to paid
-    if (sendEmails && newStatus === 'paid') {
+    // FIX-EMAIL-CONTROL : gate sur le flag unifie `sendEmail` (cf. body parse plus haut)
+    if (sendEmail && newStatus === 'paid') {
       try {
         const orderData = updated as any;
         const orderItems: any[] = Array.isArray(orderData.items) ? orderData.items : [];
@@ -2443,8 +2457,10 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
 
     strapi.log.info(`Commande ${documentId} status: ${(order as any).status} -> ${newStatus}`);
 
-    // Quand la commande est livree, envoyer un email de demande de temoignage
-    if (newStatus === 'delivered' && (order as any).customerEmail) {
+    // FIX-EMAIL-CONTROL : quand la commande est livree, courriel temoignage
+    // envoye UNIQUEMENT si sendEmail=true. Avant ce fix, il partait a chaque
+    // transition vers 'delivered' sans que l'admin ne puisse l'empecher.
+    if (sendEmail && newStatus === 'delivered' && (order as any).customerEmail) {
       try {
         const token = crypto.randomBytes(16).toString('hex');
         const customerName = (order as any).customerName || (order as any).customerEmail.split('@')[0];

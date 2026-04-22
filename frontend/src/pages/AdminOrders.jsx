@@ -13,6 +13,7 @@ import { useNotifications } from '../contexts/NotificationContext';
 import { generateInvoicePDF } from '../utils/generateInvoice';
 import EditOrderTotalModal from '../components/EditOrderTotalModal';
 import CreateManualOrderModal from '../components/CreateManualOrderModal';
+import StatusChangeModal from '../components/StatusChangeModal';
 import AdminReglagesFacturation from './AdminReglagesFacturation';
 
 // FIX-UX (avril 2026) : vocabulaire "A remettre" adopte pour ready/delivered
@@ -115,6 +116,13 @@ function AdminOrders() {
   // Modal creation commande manuelle + facture + lien Stripe
   const [showManualModal, setShowManualModal] = useState(false);
 
+  // FIX-EMAIL-CONTROL (avril 2026) : interception du changement de statut via
+  // une modale de confirmation avec apercu du courriel. Structure :
+  //   { order, from, to }  OU null
+  // Le dropdown declenche openStatusModal(order, newStatus) qui stocke le target
+  // sans encore muter la DB. Seul le bouton de la modale ecrit vraiment.
+  const [statusChangeTarget, setStatusChangeTarget] = useState(null);
+
   // Tracking live : etat par commande - { [documentId]: { loading, data, error } }
   const [trackingState, setTrackingState] = useState({});
 
@@ -136,7 +144,10 @@ function AdminOrders() {
         });
         if (window.confirm(msg)) {
           try {
-            await updateOrderStatus(documentId, 'delivered');
+            // FIX-EMAIL-CONTROL : statut delivered via tracking = silencieux
+            // par defaut (pas de temoignage auto). Admin peut encore renvoyer
+            // via la modale de statut s'il change de decision.
+            await updateOrderStatus(documentId, 'delivered', { sendEmail: false });
             setOrders(prev => prev.map(o => o.documentId === documentId ? { ...o, status: 'delivered' } : o));
             setInvoiceToast({
               type: 'success',
@@ -222,10 +233,11 @@ function AdminOrders() {
       const sentTo = res?.data?.data?.customerEmail || order.customerEmail;
       setInvoiceToast({
         type: 'success',
+        title: tx({ fr: 'Courriel envoye', en: 'Email sent', es: 'Correo enviado' }),
         message: tx({
-          fr: `Courriel envoye avec succes a ${sentTo}`,
-          en: `Email sent successfully to ${sentTo}`,
-          es: `Correo enviado con exito a ${sentTo}`,
+          fr: `Envoye avec succes a ${sentTo}`,
+          en: `Successfully sent to ${sentTo}`,
+          es: `Enviado con exito a ${sentTo}`,
         }),
       });
     } catch (err) {
@@ -385,55 +397,73 @@ function AdminOrders() {
   }, []);
 
   // Handlers
-  // FIX-SPIN (avril 2026) : le spinner pouvait rester "dans le beurre" jusqu'a
-  // ~2 min car l'intercepteur axios retente automatiquement les 500-504 avec
-  // 4+8+15s de backoff, 3 fois. Pendant ce temps le await ne resoud pas, donc
-  // le finally n'est jamais atteint. On ajoute :
-  //   1. Un safety-timeout hard a 20s (force-reset updatingId + toast erreur)
-  //   2. Un toast d'erreur EXPLICITE en cas d'echec (pas de fallback silencieux)
-  //   3. Rollback de l'optimistic update des l'echec (etait deja present mais
-  //      on verifie qu'il survit au force-reset)
-  const handleStatusChange = async (documentId, newStatus, currentStatus) => {
-    if (!newStatus || newStatus === currentStatus) return;
-    setUpdatingId(documentId);
+  // FIX-EMAIL-CONTROL (avril 2026) : le dropdown n'ecrit plus directement en
+  // base. Il ouvre une modale de confirmation (StatusChangeModal) qui affiche
+  // l'apercu du courriel qui SERAIT envoye + 3 boutons :
+  //   - "Sans courriel"  -> sendEmail:false (mise a jour silencieuse)
+  //   - "Avec courriel"  -> sendEmail:true
+  //   - "Annuler"        -> ferme sans rien faire
+  // Cette interception garantit que l'admin voit TOUJOURS ce qui va partir
+  // avant que la DB soit muteee. Principe de moindre surprise.
+  const openStatusChangeModal = (order, newStatus) => {
+    if (!newStatus || newStatus === order.status) return;
     setInvoiceToast(null);
-    // Optimistic update
+    setStatusChangeTarget({ order, from: order.status, to: newStatus });
+  };
+
+  // Appelle par le bouton "Sans courriel" / "Avec courriel" de la modale.
+  // sendEmail est le choix explicite de l'admin. Conserve le safety-timer 20s
+  // + optimistic update + rollback on failure, mais n'ecrit QUE sur cette
+  // action explicite.
+  const confirmStatusChange = async (sendEmail) => {
+    const target = statusChangeTarget;
+    if (!target) return;
+    const { order, to: newStatus } = target;
+    const documentId = order.documentId;
+
+    setUpdatingId(documentId);
     const snapshot = orders;
     setOrders(prev => prev.map(o => o.documentId === documentId ? { ...o, status: newStatus } : o));
 
-    // Safety net : si le backend met plus de 20s, on force-reset et on affiche
-    // une erreur claire plutot que de laisser le spinner tourner indefiniment.
     let timedOut = false;
     const safetyTimer = setTimeout(() => {
       timedOut = true;
       setUpdatingId(null);
       setOrders(snapshot);
+      setStatusChangeTarget(null);
       setInvoiceToast({
         type: 'error',
         message: tx({
-          fr: `Le serveur ne repond pas (timeout 20s). Le statut n'a pas ete change. Verifie la connexion.`,
-          en: `Server not responding (20s timeout). Status was not changed. Check connection.`,
-          es: `Servidor no responde (20s). Estado no cambiado.`,
+          fr: `Le serveur ne repond pas (timeout 20s). Le statut n'a pas ete change.`,
+          en: `Server not responding (20s timeout). Status was not changed.`,
+          es: `Servidor no responde (20s).`,
         }),
       });
     }, 20000);
 
     try {
-      await updateOrderStatus(documentId, newStatus);
-      if (timedOut) return; // Le timer a deja rollback et affiche l'erreur
+      await updateOrderStatus(documentId, newStatus, { sendEmail });
+      if (timedOut) return;
+
       const label = ORDER_STATUS[newStatus];
       const labelTxt = label ? tx({ fr: label.fr, en: label.en, es: label.es }) : newStatus;
       setInvoiceToast({
         type: 'success',
-        message: tx({
-          fr: `Statut change vers "${labelTxt}".`,
-          en: `Status changed to "${labelTxt}".`,
-          es: `Estado cambiado a "${labelTxt}".`,
-        }),
+        message: sendEmail
+          ? tx({
+              fr: `Statut mis a jour vers "${labelTxt}" et courriel envoye.`,
+              en: `Status updated to "${labelTxt}" and email sent.`,
+              es: `Estado actualizado a "${labelTxt}" y correo enviado.`,
+            })
+          : tx({
+              fr: `Statut mis a jour vers "${labelTxt}" silencieusement (aucun courriel).`,
+              en: `Status silently updated to "${labelTxt}" (no email).`,
+              es: `Estado actualizado a "${labelTxt}" sin correo.`,
+            }),
       });
+      setStatusChangeTarget(null);
     } catch (err) {
-      if (timedOut) return; // Le timer a deja gere l'UI
-      // Rollback
+      if (timedOut) return;
       setOrders(snapshot);
       const backendMsg = err?.response?.data?.error?.message
         || err?.response?.data?.message
@@ -444,15 +474,19 @@ function AdminOrders() {
         message: tx({
           fr: `Changement de statut refuse : ${backendMsg}`,
           en: `Status change rejected: ${backendMsg}`,
-          es: `Cambio de estado rechazado: ${backendMsg}`,
+          es: `Cambio rechazado: ${backendMsg}`,
         }),
       });
+      setStatusChangeTarget(null);
     } finally {
       clearTimeout(safetyTimer);
-      // Double-guard : meme si timedOut a deja reset, on force a null pour que
-      // le spinner disparaisse peu importe la sequence d'events.
       setUpdatingId(null);
     }
+  };
+
+  const cancelStatusChange = () => {
+    if (updatingId) return; // refuse la fermeture pendant un submit en cours
+    setStatusChangeTarget(null);
   };
 
   const handleSaveNotes = async (documentId) => {
@@ -667,10 +701,16 @@ function AdminOrders() {
               ? <CheckCircle size={20} className="text-white flex-shrink-0 mt-0.5" />
               : <AlertTriangle size={20} className="text-white flex-shrink-0 mt-0.5" />}
             <div className="flex-1">
+              {/* FIX-TOAST (avril 2026) : le titre etait hardcode a "Courriel
+                  envoye" pour TOUS les toasts de succes -> faisait croire au
+                  client qu'un courriel partait a chaque changement de statut.
+                  On priorise actionToast.title si le caller le fournit, sinon
+                  fallback generique "Succes" / "Erreur". */}
               <p className="text-white font-semibold text-sm">
-                {actionToast.type === 'success'
-                  ? tx({ fr: 'Courriel envoye', en: 'Email sent', es: 'Correo enviado' })
-                  : tx({ fr: 'Erreur', en: 'Error', es: 'Error' })}
+                {actionToast.title
+                  || (actionToast.type === 'success'
+                        ? tx({ fr: 'Succes', en: 'Success', es: 'Exito' })
+                        : tx({ fr: 'Erreur', en: 'Error', es: 'Error' }))}
               </p>
               <p className="text-white/90 text-xs mt-0.5 whitespace-pre-wrap">{actionToast.message}</p>
             </div>
@@ -735,6 +775,19 @@ function AdminOrders() {
             fetchOrders();
             getOrderStats().then(({ data }) => setStats(data)).catch(() => {});
           }}
+        />
+      )}
+
+      {/* Modale d'interception changement de statut (apercu courriel + choix
+          sendEmail true/false). Declencheur : onChange du <select> de statut. */}
+      {statusChangeTarget && (
+        <StatusChangeModal
+          order={statusChangeTarget.order}
+          currentStatus={statusChangeTarget.from}
+          targetStatus={statusChangeTarget.to}
+          onCancel={cancelStatusChange}
+          onConfirm={confirmStatusChange}
+          submitting={updatingId === statusChangeTarget.order.documentId}
         />
       )}
       {/* Ventes privees en attente (artistes) */}
@@ -1190,7 +1243,7 @@ function AdminOrders() {
                             <div className="relative inline-block">
                               <select
                                 value={order.status || 'pending'}
-                                onChange={(e) => handleStatusChange(order.documentId, e.target.value, order.status)}
+                                onChange={(e) => openStatusChangeModal(order, e.target.value)}
                                 disabled={updatingId === order.documentId}
                                 className={`appearance-none cursor-pointer pl-3 pr-8 py-1.5 rounded-lg text-xs font-semibold border-2 border-white/10 hover:border-accent/50 focus:border-accent focus:outline-none transition-colors disabled:opacity-50 ${ORDER_STATUS[order.status]?.color || 'bg-gray-500/20 text-gray-400'}`}
                               >

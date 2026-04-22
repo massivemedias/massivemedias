@@ -88,7 +88,24 @@ export const activatePrivateSale = (slug, itemId, payload) => {
 // --- Commandes ---
 export const getOrders = (params) => api.get('/orders/admin', { params });
 export const getOrderStats = () => api.get('/orders/stats');
-export const updateOrderStatus = (documentId, status) => api.put(`/orders/${documentId}/status`, { status });
+/**
+ * Changement de statut d'une commande.
+ * @param {string} documentId
+ * @param {string} status - enum backend ('pending', 'paid', 'processing', 'ready', 'shipped', 'delivered', 'cancelled', 'refunded')
+ * @param {object} [opts]
+ * @param {boolean} [opts.sendEmail=false] - true = envoie les courriels lies au nouveau statut
+ *   (confirmation si paid, demande temoignage si delivered). false = mise a jour silencieuse.
+ *   Defaut false pour que le comportement reste "silencieux" sans intervention explicite admin.
+ * @param {string} [opts.invoiceNumber] - optionnel, override du numero de facture
+ * @param {boolean} [opts.autoInvoice] - optionnel, auto-genere un numero MM-AAAA-NNNN quand passe a paid
+ */
+export const updateOrderStatus = (documentId, status, opts = {}) => {
+  const payload = { status };
+  if (typeof opts.sendEmail === 'boolean') payload.sendEmail = opts.sendEmail;
+  if (opts.invoiceNumber) payload.invoiceNumber = opts.invoiceNumber;
+  if (typeof opts.autoInvoice === 'boolean') payload.autoInvoice = opts.autoInvoice;
+  return api.put(`/orders/${documentId}/status`, payload);
+};
 export const updateOrderNotes = (documentId, notes) => api.put(`/orders/${documentId}/notes`, { notes });
 export const updateOrderTracking = (documentId, trackingNumber, carrier) => api.put(`/orders/${documentId}/tracking`, { trackingNumber, carrier });
 
