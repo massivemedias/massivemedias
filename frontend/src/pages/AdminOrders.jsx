@@ -562,9 +562,13 @@ function AdminOrders() {
       accent: 'text-yellow-400',
     },
     {
-      label: tx({ fr: 'À expédier', en: 'To ship', es: 'Por enviar' }),
+      // FIX-UX (avril 2026) : "A expedier" -> "A remettre" car une partie
+      // significative des clients Massive vient chercher sa commande sur
+      // place (cueillette locale), la formulation "expedier" n'englobe pas
+      // le retrait en atelier. Icone passe de Truck a Package pour matcher.
+      label: tx({ fr: 'À remettre', en: 'To hand over', es: 'Por entregar' }),
       value: stats?.orderStats?.byStatus?.processing || 0,
-      icon: Truck,
+      icon: Package,
       accent: 'text-blue-400',
     },
   ];
