@@ -280,7 +280,22 @@ function AdminOrders() {
     setLoading(true);
     try {
       const params = { page: meta.page, pageSize: meta.pageSize };
-      if (filterStatus !== 'all') params.status = filterStatus;
+      if (filterStatus !== 'all') {
+        // FIX-FILTER (avril 2026) : le filtre "paid" devient un SUPER-FILTRE
+        // qui inclut tous les statuts post-paiement (processing/ready/shipped/
+        // delivered). Logique metier : une commande "prete" est toujours une
+        // commande "payee". Avant ce fix, l'admin voyait sa commande
+        // disparaitre de l'onglet Paye des qu'il la passait a "Pret".
+        //
+        // Le backend supporte maintenant une liste virgule-separee et applique
+        // filters.status = { $in: [...] }. Retro-compat : les autres statuts
+        // (pending/cancelled/refunded/draft) restent en match exact.
+        if (filterStatus === 'paid') {
+          params.status = 'paid,processing,ready,shipped,delivered';
+        } else {
+          params.status = filterStatus;
+        }
+      }
       if (searchDebounce) params.search = searchDebounce;
       const { data } = await getOrders(params);
       const received = Array.isArray(data?.data) ? data.data : [];
@@ -335,7 +350,13 @@ function AdminOrders() {
       if (updatingId || deletingId || sendingInvoiceId) return;
       try {
         const params = { page: meta.page, pageSize: meta.pageSize };
-        if (filterStatus !== 'all') params.status = filterStatus;
+        if (filterStatus !== 'all') {
+          // Meme super-filtre inclusif que fetchOrders pour que le polling voit
+          // exactement la meme fenetre que le fetch initial.
+          params.status = filterStatus === 'paid'
+            ? 'paid,processing,ready,shipped,delivered'
+            : filterStatus;
+        }
         if (searchDebounce) params.search = searchDebounce;
         const { data } = await getOrders(params);
         const fresh = data?.data || [];

@@ -933,17 +933,24 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
           } as any,
         });
         if (orders.length > 0 && (orders[0] as any).status === 'draft') {
-          // Normalize: store the real payment_intent in stripePaymentIntentId AND preserve the
-          // checkout session id in its dedicated column. This makes subsequent searches by either
-          // id deterministic and avoids the cs vs pi race that caused Cindy's order to stuck.
+          // FIX-STRIPE-SYNC (avril 2026) : double-filet pour que le statut
+          // passe a 'paid' des que checkout.session.completed arrive. Avant,
+          // on attendait STRICTEMENT payment_intent.succeeded pour flipper.
+          // Si ce 2e event tombait dans la lucarne (retry Stripe echoue,
+          // ngrok deconnecte en dev, etc.), la commande restait 'draft' ad
+          // vitam -> admin avait l'impression que Stripe "ne syncait pas".
+          // Maintenant on flip aussi ici quand session.payment_status==='paid',
+          // et on se contente d'etre idempotent si payment_intent.succeeded
+          // arrive ensuite (il passe alors de paid->paid sans effet).
           await strapi.documents('api::order.order').update({
             documentId: orders[0].documentId,
             data: {
+              status: 'paid',
               stripePaymentIntentId: session.payment_intent,
               stripeCheckoutSessionId: session.id,
             } as any,
           });
-          strapi.log.info(`[webhook:${requestId}] checkout.session.completed: order ${orders[0].documentId} payment_intent=${session.payment_intent} session=${session.id}`);
+          strapi.log.info(`[webhook:${requestId}] checkout.session.completed: order ${orders[0].documentId} -> PAID (session=${session.id}, pi=${session.payment_intent})`);
         }
       }
       // Le payment_intent.succeeded va suivre et gerer le reste
@@ -2261,7 +2268,17 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
 
     const filters: any = {};
     if (status && status !== 'all') {
-      filters.status = status;
+      // FIX-FILTER (avril 2026) : support d'une liste virgule-separee pour les
+      // super-filtres inclusifs. Ex: status=paid,processing,ready,shipped,delivered
+      // envoye par l'onglet "Paye" du frontend pour que toutes les commandes
+      // POST-paiement (pas seulement celles figees a 'paid') y apparaissent.
+      // Conserve retro-compat : une valeur simple reste un match exact.
+      if (status.includes(',')) {
+        const list = status.split(',').map(s => s.trim()).filter(Boolean);
+        if (list.length > 0) filters.status = { $in: list };
+      } else {
+        filters.status = status;
+      }
     } else {
       // Exclude draft orders (payment not yet confirmed by Stripe webhook)
       filters.status = { $ne: 'draft' };
