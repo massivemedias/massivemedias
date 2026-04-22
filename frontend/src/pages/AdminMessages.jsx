@@ -113,7 +113,12 @@ const formatDate = (d) => {
 
 function AdminMessages() {
   const { tx } = useLang();
-  const { refreshNotifs } = useNotifications();
+  const { refreshNotifs, markMessagesViewed } = useNotifications();
+
+  // FIX-NOTIF (avril 2026) : on marque les messages comme vus a l'arrivee
+  // sur la page pour que le badge de notification s'efface instantanement
+  // (meme comportement que AdminOrders/AdminUtilisateurs).
+  useEffect(() => { markMessagesViewed(); }, [markMessagesViewed]);
 
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);

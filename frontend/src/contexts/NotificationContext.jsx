@@ -72,12 +72,21 @@ export function NotificationProvider({ children }) {
       // Nouveaux users et commandes depuis la derniere visite admin
       const lastUsersAt = getLastViewed('lastViewedUsersAt');
       const lastOrdersAt = getLastViewed('lastViewedOrdersAt');
+      const lastMessagesAt = getLastViewed('lastViewedMessagesAt');
       const nUsers = userRoles.filter(u => new Date(u.createdAt).getTime() > lastUsersAt).length;
       const nOrders = orders.filter(o => new Date(o.createdAt).getTime() > lastOrdersAt).length;
 
-      const msgsOnly = contacts.filter(c => (c.status || 'new') === 'new').length
-        + artists.filter(a => (a.status || 'new') === 'new').length
-        + artistMsgs.filter(m => (m.status || 'new') === 'new').length;
+      // FIX-NOTIF (avril 2026) : le compteur de messages etait bloque sur 2 car
+      // il ne filtrait QUE sur status='new' sans jamais comparer a un timestamp
+      // "vu jusqu'a". Resultat : 2 contacts/submissions orphelins laissaient le
+      // badge rouge colle a jamais. On ajoute un filtre date > lastViewedMessagesAt
+      // (cumulatif avec status='new') pour que l'admin puisse ecraser le compteur
+      // via markMessagesViewed / markAllViewed sans avoir a rouvrir chaque message.
+      const isNewMsg = (m) => (m.status || 'new') === 'new';
+      const isRecent = (m) => new Date(m.createdAt).getTime() > lastMessagesAt;
+      const msgsOnly = contacts.filter(c => isNewMsg(c) && isRecent(c)).length
+        + artists.filter(a => isNewMsg(a) && isRecent(a)).length
+        + artistMsgs.filter(m => isNewMsg(m) && isRecent(m)).length;
 
       const count = msgsOnly + nUsers + nOrders;
 
@@ -116,9 +125,33 @@ export function NotificationProvider({ children }) {
     setNewOrdersCount(0);
     fetchNotifs();
   }, [fetchNotifs]);
+  // FIX-NOTIF (avril 2026) : equivalent pour /admin/messages. Reset optimiste
+  // du compteur pour que le badge disparaisse immediatement, puis refetch pour
+  // capter d'eventuels nouveaux items arrives entre temps.
+  const markMessagesViewed = useCallback(() => {
+    setLastViewed('lastViewedMessagesAt');
+    setMessagesOnlyCount(0);
+    prevCountRef.current = newUsersCount + newOrdersCount; // evite de rejouer le son
+    fetchNotifs();
+  }, [fetchNotifs, newUsersCount, newOrdersCount]);
+
+  // "Tout marquer comme lu" : bouton dedie dans le drawer mobile / header.
+  // Reset les 3 timestamps d'un coup et force un refetch. Utile quand l'admin
+  // veut juste effacer le badge sans naviguer dans chaque section.
+  const markAllViewed = useCallback(() => {
+    setLastViewed('lastViewedUsersAt');
+    setLastViewed('lastViewedOrdersAt');
+    setLastViewed('lastViewedMessagesAt');
+    setNewUsersCount(0);
+    setNewOrdersCount(0);
+    setMessagesOnlyCount(0);
+    setAdminMsgCount(0);
+    prevCountRef.current = 0;
+    fetchNotifs();
+  }, [fetchNotifs]);
 
   return (
-    <NotificationContext.Provider value={{ adminMsgCount, messagesOnlyCount, newUsersCount, newOrdersCount, refreshNotifs, markUsersViewed, markOrdersViewed }}>
+    <NotificationContext.Provider value={{ adminMsgCount, messagesOnlyCount, newUsersCount, newOrdersCount, refreshNotifs, markUsersViewed, markOrdersViewed, markMessagesViewed, markAllViewed }}>
       {children}
     </NotificationContext.Provider>
   );
@@ -126,6 +159,6 @@ export function NotificationProvider({ children }) {
 
 export function useNotifications() {
   const ctx = useContext(NotificationContext);
-  if (!ctx) return { adminMsgCount: 0, messagesOnlyCount: 0, newUsersCount: 0, newOrdersCount: 0, refreshNotifs: () => {}, markUsersViewed: () => {}, markOrdersViewed: () => {} };
+  if (!ctx) return { adminMsgCount: 0, messagesOnlyCount: 0, newUsersCount: 0, newOrdersCount: 0, refreshNotifs: () => {}, markUsersViewed: () => {}, markOrdersViewed: () => {}, markMessagesViewed: () => {}, markAllViewed: () => {} };
   return ctx;
 }

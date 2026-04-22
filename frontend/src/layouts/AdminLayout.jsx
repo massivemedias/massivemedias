@@ -1,12 +1,14 @@
 import { Outlet, NavLink, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ChevronRight } from 'lucide-react';
+import { X, ChevronRight, Menu, CheckCheck } from 'lucide-react';
 import { useState } from 'react';
 import { useLang } from '../i18n/LanguageContext';
 import { useNotifications } from '../contexts/NotificationContext';
-import Tooltip from '../components/Tooltip';
 import NAV_ITEMS from '../data/adminNav';
-import { AdminSidebarNav } from '../components/AdminSidebar';
+// FIX-UI (avril 2026) : on importe ACCOUNT_ITEMS qui etait referencee dans le
+// drawer mobile mais jamais importee -> ReferenceError au click sur le menu
+// mobile -> drawer ne se montait plus et l'admin voyait un amas de fragments.
+import { AdminSidebarNav, ACCOUNT_ITEMS } from '../components/AdminSidebar';
 
 function getDrawerBadge(route, notifs) {
   if (route === '/admin/messages') return notifs.messagesOnlyCount || 0;
@@ -24,23 +26,29 @@ function AdminLayout() {
   const currentNav = NAV_ITEMS.find(item => location.pathname.startsWith(item.to));
   const pageTitle = currentNav ? tx({ fr: currentNav.fr, en: currentNav.en, es: currentNav.es }) : 'Admin';
   const close = () => setMobileOpen(false);
+  const totalBadge = (notifs.messagesOnlyCount || 0) + (notifs.newOrdersCount || 0) + (notifs.newUsersCount || 0);
 
   return (
     <section className="section-container pt-28 pb-20 min-h-screen">
-      {/* Mobile title */}
-      <div className="lg:hidden mb-4">
-        <h1 className="text-2xl font-heading font-bold text-heading">{pageTitle}</h1>
+      {/* FIX-UI (avril 2026) : header mobile = titre a gauche + bouton Menu Admin
+          a droite avec icone hamburger + texte. Plus lisible que l'ancienne
+          languette verticale en bord d'ecran qu'on louchait pour deviner. */}
+      <div className="lg:hidden flex items-center justify-between gap-3 mb-4">
+        <h1 className="text-2xl font-heading font-bold text-heading truncate">{pageTitle}</h1>
+        <button
+          onClick={() => setMobileOpen(true)}
+          className="relative flex items-center gap-2 flex-shrink-0 px-4 py-2.5 rounded-xl bg-accent text-white font-semibold text-sm shadow-lg shadow-accent/30 hover:brightness-110 transition-all active:scale-95"
+          aria-label={tx({ fr: 'Ouvrir le menu admin', en: 'Open admin menu', es: 'Abrir menu admin' })}
+        >
+          <Menu size={18} />
+          <span>{tx({ fr: 'Menu Admin', en: 'Admin Menu', es: 'Menu Admin' })}</span>
+          {totalBadge > 0 && (
+            <span className="absolute -top-1.5 -right-1.5 min-w-[20px] h-5 px-1.5 rounded-full bg-red-500 text-white text-[10px] font-bold shadow-lg shadow-red-500/40 flex items-center justify-center animate-pulse">
+              {totalBadge}
+            </span>
+          )}
+        </button>
       </div>
-
-      {/* Sticky tab on right edge - mobile only */}
-      <button
-        onClick={() => setMobileOpen(true)}
-        className="lg:hidden fixed right-0 top-1/2 -translate-y-1/2 z-[50] bg-accent text-white px-1.5 py-4 rounded-l-lg shadow-lg shadow-accent/30"
-        style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}
-        aria-label="Menu Admin"
-      >
-        <span className="text-[11px] font-bold tracking-wider uppercase">Menu Admin</span>
-      </button>
 
       {/* Mobile drawer */}
       <AnimatePresence>
@@ -67,15 +75,31 @@ function AdminLayout() {
               style={{ backgroundColor: 'var(--bg-body, #3D0079)' }}
             >
               {/* Drawer header */}
-              <div className="flex items-center justify-between px-4 py-3 border-b mobile-drawer-border flex-shrink-0">
+              <div className="flex items-center justify-between gap-2 px-4 py-3 border-b mobile-drawer-border flex-shrink-0">
                 <span className="text-heading font-heading font-bold text-sm">Menu Admin</span>
-                <button
-                  onClick={close}
-                  className="p-2 rounded-lg nav-link transition-colors"
-                  aria-label="Fermer"
-                >
-                  <X size={18} />
-                </button>
+                <div className="flex items-center gap-1">
+                  {/* FIX-NOTIF (avril 2026) : "Tout marquer comme lu" pour que
+                      l'admin puisse effacer d'un coup les 2+ items fantomes sans
+                      avoir a rouvrir chaque conversation. Visible seulement si
+                      au moins une notification rouge. */}
+                  {totalBadge > 0 && (
+                    <button
+                      onClick={() => { notifs.markAllViewed(); }}
+                      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold bg-accent/15 text-accent hover:bg-accent/25 transition-colors"
+                      aria-label={tx({ fr: 'Tout marquer comme lu', en: 'Mark all as read', es: 'Marcar todo como leido' })}
+                    >
+                      <CheckCheck size={12} />
+                      <span>{tx({ fr: 'Tout lu', en: 'Mark read', es: 'Marcar leido' })}</span>
+                    </button>
+                  )}
+                  <button
+                    onClick={close}
+                    className="p-2 rounded-lg nav-link transition-colors"
+                    aria-label="Fermer"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
               </div>
 
               {/* Scrollable nav */}
