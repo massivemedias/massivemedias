@@ -3,13 +3,13 @@ export default {
     {
       method: 'GET',
       path: '/billing-settings',
-      handler: 'billing-settings.find',
+      handler: 'billing-setting.find',
       config: { auth: false },
     },
     {
       method: 'PUT',
       path: '/billing-settings',
-      handler: 'billing-settings.update',
+      handler: 'billing-setting.update',
       config: { auth: false },
     },
   ],

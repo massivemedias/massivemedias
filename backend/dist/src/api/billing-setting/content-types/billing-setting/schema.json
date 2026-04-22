@@ -2,7 +2,7 @@
     "kind": "singleType",
     "collectionName": "billing_settings",
     "info": {
-        "singularName": "billing-settings",
+        "singularName": "billing-setting",
         "pluralName": "billing-settings",
         "displayName": "Reglages Facturation",
         "description": "Numeros de taxes (TPS/TVQ), NEQ, coordonnees bancaires et modalites de paiement"

@@ -15,10 +15,10 @@ const auth_1 = require("../../../utils/auth");
 // lecture publique est acceptable. Ne PAS stocker ici des infos type mot de
 // passe banque, API keys, etc.
 // Cast any sur le UID : les types Strapi sont regeneres au boot serveur.
-exports.default = strapi_1.factories.createCoreController('api::billing-settings.billing-settings', ({ strapi }) => ({
+exports.default = strapi_1.factories.createCoreController('api::billing-setting.billing-setting', ({ strapi }) => ({
     async find(ctx) {
         try {
-            const entry = await strapi.documents('api::billing-settings.billing-settings').findFirst({});
+            const entry = await strapi.documents('api::billing-setting.billing-setting').findFirst({});
             if (!entry) {
                 // Bootstrap : retourner les defaults si l'entite n'a pas encore ete creee.
                 ctx.body = {
@@ -63,16 +63,16 @@ exports.default = strapi_1.factories.createCoreController('api::billing-settings
         }
         try {
             // Single-type : on utilise findFirst + update/create selon existence
-            const existing = await strapi.documents('api::billing-settings.billing-settings').findFirst({});
+            const existing = await strapi.documents('api::billing-setting.billing-setting').findFirst({});
             let saved;
             if (existing) {
-                saved = await strapi.documents('api::billing-settings.billing-settings').update({
+                saved = await strapi.documents('api::billing-setting.billing-setting').update({
                     documentId: existing.documentId,
                     data,
                 });
             }
             else {
-                saved = await strapi.documents('api::billing-settings.billing-settings').create({
+                saved = await strapi.documents('api::billing-setting.billing-setting').create({
                     data,
                 });
             }
