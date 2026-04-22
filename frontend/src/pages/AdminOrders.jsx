@@ -526,6 +526,20 @@ function AdminOrders() {
     return new Date(d).toLocaleDateString('fr-CA', { day: 'numeric', month: 'short' });
   };
 
+  // FIX-BUSINESS (avril 2026): somme des montants des commandes "A traiter".
+  // Complete le count avec la valeur monetaire pour donner au dirigeant une
+  // visibilite financiere immediate (ex: "6 commandes = 1 245$ en attente").
+  // On somme sur les orders charges (pageSize=500 couvre tout l'historique).
+  // Les totaux Strapi sont stockes en cents -> conversion via `dollars`.
+  const pendingTotalCents = orders.reduce((sum, o) => {
+    return (o.status === 'pending' || o.status === 'paid')
+      ? sum + (Number(o.total) || 0)
+      : sum;
+  }, 0);
+  const pendingTotalFormatted = `${(pendingTotalCents / 100).toLocaleString('fr-CA', {
+    minimumFractionDigits: 2, maximumFractionDigits: 2,
+  })} $`;
+
   // Summary cards
   const summaryCards = [
     {
@@ -543,6 +557,7 @@ function AdminOrders() {
     {
       label: tx({ fr: 'À traiter', en: 'To process', es: 'Por procesar' }),
       value: stats?.orderStats?.byStatus ? (stats.orderStats.byStatus.paid || 0) + (stats.orderStats.byStatus.pending || 0) : 0,
+      subValue: pendingTotalCents > 0 ? pendingTotalFormatted : null,
       icon: Clock,
       accent: 'text-yellow-400',
     },
@@ -857,7 +872,14 @@ function AdminOrders() {
                 <Icon size={14} className={card.accent} />
                 <span className="text-grey-muted text-[10px] md:text-xs">{card.label}</span>
               </div>
-              <span className="text-xl md:text-2xl font-heading font-bold text-heading">{card.value}</span>
+              <div className="flex items-baseline gap-2 flex-wrap">
+                <span className="text-xl md:text-2xl font-heading font-bold text-heading">{card.value}</span>
+                {card.subValue && (
+                  <span className={`text-xs md:text-sm font-semibold ${card.accent}`}>
+                    {card.subValue}
+                  </span>
+                )}
+              </div>
             </motion.div>
           );
         })}
