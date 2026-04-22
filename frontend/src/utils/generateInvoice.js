@@ -186,8 +186,26 @@ export function generateInvoicePDF(order, type = 'invoice', options = {}) {
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9);
   doc.setTextColor(...greyText);
+
+  // FIX-PDF (avril 2026): le libelle Paiement etait code en dur a "Stripe" meme
+  // sur les factures B2B payables par Interac ou depot direct. On le rend dynamique :
+  //   - Recu (deja paye)                           -> "Confirme"
+  //   - Commande manuelle (isManual) non payee     -> "Virement / Depot direct"
+  //   - Commande e-commerce (web)                  -> "Stripe"
+  // L'admin reste libre d'override via options.paymentMethod.
+  let paymentLabel;
+  if (isReceipt) {
+    paymentLabel = 'Confirme';
+  } else if (options?.paymentMethod) {
+    paymentLabel = String(options.paymentMethod);
+  } else if (order?.isManual) {
+    paymentLabel = 'Virement / Depot direct';
+  } else {
+    paymentLabel = 'Stripe';
+  }
+
   const details = [
-    ['Paiement', isReceipt ? 'Confirmé' : 'Stripe'],
+    ['Paiement', paymentLabel],
     ['Devise', (order.currency || 'cad').toUpperCase()],
     ['NEQ', company.neq],
     ['TPS', company.tps],
