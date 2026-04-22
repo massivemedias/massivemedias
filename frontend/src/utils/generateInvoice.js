@@ -106,12 +106,16 @@ export function generateInvoicePDF(order, type = 'invoice', options = {}) {
   }
 
   // Company details (sous le logo)
+  // FIX-PDF-COMPLIANCE (avril 2026): on affiche TPS/TVQ directement sous l'adresse
+  // Massive Medias (en plus du rappel dans la colonne DETAILS et dans le footer)
+  // pour que les factures soient sans ambiguite aux yeux de Revenu Quebec / ARC.
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8);
   doc.setTextColor(...greyText);
   doc.text(company.address, margin, y + logoH + 4);
   doc.text(company.city, margin, y + logoH + 8);
   doc.text(`${company.phone || ''}  |  ${company.email}`, margin, y + logoH + 12);
+  doc.text(`TPS: ${company.tps}  |  TVQ: ${company.tvq}`, margin, y + logoH + 16);
 
   // Document type - right aligned
   doc.setFont('helvetica', 'bold');
@@ -129,7 +133,9 @@ export function generateInvoicePDF(order, type = 'invoice', options = {}) {
   });
   doc.text(`Date: ${orderDate}`, pageWidth - margin, y + 19, { align: 'right' });
 
-  y += 26;
+  // FIX-PDF-COMPLIANCE : 4 lignes d'adresse (au lieu de 3) -> on passe de 26 a 30mm
+  // pour eviter que la ligne TPS/TVQ sous l'adresse ne chevauche le separateur.
+  y += 30;
 
   // Separator line
   doc.setDrawColor(...accentColor);

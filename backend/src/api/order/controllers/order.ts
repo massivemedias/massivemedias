@@ -1391,6 +1391,13 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
       shipping = 0,
       notes, lang = 'fr',
       currency = 'cad',
+      // FIX-LEGACY (avril 2026) : backdating d'une facture oubliee / saisie retroactive.
+      // `createdAt` applique une valeur historique sur Order.createdAt et Invoice.createdAt
+      // via raw SQL (Strapi documents API ne permet pas d'override createdAt).
+      // `invoiceDate` (YYYY-MM-DD) controle le champ `date` affiche sur la facture PDF.
+      // Si absents : comportement legacy (now).
+      createdAt,
+      invoiceDate,
     } = body || {};
     let { subtotal, total, tps = 0, tvq = 0 } = body || {};
 
@@ -1490,10 +1497,15 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
       const invoiceNumber = `${prefix}${String(seq).padStart(4, '0')}`;
 
       // 4. Creer l'Invoice liee a l'Order + Client (montants TTC en dollars dans l'invoice)
+      // FIX-LEGACY : si invoiceDate fourni (YYYY-MM-DD), on l'utilise pour le champ `date`
+      // qui apparait sur la facture PDF. Sinon, date du jour.
+      const resolvedInvoiceDate = invoiceDate
+        ? String(invoiceDate).slice(0, 10)
+        : new Date().toISOString().slice(0, 10);
       const invoice = await strapi.documents('api::invoice.invoice').create({
         data: {
           invoiceNumber,
-          date: new Date().toISOString().slice(0, 10),
+          date: resolvedInvoiceDate,
           customerName,
           customerEmail: customerEmail || null,
           customerPhone: customerPhone || null,
@@ -1591,6 +1603,29 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
         data: { stripePaymentLink: paymentLink.url } as any,
       });
 
+      // 7. FIX-LEGACY : si createdAt fourni, override les timestamps Order + Invoice
+      // via raw SQL (Strapi documents API ne permet PAS de backdater createdAt).
+      // Pattern : on patche TOUTES les lignes publiees + drafts qui partagent le
+      // documentId (Strapi v5 en a plusieurs : published + draft) pour etre sur que
+      // la ligne lue par adminList ait le bon createdAt, peu importe le mode.
+      if (createdAt) {
+        try {
+          const backdateISO = new Date(createdAt).toISOString();
+          const patched = await strapi.db.query('api::order.order').updateMany({
+            where: { documentId: order.documentId },
+            data: { createdAt: backdateISO, updatedAt: backdateISO } as any,
+          });
+          await strapi.db.query('api::invoice.invoice').updateMany({
+            where: { documentId: invoice.documentId },
+            data: { createdAt: backdateISO, updatedAt: backdateISO } as any,
+          });
+          strapi.log.info(`[manualCreate] Backdated ${patched} order rows to ${backdateISO}`);
+        } catch (backdateErr: any) {
+          // On n'echoue pas la requete : la commande existe, seul le timestamp est KO.
+          strapi.log.warn(`[manualCreate] Backdate ECHEC (order persiste): ${backdateErr?.message}`);
+        }
+      }
+
       strapi.log.info(`[manualCreate] Order ${order.documentId} + Invoice ${invoiceNumber} + PaymentLink ${paymentLink.id}`);
 
       ctx.body = {
@@ -1604,6 +1639,273 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
       strapi.log.error('manualCreate error:', err);
       return ctx.badRequest(err.message || 'Erreur creation commande manuelle');
     }
+  },
+
+  // POST /orders/seed-legacy-april2026 - One-shot endpoint pour reinjecter 3 factures
+  // B2B historiques (perdues lors d'un refactor) :
+  //   - La Presse (Correction Zendesk) - 770$ HT - 9 avril 2026
+  //   - Andrew Higgs (SEO 15 Thorburn Living) - 400$ HT - 9 avril 2026
+  //   - Jerome Prunier (jprunier.com + Sanity) - 1500$ HT - 17 avril 2026
+  //
+  // Idempotent : verifie si les factures existent deja via (customerEmail, subtotal, date)
+  // et skippe celles deja creees. Retourne un rapport detaille par facture.
+  // Taxes (TPS 5% + TVQ 9.975%) recalculees serveur-side. Genere aussi un Stripe
+  // Payment Link par facture pour compat avec le reste du workflow.
+  async seedLegacyApril2026(ctx) {
+    if (!(await requireAdminAuth(ctx))) return;
+
+    const LEGACY_INVOICES = [
+      {
+        key: 'lapresse-2026-04-09',
+        createdAt: '2026-04-09T10:00:00.000-04:00',
+        invoiceDate: '2026-04-09',
+        customerName: 'La Presse Inc',
+        customerEmail: 'ELanoix@lapresse.ca',
+        customerPhone: null,
+        items: [{
+          description: "Correction de l'affichage responsive mobile et des erreurs JavaScript - Centre d'aide Zendesk",
+          quantity: 1,
+          unitPrice: 770.00,
+          lineTotal: 770.00,
+        }],
+        subtotal: 770.00,
+        notes: 'Facture reinjectee (perte refactor avril 2026).',
+      },
+      {
+        key: 'higgs-2026-04-09',
+        createdAt: '2026-04-09T11:00:00.000-04:00',
+        invoiceDate: '2026-04-09',
+        customerName: 'Andrew Higgs',
+        customerEmail: 'andrewhiggssold@gmail.com',
+        customerPhone: null,
+        items: [{
+          description: 'SEO Optimization Package 15 Thorburn Living',
+          quantity: 1,
+          unitPrice: 400.00,
+          lineTotal: 400.00,
+        }],
+        subtotal: 400.00,
+        notes: 'Facture reinjectee (perte refactor avril 2026).',
+      },
+      {
+        key: 'prunier-2026-04-17',
+        createdAt: '2026-04-17T10:00:00.000-04:00',
+        invoiceDate: '2026-04-17',
+        customerName: 'Jerome Prunier',
+        customerEmail: 'jerome@jprunier.com',
+        customerPhone: null,
+        items: [{
+          description: 'Developpement de site web jprunier.com et configuration Sanity CMS',
+          quantity: 1,
+          unitPrice: 1500.00,
+          lineTotal: 1500.00,
+        }],
+        subtotal: 1500.00,
+        notes: 'Facture reinjectee (perte refactor avril 2026).',
+      },
+    ];
+
+    const report: any[] = [];
+    const stripe = getStripe();
+
+    for (const data of LEGACY_INVOICES) {
+      try {
+        // Idempotence : chercher une Order existante match par (email + subtotal en cents + isManual + createdAt dans +/- 2j).
+        const subtotalCents = Math.round(data.subtotal * 100);
+        const existingOrders = await strapi.db.query('api::order.order').findMany({
+          where: {
+            customerEmail: data.customerEmail,
+            subtotal: subtotalCents,
+            isManual: true,
+          } as any,
+          limit: 5,
+        }) as any[];
+        if (existingOrders && existingOrders.length > 0) {
+          report.push({
+            key: data.key,
+            skipped: true,
+            reason: `Already exists (${existingOrders.length} match)`,
+            existingOrderId: existingOrders[0].documentId,
+          });
+          continue;
+        }
+
+        // Calcul taxes
+        const tps = Math.round(data.subtotal * 0.05 * 100) / 100;
+        const tvq = Math.round(data.subtotal * 0.09975 * 100) / 100;
+        const total = Math.round((data.subtotal + tps + tvq) * 100) / 100;
+
+        // Resolve/create client
+        let clientDocId: string | null = null;
+        const existingClients = await strapi.documents('api::client.client').findMany({
+          filters: { email: { $eqi: data.customerEmail } } as any,
+          limit: 1,
+        });
+        if (existingClients.length > 0) {
+          clientDocId = existingClients[0].documentId;
+        } else {
+          const createdClient = await strapi.documents('api::client.client').create({
+            data: {
+              email: data.customerEmail,
+              name: data.customerName,
+            } as any,
+          });
+          clientDocId = createdClient.documentId;
+        }
+
+        // Create order
+        const order = await strapi.documents('api::order.order').create({
+          data: {
+            isManual: true,
+            status: 'pending',
+            customerName: data.customerName,
+            customerEmail: data.customerEmail,
+            customerPhone: data.customerPhone,
+            items: data.items,
+            subtotal: Math.round(data.subtotal * 100),
+            total: Math.round(total * 100),
+            shipping: 0,
+            tps: Math.round(tps * 100),
+            tvq: Math.round(tvq * 100),
+            currency: 'cad',
+            notes: data.notes,
+            client: clientDocId ? { connect: [clientDocId] } : undefined,
+          } as any,
+        });
+
+        // Numero de facture sequentiel
+        const year = new Date(data.invoiceDate).getFullYear();
+        const prefix = `MM-${year}-`;
+        const lastInvoice = await strapi.documents('api::invoice.invoice').findMany({
+          filters: { invoiceNumber: { $startsWith: prefix } } as any,
+          sort: { invoiceNumber: 'desc' } as any,
+          limit: 1,
+        });
+        let seq = 1;
+        if (lastInvoice.length > 0 && (lastInvoice[0] as any).invoiceNumber) {
+          const lastNum = (lastInvoice[0] as any).invoiceNumber.replace(prefix, '');
+          seq = (parseInt(lastNum, 10) || 0) + 1;
+        }
+        const invoiceNumber = `${prefix}${String(seq).padStart(4, '0')}`;
+
+        // Create invoice
+        const invoice = await strapi.documents('api::invoice.invoice').create({
+          data: {
+            invoiceNumber,
+            date: data.invoiceDate,
+            customerName: data.customerName,
+            customerEmail: data.customerEmail,
+            customerPhone: data.customerPhone,
+            items: data.items,
+            subtotal: data.subtotal,
+            tps,
+            tvq,
+            total,
+            status: 'draft',
+            paymentStatus: 'pending',
+            lang: 'fr',
+            notes: data.notes,
+            order: { connect: [order.documentId] },
+            client: clientDocId ? { connect: [clientDocId] } : undefined,
+          } as any,
+        });
+
+        // Stripe Payment Link (line_items separes pour breakdown TPS/TVQ)
+        async function makeLineItem(name: string, amountDollars: number): Promise<any | null> {
+          const cents = Math.round(amountDollars * 100);
+          if (cents <= 0) return null;
+          const prod = await stripe.products.create({
+            name,
+            metadata: { invoiceNumber, orderId: order.documentId, legacy: 'true' },
+          });
+          const pr = await stripe.prices.create({
+            product: prod.id,
+            unit_amount: cents,
+            currency: 'cad',
+          });
+          return { price: pr.id, quantity: 1 };
+        }
+
+        const lineItems: any[] = [];
+        const subItem = await makeLineItem(`Facture ${invoiceNumber} - Sous-total`, data.subtotal);
+        if (subItem) lineItems.push(subItem);
+        if (tps > 0) {
+          const t = await makeLineItem(`TPS (5%) - ${invoiceNumber}`, tps);
+          if (t) lineItems.push(t);
+        }
+        if (tvq > 0) {
+          const q = await makeLineItem(`TVQ (9.975%) - ${invoiceNumber}`, tvq);
+          if (q) lineItems.push(q);
+        }
+
+        const paymentLink = await stripe.paymentLinks.create({
+          line_items: lineItems,
+          metadata: {
+            orderId: order.documentId,
+            invoiceId: invoice.documentId,
+            invoiceNumber,
+            type: 'manual-legacy',
+          },
+          payment_intent_data: {
+            metadata: {
+              orderId: order.documentId,
+              invoiceId: invoice.documentId,
+              invoiceNumber,
+              type: 'manual-legacy',
+            },
+          },
+        });
+
+        await strapi.documents('api::invoice.invoice').update({
+          documentId: invoice.documentId,
+          data: { stripePaymentLink: paymentLink.url } as any,
+        });
+
+        // Backdate createdAt (RAW SQL - documents API ne permet pas d'override)
+        const backdateISO = new Date(data.createdAt).toISOString();
+        await strapi.db.query('api::order.order').updateMany({
+          where: { documentId: order.documentId },
+          data: { createdAt: backdateISO, updatedAt: backdateISO } as any,
+        });
+        await strapi.db.query('api::invoice.invoice').updateMany({
+          where: { documentId: invoice.documentId },
+          data: { createdAt: backdateISO, updatedAt: backdateISO } as any,
+        });
+
+        strapi.log.info(`[seedLegacy] ${data.key} CREE -> order=${order.documentId} invoice=${invoiceNumber} total=${total}$`);
+
+        report.push({
+          key: data.key,
+          skipped: false,
+          orderId: order.documentId,
+          invoiceId: invoice.documentId,
+          invoiceNumber,
+          paymentUrl: paymentLink.url,
+          subtotal: data.subtotal,
+          tps,
+          tvq,
+          total,
+          backdatedTo: backdateISO,
+        });
+      } catch (err: any) {
+        strapi.log.error(`[seedLegacy] ${data.key} ECHEC :`, err);
+        report.push({
+          key: data.key,
+          skipped: false,
+          error: err.message || 'Erreur inconnue',
+        });
+      }
+    }
+
+    const created = report.filter(r => !r.skipped && !r.error).length;
+    const skipped = report.filter(r => r.skipped).length;
+    const failed = report.filter(r => r.error).length;
+
+    ctx.body = {
+      success: failed === 0,
+      summary: { created, skipped, failed, total: LEGACY_INVOICES.length },
+      report,
+    };
   },
 
   // POST /orders/:documentId/send-invoice - Envoyer la facture par courriel au client
