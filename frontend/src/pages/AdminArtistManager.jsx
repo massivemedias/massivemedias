@@ -14,7 +14,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search, Users, Loader2, ChevronLeft, Trash2, Save, CheckCircle,
   XCircle, Image as ImageIcon, Pencil, DollarSign, Sparkles, TrendingUp,
-  BarChart3, Banknote, Eye, Plus, Wallet, Lock,
+  BarChart3, Banknote, Eye, Plus, Wallet, Lock, ShieldCheck,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import {
@@ -359,10 +359,12 @@ function AdminArtistManager() {
               {tx({ fr: 'Gestion Artistes (God Mode)', en: 'Artist Management (God Mode)', es: 'Gestion Artistas' })}
             </h2>
           </div>
-          {/* FIX-UI (avril 2026) : badge jaune illisible remplace par une etiquette
-              sombre avec liseret dore qui lit clairement "Acces Administrateur Total". */}
-          <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold bg-black/70 text-amber-300 border border-amber-400/40 px-2.5 py-1 rounded-lg shadow-sm">
-            <span className="text-sm leading-none">👑</span>
+          {/* FIX-UI (avril 2026 v2) : design sleek minimaliste. L'ancienne version
+              or/amber + emoji couronne jurait avec le theme sombre et faisait "jeu
+              video". On remplace par une icone ShieldCheck (securite) + palette
+              neutre (bg-white/5, border-white/10, text-white/80). Discret mais clair. */}
+          <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold bg-white/5 text-white/80 border border-white/10 px-2.5 py-1 rounded-lg backdrop-blur-sm">
+            <ShieldCheck size={13} className="text-white/70" strokeWidth={2.2} />
             {tx({
               fr: 'Acces Administrateur Total',
               en: 'Total Admin Access',
