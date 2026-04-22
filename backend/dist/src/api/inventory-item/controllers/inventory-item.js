@@ -1,7 +1,95 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.runExplicitReclassificationApril2026 = void 0;
 const strapi_1 = require("@strapi/strapi");
 const auth_1 = require("../../../utils/auth");
+// FIX-TAXONOMY (avril 2026) : reclassification explicite demandee par le
+// proprietaire apres constatation que les fournitures recurrentes (papier,
+// encre, pochettes, cartouches) etaient melangees avec les machines
+// permanentes (Epson 2850, Cameo 5, Fellowes, etc.) dans la meme categorie
+// "Equipement & Machines".
+//
+// La liste ci-dessous est EXPLICITE (pas d'heuristique fragile). Chaque entree
+// est un pattern (substring, case-insensitive) match contre nameFr + nameEn.
+// Un item est reclasse SEULEMENT s'il match ET si sa categorie actuelle
+// differe de la cible. Idempotent : re-execute = no-op.
+const EXPLICIT_RECLASSIFY_PLAN = [
+    // Consommables (fournitures qui s'epuisent)
+    { pattern: 'canon mc-20', target: 'consumables' }, // Cartouche d'entretien Canon MC-20 PRO-1000
+    { pattern: 'canon mc 20', target: 'consumables' }, // variante orthographique
+    { pattern: 'cartouche', target: 'consumables' },
+    { pattern: 'epson papier lustre', target: 'consumables' },
+    { pattern: 'epson papier photo mat', target: 'consumables' },
+    { pattern: 'pochettes plastifieuse 17x11', target: 'consumables' },
+    { pattern: 'pochettes plastifieuse a3', target: 'consumables' },
+    { pattern: 'pochettes plastifieuse brill', target: 'consumables' },
+    { pattern: 'tubes en carton', target: 'consumables' },
+    // Equipment (materiel permanent, machines, outils)
+    { pattern: 'epson 2850', target: 'equipment' },
+    { pattern: 'fellowes jupiter', target: 'equipment' },
+    { pattern: 'regle carree', target: 'equipment' }, // Regle carree 300mm inox
+    { pattern: 'règle carrée', target: 'equipment' }, // avec accents
+    { pattern: 'silhouette cameo', target: 'equipment' },
+    // Software (licences, logiciels)
+    { pattern: 'silhouette connect', target: 'software' },
+];
+/**
+ * Applique la reclassification explicite. Idempotent. Retourne le rapport
+ * detaille des items modifies + ignores. Partagee entre l'endpoint admin
+ * et le bootstrap (auto-run au premier boot apres deploy).
+ */
+async function runExplicitReclassificationApril2026(strapi) {
+    const allItems = await strapi.documents('api::inventory-item.inventory-item').findMany({
+        limit: 1000,
+    });
+    const changes = [];
+    const errors = [];
+    let alreadyCorrect = 0;
+    let unmatched = 0;
+    for (const item of allItems) {
+        const haystack = `${item.nameFr || ''} ${item.nameEn || ''}`.toLowerCase();
+        const match = EXPLICIT_RECLASSIFY_PLAN.find(p => haystack.includes(p.pattern));
+        if (!match) {
+            unmatched++;
+            continue;
+        }
+        if (item.category === match.target) {
+            alreadyCorrect++;
+            continue;
+        }
+        changes.push({
+            id: item.id,
+            documentId: item.documentId,
+            name: item.nameFr || item.nameEn || '(sans nom)',
+            from: item.category,
+            to: match.target,
+        });
+    }
+    for (const change of changes) {
+        try {
+            await strapi.documents('api::inventory-item.inventory-item').update({
+                documentId: change.documentId,
+                data: { category: change.to },
+            });
+        }
+        catch (err) {
+            errors.push({
+                documentId: change.documentId,
+                name: change.name,
+                error: (err === null || err === void 0 ? void 0 : err.message) || 'Erreur inconnue',
+            });
+        }
+    }
+    return {
+        scanned: allItems.length,
+        reclassified: changes.length - errors.length,
+        alreadyCorrect,
+        unmatched,
+        changes,
+        errors,
+    };
+}
+exports.runExplicitReclassificationApril2026 = runExplicitReclassificationApril2026;
 exports.default = strapi_1.factories.createCoreController('api::inventory-item.inventory-item', ({ strapi }) => ({
     async lowStock(ctx) {
         if (!(await (0, auth_1.requireAdminAuth)(ctx)))
@@ -533,5 +621,22 @@ exports.default = strapi_1.factories.createCoreController('api::inventory-item.i
                 totalScanned: items.length,
             },
         };
+    },
+    // POST /inventory-items/reclassify-explicit-april2026
+    // Reclassification EXPLICITE par liste d'items (pas d'heuristique) demandee
+    // par le proprietaire. Idempotent. Aussi auto-declenchee au bootstrap backend
+    // (voir src/index.ts). Admin-only.
+    async reclassifyExplicitApril2026(ctx) {
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
+            return;
+        try {
+            const report = await runExplicitReclassificationApril2026(strapi);
+            strapi.log.info(`[reclassifyExplicit] scanned=${report.scanned} reclassified=${report.reclassified} already=${report.alreadyCorrect} errors=${report.errors.length}`);
+            ctx.body = { data: report };
+        }
+        catch (err) {
+            strapi.log.error('[reclassifyExplicit] ECHEC :', err);
+            return ctx.throw(500, (err === null || err === void 0 ? void 0 : err.message) || 'Erreur reclassification');
+        }
     },
 }));

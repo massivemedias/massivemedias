@@ -23,6 +23,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const inventory_item_1 = require("./api/inventory-item/controllers/inventory-item");
 exports.default = {
     register( /* { strapi }: { strapi: Core.Strapi } */) { },
     async bootstrap({ strapi }) {
@@ -118,6 +119,30 @@ exports.default = {
         }
         catch (err) {
             console.error('[seed] Permissions/UserRoles error:', err.message);
+        }
+        // FIX-TAXONOMY (avril 2026) : reclassification auto des items d'inventaire
+        // qui ont ete melanges entre equipement permanent et consommables. Idempotent :
+        // si tous les items sont deja dans leur categorie cible, no-op. Execute
+        // systematiquement au boot pour qu'aucun redeploy n'ait a attendre un click
+        // admin manuel. L'erreur est loggee mais n'empeche PAS le demarrage Strapi.
+        try {
+            const report = await (0, inventory_item_1.runExplicitReclassificationApril2026)(strapi);
+            if (report.reclassified > 0 || report.errors.length > 0) {
+                console.log(`[bootstrap] Inventaire reclassification : ${report.reclassified} modifies, ` +
+                    `${report.alreadyCorrect} deja OK, ${report.errors.length} erreurs sur ${report.scanned} items scannes.`);
+                for (const ch of report.changes) {
+                    console.log(`[bootstrap]   - ${ch.name}: ${ch.from} -> ${ch.to}`);
+                }
+                for (const err of report.errors) {
+                    console.warn(`[bootstrap]   ! ${err.name}: ${err.error}`);
+                }
+            }
+            else {
+                console.log(`[bootstrap] Inventaire reclassification : aucun changement (${report.alreadyCorrect} items deja correctement ranges).`);
+            }
+        }
+        catch (err) {
+            console.error('[bootstrap] Reclassification inventaire echoue (non bloquant) :', err === null || err === void 0 ? void 0 : err.message);
         }
         // Seed contenu seulement si SEED_CONTENT=true (evite OOM sur Render free tier)
         if (process.env.SEED_CONTENT !== 'true')

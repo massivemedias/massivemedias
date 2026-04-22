@@ -1,4 +1,5 @@
 import type { Core } from '@strapi/strapi';
+import { runExplicitReclassificationApril2026 } from './api/inventory-item/controllers/inventory-item';
 
 export default {
   register(/* { strapi }: { strapi: Core.Strapi } */) {},
@@ -97,6 +98,31 @@ export default {
       console.log('[seed] User Roles OK!');
     } catch (err: any) {
       console.error('[seed] Permissions/UserRoles error:', err.message);
+    }
+
+    // FIX-TAXONOMY (avril 2026) : reclassification auto des items d'inventaire
+    // qui ont ete melanges entre equipement permanent et consommables. Idempotent :
+    // si tous les items sont deja dans leur categorie cible, no-op. Execute
+    // systematiquement au boot pour qu'aucun redeploy n'ait a attendre un click
+    // admin manuel. L'erreur est loggee mais n'empeche PAS le demarrage Strapi.
+    try {
+      const report = await runExplicitReclassificationApril2026(strapi);
+      if (report.reclassified > 0 || report.errors.length > 0) {
+        console.log(
+          `[bootstrap] Inventaire reclassification : ${report.reclassified} modifies, ` +
+          `${report.alreadyCorrect} deja OK, ${report.errors.length} erreurs sur ${report.scanned} items scannes.`
+        );
+        for (const ch of report.changes) {
+          console.log(`[bootstrap]   - ${ch.name}: ${ch.from} -> ${ch.to}`);
+        }
+        for (const err of report.errors) {
+          console.warn(`[bootstrap]   ! ${err.name}: ${err.error}`);
+        }
+      } else {
+        console.log(`[bootstrap] Inventaire reclassification : aucun changement (${report.alreadyCorrect} items deja correctement ranges).`);
+      }
+    } catch (err: any) {
+      console.error('[bootstrap] Reclassification inventaire echoue (non bloquant) :', err?.message);
     }
 
     // Seed contenu seulement si SEED_CONTENT=true (evite OOM sur Render free tier)

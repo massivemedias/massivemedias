@@ -64,5 +64,17 @@ exports.default = {
                 auth: false,
             },
         },
+        // Reclassification explicite (liste hardcoded) - avril 2026.
+        // Protegee par requireAdminAuth dans le controller. Auto-run egalement
+        // au bootstrap pour garantir que les items soient ranges peu importe
+        // qui touche au deploy.
+        {
+            method: 'POST',
+            path: '/inventory-items/reclassify-explicit-april2026',
+            handler: 'inventory-item.reclassifyExplicitApril2026',
+            config: {
+                auth: false,
+            },
+        },
     ],
 };
