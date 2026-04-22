@@ -20,6 +20,16 @@ function InstantMockup({ imageUrl, frameColor = 'black', isLandscape = false, sc
   const roomImgCache = useRef({});
   const userImgRef = useRef(null);
 
+  // FIX-MOCKUP (avril 2026) : compteur de generation par canvas pour eliminer
+  // les race conditions de chargement async. Quand l'utilisateur change de
+  // cadre rapidement, plusieurs img.onload peuvent etre en vol ; sans ce
+  // counter, un onload tardif ecraserait le rendu plus recent. Chaque
+  // drawComposite incremente son counter + le capture en closure. Si un
+  // doRender arrive a s'executer alors que genRef.current a bouge, il
+  // abandonne son dessin (return silencieux).
+  const mainGenRef = useRef(0);
+  const lightboxGenRef = useRef(0);
+
   // Charger l'image du print
   useEffect(() => {
     if (!imageUrl) { setReady(false); return; }
@@ -30,20 +40,34 @@ function InstantMockup({ imageUrl, frameColor = 'black', isLandscape = false, sc
     img.src = imageUrl;
   }, [imageUrl]);
 
-  const drawComposite = useCallback((canvas, targetWidth, sid, landscape, fc) => {
-    if (!canvas || !userImgRef.current || !sid) return;
+  const drawComposite = useCallback((canvas, targetWidth, sid, landscape, fc, genRef) => {
+    if (!canvas || !userImgRef.current || !sid || !genRef) return;
+
+    // Capture la generation de CE call. Si une nouvelle drawComposite est
+    // appelee (nouveau cadre/scene), genRef.current devient > myGen et le
+    // doRender en cours est abandonne.
+    const myGen = ++genRef.current;
 
     // Paysage: sous-dossier /landscape/ avec cadres horizontaux
     const roomKey = landscape ? `landscape/${sid}_${fc}` : `${sid}_${fc}`;
     const roomSrc = `/images/mockups/${roomKey}.webp`;
 
     const doRender = (roomImg) => {
+      // GUARD anti-race : si une drawComposite plus recente a demarre, stop.
+      if (myGen !== genRef.current) return;
+
       const roomRatio = roomImg.naturalHeight / roomImg.naturalWidth;
       const cw = targetWidth;
       const ch = Math.round(cw * roomRatio);
+
+      // Reset COMPLET du canvas : setter .width efface tout le contenu ET reset
+      // toutes les transforms / states. On ajoute quand meme un clearRect
+      // explicite apres pour etre defensif sur d'eventuels residus de pixels
+      // si la meme dimension est reutilisee (edge case sur certains browsers).
       canvas.width = cw;
       canvas.height = ch;
       const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, cw, ch);
 
       // 1. Dessiner la photo de la piece
       ctx.drawImage(roomImg, 0, 0, cw, ch);
@@ -142,16 +166,30 @@ function InstantMockup({ imageUrl, frameColor = 'black', isLandscape = false, sc
       offCtx.drawImage(maskCanvas, 0, 0);
       offCtx.globalCompositeOperation = 'source-over';
 
+      // Dernier guard anti-race AVANT le compose final. Entre le debut de
+      // doRender et ici, un autre drawComposite a pu etre appele (ex: l'user
+      // a clique un autre cadre pendant le scan). Si c'est le cas, on ne
+      // composite PAS sur le canvas (il est deja en cours de redessin par
+      // le nouveau cycle).
+      if (myGen !== genRef.current) return;
+
       // Compose le print clippe sur le canvas principal (par-dessus le mat beige)
       ctx.drawImage(offCanvas, 0, 0);
     };
 
     if (roomImgCache.current[roomKey]) {
-      doRender(roomImgCache.current[roomKey]);
+      // Guard immediat aussi pour le cache hit : si une autre draw a demarre
+      // entre l'increment de myGen et ce if, on abandonne.
+      if (myGen === genRef.current) doRender(roomImgCache.current[roomKey]);
     } else {
       const img = new Image();
       img.crossOrigin = 'anonymous';
-      img.onload = () => { roomImgCache.current[roomKey] = img; doRender(img); };
+      img.onload = () => {
+        // Toujours cacher l'image pour les prochaines requetes (non-bloquant
+        // meme si cette generation est stale).
+        roomImgCache.current[roomKey] = img;
+        doRender(img);
+      };
       img.onerror = () => {
         // Fallback portrait si le mockup paysage est absent
         if (landscape) {
@@ -173,13 +211,13 @@ function InstantMockup({ imageUrl, frameColor = 'black', isLandscape = false, sc
   // Redessiner quand scene, orientation, cadre ou image change
   useEffect(() => {
     if (!ready || !sceneId) return;
-    if (canvasRef.current) drawComposite(canvasRef.current, 800, sceneId, isLandscape, frameColor);
+    if (canvasRef.current) drawComposite(canvasRef.current, 800, sceneId, isLandscape, frameColor, mainGenRef);
   }, [ready, sceneId, isLandscape, frameColor, drawComposite]);
 
   // Lightbox haute resolution
   useEffect(() => {
     if (lightboxOpen && lightboxCanvasRef.current && ready && sceneId) {
-      drawComposite(lightboxCanvasRef.current, 1400, sceneId, isLandscape, frameColor);
+      drawComposite(lightboxCanvasRef.current, 1400, sceneId, isLandscape, frameColor, lightboxGenRef);
     }
   }, [lightboxOpen, ready, sceneId, isLandscape, frameColor, drawComposite]);
 
