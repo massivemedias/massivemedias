@@ -15,16 +15,20 @@ import EditOrderTotalModal from '../components/EditOrderTotalModal';
 import CreateManualOrderModal from '../components/CreateManualOrderModal';
 import AdminReglagesFacturation from './AdminReglagesFacturation';
 
+// FIX-UX (avril 2026) : vocabulaire "A remettre" adopte pour ready/delivered
+// car une grande part des commandes est recuperee en cueillette locale a l'atelier.
+// Les `key` restent techniques (enum backend inchange) ; seuls les labels d'affichage
+// parlent de "remettre" plutot que "expedier".
 const ORDER_STATUS = {
-  draft:      { fr: 'Brouillon',    en: 'Draft',      es: 'Borrador',     color: 'bg-gray-600/20 text-gray-500', icon: Clock },
-  pending:    { fr: 'En attente',    en: 'Pending',    es: 'Pendiente',    color: 'bg-yellow-500/20 text-yellow-400', icon: Clock },
-  paid:       { fr: 'Payé',          en: 'Paid',       es: 'Pagado',       color: 'bg-green-500/20 text-green-400', icon: CreditCard },
-  processing: { fr: 'En production', en: 'Processing', es: 'En proceso',   color: 'bg-blue-500/20 text-blue-400', icon: Package },
-  ready:      { fr: 'Prêt',           en: 'Ready',      es: 'Listo',        color: 'bg-orange-500/20 text-orange-400', icon: MapPin },
-  shipped:    { fr: 'Expédié',       en: 'Shipped',    es: 'Enviado',      color: 'bg-purple-500/20 text-purple-400', icon: Truck },
-  delivered:  { fr: 'Livré',         en: 'Delivered',  es: 'Entregado',    color: 'bg-emerald-500/20 text-emerald-400', icon: CheckCircle },
-  cancelled:  { fr: 'Annulé',        en: 'Cancelled',  es: 'Cancelado',    color: 'bg-red-500/20 text-red-400', icon: XCircle },
-  refunded:   { fr: 'Remboursé',     en: 'Refunded',   es: 'Reembolsado',  color: 'bg-gray-500/20 text-gray-400', icon: RotateCcw },
+  draft:      { fr: 'Brouillon',            en: 'Draft',                  es: 'Borrador',           color: 'bg-gray-600/20 text-gray-500', icon: Clock },
+  pending:    { fr: 'En attente',           en: 'Pending',                es: 'Pendiente',          color: 'bg-yellow-500/20 text-yellow-400', icon: Clock },
+  paid:       { fr: 'Payé',                 en: 'Paid',                   es: 'Pagado',             color: 'bg-green-500/20 text-green-400', icon: CreditCard },
+  processing: { fr: 'En production',        en: 'Processing',             es: 'En proceso',         color: 'bg-blue-500/20 text-blue-400', icon: Package },
+  ready:      { fr: 'Prêt / À remettre',    en: 'Ready / To hand over',   es: 'Listo / Por entregar', color: 'bg-orange-500/20 text-orange-400', icon: MapPin },
+  shipped:    { fr: 'Expédié',              en: 'Shipped',                es: 'Enviado',            color: 'bg-purple-500/20 text-purple-400', icon: Truck },
+  delivered:  { fr: 'Livré / Remis',        en: 'Delivered / Handed over', es: 'Entregado',         color: 'bg-emerald-500/20 text-emerald-400', icon: CheckCircle },
+  cancelled:  { fr: 'Annulé',               en: 'Cancelled',              es: 'Cancelado',          color: 'bg-red-500/20 text-red-400', icon: XCircle },
+  refunded:   { fr: 'Remboursé',            en: 'Refunded',               es: 'Reembolsado',        color: 'bg-gray-500/20 text-gray-400', icon: RotateCcw },
 };
 
 const STATUS_FLOW = {
@@ -350,6 +354,14 @@ function AdminOrders() {
   }, []);
 
   // Handlers
+  // FIX-SPIN (avril 2026) : le spinner pouvait rester "dans le beurre" jusqu'a
+  // ~2 min car l'intercepteur axios retente automatiquement les 500-504 avec
+  // 4+8+15s de backoff, 3 fois. Pendant ce temps le await ne resoud pas, donc
+  // le finally n'est jamais atteint. On ajoute :
+  //   1. Un safety-timeout hard a 20s (force-reset updatingId + toast erreur)
+  //   2. Un toast d'erreur EXPLICITE en cas d'echec (pas de fallback silencieux)
+  //   3. Rollback de l'optimistic update des l'echec (etait deja present mais
+  //      on verifie qu'il survit au force-reset)
   const handleStatusChange = async (documentId, newStatus, currentStatus) => {
     if (!newStatus || newStatus === currentStatus) return;
     setUpdatingId(documentId);
@@ -357,8 +369,27 @@ function AdminOrders() {
     // Optimistic update
     const snapshot = orders;
     setOrders(prev => prev.map(o => o.documentId === documentId ? { ...o, status: newStatus } : o));
+
+    // Safety net : si le backend met plus de 20s, on force-reset et on affiche
+    // une erreur claire plutot que de laisser le spinner tourner indefiniment.
+    let timedOut = false;
+    const safetyTimer = setTimeout(() => {
+      timedOut = true;
+      setUpdatingId(null);
+      setOrders(snapshot);
+      setActionToast({
+        type: 'error',
+        message: tx({
+          fr: `Le serveur ne repond pas (timeout 20s). Le statut n'a pas ete change. Verifie la connexion.`,
+          en: `Server not responding (20s timeout). Status was not changed. Check connection.`,
+          es: `Servidor no responde (20s). Estado no cambiado.`,
+        }),
+      });
+    }, 20000);
+
     try {
       await updateOrderStatus(documentId, newStatus);
+      if (timedOut) return; // Le timer a deja rollback et affiche l'erreur
       const label = ORDER_STATUS[newStatus];
       const labelTxt = label ? tx({ fr: label.fr, en: label.en, es: label.es }) : newStatus;
       setActionToast({
@@ -370,12 +401,13 @@ function AdminOrders() {
         }),
       });
     } catch (err) {
+      if (timedOut) return; // Le timer a deja gere l'UI
       // Rollback
       setOrders(snapshot);
       const backendMsg = err?.response?.data?.error?.message
         || err?.response?.data?.message
         || err?.message
-        || 'Erreur inconnue';
+        || tx({ fr: 'Erreur inconnue', en: 'Unknown error', es: 'Error desconocido' });
       setActionToast({
         type: 'error',
         message: tx({
@@ -385,6 +417,9 @@ function AdminOrders() {
         }),
       });
     } finally {
+      clearTimeout(safetyTimer);
+      // Double-guard : meme si timedOut a deja reset, on force a null pour que
+      // le spinner disparaisse peu importe la sequence d'events.
       setUpdatingId(null);
     }
   };
@@ -1128,12 +1163,17 @@ function AdminOrders() {
                                 disabled={updatingId === order.documentId}
                                 className={`appearance-none cursor-pointer pl-3 pr-8 py-1.5 rounded-lg text-xs font-semibold border-2 border-white/10 hover:border-accent/50 focus:border-accent focus:outline-none transition-colors disabled:opacity-50 ${ORDER_STATUS[order.status]?.color || 'bg-gray-500/20 text-gray-400'}`}
                               >
+                                {/* FIX-UX (avril 2026) : les `value` restent sur l'enum
+                                    backend ('ready', 'shipped') pour ne pas casser le
+                                    PUT /orders/:id/status qui valide la liste serveur-side.
+                                    Seuls les labels affiches changent pour coller au
+                                    vocabulaire atelier (cueillette locale + expedition). */}
                                 <option value="pending">{tx({ fr: 'En attente', en: 'Pending', es: 'Pendiente' })}</option>
                                 <option value="paid">{tx({ fr: 'Paye / En production', en: 'Paid / In production', es: 'Pagado / En produccion' })}</option>
                                 <option value="processing">{tx({ fr: 'En production', en: 'Processing', es: 'En proceso' })}</option>
-                                <option value="ready">{tx({ fr: 'Pret', en: 'Ready', es: 'Listo' })}</option>
+                                <option value="ready">{tx({ fr: 'Pret / A remettre', en: 'Ready / To hand over', es: 'Listo / Por entregar' })}</option>
                                 <option value="shipped">{tx({ fr: 'Expedie', en: 'Shipped', es: 'Enviado' })}</option>
-                                <option value="delivered">{tx({ fr: 'Livre', en: 'Delivered', es: 'Entregado' })}</option>
+                                <option value="delivered">{tx({ fr: 'Livre / Remis', en: 'Delivered / Handed over', es: 'Entregado' })}</option>
                                 <option value="cancelled">{tx({ fr: 'Annule', en: 'Cancelled', es: 'Cancelado' })}</option>
                                 <option value="refunded">{tx({ fr: 'Rembourse', en: 'Refunded', es: 'Reembolsado' })}</option>
                               </select>
