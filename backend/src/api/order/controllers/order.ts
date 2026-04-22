@@ -2891,7 +2891,20 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
         if (!matchedSlug) continue;
 
         const artist = artistMap[matchedSlug];
-        const rate = parseFloat(artist.commissionRate) || 0.5;
+
+        // FIX-COMMISSIONS (avril 2026) : taux distinct prints vs stickers.
+        // Fallback chain : printCommissionRate > commissionRate > 0.5.
+        //                  stickerCommissionRate > commissionRate > 0.15.
+        const legacyRate = parseFloat(artist.commissionRate);
+        const printRate = Number.isFinite(parseFloat(artist.printCommissionRate))
+          ? parseFloat(artist.printCommissionRate)
+          : (Number.isFinite(legacyRate) ? legacyRate : 0.5);
+        const stickerRate = Number.isFinite(parseFloat(artist.stickerCommissionRate))
+          ? parseFloat(artist.stickerCommissionRate)
+          : (Number.isFinite(legacyRate) ? legacyRate : 0.15);
+        const isSticker = pid.startsWith(`artist-sticker-pack-${matchedSlug}-`);
+        const rate = isSticker ? stickerRate : printRate;
+
         const salePrice = item.totalPrice || item.unitPrice || 0;
         const prodCost = getProductionCost(artist, item);
         const qty = item.quantity || 1;
@@ -2904,13 +2917,20 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
           commissionsByArtist[matchedSlug] = {
             slug: matchedSlug,
             name: artist.name,
-            rate,
+            rate, // legacy field : rate moyen du dernier item rencontre
+            printCommissionRate: printRate,
+            stickerCommissionRate: stickerRate,
             totalSales: 0,
             totalProduction: 0,
             totalNetProfit: 0,
             totalCommission: 0,
             totalPaid: 0,
             balance: 0,
+            // Breakdown pour l'UI "Revenus par type"
+            printSales: 0,
+            printCommission: 0,
+            stickerSales: 0,
+            stickerCommission: 0,
             orders: [],
           };
         }
@@ -2920,6 +2940,13 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
         c.totalProduction += totalProd;
         c.totalNetProfit += netProfit;
         c.totalCommission += commission;
+        if (isSticker) {
+          c.stickerSales += totalSale;
+          c.stickerCommission += commission;
+        } else {
+          c.printSales += totalSale;
+          c.printCommission += commission;
+        }
         c.orders.push({
           orderId: order.documentId,
           orderDate: order.createdAt,

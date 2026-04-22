@@ -523,7 +523,28 @@ exports.default = strapi_1.factories.createCoreController('api::artist.artist', 
                 }
                 return cost;
             }
-            const rate = parseFloat(a.commissionRate) || 0.5;
+            // FIX-COMMISSIONS (avril 2026) : resolution du taux PAR TYPE d'item.
+            // Les prints (artist-print-*) et stickers (artist-sticker-pack-*) ont
+            // maintenant des taux distincts. Fallback chain :
+            //   print   : printCommissionRate   || commissionRate || 0.5
+            //   sticker : stickerCommissionRate || commissionRate || 0.15
+            const legacyRate = parseFloat(a.commissionRate);
+            const printRate = Number.isFinite(parseFloat(a.printCommissionRate))
+                ? parseFloat(a.printCommissionRate)
+                : (Number.isFinite(legacyRate) ? legacyRate : 0.5);
+            const stickerRate = Number.isFinite(parseFloat(a.stickerCommissionRate))
+                ? parseFloat(a.stickerCommissionRate)
+                : (Number.isFinite(legacyRate) ? legacyRate : 0.15);
+            const resolveRate = (productId) => {
+                const pid = String(productId || '');
+                if (pid.startsWith(`artist-sticker-pack-${slug}-`))
+                    return stickerRate;
+                return printRate; // default = print (match la garde en amont)
+            };
+            // Retourne un taux "moyen pondere" pour l'affichage (utile quand un
+            // artiste vend les deux types). Si un seul type dans l'historique -> taux
+            // de ce type.
+            const rate = printRate; // fallback display si pas de ventes
             const relatedOrders = [];
             let totalSales = 0, totalProduction = 0, totalNetProfit = 0, totalCommission = 0;
             for (const order of (orders || [])) {
@@ -534,11 +555,12 @@ exports.default = strapi_1.factories.createCoreController('api::artist.artist', 
                         continue;
                     if (item.isArtistOwnPrint)
                         continue;
+                    const itemRate = resolveRate(pid);
                     const qty = item.quantity || 1;
                     const salePrice = item.totalPrice || (item.unitPrice || 0) * qty;
                     const prodCost = getProductionCost(a, item) * qty;
                     const netProfit = Math.max(0, salePrice - prodCost);
-                    const commission = Math.round(netProfit * rate * 100) / 100;
+                    const commission = Math.round(netProfit * itemRate * 100) / 100;
                     totalSales += salePrice;
                     totalProduction += prodCost;
                     totalNetProfit += netProfit;
@@ -570,6 +592,8 @@ exports.default = strapi_1.factories.createCoreController('api::artist.artist', 
             const totalPaid = payments.reduce((s, p) => s + (parseFloat(p.amount) || 0), 0);
             const financials = {
                 commissionRate: rate,
+                printCommissionRate: printRate,
+                stickerCommissionRate: stickerRate,
                 totalSales: Math.round(totalSales * 100) / 100,
                 totalProduction: Math.round(totalProduction * 100) / 100,
                 totalNetProfit: Math.round(totalNetProfit * 100) / 100,
@@ -634,6 +658,8 @@ exports.default = strapi_1.factories.createCoreController('api::artist.artist', 
                     socials: a.socials || {},
                     pricing: a.pricing || null,
                     commissionRate: rate,
+                    printCommissionRate: printRate,
+                    stickerCommissionRate: stickerRate,
                     active: a.active,
                     sortOrder: (_b = a.sortOrder) !== null && _b !== void 0 ? _b : 0,
                     prints,
@@ -671,7 +697,12 @@ exports.default = strapi_1.factories.createCoreController('api::artist.artist', 
         // Whitelist stricte : seuls ces champs peuvent etre modifies ici.
         // Les items (prints/stickers) passent par les routes dediees ci-dessous.
         const ALLOWED = ['name', 'email', 'taglineFr', 'taglineEn', 'taglineEs',
-            'bioFr', 'bioEn', 'bioEs', 'socials', 'commissionRate', 'active', 'sortOrder'];
+            'bioFr', 'bioEn', 'bioEs', 'socials', 'commissionRate',
+            // FIX-COMMISSIONS (avril 2026) : taux distincts pour prints vs stickers.
+            // commissionRate reste en fallback pour retro-compat mais ces deux valeurs
+            // prennent priorite dans les calculs (cf. helper getRate ci-dessous).
+            'printCommissionRate', 'stickerCommissionRate',
+            'active', 'sortOrder'];
         const data = {};
         for (const key of ALLOWED) {
             if (body[key] !== undefined)
@@ -680,12 +711,15 @@ exports.default = strapi_1.factories.createCoreController('api::artist.artist', 
         if (Object.keys(data).length === 0) {
             return ctx.badRequest('Aucun champ valide a mettre a jour. Champs autorises: ' + ALLOWED.join(', '));
         }
-        if (data.commissionRate !== undefined) {
-            const cr = Number(data.commissionRate);
-            if (!Number.isFinite(cr) || cr < 0 || cr > 1) {
-                return ctx.badRequest('commissionRate doit etre un decimal entre 0 et 1 (ex: 0.5 = 50%)');
+        // Validation des 3 taux (0-1 decimal)
+        for (const field of ['commissionRate', 'printCommissionRate', 'stickerCommissionRate']) {
+            if (data[field] !== undefined) {
+                const cr = Number(data[field]);
+                if (!Number.isFinite(cr) || cr < 0 || cr > 1) {
+                    return ctx.badRequest(`${field} doit etre un decimal entre 0 et 1 (ex: 0.5 = 50%)`);
+                }
+                data[field] = cr;
             }
-            data.commissionRate = cr;
         }
         try {
             const artists = await strapi.documents('api::artist.artist').findMany({

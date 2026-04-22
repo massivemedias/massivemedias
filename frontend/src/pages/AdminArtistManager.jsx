@@ -20,7 +20,7 @@ import { useLang } from '../i18n/LanguageContext';
 import {
   getAdminArtistsList, getAdminArtistDetail,
   updateAdminArtistProfile, updateAdminArtistItem, deleteAdminArtistItem,
-  createArtistPayment,
+  createArtistPayment, getCommissions,
 } from '../services/adminService';
 import ActivatePrivateSaleModal from '../components/ActivatePrivateSaleModal';
 
@@ -31,6 +31,11 @@ function AdminArtistManager() {
   const [artists, setArtists] = useState([]);
   const [listLoading, setListLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [sortBy, setSortBy] = useState('name'); // 'name' | 'sales' | 'balance'
+
+  // FIX-STATS-GOD (avril 2026) : commissions agregees en parallele de la liste
+  // pour afficher un bloc "stats globales God Mode" en tete.
+  const [commissionsData, setCommissionsData] = useState({ artists: [], loaded: false });
 
   const [selectedSlug, setSelectedSlug] = useState(null);
   const [detail, setDetail] = useState(null);
@@ -68,15 +73,65 @@ function AdminArtistManager() {
 
   useEffect(() => { loadList(); }, [loadList]);
 
+  // Fetch commissions parallele pour le bloc stats globales (list view)
+  useEffect(() => {
+    let cancelled = false;
+    getCommissions()
+      .then(({ data }) => {
+        if (cancelled) return;
+        const arr = Array.isArray(data?.artists) ? data.artists : [];
+        setCommissionsData({ artists: arr, loaded: true });
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setCommissionsData({ artists: [], loaded: true });
+      });
+    return () => { cancelled = true; };
+  }, []);
+
+  // Map slug -> commissions pour enrichir les cards de la liste
+  const commissionBySlug = useMemo(() => {
+    const m = {};
+    for (const c of commissionsData.artists) m[c.slug] = c;
+    return m;
+  }, [commissionsData]);
+
+  // Stats globales God Mode (sommes sur tous les artistes)
+  const globalStats = useMemo(() => {
+    const a = commissionsData.artists;
+    const totalRevenue = a.reduce((s, x) => s + (Number(x.totalSales) || 0), 0);
+    const artistsMargin = a.reduce((s, x) => s + (Number(x.totalCommission) || 0), 0);
+    const totalPaid = a.reduce((s, x) => s + (Number(x.totalPaid) || 0), 0);
+    const totalBalance = a.reduce((s, x) => s + (Number(x.balance) || 0), 0);
+    const massiveMargin = Math.max(0, totalRevenue - artistsMargin);
+    return {
+      totalRevenue,
+      artistsMargin,
+      massiveMargin,
+      totalPaid,
+      totalBalance,
+    };
+  }, [commissionsData]);
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return artists;
-    return artists.filter(a =>
-      (a.name || '').toLowerCase().includes(q)
-      || (a.slug || '').toLowerCase().includes(q)
-      || (a.email || '').toLowerCase().includes(q),
-    );
-  }, [artists, search]);
+    const base = q
+      ? artists.filter(a =>
+          (a.name || '').toLowerCase().includes(q)
+          || (a.slug || '').toLowerCase().includes(q)
+          || (a.email || '').toLowerCase().includes(q))
+      : artists;
+
+    // Tri selon le critere choisi. Les enrichissements viennent de commissionBySlug.
+    const withStats = base.map(a => ({
+      ...a,
+      _sales: commissionBySlug?.[a.slug]?.totalSales || 0,
+      _balance: commissionBySlug?.[a.slug]?.balance || 0,
+    }));
+    if (sortBy === 'sales') return [...withStats].sort((x, y) => y._sales - x._sales);
+    if (sortBy === 'balance') return [...withStats].sort((x, y) => y._balance - x._balance);
+    return [...withStats].sort((x, y) => (x.name || '').localeCompare(y.name || ''));
+  }, [artists, search, sortBy, commissionBySlug]);
 
   // ------- Detail -------
   const loadDetail = useCallback(async (slug) => {
@@ -304,19 +359,99 @@ function AdminArtistManager() {
               {tx({ fr: 'Gestion Artistes (God Mode)', en: 'Artist Management (God Mode)', es: 'Gestion Artistas' })}
             </h2>
           </div>
-          <span className="text-xs text-yellow-400 bg-yellow-500/10 px-2 py-1 rounded-lg border border-yellow-500/30">
-            {tx({ fr: 'Mutations DIRECTES, bypass edit-requests.', en: 'DIRECT mutations, bypasses edit-requests.', es: 'Mutaciones DIRECTAS.' })}
+          {/* FIX-UI (avril 2026) : badge jaune illisible remplace par une etiquette
+              sombre avec liseret dore qui lit clairement "Acces Administrateur Total". */}
+          <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold bg-black/70 text-amber-300 border border-amber-400/40 px-2.5 py-1 rounded-lg shadow-sm">
+            <span className="text-sm leading-none">👑</span>
+            {tx({
+              fr: 'Acces Administrateur Total',
+              en: 'Total Admin Access',
+              es: 'Acceso de Administrador Total',
+            })}
           </span>
         </div>
-        <div className="relative">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-grey-muted" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder={tx({ fr: 'Chercher un artiste...', en: 'Search artist...', es: 'Buscar artista...' })}
-            className="input-field text-sm w-full pl-9"
-          />
+        {/* ===== STATS GLOBALES GOD MODE =====
+            4 cartes agregees sur TOUS les artistes actifs :
+              - Revenus generes (somme totalSales)
+              - Part Massive (revenus - commissions totales)
+              - Part Artistes (somme totalCommission due)
+              - Balance due (commissions non encore payees) */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="rounded-xl card-bg p-3 md:p-4 border border-accent/15">
+            <div className="flex items-center gap-1.5 mb-1">
+              <DollarSign size={14} className="text-accent" />
+              <span className="text-grey-muted text-[10px] md:text-xs uppercase tracking-wider">
+                {tx({ fr: 'Revenus generes', en: 'Total revenue', es: 'Ingresos' })}
+              </span>
+            </div>
+            <span className="text-lg md:text-xl font-heading font-bold text-heading">
+              {commissionsData.loaded ? `${Math.round(globalStats.totalRevenue)}$` : <Loader2 size={16} className="animate-spin text-grey-muted" />}
+            </span>
+          </div>
+          <div className="rounded-xl card-bg p-3 md:p-4 border border-green-500/15">
+            <div className="flex items-center gap-1.5 mb-1">
+              <TrendingUp size={14} className="text-green-400" />
+              <span className="text-grey-muted text-[10px] md:text-xs uppercase tracking-wider">
+                {tx({ fr: 'Part Massive', en: 'Massive margin', es: 'Margen Massive' })}
+              </span>
+            </div>
+            <span className="text-lg md:text-xl font-heading font-bold text-green-400">
+              {commissionsData.loaded ? `${Math.round(globalStats.massiveMargin)}$` : '-'}
+            </span>
+          </div>
+          <div className="rounded-xl card-bg p-3 md:p-4 border border-purple-500/15">
+            <div className="flex items-center gap-1.5 mb-1">
+              <Banknote size={14} className="text-purple-400" />
+              <span className="text-grey-muted text-[10px] md:text-xs uppercase tracking-wider">
+                {tx({ fr: 'Part Artistes', en: 'Artists margin', es: 'Margen Artistas' })}
+              </span>
+            </div>
+            <span className="text-lg md:text-xl font-heading font-bold text-purple-400">
+              {commissionsData.loaded ? `${Math.round(globalStats.artistsMargin)}$` : '-'}
+            </span>
+          </div>
+          <div className="rounded-xl card-bg p-3 md:p-4 border border-yellow-500/15">
+            <div className="flex items-center gap-1.5 mb-1">
+              <Wallet size={14} className="text-yellow-400" />
+              <span className="text-grey-muted text-[10px] md:text-xs uppercase tracking-wider">
+                {tx({ fr: 'A payer aux artistes', en: 'Owed to artists', es: 'Por pagar' })}
+              </span>
+            </div>
+            <span className="text-lg md:text-xl font-heading font-bold text-yellow-400">
+              {commissionsData.loaded ? `${Math.round(globalStats.totalBalance)}$` : '-'}
+            </span>
+          </div>
+        </div>
+
+        {/* Search + sort */}
+        <div className="flex flex-col md:flex-row gap-3">
+          <div className="relative flex-1">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-grey-muted" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder={tx({ fr: 'Chercher un artiste...', en: 'Search artist...', es: 'Buscar artista...' })}
+              className="input-field text-sm w-full pl-9"
+            />
+          </div>
+          <div className="flex items-center gap-1 card-bg rounded-xl p-1">
+            {[
+              { id: 'name',    label: tx({ fr: 'Nom',     en: 'Name',     es: 'Nombre' }) },
+              { id: 'sales',   label: tx({ fr: 'Ventes',  en: 'Sales',    es: 'Ventas' }) },
+              { id: 'balance', label: tx({ fr: 'A payer', en: 'Owed',     es: 'Por pagar' }) },
+            ].map(opt => (
+              <button
+                key={opt.id}
+                onClick={() => setSortBy(opt.id)}
+                className={`px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition-colors ${
+                  sortBy === opt.id ? 'bg-accent text-white' : 'text-grey-muted hover:text-heading'
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
         </div>
         {listLoading ? (
           <div className="flex items-center justify-center py-12"><Loader2 size={24} className="animate-spin text-accent" /></div>
@@ -338,8 +473,20 @@ function AdminArtistManager() {
                 <div className="flex items-center gap-3 mt-3 text-xs">
                   <span className="inline-flex items-center gap-1 text-heading"><ImageIcon size={11} className="text-accent" />{a.printsCount} prints</span>
                   <span className="inline-flex items-center gap-1 text-heading"><Sparkles size={11} className="text-purple-400" />{a.stickersCount} stickers</span>
-                  <span className="inline-flex items-center gap-1 text-grey-muted ml-auto"><DollarSign size={11} />{Math.round((a.commissionRate ?? 0.5) * 100)}%</span>
                 </div>
+                {/* Enrichissement stats (avril 2026) : revenus + balance due */}
+                {commissionsData.loaded && (a._sales > 0 || a._balance > 0) && (
+                  <div className="mt-2 pt-2 border-t border-white/5 flex items-center justify-between text-[11px]">
+                    <span className="inline-flex items-center gap-1 text-green-400 font-semibold">
+                      <DollarSign size={10} />{Math.round(a._sales)}$ {tx({ fr: 'vendu', en: 'sold', es: 'vendido' })}
+                    </span>
+                    {a._balance > 0 && (
+                      <span className="inline-flex items-center gap-1 text-yellow-400 font-semibold">
+                        {Math.round(a._balance)}$ {tx({ fr: 'a payer', en: 'owed', es: 'por pagar' })}
+                      </span>
+                    )}
+                  </div>
+                )}
               </button>
             ))}
           </div>
@@ -370,8 +517,14 @@ function AdminArtistManager() {
               <span className={`text-xs px-2 py-1 rounded ${detail.active ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
                 {detail.active ? tx({ fr: 'Actif', en: 'Active', es: 'Activo' }) : tx({ fr: 'Inactif', en: 'Inactive', es: 'Inactivo' })}
               </span>
+              {/* FIX-COMMISSIONS (avril 2026) : affichage des deux taux separement
+                  dans le header (prints violet, stickers accent) pour que l'admin
+                  voie tout de suite la structure. */}
               <span className="text-xs bg-accent/20 text-accent px-2 py-1 rounded">
-                Commission: {Math.round((detail.commissionRate ?? 0.5) * 100)}%
+                {tx({ fr: 'Prints', en: 'Prints', es: 'Prints' })}: {Math.round((detail.printCommissionRate ?? detail.commissionRate ?? 0.5) * 100)}%
+              </span>
+              <span className="text-xs bg-purple-500/20 text-purple-400 px-2 py-1 rounded">
+                {tx({ fr: 'Stickers', en: 'Stickers', es: 'Stickers' })}: {Math.round((detail.stickerCommissionRate ?? 0.15) * 100)}%
               </span>
             </div>
           </div>
@@ -409,10 +562,19 @@ function AdminArtistManager() {
                   <InputField label="Tagline EN" value={profileDraft?.taglineEn ?? detail.taglineEn} onChange={v => handleProfileField('taglineEn', v)} />
                   <TextareaField label="Bio FR" value={profileDraft?.bioFr ?? detail.bioFr} onChange={v => handleProfileField('bioFr', v)} />
                   <TextareaField label="Bio EN" value={profileDraft?.bioEn ?? detail.bioEn} onChange={v => handleProfileField('bioEn', v)} />
-                  <InputField label={tx({ fr: 'Commission (0.0 - 1.0)', en: 'Commission (0.0 - 1.0)', es: 'Comision (0.0 - 1.0)' })}
+                  {/* FIX-COMMISSIONS (avril 2026) : deux champs distincts Prints /
+                      Stickers. Le legacy `commissionRate` est conserve en BDD
+                      comme fallback mais n'est plus edite depuis l'UI God Mode. */}
+                  <InputField
+                    label={tx({ fr: 'Commission Prints (0-1 = %)', en: 'Prints commission (0-1 = %)', es: 'Comision Prints (0-1)' })}
                     type="number" step="0.01" min="0" max="1"
-                    value={profileDraft?.commissionRate ?? detail.commissionRate ?? 0.5}
-                    onChange={v => handleProfileField('commissionRate', parseFloat(v))} />
+                    value={profileDraft?.printCommissionRate ?? detail.printCommissionRate ?? detail.commissionRate ?? 0.5}
+                    onChange={v => handleProfileField('printCommissionRate', parseFloat(v))} />
+                  <InputField
+                    label={tx({ fr: 'Commission Stickers (0-1 = %)', en: 'Stickers commission (0-1 = %)', es: 'Comision Stickers (0-1)' })}
+                    type="number" step="0.01" min="0" max="1"
+                    value={profileDraft?.stickerCommissionRate ?? detail.stickerCommissionRate ?? 0.15}
+                    onChange={v => handleProfileField('stickerCommissionRate', parseFloat(v))} />
                   <div>
                     <label className="text-xs text-grey-muted block mb-1">{tx({ fr: 'Actif', en: 'Active', es: 'Activo' })}</label>
                     <select value={(profileDraft?.active ?? detail.active) ? 'true' : 'false'}
