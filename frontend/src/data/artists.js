@@ -65,10 +65,12 @@ const artistsData = {
       website: 'https://www.adrift.vision',
     },
     avatar: img('/images/prints/AdriftAvatar.webp'),
-    heroImage: thumb('/images/prints/Adrift1.webp'),
+    // heroImage re-pointe sur Adrift3 (Adrift1 retire sur demande admin, avril 2026)
+    heroImage: thumb('/images/prints/Adrift5.webp'),
     prints: [
-      { id: 'adrift-001', titleFr: 'Print 1', titleEn: 'Print 1', titleEs: 'Print 1', image: thumb('/images/prints/Adrift1.webp'), fullImage: img('/images/prints/Adrift1.webp'), limited: false },
-      { id: 'adrift-002', titleFr: 'Print 2', titleEn: 'Print 2', titleEs: 'Print 2', image: thumb('/images/prints/Adrift2.webp'), fullImage: img('/images/prints/Adrift2.webp'), limited: false },
+      // adrift-001 (Adrift1.webp) et adrift-002 (Adrift2.webp) retires sur demande admin (avril 2026).
+      // Si ces prints existent aussi dans le CMS Strapi, utiliser /admin/artists God Mode pour
+      // les supprimer cote serveur - le fichier local est uniquement un fallback.
       { id: 'adrift-003', titleFr: 'Print 3', titleEn: 'Print 3', titleEs: 'Print 3', image: thumb('/images/prints/Adrift5.webp'), fullImage: img('/images/prints/Adrift5.webp'), limited: false },
       { id: 'adrift-004', titleFr: 'Print 4', titleEn: 'Print 4', titleEs: 'Print 4', image: thumb('/images/prints/Adrift6.webp'), fullImage: img('/images/prints/Adrift6.webp'), limited: false },
       { id: 'adrift-005', titleFr: 'Print 5', titleEn: 'Print 5', titleEs: 'Print 5', image: thumb('/images/prints/Adrift7.webp'), fullImage: img('/images/prints/Adrift7.webp'), limited: false },
