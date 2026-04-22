@@ -5,7 +5,7 @@ import {
   Clock, Truck, Package, CreditCard, CheckCircle, XCircle,
   RotateCcw, Loader2, ExternalLink, MapPin, Save, Image,
   FileText, ChevronLeft, ChevronRight, Phone, Mail, Hash, Palette,
-  Download, Receipt, Trash2, Send, AlertTriangle, Pencil, Plus,
+  Download, Receipt, Trash2, Send, AlertTriangle, Pencil, Plus, Landmark,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import { getOrders, getOrderStats, updateOrderStatus, updateOrderNotes, updateOrderTracking, deleteOrder, getPrivateSales, deletePrivateSale, resendPrivateSaleEmail, sendOrderInvoice, getOrderTracking, getBillingSettings } from '../services/adminService';
@@ -45,6 +45,37 @@ const STATUS_FLOW = {
 
 // Montants stockés en cents dans Strapi - afficher en dollars
 const dollars = (v) => `${((v || 0) / 100).toFixed(2)}$`;
+
+// FIX-BIZ (avril 2026) : calculateur de reserve fiscale pour aider l'admin a
+// mettre de cote l'argent du gouvernement (taxes + provision impot revenu) des
+// qu'une commande est payee. Evite de "depenser l'argent du fisc" par erreur.
+//
+// - Taxes collectees (TPS + TVQ) : 100% a remettre a Revenu Quebec / ARC.
+// - Provision impot revenu : 25% du SOUS-TOTAL (hors taxes, hors livraison).
+//   C'est une approximation prudente : le vrai taux depend du revenu net annuel
+//   mais 25% est un filet conservateur pour une TPE en palier median.
+// - Total reserve = taxes collectees + provision.
+//
+// Montants d'entree en cents (comme dans la BDD), retour en cents.
+const INCOME_TAX_PROVISION_RATE = 0.25;
+const computeTaxReserve = (order) => {
+  const subtotalCents = Number(order?.subtotal) || 0;
+  const tpsCents = Number(order?.tps) || 0;
+  const tvqCents = Number(order?.tvq) || 0;
+  const taxesCollected = tpsCents + tvqCents;
+  const incomeProvision = Math.round(subtotalCents * INCOME_TAX_PROVISION_RATE);
+  return {
+    taxesCollected,
+    incomeProvision,
+    totalReserve: taxesCollected + incomeProvision,
+  };
+};
+
+// Statuts pour lesquels l'argent est EFFECTIVEMENT entre (on affiche le widget
+// reserve fiscale). "paid" est le trigger principal ; les statuts suivants
+// (processing, ready, shipped, delivered) gardent l'affichage pour que l'admin
+// puisse toujours le consulter a posteriori.
+const PAID_STATUSES = new Set(['paid', 'processing', 'ready', 'shipped', 'delivered']);
 
 function AdminOrders() {
   const { tx } = useLang();
@@ -1387,6 +1418,48 @@ function AdminOrders() {
                               {order.totalWeight > 0 && (
                                 <p className="text-xs text-grey-muted mt-3">{tx({ fr: 'Poids total', en: 'Total weight', es: 'Peso total' })}: {order.totalWeight}g</p>
                               )}
+
+                              {/* FIX-BIZ (avril 2026) : reserve fiscale.
+                                  Visible UNIQUEMENT si la commande est payee ou dans
+                                  un etat post-paiement (processing / ready / shipped /
+                                  delivered). Calcul : TPS+TVQ collectees (100% dus au
+                                  fisc) + 25% du sous-total en provision pour impot sur
+                                  le revenu. L'encart s'integre au bloc financier pour
+                                  rester "informational" sans ajouter de bruit visuel. */}
+                              {PAID_STATUSES.has(order.status) && (order.tps > 0 || order.tvq > 0 || order.subtotal > 0) && (() => {
+                                const r = computeTaxReserve(order);
+                                const provisionPct = Math.round(INCOME_TAX_PROVISION_RATE * 100);
+                                return (
+                                  <div className="mt-3 rounded-lg p-3 bg-blue-500/10 border border-blue-400/30">
+                                    <div className="flex items-start gap-2.5">
+                                      <span className="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center flex-shrink-0">
+                                        <Landmark size={14} className="text-blue-300" />
+                                      </span>
+                                      <div className="flex-1 min-w-0">
+                                        <div className="flex items-baseline justify-between gap-2 flex-wrap">
+                                          <span className="text-[11px] uppercase tracking-wider font-bold text-blue-300">
+                                            {tx({
+                                              fr: 'A transferer aux impots',
+                                              en: 'Transfer to tax reserve',
+                                              es: 'Transferir a reserva fiscal',
+                                            })}
+                                          </span>
+                                          <span className="text-blue-100 font-heading font-bold text-base">
+                                            {dollars(r.totalReserve)}
+                                          </span>
+                                        </div>
+                                        <p className="text-[11px] text-blue-200/80 mt-1 leading-relaxed">
+                                          {tx({
+                                            fr: `Inclut ${dollars(r.taxesCollected)} de taxes (TPS+TVQ) et ${dollars(r.incomeProvision)} de provision impot (${provisionPct}% du sous-total).`,
+                                            en: `Includes ${dollars(r.taxesCollected)} in taxes (GST+QST) and ${dollars(r.incomeProvision)} income tax provision (${provisionPct}% of subtotal).`,
+                                            es: `Incluye ${dollars(r.taxesCollected)} en impuestos y ${dollars(r.incomeProvision)} de provision (${provisionPct}%).`,
+                                          })}
+                                        </p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              })()}
                             </div>
 
                             {/* Shipping address */}
