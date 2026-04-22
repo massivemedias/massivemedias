@@ -10,10 +10,6 @@ export const updateBillingSettings = (fields) => {
   return api.put('/billing-settings', fields);
 };
 
-// --- One-shot : reinjection des 3 factures B2B perdues (avril 2026) ---
-// Idempotent cote backend : skip les lignes deja presentes. A declencher via
-// le bouton "Reinjecter factures perdues" dans /admin/commandes (onglet Reglages).
-export const seedLegacyInvoicesApril2026 = () => api.post('/orders/seed-legacy-april2026');
 
 // --- GOD MODE artistes (mutations directes, bypass edit-requests) ---
 // Toutes ces fonctions validen les params AVANT appel reseau.

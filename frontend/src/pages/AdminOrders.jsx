@@ -8,7 +8,7 @@ import {
   Download, Receipt, Trash2, Send, AlertTriangle, Pencil, Plus,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
-import { getOrders, getOrderStats, updateOrderStatus, updateOrderNotes, updateOrderTracking, deleteOrder, getPrivateSales, deletePrivateSale, resendPrivateSaleEmail, sendOrderInvoice, getOrderTracking, getBillingSettings, seedLegacyInvoicesApril2026 } from '../services/adminService';
+import { getOrders, getOrderStats, updateOrderStatus, updateOrderNotes, updateOrderTracking, deleteOrder, getPrivateSales, deletePrivateSale, resendPrivateSaleEmail, sendOrderInvoice, getOrderTracking, getBillingSettings } from '../services/adminService';
 import { useNotifications } from '../contexts/NotificationContext';
 import { generateInvoicePDF } from '../utils/generateInvoice';
 import EditOrderTotalModal from '../components/EditOrderTotalModal';
@@ -79,10 +79,6 @@ function AdminOrders() {
 
   // Modal creation commande manuelle + facture + lien Stripe
   const [showManualModal, setShowManualModal] = useState(false);
-
-  // One-shot : reinjection 3 factures B2B perdues (avril 2026)
-  const [seedingLegacy, setSeedingLegacy] = useState(false);
-  const [seedReport, setSeedReport] = useState(null);
 
   // Tracking live : etat par commande - { [documentId]: { loading, data, error } }
   const [trackingState, setTrackingState] = useState({});
@@ -156,42 +152,6 @@ function AdminOrders() {
     const t = setTimeout(() => setInvoiceToast(null), actionToast.type === 'error' ? 7000 : 4500);
     return () => clearTimeout(t);
   }, [actionToast]);
-
-  // One-shot : reinjecter les 3 factures B2B perdues (avril 2026).
-  // Idempotent : backend skip si deja presentes. Affiche le rapport et refresh la liste.
-  const handleSeedLegacy = async () => {
-    if (seedingLegacy) return;
-    const confirmed = window.confirm(tx({
-      fr: 'Reinjecter les 3 factures B2B historiques (La Presse 770$, Andrew Higgs 400$, Jerome Prunier 1500$) ? Idempotent : skip si deja presentes.',
-      en: 'Reinject the 3 historical B2B invoices (La Presse 770$, Andrew Higgs 400$, Jerome Prunier 1500$)? Idempotent: skips if already present.',
-      es: 'Reinjectar las 3 facturas B2B historicas? Idempotente: omite si ya estan presentes.',
-    }));
-    if (!confirmed) return;
-
-    setSeedingLegacy(true);
-    setSeedReport(null);
-    try {
-      const { data } = await seedLegacyInvoicesApril2026();
-      setSeedReport(data || { success: false, summary: null, report: [] });
-      // Refresh la liste pour que les 3 factures apparaissent immediatement
-      await fetchOrders();
-      getOrderStats().then(({ data }) => setStats(data)).catch(() => {});
-      const summary = data?.summary || {};
-      setInvoiceToast({
-        type: summary.failed === 0 ? 'success' : 'error',
-        message: tx({
-          fr: `Reinjection: ${summary.created || 0} crees, ${summary.skipped || 0} skip, ${summary.failed || 0} echec(s).`,
-          en: `Reinjected: ${summary.created || 0} created, ${summary.skipped || 0} skipped, ${summary.failed || 0} failed.`,
-          es: `Reinjectado: ${summary.created || 0} creadas, ${summary.skipped || 0} omitidas, ${summary.failed || 0} fallos.`,
-        }),
-      });
-    } catch (err) {
-      const msg = err?.response?.data?.error?.message || err?.response?.data?.message || err?.message || 'Erreur';
-      setInvoiceToast({ type: 'error', message: `Reinjection: ${msg}` });
-    } finally {
-      setSeedingLegacy(false);
-    }
-  };
 
   const handleSendInvoice = async (order) => {
     if (!order?.documentId) return;
@@ -940,82 +900,9 @@ function AdminOrders() {
           Reglages Facturation integre. Aucun fetch additionel necessaire,
           le composant gere son propre load state. */}
       {activeTab === 'settings' ? (
-        <>
-          {/* One-shot : reinjection 3 factures B2B perdues (avril 2026) */}
-          <div className="rounded-xl card-bg shadow-lg shadow-black/20 p-5 mb-4 border border-yellow-500/30">
-            <div className="flex items-start gap-3 mb-3">
-              <AlertTriangle size={18} className="text-yellow-400 flex-shrink-0 mt-0.5" />
-              <div className="flex-1">
-                <h3 className="text-sm font-heading font-bold text-heading mb-1">
-                  {tx({
-                    fr: 'Reinjection factures perdues (one-shot)',
-                    en: 'Reinject lost invoices (one-shot)',
-                    es: 'Reinjectar facturas perdidas (una vez)',
-                  })}
-                </h3>
-                <p className="text-xs text-grey-muted leading-relaxed">
-                  {tx({
-                    fr: 'Recree les 3 factures B2B historiques disparues lors du refactor : La Presse (770$), Andrew Higgs (400$), Jerome Prunier (1500$). TPS/TVQ calculees serveur. Genere un Stripe Payment Link par facture. Idempotent : skip si deja presentes.',
-                    en: 'Recreates the 3 historical B2B invoices lost during refactor: La Presse (770$), Andrew Higgs (400$), Jerome Prunier (1500$). GST/QST server-side. Generates a Stripe Payment Link per invoice. Idempotent.',
-                    es: 'Recrea las 3 facturas B2B historicas perdidas.',
-                  })}
-                </p>
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={handleSeedLegacy}
-              disabled={seedingLegacy}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-yellow-500 text-black font-semibold text-sm hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {seedingLegacy ? <Loader2 size={14} className="animate-spin" /> : <RotateCcw size={14} />}
-              {seedingLegacy
-                ? tx({ fr: 'Reinjection en cours...', en: 'Reinjecting...', es: 'Reinjectando...' })
-                : tx({ fr: 'Reinjecter les 3 factures', en: 'Reinject the 3 invoices', es: 'Reinjectar las 3 facturas' })}
-            </button>
-
-            {seedReport && seedReport.report && (
-              <div className="mt-4 p-3 rounded-lg bg-black/30 border border-white/5">
-                <div className="text-xs font-mono text-grey-muted mb-2">
-                  {tx({ fr: 'Rapport :', en: 'Report:', es: 'Informe:' })}
-                  {' '}
-                  <span className="text-green-400">{seedReport.summary?.created || 0} {tx({ fr: 'crees', en: 'created', es: 'creadas' })}</span>
-                  {' · '}
-                  <span className="text-yellow-400">{seedReport.summary?.skipped || 0} skip</span>
-                  {' · '}
-                  <span className="text-red-400">{seedReport.summary?.failed || 0} {tx({ fr: 'echec', en: 'failed', es: 'fallo' })}</span>
-                </div>
-                <div className="space-y-1 max-h-48 overflow-y-auto">
-                  {seedReport.report.map((r, i) => (
-                    <div key={i} className="text-[11px] font-mono flex items-start gap-2">
-                      <span className={r.error ? 'text-red-400' : r.skipped ? 'text-yellow-400' : 'text-green-400'}>
-                        {r.error ? 'X' : r.skipped ? '-' : '+'}
-                      </span>
-                      <span className="text-grey-muted flex-1">
-                        <span className="text-heading">{r.key}</span>
-                        {r.invoiceNumber && <> -&gt; {r.invoiceNumber} ({r.total}$)</>}
-                        {r.skipped && <> {tx({ fr: 'deja present', en: 'already exists', es: 'ya existe' })}</>}
-                        {r.error && <> {tx({ fr: 'erreur :', en: 'error:', es: 'error:' })} {r.error}</>}
-                        {r.paymentUrl && (
-                          <>
-                            {' '}
-                            <a href={r.paymentUrl} target="_blank" rel="noreferrer" className="text-accent hover:underline">
-                              [Stripe link]
-                            </a>
-                          </>
-                        )}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="rounded-xl card-bg shadow-lg shadow-black/20 p-5">
-            <AdminReglagesFacturation />
-          </div>
-        </>
+        <div className="rounded-xl card-bg shadow-lg shadow-black/20 p-5">
+          <AdminReglagesFacturation />
+        </div>
       ) : (
       <>
       {/* Table */}
