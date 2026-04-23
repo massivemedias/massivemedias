@@ -8,9 +8,21 @@ import {
   UserPlus, Eye, Users, Globe, Zap, TrendingUp, AlertTriangle, ChevronDown, ChevronUp,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
-import { getOrders, getContactSubmissions, getExpenses, getAnalytics, getAdminNotes } from '../services/adminService';
+import { getOrders, getContactSubmissions, getExpenses, getAnalytics } from '../services/adminService';
 import api from '../services/api';
 import AnnualBalanceCard from '../components/AnnualBalanceCard';
+
+// FIX-NOTES-FETCH (23 avril 2026) : on abandonne le wrapper getAdminNotes
+// et on utilise api.get('/admin-notes/list') EN DIRECT, exactement comme
+// AdminNotes.jsx. Ca elimine toute divergence possible entre les deux endpoints.
+const NOTES_LOCAL_KEY = 'mm-admin-notes';
+function loadLocalNotesFallback() {
+  try {
+    const raw = localStorage.getItem(NOTES_LOCAL_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch { return []; }
+}
 
 // FIX-NOTES (avril 2026) : le widget Notes lisait localStorage qui etait quasi
 // toujours vide -> affichait "Aucune note". On branche maintenant sur le content-type
@@ -160,38 +172,54 @@ function AdminDashboard() {
     return () => { cancelled = true; clearInterval(interval); };
   }, []);
 
-  // Fetch notes (API admin-note) separe des autres data pour un refresh rapide
-  // independant. On mappe {title, body, updatedAt, createdAt, documentId} pour
-  // la preview. Fallback localStorage si l'API est down.
+  // FIX-NOTES-FETCH (23 avril 2026) : fetch identique a AdminNotes.jsx ligne 26-63.
+  // EXACTEMENT meme endpoint (api.get direct, pas de wrapper), meme extraction
+  // (res.data?.data), meme fallback localStorage sur erreur. La seule difference
+  // est qu'on conserve body + createdAt en plus pour l'excerpt/timeAgo du widget.
   useEffect(() => {
     let cancelled = false;
     async function fetchNotes() {
-      setNotesLoading(true);
       try {
-        const res = await getAdminNotes();
+        const res = await api.get('/admin-notes/list');
         if (cancelled) return;
-        const raw = res?.data?.data || [];
-        const mapped = (Array.isArray(raw) ? raw : []).map(n => ({
+
+        // Log de diagnostic : si le widget affiche encore "Aucune note" malgre
+        // des entrees en BDD, ce log montrera EXACTEMENT ce que renvoie l'API.
+        // A supprimer une fois le bug client confirme resolu.
+        console.log('[Dashboard.Notes] API response shape :', {
+          hasData: !!res?.data,
+          dataIsArray: Array.isArray(res?.data),
+          hasDataData: !!res?.data?.data,
+          dataDataLength: Array.isArray(res?.data?.data) ? res.data.data.length : 'not array',
+          sampleKeys: res?.data?.data?.[0] ? Object.keys(res.data.data[0]) : null,
+        });
+
+        const cmsNotes = (res.data?.data || []).map(n => ({
           id: n.documentId || n.id,
           title: n.title || '',
           body: n.body || '',
           updatedAt: n.updatedAt ? new Date(n.updatedAt).getTime() : 0,
           createdAt: n.createdAt ? new Date(n.createdAt).getTime() : 0,
+          pinned: !!n.pinned,
+          color: n.color || '',
         }));
-        setNotes(mapped);
+        setNotes(cmsNotes);
       } catch (err) {
-        console.warn('[Dashboard] Notes fetch failed, fallback localStorage:', err?.message);
+        console.warn('[Dashboard.Notes] Fetch failed, fallback localStorage:', err?.response?.status, err?.message);
         if (cancelled) return;
-        try {
-          const parsed = JSON.parse(localStorage.getItem('mm-admin-notes') || '[]');
-          setNotes(Array.isArray(parsed) ? parsed.map(n => ({
-            id: n.id,
-            title: n.title || '',
-            body: n.body || '',
-            updatedAt: n.updatedAt || 0,
-            createdAt: n.createdAt || 0,
-          })) : []);
-        } catch { setNotes([]); }
+        // Fallback localStorage IDENTIQUE a AdminNotes.jsx : meme STORAGE_KEY,
+        // meme shape de mapping. Si AdminNotes affiche les notes depuis
+        // localStorage, le Dashboard les verra aussi.
+        const local = loadLocalNotesFallback();
+        setNotes(local.map(n => ({
+          id: n.id,
+          title: n.title || '',
+          body: n.body || '',
+          updatedAt: n.updatedAt || Date.now(),
+          createdAt: n.createdAt || 0,
+          pinned: !!n.pinned,
+          color: n.color || '',
+        })));
       } finally {
         if (!cancelled) setNotesLoading(false);
       }
@@ -273,11 +301,17 @@ function AdminDashboard() {
   // L'edition des notes est desormais deportee dans /admin/notes (CRUD complet).
   // Le widget Dashboard est purement en lecture pour preview rapide.
 
-  // Top 3 notes triees par updatedAt desc (fallback createdAt si updatedAt=0)
+  // Top 3 notes : pinned en premier, puis triees par updatedAt desc.
+  // Le champ `pinned` vient du schema admin-note (existe deja cote backend).
   const topNotes = useMemo(() => {
     const safe = Array.isArray(notes) ? notes : [];
     return [...safe]
-      .sort((a, b) => (b.updatedAt || b.createdAt || 0) - (a.updatedAt || a.createdAt || 0))
+      .sort((a, b) => {
+        // Epinglees toujours en tete
+        if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
+        // Fallback createdAt si updatedAt=0 (note non encore sauvegardee)
+        return (b.updatedAt || b.createdAt || 0) - (a.updatedAt || a.createdAt || 0);
+      })
       .slice(0, 3);
   }, [notes]);
 
