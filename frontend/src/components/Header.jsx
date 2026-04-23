@@ -139,7 +139,20 @@ function Header() {
               </button>
 
               {user ? (
-                <Link to={isAdmin && adminMsgCount > 0 ? "/admin/messages" : "/account"} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="relative p-1 transition-colors duration-200 nav-link" title={t('nav.account')}>
+                <Link
+                  // FIX-ROUTING (23 avril 2026) : l'admin qui clique sur son
+                  // icone engrenage dans le header public atterrit maintenant
+                  // sur /admin/dashboard (vrai porte d'entree back-office) au
+                  // lieu de /account (qui poussait vers le tab Profil). Si des
+                  // messages admin sont en attente, on garde le shortcut
+                  // historique vers /admin/messages pour traiter en priorite.
+                  to={isAdmin
+                    ? (adminMsgCount > 0 ? "/admin/messages" : "/admin/dashboard")
+                    : "/account"}
+                  onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                  className="relative p-1 transition-colors duration-200 nav-link"
+                  title={t('nav.account')}
+                >
                   <span className="w-8 h-8 rounded-full bg-accent/20 text-white flex items-center justify-center font-bold text-sm">
                     {isAdmin ? (
                       <Settings size={16} />
@@ -348,8 +361,11 @@ function Header() {
                 {/* Account / Login */}
                 {user ? (
                   <Link
-                    to="/account"
-                    className={`flex items-center gap-3 px-3 py-2 rounded-xl mobile-drawer-item group transition-colors ${isActive('/account') ? 'bg-accent/15 text-accent' : 'nav-link'}`}
+                    // FIX-ROUTING (23 avril 2026) : symetrie avec l'icone desktop -
+                    // admin atterrit sur /admin/dashboard plutot que sur le tab
+                    // Profil. Fallback /account pour les utilisateurs non-admin.
+                    to={isAdmin ? "/admin/dashboard" : "/account"}
+                    className={`flex items-center gap-3 px-3 py-2 rounded-xl mobile-drawer-item group transition-colors ${isActive(isAdmin ? '/admin' : '/account') ? 'bg-accent/15 text-accent' : 'nav-link'}`}
                     onClick={close}
                   >
                     <span className="relative flex-shrink-0">
