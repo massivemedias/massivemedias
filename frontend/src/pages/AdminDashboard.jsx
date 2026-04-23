@@ -6,6 +6,7 @@ import {
   BarChart3, DollarSign, Banknote, AlertCircle,
   Loader2, ArrowRight, StickyNote, Clock, CheckCircle, Truck, Activity,
   UserPlus, Eye, Users, Globe, Zap, TrendingUp, AlertTriangle, ChevronDown, ChevronUp,
+  Plus,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import { getOrders, getContactSubmissions, getExpenses, getAnalytics } from '../services/adminService';
