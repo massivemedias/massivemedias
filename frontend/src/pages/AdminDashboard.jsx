@@ -316,19 +316,17 @@ function AdminDashboard() {
       .slice(0, 3);
   }, [notes]);
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 size={32} className="animate-spin text-accent" />
-      </div>
-    );
-  }
-
   // ---------- Alertes et actions du jour ----------
-  // FIX-UI (23 avril 2026) : consolidation des 3 sources d'alertes (commandes
-  // pretes / ruptures stock / stock faible) dans un seul tableau pour pouvoir
-  // appliquer slice(0, 3) et limiter l'encombrement vertical du widget.
-  // Le badge en haut affiche TOUJOURS le total reel, pas le nombre affiche.
+  // FIX-HOOKS (23 avril 2026) : ce useMemo DOIT etre declare AVANT le
+  // "if (loading) return" sinon Rules of Hooks violation : au premier render
+  // (loading=true) le hook n'est pas atteint, au 2e render il l'est, React
+  // voit un nombre different de hooks entre renders -> Error #310 crash.
+  // TOUS les hooks du composant sont maintenant au top, early returns apres.
+  //
+  // Consolidation des 3 sources d'alertes (commandes pretes / ruptures stock /
+  // stock faible) dans un seul tableau pour pouvoir appliquer slice(0, 3) et
+  // limiter l'encombrement vertical du widget. Le badge en haut affiche
+  // TOUJOURS le total reel, pas le nombre affiche.
   const alertsList = useMemo(() => {
     const out = [];
     // 1. Commandes pretes a remettre (priorite max : action client directe)
@@ -383,10 +381,24 @@ function AdminDashboard() {
     return out;
   }, [kpis.readyOrders, kpis.outOfStockItems, kpis.lowStockItems, tx]);
 
+  // Derived plain values (non-hooks) - peuvent rester ici, pas besoin d'etre
+  // au-dessus du if. Mais on les garde ici pour la proximite avec alertsList.
   const totalAlertsCount = alertsList.length;
   const visibleAlerts = alertsList.slice(0, 3);
   const hiddenAlertsCount = Math.max(0, totalAlertsCount - 3);
   const hasAlerts = totalAlertsCount > 0;
+
+  // ========== EARLY RETURNS ICI, PAS AVANT ==========
+  // Aucun hook React ne doit etre appele apres ce point. Si tu ajoutes un
+  // useState / useEffect / useMemo / useCallback / useRef, mets-le AU-DESSUS
+  // de ce commentaire sinon React Error #310 au prochain toggle loading.
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 size={32} className="animate-spin text-accent" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-5">
