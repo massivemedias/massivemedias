@@ -325,7 +325,68 @@ function AdminDashboard() {
   }
 
   // ---------- Alertes et actions du jour ----------
-  const hasAlerts = kpis.readyOrders.length > 0 || kpis.outOfStockItems.length > 0 || kpis.lowStockItems.length > 0;
+  // FIX-UI (23 avril 2026) : consolidation des 3 sources d'alertes (commandes
+  // pretes / ruptures stock / stock faible) dans un seul tableau pour pouvoir
+  // appliquer slice(0, 3) et limiter l'encombrement vertical du widget.
+  // Le badge en haut affiche TOUJOURS le total reel, pas le nombre affiche.
+  const alertsList = useMemo(() => {
+    const out = [];
+    // 1. Commandes pretes a remettre (priorite max : action client directe)
+    for (const o of kpis.readyOrders) {
+      out.push({
+        key: `ready-${o.documentId || o.id}`,
+        kind: 'ready',
+        icon: Package,
+        iconColor: 'text-orange-400',
+        text: tx({
+          fr: `La commande de ${o.customerName || 'client inconnu'} est prete pour la cueillette.`,
+          en: `${o.customerName || 'unknown client'}'s order is ready for pickup.`,
+          es: `El pedido de ${o.customerName || 'cliente'} esta listo para recoger.`,
+        }),
+        sub: o.total ? `${dollars(o.total)} - ${o.customerEmail || ''}` : (o.customerEmail || ''),
+        to: '/admin/commandes',
+      });
+    }
+    // 2. Ruptures totales de stock (qty = 0)
+    for (const it of kpis.outOfStockItems) {
+      out.push({
+        key: `oos-${it.documentId || it.id}`,
+        kind: 'out-of-stock',
+        icon: AlertCircle,
+        iconColor: 'text-red-400',
+        text: tx({
+          fr: `Rupture de stock : ${it.nameFr || it.nameEn || it.sku || 'item'}.`,
+          en: `Out of stock: ${it.nameEn || it.nameFr || it.sku || 'item'}.`,
+          es: `Sin stock: ${it.nameFr || it.nameEn || it.sku}.`,
+        }),
+        sub: it.category ? `Cat: ${it.category}${it.location ? ` - ${it.location}` : ''}` : null,
+        to: '/admin/inventaire',
+      });
+    }
+    // 3. Stock faible (qty > 0 mais <= threshold) - on exclut les ruptures
+    for (const it of kpis.lowStockItems) {
+      if (!(it.quantity > 0)) continue;
+      out.push({
+        key: `low-${it.documentId || it.id}`,
+        kind: 'low-stock',
+        icon: AlertTriangle,
+        iconColor: 'text-yellow-400',
+        text: tx({
+          fr: `Stock faible : ${it.nameFr || it.nameEn || it.sku} (${it.quantity} restant${it.quantity > 1 ? 's' : ''}).`,
+          en: `Low stock: ${it.nameEn || it.nameFr || it.sku} (${it.quantity} left).`,
+          es: `Stock bajo: ${it.nameFr || it.nameEn || it.sku}.`,
+        }),
+        sub: it.category ? `Cat: ${it.category}` : null,
+        to: '/admin/inventaire',
+      });
+    }
+    return out;
+  }, [kpis.readyOrders, kpis.outOfStockItems, kpis.lowStockItems, tx]);
+
+  const totalAlertsCount = alertsList.length;
+  const visibleAlerts = alertsList.slice(0, 3);
+  const hiddenAlertsCount = Math.max(0, totalAlertsCount - 3);
+  const hasAlerts = totalAlertsCount > 0;
 
   return (
     <div className="space-y-5">
@@ -426,7 +487,10 @@ function AdminDashboard() {
         />
       </div>
 
-      {/* ===== ALERTES & ACTIONS DU JOUR ===== */}
+      {/* ===== ALERTES & ACTIONS DU JOUR =====
+          Limite a 3 elements visibles pour eviter l'encombrement vertical.
+          Le badge en haut garde le total reel (ex: 42). Une ligne discrete
+          en bas signale combien d'alertes restent masquees. */}
       <div className="rounded-2xl p-4 md:p-5 card-bg">
         <h3 className="text-heading font-heading font-bold text-base flex items-center gap-2 mb-3">
           <AlertTriangle size={18} className={hasAlerts ? 'text-yellow-400' : 'text-green-400'} />
@@ -437,7 +501,7 @@ function AdminDashboard() {
           })}
           {hasAlerts && (
             <span className="ml-auto text-[11px] bg-yellow-500/15 text-yellow-400 px-2 py-0.5 rounded-full font-semibold">
-              {kpis.readyOrders.length + kpis.outOfStockItems.length + kpis.lowStockItems.length}
+              {totalAlertsCount}
             </span>
           )}
         </h3>
@@ -452,57 +516,30 @@ function AdminDashboard() {
             })}
           </div>
         ) : (
-          <div className="space-y-1">
-            {/* Commandes pretes a remettre (local pickup) */}
-            {kpis.readyOrders.map(o => (
-              <AlertRow
-                key={o.documentId || o.id}
-                icon={Package}
-                iconColor="text-orange-400"
-                text={tx({
-                  fr: `La commande de ${o.customerName || 'client inconnu'} est prete pour la cueillette.`,
-                  en: `${o.customerName || 'unknown client'}'s order is ready for pickup.`,
-                  es: `El pedido de ${o.customerName || 'cliente'} esta listo para recoger.`,
-                })}
-                sub={o.total ? `${dollars(o.total)} - ${o.customerEmail || ''}` : (o.customerEmail || '')}
-                to={`/admin/commandes`}
-              />
-            ))}
-
-            {/* Ruptures de stock (qty = 0) */}
-            {kpis.outOfStockItems.map(it => (
-              <AlertRow
-                key={`oos-${it.documentId || it.id}`}
-                icon={AlertCircle}
-                iconColor="text-red-400"
-                text={tx({
-                  fr: `Rupture de stock : ${it.nameFr || it.nameEn || it.sku || 'item'}.`,
-                  en: `Out of stock: ${it.nameEn || it.nameFr || it.sku || 'item'}.`,
-                  es: `Sin stock: ${it.nameFr || it.nameEn || it.sku}.`,
-                })}
-                sub={it.category ? `Cat: ${it.category}${it.location ? ` - ${it.location}` : ''}` : null}
-                to="/admin/inventaire"
-              />
-            ))}
-
-            {/* Stock faible (qty > 0 mais <= threshold) */}
-            {kpis.lowStockItems
-              .filter(it => it.quantity > 0) // exclure ruptures deja listees
-              .map(it => (
+          <>
+            <div className="space-y-1">
+              {visibleAlerts.map(a => (
                 <AlertRow
-                  key={`low-${it.documentId || it.id}`}
-                  icon={AlertTriangle}
-                  iconColor="text-yellow-400"
-                  text={tx({
-                    fr: `Stock faible : ${it.nameFr || it.nameEn || it.sku} (${it.quantity} restant${it.quantity > 1 ? 's' : ''}).`,
-                    en: `Low stock: ${it.nameEn || it.nameFr || it.sku} (${it.quantity} left).`,
-                    es: `Stock bajo: ${it.nameFr || it.nameEn || it.sku}.`,
-                  })}
-                  sub={it.category ? `Cat: ${it.category}` : null}
-                  to="/admin/inventaire"
+                  key={a.key}
+                  icon={a.icon}
+                  iconColor={a.iconColor}
+                  text={a.text}
+                  sub={a.sub}
+                  to={a.to}
                 />
               ))}
-          </div>
+            </div>
+
+            {hiddenAlertsCount > 0 && (
+              <p className="mt-3 text-center text-[11px] text-grey-muted/70 italic">
+                {tx({
+                  fr: `+ ${hiddenAlertsCount} autres alerte${hiddenAlertsCount > 1 ? 's' : ''} (voir les onglets Commandes et Inventaire)`,
+                  en: `+ ${hiddenAlertsCount} more alert${hiddenAlertsCount > 1 ? 's' : ''} (see Orders and Inventory tabs)`,
+                  es: `+ ${hiddenAlertsCount} alertas mas (ver pestanas Pedidos e Inventario)`,
+                })}
+              </p>
+            )}
+          </>
         )}
       </div>
 
