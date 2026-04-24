@@ -28,7 +28,26 @@ function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, t
   const userImgRef = useRef(null);
   const roomImgCache = useRef({});
   const autoPlayRef = useRef(null);
-  const totalSlides = image ? 1 + MOCKUP_SCENES.length : 0;
+
+  // FIX-SQUARE-MOCKUP (23 avril 2026 v2) : si le format est carre, on CACHE
+  // les slides environnementaux (chambre/salon/bureau/zen) car leurs cadres
+  // sont portrait et trompent visuellement le client. Seul le slide 0
+  // (FramePreview 1:1 CSS parfait) reste affiche pour les formats carres.
+  // On disposera peut-etre un jour d'assets chambre avec cadre carre ; en
+  // attendant, on protege l'acheteur de la fausse promesse visuelle.
+  const currentFmt = formats?.find(f => f.id === format);
+  const currentFmtShape = currentFmt?.shape
+    || (Math.abs((currentFmt?.w || 1) - (currentFmt?.h || 1)) < 0.5 ? 'square' : 'rect');
+  const hideRoomMockups = currentFmtShape === 'square';
+  const visibleScenes = hideRoomMockups ? [] : MOCKUP_SCENES;
+  const totalSlides = image ? 1 + visibleScenes.length : 0;
+
+  // Si l'admin etait sur un slide room et bascule vers un format carre,
+  // on remet le carrousel sur le slide 0 (FramePreview) pour ne pas afficher
+  // un slide vide ou obsolete.
+  useEffect(() => {
+    if (hideRoomMockups && slideIdx > 0) setSlideIdx(0);
+  }, [hideRoomMockups, slideIdx]);
 
   // Charger l'image du client
   useEffect(() => {
@@ -81,38 +100,27 @@ function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, t
 
       // Reduire la zone pour eviter les bords verts et le debordement
       const margin = Math.max(4, Math.round(Math.min(maxX - minX, maxY - minY) * 0.02));
-      let printX = minX + margin, printY = minY + margin;
-      let printW = maxX - minX + 1 - margin * 2, printH = maxY - minY + 1 - margin * 2;
+      const printX = minX + margin, printY = minY + margin;
+      const printW = maxX - minX + 1 - margin * 2, printH = maxY - minY + 1 - margin * 2;
       if (printW <= 0 || printH <= 0) return;
 
-      // FIX-SQUARE-MOCKUP (23 avril 2026) : si le format choisi est carre, on
-      // reduit la zone d'impression a un carre centre dans le cadre detecte.
-      // Les pixels green exterieurs au carre ont deja ete remplaces par la
-      // couleur mat (visible ci-dessus ligne 73-75), donc l'image carree rendue
-      // s'inscrit dans un "mini cadre" carre avec mat top/bottom visible.
-      // C'est l'equivalent visuel d'un mat carre dans un cadre portrait : le
-      // rendu reste propre et coherent sans devoir fabriquer des assets de
-      // chambre dedies aux formats carres.
-      const currentFmt = formats?.find(f => f.id === format);
-      const fmtShape = currentFmt?.shape
-        || (Math.abs((currentFmt?.w || 1) - (currentFmt?.h || 1)) < 0.5 ? 'square' : 'rect');
-      const isSquareFormat = fmtShape === 'square';
-      if (isSquareFormat) {
-        const side = Math.min(printW, printH);
-        printX = printX + Math.round((printW - side) / 2);
-        printY = printY + Math.round((printH - side) / 2);
-        printW = side;
-        printH = side;
-      }
-
-      const printRatio = printW / printH; // 1 si format carre
+      // REVERT (23 avril 2026) : l'ancien "mini cadre carre centre avec mat
+      // top/bottom visible" a ete rejete par le proprietaire - le cadre au mur
+      // restait portrait, les clients croyaient recevoir un cadre rectangulaire
+      // avec l'image au milieu. Mieux vaut cacher les slides environnementaux
+      // pour les formats carres (voir MOCKUP_SCENES filter plus bas) que
+      // tromper visuellement.
+      //
+      // Pour les formats RECT qui seuls atteignent drawMockup : comportement
+      // historique (clip rectangulaire plein, object-fit:cover sur l'image).
+      const printRatio = printW / printH;
       const userImg = userImgRef.current;
       const imgRatio = userImg.naturalWidth / userImg.naturalHeight;
       let sx = 0, sy = 0, sw = userImg.naturalWidth, sh = userImg.naturalHeight;
       if (imgRatio > printRatio) { sw = Math.round(sh * printRatio); sx = Math.round((userImg.naturalWidth - sw) / 2); }
       else { sh = Math.round(sw / printRatio); sy = Math.round((userImg.naturalHeight - sh) / 2); }
 
-      // Clipper pour que l'image ne depasse jamais le cadre reduit
+      // Clipper pour que l'image ne depasse jamais le cadre
       ctx.save();
       ctx.beginPath();
       ctx.rect(printX, printY, printW, printH);
@@ -133,7 +141,8 @@ function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, t
   // Dessiner le mockup du slide actif quand les options changent
   useEffect(() => {
     if (!image || !userImgRef.current || slideIdx === 0) return;
-    const sceneId = MOCKUP_SCENES[slideIdx - 1]?.id;
+    if (hideRoomMockups) return; // format carre : pas de rendu de scene
+    const sceneId = visibleScenes[slideIdx - 1]?.id;
     if (!sceneId) return;
     const timer = setTimeout(() => {
       const canvas = canvasRefs.current[sceneId];
@@ -146,7 +155,7 @@ function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, t
   useEffect(() => {
     if (!image || !userImgRef.current) return;
     const timer = setTimeout(() => {
-      MOCKUP_SCENES.forEach(s => {
+      visibleScenes.forEach(s => {
         const canvas = canvasRefs.current[s.id];
         if (canvas) drawMockup(canvas, 600, s.id);
       });
@@ -157,7 +166,7 @@ function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, t
   // Lightbox mockup
   useEffect(() => {
     if (lightboxOpen && slideIdx > 0 && lightboxCanvasRef.current && userImgRef.current) {
-      drawMockup(lightboxCanvasRef.current, 1400, MOCKUP_SCENES[slideIdx - 1].id);
+      drawMockup(lightboxCanvasRef.current, 1400, visibleScenes[slideIdx - 1].id);
     }
   }, [lightboxOpen, slideIdx, drawMockup]);
 
@@ -311,7 +320,7 @@ function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, t
         </div>
 
         {/* Slides 1-4: Mockups Canvas (tous rendus, seul l'actif visible) */}
-        {MOCKUP_SCENES.map((s, i) => (
+        {visibleScenes.map((s, i) => (
           <canvas
             key={s.id}
             ref={el => { canvasRefs.current[s.id] = el; }}

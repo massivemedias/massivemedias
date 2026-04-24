@@ -278,19 +278,19 @@ function escapeHtmlAttr(value) {
         .replace(/>/g, '&gt;');
 }
 function buildTestimonialRequestHtml(data) {
-    // FIX-GOOGLE-REVIEW (23 avril 2026) : bug precedent : si GOOGLE_REVIEW_URL
-    // n'etait pas configuree, le template literal inlinait le placeholder
-    // `[LIEN_GOOGLE_REVIEW]` dans le href du bouton ET dans le texte fallback
-    // -> bouton cliquable qui menait vers une URL cassee + placeholder visible
-    // dans l'email recu par le client. Embarrassant.
+    // FIX-GOOGLE-REVIEW (23 avril 2026 v3) : approche placeholder + replaceAll
+    // explicite (comme demande par le proprietaire) POUR QUE LE BOUTON HREF ET
+    // LE TEXTE DE FALLBACK SOIENT STRICTEMENT IDENTIQUES, peu importe l'environne-
+    // ment. Strategie :
     //
-    // Nouveau comportement :
-    //   - URL configuree et valide (http(s)://...) -> bloc rendu, URL injectee
-    //     de maniere identique dans href ET texte fallback (meme variable locale
-    //     escapee une seule fois, donc impossible de desynchroniser).
-    //   - URL absente ou invalide (placeholder, string vide, URL bizarre) ->
-    //     le bloc entier est OMIS. Pas de bouton casse, pas de placeholder
-    //     visible dans l'email. Silence propre.
+    //   1. On definit un placeholder unique `[LIEN_GOOGLE_REVIEW]` dans le
+    //      template du bloc Google (aux 2 endroits : href + texte).
+    //   2. On rend le bloc UNIQUEMENT si GOOGLE_REVIEW_URL est valide http(s).
+    //      Sinon string vide : pas de bouton casse dans l'email client.
+    //   3. Apres concatenation complete du template, on fait
+    //      content.replaceAll('[LIEN_GOOGLE_REVIEW]', safeUrl)
+    //      qui garantit que TOUTES les occurrences du placeholder sont remplacees
+    //      d'un coup, impossible de desynchroniser entre href et texte.
     const rawUrl = process.env.GOOGLE_REVIEW_URL;
     const hasValidUrl = isValidHttpUrl(rawUrl);
     const safeUrl = hasValidUrl ? escapeHtmlAttr(rawUrl.trim()) : '';
@@ -302,17 +302,17 @@ function buildTestimonialRequestHtml(data) {
         Vous avez un compte Google ? Vous pouvez aussi nous donner un \u00e9norme coup de pouce en laissant un avis rapide sur notre page :
       </p>
       <p style="margin:0;font-size:14px;">
-        <a href="${safeUrl}" style="display:inline-block;color:#1a73e8;text-decoration:none;font-weight:600;background:#f1f6ff;padding:10px 18px;border-radius:8px;border:1px solid #d2e3fc;">
+        <a href="[LIEN_GOOGLE_REVIEW]" style="display:inline-block;color:#1a73e8;text-decoration:none;font-weight:600;background:#f1f6ff;padding:10px 18px;border-radius:8px;border:1px solid #d2e3fc;">
           \u2B50 Laisser un avis Google
         </a>
       </p>
       <p style="color:#999;margin:8px 0 0;font-size:11px;word-break:break-all;">
-        <a href="${safeUrl}" style="color:#999;text-decoration:none;">${safeUrl}</a>
+        <a href="[LIEN_GOOGLE_REVIEW]" style="color:#999;text-decoration:none;">[LIEN_GOOGLE_REVIEW]</a>
       </p>
     </div>
   `
         : '';
-    const content = `
+    const rawContent = `
     <h2 style="color:#222;margin:0 0 8px;font-size:16px;">Bonjour ${data.customerName},</h2>
 
     <p style="color:#666;margin:16px 0;font-size:15px;line-height:1.7;">
@@ -338,6 +338,13 @@ function buildTestimonialRequestHtml(data) {
     </p>
 ${googleBlock}
   `;
+    // REPLACE-ALL GARANTI : toutes les occurrences de [LIEN_GOOGLE_REVIEW] dans
+    // le template complet sont substituees par la meme safeUrl. On utilise
+    // String.prototype.replace avec regex globale (equivalent strict de
+    // String.prototype.replaceAll mais compatible lib TS pre-ES2021 du projet
+    // Strapi). Si le bloc Google est absent (hasValidUrl=false), aucune occurrence
+    // a remplacer -> no-op, pas d'effet de bord.
+    const content = rawContent.replace(/\[LIEN_GOOGLE_REVIEW\]/g, safeUrl);
     return massiveEmailWrapper(content);
 }
 async function sendTestimonialRequestEmail(data) {
