@@ -81,18 +81,38 @@ function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, t
 
       // Reduire la zone pour eviter les bords verts et le debordement
       const margin = Math.max(4, Math.round(Math.min(maxX - minX, maxY - minY) * 0.02));
-      const printX = minX + margin, printY = minY + margin;
-      const printW = maxX - minX + 1 - margin * 2, printH = maxY - minY + 1 - margin * 2;
+      let printX = minX + margin, printY = minY + margin;
+      let printW = maxX - minX + 1 - margin * 2, printH = maxY - minY + 1 - margin * 2;
       if (printW <= 0 || printH <= 0) return;
 
-      const printRatio = printW / printH;
+      // FIX-SQUARE-MOCKUP (23 avril 2026) : si le format choisi est carre, on
+      // reduit la zone d'impression a un carre centre dans le cadre detecte.
+      // Les pixels green exterieurs au carre ont deja ete remplaces par la
+      // couleur mat (visible ci-dessus ligne 73-75), donc l'image carree rendue
+      // s'inscrit dans un "mini cadre" carre avec mat top/bottom visible.
+      // C'est l'equivalent visuel d'un mat carre dans un cadre portrait : le
+      // rendu reste propre et coherent sans devoir fabriquer des assets de
+      // chambre dedies aux formats carres.
+      const currentFmt = formats?.find(f => f.id === format);
+      const fmtShape = currentFmt?.shape
+        || (Math.abs((currentFmt?.w || 1) - (currentFmt?.h || 1)) < 0.5 ? 'square' : 'rect');
+      const isSquareFormat = fmtShape === 'square';
+      if (isSquareFormat) {
+        const side = Math.min(printW, printH);
+        printX = printX + Math.round((printW - side) / 2);
+        printY = printY + Math.round((printH - side) / 2);
+        printW = side;
+        printH = side;
+      }
+
+      const printRatio = printW / printH; // 1 si format carre
       const userImg = userImgRef.current;
       const imgRatio = userImg.naturalWidth / userImg.naturalHeight;
       let sx = 0, sy = 0, sw = userImg.naturalWidth, sh = userImg.naturalHeight;
       if (imgRatio > printRatio) { sw = Math.round(sh * printRatio); sx = Math.round((userImg.naturalWidth - sw) / 2); }
       else { sh = Math.round(sw / printRatio); sy = Math.round((userImg.naturalHeight - sh) / 2); }
 
-      // Clipper pour que l'image ne depasse jamais le cadre
+      // Clipper pour que l'image ne depasse jamais le cadre reduit
       ctx.save();
       ctx.beginPath();
       ctx.rect(printX, printY, printW, printH);
@@ -108,7 +128,7 @@ function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, t
       img.onload = () => { roomImgCache.current[roomKey] = img; doRender(img); };
       img.src = roomSrc;
     }
-  }, [withFrame, frameColor]);
+  }, [withFrame, frameColor, format, formats]);
 
   // Dessiner le mockup du slide actif quand les options changent
   useEffect(() => {

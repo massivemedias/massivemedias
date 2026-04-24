@@ -149,29 +149,43 @@ function ConfiguratorFineArt() {
     img.src = previewImage;
   }, [previewImage]);
 
-  // Filtrage dynamique : si l'image est carree, on ne montre QUE les formats
-  // carres. Sinon, on ne montre que les rectangulaires. Les legacy items sans
-  // champ `shape` sont consideres 'rect' par defaut (retro-compat).
+  // FIX-UX (23 avril 2026 v2) : filtrage NON-strict. L'admin / client peut
+  // toujours choisir un format portrait (A4, A3, etc.) pour une image carree,
+  // il sera juste crope par object-fit. On s'est rendu compte que le filtrage
+  // strict (ancien comportement, masquant les portrait quand isSquare) faisait
+  // peur au client qui voulait garder la liberte de choix.
+  //
+  // Nouvelle regle :
+  //   - Image carree (isSquare=true)  -> AFFICHE tout (rectangles + carres)
+  //   - Image rectangulaire (isSquare=false) -> AFFICHE uniquement les rectangles
+  //     (les carres n'ont aucun sens pour une image portrait/paysage)
+  //
+  // Ordre d'affichage : les rectangles d'abord (ordre historique A6 -> A2),
+  // puis les carres a la fin (sq8, sq10, sq12). L'admin peut voir les options
+  // carres comme "aussi disponible" sans les considerer comme default.
   const visibleFormats = useMemo(() => {
-    const wantSquare = isSquare;
-    return fineArtFormats.filter(f => {
-      const shape = f.shape || 'rect';
-      return wantSquare ? shape === 'square' : shape === 'rect';
-    });
+    if (!isSquare) {
+      // Image portrait/paysage : on cache les formats carres (inutile pour
+      // une image non-1:1, ca forcerait un crop enorme).
+      return fineArtFormats.filter(f => (f.shape || 'rect') !== 'square');
+    }
+    // Image carree : rectangles d'abord, puis carres
+    const rects = fineArtFormats.filter(f => (f.shape || 'rect') !== 'square');
+    const squares = fineArtFormats.filter(f => (f.shape || 'rect') === 'square');
+    return [...rects, ...squares];
   }, [fineArtFormats, isSquare]);
 
-  // Auto-selection d'un format par defaut quand l'aspect change et que le
-  // format actuel n'est plus dans la liste visible. Strategie :
-  //   - carre  -> 10x10 (milieu de gamme)
-  //   - rect   -> a4 (default historique)
+  // Auto-selection : si le format courant sort de la liste visible (ex: l'admin
+  // avait selectionne sq12 puis uploade une image portrait qui cache les
+  // carres), on revient sur A4 par defaut. JAMAIS d'auto-switch vers un format
+  // carre - l'utilisateur choisit explicitement s'il veut imprimer en carre.
   useEffect(() => {
     const isCurrentVisible = visibleFormats.some(f => f.id === format);
     if (!isCurrentVisible) {
-      const fallback = isSquare ? 'sq10' : 'a4';
-      const chosen = visibleFormats.find(f => f.id === fallback) || visibleFormats[0];
-      if (chosen) setFormat(chosen.id);
+      const fallback = visibleFormats.find(f => f.id === 'a4') || visibleFormats[0];
+      if (fallback) setFormat(fallback.id);
     }
-  }, [visibleFormats, isSquare, format]);
+  }, [visibleFormats, format]);
 
   const canAddToCart = uploadedFiles.length > 0 || notes.trim().length > 0;
 
@@ -263,10 +277,10 @@ function ConfiguratorFineArt() {
                   setTier(t.id);
                   const curFmt = fineArtFormats.find(f => f.id === format);
                   const price = t.id === 'museum' ? curFmt?.museumPrice : curFmt?.studioPrice;
-                  if (price == null) {
-                    // Fallback au default du shape actif : sq10 si carre, a4 sinon.
-                    setFormat(isSquare ? 'sq10' : 'a4');
-                  }
+                  // Fallback TOUJOURS vers a4 (portrait par defaut), peu importe
+                  // l'aspect de l'image. L'utilisateur choisit explicitement
+                  // s'il veut un format carre.
+                  if (price == null) setFormat('a4');
                 }}
                 className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-semibold transition-all border-2 ${tier === t.id
                   ? 'border-accent bg-accent/10 text-accent'
@@ -282,27 +296,24 @@ function ConfiguratorFineArt() {
           </div>
         </div>
 
-        {/* Format - rectangles ou carres proportionnels selon l'aspect de l'image.
-            FIX-SQUARE : le grid est visiblement adapte a la nouvelle longueur
-            de visibleFormats (5 rectangulaires OU 3 carres). Le label du bloc
-            indique aussi aux clients pourquoi la liste change ("Formats carres"
-            vs "Formats rectangulaires") pour enlever toute confusion. */}
+        {/* Format : toujours en grille 5 colonnes. Pour une image carree, les 3
+            formats carres (sq8/sq10/sq12) sont ajoutes en 2e rangee apres les
+            rectangulaires. L'utilisateur garde la liberte de choisir portrait
+            meme pour une image 1:1 (cropping automatique via object-fit:cover). */}
         <div>
           <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2">
-            {isSquare
-              ? tx({ fr: 'Format carre', en: 'Square format', es: 'Formato cuadrado' })
-              : tx({ fr: 'Format', en: 'Format', es: 'Formato' })}
+            {tx({ fr: 'Format', en: 'Format', es: 'Formato' })}
             {isSquare && previewImage && (
-              <span className="ml-2 text-[10px] font-normal text-grey-muted/70 normal-case tracking-normal">
+              <span className="ml-2 text-[13px] font-normal text-grey-muted/70 normal-case tracking-normal">
                 {tx({
-                  fr: '(adapte a votre image 1:1)',
-                  en: '(matched to your 1:1 image)',
-                  es: '(adaptado a su imagen 1:1)',
+                  fr: '(formats carres aussi disponibles pour votre image 1:1)',
+                  en: '(square formats also available for your 1:1 image)',
+                  es: '(formatos cuadrados tambien disponibles)',
                 })}
               </span>
             )}
           </label>
-          <div className={`grid gap-1.5 ${isSquare ? 'grid-cols-3' : 'grid-cols-5'}`}>
+          <div className="grid grid-cols-5 gap-1.5">
             {visibleFormats.map(f => {
               const price = tier === 'museum' ? f.museumPrice : f.studioPrice;
               const isAvailable = price != null;
