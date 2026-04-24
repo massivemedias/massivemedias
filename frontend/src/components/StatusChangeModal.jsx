@@ -56,15 +56,20 @@ function getEmailPreview(status, order, tx) {
           en: `Your order is delivered - share your experience`,
           es: `Tu pedido esta entregado - comparte tu experiencia`,
         }),
+        // FIX-SEO (23 avril 2026) : prompt Google Review ajoute a la fin pour
+        // booster le referencement local. [LIEN_GOOGLE_REVIEW] est le placeholder
+        // reel injecte en prod (remplace par process.env.GOOGLE_REVIEW_URL cote
+        // backend). On le garde verbatim dans la preview pour que l'admin voie
+        // exactement ce qui partira.
         preview: tx({
-          fr: `Bonjour ${name},\n\nVotre commande est livree. Nous serions ravis de lire votre temoignage. Cliquez sur le lien personnel ci-dessous pour partager votre experience en quelques mots :\n\n[lien temoignage genere automatiquement]\n\nMassive Medias`,
-          en: `Hello ${name},\n\nYour order has been delivered. We would love to hear your feedback. Click the personal link below to share your experience:\n\n[auto-generated testimonial link]\n\nMassive Medias`,
-          es: `Hola ${name},\n\nTu pedido esta entregado. Comparte tu experiencia:\n\n[enlace de testimonio]\n\nMassive Medias`,
+          fr: `Bonjour ${name},\n\nVotre commande est livree. Nous serions ravis de lire votre temoignage. Cliquez sur le lien personnel ci-dessous pour partager votre experience en quelques mots :\n\n[lien temoignage genere automatiquement]\n\n---\n\nVous avez un compte Google ? Vous pouvez aussi nous donner un enorme coup de pouce en laissant un avis rapide sur notre page :\n[LIEN_GOOGLE_REVIEW]\n\nMassive Medias`,
+          en: `Hello ${name},\n\nYour order has been delivered. We would love to hear your feedback. Click the personal link below to share your experience:\n\n[auto-generated testimonial link]\n\n---\n\nDo you have a Google account? You can also give us a huge boost by leaving a quick review on our page:\n[LIEN_GOOGLE_REVIEW]\n\nMassive Medias`,
+          es: `Hola ${name},\n\nTu pedido esta entregado. Comparte tu experiencia:\n\n[enlace de testimonio]\n\n---\n\nTienes cuenta Google? Tambien puedes dejarnos una resena:\n[LIEN_GOOGLE_REVIEW]\n\nMassive Medias`,
         }),
         notes: tx({
-          fr: 'Cree aussi un enregistrement Temoignage en attente de validation dans /admin/temoignages.',
-          en: 'Also creates a pending testimonial record in /admin/temoignages.',
-          es: 'Crea un testimonio pendiente.',
+          fr: 'Cree aussi un enregistrement Temoignage en attente de validation dans /admin/temoignages. Le lien Google Review utilise la variable d\'env GOOGLE_REVIEW_URL en prod.',
+          en: 'Also creates a pending testimonial record in /admin/temoignages. Google Review link uses GOOGLE_REVIEW_URL env var in prod.',
+          es: 'Crea un testimonio pendiente. Enlace Google usa GOOGLE_REVIEW_URL.',
         }),
       };
     default:

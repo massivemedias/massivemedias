@@ -317,6 +317,13 @@ interface TestimonialRequestData {
 }
 
 function buildTestimonialRequestHtml(data: TestimonialRequestData): string {
+  // FIX-SEO (23 avril 2026) : lien Google Review injecte a la fin pour booster
+  // le referencement local. La variable d'env GOOGLE_REVIEW_URL permet au client
+  // de pointer vers sa fiche Google My Business sans toucher au code.
+  // Si absente, on garde le placeholder [LIEN_GOOGLE_REVIEW] comme demande pour
+  // que ce soit visible a la relecture et remplace manuellement.
+  const googleReviewUrl = process.env.GOOGLE_REVIEW_URL || '[LIEN_GOOGLE_REVIEW]';
+
   const content = `
     <h2 style="color:#222;margin:0 0 8px;font-size:16px;">Bonjour ${data.customerName},</h2>
 
@@ -341,6 +348,21 @@ function buildTestimonialRequestHtml(data: TestimonialRequestData): string {
       Ou copiez ce lien dans votre navigateur :<br>
       <a href="${data.testimonialLink}" style="color:#FF52A0;word-break:break-all;">${data.testimonialLink}</a>
     </p>
+
+    <!-- ===== Google Review prompt (SEO local) ===== -->
+    <div style="margin-top:32px;padding-top:20px;border-top:1px solid #eee;">
+      <p style="color:#666;margin:0 0 10px;font-size:14px;line-height:1.6;">
+        Vous avez un compte Google ? Vous pouvez aussi nous donner un \u00e9norme coup de pouce en laissant un avis rapide sur notre page :
+      </p>
+      <p style="margin:0;font-size:14px;">
+        <a href="${googleReviewUrl}" style="display:inline-block;color:#1a73e8;text-decoration:none;font-weight:600;background:#f1f6ff;padding:10px 18px;border-radius:8px;border:1px solid #d2e3fc;">
+          \u2B50 Laisser un avis Google
+        </a>
+      </p>
+      <p style="color:#999;margin:8px 0 0;font-size:11px;word-break:break-all;">
+        ${googleReviewUrl}
+      </p>
+    </div>
   `;
 
   return massiveEmailWrapper(content);
