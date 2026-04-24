@@ -179,67 +179,111 @@ function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, t
           }
           e.currentTarget._touchX = null;
         }}>
-        {/* Slide 0: FramePreview */}
-        {/* FIX-FRAME (23 avril 2026) : deux bugs corriges ici
-            1. Cadre BLANC : l'ancienne regle `border: '1px solid ...'` s'ajoutait
-               au box-sizing border-box et reduisait la zone interieure par 2px
-               asymetriquement avec le noir (qui avait `border: 'none'`) -> sur
-               aspect-ratio carre, l'inner <img> se decalait et "cassait" visuel.
-               On remplace le border CSS par un inset box-shadow combine au shadow
-               existant. Resultat : layout strictement identique entre noir et
-               blanc, et le liseret sombre du cadre blanc reste visible.
-            2. IMAGE DEBORDEMENT bas : l'<img> etait en display:inline par defaut,
-               ce qui ajoute un espace baseline (~3-5px) sous l'image. Classic
-               bug HTML. Fix : className "block" (display:block) sur l'image ET
-               overflow-hidden sur le wrapper aspect-ratio pour garantir aucun
-               depassement meme si les arrondis de subpixel divergent. */}
+        {/* Slide 0: FramePreview
+            REWRITE (23 avril 2026) : architecture entierement en positionnement
+            absolu + object-fit + outline (pas de border ni box-shadow inset).
+            Chaque couche (cadre / mat / image) est un enfant absolute du wrapper
+            aspect-ratio -> layout strict, aucun cascade de rounding subpixel,
+            layout identique noir vs blanc.
+
+            Hierarchie :
+              <wrapper aspectRatio>     relative, aspect-ratio impose
+                <frame>                 absolute inset-0, couleur + outline
+                <mat>                   absolute inset-{frameThickness}
+                  <imageBox>            absolute inset-{matThickness}, overflow hidden
+                    <img>               absolute top:0 left:0 w/h:100%, object-fit:cover
+
+            La couleur du cadre blanc utilise `outline: 1px solid` avec
+            `outline-offset: -1px` - contrairement a `border`, outline n'entre
+            PAS dans le box-sizing, donc zero decalage. */}
         <div className={slideIdx === 0 ? '' : 'hidden'}>
           <div className="flex items-center justify-center p-2 cursor-pointer" onClick={onClickImage}>
             <div
+              className={`relative transition-all duration-500 ease-out ${renderSquare ? 'aspect-square' : ''}`}
               style={{
-                aspectRatio: withFrame ? `${frameW}/${frameH}` : `${w}/${h}`,
+                // Si renderSquare, on force 1/1 (l'aspect-square Tailwind fait pareil
+                // mais on double-up en inline pour etre sur contre les purges CSS).
+                aspectRatio: renderSquare ? '1 / 1' : (withFrame ? `${frameW} / ${frameH}` : `${w} / ${h}`),
                 width: '100%',
                 maxWidth: `${previewMaxW}px`,
               }}
-              className="relative transition-all duration-500 ease-out overflow-hidden"
             >
               {withFrame ? (
-                <div
-                  className="absolute inset-0 rounded-[2px]"
-                  style={{
-                    background: frameColor === 'black'
-                      ? 'linear-gradient(135deg, #2a2a2a, #111)'
-                      : 'linear-gradient(135deg, #fff, #e8e3de)',
-                    boxShadow: frameColor === 'black'
-                      ? '0 4px 20px rgba(0,0,0,0.3)'
-                      : '0 4px 20px rgba(0,0,0,0.3), inset 0 0 0 1px rgba(0,0,0,0.12)',
-                    // Plus de `border` qui mangeait 1-2px du contenu en box-sizing
-                    // border-box -> layout identique noir vs blanc.
-                    padding: `${frameThickness}px`,
-                    boxSizing: 'border-box',
-                  }}
-                >
+                <>
+                  {/* Cadre exterieur (couleur + outline pour blanc) */}
                   <div
+                    className="absolute inset-0 rounded-[2px]"
                     style={{
+                      background: frameColor === 'black'
+                        ? 'linear-gradient(135deg, #2a2a2a, #111)'
+                        : 'linear-gradient(135deg, #fff, #e8e3de)',
+                      boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+                      // outline n'est PAS dans le box model -> zero decalage entre noir et blanc.
+                      outline: frameColor === 'white' ? '1px solid rgba(0,0,0,0.12)' : 'none',
+                      outlineOffset: '-1px',
+                    }}
+                  />
+                  {/* Mat / passe-partout (absolute inset base sur frameThickness) */}
+                  <div
+                    className="absolute overflow-hidden"
+                    style={{
+                      top: `${frameThickness}px`,
+                      left: `${frameThickness}px`,
+                      right: `${frameThickness}px`,
+                      bottom: `${frameThickness}px`,
                       background: '#f5f2ed',
-                      padding: `${matThickness}px`,
-                      width: '100%',
-                      height: '100%',
-                      boxSizing: 'border-box',
                     }}
                   >
-                    <div className="w-full h-full overflow-hidden">
-                      {image
-                        ? <img src={image} alt="" className="block w-full h-full object-cover" />
-                        : <div className="w-full h-full bg-glass" />}
+                    {/* Zone image (absolute inset base sur matThickness) */}
+                    <div
+                      className="absolute overflow-hidden"
+                      style={{
+                        top: `${matThickness}px`,
+                        left: `${matThickness}px`,
+                        right: `${matThickness}px`,
+                        bottom: `${matThickness}px`,
+                      }}
+                    >
+                      {image ? (
+                        <img
+                          src={image}
+                          alt=""
+                          style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
+                            display: 'block',
+                          }}
+                        />
+                      ) : (
+                        <div className="absolute inset-0 bg-glass" />
+                      )}
                     </div>
                   </div>
-                </div>
+                </>
               ) : (
+                /* Sans cadre : image pleine bord avec shadow */
                 <div className="absolute inset-0 overflow-hidden shadow-lg">
-                  {image
-                    ? <img src={image} alt="" className="block w-full h-full object-cover" />
-                    : <div className="w-full h-full bg-glass" />}
+                  {image ? (
+                    <img
+                      src={image}
+                      alt=""
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        display: 'block',
+                      }}
+                    />
+                  ) : (
+                    <div className="absolute inset-0 bg-glass" />
+                  )}
                 </div>
               )}
             </div>
