@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { X, Loader2, AlertCircle, CheckCircle, Copy, ExternalLink, Plus, Trash2 } from 'lucide-react';
+import { X, Loader2, AlertCircle, CheckCircle, Copy, ExternalLink, Plus, Trash2, CreditCard, Banknote } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import api from '../services/api';
 
@@ -28,6 +28,14 @@ function CreateManualOrderModal({ onClose, onCreated }) {
   const [result, setResult] = useState(null);
   const [copied, setCopied] = useState(false);
   const firstInputRef = useRef(null);
+
+  // FIX-PREPAID (23 avril 2026) : toggle paiement requis vs deja paye hors-ligne.
+  // - 'stripe'    : comportement historique (cree l'order + genere un lien Stripe)
+  // - 'prepaid'   : bypass Stripe, order.status='paid' direct, invoice paymentStatus='paid'
+  // Si prepaid, l'admin peut preciser la methode (interac/cash/square/cheque/other)
+  // pour la trace comptable.
+  const [paymentMode, setPaymentMode] = useState('stripe');
+  const [offlineMethod, setOfflineMethod] = useState('interac');
 
   useEffect(() => {
     setTimeout(() => firstInputRef.current?.focus(), 50);
@@ -100,6 +108,7 @@ function CreateManualOrderModal({ onClose, onCreated }) {
 
     setLoading(true);
     try {
+      const isAlreadyPaid = paymentMode === 'prepaid';
       const { data } = await api.post('/orders/manual', {
         customerName: customerName.trim(),
         customerEmail: customerEmail.trim() || undefined,
@@ -112,6 +121,10 @@ function CreateManualOrderModal({ onClose, onCreated }) {
         // valeur UI pour trace/coherence mais le serveur reste la source de verite.
         total: grandTotal,
         notes: notes.trim() || undefined,
+        // FIX-PREPAID : envoi du flag + methode pour que le backend bypass Stripe
+        // et cree la commande directement en status='paid' si deja reglee.
+        isAlreadyPaid,
+        offlinePaymentMethod: isAlreadyPaid ? offlineMethod : undefined,
       });
       setResult(data);
       onCreated?.(data);
@@ -203,44 +216,65 @@ function CreateManualOrderModal({ onClose, onCreated }) {
               </div>
             </div>
 
-            <div>
-              <label className="text-xs text-grey-muted uppercase tracking-wider block mb-1.5">
-                {tx({ fr: 'Lien de paiement Stripe', en: 'Stripe payment link', es: 'Enlace de pago Stripe' })}
-              </label>
-              <div className="flex items-stretch gap-2">
-                <div className="flex-1 rounded-lg border px-3 py-2.5 text-sm text-heading font-mono truncate" style={inputBg}>
-                  {result.paymentUrl}
+            {result.paymentUrl ? (
+              <div>
+                <label className="text-xs text-grey-muted uppercase tracking-wider block mb-1.5">
+                  {tx({ fr: 'Lien de paiement Stripe', en: 'Stripe payment link', es: 'Enlace de pago Stripe' })}
+                </label>
+                <div className="flex items-stretch gap-2">
+                  <div className="flex-1 rounded-lg border px-3 py-2.5 text-sm text-heading font-mono truncate" style={inputBg}>
+                    {result.paymentUrl}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={copyLink}
+                    className={`px-3 rounded-lg font-semibold text-sm transition-all flex items-center gap-1.5 ${
+                      copied ? 'bg-green-500/20 text-green-400' : 'bg-accent text-white hover:brightness-110'
+                    }`}
+                  >
+                    {copied ? <CheckCircle size={14} /> : <Copy size={14} />}
+                    {copied
+                      ? tx({ fr: 'Copie', en: 'Copied', es: 'Copiado' })
+                      : tx({ fr: 'Copier', en: 'Copy', es: 'Copiar' })}
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  onClick={copyLink}
-                  className={`px-3 rounded-lg font-semibold text-sm transition-all flex items-center gap-1.5 ${
-                    copied ? 'bg-green-500/20 text-green-400' : 'bg-accent text-white hover:brightness-110'
-                  }`}
+                <a
+                  href={result.paymentUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 mt-2 text-xs text-accent hover:brightness-110"
                 >
-                  {copied ? <CheckCircle size={14} /> : <Copy size={14} />}
-                  {copied
-                    ? tx({ fr: 'Copie', en: 'Copied', es: 'Copiado' })
-                    : tx({ fr: 'Copier', en: 'Copy', es: 'Copiar' })}
-                </button>
+                  <ExternalLink size={12} />
+                  {tx({ fr: 'Ouvrir le lien dans un nouvel onglet', en: 'Open link in new tab', es: 'Abrir en nueva pestana' })}
+                </a>
+                <p className="text-[11px] text-grey-muted mt-2 leading-relaxed">
+                  {tx({
+                    fr: 'Envoie ce lien au client par courriel ou WhatsApp. Quand il paie, la commande passera automatiquement en "paye" et la facture sera marquee comme reglee.',
+                    en: 'Send this link to the customer by email or WhatsApp. When they pay, the order will auto-flip to "paid" and the invoice to "settled".',
+                    es: 'Envia este enlace al cliente por correo o WhatsApp. Cuando pague, el pedido pasara a "pagado" y la factura a "liquidada".',
+                  })}
+                </p>
               </div>
-              <a
-                href={result.paymentUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 mt-2 text-xs text-accent hover:brightness-110"
-              >
-                <ExternalLink size={12} />
-                {tx({ fr: 'Ouvrir le lien dans un nouvel onglet', en: 'Open link in new tab', es: 'Abrir en nueva pestana' })}
-              </a>
-              <p className="text-[11px] text-grey-muted mt-2 leading-relaxed">
-                {tx({
-                  fr: 'Envoie ce lien au client par courriel ou WhatsApp. Quand il paie, la commande passera automatiquement en "paye" et la facture sera marquee comme reglee.',
-                  en: 'Send this link to the customer by email or WhatsApp. When they pay, the order will auto-flip to "paid" and the invoice to "settled".',
-                  es: 'Envia este enlace al cliente por correo o WhatsApp. Cuando pague, el pedido pasara a "pagado" y la factura a "liquidada".',
-                })}
-              </p>
-            </div>
+            ) : (
+              /* Mode prepaid : pas de lien Stripe, message de confirmation */
+              <div className="rounded-lg bg-green-500/5 border border-green-500/20 px-4 py-3">
+                <p className="text-sm text-green-300 font-semibold flex items-center gap-2">
+                  <Banknote size={14} />
+                  {tx({
+                    fr: 'Commande enregistree au statut PAYE',
+                    en: 'Order recorded as PAID',
+                    es: 'Pedido registrado como PAGADO',
+                  })}
+                </p>
+                <p className="text-[11px] text-grey-muted mt-1.5 leading-relaxed">
+                  {tx({
+                    fr: `Aucun lien Stripe genere. Le paiement hors-ligne${result.offlinePaymentMethod ? ` (${result.offlinePaymentMethod})` : ''} est deja consigne dans les notes de la commande. La facture est marquee "reglee".`,
+                    en: `No Stripe link generated. Offline payment${result.offlinePaymentMethod ? ` (${result.offlinePaymentMethod})` : ''} already logged in order notes. Invoice marked "settled".`,
+                    es: 'No se genero enlace Stripe. Pago offline ya registrado.',
+                  })}
+                </p>
+              </div>
+            )}
 
             <div className="flex items-center gap-2 pt-2">
               <button
@@ -439,6 +473,94 @@ function CreateManualOrderModal({ onClose, onCreated }) {
                 />
               </div>
 
+              {/* FIX-PREPAID (23 avril 2026) : selecteur mode de paiement.
+                  Stripe = genere un lien, client paie plus tard.
+                  Prepaid = commande deja reglee hors-ligne (Interac, comptant,
+                  Square en personne) -> bypass Stripe + status='paid' immediat. */}
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-grey-muted uppercase tracking-wider">
+                  {tx({ fr: 'Mode de paiement', en: 'Payment mode', es: 'Modo de pago' })}
+                </label>
+                <div className="grid grid-cols-1 gap-2">
+                  <label className={`flex items-start gap-2.5 p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                    paymentMode === 'stripe'
+                      ? 'border-accent bg-accent/5'
+                      : 'border-white/10 hover:border-white/20'
+                  }`}>
+                    <input
+                      type="radio"
+                      name="paymentMode"
+                      value="stripe"
+                      checked={paymentMode === 'stripe'}
+                      onChange={() => setPaymentMode('stripe')}
+                      className="mt-0.5 accent-accent flex-shrink-0"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="flex items-center gap-1.5 text-sm font-semibold text-heading">
+                        <CreditCard size={14} className="text-accent" />
+                        {tx({
+                          fr: 'Paiement requis (generer un lien Stripe)',
+                          en: 'Payment required (generate Stripe link)',
+                          es: 'Pago requerido (generar enlace Stripe)',
+                        })}
+                      </p>
+                      <p className="text-[11px] text-grey-muted mt-0.5">
+                        {tx({
+                          fr: 'Envoyer le lien au client. La commande passera a "paye" automatiquement au paiement.',
+                          en: 'Send link to client. Order auto-flips to "paid" on payment.',
+                          es: 'Enviar enlace al cliente.',
+                        })}
+                      </p>
+                    </div>
+                  </label>
+                  <label className={`flex items-start gap-2.5 p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                    paymentMode === 'prepaid'
+                      ? 'border-green-500 bg-green-500/5'
+                      : 'border-white/10 hover:border-white/20'
+                  }`}>
+                    <input
+                      type="radio"
+                      name="paymentMode"
+                      value="prepaid"
+                      checked={paymentMode === 'prepaid'}
+                      onChange={() => setPaymentMode('prepaid')}
+                      className="mt-0.5 accent-green-500 flex-shrink-0"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="flex items-center gap-1.5 text-sm font-semibold text-heading">
+                        <Banknote size={14} className="text-green-400" />
+                        {tx({
+                          fr: 'Deja paye hors-ligne (Virement, Comptant, etc.)',
+                          en: 'Already paid offline (Interac, Cash, etc.)',
+                          es: 'Pagado fuera de linea',
+                        })}
+                      </p>
+                      <p className="text-[11px] text-grey-muted mt-0.5">
+                        {tx({
+                          fr: 'La commande sera enregistree directement en statut "paye". Aucun lien Stripe.',
+                          en: 'Order recorded directly as "paid". No Stripe link.',
+                          es: 'Pedido registrado directamente como "pagado".',
+                        })}
+                      </p>
+                      {paymentMode === 'prepaid' && (
+                        <select
+                          value={offlineMethod}
+                          onChange={(e) => setOfflineMethod(e.target.value)}
+                          className="mt-2 w-full rounded-md text-xs px-2 py-1.5 outline-none border focus:border-green-500"
+                          style={inputBg}
+                        >
+                          <option value="interac">{tx({ fr: 'Interac', en: 'Interac', es: 'Interac' })}</option>
+                          <option value="cash">{tx({ fr: 'Comptant', en: 'Cash', es: 'Efectivo' })}</option>
+                          <option value="square">Square</option>
+                          <option value="cheque">{tx({ fr: 'Cheque', en: 'Cheque', es: 'Cheque' })}</option>
+                          <option value="other">{tx({ fr: 'Autre', en: 'Other', es: 'Otro' })}</option>
+                        </select>
+                      )}
+                    </div>
+                  </label>
+                </div>
+              </div>
+
               {error && (
                 <div className="flex items-start gap-2 rounded-lg bg-red-500/10 border border-red-500/30 px-3 py-2 text-xs text-red-400">
                   <AlertCircle size={14} className="flex-shrink-0 mt-0.5" />
@@ -461,14 +583,23 @@ function CreateManualOrderModal({ onClose, onCreated }) {
               <button
                 type="submit"
                 disabled={loading || subtotal <= 0}
-                className="flex-[2] py-2 rounded-lg bg-accent text-white font-semibold text-sm hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className={`flex-[2] py-2 rounded-lg text-white font-semibold text-sm hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 ${
+                  paymentMode === 'prepaid' ? 'bg-green-500' : 'bg-accent'
+                }`}
               >
                 {loading && <Loader2 size={14} className="animate-spin" />}
-                {tx({
-                  fr: 'Creer et generer lien Stripe',
-                  en: 'Create and generate Stripe link',
-                  es: 'Crear y generar enlace Stripe',
-                })}
+                {/* FIX-PREPAID : label dynamique selon le mode choisi. */}
+                {paymentMode === 'prepaid'
+                  ? tx({
+                      fr: 'Creer la commande (Statut: Paye)',
+                      en: 'Create order (Status: Paid)',
+                      es: 'Crear pedido (Estado: Pagado)',
+                    })
+                  : tx({
+                      fr: 'Creer et generer lien Stripe',
+                      en: 'Create and generate Stripe link',
+                      es: 'Crear y generar enlace Stripe',
+                    })}
               </button>
             </div>
           </form>

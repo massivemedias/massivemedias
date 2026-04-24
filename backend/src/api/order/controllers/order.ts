@@ -1454,6 +1454,13 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
       // Si absents : comportement legacy (now).
       createdAt,
       invoiceDate,
+      // FIX-PREPAID (23 avril 2026) : si `isAlreadyPaid=true`, on BYPASS totalement
+      // Stripe (pas de paymentLinks.create, pas de products/prices, pas de metadata).
+      // L'order est directement en status='paid', l'invoice en paymentStatus='paid'
+      // + paidAt=now. `offlinePaymentMethod` (optionnel) tag la methode reelle :
+      // 'interac', 'cash', 'square', 'cheque', 'other'. Utile pour la comptabilite.
+      isAlreadyPaid = false,
+      offlinePaymentMethod,
     } = body || {};
     let { subtotal, total, tps = 0, tvq = 0 } = body || {};
 
@@ -1518,10 +1525,25 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
       // 2. Creer l'Order (isManual, stripePaymentIntentId nullable grace au schema patch)
       // FIX-TAXES : les montants stockes en cents utilisent le total TTC recalcule
       // (subtotal + shipping + tps + tvq) pour garantir la coherence avec Stripe.
+      // FIX-PREPAID : si isAlreadyPaid, status='paid' direct + notes enrichies avec
+      // la methode de paiement hors-ligne pour trace comptable.
+      const prepaid = !!isAlreadyPaid;
+      const offlineMethodClean = prepaid && typeof offlinePaymentMethod === 'string'
+        ? offlinePaymentMethod.trim().slice(0, 40)
+        : null;
+      const composedNotes = prepaid
+        ? [
+            notes || '',
+            offlineMethodClean
+              ? `[Paye hors-ligne via ${offlineMethodClean} le ${new Date().toISOString().slice(0, 10)}]`
+              : `[Paye hors-ligne le ${new Date().toISOString().slice(0, 10)}]`,
+          ].filter(Boolean).join('\n\n')
+        : (notes || null);
+
       const order = await strapi.documents('api::order.order').create({
         data: {
           isManual: true,
-          status: 'pending',
+          status: prepaid ? 'paid' : 'pending',
           customerName,
           customerEmail: customerEmail || null,
           customerPhone: customerPhone || null,
@@ -1532,7 +1554,7 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
           tps: Math.round(tps * 100),
           tvq: Math.round(tvq * 100),
           currency,
-          notes: notes || null,
+          notes: composedNotes,
           client: clientDocId ? { connect: [clientDocId] } : undefined,
         } as any,
       });
@@ -1570,10 +1592,12 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
           tps,
           tvq,
           total,
-          status: 'draft',
-          paymentStatus: 'pending',
+          // FIX-PREPAID : invoice flip aussi a paid si commande deja reglee hors-ligne.
+          status: prepaid ? 'paid' : 'draft',
+          paymentStatus: prepaid ? 'paid' : 'pending',
+          ...(prepaid ? { paidAt: new Date().toISOString() } : {}),
           lang,
-          notes: notes || null,
+          notes: composedNotes,
           order: { connect: [order.documentId] },
           client: clientDocId ? { connect: [clientDocId] } : undefined,
         } as any,
@@ -1582,82 +1606,89 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
       // 5. Stripe Payment Link : line_items detailles (sous-total + TPS + TVQ + shipping)
       // pour que le client VOIE le breakdown des taxes sur la page de paiement Stripe.
       // Chaque ligne a son propre Product+Price Stripe avec un label parlant.
-      const stripe = getStripe();
-      const currencyLower = (currency || 'cad').toLowerCase();
-      const amountCents = Math.round(total * 100);
+      //
+      // FIX-PREPAID : si isAlreadyPaid=true, on BYPASS totalement ce bloc. Pas
+      // d'appel Stripe, pas de products/prices crees, pas de paymentLink. L'order
+      // et l'invoice sont deja en status=paid, aucun lien a generer.
+      let paymentLink: any = null;
+      if (!prepaid) {
+        const stripe = getStripe();
+        const currencyLower = (currency || 'cad').toLowerCase();
+        const amountCents = Math.round(total * 100);
 
-      async function makeLineItem(name: string, amountDollars: number): Promise<any | null> {
-        const cents = Math.round(amountDollars * 100);
-        if (cents <= 0) return null;
-        const prod = await stripe.products.create({
-          name,
-          metadata: { invoiceNumber, orderId: order.documentId },
-        });
-        const pr = await stripe.prices.create({
-          product: prod.id,
-          unit_amount: cents,
-          currency: currencyLower,
-        });
-        return { price: pr.id, quantity: 1 };
-      }
+        async function makeLineItem(name: string, amountDollars: number): Promise<any | null> {
+          const cents = Math.round(amountDollars * 100);
+          if (cents <= 0) return null;
+          const prod = await stripe.products.create({
+            name,
+            metadata: { invoiceNumber, orderId: order.documentId },
+          });
+          const pr = await stripe.prices.create({
+            product: prod.id,
+            unit_amount: cents,
+            currency: currencyLower,
+          });
+          return { price: pr.id, quantity: 1 };
+        }
 
-      const lineItems: any[] = [];
-      const subtotalItem = await makeLineItem(
-        `Facture ${invoiceNumber} - Sous-total`,
-        subtotal,
-      );
-      if (subtotalItem) lineItems.push(subtotalItem);
+        const lineItems: any[] = [];
+        const subtotalItem = await makeLineItem(
+          `Facture ${invoiceNumber} - Sous-total`,
+          subtotal,
+        );
+        if (subtotalItem) lineItems.push(subtotalItem);
 
-      if (shippingNum > 0) {
-        const shippingItem = await makeLineItem(`Livraison - ${invoiceNumber}`, shippingNum);
-        if (shippingItem) lineItems.push(shippingItem);
-      }
+        if (shippingNum > 0) {
+          const shippingItem = await makeLineItem(`Livraison - ${invoiceNumber}`, shippingNum);
+          if (shippingItem) lineItems.push(shippingItem);
+        }
 
-      if (tps > 0) {
-        const tpsItem = await makeLineItem(`TPS (5%) - ${invoiceNumber}`, tps);
-        if (tpsItem) lineItems.push(tpsItem);
-      }
+        if (tps > 0) {
+          const tpsItem = await makeLineItem(`TPS (5%) - ${invoiceNumber}`, tps);
+          if (tpsItem) lineItems.push(tpsItem);
+        }
 
-      if (tvq > 0) {
-        const tvqItem = await makeLineItem(`TVQ (9.975%) - ${invoiceNumber}`, tvq);
-        if (tvqItem) lineItems.push(tvqItem);
-      }
+        if (tvq > 0) {
+          const tvqItem = await makeLineItem(`TVQ (9.975%) - ${invoiceNumber}`, tvq);
+          if (tvqItem) lineItems.push(tvqItem);
+        }
 
-      // Fallback defensif : si pour une raison quelconque aucun line_item n'a ete cree,
-      // on bascule sur un line_item unique pour le total (plutot que d'echouer).
-      if (lineItems.length === 0) {
-        const fallback = await makeLineItem(`Facture ${invoiceNumber} - ${customerName}`, total);
-        if (fallback) lineItems.push(fallback);
-      }
+        // Fallback defensif : si pour une raison quelconque aucun line_item n'a ete cree,
+        // on bascule sur un line_item unique pour le total (plutot que d'echouer).
+        if (lineItems.length === 0) {
+          const fallback = await makeLineItem(`Facture ${invoiceNumber} - ${customerName}`, total);
+          if (fallback) lineItems.push(fallback);
+        }
 
-      // Garde-fou : verifier que la somme des line_items correspond au total attendu.
-      // Evite qu'un bug de calcul ne facture le client a cote.
-      // (Stripe re-additionne de toute facon, mais on log pour trace audit.)
-      strapi.log.info(`[manualCreate] Stripe line_items : ${lineItems.length} lignes pour ${amountCents} cents (subtotal=${subtotal}, shipping=${shippingNum}, tps=${tps}, tvq=${tvq})`);
+        // Garde-fou : verifier que la somme des line_items correspond au total attendu.
+        // Evite qu'un bug de calcul ne facture le client a cote.
+        // (Stripe re-additionne de toute facon, mais on log pour trace audit.)
+        strapi.log.info(`[manualCreate] Stripe line_items : ${lineItems.length} lignes pour ${amountCents} cents (subtotal=${subtotal}, shipping=${shippingNum}, tps=${tps}, tvq=${tvq})`);
 
-      const paymentLink = await stripe.paymentLinks.create({
-        line_items: lineItems,
-        metadata: {
-          orderId: order.documentId,
-          invoiceId: invoice.documentId,
-          invoiceNumber,
-          type: 'manual',
-        },
-        payment_intent_data: {
+        paymentLink = await stripe.paymentLinks.create({
+          line_items: lineItems,
           metadata: {
             orderId: order.documentId,
             invoiceId: invoice.documentId,
             invoiceNumber,
             type: 'manual',
           },
-        },
-      });
+          payment_intent_data: {
+            metadata: {
+              orderId: order.documentId,
+              invoiceId: invoice.documentId,
+              invoiceNumber,
+              type: 'manual',
+            },
+          },
+        });
 
-      // 6. Patch Invoice.stripePaymentLink
-      await strapi.documents('api::invoice.invoice').update({
-        documentId: invoice.documentId,
-        data: { stripePaymentLink: paymentLink.url } as any,
-      });
+        // 6. Patch Invoice.stripePaymentLink
+        await strapi.documents('api::invoice.invoice').update({
+          documentId: invoice.documentId,
+          data: { stripePaymentLink: paymentLink.url } as any,
+        });
+      }
 
       // 7. FIX-LEGACY : si createdAt fourni, override les timestamps Order + Invoice
       // via raw SQL (Strapi documents API ne permet PAS de backdater createdAt).
@@ -1682,14 +1713,21 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
         }
       }
 
-      strapi.log.info(`[manualCreate] Order ${order.documentId} + Invoice ${invoiceNumber} + PaymentLink ${paymentLink.id}`);
+      if (prepaid) {
+        strapi.log.info(`[manualCreate] Order ${order.documentId} + Invoice ${invoiceNumber} PREPAID (offline method=${offlineMethodClean || 'none'}) - Stripe bypassed`);
+      } else {
+        strapi.log.info(`[manualCreate] Order ${order.documentId} + Invoice ${invoiceNumber} + PaymentLink ${paymentLink?.id}`);
+      }
 
       ctx.body = {
         success: true,
         orderId: order.documentId,
         invoiceId: invoice.documentId,
         invoiceNumber,
-        paymentUrl: paymentLink.url,
+        // null si prepaid (pas de lien Stripe genere)
+        paymentUrl: paymentLink?.url || null,
+        isAlreadyPaid: prepaid,
+        offlinePaymentMethod: offlineMethodClean,
       };
     } catch (err: any) {
       strapi.log.error('manualCreate error:', err);
