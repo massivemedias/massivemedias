@@ -180,26 +180,66 @@ function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, t
           e.currentTarget._touchX = null;
         }}>
         {/* Slide 0: FramePreview */}
+        {/* FIX-FRAME (23 avril 2026) : deux bugs corriges ici
+            1. Cadre BLANC : l'ancienne regle `border: '1px solid ...'` s'ajoutait
+               au box-sizing border-box et reduisait la zone interieure par 2px
+               asymetriquement avec le noir (qui avait `border: 'none'`) -> sur
+               aspect-ratio carre, l'inner <img> se decalait et "cassait" visuel.
+               On remplace le border CSS par un inset box-shadow combine au shadow
+               existant. Resultat : layout strictement identique entre noir et
+               blanc, et le liseret sombre du cadre blanc reste visible.
+            2. IMAGE DEBORDEMENT bas : l'<img> etait en display:inline par defaut,
+               ce qui ajoute un espace baseline (~3-5px) sous l'image. Classic
+               bug HTML. Fix : className "block" (display:block) sur l'image ET
+               overflow-hidden sur le wrapper aspect-ratio pour garantir aucun
+               depassement meme si les arrondis de subpixel divergent. */}
         <div className={slideIdx === 0 ? '' : 'hidden'}>
           <div className="flex items-center justify-center p-2 cursor-pointer" onClick={onClickImage}>
-            <div style={{ aspectRatio: withFrame ? `${frameW}/${frameH}` : `${w}/${h}`, width: '100%', maxWidth: `${previewMaxW}px` }}
-              className="relative transition-all duration-500 ease-out">
+            <div
+              style={{
+                aspectRatio: withFrame ? `${frameW}/${frameH}` : `${w}/${h}`,
+                width: '100%',
+                maxWidth: `${previewMaxW}px`,
+              }}
+              className="relative transition-all duration-500 ease-out overflow-hidden"
+            >
               {withFrame ? (
-                <div className="absolute inset-0 rounded-[2px]" style={{
-                  background: frameColor === 'black' ? 'linear-gradient(135deg, #2a2a2a, #111)' : 'linear-gradient(135deg, #fff, #e8e3de)',
-                  boxShadow: frameColor === 'black' ? '0 4px 20px rgba(0,0,0,0.3)' : '0 4px 20px rgba(0,0,0,0.3), inset 0 0 0 1px rgba(0,0,0,0.08)',
-                  border: frameColor === 'white' ? '1px solid rgba(0,0,0,0.1)' : 'none',
-                  padding: `${frameThickness}px`,
-                }}>
-                  <div style={{ background: '#f5f2ed', padding: `${matThickness}px`, width: '100%', height: '100%' }}>
+                <div
+                  className="absolute inset-0 rounded-[2px]"
+                  style={{
+                    background: frameColor === 'black'
+                      ? 'linear-gradient(135deg, #2a2a2a, #111)'
+                      : 'linear-gradient(135deg, #fff, #e8e3de)',
+                    boxShadow: frameColor === 'black'
+                      ? '0 4px 20px rgba(0,0,0,0.3)'
+                      : '0 4px 20px rgba(0,0,0,0.3), inset 0 0 0 1px rgba(0,0,0,0.12)',
+                    // Plus de `border` qui mangeait 1-2px du contenu en box-sizing
+                    // border-box -> layout identique noir vs blanc.
+                    padding: `${frameThickness}px`,
+                    boxSizing: 'border-box',
+                  }}
+                >
+                  <div
+                    style={{
+                      background: '#f5f2ed',
+                      padding: `${matThickness}px`,
+                      width: '100%',
+                      height: '100%',
+                      boxSizing: 'border-box',
+                    }}
+                  >
                     <div className="w-full h-full overflow-hidden">
-                      {image ? <img src={image} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full bg-glass" />}
+                      {image
+                        ? <img src={image} alt="" className="block w-full h-full object-cover" />
+                        : <div className="w-full h-full bg-glass" />}
                     </div>
                   </div>
                 </div>
               ) : (
                 <div className="absolute inset-0 overflow-hidden shadow-lg">
-                  {image ? <img src={image} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full bg-glass" />}
+                  {image
+                    ? <img src={image} alt="" className="block w-full h-full object-cover" />
+                    : <div className="w-full h-full bg-glass" />}
                 </div>
               )}
             </div>
