@@ -4,6 +4,27 @@ import api from './api';
 // Utilise par AdminNotes.jsx (page complete) ET AdminDashboard.jsx (widget 3 recentes).
 export const getAdminNotes = () => api.get('/admin-notes/list');
 
+/**
+ * Fusion de 2 utilisateurs : le compte source et sa trace (user-role, client)
+ * sont supprimes, toutes les donnees liees (orders, testimonials, contact-
+ * submissions, artist-edit-requests) sont migrees vers le compte cible.
+ *
+ * Action irreversible - le frontend affiche un avertissement rouge avant
+ * appel. Validation cote backend (requireAdminAuth + regex emails + source
+ * != target).
+ *
+ * @param {string} sourceEmail  - email du compte a supprimer
+ * @param {string} targetEmail  - email du compte a conserver
+ * @returns Promise<{ success, data: { updatedOrders, updatedTestimonials, ... } }>
+ */
+export const mergeUsers = (sourceEmail, targetEmail) => {
+  const src = String(sourceEmail || '').trim().toLowerCase();
+  const tgt = String(targetEmail || '').trim().toLowerCase();
+  if (!src || !tgt) throw new Error('mergeUsers: sourceEmail et targetEmail requis');
+  if (src === tgt) throw new Error('mergeUsers: source et target doivent etre differents');
+  return api.post('/admin/users/merge', { sourceEmail: src, targetEmail: tgt });
+};
+
 // --- Reglages Facturation (TPS/TVQ, bancaire, Interac) ---
 export const getBillingSettings = () => api.get('/billing-settings');
 

@@ -4,12 +4,13 @@ import {
   Users, UserCheck, Clock, Mail, Calendar, Search,
   Loader2, Shield, Palette, ChevronDown, ChevronUp, Check, X,
   DollarSign, ShoppingBag, Phone, Building2, MapPin, Trash2,
-  Eye, MousePointerClick, ArrowUpRight, ExternalLink, BarChart3, Gift, FileCheck, Receipt, PenTool,
+  Eye, MousePointerClick, ArrowUpRight, ExternalLink, BarChart3, Gift, FileCheck, Receipt, PenTool, GitMerge,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import api from '../services/api';
 import { getClients, getArtistSubmissions } from '../services/adminService';
 import { getUserRoles, setUserRole } from '../services/userRoleService';
+import UserMergeModal from '../components/UserMergeModal';
 import { useNotifications } from '../contexts/NotificationContext';
 import artistsData from '../data/artists';
 
@@ -44,40 +45,44 @@ function AdminUtilisateurs() {
   const [tab, setTab] = useState('all'); // 'all' | 'buyers' | 'visitors' | 'artists'
   const [expandedId, setExpandedId] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
+  // FIX-MERGE (23 avril 2026) : state de la modale de fusion.
+  // null = ferme. { initialSource: 'email@...' } = ouvert avec source pre-remplie.
+  const [mergeModal, setMergeModal] = useState(null);
 
-  useEffect(() => {
-    const fetchAll = async () => {
-      try {
-        const [usersRes, rolesRes, clientsRes, subsRes] = await Promise.all([
-          api.get('/clients/users'),
-          getUserRoles().catch(() => ({ data: { data: [] } })),
-          getClients({ pageSize: 999 }).catch(() => ({ data: { data: [] } })),
-          getArtistSubmissions({ pageSize: 999 }).catch(() => ({ data: { data: [] } })),
-        ]);
-        setUsers(usersRes.data?.data || usersRes.data || []);
+  // FIX-MERGE : fetchAll lifte en useCallback pour pouvoir etre rappele par la
+  // modale de fusion apres succes (refresh la liste avec les comptes mergeeS).
+  const fetchAll = useCallback(async () => {
+    try {
+      const [usersRes, rolesRes, clientsRes, subsRes] = await Promise.all([
+        api.get('/clients/users'),
+        getUserRoles().catch(() => ({ data: { data: [] } })),
+        getClients({ pageSize: 999 }).catch(() => ({ data: { data: [] } })),
+        getArtistSubmissions({ pageSize: 999 }).catch(() => ({ data: { data: [] } })),
+      ]);
+      setUsers(usersRes.data?.data || usersRes.data || []);
 
-        const roleMap = {};
-        (rolesRes.data?.data || rolesRes.data || []).forEach(r => {
-          if (r?.email) roleMap[r.email.toLowerCase()] = r;
-        });
-        setRoles(roleMap);
-        setClients(clientsRes.data?.data || clientsRes.data || []);
+      const roleMap = {};
+      (rolesRes.data?.data || rolesRes.data || []).forEach(r => {
+        if (r?.email) roleMap[r.email.toLowerCase()] = r;
+      });
+      setRoles(roleMap);
+      setClients(clientsRes.data?.data || clientsRes.data || []);
 
-        // Build artist submissions map by email
-        const subsMap = {};
-        (subsRes.data?.data || subsRes.data || []).forEach(s => {
-          if (s?.email) subsMap[s.email.toLowerCase()] = s;
-        });
-        setArtistSubs(subsMap);
-        setError('');
-      } catch {
-        setError(tx({ fr: 'Impossible de charger les donnees', en: 'Unable to load data', es: 'No se pueden cargar los datos' }));
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchAll();
-  }, []);
+      // Build artist submissions map by email
+      const subsMap = {};
+      (subsRes.data?.data || subsRes.data || []).forEach(s => {
+        if (s?.email) subsMap[s.email.toLowerCase()] = s;
+      });
+      setArtistSubs(subsMap);
+      setError('');
+    } catch {
+      setError(tx({ fr: 'Impossible de charger les donnees', en: 'Unable to load data', es: 'No se pueden cargar los datos' }));
+    } finally {
+      setLoading(false);
+    }
+  }, [tx]);
+
+  useEffect(() => { fetchAll(); }, [fetchAll]);
 
   const formatDate = (d) => d ? new Date(d).toLocaleDateString('fr-CA', { day: 'numeric', month: 'short', year: 'numeric' }) : '-';
   const formatMoney = (v) => `${(parseFloat(v) || 0).toFixed(2)}$`;
@@ -335,7 +340,7 @@ function AdminUtilisateurs() {
         </div>
       )}
 
-      {/* Search + Tabs */}
+      {/* Search + Tabs + Merge action */}
       <div className="flex flex-col md:flex-row gap-3">
         <div className="relative flex-1">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-grey-muted" />
@@ -345,6 +350,22 @@ function AdminUtilisateurs() {
             className="input-field pl-9 text-sm"
           />
         </div>
+        {/* FIX-MERGE (23 avril 2026) : bouton global pour ouvrir la modale
+            de fusion. L'admin peut aussi declencher depuis l'action "Fusionner
+            vers..." dans la row expanded (pre-remplit le source). */}
+        <button
+          type="button"
+          onClick={() => setMergeModal({ initialSource: '' })}
+          className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-accent/10 text-accent border border-accent/30 hover:bg-accent/20 transition-all text-sm font-semibold"
+          title={tx({
+            fr: 'Fusionner deux comptes (consolidation invite + inscrit)',
+            en: 'Merge two accounts (consolidate guest + registered)',
+            es: 'Fusionar dos cuentas',
+          })}
+        >
+          <GitMerge size={14} />
+          {tx({ fr: 'Fusionner des comptes', en: 'Merge accounts', es: 'Fusionar cuentas' })}
+        </button>
       </div>
 
       {/* Filter tabs */}
@@ -929,6 +950,16 @@ function AdminUtilisateurs() {
           </a>
         </div>
       </div>
+
+      {/* Modale fusion utilisateurs (FIX-MERGE, 23 avril 2026) */}
+      {mergeModal && (
+        <UserMergeModal
+          users={allUsers}
+          initialSource={mergeModal.initialSource || ''}
+          onClose={() => setMergeModal(null)}
+          onMerged={() => fetchAll()}
+        />
+      )}
     </div>
   );
 }

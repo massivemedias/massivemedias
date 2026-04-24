@@ -36,5 +36,13 @@ export default {
       handler: 'user-role.removeRole',
       config: { auth: false },
     },
+    // Fusion d'utilisateurs : source (guest ou doublon) -> target (compte principal).
+    // Protege par requireAdminAuth dans le controller. Voir mergeUsers pour le detail.
+    {
+      method: 'POST',
+      path: '/admin/users/merge',
+      handler: 'user-role.mergeUsers',
+      config: { auth: false },
+    },
   ],
 };

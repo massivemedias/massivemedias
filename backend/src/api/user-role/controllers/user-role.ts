@@ -190,4 +190,216 @@ export default factories.createCoreController('api::user-role.user-role', ({ str
       ctx.throw(500, err.message);
     }
   },
+
+  /**
+   * POST /admin/users/merge - Fusion de 2 utilisateurs (source -> target).
+   *
+   * Pattern : l'email est la cle universelle dans le systeme (orders.customerEmail,
+   * testimonial.email, contact-submission.email, user-role.email, client.email
+   * unique). Merger deux comptes = re-linker toutes les donnees du source vers
+   * le target PUIS supprimer le source.
+   *
+   * Body : { sourceEmail: string, targetEmail: string }
+   *
+   * Entites touchees (best-effort, chaque bloc catch et log sans bloquer) :
+   *   - orders.customerEmail = sourceEmail      -> targetEmail
+   *     + si target a un supabaseUserId, on patche supabaseUserId sur ces orders
+   *     + si target a un client documentId, on re-connect via client relation
+   *   - testimonials.email = sourceEmail        -> targetEmail
+   *   - contact-submissions.email = sourceEmail -> targetEmail
+   *   - artist-edit-requests.email = sourceEmail -> targetEmail
+   *   - user-role ou client source : supprimes apres migration
+   *
+   * Retour : rapport detaille par entite { updatedOrders, updatedTestimonials, etc. }
+   * Tout est admin-only. Pas de dry-run implementation pour l'instant : l'admin
+   * doit verifier le preview cote frontend avant de confirmer.
+   */
+  async mergeUsers(ctx) {
+    if (!(await requireAdminAuth(ctx))) return;
+    const body = (ctx.request.body as any) || {};
+    const sourceEmail = String(body.sourceEmail || '').trim().toLowerCase();
+    const targetEmail = String(body.targetEmail || '').trim().toLowerCase();
+
+    if (!sourceEmail || !targetEmail) {
+      return ctx.badRequest('sourceEmail et targetEmail requis');
+    }
+    if (sourceEmail === targetEmail) {
+      return ctx.badRequest('sourceEmail et targetEmail doivent etre differents');
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(sourceEmail) || !emailRegex.test(targetEmail)) {
+      return ctx.badRequest('Format email invalide (source ou target)');
+    }
+
+    const report: any = {
+      sourceEmail,
+      targetEmail,
+      updatedOrders: 0,
+      updatedTestimonials: 0,
+      updatedContactSubmissions: 0,
+      updatedArtistEditRequests: 0,
+      deletedSourceUserRole: false,
+      deletedSourceClient: false,
+      errors: [],
+    };
+
+    // 1. Resolve le client cible (si present) pour re-connecter les orders
+    let targetClientDocId: string | null = null;
+    let targetSupabaseUserId: string | null = null;
+    try {
+      const targetClients = await strapi.documents('api::client.client').findMany({
+        filters: { email: { $eqi: targetEmail } } as any,
+        limit: 1,
+      });
+      if (targetClients.length > 0) {
+        const tc = targetClients[0] as any;
+        targetClientDocId = tc.documentId;
+        targetSupabaseUserId = tc.supabaseUserId || null;
+      }
+    } catch (e: any) {
+      report.errors.push(`Lookup target client: ${e?.message}`);
+    }
+
+    // 2. Orders : update customerEmail + supabaseUserId + re-connect client
+    try {
+      const orders = await strapi.documents('api::order.order').findMany({
+        filters: { customerEmail: { $eqi: sourceEmail } } as any,
+        limit: 5000,
+      }) as any[];
+      for (const o of orders) {
+        try {
+          const data: any = { customerEmail: targetEmail };
+          if (targetSupabaseUserId) data.supabaseUserId = targetSupabaseUserId;
+          if (targetClientDocId) data.client = { connect: [targetClientDocId] };
+          await strapi.documents('api::order.order').update({
+            documentId: o.documentId,
+            data,
+          });
+          report.updatedOrders++;
+        } catch (e: any) {
+          report.errors.push(`Order ${o.documentId}: ${e?.message}`);
+        }
+      }
+    } catch (e: any) {
+      report.errors.push(`Orders lookup: ${e?.message}`);
+    }
+
+    // 3. Testimonials : update email + re-connect client
+    try {
+      const testimonials = await strapi.documents('api::testimonial.testimonial').findMany({
+        filters: { email: { $eqi: sourceEmail } } as any,
+        limit: 2000,
+      }) as any[];
+      for (const t of testimonials) {
+        try {
+          const data: any = { email: targetEmail };
+          if (targetClientDocId) data.client = { connect: [targetClientDocId] };
+          await strapi.documents('api::testimonial.testimonial').update({
+            documentId: t.documentId,
+            data,
+          });
+          report.updatedTestimonials++;
+        } catch (e: any) {
+          report.errors.push(`Testimonial ${t.documentId}: ${e?.message}`);
+        }
+      }
+    } catch (e: any) {
+      // Content-type peut ne pas exister dans tous les environnements
+      if (!/not.*found|doesn.*exist/i.test(e?.message || '')) {
+        report.errors.push(`Testimonials lookup: ${e?.message}`);
+      }
+    }
+
+    // 4. Contact submissions
+    try {
+      const subs = await strapi.documents('api::contact-submission.contact-submission').findMany({
+        filters: { email: { $eqi: sourceEmail } } as any,
+        limit: 2000,
+      }) as any[];
+      for (const s of subs) {
+        try {
+          await strapi.documents('api::contact-submission.contact-submission').update({
+            documentId: s.documentId,
+            data: { email: targetEmail } as any,
+          });
+          report.updatedContactSubmissions++;
+        } catch (e: any) {
+          report.errors.push(`ContactSubmission ${s.documentId}: ${e?.message}`);
+        }
+      }
+    } catch (e: any) {
+      if (!/not.*found|doesn.*exist/i.test(e?.message || '')) {
+        report.errors.push(`ContactSubmissions lookup: ${e?.message}`);
+      }
+    }
+
+    // 5. Artist edit requests
+    try {
+      const reqs = await strapi.documents('api::artist-edit-request.artist-edit-request' as any).findMany({
+        filters: { email: { $eqi: sourceEmail } } as any,
+        limit: 2000,
+      }) as any[];
+      for (const r of reqs) {
+        try {
+          await strapi.documents('api::artist-edit-request.artist-edit-request' as any).update({
+            documentId: r.documentId,
+            data: { email: targetEmail } as any,
+          });
+          report.updatedArtistEditRequests++;
+        } catch (e: any) {
+          report.errors.push(`ArtistEditRequest ${r.documentId}: ${e?.message}`);
+        }
+      }
+    } catch (e: any) {
+      if (!/not.*found|doesn.*exist/i.test(e?.message || '')) {
+        report.errors.push(`ArtistEditRequests lookup: ${e?.message}`);
+      }
+    }
+
+    // 6. Supprimer le user-role source (si existe). L'email etant unique, on ne
+    //    peut pas juste le patcher vers targetEmail : il faudrait merger les
+    //    champs role/artistSlug/etc. -> plus risque que ca ne vaut. On delete
+    //    simplement le user-role source. Si le target n'a pas de role, l'admin
+    //    le recreera via /user-roles/set s'il en avait besoin.
+    try {
+      const sourceRoles = await strapi.documents('api::user-role.user-role').findMany({
+        filters: { email: { $eqi: sourceEmail } } as any,
+        limit: 5,
+      });
+      for (const r of sourceRoles as any[]) {
+        await strapi.documents('api::user-role.user-role').delete({
+          documentId: r.documentId,
+        });
+        report.deletedSourceUserRole = true;
+      }
+    } catch (e: any) {
+      report.errors.push(`Delete source user-role: ${e?.message}`);
+    }
+
+    // 7. Supprimer le client source (ses orders ont ete re-connectes au target)
+    try {
+      const sourceClients = await strapi.documents('api::client.client').findMany({
+        filters: { email: { $eqi: sourceEmail } } as any,
+        limit: 5,
+      });
+      for (const c of sourceClients as any[]) {
+        await strapi.documents('api::client.client').delete({
+          documentId: c.documentId,
+        });
+        report.deletedSourceClient = true;
+      }
+    } catch (e: any) {
+      report.errors.push(`Delete source client: ${e?.message}`);
+    }
+
+    strapi.log.info(
+      `[mergeUsers] ${sourceEmail} -> ${targetEmail} : ` +
+      `orders=${report.updatedOrders}, testimonials=${report.updatedTestimonials}, ` +
+      `contacts=${report.updatedContactSubmissions}, editReqs=${report.updatedArtistEditRequests}, ` +
+      `roleDeleted=${report.deletedSourceUserRole}, clientDeleted=${report.deletedSourceClient}, ` +
+      `errors=${report.errors.length}`
+    );
+
+    ctx.body = { success: report.errors.length === 0, data: report };
+  },
 }));
