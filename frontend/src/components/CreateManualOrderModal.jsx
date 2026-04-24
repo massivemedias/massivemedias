@@ -16,6 +16,9 @@ import api from '../services/api';
 function CreateManualOrderModal({ onClose, onCreated }) {
   const { tx } = useLang();
   const [customerName, setCustomerName] = useState('');
+  // FIX-B2B (23 avril 2026) : nom de l'entreprise optionnel. Affiche sur le
+  // resume admin et injecte dans le PDF facture sous le nom du client.
+  const [companyName, setCompanyName] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
   // Note: le champ "lineTotal" est le prix TOTAL de la ligne (pas un prix unitaire).
@@ -111,6 +114,7 @@ function CreateManualOrderModal({ onClose, onCreated }) {
       const isAlreadyPaid = paymentMode === 'prepaid';
       const { data } = await api.post('/orders/manual', {
         customerName: customerName.trim(),
+        companyName: companyName.trim() || undefined,
         customerEmail: customerEmail.trim() || undefined,
         customerPhone: customerPhone.trim() || undefined,
         items: payloadItems,
@@ -318,17 +322,38 @@ function CreateManualOrderModal({ onClose, onCreated }) {
                   />
                 </div>
               </div>
-              <div>
-                <label className="text-xs text-grey-muted uppercase tracking-wider block mb-1">
-                  {tx({ fr: 'Telephone (optionnel)', en: 'Phone (optional)', es: 'Telefono (opcional)' })}
-                </label>
-                <input
-                  type="tel"
-                  value={customerPhone}
-                  onChange={(e) => setCustomerPhone(e.target.value)}
-                  className="w-full rounded-lg text-sm px-3 py-2.5 outline-none border focus:border-accent" style={inputBg}
-                  placeholder="514 555 1234"
-                />
+              {/* FIX-B2B (23 avril 2026) : nouvelle rangee company + phone.
+                  Layout grille 2 colonnes sur desktop pour rester compact. */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs text-grey-muted uppercase tracking-wider block mb-1">
+                    {tx({
+                      fr: `Nom de l'entreprise (optionnel)`,
+                      en: 'Company name (optional)',
+                      es: 'Nombre de la empresa (opcional)',
+                    })}
+                  </label>
+                  <input
+                    type="text"
+                    value={companyName}
+                    onChange={(e) => setCompanyName(e.target.value)}
+                    className="w-full rounded-lg text-sm px-3 py-2.5 outline-none border focus:border-accent" style={inputBg}
+                    placeholder="La Presse Inc."
+                    maxLength={200}
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-grey-muted uppercase tracking-wider block mb-1">
+                    {tx({ fr: 'Telephone (optionnel)', en: 'Phone (optional)', es: 'Telefono (opcional)' })}
+                  </label>
+                  <input
+                    type="tel"
+                    value={customerPhone}
+                    onChange={(e) => setCustomerPhone(e.target.value)}
+                    className="w-full rounded-lg text-sm px-3 py-2.5 outline-none border focus:border-accent" style={inputBg}
+                    placeholder="514 555 1234"
+                  />
+                </div>
               </div>
 
               {/* Items lines */}

@@ -1443,6 +1443,9 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
     const body = ctx.request.body as any;
     const {
       customerName, customerEmail, customerPhone,
+      // FIX-B2B (23 avril 2026) : companyName optionnel pour les clients entreprise.
+      // Affiche sous le nom dans les factures PDF + dans le resume admin.
+      companyName,
       items,
       shipping = 0,
       notes, lang = 'fr',
@@ -1540,11 +1543,13 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
           ].filter(Boolean).join('\n\n')
         : (notes || null);
 
+      const cleanCompanyName = typeof companyName === 'string' ? companyName.trim().slice(0, 200) : '';
       const order = await strapi.documents('api::order.order').create({
         data: {
           isManual: true,
           status: prepaid ? 'paid' : 'pending',
           customerName,
+          companyName: cleanCompanyName || null,
           customerEmail: customerEmail || null,
           customerPhone: customerPhone || null,
           items,
@@ -1585,6 +1590,7 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
           invoiceNumber,
           date: resolvedInvoiceDate,
           customerName,
+          companyName: cleanCompanyName || null,
           customerEmail: customerEmail || null,
           customerPhone: customerPhone || null,
           items,

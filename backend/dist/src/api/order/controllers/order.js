@@ -1397,7 +1397,10 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
         if (!(await (0, auth_1.requireAdminAuth)(ctx)))
             return;
         const body = ctx.request.body;
-        const { customerName, customerEmail, customerPhone, items, shipping = 0, notes, lang = 'fr', currency = 'cad', 
+        const { customerName, customerEmail, customerPhone, 
+        // FIX-B2B (23 avril 2026) : companyName optionnel pour les clients entreprise.
+        // Affiche sous le nom dans les factures PDF + dans le resume admin.
+        companyName, items, shipping = 0, notes, lang = 'fr', currency = 'cad', 
         // FIX-LEGACY (avril 2026) : backdating d'une facture oubliee / saisie retroactive.
         // `createdAt` applique une valeur historique sur Order.createdAt et Invoice.createdAt
         // via raw SQL (Strapi documents API ne permet pas d'override createdAt).
@@ -1480,11 +1483,13 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
                         : `[Paye hors-ligne le ${new Date().toISOString().slice(0, 10)}]`,
                 ].filter(Boolean).join('\n\n')
                 : (notes || null);
+            const cleanCompanyName = typeof companyName === 'string' ? companyName.trim().slice(0, 200) : '';
             const order = await strapi.documents('api::order.order').create({
                 data: {
                     isManual: true,
                     status: prepaid ? 'paid' : 'pending',
                     customerName,
+                    companyName: cleanCompanyName || null,
                     customerEmail: customerEmail || null,
                     customerPhone: customerPhone || null,
                     items,
@@ -1523,6 +1528,7 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
                     invoiceNumber,
                     date: resolvedInvoiceDate,
                     customerName,
+                    companyName: cleanCompanyName || null,
                     customerEmail: customerEmail || null,
                     customerPhone: customerPhone || null,
                     items,

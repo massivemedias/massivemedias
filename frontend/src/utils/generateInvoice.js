@@ -157,10 +157,20 @@ export function generateInvoicePDF(order, type = 'invoice', options = {}) {
   doc.setTextColor(...darkText);
   doc.text(order.customerName || '-', margin, y + 5);
 
+  // FIX-B2B (23 avril 2026) : nom entreprise juste sous le nom du client,
+  // en gras leger et accent pour le rendre visible sans ecraser l'identite.
+  let clientY = y + 10;
+  if (order.companyName) {
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.setTextColor(...accentColor);
+    doc.text(order.companyName, margin, clientY);
+    clientY += 5;
+  }
+
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9);
   doc.setTextColor(...greyText);
-  let clientY = y + 10;
   doc.text(order.customerEmail || '', margin, clientY);
   clientY += 4;
   if (order.customerPhone) {
@@ -617,12 +627,21 @@ export function generateManualInvoicePDF(invoice, lang = 'fr') {
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(30);
   doc.text(invoice.customerName, col2, y + 5);
+  // FIX-B2B (23 avril 2026) : companyName en accent violet sous le nom client.
+  let billToY = y + 11;
+  if (invoice.companyName) {
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.setTextColor(61, 0, 121); // meme violet que les titres du PDF manuel
+    doc.text(invoice.companyName, col2, billToY);
+    billToY += 5;
+  }
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8);
   doc.setTextColor(120);
-  if (invoice.customerAddress) doc.text(invoice.customerAddress, col2, y + 11);
-  if (invoice.customerPhone) doc.text(invoice.customerPhone, col2, y + 16);
-  if (invoice.customerEmail) doc.text(invoice.customerEmail, col2, y + 21);
+  if (invoice.customerAddress) { doc.text(invoice.customerAddress, col2, billToY); billToY += 5; }
+  if (invoice.customerPhone) { doc.text(invoice.customerPhone, col2, billToY); billToY += 5; }
+  if (invoice.customerEmail) { doc.text(invoice.customerEmail, col2, billToY); billToY += 5; }
 
   // Table items - espace genereux entre le bloc DE et la table
   const deLastLineY = deY + 20; // NEQ/QBN est la derniere ligne

@@ -1118,7 +1118,13 @@ function AdminOrders() {
                     {/* Desktop row */}
                     <div className="hidden md:grid grid-cols-[1fr_100px_80px_120px_120px_40px] gap-3 px-4 py-3 items-center">
                       <div className="min-w-0">
-                        <p className="text-sm text-heading font-semibold truncate">{order.customerName}</p>
+                        {/* FIX-B2B : nom + entreprise sur la meme ligne, email en dessous */}
+                        <p className="text-sm text-heading font-semibold truncate">
+                          {order.customerName}
+                          {order.companyName && (
+                            <span className="text-grey-muted font-normal"> - {order.companyName}</span>
+                          )}
+                        </p>
                         <p className="text-xs text-grey-muted truncate">{order.customerEmail}</p>
                       </div>
                       <span className="text-xs text-grey-muted">{formatDateShort(order.createdAt)}</span>
@@ -1155,7 +1161,12 @@ function AdminOrders() {
                     {/* Mobile row - compact */}
                     <div className="md:hidden px-3 py-2.5">
                       <div className="flex items-center justify-between gap-2">
-                        <p className="text-sm text-heading font-semibold truncate flex-1">{order.customerName}</p>
+                        <p className="text-sm text-heading font-semibold truncate flex-1">
+                          {order.customerName}
+                          {order.companyName && (
+                            <span className="text-grey-muted font-normal"> - {order.companyName}</span>
+                          )}
+                        </p>
                         <span className="text-base text-heading font-bold flex-shrink-0 inline-flex items-center gap-1">
                           {dollars(order.total)}
                           <button
@@ -1206,6 +1217,9 @@ function AdminOrders() {
                             <div className="space-y-1">
                               <h4 className="text-xs font-semibold text-grey-muted uppercase tracking-wider">{tx({ fr: 'Client', en: 'Client', es: 'Cliente' })}</h4>
                               <p className="text-sm text-heading font-medium">{order.customerName}</p>
+                              {order.companyName && (
+                                <p className="text-xs text-accent font-semibold">{order.companyName}</p>
+                              )}
                               <p className="text-xs text-grey-muted flex items-center gap-1.5"><Mail size={11} /> {order.customerEmail}</p>
                               {order.customerPhone && (
                                 <p className="text-xs text-grey-muted flex items-center gap-1.5"><Phone size={11} /> {order.customerPhone}</p>
