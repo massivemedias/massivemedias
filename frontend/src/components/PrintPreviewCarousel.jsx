@@ -20,7 +20,7 @@ const MOCKUP_SCENES = [
 
 const MAT_COLOR = { r: 240, g: 237, b: 232 };
 
-function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, tx, isLandscape, onClickImage }) {
+function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, tx, isLandscape, isSquare = false, onClickImage }) {
   const [slideIdx, setSlideIdx] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const canvasRefs = useRef({});
@@ -144,12 +144,18 @@ function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, t
   if (!image) return null;
 
   // FramePreview inline (slide 0)
+  // FIX-SQUARE (23 avril 2026) : si le format est carre (shape === 'square' OU
+  // isSquare signale par le parent), le cadre preview rend un 1:1 exact,
+  // l'object-fit:cover garde l'image carree sans distorsion, et le rapport de
+  // landscape est ignore.
   const fmt = formats?.find(f => f.id === format);
+  const fmtShape = fmt?.shape || (Math.abs((fmt?.w || 1) - (fmt?.h || 1)) < 0.5 ? 'square' : 'rect');
+  const renderSquare = fmtShape === 'square' || isSquare;
   const fmtW = fmt?.w || 8.5;
   const fmtH = fmt?.h || 11;
-  const useLandscape = isLandscape;
-  const w = useLandscape ? Math.max(fmtW, fmtH) : Math.min(fmtW, fmtH);
-  const h = useLandscape ? Math.min(fmtW, fmtH) : Math.max(fmtW, fmtH);
+  const useLandscape = !renderSquare && isLandscape;
+  const w = renderSquare ? 1 : (useLandscape ? Math.max(fmtW, fmtH) : Math.min(fmtW, fmtH));
+  const h = renderSquare ? 1 : (useLandscape ? Math.min(fmtW, fmtH) : Math.max(fmtW, fmtH));
   const maxDim = Math.max(fmtW, fmtH);
   const scaleFactor = 320 / 24;
   const previewMaxW = Math.max(180, Math.round(maxDim * scaleFactor));

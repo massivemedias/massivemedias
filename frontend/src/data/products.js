@@ -213,6 +213,8 @@ export const fineArtPrinterTiers = [
 ];
 
 // Derive depuis FINE_ART_GRID (pricingData.js). Source unique de verite.
+// FIX-SQUARE (avril 2026) : propage `shape` ('rect' ou 'square') pour que le
+// configurateur puisse filtrer la liste selon l'aspect de l'image uploadee.
 export const fineArtFormats = Object.keys(FINE_ART_GRID).map(id => ({
   id,
   label: FINE_ART_GRID[id].label,
@@ -221,6 +223,7 @@ export const fineArtFormats = Object.keys(FINE_ART_GRID).map(id => ({
   w: FINE_ART_GRID[id].w,
   h: FINE_ART_GRID[id].h,
   typeName: FINE_ART_GRID[id].typeName,
+  shape: FINE_ART_GRID[id].shape || (Math.abs((FINE_ART_GRID[id].w || 1) - (FINE_ART_GRID[id].h || 1)) < 0.5 ? 'square' : 'rect'),
 }));
 
 // Prix du cadre derive depuis FINE_ART_GRID (source unique de verite).

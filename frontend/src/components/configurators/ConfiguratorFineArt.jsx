@@ -121,6 +121,10 @@ function ConfiguratorFineArt() {
   const imageFiles = useMemo(() => uploadedFiles.filter(f => f.mime?.startsWith('image/')), [uploadedFiles]);
   const [activeImageIdx, setActiveImageIdx] = useState(0);
   const [isLandscape, setIsLandscape] = useState(false);
+  // FIX-SQUARE (23 avril 2026) : detection carre (tolerance 3%) pour filtrer
+  // les formats proposes et swap le cadre de preview. Un ratio 0.97-1.03 est
+  // considere carre - couvre les images legerement croppees par le client.
+  const [isSquare, setIsSquare] = useState(false);
 
   // Reset index si les fichiers changent
   useEffect(() => {
@@ -129,13 +133,45 @@ function ConfiguratorFineArt() {
 
   const previewImage = imageFiles[activeImageIdx]?.url || null;
 
-  // Detecter orientation de l'image active
+  // Detecter orientation de l'image active (landscape + square)
   useEffect(() => {
-    if (!previewImage) { setIsLandscape(false); return; }
+    if (!previewImage) { setIsLandscape(false); setIsSquare(false); return; }
     const img = new Image();
-    img.onload = () => setIsLandscape(img.naturalWidth > img.naturalHeight);
+    img.onload = () => {
+      const w = img.naturalWidth;
+      const h = img.naturalHeight;
+      if (!w || !h) return;
+      const ratio = w / h;
+      const square = ratio >= 0.97 && ratio <= 1.03;
+      setIsSquare(square);
+      setIsLandscape(!square && w > h);
+    };
     img.src = previewImage;
   }, [previewImage]);
+
+  // Filtrage dynamique : si l'image est carree, on ne montre QUE les formats
+  // carres. Sinon, on ne montre que les rectangulaires. Les legacy items sans
+  // champ `shape` sont consideres 'rect' par defaut (retro-compat).
+  const visibleFormats = useMemo(() => {
+    const wantSquare = isSquare;
+    return fineArtFormats.filter(f => {
+      const shape = f.shape || 'rect';
+      return wantSquare ? shape === 'square' : shape === 'rect';
+    });
+  }, [fineArtFormats, isSquare]);
+
+  // Auto-selection d'un format par defaut quand l'aspect change et que le
+  // format actuel n'est plus dans la liste visible. Strategie :
+  //   - carre  -> 10x10 (milieu de gamme)
+  //   - rect   -> a4 (default historique)
+  useEffect(() => {
+    const isCurrentVisible = visibleFormats.some(f => f.id === format);
+    if (!isCurrentVisible) {
+      const fallback = isSquare ? 'sq10' : 'a4';
+      const chosen = visibleFormats.find(f => f.id === fallback) || visibleFormats[0];
+      if (chosen) setFormat(chosen.id);
+    }
+  }, [visibleFormats, isSquare, format]);
 
   const canAddToCart = uploadedFiles.length > 0 || notes.trim().length > 0;
 
@@ -186,6 +222,7 @@ function ConfiguratorFineArt() {
             formats={fineArtFormats}
             tx={tx}
             isLandscape={isLandscape}
+            isSquare={isSquare}
             onClickImage={() => previewImage && setLightboxOpen(true)}
           />
         </div>
@@ -226,7 +263,10 @@ function ConfiguratorFineArt() {
                   setTier(t.id);
                   const curFmt = fineArtFormats.find(f => f.id === format);
                   const price = t.id === 'museum' ? curFmt?.museumPrice : curFmt?.studioPrice;
-                  if (price == null) setFormat('a4');
+                  if (price == null) {
+                    // Fallback au default du shape actif : sq10 si carre, a4 sinon.
+                    setFormat(isSquare ? 'sq10' : 'a4');
+                  }
                 }}
                 className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-semibold transition-all border-2 ${tier === t.id
                   ? 'border-accent bg-accent/10 text-accent'
@@ -242,13 +282,28 @@ function ConfiguratorFineArt() {
           </div>
         </div>
 
-        {/* Format - rectangles proportionnels */}
+        {/* Format - rectangles ou carres proportionnels selon l'aspect de l'image.
+            FIX-SQUARE : le grid est visiblement adapte a la nouvelle longueur
+            de visibleFormats (5 rectangulaires OU 3 carres). Le label du bloc
+            indique aussi aux clients pourquoi la liste change ("Formats carres"
+            vs "Formats rectangulaires") pour enlever toute confusion. */}
         <div>
           <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2">
-            Format
+            {isSquare
+              ? tx({ fr: 'Format carre', en: 'Square format', es: 'Formato cuadrado' })
+              : tx({ fr: 'Format', en: 'Format', es: 'Formato' })}
+            {isSquare && previewImage && (
+              <span className="ml-2 text-[10px] font-normal text-grey-muted/70 normal-case tracking-normal">
+                {tx({
+                  fr: '(adapte a votre image 1:1)',
+                  en: '(matched to your 1:1 image)',
+                  es: '(adaptado a su imagen 1:1)',
+                })}
+              </span>
+            )}
           </label>
-          <div className="grid grid-cols-5 gap-1.5">
-            {fineArtFormats.map(f => {
+          <div className={`grid gap-1.5 ${isSquare ? 'grid-cols-3' : 'grid-cols-5'}`}>
+            {visibleFormats.map(f => {
               const price = tier === 'museum' ? f.museumPrice : f.studioPrice;
               const isAvailable = price != null;
               const scale = 2.8;
