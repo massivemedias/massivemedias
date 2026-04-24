@@ -56,20 +56,21 @@ function getEmailPreview(status, order, tx) {
           en: `Your order is delivered - share your experience`,
           es: `Tu pedido esta entregado - comparte tu experiencia`,
         }),
-        // FIX-SEO (23 avril 2026) : prompt Google Review ajoute a la fin pour
-        // booster le referencement local. [LIEN_GOOGLE_REVIEW] est le placeholder
-        // reel injecte en prod (remplace par process.env.GOOGLE_REVIEW_URL cote
-        // backend). On le garde verbatim dans la preview pour que l'admin voie
-        // exactement ce qui partira.
+        // FIX-GOOGLE-REVIEW (23 avril 2026) : la preview affiche la section
+        // Google Review avec une annotation "[...si GOOGLE_REVIEW_URL configure...]"
+        // pour que l'admin sache qu'elle n'apparaitra PAS dans l'email reel tant
+        // que la variable d'env n'est pas set sur Render. Cote backend, le bloc
+        // entier est omis si l'URL est absente/invalide - zero risque de bouton
+        // casse chez le client.
         preview: tx({
-          fr: `Bonjour ${name},\n\nVotre commande est livree. Nous serions ravis de lire votre temoignage. Cliquez sur le lien personnel ci-dessous pour partager votre experience en quelques mots :\n\n[lien temoignage genere automatiquement]\n\n---\n\nVous avez un compte Google ? Vous pouvez aussi nous donner un enorme coup de pouce en laissant un avis rapide sur notre page :\n[LIEN_GOOGLE_REVIEW]\n\nMassive Medias`,
-          en: `Hello ${name},\n\nYour order has been delivered. We would love to hear your feedback. Click the personal link below to share your experience:\n\n[auto-generated testimonial link]\n\n---\n\nDo you have a Google account? You can also give us a huge boost by leaving a quick review on our page:\n[LIEN_GOOGLE_REVIEW]\n\nMassive Medias`,
-          es: `Hola ${name},\n\nTu pedido esta entregado. Comparte tu experiencia:\n\n[enlace de testimonio]\n\n---\n\nTienes cuenta Google? Tambien puedes dejarnos una resena:\n[LIEN_GOOGLE_REVIEW]\n\nMassive Medias`,
+          fr: `Bonjour ${name},\n\nVotre commande est livree. Nous serions ravis de lire votre temoignage. Cliquez sur le lien personnel ci-dessous pour partager votre experience en quelques mots :\n\n[lien temoignage genere automatiquement]\n\n--- [section ci-dessous uniquement si GOOGLE_REVIEW_URL est configure sur Render] ---\n\nVous avez un compte Google ? Vous pouvez aussi nous donner un enorme coup de pouce en laissant un avis rapide sur notre page :\n[votre URL Google My Business]\n\nMassive Medias`,
+          en: `Hello ${name},\n\nYour order has been delivered. We would love to hear your feedback. Click the personal link below to share your experience:\n\n[auto-generated testimonial link]\n\n--- [section below only if GOOGLE_REVIEW_URL env var is set on Render] ---\n\nDo you have a Google account? You can also give us a huge boost by leaving a quick review on our page:\n[your Google My Business URL]\n\nMassive Medias`,
+          es: `Hola ${name},\n\nTu pedido esta entregado. Comparte tu experiencia:\n\n[enlace de testimonio]\n\n--- [solo si GOOGLE_REVIEW_URL esta configurada] ---\n\nTienes cuenta Google?\n[URL Google My Business]\n\nMassive Medias`,
         }),
         notes: tx({
-          fr: 'Cree aussi un enregistrement Temoignage en attente de validation dans /admin/temoignages. Le lien Google Review utilise la variable d\'env GOOGLE_REVIEW_URL en prod.',
-          en: 'Also creates a pending testimonial record in /admin/temoignages. Google Review link uses GOOGLE_REVIEW_URL env var in prod.',
-          es: 'Crea un testimonio pendiente. Enlace Google usa GOOGLE_REVIEW_URL.',
+          fr: 'Cree un enregistrement Temoignage en attente. La section Google Review n\'est rendue QUE si la variable d\'env GOOGLE_REVIEW_URL est set sur Render (https://...). Sinon le bloc entier est omis - aucun bouton casse envoye au client.',
+          en: 'Creates a pending testimonial record. Google Review section is rendered ONLY if GOOGLE_REVIEW_URL env var is set on Render (https://...). Otherwise entire block is omitted - no broken button sent to client.',
+          es: 'Crea testimonio pendiente. Bloque Google solo si GOOGLE_REVIEW_URL esta configurada.',
         }),
       };
     default:

@@ -316,13 +316,65 @@ interface TestimonialRequestData {
   orderRef?: string;
 }
 
+// Helper : valide qu'une string ressemble a une URL HTTP(S) REELLE (pas un
+// placeholder, pas un string vide, pas une URL relative). Utilise pour decider
+// si on rend le bloc Google Review ou si on l'omet.
+function isValidHttpUrl(value: string | undefined | null): boolean {
+  if (!value || typeof value !== 'string') return false;
+  const trimmed = value.trim();
+  if (!trimmed) return false;
+  // Rejette explicitement le placeholder pour eviter les faux positifs
+  if (trimmed.startsWith('[') || trimmed.includes('LIEN_GOOGLE_REVIEW')) return false;
+  return /^https?:\/\/.+\..+/i.test(trimmed);
+}
+
+// Minimal HTML attribute-safe escape (on reste simple - nos URLs ne contiennent
+// pas de " dans le cas normal, mais on guarde contre un admin maladroit qui
+// aurait colle une URL avec des caracteres suspects dans GOOGLE_REVIEW_URL).
+function escapeHtmlAttr(value: string): string {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
 function buildTestimonialRequestHtml(data: TestimonialRequestData): string {
-  // FIX-SEO (23 avril 2026) : lien Google Review injecte a la fin pour booster
-  // le referencement local. La variable d'env GOOGLE_REVIEW_URL permet au client
-  // de pointer vers sa fiche Google My Business sans toucher au code.
-  // Si absente, on garde le placeholder [LIEN_GOOGLE_REVIEW] comme demande pour
-  // que ce soit visible a la relecture et remplace manuellement.
-  const googleReviewUrl = process.env.GOOGLE_REVIEW_URL || '[LIEN_GOOGLE_REVIEW]';
+  // FIX-GOOGLE-REVIEW (23 avril 2026) : bug precedent : si GOOGLE_REVIEW_URL
+  // n'etait pas configuree, le template literal inlinait le placeholder
+  // `[LIEN_GOOGLE_REVIEW]` dans le href du bouton ET dans le texte fallback
+  // -> bouton cliquable qui menait vers une URL cassee + placeholder visible
+  // dans l'email recu par le client. Embarrassant.
+  //
+  // Nouveau comportement :
+  //   - URL configuree et valide (http(s)://...) -> bloc rendu, URL injectee
+  //     de maniere identique dans href ET texte fallback (meme variable locale
+  //     escapee une seule fois, donc impossible de desynchroniser).
+  //   - URL absente ou invalide (placeholder, string vide, URL bizarre) ->
+  //     le bloc entier est OMIS. Pas de bouton casse, pas de placeholder
+  //     visible dans l'email. Silence propre.
+  const rawUrl = process.env.GOOGLE_REVIEW_URL;
+  const hasValidUrl = isValidHttpUrl(rawUrl);
+  const safeUrl = hasValidUrl ? escapeHtmlAttr(rawUrl!.trim()) : '';
+
+  const googleBlock = hasValidUrl
+    ? `
+    <!-- ===== Google Review prompt (SEO local) ===== -->
+    <div style="margin-top:32px;padding-top:20px;border-top:1px solid #eee;">
+      <p style="color:#666;margin:0 0 10px;font-size:14px;line-height:1.6;">
+        Vous avez un compte Google ? Vous pouvez aussi nous donner un \u00e9norme coup de pouce en laissant un avis rapide sur notre page :
+      </p>
+      <p style="margin:0;font-size:14px;">
+        <a href="${safeUrl}" style="display:inline-block;color:#1a73e8;text-decoration:none;font-weight:600;background:#f1f6ff;padding:10px 18px;border-radius:8px;border:1px solid #d2e3fc;">
+          \u2B50 Laisser un avis Google
+        </a>
+      </p>
+      <p style="color:#999;margin:8px 0 0;font-size:11px;word-break:break-all;">
+        <a href="${safeUrl}" style="color:#999;text-decoration:none;">${safeUrl}</a>
+      </p>
+    </div>
+  `
+    : '';
 
   const content = `
     <h2 style="color:#222;margin:0 0 8px;font-size:16px;">Bonjour ${data.customerName},</h2>
@@ -348,21 +400,7 @@ function buildTestimonialRequestHtml(data: TestimonialRequestData): string {
       Ou copiez ce lien dans votre navigateur :<br>
       <a href="${data.testimonialLink}" style="color:#FF52A0;word-break:break-all;">${data.testimonialLink}</a>
     </p>
-
-    <!-- ===== Google Review prompt (SEO local) ===== -->
-    <div style="margin-top:32px;padding-top:20px;border-top:1px solid #eee;">
-      <p style="color:#666;margin:0 0 10px;font-size:14px;line-height:1.6;">
-        Vous avez un compte Google ? Vous pouvez aussi nous donner un \u00e9norme coup de pouce en laissant un avis rapide sur notre page :
-      </p>
-      <p style="margin:0;font-size:14px;">
-        <a href="${googleReviewUrl}" style="display:inline-block;color:#1a73e8;text-decoration:none;font-weight:600;background:#f1f6ff;padding:10px 18px;border-radius:8px;border:1px solid #d2e3fc;">
-          \u2B50 Laisser un avis Google
-        </a>
-      </p>
-      <p style="color:#999;margin:8px 0 0;font-size:11px;word-break:break-all;">
-        ${googleReviewUrl}
-      </p>
-    </div>
+${googleBlock}
   `;
 
   return massiveEmailWrapper(content);
