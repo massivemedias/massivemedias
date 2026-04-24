@@ -260,7 +260,14 @@ input[type="number"] {
    ============================================= */
 
 html, body, #root {
-  overflow-x: hidden;
+  /* FIX-STICKY (23 avril 2026) : overflow-x: hidden cassait position: sticky sur
+     tous les descendants (spec CSS : un ancetre avec overflow-x != visible cree
+     un contexte de scroll implicite qui capture le sticky). La sidebar admin
+     declaree "sticky top-24" ne suivait donc PAS le scroll malgre ses classes.
+     Fix : overflow-x: clip a le meme effet visuel (masque le debordement
+     horizontal) MAIS ne cree pas de contexte de scroll -> les descendants
+     sticky fonctionnent. Support all evergreen browsers 2022+. */
+  overflow-x: clip;
   max-width: 100vw;
 }
 
