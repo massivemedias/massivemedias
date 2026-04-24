@@ -152,7 +152,7 @@ function ActivatePrivateSaleModal({ artistSlug, item, category = 'prints', onClo
                       ? tx({ fr: 'Modifier la vente privee', en: 'Edit private sale', es: 'Editar venta privada' })
                       : tx({ fr: 'Creer une vente privee', en: 'Create private sale', es: 'Crear venta privada' })}
                 </h3>
-                <p className="text-[11px] text-grey-muted truncate max-w-[240px]">
+                <p className="text-[13px] text-grey-muted truncate max-w-[240px]">
                   {item?.titleFr || item?.titleEn || item?.id}
                 </p>
               </div>
@@ -181,7 +181,7 @@ function ActivatePrivateSaleModal({ artistSlug, item, category = 'prints', onClo
                       es: 'Correo enviado al cliente',
                     })}
                   </p>
-                  <p className="text-grey-muted text-xs mt-0.5">
+                  <p className="text-grey-muted text-[13px] mt-1 leading-snug">
                     {result.emailSent
                       ? tx({
                           fr: `Le tutoriel a ete envoye a ${result.clientEmail}.`,
@@ -199,21 +199,21 @@ function ActivatePrivateSaleModal({ artistSlug, item, category = 'prints', onClo
 
               {/* Link display + copy */}
               <div>
-                <label className="text-[11px] text-grey-muted uppercase tracking-wider font-semibold">
+                <label className="text-[13px] text-grey-muted uppercase tracking-wider font-semibold">
                   {tx({ fr: 'Lien prive client', en: 'Client private link', es: 'Enlace privado' })}
                 </label>
                 <div className="mt-1 flex gap-2">
                   <input
                     readOnly
                     value={result.clientLink || ''}
-                    className="flex-1 rounded-lg text-[11px] font-mono px-3 py-2.5 outline-none border"
+                    className="flex-1 rounded-lg text-[13px] font-mono px-3 py-2.5 outline-none border"
                     style={inputBg}
                     onClick={(e) => e.target.select()}
                   />
                   <button
                     type="button"
                     onClick={copyLink}
-                    className={`px-3 rounded-lg font-semibold text-xs flex items-center gap-1.5 transition-colors ${
+                    className={`px-3 rounded-lg font-semibold text-sm flex items-center gap-1.5 transition-colors ${
                       copied ? 'bg-green-500 text-white' : 'bg-accent text-white hover:brightness-110'
                     }`}
                   >
@@ -227,14 +227,14 @@ function ActivatePrivateSaleModal({ artistSlug, item, category = 'prints', onClo
                   href={result.clientLink}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-1 mt-2 text-[11px] text-accent hover:underline"
+                  className="inline-flex items-center gap-1.5 mt-2 text-[13px] text-accent hover:underline"
                 >
                   <ExternalLink size={10} /> {tx({ fr: 'Ouvrir dans un onglet', en: 'Open in tab', es: 'Abrir' })}
                 </a>
               </div>
 
               {/* Summary */}
-              <div className="rounded-lg p-3 text-xs space-y-1" style={{ background: 'var(--bg-glass)' }}>
+              <div className="rounded-lg p-3.5 text-sm space-y-2" style={{ background: 'var(--bg-glass)' }}>
                 <div className="flex justify-between text-grey-muted">
                   <span>{tx({ fr: 'Prix minimum', en: 'Min price', es: 'Precio min' })}</span>
                   <span className="text-heading font-semibold">{result.basePrice}$ CAD</span>
@@ -270,10 +270,10 @@ function ActivatePrivateSaleModal({ artistSlug, item, category = 'prints', onClo
                     className="w-14 h-14 rounded-lg object-cover flex-shrink-0 border border-white/10"
                   />
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold text-heading truncate">
+                    <p className="text-sm font-semibold text-heading truncate">
                       {item.titleFr || item.titleEn || item.id}
                     </p>
-                    <p className="text-[10px] text-grey-muted font-mono truncate">{item.id}</p>
+                    <p className="text-[13px] text-grey-muted font-mono truncate">{item.id}</p>
                     {isReactivation && (
                       <span className="inline-flex items-center gap-1 mt-1 text-[9px] bg-accent/15 text-accent px-1.5 py-0.5 rounded font-semibold">
                         <Sparkles size={9} />
@@ -286,7 +286,7 @@ function ActivatePrivateSaleModal({ artistSlug, item, category = 'prints', onClo
 
               {/* Client email */}
               <label className="block">
-                <span className="text-[11px] uppercase tracking-wider font-semibold text-grey-muted flex items-center gap-1.5 mb-1.5">
+                <span className="text-[13px] uppercase tracking-wider font-semibold text-grey-muted flex items-center gap-1.5 mb-1.5">
                   <Mail size={11} />
                   {tx({ fr: 'Email du client', en: 'Client email', es: 'Email del cliente' })} *
                 </span>
@@ -305,7 +305,7 @@ function ActivatePrivateSaleModal({ artistSlug, item, category = 'prints', onClo
 
               {/* Base price */}
               <label className="block">
-                <span className="text-[11px] uppercase tracking-wider font-semibold text-grey-muted flex items-center gap-1.5 mb-1.5">
+                <span className="text-[13px] uppercase tracking-wider font-semibold text-grey-muted flex items-center gap-1.5 mb-1.5">
                   <DollarSign size={11} />
                   {tx({ fr: 'Prix de base ($CAD)', en: 'Base price ($CAD)', es: 'Precio de base ($CAD)' })} *
                 </span>
@@ -321,7 +321,7 @@ function ActivatePrivateSaleModal({ artistSlug, item, category = 'prints', onClo
                   style={inputBg}
                   disabled={submitting}
                 />
-                <p className="text-[10px] text-grey-muted mt-1">
+                <p className="text-[13px] text-grey-muted mt-1">
                   {tx({
                     fr: 'Montant minimum que le client doit payer pour cette oeuvre.',
                     en: 'Minimum amount the client must pay for this artwork.',
@@ -341,14 +341,14 @@ function ActivatePrivateSaleModal({ artistSlug, item, category = 'prints', onClo
                   disabled={submitting}
                 />
                 <div className="flex-1">
-                  <p className="text-xs font-semibold text-heading">
+                  <p className="text-sm font-semibold text-heading">
                     {tx({
                       fr: 'Autoriser le client a payer plus cher (Prix libre)',
                       en: 'Allow client to pay more (Pay what you want)',
                       es: 'Permitir al cliente pagar mas',
                     })}
                   </p>
-                  <p className="text-[10px] text-grey-muted mt-0.5 leading-relaxed">
+                  <p className="text-[13px] text-grey-muted mt-0.5 leading-relaxed">
                     {tx({
                       fr: 'Le prix de base reste un minimum. Le client peut choisir de payer plus.',
                       en: 'The base price stays the minimum. The client can choose to pay more.',
@@ -360,7 +360,7 @@ function ActivatePrivateSaleModal({ artistSlug, item, category = 'prints', onClo
 
               {/* Error */}
               {error && (
-                <div className="flex items-start gap-2 rounded-lg bg-red-500/10 border border-red-500/30 px-3 py-2 text-xs text-red-400">
+                <div className="flex items-start gap-2 rounded-lg bg-red-500/10 border border-red-500/30 px-3 py-2.5 text-sm text-red-400 leading-snug">
                   <AlertCircle size={14} className="flex-shrink-0 mt-0.5" />
                   <span>{error}</span>
                 </div>

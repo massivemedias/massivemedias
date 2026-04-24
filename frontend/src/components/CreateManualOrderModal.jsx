@@ -213,7 +213,7 @@ function CreateManualOrderModal({ onClose, onCreated }) {
                 <p className="text-heading font-semibold text-sm">
                   {tx({ fr: 'Commande et facture creees', en: 'Order and invoice created', es: 'Pedido y factura creados' })}
                 </p>
-                <p className="text-grey-muted text-xs mt-0.5">
+                <p className="text-grey-muted text-sm mt-0.5 leading-snug">
                   {tx({ fr: 'Numero de facture', en: 'Invoice number', es: 'Numero de factura' })}:{' '}
                   <span className="text-heading font-mono font-bold">{result.invoiceNumber}</span>
                 </p>
@@ -222,7 +222,7 @@ function CreateManualOrderModal({ onClose, onCreated }) {
 
             {result.paymentUrl ? (
               <div>
-                <label className="text-xs text-grey-muted uppercase tracking-wider block mb-1.5">
+                <label className="text-[13px] text-grey-muted uppercase tracking-wider block mb-1.5">
                   {tx({ fr: 'Lien de paiement Stripe', en: 'Stripe payment link', es: 'Enlace de pago Stripe' })}
                 </label>
                 <div className="flex items-stretch gap-2">
@@ -246,12 +246,12 @@ function CreateManualOrderModal({ onClose, onCreated }) {
                   href={result.paymentUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 mt-2 text-xs text-accent hover:brightness-110"
+                  className="inline-flex items-center gap-1.5 mt-2 text-sm text-accent hover:brightness-110"
                 >
                   <ExternalLink size={12} />
                   {tx({ fr: 'Ouvrir le lien dans un nouvel onglet', en: 'Open link in new tab', es: 'Abrir en nueva pestana' })}
                 </a>
-                <p className="text-[11px] text-grey-muted mt-2 leading-relaxed">
+                <p className="text-[13px] text-grey-muted mt-2 leading-relaxed">
                   {tx({
                     fr: 'Envoie ce lien au client par courriel ou WhatsApp. Quand il paie, la commande passera automatiquement en "paye" et la facture sera marquee comme reglee.',
                     en: 'Send this link to the customer by email or WhatsApp. When they pay, the order will auto-flip to "paid" and the invoice to "settled".',
@@ -270,7 +270,7 @@ function CreateManualOrderModal({ onClose, onCreated }) {
                     es: 'Pedido registrado como PAGADO',
                   })}
                 </p>
-                <p className="text-[11px] text-grey-muted mt-1.5 leading-relaxed">
+                <p className="text-[13px] text-grey-muted mt-1.5 leading-relaxed">
                   {tx({
                     fr: `Aucun lien Stripe genere. Le paiement hors-ligne${result.offlinePaymentMethod ? ` (${result.offlinePaymentMethod})` : ''} est deja consigne dans les notes de la commande. La facture est marquee "reglee".`,
                     en: `No Stripe link generated. Offline payment${result.offlinePaymentMethod ? ` (${result.offlinePaymentMethod})` : ''} already logged in order notes. Invoice marked "settled".`,
@@ -297,7 +297,7 @@ function CreateManualOrderModal({ onClose, onCreated }) {
               {/* Client info */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs text-grey-muted uppercase tracking-wider block mb-1">
+                  <label className="text-[13px] text-grey-muted uppercase tracking-wider block mb-1">
                     {tx({ fr: 'Nom du client', en: 'Customer name', es: 'Nombre del cliente' })} *
                   </label>
                   <input
@@ -310,7 +310,7 @@ function CreateManualOrderModal({ onClose, onCreated }) {
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-grey-muted uppercase tracking-wider block mb-1">
+                  <label className="text-[13px] text-grey-muted uppercase tracking-wider block mb-1">
                     {tx({ fr: 'Courriel', en: 'Email', es: 'Correo' })}
                   </label>
                   <input
@@ -326,7 +326,7 @@ function CreateManualOrderModal({ onClose, onCreated }) {
                   Layout grille 2 colonnes sur desktop pour rester compact. */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs text-grey-muted uppercase tracking-wider block mb-1">
+                  <label className="text-[13px] text-grey-muted uppercase tracking-wider block mb-1">
                     {tx({
                       fr: `Nom de l'entreprise (optionnel)`,
                       en: 'Company name (optional)',
@@ -343,7 +343,7 @@ function CreateManualOrderModal({ onClose, onCreated }) {
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-grey-muted uppercase tracking-wider block mb-1">
+                  <label className="text-[13px] text-grey-muted uppercase tracking-wider block mb-1">
                     {tx({ fr: 'Telephone (optionnel)', en: 'Phone (optional)', es: 'Telefono (opcional)' })}
                   </label>
                   <input
@@ -359,7 +359,7 @@ function CreateManualOrderModal({ onClose, onCreated }) {
               {/* Items lines */}
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-xs text-grey-muted uppercase tracking-wider">
+                  <label className="text-[13px] text-grey-muted uppercase tracking-wider">
                     {tx({ fr: 'Lignes de facture', en: 'Invoice lines', es: 'Lineas de factura' })} *
                   </label>
                   <button
@@ -374,13 +374,13 @@ function CreateManualOrderModal({ onClose, onCreated }) {
                 </div>
                 {/* Colonnes headers pour clarifier Quantite vs Prix total */}
                 <div className="grid grid-cols-[1fr_70px_90px_32px] gap-2 mb-1 px-0.5">
-                  <span className="text-[10px] text-grey-muted uppercase tracking-wider">
+                  <span className="text-[13px] text-grey-muted uppercase tracking-wider">
                     {tx({ fr: 'Description', en: 'Description', es: 'Descripcion' })}
                   </span>
-                  <span className="text-[10px] text-grey-muted uppercase tracking-wider text-center">
+                  <span className="text-[13px] text-grey-muted uppercase tracking-wider text-center">
                     {tx({ fr: 'Quantite', en: 'Quantity', es: 'Cantidad' })}
                   </span>
-                  <span className="text-[10px] text-grey-muted uppercase tracking-wider text-right">
+                  <span className="text-[13px] text-grey-muted uppercase tracking-wider text-right">
                     {tx({ fr: 'Prix total ($)', en: 'Line total ($)', es: 'Precio total ($)' })}
                   </span>
                   <span></span>
@@ -439,7 +439,7 @@ function CreateManualOrderModal({ onClose, onCreated }) {
                     </div>
                   ))}
                 </div>
-                <p className="text-[10px] text-grey-muted mt-2 leading-relaxed">
+                <p className="text-[13px] text-grey-muted mt-2 leading-relaxed">
                   {tx({
                     fr: 'Saisis le prix TOTAL de la ligne (ex: 100 stickers = 85$, pas 0.85$). La quantite est purement descriptive.',
                     en: 'Enter the TOTAL line price (ex: 100 stickers = $85, not $0.85). Quantity is purely descriptive.',
@@ -457,25 +457,25 @@ function CreateManualOrderModal({ onClose, onCreated }) {
                   <span className="text-heading text-sm font-semibold">{subtotal.toFixed(2)}$</span>
                 </div>
                 <div className="flex items-center justify-between px-4 py-2 border-b" style={dividerBorder}>
-                  <span className="text-grey-muted text-xs">
+                  <span className="text-grey-muted text-sm">
                     {tx({ fr: 'TPS (5%)', en: 'GST (5%)', es: 'TPS (5%)' })}
                   </span>
                   <span className="text-heading text-sm">{tps.toFixed(2)}$</span>
                 </div>
                 <div className="flex items-center justify-between px-4 py-2 border-b" style={dividerBorder}>
-                  <span className="text-grey-muted text-xs">
+                  <span className="text-grey-muted text-sm">
                     {tx({ fr: 'TVQ (9.975%)', en: 'QST (9.975%)', es: 'TVQ (9.975%)' })}
                   </span>
                   <span className="text-heading text-sm">{tvq.toFixed(2)}$</span>
                 </div>
                 <div className="flex items-center justify-between px-4 py-3 bg-accent/10">
-                  <span className="text-heading text-xs uppercase tracking-wider font-bold">
+                  <span className="text-heading text-sm uppercase tracking-wider font-bold">
                     {tx({ fr: 'Grand Total (TTC)', en: 'Grand Total (with tax)', es: 'Total con impuestos' })}
                   </span>
                   <span className="text-accent text-xl font-heading font-bold">{grandTotal.toFixed(2)}$</span>
                 </div>
               </div>
-              <p className="text-[10px] text-grey-muted mt-1.5 text-right">
+              <p className="text-[13px] text-grey-muted mt-1.5 text-right">
                 {tx({
                   fr: 'Montant facture au client sur Stripe = Grand Total (TTC).',
                   en: 'Amount charged to client on Stripe = Grand Total (tax included).',
@@ -485,7 +485,7 @@ function CreateManualOrderModal({ onClose, onCreated }) {
 
               {/* Notes */}
               <div>
-                <label className="text-xs text-grey-muted uppercase tracking-wider block mb-1">
+                <label className="text-[13px] text-grey-muted uppercase tracking-wider block mb-1">
                   {tx({ fr: 'Notes internes (optionnel)', en: 'Internal notes (optional)', es: 'Notas internas (opcional)' })}
                 </label>
                 <textarea
@@ -529,7 +529,7 @@ function CreateManualOrderModal({ onClose, onCreated }) {
                           es: 'Pago requerido (generar enlace Stripe)',
                         })}
                       </p>
-                      <p className="text-[11px] text-grey-muted mt-0.5">
+                      <p className="text-[13px] text-grey-muted mt-0.5">
                         {tx({
                           fr: 'Envoyer le lien au client. La commande passera a "paye" automatiquement au paiement.',
                           en: 'Send link to client. Order auto-flips to "paid" on payment.',
@@ -560,7 +560,7 @@ function CreateManualOrderModal({ onClose, onCreated }) {
                           es: 'Pagado fuera de linea',
                         })}
                       </p>
-                      <p className="text-[11px] text-grey-muted mt-0.5">
+                      <p className="text-[13px] text-grey-muted mt-0.5">
                         {tx({
                           fr: 'La commande sera enregistree directement en statut "paye". Aucun lien Stripe.',
                           en: 'Order recorded directly as "paid". No Stripe link.',
@@ -571,7 +571,7 @@ function CreateManualOrderModal({ onClose, onCreated }) {
                         <select
                           value={offlineMethod}
                           onChange={(e) => setOfflineMethod(e.target.value)}
-                          className="mt-2 w-full rounded-md text-xs px-2 py-1.5 outline-none border focus:border-green-500"
+                          className="mt-2 w-full rounded-md text-sm px-3 py-2 outline-none border focus:border-green-500"
                           style={inputBg}
                         >
                           <option value="interac">{tx({ fr: 'Interac', en: 'Interac', es: 'Interac' })}</option>
@@ -587,7 +587,7 @@ function CreateManualOrderModal({ onClose, onCreated }) {
               </div>
 
               {error && (
-                <div className="flex items-start gap-2 rounded-lg bg-red-500/10 border border-red-500/30 px-3 py-2 text-xs text-red-400">
+                <div className="flex items-start gap-2 rounded-lg bg-red-500/10 border border-red-500/30 px-3 py-2.5 text-sm text-red-400 leading-snug">
                   <AlertCircle size={14} className="flex-shrink-0 mt-0.5" />
                   <span>{error}</span>
                 </div>

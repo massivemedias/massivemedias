@@ -155,14 +155,14 @@ function UserMergeModal({ users = [], initialSource = '', onClose, onMerged }) {
                   <p className="text-heading font-semibold">
                     {tx({ fr: 'Fusion reussie', en: 'Merge successful', es: 'Fusion exitosa' })}
                   </p>
-                  <p className="text-grey-muted text-xs mt-0.5">
-                    {result.sourceEmail} <ArrowRight className="inline mx-1" size={10} /> {result.targetEmail}
+                  <p className="text-grey-muted text-[13px] mt-1 leading-snug">
+                    {result.sourceEmail} <ArrowRight className="inline mx-1" size={11} /> {result.targetEmail}
                   </p>
                 </div>
               </div>
 
-              <div className="rounded-lg p-3 text-xs space-y-1" style={{ background: 'var(--bg-glass)' }}>
-                <h4 className="text-heading font-semibold mb-2 text-[11px] uppercase tracking-wider">
+              <div className="rounded-lg p-3.5 text-sm space-y-2" style={{ background: 'var(--bg-glass)' }}>
+                <h4 className="text-heading font-semibold mb-2 text-[13px] uppercase tracking-wider">
                   {tx({ fr: 'Donnees migrees', en: 'Data migrated', es: 'Datos migrados' })}
                 </h4>
                 <div className="flex justify-between text-grey-muted">
@@ -181,7 +181,7 @@ function UserMergeModal({ users = [], initialSource = '', onClose, onMerged }) {
                   <span>{tx({ fr: 'Demandes edition artiste', en: 'Artist edit requests', es: 'Solicitudes' })}</span>
                   <span className="text-heading font-mono">{result.updatedArtistEditRequests}</span>
                 </div>
-                <div className="pt-1.5 mt-1.5 border-t border-white/5 flex justify-between text-grey-muted">
+                <div className="pt-2 mt-1 border-t border-white/5 flex justify-between text-grey-muted">
                   <span>{tx({ fr: 'Compte source supprime', en: 'Source account deleted', es: 'Cuenta origen eliminada' })}</span>
                   <span className="text-heading font-mono">
                     {result.deletedSourceUserRole || result.deletedSourceClient
@@ -192,11 +192,11 @@ function UserMergeModal({ users = [], initialSource = '', onClose, onMerged }) {
               </div>
 
               {Array.isArray(result.errors) && result.errors.length > 0 && (
-                <div className="rounded-lg bg-yellow-500/10 border border-yellow-500/30 px-3 py-2 text-xs text-yellow-300">
-                  <p className="font-semibold mb-1">
+                <div className="rounded-lg bg-yellow-500/10 border border-yellow-500/30 px-3 py-2.5 text-sm text-yellow-300 leading-snug">
+                  <p className="font-semibold mb-1.5">
                     {tx({ fr: 'Avertissements', en: 'Warnings', es: 'Advertencias' })} ({result.errors.length})
                   </p>
-                  <ul className="space-y-0.5 text-[11px] text-yellow-200/80 font-mono max-h-32 overflow-y-auto">
+                  <ul className="space-y-0.5 text-[13px] text-yellow-200/80 font-mono max-h-32 overflow-y-auto">
                     {result.errors.slice(0, 10).map((e, i) => <li key={i}>{e}</li>)}
                   </ul>
                 </div>
@@ -213,11 +213,11 @@ function UserMergeModal({ users = [], initialSource = '', onClose, onMerged }) {
           ) : (
             /* Form state */
             <div className="px-5 py-5 space-y-4">
-              {/* Warning rouge */}
+              {/* Warning rouge - FIX-A11Y : text-sm minimum (14px) + leading-relaxed. */}
               <div className="flex items-start gap-2.5 rounded-xl bg-red-500/10 border border-red-500/30 px-4 py-3">
-                <AlertTriangle size={16} className="text-red-400 flex-shrink-0 mt-0.5" />
-                <div className="text-xs text-red-200 leading-relaxed">
-                  <p className="font-bold text-red-300 mb-1 uppercase tracking-wider text-[10px]">
+                <AlertTriangle size={18} className="text-red-400 flex-shrink-0 mt-0.5" />
+                <div className="text-sm text-red-200 leading-relaxed">
+                  <p className="font-bold text-red-300 mb-1.5 uppercase tracking-wider text-[13px]">
                     {tx({ fr: 'Attention - Action irreversible', en: 'Warning - Irreversible', es: 'Atencion - Irreversible' })}
                   </p>
                   {tx({
@@ -228,10 +228,10 @@ function UserMergeModal({ users = [], initialSource = '', onClose, onMerged }) {
                 </div>
               </div>
 
-              {/* Source email */}
+              {/* Source email - FIX-A11Y : label bumpe a text-[13px]. */}
               <div>
-                <label className="text-[11px] uppercase tracking-wider font-semibold text-grey-muted flex items-center gap-1.5 mb-1.5">
-                  <Mail size={11} />
+                <label className="text-[13px] uppercase tracking-wider font-semibold text-grey-muted flex items-center gap-1.5 mb-2">
+                  <Mail size={13} />
                   {tx({
                     fr: 'Compte source (a supprimer)',
                     en: 'Source account (to delete)',
@@ -253,7 +253,7 @@ function UserMergeModal({ users = [], initialSource = '', onClose, onMerged }) {
                   {emailOptions.map(o => <option key={o.email} value={o.email}>{o.label}</option>)}
                 </datalist>
                 {sourcePreview && (
-                  <p className="text-[11px] text-grey-muted mt-1">
+                  <p className="text-[13px] text-grey-muted mt-1.5 leading-snug">
                     {sourcePreview.fullName || tx({ fr: 'Sans nom', en: 'Unnamed', es: 'Sin nombre' })}
                     {' · '}
                     <span className="text-heading">{sourcePreview.orderCount || 0} {tx({ fr: 'commandes', en: 'orders', es: 'pedidos' })}</span>
@@ -264,13 +264,13 @@ function UserMergeModal({ users = [], initialSource = '', onClose, onMerged }) {
 
               {/* Arrow visuel */}
               <div className="flex items-center justify-center text-grey-muted">
-                <ArrowRight size={18} className="text-accent" />
+                <ArrowRight size={20} className="text-accent" />
               </div>
 
-              {/* Target email */}
+              {/* Target email - FIX-A11Y : meme bumps qu'au-dessus */}
               <div>
-                <label className="text-[11px] uppercase tracking-wider font-semibold text-grey-muted flex items-center gap-1.5 mb-1.5">
-                  <Mail size={11} />
+                <label className="text-[13px] uppercase tracking-wider font-semibold text-grey-muted flex items-center gap-1.5 mb-2">
+                  <Mail size={13} />
                   {tx({
                     fr: 'Compte cible (a conserver)',
                     en: 'Target account (to keep)',
@@ -291,7 +291,7 @@ function UserMergeModal({ users = [], initialSource = '', onClose, onMerged }) {
                   {emailOptions.map(o => <option key={o.email} value={o.email}>{o.label}</option>)}
                 </datalist>
                 {targetPreview && (
-                  <p className="text-[11px] text-grey-muted mt-1">
+                  <p className="text-[13px] text-grey-muted mt-1.5 leading-snug">
                     {targetPreview.fullName || tx({ fr: 'Sans nom', en: 'Unnamed', es: 'Sin nombre' })}
                     {' · '}
                     <span className="text-heading">{targetPreview.orderCount || 0} {tx({ fr: 'commandes existantes', en: 'existing orders', es: 'pedidos' })}</span>
@@ -300,8 +300,8 @@ function UserMergeModal({ users = [], initialSource = '', onClose, onMerged }) {
               </div>
 
               {sameEmail && sourceEmail && (
-                <p className="text-xs text-yellow-400 flex items-center gap-1.5">
-                  <AlertTriangle size={12} />
+                <p className="text-sm text-yellow-400 flex items-center gap-1.5 leading-snug">
+                  <AlertTriangle size={14} />
                   {tx({
                     fr: 'Source et cible sont identiques - choisissez deux comptes differents.',
                     en: 'Source and target are identical.',
@@ -311,8 +311,8 @@ function UserMergeModal({ users = [], initialSource = '', onClose, onMerged }) {
               )}
 
               {error && (
-                <div className="flex items-start gap-2 rounded-lg bg-red-500/10 border border-red-500/30 px-3 py-2 text-xs text-red-400">
-                  <AlertTriangle size={14} className="flex-shrink-0 mt-0.5" />
+                <div className="flex items-start gap-2 rounded-lg bg-red-500/10 border border-red-500/30 px-3 py-2.5 text-sm text-red-400 leading-snug">
+                  <AlertTriangle size={16} className="flex-shrink-0 mt-0.5" />
                   <span>{error}</span>
                 </div>
               )}

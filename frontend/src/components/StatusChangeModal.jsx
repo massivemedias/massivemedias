@@ -126,7 +126,7 @@ function StatusChangeModal({ order, currentStatus, targetStatus, onCancel, onCon
           {/* Header */}
           <div className="flex items-center justify-between px-5 py-4 border-b" style={dividerBorder}>
             <div className="flex-1 min-w-0">
-              <p className="text-[10px] uppercase tracking-wider text-grey-muted font-semibold mb-1">
+              <p className="text-[13px] uppercase tracking-wider text-grey-muted font-semibold mb-1.5">
                 {tx({ fr: 'Changement de statut', en: 'Status change', es: 'Cambio de estado' })}
               </p>
               <h3 className="text-heading font-heading font-bold text-base leading-tight flex items-center gap-2 flex-wrap">
@@ -135,7 +135,7 @@ function StatusChangeModal({ order, currentStatus, targetStatus, onCancel, onCon
                 <span className="text-accent">{toLabel}</span>
               </h3>
               {order?.customerName && (
-                <p className="text-xs text-grey-muted mt-1 truncate">
+                <p className="text-sm text-grey-muted mt-1.5 truncate leading-snug">
                   {tx({ fr: 'Commande de', en: 'Order from', es: 'Pedido de' })}{' '}
                   <span className="text-heading">{order.customerName}</span>
                   {order.customerEmail && <span className="ml-1">({order.customerEmail})</span>}
@@ -159,38 +159,38 @@ function StatusChangeModal({ order, currentStatus, targetStatus, onCancel, onCon
               <>
                 <div className="flex items-center gap-2">
                   <span className="w-7 h-7 rounded-lg bg-accent/15 flex items-center justify-center">
-                    <Mail size={13} className="text-accent" />
+                    <Mail size={14} className="text-accent" />
                   </span>
-                  <span className="text-xs font-semibold text-heading">
+                  <span className="text-sm font-semibold text-heading">
                     {tx({ fr: 'Apercu du courriel au client', en: 'Client email preview', es: 'Vista previa' })}
                   </span>
                 </div>
                 <div className="rounded-lg border px-3 py-3 space-y-2" style={{ borderColor: 'var(--bg-input-border)', background: 'var(--bg-input)' }}>
-                  <div className="text-[11px] text-grey-muted">
+                  <div className="text-[13px] text-grey-muted">
                     <span className="font-semibold">{tx({ fr: 'Objet', en: 'Subject', es: 'Asunto' })} :</span>{' '}
                     <span className="text-heading">{email.subject}</span>
                   </div>
-                  <div className="border-t pt-2 text-xs text-heading whitespace-pre-wrap leading-relaxed font-mono" style={{ borderColor: 'var(--bg-input-border)' }}>
+                  <div className="border-t pt-2.5 text-[13px] text-heading whitespace-pre-wrap leading-relaxed font-mono" style={{ borderColor: 'var(--bg-input-border)' }}>
                     {email.preview}
                   </div>
                 </div>
                 {email.notes && (
-                  <p className="flex items-start gap-1.5 text-[11px] text-grey-muted leading-relaxed">
-                    <AlertTriangle size={11} className="flex-shrink-0 mt-0.5 text-yellow-400" />
+                  <p className="flex items-start gap-2 text-[13px] text-grey-muted leading-relaxed">
+                    <AlertTriangle size={14} className="flex-shrink-0 mt-0.5 text-yellow-400" />
                     {email.notes}
                   </p>
                 )}
               </>
             ) : (
               <div className="flex items-start gap-3 rounded-lg border px-3 py-3" style={{ borderColor: 'var(--bg-input-border)', background: 'var(--bg-input)' }}>
-                <span className="w-7 h-7 rounded-lg bg-grey-muted/15 flex items-center justify-center flex-shrink-0">
-                  <MailX size={13} className="text-grey-muted" />
+                <span className="w-8 h-8 rounded-lg bg-grey-muted/15 flex items-center justify-center flex-shrink-0">
+                  <MailX size={15} className="text-grey-muted" />
                 </span>
                 <div>
                   <p className="text-sm font-semibold text-heading">
                     {tx({ fr: 'Aucun courriel prevu', en: 'No email planned', es: 'Sin correo' })}
                   </p>
-                  <p className="text-[11px] text-grey-muted mt-0.5">
+                  <p className="text-[13px] text-grey-muted mt-1 leading-snug">
                     {tx({
                       fr: `Le statut "${toLabel}" ne declenche aucun courriel automatique cote client.`,
                       en: `Status "${toLabel}" does not trigger any automatic client email.`,
@@ -240,7 +240,7 @@ function StatusChangeModal({ order, currentStatus, targetStatus, onCancel, onCon
               type="button"
               onClick={onCancel}
               disabled={submitting}
-              className="w-full py-2 rounded-lg text-xs text-grey-muted hover:text-heading transition-colors disabled:opacity-40"
+              className="w-full py-2 rounded-lg text-[13px] text-grey-muted hover:text-heading transition-colors disabled:opacity-40"
               style={{ background: 'transparent' }}
             >
               {tx({ fr: 'Annuler', en: 'Cancel', es: 'Cancelar' })}
