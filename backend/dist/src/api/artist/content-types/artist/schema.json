@@ -45,6 +45,8 @@
         "sortOrder": { "type": "integer", "default": 0 },
         "active": { "type": "boolean", "default": true },
         "commissionRate": { "type": "decimal", "default": 0.5 },
+        "printCommissionRate": { "type": "decimal", "default": 0.5 },
+        "stickerCommissionRate": { "type": "decimal", "default": 0.15 },
         "productionCosts": { "type": "json" }
     }
 }

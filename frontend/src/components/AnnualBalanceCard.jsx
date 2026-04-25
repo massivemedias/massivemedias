@@ -66,27 +66,42 @@ function AnnualBalanceCard() {
 
   const exportCSV = () => {
     if (!yearData) return;
-    const months = Object.entries(yearData.months || {});
+    // FIX-DEFENSIVE (23 avril 2026) : optional chaining + fallbacks partout
+    // pour ne pas crasher l'export si l'API retourne une structure tronquee
+    // (ex: yearData.months absent, yearData.totals partiel).
+    const months = Object.entries(yearData?.months || {});
     const mNames = MONTH_NAMES.fr;
-    const t = yearData.totals || {};
+    const t = yearData?.totals || {};
+    // Helper local : valeur numerique safe (evite NaN dans le CSV).
+    const num = (v) => Number.isFinite(Number(v)) ? Number(v) : 0;
     const lines = [
       `Massive Medias - Bilan annuel ${year}`,
       `NEQ: 2269057891 | TPS: 732457635RT0001 | TVQ: 4012577678TQ0001`,
       '',
       'Mois,Revenus,Depenses,TPS payee,TVQ payee,Bilan',
       ...months.map(([key, m]) => {
-        const balance = (m.revenue || 0) - (m.expenses || 0);
-        return `${mNames[parseInt(key) - 1]},${fmt(m.revenue)},${fmt(m.expenses)},${fmt(m.tps)},${fmt(m.tvq)},${fmt(balance)}`;
+        const safeM = m || {};
+        const balance = num(safeM.revenue) - num(safeM.expenses);
+        return `${mNames[parseInt(key) - 1]},${fmt(safeM.revenue)},${fmt(safeM.expenses)},${fmt(safeM.tps)},${fmt(safeM.tvq)},${fmt(balance)}`;
       }),
-      `Total,${fmt(t.revenue)},${fmt(t.expenses)},${fmt(t.tps)},${fmt(t.tvq)},${fmt((t.revenue || 0) - (t.expenses || 0))}`,
+      `Total,${fmt(t.revenue)},${fmt(t.expenses)},${fmt(t.tps)},${fmt(t.tvq)},${fmt(num(t.revenue) - num(t.expenses))}`,
       '',
       'Taxes',
       `,TPS (5%),TVQ (9.975%)`,
       `Percue sur ventes,${fmt(t.revenueTps)},${fmt(t.revenueTvq)}`,
       `Payee sur achats,${fmt(t.tps)},${fmt(t.tvq)}`,
-      `Net a remettre,${fmt((t.revenueTps || 0) - (t.tps || 0))},${fmt((t.revenueTvq || 0) - (t.tvq || 0))}`,
+      `Net a remettre,${fmt(num(t.revenueTps) - num(t.tps))},${fmt(num(t.revenueTvq) - num(t.tvq))}`,
       '',
       `Depenses deductibles,${fmt(t.deductible)}`,
+      // FIX-MANUAL-EXPORT (23 avril 2026) : breakdown explicite des sources
+      // de revenus pour transparence comptable. Inclut les commandes manuelles
+      // (B2B, prepaid Interac/Square/comptant, et liens Stripe payes). Si les
+      // champs sont absents (vieux backend pre-fix), fallback 0 - pas de
+      // regression sur l'export existant.
+      '',
+      'Source des revenus',
+      `Commandes web (Stripe checkout),${fmt(t.revenueWeb)},${num(t.webCount)} commande${num(t.webCount) > 1 ? 's' : ''}`,
+      `Commandes manuelles (B2B / prepaid),${fmt(t.revenueManual)},${num(t.manualCount)} commande${num(t.manualCount) > 1 ? 's' : ''}`,
     ];
     downloadCSV(`massive-bilan-${year}.csv`, lines.join('\n'));
   };

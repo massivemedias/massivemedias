@@ -26,6 +26,9 @@
             "type": "string",
             "required": true
         },
+        "companyName": {
+            "type": "string"
+        },
         "customerPhone": {
             "type": "string"
         },
