@@ -33,6 +33,23 @@ function Header() {
   const services = t('nav.servicesList');
   const close = () => setMobileMenuOpen(false);
 
+  // FIX-NAV-SCROLL (27 avril 2026) : helper pour scroller en haut quand on
+  // re-clique sur le lien de la page courante. React Router ne re-render pas
+  // un Link si pathname == to, et ScrollToTop ne se declenche que sur un vrai
+  // changement de pathname. Sans ce helper, l'utilisateur reste au milieu de
+  // la page (tres frustrant sur mobile apres avoir scrolle pour lire).
+  // Comportement :
+  //   - Si pathname === target -> preventDefault + scrollTo(0,0) smooth.
+  //   - Sinon : laisse Link naviguer normalement (ScrollToTop scrollera apres).
+  // Le 2eme arg `andDo` permet de chainer une action (ex: close() pour le drawer mobile).
+  const navClick = (targetPath, andDo) => (e) => {
+    if (pathname === targetPath) {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    if (typeof andDo === 'function') andDo();
+  };
+
   // Desktop: dropdown "Services"
   const [servicesOpen, setServicesOpen] = useState(false);
   const servicesTimeoutRef = useRef(null);
@@ -54,7 +71,7 @@ function Header() {
         <nav className="mx-4 lg:mx-6 py-2">
           <div className="flex items-center justify-between">
             {/* Logo */}
-            <Link to="/" className="flex items-center gap-3 flex-shrink-0">
+            <Link to="/" onClick={navClick('/')} className="flex items-center gap-3 flex-shrink-0">
               <MassiveLogo className="transition-colors duration-300 logo-header" />
             </Link>
 
@@ -93,7 +110,7 @@ function Header() {
                           <Link
                             key={service.slug}
                             to={`/services/${service.slug}`}
-                            onClick={() => setServicesOpen(false)}
+                            onClick={navClick(`/services/${service.slug}`, () => setServicesOpen(false))}
                             className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${active ? 'bg-accent/15 text-accent' : 'nav-link hover:bg-white/5'}`}
                           >
                             {Icon && (
@@ -115,16 +132,17 @@ function Header() {
 
               <Link
                 to="/artistes"
+                onClick={navClick('/artistes')}
                 className={`transition-colors duration-200 font-medium text-sm whitespace-nowrap ${isActive('/artistes') || isActive('/boutique') ? 'text-accent' : 'nav-link'}`}
               >
                 {tx({ fr: 'Artistes', en: 'Artists', es: 'Artistas' })}
               </Link>
 
-              <Link to="/a-propos" className={`transition-colors duration-200 font-medium text-sm whitespace-nowrap ${isActive('/a-propos') ? 'text-accent' : 'nav-link'}`}>
+              <Link to="/a-propos" onClick={navClick('/a-propos')} className={`transition-colors duration-200 font-medium text-sm whitespace-nowrap ${isActive('/a-propos') ? 'text-accent' : 'nav-link'}`}>
                 {t('nav.aPropos')}
               </Link>
 
-              <Link to="/contact" className="btn-primary text-sm !py-1 !px-3.5 whitespace-nowrap">
+              <Link to="/contact" onClick={navClick('/contact')} className="btn-primary text-sm !py-1 !px-3.5 whitespace-nowrap">
                 {t('nav.contact')}
               </Link>
 
@@ -178,7 +196,7 @@ function Header() {
                 </button>
               )}
 
-              <Link to="/panier" className="relative p-2 transition-colors duration-200 nav-link" aria-label={t('nav.panier')}>
+              <Link to="/panier" onClick={navClick('/panier')} className="relative p-2 transition-colors duration-200 nav-link" aria-label={t('nav.panier')}>
                 <ShoppingCart size={20} />
                 {cartCount > 0 && (
                   <motion.span
@@ -255,7 +273,7 @@ function Header() {
             >
               {/* Drawer header row */}
               <div className="flex items-center justify-between px-4 py-3 border-b mobile-drawer-border flex-shrink-0">
-                <Link to="/" onClick={close} className="flex items-center">
+                <Link to="/" onClick={navClick('/', close)} className="flex items-center">
                   <MassiveLogo className="logo-header" />
                 </Link>
                 <button
@@ -282,7 +300,7 @@ function Header() {
                       key={service.slug}
                       to={`/services/${service.slug}`}
                       className={`flex items-center gap-3 px-3 py-2 rounded-xl mobile-drawer-item group transition-colors ${active ? 'bg-accent/15 text-accent' : 'nav-link'}`}
-                      onClick={close}
+                      onClick={navClick(`/services/${service.slug}`, close)}
                     >
                       {Icon && (
                         <span className="w-7 h-7 rounded-lg flex items-center justify-center mobile-icon-bg flex-shrink-0">
@@ -301,7 +319,7 @@ function Header() {
                 <Link
                   to="/artistes"
                   className={`flex items-center gap-3 px-3 py-2 rounded-xl mobile-drawer-item group transition-colors ${(isActive('/artistes') || isActive('/boutique')) ? 'bg-accent/15 text-accent' : 'nav-link'}`}
-                  onClick={close}
+                  onClick={navClick('/artistes', close)}
                 >
                   <span className="w-7 h-7 rounded-lg flex items-center justify-center mobile-icon-bg flex-shrink-0">
                     <Camera size={14} className="text-accent" />
@@ -313,7 +331,7 @@ function Header() {
                 <Link
                   to="/a-propos"
                   className={`flex items-center gap-3 px-3 py-2 rounded-xl mobile-drawer-item group transition-colors ${isActive('/a-propos') ? 'bg-accent/15 text-accent' : 'nav-link'}`}
-                  onClick={close}
+                  onClick={navClick('/a-propos', close)}
                 >
                   <span className="w-7 h-7 rounded-lg flex items-center justify-center mobile-icon-bg flex-shrink-0">
                     <Info size={14} className="text-accent" />
@@ -325,7 +343,7 @@ function Header() {
                 <Link
                   to="/panier"
                   className={`flex items-center gap-3 px-3 py-2 rounded-xl mobile-drawer-item group transition-colors ${isActive('/panier') ? 'bg-accent/15 text-accent' : 'nav-link'}`}
-                  onClick={close}
+                  onClick={navClick('/panier', close)}
                 >
                   <span className="w-7 h-7 rounded-lg flex items-center justify-center mobile-icon-bg flex-shrink-0 relative">
                     <ShoppingCart size={14} className="text-accent" />
@@ -411,7 +429,7 @@ function Header() {
                   <Link
                     to="/contact"
                     className="btn-primary w-full text-center py-2.5 font-bold flex items-center justify-center gap-2 text-[14px]"
-                    onClick={close}
+                    onClick={navClick('/contact', close)}
                   >
                     <Phone size={15} />
                     {t('nav.contact')}
