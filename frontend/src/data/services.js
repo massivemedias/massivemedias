@@ -155,7 +155,7 @@ Découpés à la forme exacte de ton design avec notre équipement de découpe p
     ],
     process: [
       { step: 1, title: 'Brief créatif', desc: 'Dis-nous ce que tu veux - logo, illustration, texte, forme custom' },
-      { step: 2, title: 'Création graphique', desc: 'On crée ou adapte ton visuel pour la découpe (inclus dans le prix)' },
+      { step: 2, title: 'Préparation fichier', desc: 'Tu nous envoies ton fichier prêt à imprimer (vectoriel ou haute résolution). Création graphique non incluse - service à part.' },
       { step: 3, title: 'Validation', desc: 'Aperçu numérique pour validation avant production' },
       { step: 4, title: 'Impression', desc: 'Impression haute qualité sur vinyle de ton choix' },
       { step: 5, title: 'Lamination', desc: 'Couche protectrice pour durabilité maximale' },
@@ -163,17 +163,23 @@ Découpés à la forme exacte de ton design avec notre équipement de découpe p
     ],
     pricing: {
       title: 'Tarifs Stickers Die-Cut',
-      note: 'Design graphique inclus dans tous les prix',
+      // FIX-PRICING (27 avril 2026) : grille alignee sur backend pricing-config.ts
+      // (STICKER_STANDARD_TIERS + STICKER_FX_TIERS) qui est la SSOT consommee par
+      // le configurateur. Avant ce fix : 250 stickers a 150$ affiche en page
+      // service alors que le configurateur facture 200$ -> client confus +
+      // probleme reputationnel. Versions EN/ES etaient deja correctes ; seul
+      // le FR etait en retard.
+      note: 'Design graphique non inclus - tu fournis ton fichier prêt à imprimer',
       tables: [
         {
           subtitle: 'Standard (Matte / Lustré)',
           headers: ['Qté', 'Prix', 'Prix/u'],
           rows: [
             ['25', '30$', '1,20$/u'],
-            ['50', '45$', '0,90$/u'],
-            ['100', '75$', '0,75$/u'],
-            ['250', '150$', '0,60$/u'],
-            ['500', '250$', '0,50$/u'],
+            ['50', '47,50$', '0,95$/u'],
+            ['100', '85$', '0,85$/u'],
+            ['250', '200$', '0,80$/u'],
+            ['500', '375$', '0,75$/u'],
           ],
         },
         {
@@ -181,10 +187,10 @@ Découpés à la forme exacte de ton design avec notre équipement de découpe p
           headers: ['Qté', 'Prix', 'Prix/u'],
           rows: [
             ['25', '35$', '1,40$/u'],
-            ['50', '55$', '1,10$/u'],
-            ['100', '90$', '0,90$/u'],
-            ['250', '175$', '0,70$/u'],
-            ['500', '300$', '0,60$/u'],
+            ['50', '57,50$', '1,15$/u'],
+            ['100', '100$', '1,00$/u'],
+            ['250', '225$', '0,90$/u'],
+            ['500', '425$', '0,85$/u'],
           ],
         },
       ],
@@ -204,14 +210,14 @@ Découpés à la forme exacte de ton design avec notre équipement de découpe p
     ],
     faq: [
       { q: 'Quels types de finis sont disponibles?', a: 'On offre matte, lustré, holographique, fond transparent, verre brisé, étoiles et points. Chaque fini a ses avantages selon l\'utilisation.' },
-      { q: 'Le design graphique est-il inclus?', a: 'Oui! La création ou adaptation de ton visuel pour la découpe est incluse dans le prix. Tu peux aussi fournir un fichier prêt.' },
+      { q: 'Le design graphique est-il inclus?', a: 'Non - tu fournis ton fichier prêt à imprimer (PDF/AI/SVG vectoriel ou PNG haute résolution). Si tu as besoin de création ou retouches, on offre un service de design à part : nous contacter pour devis.' },
       { q: 'Quelle est la quantité minimum?', a: 'À partir de 25 stickers identiques. Une démo photo/vidéo est envoyée pour validation avant la production complète.' },
       { q: 'Les stickers sont-ils résistants à l\'eau?', a: 'Oui, tous nos stickers sont laminés et résistants à l\'eau, aux UV et aux rayures. Durabilité extérieure de 3 à 5 ans.' },
       { q: 'Peut-on avoir une forme totalement custom?', a: 'Absolument! Nos stickers sont découpés sur mesure (die-cut) selon la forme exacte de ton design.' },
     ],
     seo: {
       title: 'Stickers Die-Cut Montréal | Personnalisés, Holographiques & Vinyle - Massive',
-      description: 'Stickers die-cut personnalisés à Montréal. Holographique, matte, glossy, transparent, vinyle. Design graphique inclus. Découpe pro sur mesure. À partir de 25 unités. Production locale Mile-End.',
+      description: 'Stickers die-cut personnalisés à Montréal. Holographique, matte, glossy, transparent, vinyle. Découpe pro sur mesure. À partir de 25 unités. Production locale Mile-End.',
     },
   },
 
@@ -305,7 +311,7 @@ Nous travaillons avec Adobe Illustrator, Figma et Photoshop pour créer des visu
     ],
     pricing: {
       title: 'Tarifs Design Graphique',
-      note: 'Le design de stickers est inclus dans le prix de production des stickers.',
+      note: 'Le design graphique est un service à part - les prix de production stickers/merch ne l\'incluent pas.',
       tables: [
         {
           subtitle: 'Design Graphique',
@@ -339,7 +345,7 @@ Nous travaillons avec Adobe Illustrator, Figma et Photoshop pour créer des visu
       { q: 'Combien coûte un logo?', a: 'Les logos débutent à 300$ pour un concept simple. Une identité visuelle complète (logo + couleurs + typographie + déclinaisons) commence à 800$.' },
       { q: 'Quel est le délai pour une création graphique?', a: 'Comptez 5 à 10 jours pour un logo, 3 à 5 jours pour une affiche ou un flyer, et 5 à 7 jours pour une pochette d\'album. Les identités visuelles complètes prennent 2 à 3 semaines.' },
       { q: 'Quels formats de fichiers sont livrés?', a: 'Tu reçois les fichiers vectoriels (AI, SVG, PDF) ainsi que les exports PNG/JPEG en haute résolution. Fichiers print-ready et versions optimisées pour les réseaux sociaux.' },
-      { q: 'Pouvez-vous créer le design de mon merch?', a: 'Oui! On crée les visuels pour tes t-shirts, hoodies, stickers, affiches et tout ce qui touche à ton image de marque. Le design de stickers est même inclus dans le prix de production.' },
+      { q: 'Pouvez-vous créer le design de mon merch?', a: 'Oui! On crée les visuels pour tes t-shirts, hoodies, stickers, affiches et tout ce qui touche à ton image de marque. Le design est facturé à part de la production - nous contacter pour devis selon la complexité.' },
       { q: 'Faites-vous des affiches et flyers d\'événement?', a: 'Absolument. Affiches de concerts, flyers promotionnels, cartes postales, pochettes d\'album - on couvre tous les supports imprimés pour promouvoir tes événements et ta musique.' },
       { q: 'Puis-je voir un proof avant la production finale?', a: 'Toujours. On envoie un proof numérique pour validation avant de finaliser. Deux rondes de révisions sont incluses dans chaque projet.' },
     ],

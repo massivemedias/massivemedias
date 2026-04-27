@@ -149,13 +149,13 @@ Cut to the exact shape of your design with our professional cutting equipment, e
       'Matte, glossy, clear, holographic vinyl',
       'Contour cut to the exact shape of the design',
       'Lamination included - water, UV, scratch resistant',
-      'Sticker graphic design included in the price',
+      'You provide your print-ready file (graphic design service available separately)',
       'Local delivery available',
       'Local production Montreal',
     ],
     process: [
       { step: 1, title: 'Creative brief', desc: 'Tell us what you want - logo, illustration, text, custom shape' },
-      { step: 2, title: 'Graphic design', desc: 'We create or adapt your visual for cutting (included in price)' },
+      { step: 2, title: 'File preparation', desc: 'You send us your print-ready file (vector or high-res). Graphic design not included - separate service available.' },
       { step: 3, title: 'Validation', desc: 'Digital preview for validation before production' },
       { step: 4, title: 'Printing', desc: 'High quality printing on your choice of vinyl' },
       { step: 5, title: 'Lamination', desc: 'Protective layer for maximum durability' },
@@ -163,7 +163,7 @@ Cut to the exact shape of your design with our professional cutting equipment, e
     ],
     pricing: {
       title: 'Die-Cut Stickers Pricing',
-      note: 'Graphic design included in all prices',
+      note: 'Graphic design not included - you provide your print-ready file',
       tables: [
         {
           subtitle: 'Standard (Matte / Glossy)',
@@ -204,14 +204,14 @@ Cut to the exact shape of your design with our professional cutting equipment, e
     ],
     faq: [
       { q: 'What finishes are available?', a: 'We offer glossy, matte, holographic, clear and prismatic. Each finish has its advantages depending on the use case.' },
-      { q: 'Is graphic design included?', a: 'Yes! Creating or adapting your visual for die-cutting is included in the price. You can also provide a print-ready file.' },
+      { q: 'Is graphic design included?', a: 'No - you provide your print-ready file (vector PDF/AI/SVG or high-res PNG). If you need design or retouching work, we offer it as a separate service: contact us for a quote.' },
       { q: 'What is the minimum quantity?', a: 'Starting from 25 identical stickers. A photo/video demo is sent for approval before full production.' },
       { q: 'Are the stickers waterproof?', a: 'Yes, all our stickers are laminated and resistant to water, UV and scratches. Outdoor durability of 3 to 5 years.' },
       { q: 'Can I get a fully custom shape?', a: 'Absolutely! Our stickers are die-cut to match the exact shape of your design.' },
     ],
     seo: {
       title: 'Die-Cut Stickers Montreal | Custom, Holographic & Vinyl - Massive',
-      description: 'Custom die-cut stickers in Montreal. Holographic, matte, glossy, clear, vinyl. Graphic design included. Pro precision cutting. From 25 units. Local production in Mile-End.',
+      description: 'Custom die-cut stickers in Montreal. Holographic, matte, glossy, clear, vinyl. Pro precision cutting. From 25 units. Local production in Mile-End.',
     },
   },
 
@@ -305,7 +305,7 @@ We work with Adobe Illustrator, Figma and Photoshop to create impactful visuals 
     ],
     pricing: {
       title: 'Graphic Design Pricing',
-      note: 'Sticker design is included in the sticker production price.',
+      note: 'Graphic design is a separate service - sticker/merch production prices do not include it.',
       tables: [
         {
           subtitle: 'Graphic Design',
@@ -339,7 +339,7 @@ We work with Adobe Illustrator, Figma and Photoshop to create impactful visuals 
       { q: 'How much does a logo cost?', a: 'Logos start at $300 for a simple concept. A complete visual identity (logo + colors + typography + variations) starts at $800.' },
       { q: 'What is the timeline for a graphic creation?', a: 'Expect 5 to 10 days for a logo, 3 to 5 days for a poster or flyer, and 5 to 7 days for an album cover. Full visual identities take 2 to 3 weeks.' },
       { q: 'What file formats are delivered?', a: 'You receive vector files (AI, SVG, PDF) as well as high-resolution PNG/JPEG exports. Print-ready files and versions optimized for social media.' },
-      { q: 'Can you design my merch?', a: 'Yes! We create visuals for your t-shirts, hoodies, stickers, posters and everything related to your brand image. Sticker design is even included in the production price.' },
+      { q: 'Can you design my merch?', a: 'Yes! We create visuals for your t-shirts, hoodies, stickers, posters and everything related to your brand image. Design is billed separately from production - contact us for a quote based on complexity.' },
       { q: 'Do you make event posters and flyers?', a: 'Absolutely. Concert posters, promotional flyers, postcards, album covers - we cover all print materials to promote your events and music.' },
       { q: 'Can I see a proof before final production?', a: 'Always. We send a digital proof for approval before finalizing. Two rounds of revisions are included with every project.' },
     ],

@@ -149,13 +149,13 @@ Cortados a la forma exacta de tu diseño con nuestro equipo de corte profesional
       'Vinilo mate, brillante, transparente, holográfico',
       'Corte contorno a la forma exacta del diseño',
       'Laminación incluida - resistente al agua, UV, rayones',
-      'Diseño gráfico del sticker incluido en el precio',
+      'Tú provees tu archivo listo para imprimir (servicio de diseño disponible aparte)',
       'Entrega local disponible',
       'Produccion local Montreal',
     ],
     process: [
       { step: 1, title: 'Brief creativo', desc: 'Dinos lo que quieres - logo, ilustración, texto, forma personalizada' },
-      { step: 2, title: 'Diseño gráfico', desc: 'Creamos o adaptamos tu visual para el corte (incluido en el precio)' },
+      { step: 2, title: 'Preparación archivo', desc: 'Tú nos envías tu archivo listo para imprimir (vectorial o alta resolución). Diseño gráfico no incluido - servicio aparte disponible.' },
       { step: 3, title: 'Validación', desc: 'Vista previa digital para validación antes de la producción' },
       { step: 4, title: 'Impresión', desc: 'Impresión de alta calidad en el vinilo de tu elección' },
       { step: 5, title: 'Laminación', desc: 'Capa protectora para máxima durabilidad' },
@@ -163,7 +163,7 @@ Cortados a la forma exacta de tu diseño con nuestro equipo de corte profesional
     ],
     pricing: {
       title: 'Precios Stickers Die-Cut',
-      note: 'Diseño gráfico incluido en todos los precios',
+      note: 'Diseño gráfico no incluido - tú provees tu archivo listo para imprimir',
       tables: [
         {
           subtitle: 'Standard (Mate / Brillante)',
@@ -204,14 +204,14 @@ Cortados a la forma exacta de tu diseño con nuestro equipo de corte profesional
     ],
     faq: [
       { q: '¿Qué acabados están disponibles?', a: 'Ofrecemos brillante, mate, holográfico, transparente y prismático. Cada acabado tiene sus ventajas según el uso.' },
-      { q: '¿El diseño gráfico está incluido?', a: '¡Sí! La creación o adaptación de tu visual para el troquelado está incluida en el precio. También puedes proporcionar un archivo listo para imprimir.' },
+      { q: '¿El diseño gráfico está incluido?', a: 'No - tú provees tu archivo listo para imprimir (PDF/AI/SVG vectorial o PNG alta resolución). Si necesitas diseño o retoques, ofrecemos servicio aparte: contáctanos para cotización.' },
       { q: '¿Cuál es la cantidad mínima?', a: 'A partir de 25 stickers idénticos. Se envía una demo foto/video para validación antes de la producción completa.' },
       { q: '¿Los stickers son resistentes al agua?', a: '¡Sí, todos nuestros stickers son laminados y resistentes al agua, rayos UV y rayones. Durabilidad exterior de 3 a 5 años.' },
       { q: '¿Se puede obtener una forma totalmente personalizada?', a: '¡Absolutamente! Nuestros stickers son troquelados (die-cut) según la forma exacta de tu diseño.' },
     ],
     seo: {
       title: 'Stickers Troquelados Montreal | Personalizados, Holograficos & Vinilo - Massive',
-      description: 'Stickers troquelados personalizados en Montreal. Holografico, mate, brillante, transparente, vinilo. Diseno grafico incluido. Corte pro a medida. Desde 25 unidades. Produccion local Mile-End.',
+      description: 'Stickers troquelados personalizados en Montreal. Holografico, mate, brillante, transparente, vinilo. Corte pro a medida. Desde 25 unidades. Produccion local Mile-End.',
     },
   },
 
@@ -305,7 +305,7 @@ Trabajamos con Adobe Illustrator, Figma y Photoshop para crear visuales impactan
     ],
     pricing: {
       title: 'Precios Diseño Gráfico',
-      note: 'El diseño de stickers está incluido en el precio de producción de los stickers.',
+      note: 'El diseño gráfico es un servicio aparte - los precios de producción stickers/merch no lo incluyen.',
       tables: [
         {
           subtitle: 'Diseño Gráfico',
@@ -339,7 +339,7 @@ Trabajamos con Adobe Illustrator, Figma y Photoshop para crear visuales impactan
       { q: '¿Cuánto cuesta un logo?', a: 'Los logos comienzan en $300 para un concepto simple. Una identidad visual completa (logo + colores + tipografía + variaciones) comienza en $800.' },
       { q: '¿Cuál es el plazo para una creación gráfica?', a: 'Espera de 5 a 10 días para un logo, de 3 a 5 días para un afiche o flyer, y de 5 a 7 días para una portada de álbum. Las identidades visuales completas toman de 2 a 3 semanas.' },
       { q: '¿Qué formatos de archivo se entregan?', a: 'Recibes archivos vectoriales (AI, SVG, PDF) así como exportaciones PNG/JPEG en alta resolución. Archivos listos para imprimir y versiones optimizadas para redes sociales.' },
-      { q: '¿Pueden diseñar mi merch?', a: '¡Sí! Creamos los visuales para tus camisetas, hoodies, stickers, afiches y todo lo relacionado con tu imagen de marca. El diseño de stickers está incluso incluido en el precio de producción.' },
+      { q: '¿Pueden diseñar mi merch?', a: '¡Sí! Creamos los visuales para tus camisetas, hoodies, stickers, afiches y todo lo relacionado con tu imagen de marca. El diseño se factura aparte de la producción - contáctanos para cotización según complejidad.' },
       { q: '¿Hacen afiches y flyers de eventos?', a: 'Absolutamente. Afiches de conciertos, flyers promocionales, postales, portadas de álbum - cubrimos todos los materiales impresos para promover tus eventos y tu música.' },
       { q: '¿Puedo ver una prueba antes de la producción final?', a: 'Siempre. Enviamos una prueba digital para aprobación antes de finalizar. Dos rondas de revisiones están incluidas en cada proyecto.' },
     ],
