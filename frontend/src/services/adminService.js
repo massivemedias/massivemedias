@@ -35,6 +35,29 @@ export const updateBillingSettings = (fields) => {
   return api.put('/billing-settings', fields);
 };
 
+/**
+ * Backup manuel JSON - telecharge une copie complete des donnees vitales
+ * (clients, orders, invoices, products, artists, testimonials, expenses,
+ * contact-submissions, user-roles) sous forme de fichier JSON.
+ *
+ * Cote backend (admin-only via requireAdminAuth) : voir
+ * backend/src/api/backup/controllers/backup.ts
+ *
+ * Pourquoi responseType:'blob' :
+ *   On veut traiter la reponse comme un binaire pour pouvoir creer un Blob
+ *   et declencher le telechargement avec URL.createObjectURL. Sinon axios
+ *   parse en JSON et on perd le filename suggere par Content-Disposition.
+ *
+ * Timeout etendu a 120s : sur une grosse base la generation peut prendre
+ * 30-60s (parallelisme + serialization JSON sur ~10k records).
+ *
+ * @returns Promise<AxiosResponse<Blob>> - le composant appelant gere le DL.
+ */
+export const downloadBackup = () => api.get('/admin/backup/export', {
+  responseType: 'blob',
+  timeout: 120000,
+});
+
 
 // --- GOD MODE artistes (mutations directes, bypass edit-requests) ---
 // Toutes ces fonctions validen les params AVANT appel reseau.

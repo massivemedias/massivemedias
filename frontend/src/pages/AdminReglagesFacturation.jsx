@@ -9,9 +9,10 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Loader2, Save, CheckCircle, XCircle, Building2, Landmark, Receipt, AtSign,
+  Download, ShieldCheck,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
-import { getBillingSettings, updateBillingSettings } from '../services/adminService';
+import { getBillingSettings, updateBillingSettings, downloadBackup } from '../services/adminService';
 
 // FIX-ADMIN (avril 2026) : valeurs par defaut Massive Medias pre-remplies
 // dans le formulaire. Meme si l'API /billing-settings retourne vide (premiere
@@ -45,6 +46,9 @@ function AdminReglagesFacturation() {
   // chose, on merge (API a priorite sur defaults).
   const [settings, setSettings] = useState({ ...DEFAULT_SETTINGS });
   const [toast, setToast] = useState(null);
+  // Etat dedie au backup pour ne pas interferer avec le saving des reglages -
+  // l'admin pourrait cliquer Save ET Download en meme temps.
+  const [downloadingBackup, setDownloadingBackup] = useState(false);
 
   useEffect(() => {
     if (!toast) return;
@@ -79,6 +83,73 @@ function AdminReglagesFacturation() {
 
   const handleChange = (field, value) => {
     setSettings(prev => ({ ...prev, [field]: value }));
+  };
+
+  // Backup manuel JSON. Cote backend : GET /admin/backup/export retourne un
+  // dump complet (clients/orders/invoices/products/artists/testimonials/
+  // expenses/contact-submissions/user-roles) avec Content-Disposition pour
+  // forcer le telechargement. Le filename suggere est extrait du header.
+  //
+  // Pourquoi tout faire ici (et pas via <a href> direct) : le endpoint exige
+  // l'Authorization header (admin-only). Un <a href> ne porte pas le token
+  // -> 401. On fait l'appel via axios (token auto-inject), recoit le blob,
+  // cree une URL.createObjectURL et trigger le download programmatique.
+  const handleDownloadBackup = async () => {
+    setDownloadingBackup(true);
+    try {
+      const response = await downloadBackup();
+      const blob = response.data instanceof Blob
+        ? response.data
+        : new Blob([JSON.stringify(response.data)], { type: 'application/json' });
+
+      // Filename : on lit Content-Disposition, fallback sur la date du jour si
+      // le header n'est pas accessible (CORS peut le bloquer en mode strict).
+      let filename = `massive_medias_backup_${new Date().toISOString().slice(0, 10)}.json`;
+      const cd = response.headers?.['content-disposition'] || response.headers?.['Content-Disposition'];
+      if (cd) {
+        const match = /filename="?([^";]+)"?/i.exec(cd);
+        if (match && match[1]) filename = match[1];
+      }
+
+      // Trigger download en simulant un click sur un <a> invisible. Standard
+      // pattern pour les downloads programmatic post-fetch.
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      // Cleanup memoire : revoque l'URL apres un court delai pour s'assurer
+      // que le navigateur a eu le temps de demarrer le DL.
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+      const totalRecords = response.headers?.['x-backup-total-records'];
+      setToast({
+        type: 'success',
+        message: tx({
+          fr: `Backup telecharge${totalRecords ? ` (${totalRecords} enregistrements)` : ''}. Conserve-le en lieu sur.`,
+          en: `Backup downloaded${totalRecords ? ` (${totalRecords} records)` : ''}. Keep it in a safe place.`,
+          es: `Copia descargada${totalRecords ? ` (${totalRecords} registros)` : ''}.`,
+        }),
+      });
+    } catch (err) {
+      const status = err?.response?.status;
+      const msg = status === 401 || status === 403
+        ? tx({
+            fr: 'Acces refuse. Seuls les administrateurs peuvent telecharger un backup.',
+            en: 'Access denied. Admin only.',
+            es: 'Acceso denegado.',
+          })
+        : err?.response?.data?.error?.message || err?.message || tx({
+            fr: 'Echec du telechargement du backup.',
+            en: 'Backup download failed.',
+            es: 'Fallo la descarga.',
+          });
+      setToast({ type: 'error', message: msg });
+    } finally {
+      setDownloadingBackup(false);
+    }
   };
 
   const handleSave = async () => {
@@ -228,6 +299,37 @@ function AdminReglagesFacturation() {
           })}
           className="input-field text-sm w-full resize-none"
         />
+      </SectionCard>
+
+      {/* Section : sauvegarde manuelle des donnees (backup JSON) */}
+      <SectionCard icon={ShieldCheck} title={tx({ fr: 'Sauvegarde des donnees', en: 'Data backup', es: 'Copia de seguridad' })}>
+        <div className="flex flex-col sm:flex-row sm:items-start gap-3">
+          <button
+            onClick={handleDownloadBackup}
+            disabled={downloadingBackup}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 text-white font-semibold text-sm shadow hover:bg-slate-800 transition-colors disabled:opacity-50 whitespace-nowrap self-start"
+          >
+            {downloadingBackup ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
+            {downloadingBackup
+              ? tx({ fr: 'Generation en cours...', en: 'Generating...', es: 'Generando...' })
+              : tx({ fr: 'Exporter les donnees (Backup JSON)', en: 'Export data (JSON Backup)', es: 'Exportar datos (Copia JSON)' })
+            }
+          </button>
+          <p className="text-xs text-grey-muted leading-relaxed flex-1">
+            {tx({
+              fr: 'Telecharge une copie complete de vos clients et commandes. Conservez ce fichier en lieu sur. Inclut clients, commandes (web et manuelles), factures, produits, artistes, temoignages, depenses, messages contact et roles utilisateurs. Les mots de passe et tokens sensibles sont exclus automatiquement.',
+              en: 'Downloads a complete copy of your clients and orders. Keep this file in a safe place. Includes clients, orders (web and manual), invoices, products, artists, testimonials, expenses, contact messages and user roles. Passwords and sensitive tokens are excluded automatically.',
+              es: 'Descarga una copia completa de tus clientes y pedidos. Guarda este archivo en un lugar seguro.',
+            })}
+          </p>
+        </div>
+        <p className="text-[11px] text-grey-muted/80 italic">
+          {tx({
+            fr: 'Note : l\'hebergeur (Render) effectue deja des backups quotidiens automatiques de la base. Cet export est un complement pour votre tranquillite d\'esprit - une copie physique sur votre ordinateur.',
+            en: 'Note: hosting provider (Render) already performs daily automatic backups. This export is a complement for peace of mind - a physical copy on your computer.',
+            es: 'Nota: el proveedor de hosting ya realiza copias diarias automaticas. Esta exportacion es un complemento para tu tranquilidad.',
+          })}
+        </p>
       </SectionCard>
 
       {/* CTA save */}
