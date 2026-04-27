@@ -213,15 +213,23 @@ export default factories.createCoreController('api::expense.expense', ({ strapi 
 
     let manualOrdersIncluded = 0;
     let webOrdersIncluded = 0;
+    // FIX-CENTS-DOLLARS (27 avril 2026) : Order schema stocke subtotal/tps/tvq
+    // en CENTS (integer), Expense schema stocke amount/tpsAmount/tvqAmount en
+    // DOLLARS (decimal). Avant ce fix : on additionnait les cents directement
+    // dans `revenue` puis le frontend AnnualBalanceCard affichait fmt(revenue)$
+    // sans diviser par 100 -> chiffres 100x trop eleves (2064.43$ HT reel
+    // affiche comme 206 443$). On divise par 100 ici pour normaliser tous les
+    // champs en DOLLARS, coherent avec les depenses qui sont deja en dollars.
+    const CENTS_TO_DOLLARS = 100;
     for (const o of orders as any[]) {
       const d = o?.createdAt ? new Date(o.createdAt) : null;
       if (!d || isNaN(d.getTime())) continue; // skip orders with corrupted dates
       const m = String(d.getMonth() + 1).padStart(2, '0');
       if (!months[m]) continue;
 
-      const subtotal = numericSafe(o?.subtotal);
-      const tps = numericSafe(o?.tps);
-      const tvq = numericSafe(o?.tvq);
+      const subtotal = numericSafe(o?.subtotal) / CENTS_TO_DOLLARS;
+      const tps = numericSafe(o?.tps) / CENTS_TO_DOLLARS;
+      const tvq = numericSafe(o?.tvq) / CENTS_TO_DOLLARS;
       const isManual = !!o?.isManual;
 
       months[m].revenue += subtotal;
