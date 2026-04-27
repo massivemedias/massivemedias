@@ -53,8 +53,23 @@ export function NotificationProvider({ children }) {
     } catch { /* Audio not supported */ }
   }, []);
 
-  const fetchNotifs = useCallback(async () => {
+  // FIX-FOCUS-SYNC (27 avril 2026) : throttle minimal entre 2 fetchNotifs.
+  // Quand l'utilisateur switche rapidement entre apps mobile (Safari +
+  // Mail + Massive en boucle), on declenchait visibilitychange ET focus
+  // ET online en quelques ms - 3 fetch consecutifs identiques. On limite
+  // a 1 fetch toutes les 5 secondes max (suffisant pour qu'un changement
+  // serveur soit visible).
+  const lastFetchAtRef = useRef(0);
+  const MIN_FETCH_INTERVAL_MS = 5000;
+
+  const fetchNotifs = useCallback(async ({ force = false } = {}) => {
     if (!isAdmin || isServerDown()) return;
+    // Throttle : ignore si le dernier fetch date de moins de 5s, SAUF si force=true.
+    // Les actions manuelles (markXxxViewed, refreshNotifs) passent force=true pour
+    // garantir un refetch instantane apres un reset optimiste local.
+    const now = Date.now();
+    if (!force && now - lastFetchAtRef.current < MIN_FETCH_INTERVAL_MS) return;
+    lastFetchAtRef.current = now;
     try {
       const [contactRes, artistRes, artistMsgRes, usersRes, ordersRes] = await Promise.all([
         getContactSubmissions({ pageSize: 200 }),
@@ -101,29 +116,71 @@ export function NotificationProvider({ children }) {
     } catch { /* ignore */ }
   }, [isAdmin, playNotifSound]);
 
-  // Polling toutes les 2 minutes
+  // FIX-FOCUS-SYNC (27 avril 2026) : polling intelligent + refetch on focus.
+  //
+  // Probleme avant : setInterval(fetchNotifs, 120000) tournait theoriquement
+  // toutes les 2 min, mais sur mobile (Safari iOS surtout) les timers sont
+  // SUSPENDUS quand l'onglet est en arriere-plan / ecran verrouille pour
+  // economiser la batterie. Resultat : badge \"8\" affiche meme apres que
+  // l'admin ait tout lu sur desktop, jusqu'au prochain poll qui pouvait
+  // mettre plusieurs minutes a se declencher.
+  //
+  // Apres ce fix :
+  //   1. visibilitychange (priorite mobile) : refetch IMMEDIAT des que l'onglet
+  //      redevient visible (deverrouillage, retour app). force=true pour
+  //      bypass le throttle 5s.
+  //   2. focus (cross-browser fallback, priorite desktop) : idem quand le
+  //      window reprend le focus apres un Cmd+Tab.
+  //   3. online : refetch quand le reseau revient apres une coupure.
+  //   4. setInterval pause-aware : skip le fetch si l'onglet est cache.
+  //      Economie batterie + data mobile + reduction charge backend.
   useEffect(() => {
     if (!isAdmin) return;
-    fetchNotifs();
-    const interval = setInterval(fetchNotifs, 120000);
-    return () => clearInterval(interval);
+    fetchNotifs({ force: true });
+
+    const interval = setInterval(() => {
+      // Skip silencieux si l'onglet est cache - inutile de polluer le reseau
+      // quand l'admin n'est meme pas sur la page. Le visibilitychange
+      // s'occupe du refetch des qu'il revient.
+      if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
+      fetchNotifs();
+    }, 120000);
+
+    const onVisible = () => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
+        fetchNotifs({ force: true });
+      }
+    };
+    const onFocus = () => fetchNotifs({ force: true });
+    const onOnline = () => fetchNotifs({ force: true });
+
+    document.addEventListener('visibilitychange', onVisible);
+    window.addEventListener('focus', onFocus);
+    window.addEventListener('online', onOnline);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', onVisible);
+      window.removeEventListener('focus', onFocus);
+      window.removeEventListener('online', onOnline);
+    };
   }, [isAdmin, fetchNotifs]);
 
   // Appeler refreshNotifs() apres avoir lu des messages pour mettre a jour le badge instantanement
   const refreshNotifs = useCallback(() => {
-    fetchNotifs();
+    fetchNotifs({ force: true });
   }, [fetchNotifs]);
 
   // A appeler quand l'admin visite les pages /admin/utilisateurs et /admin/commandes
   const markUsersViewed = useCallback(() => {
     setLastViewed('lastViewedUsersAt');
     setNewUsersCount(0);
-    fetchNotifs();
+    fetchNotifs({ force: true });
   }, [fetchNotifs]);
   const markOrdersViewed = useCallback(() => {
     setLastViewed('lastViewedOrdersAt');
     setNewOrdersCount(0);
-    fetchNotifs();
+    fetchNotifs({ force: true });
   }, [fetchNotifs]);
   // FIX-NOTIF (avril 2026) : equivalent pour /admin/messages. Reset optimiste
   // du compteur pour que le badge disparaisse immediatement, puis refetch pour
@@ -132,7 +189,7 @@ export function NotificationProvider({ children }) {
     setLastViewed('lastViewedMessagesAt');
     setMessagesOnlyCount(0);
     prevCountRef.current = newUsersCount + newOrdersCount; // evite de rejouer le son
-    fetchNotifs();
+    fetchNotifs({ force: true });
   }, [fetchNotifs, newUsersCount, newOrdersCount]);
 
   // "Tout marquer comme lu" : bouton dedie dans le drawer mobile / header.
@@ -147,7 +204,7 @@ export function NotificationProvider({ children }) {
     setMessagesOnlyCount(0);
     setAdminMsgCount(0);
     prevCountRef.current = 0;
-    fetchNotifs();
+    fetchNotifs({ force: true });
   }, [fetchNotifs]);
 
   return (
