@@ -845,7 +845,7 @@
                 "Matte, glossy, clear, holographic vinyl",
                 "Contour cut to the exact shape of the design",
                 "Lamination included - water, UV, scratch resistant",
-                "Sticker graphic design included in the price",
+                "You provide your print-ready file (graphic design service available separately)",
                 "Local delivery available",
                 "Fast turnaround: 24-72h"
             ],
@@ -857,8 +857,8 @@
                 },
                 {
                     "step": 2,
-                    "title": "Création graphique",
-                    "desc": "On crée ou adapte ton visuel pour la découpe (inclus dans le prix)"
+                    "title": "Préparation fichier",
+                    "desc": "Tu nous envoies ton fichier prêt à imprimer (vectoriel ou haute résolution). Création graphique non incluse - service à part."
                 },
                 {
                     "step": 3,
@@ -889,8 +889,8 @@
                 },
                 {
                     "step": 2,
-                    "title": "Graphic design",
-                    "desc": "We create or adapt your visual for cutting (included in price)"
+                    "title": "File preparation",
+                    "desc": "You send us your print-ready file (vector or high-res). Graphic design not included - separate service available."
                 },
                 {
                     "step": 3,
@@ -915,7 +915,7 @@
             ],
             "pricingFr": {
                 "title": "Tarifs Stickers Custom (Die-Cut)",
-                "note": "Design graphique inclus dans tous les prix",
+                "note": "Design graphique non inclus - tu fournis ton fichier. Prix calcule selon la dimension la plus large de ton design.",
                 "tables": [
                     {
                         "subtitle": "Stickers custom die-cut",
@@ -962,7 +962,7 @@
             },
             "pricingEn": {
                 "title": "Custom Stickers Pricing (Die-Cut)",
-                "note": "Graphic design included in all prices",
+                "note": "Graphic design not included - you provide your file. Price based on the longest dimension of your design.",
                 "tables": [
                     {
                         "subtitle": "Custom die-cut stickers",
@@ -1042,7 +1042,7 @@
                 },
                 {
                     "q": "Le design graphique est-il inclus?",
-                    "a": "Oui! La création ou adaptation de ton visuel pour la découpe est incluse dans le prix. Tu peux aussi fournir un fichier prêt."
+                    "a": "Non - tu fournis ton fichier prêt à imprimer (PDF/AI/SVG vectoriel ou PNG haute résolution). Si tu as besoin de création ou retouches, on offre un service de design à part : nous contacter pour devis."
                 },
                 {
                     "q": "Quelle est la quantité minimum?",
@@ -1064,7 +1064,7 @@
                 },
                 {
                     "q": "Is graphic design included?",
-                    "a": "Yes! Creating or adapting your visual for die-cutting is included in the price. You can also provide a print-ready file."
+                    "a": "No - you provide your print-ready file (vector PDF/AI/SVG or high-res PNG). If you need design or retouching work, we offer it as a separate service: contact us for a quote."
                 },
                 {
                     "q": "What is the minimum quantity?",
@@ -1082,8 +1082,8 @@
             "seo": {
                 "titleFr": "Stickers Custom Montréal - Massive Medias",
                 "titleEn": "Custom Stickers Montreal - Massive Medias",
-                "descriptionFr": "Stickers die-cut personnalisés. Holographique, matte, glossy, transparent. Design inclus. Découpe pro. Montréal.",
-                "descriptionEn": "Custom die-cut stickers. Holographic, matte, glossy, clear. Design included. Pro cutting. Montreal."
+                "descriptionFr": "Stickers die-cut personnalisés. Holographique, matte, glossy, transparent. Découpe pro. Montréal.",
+                "descriptionEn": "Custom die-cut stickers. Holographic, matte, glossy, clear. Pro cutting. Montreal."
             },
             "sortOrder": 2,
             "active": true
@@ -1592,7 +1592,7 @@
             ],
             "pricingFr": {
                 "title": "Tarifs Design & Web",
-                "note": "Le design de stickers est inclus dans le prix de production des stickers.",
+                "note": "Le design graphique est un service à part - les prix de production stickers/merch ne l'incluent pas.",
                 "tables": [
                     {
                         "subtitle": "Design Graphique",
@@ -1671,7 +1671,7 @@
             },
             "pricingEn": {
                 "title": "Design & Web Pricing",
-                "note": "Sticker design is included in the sticker production price.",
+                "note": "Graphic design is a separate service - sticker/merch production prices do not include it.",
                 "tables": [
                     {
                         "subtitle": "Graphic Design",
@@ -2545,7 +2545,7 @@
                 "Vinyle matte, glossy, transparent, holographique",
                 "Decoupe contour a la forme exacte du design",
                 "Lamination incluse - resistant eau, UV, rayures",
-                "Design graphique inclus dans le prix",
+                "Tarification 3 paliers de taille (Standard / Medium / Large)",
                 "Livraison locale disponible",
                 "Delai rapide : 24-72h"
             ],
@@ -2554,14 +2554,14 @@
                 "Matte, glossy, clear, holographic vinyl",
                 "Contour cut to exact design shape",
                 "Lamination included - water, UV, scratch resistant",
-                "Graphic design included in price",
+                "3-tier size-based pricing (Standard / Medium / Large)",
                 "Local delivery available",
                 "Fast turnaround: 24-72h"
             ],
             "faqFr": [
                 {
                     "q": "Quels fichiers dois-je fournir?",
-                    "a": "Idealement un fichier vectoriel (AI, SVG, PDF) ou un PNG haute resolution (300 DPI minimum) avec fond transparent. Si vous n'avez pas de fichier pret, notre service de design graphique est inclus dans le prix."
+                    "a": "Un fichier vectoriel (AI, SVG, PDF) ou un PNG haute resolution (300 DPI minimum) avec fond transparent. Si vous n'avez pas de fichier pret, on offre un service de design graphique facture a part - nous contacter pour devis."
                 },
                 {
                     "q": "Quel est le delai de production?",
@@ -2580,8 +2580,8 @@
                     "a": "Livraison locale gratuite a Montreal (Mile-End et environs). Envoi postal disponible partout au Canada."
                 },
                 {
-                    "q": "Le design est vraiment inclus?",
-                    "a": "Oui, la creation ou l'adaptation graphique de votre sticker est incluse dans tous nos prix."
+                    "q": "Le design est-il inclus dans le prix?",
+                    "a": "Non - vous fournissez votre fichier pret a imprimer. Si vous avez besoin de creation ou d'adaptation graphique, on offre ce service a part : nous contacter pour devis selon la complexite."
                 },
                 {
                     "q": "Que se passe-t-il si je ne suis pas satisfait?",
@@ -2595,7 +2595,7 @@
             "faqEn": [
                 {
                     "q": "What files should I provide?",
-                    "a": "Ideally a vector file (AI, SVG, PDF) or high-resolution PNG (300 DPI minimum) with transparent background. If you don't have a ready file, our graphic design service is included in the price."
+                    "a": "A vector file (AI, SVG, PDF) or high-resolution PNG (300 DPI minimum) with transparent background. If you don't have a ready file, we offer graphic design as a separate service - contact us for a quote."
                 },
                 {
                     "q": "What is the production time?",
@@ -2614,8 +2614,8 @@
                     "a": "Free local delivery in Montreal (Mile-End area). Postal shipping available across Canada."
                 },
                 {
-                    "q": "Is design really included?",
-                    "a": "Yes, graphic creation or adaptation of your sticker is included in all our prices."
+                    "q": "Is design included in the price?",
+                    "a": "No - you provide your print-ready file. If you need graphic creation or adaptation, we offer it as a separate service: contact us for a quote based on complexity."
                 },
                 {
                     "q": "What if I'm not satisfied?",
@@ -3189,8 +3189,8 @@
                     "a": "2 rondes de revisions sont incluses dans tous nos forfaits."
                 },
                 {
-                    "q": "Le design de stickers est-il inclus?",
-                    "a": "Oui! La creation graphique de stickers est incluse dans le prix de production."
+                    "q": "Le design de stickers est-il inclus dans la production?",
+                    "a": "Non - le client fournit son fichier pret a imprimer. Le design graphique de stickers est un service a part : nous contacter pour devis."
                 },
                 {
                     "q": "Dans quels formats livrez-vous?",
@@ -3215,8 +3215,8 @@
                     "a": "2 rounds of revisions are included in all packages."
                 },
                 {
-                    "q": "Is sticker design included?",
-                    "a": "Yes! Sticker graphic design is included in the production price."
+                    "q": "Is sticker design included in production?",
+                    "a": "No - the client provides their print-ready file. Sticker graphic design is a separate service: contact us for a quote."
                 },
                 {
                     "q": "What formats do you deliver in?",

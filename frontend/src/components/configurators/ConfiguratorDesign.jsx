@@ -64,8 +64,12 @@ function ConfiguratorDesign() {
       )}
 
       {/* Note about sticker design */}
+      {/* FIX-PRICING-TIERS (27 avril 2026) : la mention "design sticker inclus
+          dans la prod" devient FAUSSE avec la nouvelle politique. La page Design
+          PROPOSE le service de design sticker, mais le client doit le commander
+          separement (n'est PAS inclus dans la production). */}
       <div className="p-3 rounded-lg mb-5 text-xs text-grey-muted bg-glass">
-        {tx({ fr: '\ud83c\udfa8 Le design de stickers est inclus dans le prix de production des stickers.', en: '\ud83c\udfa8 Sticker design is included in the sticker production price.', es: '\ud83c\udfa8 El dise\u00f1o de stickers est\u00e1 incluido en el precio de producci\u00f3n de los stickers.' })}
+        {tx({ fr: '\ud83c\udfa8 Le design graphique est un service \u00e0 part - les prix de production stickers ne l\'incluent pas. Tu fournis ton fichier ou commandes le design ici.', en: '\ud83c\udfa8 Graphic design is a separate service - sticker production prices do not include it. Provide your file or order design here.', es: '\ud83c\udfa8 El dise\u00f1o gr\u00e1fico es un servicio aparte - los precios de producci\u00f3n no lo incluyen. Provee tu archivo o pide el dise\u00f1o aqu\u00ed.' })}
       </div>
 
       {/* File upload + Notes side by side */}

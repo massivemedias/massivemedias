@@ -297,7 +297,7 @@ function ConfiguratorStickers({ onFinishChange }) {
                   )}
                   <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-accent/10 text-accent">
                     <Sparkles size={12} />
-                    {tx({ fr: 'Design inclus', en: 'Design included', es: 'Diseño incluido' })}
+                    {tx({ fr: 'Proof avant impression', en: 'Digital proof included', es: 'Prueba antes de imprimir' })}
                   </span>
                 </div>
               </div>

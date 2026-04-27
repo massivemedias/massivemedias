@@ -377,7 +377,7 @@ function Home() {
               { icon: Shield, fr: 'La promesse Massive', en: 'The Massive Promise', es: 'La promesa Massive', descFr: 'Satisfaction garantie ou on refait', descEn: 'Satisfaction guaranteed or we redo it', descEs: 'Satisfaccion garantizada o lo rehacemos' },
               { icon: MapPin, fr: 'Imprimé à Montréal', en: 'Printed in Montreal', es: 'Impreso en Montreal', descFr: 'Production 100% locale, Mile-End', descEn: '100% local production, Mile-End', descEs: 'Producción 100% local, Mile-End' },
               { icon: Clock, fr: 'Production locale', en: 'Local production', es: 'Produccion local', descFr: 'Fabriqué à Montréal, Mile-End', descEn: 'Made in Montreal, Mile-End', descEs: 'Hecho en Montreal, Mile-End' },
-              { icon: Heart, fr: 'Design inclus', en: 'Design included', es: 'Diseño incluido', descFr: 'Création graphique incluse', descEn: 'Graphic design included', descEs: 'Creación gráfica incluida' },
+              { icon: Heart, fr: 'Proof systématique', en: 'Always with proof', es: 'Prueba sistemática', descFr: 'Validation digitale avant impression', descEn: 'Digital validation before printing', descEs: 'Validación digital antes de imprimir' },
             ].map((item, i) => {
               const Icon = item.icon;
               return (

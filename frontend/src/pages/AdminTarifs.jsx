@@ -298,7 +298,7 @@ function AdminTarifs() {
 
       // --- Stickers ---
       if (y > 220) { doc.addPage(); y = 20; }
-      sectionTitle(tx({ fr: 'Packs stickers artiste (design inclus)', en: 'Artist sticker packs (design included)', es: 'Packs stickers artista (diseno incluido)' }));
+      sectionTitle(tx({ fr: 'Packs stickers artiste (palier Standard <=2.5", design fourni par client)', en: 'Artist sticker packs (Standard tier <=2.5", client-provided design)', es: 'Packs stickers artista (Standard <=2.5", diseno proveido por cliente)' }));
       addTable(
         [tx({ fr: 'Quantité', en: 'Quantity', es: 'Cantidad' }), 'Standard', '$/unit', 'FX (Holo)', '$/unit'],
         STICKER_STANDARD.map((s, i) => {

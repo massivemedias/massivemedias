@@ -31,17 +31,21 @@ function BoutiqueStickers() {
     const finishImg = finishImages[selectedFinish];
     return finishImg ? [finishImg, ...stickerImages] : stickerImages;
   }, [selectedFinish, cmsImages]);
+  // FIX-PRICING-TIERS (27 avril 2026) : suppression des mentions "Design inclus"
+  // alignement sur la nouvelle politique - le client fournit son fichier pret
+  // a imprimer, le service de design est facture a part. On remplace par un
+  // trust signal alternatif (Proof avant impression) qui reste vrai et utile.
   const trustItems = [
     { icon: Scissors, fr: 'D\u00e9coupe pr\u00e9cision', en: 'Precision cutting', es: 'Corte de precisi\u00f3n' },
     { icon: Shield, fr: 'Durabilit\u00e9 3-5 ans', en: '3-5 year durability', es: 'Durabilidad 3-5 a\u00f1os' },
-    { icon: Sparkles, fr: 'Design inclus', en: 'Design included', es: 'Dise\u00f1o incluido' },
+    { icon: Sparkles, fr: 'Proof avant impression', en: 'Digital proof included', es: 'Prueba antes de imprimir' },
     { icon: Truck, fr: 'Livraison locale gratuite', en: 'Free local delivery', es: 'Env\u00edo local gratis' },
   ];
 
   const features = [
     { icon: Scissors, fr: 'D\u00e9coupe de pr\u00e9cision', en: 'Precision cutting', es: 'Corte de precisi\u00f3n', descFr: 'Contour cut professionnel \u00e0 la forme exacte de votre design. \u00c9quipement pro jusqu\'au 12" de large.', descEn: 'Professional contour cutting to the exact shape of your design. Pro equipment up to 12" wide.', descEs: 'Corte de contorno profesional a la forma exacta de tu dise\u00f1o. Equipo profesional hasta 12" de ancho.' },
     { icon: Droplets, fr: 'R\u00e9sistant \u00e0 tout', en: 'Weather resistant', es: 'Resistente a todo', descFr: 'Lamination int\u00e9gr\u00e9e. Eau, UV, rayures - vos stickers durent 3 \u00e0 5 ans en ext\u00e9rieur.', descEn: 'Integrated lamination. Water, UV, scratches - your stickers last 3-5 years outdoors.', descEs: 'Laminaci\u00f3n integrada. Agua, UV, rayaduras - tus stickers duran de 3 a 5 a\u00f1os en exteriores.' },
-    { icon: Sparkles, fr: 'Design inclus', en: 'Design included', es: 'Dise\u00f1o incluido', descFr: 'Cr\u00e9ation ou adaptation graphique incluse dans tous les prix. On optimise votre design pour l\'impression.', descEn: 'Graphic creation or adaptation included in all prices. We optimize your design for printing.', descEs: 'Creaci\u00f3n o adaptaci\u00f3n gr\u00e1fica incluida en todos los precios. Optimizamos tu dise\u00f1o para la impresi\u00f3n.' },
+    { icon: Sparkles, fr: 'Proof avant impression', en: 'Digital proof included', es: 'Prueba antes de imprimir', descFr: 'On envoie un proof num\u00e9rique pour validation avant production. Couleurs, forme, d\u00e9tails - tu valides tout avant l\'impression.', descEn: 'We send a digital proof for validation before production. Colors, shape, details - you validate everything before printing.', descEs: 'Enviamos una prueba digital para validaci\u00f3n antes de la producci\u00f3n. Colores, forma, detalles - validas todo antes de imprimir.' },
   ];
 
   const useCases = [
@@ -60,20 +64,20 @@ function BoutiqueStickers() {
   return (
     <BoutiqueProductLayout
       serviceSlug="stickers-custom"
-      startingPrice={45}
+      startingPrice={30}
       pageTitle={{ fr: 'Stickers Die-Cut Montréal - Autocollants Personnalisés | Massive', en: 'Die-Cut Stickers Montreal - Custom Stickers | Massive', es: 'Stickers Die-Cut Montreal - Pegatinas Personalizadas | Massive' }}
       metaDescription={{
-        fr: 'Stickers die-cut personnalisés à Montréal. Vinyle matte, glossy, holographique, verre brisé. Découpe de précision, design inclus. À partir de 25 unités. Production locale Mile-End.',
-        en: 'Custom die-cut stickers in Montreal. Matte, glossy, holographic, broken glass vinyl. Precision cutting, design included. From 25 units. Local production Mile-End.',
-        es: 'Pide tus stickers personalizados. Vinilo mate, brillante, hologr\u00e1fico, vidrio roto, estrellas. Corte de precisi\u00f3n. Dise\u00f1o incluido.',
+        fr: 'Stickers die-cut personnalisés à Montréal. Vinyle matte, glossy, holographique, verre brisé. Découpe de précision, 3 paliers de prix selon la taille. À partir de 25 unités. Production locale Mile-End.',
+        en: 'Custom die-cut stickers in Montreal. Matte, glossy, holographic, broken glass vinyl. Precision cutting, 3 size-based price tiers. From 25 units. Local production Mile-End.',
+        es: 'Pide tus stickers personalizados. Vinilo mate, brillante, hologr\u00e1fico, vidrio roto, estrellas. Corte de precisi\u00f3n. 3 niveles de precio seg\u00fan el tama\u00f1o.',
       }}
       productTitle={{ fr: 'Stickers Custom', en: 'Custom Stickers', es: 'Stickers Personalizados' }}
       productSubtitle={{
-        fr: 'Autocollants d\u00e9coup\u00e9s sur mesure. Design graphique inclus.',
-        en: 'Custom die-cut stickers. Graphic design included.',
-        es: 'Stickers troquelados a medida. Dise\u00f1o gr\u00e1fico incluido.',
+        fr: 'Autocollants d\u00e9coup\u00e9s sur mesure. 3 paliers de prix selon la taille.',
+        en: 'Custom die-cut stickers. 3 price tiers based on size.',
+        es: 'Stickers troquelados a medida. 3 niveles de precio seg\u00fan el tama\u00f1o.',
       }}
-      badge={{ fr: 'Design inclus', en: 'Design included', es: 'Dise\u00f1o incluido', icon: Sparkles }}
+      badge={{ fr: 'Production locale', en: 'Local production', es: 'Producci\u00f3n local', icon: Sparkles }}
       trustItems={trustItems}
       features={features}
       featuresTitle={{ fr: 'Pourquoi nos stickers?', en: 'Why our stickers?', es: '\u00bfPor qu\u00e9 nuestros stickers?' }}
