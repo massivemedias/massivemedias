@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { ShoppingCart, Check, Sparkles } from 'lucide-react';
+import { ShoppingCart, Check, Sparkles, Info } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../../contexts/CartContext';
 import { useLang } from '../../i18n/LanguageContext';
@@ -208,6 +208,21 @@ function ConfiguratorStickers({ onFinishChange }) {
                 </button>
               ))}
             </div>
+            {/* FIX-UX (27 avril 2026) : helper text qui rassure le client sur
+                la grille de prix. Les formats 2", 2.5" et 3" partagent le meme
+                prix de base (SIZE_MULTIPLIERS = 1.0 dans pricing-config). Au
+                dela (4", 5") un multiplicateur s'applique. icone Info pour
+                signaler que c'est un "tip" et pas une regle stricte. */}
+            <p className="mt-2 flex items-start gap-1.5 text-[11px] text-grey-muted leading-relaxed">
+              <Info size={11} className="text-accent flex-shrink-0 mt-0.5" />
+              <span>
+                {tx({
+                  fr: 'Pour plus de simplicite, tous nos formats standards (jusqu\'a 3 pouces) sont offerts au meme tarif de base.',
+                  en: 'For simplicity, all our standard formats (up to 3 inches) come at the same base price.',
+                  es: 'Para mayor simplicidad, todos nuestros formatos estandar (hasta 3 pulgadas) tienen el mismo precio base.',
+                })}
+              </span>
+            </p>
           </div>
 
           {/* Quantite - grille 5 egale */}

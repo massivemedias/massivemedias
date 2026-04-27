@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { ShoppingCart, Check, Sparkles, Shuffle, RotateCcw, Plus, Minus, AlertCircle } from 'lucide-react';
+import { ShoppingCart, Check, Sparkles, Shuffle, RotateCcw, Plus, Minus, AlertCircle, Info } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../../contexts/CartContext';
 import { useLang } from '../../i18n/LanguageContext';
@@ -355,6 +355,19 @@ function ConfiguratorArtistSticker({ artist, selectedSticker, allStickers = [] }
               </button>
             ))}
           </div>
+          {/* FIX-UX (27 avril 2026) : meme helper que ConfiguratorStickers
+              (formats standards jusqu'a 3" au meme prix). Coherence sur les
+              2 chemins d'achat sticker (catalogue boutique + page artiste). */}
+          <p className="mt-2 flex items-start gap-1 text-[10px] text-grey-muted leading-relaxed">
+            <Info size={10} className="text-accent flex-shrink-0 mt-0.5" />
+            <span>
+              {tx({
+                fr: 'Formats jusqu\'a 3" au meme tarif de base.',
+                en: 'Formats up to 3" share the same base price.',
+                es: 'Formatos hasta 3" al mismo precio base.',
+              })}
+            </span>
+          </p>
         </div>
       </div>
 
