@@ -31,6 +31,21 @@ function CreateManualOrderModal({ onClose, onCreated }) {
   const [result, setResult] = useState(null);
   const [copied, setCopied] = useState(false);
   const firstInputRef = useRef(null);
+  // FIX-DOUBLE-SUBMIT (27 avril 2026) : useRef pour guard SYNCHRONE.
+  //
+  // Pourquoi useRef et pas juste l'etat `loading` :
+  //   setState est asynchrone. Entre setLoading(true) et le re-render qui
+  //   applique disabled={true} sur le bouton, il y a une fenetre de ~16ms
+  //   (1 frame) durant laquelle le bouton est encore cliquable. Un double-
+  //   click rapide ou Enter+click peut donc envoyer 2 requetes paralleles.
+  //   Resultat reel observe : 1ere requete cree la commande, 2e echoue avec
+  //   "must be unique" sur le compteur de facture -> message d'erreur affiche
+  //   alors que la commande EST creee = panique admin.
+  //
+  // useRef.current change SYNCHRONEMENT, sans attendre le re-render. Donc
+  // dans submit(), des qu'on lit `submittingRef.current === true` on peut
+  // early-return AVANT meme de toucher au reseau. C'est la garantie dure.
+  const submittingRef = useRef(false);
 
   // FIX-PREPAID (23 avril 2026) : toggle paiement requis vs deja paye hors-ligne.
   // - 'stripe'    : comportement historique (cree l'order + genere un lien Stripe)
@@ -45,10 +60,17 @@ function CreateManualOrderModal({ onClose, onCreated }) {
   }, []);
 
   useEffect(() => {
-    const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+    // FIX-DOUBLE-SUBMIT : Escape NE FERME PAS pendant la creation. L'admin
+    // pourrait fermer la modale par reflexe entre le clic Creer et la reponse
+    // serveur, ce qui laisse l'illusion d'un echec alors que la commande
+    // s'est cree en arriere-plan. Maintenant tant que loading=true, Escape
+    // est ignore.
+    const onKey = (e) => {
+      if (e.key === 'Escape' && !loading) onClose();
+    };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  }, [onClose, loading]);
 
   const updateItem = (idx, field, value) => {
     setItems(prev => prev.map((it, i) => i === idx ? { ...it, [field]: value } : it));
@@ -83,14 +105,25 @@ function CreateManualOrderModal({ onClose, onCreated }) {
 
   const submit = async (e) => {
     e?.preventDefault?.();
+    // FIX-DOUBLE-SUBMIT : guard synchrone HARD. Si une soumission est deja en
+    // cours, on rejette immediatement. Avant ce guard, un double-click rapide
+    // ou Enter+click envoyait 2 requetes paralleles et le client voyait
+    // l'erreur de la 2e meme si la 1ere reussissait.
+    if (submittingRef.current) {
+      console.warn('[ManualOrderModal] Double-submit ignore (deja en cours)');
+      return;
+    }
+    submittingRef.current = true;
     setError('');
 
     if (!customerName.trim()) {
+      submittingRef.current = false;
       setError(tx({ fr: 'Nom du client requis', en: 'Customer name required', es: 'Nombre del cliente requerido' }));
       return;
     }
     const validItems = parsedItems.filter(it => it.description && it.quantity > 0 && it.lineTotal > 0);
     if (validItems.length === 0) {
+      submittingRef.current = false;
       setError(tx({
         fr: 'Au moins une ligne avec description, quantite et prix requise',
         en: 'At least one line with description, quantity and price required',
@@ -195,6 +228,14 @@ function CreateManualOrderModal({ onClose, onCreated }) {
             es: `Conflicto de unicidad. ${backendMsg}.`,
           });
         }
+      } else if (code === 'STRIPE_FAILURE' || status === 502) {
+        // FIX-COMPENSATE : Stripe a plante mais le backend a ROLLBACK l'order
+        // et l'invoice. L'admin peut re-tenter sans risque d'orphelin.
+        displayMsg = backendMsg || tx({
+          fr: 'Stripe injoignable. La commande creee a ete automatiquement annulee, aucune trace en base. Re-essaie dans 30 secondes.',
+          en: 'Stripe unreachable. The created order has been automatically cancelled, no trace in DB. Retry in 30 seconds.',
+          es: 'Stripe no disponible. El pedido fue cancelado automaticamente. Reintenta en 30 segundos.',
+        });
       } else if (status === 401 || status === 403) {
         displayMsg = tx({
           fr: 'Session expiree ou acces refuse. Reconnecte-toi.',
@@ -208,6 +249,10 @@ function CreateManualOrderModal({ onClose, onCreated }) {
       setError(displayMsg);
     } finally {
       setLoading(false);
+      // FIX-DOUBLE-SUBMIT : on libere le ref EN DERNIER pour que toute
+      // tentative de re-soumission pendant le finally soit bloquee. La libe-
+      // ration synchrone garantit qu'a la prochaine event loop, l'UI est dispo.
+      submittingRef.current = false;
     }
   };
 
@@ -244,7 +289,9 @@ function CreateManualOrderModal({ onClose, onCreated }) {
   return (
     <div
       className="fixed inset-0 z-[9000] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto"
-      onClick={onClose}
+      // FIX-DOUBLE-SUBMIT : ignorer le click sur le backdrop pendant la
+      // creation - meme raison que pour Escape (cf useEffect plus haut).
+      onClick={loading ? undefined : onClose}
     >
       <div
         onClick={(e) => e.stopPropagation()}
@@ -261,11 +308,15 @@ function CreateManualOrderModal({ onClose, onCreated }) {
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg text-grey-muted hover:text-heading transition-colors"
+            disabled={loading}
+            className="p-1.5 rounded-lg text-grey-muted hover:text-heading transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
             style={{ background: 'transparent' }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--bg-glass)'; }}
+            onMouseEnter={(e) => { if (!loading) e.currentTarget.style.background = 'var(--bg-glass)'; }}
             onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
             aria-label="Fermer"
+            // FIX-DOUBLE-SUBMIT : titre explicite pendant la creation pour que
+            // l'admin comprenne POURQUOI le bouton est inerte.
+            title={loading ? 'Creation en cours, attendre la reponse du serveur...' : 'Fermer'}
           >
             <X size={18} />
           </button>
@@ -675,23 +726,37 @@ function CreateManualOrderModal({ onClose, onCreated }) {
               <button
                 type="submit"
                 disabled={loading || subtotal <= 0}
-                className={`flex-[2] py-2 rounded-lg text-white font-semibold text-sm hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 ${
+                aria-busy={loading}
+                className={`flex-[2] py-2 rounded-lg text-white font-semibold text-sm transition-all disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 ${
+                  loading ? '' : 'hover:brightness-110'
+                } ${
                   paymentMode === 'prepaid' ? 'bg-green-500' : 'bg-accent'
                 }`}
+                // FIX-DOUBLE-SUBMIT : titre explicite pour les screen readers
+                // et tooltips pendant la creation.
+                title={loading ? 'Creation en cours, ne pas cliquer plusieurs fois' : undefined}
               >
                 {loading && <Loader2 size={14} className="animate-spin" />}
-                {/* FIX-PREPAID : label dynamique selon le mode choisi. */}
-                {paymentMode === 'prepaid'
+                {/* FIX-DOUBLE-SUBMIT : label dynamique CLAIR pendant la creation
+                    pour que l'admin comprenne que le serveur travaille - et ne
+                    re-clique pas en pensant que c'est bloque. */}
+                {loading
                   ? tx({
-                      fr: 'Creer la commande (Statut: Paye)',
-                      en: 'Create order (Status: Paid)',
-                      es: 'Crear pedido (Estado: Pagado)',
+                      fr: 'Creation en cours...',
+                      en: 'Creating...',
+                      es: 'Creando...',
                     })
-                  : tx({
-                      fr: 'Creer et generer lien Stripe',
-                      en: 'Create and generate Stripe link',
-                      es: 'Crear y generar enlace Stripe',
-                    })}
+                  : paymentMode === 'prepaid'
+                    ? tx({
+                        fr: 'Creer la commande (Statut: Paye)',
+                        en: 'Create order (Status: Paid)',
+                        es: 'Crear pedido (Estado: Pagado)',
+                      })
+                    : tx({
+                        fr: 'Creer et generer lien Stripe',
+                        en: 'Create and generate Stripe link',
+                        es: 'Crear y generar enlace Stripe',
+                      })}
               </button>
             </div>
           </form>

@@ -1463,6 +1463,7 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
     // facture le montant TTC exact. Avant ce fix, le frontend envoyait souvent total=subtotal
     // -> Stripe percevait HT -> factures sous-facturees sans TPS/TVQ.
     async manualCreate(ctx) {
+        var _a, _b;
         if (!(await (0, auth_1.requireAdminAuth)(ctx)))
             return;
         const body = ctx.request.body;
@@ -1513,6 +1514,42 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
         if (total <= 0) {
             return ctx.badRequest('Total calcule invalide (0 ou negatif). Verifier subtotal et taxes.');
         }
+        // FIX-COMPENSATE (27 avril 2026) : tracker des entites creees pour rollback.
+        //
+        // Pourquoi : Strapi v5 documents API ne propage pas naturellement les
+        // transactions Knex (le AsyncLocalStorage ne traverse pas l'abstraction
+        // documents -> entityService -> db.query). Plutot que de bypasser la
+        // documents API (perte de la lifecycle / draftAndPublish / populate auto)
+        // on utilise le pattern "compensating actions" : on track ce qu'on a cree
+        // et si l'etape N echoue, on supprime tout ce qui a ete cree aux etapes
+        // 1..N-1. Resultat : aucun orphelin en BDD, aucune commande "fantome".
+        //
+        // Le client (au sens DB) NE FAIT PAS partie du rollback car il peut etre
+        // reutilise (patient findOrCreate). Seuls order et invoice sont temporaires
+        // jusqu'a ce que toutes les etapes critiques aient reussi.
+        const created = {};
+        const safeDeleteOrder = async (reason) => {
+            if (!created.orderDocId)
+                return;
+            try {
+                await strapi.documents('api::order.order').delete({ documentId: created.orderDocId });
+                strapi.log.warn(`[manualCreate][rollback] Order ${created.orderDocId} supprime (raison: ${reason})`);
+            }
+            catch (delErr) {
+                strapi.log.error(`[manualCreate][rollback] ECHEC suppression order ${created.orderDocId}: ${delErr === null || delErr === void 0 ? void 0 : delErr.message}`);
+            }
+        };
+        const safeDeleteInvoice = async (reason) => {
+            if (!created.invoiceDocId)
+                return;
+            try {
+                await strapi.documents('api::invoice.invoice').delete({ documentId: created.invoiceDocId });
+                strapi.log.warn(`[manualCreate][rollback] Invoice ${created.invoiceDocId} supprime (raison: ${reason})`);
+            }
+            catch (delErr) {
+                strapi.log.error(`[manualCreate][rollback] ECHEC suppression invoice ${created.invoiceDocId}: ${delErr === null || delErr === void 0 ? void 0 : delErr.message}`);
+            }
+        };
         try {
             // 1. Resoudre ou creer le Client (lookup par email si fourni).
             //
@@ -1608,6 +1645,10 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
                     client: clientDocId ? { connect: [clientDocId] } : undefined,
                 },
             });
+            // FIX-COMPENSATE : tracker l'order pour rollback eventuel si une etape
+            // ulterieure echoue (invoice, Stripe). Le finally du catch global appelle
+            // safeDeleteOrder() pour nettoyer.
+            created.orderDocId = order.documentId;
             // 3. Numero de facture sequentiel MM-AAAA-XXXX (meme logique que webhook)
             //
             // FIX-UNIQUE-RACE (27 avril 2026) : retry loop pour resister aux race
@@ -1677,7 +1718,8 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
                             client: clientDocId ? { connect: [clientDocId] } : undefined,
                         },
                     });
-                    // Succes : on sort de la boucle.
+                    // Succes : on tracke l'invoice et on sort de la boucle.
+                    created.invoiceDocId = invoice.documentId;
                     break;
                 }
                 catch (invoiceErr) {
@@ -1833,15 +1875,42 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
             // sensibles (telephone, email partiel) pour la conformite.
             const isUnique = isUniqueViolation(err);
             const parsed = parseUniqueViolation(err);
-            strapi.log.error(`[manualCreate] ECHEC creation - isUnique=${isUnique} field=${parsed.field || '?'} `
-                + `code=${(err === null || err === void 0 ? void 0 : err.code) || '?'} name=${(err === null || err === void 0 ? void 0 : err.name) || '?'} message="${((err === null || err === void 0 ? void 0 : err.message) || '').slice(0, 300)}" `
+            const isStripeErr = ((_b = (_a = err === null || err === void 0 ? void 0 : err.type) === null || _a === void 0 ? void 0 : _a.startsWith) === null || _b === void 0 ? void 0 : _b.call(_a, 'Stripe')) || /stripe/i.test((err === null || err === void 0 ? void 0 : err.message) || '');
+            strapi.log.error(`[manualCreate] ECHEC creation - isUnique=${isUnique} isStripe=${isStripeErr} `
+                + `field=${parsed.field || '?'} code=${(err === null || err === void 0 ? void 0 : err.code) || '?'} name=${(err === null || err === void 0 ? void 0 : err.name) || '?'} `
+                + `message="${((err === null || err === void 0 ? void 0 : err.message) || '').slice(0, 300)}" `
                 + `payloadKeys=${Object.keys(body || {}).join(',')} `
                 + `customerEmail=${customerEmail ? customerEmail.replace(/(.{2}).+(@.+)/, '$1***$2') : 'none'} `
                 + `companyName="${(companyName || '').slice(0, 50)}" `
-                + `itemsCount=${Array.isArray(items) ? items.length : '?'}`);
+                + `itemsCount=${Array.isArray(items) ? items.length : '?'} `
+                + `created.orderDocId=${created.orderDocId || 'none'} `
+                + `created.invoiceDocId=${created.invoiceDocId || 'none'}`);
             // Log la stack complete pour les inconnues (utile en dev / 1ere apparition)
-            if (!isUnique && (err === null || err === void 0 ? void 0 : err.stack)) {
+            if (!isUnique && !isStripeErr && (err === null || err === void 0 ? void 0 : err.stack)) {
                 strapi.log.error(`[manualCreate] Stack trace:\n${err.stack}`);
+            }
+            // FIX-COMPENSATE (27 avril 2026) : ROLLBACK des entites creees avant
+            // de repondre l'erreur. Sans ce rollback, le scenario reel observe
+            // etait : order cree -> invoice plante (5 retries epuises) -> erreur
+            // remontee au frontend -> MAIS l'order persiste en BDD = orphan +
+            // confusion admin ("on me dit que ca a plante mais je vois la
+            // commande dans la liste"). Maintenant : avant de jeter l'erreur on
+            // efface tout ce qui a ete partiellement cree. L'admin verra une
+            // erreur claire sans aucune trace fantome dans la liste des commandes.
+            //
+            // Ordre IMPORTANT : invoice AVANT order car l'invoice a une relation
+            // oneToOne mappedBy='invoice' vers order. Strapi v5 supprime la relation
+            // proprement seulement si on supprime le owning side d'abord. En
+            // pratique les 2 sont independants au niveau DB pour les manuelles
+            // (pas de FK NOT NULL), donc l'ordre est defensif mais pas critique.
+            if (created.invoiceDocId || created.orderDocId) {
+                const reason = isUnique
+                    ? `unique violation on ${parsed.field || 'unknown field'}`
+                    : isStripeErr
+                        ? `Stripe API failure: ${((err === null || err === void 0 ? void 0 : err.message) || '').slice(0, 80)}`
+                        : `unexpected error: ${((err === null || err === void 0 ? void 0 : err.message) || '').slice(0, 80)}`;
+                await safeDeleteInvoice(reason);
+                await safeDeleteOrder(reason);
             }
             // Reponse structuree pour que le frontend puisse afficher un message
             // ciblé. Le frontend lit ctx.response.data.error.{message,field,code}.
@@ -1872,7 +1941,23 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
                 };
                 return;
             }
-            // Erreur non-unique : fallback comportement historique (badRequest 400).
+            // FIX-COMPENSATE : si erreur Stripe, on renvoie un message explicite
+            // qui indique que le rollback a eu lieu. L'admin doit savoir qu'il peut
+            // re-tenter sans craindre d'avoir une commande fantome.
+            if (isStripeErr) {
+                ctx.status = 502; // Bad Gateway - service externe (Stripe) indisponible
+                ctx.body = {
+                    error: {
+                        status: 502,
+                        name: 'StripeFailure',
+                        message: `Le lien de paiement Stripe n'a pas pu etre genere (${((err === null || err === void 0 ? void 0 : err.message) || 'erreur reseau').slice(0, 120)}). La commande et la facture creees ont ete automatiquement annulees - aucune trace en base. Re-essaie dans 30 secondes.`,
+                        code: 'STRIPE_FAILURE',
+                        details: { stripeType: err === null || err === void 0 ? void 0 : err.type, stripeCode: err === null || err === void 0 ? void 0 : err.code },
+                    },
+                };
+                return;
+            }
+            // Erreur non-unique non-Stripe : fallback comportement historique (badRequest 400).
             return ctx.badRequest((err === null || err === void 0 ? void 0 : err.message) || 'Erreur creation commande manuelle');
         }
     },
