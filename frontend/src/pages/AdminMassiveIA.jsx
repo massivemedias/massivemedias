@@ -1614,20 +1614,148 @@ function QRCodeTab() {
     a.click();
   };
 
+  // FIX-QR-SVG (27 avril 2026) : generateur SVG custom pour eliminer les
+  // artefacts horizontaux dans Illustrator.
+  //
+  // Probleme avec QRCode.toString({ type: 'svg' }) : la lib produit des
+  // commandes path optimisees par run-length-encoding sur les rangees
+  // (`h N` traversant plusieurs modules adjacents). Quand Illustrator parse,
+  // chaque rangee devient un long rectangle horizontal -> les modules
+  // apparaissent comme des bandes empilees au lieu de carres distincts.
+  //
+  // Notre approche :
+  //   1. QRCode.create(text) -> { modules: BitMatrix } (donnees brutes)
+  //   2. Iterer sur chaque module noir individuellement
+  //   3. Construire UN SEUL <path> compound avec un sub-path FERME (Z) par
+  //      module : "M x y h 1 v 1 h -1 Z M x2 y2 h 1 v 1 h -1 Z ..."
+  //      Aucune fusion possible entre modules adjacents -> pas d'artefact.
+  //   4. Variantes pour dotStyle 'dots' et 'rounded' avec courbes bezier.
+  //   5. shape-rendering="crispEdges" sur le <svg> pour rendu net.
+  //   6. stroke="none" explicite partout (jamais de contour parasite).
+  //   7. Logo embed via <image> + rect blanc arrondi derriere si logoUrl.
+  //
+  // Resultat : Illustrator voit un compound path avec N sub-paths discrets,
+  // chacun = 1 module net. Pretes pour impression professionnelle.
   const handleDownloadSVG = async () => {
     try {
       const QRCode = (await import('qrcode')).default;
-      const svg = await QRCode.toString(effectiveUrl.trim(), {
-        type: 'svg', width: size, margin: 2,
-        errorCorrectionLevel: effectiveEC,
-        color: { dark: fgColor, light: bgColor },
-      });
+      const qrData = await QRCode.create(effectiveUrl.trim(), { errorCorrectionLevel: effectiveEC });
+      const modules = qrData.modules;
+      const modSize = modules.size;
+      const margin = 2; // quiet zone en modules (cf comportement original toString)
+      const totalSize = modSize + margin * 2;
+
+      // Helpers de geometrie en unites "module" (1 module = 1 unit dans le viewBox).
+      // L'unite reelle est definie par width/height en pixels, ce qui garantit la
+      // precision mathematique sans arrondi flottant.
+
+      // Sub-path carre ferme : 1 module plein
+      const squarePath = (col, row) => {
+        const x = col + margin;
+        const y = row + margin;
+        return `M${x} ${y}h1v1h-1Z`;
+      };
+
+      // Sub-path rounded rect ferme avec coins arrondis (radius en unites module).
+      // Utilise des arcs (A) pour les 4 coins. Plus compact que les cubics beziers
+      // et donne un cercle parfait dans Illustrator. Les bords interieurs restent
+      // droits (h/v) entre les arcs.
+      const roundedPath = (col, row, r) => {
+        const x = col + margin;
+        const y = row + margin;
+        const inset = (1 - 0.96) / 2; // 2% inset comme le canvas (cellSize - 1 sur 1)
+        const x1 = x + inset, y1 = y + inset;
+        const w = 1 - inset * 2;
+        // Sub-path : start au coin haut-gauche apres l'arc
+        return `M${x1 + r} ${y1}` +
+          `h${w - 2 * r}` +
+          `a${r} ${r} 0 0 1 ${r} ${r}` +
+          `v${w - 2 * r}` +
+          `a${r} ${r} 0 0 1 ${-r} ${r}` +
+          `h${-(w - 2 * r)}` +
+          `a${r} ${r} 0 0 1 ${-r} ${-r}` +
+          `v${-(w - 2 * r)}` +
+          `a${r} ${r} 0 0 1 ${r} ${-r}` +
+          `Z`;
+      };
+
+      // Sub-path cercle ferme : 2 arcs demi-cercles. Equivalent geometrique
+      // d'un <circle> mais inclu dans le compound path pour rester sur 1 seul
+      // <path>. Diametre = 0.76 module (meme ratio que le canvas dots: 0.38 radius).
+      const circlePath = (col, row, radius) => {
+        const cx = col + margin + 0.5;
+        const cy = row + margin + 0.5;
+        return `M${cx - radius} ${cy}` +
+          `a${radius} ${radius} 0 1 0 ${radius * 2} 0` +
+          `a${radius} ${radius} 0 1 0 ${-radius * 2} 0` +
+          `Z`;
+      };
+
+      // Construire le compound path complet en accumulant les sub-paths.
+      // get(row, col) - on respecte l'ordre de la lib qrcode (cf canvas ligne 1547).
+      let pathData = '';
+      const ROUNDED_RADIUS = 0.32;
+      const DOT_RADIUS = 0.38;
+      for (let row = 0; row < modSize; row++) {
+        for (let col = 0; col < modSize; col++) {
+          if (!modules.get(row, col)) continue;
+          if (dotStyle === 'dots') {
+            pathData += circlePath(col, row, DOT_RADIUS);
+          } else if (dotStyle === 'rounded') {
+            pathData += roundedPath(col, row, ROUNDED_RADIUS);
+          } else {
+            pathData += squarePath(col, row);
+          }
+        }
+      }
+
+      // Construire le SVG. ViewBox en unites module pour la precision math.
+      // width/height en pixels pour le rendu cible. shape-rendering="crispEdges"
+      // sur le <svg> racine s'applique a tous les enfants -> bords mathematiquement
+      // parfaits sans antialiasing. fill explicite, stroke="none" explicite.
+      const escapeXml = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      const safeFg = escapeXml(fgColor);
+      const safeBg = escapeXml(bgColor);
+
+      // Background : rect plein si pas transparent. stroke="none" explicite.
+      const bgRect = transparentBg
+        ? ''
+        : `<rect width="${totalSize}" height="${totalSize}" fill="${safeBg}" stroke="none"/>`;
+
+      // Logo (optionnel) : image SVG embeddee + rect blanc arrondi derriere
+      // pour lisibilite. Meme ratio que le canvas (22% taille, padding 12%).
+      let logoMarkup = '';
+      if (logoUrl) {
+        const logoRatio = 0.22;
+        const logoSize = totalSize * logoRatio;
+        const lx = (totalSize - logoSize) / 2;
+        const ly = (totalSize - logoSize) / 2;
+        const padding = logoSize * 0.12;
+        const bgSize = logoSize + padding * 2;
+        const bgX = lx - padding;
+        const bgY = ly - padding;
+        const bgRadius = bgSize * 0.18;
+        const safeLogoBg = transparentBg ? 'white' : safeBg;
+        logoMarkup =
+          `<rect x="${bgX}" y="${bgY}" width="${bgSize}" height="${bgSize}" rx="${bgRadius}" ry="${bgRadius}" fill="${safeLogoBg}" stroke="none"/>` +
+          `<image x="${lx}" y="${ly}" width="${logoSize}" height="${logoSize}" href="${escapeXml(logoUrl)}" preserveAspectRatio="xMidYMid meet"/>`;
+      }
+
+      const svg = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 ${totalSize} ${totalSize}" width="${size}" height="${size}" shape-rendering="crispEdges">
+  ${bgRect}
+  <path d="${pathData}" fill="${safeFg}" stroke="none" shape-rendering="crispEdges"/>
+  ${logoMarkup}
+</svg>`;
+
       const blob = new Blob([svg], { type: 'image/svg+xml' });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
       const labelUrl = effectiveUrl.replace(/https?:\/\//, '').replace(/[^a-z0-9]/gi, '-').slice(0, 30);
       a.download = `qr-${labelUrl}.svg`;
       a.click();
+      // Cleanup memoire apres un court delai (laisse le navigateur trigger le DL)
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
     } catch (err) { console.error('SVG error:', err); }
   };
 
