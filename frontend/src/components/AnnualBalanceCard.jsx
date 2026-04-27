@@ -36,8 +36,27 @@ function downloadCSV(filename, csvContent) {
   URL.revokeObjectURL(url);
 }
 
+// FIX-PARANOIA (27 avril 2026) : seuil de securite contre un eventuel bug
+// d'unite cents/dollars (deja fixe cote backend, mais belt-and-suspenders).
+// Si le backend renvoie une valeur > seuil pour un champ financier, c'est
+// presque toujours un bug d'unite (cents lus comme dollars => valeur 100x
+// trop grande). Plutot que d'afficher un chiffre faux qui fausse la compta,
+// on force 0$ et on log un warning lisible dans la console pour diagnostic.
+//
+// Seuil : 500k$ par champ. Couvre le bug d'unite typique (1k$ reel x100 =
+// 100k$, bien au-dessus du seuil) sans pour autant bloquer un atelier qui
+// genererait jusqu'a 500k$ de revenu annuel reel (donnerait 50M$ avec bug).
+// Si tu fais > 500k$/an et que ton chiffre s'affiche a 0$, augmente ce seuil.
+const SAFETY_MAX_FINANCIAL_VALUE = 500_000;
+
 const fmt = (v) => {
   const n = parseFloat(v || 0) || 0;
+  if (n > SAFETY_MAX_FINANCIAL_VALUE) {
+    if (typeof console !== 'undefined') {
+      console.warn(`[AnnualBalanceCard] Valeur suspecte ${n} > seuil 1M$ - probable bug d'unite cents/dollars cote backend. Affichage 0$ par securite. Verifier backend yearSummary.`);
+    }
+    return '0,00';
+  }
   return n.toLocaleString('fr-CA', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 };
 
@@ -111,19 +130,35 @@ function AnnualBalanceCard() {
     downloadCSV(`massive-bilan-${year}.csv`, lines.join('\n'));
   };
 
-  const t = yearData?.totals || {};
+  const tRaw = yearData?.totals || {};
+  // FIX-PARANOIA (27 avril 2026) : sanitize chaque valeur financiere avant
+  // calculs derives. Si un champ depasse le seuil 1M$, on le force a 0 plutot
+  // que de propager un chiffre suspect dans bilan/netTps/netTvq. Garantit
+  // qu'un eventuel bug d'unite cents/dollars cote backend ne produit JAMAIS
+  // un chiffre faux affiche a l'admin (force 0$ + warning console).
+  const safeNum = (v) => {
+    const n = parseFloat(v || 0) || 0;
+    return n > SAFETY_MAX_FINANCIAL_VALUE ? 0 : n;
+  };
+  const t = {
+    revenue: safeNum(tRaw.revenue),
+    expenses: safeNum(tRaw.expenses),
+    tps: safeNum(tRaw.tps),
+    tvq: safeNum(tRaw.tvq),
+    deductible: safeNum(tRaw.deductible),
+    revenueTps: safeNum(tRaw.revenueTps),
+    revenueTvq: safeNum(tRaw.revenueTvq),
+    revenueWeb: safeNum(tRaw.revenueWeb),
+    revenueManual: safeNum(tRaw.revenueManual),
+    webCount: parseInt(tRaw.webCount, 10) || 0,
+    manualCount: parseInt(tRaw.manualCount, 10) || 0,
+  };
   // FIX-COMPTA (27 avril 2026) : bilan = revenue - DEDUCTIBLE (HT) au lieu de
   // revenue - expenses (TTC). Les TPS/TVQ payees sur les depenses sont
-  // recuperables via CTI/RTI (Net a remettre) donc PAS des charges deductibles
-  // qu'il faudrait soustraire au profit. Cas chiffre :
-  //   Avant : 206443 - 5201.56 = 201241.44 (faux, double-compte les taxes)
-  //   Apres : 206443 - 5031.42 = 201411.58 (correct : profit reel)
-  // L'ecart de 170.14$ correspond exactement a TPS+TVQ payees recuperables.
-  // Pour les exercices ou aucune depense n'est marquee taxDeductible (rare,
-  // typique d'une nouvelle entreprise), deductible=0 et bilan=revenue.
-  const bilan = (t.revenue || 0) - (t.deductible || 0);
-  const netTps = (t.revenueTps || 0) - (t.tps || 0);
-  const netTvq = (t.revenueTvq || 0) - (t.tvq || 0);
+  // recuperables via CTI/RTI (Net a remettre) donc PAS des charges deductibles.
+  const bilan = t.revenue - t.deductible;
+  const netTps = t.revenueTps - t.tps;
+  const netTvq = t.revenueTvq - t.tvq;
 
   return (
     <div className="rounded-2xl card-bg shadow-lg shadow-black/20 p-4 md:p-5 space-y-4">

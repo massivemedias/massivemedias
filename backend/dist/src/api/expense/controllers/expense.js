@@ -212,9 +212,9 @@ exports.default = strapi_1.factories.createCoreController('api::expense.expense'
         // en CENTS (integer), Expense schema stocke amount/tpsAmount/tvqAmount en
         // DOLLARS (decimal). Avant ce fix : on additionnait les cents directement
         // dans `revenue` puis le frontend AnnualBalanceCard affichait fmt(revenue)$
-        // sans diviser par 100 -> chiffres 100x trop eleves (2064.43$ HT reel
-        // affiche comme 206 443$). On divise par 100 ici pour normaliser tous les
-        // champs en DOLLARS, coherent avec les depenses qui sont deja en dollars.
+        // sans diviser par 100 -> chiffres 100x trop eleves a l'ecran. On divise
+        // par 100 ici pour normaliser tous les champs en DOLLARS, coherent avec
+        // les depenses qui sont deja en dollars.
         const CENTS_TO_DOLLARS = 100;
         for (const o of orders) {
             const d = (o === null || o === void 0 ? void 0 : o.createdAt) ? new Date(o.createdAt) : null;
