@@ -9,25 +9,74 @@
 //   2. Etre repercutee dans backend/src/utils/pricing-config.ts (meme valeurs)
 
 // =======================================================
-// 1. STICKERS (taille confondue, prix fixe par palier)
+// 1. STICKERS (3 paliers de taille : Standard / Medium / Large)
 // =======================================================
-export const STICKER_GRID_STANDARD = Object.freeze({
-  25: 30,
-  50: 47.50,
-  100: 85,
-  250: 200,
-  500: 375,
+// FIX-PRICING-TIERS (27 avril 2026) : refonte du pricing sticker pour tenir
+// compte de la consommation reelle de matiere selon la taille. Avant : prix
+// fixe peu importe la taille -> non rentable sur 4"/5". Maintenant : 3 paliers
+// avec une grille dediee chacun.
+//
+// Mapping taille -> tier :
+//   2", 2.5"     -> standard  (palier le moins cher)
+//   3", 3.5"     -> medium    (+35% par rapport a standard)
+//   4", 5"       -> large     (+85% par rapport a standard)
+//
+// Pour chaque tier : 2 grilles selon le fini :
+//   matte = Matte + Lustre + Die-Cut classique
+//   fx    = Holographique + Verre Brise + Etoiles
+//
+// SSOT cote backend : backend/src/utils/pricing-config.ts -> STICKER_GRID.
+// Si vous modifiez les prix ici, modifiez aussi la-bas (sinon le backend
+// rejette des commandes legitimes via validation server-side).
+export const STICKER_GRID = Object.freeze({
+  standard: Object.freeze({
+    matte: Object.freeze({ 25: 30, 50: 47.50, 100: 85, 250: 200, 500: 375 }),
+    fx:    Object.freeze({ 25: 35, 50: 57.50, 100: 100, 250: 225, 500: 425 }),
+  }),
+  medium: Object.freeze({
+    matte: Object.freeze({ 25: 40, 50: 65, 100: 115, 250: 275, 500: 500 }),
+    fx:    Object.freeze({ 25: 50, 50: 80, 100: 135, 250: 305, 500: 575 }),
+  }),
+  large: Object.freeze({
+    matte: Object.freeze({ 25: 55, 50: 90, 100: 160, 250: 375, 500: 700 }),
+    fx:    Object.freeze({ 25: 65, 50: 105, 100: 185, 250: 415, 500: 785 }),
+  }),
 });
 
-export const STICKER_GRID_FX = Object.freeze({
-  25: 35,
-  50: 57.50,
-  100: 100,
-  250: 225,
-  500: 425,
-});
+// ALIAS RETRO-COMPAT : pointent sur le palier `standard` (= ancien comportement).
+// Tout le code legacy qui faisait STICKER_GRID_STANDARD[qty] continue de fonctionner.
+// Pour le nouveau code : utiliser STICKER_GRID[tier][kind][qty].
+export const STICKER_GRID_STANDARD = STICKER_GRID.standard.matte;
+export const STICKER_GRID_FX = STICKER_GRID.standard.fx;
 
 export const STICKER_FX_FINISHES = Object.freeze(['holographic', 'broken-glass', 'stars']);
+
+/**
+ * Mapping taille -> tier de prix.
+ * Accepte tous les formats : '2', '2in', '2.5', '2.5in', '3"', etc.
+ * Fallback 'standard' si parse echoue (tier le moins cher).
+ */
+export function getStickerSizeTier(size) {
+  if (size === null || size === undefined) return 'standard';
+  const match = String(size).match(/^\s*([\d.]+)/);
+  if (!match) return 'standard';
+  const inches = parseFloat(match[1]);
+  if (!Number.isFinite(inches)) return 'standard';
+  if (inches <= 2.5) return 'standard';
+  if (inches <= 3.5) return 'medium';
+  return 'large';
+}
+
+/**
+ * Helper public : retourne la grille (objet { qty: price }) pour une (taille, fini) donnee.
+ * Utilise par la page service pour construire les tableaux d'onglets et par le
+ * configurateur pour afficher le prix dynamiquement.
+ */
+export function getStickerGridForSize(size, finish) {
+  const tier = getStickerSizeTier(size);
+  const kind = STICKER_FX_FINISHES.includes(finish) ? 'fx' : 'matte';
+  return STICKER_GRID[tier][kind];
+}
 
 // =======================================================
 // 2. FINE ART (prix par format, Studio vs Musee, + cadre)
@@ -96,15 +145,19 @@ export const SUBLIMATION_BYOT_ALLOWED = Object.freeze(['tshirt', 'longsleeve', '
 // =======================================================
 
 /**
- * Prix sticker : lookup strict dans STICKER_GRID_STANDARD ou STICKER_GRID_FX.
- * La taille du sticker est IGNOREE (hardcoded business rule 2026).
+ * Prix sticker : lookup strict dans STICKER_GRID[tier][kind].
+ * FIX-PRICING-TIERS (27 avril 2026) : `size` influence maintenant le prix via
+ * 3 paliers (standard/medium/large). Si `size` absent (cas legacy / panier
+ * pre-fix), fallback sur tier 'standard' = ancien comportement -> aucune
+ * regression sur les anciens items du panier.
  */
-export function lookupStickerPrice(finish, qty) {
-  const grid = STICKER_FX_FINISHES.includes(finish) ? STICKER_GRID_FX : STICKER_GRID_STANDARD;
+export function lookupStickerPrice(finish, qty, size) {
+  const grid = getStickerGridForSize(size, finish);
   const price = grid[qty];
   if (price == null) return null;
   const unitPrice = Math.round((price / qty) * 100) / 100;
-  return { qty, price, unitPrice };
+  const tier = getStickerSizeTier(size);
+  return { qty, price, unitPrice, tier };
 }
 
 /**

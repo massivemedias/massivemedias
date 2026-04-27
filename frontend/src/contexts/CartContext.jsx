@@ -159,8 +159,12 @@ export function CartProvider({ children }) {
         let finalUnitPrice = unitPrice;
         let finalTotal = quantity * unitPrice;
         if (item.productId === 'sticker-custom' || item.productId === 'sticker-artist') {
-          // Grille officielle fixe par palier. La taille n'impacte plus le prix.
-          const priceInfo = getStickerPrice(item.finish, item.shape, quantity);
+          // FIX-PRICING-TIERS (27 avril 2026) : la taille IMPACTE le prix via 3
+          // paliers (Standard/Medium/Large). On passe item.sizeId au lookup pour
+          // recalculer le prix dans le bon palier. Fallback gracieux : si sizeId
+          // absent (ancien item du panier pre-fix), getStickerPrice utilise tier
+          // 'standard' = ancien comportement -> aucune regression.
+          const priceInfo = getStickerPrice(item.finish, item.shape, quantity, item.sizeId);
           if (priceInfo) {
             finalUnitPrice = priceInfo.unitPrice;
             finalTotal = priceInfo.price;

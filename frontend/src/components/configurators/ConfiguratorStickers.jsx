@@ -41,10 +41,13 @@ function ConfiguratorStickers({ onFinishChange }) {
 
   // PRIX-HARDCODE : on IGNORE pd?.tiers. La grille officielle vit uniquement dans
   // data/products.js. Aucun override CMS/API possible depuis avril 2026.
+  // FIX-PRICING-TIERS (27 avril 2026) : on PASSE maintenant `size` a getStickerPrice
+  // pour que le prix reflete le palier de taille (Standard/Medium/Large). React
+  // re-render automatiquement quand `size` change dans le state -> prix dynamique.
   const getStickerPrice = defaultGetPrice;
   const tiers = defaultTiers;
   const currentTier = tiers[qtyIndex] || tiers[0];
-  const priceInfo = getStickerPrice(finish, shape, currentTier.qty);
+  const priceInfo = getStickerPrice(finish, shape, currentTier.qty, size);
 
   const finishLabel = stickerFinishes.find(f => f.id === finish);
   const shapeLabel = stickerShapes.find(s => s.id === shape);
@@ -208,19 +211,33 @@ function ConfiguratorStickers({ onFinishChange }) {
                 </button>
               ))}
             </div>
-            {/* FIX-UX (27 avril 2026) : helper text qui rassure le client sur
-                la grille de prix. Les formats 2", 2.5" et 3" partagent le meme
-                prix de base (SIZE_MULTIPLIERS = 1.0 dans pricing-config). Au
-                dela (4", 5") un multiplicateur s'applique. icone Info pour
-                signaler que c'est un "tip" et pas une regle stricte. */}
+            {/* FIX-PRICING-TIERS (27 avril 2026) : helper qui explique les 3
+                paliers de prix selon la taille. Avant : tous formats au meme
+                prix (devenu FAUX avec la refonte). Maintenant : 3 paliers
+                (Standard <=2.5", Medium <=3.5", Large <=5") avec une grille
+                de prix par palier. Le helper indique le palier actuel actif. */}
             <p className="mt-2 flex items-start gap-1.5 text-[11px] text-grey-muted leading-relaxed">
               <Info size={11} className="text-accent flex-shrink-0 mt-0.5" />
               <span>
-                {tx({
-                  fr: 'Pour plus de simplicite, tous nos formats standards (jusqu\'a 3 pouces) sont offerts au meme tarif de base.',
-                  en: 'For simplicity, all our standard formats (up to 3 inches) come at the same base price.',
-                  es: 'Para mayor simplicidad, todos nuestros formatos estandar (hasta 3 pulgadas) tienen el mismo precio base.',
-                })}
+                {priceInfo?.tier === 'large' ? (
+                  tx({
+                    fr: 'Palier Large (jusqu\'a 5"). Prix calcule selon la dimension la plus large de ton design.',
+                    en: 'Large tier (up to 5"). Price based on the longest dimension of your design.',
+                    es: 'Nivel Large (hasta 5"). Precio según la dimensión más larga de tu diseño.',
+                  })
+                ) : priceInfo?.tier === 'medium' ? (
+                  tx({
+                    fr: 'Palier Medium (jusqu\'a 3.5"). Prix calcule selon la dimension la plus large de ton design.',
+                    en: 'Medium tier (up to 3.5"). Price based on the longest dimension of your design.',
+                    es: 'Nivel Medium (hasta 3.5"). Precio según la dimensión más larga de tu diseño.',
+                  })
+                ) : (
+                  tx({
+                    fr: 'Palier Standard (jusqu\'a 2.5"). Prix calcule selon la dimension la plus large de ton design.',
+                    en: 'Standard tier (up to 2.5"). Price based on the longest dimension of your design.',
+                    es: 'Nivel Standard (hasta 2.5"). Precio según la dimensión más larga de tu diseño.',
+                  })
+                )}
               </span>
             </p>
           </div>
@@ -232,7 +249,7 @@ function ConfiguratorStickers({ onFinishChange }) {
             </label>
             <div className="grid grid-cols-5 gap-2">
               {tiers.map((tier, i) => {
-                const p = getStickerPrice(finish, shape, tier.qty);
+                const p = getStickerPrice(finish, shape, tier.qty, size);
                 return (
                   <button
                     key={tier.qty}

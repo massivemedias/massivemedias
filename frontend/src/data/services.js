@@ -163,34 +163,97 @@ Découpés à la forme exacte de ton design avec notre équipement de découpe p
     ],
     pricing: {
       title: 'Tarifs Stickers Die-Cut',
-      // FIX-PRICING (27 avril 2026) : grille alignee sur backend pricing-config.ts
-      // (STICKER_STANDARD_TIERS + STICKER_FX_TIERS) qui est la SSOT consommee par
-      // le configurateur. Avant ce fix : 250 stickers a 150$ affiche en page
-      // service alors que le configurateur facture 200$ -> client confus +
-      // probleme reputationnel. Versions EN/ES etaient deja correctes ; seul
-      // le FR etait en retard.
-      note: 'Design graphique non inclus - tu fournis ton fichier prêt à imprimer',
-      tables: [
+      // FIX-PRICING-TIERS (27 avril 2026) : refonte du systeme de prix en 3 paliers
+      // de taille (Standard <=2.5", Medium <=3.5", Large <=5"). Avant : prix fixe
+      // peu importe la taille -> non rentable sur 4"/5". Maintenant : majoration
+      // de +35% pour Medium et +85% pour Large par rapport au Standard. Memes
+      // ratios appliques aux finis FX. SSOT : STICKER_GRID dans
+      // backend/utils/pricing-config.ts ET frontend/utils/pricingData.js.
+      // La structure tabs[] est rendue par PricingTabs dans ServiceDetail.jsx.
+      note: 'Design graphique non inclus - tu fournis ton fichier prêt à imprimer. Prix calculé selon la dimension la plus large de ton design.',
+      tabs: [
         {
-          subtitle: 'Standard (Matte / Lustré)',
-          headers: ['Qté', 'Prix', 'Prix/u'],
-          rows: [
-            ['25', '30$', '1,20$/u'],
-            ['50', '47,50$', '0,95$/u'],
-            ['100', '85$', '0,85$/u'],
-            ['250', '200$', '0,80$/u'],
-            ['500', '375$', '0,75$/u'],
+          id: 'standard',
+          label: 'Standard (jusqu\'à 2.5")',
+          tables: [
+            {
+              subtitle: 'Matte / Lustré',
+              headers: ['Qté', 'Prix', 'Prix/u'],
+              rows: [
+                ['25', '30$', '1,20$/u'],
+                ['50', '47,50$', '0,95$/u'],
+                ['100', '85$', '0,85$/u'],
+                ['250', '200$', '0,80$/u'],
+                ['500', '375$', '0,75$/u'],
+              ],
+            },
+            {
+              subtitle: 'Fx (Holo / Verre Brisé / Étoiles)',
+              headers: ['Qté', 'Prix', 'Prix/u'],
+              rows: [
+                ['25', '35$', '1,40$/u'],
+                ['50', '57,50$', '1,15$/u'],
+                ['100', '100$', '1,00$/u'],
+                ['250', '225$', '0,90$/u'],
+                ['500', '425$', '0,85$/u'],
+              ],
+            },
           ],
         },
         {
-          subtitle: 'Fx (Holo, Verre Brisé, Étoiles)',
-          headers: ['Qté', 'Prix', 'Prix/u'],
-          rows: [
-            ['25', '35$', '1,40$/u'],
-            ['50', '57,50$', '1,15$/u'],
-            ['100', '100$', '1,00$/u'],
-            ['250', '225$', '0,90$/u'],
-            ['500', '425$', '0,85$/u'],
+          id: 'medium',
+          label: 'Medium (jusqu\'à 3.5")',
+          tables: [
+            {
+              subtitle: 'Matte / Lustré',
+              headers: ['Qté', 'Prix', 'Prix/u'],
+              rows: [
+                ['25', '40$', '1,60$/u'],
+                ['50', '65$', '1,30$/u'],
+                ['100', '115$', '1,15$/u'],
+                ['250', '275$', '1,10$/u'],
+                ['500', '500$', '1,00$/u'],
+              ],
+            },
+            {
+              subtitle: 'Fx (Holo / Verre Brisé / Étoiles)',
+              headers: ['Qté', 'Prix', 'Prix/u'],
+              rows: [
+                ['25', '50$', '2,00$/u'],
+                ['50', '80$', '1,60$/u'],
+                ['100', '135$', '1,35$/u'],
+                ['250', '305$', '1,22$/u'],
+                ['500', '575$', '1,15$/u'],
+              ],
+            },
+          ],
+        },
+        {
+          id: 'large',
+          label: 'Large (jusqu\'à 5")',
+          tables: [
+            {
+              subtitle: 'Matte / Lustré',
+              headers: ['Qté', 'Prix', 'Prix/u'],
+              rows: [
+                ['25', '55$', '2,20$/u'],
+                ['50', '90$', '1,80$/u'],
+                ['100', '160$', '1,60$/u'],
+                ['250', '375$', '1,50$/u'],
+                ['500', '700$', '1,40$/u'],
+              ],
+            },
+            {
+              subtitle: 'Fx (Holo / Verre Brisé / Étoiles)',
+              headers: ['Qté', 'Prix', 'Prix/u'],
+              rows: [
+                ['25', '65$', '2,60$/u'],
+                ['50', '105$', '2,10$/u'],
+                ['100', '185$', '1,85$/u'],
+                ['250', '415$', '1,66$/u'],
+                ['500', '785$', '1,57$/u'],
+              ],
+            },
           ],
         },
       ],

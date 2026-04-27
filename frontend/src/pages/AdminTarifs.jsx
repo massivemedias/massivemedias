@@ -5,6 +5,11 @@ import { useLang } from '../i18n/LanguageContext';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import artistsData, { artistPrinterTiers, artistFormats } from '../data/artists';
+// FIX-PRICING-TIERS (27 avril 2026) : import depuis SSOT au lieu de hardcoder
+// les arrays. STICKER_GRID expose 3 paliers (standard/medium/large) - cette
+// page admin affiche le palier 'standard' par defaut + une note pour rappeler
+// l'existence des paliers Medium (+35%) et Large (+85%).
+import { STICKER_GRID } from '../utils/pricingData';
 
 // =============================================
 // DONNÉES TARIFS
@@ -26,21 +31,23 @@ const ARTIST_PRICES = [
   { format: 'A2 (18×24")', studio: null, museum: 190, frame: 45 },
 ];
 
-const STICKER_STANDARD = [
-  { qty: 25, price: 30, unit: 1.20 },
-  { qty: 50, price: 47.50, unit: 0.95 },
-  { qty: 100, price: 85, unit: 0.85 },
-  { qty: 250, price: 200, unit: 0.80 },
-  { qty: 500, price: 375, unit: 0.75 },
-];
-
-const STICKER_FX = [
-  { qty: 25, price: 35, unit: 1.40 },
-  { qty: 50, price: 57.50, unit: 1.15 },
-  { qty: 100, price: 100, unit: 1.00 },
-  { qty: 250, price: 225, unit: 0.90 },
-  { qty: 500, price: 425, unit: 0.85 },
-];
+// FIX-PRICING-TIERS : les arrays STICKER_STANDARD/STICKER_FX sont maintenant
+// derives de la SSOT (STICKER_GRID.standard) au lieu d'etre hardcoded en
+// double. Si un prix change dans pricingData.js, cette page se met a jour
+// automatiquement au prochain rebuild. Le palier 'standard' (<=2.5") est
+// affiche par defaut - les paliers Medium/Large sont accessibles via la
+// page service publique /services/stickers (onglets).
+const buildStickerArr = (gridObj) => Object.entries(gridObj).map(([qty, price]) => ({
+  qty: Number(qty),
+  price,
+  unit: Math.round((price / Number(qty)) * 100) / 100,
+}));
+const STICKER_STANDARD = buildStickerArr(STICKER_GRID.standard.matte);
+const STICKER_FX = buildStickerArr(STICKER_GRID.standard.fx);
+const STICKER_MEDIUM = buildStickerArr(STICKER_GRID.medium.matte);
+const STICKER_MEDIUM_FX = buildStickerArr(STICKER_GRID.medium.fx);
+const STICKER_LARGE = buildStickerArr(STICKER_GRID.large.matte);
+const STICKER_LARGE_FX = buildStickerArr(STICKER_GRID.large.fx);
 
 const FLYERS = [
   { qty: 50, single: 40, double: 52 },
@@ -146,7 +153,7 @@ function AdminTarifs() {
     lines.push(tx({ fr: '* A2 (18x24") = 12 encres pigmentées uniquement, pas de frame', en: '* A2 (18x24") = 12 pigmented inks only, no frame', es: '* A2 (18x24") = 12 tintas pigmentadas solamente, sin marco' }));
     lines.push(tx({ fr: '* Frame = cadre noir ou blanc (20$ A6/A4, 30$ A3, 35$ A3+, 45$ A2)', en: '* Frame = black or white (20$ A6/A4, 30$ A3, 35$ A3+, 45$ A2)', es: '* Marco = negro o blanco (20$ A6/A4, 30$ A3, 35$ A3+, 45$ A2)' }));
     lines.push('');
-    lines.push(tx({ fr: 'PACKS STICKERS (design inclus)', en: 'STICKER PACKS (design included)', es: 'PACKS STICKERS (diseno incluido)' }));
+    lines.push(tx({ fr: 'PACKS STICKERS (palier Standard <=2.5\", design fourni par client)', en: 'STICKER PACKS (Standard tier <=2.5\", client-provided design)', es: 'PACKS STICKERS (Standard hasta 2.5\", diseno proveido por cliente)' }));
     lines.push('-'.repeat(55));
     lines.push(`${tx({ fr: 'Quantité', en: 'Quantity', es: 'Cantidad' })} | Standard (Matte/Lustré) | FX (Holo/Broken Glass)`);
     STICKER_STANDARD.forEach((s, i) => {
@@ -721,7 +728,7 @@ function AdminTarifs() {
           {/* Stickers pour artistes */}
           <SectionCard icon={Sticker} iconColor="text-pink-400"
             title={tx({ fr: 'Packs stickers artiste', en: 'Artist sticker packs', es: 'Packs stickers artista' })}
-            subtitle={tx({ fr: 'Prix pour les artistes qui veulent vendre des stickers (design inclus)', en: 'Prices for artists who want to sell stickers (design included)', es: 'Precios para artistas que quieren vender stickers (diseno incluido)' })}>
+            subtitle={tx({ fr: 'Palier Standard <=2.5". Pour Medium (<=3.5") +35% et Large (<=5") +85%, voir /services/stickers.', en: 'Standard tier <=2.5". For Medium (<=3.5") +35% and Large (<=5") +85%, see /services/stickers.', es: 'Standard <=2.5". Para Medium +35% y Large +85%, ver /services/stickers.' })}>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <div>
                 <h4 className="text-xs font-semibold text-heading mb-2 uppercase tracking-wider">Standard (Matte / Lustré / Die-cut)</h4>
@@ -842,7 +849,7 @@ function AdminTarifs() {
           </SectionCard>
 
           {/* Stickers */}
-          <SectionCard icon={Sticker} iconColor="text-pink-400" title="Stickers" subtitle={tx({ fr: 'Design inclus dans le prix', en: 'Design included in price', es: 'Diseno incluido en el precio' })} delay={0.05}>
+          <SectionCard icon={Sticker} iconColor="text-pink-400" title="Stickers" subtitle={tx({ fr: 'Palier Standard <=2.5". Voir /services/stickers pour Medium (+35%) et Large (+85%). Design fourni par le client.', en: 'Standard tier <=2.5". See /services/stickers for Medium (+35%) and Large (+85%). Client-provided design.', es: 'Standard <=2.5". Ver /services/stickers para Medium y Large. Cliente provee diseno.' })} delay={0.05}>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <div>
                 <h4 className="text-xs font-semibold text-heading mb-2 uppercase tracking-wider">Standard (Matte / Lustré / Die-cut)</h4>
@@ -964,7 +971,7 @@ function AdminTarifs() {
                 </tr>
               ))}
             </DataTable>
-            <p className="text-xs text-grey-muted mt-2">* {tx({ fr: 'Design stickers inclus dans le prix des stickers', en: 'Sticker design included in sticker price', es: 'Diseno de stickers incluido en el precio de los stickers' })}</p>
+            <p className="text-xs text-grey-muted mt-2">* {tx({ fr: 'Le client fournit son fichier - service de design facture a part', en: 'Client provides their file - design billed separately', es: 'El cliente provee su archivo - diseno facturado aparte' })}</p>
           </SectionCard>
 
           {/* Web */}

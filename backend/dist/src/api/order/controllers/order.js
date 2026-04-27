@@ -297,18 +297,19 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
         let subtotal = 0;
         for (const item of items) {
             let validPrice = item.totalPrice || 0;
-            // Validate sticker pricing against official grid (prix fixe par palier, taille ignoree)
+            // FIX-PRICING-TIERS (27 avril 2026) : validation sticker selon les 3
+            // paliers de taille (Standard/Medium/Large). Le prix officiel vient de
+            // STICKER_GRID[tier][kind][qty] - taille INFLUENCE maintenant le prix.
+            // Avant : prix fixe peu importe la taille -> non rentable sur 4"/5".
             if (item.productId === 'sticker-custom' || item.productId === 'sticker-artist') {
                 const finishLower = String(item.finish || '').toLowerCase();
-                const isFx = pricing_config_1.FX_FINISHES.some((f) => finishLower.includes(f));
-                const tiers = isFx ? pricing_config_1.STICKER_FX_TIERS : pricing_config_1.STICKER_STANDARD_TIERS;
-                const tierPrice = tiers[item.quantity];
-                if (tierPrice) {
+                const tierPrice = (0, pricing_config_1.lookupStickerPriceBySize)(finishLower, item.quantity, item.size);
+                if (tierPrice != null) {
                     validPrice = tierPrice;
-                    strapi.log.info(`[sticker-validate] qty=${item.quantity} tier=${tierPrice}$ -> validated=${validPrice}$`);
+                    strapi.log.info(`[sticker-validate] size=${item.size} qty=${item.quantity} finish=${finishLower} -> ${tierPrice}$`);
                 }
                 else {
-                    strapi.log.warn(`Invalid sticker tier: qty=${item.quantity}, using client price ${item.totalPrice}`);
+                    strapi.log.warn(`Invalid sticker tier: size=${item.size} qty=${item.quantity}, using client price ${item.totalPrice}`);
                 }
             }
             // Validate business card pricing against tiers
@@ -525,13 +526,13 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
         catch (_) { /* ignore */ }
         for (const item of items) {
             let validPrice = item.totalPrice || 0;
-            // --- Stickers: validation par grille officielle (prix fixe par palier, taille ignoree) ---
+            // --- Stickers: validation par grille officielle 3 paliers de taille ---
+            // FIX-PRICING-TIERS (27 avril 2026) : voir createPaymentIntent pour le
+            // detail. Meme regle ici (chemin checkout-session) pour coherence.
             if (item.productId === 'sticker-custom' || item.productId === 'sticker-artist') {
                 const finishLower = String(item.finish || '').toLowerCase();
-                const isFx = pricing_config_1.FX_FINISHES.some((f) => finishLower.includes(f));
-                const tiers = isFx ? pricing_config_1.STICKER_FX_TIERS : pricing_config_1.STICKER_STANDARD_TIERS;
-                const tierPrice = tiers[item.quantity];
-                if (tierPrice) {
+                const tierPrice = (0, pricing_config_1.lookupStickerPriceBySize)(finishLower, item.quantity, item.size);
+                if (tierPrice != null) {
                     validPrice = tierPrice;
                 }
             }

@@ -52,7 +52,9 @@ function ConfiguratorArtistSticker({ artist, selectedSticker, allStickers = [] }
   const totalQty = packSize * packCount;
 
   const isSpecialFinish = finish === 'holographic' || finish === 'broken-glass' || finish === 'stars';
-  const priceInfo = totalQty > 0 ? getStickerPriceForTotal(finish, shape, totalQty) : null;
+  // FIX-PRICING-TIERS (27 avril 2026) : `size` impacte le prix via 3 paliers
+  // (Standard/Medium/Large). React re-render automatiquement quand size change.
+  const priceInfo = totalQty > 0 ? getStickerPriceForTotal(finish, shape, totalQty, size) : null;
   const canCheckout = totalQty >= MIN_TOTAL && packSize > 0;
   const missing = Math.max(0, MIN_TOTAL - totalQty);
 
@@ -355,17 +357,30 @@ function ConfiguratorArtistSticker({ artist, selectedSticker, allStickers = [] }
               </button>
             ))}
           </div>
-          {/* FIX-UX (27 avril 2026) : meme helper que ConfiguratorStickers
-              (formats standards jusqu'a 3" au meme prix). Coherence sur les
-              2 chemins d'achat sticker (catalogue boutique + page artiste). */}
+          {/* FIX-PRICING-TIERS (27 avril 2026) : 3 paliers de prix selon la
+              taille. Affiche le palier actif. Coherent avec ConfiguratorStickers. */}
           <p className="mt-2 flex items-start gap-1 text-[10px] text-grey-muted leading-relaxed">
             <Info size={10} className="text-accent flex-shrink-0 mt-0.5" />
             <span>
-              {tx({
-                fr: 'Formats jusqu\'a 3" au meme tarif de base.',
-                en: 'Formats up to 3" share the same base price.',
-                es: 'Formatos hasta 3" al mismo precio base.',
-              })}
+              {priceInfo?.tier === 'large' ? (
+                tx({
+                  fr: 'Large (jusqu\'a 5"). Calcule sur la dimension la plus large.',
+                  en: 'Large (up to 5"). Based on longest dimension.',
+                  es: 'Large (hasta 5"). Según la dimensión más larga.',
+                })
+              ) : priceInfo?.tier === 'medium' ? (
+                tx({
+                  fr: 'Medium (jusqu\'a 3.5"). Calcule sur la dimension la plus large.',
+                  en: 'Medium (up to 3.5"). Based on longest dimension.',
+                  es: 'Medium (hasta 3.5"). Según la dimensión más larga.',
+                })
+              ) : (
+                tx({
+                  fr: 'Standard (jusqu\'a 2.5"). Calcule sur la dimension la plus large.',
+                  en: 'Standard (up to 2.5"). Based on longest dimension.',
+                  es: 'Standard (hasta 2.5"). Según la dimensión más larga.',
+                })
+              )}
             </span>
           </p>
         </div>

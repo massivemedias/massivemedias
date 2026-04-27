@@ -15,6 +15,8 @@ import {
   lookupFineArtPrice,
   lookupFlyerPrice,
   lookupSublimationPrice,
+  getStickerSizeTier,
+  getStickerGridForSize,
 } from '../utils/pricingData';
 
 export const stickerFinishes = [
@@ -59,21 +61,24 @@ export const holographicPriceTiers = gridToTiers(STICKER_GRID_FX);
 export const diecutPriceTiers = stickerPriceTiers;
 
 // -------------------------------------------------------------
-// SIZE MULTIPLIERS - DEPRECATED (avril 2026)
-// La grille officielle impose un prix fixe par palier, peu importe la taille.
-// Gardes a 1.0 pour ne rien casser chez les eventuels consommateurs (exports
-// API pricing-config, admin UI). NE PAS reintroduire de multiplier != 1.0.
+// SIZE MULTIPLIERS - DEPRECATED (avril 2026, conservatoire 27 avril 2026)
+// FIX-PRICING-TIERS (27 avril 2026) : la taille INFLUENCE maintenant le prix
+// via 3 paliers (Standard/Medium/Large) gere par STICKER_GRID. Les multiplier
+// numeriques ne sont plus utilises (le tier est categoriel, pas multiplicatif).
+// Ces constantes sont conservees a 1.0 uniquement pour compat retro avec les
+// vieux imports - ne plus les referencer dans le nouveau code.
 // -------------------------------------------------------------
 export const SIZE_MULTIPLIERS = {
   '2': 1.0,
   '2.5': 1.0,
   '3': 1.0,
+  '3.5': 1.0,
   '4': 1.0,
   '5': 1.0,
 };
 
-// DEPRECATED (avril 2026): la grille officielle est fixe, la taille n'impacte plus le prix.
-// Conserve pour ne pas casser les imports existants. Retourne toujours 1.0.
+// DEPRECATED : utiliser getStickerSizeTier(size) de pricingData.js a la place
+// pour obtenir le tier categoriel ('standard'|'medium'|'large').
 export function getSizeMultiplier(size) {
   return 1.0;
 }
@@ -81,16 +86,20 @@ export function getSizeMultiplier(size) {
 /**
  * Calcule le prix d'un palier sticker STRICTEMENT depuis la grille hardcoded.
  * Proxy vers lookupStickerPrice de pricingData.js (source unique de verite).
- * La taille du sticker n'impacte PAS le prix.
+ *
+ * FIX-PRICING-TIERS (27 avril 2026) : la taille IMPACTE maintenant le prix via
+ * 3 paliers (standard/medium/large). Si `size` absent, fallback sur 'standard'
+ * = ancien comportement (aucune regression sur le panier legacy).
  */
 export function getStickerPrice(finish, shape, qty, size) {
-  const r = lookupStickerPrice(finish, qty);
+  const r = lookupStickerPrice(finish, qty, size);
   if (!r) return null;
   return {
     qty: r.qty,
     price: r.price,
     unitPrice: r.unitPrice,
-    sizeMultiplier: 1.0,
+    tier: r.tier,
+    sizeMultiplier: 1.0,         // legacy alias - desormais le tier remplace cette notion
     baseUnitPrice: r.unitPrice,
   };
 }
@@ -98,13 +107,13 @@ export function getStickerPrice(finish, shape, qty, size) {
 /**
  * Calcule le prix proportionnel pour une quantite quelconque (pack builder).
  * Utilise le unitPrice du palier le plus eleve que la quantite atteint.
- * HARDCODED via pricingData.STICKER_GRID_*. La taille n'est PAS utilisee.
  *
+ * FIX-PRICING-TIERS : utilise STICKER_GRID[tier][kind] selon la taille fournie.
  * Retourne null si total < 25 (minimum d'impression).
  */
 export function getStickerPriceForTotal(finish, shape, total, size) {
   if (!total || total < 25) return null;
-  const grid = STICKER_FX_FINISHES.includes(finish) ? STICKER_GRID_FX : STICKER_GRID_STANDARD;
+  const grid = getStickerGridForSize(size, finish);
   const tierQtys = Object.keys(grid).map(Number).sort((a, b) => a - b);
   let tierQty = tierQtys[0];
   for (const q of tierQtys) {
@@ -116,6 +125,7 @@ export function getStickerPriceForTotal(finish, shape, total, size) {
     unitPrice: tierUnitPrice,
     price: Math.round(total * tierUnitPrice * 100) / 100,
     tierQty,
+    tier: getStickerSizeTier(size),
     sizeMultiplier: 1.0,
     baseUnitPrice: tierUnitPrice,
   };

@@ -124,6 +124,78 @@ function WebProjectCard({ project, index }) {
   );
 }
 
+/**
+ * FIX-PRICING-TIERS (27 avril 2026) : composant tabs pour afficher plusieurs
+ * grilles de prix (utilise pour les stickers avec 3 paliers Standard/Medium/Large).
+ *
+ * Le format `pricing.tabs` est :
+ *   tabs: [
+ *     { id, label, tables: [ { subtitle, headers, rows }, ... ] },
+ *     ...
+ *   ]
+ *
+ * Si un service a uniquement `pricing.tables` (pas de tabs), on continue de
+ * l'afficher sans tabs (compat retro avec les autres services).
+ */
+function PricingTabs({ tabs }) {
+  const [activeId, setActiveId] = useState(tabs?.[0]?.id || null);
+  if (!Array.isArray(tabs) || tabs.length === 0) return null;
+  const active = tabs.find(t => t.id === activeId) || tabs[0];
+
+  return (
+    <div className="max-w-5xl mx-auto">
+      {/* Tabs header */}
+      <div className="flex flex-wrap gap-1.5 p-1 rounded-xl bg-glass-alt mb-5">
+        {tabs.map(tab => (
+          <button
+            key={tab.id}
+            type="button"
+            onClick={() => setActiveId(tab.id)}
+            className={`flex-1 min-w-[110px] py-2 px-3 rounded-lg text-xs md:text-sm font-semibold transition-all ${
+              tab.id === active.id
+                ? 'bg-accent text-white shadow-md'
+                : 'text-grey-muted hover:text-heading hover:bg-white/5'
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Active tab content : reuse the same `tables` rendering as below */}
+      <div className={`gap-6 mx-auto ${active.tables?.length === 1 ? '' : 'grid grid-cols-1 md:grid-cols-2'}`}>
+        {(active.tables || []).map((table, tableIndex) => (
+          <div key={tableIndex} className="rounded-xl overflow-hidden card-shadow">
+            <div className="p-3 md:p-4 border-b border-purple-main/30 bg-glass-alt">
+              <h3 className="text-heading font-heading font-bold text-sm md:text-base">{table.subtitle}</h3>
+            </div>
+            <table className="price-table w-full">
+              <thead>
+                <tr>
+                  {table.headers.map((header, i) => (
+                    <th key={i} className="text-xs md:text-sm">{header}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {table.rows.map((row, i) => (
+                  <tr key={i}>
+                    {row.map((cell, j) => (
+                      <td key={j} className={`sm:whitespace-nowrap ${j === 0 ? 'text-heading font-semibold' : j === 1 ? 'text-gradient font-bold' : 'text-grey-muted'}`}>
+                        {cell}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function ServiceDetail() {
   const { lang, t, tx } = useLang();
   const { theme } = useTheme();
@@ -642,7 +714,13 @@ function ServiceDetail() {
             </div>
           )}
 
-          {service.pricing.tables && (
+          {/* FIX-PRICING-TIERS (27 avril 2026) : si pricing.tabs existe, on affiche
+              les onglets (Standard/Medium/Large pour les stickers). Sinon on
+              fallback sur l'ancien rendu pricing.tables (compat retro pour les
+              services sans tier-pricing). */}
+          {service.pricing.tabs && <PricingTabs tabs={service.pricing.tabs} />}
+
+          {service.pricing.tables && !service.pricing.tabs && (
             <div className={`gap-8 mx-auto ${service.pricing.tables.length === 1 ? 'max-w-5xl' : 'grid grid-cols-1 md:grid-cols-2 max-w-5xl'}`}>
               {service.pricing.tables.map((table, tableIndex) => (
                 <div key={tableIndex} className="rounded-xl overflow-hidden card-shadow">

@@ -163,28 +163,90 @@ Cortados a la forma exacta de tu diseño con nuestro equipo de corte profesional
     ],
     pricing: {
       title: 'Precios Stickers Die-Cut',
-      note: 'Diseño gráfico no incluido - tú provees tu archivo listo para imprimir',
-      tables: [
+      note: 'Diseño gráfico no incluido - tú provees tu archivo listo para imprimir. Precio según la dimensión más larga de tu diseño.',
+      tabs: [
         {
-          subtitle: 'Standard (Mate / Brillante)',
-          headers: ['Cant.', 'Precio', 'Precio/u'],
-          rows: [
-            ['25', '$30', '$1.20/u'],
-            ['50', '$47.50', '$0.95/u'],
-            ['100', '$85', '$0.85/u'],
-            ['250', '$200', '$0.80/u'],
-            ['500', '$375', '$0.75/u'],
+          id: 'standard',
+          label: 'Standard (hasta 2.5")',
+          tables: [
+            {
+              subtitle: 'Mate / Brillante',
+              headers: ['Cant.', 'Precio', 'Precio/u'],
+              rows: [
+                ['25', '$30', '$1.20/u'],
+                ['50', '$47.50', '$0.95/u'],
+                ['100', '$85', '$0.85/u'],
+                ['250', '$200', '$0.80/u'],
+                ['500', '$375', '$0.75/u'],
+              ],
+            },
+            {
+              subtitle: 'Fx (Holo / Vidrio Roto / Estrellas)',
+              headers: ['Cant.', 'Precio', 'Precio/u'],
+              rows: [
+                ['25', '$35', '$1.40/u'],
+                ['50', '$57.50', '$1.15/u'],
+                ['100', '$100', '$1.00/u'],
+                ['250', '$225', '$0.90/u'],
+                ['500', '$425', '$0.85/u'],
+              ],
+            },
           ],
         },
         {
-          subtitle: 'Fx (Holo, Vidrio Roto, Estrellas)',
-          headers: ['Cant.', 'Precio', 'Precio/u'],
-          rows: [
-            ['25', '$35', '$1.40/u'],
-            ['50', '$57.50', '$1.15/u'],
-            ['100', '$100', '$1.00/u'],
-            ['250', '$225', '$0.90/u'],
-            ['500', '$425', '$0.85/u'],
+          id: 'medium',
+          label: 'Medium (hasta 3.5")',
+          tables: [
+            {
+              subtitle: 'Mate / Brillante',
+              headers: ['Cant.', 'Precio', 'Precio/u'],
+              rows: [
+                ['25', '$40', '$1.60/u'],
+                ['50', '$65', '$1.30/u'],
+                ['100', '$115', '$1.15/u'],
+                ['250', '$275', '$1.10/u'],
+                ['500', '$500', '$1.00/u'],
+              ],
+            },
+            {
+              subtitle: 'Fx (Holo / Vidrio Roto / Estrellas)',
+              headers: ['Cant.', 'Precio', 'Precio/u'],
+              rows: [
+                ['25', '$50', '$2.00/u'],
+                ['50', '$80', '$1.60/u'],
+                ['100', '$135', '$1.35/u'],
+                ['250', '$305', '$1.22/u'],
+                ['500', '$575', '$1.15/u'],
+              ],
+            },
+          ],
+        },
+        {
+          id: 'large',
+          label: 'Large (hasta 5")',
+          tables: [
+            {
+              subtitle: 'Mate / Brillante',
+              headers: ['Cant.', 'Precio', 'Precio/u'],
+              rows: [
+                ['25', '$55', '$2.20/u'],
+                ['50', '$90', '$1.80/u'],
+                ['100', '$160', '$1.60/u'],
+                ['250', '$375', '$1.50/u'],
+                ['500', '$700', '$1.40/u'],
+              ],
+            },
+            {
+              subtitle: 'Fx (Holo / Vidrio Roto / Estrellas)',
+              headers: ['Cant.', 'Precio', 'Precio/u'],
+              rows: [
+                ['25', '$65', '$2.60/u'],
+                ['50', '$105', '$2.10/u'],
+                ['100', '$185', '$1.85/u'],
+                ['250', '$415', '$1.66/u'],
+                ['500', '$785', '$1.57/u'],
+              ],
+            },
           ],
         },
       ],
