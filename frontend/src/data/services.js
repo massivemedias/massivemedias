@@ -329,20 +329,14 @@ const servicesData = {
   'design': {
     slug: 'design',
     icon: Palette,
-    title: 'Design',
-    subtitle: 'Logos, identités visuelles, affiches et pochettes',
+    title: 'Direction Artistique & Identité Visuelle',
+    subtitle: 'Ne soyez pas juste vus, soyez reconnus.',
     heroImage: thumb('/images/graphism/GraphicDesignHero.webp'),
-    description: `Service complet de design graphique. De la conception de logos à l'identité visuelle complète, en passant par les affiches d'événements, les pochettes d'album et le design d'icônes.
-
-Nous travaillons avec Adobe Illustrator, Figma et Photoshop pour créer des visuels percutants et cohérents avec ta marque.`,
+    description: `De la création de logos percutants à l'habillage complet de votre festival ou tournée. Nous concevons des identités visuelles fortes, taillées pour le merch et l'impression premium. Pas de templates, que de la direction artistique sur mesure.`,
     highlights: [
-      'Adobe Illustrator - Logos vectoriels et identités visuelles',
-      'Figma - Maquettes UI/UX et prototypage interactif',
-      'Adobe Photoshop - Retouche photo et compositing',
-      'Logos et identités visuelles complètes',
-      'Affiches, flyers et pochettes album',
-      'Packaging et design d\'emballage',
-      'Design d\'icônes et pictogrammes',
+      'Identité de Marque',
+      'Pochettes d\'Albums',
+      'Design de Merch',
     ],
     process: [
       { step: 1, title: 'Brief créatif', desc: 'Discussion sur ta vision, tes références, ton public cible et tes objectifs' },

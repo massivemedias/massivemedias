@@ -6,24 +6,14 @@ const servicesDataEs = {
     slug: 'prints',
     boutiqueSlug: 'fine-art',
     icon: Printer,
-    title: 'Prints',
-    subtitle: 'Fine art, flyers, tarjetas - impresión de calidad profesional',
+    title: 'Impresiones de Bellas Artes y Carteles de Eventos',
+    subtitle: 'Las fábricas son para el papeleo. Aquí imprimimos para la cultura.',
     heroImage: thumb('/images/prints/PrintsHero.webp'),
-    description: `Fine Art se refiere a impresiones fotográficas o artísticas realizadas en papeles de archivo de alta gama (algodón, alfa-celulosa) con tintas pigmentadas de alta longevidad. Estas impresiones cumplen con los estándares de galerías y museos, con una vida de conservación superior a 100 años.
-
-Cada impresión es sometida a una rigurosa calibración de color para garantizar una fidelidad óptima a las intenciones del artista.
-
-También imprimimos flyers, postales y tarjetas de presentación - todo lo que necesitas para promover tu evento, show o proyecto. Impresión local rápida, calidad profesional.`,
+    description: `Desde impresiones 'Fine Art' calibradas para ilustradores hasta carteles de Line-up ultrarresistentes para tus festivales. Producimos visuales impactantes con tintas vibrantes y papel grueso de archivo. Se acabaron los volantes desechables, abre paso a los Handbills premium.`,
     highlights: [
-      'Impresora profesional fine art - 12 tintas pigmentadas',
-      'Acceso a impresora de gran formato para impresiones de 24" y más',
-      'Papeles fine art profesionales premium',
-      'Calibración profesional, perfiles ICC personalizados',
-      'Vida de conservación de 100+ años',
-      'Flyers A6, A5, carta (8.5x11")',
-      'Postales y tarjetas de presentación',
-      'Papel premium 300g+ mate o brillante',
-      'Recogida gratuita Mile-End, entrega local',
+      'Calidad de Galería',
+      'Colores Calibrados',
+      'Tarjetas Promocionales y Señalización',
     ],
     process: [
       { step: 1, title: 'Recepción del archivo', desc: 'Envía tu archivo de alta resolución (o diseño gráfico bajo pedido)' },
@@ -138,20 +128,14 @@ También imprimimos flyers, postales y tarjetas de presentación - todo lo que n
     slug: 'stickers',
     boutiqueSlug: 'stickers',
     icon: Sticker,
-    title: 'Stickers',
-    subtitle: 'Stickers troquelados personalizados para creadores',
+    title: 'Stickers Personalizados y Die-Cut Premium',
+    subtitle: 'Marketing de guerrilla a prueba de calle.',
     heroImage: thumb('/images/stickers/StickersHero.webp'),
-    description: `Stickers troquelados personalizados para artistas, sellos discográficos, eventos y marcas. Servicio completo incluyendo diseño gráfico si es necesario.
-
-Cortados a la forma exacta de tu diseño con nuestro equipo de corte profesional, cada sticker es terminado con laminación para resistir al agua, rayos UV y rayones.`,
+    description: `No dejes que tu logo se desvanezca. Vinilo grueso, laminado robusto y corte personalizado. Nuestros stickers están diseñados para sobrevivir a la intemperie, al barro de los festivales y a las giras. El merch perfecto para dejar huella.`,
     highlights: [
-      'Equipo de corte de precisión profesional',
-      'Vinilo mate, brillante, transparente, holográfico',
-      'Corte contorno a la forma exacta del diseño',
-      'Laminación incluida - resistente al agua, UV, rayones',
-      'Tú provees tu archivo listo para imprimir (servicio de diseño disponible aparte)',
-      'Entrega local disponible',
-      'Produccion local Montreal',
+      'Corte Personalizado (Die-Cut)',
+      'Resistente al Agua y UV',
+      'Acabados Holo, Mate, Brillante',
     ],
     process: [
       { step: 1, title: 'Brief creativo', desc: 'Dinos lo que quieres - logo, ilustración, texto, forma personalizada' },
@@ -281,20 +265,14 @@ Cortados a la forma exacta de tu diseño con nuestro equipo de corte profesional
     slug: 'merch',
     boutiqueSlug: 'sublimation',
     icon: Shirt,
-    title: 'Merch',
-    subtitle: 'Camisetas, long sleeves, hoodies, riñoneras, tazas - tu merch personalizado',
+    title: 'Merchandising y Streetwear',
+    subtitle: 'El merch que tus fans realmente querrán usar.',
     heroImage: thumb('/images/textile/MerchHero.webp'),
-    description: `Impresión por sublimación sobre textiles y objetos. La sublimación produce colores vibrantes y permanentes que no se agrietan, no se desvanecen y resisten al lavado.
-
-Ideal para merch de artistas, eventos, regalos corporativos o cualquier proyecto personalizado. Camisetas, long sleeves, hoodies, riñoneras con tu logo, tazas, termos y más.`,
+    description: `No vendas simples camisetas promocionales, crea el uniforme de tu comunidad. Imprimimos prendas premium listas para usar, perfectas para lanzamientos de álbumes, stands de festivales y marcas audaces.`,
     highlights: [
-      'Prensa de calor gran formato - textil',
-      'Prensa de calor compacta - objetos y accesorios',
-      'Kit de pinza para vasos - sublimación drinkware',
-      'Riñoneras personalizadas con tu logo',
-      'Impresión permanente - no se agrieta, no se desvanece',
-      'Colores vibrantes, resistente al lavado',
-      'Pequeñas y medianas series',
+      'Calidad Premium',
+      'Tiradas Pequeñas y Medianas',
+      'Listo para la Gira',
     ],
     process: [
       { step: 1, title: 'Elección del producto', desc: 'Camiseta, longsleeve, hoodie, riñonera, taza, termo, mousepad, etc.' },
@@ -344,20 +322,14 @@ Ideal para merch de artistas, eventos, regalos corporativos o cualquier proyecto
   'design': {
     slug: 'design',
     icon: Palette,
-    title: 'Diseño',
-    subtitle: 'Logos, identidades visuales, afiches y portadas de álbum',
+    title: 'Dirección de Arte e Identidad Visual',
+    subtitle: 'No solo seas visto, sé reconocido.',
     heroImage: thumb('/images/graphism/GraphicDesignHero.webp'),
-    description: `Servicio completo de diseño gráfico. Desde la creación de logos hasta la identidad visual completa, incluyendo afiches de eventos, portadas de álbum y diseño de iconos.
-
-Trabajamos con Adobe Illustrator, Figma y Photoshop para crear visuales impactantes y coherentes con tu marca.`,
+    description: `Desde la creación de logotipos impactantes hasta la marca completa de tu festival o gira. Diseñamos identidades visuales fuertes, hechas a medida para el merch y la impresión premium. Sin plantillas, solo dirección de arte personalizada.`,
     highlights: [
-      'Adobe Illustrator - Logos vectoriales e identidades visuales',
-      'Figma - Maquetas UI/UX y prototipado interactivo',
-      'Adobe Photoshop - Retoque fotográfico y composición',
-      'Logos e identidades visuales completas',
-      'Afiches, flyers y portadas de álbum',
-      'Packaging y diseño de embalaje',
-      'Diseño de iconos y pictogramas',
+      'Identidad de Marca',
+      'Portadas de Álbumes',
+      'Diseño de Merch',
     ],
     process: [
       { step: 1, title: 'Brief creativo', desc: 'Discusión sobre tu visión, referencias, público objetivo y metas' },
@@ -427,21 +399,14 @@ Trabajamos con Adobe Illustrator, Figma y Photoshop para crear visuales impactan
     slug: 'web',
     boutiqueSlug: 'web',
     icon: Globe,
-    title: 'Web',
-    subtitle: 'Sitios web, e-commerce, SEO - desarrollo moderno y de alto rendimiento',
+    title: 'Experiencias Digitales y Plataformas Web',
+    subtitle: 'Plataformas web que vibran al ritmo de tu arte.',
     heroImage: thumb('/images/web/DevWebHero.webp'),
-    description: `Sitios web modernos, rápidos y optimizados para SEO para artistas, creadores y pequeñas empresas. Desde portafolios de artistas hasta tiendas e-commerce completas.
-
-Más de 15 años de experiencia en desarrollo web. El fundador de Massive es programador-analista de formación. Utilizamos las tecnologías web más modernas para crear sitios rápidos, seguros y bien posicionados.`,
+    description: `Nada de plantillas corporativas aburridas. Codificamos sitios web a medida para la escena cultural: portafolios de artistas, sitios de festivales con integración de entradas y experiencias inmersivas. Nosotros manejamos la tecnología, tú mantienes el control de tu imagen.`,
     highlights: [
-      'Desarrollo front-end y back-end completo',
-      'React, Angular, WordPress, Shopify',
-      'SEO técnico y posicionamiento orgánico',
-      'Sitios responsive mobile-first',
-      'E-commerce y pagos integrados',
-      'Integración CMS (WordPress, Strapi, Shopify)',
-      'Alojamiento, dominio y mantenimiento',
-      'Rendimiento optimizado - Puntuación 90+ PageSpeed',
+      'Diseño Inmersivo',
+      'Integración de Eventos',
+      'Estética Underground',
     ],
     whatWeDeliver: [
       { title: 'Diseño Web', desc: 'Maquetas UI/UX personalizadas, paleta de colores, tipografía e identidad visual alineada con tu marca.' },
