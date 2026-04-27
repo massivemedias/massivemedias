@@ -164,6 +164,30 @@ export const getOrderTracking = (documentId) => {
 export const deleteOrder = (documentId) => api.delete(`/orders/${documentId}`);
 
 /**
+ * Regenere un lien Stripe pour une commande pending/draft dont le lien
+ * initial n'a pas pu etre genere (Stripe down, race condition, deploy
+ * mid-flight). Cas reel : commande Don Mescal - Cosmovision (195,46$)
+ * restee sans paymentLink suite a une violation unique sur companyName.
+ *
+ * Cote backend (admin-only via requireAdminAuth) : voir
+ * backend/src/api/order/controllers/order.ts -> regenerateStripeLink
+ *
+ * Comportement :
+ *   - Refuse si la commande est deja en statut terminal (paid/processing/etc.)
+ *     -> retourne HTTP 409 + code: 'INVALID_STATUS_FOR_REGEN'
+ *   - Cree un nouveau Payment Link Stripe (l'ancien reste valide chez Stripe
+ *     mais l'invoice ne pointe que sur le DERNIER lien)
+ *   - Si pas d'invoice liee, en cree une minimale a la volee
+ *
+ * @param {string} documentId - ID Strapi de la commande
+ * @returns Promise<{ data: { success, paymentUrl, invoiceNumber, amount, message } }>
+ */
+export const regenerateStripeLink = (documentId) => {
+  if (!documentId) throw new Error('regenerateStripeLink: documentId requis');
+  return api.post(`/orders/${encodeURIComponent(documentId)}/regenerate-stripe-link`);
+};
+
+/**
  * Envoyer la facture par courriel au client avec lien Stripe + PDF.
  * Validation pre-envoi stricte : throw AVANT l'appel reseau si donnees critiques absentes.
  * @param {string} documentId - ID Strapi de la commande

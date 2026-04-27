@@ -8,7 +8,7 @@ import {
   Download, Receipt, Trash2, Send, AlertTriangle, Pencil, Plus, Landmark,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
-import { getOrders, getOrderStats, updateOrderStatus, updateOrderNotes, updateOrderTracking, deleteOrder, getPrivateSales, deletePrivateSale, resendPrivateSaleEmail, sendOrderInvoice, getOrderTracking, getBillingSettings } from '../services/adminService';
+import { getOrders, getOrderStats, updateOrderStatus, updateOrderNotes, updateOrderTracking, deleteOrder, getPrivateSales, deletePrivateSale, resendPrivateSaleEmail, sendOrderInvoice, getOrderTracking, getBillingSettings, regenerateStripeLink } from '../services/adminService';
 import { useNotifications } from '../contexts/NotificationContext';
 import { generateInvoicePDF } from '../utils/generateInvoice';
 import EditOrderTotalModal from '../components/EditOrderTotalModal';
@@ -175,6 +175,11 @@ function AdminOrders() {
   const [sendingInvoiceId, setSendingInvoiceId] = useState(null);
   // Modal de previsualisation avant envoi facture (controle admin)
   const [previewInvoiceOrder, setPreviewInvoiceOrder] = useState(null);
+  // FIX-RECOVERY (27 avril 2026) : etat par commande pour le bouton "Regenerer
+  // lien Stripe" affichee sur les commandes pending sans paymentLink valide.
+  // Map { documentId: boolean } pour pouvoir avoir plusieurs commandes en cours
+  // de regeneration en parallele sans bloquer l'UI.
+  const [regeneratingId, setRegeneratingId] = useState(null);
 
   // FIX-ADMIN (avril 2026) : interface minimaliste a 2 onglets seulement.
   // - 'all'      : tableau complet sans aucun filtre (recupere tout l'historique)
@@ -256,6 +261,82 @@ function AdminOrders() {
       });
     } finally {
       setSendingInvoiceId(null);
+    }
+  };
+
+  // FIX-RECOVERY (27 avril 2026) : regeneration manuelle d'un lien Stripe pour
+  // les commandes pending/draft sans paymentLink. Cas d'usage : commande Don
+  // Mescal - Cosmovision (195,46$) restee bloquee suite a une violation unique
+  // sur companyName (deploy mid-flight, fix non encore actif a la creation).
+  //
+  // Confirmation explicite si un lien existe deja : on pourrait ecraser un lien
+  // valide par accident. Si pas de lien, click direct = action critique.
+  const handleRegenerateStripe = async (order) => {
+    if (!order?.documentId) return;
+    const hasLink = !!order.stripePaymentLink;
+    if (hasLink) {
+      const confirmed = window.confirm(tx({
+        fr: 'Cette commande a deja un lien Stripe. En generer un nouveau l\'ecrasera (l\'ancien restera valide chez Stripe mais ne sera plus dans la facture). Continuer ?',
+        en: 'This order already has a Stripe link. Generating a new one will overwrite it. Continue?',
+        es: 'Esta orden ya tiene un enlace Stripe. ?Continuar?',
+      }));
+      if (!confirmed) return;
+    }
+
+    setRegeneratingId(order.documentId);
+    setInvoiceToast(null);
+    try {
+      const { data } = await regenerateStripeLink(order.documentId);
+      const paymentUrl = data?.paymentUrl;
+      const amount = data?.amount;
+      // Mise a jour optimiste : injecter le nouveau lien dans l'order locale
+      // pour que le bouton "Voir dans Stripe" et la facture PDF soient a jour
+      // sans refetch.
+      setOrders((prev) => prev.map((o) =>
+        o.documentId === order.documentId ? { ...o, stripePaymentLink: paymentUrl } : o
+      ));
+      // Copier automatiquement le lien dans le presse-papier pour que l'admin
+      // puisse l'envoyer immediatement au client par WhatsApp/email.
+      try {
+        if (paymentUrl && navigator.clipboard) {
+          await navigator.clipboard.writeText(paymentUrl);
+        }
+      } catch { /* clipboard non dispo, on continue */ }
+      setInvoiceToast({
+        type: 'success',
+        title: tx({ fr: 'Lien Stripe regenere', en: 'Stripe link regenerated', es: 'Enlace regenerado' }),
+        message: tx({
+          fr: `Lien copie dans le presse-papier${amount ? ` (${amount.toFixed(2)}$)` : ''}. Envoyer au client par email ou WhatsApp.`,
+          en: `Link copied to clipboard${amount ? ` ($${amount.toFixed(2)})` : ''}. Send to customer.`,
+          es: `Enlace copiado${amount ? ` ($${amount.toFixed(2)})` : ''}. Enviar al cliente.`,
+        }),
+      });
+    } catch (err) {
+      console.error('regenerateStripeLink failed:', err);
+      const code = err?.response?.data?.error?.code;
+      const backendMsg = err?.response?.data?.error?.message
+        || err?.response?.data?.message
+        || err?.message
+        || 'Erreur inconnue';
+      let displayMsg;
+      if (code === 'INVALID_STATUS_FOR_REGEN') {
+        displayMsg = tx({
+          fr: 'Cette commande n\'est pas en statut pending/draft. Repasse-la en pending d\'abord si tu veux regenerer un lien.',
+          en: 'Order is not in pending/draft status. Switch to pending first.',
+          es: 'La orden no esta en pendiente.',
+        });
+      } else if (code === 'STRIPE_FAILURE') {
+        displayMsg = backendMsg;
+      } else {
+        displayMsg = backendMsg;
+      }
+      setInvoiceToast({
+        type: 'error',
+        title: tx({ fr: 'Echec regeneration', en: 'Regeneration failed', es: 'Fallo' }),
+        message: displayMsg,
+      });
+    } finally {
+      setRegeneratingId(null);
     }
   };
 
@@ -1266,6 +1347,34 @@ function AdminOrders() {
                                     <><Mail size={12} /> {tx({ fr: 'Envoyer la facture', en: 'Email invoice', es: 'Enviar factura' })}</>
                                   )}
                                 </button>
+                                {/* FIX-RECOVERY (27 avril 2026) : bouton de regeneration du lien
+                                    Stripe pour les commandes pending/draft. Affiche en orange
+                                    "critique" si le lien manque, ou en gris discret si un
+                                    lien existe deja (avec confirmation avant ecrasement).
+                                    Cas concret : commande Don Mescal sans lien suite a un
+                                    fix non encore deploye au moment de la creation. */}
+                                {(order.status === 'pending' || order.status === 'draft') && (
+                                  <button
+                                    onClick={(e) => { e.stopPropagation(); handleRegenerateStripe(order); }}
+                                    disabled={regeneratingId === order.documentId}
+                                    title={order.stripePaymentLink
+                                      ? tx({ fr: 'Lien Stripe deja present - regenerer un nouveau (l\'ancien sera ecrase dans la facture)', en: 'Stripe link already present - regenerate new one', es: 'Enlace Stripe ya existe' })
+                                      : tx({ fr: 'Cette commande n\'a PAS de lien Stripe - cliquer pour en generer un', en: 'This order has NO Stripe link - click to generate one', es: 'Sin enlace Stripe - generar uno' })}
+                                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
+                                      order.stripePaymentLink
+                                        ? 'bg-white/5 text-grey-muted hover:bg-white/10 border border-white/10'
+                                        : 'bg-orange-500/20 text-orange-400 hover:bg-orange-500/30 border border-orange-500/40 animate-pulse'
+                                    }`}
+                                  >
+                                    {regeneratingId === order.documentId ? (
+                                      <><Loader2 size={12} className="animate-spin" /> {tx({ fr: 'Generation...', en: 'Generating...', es: 'Generando...' })}</>
+                                    ) : (
+                                      <><CreditCard size={12} /> {order.stripePaymentLink
+                                        ? tx({ fr: 'Regenerer lien Stripe', en: 'Regenerate Stripe link', es: 'Regenerar enlace' })
+                                        : tx({ fr: 'Generer lien Stripe manquant', en: 'Generate missing Stripe link', es: 'Generar enlace faltante' })}</>
+                                    )}
+                                  </button>
+                                )}
                               </div>
                             </div>
                           </div>

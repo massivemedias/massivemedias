@@ -162,6 +162,19 @@ export default {
         auth: false,
       },
     },
+    // FIX-RECOVERY (27 avril 2026) : regeneration manuelle d'un lien Stripe pour
+    // les commandes en pending/draft dont la generation initiale a echoue (Stripe
+    // down, race condition, deploy mid-flight). Auth admin via requireAdminAuth
+    // dans le controller. Utilise pour debloquer la commande Don Mescal et
+    // tout futur cas similaire sans intervention DB.
+    {
+      method: 'POST',
+      path: '/orders/:documentId/regenerate-stripe-link',
+      handler: 'order.regenerateStripeLink',
+      config: {
+        auth: false,
+      },
+    },
     {
       method: 'GET',
       path: '/orders/by-payment-intent/:paymentIntentId',

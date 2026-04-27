@@ -1961,6 +1961,212 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
             return ctx.badRequest((err === null || err === void 0 ? void 0 : err.message) || 'Erreur creation commande manuelle');
         }
     },
+    // POST /orders/:documentId/regenerate-stripe-link
+    //
+    // FIX-RECOVERY (27 avril 2026) : regenere un lien de paiement Stripe pour
+    // une commande existante en pending/draft dont la generation initiale a
+    // echoue. Cas d'usage reel : commande Don Mescal - Cosmovision (195,46$)
+    // creee avant le deploy du rollback compensating, restee en pending sans
+    // payment link a cause d'une violation unique sur companyName.
+    //
+    // Logique :
+    //   1. Auth admin
+    //   2. Trouver l'order par documentId, refuser si status paid/processing/etc.
+    //   3. Trouver l'invoice liee (necessaire pour invoiceNumber + montants)
+    //   4. Si pas d'invoice, on en cree une minimale a la volee (tres rare)
+    //   5. Generer Stripe Payment Link avec les memes line_items que manualCreate
+    //   6. Update invoice.stripePaymentLink + retourne l'URL au frontend
+    //
+    // Idempotent au sens "safe a re-jouer" : si l'admin re-clique, on cree un
+    // nouveau payment link Stripe (ancien reste valide chez Stripe mais ignore).
+    // L'invoice pointe sur le DERNIER lien genere.
+    async regenerateStripeLink(ctx) {
+        var _a, _b;
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
+            return;
+        const { documentId } = ctx.params;
+        if (!documentId)
+            return ctx.badRequest('documentId requis');
+        try {
+            // 1. Resoudre l'order
+            const order = await strapi.documents('api::order.order').findOne({
+                documentId,
+            });
+            if (!order)
+                return ctx.notFound('Commande introuvable');
+            // 2. Securite : refuser sur status terminal (deja payee / livree / annulee)
+            const TERMINAL_STATUSES = ['paid', 'processing', 'ready', 'shipped', 'delivered', 'cancelled', 'refunded'];
+            if (TERMINAL_STATUSES.includes(order.status)) {
+                ctx.status = 409;
+                ctx.body = {
+                    error: {
+                        status: 409,
+                        name: 'InvalidOrderStatus',
+                        message: `La commande est deja en statut "${order.status}" - regeneration interdite. Si vous devez reouvrir un paiement, repassez d'abord en "pending".`,
+                        code: 'INVALID_STATUS_FOR_REGEN',
+                    },
+                };
+                return;
+            }
+            // 3. Resoudre l'invoice liee (necessaire pour invoiceNumber + montants en dollars)
+            const invoices = await strapi.documents('api::invoice.invoice').findMany({
+                filters: { order: { documentId: { $eq: documentId } } },
+                limit: 1,
+            });
+            let invoice = invoices.length > 0 ? invoices[0] : null;
+            // 4. Si pas d'invoice (cas tres rare : ancienne commande importee, ou
+            //    creation interrompue avant l'invoice), on en cree une minimale.
+            //    Numero genere en reutilisant la logique retry pour eviter les race.
+            if (!invoice) {
+                const year = new Date().getFullYear();
+                const prefix = `MM-${year}-`;
+                const lastInvoice = await strapi.documents('api::invoice.invoice').findMany({
+                    filters: { invoiceNumber: { $startsWith: prefix } },
+                    sort: { invoiceNumber: 'desc' },
+                    limit: 1,
+                });
+                let seq = 1;
+                if (lastInvoice.length > 0 && lastInvoice[0].invoiceNumber) {
+                    const lastNum = lastInvoice[0].invoiceNumber.replace(prefix, '');
+                    seq = (parseInt(lastNum, 10) || 0) + 1;
+                }
+                const fallbackInvoiceNumber = `${prefix}${String(seq).padStart(4, '0')}`;
+                // Strapi stocke order amounts en CENTS, invoice en DOLLARS
+                const subtotalDollars = (order.subtotal || 0) / 100;
+                const tpsDollars = (order.tps || 0) / 100;
+                const tvqDollars = (order.tvq || 0) / 100;
+                const totalDollars = (order.total || 0) / 100;
+                invoice = await strapi.documents('api::invoice.invoice').create({
+                    data: {
+                        invoiceNumber: fallbackInvoiceNumber,
+                        date: new Date().toISOString().slice(0, 10),
+                        customerName: order.customerName,
+                        companyName: order.companyName || null,
+                        customerEmail: order.customerEmail || null,
+                        customerPhone: order.customerPhone || null,
+                        items: order.items || [],
+                        subtotal: subtotalDollars,
+                        tps: tpsDollars,
+                        tvq: tvqDollars,
+                        total: totalDollars,
+                        status: 'draft',
+                        paymentStatus: 'pending',
+                        lang: 'fr',
+                        order: { connect: [documentId] },
+                    },
+                });
+                strapi.log.warn(`[regenerateStripeLink] Order ${documentId} avait pas d'invoice, cree ${fallbackInvoiceNumber}`);
+            }
+            const invoiceNumber = invoice.invoiceNumber;
+            // Conversions cents -> dollars (les amounts dans Order sont en cents)
+            const subtotal = (order.subtotal || 0) / 100;
+            const total = (order.total || 0) / 100;
+            const shippingNum = (order.shipping || 0) / 100;
+            const tps = (order.tps || 0) / 100;
+            const tvq = (order.tvq || 0) / 100;
+            const customerName = order.customerName || 'Client';
+            const currency = order.currency || 'cad';
+            if (total <= 0) {
+                return ctx.badRequest('Total de la commande invalide (0 ou negatif), impossible de generer un lien Stripe.');
+            }
+            // 5. Stripe Payment Link - meme structure que manualCreate (line_items
+            // breakdown TPS/TVQ/shipping pour transparence client sur Stripe)
+            const stripe = getStripe();
+            const currencyLower = currency.toLowerCase();
+            async function makeLineItem(name, amountDollars) {
+                const cents = Math.round(amountDollars * 100);
+                if (cents <= 0)
+                    return null;
+                const prod = await stripe.products.create({
+                    name,
+                    metadata: { invoiceNumber, orderId: documentId, regenerated: 'true' },
+                });
+                const pr = await stripe.prices.create({
+                    product: prod.id,
+                    unit_amount: cents,
+                    currency: currencyLower,
+                });
+                return { price: pr.id, quantity: 1 };
+            }
+            const lineItems = [];
+            const subtotalItem = await makeLineItem(`Facture ${invoiceNumber} - Sous-total`, subtotal);
+            if (subtotalItem)
+                lineItems.push(subtotalItem);
+            if (shippingNum > 0) {
+                const shippingItem = await makeLineItem(`Livraison - ${invoiceNumber}`, shippingNum);
+                if (shippingItem)
+                    lineItems.push(shippingItem);
+            }
+            if (tps > 0) {
+                const tpsItem = await makeLineItem(`TPS (5%) - ${invoiceNumber}`, tps);
+                if (tpsItem)
+                    lineItems.push(tpsItem);
+            }
+            if (tvq > 0) {
+                const tvqItem = await makeLineItem(`TVQ (9.975%) - ${invoiceNumber}`, tvq);
+                if (tvqItem)
+                    lineItems.push(tvqItem);
+            }
+            // Fallback : si aucun line_item (commande sans subtotal/taxes detailles), un seul item pour le total
+            if (lineItems.length === 0) {
+                const fallback = await makeLineItem(`Facture ${invoiceNumber} - ${customerName}`, total);
+                if (fallback)
+                    lineItems.push(fallback);
+            }
+            const paymentLink = await stripe.paymentLinks.create({
+                line_items: lineItems,
+                metadata: {
+                    orderId: documentId,
+                    invoiceId: invoice.documentId,
+                    invoiceNumber,
+                    type: 'manual-regenerated',
+                },
+                payment_intent_data: {
+                    metadata: {
+                        orderId: documentId,
+                        invoiceId: invoice.documentId,
+                        invoiceNumber,
+                        type: 'manual-regenerated',
+                    },
+                },
+            });
+            // 6. Patch Invoice.stripePaymentLink avec le NOUVEAU lien
+            await strapi.documents('api::invoice.invoice').update({
+                documentId: invoice.documentId,
+                data: { stripePaymentLink: paymentLink.url },
+            });
+            strapi.log.info(`[regenerateStripeLink] Order ${documentId} (Invoice ${invoiceNumber}) regenere PaymentLink ${paymentLink.id} (${total}$)`);
+            ctx.body = {
+                success: true,
+                orderId: documentId,
+                invoiceId: invoice.documentId,
+                invoiceNumber,
+                paymentUrl: paymentLink.url,
+                amount: total,
+                message: `Lien Stripe regenere pour ${customerName} (${total.toFixed(2)}$). Envoyer le lien au client.`,
+            };
+        }
+        catch (err) {
+            const isStripeErr = ((_b = (_a = err === null || err === void 0 ? void 0 : err.type) === null || _a === void 0 ? void 0 : _a.startsWith) === null || _b === void 0 ? void 0 : _b.call(_a, 'Stripe')) || /stripe/i.test((err === null || err === void 0 ? void 0 : err.message) || '');
+            strapi.log.error(`[regenerateStripeLink] ECHEC pour order ${documentId} - isStripe=${isStripeErr} `
+                + `name=${err === null || err === void 0 ? void 0 : err.name} message="${((err === null || err === void 0 ? void 0 : err.message) || '').slice(0, 200)}"`);
+            if ((err === null || err === void 0 ? void 0 : err.stack) && !isStripeErr)
+                strapi.log.error(`[regenerateStripeLink] Stack:\n${err.stack}`);
+            if (isStripeErr) {
+                ctx.status = 502;
+                ctx.body = {
+                    error: {
+                        status: 502,
+                        name: 'StripeFailure',
+                        message: `Stripe injoignable lors de la regeneration : ${((err === null || err === void 0 ? void 0 : err.message) || 'erreur reseau').slice(0, 120)}. Re-essaie dans 30 secondes.`,
+                        code: 'STRIPE_FAILURE',
+                    },
+                };
+                return;
+            }
+            return ctx.badRequest((err === null || err === void 0 ? void 0 : err.message) || 'Erreur regeneration lien Stripe');
+        }
+    },
     // POST /orders/seed-legacy-april2026 - One-shot endpoint pour reinjecter 3 factures
     // B2B historiques (perdues lors d'un refactor) :
     //   - La Presse (Correction Zendesk) - 770$ HT - 9 avril 2026
