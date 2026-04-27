@@ -6,24 +6,14 @@ const servicesData = {
     slug: 'prints',
     boutiqueSlug: 'fine-art',
     icon: Printer,
-    title: 'Prints',
-    subtitle: 'Fine art, flyers, cartes - impression qualité pro',
+    title: 'Tirages d\'Art & Affiches d\'Événements',
+    subtitle: 'L\'usine, c\'est pour la paperasse. Ici, on imprime pour la culture.',
     heroImage: thumb('/images/prints/PrintsHero.webp'),
-    description: `Le Fine Art désigne des impressions photographiques ou artistiques réalisées sur des papiers d'archives haut de gamme (coton, alpha-cellulose) avec des encres pigmentées à haute longévité. Ces tirages respectent les standards des galeries d'art et musées, avec une durée de conservation pouvant dépasser 100 ans.
-
-Chaque impression fait l'objet d'un calibrage colorimétrique rigoureux pour garantir une fidélité optimale aux intentions de l'artiste.
-
-Nous imprimons aussi des flyers, cartes postales et cartes d'affaires - tout ce dont tu as besoin pour promouvoir ton événement, ton show ou ton projet. Impression locale rapide, qualité pro.`,
+    description: `Des tirages "Fine Art" calibrés pour les illustrateurs aux affiches Line-up ultra-résistantes pour vos festivals. Nous produisons des visuels qui frappent avec des encres vibrantes et du papier épais conçu pour durer. Fini les flyers jetables, place aux Handbills premium.`,
     highlights: [
-      'Imprimante professionnelle fine art - 12 encres pigmentées',
-      'Accès imprimante grand format pour tirages 24" et plus',
-      'Papiers fine art professionnels premium',
-      'Calibration professionnelle, profils ICC sur mesure',
-      'Durée de conservation 100+ ans',
-      'Flyers A6, A5, lettre (8.5x11")',
-      'Cartes postales et cartes d\'affaires',
-      'Papier premium 300g+ mat ou lustré',
-      'Pick-up gratuit Mile-End, livraison locale',
+      'Qualité Galerie',
+      'Couleurs Calibrées',
+      'Cartes Promo & Signalétique',
     ],
     process: [
       { step: 1, title: 'Réception du fichier', desc: 'Envoi de ton fichier haute résolution (ou création graphique sur demande)' },
@@ -138,20 +128,14 @@ Nous imprimons aussi des flyers, cartes postales et cartes d'affaires - tout ce 
     slug: 'stickers',
     boutiqueSlug: 'stickers',
     icon: Sticker,
-    title: 'Stickers',
-    subtitle: 'Autocollants découpés sur mesure pour créateurs',
+    title: 'Stickers Custom & Die-Cut Premium',
+    subtitle: 'Du guerilla marketing à l\'épreuve de la rue.',
     heroImage: thumb('/images/stickers/StickersHero.webp'),
-    description: `Autocollants découpés sur mesure pour artistes, labels, événements et marques. Service complet incluant la création graphique du visuel si nécessaire.
-
-Découpés à la forme exacte de ton design avec notre équipement de découpe professionnel, chaque sticker est fini avec une lamination pour résister à l'eau, aux UV et aux rayures.`,
+    description: `Ne laissez pas votre logo s'effacer. Vinyle épais, laminage robuste et découpe sur mesure. Nos autocollants sont conçus pour survivre aux intempéries, à la boue des festivals et aux tournées. Le merch parfait pour marquer les esprits.`,
     highlights: [
-      'Équipement de découpe de précision professionnel',
-      'Vinyle matte, lustré, holographique, transparent, verre brisé, étoiles, points',
-      'Découpe contour à la forme exacte du design',
-      'Lamination incluse - résistant eau, UV, rayures',
-      'Création graphique du sticker incluse dans le prix',
-      'Livraison locale disponible',
-      'Production locale Montréal',
+      'Découpe Sur-Mesure (Die-Cut)',
+      'Résiste aux UV & à l\'Eau',
+      'Finitions Holo, Mat, Glossy',
     ],
     process: [
       { step: 1, title: 'Brief créatif', desc: 'Dis-nous ce que tu veux - logo, illustration, texte, forme custom' },
@@ -288,20 +272,14 @@ Découpés à la forme exacte de ton design avec notre équipement de découpe p
     slug: 'merch',
     boutiqueSlug: 'sublimation',
     icon: Shirt,
-    title: 'Merch',
-    subtitle: 'T-shirts, long sleeves, hoodies, sacs bananes, mugs - ton merch sur mesure',
+    title: 'Merchandising & Streetwear',
+    subtitle: 'Du merch que vos fans voudront vraiment porter.',
     heroImage: thumb('/images/textile/MerchHero.webp'),
-    description: `Impression sublimation sur textile et objets. La sublimation produit des couleurs vibrantes et permanentes qui ne craquent pas, ne s'effacent pas et résistent au lavage.
-
-Idéal pour le merch d'artiste, les événements, les cadeaux corporatifs ou tout projet personnalisé. T-shirts, long sleeves, hoodies, sacs bananes avec ton logo, mugs, thermos et plus encore.`,
+    description: `Ne vendez pas de simples t-shirts promotionnels, créez l'uniforme de votre communauté. Nous imprimons des vêtements de qualité prêts-à-porter, parfaits pour les lancements d'albums, les kiosques de festivals et les marques audacieuses.`,
     highlights: [
-      'Presse à chaud grand format - textile',
-      'Presse à chaud compacte - objets et accessoires',
-      'Kit pincement gobelets - drinkware sublimation',
-      'Sacs bananes personnalisés avec ton logo',
-      'Impression permanente - ne craque pas, ne s\'efface pas',
-      'Couleurs vibrantes, résistant au lavage',
-      'Petites et moyennes séries',
+      'Qualité Premium',
+      'Petites & Moyennes Séries',
+      'Prêt pour la Tournée',
     ],
     process: [
       { step: 1, title: 'Choix du produit', desc: 'T-shirt, longsleeve, hoodie, sac banane, mug, thermos, tapis de souris, etc.' },
@@ -434,21 +412,14 @@ Nous travaillons avec Adobe Illustrator, Figma et Photoshop pour créer des visu
     slug: 'web',
     boutiqueSlug: 'web',
     icon: Globe,
-    title: 'Web',
-    subtitle: 'Sites web, e-commerce, SEO - développement moderne et performant',
+    title: 'Expériences Numériques & Direction Artistique',
+    subtitle: 'Des plateformes web qui vibrent au même rythme que votre art.',
     heroImage: thumb('/images/web/DevWebHero.webp'),
-    description: `Sites web modernes, performants et optimisés SEO pour artistes, créateurs et petites entreprises. Du portfolio d'artiste à la boutique e-commerce complète.
-
-15+ années d'expérience en développement web. Le fondateur de Massive est programmeur-analyste de formation. Nous travaillons avec les technologies web les plus modernes pour créer des sites rapides, sécurisés et bien référencés.`,
+    description: `Pas de templates corporatifs ennuyeux. Nous codons des sites sur mesure pour la scène culturelle : portfolios d'artistes, sites de festivals avec intégration de billetterie, et expériences immersives. On s'occupe de la technique, vous gardez le contrôle de votre image.`,
     highlights: [
-      'Développement front-end et back-end complet',
-      'React, Angular, WordPress, Shopify',
-      'SEO technique et référencement naturel',
-      'Sites responsive mobile-first',
-      'E-commerce et paiement intégré',
-      'Intégration CMS (WordPress, Strapi, Shopify)',
-      'Hébergement, domaine et maintenance',
-      'Performance optimisée - Score 90+ PageSpeed',
+      'Design Immersif',
+      'Intégration Événementielle',
+      'Esthétique Underground',
     ],
     whatWeDeliver: [
       { title: 'Web Design', desc: 'Maquettes UI/UX sur mesure, palette de couleurs, typographie et identité visuelle cohérente avec ta marque.' },
