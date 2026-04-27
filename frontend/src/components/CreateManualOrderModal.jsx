@@ -134,11 +134,78 @@ function CreateManualOrderModal({ onClose, onCreated }) {
       onCreated?.(data);
     } catch (err) {
       console.error('manualCreate error:', err);
-      const msg = err?.response?.data?.error?.message
-        || err?.response?.data?.message
-        || err?.message
-        || tx({ fr: 'Erreur inconnue', en: 'Unknown error', es: 'Error desconocido' });
-      setError(msg);
+      // FIX-UNIQUE-DETECT (27 avril 2026) : parsing intelligent de l'erreur
+      // pour afficher un message ACTIONNABLE par champ. Avant : on affichait
+      // bruteforce "This attribute must be unique" sans dire quel champ.
+      // Maintenant le backend renvoie { code: 'UNIQUE_VIOLATION', field: 'invoiceNumber' }
+      // qu'on mappe en message clair. Fallback sur l'ancien comportement si
+      // le backend n'a pas mis a jour (deploy en cours, autre erreur).
+      const errData = err?.response?.data?.error || {};
+      const status = err?.response?.status;
+      const code = errData?.code;
+      const field = errData?.field;
+      const backendMsg = errData?.message || err?.response?.data?.message || err?.message || '';
+
+      let displayMsg;
+
+      if (code === 'UNIQUE_VIOLATION' || status === 409 || /must be unique/i.test(backendMsg)) {
+        // Cartographie des champs reconnus -> message clair tri-langue.
+        const FIELD_MESSAGES = {
+          email: {
+            fr: 'Ce courriel est deja associe a un autre client. Le client existant sera reutilise automatiquement - reessaie en cliquant Creer.',
+            en: 'This email is already linked to another client. The existing client will be reused automatically - retry by clicking Create.',
+            es: 'Este correo ya esta asociado a otro cliente.',
+          },
+          customerEmail: {
+            fr: 'Ce courriel est deja associe a un autre client. Le client existant sera reutilise automatiquement - reessaie en cliquant Creer.',
+            en: 'This email is already linked to another client.',
+            es: 'Este correo ya esta asociado.',
+          },
+          invoiceNumber: {
+            fr: 'Conflit de numero de facture (race condition). Reessaie dans 2-3 secondes - le serveur a deja epuise ses tentatives auto.',
+            en: 'Invoice number conflict (race condition). Retry in 2-3 seconds.',
+            es: 'Conflicto de numero de factura. Reintenta en unos segundos.',
+          },
+          companyName: {
+            fr: 'Probleme technique sur le champ "nom d\'entreprise" : un index unique orphelin survit en BDD malgre le schema. Render va auto-fixer au prochain restart. Solution immediate : laisse le champ vide ou modifie legerement la valeur.',
+            en: 'Technical issue on company name field: orphan unique index in DB. Leave the field empty or slightly modify the value as a workaround.',
+            es: 'Problema tecnico en el nombre de empresa.',
+          },
+          stripePaymentIntentId: {
+            fr: 'Doublon Stripe detecte. Verifie qu\'aucune autre commande n\'a ete creee dans les dernieres secondes.',
+            en: 'Stripe duplicate detected.',
+            es: 'Duplicado Stripe detectado.',
+          },
+        };
+
+        if (field && FIELD_MESSAGES[field]) {
+          displayMsg = tx(FIELD_MESSAGES[field]);
+        } else if (field) {
+          // Champ inconnu mais identifie : message generique avec le nom du champ
+          displayMsg = tx({
+            fr: `Conflit d'unicite sur le champ "${field}". ${backendMsg}`,
+            en: `Uniqueness conflict on field "${field}". ${backendMsg}`,
+            es: `Conflicto de unicidad en el campo "${field}".`,
+          });
+        } else {
+          // Pas d'info sur le champ : afficher le backend message + hint de debug
+          displayMsg = tx({
+            fr: `Conflit d'unicite en BDD. ${backendMsg}. Si le probleme persiste, copie ce message et envoie-le a l'admin technique.`,
+            en: `DB unique conflict. ${backendMsg}. If it persists, send this message to the technical admin.`,
+            es: `Conflicto de unicidad. ${backendMsg}.`,
+          });
+        }
+      } else if (status === 401 || status === 403) {
+        displayMsg = tx({
+          fr: 'Session expiree ou acces refuse. Reconnecte-toi.',
+          en: 'Session expired or access denied. Sign back in.',
+          es: 'Sesion expirada o acceso denegado.',
+        });
+      } else {
+        displayMsg = backendMsg || tx({ fr: 'Erreur inconnue', en: 'Unknown error', es: 'Error desconocido' });
+      }
+
+      setError(displayMsg);
     } finally {
       setLoading(false);
     }

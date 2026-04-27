@@ -27,7 +27,7 @@ const inventory_item_1 = require("./api/inventory-item/controllers/inventory-ite
 exports.default = {
     register( /* { strapi }: { strapi: Core.Strapi } */) { },
     async bootstrap({ strapi }) {
-        var _a;
+        var _a, _b;
         // ── Auto-create admin super user ──
         try {
             const existingAdmins = await strapi.db.query('admin::user').findMany({ limit: 1 });
@@ -119,6 +119,99 @@ exports.default = {
         }
         catch (err) {
             console.error('[seed] Permissions/UserRoles error:', err.message);
+        }
+        // FIX-UNIQUE-COMPANY (27 avril 2026) : drop defensif au boot des index UNIQUE
+        // orphelins sur company_name dans orders/invoices.
+        //
+        // Pourquoi au boot et pas seulement via migration : les migrations Strapi
+        // sont parfois skippees sur Render (cold start, restore depuis snapshot,
+        // deploy partiel) et l'index UNIQUE survit en BDD meme apres avoir retire
+        // le `unique: true` du schema. Resultat : creation de commande manuelle
+        // qui reutilise un companyName -> "This attribute must be unique".
+        //
+        // Idempotent : DROP INDEX IF EXISTS + introspection pg_index avant. Si
+        // les index n'existent pas (cas normal apres 1ere execution), no-op silencieux.
+        // Erreur loggee mais NE BLOQUE PAS le demarrage Strapi - on degrade gracefully.
+        try {
+            const knex = (_a = strapi.db) === null || _a === void 0 ? void 0 : _a.connection;
+            if (knex && typeof knex.raw === 'function') {
+                const dropOrphanUnique = async (tableName, columnName) => {
+                    // Detecte tous les index UNIQUE qui touchent la colonne et les drop.
+                    // Couvre a la fois les CONSTRAINTS (table-level) et les INDEX (db-level)
+                    // car Postgres garde les deux au sens index quand on declare unique.
+                    const result = await knex.raw(`
+            DO $$
+            DECLARE
+              dropped_count INTEGER := 0;
+              con RECORD;
+              idx RECORD;
+            BEGIN
+              -- Skip si table absente (premier deploy sur DB vide)
+              IF NOT EXISTS (
+                SELECT 1 FROM information_schema.tables
+                WHERE table_schema = current_schema() AND table_name = '${tableName}'
+              ) THEN RETURN; END IF;
+              -- Skip si colonne absente
+              IF NOT EXISTS (
+                SELECT 1 FROM information_schema.columns
+                WHERE table_schema = current_schema()
+                  AND table_name = '${tableName}'
+                  AND column_name = '${columnName}'
+              ) THEN RETURN; END IF;
+
+              -- 1. Drop UNIQUE constraints (niveau table)
+              FOR con IN
+                SELECT tc.constraint_name
+                FROM information_schema.table_constraints tc
+                JOIN information_schema.constraint_column_usage ccu
+                  ON tc.constraint_name = ccu.constraint_name
+                 AND tc.table_schema = ccu.table_schema
+                WHERE tc.table_schema = current_schema()
+                  AND tc.table_name = '${tableName}'
+                  AND tc.constraint_type = 'UNIQUE'
+                  AND ccu.column_name = '${columnName}'
+              LOOP
+                EXECUTE format('ALTER TABLE %I DROP CONSTRAINT IF EXISTS %I', '${tableName}', con.constraint_name);
+                dropped_count := dropped_count + 1;
+              END LOOP;
+
+              -- 2. Drop UNIQUE indexes (niveau db, peut etre orphelin sans constraint)
+              FOR idx IN
+                SELECT i.relname AS index_name
+                FROM pg_class t
+                JOIN pg_index ix ON t.oid = ix.indrelid
+                JOIN pg_class i ON i.oid = ix.indexrelid
+                JOIN pg_attribute a ON a.attrelid = t.oid AND a.attnum = ANY(ix.indkey)
+                WHERE t.relname = '${tableName}'
+                  AND t.relkind = 'r'
+                  AND ix.indisunique = true
+                  AND a.attname = '${columnName}'
+              LOOP
+                EXECUTE format('DROP INDEX IF EXISTS %I', idx.index_name);
+                dropped_count := dropped_count + 1;
+              END LOOP;
+
+              IF dropped_count > 0 THEN
+                RAISE NOTICE 'Dropped % UNIQUE index/constraint(s) on ${tableName}.${columnName}', dropped_count;
+              END IF;
+            END $$;
+          `);
+                    return result;
+                };
+                await dropOrphanUnique('orders', 'company_name');
+                await dropOrphanUnique('invoices', 'company_name');
+                console.log('[bootstrap] Orphan UNIQUE indexes on company_name checked (orders + invoices)');
+            }
+            else {
+                console.warn('[bootstrap] strapi.db.connection unavailable, skip orphan-unique cleanup');
+            }
+        }
+        catch (cleanupErr) {
+            // Non bloquant : si la cleanup plante (permissions, syntax PG specifique),
+            // on log mais on laisse Strapi demarrer. Le runtime est protege par le
+            // catch enrichi dans manualCreate qui detecte l'erreur unique et renvoie
+            // un message clair au frontend.
+            console.error('[bootstrap] Orphan-unique cleanup failed (non-blocking):', cleanupErr === null || cleanupErr === void 0 ? void 0 : cleanupErr.message);
         }
         // FIX-TAXONOMY (avril 2026) : reclassification auto des items d'inventaire
         // qui ont ete melanges entre equipement permanent et consommables. Idempotent :
@@ -242,7 +335,7 @@ exports.default = {
         }
         catch (err) {
             console.error('[seed] Error:', err.message);
-            if ((_a = err.details) === null || _a === void 0 ? void 0 : _a.errors) {
+            if ((_b = err.details) === null || _b === void 0 ? void 0 : _b.errors) {
                 err.details.errors.forEach((e) => { var _a; return console.error('[seed]  -', (_a = e.path) === null || _a === void 0 ? void 0 : _a.join('.'), ':', e.message); });
             }
         }

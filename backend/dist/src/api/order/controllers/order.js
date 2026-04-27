@@ -26,6 +26,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.parseUniqueViolation = exports.isUniqueViolation = void 0;
 const strapi_1 = require("@strapi/strapi");
 const stripe_1 = __importDefault(require("stripe"));
 const shipping_1 = require("../../../utils/shipping");
@@ -46,6 +47,74 @@ const getStripe = () => {
 // L'import est en haut du fichier. Le comportement est identique, seul le diagnostic
 // __authDiag n'est plus expose (il etait utilise par /admin-whoami, endpoint de debug
 // retire depuis). Aucune regression fonctionnelle sur order.ts.
+/**
+ * FIX-UNIQUE-DETECT (27 avril 2026) : helpers de classification des erreurs.
+ *
+ * Strapi v5 jette une ValidationError typée pour les unique constraints :
+ *   { name: 'ValidationError', message: 'This attribute must be unique',
+ *     details: { errors: [{ path: ['invoiceNumber'], message: '...' }] } }
+ *
+ * Postgres jette directement (avant Strapi) :
+ *   { code: '23505', detail: 'Key (invoice_number)=(MM-2026-0042) already exists.',
+ *     constraint: 'orders_invoice_number_unique' }
+ *
+ * Avant ce fix, le client recevait juste "This attribute must be unique" sans
+ * savoir QUEL champ. On parse les deux formats pour identifier le champ exact
+ * et permettre soit un retry intelligent (invoiceNumber) soit un message UI
+ * clair (email, companyName).
+ */
+function isUniqueViolation(err) {
+    var _a;
+    if (!err)
+        return false;
+    if ((err === null || err === void 0 ? void 0 : err.name) === 'ValidationError') {
+        const msg = String((err === null || err === void 0 ? void 0 : err.message) || '').toLowerCase();
+        if (msg.includes('unique'))
+            return true;
+        const details = (_a = err === null || err === void 0 ? void 0 : err.details) === null || _a === void 0 ? void 0 : _a.errors;
+        if (Array.isArray(details) && details.some((d) => String((d === null || d === void 0 ? void 0 : d.message) || '').toLowerCase().includes('unique'))) {
+            return true;
+        }
+    }
+    // Postgres native error
+    if ((err === null || err === void 0 ? void 0 : err.code) === '23505')
+        return true;
+    const msg = String((err === null || err === void 0 ? void 0 : err.message) || (err === null || err === void 0 ? void 0 : err.detail) || '').toLowerCase();
+    return msg.includes('duplicate key') || msg.includes('must be unique');
+}
+exports.isUniqueViolation = isUniqueViolation;
+function parseUniqueViolation(err) {
+    var _a, _b, _c;
+    if (!err)
+        return { field: null, raw: '' };
+    // 1. Strapi ValidationError details path
+    const path = (_c = (_b = (_a = err === null || err === void 0 ? void 0 : err.details) === null || _a === void 0 ? void 0 : _a.errors) === null || _b === void 0 ? void 0 : _b[0]) === null || _c === void 0 ? void 0 : _c.path;
+    if (Array.isArray(path) && path.length > 0) {
+        return { field: String(path[0]), raw: (err === null || err === void 0 ? void 0 : err.message) || '' };
+    }
+    // 2. Postgres detail "Key (column_name)=(value) already exists."
+    const detailStr = String((err === null || err === void 0 ? void 0 : err.detail) || (err === null || err === void 0 ? void 0 : err.message) || '');
+    const keyMatch = /Key \(([^)]+)\)=/i.exec(detailStr);
+    if (keyMatch) {
+        // Conversion snake_case -> camelCase pour matcher les noms du schema Strapi
+        const snake = keyMatch[1];
+        const camel = snake.replace(/_([a-z])/g, (_, c) => c.toUpperCase());
+        return { field: camel, raw: detailStr };
+    }
+    // 3. Postgres constraint name "orders_invoice_number_unique"
+    const constraintMatch = /unique constraint "([^"]+)"/i.exec(detailStr);
+    if (constraintMatch) {
+        const cname = constraintMatch[1];
+        // Heuristique : retire le prefixe "tablename_" et le suffixe "_unique"
+        const guess = cname
+            .replace(/_unique$/i, '')
+            .replace(/^(orders|invoices|clients|user_roles|artists|products)_/i, '')
+            .replace(/_([a-z])/g, (_, c) => c.toUpperCase());
+        return { field: guess || null, raw: detailStr };
+    }
+    return { field: null, raw: detailStr || String((err === null || err === void 0 ? void 0 : err.message) || err) };
+}
+exports.parseUniqueViolation = parseUniqueViolation;
 // PRIX-02: les constantes de pricing (STICKER_*, SIZE_MULTIPLIERS, BUSINESS_CARD_TIERS,
 // FLYER_TIERS, FLYER_RECTO_VERSO_MULTIPLIER, ARTIST_DISCOUNT, FX_FINISHES) sont
 // maintenant importees depuis utils/pricing-config.ts pour que le backend ait une seule
@@ -1445,25 +1514,61 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
             return ctx.badRequest('Total calcule invalide (0 ou negatif). Verifier subtotal et taxes.');
         }
         try {
-            // 1. Resoudre ou creer le Client (lookup par email si fourni)
+            // 1. Resoudre ou creer le Client (lookup par email si fourni).
+            //
+            // FIX-UNIQUE-RACE (27 avril 2026) : findOrCreate robuste contre les
+            // race conditions. Scenario reel observe : double-click sur "Creer" en
+            // moins de 200ms -> 2 requetes paralleles -> les 2 findMany retournent
+            // [] -> les 2 create() partent -> 2e crash avec "email must be unique"
+            // qui remonte au client comme "This attribute must be unique" generique.
+            // Solution : si le create echoue avec une violation unique sur email,
+            // on re-lit la table (le 1er insert est maintenant visible) et on
+            // recupere le clientDocId existant. Belt-and-suspenders : ce pattern
+            // tient meme si Strapi/Knex retry tout seul.
             let clientDocId = null;
             if (customerEmail) {
+                const emailLower = String(customerEmail).trim().toLowerCase();
                 const existing = await strapi.documents('api::client.client').findMany({
-                    filters: { email: { $eqi: customerEmail } },
+                    filters: { email: { $eqi: emailLower } },
                     limit: 1,
                 });
                 if (existing.length > 0) {
                     clientDocId = existing[0].documentId;
                 }
                 else {
-                    const created = await strapi.documents('api::client.client').create({
-                        data: {
-                            email: customerEmail,
-                            name: customerName,
-                            phone: customerPhone || undefined,
-                        },
-                    });
-                    clientDocId = created.documentId;
+                    try {
+                        const created = await strapi.documents('api::client.client').create({
+                            data: {
+                                email: emailLower,
+                                name: customerName,
+                                phone: customerPhone || undefined,
+                            },
+                        });
+                        clientDocId = created.documentId;
+                    }
+                    catch (clientErr) {
+                        // Race condition : un autre handler a cree le client entre notre
+                        // findMany et notre create. On re-fetch pour recuperer son docId.
+                        const isUniqueErr = isUniqueViolation(clientErr);
+                        if (isUniqueErr) {
+                            strapi.log.warn(`[manualCreate] Race condition client.email=${emailLower}, re-fetch en cours`);
+                            const refetch = await strapi.documents('api::client.client').findMany({
+                                filters: { email: { $eqi: emailLower } },
+                                limit: 1,
+                            });
+                            if (refetch.length > 0) {
+                                clientDocId = refetch[0].documentId;
+                            }
+                            else {
+                                // Tres etrange : unique error mais re-fetch retourne []. On laisse
+                                // tomber l'attache client (la commande peut exister sans relation).
+                                strapi.log.error(`[manualCreate] Client unique violation MAIS re-fetch vide pour email=${emailLower}. Order creee sans relation client.`);
+                            }
+                        }
+                        else {
+                            throw clientErr;
+                        }
+                    }
                 }
             }
             // 2. Creer l'Order (isManual, stripePaymentIntentId nullable grace au schema patch)
@@ -1504,48 +1609,99 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
                 },
             });
             // 3. Numero de facture sequentiel MM-AAAA-XXXX (meme logique que webhook)
+            //
+            // FIX-UNIQUE-RACE (27 avril 2026) : retry loop pour resister aux race
+            // conditions du compteur. Le pattern findMany sort:desc + 1 N'EST PAS
+            // atomic - si 2 manualCreate tournent en parallele (admin double-click,
+            // 2 onglets, retry reseau), les 2 calculs voient le meme lastSeq et
+            // generent le MEME invoiceNumber -> 2e crash sur unique constraint.
+            // Le client recoit alors "This attribute must be unique" sans contexte.
+            //
+            // Solution : on tente jusqu'a MAX_INVOICE_RETRIES fois, en bumpant le
+            // seq a chaque tentative. Au 1er essai on prend lastSeq+1, au 2e
+            // lastSeq+2, etc. On loggue chaque collision pour pouvoir auditer la
+            // frequence. 5 retries couvrent meme le pire cas realiste.
             const year = new Date().getFullYear();
             const prefix = `MM-${year}-`;
-            const lastInvoice = await strapi.documents('api::invoice.invoice').findMany({
-                filters: { invoiceNumber: { $startsWith: prefix } },
-                sort: { invoiceNumber: 'desc' },
-                limit: 1,
-            });
-            let seq = 1;
-            if (lastInvoice.length > 0 && lastInvoice[0].invoiceNumber) {
-                const lastNum = lastInvoice[0].invoiceNumber.replace(prefix, '');
-                seq = (parseInt(lastNum, 10) || 0) + 1;
-            }
-            const invoiceNumber = `${prefix}${String(seq).padStart(4, '0')}`;
-            // 4. Creer l'Invoice liee a l'Order + Client (montants TTC en dollars dans l'invoice)
+            const MAX_INVOICE_RETRIES = 5;
             // FIX-LEGACY : si invoiceDate fourni (YYYY-MM-DD), on l'utilise pour le champ `date`
             // qui apparait sur la facture PDF. Sinon, date du jour.
             const resolvedInvoiceDate = invoiceDate
                 ? String(invoiceDate).slice(0, 10)
                 : new Date().toISOString().slice(0, 10);
-            const invoice = await strapi.documents('api::invoice.invoice').create({
-                data: {
-                    invoiceNumber,
-                    date: resolvedInvoiceDate,
-                    customerName,
-                    companyName: cleanCompanyName || null,
-                    customerEmail: customerEmail || null,
-                    customerPhone: customerPhone || null,
-                    items,
-                    subtotal,
-                    tps,
-                    tvq,
-                    total,
-                    // FIX-PREPAID : invoice flip aussi a paid si commande deja reglee hors-ligne.
-                    status: prepaid ? 'paid' : 'draft',
-                    paymentStatus: prepaid ? 'paid' : 'pending',
-                    ...(prepaid ? { paidAt: new Date().toISOString() } : {}),
-                    lang,
-                    notes: composedNotes,
-                    order: { connect: [order.documentId] },
-                    client: clientDocId ? { connect: [clientDocId] } : undefined,
-                },
-            });
+            let invoice = null;
+            let invoiceNumber = '';
+            let attempt = 0;
+            let lastInvoiceErr = null;
+            while (attempt < MAX_INVOICE_RETRIES) {
+                attempt++;
+                // Re-lire le compteur a CHAQUE tentative : si la 1ere a echoue parce
+                // qu'un autre handler a insere notre numero, son insert est maintenant
+                // visible et notre prochain calcul donnera lastSeq+1 frais.
+                const lastInvoice = await strapi.documents('api::invoice.invoice').findMany({
+                    filters: { invoiceNumber: { $startsWith: prefix } },
+                    sort: { invoiceNumber: 'desc' },
+                    limit: 1,
+                });
+                let seq = 1;
+                if (lastInvoice.length > 0 && lastInvoice[0].invoiceNumber) {
+                    const lastNum = lastInvoice[0].invoiceNumber.replace(prefix, '');
+                    seq = (parseInt(lastNum, 10) || 0) + 1;
+                }
+                // Si on est en retry (attempt > 1), on ajoute (attempt-1) pour s'eloigner
+                // du seq qui a deja collisione. Sans ce bump, on relit la meme valeur
+                // et on retombe sur le meme conflit.
+                const candidateSeq = seq + (attempt - 1);
+                invoiceNumber = `${prefix}${String(candidateSeq).padStart(4, '0')}`;
+                try {
+                    invoice = await strapi.documents('api::invoice.invoice').create({
+                        data: {
+                            invoiceNumber,
+                            date: resolvedInvoiceDate,
+                            customerName,
+                            companyName: cleanCompanyName || null,
+                            customerEmail: customerEmail || null,
+                            customerPhone: customerPhone || null,
+                            items,
+                            subtotal,
+                            tps,
+                            tvq,
+                            total,
+                            // FIX-PREPAID : invoice flip aussi a paid si commande deja reglee hors-ligne.
+                            status: prepaid ? 'paid' : 'draft',
+                            paymentStatus: prepaid ? 'paid' : 'pending',
+                            ...(prepaid ? { paidAt: new Date().toISOString() } : {}),
+                            lang,
+                            notes: composedNotes,
+                            order: { connect: [order.documentId] },
+                            client: clientDocId ? { connect: [clientDocId] } : undefined,
+                        },
+                    });
+                    // Succes : on sort de la boucle.
+                    break;
+                }
+                catch (invoiceErr) {
+                    lastInvoiceErr = invoiceErr;
+                    const parsed = parseUniqueViolation(invoiceErr);
+                    // Si c'est une collision sur invoiceNumber, on retry avec un seq bumpe.
+                    if (isUniqueViolation(invoiceErr) && (parsed.field === 'invoiceNumber' || parsed.field === null)) {
+                        strapi.log.warn(`[manualCreate] Collision invoiceNumber=${invoiceNumber} (tentative ${attempt}/${MAX_INVOICE_RETRIES}). `
+                            + `Detail: ${parsed.raw.slice(0, 200)}`);
+                        continue;
+                    }
+                    // Autre type d'erreur (companyName unique orphelin, validation, etc.) :
+                    // on remonte tout de suite, le retry n'aiderait pas.
+                    throw invoiceErr;
+                }
+            }
+            if (!invoice) {
+                // Toutes les tentatives ont echoue sur invoiceNumber. Tres rare en pratique
+                // (5 collisions consecutives = des dizaines de manualCreate paralleles).
+                const parsed = parseUniqueViolation(lastInvoiceErr);
+                strapi.log.error(`[manualCreate] ECHEC genese invoiceNumber apres ${MAX_INVOICE_RETRIES} tentatives. `
+                    + `Dernier essai: ${invoiceNumber}. Field=${parsed.field}, raw=${parsed.raw.slice(0, 200)}`);
+                throw lastInvoiceErr || new Error(`Impossible de generer un numero de facture unique apres ${MAX_INVOICE_RETRIES} tentatives.`);
+            }
             // 5. Stripe Payment Link : line_items detailles (sous-total + TPS + TVQ + shipping)
             // pour que le client VOIE le breakdown des taxes sur la page de paiement Stripe.
             // Chaque ligne a son propre Product+Price Stripe avec un label parlant.
@@ -1667,8 +1823,57 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
             };
         }
         catch (err) {
-            strapi.log.error('manualCreate error:', err);
-            return ctx.badRequest(err.message || 'Erreur creation commande manuelle');
+            // FIX-UNIQUE-DETECT (27 avril 2026) : on parse l'erreur pour identifier
+            // EXACTEMENT le champ qui a viole une contrainte unique. Avant ce fix,
+            // le frontend recevait juste "This attribute must be unique" sans savoir
+            // si c'etait email, invoiceNumber, companyName (orphelin), ou autre.
+            //
+            // On log AUSSI le payload pour que les prochains debugs aient toujours
+            // le contexte complet (dans les logs Render). On masque juste les valeurs
+            // sensibles (telephone, email partiel) pour la conformite.
+            const isUnique = isUniqueViolation(err);
+            const parsed = parseUniqueViolation(err);
+            strapi.log.error(`[manualCreate] ECHEC creation - isUnique=${isUnique} field=${parsed.field || '?'} `
+                + `code=${(err === null || err === void 0 ? void 0 : err.code) || '?'} name=${(err === null || err === void 0 ? void 0 : err.name) || '?'} message="${((err === null || err === void 0 ? void 0 : err.message) || '').slice(0, 300)}" `
+                + `payloadKeys=${Object.keys(body || {}).join(',')} `
+                + `customerEmail=${customerEmail ? customerEmail.replace(/(.{2}).+(@.+)/, '$1***$2') : 'none'} `
+                + `companyName="${(companyName || '').slice(0, 50)}" `
+                + `itemsCount=${Array.isArray(items) ? items.length : '?'}`);
+            // Log la stack complete pour les inconnues (utile en dev / 1ere apparition)
+            if (!isUnique && (err === null || err === void 0 ? void 0 : err.stack)) {
+                strapi.log.error(`[manualCreate] Stack trace:\n${err.stack}`);
+            }
+            // Reponse structuree pour que le frontend puisse afficher un message
+            // ciblé. Le frontend lit ctx.response.data.error.{message,field,code}.
+            if (isUnique) {
+                // Message lisible pour les champs qu'on connait. Le frontend peut
+                // override avec son propre i18n via le `code`.
+                const fieldLabels = {
+                    email: 'courriel',
+                    customerEmail: 'courriel client',
+                    invoiceNumber: 'numero de facture',
+                    companyName: 'nom d\'entreprise (probleme technique - contacter le support)',
+                    stripePaymentIntentId: 'identifiant Stripe',
+                };
+                const fieldLabel = parsed.field ? (fieldLabels[parsed.field] || parsed.field) : 'un champ';
+                const userMessage = parsed.field === 'invoiceNumber'
+                    ? `Conflit de numero de facture (5 tentatives epuisees). Reessaie dans quelques secondes.`
+                    : `Conflit d'unicite sur le champ "${fieldLabel}". ${parsed.field === 'companyName' ? 'Un index Postgres orphelin survit en BDD - signaler a l\'admin technique.' : 'Une autre entree existe deja avec cette valeur.'}`;
+                ctx.status = 409; // Conflict (plus precis que 400 BadRequest)
+                ctx.body = {
+                    error: {
+                        status: 409,
+                        name: 'UniqueViolation',
+                        message: userMessage,
+                        field: parsed.field,
+                        code: 'UNIQUE_VIOLATION',
+                        details: { rawHint: parsed.raw.slice(0, 200) },
+                    },
+                };
+                return;
+            }
+            // Erreur non-unique : fallback comportement historique (badRequest 400).
+            return ctx.badRequest((err === null || err === void 0 ? void 0 : err.message) || 'Erreur creation commande manuelle');
         }
     },
     // POST /orders/seed-legacy-april2026 - One-shot endpoint pour reinjecter 3 factures
