@@ -78,13 +78,18 @@ function AnnualBalanceCard() {
       `Massive Medias - Bilan annuel ${year}`,
       `NEQ: 2269057891 | TPS: 732457635RT0001 | TVQ: 4012577678TQ0001`,
       '',
-      'Mois,Revenus,Depenses,TPS payee,TVQ payee,Bilan',
+      // FIX-COMPTA (27 avril 2026) : bilan mensuel = revenu HT - depenses
+      // deductibles HT (au lieu de depenses TTC). Les TPS/TVQ payees sont
+      // recuperables via CTI/RTI, donc pas des charges deductibles.
+      // Si l'admin n'a aucune depense taxDeductible=true, deductible=0
+      // -> bilan = revenu (cas normal pour ses revenus deja en HT).
+      'Mois,Revenus (HT),Depenses (TTC),TPS payee,TVQ payee,Depenses deductibles (HT),Bilan (profit)',
       ...months.map(([key, m]) => {
         const safeM = m || {};
-        const balance = num(safeM.revenue) - num(safeM.expenses);
-        return `${mNames[parseInt(key) - 1]},${fmt(safeM.revenue)},${fmt(safeM.expenses)},${fmt(safeM.tps)},${fmt(safeM.tvq)},${fmt(balance)}`;
+        const balance = num(safeM.revenue) - num(safeM.deductible);
+        return `${mNames[parseInt(key) - 1]},${fmt(safeM.revenue)},${fmt(safeM.expenses)},${fmt(safeM.tps)},${fmt(safeM.tvq)},${fmt(safeM.deductible)},${fmt(balance)}`;
       }),
-      `Total,${fmt(t.revenue)},${fmt(t.expenses)},${fmt(t.tps)},${fmt(t.tvq)},${fmt(num(t.revenue) - num(t.expenses))}`,
+      `Total,${fmt(t.revenue)},${fmt(t.expenses)},${fmt(t.tps)},${fmt(t.tvq)},${fmt(t.deductible)},${fmt(num(t.revenue) - num(t.deductible))}`,
       '',
       'Taxes',
       `,TPS (5%),TVQ (9.975%)`,
@@ -92,7 +97,7 @@ function AnnualBalanceCard() {
       `Payee sur achats,${fmt(t.tps)},${fmt(t.tvq)}`,
       `Net a remettre,${fmt(num(t.revenueTps) - num(t.tps))},${fmt(num(t.revenueTvq) - num(t.tvq))}`,
       '',
-      `Depenses deductibles,${fmt(t.deductible)}`,
+      `Depenses deductibles (HT - apres CTI/RTI),${fmt(t.deductible)}`,
       // FIX-MANUAL-EXPORT (23 avril 2026) : breakdown explicite des sources
       // de revenus pour transparence comptable. Inclut les commandes manuelles
       // (B2B, prepaid Interac/Square/comptant, et liens Stripe payes). Si les
@@ -107,7 +112,16 @@ function AnnualBalanceCard() {
   };
 
   const t = yearData?.totals || {};
-  const bilan = (t.revenue || 0) - (t.expenses || 0);
+  // FIX-COMPTA (27 avril 2026) : bilan = revenue - DEDUCTIBLE (HT) au lieu de
+  // revenue - expenses (TTC). Les TPS/TVQ payees sur les depenses sont
+  // recuperables via CTI/RTI (Net a remettre) donc PAS des charges deductibles
+  // qu'il faudrait soustraire au profit. Cas chiffre :
+  //   Avant : 206443 - 5201.56 = 201241.44 (faux, double-compte les taxes)
+  //   Apres : 206443 - 5031.42 = 201411.58 (correct : profit reel)
+  // L'ecart de 170.14$ correspond exactement a TPS+TVQ payees recuperables.
+  // Pour les exercices ou aucune depense n'est marquee taxDeductible (rare,
+  // typique d'une nouvelle entreprise), deductible=0 et bilan=revenue.
+  const bilan = (t.revenue || 0) - (t.deductible || 0);
   const netTps = (t.revenueTps || 0) - (t.tps || 0);
   const netTvq = (t.revenueTvq || 0) - (t.tvq || 0);
 
@@ -185,9 +199,9 @@ function AnnualBalanceCard() {
                   <dt className="font-bold text-accent flex-shrink-0 w-[110px]">{tx({ fr: 'Bilan (Profit) :', en: 'Balance (Profit):', es: 'Balance (Beneficio):' })}</dt>
                   <dd className="text-amber-100/85">
                     {tx({
-                      fr: 'Tes revenus moins tes depenses. C\'est ce que l\'entreprise a vraiment gagne.',
-                      en: 'Revenue minus expenses. What the business really earned.',
-                      es: 'Ingresos menos gastos. Lo que realmente ganaste.',
+                      fr: 'Tes revenus moins tes depenses DEDUCTIBLES (HT, sans les TPS/TVQ payees recuperables). C\'est ton profit fiscal reel.',
+                      en: 'Revenue minus DEDUCTIBLE expenses (before tax, recoverable GST/QST excluded). Your real fiscal profit.',
+                      es: 'Ingresos menos gastos DEDUCIBLES (sin impuestos recuperables).',
                     })}
                   </dd>
                 </div>
@@ -303,7 +317,14 @@ function AnnualBalanceCard() {
               <p className={`text-lg font-bold ${netTvq >= 0 ? 'text-red-400' : 'text-green-400'}`}>{fmt(netTvq)}$</p>
             </div>
             <div className="flex-1 rounded-lg bg-accent/5 border border-accent/15 p-3">
-              <p className="text-[10px] text-grey-muted uppercase tracking-wider mb-1">{tx({ fr: 'Depenses deductibles', en: 'Deductible expenses', es: 'Gastos deducibles' })}</p>
+              <div className="flex items-center gap-1.5 mb-1">
+                <p className="text-[10px] text-grey-muted uppercase tracking-wider">{tx({ fr: 'Depenses deductibles (HT)', en: 'Deductible expenses (before tax)', es: 'Gastos deducibles (HT)' })}</p>
+                <Info size={10} className="text-grey-muted/70" title={tx({
+                  fr: 'Total HT des depenses marquees deductibles. TPS/TVQ payees exclues car recuperables via CTI/RTI (ligne Net a remettre).',
+                  en: 'Pre-tax total of deductible expenses. GST/QST excluded (recovered via input tax credits).',
+                  es: 'Total HT de gastos deducibles. Impuestos recuperables excluidos.',
+                })} />
+              </div>
               <p className="text-lg font-bold text-green-400">{fmt(t.deductible)}$</p>
             </div>
           </div>
@@ -344,7 +365,10 @@ function AnnualBalanceCard() {
                     </thead>
                     <tbody>
                       {Object.entries(yearData.months || {}).map(([key, m]) => {
-                        const balance = (m.revenue || 0) - (m.expenses || 0);
+                        // FIX-COMPTA : balance mensuel = revenue - deductible (HT)
+                        // au lieu de revenue - expenses (TTC). Voir commentaire long
+                        // sur le calcul du `bilan` annuel plus haut.
+                        const balance = (m.revenue || 0) - (m.deductible || 0);
                         const hasData = (m.revenue || 0) > 0 || (m.expenses || 0) > 0;
                         if (!hasData) return (
                           <tr key={key} className="shadow-[0_1px_0_rgba(255,255,255,0.04)] opacity-30">

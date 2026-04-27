@@ -30,12 +30,25 @@ exports.default = strapi_1.factories.createCoreController('api::expense.expense'
             strapi.documents('api::expense.expense').findMany({ filters }),
         ]);
         // Summary
+        // FIX-COMPTA (27 avril 2026) : `deductible` est calcule en HT (avant taxes)
+        // au lieu de TTC. Raison fiscale QC : les TPS/TVQ payees sont RECUPERABLES
+        // via credits de taxes sur intrants (CTI/RTI). Les inclure dans les
+        // "depenses deductibles" gonfle artificiellement la deduction fiscale.
+        // Bonne formule : amount HT = amount_TTC - tps - tvq.
+        // Ex: facture 200$ TTC = 173.91$ HT + 8.70$ TPS + 17.39$ TVQ
+        //     -> deductible compte 173.91$ (les 26.09$ taxes sont recuperees
+        //        separement via la ligne "Net a remettre").
         const allExpenses = await strapi.documents('api::expense.expense').findMany({});
         const summary = {
             total: allExpenses.reduce((s, e) => s + (parseFloat(e.amount) || 0), 0),
             tps: allExpenses.reduce((s, e) => s + (parseFloat(e.tpsAmount) || 0), 0),
             tvq: allExpenses.reduce((s, e) => s + (parseFloat(e.tvqAmount) || 0), 0),
-            deductible: allExpenses.filter((e) => e.taxDeductible).reduce((s, e) => s + (parseFloat(e.amount) || 0), 0),
+            deductible: allExpenses.filter((e) => e.taxDeductible).reduce((s, e) => {
+                const amt = parseFloat(e.amount) || 0;
+                const tpsAmt = parseFloat(e.tpsAmount) || 0;
+                const tvqAmt = parseFloat(e.tvqAmount) || 0;
+                return s + (amt - tpsAmt - tvqAmt);
+            }, 0),
         };
         const total = allFiltered.length;
         ctx.body = {
@@ -180,11 +193,18 @@ exports.default = strapi_1.factories.createCoreController('api::expense.expense'
             const m = (e === null || e === void 0 ? void 0 : e.date) ? String(e.date).substring(5, 7) : null;
             if (!m || !months[m])
                 continue;
-            months[m].expenses += numericSafe(e === null || e === void 0 ? void 0 : e.amount);
-            months[m].tps += numericSafe(e === null || e === void 0 ? void 0 : e.tpsAmount);
-            months[m].tvq += numericSafe(e === null || e === void 0 ? void 0 : e.tvqAmount);
+            const amt = numericSafe(e === null || e === void 0 ? void 0 : e.amount);
+            const tpsAmt = numericSafe(e === null || e === void 0 ? void 0 : e.tpsAmount);
+            const tvqAmt = numericSafe(e === null || e === void 0 ? void 0 : e.tvqAmount);
+            months[m].expenses += amt; // TTC : ce que l'admin a reellement paye
+            months[m].tps += tpsAmt; // TPS payee (recuperable via CTI)
+            months[m].tvq += tvqAmt; // TVQ payee (recuperable via RTI)
+            // FIX-COMPTA (27 avril 2026) : deductible calcule en HT (amount - tps - tvq).
+            // Avant : deductible = amount_TTC -> faux fiscalement (les taxes recuperables
+            // ne sont pas des charges deductibles). Voir le commentaire long dans
+            // adminList summary plus haut pour le raisonnement complet.
             if (e === null || e === void 0 ? void 0 : e.taxDeductible)
-                months[m].deductible += numericSafe(e === null || e === void 0 ? void 0 : e.amount);
+                months[m].deductible += (amt - tpsAmt - tvqAmt);
         }
         let manualOrdersIncluded = 0;
         let webOrdersIncluded = 0;

@@ -514,10 +514,16 @@ function AdminDepenses() {
     return n.toLocaleString('fr-CA', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   };
 
+  // FIX-COMPTA (27 avril 2026) : 4e card "Depenses deductibles (HT)" qui
+  // affiche les depenses fiscalement deductibles APRES retrait des taxes
+  // recuperables (CTI/RTI). Backend renvoie deja `summary.deductible` calcule
+  // en HT (amount - tps - tvq, filtre par taxDeductible=true). C'est ce qui
+  // alimentera la deduction reelle au moment de produire la declaration.
   const summaryCards = [
     { label: tx({ fr: 'Total dépenses', en: 'Total expenses', es: 'Total gastos' }), value: summary ? `${fmt(summary.total)}$` : '-', icon: Receipt, accent: 'text-accent' },
     { label: tx({ fr: 'TPS payée', en: 'GST paid', es: 'TPS pagado' }), value: summary ? `${fmt(summary.tps)}$` : '-', icon: DollarSign, accent: 'text-blue-400' },
     { label: tx({ fr: 'TVQ payée', en: 'QST paid', es: 'TVQ pagado' }), value: summary ? `${fmt(summary.tvq)}$` : '-', icon: DollarSign, accent: 'text-purple-400' },
+    { label: tx({ fr: 'Déductibles (HT)', en: 'Deductible (before tax)', es: 'Deducibles (HT)' }), value: summary ? `${fmt(summary.deductible)}$` : '-', icon: Receipt, accent: 'text-green-400' },
   ];
 
   return (
