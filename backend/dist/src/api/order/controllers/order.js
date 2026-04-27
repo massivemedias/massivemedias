@@ -2982,66 +2982,172 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
     },
     /**
      * PUT /orders/:documentId/total
-     * Ajustement manuel admin du total d'une commande (rabais, balance, correction).
+     * Ajustement manuel admin du sous-total d'une commande (rabais, balance, correction).
      *
-     * Body:
-     *   - total: number (en DOLLARS, sera converti en cents en DB)
+     * Body (FIX-COMPTA 27 avril 2026 - migration vers subtotal as source of truth):
+     *   - subtotal: number (en DOLLARS) - PREFERENTIEL. Backend recalcule TPS+TVQ+total automatiquement.
+     *   - total: number (en DOLLARS) - LEGACY. Si subtotal absent, fallback sur l'ancien comportement
+     *     (modifie uniquement total sans toucher aux taxes - utile uniquement pour des cas hors-Quebec).
      *   - reason: string (obligatoire - trace dans les notes admin)
      *
-     * Append une ligne d'audit dans le champ notes:
-     *   [2026-04-18 12:34 par admin@exemple.com] Ajustement 68.99$ -> 100.60$ : Ajout balance 31.61$
+     * Pourquoi subtotal et pas total :
+     *   La comptabilite QC repose sur des taxes calculees a partir du sous-total HT.
+     *   Si l'admin appliquait un rabais en modifiant uniquement le Grand Total
+     *   (ex: 195$ -> 160$), les lignes TPS/TVQ stockees restaient incoherentes
+     *   (calculees sur l'ancien sous-total) -> exports comptables faux, factures
+     *   PDF qui ne se reconciliaient pas. Maintenant on edite la base (sous-total)
+     *   et tout le reste est derive de facon deterministe : TPS=subtotal*5%,
+     *   TVQ=subtotal*9.975%, total=subtotal+tps+tvq+shipping.
      *
-     * Le total Stripe original n'est PAS touche (garde trace du paiement reel).
-     * On modifie uniquement le champ `total` qui sert a l'affichage et aux factures.
+     * Cascade : on met aussi a jour l'Invoice liee (si elle existe) avec les
+     * memes valeurs en dollars (Invoice stocke en decimal, Order en cents) pour
+     * que la prochaine facture PDF / export utilise les bons chiffres.
+     *
+     * Audit log: timestamp Montreal + admin email + breakdown complet
+     *   [2026-04-27 14:32 par admin@exemple.com] Sous-total 170$ -> 160$ (TPS 8$, TVQ 15.96$, Total TTC 183.96$) : Rabais artiste
      */
     async updateTotal(ctx) {
         if (!(await (0, auth_1.requireAdminAuth)(ctx)))
             return;
         const { documentId } = ctx.params;
-        const { total, reason } = ctx.request.body;
-        // Validation stricte: total en dollars, positif, raisonnable (max 100k$)
-        const newTotalDollars = Number(total);
-        if (!Number.isFinite(newTotalDollars) || newTotalDollars < 0 || newTotalDollars > 100000) {
-            return ctx.badRequest('total must be a positive number in dollars (max 100000)');
-        }
-        const newTotalCents = Math.round(newTotalDollars * 100);
+        const { subtotal, total, reason } = ctx.request.body;
         const reasonTrim = String(reason || '').trim();
         if (!reasonTrim) {
-            return ctx.badRequest('reason is required (explain why you are adjusting the total)');
+            return ctx.badRequest('reason is required (explain why you are adjusting the subtotal/total)');
         }
         if (reasonTrim.length > 500) {
             return ctx.badRequest('reason max 500 chars');
+        }
+        // Determiner le mode : subtotal-driven (nouveau, recommande) ou total-driven (legacy)
+        const subtotalDollars = Number(subtotal);
+        const isSubtotalMode = Number.isFinite(subtotalDollars) && subtotalDollars >= 0;
+        const isTotalMode = !isSubtotalMode && Number.isFinite(Number(total));
+        if (!isSubtotalMode && !isTotalMode) {
+            return ctx.badRequest('subtotal (recommande) ou total (legacy) requis - un nombre en dollars');
+        }
+        if (isSubtotalMode && (subtotalDollars < 0 || subtotalDollars > 100000)) {
+            return ctx.badRequest('subtotal must be between 0 and 100000 dollars');
+        }
+        if (isTotalMode && (Number(total) < 0 || Number(total) > 100000)) {
+            return ctx.badRequest('total must be between 0 and 100000 dollars');
         }
         const order = await strapi.documents('api::order.order').findFirst({
             filters: { documentId },
         });
         if (!order)
             return ctx.notFound('Commande introuvable');
-        const previousCents = Number(order.total) || 0;
-        const previousDollars = (previousCents / 100).toFixed(2);
-        const newDollarsFmt = (newTotalCents / 100).toFixed(2);
-        // Audit log: timestamp Montreal + admin email si dispo + old/new
+        // Etats precedents (en cents dans Order)
+        const previousSubtotalCents = Number(order.subtotal) || 0;
+        const previousTpsCents = Number(order.tps) || 0;
+        const previousTvqCents = Number(order.tvq) || 0;
+        const previousTotalCents = Number(order.total) || 0;
+        const previousShippingCents = Number(order.shipping) || 0;
+        // FIX-COMPTA : taux QC standard. Si l'admin a explicitement zero les taxes
+        // (cas hors-QC), on garde 0 - on ne RE-applique PAS automatiquement. La
+        // detection se fait via le ratio actuel : si previousTps == 0 ET previous
+        // Tvq == 0 sur une commande non-vide, on suppose hors-QC et on garde 0.
+        const TPS_RATE = 0.05;
+        const TVQ_RATE = 0.09975;
+        const isQcOrder = previousTpsCents > 0 || previousTvqCents > 0
+            || (previousSubtotalCents === 0 && previousTotalCents === 0); // commande vide / nouvelle = QC par defaut
+        let newSubtotalCents;
+        let newTpsCents;
+        let newTvqCents;
+        let newTotalCents;
+        let newShippingCents = previousShippingCents;
+        if (isSubtotalMode) {
+            // Mode recommande : on edite le sous-total et tout est derive
+            newSubtotalCents = Math.round(subtotalDollars * 100);
+            const tpsDollars = isQcOrder ? Math.round(subtotalDollars * TPS_RATE * 100) / 100 : 0;
+            const tvqDollars = isQcOrder ? Math.round(subtotalDollars * TVQ_RATE * 100) / 100 : 0;
+            newTpsCents = Math.round(tpsDollars * 100);
+            newTvqCents = Math.round(tvqDollars * 100);
+            const totalDollars = subtotalDollars + tpsDollars + tvqDollars + (newShippingCents / 100);
+            newTotalCents = Math.round(totalDollars * 100);
+        }
+        else {
+            // Mode legacy : on edite uniquement le total (compat retro pour ancien client)
+            newTotalCents = Math.round(Number(total) * 100);
+            newSubtotalCents = previousSubtotalCents;
+            newTpsCents = previousTpsCents;
+            newTvqCents = previousTvqCents;
+            strapi.log.warn(`[updateTotal] LEGACY mode (total only) sur order ${documentId} - les taxes restent incoherentes. Le frontend devrait envoyer subtotal a la place.`);
+        }
+        const fmt = (cents) => (cents / 100).toFixed(2);
+        // Audit log enrichi avec breakdown complet
         const adminEmail = ctx.state.adminUserEmail || ctx.state.adminAuthMethod || 'admin';
         const now = new Date().toLocaleString('fr-CA', {
             day: '2-digit', month: '2-digit', year: 'numeric',
             hour: '2-digit', minute: '2-digit',
             timeZone: 'America/Toronto',
         });
-        const auditLine = `[${now} par ${adminEmail}] Ajustement total ${previousDollars}$ -> ${newDollarsFmt}$ : ${reasonTrim}`;
+        const auditLine = isSubtotalMode
+            ? `[${now} par ${adminEmail}] Sous-total ${fmt(previousSubtotalCents)}$ -> ${fmt(newSubtotalCents)}$ `
+                + `(TPS ${fmt(newTpsCents)}$, TVQ ${fmt(newTvqCents)}$, Total TTC ${fmt(newTotalCents)}$) : ${reasonTrim}`
+            : `[${now} par ${adminEmail}] Ajustement total ${fmt(previousTotalCents)}$ -> ${fmt(newTotalCents)}$ (LEGACY, taxes inchangees) : ${reasonTrim}`;
         const prevNotes = String(order.notes || '').trim();
         const newNotes = prevNotes ? `${prevNotes}\n${auditLine}` : auditLine;
+        // Update Order (cents)
         const updated = await strapi.documents('api::order.order').update({
             documentId: order.documentId,
             data: {
+                subtotal: newSubtotalCents,
+                tps: newTpsCents,
+                tvq: newTvqCents,
                 total: newTotalCents,
                 notes: newNotes,
             },
         });
-        strapi.log.info(`[updateTotal] Order ${documentId}: ${previousDollars}$ -> ${newDollarsFmt}$ by ${adminEmail} (reason: ${reasonTrim})`);
+        // FIX-COMPTA : cascade sur l'Invoice liee. Invoice stocke en DOLLARS
+        // (decimal) pas en cents. Si l'invoice est deja payee (paymentStatus='paid'),
+        // on update quand meme - l'admin doit pouvoir corriger un montant facture
+        // a posteriori (ex: rabais retroactif accorde apres paiement). Le PDF
+        // sera regenere avec les bons montants, et l'export comptable cohera.
+        let invoiceUpdated = false;
+        try {
+            const invoices = await strapi.documents('api::invoice.invoice').findMany({
+                filters: { order: { documentId: { $eq: order.documentId } } },
+                limit: 1,
+            });
+            if (invoices.length > 0) {
+                const inv = invoices[0];
+                await strapi.documents('api::invoice.invoice').update({
+                    documentId: inv.documentId,
+                    data: {
+                        subtotal: newSubtotalCents / 100,
+                        tps: newTpsCents / 100,
+                        tvq: newTvqCents / 100,
+                        total: newTotalCents / 100,
+                    },
+                });
+                invoiceUpdated = true;
+                strapi.log.info(`[updateTotal] Invoice ${inv.invoiceNumber} synchronisee avec les nouveaux montants`);
+            }
+        }
+        catch (invErr) {
+            // Non bloquant : si la cascade Invoice plante, l'Order est correctement
+            // mis a jour. L'admin peut re-cliquer ou regenerer la facture manuellement.
+            strapi.log.warn(`[updateTotal] Cascade Invoice ECHEC (Order persiste): ${invErr === null || invErr === void 0 ? void 0 : invErr.message}`);
+        }
+        strapi.log.info(`[updateTotal] Order ${documentId} mode=${isSubtotalMode ? 'subtotal' : 'legacy-total'} `
+            + `subtotal=${fmt(newSubtotalCents)}$ tps=${fmt(newTpsCents)}$ tvq=${fmt(newTvqCents)}$ total=${fmt(newTotalCents)}$ `
+            + `invoice=${invoiceUpdated ? 'sync' : 'absent'} by ${adminEmail} (reason: ${reasonTrim})`);
         ctx.body = {
             data: updated,
-            previousTotal: previousCents,
-            newTotal: newTotalCents,
+            mode: isSubtotalMode ? 'subtotal' : 'legacy-total',
+            previous: {
+                subtotal: previousSubtotalCents,
+                tps: previousTpsCents,
+                tvq: previousTvqCents,
+                total: previousTotalCents,
+            },
+            new: {
+                subtotal: newSubtotalCents,
+                tps: newTpsCents,
+                tvq: newTvqCents,
+                total: newTotalCents,
+            },
+            invoiceUpdated,
             auditLine,
         };
     },
