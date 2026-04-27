@@ -102,12 +102,25 @@ function EditOrderTotalModal({ order, onClose, onUpdated }) {
     submittingRef.current = true;
     setLoading(true);
     try {
-      // FIX-COMPTA : on envoie SUBTOTAL et le backend recalcule TPS/TVQ/total
-      // automatiquement (source unique de verite).
-      const res = await api.put(`/orders/${order.documentId}/total`, {
-        subtotal: preview.subtotal,
+      // FIX-COMPAT (27 avril 2026) : on envoie LE BUNDLE COMPLET (subtotal +
+      // tps + tvq + total) en Number explicite. Le frontend deploye via GH
+      // Pages part en quelques minutes alors que le backend Render peut prendre
+      // 5-10 min (cold start, build TS + restart container). Pendant cette
+      // fenetre de desynchronisation, l'ancien backend n'accepte que `total`,
+      // le nouveau accepte `subtotal` (recalcule). En envoyant les deux :
+      //   - Ancien backend : ignore subtotal/tps/tvq, valide total -> OK
+      //   - Nouveau backend : utilise subtotal en priorite (source de verite),
+      //     ignore tps/tvq/total qu'il recalcule lui-meme -> OK
+      // Conversion explicite via Number(...) pour neutraliser tout edge case
+      // ou un input controle aurait une valeur string en interne.
+      const payload = {
+        subtotal: Number(preview.subtotal),
+        tps: Number(preview.tps),
+        tvq: Number(preview.tvq),
+        total: Number(preview.total),
         reason: reason.trim(),
-      });
+      };
+      const res = await api.put(`/orders/${order.documentId}/total`, payload);
       onUpdated?.(res.data?.data || res.data);
       onClose();
     } catch (err) {
