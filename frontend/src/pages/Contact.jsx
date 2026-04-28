@@ -9,6 +9,11 @@ import { bl } from '../utils/cms';
 import api from '../services/api';
 import ArtistPartnershipForm from '../components/ArtistPartnershipForm';
 import { ARTIST_FAQ } from '../data/artistContract';
+// FIX-PREMIUM-FORM (28 avril 2026) : reuse du composant FileUpload existant
+// (utilise par les configurateurs Fine Art / Stickers / Design / etc).
+// Il pousse les fichiers sur Google Drive via /artist-edit-requests/upload-direct
+// et renvoie un objet { name, url, driveUrl, ... } pour chaque fichier upload.
+import FileUpload from '../components/FileUpload';
 
 function ArtistFAQ({ lang, tx }) {
   const [openIdx, setOpenIdx] = useState(null);
@@ -89,6 +94,11 @@ function Contact() {
   });
   const [formLoadTime] = useState(Date.now());
   const [status, setStatus] = useState('idle');
+  // FIX-PREMIUM-FORM (28 avril 2026) : fichiers uploades sur Google Drive
+  // via FileUpload. Chaque entree contient { name, url, driveUrl, ... }.
+  // Les URLs Drive sont concatenees au champ fileLink dans le payload submit
+  // pour qu'elles arrivent dans la BDD ET dans l'email admin.
+  const [uploadedFiles, setUploadedFiles] = useState([]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -103,6 +113,25 @@ function Contact() {
 
     try {
       const { website, ...submitData } = formData; // exclure le honeypot
+
+      // FIX-PREMIUM-FORM (28 avril 2026) : composer le fileLink final en
+      // concatenant le lien manuel (formData.fileLink) ET les URLs Google Drive
+      // des fichiers uploades. Format lisible pour l'email admin et la fiche
+      // Strapi (saut de ligne entre chaque entree, en-tetes clairs).
+      const manualLink = (submitData.fileLink || '').trim();
+      const driveLines = uploadedFiles
+        .map((f) => {
+          const url = f.driveUrl || f.url || '';
+          if (!url) return null;
+          return `${f.name || f.originalName || 'fichier'} -> ${url}`;
+        })
+        .filter(Boolean);
+      const composedFileLink = [
+        manualLink && `[Lien fourni] ${manualLink}`,
+        driveLines.length > 0 && `[Fichiers uploades sur Drive]\n${driveLines.join('\n')}`,
+      ].filter(Boolean).join('\n\n');
+      submitData.fileLink = composedFileLink; // peut etre vide si aucun lien ni fichier
+
       await api.post('/contact-submissions/submit', submitData);
       setStatus('success');
       setFormData({
@@ -117,6 +146,7 @@ function Contact() {
         fileLink: '',
         website: '', // honeypot reset aussi
       });
+      setUploadedFiles([]); // reset de la zone d'upload apres succes
     } catch (error) {
       setStatus('error');
     }
@@ -458,16 +488,49 @@ function Contact() {
                   />
                 </div>
 
-                {/* FIX-PREMIUM-FORM (28 avril 2026) : champ optionnel pour
-                    le lien Drive/WeTransfer/Dropbox vers fichiers / brief /
-                    inspirations. Texte d'aide en dessous pour rassurer le
-                    prospect (pas obligatoire, formats acceptes). */}
+                {/* FIX-PREMIUM-FORM (28 avril 2026) : 2 chemins pour partager
+                    des fichiers/inspirations :
+                    (a) Upload direct via FileUpload -> Google Drive (pratique
+                        pour photos, mockups, brief PDF, ...)
+                    (b) Lien externe (Drive perso, WeTransfer, Dropbox, ...)
+                        pour ceux qui ont deja leurs assets ailleurs.
+                    Les 2 sont composes dans le payload final fileLink avant
+                    envoi a Strapi (cf handleSubmit). */}
+                <div>
+                  <label className="block text-heading font-semibold mb-2">
+                    {tx({
+                      fr: 'Vos fichiers ou inspirations (optionnel)',
+                      en: 'Your files or inspirations (optional)',
+                      es: 'Tus archivos o inspiraciones (opcional)',
+                    })}
+                  </label>
+                  <p className="text-xs text-grey-muted mb-3 leading-relaxed">
+                    {tx({
+                      fr: 'Téléversez directement vos fichiers (Drive géré pour vous) ou collez un lien existant ci-dessous.',
+                      en: 'Upload your files directly (Drive handled for you) or paste an existing link below.',
+                      es: 'Sube tus archivos directamente (Drive gestionado) o pega un enlace existente abajo.',
+                    })}
+                  </p>
+                  <FileUpload
+                    files={uploadedFiles}
+                    onFilesChange={setUploadedFiles}
+                    label={tx({
+                      fr: 'Téléverser des fichiers',
+                      en: 'Upload files',
+                      es: 'Subir archivos',
+                    })}
+                    contextLabel="contact-form"
+                    maxFiles={5}
+                    compact
+                  />
+                </div>
+
                 <div>
                   <label htmlFor="fileLink" className="block text-heading font-semibold mb-2">
                     {tx({
-                      fr: 'Lien vers vos fichiers ou inspirations',
-                      en: 'Link to your files or inspirations',
-                      es: 'Enlace a tus archivos o inspiraciones',
+                      fr: 'Ou collez un lien externe',
+                      en: 'Or paste an external link',
+                      es: 'O pega un enlace externo',
                     })}
                   </label>
                   <input
@@ -487,7 +550,7 @@ function Contact() {
                   />
                   <p className="text-xs text-grey-muted mt-1.5 leading-relaxed">
                     {tx({
-                      fr: 'Optionnel - Google Drive, WeTransfer, Dropbox, Notion ou tout autre lien partageable. Aide-nous a comprendre votre vision.',
+                      fr: 'Optionnel - Google Drive, WeTransfer, Dropbox, Notion ou tout autre lien partageable. Aidez-nous à comprendre votre vision.',
                       en: 'Optional - Google Drive, WeTransfer, Dropbox, Notion or any shareable link. Helps us understand your vision.',
                       es: 'Opcional - Google Drive, WeTransfer, Dropbox, Notion o cualquier enlace compartible.',
                     })}

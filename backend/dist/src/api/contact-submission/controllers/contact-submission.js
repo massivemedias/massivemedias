@@ -129,12 +129,13 @@ exports.default = strapi_1.factories.createCoreController('api::contact-submissi
             ctx.body = { success: true, id: 'ok' }; // fake success
             return;
         }
-        // Validation legere du fileLink : si fourni, doit ressembler a une URL.
-        // Tolerance pour les variantes (avec ou sans https://, www., etc.) - on
-        // ne veut pas rejeter un lien legitime juste a cause du formatage. Si
-        // vraiment inutilisable (ex: text non-URL), on stocke quand meme - l'admin
-        // peut le voir et le corriger.
-        const cleanFileLink = typeof fileLink === 'string' ? fileLink.trim().slice(0, 500) : '';
+        // Validation legere du fileLink : si fourni, on accepte tout (URL ou texte).
+        // FIX-FILE-UPLOAD (28 avril 2026) : borne portee a 2000 caracteres pour
+        // accommoder le format compose par le frontend (lien manuel + 5 URLs Drive
+        // x ~150 chars chaque + en-tetes "[Lien fourni]" / "[Fichiers uploades]").
+        // Tolerant > strict : si vraiment inutilisable, l'admin voit le contenu et
+        // peut corriger.
+        const cleanFileLink = typeof fileLink === 'string' ? fileLink.trim().slice(0, 2000) : '';
         try {
             const submission = await strapi.documents('api::contact-submission.contact-submission').create({
                 data: {

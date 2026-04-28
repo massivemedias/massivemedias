@@ -796,23 +796,48 @@ function buildNewContactNotificationHtml(data) {
       <td style="padding:8px 14px;border-bottom:1px solid #eee;color:#222;font-size:14px;font-weight:600;">${r.value}</td>
     </tr>
   `).join('');
-    // FIX-PREMIUM-FORM : bloc fileLink rendu UNIQUEMENT si le prospect en a fourni
-    // un. URL escapee via escapeHtmlAttr pour prevenir injection HTML/XSS si un
-    // bot ou un user malicieux glissait du markup. Lien rendu cliquable + bordure
-    // accent (rose Massive) pour le faire ressortir dans l'email admin.
-    const fileLinkBlock = data.fileLink && data.fileLink.trim()
-        ? `
+    // FIX-PREMIUM-FORM (28 avril 2026) + FIX-FILE-UPLOAD (28 avril 2026) :
+    // bloc fileLink supporte maintenant 2 formats :
+    //   1. Texte simple sur une ligne (legacy : un seul lien colle par le prospect)
+    //   2. Format compose multi-ligne avec en-tetes + URLs (depuis le commit du
+    //      composant FileUpload integre) :
+    //         [Lien fourni] https://drive.google.com/...
+    //
+    //         [Fichiers uploades sur Drive]
+    //         brief.pdf -> https://drive.google.com/...
+    //         mockup.png -> https://drive.google.com/...
+    // On detecte le multi-ligne via la presence de \n et on rend en
+    // <div white-space:pre-wrap> avec linkify des URLs http(s):// detectees.
+    // Sinon (1 seule ligne), on garde le rendu <a> cliquable historique.
+    // Tout le contenu est escape d'abord pour prevenir l'injection HTML.
+    const linkifyEscapedText = (escapedText) => {
+        // L'input est deja escape via escapeHtmlAttr -> les `<`, `>`, `&`, `"`
+        // sont deja transformes en entites. Le pattern URL ci-dessous matche
+        // donc des chaines http(s)://... composees uniquement de chars qui ne
+        // sont PAS dans le set escape, ce qui est exactement ce qu'on veut
+        // (evite de transformer une fausse URL injectee via &lt;a href...).
+        return escapedText.replace(/(https?:\/\/[^\s<>"]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer" style="color:#FF52A0;text-decoration:underline;word-break:break-all;">$1</a>');
+    };
+    let fileLinkBlock = '';
+    if (data.fileLink && data.fileLink.trim()) {
+        const trimmed = data.fileLink.trim();
+        const isMultiLine = trimmed.includes('\n');
+        const escapedContent = escapeHtmlAttr(trimmed);
+        const innerHtml = isMultiLine
+            ? `<div style="color:#222;font-size:13px;line-height:1.7;white-space:pre-wrap;font-family:inherit;">${linkifyEscapedText(escapedContent)}</div>`
+            : `<a href="${escapedContent}" target="_blank" rel="noopener noreferrer"
+           style="color:#FF52A0;text-decoration:underline;font-size:13px;font-weight:600;word-break:break-all;">
+          ${escapedContent}
+        </a>`;
+        fileLinkBlock = `
     <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:16px;">
       <tr><td style="padding:14px 16px;background:#fff8fc;border-radius:8px;border:1px solid #f9c4dc;border-left:3px solid #FF52A0;">
-        <p style="margin:0 0 6px;color:#666;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">Fichiers / inspirations</p>
-        <a href="${escapeHtmlAttr(data.fileLink.trim())}" target="_blank" rel="noopener noreferrer"
-           style="color:#FF52A0;text-decoration:underline;font-size:13px;font-weight:600;word-break:break-all;">
-          ${escapeHtmlAttr(data.fileLink.trim())}
-        </a>
+        <p style="margin:0 0 8px;color:#666;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">Fichiers / inspirations</p>
+        ${innerHtml}
       </td></tr>
     </table>
-  `
-        : '';
+  `;
+    }
     const content = `
     <h2 style="color:#222;margin:0 0 16px;font-size:16px;">Nouveau message de contact</h2>
 
