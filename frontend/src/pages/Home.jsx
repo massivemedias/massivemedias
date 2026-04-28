@@ -15,6 +15,7 @@ import {
   Clock,
   MapPin,
   ShoppingBag,
+  ExternalLink,
 } from 'lucide-react';
 import artistsData from '../data/artists';
 import ServiceCard from '../components/ServiceCard';
@@ -569,6 +570,125 @@ function Home() {
                   {tx({ fr: 'Commander mes stickers', en: 'Order my stickers', es: 'Pedir mis stickers' })}
                   <ArrowRight size={16} className="ml-2" />
                 </Link>
+                <Link to="/contact" className="btn-outline text-sm">
+                  {tx({ fr: 'Projet similaire ?', en: 'Similar project?', es: '¿Proyecto similar?' })}
+                </Link>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Projet J. Prunier - Site web SPA React */}
+        {/* Meme structure que Pogos pour coherence visuelle (audit du brief
+            portfolio premium). Storytelling axe excellence technique : SPA
+            React, CMS sur mesure, migration SEO chirurgicale. */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true }}
+          className="max-w-6xl mx-auto mt-20"
+        >
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10 items-center">
+            {/* Galerie d'images - mosaic 3 photos + logo */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="col-span-2 rounded-xl overflow-hidden aspect-[4/3]">
+                <img
+                  src={thumb('/images/realisations/jprunier/jprunier1.webp')}
+                  alt="Site web J. Prunier - page d'accueil refondue en React"
+                  loading="lazy"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="rounded-xl overflow-hidden aspect-square">
+                <img
+                  src={thumb('/images/realisations/jprunier/jprunier2.webp')}
+                  alt="Site J. Prunier - section services audiovisuel"
+                  loading="lazy"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="rounded-xl overflow-hidden aspect-square">
+                <img
+                  src={thumb('/images/realisations/jprunier/jprunier3.webp')}
+                  alt="Site J. Prunier - section portfolio realisations AV"
+                  loading="lazy"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="col-span-2 rounded-xl overflow-hidden aspect-[16/9] bg-glass flex items-center justify-center p-8">
+                <img
+                  src={thumb('/images/realisations/jprunier/jprunierlogo.webp')}
+                  alt="Logo J. Prunier"
+                  loading="lazy"
+                  className="max-h-full max-w-full object-contain"
+                />
+              </div>
+            </div>
+
+            {/* Story telling */}
+            <div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 text-accent text-xs font-semibold uppercase tracking-wider mb-4">
+                {tx({ fr: 'Site web - SPA React', en: 'Web app - React SPA', es: 'Sitio web - SPA React' })}
+              </div>
+              <h3 className="text-3xl md:text-4xl font-heading font-bold text-heading mb-3">
+                {tx({
+                  fr: 'J. Prunier - L\'art de l\'intégration AV',
+                  en: 'J. Prunier - The art of AV integration',
+                  es: 'J. Prunier - El arte de la integración AV',
+                })}
+              </h3>
+              <p className="text-accent text-sm font-semibold mb-6">
+                {tx({
+                  fr: 'Refonte complète - Lancement 2026',
+                  en: 'Complete redesign - Launched 2026',
+                  es: 'Rediseño completo - Lanzamiento 2026',
+                })}
+              </p>
+              <div className="space-y-4 text-grey-light leading-relaxed">
+                <p>
+                  {tx({
+                    fr: 'Jérôme Prunier est un consultant de haut vol basé entre Montréal et Paris. Son ancien site WordPress était un frein à son image de marque : lourd, lent et difficile à mettre à jour. Pour une expertise pointue, il fallait une vitrine à la hauteur.',
+                    en: 'Jérôme Prunier is a top-tier consultant based between Montreal and Paris. His old WordPress site was holding back his brand: heavy, slow, and hard to update. For sharp expertise, he needed a showcase to match.',
+                    es: 'Jérôme Prunier es un consultor de alto nivel con base entre Montreal y París. Su antiguo sitio WordPress frenaba su imagen de marca: pesado, lento y difícil de actualizar. Para una experiencia tan precisa, hacía falta una vitrina a la altura.',
+                  })}
+                </p>
+                <p>
+                  {tx({
+                    fr: 'Nous avons déconstruit l\'existant pour rebâtir une SPA (Single Page Application) ultra-rapide sous React. Vitesse pure : zéro chargement entre les pages, navigation instantanée. Autonomie totale : panneau d\'administration sur-mesure pour qu\'il puisse éditer ses textes bilingues FR/EN en moins d\'une minute.',
+                    en: 'We deconstructed the existing site and rebuilt it as an ultra-fast Single Page Application in React. Pure speed: zero page loads, instant navigation. Full autonomy: a custom admin panel lets him edit his bilingual FR/EN content in under a minute.',
+                    es: 'Deconstruimos el sitio existente y lo reconstruimos como una SPA (Single Page Application) ultrarrápida en React. Velocidad pura: cero recargas entre páginas, navegación instantánea. Autonomía total: panel de administración a medida para editar sus textos bilingües FR/EN en menos de un minuto.',
+                  })}
+                </p>
+                <p>
+                  {tx({
+                    fr: 'Migration chirurgicale : gestion de 33 redirections SEO pour ne perdre aucun client historique lors du lancement. L\'autorité Google acquise sur l\'ancien domaine a été préservée à 100%. Pas une URL cassée, pas un visiteur perdu.',
+                    en: 'Surgical migration: 33 SEO redirects handled to preserve every historical client at launch. Google authority earned on the old domain was kept 100% intact. Not a single broken URL, not a single lost visitor.',
+                    es: 'Migración quirúrgica: 33 redirecciones SEO gestionadas para no perder ningún cliente histórico en el lanzamiento. La autoridad Google del dominio antiguo se conservó al 100%. Ni una URL rota, ni un visitante perdido.',
+                  })}
+                </p>
+              </div>
+              {/* Badges techniques */}
+              <div className="flex flex-wrap gap-2 mt-6">
+                {['Vite + React', 'CMS Sanity', 'SEO Migration', 'Bilingue FR/EN'].map((tag) => (
+                  <span
+                    key={tag}
+                    className="inline-flex items-center px-3 py-1 rounded-full bg-glass border border-white/10 text-grey-muted text-xs font-mono"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+              <div className="flex flex-wrap gap-3 mt-6">
+                <a
+                  href="https://jprunier.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-primary text-sm inline-flex items-center"
+                >
+                  {tx({ fr: 'Voir le site', en: 'View live site', es: 'Ver el sitio' })}
+                  <ExternalLink size={14} className="ml-2" />
+                </a>
                 <Link to="/contact" className="btn-outline text-sm">
                   {tx({ fr: 'Projet similaire ?', en: 'Similar project?', es: '¿Proyecto similar?' })}
                 </Link>
