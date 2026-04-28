@@ -55,19 +55,19 @@ function getEmailPreview(status, order, tx) {
     case 'ready':
       return {
         subject: tx({
-          fr: `Votre commande est prete a recuperer - ${orderRef}`,
+          fr: `Votre commande est prête à récupérer - ${orderRef}`,
           en: `Your order is ready for pickup - ${orderRef}`,
-          es: `Tu pedido esta listo para recoger - ${orderRef}`,
+          es: `Tu pedido está listo para recoger - ${orderRef}`,
         }),
         preview: tx({
-          fr: `Bonjour ${name},\n\nBonne nouvelle ! Votre commande #${orderRef} est maintenant prete a etre recuperee ou remise.\n\nCueillette locale au studio Mile-End (Massive Medias, 5338 rue Marquette, Montreal H2J 3Z3) - sur rendez-vous.\n\nRepondez simplement a ce courriel pour confirmer un creneau de cueillette ou pour organiser une remise en main propre. Si une livraison etait prevue, on revient vers vous tres vite avec les details.\n\nA bientot,\nL'equipe Massive Medias`,
-          en: `Hello ${name},\n\nGood news! Your order #${orderRef} is now ready to be picked up or handed over.\n\nLocal pickup at our Mile-End studio (Massive Medias, 5338 rue Marquette, Montreal H2J 3Z3) - by appointment.\n\nJust reply to this email to confirm a pickup slot or arrange a hand-off. If a delivery was scheduled, we'll get back to you with the details soon.\n\nSee you soon,\nThe Massive Medias team`,
-          es: `Hola ${name},\n\n!Buenas noticias! Tu pedido #${orderRef} esta listo para recoger.\n\nRecogida local en nuestro estudio Mile-End (5338 rue Marquette, Montreal H2J 3Z3), con cita previa.\n\nResponde a este correo para confirmar un horario.\n\nHasta pronto,\nEl equipo Massive Medias`,
+          fr: `Bonjour ${name},\n\nBonne nouvelle ! Votre commande #${orderRef} est maintenant prête à être récupérée ou remise.\n\nCueillette locale à l'atelier (Massive Medias, 5338 rue Marquette, Montréal H2J 3Z3) - sur rendez-vous.\n\nRépondez simplement à ce courriel pour confirmer un créneau de cueillette ou pour organiser une remise en main propre. Il est également possible de déposer votre commande dans une boîte sécurisée au 5338 rue Marquette pour que vous puissiez passer la récupérer au moment qui vous convient. Si une livraison par la poste était prévue, nous revenons vers vous très vite avec les détails d'expédition.\n\nÀ bientôt,\nL'équipe Massive Medias`,
+          en: `Hello ${name},\n\nGood news! Your order #${orderRef} is now ready to be picked up or handed over.\n\nLocal pickup at the workshop (Massive Medias, 5338 rue Marquette, Montreal H2J 3Z3) - by appointment.\n\nJust reply to this email to confirm a pickup slot or to arrange a hand-off. We can also drop your order in a secure box at 5338 rue Marquette so you can pick it up at your convenience. If postal shipping was planned, we'll get back to you very soon with the shipping details.\n\nSee you soon,\nThe Massive Medias team`,
+          es: `Hola ${name},\n\n¡Buenas noticias! Tu pedido #${orderRef} está listo para ser recogido o entregado.\n\nRecogida local en el taller (Massive Medias, 5338 rue Marquette, Montreal H2J 3Z3), con cita previa.\n\nResponde a este correo para confirmar un horario de recogida o para organizar la entrega en mano. También podemos dejar tu pedido en una caja segura en 5338 rue Marquette para que puedas pasar a recogerlo cuando te convenga. Si se planeaba un envío postal, te contactaremos pronto con los detalles de envío.\n\nHasta pronto,\nEl equipo Massive Medias`,
         }),
         notes: tx({
-          fr: 'Notifie le client que sa commande est prete pour la cueillette locale (Mile-End). Ne genere pas de tracking colis - utilisez le statut "Expedie" si la commande part par la poste.',
-          en: 'Notifies the client that the order is ready for local pickup (Mile-End). Does not generate parcel tracking - use "Shipped" status if mailing the order.',
-          es: 'Notifica al cliente que su pedido esta listo para recogida local.',
+          fr: 'Notifie le client que sa commande est prete pour la cueillette locale a l\'atelier (option boite securisee mentionnee). Ne genere pas de tracking colis - utilisez le statut "Expedie" si la commande part par la poste.',
+          en: 'Notifies the client that the order is ready for local pickup at the workshop (secure box option mentioned). Does not generate parcel tracking - use "Shipped" status if mailing the order.',
+          es: 'Notifica al cliente que su pedido esta listo para recogida local en el taller (caja segura mencionada).',
         }),
       };
     case 'delivered':

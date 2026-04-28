@@ -963,21 +963,20 @@ function buildOrderReadyEmailHtml(data: OrderReadyEmailData): string {
 
     <table width="100%" cellpadding="0" cellspacing="0" style="margin:20px 0;">
       <tr><td style="padding:18px;background:#fff8fc;border-radius:10px;border:1px solid #f9c4dc;border-left:3px solid #FF52A0;">
-        <p style="margin:0 0 8px;color:#666;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Cueillette locale</p>
-        <p style="margin:0 0 6px;color:#222;font-size:14px;font-weight:600;">Massive Medias</p>
-        <p style="margin:0;color:#444;font-size:13px;line-height:1.6;">
-          5338 rue Marquette<br>
-          Montreal (QC) H2J 3Z3<br>
-          <span style="color:#666;">Mile-End, sur rendez-vous</span>
+        <p style="margin:0;color:#222;font-size:14px;line-height:1.6;font-weight:600;">
+          Cueillette locale à l'atelier (Massive Medias, 5338 rue Marquette,
+          Montréal H2J 3Z3) - sur rendez-vous.
         </p>
       </td></tr>
     </table>
 
     <p style="color:#444;font-size:14px;line-height:1.7;margin:0 0 14px;">
-      Repondez simplement a ce courriel pour confirmer un creneau de
-      cueillette ou pour organiser une remise en main propre. Si une
-      livraison etait prevue, on revient vers vous tres vite avec les
-      details.
+      Répondez simplement à ce courriel pour confirmer un créneau de
+      cueillette ou pour organiser une remise en main propre. Il est
+      également possible de déposer votre commande dans une boîte sécurisée
+      au 5338 rue Marquette pour que vous puissiez passer la récupérer au
+      moment qui vous convient. Si une livraison par la poste était prévue,
+      nous revenons vers vous très vite avec les détails d'expédition.
     </p>
 
     <p style="color:#666;font-size:13px;line-height:1.6;margin:24px 0 0;">
