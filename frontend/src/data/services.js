@@ -474,6 +474,19 @@ const servicesData = {
       ],
     },
     webProjects: [
+      // FIX-PORTFOLIO (28 avril 2026) : projet le plus recent en TOP de liste.
+      // Refonte WordPress -> SPA React pour Jerome Prunier (consultant integration AV
+      // Mtl/Paris). 33 redirections SEO gerees, CMS bilingue sur-mesure, navigation
+      // instantanee. Storytelling premium aligne sur le pitch atelier culturel.
+      {
+        name: 'jprunier.com',
+        desc: 'Refonte WordPress vers SPA React ultra-rapide pour consultant intégration AV (Montréal/Paris). 33 redirections SEO gérées, CMS bilingue FR/EN sur-mesure, navigation instantanée.',
+        url: 'https://jprunier.com',
+        screenshot: thumb('/images/realisations/jprunier/jprunier1.webp'),
+        phoneScreenshot: thumb('/images/realisations/jprunier/jprunier2.webp'),
+        logo: '/images/realisations/jprunier/jprunierlogo.webp',
+        tags: ['React + Vite', 'CMS bilingue', 'SEO Migration'],
+      },
       {
         name: 'Sonaa.ca',
         desc: 'Portail d\'actualités technologiques avec agrégation de contenu automatisée',
