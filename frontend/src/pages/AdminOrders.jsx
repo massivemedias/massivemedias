@@ -2087,6 +2087,29 @@ function AdminOrders() {
           const refShort = po.orderRef || po.documentId?.slice(0, 8).toUpperCase() || '';
           const totalDollars = ((po.total || 0) / 100).toFixed(2);
           const isSending = sendingInvoiceId === po.documentId;
+          // FIX-LOGIC (28 avril 2026) : seules les commandes en attente de
+          // paiement (pending / draft) exigent un lien Stripe avant l'envoi.
+          // Les commandes deja payees / en production / livrees envoient juste
+          // le PDF du recu - pas besoin de bouton "Payer maintenant" dans le
+          // mail. Le statut backend `paid` couvre tous les flux post-paiement
+          // (Stripe webhook ou flag manuel prepaid).
+          const requiresStripeLink = po.status === 'pending' || po.status === 'draft';
+          const orderIsPaidOrAfter = !requiresStripeLink;
+          // Label tri-langue du statut pour le badge "envoi recu PDF" - on
+          // mappe l'enum Strapi vers du texte lisible. Fallback sur le slug
+          // brut si statut inconnu.
+          const STATUS_LABELS = {
+            paid: { fr: 'Payée', en: 'Paid', es: 'Pagada' },
+            processing: { fr: 'En production', en: 'Processing', es: 'En proceso' },
+            ready: { fr: 'Prête', en: 'Ready', es: 'Lista' },
+            shipped: { fr: 'Expédiée', en: 'Shipped', es: 'Enviada' },
+            delivered: { fr: 'Livrée', en: 'Delivered', es: 'Entregada' },
+            cancelled: { fr: 'Annulée', en: 'Cancelled', es: 'Cancelada' },
+            refunded: { fr: 'Remboursée', en: 'Refunded', es: 'Reembolsada' },
+          };
+          const statusLabel = STATUS_LABELS[po.status]
+            ? tx(STATUS_LABELS[po.status])
+            : (po.status || '?');
           return (
             <motion.div
               initial={{ opacity: 0 }}
@@ -2169,74 +2192,97 @@ function AdminOrders() {
                     </div>
                   </div>
 
-                  {/* FIX-MODAL-STRIPE (28 avril 2026) : gestion 1-clic du lien
-                      Stripe directement dans le modal d'envoi. 2 modes :
-                      (a) lien existant -> affichage + Copier
-                      (b) lien manquant -> bouton primaire "Generer" qui appelle
-                          regenerateStripeLink puis met a jour le state du modal.
-                      Le bouton "Confirmer l'envoi" est disabled tant que le
-                      lien n'est pas present -> impossible d'envoyer une facture
-                      sans lien de paiement (= source de l'erreur backend
-                      "Lien de paiement Stripe manquant"). */}
-                  <div>
-                    <label className="text-[10px] text-grey-muted uppercase tracking-wider block mb-1">
-                      {tx({ fr: 'Lien de paiement Stripe', en: 'Stripe payment link', es: 'Enlace de pago Stripe' })}
-                    </label>
-                    {po.stripePaymentLink ? (
-                      <div className="flex items-stretch gap-2">
-                        <div className="flex-1 rounded-lg bg-black/30 px-3 py-2.5 border border-green-500/30 flex items-center gap-2 min-w-0">
-                          <CheckCircle size={12} className="text-green-400 flex-shrink-0" />
-                          <span className="text-heading text-xs font-mono truncate">{po.stripePaymentLink}</span>
+                  {/* FIX-MODAL-STRIPE (28 avril 2026) + FIX-LOGIC (28 avril 2026) :
+                      Section Stripe affichee UNIQUEMENT si la commande exige un
+                      lien (status pending/draft). Pour les commandes deja payees
+                      ou post-paiement (paid/processing/ready/shipped/delivered/
+                      cancelled/refunded), on affiche un badge neutre indiquant
+                      qu'on envoie juste le recu PDF, sans aucune exigence Stripe.
+                      Cette logique evite la regression de "Confirmer l'envoi
+                      desactive a tort sur des commandes deja reglees". */}
+                  {requiresStripeLink ? (
+                    <div>
+                      <label className="text-[10px] text-grey-muted uppercase tracking-wider block mb-1">
+                        {tx({ fr: 'Lien de paiement Stripe', en: 'Stripe payment link', es: 'Enlace de pago Stripe' })}
+                      </label>
+                      {po.stripePaymentLink ? (
+                        <div className="flex items-stretch gap-2">
+                          <div className="flex-1 rounded-lg bg-black/30 px-3 py-2.5 border border-green-500/30 flex items-center gap-2 min-w-0">
+                            <CheckCircle size={12} className="text-green-400 flex-shrink-0" />
+                            <span className="text-heading text-xs font-mono truncate">{po.stripePaymentLink}</span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              try {
+                                if (navigator.clipboard) {
+                                  await navigator.clipboard.writeText(po.stripePaymentLink);
+                                  setPreviewLinkCopied(true);
+                                  setTimeout(() => setPreviewLinkCopied(false), 2000);
+                                }
+                              } catch { /* clipboard unavailable - silent fail */ }
+                            }}
+                            className={`px-3 rounded-lg font-semibold text-xs transition-all flex items-center gap-1.5 ${
+                              previewLinkCopied
+                                ? 'bg-green-500/20 text-green-400'
+                                : 'bg-white/10 hover:bg-white/20 text-heading'
+                            }`}
+                            title={tx({ fr: 'Copier le lien Stripe', en: 'Copy Stripe link', es: 'Copiar enlace' })}
+                          >
+                            {previewLinkCopied ? <CheckCircle size={12} /> : <Copy size={12} />}
+                            {previewLinkCopied
+                              ? tx({ fr: 'Copie', en: 'Copied', es: 'Copiado' })
+                              : tx({ fr: 'Copier', en: 'Copy', es: 'Copiar' })}
+                          </button>
                         </div>
+                      ) : (
                         <button
                           type="button"
-                          onClick={async () => {
-                            try {
-                              if (navigator.clipboard) {
-                                await navigator.clipboard.writeText(po.stripePaymentLink);
-                                setPreviewLinkCopied(true);
-                                setTimeout(() => setPreviewLinkCopied(false), 2000);
-                              }
-                            } catch { /* clipboard unavailable - silent fail */ }
-                          }}
-                          className={`px-3 rounded-lg font-semibold text-xs transition-all flex items-center gap-1.5 ${
-                            previewLinkCopied
-                              ? 'bg-green-500/20 text-green-400'
-                              : 'bg-white/10 hover:bg-white/20 text-heading'
-                          }`}
-                          title={tx({ fr: 'Copier le lien Stripe', en: 'Copy Stripe link', es: 'Copiar enlace' })}
+                          onClick={() => handleGeneratePreviewLink(po)}
+                          disabled={generatingInModal}
+                          className="w-full py-2.5 rounded-lg bg-orange-500/20 text-orange-400 border border-orange-500/40 font-semibold text-xs hover:bg-orange-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 animate-pulse"
+                          title={tx({ fr: 'Cette commande n\'a pas de lien Stripe - cliquer pour en generer un', en: 'This order has no Stripe link - click to generate one', es: 'Generar enlace de pago' })}
                         >
-                          {previewLinkCopied ? <CheckCircle size={12} /> : <Copy size={12} />}
-                          {previewLinkCopied
-                            ? tx({ fr: 'Copie', en: 'Copied', es: 'Copiado' })
-                            : tx({ fr: 'Copier', en: 'Copy', es: 'Copiar' })}
+                          {generatingInModal ? (
+                            <><Loader2 size={12} className="animate-spin" /> {tx({ fr: 'Generation en cours...', en: 'Generating...', es: 'Generando...' })}</>
+                          ) : (
+                            <><CreditCard size={12} /> {tx({ fr: 'Generer le lien de paiement Stripe', en: 'Generate Stripe payment link', es: 'Generar enlace Stripe' })}</>
+                          )}
                         </button>
+                      )}
+                      {!po.stripePaymentLink && (
+                        <p className="text-[10px] text-grey-muted mt-1.5 leading-snug">
+                          {tx({
+                            fr: 'Le lien doit etre genere avant l\'envoi de la facture (le mail inclut un bouton "Payer maintenant" qui pointe vers Stripe).',
+                            en: 'The link must be generated before sending (the email includes a "Pay now" button pointing to Stripe).',
+                            es: 'El enlace debe generarse antes del envio.',
+                          })}
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                    /* Badge neutre pour les commandes paid/processing/ready/shipped/
+                       delivered/cancelled/refunded - aucun lien Stripe requis. */
+                    <div className="rounded-lg bg-green-500/8 border border-green-500/25 px-3 py-2.5 flex items-start gap-2">
+                      <CheckCircle size={14} className="text-green-400 flex-shrink-0 mt-0.5" />
+                      <div className="flex-1 text-xs leading-snug">
+                        <p className="text-green-300 font-semibold">
+                          {tx({
+                            fr: `Commande ${statusLabel.toLowerCase()}`,
+                            en: `Order ${statusLabel.toLowerCase()}`,
+                            es: `Pedido ${statusLabel.toLowerCase()}`,
+                          })}
+                        </p>
+                        <p className="text-grey-muted mt-0.5">
+                          {tx({
+                            fr: 'Envoi du recu PDF uniquement (pas de lien de paiement requis).',
+                            en: 'Sending PDF receipt only (no payment link required).',
+                            es: 'Enviando recibo PDF unicamente (sin enlace de pago).',
+                          })}
+                        </p>
                       </div>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => handleGeneratePreviewLink(po)}
-                        disabled={generatingInModal}
-                        className="w-full py-2.5 rounded-lg bg-orange-500/20 text-orange-400 border border-orange-500/40 font-semibold text-xs hover:bg-orange-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 animate-pulse"
-                        title={tx({ fr: 'Cette commande n\'a pas de lien Stripe - cliquer pour en generer un', en: 'This order has no Stripe link - click to generate one', es: 'Generar enlace de pago' })}
-                      >
-                        {generatingInModal ? (
-                          <><Loader2 size={12} className="animate-spin" /> {tx({ fr: 'Generation en cours...', en: 'Generating...', es: 'Generando...' })}</>
-                        ) : (
-                          <><CreditCard size={12} /> {tx({ fr: 'Generer le lien de paiement Stripe', en: 'Generate Stripe payment link', es: 'Generar enlace Stripe' })}</>
-                        )}
-                      </button>
-                    )}
-                    {!po.stripePaymentLink && (
-                      <p className="text-[10px] text-grey-muted mt-1.5 leading-snug">
-                        {tx({
-                          fr: 'Le lien doit etre genere avant l\'envoi de la facture (le mail inclut un bouton "Payer maintenant" qui pointe vers Stripe).',
-                          en: 'The link must be generated before sending (the email includes a "Pay now" button pointing to Stripe).',
-                          es: 'El enlace debe generarse antes del envio.',
-                        })}
-                      </p>
-                    )}
-                  </div>
+                    </div>
+                  )}
 
                   {/* Piece jointe */}
                   <div>
@@ -2266,8 +2312,12 @@ function AdminOrders() {
                       await handleSendInvoice(po);
                       setPreviewInvoiceOrder(null);
                     }}
-                    disabled={isSending || !po.stripePaymentLink}
-                    title={!po.stripePaymentLink
+                    // FIX-LOGIC (28 avril 2026) : disabled UNIQUEMENT si la
+                    // commande est en pending/draft (requiresStripeLink) ET
+                    // qu'aucun lien n'est genere. Pour les commandes deja
+                    // payees, le bouton reste actif - on envoie juste le recu.
+                    disabled={isSending || (requiresStripeLink && !po.stripePaymentLink)}
+                    title={(requiresStripeLink && !po.stripePaymentLink)
                       ? tx({ fr: 'Genere le lien de paiement Stripe d\'abord', en: 'Generate the Stripe payment link first', es: 'Genera primero el enlace Stripe' })
                       : undefined}
                     className="flex-[2] py-2 rounded-lg bg-accent text-white font-semibold text-sm hover:bg-accent/80 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
