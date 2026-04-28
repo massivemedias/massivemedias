@@ -49,6 +49,27 @@ function getEmailPreview(status, order, tx) {
           es: 'Tambien notifica al admin.',
         }),
       };
+    // FIX-READY-EMAIL (28 avril 2026) : ajout du template "commande prete a
+    // recuperer". Backend correspondant : sendOrderReadyEmail dans email.ts +
+    // wire dans order.ts updateStatus quand newStatus==='ready' et sendEmail=true.
+    case 'ready':
+      return {
+        subject: tx({
+          fr: `Votre commande est prete a recuperer - ${orderRef}`,
+          en: `Your order is ready for pickup - ${orderRef}`,
+          es: `Tu pedido esta listo para recoger - ${orderRef}`,
+        }),
+        preview: tx({
+          fr: `Bonjour ${name},\n\nBonne nouvelle ! Votre commande #${orderRef} est maintenant prete a etre recuperee ou remise.\n\nCueillette locale au studio Mile-End (Massive Medias, 5338 rue Marquette, Montreal H2J 3Z3) - sur rendez-vous.\n\nRepondez simplement a ce courriel pour confirmer un creneau de cueillette ou pour organiser une remise en main propre. Si une livraison etait prevue, on revient vers vous tres vite avec les details.\n\nA bientot,\nL'equipe Massive Medias`,
+          en: `Hello ${name},\n\nGood news! Your order #${orderRef} is now ready to be picked up or handed over.\n\nLocal pickup at our Mile-End studio (Massive Medias, 5338 rue Marquette, Montreal H2J 3Z3) - by appointment.\n\nJust reply to this email to confirm a pickup slot or arrange a hand-off. If a delivery was scheduled, we'll get back to you with the details soon.\n\nSee you soon,\nThe Massive Medias team`,
+          es: `Hola ${name},\n\n!Buenas noticias! Tu pedido #${orderRef} esta listo para recoger.\n\nRecogida local en nuestro estudio Mile-End (5338 rue Marquette, Montreal H2J 3Z3), con cita previa.\n\nResponde a este correo para confirmar un horario.\n\nHasta pronto,\nEl equipo Massive Medias`,
+        }),
+        notes: tx({
+          fr: 'Notifie le client que sa commande est prete pour la cueillette locale (Mile-End). Ne genere pas de tracking colis - utilisez le statut "Expedie" si la commande part par la poste.',
+          en: 'Notifies the client that the order is ready for local pickup (Mile-End). Does not generate parcel tracking - use "Shipped" status if mailing the order.',
+          es: 'Notifica al cliente que su pedido esta listo para recogida local.',
+        }),
+      };
     case 'delivered':
       return {
         subject: tx({

@@ -933,6 +933,102 @@ export async function sendTrackingEmail(data: TrackingEmailData): Promise<boolea
 }
 
 // -----------------------------------------------------------
+// FIX-READY-EMAIL (28 avril 2026) : email "commande prete a recuperer"
+// -----------------------------------------------------------
+// Envoye quand l'admin passe une commande au statut `ready` ("Pret / A remettre").
+// Cas typique : cueillette locale au studio Mile-End, ou commande qui doit etre
+// remise en main propre (vs. expediee par la poste -> sendTrackingEmail).
+//
+// Le template suit la meme structure visuelle que sendTrackingEmail (palette
+// Massive, wrapper, CTA principal) mais le copy est centre sur la cueillette
+// locale plutot que le suivi colis.
+interface OrderReadyEmailData {
+  customerName: string;
+  customerEmail: string;
+  orderRef: string;
+}
+
+function buildOrderReadyEmailHtml(data: OrderReadyEmailData): string {
+  const safeName = escapeHtmlAttr(String(data.customerName || 'cher client'));
+  const safeRef = escapeHtmlAttr(String(data.orderRef || ''));
+  const content = `
+    <h2 style="color:#222;margin:0 0 16px;font-size:20px;">Bonne nouvelle, ${safeName} !</h2>
+
+    <p style="color:#444;font-size:15px;line-height:1.7;margin:0 0 14px;">
+      Votre commande
+      <strong style="color:#222;">#${safeRef}</strong>
+      est maintenant
+      <strong style="color:#FF52A0;">prete a etre recuperee ou remise</strong>.
+    </p>
+
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin:20px 0;">
+      <tr><td style="padding:18px;background:#fff8fc;border-radius:10px;border:1px solid #f9c4dc;border-left:3px solid #FF52A0;">
+        <p style="margin:0 0 8px;color:#666;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Cueillette locale</p>
+        <p style="margin:0 0 6px;color:#222;font-size:14px;font-weight:600;">Massive Medias</p>
+        <p style="margin:0;color:#444;font-size:13px;line-height:1.6;">
+          5338 rue Marquette<br>
+          Montreal (QC) H2J 3Z3<br>
+          <span style="color:#666;">Mile-End, sur rendez-vous</span>
+        </p>
+      </td></tr>
+    </table>
+
+    <p style="color:#444;font-size:14px;line-height:1.7;margin:0 0 14px;">
+      Repondez simplement a ce courriel pour confirmer un creneau de
+      cueillette ou pour organiser une remise en main propre. Si une
+      livraison etait prevue, on revient vers vous tres vite avec les
+      details.
+    </p>
+
+    <p style="color:#666;font-size:13px;line-height:1.6;margin:24px 0 0;">
+      A bientot,<br>
+      <strong style="color:#222;">L'equipe Massive Medias</strong>
+    </p>
+
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin:24px 0 0;border-top:1px solid #eee;padding-top:16px;">
+      <tr><td align="center">
+        <a href="https://massivemedias.com" style="display:inline-block;color:#FF52A0;text-decoration:none;font-size:12px;font-weight:600;">
+          massivemedias.com
+        </a>
+        <span style="color:#ccc;margin:0 8px;">|</span>
+        <a href="mailto:massivemedias@gmail.com" style="display:inline-block;color:#FF52A0;text-decoration:none;font-size:12px;font-weight:600;">
+          massivemedias@gmail.com
+        </a>
+      </td></tr>
+    </table>
+  `;
+  return massiveEmailWrapper(content);
+}
+
+export async function sendOrderReadyEmail(data: OrderReadyEmailData): Promise<boolean> {
+  const resend = getResend();
+  if (!resend) {
+    console.warn('[email] Resend non configure, email "commande prete" non envoye');
+    return false;
+  }
+  if (!data.customerEmail || !data.customerEmail.includes('@')) {
+    console.warn('[email] sendOrderReadyEmail skip : email invalide', data.customerEmail);
+    return false;
+  }
+
+  const sender = getSender();
+
+  try {
+    await resend.emails.send({
+      ...sender,
+      to: data.customerEmail,
+      subject: `Votre commande est prete a recuperer - ${data.orderRef}`,
+      html: buildOrderReadyEmailHtml(data),
+    });
+    console.log('[email] Email "commande prete" envoye a', data.customerEmail);
+    return true;
+  } catch (err) {
+    console.error('[email] Erreur envoi email "commande prete":', err);
+    return false;
+  }
+}
+
+// -----------------------------------------------------------
 // Email de notification de nouveau message contact (vers admin)
 // -----------------------------------------------------------
 interface NewContactData {

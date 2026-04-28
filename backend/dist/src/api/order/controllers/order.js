@@ -3008,6 +3008,27 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
             }
         }
         strapi.log.info(`Commande ${documentId} status: ${order.status} -> ${newStatus}`);
+        // FIX-READY-EMAIL (28 avril 2026) : quand la commande passe a `ready`
+        // ("Pret / A remettre"), envoyer un courriel au client pour l'informer
+        // qu'il peut venir recuperer sa commande au studio Mile-End. Gate sur
+        // sendEmail comme les autres triggers email - laisse a l'admin le
+        // controle final via le toggle du modal StatusChangeModal.
+        if (sendEmail && newStatus === 'ready' && order.customerEmail) {
+            try {
+                const orderData = updated;
+                const sid = orderData.stripePaymentIntentId || orderData.documentId || '';
+                const orderRef = orderData.orderRef || String(sid).slice(-8).toUpperCase();
+                await (0, email_1.sendOrderReadyEmail)({
+                    customerName: orderData.customerName || 'cher client',
+                    customerEmail: orderData.customerEmail,
+                    orderRef,
+                });
+                strapi.log.info(`[updateStatus] Email "commande prete" envoye a ${orderData.customerEmail} pour ${documentId}`);
+            }
+            catch (err) {
+                strapi.log.warn('[updateStatus] Erreur envoi email "commande prete" (non bloquant):', err);
+            }
+        }
         // FIX-EMAIL-CONTROL : quand la commande est livree, courriel temoignage
         // envoye UNIQUEMENT si sendEmail=true. Avant ce fix, il partait a chaque
         // transition vers 'delivered' sans que l'admin ne puisse l'empecher.

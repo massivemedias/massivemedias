@@ -1,7 +1,7 @@
 import { factories } from '@strapi/strapi';
 import Stripe from 'stripe';
 import { calculateShipping } from '../../../utils/shipping';
-import { sendOrderConfirmationEmail, sendTestimonialRequestEmail, sendArtistSaleNotificationEmail, sendNewOrderNotificationEmail, sendTrackingEmail, sendInvoiceEmail } from '../../../utils/email';
+import { sendOrderConfirmationEmail, sendTestimonialRequestEmail, sendArtistSaleNotificationEmail, sendNewOrderNotificationEmail, sendTrackingEmail, sendInvoiceEmail, sendOrderReadyEmail } from '../../../utils/email';
 import { getTrackingStatus } from '../../../utils/tracking-provider';
 import crypto from 'crypto';
 import { PROMO_CODES } from '../../../utils/promo-codes';
@@ -3121,6 +3121,27 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
     }
 
     strapi.log.info(`Commande ${documentId} status: ${(order as any).status} -> ${newStatus}`);
+
+    // FIX-READY-EMAIL (28 avril 2026) : quand la commande passe a `ready`
+    // ("Pret / A remettre"), envoyer un courriel au client pour l'informer
+    // qu'il peut venir recuperer sa commande au studio Mile-End. Gate sur
+    // sendEmail comme les autres triggers email - laisse a l'admin le
+    // controle final via le toggle du modal StatusChangeModal.
+    if (sendEmail && newStatus === 'ready' && (order as any).customerEmail) {
+      try {
+        const orderData = updated as any;
+        const sid = orderData.stripePaymentIntentId || orderData.documentId || '';
+        const orderRef = orderData.orderRef || String(sid).slice(-8).toUpperCase();
+        await sendOrderReadyEmail({
+          customerName: orderData.customerName || 'cher client',
+          customerEmail: orderData.customerEmail,
+          orderRef,
+        });
+        strapi.log.info(`[updateStatus] Email "commande prete" envoye a ${orderData.customerEmail} pour ${documentId}`);
+      } catch (err) {
+        strapi.log.warn('[updateStatus] Erreur envoi email "commande prete" (non bloquant):', err);
+      }
+    }
 
     // FIX-EMAIL-CONTROL : quand la commande est livree, courriel temoignage
     // envoye UNIQUEMENT si sendEmail=true. Avant ce fix, il partait a chaque
