@@ -28,6 +28,8 @@ function lazyWithRetry(importFn) {
 // Lazy-loaded pages (chargees a la demande, avec retry automatique)
 const ServiceDetail = lazyWithRetry(() => import('./pages/ServiceDetail'));
 const Contact = lazyWithRetry(() => import('./pages/Contact'));
+// FIX-TRACKING-PORTAL (28 avril 2026) : portail public de suivi de commande.
+const Tracking = lazyWithRetry(() => import('./pages/Tracking'));
 const APropos = lazyWithRetry(() => import('./pages/APropos'));
 const Shop = lazyWithRetry(() => import('./pages/Shop'));
 const ServiceFineArt = lazyWithRetry(() => import('./pages/ServiceFineArt'));
@@ -149,6 +151,11 @@ function App() {
             } />
             <Route path="/services/:slug" element={<ServiceDetail />} />
             <Route path="/contact" element={<Contact />} />
+            {/* FIX-TRACKING-PORTAL : portail public de suivi de commande.
+                Accepte ?id=X&email=Y pour pre-remplissage auto via les liens
+                inseres dans les emails post-paiement. */}
+            <Route path="/suivi" element={<Tracking />} />
+            <Route path="/tracking" element={<Tracking />} />
             <Route path="/a-propos" element={<APropos />} />
 
             {/* Redirects - anciens slugs → nouveaux */}

@@ -15,6 +15,34 @@ function getResend() {
 // -----------------------------------------------------------
 // Template email Massive Medias unifie
 // -----------------------------------------------------------
+// FIX-TRACKING-PORTAL (28 avril 2026) : helper qui produit le bloc HTML
+// "Suivre l'avancement de ma commande" insere dans tous les emails post-paiement
+// (confirmation, tracking, ready, invoice). Le lien pointe vers /suivi avec
+// les query params id+email pour pre-remplir et auto-submitter le form cote
+// frontend. Si orderRef ou email manque, le helper retourne string vide
+// (rendu conditionnel : on ne casse pas un email pour un parametre absent).
+//
+// SITE_URL est definie via env Render (avec fallback massivemedias.com).
+function buildTrackingLinkBlock(orderRef, customerEmail) {
+    if (!orderRef || !customerEmail)
+        return '';
+    const baseUrl = process.env.SITE_URL || 'https://massivemedias.com';
+    const url = `${baseUrl}/suivi?id=${encodeURIComponent(orderRef)}&email=${encodeURIComponent(customerEmail)}`;
+    return `
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin:24px 0 8px;">
+      <tr><td align="center" style="padding:14px 0;background:#fafafa;border-radius:8px;border:1px dashed #FF52A0;">
+        <p style="margin:0 0 8px;color:#666;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Suivi en ligne</p>
+        <a href="${url}" target="_blank" rel="noopener noreferrer"
+           style="display:inline-block;color:#FF52A0;text-decoration:none;font-size:13px;font-weight:700;">
+          → Suivre l'avancement de ma commande
+        </a>
+        <p style="margin:6px 0 0;color:#999;font-size:10px;">
+          Vos informations sont pre-remplies, un seul click pour voir le statut.
+        </p>
+      </td></tr>
+    </table>
+  `;
+}
 function massiveEmailWrapper(content) {
     return `<!DOCTYPE html>
 <html>
@@ -203,6 +231,8 @@ function buildOrderConfirmationHtml(data) {
         </p>
       </td></tr>
     </table>
+
+    ${buildTrackingLinkBlock(data.orderRef, data.customerEmail)}
   `;
     return massiveEmailWrapper(content);
 }
@@ -752,6 +782,8 @@ function buildTrackingEmailHtml(data) {
       Ou copiez ce lien dans votre navigateur :<br>
       <a href="${trackingUrl}" style="color:#FF52A0;word-break:break-all;">${trackingUrl}</a>
     </p>
+
+    ${buildTrackingLinkBlock(data.orderRef, data.customerEmail)}
   `;
     return massiveEmailWrapper(content);
 }
@@ -781,6 +813,8 @@ exports.sendTrackingEmail = sendTrackingEmail;
 function buildOrderReadyEmailHtml(data) {
     const safeName = escapeHtmlAttr(String(data.customerName || 'cher client'));
     const safeRef = escapeHtmlAttr(String(data.orderRef || ''));
+    // FIX-TRACKING-PORTAL : bloc "Suivre ma commande" pre-rempli (id + email).
+    const trackingLink = buildTrackingLinkBlock(data.orderRef || '', data.customerEmail || '');
     const content = `
     <h2 style="color:#222;margin:0 0 16px;font-size:20px;">Bonne nouvelle, ${safeName} !</h2>
 
@@ -808,6 +842,8 @@ function buildOrderReadyEmailHtml(data) {
       moment qui vous convient. Si une livraison par la poste était prévue,
       nous revenons vers vous très vite avec les détails d'expédition.
     </p>
+
+    ${trackingLink}
 
     <p style="color:#666;font-size:13px;line-height:1.6;margin:24px 0 0;">
       A bientot,<br>
@@ -1474,6 +1510,8 @@ function buildManualInvoiceHtml(data) {
     <p style="color:#888;font-size:12px;line-height:1.6;margin:0;text-align:center;">
       Le PDF de votre facture est attache a ce courriel pour vos archives.
     </p>
+
+    ${buildTrackingLinkBlock(String(data.orderId || '').slice(-8).toUpperCase(), data.customerEmail)}
 
     <hr style="border:none;border-top:1px solid #eee;margin:24px 0;" />
     <p style="color:#666;font-size:13px;line-height:1.6;margin:0;">

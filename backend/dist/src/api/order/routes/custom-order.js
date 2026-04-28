@@ -177,6 +177,17 @@ exports.default = {
                 auth: false,
             },
         },
+        // FIX-TRACKING-PORTAL (28 avril 2026) : portail public de suivi de commande.
+        // Route publique mais verifiee par double cle orderId+email matchant (cf
+        // controller trackOrder). Pas de donnees sensibles retournees.
+        {
+            method: 'GET',
+            path: '/orders/track',
+            handler: 'order.trackOrder',
+            config: {
+                auth: false,
+            },
+        },
         {
             method: 'GET',
             path: '/orders/by-payment-intent/:paymentIntentId',

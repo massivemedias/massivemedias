@@ -2345,6 +2345,131 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
     }
   },
 
+  // GET /orders/track?orderId=X&email=Y
+  //
+  // FIX-TRACKING-PORTAL (28 avril 2026) : portail public de suivi de commande.
+  // Le client recoit son orderRef (8 derniers chars du stripePaymentIntentId
+  // en upper, ex: "KOTWUXW5") dans tous les emails post-paiement. Il peut
+  // le saisir avec son email sur /suivi pour voir l'avancement de sa commande.
+  //
+  // SECURITE :
+  // - Route publique (auth: false) - pas de login requis cote client.
+  // - Mais la double exigence orderId + email matchant agit comme cle de
+  //   verification. Sans la combinaison exacte, retour 404 generique
+  //   (volontairement le meme code pour "pas trouve" et "email ne matche pas"
+  //   afin d'eviter une enumeration : un attaquant ne peut pas distinguer
+  //   les 2 cas pour deviner les emails).
+  // - Donnees retournees STRICTEMENT minimales : orderId (le ref affiche),
+  //   status, createdAt, updatedAt. Pas de prix, pas d'items, pas d'adresse,
+  //   pas de telephone, pas de companyName, pas de notes admin, pas de
+  //   stripePaymentIntentId, pas de invoiceNumber (qui pourrait servir a
+  //   reconstruire des refs). Strict need-to-know.
+  // - Anti-enumeration : si email vide ou orderId vide -> 400 (pas 404)
+  //   pour distinguer "tu as oublie un parametre" de "ca ne matche pas".
+  //
+  // PERFORMANCE :
+  // - findMany avec filters customerEmail $eqi (case-insensitive) limite a
+  //   50 resultats max. En realite un client a rarement >5 commandes mais
+  //   on prend une marge safe.
+  // - Filter en JS pour matcher le orderRef en utilisant la meme logique
+  //   slice(-8).toUpperCase() qu'a la creation (cf email.ts ligne 1151).
+  //   Plus robuste qu'une regex SQL et evite les faux positifs.
+  async trackOrder(ctx) {
+    const orderId = String(ctx.query?.orderId || '').trim();
+    const email = String(ctx.query?.email || '').trim();
+
+    if (!orderId || !email) {
+      ctx.status = 400;
+      ctx.body = {
+        error: {
+          status: 400,
+          name: 'MissingParameters',
+          message: 'orderId et email sont requis',
+          code: 'MISSING_PARAMS',
+        },
+      };
+      return;
+    }
+
+    // Validation legere de l'email pour eviter les requetes vraiment vides
+    if (!email.includes('@') || email.length < 5 || email.length > 200) {
+      ctx.status = 400;
+      ctx.body = {
+        error: { status: 400, name: 'InvalidEmail', message: 'email invalide', code: 'INVALID_EMAIL' },
+      };
+      return;
+    }
+
+    // Borne le orderId : entre 6 et 64 chars (couvre 8-char ref + full doc IDs)
+    if (orderId.length < 6 || orderId.length > 64) {
+      ctx.status = 400;
+      ctx.body = {
+        error: { status: 400, name: 'InvalidOrderId', message: 'orderId invalide', code: 'INVALID_ORDER_ID' },
+      };
+      return;
+    }
+
+    try {
+      const candidates = await strapi.documents('api::order.order').findMany({
+        filters: { customerEmail: { $eqi: email } } as any,
+        limit: 50,
+      });
+
+      const requested = orderId.toUpperCase();
+      const match = (candidates as any[]).find((o) => {
+        const sid = String(o?.stripePaymentIntentId || '');
+        const did = String(o?.documentId || '');
+        const refFromSid = sid.slice(-8).toUpperCase();
+        const refFromDid = did.slice(-8).toUpperCase();
+        return (
+          refFromSid === requested ||
+          refFromDid === requested ||
+          sid.toUpperCase() === requested ||
+          did.toUpperCase() === requested
+        );
+      });
+
+      if (!match) {
+        // 404 generique : ne pas distinguer "email inconnu" de "orderId inconnu"
+        // pour empecher l'enumeration des emails clients par un attaquant.
+        ctx.status = 404;
+        ctx.body = {
+          error: {
+            status: 404,
+            name: 'OrderNotFound',
+            message: 'Aucune commande ne correspond a cette combinaison numero de commande + email.',
+            code: 'NOT_FOUND',
+          },
+        };
+        // Log discret pour audit (sans details sensibles)
+        strapi.log.info(`[trackOrder] Lookup failed for orderId=${orderId.slice(0, 4)}*** email=${email.slice(0, 2)}***`);
+        return;
+      }
+
+      // Reponse minimale - aucun champ sensible expose
+      const orderRef = (String(match.stripePaymentIntentId || '').slice(-8) || String(match.documentId || '').slice(-8)).toUpperCase();
+      ctx.body = {
+        success: true,
+        orderId: orderRef,
+        status: match.status || 'pending',
+        createdAt: match.createdAt || null,
+        updatedAt: match.updatedAt || null,
+      };
+      strapi.log.info(`[trackOrder] OK orderRef=${orderRef} status=${match.status}`);
+    } catch (err: any) {
+      strapi.log.error(`[trackOrder] ECHEC : ${err?.message || err}`);
+      ctx.status = 500;
+      ctx.body = {
+        error: {
+          status: 500,
+          name: 'TrackingFailed',
+          message: 'Erreur lors de la recherche de la commande. Reessaie dans quelques secondes.',
+          code: 'TRACKING_FAILED',
+        },
+      };
+    }
+  },
+
   // POST /orders/seed-legacy-april2026 - One-shot endpoint pour reinjecter 3 factures
   // B2B historiques (perdues lors d'un refactor) :
   //   - La Presse (Correction Zendesk) - 770$ HT - 9 avril 2026
