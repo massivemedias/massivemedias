@@ -2087,13 +2087,15 @@ function AdminOrders() {
           const refShort = po.orderRef || po.documentId?.slice(0, 8).toUpperCase() || '';
           const totalDollars = ((po.total || 0) / 100).toFixed(2);
           const isSending = sendingInvoiceId === po.documentId;
-          // FIX-LOGIC (28 avril 2026) : seules les commandes en attente de
-          // paiement (pending / draft) exigent un lien Stripe avant l'envoi.
-          // Les commandes deja payees / en production / livrees envoient juste
-          // le PDF du recu - pas besoin de bouton "Payer maintenant" dans le
-          // mail. Le statut backend `paid` couvre tous les flux post-paiement
-          // (Stripe webhook ou flag manuel prepaid).
-          const requiresStripeLink = po.status === 'pending' || po.status === 'draft';
+          // FIX-LOGIC (28 avril 2026) + FIX-WORKFLOW (28 avril 2026) : les
+          // commandes en attente de paiement (pending / draft) ET en production
+          // (processing) exigent un lien Stripe avant l'envoi de la facture.
+          // Cas d'usage processing : workflow d'agence ou la production demarre
+          // avant le paiement (B2B, acomptes, clients recurrents). L'admin doit
+          // pouvoir generer le lien pendant la production pour le facturer.
+          // Les autres statuts (paid/ready/shipped/delivered/cancelled/refunded)
+          // n'ont pas besoin de lien : envoi du recu PDF uniquement.
+          const requiresStripeLink = po.status === 'pending' || po.status === 'draft' || po.status === 'processing';
           const orderIsPaidOrAfter = !requiresStripeLink;
           // Label tri-langue du statut pour le badge "envoi recu PDF" - on
           // mappe l'enum Strapi vers du texte lisible. Fallback sur le slug

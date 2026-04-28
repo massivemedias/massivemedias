@@ -2066,15 +2066,23 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
       } as any);
       if (!order) return ctx.notFound('Commande introuvable');
 
-      // 2. Securite : refuser sur status terminal (deja payee / livree / annulee)
-      const TERMINAL_STATUSES = ['paid', 'processing', 'ready', 'shipped', 'delivered', 'cancelled', 'refunded'];
+      // 2. Securite : refuser sur status terminal (deja payee / livree / annulee).
+      // FIX-WORKFLOW (28 avril 2026) : `processing` (= "En production") retire
+      // de la blacklist car cas d'usage agence : on commence a produire avant
+      // d'avoir recu le paiement (B2B avec confiance / acomptes / clients
+      // recurrents). L'admin doit pouvoir generer ou regenerer le lien Stripe
+      // pendant la production. Les autres statuts terminaux sont conserves :
+      // - paid : deja paye, pas de raison de generer un autre lien
+      // - ready / shipped / delivered : produit / livre, paiement deja resolu
+      // - cancelled / refunded : commande fermee, generer un lien serait absurde
+      const TERMINAL_STATUSES = ['paid', 'ready', 'shipped', 'delivered', 'cancelled', 'refunded'];
       if (TERMINAL_STATUSES.includes((order as any).status)) {
         ctx.status = 409;
         ctx.body = {
           error: {
             status: 409,
             name: 'InvalidOrderStatus',
-            message: `La commande est deja en statut "${(order as any).status}" - regeneration interdite. Si vous devez reouvrir un paiement, repassez d'abord en "pending".`,
+            message: `La commande est deja en statut "${(order as any).status}" - regeneration interdite. Si vous devez reouvrir un paiement, repassez d'abord en "pending" ou "processing".`,
             code: 'INVALID_STATUS_FOR_REGEN',
           },
         };
