@@ -107,9 +107,17 @@ function WebProjectCard({ project, index }) {
           </div>
         </motion.div>
         {/* Cadre phone */}
+        {/* FIX-MOCKUP (28 avril 2026) : rounded bumped 10 -> 22 pour un effet
+            "iPhone moderne" plus realiste, double-shadow drop pour effet
+            "mockup flottant" premium au-dessus de la carte. Affecte tous les
+            phoneScreenshot du portfolio web (Sonaa, Ville de Mtl, JPrunier...). */}
         <motion.div
-          style={{ y: phoneY, aspectRatio: '9 / 19' }}
-          className="absolute bottom-0 right-0 w-[17%] rounded-[10px] border-[2px] border-[#0e0e20] shadow-2xl overflow-hidden bg-black"
+          style={{
+            y: phoneY,
+            aspectRatio: '9 / 19',
+            filter: 'drop-shadow(0 14px 28px rgba(0,0,0,0.45)) drop-shadow(0 4px 8px rgba(0,0,0,0.25))',
+          }}
+          className="absolute bottom-0 right-0 w-[17%] rounded-[22px] border-[2px] border-[#0e0e20] overflow-hidden bg-black"
         >
           <img
             src={project.phoneScreenshot || project.screenshot}

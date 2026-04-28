@@ -472,7 +472,7 @@ const servicesDataEs = {
         desc: 'Migración WordPress a SPA React ultrarrápida para consultor de integración AV (Montreal/París). 33 redirecciones SEO gestionadas, CMS bilingüe FR/EN a medida, navegación instantánea.',
         url: 'https://jprunier.com',
         screenshot: thumb('/images/realisations/jprunier/jprunier1.webp'),
-        phoneScreenshot: thumb('/images/realisations/jprunier/jprunier2.webp'),
+        phoneScreenshot: thumb('/images/realisations/jprunier/jprunier_cell.webp'),
         logo: '/images/realisations/jprunier/jprunierlogo.webp',
         tags: ['React + Vite', 'CMS bilingüe', 'Migración SEO'],
       },

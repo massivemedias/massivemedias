@@ -472,7 +472,7 @@ const servicesDataEn = {
         desc: 'WordPress to React SPA refactor for an AV integration consultant (Montreal/Paris). 33 SEO redirects handled, custom bilingual EN/FR CMS, instant navigation.',
         url: 'https://jprunier.com',
         screenshot: thumb('/images/realisations/jprunier/jprunier1.webp'),
-        phoneScreenshot: thumb('/images/realisations/jprunier/jprunier2.webp'),
+        phoneScreenshot: thumb('/images/realisations/jprunier/jprunier_cell.webp'),
         logo: '/images/realisations/jprunier/jprunierlogo.webp',
         tags: ['React + Vite', 'Bilingual CMS', 'SEO Migration'],
       },

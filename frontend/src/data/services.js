@@ -483,7 +483,11 @@ const servicesData = {
         desc: 'Refonte WordPress vers SPA React ultra-rapide pour consultant intégration AV (Montréal/Paris). 33 redirections SEO gérées, CMS bilingue FR/EN sur-mesure, navigation instantanée.',
         url: 'https://jprunier.com',
         screenshot: thumb('/images/realisations/jprunier/jprunier1.webp'),
-        phoneScreenshot: thumb('/images/realisations/jprunier/jprunier2.webp'),
+        // FIX-MOCKUP (28 avril 2026) : phoneScreenshot etait jprunier2.webp (un
+        // screenshot desktop), forcant l'image a etre crop pour rentrer dans
+        // le cadre phone -> rendu non-natif. Maintenant : vraie capture mobile
+        // 828x1790 (ratio iPhone reel) pour un mockup pixel-perfect.
+        phoneScreenshot: thumb('/images/realisations/jprunier/jprunier_cell.webp'),
         logo: '/images/realisations/jprunier/jprunierlogo.webp',
         tags: ['React + Vite', 'CMS bilingue', 'SEO Migration'],
       },
