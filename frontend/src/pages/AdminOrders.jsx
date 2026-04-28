@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search, ChevronDown, ChevronUp, ShoppingBag, DollarSign, Settings, Briefcase, Layers,
@@ -43,6 +43,31 @@ const STATUS_FLOW = {
   cancelled: [],
   refunded: [],
 };
+
+// FIX-SORT (28 avril 2026) : poids de tri par "Priorite d'action" (regle metier).
+// Les commandes avec un poids plus FAIBLE remontent en haut du tableau.
+// 4 buckets distincts pour reduire l'overload visuel quand il y a >50 commandes :
+//   1 = travail en cours / a traiter (admin doit agir : voir, produire, valider)
+//       -> draft / pending / paid / processing
+//   2 = travail fini, attente client (rien a faire cote admin)
+//       -> ready / shipped
+//   3 = termine (clos cycle complet)
+//       -> delivered
+//   4 = archives (commandes mortes, pas pertinent au quotidien)
+//       -> cancelled / refunded
+// Statut inconnu -> poids 99 (relegue tout en bas, evite de masquer une anomalie).
+const STATUS_WEIGHT = {
+  draft: 1,
+  pending: 1,
+  paid: 1,
+  processing: 1,
+  ready: 2,
+  shipped: 2,
+  delivered: 3,
+  cancelled: 4,
+  refunded: 4,
+};
+const getStatusWeight = (status) => STATUS_WEIGHT[status] != null ? STATUS_WEIGHT[status] : 99;
 
 // Montants stockés en cents dans Strapi - afficher en dollars
 const dollars = (v) => `${((v || 0) / 100).toFixed(2)}$`;
@@ -787,7 +812,28 @@ function AdminOrders() {
 
   // Interface minimaliste : "all" affiche TOUTES les orders, sans filtre.
   // Les anciens onglets Boutique/B2B ont ete supprimes.
-  const displayedOrders = orders;
+  //
+  // FIX-SORT (28 avril 2026) : tri par priorite d'action (statusWeight) puis
+  // par date desc (plus recente en premier en cas d'egalite). Resultat :
+  //   - En haut : draft/pending/paid/processing (mon travail en cours)
+  //   - Puis :    ready/shipped (en attente du client)
+  //   - Puis :    delivered (termine)
+  //   - En bas :  cancelled/refunded (archives)
+  // useMemo evite de re-sort a chaque render. Spread [...orders] pour ne pas
+  // muter le state React (important : Array.prototype.sort modifie en place).
+  const displayedOrders = useMemo(() => {
+    if (!Array.isArray(orders)) return [];
+    return [...orders].sort((a, b) => {
+      const wa = getStatusWeight(a?.status);
+      const wb = getStatusWeight(b?.status);
+      if (wa !== wb) return wa - wb;
+      // Egalite de poids : tri secondaire par date decroissante.
+      // Fallback sur 0 si createdAt absent / invalide pour eviter NaN.
+      const ta = new Date(a?.createdAt || 0).getTime() || 0;
+      const tb = new Date(b?.createdAt || 0).getTime() || 0;
+      return tb - ta;
+    });
+  }, [orders]);
 
   const formatDateShort = (d) => {
     if (!d) return '-';
