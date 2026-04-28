@@ -1,5 +1,5 @@
 import { factories } from '@strapi/strapi';
-import { sendContactReplyEmail, sendNewContactNotificationEmail } from '../../../utils/email';
+import { sendContactReplyEmail, sendNewContactNotificationEmail, sendAutoReplyToProspect } from '../../../utils/email';
 import { requireAdminAuth } from '../../../utils/auth';
 
 export default factories.createCoreController('api::contact-submission.contact-submission', ({ strapi }) => ({
@@ -123,7 +123,9 @@ export default factories.createCoreController('api::contact-submission.contact-s
   },
 
   async submit(ctx) {
-    const { nom, email, telephone, entreprise, service, budget, urgence, message, website } = ctx.request.body as any;
+    // FIX-PREMIUM-FORM (28 avril 2026) : ajout du champ fileLink (lien Drive/
+    // WeTransfer/Dropbox) collecte dans le formulaire de qualification premium.
+    const { nom, email, telephone, entreprise, service, budget, urgence, message, fileLink, website } = ctx.request.body as any;
 
     // Anti-spam honeypot: si le champ "website" est rempli, c'est un bot
     if (website) {
@@ -142,6 +144,13 @@ export default factories.createCoreController('api::contact-submission.contact-s
       return;
     }
 
+    // Validation legere du fileLink : si fourni, doit ressembler a une URL.
+    // Tolerance pour les variantes (avec ou sans https://, www., etc.) - on
+    // ne veut pas rejeter un lien legitime juste a cause du formatage. Si
+    // vraiment inutilisable (ex: text non-URL), on stocke quand meme - l'admin
+    // peut le voir et le corriger.
+    const cleanFileLink = typeof fileLink === 'string' ? fileLink.trim().slice(0, 500) : '';
+
     try {
       const submission = await strapi.documents('api::contact-submission.contact-submission').create({
         data: {
@@ -153,15 +162,25 @@ export default factories.createCoreController('api::contact-submission.contact-s
           budget: budget || '',
           urgence: urgence || '',
           message,
+          fileLink: cleanFileLink,
           status: 'new',
         },
       });
 
-      // Notifier l'admin par email
+      // Notifier l'admin par email (avec le nouveau champ fileLink inclus)
       sendNewContactNotificationEmail({
         nom, email, telephone, entreprise, service, budget, urgence, message,
+        fileLink: cleanFileLink,
       }).catch(err => {
         strapi.log.warn('Email notification contact non envoye:', err);
+      });
+
+      // FIX-PREMIUM-FORM : auto-reply au prospect (accuse de reception
+      // professionnel + delai 24-48h annonce). Fire-and-forget : si Resend
+      // est down ou rate, le user a quand meme sa confirmation UI cote
+      // frontend (status='success'). On log juste le warning serveur.
+      sendAutoReplyToProspect(email, nom).catch(err => {
+        strapi.log.warn('Auto-reply prospect non envoye:', err);
       });
 
       ctx.body = { success: true, id: submission.documentId };

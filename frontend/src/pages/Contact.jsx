@@ -82,6 +82,9 @@ function Contact() {
     budget: '',
     urgence: '',
     message: '',
+    // FIX-PREMIUM-FORM (28 avril 2026) : nouveau champ pour le formulaire
+    // de qualification premium - lien vers Drive/WeTransfer/Dropbox.
+    fileLink: '',
     website: '', // honeypot anti-spam
   });
   const [formLoadTime] = useState(Date.now());
@@ -110,7 +113,9 @@ function Contact() {
         service: '',
         budget: '',
         urgence: '',
-        message: ''
+        message: '',
+        fileLink: '',
+        website: '', // honeypot reset aussi
       });
     } catch (error) {
       setStatus('error');
@@ -451,6 +456,42 @@ function Contact() {
                     placeholder={t('contactPage.form.messagePlaceholder')}
                     className="input-field resize-none"
                   />
+                </div>
+
+                {/* FIX-PREMIUM-FORM (28 avril 2026) : champ optionnel pour
+                    le lien Drive/WeTransfer/Dropbox vers fichiers / brief /
+                    inspirations. Texte d'aide en dessous pour rassurer le
+                    prospect (pas obligatoire, formats acceptes). */}
+                <div>
+                  <label htmlFor="fileLink" className="block text-heading font-semibold mb-2">
+                    {tx({
+                      fr: 'Lien vers vos fichiers ou inspirations',
+                      en: 'Link to your files or inspirations',
+                      es: 'Enlace a tus archivos o inspiraciones',
+                    })}
+                  </label>
+                  <input
+                    type="url"
+                    id="fileLink"
+                    name="fileLink"
+                    value={formData.fileLink}
+                    onChange={handleChange}
+                    maxLength={500}
+                    placeholder={tx({
+                      fr: 'https://drive.google.com/... ou wetransfer.com/... ou dropbox.com/...',
+                      en: 'https://drive.google.com/... or wetransfer.com/... or dropbox.com/...',
+                      es: 'https://drive.google.com/... o wetransfer.com/... o dropbox.com/...',
+                    })}
+                    className="input-field"
+                    autoComplete="off"
+                  />
+                  <p className="text-xs text-grey-muted mt-1.5 leading-relaxed">
+                    {tx({
+                      fr: 'Optionnel - Google Drive, WeTransfer, Dropbox, Notion ou tout autre lien partageable. Aide-nous a comprendre votre vision.',
+                      en: 'Optional - Google Drive, WeTransfer, Dropbox, Notion or any shareable link. Helps us understand your vision.',
+                      es: 'Opcional - Google Drive, WeTransfer, Dropbox, Notion o cualquier enlace compartible.',
+                    })}
+                  </p>
                 </div>
 
                 {status === 'error' && (

@@ -38,6 +38,9 @@
             "type": "text",
             "required": true
         },
+        "fileLink": {
+            "type": "string"
+        },
         "status": {
             "type": "enumeration",
             "enum": ["new", "read", "replied", "archived"],

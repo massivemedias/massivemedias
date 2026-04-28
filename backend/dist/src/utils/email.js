@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sendInvoiceEmail = exports.sendPrivatePrintEmail = exports.sendNewUserNotificationEmail = exports.sendDriveFailureAlert = exports.sendWebhookFailureAlert = exports.sendNewContactNotificationEmail = exports.sendTrackingEmail = exports.sendNewOrderNotificationEmail = exports.sendArtistSaleNotificationEmail = exports.sendContractSignedEmail = exports.sendOrderConfirmationEmail = exports.sendTestimonialRequestEmail = exports.sendContactReplyEmail = void 0;
+exports.sendInvoiceEmail = exports.sendPrivatePrintEmail = exports.sendNewUserNotificationEmail = exports.sendDriveFailureAlert = exports.sendWebhookFailureAlert = exports.sendAutoReplyToProspect = exports.sendNewContactNotificationEmail = exports.sendTrackingEmail = exports.sendNewOrderNotificationEmail = exports.sendArtistSaleNotificationEmail = exports.sendContractSignedEmail = exports.sendOrderConfirmationEmail = exports.sendTestimonialRequestEmail = exports.sendContactReplyEmail = void 0;
 // Email transactionnels Massive Medias via Resend
 const resend_1 = require("resend");
 let resendInstance = null;
@@ -796,6 +796,23 @@ function buildNewContactNotificationHtml(data) {
       <td style="padding:8px 14px;border-bottom:1px solid #eee;color:#222;font-size:14px;font-weight:600;">${r.value}</td>
     </tr>
   `).join('');
+    // FIX-PREMIUM-FORM : bloc fileLink rendu UNIQUEMENT si le prospect en a fourni
+    // un. URL escapee via escapeHtmlAttr pour prevenir injection HTML/XSS si un
+    // bot ou un user malicieux glissait du markup. Lien rendu cliquable + bordure
+    // accent (rose Massive) pour le faire ressortir dans l'email admin.
+    const fileLinkBlock = data.fileLink && data.fileLink.trim()
+        ? `
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:16px;">
+      <tr><td style="padding:14px 16px;background:#fff8fc;border-radius:8px;border:1px solid #f9c4dc;border-left:3px solid #FF52A0;">
+        <p style="margin:0 0 6px;color:#666;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">Fichiers / inspirations</p>
+        <a href="${escapeHtmlAttr(data.fileLink.trim())}" target="_blank" rel="noopener noreferrer"
+           style="color:#FF52A0;text-decoration:underline;font-size:13px;font-weight:600;word-break:break-all;">
+          ${escapeHtmlAttr(data.fileLink.trim())}
+        </a>
+      </td></tr>
+    </table>
+  `
+        : '';
     const content = `
     <h2 style="color:#222;margin:0 0 16px;font-size:16px;">Nouveau message de contact</h2>
 
@@ -810,6 +827,8 @@ function buildNewContactNotificationHtml(data) {
         <p style="margin:0;color:#222;font-size:14px;line-height:1.6;white-space:pre-wrap;">${data.message}</p>
       </td></tr>
     </table>
+
+    ${fileLinkBlock}
 
     <!-- CTA -->
     <table width="100%" cellpadding="0" cellspacing="0" style="margin:24px 0 0;">
@@ -844,6 +863,105 @@ async function sendNewContactNotificationEmail(data) {
     }
 }
 exports.sendNewContactNotificationEmail = sendNewContactNotificationEmail;
+// -----------------------------------------------------------
+// FIX-PREMIUM-FORM (28 avril 2026) : auto-reply au prospect
+// -----------------------------------------------------------
+// Apres soumission du formulaire de qualification premium, on envoie un email
+// au prospect pour confirmer reception et annoncer un delai de reponse de
+// 24 a 48h. Augmente la confiance, professionnalise l'experience.
+//
+// Implementation defensive :
+// - Si Resend pas configure (RESEND_API_KEY absent en local) : return false
+//   silencieusement, le frontend voit quand meme success.
+// - Si l'envoi echoue (network, quota Resend) : log + return false. Le
+//   controller a un .catch() qui empeche l'erreur de remonter au frontend.
+// - HTML avec Massive wrapper pour coherence visuelle avec les autres emails.
+// - Salutation personnalisee avec le prenom du prospect (premier mot du nom).
+function buildAutoReplyToProspectHtml(prenom) {
+    // On extrait le prenom du nom complet pour une salutation plus chaleureuse
+    // qu'un "Bonjour {nom complet}" generique. Fallback sur le nom complet si
+    // le split echoue (ex: nom monolithique). Escape HTML pour prevenir XSS si
+    // le prospect a entre du markup dans son nom (rare mais possible).
+    const safePrenom = escapeHtmlAttr(String(prenom || '').trim().split(/\s+/)[0] || 'cher client');
+    const content = `
+    <h2 style="color:#222;margin:0 0 16px;font-size:18px;">Merci pour votre demande, ${safePrenom} !</h2>
+
+    <p style="color:#444;font-size:14px;line-height:1.7;margin:0 0 14px;">
+      Nous avons bien recu votre demande de projet et nous vous remercions
+      d'avoir pense a Massive Medias pour donner vie a votre vision.
+    </p>
+
+    <p style="color:#444;font-size:14px;line-height:1.7;margin:0 0 14px;">
+      <strong>Prochaine etape :</strong> Michael ou un membre de l'equipe
+      analyse votre projet en detail et reviendra vers vous avec une
+      premiere reponse personnalisee
+      <strong style="color:#FF52A0;">sous 24 a 48 heures (jours ouvrables)</strong>.
+    </p>
+
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin:20px 0;">
+      <tr><td style="padding:16px;background:#fff8fc;border-radius:8px;border-left:3px solid #FF52A0;">
+        <p style="margin:0 0 6px;color:#666;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">En attendant</p>
+        <p style="margin:0;color:#222;font-size:13px;line-height:1.6;">
+          Si vous avez d'autres references, fichiers ou precisions a ajouter
+          a votre brief, repondez simplement a ce courriel - tout sera annexe
+          a votre dossier.
+        </p>
+      </td></tr>
+    </table>
+
+    <p style="color:#444;font-size:14px;line-height:1.7;margin:0 0 14px;">
+      Notre approche : pas de templates corporatifs, pas de promesses creuses.
+      On regarde chaque projet avec attention pour comprendre votre univers
+      avant de proposer.
+    </p>
+
+    <p style="color:#666;font-size:13px;line-height:1.6;margin:24px 0 0;">
+      A tres vite,<br>
+      <strong style="color:#222;">Michael Sanchez</strong><br>
+      <span style="color:#999;font-size:12px;">Massive Medias - Atelier d'impression et de creation, Mile-End Montreal</span>
+    </p>
+
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin:24px 0 0;border-top:1px solid #eee;padding-top:16px;">
+      <tr><td align="center">
+        <a href="https://massivemedias.com" style="display:inline-block;color:#FF52A0;text-decoration:none;font-size:12px;font-weight:600;">
+          massivemedias.com
+        </a>
+        <span style="color:#ccc;margin:0 8px;">|</span>
+        <a href="mailto:massivemedias@gmail.com" style="display:inline-block;color:#FF52A0;text-decoration:none;font-size:12px;font-weight:600;">
+          massivemedias@gmail.com
+        </a>
+      </td></tr>
+    </table>
+  `;
+    return massiveEmailWrapper(content);
+}
+async function sendAutoReplyToProspect(email, nom) {
+    const resend = getResend();
+    if (!resend) {
+        console.warn('[email] sendAutoReplyToProspect skip : Resend non configure');
+        return false;
+    }
+    if (!email || !email.includes('@')) {
+        console.warn('[email] sendAutoReplyToProspect skip : email invalide', email);
+        return false;
+    }
+    const sender = getSender();
+    try {
+        await resend.emails.send({
+            ...sender,
+            to: email,
+            subject: 'Votre demande de projet - Massive Medias',
+            html: buildAutoReplyToProspectHtml(nom),
+        });
+        console.log('[email] Auto-reply prospect envoye a', email);
+        return true;
+    }
+    catch (err) {
+        console.error('[email] Erreur auto-reply prospect:', err);
+        return false;
+    }
+}
+exports.sendAutoReplyToProspect = sendAutoReplyToProspect;
 // -----------------------------------------------------------
 // Alerte critique: echec signature webhook Stripe (envoyee max 1x/10min)
 // -----------------------------------------------------------

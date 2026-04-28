@@ -249,11 +249,10 @@ const translations = {
         messagePlaceholder: 'Dis-nous ce que tu as en tête...',
         selectPlaceholder: 'Sélectionne...',
         serviceOptions: [
-          'Prints (Fine Art, Flyers, Cartes)',
-          'Stickers',
-          'Merch (Sublimation)',
-          'Design (Graphique + Web)',
-          'Autre',
+          'Design Web & Application',
+          'Stickers & Merchandising (Vinyle Premium)',
+          'Identité Visuelle & Branding',
+          'Autre projet créatif',
         ],
         budgetOptions: [
           'Moins de 500$',
@@ -610,11 +609,10 @@ const translations = {
         messagePlaceholder: 'Tell us what you have in mind...',
         selectPlaceholder: 'Select...',
         serviceOptions: [
-          'Prints (Fine Art, Flyers, Cards)',
-          'Stickers',
-          'Merch (Sublimation)',
-          'Design (Graphic + Web)',
-          'Other',
+          'Web & App Design',
+          'Stickers & Merchandising (Premium Vinyl)',
+          'Visual Identity & Branding',
+          'Other creative project',
         ],
         budgetOptions: [
           'Under $500',
@@ -971,11 +969,10 @@ const translations = {
         messagePlaceholder: 'Cuéntanos lo que tienes en mente...',
         selectPlaceholder: 'Seleccionar...',
         serviceOptions: [
-          'Prints (Fine Art, Flyers, Tarjetas)',
-          'Stickers',
-          'Merch (Sublimación)',
-          'Diseño (Gráfico + Web)',
-          'Otro',
+          'Diseño Web y Aplicaciones',
+          'Stickers y Merchandising (Vinilo Premium)',
+          'Identidad Visual y Branding',
+          'Otro proyecto creativo',
         ],
         budgetOptions: [
           'Menos de $500',
