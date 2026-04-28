@@ -2025,46 +2025,76 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
             let invoice = invoices.length > 0 ? invoices[0] : null;
             // 4. Si pas d'invoice (cas tres rare : ancienne commande importee, ou
             //    creation interrompue avant l'invoice), on en cree une minimale.
-            //    Numero genere en reutilisant la logique retry pour eviter les race.
+            //    FIX-STRIPE-UNIQUE (28 avril 2026) : retry loop identique a celui de
+            //    manualCreate pour resister aux race conditions du compteur. Sans ce
+            //    retry, l'erreur "invoiceNumber must be unique" pouvait remonter
+            //    jusqu'au frontend et etre confondue avec une erreur Stripe.
             if (!invoice) {
                 const year = new Date().getFullYear();
                 const prefix = `MM-${year}-`;
-                const lastInvoice = await strapi.documents('api::invoice.invoice').findMany({
-                    filters: { invoiceNumber: { $startsWith: prefix } },
-                    sort: { invoiceNumber: 'desc' },
-                    limit: 1,
-                });
-                let seq = 1;
-                if (lastInvoice.length > 0 && lastInvoice[0].invoiceNumber) {
-                    const lastNum = lastInvoice[0].invoiceNumber.replace(prefix, '');
-                    seq = (parseInt(lastNum, 10) || 0) + 1;
-                }
-                const fallbackInvoiceNumber = `${prefix}${String(seq).padStart(4, '0')}`;
-                // Strapi stocke order amounts en CENTS, invoice en DOLLARS
+                const MAX_INVOICE_RETRIES = 5;
                 const subtotalDollars = (order.subtotal || 0) / 100;
                 const tpsDollars = (order.tps || 0) / 100;
                 const tvqDollars = (order.tvq || 0) / 100;
                 const totalDollars = (order.total || 0) / 100;
-                invoice = await strapi.documents('api::invoice.invoice').create({
-                    data: {
-                        invoiceNumber: fallbackInvoiceNumber,
-                        date: new Date().toISOString().slice(0, 10),
-                        customerName: order.customerName,
-                        companyName: order.companyName || null,
-                        customerEmail: order.customerEmail || null,
-                        customerPhone: order.customerPhone || null,
-                        items: order.items || [],
-                        subtotal: subtotalDollars,
-                        tps: tpsDollars,
-                        tvq: tvqDollars,
-                        total: totalDollars,
-                        status: 'draft',
-                        paymentStatus: 'pending',
-                        lang: 'fr',
-                        order: { connect: [documentId] },
-                    },
-                });
-                strapi.log.warn(`[regenerateStripeLink] Order ${documentId} avait pas d'invoice, cree ${fallbackInvoiceNumber}`);
+                let attempt = 0;
+                let lastInvoiceErr = null;
+                while (attempt < MAX_INVOICE_RETRIES) {
+                    attempt++;
+                    // Re-lire le compteur a CHAQUE tentative : si la 1ere a echoue parce
+                    // qu'un autre handler a insere notre numero, son insert est maintenant
+                    // visible et notre prochain calcul donnera lastSeq+1 frais.
+                    const lastInvoice = await strapi.documents('api::invoice.invoice').findMany({
+                        filters: { invoiceNumber: { $startsWith: prefix } },
+                        sort: { invoiceNumber: 'desc' },
+                        limit: 1,
+                    });
+                    let seq = 1;
+                    if (lastInvoice.length > 0 && lastInvoice[0].invoiceNumber) {
+                        const lastNum = lastInvoice[0].invoiceNumber.replace(prefix, '');
+                        seq = (parseInt(lastNum, 10) || 0) + 1;
+                    }
+                    // Bump (attempt - 1) si on est en retry, pour s'eloigner d'un seq
+                    // deja collisione au tour precedent.
+                    const candidateSeq = seq + (attempt - 1);
+                    const fallbackInvoiceNumber = `${prefix}${String(candidateSeq).padStart(4, '0')}`;
+                    try {
+                        invoice = await strapi.documents('api::invoice.invoice').create({
+                            data: {
+                                invoiceNumber: fallbackInvoiceNumber,
+                                date: new Date().toISOString().slice(0, 10),
+                                customerName: order.customerName,
+                                companyName: order.companyName || null,
+                                customerEmail: order.customerEmail || null,
+                                customerPhone: order.customerPhone || null,
+                                items: order.items || [],
+                                subtotal: subtotalDollars,
+                                tps: tpsDollars,
+                                tvq: tvqDollars,
+                                total: totalDollars,
+                                status: 'draft',
+                                paymentStatus: 'pending',
+                                lang: 'fr',
+                                order: { connect: [documentId] },
+                            },
+                        });
+                        strapi.log.warn(`[regenerateStripeLink] Order ${documentId} avait pas d'invoice, cree ${fallbackInvoiceNumber} (tentative ${attempt})`);
+                        break;
+                    }
+                    catch (invErr) {
+                        lastInvoiceErr = invErr;
+                        const parsed = parseUniqueViolation(invErr);
+                        if (isUniqueViolation(invErr) && (parsed.field === 'invoiceNumber' || parsed.field === null)) {
+                            strapi.log.warn(`[regenerateStripeLink] Collision invoiceNumber=${fallbackInvoiceNumber} (tentative ${attempt}/${MAX_INVOICE_RETRIES}) - retry avec seq bumpe`);
+                            continue;
+                        }
+                        // Autre erreur (companyName orphan unique, validation, etc.) : on remonte.
+                        throw invErr;
+                    }
+                }
+                if (!invoice) {
+                    throw lastInvoiceErr || new Error(`Impossible de generer une invoice fallback apres ${MAX_INVOICE_RETRIES} tentatives.`);
+                }
             }
             const invoiceNumber = invoice.invoiceNumber;
             // Conversions cents -> dollars (les amounts dans Order sont en cents)
@@ -2080,45 +2110,60 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
             }
             // 5. Stripe Payment Link - meme structure que manualCreate (line_items
             // breakdown TPS/TVQ/shipping pour transparence client sur Stripe)
+            //
+            // FIX-STRIPE-UNIQUE (28 avril 2026) : ajout d'idempotencyKey sur tous
+            // les calls Stripe (products, prices, paymentLinks). Tres important :
+            // - Une cle UNIQUE par tentative legitime (timestamp dans la cle).
+            //   -> retry reseau avec MEME cle = Stripe renvoie le meme objet (pas
+            //      de doublon), comportement idempotent natif de Stripe.
+            //   -> nouveau click admin avec NOUVEAU timestamp = nouvelle cle = nouveau
+            //      lien Stripe genere.
+            // - Si une erreur Stripe survenait sans idempotency, un retry pouvait
+            //   creer 2-3 produits Stripe pour le meme paiement (orphelins).
+            // Format cle : "{action}-{documentId}-{slug}-{regenTs}"
             const stripe = getStripe();
             const currencyLower = currency.toLowerCase();
-            async function makeLineItem(name, amountDollars) {
+            const regenTs = Date.now(); // timestamp unique par tentative de regeneration
+            // Helper qui fabrique un slug ASCII safe a partir du label de ligne, pour
+            // que la cle d'idempotence soit lisible et bornee (Stripe limite a 255 chars).
+            const slugify = (s) => String(s).normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-zA-Z0-9]+/g, '-').toLowerCase().slice(0, 40);
+            async function makeLineItem(name, amountDollars, lineKey) {
                 const cents = Math.round(amountDollars * 100);
                 if (cents <= 0)
                     return null;
                 const prod = await stripe.products.create({
                     name,
                     metadata: { invoiceNumber, orderId: documentId, regenerated: 'true' },
-                });
+                }, { idempotencyKey: `regen-prod-${documentId}-${lineKey}-${regenTs}` });
                 const pr = await stripe.prices.create({
                     product: prod.id,
                     unit_amount: cents,
                     currency: currencyLower,
-                });
+                }, { idempotencyKey: `regen-price-${documentId}-${lineKey}-${regenTs}` });
                 return { price: pr.id, quantity: 1 };
             }
             const lineItems = [];
-            const subtotalItem = await makeLineItem(`Facture ${invoiceNumber} - Sous-total`, subtotal);
+            const subtotalItem = await makeLineItem(`Facture ${invoiceNumber} - Sous-total`, subtotal, 'subtotal');
             if (subtotalItem)
                 lineItems.push(subtotalItem);
             if (shippingNum > 0) {
-                const shippingItem = await makeLineItem(`Livraison - ${invoiceNumber}`, shippingNum);
+                const shippingItem = await makeLineItem(`Livraison - ${invoiceNumber}`, shippingNum, 'shipping');
                 if (shippingItem)
                     lineItems.push(shippingItem);
             }
             if (tps > 0) {
-                const tpsItem = await makeLineItem(`TPS (5%) - ${invoiceNumber}`, tps);
+                const tpsItem = await makeLineItem(`TPS (5%) - ${invoiceNumber}`, tps, 'tps');
                 if (tpsItem)
                     lineItems.push(tpsItem);
             }
             if (tvq > 0) {
-                const tvqItem = await makeLineItem(`TVQ (9.975%) - ${invoiceNumber}`, tvq);
+                const tvqItem = await makeLineItem(`TVQ (9.975%) - ${invoiceNumber}`, tvq, 'tvq');
                 if (tvqItem)
                     lineItems.push(tvqItem);
             }
             // Fallback : si aucun line_item (commande sans subtotal/taxes detailles), un seul item pour le total
             if (lineItems.length === 0) {
-                const fallback = await makeLineItem(`Facture ${invoiceNumber} - ${customerName}`, total);
+                const fallback = await makeLineItem(`Facture ${invoiceNumber} - ${customerName}`, total, `fallback-${slugify(customerName)}`);
                 if (fallback)
                     lineItems.push(fallback);
             }
@@ -2138,7 +2183,7 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
                         type: 'manual-regenerated',
                     },
                 },
-            });
+            }, { idempotencyKey: `regen-plink-${documentId}-${regenTs}` });
             // 6. Patch Invoice.stripePaymentLink avec le NOUVEAU lien
             await strapi.documents('api::invoice.invoice').update({
                 documentId: invoice.documentId,
@@ -2156,11 +2201,23 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
             };
         }
         catch (err) {
+            // FIX-STRIPE-UNIQUE (28 avril 2026) : detection enrichie pour distinguer
+            // les 3 sources possibles d'erreur :
+            //   - Stripe API (network, key invalide, params)
+            //   - Strapi unique violation (invoiceNumber, companyName orphan, etc.)
+            //   - Autre (validation, programmation)
+            // Avant ce fix : "must be unique" Strapi etait remontee comme erreur
+            // generique 400, prêtant a confusion avec Stripe.
             const isStripeErr = ((_b = (_a = err === null || err === void 0 ? void 0 : err.type) === null || _a === void 0 ? void 0 : _a.startsWith) === null || _b === void 0 ? void 0 : _b.call(_a, 'Stripe')) || /stripe/i.test((err === null || err === void 0 ? void 0 : err.message) || '');
+            const isUnique = isUniqueViolation(err);
+            const parsed = parseUniqueViolation(err);
             strapi.log.error(`[regenerateStripeLink] ECHEC pour order ${documentId} - isStripe=${isStripeErr} `
-                + `name=${err === null || err === void 0 ? void 0 : err.name} message="${((err === null || err === void 0 ? void 0 : err.message) || '').slice(0, 200)}"`);
-            if ((err === null || err === void 0 ? void 0 : err.stack) && !isStripeErr)
+                + `isUnique=${isUnique} field=${parsed.field || '?'} `
+                + `name=${err === null || err === void 0 ? void 0 : err.name} code=${(err === null || err === void 0 ? void 0 : err.code) || '?'} `
+                + `message="${((err === null || err === void 0 ? void 0 : err.message) || '').slice(0, 200)}"`);
+            if ((err === null || err === void 0 ? void 0 : err.stack) && !isStripeErr && !isUnique) {
                 strapi.log.error(`[regenerateStripeLink] Stack:\n${err.stack}`);
+            }
             if (isStripeErr) {
                 ctx.status = 502;
                 ctx.body = {
@@ -2169,6 +2226,26 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
                         name: 'StripeFailure',
                         message: `Stripe injoignable lors de la regeneration : ${((err === null || err === void 0 ? void 0 : err.message) || 'erreur reseau').slice(0, 120)}. Re-essaie dans 30 secondes.`,
                         code: 'STRIPE_FAILURE',
+                    },
+                };
+                return;
+            }
+            // Strapi unique violation (typiquement invoiceNumber - couvert par retry
+            // loop sur la creation fallback - ou companyName orphan index Postgres).
+            if (isUnique) {
+                const fieldHint = parsed.field === 'invoiceNumber'
+                    ? 'le compteur de numero de facture est en collision (race condition extreme - reessaie dans 5 secondes)'
+                    : parsed.field === 'companyName'
+                        ? 'index Postgres orphelin sur company_name (le boot Strapi va auto-fixer au prochain restart, en attendant essaie sans companyName)'
+                        : `champ "${parsed.field || 'inconnu'}" deja utilise ailleurs`;
+                ctx.status = 409;
+                ctx.body = {
+                    error: {
+                        status: 409,
+                        name: 'UniqueViolation',
+                        message: `Conflit de base de donnees : ${fieldHint}. Aucun lien Stripe genere - reessaie dans quelques secondes.`,
+                        field: parsed.field,
+                        code: 'UNIQUE_VIOLATION',
                     },
                 };
                 return;
