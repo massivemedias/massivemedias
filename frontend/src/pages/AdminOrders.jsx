@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Search, ChevronDown, ChevronUp, ShoppingBag, DollarSign, Settings, Briefcase, Layers,
+  Search, ChevronDown, ShoppingBag, DollarSign, Settings, Briefcase, Layers,
   Clock, Truck, Package, CreditCard, CheckCircle, XCircle,
   RotateCcw, Loader2, ExternalLink, MapPin, Save, Image,
   FileText, ChevronLeft, ChevronRight, Phone, Mail, Hash, Palette,
@@ -1304,9 +1304,22 @@ function AdminOrders() {
                   className=""
                 >
                   {/* Row - Compact mobile, full desktop */}
+                  {/* FIX-UX-EXPAND (28 avril 2026) : surbrillance visuelle de
+                      l'accordeon ouvert pour le rendre plus facile a refermer
+                      en un coup d'oeil.
+                      - Ferme : fond transparent + bordure gauche transparente
+                        (4px reservee pour eviter le saut de layout au toggle).
+                      - Ouvert : fond bg-white/5 (subtilement plus clair) +
+                        bordure gauche solid border-accent (rose Massive) qui
+                        ancre visuellement la ligne ouverte. transition-colors
+                        adoucit le swap quand on toggle. */}
                   <div
                     onClick={() => toggleExpand(order.documentId)}
-                    className="cursor-pointer hover:bg-accent/5 transition-colors"
+                    className={`cursor-pointer transition-colors duration-200 border-l-4 ${
+                      isExpanded
+                        ? 'bg-white/5 border-accent'
+                        : 'border-transparent hover:bg-accent/5'
+                    }`}
                   >
                     {/* Desktop row */}
                     <div className="hidden md:grid grid-cols-[1fr_100px_80px_120px_120px_40px] gap-3 px-4 py-3 items-center">
@@ -1347,7 +1360,12 @@ function AdminOrders() {
                         )}
                       </div>
                       <span className="text-grey-muted justify-self-end">
-                        {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                        {/* FIX-UX-EXPAND : un seul ChevronDown qui pivote pour
+                            animer la transition (au lieu de swap up/down brutal). */}
+                        <ChevronDown
+                          size={16}
+                          className={`transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+                        />
                       </span>
                     </div>
 
@@ -1373,7 +1391,11 @@ function AdminOrders() {
                           </button>
                         </span>
                         <span className="text-grey-muted flex-shrink-0">
-                          {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                          {/* FIX-UX-EXPAND : meme rotation animee que le rendu desktop */}
+                          <ChevronDown
+                            size={14}
+                            className={`transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+                          />
                         </span>
                       </div>
                       <div className="flex items-center gap-2 mt-1">
