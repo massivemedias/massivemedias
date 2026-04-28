@@ -5,7 +5,7 @@ import {
   Clock, Truck, Package, CreditCard, CheckCircle, XCircle,
   RotateCcw, Loader2, ExternalLink, MapPin, Save, Image,
   FileText, ChevronLeft, ChevronRight, Phone, Mail, Hash, Palette,
-  Download, Receipt, Trash2, Send, AlertTriangle, Pencil, Plus, Landmark,
+  Download, Receipt, Trash2, Send, AlertTriangle, Pencil, Plus, Landmark, Copy,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import { getOrders, getOrderStats, updateOrderStatus, updateOrderNotes, updateOrderTracking, deleteOrder, getPrivateSales, deletePrivateSale, resendPrivateSaleEmail, sendOrderInvoice, getOrderTracking, getBillingSettings, regenerateStripeLink } from '../services/adminService';
@@ -180,6 +180,11 @@ function AdminOrders() {
   // Map { documentId: boolean } pour pouvoir avoir plusieurs commandes en cours
   // de regeneration en parallele sans bloquer l'UI.
   const [regeneratingId, setRegeneratingId] = useState(null);
+  // FIX-MODAL-STRIPE (28 avril 2026) : etats dedies au modal d'envoi de facture
+  // pour generer/copier le lien Stripe directement depuis le modal de preview,
+  // sans avoir a fermer et chercher le bouton dans la liste.
+  const [generatingInModal, setGeneratingInModal] = useState(false);
+  const [previewLinkCopied, setPreviewLinkCopied] = useState(false);
 
   // FIX-ADMIN (avril 2026) : interface minimaliste a 2 onglets seulement.
   // - 'all'      : tableau complet sans aucun filtre (recupere tout l'historique)
@@ -337,6 +342,67 @@ function AdminOrders() {
       });
     } finally {
       setRegeneratingId(null);
+    }
+  };
+
+  // FIX-MODAL-STRIPE (28 avril 2026) : variante de handleRegenerateStripe
+  // dediee au modal de preview avant envoi de facture. Difference cle : en
+  // plus de mettre a jour le tableau des commandes (setOrders), met a jour
+  // previewInvoiceOrder pour que l'UI du modal reflete instantanement le
+  // nouveau lien (sans devoir fermer/rouvrir le modal).
+  // Pas de confirmation `window.confirm` : si le bouton "Generer" est visible
+  // c'est que le lien est manquant - aucune ambiguite, click direct.
+  const handleGeneratePreviewLink = async (order) => {
+    if (!order?.documentId) return;
+    setGeneratingInModal(true);
+    try {
+      const { data } = await regenerateStripeLink(order.documentId);
+      const paymentUrl = data?.paymentUrl;
+      if (!paymentUrl) {
+        throw new Error('Reponse backend incomplete : paymentUrl manquant');
+      }
+      // Update tableau des commandes (cohérence avec la liste qui peut etre
+      // visible derriere le modal).
+      setOrders((prev) => prev.map((o) =>
+        o.documentId === order.documentId ? { ...o, stripePaymentLink: paymentUrl } : o
+      ));
+      // Update modal state : c'est ce qui fait disparaitre le bouton "Generer"
+      // et apparaitre l'affichage + bouton Copier sans rerender complet.
+      setPreviewInvoiceOrder((prev) => prev && prev.documentId === order.documentId
+        ? { ...prev, stripePaymentLink: paymentUrl }
+        : prev);
+      setInvoiceToast({
+        type: 'success',
+        title: tx({ fr: 'Lien Stripe genere', en: 'Stripe link generated', es: 'Enlace generado' }),
+        message: tx({
+          fr: 'Tu peux maintenant envoyer la facture.',
+          en: 'You can now send the invoice.',
+          es: 'Ahora puedes enviar la factura.',
+        }),
+      });
+    } catch (err) {
+      console.error('handleGeneratePreviewLink failed:', err);
+      const code = err?.response?.data?.error?.code;
+      const backendMsg = err?.response?.data?.error?.message
+        || err?.response?.data?.message
+        || err?.message
+        || 'Erreur inconnue';
+      const displayMsg = code === 'INVALID_STATUS_FOR_REGEN'
+        ? tx({
+            fr: 'Cette commande n\'est pas en statut pending/draft. Si tu envoies une facture pour une commande payee, l\'email contiendra juste le PDF (pas de lien Stripe necessaire).',
+            en: 'Order is not in pending/draft status.',
+            es: 'La orden no esta en pendiente.',
+          })
+        : code === 'STRIPE_FAILURE'
+          ? backendMsg
+          : backendMsg;
+      setInvoiceToast({
+        type: 'error',
+        title: tx({ fr: 'Echec generation Stripe', en: 'Stripe generation failed', es: 'Fallo generacion' }),
+        message: displayMsg,
+      });
+    } finally {
+      setGeneratingInModal(false);
     }
   };
 
@@ -2103,6 +2169,75 @@ function AdminOrders() {
                     </div>
                   </div>
 
+                  {/* FIX-MODAL-STRIPE (28 avril 2026) : gestion 1-clic du lien
+                      Stripe directement dans le modal d'envoi. 2 modes :
+                      (a) lien existant -> affichage + Copier
+                      (b) lien manquant -> bouton primaire "Generer" qui appelle
+                          regenerateStripeLink puis met a jour le state du modal.
+                      Le bouton "Confirmer l'envoi" est disabled tant que le
+                      lien n'est pas present -> impossible d'envoyer une facture
+                      sans lien de paiement (= source de l'erreur backend
+                      "Lien de paiement Stripe manquant"). */}
+                  <div>
+                    <label className="text-[10px] text-grey-muted uppercase tracking-wider block mb-1">
+                      {tx({ fr: 'Lien de paiement Stripe', en: 'Stripe payment link', es: 'Enlace de pago Stripe' })}
+                    </label>
+                    {po.stripePaymentLink ? (
+                      <div className="flex items-stretch gap-2">
+                        <div className="flex-1 rounded-lg bg-black/30 px-3 py-2.5 border border-green-500/30 flex items-center gap-2 min-w-0">
+                          <CheckCircle size={12} className="text-green-400 flex-shrink-0" />
+                          <span className="text-heading text-xs font-mono truncate">{po.stripePaymentLink}</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            try {
+                              if (navigator.clipboard) {
+                                await navigator.clipboard.writeText(po.stripePaymentLink);
+                                setPreviewLinkCopied(true);
+                                setTimeout(() => setPreviewLinkCopied(false), 2000);
+                              }
+                            } catch { /* clipboard unavailable - silent fail */ }
+                          }}
+                          className={`px-3 rounded-lg font-semibold text-xs transition-all flex items-center gap-1.5 ${
+                            previewLinkCopied
+                              ? 'bg-green-500/20 text-green-400'
+                              : 'bg-white/10 hover:bg-white/20 text-heading'
+                          }`}
+                          title={tx({ fr: 'Copier le lien Stripe', en: 'Copy Stripe link', es: 'Copiar enlace' })}
+                        >
+                          {previewLinkCopied ? <CheckCircle size={12} /> : <Copy size={12} />}
+                          {previewLinkCopied
+                            ? tx({ fr: 'Copie', en: 'Copied', es: 'Copiado' })
+                            : tx({ fr: 'Copier', en: 'Copy', es: 'Copiar' })}
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => handleGeneratePreviewLink(po)}
+                        disabled={generatingInModal}
+                        className="w-full py-2.5 rounded-lg bg-orange-500/20 text-orange-400 border border-orange-500/40 font-semibold text-xs hover:bg-orange-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 animate-pulse"
+                        title={tx({ fr: 'Cette commande n\'a pas de lien Stripe - cliquer pour en generer un', en: 'This order has no Stripe link - click to generate one', es: 'Generar enlace de pago' })}
+                      >
+                        {generatingInModal ? (
+                          <><Loader2 size={12} className="animate-spin" /> {tx({ fr: 'Generation en cours...', en: 'Generating...', es: 'Generando...' })}</>
+                        ) : (
+                          <><CreditCard size={12} /> {tx({ fr: 'Generer le lien de paiement Stripe', en: 'Generate Stripe payment link', es: 'Generar enlace Stripe' })}</>
+                        )}
+                      </button>
+                    )}
+                    {!po.stripePaymentLink && (
+                      <p className="text-[10px] text-grey-muted mt-1.5 leading-snug">
+                        {tx({
+                          fr: 'Le lien doit etre genere avant l\'envoi de la facture (le mail inclut un bouton "Payer maintenant" qui pointe vers Stripe).',
+                          en: 'The link must be generated before sending (the email includes a "Pay now" button pointing to Stripe).',
+                          es: 'El enlace debe generarse antes del envio.',
+                        })}
+                      </p>
+                    )}
+                  </div>
+
                   {/* Piece jointe */}
                   <div>
                     <label className="text-[10px] text-grey-muted uppercase tracking-wider block mb-1">
@@ -2131,7 +2266,10 @@ function AdminOrders() {
                       await handleSendInvoice(po);
                       setPreviewInvoiceOrder(null);
                     }}
-                    disabled={isSending}
+                    disabled={isSending || !po.stripePaymentLink}
+                    title={!po.stripePaymentLink
+                      ? tx({ fr: 'Genere le lien de paiement Stripe d\'abord', en: 'Generate the Stripe payment link first', es: 'Genera primero el enlace Stripe' })
+                      : undefined}
                     className="flex-[2] py-2 rounded-lg bg-accent text-white font-semibold text-sm hover:bg-accent/80 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
                     {isSending
