@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sendInvoiceEmail = exports.sendPrivatePrintEmail = exports.sendNewUserNotificationEmail = exports.sendDriveFailureAlert = exports.sendWebhookFailureAlert = exports.sendAutoReplyToProspect = exports.sendNewContactNotificationEmail = exports.sendOrderDeliveredEmail = exports.sendOrderReadyEmail = exports.sendTrackingEmail = exports.sendNewOrderNotificationEmail = exports.sendArtistSaleNotificationEmail = exports.sendContractSignedEmail = exports.sendOrderConfirmationEmail = exports.sendTestimonialRequestEmail = exports.sendContactReplyEmail = void 0;
+exports.sendPaymentReminderEmail = exports.sendInvoiceEmail = exports.sendPrivatePrintEmail = exports.sendNewUserNotificationEmail = exports.sendDriveFailureAlert = exports.sendWebhookFailureAlert = exports.sendAutoReplyToProspect = exports.sendNewContactNotificationEmail = exports.sendOrderDeliveredEmail = exports.sendOrderReadyEmail = exports.sendTrackingEmail = exports.sendNewOrderNotificationEmail = exports.sendArtistSaleNotificationEmail = exports.sendContractSignedEmail = exports.sendOrderConfirmationEmail = exports.sendTestimonialRequestEmail = exports.sendContactReplyEmail = void 0;
 // Email transactionnels Massive Medias via Resend
 const resend_1 = require("resend");
 let resendInstance = null;
@@ -1666,3 +1666,95 @@ async function sendInvoiceEmail(data) {
     }
 }
 exports.sendInvoiceEmail = sendInvoiceEmail;
+// -----------------------------------------------------------
+// MONEY RETRIEVER (Phase 7 cron) : relance amicale pour les factures
+// pending depuis plus de 4 jours.
+// -----------------------------------------------------------
+// Declenche par le cron `paymentReminder` defini dans config/cron-tasks.ts.
+// Le cron tourne tous les jours a 9h00 Montreal et appelle ce helper pour
+// chaque commande pending dont createdAt > 4j et paymentReminderSent != true.
+// Le ton est volontairement leger - on relance, on ne harcele pas. Un seul
+// envoi par commande (le cron flippe paymentReminderSent a true apres succes).
+async function sendPaymentReminderEmail(email, nom, orderRef, orderTotal, paymentUrl) {
+    const resend = getResend();
+    if (!resend) {
+        console.warn('[email] Resend non configure, relance paiement non envoyee');
+        return false;
+    }
+    if (!email || !email.includes('@')) {
+        console.warn('[email] sendPaymentReminderEmail skip : email invalide', email);
+        return false;
+    }
+    if (!paymentUrl) {
+        console.warn(`[email] sendPaymentReminderEmail skip : paymentUrl manquant pour ${orderRef}`);
+        return false;
+    }
+    // Prenom uniquement pour un ton chaleureux (cf. sendOrderDeliveredEmail).
+    const rawFirst = String(nom || '').trim().split(/\s+/)[0];
+    const firstName = escapeHtmlAttr(rawFirst || 'cher client');
+    const safeRef = escapeHtmlAttr(String(orderRef || ''));
+    const safeUrl = escapeHtmlAttr(String(paymentUrl));
+    const totalStr = (Number(orderTotal) || 0).toFixed(2);
+    const content = `
+    <h2 style="color:#222;margin:0 0 16px;font-size:20px;">Bonjour ${firstName},</h2>
+
+    <p style="color:#444;font-size:15px;line-height:1.7;margin:0 0 14px;">
+      Un petit mot amical pour vous informer que votre devis/facture pour
+      la commande <strong style="color:#222;">#${safeRef}</strong>
+      est toujours en attente.
+    </p>
+
+    <p style="color:#444;font-size:15px;line-height:1.7;margin:0 0 8px;">
+      Si vous souhaitez aller de l'avant, vous pouvez finaliser votre
+      commande en toute securite via ce lien :
+    </p>
+
+    <!-- Recap minimal (montant total) -->
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin:16px 0 20px;background:#fafafa;border-radius:8px;border:1px solid #eee;">
+      <tr>
+        <td style="padding:14px 16px;color:#222;font-size:14px;font-weight:600;">Total a regler</td>
+        <td style="padding:14px 16px;text-align:right;color:#FF52A0;font-size:18px;font-weight:700;">${totalStr} $</td>
+      </tr>
+    </table>
+
+    <!-- CTA Stripe (meme bouton rose que sendInvoiceEmail) -->
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 24px;">
+      <tr><td align="center">
+        <a href="${safeUrl}" target="_blank" rel="noopener noreferrer"
+           style="display:inline-block;background:#FF52A0;color:#ffffff;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:700;font-size:15px;box-shadow:0 4px 12px rgba(255,82,160,0.3);">
+          Payer ma facture en ligne
+        </a>
+      </td></tr>
+    </table>
+
+    <p style="color:#888;font-size:12px;line-height:1.6;margin:0 0 24px;text-align:center;">
+      Paiement securise via Stripe (carte de credit, Apple Pay, Google Pay).
+    </p>
+
+    <p style="color:#444;font-size:14px;line-height:1.7;margin:0 0 14px;">
+      Si vous avez des questions ou besoin d'ajustements sur le projet,
+      repondez simplement a ce courriel. A tres vite !
+    </p>
+
+    <p style="color:#666;font-size:13px;line-height:1.6;margin:24px 0 0;">
+      Merci,<br>
+      <strong style="color:#222;">L'equipe Massive Medias</strong>
+    </p>
+  `;
+    const sender = getSender();
+    try {
+        await resend.emails.send({
+            ...sender,
+            to: email,
+            subject: `Petit rappel : Votre devis Massive Medias vous attend (#${orderRef})`,
+            html: massiveEmailWrapper(content),
+        });
+        console.log(`[email] Relance paiement envoyee a ${email} pour ${orderRef}`);
+        return true;
+    }
+    catch (err) {
+        console.error('[email] Erreur envoi relance paiement:', (err === null || err === void 0 ? void 0 : err.message) || err);
+        return false;
+    }
+}
+exports.sendPaymentReminderEmail = sendPaymentReminderEmail;
