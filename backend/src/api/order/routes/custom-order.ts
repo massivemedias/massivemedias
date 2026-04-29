@@ -198,6 +198,19 @@ export default {
         auth: false,
       },
     },
+    // REORDER (Phase 6, 28 avril 2026) : 1-click reorder depuis le portail
+    // public /suivi pour les commandes livrees. Auth = double cle orderId+
+    // email + gate status='delivered' + throttle 1/60s/email dans le
+    // controller. Cree une nouvelle commande clone en status='pending' que
+    // l'admin valide ensuite via le panneau standard.
+    {
+      method: 'POST',
+      path: '/orders/reorder',
+      handler: 'order.reorderOrder',
+      config: {
+        auth: false,
+      },
+    },
     {
       method: 'GET',
       path: '/orders/by-payment-intent/:paymentIntentId',

@@ -2470,6 +2470,219 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
     }
   },
 
+  /**
+   * POST /orders/reorder
+   *
+   * REORDER (Phase 6, 28 avril 2026) : permet a un client de cloner une
+   * commande livree depuis le portail public de suivi (/suivi). Le client
+   * recoit un nouveau numero de commande en draft/pending, l'admin voit
+   * apparaitre une nouvelle entree dans la liste et peut emettre la facture.
+   *
+   * Securite (route publique) :
+   *   1. Double cle orderId+email matchant - meme garde que trackOrder.
+   *   2. Original DOIT etre status='delivered' (sinon recommandation
+   *      n'a pas de sens et previent l'abus sur des commandes en cours).
+   *   3. Throttle in-memory : 1 reorder / 60s / email pour bloquer le spam
+   *      trivial (cle de cache : email lower).
+   *   4. Pas de re-paiement automatique : la nouvelle commande est en
+   *      'pending' (l'admin valide manuellement et regenere un lien Stripe
+   *      via le bouton "Send invoice" du panneau admin si necessaire).
+   *
+   * Champs clones depuis l'original :
+   *   - customerEmail, customerName, customerPhone, companyName
+   *   - items (deep copy JSON)
+   *   - subtotal, total, tps, tvq, shipping, currency
+   *   - shippingAddress (deep copy)
+   *   - files (relation media, on connect les memes ids)
+   *
+   * Champs explicitement NON clones (uniques ou contextuels) :
+   *   - stripePaymentIntentId (unique en DB)
+   *   - stripeCheckoutSessionId, stripePaymentLink
+   *   - invoiceNumber (unique), invoice (relation)
+   *   - trackingNumber, carrier
+   *   - notes (remplaces par marqueur "[REORDER] from #XXXX")
+   *   - status (force a 'pending')
+   *   - isManual = true (origine = portail public, traitement admin requis)
+   */
+  async reorderOrder(ctx) {
+    const body = (ctx.request.body || {}) as any;
+    const orderId = String(body.orderId || '').trim();
+    const email = String(body.email || '').trim();
+
+    if (!orderId || !email) {
+      ctx.status = 400;
+      ctx.body = {
+        error: { status: 400, name: 'MissingParameters', message: 'orderId et email sont requis', code: 'MISSING_PARAMS' },
+      };
+      return;
+    }
+    if (!email.includes('@') || email.length < 5 || email.length > 200) {
+      ctx.status = 400;
+      ctx.body = {
+        error: { status: 400, name: 'InvalidEmail', message: 'email invalide', code: 'INVALID_EMAIL' },
+      };
+      return;
+    }
+    if (orderId.length < 6 || orderId.length > 64) {
+      ctx.status = 400;
+      ctx.body = {
+        error: { status: 400, name: 'InvalidOrderId', message: 'orderId invalide', code: 'INVALID_ORDER_ID' },
+      };
+      return;
+    }
+
+    // Throttle in-memory : 1 reorder / 60s / email. Le Map est attache a
+    // strapi pour survivre aux hot-reloads dev (reinitialise au cold-start).
+    const THROTTLE_MS = 60_000;
+    const THROTTLE_KEY = '__reorderThrottle__';
+    const map: Map<string, number> = ((strapi as any)[THROTTLE_KEY] ||= new Map());
+    const emailKey = email.toLowerCase();
+    const last = map.get(emailKey) || 0;
+    const nowMs = Date.now();
+    if (nowMs - last < THROTTLE_MS) {
+      const retryIn = Math.ceil((THROTTLE_MS - (nowMs - last)) / 1000);
+      ctx.status = 429;
+      ctx.body = {
+        error: {
+          status: 429,
+          name: 'TooManyRequests',
+          message: `Patientez ${retryIn}s avant de soumettre une autre demande.`,
+          code: 'THROTTLED',
+          retryAfter: retryIn,
+        },
+      };
+      return;
+    }
+
+    try {
+      // 1. Lookup original via double cle (meme pattern que trackOrder).
+      const candidates = await strapi.documents('api::order.order').findMany({
+        filters: { customerEmail: { $eqi: email } } as any,
+        limit: 50,
+        populate: ['files'],
+      });
+
+      const requested = orderId.toUpperCase();
+      const original = (candidates as any[]).find((o) => {
+        const sid = String(o?.stripePaymentIntentId || '');
+        const did = String(o?.documentId || '');
+        return (
+          sid.slice(-8).toUpperCase() === requested ||
+          did.slice(-8).toUpperCase() === requested ||
+          sid.toUpperCase() === requested ||
+          did.toUpperCase() === requested
+        );
+      });
+
+      if (!original) {
+        ctx.status = 404;
+        ctx.body = {
+          error: {
+            status: 404,
+            name: 'OrderNotFound',
+            message: 'Aucune commande ne correspond a cette combinaison numero + email.',
+            code: 'NOT_FOUND',
+          },
+        };
+        strapi.log.info(`[reorder] Lookup failed for orderId=${orderId.slice(0, 4)}*** email=${email.slice(0, 2)}***`);
+        return;
+      }
+
+      // 2. Gate : original doit etre delivered.
+      if (original.status !== 'delivered') {
+        ctx.status = 409;
+        ctx.body = {
+          error: {
+            status: 409,
+            name: 'OrderNotEligible',
+            message: 'Seules les commandes livrees peuvent etre recommandees.',
+            code: 'NOT_ELIGIBLE',
+            currentStatus: original.status,
+          },
+        };
+        return;
+      }
+
+      // 3. Construire le payload de la nouvelle commande.
+      const originalRef = (
+        String(original.stripePaymentIntentId || '').slice(-8) ||
+        String(original.documentId || '').slice(-8)
+      ).toUpperCase();
+      const todayIso = new Date().toISOString().slice(0, 10);
+
+      const fileIds = Array.isArray(original.files)
+        ? (original.files as any[]).map((f) => f?.id).filter(Boolean)
+        : [];
+
+      const reorderData: any = {
+        customerEmail: original.customerEmail,
+        customerName: original.customerName,
+        customerPhone: original.customerPhone || null,
+        companyName: original.companyName || null,
+        items: Array.isArray(original.items)
+          ? JSON.parse(JSON.stringify(original.items))
+          : original.items,
+        subtotal: Number(original.subtotal) || 0,
+        total: Number(original.total) || 0,
+        tps: Number(original.tps) || 0,
+        tvq: Number(original.tvq) || 0,
+        shipping: Number(original.shipping) || 0,
+        currency: original.currency || 'cad',
+        shippingAddress: original.shippingAddress
+          ? JSON.parse(JSON.stringify(original.shippingAddress))
+          : null,
+        status: 'pending',
+        isManual: true,
+        designReady: !!original.designReady,
+        notes: `[REORDER] Reimpression demandee par le client le ${todayIso} a partir de la commande #${originalRef}.`,
+      };
+
+      if (fileIds.length > 0) {
+        reorderData.files = { connect: fileIds };
+      }
+      if (original.client && (original.client as any).documentId) {
+        reorderData.client = { connect: [(original.client as any).documentId] };
+      }
+
+      // 4. Create + record throttle. On ecrit dans la map AVANT le create
+      // pour bloquer une rafale de requetes paralleles, mais APRES toutes
+      // les validations (sinon on bloque l'utilisateur sur erreur 400).
+      map.set(emailKey, nowMs);
+
+      const newOrder = await strapi.documents('api::order.order').create({
+        data: reorderData,
+      });
+
+      const newRef = (
+        String((newOrder as any).stripePaymentIntentId || '').slice(-8) ||
+        String((newOrder as any).documentId || '').slice(-8)
+      ).toUpperCase();
+
+      strapi.log.info(`[reorder] OK : ${originalRef} (delivered) -> ${newRef} (pending) for ${email}`);
+
+      ctx.status = 201;
+      ctx.body = {
+        success: true,
+        message: 'Demande de reimpression enregistree',
+        newOrderId: newRef,
+        newDocumentId: (newOrder as any).documentId,
+        originalOrderId: originalRef,
+        status: 'pending',
+      };
+    } catch (err: any) {
+      strapi.log.error(`[reorder] ECHEC : ${err?.message || err}`);
+      ctx.status = 500;
+      ctx.body = {
+        error: {
+          status: 500,
+          name: 'ReorderFailed',
+          message: 'Impossible de creer la commande de reimpression. Contactez-nous a massivemedias@gmail.com.',
+          code: 'REORDER_FAILED',
+        },
+      };
+    }
+  },
+
   // POST /orders/seed-legacy-april2026 - One-shot endpoint pour reinjecter 3 factures
   // B2B historiques (perdues lors d'un refactor) :
   //   - La Presse (Correction Zendesk) - 770$ HT - 9 avril 2026

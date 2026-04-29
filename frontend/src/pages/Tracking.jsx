@@ -3,7 +3,7 @@ import { useSearchParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search, Package, CreditCard, Hammer, MapPin, Truck, CheckCircle, XCircle,
-  Loader2, ArrowRight, AlertCircle, Mail,
+  Loader2, ArrowRight, AlertCircle, Mail, RotateCcw,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import SEO from '../components/SEO';
@@ -93,6 +93,17 @@ function Tracking() {
   const [error, setError] = useState('');
   const [result, setResult] = useState(null);
 
+  // REORDER (Phase 6) : etat dedie au bouton "Recommander a l'identique"
+  // affiche uniquement si la commande est livree (cf TIMELINE et brief).
+  // Trois etats UI :
+  //   - idle    : bouton actif
+  //   - loading : spinner pendant l'appel POST /orders/reorder
+  //   - success : message vert + nouveau orderRef
+  //   - error   : message rouge inline + bouton reactive
+  const [reorderState, setReorderState] = useState('idle');
+  const [reorderError, setReorderError] = useState('');
+  const [reorderResult, setReorderResult] = useState(null);
+
   // Auto-prefill + auto-submit si l'url contient ?id=X&email=Y (lien email).
   useEffect(() => {
     const idFromUrl = (searchParams.get('id') || '').trim();
@@ -161,6 +172,58 @@ function Tracking() {
     setError('');
     setOrderId('');
     setEmail('');
+    setReorderState('idle');
+    setReorderError('');
+    setReorderResult(null);
+  };
+
+  // REORDER (Phase 6) : appelle POST /orders/reorder avec orderId+email
+  // (doublecle deja validee cote backend). Sur succes, on bascule sur l'etat
+  // "success" qui remplace le bouton par un bandeau vert.
+  const handleReorder = async () => {
+    if (reorderState === 'loading' || reorderState === 'success') return;
+    setReorderState('loading');
+    setReorderError('');
+    try {
+      const { data } = await api.post('/orders/reorder', {
+        orderId: result?.orderId || orderId,
+        email: email,
+      });
+      setReorderResult(data);
+      setReorderState('success');
+    } catch (err) {
+      const status = err?.response?.status;
+      const code = err?.response?.data?.error?.code;
+      const retryAfter = err?.response?.data?.error?.retryAfter;
+      let msg;
+      if (status === 429 || code === 'THROTTLED') {
+        msg = tx({
+          fr: `Trop de tentatives. Réessayez dans ${retryAfter || 60} secondes.`,
+          en: `Too many attempts. Retry in ${retryAfter || 60} seconds.`,
+          es: `Demasiados intentos. Inténtalo de nuevo en ${retryAfter || 60} segundos.`,
+        });
+      } else if (status === 409 || code === 'NOT_ELIGIBLE') {
+        msg = tx({
+          fr: 'Cette commande ne peut être recommandée que lorsqu\'elle est livrée.',
+          en: 'This order can only be reordered once it has been delivered.',
+          es: 'Este pedido solo se puede volver a pedir una vez entregado.',
+        });
+      } else if (status === 404 || code === 'NOT_FOUND') {
+        msg = tx({
+          fr: 'Commande introuvable. Recommencez la recherche.',
+          en: 'Order not found. Restart your search.',
+          es: 'Pedido no encontrado.',
+        });
+      } else {
+        msg = tx({
+          fr: 'Erreur de connexion. Réessayez dans quelques secondes.',
+          en: 'Connection error. Retry in a few seconds.',
+          es: 'Error de conexión.',
+        });
+      }
+      setReorderError(msg);
+      setReorderState('error');
+    }
   };
 
   // Calcul du progress en cours d'apres le status retourne par le backend.
@@ -433,6 +496,108 @@ function Tracking() {
                       })}
                     </div>
                   </div>
+                )}
+
+                {/* REORDER (Phase 6) : bouton "Recommander a l'identique"
+                    visible UNIQUEMENT si la commande est livree. Backend
+                    POST /orders/reorder gate le status (409 si non eligible)
+                    + throttle 1/60s/email. */}
+                {result.status === 'delivered' && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.15 }}
+                    className="card-bg rounded-2xl p-6 md:p-7 shadow-lg shadow-black/20"
+                  >
+                    {reorderState === 'success' ? (
+                      <div className="flex items-start gap-3">
+                        <span className="w-10 h-10 rounded-full bg-green-500/15 text-green-400 flex items-center justify-center flex-shrink-0">
+                          <CheckCircle size={20} />
+                        </span>
+                        <div className="flex-1">
+                          <p className="text-heading font-heading font-bold text-base mb-1">
+                            {tx({
+                              fr: 'Succès !',
+                              en: 'Success!',
+                              es: '¡Éxito!',
+                            })}
+                          </p>
+                          <p className="text-grey-muted text-sm leading-relaxed">
+                            {tx({
+                              fr: 'Votre demande de réimpression a été envoyée. Vous recevrez votre nouvelle facture sous peu.',
+                              en: 'Your reprint request has been sent. You will receive your new invoice shortly.',
+                              es: 'Tu solicitud de reimpresión fue enviada. Recibirás tu nueva factura en breve.',
+                            })}
+                          </p>
+                          {reorderResult?.newOrderId && (
+                            <p className="text-xs text-grey-muted mt-2">
+                              {tx({ fr: 'Nouvelle référence', en: 'New reference', es: 'Nueva referencia' })}
+                              {' : '}
+                              <span className="font-mono font-semibold text-heading">#{reorderResult.newOrderId}</span>
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="flex items-start gap-3 mb-4">
+                          <span className="w-10 h-10 rounded-full bg-accent/15 text-accent flex items-center justify-center flex-shrink-0">
+                            <RotateCcw size={20} />
+                          </span>
+                          <div className="flex-1">
+                            <p className="text-heading font-heading font-bold text-base mb-1">
+                              {tx({
+                                fr: 'Besoin d\'une autre série ?',
+                                en: 'Need another batch?',
+                                es: '¿Necesitas otra serie?',
+                              })}
+                            </p>
+                            <p className="text-grey-muted text-xs leading-relaxed">
+                              {tx({
+                                fr: 'On garde tout en mémoire (fichiers, formats, quantités). En un clic, on relance la même commande à l\'identique.',
+                                en: 'We have everything saved (files, sizes, quantities). One click and we re-launch the exact same order.',
+                                es: 'Lo tenemos todo guardado (archivos, formatos, cantidades). Un click y relanzamos el mismo pedido.',
+                              })}
+                            </p>
+                          </div>
+                        </div>
+
+                        {reorderState === 'error' && reorderError && (
+                          <motion.div
+                            initial={{ opacity: 0, y: -5 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="flex items-start gap-2 rounded-lg bg-red-500/10 border border-red-500/30 px-3 py-2 text-xs text-red-400 mb-3"
+                          >
+                            <AlertCircle size={14} className="flex-shrink-0 mt-0.5" />
+                            <span className="leading-relaxed">{reorderError}</span>
+                          </motion.div>
+                        )}
+
+                        <button
+                          type="button"
+                          onClick={handleReorder}
+                          disabled={reorderState === 'loading'}
+                          className="w-full py-3 rounded-lg bg-white/5 hover:bg-white/10 border border-accent/40 hover:border-accent text-heading font-bold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                        >
+                          {reorderState === 'loading' ? (
+                            <>
+                              <Loader2 size={16} className="animate-spin" />
+                              {tx({ fr: 'Envoi en cours...', en: 'Submitting...', es: 'Enviando...' })}
+                            </>
+                          ) : (
+                            <>
+                              <RotateCcw size={16} />
+                              {tx({
+                                fr: 'Recommander à l\'identique (Reprint)',
+                                en: 'Reorder identically (Reprint)',
+                                es: 'Volver a pedir igual (Reprint)',
+                              })}
+                            </>
+                          )}
+                        </button>
+                      </>
+                    )}
+                  </motion.div>
                 )}
 
                 {/* Lien support */}
