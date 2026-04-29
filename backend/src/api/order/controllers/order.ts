@@ -3697,6 +3697,53 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
   },
 
   /**
+   * PUT /orders/:documentId/production-stage
+   *
+   * KANBAN PRODUCTION (Phase 7A, 28 avril 2026) : update du sous-statut
+   * production (files_prep / printing / cutting / packaging) sans toucher
+   * au status global de la commande (qui reste 'processing' pendant tout
+   * ce cycle - le status global est ce que voit le client cote tracking).
+   *
+   * Auth admin via requireAdminAuth.
+   * Body : { productionStage: 'files_prep' | 'printing' | 'cutting' | 'packaging' }
+   * Validation : productionStage doit etre dans l'enum, sinon 400.
+   *
+   * Note : le tableau Kanban affiche uniquement les commandes en
+   * status='processing'. Les autres statuts (paid avant production,
+   * ready/shipped/delivered apres) n'ont pas vocation a apparaitre dans
+   * la vue atelier - donc on n'enforce pas le gate ici, mais le frontend
+   * filtre la liste avant d'autoriser le drag&drop.
+   */
+  async updateProductionStage(ctx) {
+    if (!(await requireAdminAuth(ctx))) return;
+    const { documentId } = ctx.params;
+    const { productionStage } = (ctx.request.body || {}) as any;
+
+    const VALID_STAGES = ['files_prep', 'printing', 'cutting', 'packaging'];
+    if (!productionStage || !VALID_STAGES.includes(productionStage)) {
+      return ctx.badRequest(
+        `productionStage doit etre l'un de : ${VALID_STAGES.join(', ')}`,
+      );
+    }
+
+    const order = await strapi.documents('api::order.order').findFirst({
+      filters: { documentId },
+    });
+
+    if (!order) {
+      return ctx.notFound('Commande introuvable');
+    }
+
+    const updated = await strapi.documents('api::order.order').update({
+      documentId: (order as any).documentId,
+      data: { productionStage } as any,
+    });
+
+    strapi.log.info(`[updateProductionStage] ${documentId} -> ${productionStage}`);
+    ctx.body = { data: updated };
+  },
+
+  /**
    * PUT /orders/:documentId/total
    * Ajustement manuel admin du sous-total d'une commande (rabais, balance, correction).
    *

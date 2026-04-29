@@ -16,6 +16,7 @@ import EditOrderTotalModal from '../components/EditOrderTotalModal';
 import CreateManualOrderModal from '../components/CreateManualOrderModal';
 import StatusChangeModal from '../components/StatusChangeModal';
 import PortfolioWizardModal from '../components/PortfolioWizardModal';
+import ProductionBoard from '../components/ProductionBoard';
 import AdminReglagesFacturation from './AdminReglagesFacturation';
 
 // FIX-UX (avril 2026) : vocabulaire "A remettre" adopte pour ready/delivered
@@ -128,6 +129,18 @@ function AdminOrders() {
   // wizard est ouvert. null = modal ferme. Le toast de succes vit dans
   // actionToast (deja existant pour les autres mutations).
   const [portfolioWizardOrder, setPortfolioWizardOrder] = useState(null);
+  // KANBAN PRODUCTION (Phase 7A) : 'list' = liste classique avec accordeon,
+  // 'kanban' = ProductionBoard 4 colonnes (filtre status='processing').
+  // Persiste dans sessionStorage pour eviter la perte d'etat sur refresh
+  // accidentel (utile quand on bascule entre vue + actions).
+  const [viewMode, setViewMode] = useState(() => {
+    try {
+      return sessionStorage.getItem('admin-orders-view-mode') || 'list';
+    } catch { return 'list'; }
+  });
+  useEffect(() => {
+    try { sessionStorage.setItem('admin-orders-view-mode', viewMode); } catch { /* noop */ }
+  }, [viewMode]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [searchDebounce, setSearchDebounce] = useState('');
@@ -1413,7 +1426,7 @@ function AdminOrders() {
         </div>
       </div>
 
-      {/* Search + filters */}
+      {/* Search + filters + view toggle (Phase 7A : list vs kanban) */}
       <div className="flex flex-col md:flex-row gap-3">
         <div className="relative flex-1">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-grey-muted" />
@@ -1423,6 +1436,7 @@ function AdminOrders() {
             onChange={(e) => { setSearch(e.target.value); setMeta(prev => ({ ...prev, page: 1 })); }}
             placeholder={tx({ fr: 'Rechercher par nom, email...', en: 'Search by name, email...', es: 'Buscar por nombre, email...' })}
             className="input-field pl-9 text-sm"
+            disabled={viewMode === 'kanban'}
           />
         </div>
         <div className="flex flex-wrap gap-1">
@@ -1435,11 +1449,39 @@ function AdminOrders() {
               <button
                 key={s}
                 onClick={() => handleFilterChange(s)}
-                className={`px-2.5 py-1 md:px-3 md:py-1.5 rounded-full text-[11px] md:text-xs font-semibold transition-all ${
+                disabled={viewMode === 'kanban'}
+                className={`px-2.5 py-1 md:px-3 md:py-1.5 rounded-full text-[11px] md:text-xs font-semibold transition-all disabled:opacity-40 ${
                   isActive ? 'text-accent' : 'text-grey-muted hover:text-accent'
                 }`}
               >
                 {label}
+              </button>
+            );
+          })}
+        </div>
+        {/* KANBAN PRODUCTION (Phase 7A) : toggle Liste / Atelier. La vue
+            atelier filtre serveur-side sur status='processing' implicitement
+            (le composant ProductionBoard filtre la liste deja chargee), donc
+            les filtres status + search sont desactives quand kanban actif. */}
+        <div className="flex items-center gap-1 card-bg rounded-lg p-1 self-start">
+          {[
+            { id: 'list',   icon: '📄', label: { fr: 'Vue liste',   en: 'List view',   es: 'Vista lista' } },
+            { id: 'kanban', icon: '🛠️', label: { fr: 'Vue atelier', en: 'Workshop',    es: 'Vista taller' } },
+          ].map((m) => {
+            const isActive = viewMode === m.id;
+            return (
+              <button
+                key={m.id}
+                onClick={() => setViewMode(m.id)}
+                className={`px-2.5 py-1 md:px-3 md:py-1.5 rounded-md text-[11px] md:text-xs font-semibold transition-all flex items-center gap-1.5 ${
+                  isActive
+                    ? 'bg-accent/15 text-accent ring-1 ring-accent/30'
+                    : 'text-grey-muted hover:text-heading'
+                }`}
+                title={tx(m.label)}
+              >
+                <span aria-hidden>{m.icon}</span>
+                <span className="hidden md:inline">{tx(m.label)}</span>
               </button>
             );
           })}
@@ -1453,6 +1495,30 @@ function AdminOrders() {
         <div className="rounded-xl card-bg shadow-lg shadow-black/20 p-5">
           <AdminReglagesFacturation />
         </div>
+      ) : (
+      <>
+      {/* KANBAN PRODUCTION (Phase 7A) : si viewMode='kanban', on remplace
+          la liste par le ProductionBoard. ProductionBoard filtre lui-meme
+          sur status='processing' et n'a donc pas besoin d'un autre fetch. */}
+      {viewMode === 'kanban' ? (
+        loading ? (
+          <div className="flex items-center justify-center py-20">
+            <Loader2 size={32} className="animate-spin text-accent" />
+          </div>
+        ) : (
+          <ProductionBoard
+            orders={orders}
+            onStageChange={() => {
+              // Resync stats / money board apres un drop reussi (l'order
+              // garde status='processing' donc Money Board ne change pas
+              // beaucoup, mais on garde la sync pour rester homogene avec
+              // les autres mutations).
+              fetchOrders().catch(() => {});
+              fetchMoneyBoard();
+            }}
+            onError={(msg) => setInvoiceToast({ type: 'error', message: msg })}
+          />
+        )
       ) : (
       <>
       {/* Table */}
@@ -2346,6 +2412,8 @@ function AdminOrders() {
           </button>
         </div>
       )}
+      </>
+      )/* fin de la branche viewMode==='list' */}
       </>
       )}
 

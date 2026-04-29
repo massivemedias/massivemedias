@@ -136,6 +136,11 @@ export const getOrderStats = () => api.get('/orders/stats');
 // admin. Optionnel : { month: 'YYYY-MM' } pour piloter le mois courant
 // (ex: navigation historique). Defaut backend = mois courant America/Toronto.
 export const getAdminMoneyBoard = (params) => api.get('/admin/stats', { params });
+// KANBAN PRODUCTION (Phase 7A) : update du sous-statut production sans
+// toucher au status global. Backend : PUT /orders/:documentId/production-stage
+// (auth admin). Stages : files_prep / printing / cutting / packaging.
+export const updateOrderProductionStage = (documentId, productionStage) =>
+  api.put(`/orders/${documentId}/production-stage`, { productionStage });
 /**
  * Changement de statut d'une commande.
  * @param {string} documentId

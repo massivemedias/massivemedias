@@ -100,6 +100,18 @@ export default {
         auth: false,
       },
     },
+    // KANBAN PRODUCTION (Phase 7A, 28 avril 2026) : sous-statut atelier
+    // (files_prep / printing / cutting / packaging) pilote depuis le
+    // ProductionBoard drag&drop. Auth admin via requireAdminAuth dans le
+    // controller. Independant du status global qui reste 'processing'.
+    {
+      method: 'PUT',
+      path: '/orders/:documentId/production-stage',
+      handler: 'order.updateProductionStage',
+      config: {
+        auth: false,
+      },
+    },
     {
       method: 'PUT',
       path: '/orders/:documentId/total',

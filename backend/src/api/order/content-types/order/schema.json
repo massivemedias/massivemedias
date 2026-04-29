@@ -121,6 +121,11 @@
       "type": "boolean",
       "default": false
     },
+    "productionStage": {
+      "type": "enumeration",
+      "enum": ["files_prep", "printing", "cutting", "packaging"],
+      "default": "files_prep"
+    },
     "invoice": {
       "type": "relation",
       "relation": "oneToOne",
