@@ -6,7 +6,7 @@ import {
   RotateCcw, Loader2, ExternalLink, MapPin, Save, Image,
   FileText, ChevronLeft, ChevronRight, Phone, Mail, Hash, Palette,
   Download, Receipt, Trash2, Send, AlertTriangle, Pencil, Plus, Landmark, Copy,
-  TrendingUp, TrendingDown, Inbox, Sparkles, List, Hammer,
+  TrendingUp, TrendingDown, Inbox, Sparkles, List, LayoutDashboard,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import { getOrders, getOrderStats, getAdminMoneyBoard, updateOrderStatus, updateOrderNotes, updateOrderTracking, deleteOrder, getPrivateSales, deletePrivateSale, resendPrivateSaleEmail, sendOrderInvoice, getOrderTracking, getBillingSettings, regenerateStripeLink } from '../services/adminService';
@@ -1483,8 +1483,8 @@ function AdminOrders() {
             desactive (etait du bleu navigateur sur le bouton actif). */}
         <div className="flex flex-row items-center gap-1 card-bg rounded-lg p-1 self-start">
           {[
-            { id: 'list',   icon: List,   label: { fr: 'Vue liste',   en: 'List view',   es: 'Vista lista' } },
-            { id: 'kanban', icon: Hammer, label: { fr: 'Vue atelier', en: 'Workshop',    es: 'Vista taller' } },
+            { id: 'list',   icon: List,            label: { fr: 'Vue liste',   en: 'List view',   es: 'Vista lista' } },
+            { id: 'kanban', icon: LayoutDashboard, label: { fr: 'Vue atelier', en: 'Workshop',    es: 'Vista taller' } },
           ].map((m) => {
             const isActive = viewMode === m.id;
             const Ic = m.icon;

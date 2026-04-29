@@ -702,23 +702,31 @@ function AdminUtilisateurs() {
                                   <span className="text-yellow-400 font-semibold text-sm">#{user.referredBy}</span>
                                 </div>
                               )}
-                              <div className="flex justify-between items-center">
-                                <span className="text-grey-muted flex items-center gap-1">
-                                  <FileCheck size={12} className={user.contractSigned ? 'text-green-400' : 'text-grey-muted/50'} />
-                                  {tx({ fr: 'Contrat', en: 'Contract', es: 'Contrato' })}
-                                </span>
-                                {user.contractSigned ? (
-                                  <span className="text-green-400 font-semibold text-sm flex items-center gap-1">
-                                    <Check size={12} />
-                                    {tx({ fr: 'Signe', en: 'Signed', es: 'Firmado' })} {user.contractVersion || ''}
-                                    {user.contractSignedAt && (
-                                      <span className="text-green-400/60 text-xs ml-1">({formatDate(user.contractSignedAt)})</span>
-                                    )}
+                              {/* HOTFIX (29 avril 2026) : la ligne "Contrat" ne
+                                  s'affiche QUE pour les artistes (les seuls qui
+                                  signent un contrat de partenariat). Pour un
+                                  client standard (acheteur stickers/prints),
+                                  cette ligne creait une fausse alerte "Non
+                                  signe" en gris qui ne signifiait rien. */}
+                              {role === 'artist' && (
+                                <div className="flex justify-between items-center">
+                                  <span className="text-grey-muted flex items-center gap-1">
+                                    <FileCheck size={12} className={user.contractSigned ? 'text-green-400' : 'text-grey-muted/50'} />
+                                    {tx({ fr: 'Contrat', en: 'Contract', es: 'Contrato' })}
                                   </span>
-                                ) : (
-                                  <span className="text-grey-muted/50 text-sm">{tx({ fr: 'Non signe', en: 'Not signed', es: 'No firmado' })}</span>
-                                )}
-                              </div>
+                                  {user.contractSigned ? (
+                                    <span className="text-green-400 font-semibold text-sm flex items-center gap-1">
+                                      <Check size={12} />
+                                      {tx({ fr: 'Signe', en: 'Signed', es: 'Firmado' })} {user.contractVersion || ''}
+                                      {user.contractSignedAt && (
+                                        <span className="text-green-400/60 text-xs ml-1">({formatDate(user.contractSignedAt)})</span>
+                                      )}
+                                    </span>
+                                  ) : (
+                                    <span className="text-grey-muted/50 text-sm">{tx({ fr: 'Non signe', en: 'Not signed', es: 'No firmado' })}</span>
+                                  )}
+                                </div>
+                              )}
                             </div>
                           </div>
                         </div>

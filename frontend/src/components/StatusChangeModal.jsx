@@ -180,22 +180,20 @@ function StatusChangeModal({ order, currentStatus, targetStatus, onCancel, onCon
           <div className="px-5 py-4 space-y-3">
             {hasEmail ? (
               <>
-                <div className="flex items-center gap-2">
-                  <span className="w-7 h-7 rounded-lg bg-accent/15 flex items-center justify-center">
-                    <Mail size={14} className="text-accent" />
-                  </span>
-                  <span className="text-sm font-semibold text-heading">
-                    {tx({ fr: 'Apercu du courriel au client', en: 'Client email preview', es: 'Vista previa' })}
-                  </span>
-                </div>
-                {/* PHASE-4-UI (28 avril 2026) : encadre "vraie lettre" - fond
-                    creme, coins arrondis uniformes, bordure douce et padding
-                    genereux. Plus aucun divider interne ni font-mono qui
-                    cassait l'harmonie du modal. */}
+                {/* HOTFIX (29 avril 2026) : header (icone Mail + label) deplace
+                    INSIDE la boite pour un bloc auto-contenu, totalement
+                    symetrique. Aucun element flottant a gauche, aucune impression
+                    de "tab attache". rounded-xl + border uniforme + p-4. */}
                 <div
-                  className="rounded-lg p-4 space-y-2 shadow-sm"
+                  className="rounded-xl p-4 space-y-3 shadow-sm"
                   style={{ background: '#fafafa', color: '#1f1f1f', border: '1px solid #e5e5e5' }}
                 >
+                  <div className="flex items-center gap-2 pb-2" style={{ borderBottom: '1px solid #ececec' }}>
+                    <Mail size={14} style={{ color: '#1f1f1f' }} />
+                    <span className="text-[11px] uppercase tracking-wider font-semibold" style={{ color: '#1f1f1f' }}>
+                      {tx({ fr: 'Apercu du courriel au client', en: 'Client email preview', es: 'Vista previa' })}
+                    </span>
+                  </div>
                   <div className="text-[13px]" style={{ color: '#666' }}>
                     <span className="font-semibold" style={{ color: '#1f1f1f' }}>
                       {tx({ fr: 'Objet', en: 'Subject', es: 'Asunto' })} :
