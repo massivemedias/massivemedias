@@ -442,8 +442,9 @@ function Boutique() {
                             <div className="absolute bottom-0 left-0 right-0 p-4">
                               <img
                                 src={artist.avatar}
-                                alt={`${artist.name} - Artiste Massive`}
+                                alt={`${artist.name} - Artiste Massive Medias`}
                                 className="w-12 h-12 rounded-full ring-2 ring-white/20 object-cover mb-2"
+                                loading="lazy"
                               />
                               <h3 className="text-lg font-heading font-bold text-white group-hover:text-accent transition-colors leading-tight">
                                 {artist.name}

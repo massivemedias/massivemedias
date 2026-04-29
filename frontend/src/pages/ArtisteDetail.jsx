@@ -688,7 +688,7 @@ function ArtisteDetail({ subdomainSlug }) {
               }>
                 {artist.prints.map((print, index) => (
                   galleryView === 'list' ? (
-                    <motion.div
+                    <motion.article
                       key={print.id}
                       initial={{ opacity: 0 }}
                       whileInView={{ opacity: 1 }}
@@ -696,15 +696,15 @@ function ArtisteDetail({ subdomainSlug }) {
                       className="flex gap-3 p-3 rounded-xl bg-black/20 cursor-pointer hover:bg-black/30 transition-colors"
                       onClick={() => handleSelectPrint(print)}
                     >
-                      <img src={print.image} alt={getItemTitle(print)} loading="lazy" className="w-20 h-28 object-cover rounded-lg flex-shrink-0" />
+                      <img src={print.image} alt={`Impression de ${getItemTitle(print)} par ${artist.name} - Massive Medias`} loading="lazy" className="w-20 h-28 object-cover rounded-lg flex-shrink-0" />
                       <div className="flex-1 min-w-0">
                         <p className="text-heading text-sm font-semibold truncate">{getItemTitle(print)}</p>
                         {print.unique && <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-accent/20 text-accent text-[9px] font-bold mt-1">Unique</span>}
                         <p className="text-grey-muted text-xs mt-1">{tx({ fr: 'A partir de', en: 'From', es: 'Desde' })} {minPrice}$</p>
                       </div>
-                    </motion.div>
+                    </motion.article>
                   ) : (
-                  <motion.div
+                  <motion.article
                     key={print.id}
                     initial={{ opacity: 0, y: 12 }}
                     whileInView={{ opacity: 1, y: 0 }}
@@ -723,7 +723,7 @@ function ArtisteDetail({ subdomainSlug }) {
                         setSelectedPrint(print);
                       }}
                     />
-                  </motion.div>
+                  </motion.article>
                   )
                 ))}
               </div>

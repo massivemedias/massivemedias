@@ -248,7 +248,7 @@ function Artistes() {
                 const tagline = tx({ fr: creator.tagline?.fr || '', en: creator.tagline?.en || '', es: creator.tagline?.es || '' });
 
                 return (
-                  <motion.div
+                  <motion.article
                     key={creator.slug}
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
@@ -261,7 +261,7 @@ function Artistes() {
                     >
                       <img
                         src={creator.heroImage || creator.avatar}
-                        alt={creator.name}
+                        alt={`${creator.name} - artiste Massive Medias`}
                         className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                         loading={index < 4 ? 'eager' : 'lazy'}
                       />
@@ -272,7 +272,7 @@ function Artistes() {
                         <div className="absolute top-3 left-3 z-10 flex items-center gap-2">
                           <img loading="lazy"
                             src={creator.avatar}
-                            alt={creator.name}
+                            alt=""
                             className="w-9 h-9 md:w-10 md:h-10 rounded-full object-cover shadow-lg shadow-black/40"
                           />
                         </div>
@@ -298,7 +298,7 @@ function Artistes() {
                         </div>
                       </div>
                     </Link>
-                  </motion.div>
+                  </motion.article>
                 );
               })}
             </div>
