@@ -119,8 +119,8 @@ const servicesDataEs = {
       { q: '¿Se puede recoger en persona?', a: '¡Sí! Recogida gratuita en Mile-End. También ofrecemos entrega local en Montreal.' },
     ],
     seo: {
-      title: 'Impresion Fine Art Montreal | Tirajes Galeria, Posters & Flyers - Massive',
-      description: 'Tirajes fine art calidad galeria en Montreal. Impresion pigmentaria 12 colores en papel Hahnemuhle. Posters, flyers y tarjetas. Produccion local Mile-End, envio local disponible.',
+      title: 'Impresion Afiches, Posters & Fine Art Montreal | Massive Medias',
+      description: 'Impresion premium de afiches, posters y tirajes fine art en Montreal. Papel Hahnemuhle, tintas pigmentarias 12 colores, calidad galeria. Estudio creativo Mile-End, cotizacion rapida, envio local disponible. Calidad premium garantizada.',
     },
   },
 
@@ -256,8 +256,8 @@ const servicesDataEs = {
       { q: '¿Se puede obtener una forma totalmente personalizada?', a: '¡Absolutamente! Nuestros stickers son troquelados (die-cut) según la forma exacta de tu diseño.' },
     ],
     seo: {
-      title: 'Stickers Troquelados Montreal | Personalizados, Holograficos & Vinilo - Massive',
-      description: 'Stickers troquelados personalizados en Montreal. Holografico, mate, brillante, transparente, vinilo. Corte pro a medida. Desde 25 unidades. Produccion local Mile-End.',
+      title: 'Impresion Stickers & Adhesivos Vinilo Montreal | Massive Medias',
+      description: 'Impresion de stickers y adhesivos de vinilo premium en Montreal. Troquelados a medida, holografico, mate, brillante, transparente. Calidad premium, cotizacion rapida en 24h. Estudio creativo Mile-End, desde 25 unidades.',
     },
   },
 
@@ -569,8 +569,8 @@ const servicesDataEs = {
       { q: '¿Qué tecnologías utilizan?', a: 'React, Angular, WordPress, Shopify, Node.js, Strapi - elegimos la tecnología más adecuada para tu proyecto y tus necesidades.' },
     ],
     seo: {
-      title: 'Desarrollo Web Montreal | Sitios Web, E-Commerce & SEO - Massive',
-      description: 'Desarrollo web profesional en Montreal. Sitios vitrina, e-commerce, aplicaciones web, SEO y posicionamiento. React, WordPress, Shopify. 10+ anos de experiencia. Estudio Mile-End.',
+      title: 'Agencia Web & Creacion de Sitios Web Montreal | Massive Medias',
+      description: 'Agencia web y creacion de sitios web a medida en Montreal. Sitios vitrina, e-commerce, aplicaciones, SEO local y posicionamiento. React, Next.js, WordPress, Shopify. Calidad premium, cotizacion rapida. Estudio creativo Mile-End.',
     },
   },
 };

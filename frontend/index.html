@@ -51,7 +51,10 @@
     <meta name="twitter:image" content="https://massivemedias.com/og-image.png" />
     <meta name="twitter:image:alt" content="Massive - Studio de production creative a Montreal" />
 
-    <!-- JSON-LD inline (visible sans JS - critique pour SEO) -->
+    <!-- JSON-LD inline (visible sans JS - critique pour SEO local Google).
+         SEO-LOCAL (28 avril 2026) : adresse corrigee + telephone + hasMap +
+         openingHours alignes sur src/components/seo/schemas.js (single source
+         of truth pour les schemas que <SEO> reinjecte cote client). -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -59,8 +62,8 @@
         {
           "@type": "Organization",
           "@id": "https://massivemedias.com/#organization",
-          "name": "Massive",
-          "alternateName": "Massive Inc.",
+          "name": "Massive Medias",
+          "alternateName": "Massive",
           "url": "https://massivemedias.com",
           "logo": {
             "@type": "ImageObject",
@@ -69,9 +72,10 @@
             "height": 630
           },
           "email": "massivemedias@gmail.com",
+          "telephone": "+15146531423",
           "foundingDate": "2022",
           "foundingLocation": "Montreal, QC, Canada",
-          "description": "Studio de production creative a Montreal specialise en impression fine art, stickers die-cut, sublimation textile, design graphique et developpement web.",
+          "description": "Massive Medias - Imprimeur a Montreal specialise en impression fine art, stickers vinyle personnalises, sublimation textile, design graphique et agence web. Studio independant au Mile-End (5338 rue Marquette, H2J 3Z3).",
           "knowsLanguage": ["fr", "en", "es"],
           "sameAs": [
             "https://instagram.com/massivemedias",
@@ -79,14 +83,16 @@
           ],
           "address": {
             "@type": "PostalAddress",
+            "streetAddress": "5338 rue Marquette",
             "addressLocality": "Montreal",
             "addressRegion": "QC",
-            "postalCode": "H2T",
+            "postalCode": "H2J 3Z3",
             "addressCountry": "CA"
           },
           "contactPoint": {
             "@type": "ContactPoint",
             "contactType": "customer service",
+            "telephone": "+15146531423",
             "email": "massivemedias@gmail.com",
             "availableLanguage": ["French", "English", "Spanish"]
           }
@@ -94,27 +100,38 @@
         {
           "@type": "LocalBusiness",
           "@id": "https://massivemedias.com/#localbusiness",
-          "name": "Massive",
+          "name": "Massive Medias",
+          "alternateName": "Massive",
           "image": "https://massivemedias.com/og-image.png",
           "url": "https://massivemedias.com",
           "email": "massivemedias@gmail.com",
-          "description": "Studio de production creative a Montreal specialise en impression fine art, stickers die-cut, sublimation textile, design graphique et developpement web.",
+          "telephone": "+15146531423",
+          "description": "Massive Medias - Imprimeur a Montreal. Impression de stickers vinyle premium, affiches fine art, sublimation textile, agence web et SEO. Studio creatif independant au Mile-End. Soumission rapide, production locale, livraison Quebec.",
           "priceRange": "$$",
           "currenciesAccepted": "CAD",
           "paymentAccepted": "Credit Card, Debit Card, Apple Pay, Google Pay",
           "address": {
             "@type": "PostalAddress",
-            "streetAddress": "Mile-End",
+            "streetAddress": "5338 rue Marquette",
             "addressLocality": "Montreal",
             "addressRegion": "QC",
-            "postalCode": "H2T",
+            "postalCode": "H2J 3Z3",
             "addressCountry": "CA"
           },
           "geo": {
             "@type": "GeoCoordinates",
-            "latitude": 45.525,
-            "longitude": -73.6
+            "latitude": 45.5335,
+            "longitude": -73.5734
           },
+          "hasMap": "https://www.google.com/maps/place/5338+Rue+Marquette,+Montr%C3%A9al,+QC+H2J+3Z3",
+          "openingHoursSpecification": [
+            {
+              "@type": "OpeningHoursSpecification",
+              "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+              "opens": "09:00",
+              "closes": "18:00"
+            }
+          ],
           "areaServed": [
             { "@type": "City", "name": "Montreal" },
             { "@type": "AdministrativeArea", "name": "Quebec" },
@@ -127,13 +144,13 @@
           ],
           "hasOfferCatalog": {
             "@type": "OfferCatalog",
-            "name": "Services Massive",
+            "name": "Services Massive Medias",
             "itemListElement": [
-              { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Impression Fine Art" } },
-              { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Stickers Die-Cut" } },
-              { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Sublimation Textile" } },
-              { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Design Graphique" } },
-              { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Developpement Web" } }
+              { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Impression Stickers Vinyle Premium Montreal" } },
+              { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Impression Fine Art et Affiches Montreal" } },
+              { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Creation de Site Web et Agence Digitale Montreal" } },
+              { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Sublimation Textile Custom Montreal" } },
+              { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Design Graphique et Direction Artistique" } }
             ]
           }
         },
@@ -141,8 +158,8 @@
           "@type": "WebSite",
           "@id": "https://massivemedias.com/#website",
           "url": "https://massivemedias.com",
-          "name": "Massive",
-          "description": "Studio de production creative a Montreal",
+          "name": "Massive Medias",
+          "description": "Studio de production creative a Montreal - stickers, prints, web, design",
           "publisher": { "@id": "https://massivemedias.com/#organization" },
           "inLanguage": ["fr-CA", "en-CA", "es-MX"]
         }

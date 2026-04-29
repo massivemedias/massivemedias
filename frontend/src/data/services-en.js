@@ -119,8 +119,8 @@ const servicesDataEn = {
       { q: 'Can I pick up in person?', a: 'Yes! Free pick-up in Mile-End. We also offer local delivery in Montreal.' },
     ],
     seo: {
-      title: 'Fine Art Printing Montreal | Gallery Prints, Posters & Flyers - Massive',
-      description: 'Gallery-quality fine art prints in Montreal. 12-color pigment printing on Hahnemuhle paper. Posters, flyers and business cards. Local production in Mile-End, local delivery available.',
+      title: 'Poster, Event & Fine Art Printing Montreal | Massive Medias',
+      description: 'Premium poster, event and fine art printing in Montreal. Hahnemuhle paper, 12-color pigment inks, gallery quality. Mile-End creative studio, fast quote, local delivery available. Premium quality guaranteed.',
     },
   },
 
@@ -256,8 +256,8 @@ const servicesDataEn = {
       { q: 'Can I get a fully custom shape?', a: 'Absolutely! Our stickers are die-cut to match the exact shape of your design.' },
     ],
     seo: {
-      title: 'Die-Cut Stickers Montreal | Custom, Holographic & Vinyl - Massive',
-      description: 'Custom die-cut stickers in Montreal. Holographic, matte, glossy, clear, vinyl. Pro precision cutting. From 25 units. Local production in Mile-End.',
+      title: 'Premium Vinyl Sticker & Decal Printing Montreal | Massive Medias',
+      description: 'Premium vinyl sticker and decal printing in Montreal. Custom die-cut, holographic, matte, glossy, clear. Premium quality, 24h fast quote. Mile-End creative studio, from 25 units.',
     },
   },
 
@@ -569,8 +569,8 @@ const servicesDataEn = {
       { q: 'What technologies do you use?', a: 'React, Angular, WordPress, Shopify, Node.js, Strapi - we choose the best tech for your project and needs.' },
     ],
     seo: {
-      title: 'Web Development Montreal | Websites, E-Commerce & SEO - Massive',
-      description: 'Professional web development in Montreal. Showcase sites, e-commerce, web apps, SEO and search ranking. React, WordPress, Shopify. 10+ years experience. Mile-End studio.',
+      title: 'Web Agency & Custom Website Design Montreal | Massive Medias',
+      description: 'Web agency and custom website design in Montreal. Showcase sites, e-commerce, web apps, local SEO and search ranking. React, Next.js, WordPress, Shopify. Premium quality, fast quote. Mile-End creative studio.',
     },
   },
 };

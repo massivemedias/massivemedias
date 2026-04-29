@@ -21,6 +21,104 @@ const configuratorMap = {
   web: lazy(() => import('../components/configurators/ConfiguratorWeb')),
 };
 
+// SEO-LOCAL (28 avril 2026) : enrichissement du schema Service.org par slug.
+// Chaque entree fournit les mots-cles a haute intention d'achat locale, le
+// serviceType normalise, la categorie schema.org et la fourchette de prix
+// (visible dans les rich snippets Google). Les pages non listees ici recoivent
+// le schema de base (name + description + areaServed Montreal/Quebec/Canada).
+const SLUG_SEO_ENRICHMENT = {
+  stickers: {
+    serviceType: 'Impression de stickers vinyle premium Montreal',
+    category: 'Sticker Printing',
+    priceRange: '$$',
+    keywords: [
+      'impression stickers Montreal',
+      'autocollants vinyle Montreal',
+      'stickers personnalises Montreal',
+      'die-cut stickers Mile-End',
+      'imprimerie stickers Montreal',
+      'sticker holographique Montreal',
+      'sticker custom Quebec',
+    ],
+    audience: 'Marques, artistes, restaurants, commerces et createurs montrealais',
+    offers: { lowPrice: 25, highPrice: 800 },
+    subServices: [
+      'Stickers die-cut sur mesure',
+      'Stickers holographiques',
+      'Stickers vinyle exterieur',
+      'Stickers transparents',
+      'Stickers matte premium',
+    ],
+  },
+  prints: {
+    serviceType: 'Impression fine art et affiches Montreal',
+    category: 'Fine Art Printing',
+    priceRange: '$$',
+    keywords: [
+      'impression affiches Montreal',
+      'impression posters Montreal',
+      'impression fine art Montreal',
+      'tirage fine art Quebec',
+      'imprimerie Mile-End',
+      'impression Hahnemuhle Montreal',
+      'affiche evenement Montreal',
+    ],
+    audience: 'Galeries, artistes, festivals et collectionneurs montrealais',
+    offers: { lowPrice: 15, highPrice: 600 },
+    subServices: [
+      'Tirages fine art Hahnemuhle',
+      'Posters et affiches grand format',
+      'Flyers et handbills premium',
+      'Cartes d\'affaires Soft Touch',
+    ],
+  },
+  web: {
+    serviceType: 'Creation de site web et agence digitale Montreal',
+    category: 'Web Development',
+    priceRange: '$$$',
+    keywords: [
+      'agence web Montreal',
+      'creation site internet Montreal',
+      'developpement web Montreal',
+      'site web Mile-End',
+      'agence digitale Montreal',
+      'SEO Montreal',
+      'site e-commerce Montreal',
+    ],
+    audience: 'Marques, festivals, restaurants et entreprises culturelles montrealaises',
+    offers: { lowPrice: 1500, highPrice: 25000 },
+    subServices: [
+      'Sites vitrines sur mesure',
+      'E-commerce Shopify et headless',
+      'Applications web React et Next.js',
+      'SEO local et referencement',
+      'Maintenance et webmastering',
+    ],
+  },
+  design: {
+    serviceType: 'Direction artistique et design graphique Montreal',
+    category: 'Graphic Design',
+    priceRange: '$$',
+    keywords: [
+      'design graphique Montreal',
+      'direction artistique Montreal',
+      'logo Montreal',
+      'identite visuelle Montreal',
+      'studio graphique Mile-End',
+      'pochette album Montreal',
+    ],
+    audience: 'Artistes, marques emergentes, festivals et entreprises culturelles',
+    offers: { lowPrice: 350, highPrice: 8000 },
+    subServices: [
+      'Logo et identite visuelle',
+      'Affiches et posters',
+      'Pochettes d\'album',
+      'Packaging et merch',
+      'Direction artistique editoriale',
+    ],
+  },
+};
+
 function buildServiceFromCMS(cms, lang) {
   if (!cms) return null;
   const l = (field) => bl(cms, field, lang);
@@ -320,6 +418,11 @@ function ServiceDetail() {
   const prevService = currentIndex > 0 ? allServices[currentIndex - 1] : null;
   const nextService = currentIndex < allServices.length - 1 ? allServices[currentIndex + 1] : null;
 
+  // SEO-LOCAL : on injecte le schema Service enrichi par slug (mots-cles
+  // a haute intention locale, fourchette de prix, sous-services, audience).
+  // Les slugs hors map recoivent le schema de base.
+  const seoEnrichment = SLUG_SEO_ENRICHMENT[slug] || {};
+
   return (
     <>
       <SEO
@@ -336,6 +439,8 @@ function ServiceDetail() {
             name: service.title,
             description: service.seo.description,
             url: `/services/${slug}`,
+            image: service.heroImage,
+            ...seoEnrichment,
           }),
           ...(service.faq ? [getFAQSchema(service.faq)] : []),
         ]}

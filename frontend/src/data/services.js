@@ -119,8 +119,8 @@ const servicesData = {
       { q: 'Peut-on récupérer sur place?', a: 'Oui! Pick-up gratuit au Mile-End. On offre aussi la livraison locale à Montréal.' },
     ],
     seo: {
-      title: 'Impression Fine Art Montréal | Tirages Galerie, Posters & Affiches - Massive',
-      description: 'Tirages fine art qualité galerie à Montréal. Impression pigmentaire 12 couleurs sur papier Hahnemühle. Posters, affiches, flyers et cartes. Production locale Mile-End, livraison locale disponible.',
+      title: 'Impression Affiches, Posters & Fine Art Montréal | Massive Medias',
+      description: 'Impression d\'affiches, posters et tirages fine art qualité galerie à Montréal. Hahnemühle 12 couleurs, papier épais, encres pigmentaires. Studio créatif au Mile-End, soumission rapide, livraison locale dispo. Qualité premium garantie.',
     },
   },
 
@@ -263,8 +263,8 @@ const servicesData = {
       { q: 'Peut-on avoir une forme totalement custom?', a: 'Absolument! Nos stickers sont découpés sur mesure (die-cut) selon la forme exacte de ton design.' },
     ],
     seo: {
-      title: 'Stickers Die-Cut Montréal | Personnalisés, Holographiques & Vinyle - Massive',
-      description: 'Stickers die-cut personnalisés à Montréal. Holographique, matte, glossy, transparent, vinyle. Découpe pro sur mesure. À partir de 25 unités. Production locale Mile-End.',
+      title: 'Impression Stickers & Autocollants Vinyle Montréal | Massive Medias',
+      description: 'Impression de stickers et autocollants vinyle premium à Montréal. Die-cut sur mesure, holographique, matte, glossy, transparent. Qualité premium, soumission rapide en 24h. Studio créatif au Mile-End, dès 25 unités.',
     },
   },
 
@@ -585,8 +585,8 @@ const servicesData = {
       { q: 'Quelles technologies utilisez-vous?', a: 'React, Angular, WordPress, Shopify, Node.js, Strapi - on choisit la techno la mieux adaptée à ton projet et tes besoins.' },
     ],
     seo: {
-      title: 'Développement Web Montréal | Sites Web, E-Commerce & SEO - Massive',
-      description: 'Développement web professionnel à Montréal. Sites vitrines, e-commerce, applications web, SEO et référencement. React, WordPress, Shopify. 10+ ans d\'expérience. Studio Mile-End.',
+      title: 'Agence Web & Création Site Internet Montréal | Massive Medias',
+      description: 'Agence web et création de site internet sur mesure à Montréal. Sites vitrines, e-commerce, applications, SEO et référencement local. React, Next.js, WordPress, Shopify. Qualité premium, soumission rapide. Studio créatif au Mile-End.',
     },
   },
 };

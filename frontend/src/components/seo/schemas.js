@@ -233,8 +233,30 @@ export function getProductWithVariantsSchema({ name, description, url, image, lo
   };
 }
 
-export function getServiceSchema({ name, description, url, priceRange }) {
-  return {
+// SEO-LOCAL (28 avril 2026) : Service schema enrichi.
+//
+// Ajout des champs serviceType (categorie schema.org), category (texte libre),
+// keywords (mots-cles a haute intention d'achat locale), image (visuel hero),
+// audience et hasOfferCatalog (sous-services). Tous optionnels - retro-compat
+// avec les appels existants qui passent uniquement {name, description, url}.
+export function getServiceSchema({
+  name,
+  description,
+  url,
+  priceRange,
+  serviceType,
+  category,
+  keywords,
+  image,
+  audience,
+  offers,
+  subServices,
+}) {
+  const fullImage = image
+    ? (image.startsWith('http') ? image : `${SITE_URL}${image}`)
+    : undefined;
+
+  const schema = {
     '@context': 'https://schema.org',
     '@type': 'Service',
     name,
@@ -243,13 +265,47 @@ export function getServiceSchema({ name, description, url, priceRange }) {
     provider: {
       '@type': 'Organization',
       '@id': `${SITE_URL}/#organization`,
-      name: 'Massive',
+      name: 'Massive Medias',
     },
     areaServed: [
       { '@type': 'City', name: 'Montreal' },
       { '@type': 'AdministrativeArea', name: 'Quebec' },
       { '@type': 'Country', name: 'Canada' },
     ],
-    ...(priceRange ? { priceRange } : {}),
   };
+
+  if (priceRange) schema.priceRange = priceRange;
+  if (serviceType) schema.serviceType = serviceType;
+  if (category) schema.category = category;
+  if (keywords && keywords.length > 0) {
+    schema.keywords = Array.isArray(keywords) ? keywords.join(', ') : keywords;
+  }
+  if (fullImage) schema.image = fullImage;
+  if (audience) {
+    schema.audience = {
+      '@type': 'Audience',
+      audienceType: audience,
+    };
+  }
+  if (offers) {
+    schema.offers = {
+      '@type': 'AggregateOffer',
+      priceCurrency: 'CAD',
+      ...offers,
+      seller: { '@type': 'Organization', name: 'Massive Medias' },
+      availability: 'https://schema.org/InStock',
+    };
+  }
+  if (subServices && subServices.length > 0) {
+    schema.hasOfferCatalog = {
+      '@type': 'OfferCatalog',
+      name: `${name} - Sous-services`,
+      itemListElement: subServices.map(s => ({
+        '@type': 'Offer',
+        itemOffered: { '@type': 'Service', name: s },
+      })),
+    };
+  }
+
+  return schema;
 }
