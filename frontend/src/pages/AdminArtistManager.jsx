@@ -14,7 +14,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search, Users, Loader2, ChevronLeft, Trash2, Save, CheckCircle,
   XCircle, Image as ImageIcon, Pencil, DollarSign, Sparkles, TrendingUp,
-  BarChart3, Banknote, Eye, Plus, Wallet, Lock, ShieldCheck, Trophy, AlertTriangle,
+  BarChart3, Banknote, Eye, Plus, Wallet, Lock, ShieldCheck, Trophy,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import {
@@ -982,22 +982,26 @@ function StatsTab({ detail, tx }) {
   // par trackArtworkView() apres exclusion de l'admin et de l'artiste
   // lui-meme via setAnalyticsIdentity. Tres deconnecte des stats
   // internes (`stats.itemsViews`) qui peuvent rester en placeholder.
-  const [gaTop, setGaTop] = useState(null); // { topArtworks, gaConfigured, message? } | null
+  //
+  // Le backend renvoie TOUJOURS { success: true, topArtworks, status }
+  // meme en cas d'echec GA4 silencieux (status='pending_data'). On
+  // n'expose volontairement aucun bandeau d'erreur cote UI - une
+  // erreur reseau brute est mappee vers le meme etat calme.
+  const [gaTop, setGaTop] = useState(null);
   const [gaLoading, setGaLoading] = useState(true);
-  const [gaError, setGaError] = useState('');
 
   useEffect(() => {
     if (!detail?.slug) return;
     let cancelled = false;
     setGaLoading(true);
-    setGaError('');
     setGaTop(null);
     getArtistTopArtworks(detail.slug)
       .then(({ data }) => { if (!cancelled) setGaTop(data); })
-      .catch((err) => {
-        if (cancelled) return;
-        const msg = err?.response?.data?.error?.message || err?.message || 'Erreur';
-        setGaError(msg);
+      .catch(() => {
+        // Erreur reseau brute (backend down, timeout, etc) : on degrade
+        // proprement vers l'etat "pending_data" plutot que d'afficher
+        // une erreur rouge anxiogene cote admin.
+        if (!cancelled) setGaTop({ success: false, topArtworks: [], status: 'pending_data' });
       })
       .finally(() => { if (!cancelled) setGaLoading(false); });
     return () => { cancelled = true; };
@@ -1014,7 +1018,12 @@ function StatsTab({ detail, tx }) {
           value={stats.itemsViews?.length || 0} color="text-grey-muted" />
       </div>
 
-      {/* GA4 Top 3 oeuvres - source verite vue reelle */}
+      {/* GA4 Top 3 oeuvres - source verite vue reelle.
+          Backend : { success, topArtworks: [{ slug, title, image, views }], status }.
+          status = 'ok' (donnees presentes) | 'pending_data' (GA non
+          configure OU pas encore de trafic public). Aucun etat "rouge"
+          - les erreurs reelles deviennent "pending_data" cote backend
+          pour rester calme cote UI. */}
       <div className="card-bg rounded-xl p-4 space-y-3 ring-1 ring-yellow-400/20">
         <div className="flex items-center justify-between gap-2 flex-wrap">
           <h3 className="text-heading font-semibold text-sm uppercase tracking-wider flex items-center gap-2">
@@ -1025,7 +1034,7 @@ function StatsTab({ detail, tx }) {
               es: 'Top 3 obras mas populares',
             })}
           </h3>
-          {gaTop?.windowDays && (
+          {gaTop?.windowDays && gaTop?.topArtworks?.length > 0 && (
             <span className="text-[10px] text-grey-muted">
               {tx({
                 fr: `Source : Google Analytics · ${gaTop.windowDays} derniers jours`,
@@ -1040,38 +1049,28 @@ function StatsTab({ detail, tx }) {
           <div className="flex items-center justify-center py-6">
             <Loader2 size={18} className="animate-spin text-yellow-400" />
           </div>
-        ) : gaError ? (
-          <div className="flex items-start gap-2 rounded-lg bg-red-500/10 border border-red-500/30 px-3 py-2 text-xs text-red-400">
-            <AlertTriangle size={12} className="flex-shrink-0 mt-0.5" />
-            <span className="leading-relaxed">{gaError}</span>
-          </div>
-        ) : !gaTop?.gaConfigured ? (
-          <p className="text-xs text-grey-muted leading-relaxed">
-            {tx({
-              fr: 'GA4 n\'est pas encore configure cote serveur. Ajoute GA_PROPERTY_ID, GA_CLIENT_EMAIL et GA_PRIVATE_KEY dans les variables d\'environnement Render pour activer cette section.',
-              en: 'GA4 is not configured on the server yet. Add GA_PROPERTY_ID, GA_CLIENT_EMAIL and GA_PRIVATE_KEY to Render env variables to enable this section.',
-              es: 'GA4 no esta configurado todavia. Agrega las variables GA_* en Render.',
-            })}
-          </p>
         ) : !gaTop?.topArtworks || gaTop.topArtworks.length === 0 ? (
-          <p className="text-xs text-grey-muted leading-relaxed">
+          // Etat discret unique : pending_data couvre tous les cas calmes
+          // (GA non configure, pas encore de donnees, erreur API silencieuse).
+          // Aucune coloration rouge - on guide l'admin sans le stresser.
+          <p className="text-xs text-grey-muted/80 italic leading-relaxed py-2">
             {tx({
-              fr: 'Pas encore assez de donnees GA4 pour cet artiste sur les 90 derniers jours. Les compteurs se rempliront avec les visites publiques (le trafic admin / artiste lui-meme est exclu a la source).',
-              en: 'Not enough GA4 data yet for this artist over the last 90 days. Public traffic only (admin and the artist themselves are excluded at source).',
-              es: 'Aun no hay suficientes datos de GA4 en los ultimos 90 dias.',
+              fr: 'En attente de synchronisation des données Google Analytics.',
+              en: 'Waiting for Google Analytics data to sync.',
+              es: 'Esperando la sincronización de datos de Google Analytics.',
             })}
           </p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             {gaTop.topArtworks.map((art, i) => (
               <div
-                key={`${art.printSlug}-${i}`}
+                key={`${art.slug || art.pagePath || i}`}
                 className="rounded-lg overflow-hidden bg-black/30 border border-white/5"
               >
                 <div className="relative aspect-square bg-white/5">
-                  {art.thumbnail ? (
+                  {art.image ? (
                     <img
-                      src={art.thumbnail}
+                      src={art.image}
                       alt={art.title}
                       className="w-full h-full object-cover"
                       loading="lazy"

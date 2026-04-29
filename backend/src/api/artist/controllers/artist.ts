@@ -1042,14 +1042,17 @@ export default factories.createCoreController('api::artist.artist', ({ strapi })
       return ctx.badRequest('Cet artiste n\'a pas de slug');
     }
 
-    // Fast path : si GA non configure, on renvoie un payload vide
-    // explicite plutot qu'une erreur 500 silencieuse.
+    // Fast path : si GA non configure, on renvoie le shape "pending_data"
+    // (success: true volontairement - on ne traite pas l'absence de
+    // config comme un echec rouge cote UI). Le frontend affiche un
+    // message discret invitant a configurer les vars d'env.
     if (!getGAClient()) {
       ctx.body = {
-        artistSlug,
+        success: true,
         topArtworks: [],
+        status: 'pending_data',
+        artistSlug,
         gaConfigured: false,
-        message: 'GA4 non configure (GA_PROPERTY_ID / GA_CLIENT_EMAIL / GA_PRIVATE_KEY manquantes).',
       };
       return;
     }
@@ -1073,29 +1076,43 @@ export default factories.createCoreController('api::artist.artist', ({ strapi })
           String(pr?.id || '') === printSlugOrId,
         );
         return {
-          pagePath: p.pagePath,
-          printSlug: printSlugOrId,
-          views: p.views,
+          // Shape alignee avec le brief :
+          //   { title, image, views, slug }
+          // On expose aussi pagePath en bonus pour debug (non breaking).
+          slug: printSlugOrId,
           title: match?.title || match?.titleEn || match?.titleFr || printSlugOrId,
-          thumbnail: match?.thumbnail || match?.image || match?.fullImage || null,
+          image: match?.thumbnail || match?.image || match?.fullImage || null,
+          views: p.views,
+          pagePath: p.pagePath,
           price: match?.price || null,
           unique: !!match?.unique,
         };
       });
 
       ctx.body = {
-        artistSlug,
+        success: true,
         topArtworks: enriched,
+        // status='ok' si GA a repondu avec >=1 ligne, 'pending_data' si
+        // GA a repondu vide (pas encore de trafic public collecte).
+        // L'UI traite les deux comme "etat propre", mais un admin qui
+        // log peut diagnostiquer plus facilement.
+        status: enriched.length > 0 ? 'ok' : 'pending_data',
+        artistSlug,
         gaConfigured: true,
         windowDays: 90,
       };
     } catch (err: any) {
-      strapi.log.error(`[adminTopArtworks] echec GA4 pour ${artistSlug}: ${err?.message || err}`);
+      // Catch silencieux par design (cf. brief) : si l'API GA4 echoue
+      // (auth pas encore propagee, quota, etc), on renvoie quand meme
+      // un succes avec status='pending_data' pour que l'UI reste calme
+      // et n'affiche pas de bandeau rouge anxiogene cote admin.
+      strapi.log.warn(`[adminTopArtworks] GA4 indisponible pour ${artistSlug}: ${err?.message || err}`);
       ctx.body = {
-        artistSlug,
+        success: true,
         topArtworks: [],
+        status: 'pending_data',
+        artistSlug,
         gaConfigured: true,
-        error: err?.message || 'Echec recuperation GA4',
       };
     }
   },
