@@ -1042,15 +1042,21 @@ export default factories.createCoreController('api::artist.artist', ({ strapi })
       return ctx.badRequest('Cet artiste n\'a pas de slug');
     }
 
-    // Fast path : si GA non configure, on renvoie le shape "pending_data"
-    // (success: true volontairement - on ne traite pas l'absence de
-    // config comme un echec rouge cote UI). Le frontend affiche un
-    // message discret invitant a configurer les vars d'env.
+    // Triage des statuts (cf. brief Phase Top 3 GA4) :
+    //   - 'missing_config' : une ou plusieurs vars d'env GA_* manquent
+    //   - 'api_error'      : l'appel runReport a leve (auth, quota, etc)
+    //   - 'no_data'        : runReport a repondu mais 0 ligne sur 90j
+    //   - 'ok'             : >= 1 ligne dans topArtworks
+    //
+    // L'UI admin traite missing_config / api_error / no_data comme un
+    // unique etat calme "En attente de synchronisation" (zero alarmisme,
+    // zero bandeau rouge). Le champ `status` reste utile pour le
+    // diagnostic dev (DevTools / Render logs).
     if (!getGAClient()) {
       ctx.body = {
         success: true,
         topArtworks: [],
-        status: 'pending_data',
+        status: 'missing_config',
         artistSlug,
         gaConfigured: false,
       };
@@ -1092,25 +1098,22 @@ export default factories.createCoreController('api::artist.artist', ({ strapi })
       ctx.body = {
         success: true,
         topArtworks: enriched,
-        // status='ok' si GA a repondu avec >=1 ligne, 'pending_data' si
-        // GA a repondu vide (pas encore de trafic public collecte).
-        // L'UI traite les deux comme "etat propre", mais un admin qui
-        // log peut diagnostiquer plus facilement.
-        status: enriched.length > 0 ? 'ok' : 'pending_data',
+        status: enriched.length > 0 ? 'ok' : 'no_data',
         artistSlug,
         gaConfigured: true,
         windowDays: 90,
       };
     } catch (err: any) {
       // Catch silencieux par design (cf. brief) : si l'API GA4 echoue
-      // (auth pas encore propagee, quota, etc), on renvoie quand meme
-      // un succes avec status='pending_data' pour que l'UI reste calme
-      // et n'affiche pas de bandeau rouge anxiogene cote admin.
-      strapi.log.warn(`[adminTopArtworks] GA4 indisponible pour ${artistSlug}: ${err?.message || err}`);
+      // (auth pas encore propagee, quota, network), on renvoie quand
+      // meme un succes avec status='api_error' pour que l'UI reste
+      // calme et que l'admin diagnostique via les logs Render plutot
+      // qu'un bandeau rouge anxiogene a l'ecran.
+      strapi.log.warn(`[adminTopArtworks] GA4 API error pour ${artistSlug}: ${err?.message || err}`);
       ctx.body = {
         success: true,
         topArtworks: [],
-        status: 'pending_data',
+        status: 'api_error',
         artistSlug,
         gaConfigured: true,
       };

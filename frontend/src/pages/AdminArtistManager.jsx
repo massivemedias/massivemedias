@@ -999,9 +999,10 @@ function StatsTab({ detail, tx }) {
       .then(({ data }) => { if (!cancelled) setGaTop(data); })
       .catch(() => {
         // Erreur reseau brute (backend down, timeout, etc) : on degrade
-        // proprement vers l'etat "pending_data" plutot que d'afficher
-        // une erreur rouge anxiogene cote admin.
-        if (!cancelled) setGaTop({ success: false, topArtworks: [], status: 'pending_data' });
+        // proprement vers le meme etat calme que les autres cas non-ok
+        // (missing_config / api_error / no_data) plutot que d'afficher
+        // un bandeau rouge anxiogene cote admin.
+        if (!cancelled) setGaTop({ success: false, topArtworks: [], status: 'api_error' });
       })
       .finally(() => { if (!cancelled) setGaLoading(false); });
     return () => { cancelled = true; };
