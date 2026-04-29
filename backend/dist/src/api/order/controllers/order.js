@@ -939,528 +939,568 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
             // qu'ignorer un event valide a cause d'un probleme DB transient).
             strapi.log.warn(`[webhook:${requestId}] idempotency log insert failed (non-unique): ${dupErr === null || dupErr === void 0 ? void 0 : dupErr.message}`);
         }
-        // FIX-PRIVATE-SALE (avril 2026) : handler dedie pour les ventes privees
-        // d'oeuvres artistes (flux /vente-privee/:token). Metadata.type === 'private-sale'
-        // signale ce flux. On marque le print comme sold=true dans artist.prints[]
-        // sans creer d'Order (les ventes privees ne vont pas dans la table orders).
-        if (event.type === 'checkout.session.completed' || event.type === 'payment_intent.succeeded') {
-            const obj = event.data.object;
-            const meta = (obj === null || obj === void 0 ? void 0 : obj.metadata) || {};
-            if (meta.type === 'private-sale' && meta.privateSaleToken && meta.artistSlug && meta.printId) {
-                try {
-                    const artists = await strapi.documents('api::artist.artist').findMany({
-                        filters: { slug: meta.artistSlug },
-                        status: 'published',
-                    });
-                    const artist = artists[0];
-                    if (artist) {
-                        const prints = Array.isArray(artist.prints) ? artist.prints : [];
-                        const updated = prints.map((p) => {
-                            if ((p === null || p === void 0 ? void 0 : p.id) === meta.printId && (p === null || p === void 0 ? void 0 : p.privateToken) === meta.privateSaleToken) {
-                                return {
-                                    ...p,
-                                    sold: true,
-                                    soldAt: new Date().toISOString(),
-                                    soldAmount: typeof obj.amount_total === 'number'
-                                        ? obj.amount_total / 100
-                                        : (typeof obj.amount === 'number' ? obj.amount / 100 : null),
-                                    stripePaymentIntentId: obj.payment_intent || obj.id || null,
-                                };
-                            }
-                            return p;
-                        });
-                        await strapi.documents('api::artist.artist').update({
-                            documentId: artist.documentId,
-                            data: { prints: updated },
+        // PRE-LAUNCH AUDIT (29 avril 2026) : top-level try/catch autour de tout
+        // le pipeline post-signature/post-idempotency. Garantit qu'on renvoie
+        // TOUJOURS un 200 a Stripe pour bloquer les retries en boucle.
+        //
+        // Pourquoi necessaire : l'idempotency log est ecrit AVANT le pipeline.
+        // Si l'order update levait (DB transient down, lock contention, etc),
+        // la 2eme tentative Stripe trouverait l'event deja loge -> 200 fast +
+        // duplicate=true -> l'order resterait orphelin en 'draft' definitivement.
+        // Avec ce wrap, on log loud, on alerte l'admin (throttle 60min), on
+        // renvoie 200 pour que Stripe arrete de retry, et l'admin peut
+        // reconcilier via /orders/reconcile-stripe.
+        try {
+            // FIX-PRIVATE-SALE (avril 2026) : handler dedie pour les ventes privees
+            // d'oeuvres artistes (flux /vente-privee/:token). Metadata.type === 'private-sale'
+            // signale ce flux. On marque le print comme sold=true dans artist.prints[]
+            // sans creer d'Order (les ventes privees ne vont pas dans la table orders).
+            if (event.type === 'checkout.session.completed' || event.type === 'payment_intent.succeeded') {
+                const obj = event.data.object;
+                const meta = (obj === null || obj === void 0 ? void 0 : obj.metadata) || {};
+                if (meta.type === 'private-sale' && meta.privateSaleToken && meta.artistSlug && meta.printId) {
+                    try {
+                        const artists = await strapi.documents('api::artist.artist').findMany({
+                            filters: { slug: meta.artistSlug },
                             status: 'published',
                         });
-                        strapi.log.info(`[webhook:${requestId}] private-sale SOLD: ${meta.artistSlug}/${meta.printId} token=${meta.privateSaleToken.slice(0, 8)}...`);
+                        const artist = artists[0];
+                        if (artist) {
+                            const prints = Array.isArray(artist.prints) ? artist.prints : [];
+                            const updated = prints.map((p) => {
+                                if ((p === null || p === void 0 ? void 0 : p.id) === meta.printId && (p === null || p === void 0 ? void 0 : p.privateToken) === meta.privateSaleToken) {
+                                    return {
+                                        ...p,
+                                        sold: true,
+                                        soldAt: new Date().toISOString(),
+                                        soldAmount: typeof obj.amount_total === 'number'
+                                            ? obj.amount_total / 100
+                                            : (typeof obj.amount === 'number' ? obj.amount / 100 : null),
+                                        stripePaymentIntentId: obj.payment_intent || obj.id || null,
+                                    };
+                                }
+                                return p;
+                            });
+                            await strapi.documents('api::artist.artist').update({
+                                documentId: artist.documentId,
+                                data: { prints: updated },
+                                status: 'published',
+                            });
+                            strapi.log.info(`[webhook:${requestId}] private-sale SOLD: ${meta.artistSlug}/${meta.printId} token=${meta.privateSaleToken.slice(0, 8)}...`);
+                        }
+                        else {
+                            strapi.log.warn(`[webhook:${requestId}] private-sale: artist ${meta.artistSlug} introuvable`);
+                        }
                     }
-                    else {
-                        strapi.log.warn(`[webhook:${requestId}] private-sale: artist ${meta.artistSlug} introuvable`);
+                    catch (err) {
+                        strapi.log.error(`[webhook:${requestId}] private-sale update ECHEC:`, err === null || err === void 0 ? void 0 : err.message);
                     }
-                }
-                catch (err) {
-                    strapi.log.error(`[webhook:${requestId}] private-sale update ECHEC:`, err === null || err === void 0 ? void 0 : err.message);
-                }
-                // On laisse le flow continuer pour NE PAS casser les orders regulieres
-                // qui partagent le meme event - mais comme le metadata est private-sale,
-                // les lookups orders plus bas ne trouveront rien et le handler retournera
-                // gracefully.
-            }
-        }
-        // Pour checkout sessions, recuperer le payment_intent_id et upgrader la colonne
-        // stripePaymentIntentId (qui contient peut-etre encore le cs_live_ temporaire).
-        if (event.type === 'checkout.session.completed') {
-            const session = event.data.object;
-            if (session.payment_intent && session.payment_status === 'paid') {
-                // Search by BOTH columns to handle both orders created pre-split (still storing cs_live
-                // in stripePaymentIntentId) AND orders created post-split (cs_live in stripeCheckoutSessionId).
-                const orders = await strapi.documents('api::order.order').findMany({
-                    filters: {
-                        $or: [
-                            { stripeCheckoutSessionId: session.id },
-                            { stripePaymentIntentId: session.payment_intent },
-                            { stripePaymentIntentId: session.id },
-                        ],
-                    },
-                });
-                if (orders.length > 0 && orders[0].status === 'draft') {
-                    // FIX-STRIPE-SYNC (avril 2026) : double-filet pour que le statut
-                    // passe a 'paid' des que checkout.session.completed arrive. Avant,
-                    // on attendait STRICTEMENT payment_intent.succeeded pour flipper.
-                    // Si ce 2e event tombait dans la lucarne (retry Stripe echoue,
-                    // ngrok deconnecte en dev, etc.), la commande restait 'draft' ad
-                    // vitam -> admin avait l'impression que Stripe "ne syncait pas".
-                    // Maintenant on flip aussi ici quand session.payment_status==='paid',
-                    // et on se contente d'etre idempotent si payment_intent.succeeded
-                    // arrive ensuite (il passe alors de paid->paid sans effet).
-                    await strapi.documents('api::order.order').update({
-                        documentId: orders[0].documentId,
-                        data: {
-                            status: 'paid',
-                            stripePaymentIntentId: session.payment_intent,
-                            stripeCheckoutSessionId: session.id,
-                        },
-                    });
-                    strapi.log.info(`[webhook:${requestId}] checkout.session.completed: order ${orders[0].documentId} -> PAID (session=${session.id}, pi=${session.payment_intent})`);
+                    // On laisse le flow continuer pour NE PAS casser les orders regulieres
+                    // qui partagent le meme event - mais comme le metadata est private-sale,
+                    // les lookups orders plus bas ne trouveront rien et le handler retournera
+                    // gracefully.
                 }
             }
-            // Le payment_intent.succeeded va suivre et gerer le reste
-            ctx.body = { received: true };
-            return;
-        }
-        if (event.type === 'payment_intent.succeeded') {
-            const paymentIntent = event.data.object;
-            // STRIPE-02: early-return DB lookup avant d'appeler Stripe. Depuis commit
-            // 15a34e1, createCheckoutSession stocke stripeCheckoutSessionId ET
-            // stripePaymentIntentId des le debut. Donc pour les orders post-avril-2026,
-            // un simple findMany sur stripePaymentIntentId trouve l'order sans avoir
-            // besoin de sessions.list() cote Stripe (100-300ms economises + rate
-            // limit menage + pas de timeout si Stripe API lente).
-            let orders = await strapi.documents('api::order.order').findMany({
-                filters: { stripePaymentIntentId: paymentIntent.id },
-            });
-            // Fallback manual payment link : metadata.orderId propagee depuis paymentLinks.create.
-            // On retrouve directement l'Order par documentId sans faire d'appel Stripe.
-            const manualOrderId = (paymentIntent.metadata || {}).orderId;
-            if (orders.length === 0 && manualOrderId) {
-                const manualOrder = await strapi.documents('api::order.order').findFirst({
-                    filters: { documentId: manualOrderId },
-                });
-                if (manualOrder) {
-                    orders = [manualOrder];
-                    // On stocke le payment_intent definitif pour les webhooks retry et la reconciliation
-                    try {
-                        await strapi.documents('api::order.order').update({
-                            documentId: manualOrder.documentId,
-                            data: { stripePaymentIntentId: paymentIntent.id },
-                        });
-                    }
-                    catch (updateErr) {
-                        strapi.log.warn(`[webhook:${requestId}] Could not stamp PI on manual order ${manualOrder.documentId}: ${updateErr === null || updateErr === void 0 ? void 0 : updateErr.message}`);
-                    }
-                }
-            }
-            // Fallback pour les orders pre-avril 2026 (pas de stripeCheckoutSessionId
-            // separe, le cs_live_ est dans stripePaymentIntentId). On resout via
-            // Stripe seulement dans ce cas.
-            if (orders.length === 0) {
-                let checkoutSessionId = null;
-                try {
-                    const stripe = getStripe();
-                    const sessions = await stripe.checkout.sessions.list({ payment_intent: paymentIntent.id, limit: 1 });
-                    if (sessions.data.length > 0)
-                        checkoutSessionId = sessions.data[0].id;
-                }
-                catch (lookupErr) {
-                    strapi.log.warn(`[webhook:${requestId}] Could not lookup session for ${paymentIntent.id}:`, lookupErr === null || lookupErr === void 0 ? void 0 : lookupErr.message);
-                }
-                if (checkoutSessionId) {
-                    orders = await strapi.documents('api::order.order').findMany({
+            // Pour checkout sessions, recuperer le payment_intent_id et upgrader la colonne
+            // stripePaymentIntentId (qui contient peut-etre encore le cs_live_ temporaire).
+            if (event.type === 'checkout.session.completed') {
+                const session = event.data.object;
+                if (session.payment_intent && session.payment_status === 'paid') {
+                    // Search by BOTH columns to handle both orders created pre-split (still storing cs_live
+                    // in stripePaymentIntentId) AND orders created post-split (cs_live in stripeCheckoutSessionId).
+                    const orders = await strapi.documents('api::order.order').findMany({
                         filters: {
                             $or: [
-                                { stripeCheckoutSessionId: checkoutSessionId },
-                                { stripePaymentIntentId: checkoutSessionId },
+                                { stripeCheckoutSessionId: session.id },
+                                { stripePaymentIntentId: session.payment_intent },
+                                { stripePaymentIntentId: session.id },
                             ],
                         },
                     });
-                }
-            }
-            if (orders.length > 0) {
-                const order = orders[0];
-                // Generer le numero de facture sequentiel MM-AAAA-XXXX
-                let invoiceNumber = '';
-                try {
-                    const now = new Date();
-                    const year = now.getFullYear();
-                    const prefix = `MM-${year}-`;
-                    const existingOrders = await strapi.documents('api::order.order').findMany({
-                        filters: { invoiceNumber: { $startsWith: prefix } },
-                        sort: { invoiceNumber: 'desc' },
-                        limit: 1,
-                    });
-                    let seq = 1;
-                    if (existingOrders.length > 0 && existingOrders[0].invoiceNumber) {
-                        const lastNum = existingOrders[0].invoiceNumber.replace(prefix, '');
-                        seq = (parseInt(lastNum, 10) || 0) + 1;
-                    }
-                    invoiceNumber = `${prefix}${String(seq).padStart(4, '0')}`;
-                }
-                catch (invoiceErr) {
-                    strapi.log.warn('Erreur generation numero facture:', invoiceErr);
-                    invoiceNumber = `MM-${new Date().getFullYear()}-0000`;
-                }
-                await strapi.documents('api::order.order').update({
-                    documentId: order.documentId,
-                    data: { status: 'paid', invoiceNumber },
-                });
-                strapi.log.info(`Order ${order.documentId} marked as paid (${invoiceNumber})`);
-                // ERP manual orders : flip l'Invoice liee (paymentStatus + paidAt).
-                // Detection: metadata.invoiceId direct OU relation order.invoice si isManual.
-                try {
-                    const metaInvoiceId = (paymentIntent.metadata || {}).invoiceId;
-                    let invoiceDocId = metaInvoiceId || null;
-                    if (!invoiceDocId) {
-                        const linked = await strapi.documents('api::invoice.invoice').findFirst({
-                            filters: { order: { documentId: order.documentId } },
-                        });
-                        if (linked)
-                            invoiceDocId = linked.documentId;
-                    }
-                    if (invoiceDocId) {
-                        await strapi.documents('api::invoice.invoice').update({
-                            documentId: invoiceDocId,
+                    if (orders.length > 0 && orders[0].status === 'draft') {
+                        // FIX-STRIPE-SYNC (avril 2026) : double-filet pour que le statut
+                        // passe a 'paid' des que checkout.session.completed arrive. Avant,
+                        // on attendait STRICTEMENT payment_intent.succeeded pour flipper.
+                        // Si ce 2e event tombait dans la lucarne (retry Stripe echoue,
+                        // ngrok deconnecte en dev, etc.), la commande restait 'draft' ad
+                        // vitam -> admin avait l'impression que Stripe "ne syncait pas".
+                        // Maintenant on flip aussi ici quand session.payment_status==='paid',
+                        // et on se contente d'etre idempotent si payment_intent.succeeded
+                        // arrive ensuite (il passe alors de paid->paid sans effet).
+                        await strapi.documents('api::order.order').update({
+                            documentId: orders[0].documentId,
                             data: {
-                                paymentStatus: 'paid',
                                 status: 'paid',
-                                paidAt: new Date().toISOString(),
+                                stripePaymentIntentId: session.payment_intent,
+                                stripeCheckoutSessionId: session.id,
                             },
                         });
-                        strapi.log.info(`[webhook:${requestId}] Invoice ${invoiceDocId} flipped to paid`);
+                        strapi.log.info(`[webhook:${requestId}] checkout.session.completed: order ${orders[0].documentId} -> PAID (session=${session.id}, pi=${session.payment_intent})`);
                     }
                 }
-                catch (invFlipErr) {
-                    strapi.log.warn(`[webhook:${requestId}] Could not flip invoice paymentStatus: ${invFlipErr === null || invFlipErr === void 0 ? void 0 : invFlipErr.message}`);
-                }
-                // STRIPE-04: emails admin + client en parallele via Promise.allSettled.
-                // Avant: sequential await - si l'un timeout (ex: Resend down 5s), l'autre
-                // attend avant de partir, doublant potentiellement le temps total du webhook.
-                // Maintenant: parallele + log structure error-level avec orderId+recipient
-                // pour qu'on puisse retracer un echec dans les logs Render.
-                // TODO STRIPE-04b: persister les echecs dans une table email_retry_queue
-                // avec cron horaire. Deferre pour rester dans le scope RACE/perf Vague 2.
-                {
-                    const orderItems = Array.isArray(order.items) ? order.items : [];
-                    const orderRef = paymentIntent.id.slice(-8).toUpperCase();
-                    const allUploadedFiles = [];
-                    for (const item of orderItems) {
-                        if (Array.isArray(item.uploadedFiles)) {
-                            for (const f of item.uploadedFiles) {
-                                if (f && (f.url || f.name)) {
-                                    allUploadedFiles.push({ name: f.name || f.url || 'Fichier', url: f.url || '' });
-                                }
-                            }
-                        }
-                    }
-                    const itemsForEmail = orderItems.map((item) => ({
-                        productName: item.productName || 'Produit',
-                        quantity: item.quantity || 1,
-                        totalPrice: item.totalPrice || 0,
-                        size: item.size || '',
-                        finish: item.finish || '',
-                    }));
-                    const [confirmRes, adminRes] = await Promise.allSettled([
-                        (0, email_1.sendOrderConfirmationEmail)({
-                            customerName: order.customerName,
-                            customerEmail: order.customerEmail,
-                            orderRef,
-                            invoiceNumber,
-                            items: itemsForEmail,
-                            subtotal: order.subtotal || 0,
-                            shipping: order.shipping || 0,
-                            tps: order.tps || 0,
-                            tvq: order.tvq || 0,
-                            total: order.total || 0,
-                            shippingAddress: order.shippingAddress || null,
-                            promoCode: order.promoCode || undefined,
-                            promoDiscount: order.promoDiscount || undefined,
-                            supabaseUserId: order.supabaseUserId || undefined,
-                        }),
-                        (0, email_1.sendNewOrderNotificationEmail)({
-                            orderRef,
-                            customerName: order.customerName,
-                            customerEmail: order.customerEmail,
-                            items: itemsForEmail,
-                            subtotal: order.subtotal || 0,
-                            shipping: order.shipping || 0,
-                            tps: order.tps || 0,
-                            tvq: order.tvq || 0,
-                            total: order.total || 0,
-                            shippingAddress: order.shippingAddress || null,
-                            uploadedFiles: allUploadedFiles.length > 0 ? allUploadedFiles : undefined,
-                            notes: order.notes || undefined,
-                            designReady: order.designReady !== false,
-                            promoCode: order.promoCode || undefined,
-                            promoDiscount: order.promoDiscount || undefined,
-                        }),
-                    ]);
-                    if (confirmRes.status === 'fulfilled') {
-                        strapi.log.info(`Email confirmation envoye a ${order.customerEmail} (${invoiceNumber})`);
-                    }
-                    else {
-                        strapi.log.error(`STRIPE-04: ECHEC email confirmation client. ` +
-                            `orderId=${order.documentId} orderRef=${orderRef} invoice=${invoiceNumber} ` +
-                            `recipient=${order.customerEmail} err=${((_b = confirmRes.reason) === null || _b === void 0 ? void 0 : _b.message) || confirmRes.reason}`);
-                    }
-                    if (adminRes.status === 'fulfilled') {
-                        strapi.log.info(`Notification vente admin envoyee pour commande ${orderRef}`);
-                    }
-                    else {
-                        strapi.log.error(`STRIPE-04: ECHEC notification vente admin. ` +
-                            `orderId=${order.documentId} orderRef=${orderRef} invoice=${invoiceNumber} ` +
-                            `err=${((_c = adminRes.reason) === null || _c === void 0 ? void 0 : _c.message) || adminRes.reason}`);
-                    }
-                }
-                // Update client stats
-                try {
-                    const clients = await strapi.documents('api::client.client').findMany({
-                        filters: { email: order.customerEmail.toLowerCase() },
+                // Le payment_intent.succeeded va suivre et gerer le reste
+                ctx.body = { received: true };
+                return;
+            }
+            if (event.type === 'payment_intent.succeeded') {
+                const paymentIntent = event.data.object;
+                // STRIPE-02: early-return DB lookup avant d'appeler Stripe. Depuis commit
+                // 15a34e1, createCheckoutSession stocke stripeCheckoutSessionId ET
+                // stripePaymentIntentId des le debut. Donc pour les orders post-avril-2026,
+                // un simple findMany sur stripePaymentIntentId trouve l'order sans avoir
+                // besoin de sessions.list() cote Stripe (100-300ms economises + rate
+                // limit menage + pas de timeout si Stripe API lente).
+                let orders = await strapi.documents('api::order.order').findMany({
+                    filters: { stripePaymentIntentId: paymentIntent.id },
+                });
+                // Fallback manual payment link : metadata.orderId propagee depuis paymentLinks.create.
+                // On retrouve directement l'Order par documentId sans faire d'appel Stripe.
+                const manualOrderId = (paymentIntent.metadata || {}).orderId;
+                if (orders.length === 0 && manualOrderId) {
+                    const manualOrder = await strapi.documents('api::order.order').findFirst({
+                        filters: { documentId: manualOrderId },
                     });
-                    if (clients.length > 0) {
-                        const client = clients[0];
-                        await strapi.documents('api::client.client').update({
-                            documentId: client.documentId,
-                            data: {
-                                totalSpent: (Number(client.totalSpent) || 0) + (order.total || 0) / 100,
-                                orderCount: (client.orderCount || 0) + 1,
-                                lastOrderDate: new Date().toISOString().split('T')[0],
-                            },
-                        });
-                    }
-                }
-                catch (err) {
-                    strapi.log.warn('Could not update client stats:', err);
-                }
-                // RACE-02: decrement inventory stock ATOMIQUEMENT pour chaque item. L'ancienne
-                // version faisait findMany -> max(0, qty-n) -> update : si deux webhooks arrivaient
-                // simultanement pour le meme SKU, le read pouvait donner la meme valeur aux deux
-                // avant qu'aucun write ne soit fait (stock surestime silencieusement).
-                //
-                // La solution: UPDATE inventory_items SET quantity=quantity-? WHERE sku=? AND
-                // active=true AND quantity>=? via knex. Postgres garantit l'atomicite de l'UPDATE
-                // sur une seule ligne. Si rowCount=0 c'est soit SKU inconnu (skip silencieux
-                // comme avant) soit stock insuffisant (log LOUD pour traitement manuel puisque
-                // le paiement est deja passe cote Stripe).
-                try {
-                    const knex = strapi.db.connection;
-                    const orderItems = Array.isArray(order.items) ? order.items : [];
-                    for (const item of orderItems) {
-                        const qty = item.quantity || 1;
-                        const sku = item.sku || item.slug;
-                        if (!sku)
-                            continue;
-                        const rowsAffected = await knex('inventory_items')
-                            .where({ sku, active: true })
-                            .andWhere('quantity', '>=', qty)
-                            .update({ quantity: knex.raw('quantity - ?', [qty]) });
-                        if (rowsAffected > 0) {
-                            const row = await knex('inventory_items')
-                                .where({ sku, active: true })
-                                .first('quantity');
-                            strapi.log.info(`Inventory ${sku}: -${qty} -> ${(_d = row === null || row === void 0 ? void 0 : row.quantity) !== null && _d !== void 0 ? _d : '?'} (atomic)`);
+                    if (manualOrder) {
+                        orders = [manualOrder];
+                        // On stocke le payment_intent definitif pour les webhooks retry et la reconciliation
+                        try {
+                            await strapi.documents('api::order.order').update({
+                                documentId: manualOrder.documentId,
+                                data: { stripePaymentIntentId: paymentIntent.id },
+                            });
                         }
-                        else {
-                            // Disambiguate: SKU non-tracked (silent skip, comportement avant) vs stock insuffisant (loud)
-                            const existing = await knex('inventory_items')
-                                .where({ sku, active: true })
-                                .first('quantity');
-                            if (existing !== undefined) {
-                                strapi.log.warn(`RACE-02: inventory insuffisant pour SKU "${sku}" (en stock: ${existing.quantity}, ` +
-                                    `demande: ${qty}). Order ${order.documentId} paye mais stock non decremente. ` +
-                                    `A traiter manuellement (rupture de stock non detectee lors de l'achat).`);
-                            }
+                        catch (updateErr) {
+                            strapi.log.warn(`[webhook:${requestId}] Could not stamp PI on manual order ${manualOrder.documentId}: ${updateErr === null || updateErr === void 0 ? void 0 : updateErr.message}`);
                         }
                     }
                 }
-                catch (err) {
-                    strapi.log.warn('Could not update inventory:', err);
-                }
-                // Notifier les artistes concernes par la vente
-                try {
-                    const orderItems = Array.isArray(order.items) ? order.items : [];
-                    const artistItemsMap = {};
-                    // Charger tous les artistes actifs
-                    const artists = await strapi.documents('api::artist.artist').findMany({
-                        filters: { active: true },
-                    });
-                    const artistMap = {};
-                    for (const a of artists) {
-                        artistMap[a.slug] = a;
-                    }
-                    const slugs = Object.keys(artistMap);
-                    // Charger TOUS les user-roles artist pour avoir un fallback email par slug
-                    // (le champ artist.email peut etre null dans le CMS, l'email reel est dans user-role)
-                    const userRoleEmailBySlug = {};
+                // Fallback pour les orders pre-avril 2026 (pas de stripeCheckoutSessionId
+                // separe, le cs_live_ est dans stripePaymentIntentId). On resout via
+                // Stripe seulement dans ce cas.
+                if (orders.length === 0) {
+                    let checkoutSessionId = null;
                     try {
-                        const artistRoles = await strapi.documents('api::user-role.user-role').findMany({
-                            filters: { role: 'artist' },
+                        const stripe = getStripe();
+                        const sessions = await stripe.checkout.sessions.list({ payment_intent: paymentIntent.id, limit: 1 });
+                        if (sessions.data.length > 0)
+                            checkoutSessionId = sessions.data[0].id;
+                    }
+                    catch (lookupErr) {
+                        strapi.log.warn(`[webhook:${requestId}] Could not lookup session for ${paymentIntent.id}:`, lookupErr === null || lookupErr === void 0 ? void 0 : lookupErr.message);
+                    }
+                    if (checkoutSessionId) {
+                        orders = await strapi.documents('api::order.order').findMany({
+                            filters: {
+                                $or: [
+                                    { stripeCheckoutSessionId: checkoutSessionId },
+                                    { stripePaymentIntentId: checkoutSessionId },
+                                ],
+                            },
                         });
-                        for (const ur of artistRoles) {
-                            const slug = ur.artistSlug;
-                            if (slug && ur.email) {
-                                // Premier email trouve pour ce slug (ou le plus recent selon ordre de findMany)
-                                if (!userRoleEmailBySlug[slug]) {
-                                    userRoleEmailBySlug[slug] = ur.email;
+                    }
+                }
+                if (orders.length > 0) {
+                    const order = orders[0];
+                    // Generer le numero de facture sequentiel MM-AAAA-XXXX
+                    let invoiceNumber = '';
+                    try {
+                        const now = new Date();
+                        const year = now.getFullYear();
+                        const prefix = `MM-${year}-`;
+                        const existingOrders = await strapi.documents('api::order.order').findMany({
+                            filters: { invoiceNumber: { $startsWith: prefix } },
+                            sort: { invoiceNumber: 'desc' },
+                            limit: 1,
+                        });
+                        let seq = 1;
+                        if (existingOrders.length > 0 && existingOrders[0].invoiceNumber) {
+                            const lastNum = existingOrders[0].invoiceNumber.replace(prefix, '');
+                            seq = (parseInt(lastNum, 10) || 0) + 1;
+                        }
+                        invoiceNumber = `${prefix}${String(seq).padStart(4, '0')}`;
+                    }
+                    catch (invoiceErr) {
+                        strapi.log.warn('Erreur generation numero facture:', invoiceErr);
+                        invoiceNumber = `MM-${new Date().getFullYear()}-0000`;
+                    }
+                    await strapi.documents('api::order.order').update({
+                        documentId: order.documentId,
+                        data: { status: 'paid', invoiceNumber },
+                    });
+                    strapi.log.info(`Order ${order.documentId} marked as paid (${invoiceNumber})`);
+                    // ERP manual orders : flip l'Invoice liee (paymentStatus + paidAt).
+                    // Detection: metadata.invoiceId direct OU relation order.invoice si isManual.
+                    try {
+                        const metaInvoiceId = (paymentIntent.metadata || {}).invoiceId;
+                        let invoiceDocId = metaInvoiceId || null;
+                        if (!invoiceDocId) {
+                            const linked = await strapi.documents('api::invoice.invoice').findFirst({
+                                filters: { order: { documentId: order.documentId } },
+                            });
+                            if (linked)
+                                invoiceDocId = linked.documentId;
+                        }
+                        if (invoiceDocId) {
+                            await strapi.documents('api::invoice.invoice').update({
+                                documentId: invoiceDocId,
+                                data: {
+                                    paymentStatus: 'paid',
+                                    status: 'paid',
+                                    paidAt: new Date().toISOString(),
+                                },
+                            });
+                            strapi.log.info(`[webhook:${requestId}] Invoice ${invoiceDocId} flipped to paid`);
+                        }
+                    }
+                    catch (invFlipErr) {
+                        strapi.log.warn(`[webhook:${requestId}] Could not flip invoice paymentStatus: ${invFlipErr === null || invFlipErr === void 0 ? void 0 : invFlipErr.message}`);
+                    }
+                    // STRIPE-04: emails admin + client en parallele via Promise.allSettled.
+                    // Avant: sequential await - si l'un timeout (ex: Resend down 5s), l'autre
+                    // attend avant de partir, doublant potentiellement le temps total du webhook.
+                    // Maintenant: parallele + log structure error-level avec orderId+recipient
+                    // pour qu'on puisse retracer un echec dans les logs Render.
+                    // TODO STRIPE-04b: persister les echecs dans une table email_retry_queue
+                    // avec cron horaire. Deferre pour rester dans le scope RACE/perf Vague 2.
+                    {
+                        const orderItems = Array.isArray(order.items) ? order.items : [];
+                        const orderRef = paymentIntent.id.slice(-8).toUpperCase();
+                        const allUploadedFiles = [];
+                        for (const item of orderItems) {
+                            if (Array.isArray(item.uploadedFiles)) {
+                                for (const f of item.uploadedFiles) {
+                                    if (f && (f.url || f.name)) {
+                                        allUploadedFiles.push({ name: f.name || f.url || 'Fichier', url: f.url || '' });
+                                    }
                                 }
                             }
                         }
-                    }
-                    catch (urErr) {
-                        strapi.log.warn('Could not load user-roles for artist email fallback:', urErr);
-                    }
-                    // Grouper les items par artiste
-                    for (const item of orderItems) {
-                        const pid = item.productId || '';
-                        if (!pid.startsWith('artist-print-') && !pid.startsWith('artist-sticker-pack-'))
-                            continue;
-                        let matchedSlug = null;
-                        for (const slug of slugs) {
-                            if (pid.startsWith(`artist-print-${slug}-`) || pid.startsWith(`artist-sticker-pack-${slug}-`)) {
-                                if (!matchedSlug || slug.length > matchedSlug.length) {
-                                    matchedSlug = slug;
-                                }
-                            }
-                        }
-                        if (!matchedSlug)
-                            continue;
-                        if (!artistItemsMap[matchedSlug])
-                            artistItemsMap[matchedSlug] = [];
-                        artistItemsMap[matchedSlug].push({
-                            productName: item.productName || 'Oeuvre',
+                        const itemsForEmail = orderItems.map((item) => ({
+                            productName: item.productName || 'Produit',
+                            quantity: item.quantity || 1,
+                            totalPrice: item.totalPrice || 0,
                             size: item.size || '',
                             finish: item.finish || '',
-                            quantity: item.quantity || 1,
-                        });
+                        }));
+                        const [confirmRes, adminRes] = await Promise.allSettled([
+                            (0, email_1.sendOrderConfirmationEmail)({
+                                customerName: order.customerName,
+                                customerEmail: order.customerEmail,
+                                orderRef,
+                                invoiceNumber,
+                                items: itemsForEmail,
+                                subtotal: order.subtotal || 0,
+                                shipping: order.shipping || 0,
+                                tps: order.tps || 0,
+                                tvq: order.tvq || 0,
+                                total: order.total || 0,
+                                shippingAddress: order.shippingAddress || null,
+                                promoCode: order.promoCode || undefined,
+                                promoDiscount: order.promoDiscount || undefined,
+                                supabaseUserId: order.supabaseUserId || undefined,
+                            }),
+                            (0, email_1.sendNewOrderNotificationEmail)({
+                                orderRef,
+                                customerName: order.customerName,
+                                customerEmail: order.customerEmail,
+                                items: itemsForEmail,
+                                subtotal: order.subtotal || 0,
+                                shipping: order.shipping || 0,
+                                tps: order.tps || 0,
+                                tvq: order.tvq || 0,
+                                total: order.total || 0,
+                                shippingAddress: order.shippingAddress || null,
+                                uploadedFiles: allUploadedFiles.length > 0 ? allUploadedFiles : undefined,
+                                notes: order.notes || undefined,
+                                designReady: order.designReady !== false,
+                                promoCode: order.promoCode || undefined,
+                                promoDiscount: order.promoDiscount || undefined,
+                            }),
+                        ]);
+                        if (confirmRes.status === 'fulfilled') {
+                            strapi.log.info(`Email confirmation envoye a ${order.customerEmail} (${invoiceNumber})`);
+                        }
+                        else {
+                            strapi.log.error(`STRIPE-04: ECHEC email confirmation client. ` +
+                                `orderId=${order.documentId} orderRef=${orderRef} invoice=${invoiceNumber} ` +
+                                `recipient=${order.customerEmail} err=${((_b = confirmRes.reason) === null || _b === void 0 ? void 0 : _b.message) || confirmRes.reason}`);
+                        }
+                        if (adminRes.status === 'fulfilled') {
+                            strapi.log.info(`Notification vente admin envoyee pour commande ${orderRef}`);
+                        }
+                        else {
+                            strapi.log.error(`STRIPE-04: ECHEC notification vente admin. ` +
+                                `orderId=${order.documentId} orderRef=${orderRef} invoice=${invoiceNumber} ` +
+                                `err=${((_c = adminRes.reason) === null || _c === void 0 ? void 0 : _c.message) || adminRes.reason}`);
+                        }
                     }
-                    // STRIPE-04: envoi parallele aux artistes via Promise.allSettled.
-                    // Avant: for-loop avec await sequentiel - si 10 artistes et Resend lent,
-                    // le webhook pouvait prendre 10*latency. Maintenant tout part en parallele,
-                    // chaque echec est logge error-level avec le contexte artist+order.
-                    const shippingAddr = order.shippingAddress;
-                    const customerCity = (shippingAddr === null || shippingAddr === void 0 ? void 0 : shippingAddr.city) || '';
-                    const artistEntries = Object.entries(artistItemsMap);
-                    const artistSendPromises = artistEntries.map(async ([slug, items]) => {
-                        const artist = artistMap[slug];
-                        const artistEmail = (artist === null || artist === void 0 ? void 0 : artist.email) || userRoleEmailBySlug[slug] || null;
-                        if (!artistEmail) {
-                            strapi.log.warn(`Artiste ${slug}: aucun email trouve (ni CMS ni user-role), notification non envoyee`);
-                            return { slug, skipped: true };
-                        }
-                        try {
-                            await (0, email_1.sendArtistSaleNotificationEmail)({
-                                artistName: (artist === null || artist === void 0 ? void 0 : artist.name) || slug,
-                                artistEmail,
-                                items,
-                                orderDate: new Date().toISOString(),
-                                customerCity,
+                    // Update client stats
+                    try {
+                        const clients = await strapi.documents('api::client.client').findMany({
+                            filters: { email: order.customerEmail.toLowerCase() },
+                        });
+                        if (clients.length > 0) {
+                            const client = clients[0];
+                            await strapi.documents('api::client.client').update({
+                                documentId: client.documentId,
+                                data: {
+                                    totalSpent: (Number(client.totalSpent) || 0) + (order.total || 0) / 100,
+                                    orderCount: (client.orderCount || 0) + 1,
+                                    lastOrderDate: new Date().toISOString().split('T')[0],
+                                },
                             });
-                            strapi.log.info(`Notification vente artiste ${slug} envoyee a ${artistEmail}`);
-                            return { slug, sent: true };
                         }
-                        catch (err) {
-                            strapi.log.error(`STRIPE-04: ECHEC notification vente artiste. ` +
-                                `orderId=${order.documentId} artistSlug=${slug} recipient=${artistEmail} ` +
-                                `err=${(err === null || err === void 0 ? void 0 : err.message) || err}`);
-                            return { slug, error: (err === null || err === void 0 ? void 0 : err.message) || String(err) };
-                        }
-                    });
-                    await Promise.allSettled(artistSendPromises);
-                }
-                catch (err) {
-                    strapi.log.warn('Could not notify artists:', err);
-                }
-                // Marquer les pieces uniques ET privees comme vendues dans le CMS artiste
-                try {
-                    const orderItems = Array.isArray(order.items) ? order.items : [];
-                    // Charger une fois tous les artistes
-                    const allArtists = await strapi.documents('api::artist.artist').findMany({ filters: { active: true } });
-                    for (const item of orderItems) {
-                        const pid = item.productId || '';
-                        if (!pid.startsWith('artist-print-'))
-                            continue;
-                        // Trouver l'artiste et l'id du print
-                        let matchedArtist = null;
-                        let printId = '';
-                        for (const a of allArtists) {
-                            if (pid.startsWith(`artist-print-${a.slug}-`)) {
-                                if (!matchedArtist || a.slug.length > matchedArtist.slug.length) {
-                                    matchedArtist = a;
-                                    printId = pid.replace(`artist-print-${a.slug}-`, '');
+                    }
+                    catch (err) {
+                        strapi.log.warn('Could not update client stats:', err);
+                    }
+                    // RACE-02: decrement inventory stock ATOMIQUEMENT pour chaque item. L'ancienne
+                    // version faisait findMany -> max(0, qty-n) -> update : si deux webhooks arrivaient
+                    // simultanement pour le meme SKU, le read pouvait donner la meme valeur aux deux
+                    // avant qu'aucun write ne soit fait (stock surestime silencieusement).
+                    //
+                    // La solution: UPDATE inventory_items SET quantity=quantity-? WHERE sku=? AND
+                    // active=true AND quantity>=? via knex. Postgres garantit l'atomicite de l'UPDATE
+                    // sur une seule ligne. Si rowCount=0 c'est soit SKU inconnu (skip silencieux
+                    // comme avant) soit stock insuffisant (log LOUD pour traitement manuel puisque
+                    // le paiement est deja passe cote Stripe).
+                    try {
+                        const knex = strapi.db.connection;
+                        const orderItems = Array.isArray(order.items) ? order.items : [];
+                        for (const item of orderItems) {
+                            const qty = item.quantity || 1;
+                            const sku = item.sku || item.slug;
+                            if (!sku)
+                                continue;
+                            const rowsAffected = await knex('inventory_items')
+                                .where({ sku, active: true })
+                                .andWhere('quantity', '>=', qty)
+                                .update({ quantity: knex.raw('quantity - ?', [qty]) });
+                            if (rowsAffected > 0) {
+                                const row = await knex('inventory_items')
+                                    .where({ sku, active: true })
+                                    .first('quantity');
+                                strapi.log.info(`Inventory ${sku}: -${qty} -> ${(_d = row === null || row === void 0 ? void 0 : row.quantity) !== null && _d !== void 0 ? _d : '?'} (atomic)`);
+                            }
+                            else {
+                                // Disambiguate: SKU non-tracked (silent skip, comportement avant) vs stock insuffisant (loud)
+                                const existing = await knex('inventory_items')
+                                    .where({ sku, active: true })
+                                    .first('quantity');
+                                if (existing !== undefined) {
+                                    strapi.log.warn(`RACE-02: inventory insuffisant pour SKU "${sku}" (en stock: ${existing.quantity}, ` +
+                                        `demande: ${qty}). Order ${order.documentId} paye mais stock non decremente. ` +
+                                        `A traiter manuellement (rupture de stock non detectee lors de l'achat).`);
                                 }
                             }
                         }
-                        if (!matchedArtist || !printId)
-                            continue;
-                        const prints = Array.isArray(matchedArtist.prints) ? [...matchedArtist.prints] : [];
-                        const idx = prints.findIndex((p) => p.id === printId);
-                        if (idx === -1)
-                            continue;
-                        const print = prints[idx];
-                        // Marquer comme vendu si: unique OU private (piece sur commande)
-                        // Les prints non-uniques / non-prives (editions multiples) ne sont pas marques
-                        const shouldMarkSold = print.unique === true || print.private === true || item.isUnique === true;
-                        if (!shouldMarkSold)
-                            continue;
-                        if (print.sold === true) {
-                            strapi.log.warn(`Piece ${printId} de ${matchedArtist.slug} deja marquee vendue (race condition?)`);
-                            continue;
-                        }
-                        // RACE-01: strip les champs de reservation quand on marque sold - la reservation
-                        // est consommee, inutile de laisser reservedUntil/reservedByOrderId trainer.
-                        const { reservedUntil: _ru, reservedByOrderId: _rb, ...restPrint } = print;
-                        prints[idx] = { ...restPrint, sold: true, soldAt: new Date().toISOString() };
-                        await strapi.documents('api::artist.artist').update({
-                            documentId: matchedArtist.documentId,
-                            data: { prints },
+                    }
+                    catch (err) {
+                        strapi.log.warn('Could not update inventory:', err);
+                    }
+                    // Notifier les artistes concernes par la vente
+                    try {
+                        const orderItems = Array.isArray(order.items) ? order.items : [];
+                        const artistItemsMap = {};
+                        // Charger tous les artistes actifs
+                        const artists = await strapi.documents('api::artist.artist').findMany({
+                            filters: { active: true },
                         });
-                        strapi.log.info(`Piece ${print.unique ? 'unique' : 'privee'} ${printId} de ${matchedArtist.slug} marquee comme vendue`);
+                        const artistMap = {};
+                        for (const a of artists) {
+                            artistMap[a.slug] = a;
+                        }
+                        const slugs = Object.keys(artistMap);
+                        // Charger TOUS les user-roles artist pour avoir un fallback email par slug
+                        // (le champ artist.email peut etre null dans le CMS, l'email reel est dans user-role)
+                        const userRoleEmailBySlug = {};
+                        try {
+                            const artistRoles = await strapi.documents('api::user-role.user-role').findMany({
+                                filters: { role: 'artist' },
+                            });
+                            for (const ur of artistRoles) {
+                                const slug = ur.artistSlug;
+                                if (slug && ur.email) {
+                                    // Premier email trouve pour ce slug (ou le plus recent selon ordre de findMany)
+                                    if (!userRoleEmailBySlug[slug]) {
+                                        userRoleEmailBySlug[slug] = ur.email;
+                                    }
+                                }
+                            }
+                        }
+                        catch (urErr) {
+                            strapi.log.warn('Could not load user-roles for artist email fallback:', urErr);
+                        }
+                        // Grouper les items par artiste
+                        for (const item of orderItems) {
+                            const pid = item.productId || '';
+                            if (!pid.startsWith('artist-print-') && !pid.startsWith('artist-sticker-pack-'))
+                                continue;
+                            let matchedSlug = null;
+                            for (const slug of slugs) {
+                                if (pid.startsWith(`artist-print-${slug}-`) || pid.startsWith(`artist-sticker-pack-${slug}-`)) {
+                                    if (!matchedSlug || slug.length > matchedSlug.length) {
+                                        matchedSlug = slug;
+                                    }
+                                }
+                            }
+                            if (!matchedSlug)
+                                continue;
+                            if (!artistItemsMap[matchedSlug])
+                                artistItemsMap[matchedSlug] = [];
+                            artistItemsMap[matchedSlug].push({
+                                productName: item.productName || 'Oeuvre',
+                                size: item.size || '',
+                                finish: item.finish || '',
+                                quantity: item.quantity || 1,
+                            });
+                        }
+                        // STRIPE-04: envoi parallele aux artistes via Promise.allSettled.
+                        // Avant: for-loop avec await sequentiel - si 10 artistes et Resend lent,
+                        // le webhook pouvait prendre 10*latency. Maintenant tout part en parallele,
+                        // chaque echec est logge error-level avec le contexte artist+order.
+                        const shippingAddr = order.shippingAddress;
+                        const customerCity = (shippingAddr === null || shippingAddr === void 0 ? void 0 : shippingAddr.city) || '';
+                        const artistEntries = Object.entries(artistItemsMap);
+                        const artistSendPromises = artistEntries.map(async ([slug, items]) => {
+                            const artist = artistMap[slug];
+                            const artistEmail = (artist === null || artist === void 0 ? void 0 : artist.email) || userRoleEmailBySlug[slug] || null;
+                            if (!artistEmail) {
+                                strapi.log.warn(`Artiste ${slug}: aucun email trouve (ni CMS ni user-role), notification non envoyee`);
+                                return { slug, skipped: true };
+                            }
+                            try {
+                                await (0, email_1.sendArtistSaleNotificationEmail)({
+                                    artistName: (artist === null || artist === void 0 ? void 0 : artist.name) || slug,
+                                    artistEmail,
+                                    items,
+                                    orderDate: new Date().toISOString(),
+                                    customerCity,
+                                });
+                                strapi.log.info(`Notification vente artiste ${slug} envoyee a ${artistEmail}`);
+                                return { slug, sent: true };
+                            }
+                            catch (err) {
+                                strapi.log.error(`STRIPE-04: ECHEC notification vente artiste. ` +
+                                    `orderId=${order.documentId} artistSlug=${slug} recipient=${artistEmail} ` +
+                                    `err=${(err === null || err === void 0 ? void 0 : err.message) || err}`);
+                                return { slug, error: (err === null || err === void 0 ? void 0 : err.message) || String(err) };
+                            }
+                        });
+                        await Promise.allSettled(artistSendPromises);
+                    }
+                    catch (err) {
+                        strapi.log.warn('Could not notify artists:', err);
+                    }
+                    // Marquer les pieces uniques ET privees comme vendues dans le CMS artiste
+                    try {
+                        const orderItems = Array.isArray(order.items) ? order.items : [];
+                        // Charger une fois tous les artistes
+                        const allArtists = await strapi.documents('api::artist.artist').findMany({ filters: { active: true } });
+                        for (const item of orderItems) {
+                            const pid = item.productId || '';
+                            if (!pid.startsWith('artist-print-'))
+                                continue;
+                            // Trouver l'artiste et l'id du print
+                            let matchedArtist = null;
+                            let printId = '';
+                            for (const a of allArtists) {
+                                if (pid.startsWith(`artist-print-${a.slug}-`)) {
+                                    if (!matchedArtist || a.slug.length > matchedArtist.slug.length) {
+                                        matchedArtist = a;
+                                        printId = pid.replace(`artist-print-${a.slug}-`, '');
+                                    }
+                                }
+                            }
+                            if (!matchedArtist || !printId)
+                                continue;
+                            const prints = Array.isArray(matchedArtist.prints) ? [...matchedArtist.prints] : [];
+                            const idx = prints.findIndex((p) => p.id === printId);
+                            if (idx === -1)
+                                continue;
+                            const print = prints[idx];
+                            // Marquer comme vendu si: unique OU private (piece sur commande)
+                            // Les prints non-uniques / non-prives (editions multiples) ne sont pas marques
+                            const shouldMarkSold = print.unique === true || print.private === true || item.isUnique === true;
+                            if (!shouldMarkSold)
+                                continue;
+                            if (print.sold === true) {
+                                strapi.log.warn(`Piece ${printId} de ${matchedArtist.slug} deja marquee vendue (race condition?)`);
+                                continue;
+                            }
+                            // RACE-01: strip les champs de reservation quand on marque sold - la reservation
+                            // est consommee, inutile de laisser reservedUntil/reservedByOrderId trainer.
+                            const { reservedUntil: _ru, reservedByOrderId: _rb, ...restPrint } = print;
+                            prints[idx] = { ...restPrint, sold: true, soldAt: new Date().toISOString() };
+                            await strapi.documents('api::artist.artist').update({
+                                documentId: matchedArtist.documentId,
+                                data: { prints },
+                            });
+                            strapi.log.info(`Piece ${print.unique ? 'unique' : 'privee'} ${printId} de ${matchedArtist.slug} marquee comme vendue`);
+                        }
+                    }
+                    catch (err) {
+                        strapi.log.error('Could not mark unique/private pieces as sold:', err);
                     }
                 }
-                catch (err) {
-                    strapi.log.error('Could not mark unique/private pieces as sold:', err);
+            }
+            if (event.type === 'payment_intent.payment_failed') {
+                const paymentIntent = event.data.object;
+                const orders = await strapi.documents('api::order.order').findMany({
+                    filters: { stripePaymentIntentId: paymentIntent.id },
+                });
+                if (orders.length > 0) {
+                    const order = orders[0];
+                    await strapi.documents('api::order.order').update({
+                        documentId: order.documentId,
+                        data: { status: 'cancelled' },
+                    });
+                    strapi.log.info(`Order ${order.documentId} marked as cancelled (payment failed)`);
+                    // RACE-01: liberer les reservations de pieces unique/privees pour que
+                    // d'autres clients puissent retenter l'achat sans attendre l'expiry de 30 min.
+                    // reservationId = session.id (stockee dans stripeCheckoutSessionId). Fallback
+                    // sur paymentIntent.id pour les commandes pre-RACE-01 ou edge cases.
+                    try {
+                        const reservationId = order.stripeCheckoutSessionId || paymentIntent.id;
+                        const allArtists = await strapi.documents('api::artist.artist').findMany({ filters: { active: true } });
+                        const uniquePieces = extractUniquePieces(Array.isArray(order.items) ? order.items : [], allArtists);
+                        if (uniquePieces.length > 0) {
+                            await releaseUniquePieceReservations(strapi, uniquePieces, reservationId);
+                            strapi.log.info(`Released ${uniquePieces.length} piece reservation(s) for failed payment ${paymentIntent.id}`);
+                        }
+                    }
+                    catch (err) {
+                        strapi.log.warn('Could not release reservations on payment failure:', err);
+                    }
                 }
             }
         }
-        if (event.type === 'payment_intent.payment_failed') {
-            const paymentIntent = event.data.object;
-            const orders = await strapi.documents('api::order.order').findMany({
-                filters: { stripePaymentIntentId: paymentIntent.id },
-            });
-            if (orders.length > 0) {
-                const order = orders[0];
-                await strapi.documents('api::order.order').update({
-                    documentId: order.documentId,
-                    data: { status: 'cancelled' },
-                });
-                strapi.log.info(`Order ${order.documentId} marked as cancelled (payment failed)`);
-                // RACE-01: liberer les reservations de pieces unique/privees pour que
-                // d'autres clients puissent retenter l'achat sans attendre l'expiry de 30 min.
-                // reservationId = session.id (stockee dans stripeCheckoutSessionId). Fallback
-                // sur paymentIntent.id pour les commandes pre-RACE-01 ou edge cases.
-                try {
-                    const reservationId = order.stripeCheckoutSessionId || paymentIntent.id;
-                    const allArtists = await strapi.documents('api::artist.artist').findMany({ filters: { active: true } });
-                    const uniquePieces = extractUniquePieces(Array.isArray(order.items) ? order.items : [], allArtists);
-                    if (uniquePieces.length > 0) {
-                        await releaseUniquePieceReservations(strapi, uniquePieces, reservationId);
-                        strapi.log.info(`Released ${uniquePieces.length} piece reservation(s) for failed payment ${paymentIntent.id}`);
-                    }
-                }
-                catch (err) {
-                    strapi.log.warn('Could not release reservations on payment failure:', err);
+        catch (processingErr) {
+            // PRE-LAUNCH AUDIT (29 avril 2026) : capture les erreurs non gerees
+            // du pipeline. On a deja inscrit l'event dans stripe_webhook_events
+            // (idempotency) AVANT d'arriver ici, donc Stripe verra notre 200 et
+            // arretera le retry loop. L'admin peut reconcilier manuellement.
+            strapi.log.error(`[webhook:${requestId}] FATAL processing error for ${event.type} ` +
+                `(${event.id}): ${(processingErr === null || processingErr === void 0 ? void 0 : processingErr.message) || processingErr}`);
+            if (processingErr === null || processingErr === void 0 ? void 0 : processingErr.stack) {
+                strapi.log.error(`[webhook:${requestId}] Stack:\n${processingErr.stack}`);
+            }
+            try {
+                const { shouldSendThrottledAlert } = await Promise.resolve().then(() => __importStar(require('../../../utils/webhook-alert-throttle')));
+                if (await shouldSendThrottledAlert('stripe_webhook_processing', 60)) {
+                    const { sendWebhookFailureAlert } = await Promise.resolve().then(() => __importStar(require('../../../utils/email')));
+                    await sendWebhookFailureAlert({
+                        reason: `Webhook processing failed for ${event.type}: ${(processingErr === null || processingErr === void 0 ? void 0 : processingErr.message) || processingErr}`,
+                        requestId,
+                        eventId: event.id,
+                    });
+                    strapi.log.warn(`[webhook:${requestId}] Admin alert email dispatched`);
                 }
             }
+            catch (alertErr) {
+                strapi.log.error(`[webhook:${requestId}] Could not send admin alert: ${alertErr === null || alertErr === void 0 ? void 0 : alertErr.message}`);
+            }
+            // ctx.body est set au final ci-dessous - on garantit le 200 a Stripe.
         }
         ctx.body = { received: true };
     },

@@ -966,6 +966,18 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
       strapi.log.warn(`[webhook:${requestId}] idempotency log insert failed (non-unique): ${dupErr?.message}`);
     }
 
+    // PRE-LAUNCH AUDIT (29 avril 2026) : top-level try/catch autour de tout
+    // le pipeline post-signature/post-idempotency. Garantit qu'on renvoie
+    // TOUJOURS un 200 a Stripe pour bloquer les retries en boucle.
+    //
+    // Pourquoi necessaire : l'idempotency log est ecrit AVANT le pipeline.
+    // Si l'order update levait (DB transient down, lock contention, etc),
+    // la 2eme tentative Stripe trouverait l'event deja loge -> 200 fast +
+    // duplicate=true -> l'order resterait orphelin en 'draft' definitivement.
+    // Avec ce wrap, on log loud, on alerte l'admin (throttle 60min), on
+    // renvoie 200 pour que Stripe arrete de retry, et l'admin peut
+    // reconcilier via /orders/reconcile-stripe.
+    try {
     // FIX-PRIVATE-SALE (avril 2026) : handler dedie pour les ventes privees
     // d'oeuvres artistes (flux /vente-privee/:token). Metadata.type === 'private-sale'
     // signale ce flux. On marque le print comme sold=true dans artist.prints[]
@@ -1507,6 +1519,34 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
           strapi.log.warn('Could not release reservations on payment failure:', err);
         }
       }
+    }
+    } catch (processingErr: any) {
+      // PRE-LAUNCH AUDIT (29 avril 2026) : capture les erreurs non gerees
+      // du pipeline. On a deja inscrit l'event dans stripe_webhook_events
+      // (idempotency) AVANT d'arriver ici, donc Stripe verra notre 200 et
+      // arretera le retry loop. L'admin peut reconcilier manuellement.
+      strapi.log.error(
+        `[webhook:${requestId}] FATAL processing error for ${event.type} ` +
+        `(${event.id}): ${processingErr?.message || processingErr}`
+      );
+      if (processingErr?.stack) {
+        strapi.log.error(`[webhook:${requestId}] Stack:\n${processingErr.stack}`);
+      }
+      try {
+        const { shouldSendThrottledAlert } = await import('../../../utils/webhook-alert-throttle');
+        if (await shouldSendThrottledAlert('stripe_webhook_processing', 60)) {
+          const { sendWebhookFailureAlert } = await import('../../../utils/email');
+          await sendWebhookFailureAlert({
+            reason: `Webhook processing failed for ${event.type}: ${processingErr?.message || processingErr}`,
+            requestId,
+            eventId: event.id,
+          } as any);
+          strapi.log.warn(`[webhook:${requestId}] Admin alert email dispatched`);
+        }
+      } catch (alertErr: any) {
+        strapi.log.error(`[webhook:${requestId}] Could not send admin alert: ${alertErr?.message}`);
+      }
+      // ctx.body est set au final ci-dessous - on garantit le 200 a Stripe.
     }
 
     ctx.body = { received: true };
