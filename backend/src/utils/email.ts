@@ -1064,6 +1064,99 @@ export async function sendOrderReadyEmail(data: OrderReadyEmailData): Promise<bo
 }
 
 // -----------------------------------------------------------
+// Email "commande livree" + demande d'avis Google (Phase 4 social proof)
+// -----------------------------------------------------------
+// Declenche par updateStatus quand newStatus === 'delivered' et sendEmail === true.
+// Objectif : remercier le client, rappeler qu'on est un studio independant
+// montrealais et demander un avis Google via un CTA rose massif. Le lien
+// pointe vers la fiche Google My Business de Massive Medias (URL stable
+// fournie par le proprietaire du compte).
+//
+// Note : on remplace ici l'ancien flow "demande de temoignage interne"
+// (lien /temoignage?token=...) car les avis Google ont 10x plus de
+// valeur SEO + social proof que les temoignages on-site.
+const GOOGLE_REVIEW_URL = 'https://g.page/r/CWPO3peuM-5nEBM/review';
+
+function buildOrderDeliveredHtml(nom: string, orderRef: string): string {
+  // Prenom uniquement pour un ton plus chaleureux (cf. brief Phase 4).
+  // Fallback sur "cher client" si le champ est vide.
+  const rawFirst = String(nom || '').trim().split(/\s+/)[0];
+  const firstName = escapeHtmlAttr(rawFirst || 'cher client');
+  const safeRef = escapeHtmlAttr(String(orderRef || ''));
+
+  const content = `
+    <h2 style="color:#222;margin:0 0 16px;font-size:22px;">Merci ${firstName} ! 🤘</h2>
+
+    <p style="color:#444;font-size:15px;line-height:1.7;margin:0 0 14px;">
+      Votre commande
+      <strong style="color:#222;">#${safeRef}</strong>
+      est maintenant entre vos mains. C'était un réel plaisir de collaborer
+      sur votre projet et on espère que le résultat est à la hauteur.
+    </p>
+
+    <p style="color:#444;font-size:15px;line-height:1.7;margin:0 0 24px;">
+      Si vous avez aimé l'expérience, le geste qui nous fait le plus plaisir
+      (et qui aide vraiment l'atelier) c'est un avis sur Google. Ça prend
+      30 secondes et ça compte énormément pour nous.
+    </p>
+
+    <!-- CTA principal : avis Google -->
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin:8px 0 28px;">
+      <tr><td align="center">
+        <a href="${GOOGLE_REVIEW_URL}" target="_blank" rel="noopener noreferrer"
+           style="display:inline-block;background:#FF52A0;color:#ffffff;text-decoration:none;font-size:16px;font-weight:700;padding:16px 32px;border-radius:10px;letter-spacing:0.3px;box-shadow:0 4px 12px rgba(255,82,160,0.3);">
+          Laisser un avis sur Google
+        </a>
+      </td></tr>
+    </table>
+
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin:24px 0 0;">
+      <tr><td style="padding:14px 18px;background:#fafafa;border-radius:8px;border-left:3px solid #FF52A0;">
+        <p style="margin:0;color:#666;font-size:13px;line-height:1.6;font-style:italic;">
+          En tant que studio indépendant à Montréal, chaque avis nous aide
+          énormément à faire grandir l'atelier. Merci de soutenir une
+          petite boîte locale.
+        </p>
+      </td></tr>
+    </table>
+
+    <p style="color:#666;font-size:13px;line-height:1.6;margin:24px 0 0;">
+      À bientôt,<br>
+      <strong style="color:#222;">L'équipe Massive Medias</strong>
+    </p>
+  `;
+  return massiveEmailWrapper(content);
+}
+
+export async function sendOrderDeliveredEmail(email: string, nom: string, orderRef: string): Promise<boolean> {
+  const resend = getResend();
+  if (!resend) {
+    console.warn('[email] Resend non configure, email "commande livree" non envoye');
+    return false;
+  }
+  if (!email || !email.includes('@')) {
+    console.warn('[email] sendOrderDeliveredEmail skip : email invalide', email);
+    return false;
+  }
+
+  const sender = getSender();
+
+  try {
+    await resend.emails.send({
+      ...sender,
+      to: email,
+      subject: 'Votre projet avec Massive Medias : Votre avis compte ! 🤘',
+      html: buildOrderDeliveredHtml(nom, orderRef),
+    });
+    console.log('[email] Email "commande livree + avis Google" envoye a', email);
+    return true;
+  } catch (err) {
+    console.error('[email] Erreur envoi email "commande livree":', err);
+    return false;
+  }
+}
+
+// -----------------------------------------------------------
 // Email de notification de nouveau message contact (vers admin)
 // -----------------------------------------------------------
 interface NewContactData {

@@ -1,7 +1,7 @@
 import { factories } from '@strapi/strapi';
 import Stripe from 'stripe';
 import { calculateShipping } from '../../../utils/shipping';
-import { sendOrderConfirmationEmail, sendTestimonialRequestEmail, sendArtistSaleNotificationEmail, sendNewOrderNotificationEmail, sendTrackingEmail, sendInvoiceEmail, sendOrderReadyEmail } from '../../../utils/email';
+import { sendOrderConfirmationEmail, sendTestimonialRequestEmail, sendArtistSaleNotificationEmail, sendNewOrderNotificationEmail, sendTrackingEmail, sendInvoiceEmail, sendOrderReadyEmail, sendOrderDeliveredEmail } from '../../../utils/email';
 import { getTrackingStatus } from '../../../utils/tracking-provider';
 import crypto from 'crypto';
 import { PROMO_CODES } from '../../../utils/promo-codes';
@@ -3268,49 +3268,26 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
       }
     }
 
-    // FIX-EMAIL-CONTROL : quand la commande est livree, courriel temoignage
-    // envoye UNIQUEMENT si sendEmail=true. Avant ce fix, il partait a chaque
-    // transition vers 'delivered' sans que l'admin ne puisse l'empecher.
+    // PHASE 4 (28 avril 2026) : transition vers `delivered` -> courriel de
+    // remerciement avec demande d'avis Google (social proof). Remplace l'ancien
+    // flow "demande de temoignage on-site" (lien /temoignage?token=...) car les
+    // avis Google ont beaucoup plus de valeur SEO + social proof.
+    //
+    // Fire-and-forget : on n'attend PAS l'envoi pour repondre a l'admin (la
+    // confirmation de status doit etre instantanee). Une eventuelle erreur
+    // Resend est logguee mais ne casse pas le workflow.
     if (sendEmail && newStatus === 'delivered' && (order as any).customerEmail) {
-      try {
-        const token = crypto.randomBytes(16).toString('hex');
-        const customerName = (order as any).customerName || (order as any).customerEmail.split('@')[0];
+      const customerEmail = (order as any).customerEmail;
+      const customerName = (order as any).customerName || customerEmail.split('@')[0];
+      const orderData = updated as any;
+      const sid = orderData.stripePaymentIntentId || orderData.documentId || '';
+      const orderRef = orderData.orderRef || (order as any).orderRef || String(sid).slice(-8).toUpperCase();
 
-        // Creer le temoignage en attente
-        const testimonialData: any = {
-          name: customerName,
-          email: (order as any).customerEmail,
-          textFr: '',
-          token,
-          approved: false,
-          order: { connect: [order.documentId] },
-        };
-
-        // Lier au client si existant
-        const client = await strapi.documents('api::client.client').findFirst({
-          filters: { email: (order as any).customerEmail },
-        });
-        if (client) {
-          testimonialData.client = { connect: [(client as any).documentId] };
-        }
-
-        await strapi.documents('api::testimonial.testimonial').create({ data: testimonialData });
-
-        const siteUrl = process.env.SITE_URL || 'https://massivemedias.com';
-        const link = `${siteUrl}/temoignage?token=${token}`;
-
-        await sendTestimonialRequestEmail({
-          customerName,
-          customerEmail: (order as any).customerEmail,
-          testimonialLink: link,
-          orderRef: (order as any).orderRef,
-        });
-
-        strapi.log.info(`Email temoignage envoye a ${(order as any).customerEmail} pour commande ${documentId}`);
-      } catch (err) {
-        strapi.log.error('Erreur envoi email temoignage:', err);
-        // Ne pas bloquer le changement de status si l'email echoue
-      }
+      sendOrderDeliveredEmail(customerEmail, customerName, orderRef)
+        .then(ok => {
+          if (ok) strapi.log.info(`[updateStatus] Email "commande livree + avis Google" envoye a ${customerEmail} pour ${documentId}`);
+        })
+        .catch(err => strapi.log.warn('[updateStatus] Erreur envoi email "commande livree" (non bloquant):', err));
     }
 
     ctx.body = { data: updated };

@@ -70,30 +70,31 @@ function getEmailPreview(status, order, tx) {
           es: 'Notifica al cliente que su pedido esta listo para recogida local en el taller (caja segura mencionada).',
         }),
       };
-    case 'delivered':
+    // PHASE 4 (28 avril 2026) : statut "Livre / Remis" -> courriel de remerciement
+    // + demande d'avis Google (social proof). Backend correspondant :
+    // sendOrderDeliveredEmail dans email.ts + wire dans order.ts updateStatus
+    // quand newStatus==='delivered' et sendEmail=true. URL Google My Business
+    // de Massive Medias hardcodee cote backend (g.page/r/CWPO3peuM-5nEBM/review).
+    case 'delivered': {
+      const firstName = (name || '').split(' ')[0] || name;
       return {
         subject: tx({
-          fr: `Votre commande est livree - partagez votre experience`,
-          en: `Your order is delivered - share your experience`,
-          es: `Tu pedido esta entregado - comparte tu experiencia`,
+          fr: `Votre projet avec Massive Medias : Votre avis compte ! 🤘`,
+          en: `Your project with Massive Medias: Your review matters! 🤘`,
+          es: `Tu proyecto con Massive Medias: ¡Tu opinión cuenta! 🤘`,
         }),
-        // FIX-GOOGLE-REVIEW (23 avril 2026) : la preview affiche la section
-        // Google Review avec une annotation "[...si GOOGLE_REVIEW_URL configure...]"
-        // pour que l'admin sache qu'elle n'apparaitra PAS dans l'email reel tant
-        // que la variable d'env n'est pas set sur Render. Cote backend, le bloc
-        // entier est omis si l'URL est absente/invalide - zero risque de bouton
-        // casse chez le client.
         preview: tx({
-          fr: `Bonjour ${name},\n\nVotre commande est livree. Nous serions ravis de lire votre temoignage. Cliquez sur le lien personnel ci-dessous pour partager votre experience en quelques mots :\n\n[lien temoignage genere automatiquement]\n\n--- [section ci-dessous uniquement si GOOGLE_REVIEW_URL est configure sur Render] ---\n\nVous avez un compte Google ? Vous pouvez aussi nous donner un enorme coup de pouce en laissant un avis rapide sur notre page :\n[votre URL Google My Business]\n\nMassive Medias`,
-          en: `Hello ${name},\n\nYour order has been delivered. We would love to hear your feedback. Click the personal link below to share your experience:\n\n[auto-generated testimonial link]\n\n--- [section below only if GOOGLE_REVIEW_URL env var is set on Render] ---\n\nDo you have a Google account? You can also give us a huge boost by leaving a quick review on our page:\n[your Google My Business URL]\n\nMassive Medias`,
-          es: `Hola ${name},\n\nTu pedido esta entregado. Comparte tu experiencia:\n\n[enlace de testimonio]\n\n--- [solo si GOOGLE_REVIEW_URL esta configurada] ---\n\nTienes cuenta Google?\n[URL Google My Business]\n\nMassive Medias`,
+          fr: `Merci ${firstName} ! 🤘\n\nVotre commande #${orderRef} est maintenant entre vos mains. C'était un réel plaisir de collaborer sur votre projet et on espère que le résultat est à la hauteur.\n\nSi vous avez aimé l'expérience, le geste qui nous fait le plus plaisir (et qui aide vraiment l'atelier) c'est un avis sur Google. Ça prend 30 secondes et ça compte énormément pour nous.\n\n[ Bouton rose : Laisser un avis sur Google ]\n\nEn tant que studio indépendant à Montréal, chaque avis nous aide énormément à faire grandir l'atelier. Merci de soutenir une petite boîte locale.\n\nÀ bientôt,\nL'équipe Massive Medias`,
+          en: `Thanks ${firstName}! 🤘\n\nYour order #${orderRef} is now in your hands. It was a real pleasure to collaborate on your project and we hope the result lives up to your expectations.\n\nIf you enjoyed the experience, the gesture that means the most to us (and really helps the studio) is a Google review. It takes 30 seconds and goes a long way.\n\n[ Pink button: Leave a Google review ]\n\nAs an independent studio based in Montreal, every review helps us grow the workshop. Thank you for supporting a small local outfit.\n\nSee you soon,\nThe Massive Medias team`,
+          es: `¡Gracias ${firstName}! 🤘\n\nTu pedido #${orderRef} ya está en tus manos. Fue un verdadero placer colaborar en tu proyecto y esperamos que el resultado esté a la altura.\n\nSi te gustó la experiencia, el gesto que más nos ayuda es una reseña en Google. Toma 30 segundos y significa mucho para nosotros.\n\n[ Botón rosa: Dejar una reseña en Google ]\n\nComo estudio independiente en Montreal, cada reseña nos ayuda a crecer. Gracias por apoyar a un pequeño taller local.\n\nHasta pronto,\nEl equipo Massive Medias`,
         }),
         notes: tx({
-          fr: 'Cree un enregistrement Temoignage en attente. La section Google Review n\'est rendue QUE si la variable d\'env GOOGLE_REVIEW_URL est set sur Render (https://...). Sinon le bloc entier est omis - aucun bouton casse envoye au client.',
-          en: 'Creates a pending testimonial record. Google Review section is rendered ONLY if GOOGLE_REVIEW_URL env var is set on Render (https://...). Otherwise entire block is omitted - no broken button sent to client.',
-          es: 'Crea testimonio pendiente. Bloque Google solo si GOOGLE_REVIEW_URL esta configurada.',
+          fr: 'Un courriel de remerciement incluant une demande d\'avis Google sera envoyé au client. Le bouton pointe directement vers la fiche Google My Business de Massive Medias (avis en un click).',
+          en: 'A thank-you email including a Google review request will be sent to the client. The button links directly to the Massive Medias Google My Business listing (one-click review).',
+          es: 'Se enviará al cliente un correo de agradecimiento que incluye una solicitud de reseña en Google. El botón enlaza directamente con la ficha Google My Business.',
         }),
       };
+    }
     default:
       return null;
   }
