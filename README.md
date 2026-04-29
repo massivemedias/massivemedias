@@ -334,6 +334,10 @@ DEEPL_API_KEY=...
 
 # Site URL (pour les liens dans les emails)
 SITE_URL=https://massivemedias.com
+
+# Webhooks hub (Phase 7D) - dispatch externe Zapier / Make / n8n
+# Optionnel : si non defini, aucun event n'est envoye (graceful exit).
+EXTERNAL_WEBHOOK_URL=https://hooks.zapier.com/hooks/catch/...
 ```
 
 ---

@@ -36,6 +36,7 @@ const crypto_1 = __importDefault(require("crypto"));
 const promo_codes_1 = require("../../../utils/promo-codes");
 const pricing_config_1 = require("../../../utils/pricing-config");
 const auth_1 = require("../../../utils/auth");
+const webhook_1 = require("../../../utils/webhook");
 const getStripe = () => {
     const key = process.env.STRIPE_SECRET_KEY;
     if (!key || key === 'sk_test_REPLACE_ME') {
@@ -469,6 +470,19 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
             const order = await strapi.documents('api::order.order').create({
                 data: orderData,
             });
+            // WEBHOOKS HUB (Phase 7D) : notify external (Zapier / Make).
+            const orderRefIntent = (String(orderData.stripePaymentIntentId || '').slice(-8) ||
+                String(order.documentId || '').slice(-8)).toUpperCase();
+            (0, webhook_1.dispatchWebhook)('order.created', {
+                orderRef: orderRefIntent,
+                documentId: order.documentId,
+                customerEmail: customerEmail || null,
+                customerName: customerName || null,
+                total: orderData.total || 0,
+                currency: orderData.currency || 'cad',
+                status: 'draft',
+                source: 'web_form',
+            }).catch(() => { });
             // Return client_secret to frontend
             ctx.body = {
                 clientSecret: paymentIntent.client_secret,
@@ -765,7 +779,20 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
             if (client) {
                 orderData.client = { connect: [{ documentId: client.documentId }] };
             }
-            await strapi.documents('api::order.order').create({ data: orderData });
+            const newOrder = await strapi.documents('api::order.order').create({ data: orderData });
+            // WEBHOOKS HUB (Phase 7D) : notify external (Zapier / Make).
+            const orderRefCheckout = (String(orderData.stripeCheckoutSessionId || '').slice(-8) ||
+                String(newOrder.documentId || '').slice(-8)).toUpperCase();
+            (0, webhook_1.dispatchWebhook)('order.created', {
+                orderRef: orderRefCheckout,
+                documentId: newOrder.documentId,
+                customerEmail: customerEmail || null,
+                customerName: customerName || null,
+                total: orderData.total || 0,
+                currency: orderData.currency || 'cad',
+                status: 'draft',
+                source: 'web_form',
+            }).catch(() => { });
             ctx.body = { url: session.url };
         }
         catch (err) {
@@ -1447,6 +1474,20 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
         }
         try {
             const order = await strapi.documents('api::order.order').create({ data });
+            // WEBHOOKS HUB (Phase 7D) : notify external (Zapier / Make).
+            const orderRefAdmin = (String(order.stripePaymentIntentId || '').slice(-8) ||
+                String(order.documentId || '').slice(-8)).toUpperCase();
+            (0, webhook_1.dispatchWebhook)('order.created', {
+                orderRef: orderRefAdmin,
+                documentId: order.documentId,
+                customerEmail: data.customerEmail || null,
+                customerName: data.customerName || null,
+                companyName: data.companyName || null,
+                total: data.total || 0,
+                currency: data.currency || 'cad',
+                status: data.status || 'draft',
+                source: 'admin',
+            }).catch(() => { });
             ctx.body = { success: true, data: order };
         }
         catch (err) {
@@ -1854,6 +1895,21 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
             else {
                 strapi.log.info(`[manualCreate] Order ${order.documentId} + Invoice ${invoiceNumber} + PaymentLink ${paymentLink === null || paymentLink === void 0 ? void 0 : paymentLink.id}`);
             }
+            // WEBHOOKS HUB (Phase 7D) : notify external (Zapier / Make).
+            const orderRefManual = (String(order.stripePaymentIntentId || '').slice(-8) ||
+                String(order.documentId || '').slice(-8)).toUpperCase();
+            (0, webhook_1.dispatchWebhook)('order.created', {
+                orderRef: orderRefManual,
+                documentId: order.documentId,
+                customerEmail: customerEmail || null,
+                customerName: customerName || null,
+                companyName: cleanCompanyName || null,
+                total: Math.round(total * 100),
+                currency,
+                status: prepaid ? 'paid' : 'pending',
+                invoiceNumber,
+                source: 'manual',
+            }).catch(() => { });
             ctx.body = {
                 success: true,
                 orderId: order.documentId,
@@ -2769,6 +2825,19 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
             const newRef = (String(newOrder.stripePaymentIntentId || '').slice(-8) ||
                 String(newOrder.documentId || '').slice(-8)).toUpperCase();
             strapi.log.info(`[reorder] OK : ${originalRef} (delivered) -> ${newRef} (pending) for ${email}`);
+            // WEBHOOKS HUB (Phase 7D) : notify external (Zapier / Make).
+            (0, webhook_1.dispatchWebhook)('order.created', {
+                orderRef: newRef,
+                documentId: newOrder.documentId,
+                customerEmail: original.customerEmail || null,
+                customerName: original.customerName || null,
+                companyName: original.companyName || null,
+                total: Number(original.total) || 0,
+                currency: original.currency || 'cad',
+                status: 'pending',
+                source: 'reorder',
+                originalOrderRef: originalRef,
+            }).catch(() => { });
             ctx.status = 201;
             ctx.body = {
                 success: true,
@@ -3873,6 +3942,26 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
             }
         }
         strapi.log.info(`Commande ${documentId} status: ${order.status} -> ${newStatus}`);
+        // WEBHOOKS HUB (Phase 7D) : dispatch externe (Zapier / Make / etc).
+        // Fire-and-forget : l'utility absorbe deja les erreurs reseau, mais
+        // on protege en plus avec un .catch defensif au cas ou.
+        {
+            const o = order;
+            const u = updated;
+            const orderRef = (String(o.stripePaymentIntentId || '').slice(-8) ||
+                String(o.documentId || '').slice(-8)).toUpperCase();
+            (0, webhook_1.dispatchWebhook)('order.status_changed', {
+                orderRef,
+                documentId: o.documentId,
+                previousStatus: o.status,
+                newStatus,
+                customerEmail: o.customerEmail || null,
+                customerName: o.customerName || null,
+                companyName: o.companyName || null,
+                total: u.total || o.total || 0,
+                currency: o.currency || 'cad',
+            }).catch(() => { });
+        }
         // FIX-READY-EMAIL (28 avril 2026) : quand la commande passe a `ready`
         // ("Pret / A remettre"), envoyer un courriel au client pour l'informer
         // qu'il peut venir recuperer sa commande au studio Mile-End. Gate sur
