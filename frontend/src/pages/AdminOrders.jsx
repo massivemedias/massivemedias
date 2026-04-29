@@ -6,7 +6,7 @@ import {
   RotateCcw, Loader2, ExternalLink, MapPin, Save, Image,
   FileText, ChevronLeft, ChevronRight, Phone, Mail, Hash, Palette,
   Download, Receipt, Trash2, Send, AlertTriangle, Pencil, Plus, Landmark, Copy,
-  TrendingUp, TrendingDown, Inbox, Sparkles,
+  TrendingUp, TrendingDown, Inbox, Sparkles, List, Hammer,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import { getOrders, getOrderStats, getAdminMoneyBoard, updateOrderStatus, updateOrderNotes, updateOrderTracking, deleteOrder, getPrivateSales, deletePrivateSale, resendPrivateSaleEmail, sendOrderInvoice, getOrderTracking, getBillingSettings, regenerateStripeLink } from '../services/adminService';
@@ -1462,25 +1462,29 @@ function AdminOrders() {
         {/* KANBAN PRODUCTION (Phase 7A) : toggle Liste / Atelier. La vue
             atelier filtre serveur-side sur status='processing' implicitement
             (le composant ProductionBoard filtre la liste deja chargee), donc
-            les filtres status + search sont desactives quand kanban actif. */}
-        <div className="flex items-center gap-1 card-bg rounded-lg p-1 self-start">
+            les filtres status + search sont desactives quand kanban actif.
+            FIX-UI (28 avril 2026) : icones Lucide a la place des emojis,
+            whitespace-nowrap pour eviter le wrap sur 2 lignes, focus ring
+            desactive (etait du bleu navigateur sur le bouton actif). */}
+        <div className="flex flex-row items-center gap-1 card-bg rounded-lg p-1 self-start">
           {[
-            { id: 'list',   icon: '📄', label: { fr: 'Vue liste',   en: 'List view',   es: 'Vista lista' } },
-            { id: 'kanban', icon: '🛠️', label: { fr: 'Vue atelier', en: 'Workshop',    es: 'Vista taller' } },
+            { id: 'list',   icon: List,   label: { fr: 'Vue liste',   en: 'List view',   es: 'Vista lista' } },
+            { id: 'kanban', icon: Hammer, label: { fr: 'Vue atelier', en: 'Workshop',    es: 'Vista taller' } },
           ].map((m) => {
             const isActive = viewMode === m.id;
+            const Ic = m.icon;
             return (
               <button
                 key={m.id}
                 onClick={() => setViewMode(m.id)}
-                className={`px-2.5 py-1 md:px-3 md:py-1.5 rounded-md text-[11px] md:text-xs font-semibold transition-all flex items-center gap-1.5 ${
+                className={`px-3 py-1.5 rounded-md text-[11px] md:text-xs font-semibold transition-colors flex flex-row items-center gap-2 whitespace-nowrap outline-none focus:outline-none focus-visible:outline-none focus:ring-0 ${
                   isActive
-                    ? 'bg-accent/15 text-accent ring-1 ring-accent/30'
+                    ? 'bg-accent/15 text-accent'
                     : 'text-grey-muted hover:text-heading'
                 }`}
                 title={tx(m.label)}
               >
-                <span aria-hidden>{m.icon}</span>
+                <Ic size={13} className="flex-shrink-0" />
                 <span className="hidden md:inline">{tx(m.label)}</span>
               </button>
             );
@@ -1572,10 +1576,10 @@ function AdminOrders() {
                         adoucit le swap quand on toggle. */}
                   <div
                     onClick={() => toggleExpand(order.documentId)}
-                    className={`cursor-pointer transition-colors duration-200 border-l-4 ${
+                    className={`cursor-pointer transition-colors duration-200 ${
                       isExpanded
-                        ? 'bg-white/5 border-accent'
-                        : 'border-transparent hover:bg-accent/5'
+                        ? 'bg-accent/8'
+                        : 'hover:bg-accent/5'
                     }`}
                   >
                     {/* Desktop row */}

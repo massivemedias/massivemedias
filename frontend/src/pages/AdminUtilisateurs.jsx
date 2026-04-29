@@ -416,15 +416,13 @@ function AdminUtilisateurs() {
 
             return (
               <div key={user.id} className="">
-                {/* Desktop row */}
+                {/* Desktop row - FIX-UI (28 avril 2026) : retrait de la
+                    bordure gauche role-specific qui creait un look "onglet
+                    asymetrique". Le code couleur du role reste visible via
+                    l'avatar (cercle colore) + le nom. */}
                 <div
                   onClick={() => setExpandedId(isExpanded ? null : user.id)}
-                  className={`hidden md:grid grid-cols-[1fr_1.2fr_100px_70px_100px_32px] gap-3 px-4 py-3 items-center cursor-pointer hover:bg-accent/5 transition-colors ${
-                    role === 'admin' ? 'border-l-2 border-l-red-400' :
-                    role === 'artist' ? 'border-l-2 border-l-purple-400' :
-                    user.isBuyer ? 'border-l-2 border-l-green-400' :
-                    'border-l-2 border-l-transparent'
-                  }`}
+                  className="hidden md:grid grid-cols-[1fr_1.2fr_100px_70px_100px_32px] gap-3 px-4 py-3 items-center cursor-pointer hover:bg-accent/5 transition-colors"
                 >
                   {/* Name + provider */}
                   <div className="flex items-center gap-3">
@@ -484,15 +482,11 @@ function AdminUtilisateurs() {
                   </span>
                 </div>
 
-                {/* Mobile card */}
+                {/* Mobile card - FIX-UI (28 avril 2026) : retrait de la
+                    bordure gauche role-specific (cf desktop ci-dessus). */}
                 <div
                   onClick={() => setExpandedId(isExpanded ? null : user.id)}
-                  className={`md:hidden px-4 py-3 cursor-pointer hover:bg-accent/5 transition-colors ${
-                    role === 'admin' ? 'border-l-2 border-l-red-400' :
-                    role === 'artist' ? 'border-l-2 border-l-purple-400' :
-                    user.isBuyer ? 'border-l-2 border-l-green-400' :
-                    'border-l-2 border-l-transparent'
-                  }`}
+                  className="md:hidden px-4 py-3 cursor-pointer hover:bg-accent/5 transition-colors"
                 >
                   {/* Line 1: Avatar + Name + Spent */}
                   <div className="flex items-center gap-3">
