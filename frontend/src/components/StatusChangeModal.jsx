@@ -188,12 +188,21 @@ function StatusChangeModal({ order, currentStatus, targetStatus, onCancel, onCon
                     {tx({ fr: 'Apercu du courriel au client', en: 'Client email preview', es: 'Vista previa' })}
                   </span>
                 </div>
-                <div className="rounded-lg border px-3 py-3 space-y-2" style={{ borderColor: 'var(--bg-input-border)', background: 'var(--bg-input)' }}>
-                  <div className="text-[13px] text-grey-muted">
-                    <span className="font-semibold">{tx({ fr: 'Objet', en: 'Subject', es: 'Asunto' })} :</span>{' '}
-                    <span className="text-heading">{email.subject}</span>
+                {/* PHASE-4-UI (28 avril 2026) : encadre "vraie lettre" - fond
+                    creme, coins arrondis uniformes, bordure douce et padding
+                    genereux. Plus aucun divider interne ni font-mono qui
+                    cassait l'harmonie du modal. */}
+                <div
+                  className="rounded-lg p-4 space-y-2 shadow-sm"
+                  style={{ background: '#fafafa', color: '#1f1f1f', border: '1px solid #e5e5e5' }}
+                >
+                  <div className="text-[13px]" style={{ color: '#666' }}>
+                    <span className="font-semibold" style={{ color: '#1f1f1f' }}>
+                      {tx({ fr: 'Objet', en: 'Subject', es: 'Asunto' })} :
+                    </span>{' '}
+                    <span style={{ color: '#1f1f1f' }}>{email.subject}</span>
                   </div>
-                  <div className="border-t pt-2.5 text-[13px] text-heading whitespace-pre-wrap leading-relaxed font-mono" style={{ borderColor: 'var(--bg-input-border)' }}>
+                  <div className="text-[13px] whitespace-pre-wrap leading-relaxed" style={{ color: '#1f1f1f' }}>
                     {email.preview}
                   </div>
                 </div>

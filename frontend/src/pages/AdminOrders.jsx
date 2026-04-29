@@ -2246,19 +2246,25 @@ function AdminOrders() {
                     <label className="text-[10px] text-grey-muted uppercase tracking-wider block mb-1">
                       {tx({ fr: 'Apercu du message', en: 'Message preview', es: 'Vista previa' })}
                     </label>
-                    <div className="rounded-lg bg-black/30 px-3 py-2.5 border border-white/10 text-xs text-grey-muted space-y-1.5">
-                      <p className="text-heading">{tx({ fr: `Bonjour ${po.customerName || 'client'},`, en: `Hi ${po.customerName || 'client'},`, es: `Hola ${po.customerName || 'cliente'},` })}</p>
-                      <p>{tx({
+                    {/* PHASE-4-UI (28 avril 2026) : encadre "vraie lettre" - fond
+                        creme, coins arrondis uniformes, bordure douce et padding
+                        genereux pour matcher la nouvelle box du StatusChangeModal. */}
+                    <div
+                      className="rounded-lg p-4 text-xs space-y-1.5 shadow-sm whitespace-pre-line"
+                      style={{ background: '#fafafa', color: '#1f1f1f', border: '1px solid #e5e5e5' }}
+                    >
+                      <p style={{ color: '#1f1f1f' }}>{tx({ fr: `Bonjour ${po.customerName || 'client'},`, en: `Hi ${po.customerName || 'client'},`, es: `Hola ${po.customerName || 'cliente'},` })}</p>
+                      <p style={{ color: '#444' }}>{tx({
                         fr: `Voici votre facture pour la commande #${refShort} (total ${totalDollars}$).`,
                         en: `Here is your invoice for order #${refShort} (total $${totalDollars}).`,
                         es: `Aqui esta tu factura del pedido #${refShort} (total ${totalDollars}$).`,
                       })}</p>
-                      <p>{tx({
+                      <p style={{ color: '#444' }}>{tx({
                         fr: 'Vous pouvez regler en ligne via le lien de paiement securise Stripe inclus.',
                         en: 'You can pay online via the secure Stripe payment link included.',
                         es: 'Puede pagar en linea mediante el enlace Stripe incluido.',
                       })}</p>
-                      <p className="text-grey-muted">{tx({ fr: 'Cordialement,\nMassive Medias', en: 'Best regards,\nMassive Medias', es: 'Saludos,\nMassive Medias' })}</p>
+                      <p style={{ color: '#666' }}>{tx({ fr: 'Cordialement,\nMassive Medias', en: 'Best regards,\nMassive Medias', es: 'Saludos,\nMassive Medias' })}</p>
                     </div>
                   </div>
 
