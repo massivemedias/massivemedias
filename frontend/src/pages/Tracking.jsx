@@ -3,7 +3,7 @@ import { useSearchParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search, Package, CreditCard, Hammer, MapPin, Truck, CheckCircle, XCircle,
-  Loader2, ArrowRight, AlertCircle, Mail, RotateCcw,
+  Loader2, ArrowRight, AlertCircle, Mail, RotateCcw, Sparkles,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import SEO from '../components/SEO';
@@ -104,6 +104,15 @@ function Tracking() {
   const [reorderError, setReorderError] = useState('');
   const [reorderResult, setReorderResult] = useState(null);
 
+  // UPSELL (Phase 7B) : etat de la carte d'offre "Order Bump". Visible
+  // uniquement quand status pending/draft ET hasUpsell=false (drapeau
+  // calcule par le backend dans trackOrder). Apres succes on refetch
+  // l'order pour que l'UI reflete le nouveau total + le nouveau lien
+  // Stripe et que la carte se cache automatiquement (hasUpsell devient
+  // true).
+  const [upsellState, setUpsellState] = useState('idle'); // idle | loading | error
+  const [upsellError, setUpsellError] = useState('');
+
   // Auto-prefill + auto-submit si l'url contient ?id=X&email=Y (lien email).
   useEffect(() => {
     const idFromUrl = (searchParams.get('id') || '').trim();
@@ -175,6 +184,56 @@ function Tracking() {
     setReorderState('idle');
     setReorderError('');
     setReorderResult(null);
+    setUpsellState('idle');
+    setUpsellError('');
+  };
+
+  // UPSELL (Phase 7B) : POST /orders/upsell + refetch automatique sur
+  // succes. Le refetch rafraichit hasUpsell + total + paymentUrl, ce qui
+  // (1) cache la carte d'offre, (2) met a jour le bouton "Payer ma
+  // facture" avec le nouveau lien Stripe, (3) affiche le nouveau total.
+  const handleUpsell = async () => {
+    if (upsellState === 'loading') return;
+    setUpsellState('loading');
+    setUpsellError('');
+    try {
+      await api.post('/orders/upsell', {
+        orderId: result?.orderId || orderId,
+        email,
+      });
+      // Refetch silencieux pour basculer la carte vers le nouvel etat
+      // (hasUpsell=true -> la carte disparait automatiquement).
+      const { data } = await api.get('/orders/track', {
+        params: { orderId: result?.orderId || orderId, email },
+      });
+      setResult(data);
+      setUpsellState('idle');
+    } catch (err) {
+      const status = err?.response?.status;
+      const code = err?.response?.data?.error?.code;
+      let msg;
+      if (status === 409 || code === 'ALREADY_ADDED') {
+        msg = tx({
+          fr: 'L\'offre est déjà sur cette commande.',
+          en: 'The offer is already on this order.',
+          es: 'La oferta ya está en este pedido.',
+        });
+      } else if (status === 400 && code === 'NOT_PENDING') {
+        msg = tx({
+          fr: 'Cette commande a déjà été traitée et ne peut plus être modifiée.',
+          en: 'This order has already been processed and cannot be modified.',
+          es: 'Este pedido ya fue procesado.',
+        });
+      } else {
+        msg = tx({
+          fr: 'Erreur lors de l\'ajout de l\'offre. Réessaie ou écris-nous à massivemedias@gmail.com.',
+          en: 'Error adding the offer. Retry or email massivemedias@gmail.com.',
+          es: 'Error al añadir la oferta.',
+        });
+      }
+      setUpsellError(msg);
+      setUpsellState('error');
+    }
   };
 
   // REORDER (Phase 6) : appelle POST /orders/reorder avec orderId+email
@@ -496,6 +555,127 @@ function Tracking() {
                       })}
                     </div>
                   </div>
+                )}
+
+                {/* PAYMENT CTA (Phase 7B) : carte de paiement visible quand
+                    la commande est pending/draft ET qu'un Stripe Payment Link
+                    est disponible. Le bouton fonctionne meme apres l'ajout
+                    d'un upsell (le backend regenere le lien et le push
+                    automatiquement dans la reponse trackOrder via le refetch). */}
+                {(result.status === 'pending' || result.status === 'draft') && result.paymentUrl && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
+                    className="card-bg rounded-2xl p-6 md:p-7 shadow-lg shadow-black/20"
+                  >
+                    <div className="flex items-start gap-3 mb-4">
+                      <span className="w-10 h-10 rounded-full bg-accent/15 text-accent flex items-center justify-center flex-shrink-0">
+                        <CreditCard size={20} />
+                      </span>
+                      <div className="flex-1">
+                        <p className="text-heading font-heading font-bold text-base mb-1">
+                          {tx({ fr: 'Paiement en attente', en: 'Payment pending', es: 'Pago pendiente' })}
+                        </p>
+                        <p className="text-grey-muted text-xs leading-relaxed">
+                          {tx({
+                            fr: 'Finalise ta commande en toute sécurité via Stripe (carte, Apple Pay, Google Pay).',
+                            en: 'Finalize your order securely via Stripe (card, Apple Pay, Google Pay).',
+                            es: 'Finaliza tu pedido de forma segura via Stripe (tarjeta, Apple Pay, Google Pay).',
+                          })}
+                        </p>
+                        {typeof result.total === 'number' && result.total > 0 && (
+                          <p className="text-[11px] text-grey-muted mt-1.5">
+                            {tx({ fr: 'Total à régler', en: 'Total to pay', es: 'Total a pagar' })}
+                            {' : '}
+                            <span className="font-mono font-semibold text-heading">
+                              {(result.total / 100).toLocaleString(lang === 'fr' ? 'fr-CA' : lang === 'es' ? 'es-ES' : 'en-CA', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} $
+                            </span>
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    <a
+                      href={result.paymentUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full inline-flex items-center justify-center gap-2 py-3 rounded-lg bg-accent text-white font-bold text-sm hover:brightness-110 transition-all shadow-[0_0_20px_rgba(var(--accent-rgb,255,82,160),0.35)]"
+                    >
+                      <CreditCard size={16} />
+                      {tx({ fr: 'Payer ma facture', en: 'Pay my invoice', es: 'Pagar mi factura' })}
+                    </a>
+                  </motion.div>
+                )}
+
+                {/* UPSELL (Phase 7B) : carte d'offre incitative "Order Bump".
+                    Visible UNIQUEMENT pour pending/draft non encore upsell.
+                    Backend POST /orders/upsell : recalc TPS/TVQ + regen
+                    Stripe Payment Link, refetch frontend met a jour total
+                    + paymentUrl + cache la carte (hasUpsell devient true). */}
+                {(result.status === 'pending' || result.status === 'draft') && !result.hasUpsell && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.18 }}
+                    className="rounded-2xl p-6 md:p-7 shadow-lg shadow-black/20 border bg-accent/5"
+                    style={{ borderColor: 'rgba(255,82,160,0.25)' }}
+                  >
+                    <div className="flex items-start gap-3 mb-3">
+                      <span className="w-10 h-10 rounded-full bg-accent/20 text-accent flex items-center justify-center flex-shrink-0">
+                        <Sparkles size={20} />
+                      </span>
+                      <div className="flex-1">
+                        <p className="text-heading font-heading font-bold text-base mb-1">
+                          {tx({
+                            fr: 'Ajoutez de la magie à votre commande',
+                            en: 'Add some magic to your order',
+                            es: 'Añade magia a tu pedido',
+                          })}
+                        </p>
+                        <p className="text-grey-muted text-xs leading-relaxed">
+                          {tx({
+                            fr: 'Obtenez 50 stickers holographiques premium (2x2 pouces) pour seulement 49$ supplémentaires. L\'ajout parfait pour faire briller votre marque.',
+                            en: 'Get 50 premium holographic stickers (2x2 inch) for only $49 extra. The perfect add-on to make your brand shine.',
+                            es: 'Obtén 50 stickers holográficos premium (2x2 pulgadas) por solo 49$ adicionales. El complemento perfecto para que tu marca brille.',
+                          })}
+                        </p>
+                      </div>
+                    </div>
+
+                    {upsellState === 'error' && upsellError && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="flex items-start gap-2 rounded-lg bg-red-500/10 border border-red-500/30 px-3 py-2 text-xs text-red-400 mb-3"
+                      >
+                        <AlertCircle size={14} className="flex-shrink-0 mt-0.5" />
+                        <span className="leading-relaxed">{upsellError}</span>
+                      </motion.div>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={handleUpsell}
+                      disabled={upsellState === 'loading'}
+                      className="w-full py-3 rounded-lg bg-accent text-white font-bold text-sm hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    >
+                      {upsellState === 'loading' ? (
+                        <>
+                          <Loader2 size={16} className="animate-spin" />
+                          {tx({ fr: 'Ajout en cours...', en: 'Adding...', es: 'Añadiendo...' })}
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles size={16} />
+                          {tx({
+                            fr: 'Ajouter à ma commande (+49$)',
+                            en: 'Add to my order (+$49)',
+                            es: 'Añadir a mi pedido (+49$)',
+                          })}
+                        </>
+                      )}
+                    </button>
+                  </motion.div>
                 )}
 
                 {/* REORDER (Phase 6) : bouton "Recommander a l'identique"

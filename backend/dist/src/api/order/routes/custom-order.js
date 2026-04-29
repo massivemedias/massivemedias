@@ -225,6 +225,18 @@ exports.default = {
                 auth: false,
             },
         },
+        // UPSELL (Phase 7B, 29 avril 2026) : 1-click upsell sur les commandes
+        // pending/draft depuis /suivi. Double cle + gate status + dedupe item
+        // dans le controller. Recalcul TPS/TVQ + regen Stripe Payment Link
+        // automatique - l'invoice.stripePaymentLink est patch avec le nouveau.
+        {
+            method: 'POST',
+            path: '/orders/upsell',
+            handler: 'order.upsellOrder',
+            config: {
+                auth: false,
+            },
+        },
         // PORTFOLIO WIZARD (Phase finale, 28 avril 2026) : transforme une
         // commande livree en brouillon de projet portfolio. Multipart upload
         // (1..N images) + auto-fill titre/description depuis les items.

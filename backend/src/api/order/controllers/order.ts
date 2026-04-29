@@ -2413,6 +2413,7 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
       const candidates = await strapi.documents('api::order.order').findMany({
         filters: { customerEmail: { $eqi: email } } as any,
         limit: 50,
+        populate: ['invoice'],
       });
 
       const requested = orderId.toUpperCase();
@@ -2446,16 +2447,34 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
         return;
       }
 
-      // Reponse minimale - aucun champ sensible expose
+      // UPSELL (Phase 7B) : champs additionnels exposes UNIQUEMENT pour les
+      // commandes pending/draft (le client a un interet legitime a voir le
+      // total + payer + accepter l'upsell). Pour les autres statuts, on
+      // garde la reponse minimale d'origine - aucun changement de contrat.
       const orderRef = (String(match.stripePaymentIntentId || '').slice(-8) || String(match.documentId || '').slice(-8)).toUpperCase();
+      const isPayable = match.status === 'pending' || match.status === 'draft';
+      const items = Array.isArray(match.items) ? match.items : [];
+      const UPSELL_NAME = 'Upsell : 50 Stickers Holographiques Premium 2x2';
+      const hasUpsell = items.some((it: any) =>
+        String(it?.name || it?.productName || '').trim() === UPSELL_NAME,
+      );
+
       ctx.body = {
         success: true,
         orderId: orderRef,
         status: match.status || 'pending',
         createdAt: match.createdAt || null,
         updatedAt: match.updatedAt || null,
+        ...(isPayable
+          ? {
+              total: Number(match.total) || 0, // en centimes
+              currency: match.currency || 'cad',
+              paymentUrl: (match as any).invoice?.stripePaymentLink || null,
+              hasUpsell,
+            }
+          : {}),
       };
-      strapi.log.info(`[trackOrder] OK orderRef=${orderRef} status=${match.status}`);
+      strapi.log.info(`[trackOrder] OK orderRef=${orderRef} status=${match.status}${isPayable ? ` payable=true hasUpsell=${hasUpsell}` : ''}`);
     } catch (err: any) {
       strapi.log.error(`[trackOrder] ECHEC : ${err?.message || err}`);
       ctx.status = 500;
@@ -2465,6 +2484,248 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
           name: 'TrackingFailed',
           message: 'Erreur lors de la recherche de la commande. Reessaie dans quelques secondes.',
           code: 'TRACKING_FAILED',
+        },
+      };
+    }
+  },
+
+  /**
+   * POST /orders/upsell
+   *
+   * UPSELL ENGINE (Phase 7B, 29 avril 2026) : permet a un client (depuis
+   * le portail public /suivi) d'ajouter en 1 clic une offre incitative
+   * sur sa commande pending/draft. Le total est recalcule (TPS+TVQ
+   * recalcules sur le nouveau subtotal, shipping conserve) et un nouveau
+   * Stripe Payment Link est genere - l'ancien lien devient obsolete car
+   * la facture finale doit refleter le nouveau total.
+   *
+   * Securite (route publique) :
+   *   1. Double cle orderId+email matchant - meme garde que trackOrder/reorder.
+   *   2. Gate status pending|draft (sinon 400 "Commande deja traitee").
+   *   3. Idempotence : detection de l'item upsell existant (409 ALREADY_ADDED)
+   *      pour empecher un client qui clique 5 fois d'ajouter 5 fois l'offre.
+   *
+   * Flow :
+   *   1. Lookup order + invoice via populate.
+   *   2. Push l'item upsell dans items[], recalc cents (subtotal/tps/tvq/total).
+   *   3. Update order.
+   *   4. stripe.paymentLinks.create avec un single line_item couvrant le
+   *      nouveau total (simple et robuste - le client voit "Massive Medias
+   *      - Facture #X" et le bon montant).
+   *   5. Patch invoice.stripePaymentLink avec le nouveau lien (l'ancien
+   *      reste valide cote Stripe mais on ne l'utilise plus).
+   */
+  async upsellOrder(ctx) {
+    const body = (ctx.request.body || {}) as any;
+    const orderId = String(body.orderId || '').trim();
+    const email = String(body.email || '').trim();
+
+    if (!orderId || !email) {
+      ctx.status = 400;
+      ctx.body = { error: { status: 400, name: 'MissingParameters', message: 'orderId et email sont requis', code: 'MISSING_PARAMS' } };
+      return;
+    }
+    if (!email.includes('@') || email.length < 5 || email.length > 200) {
+      ctx.status = 400;
+      ctx.body = { error: { status: 400, name: 'InvalidEmail', message: 'email invalide', code: 'INVALID_EMAIL' } };
+      return;
+    }
+    if (orderId.length < 6 || orderId.length > 64) {
+      ctx.status = 400;
+      ctx.body = { error: { status: 400, name: 'InvalidOrderId', message: 'orderId invalide', code: 'INVALID_ORDER_ID' } };
+      return;
+    }
+
+    const UPSELL_NAME = 'Upsell : 50 Stickers Holographiques Premium 2x2';
+    const UPSELL_PRICE_DOLLARS = 49.00;
+
+    try {
+      // 1. Lookup via double cle (avec invoice populee).
+      const candidates = await strapi.documents('api::order.order').findMany({
+        filters: { customerEmail: { $eqi: email } } as any,
+        limit: 50,
+        populate: ['invoice'],
+      });
+
+      const requested = orderId.toUpperCase();
+      const order = (candidates as any[]).find((o) => {
+        const sid = String(o?.stripePaymentIntentId || '');
+        const did = String(o?.documentId || '');
+        return (
+          sid.slice(-8).toUpperCase() === requested ||
+          did.slice(-8).toUpperCase() === requested ||
+          sid.toUpperCase() === requested ||
+          did.toUpperCase() === requested
+        );
+      });
+
+      if (!order) {
+        ctx.status = 404;
+        ctx.body = { error: { status: 404, name: 'OrderNotFound', message: 'Aucune commande ne correspond a cette combinaison numero + email.', code: 'NOT_FOUND' } };
+        strapi.log.info(`[upsell] Lookup failed for orderId=${orderId.slice(0, 4)}*** email=${email.slice(0, 2)}***`);
+        return;
+      }
+
+      // 2. Gate status pending|draft.
+      if (order.status !== 'pending' && order.status !== 'draft') {
+        ctx.status = 400;
+        ctx.body = {
+          error: {
+            status: 400,
+            name: 'OrderAlreadyProcessed',
+            message: 'Commande deja traitee.',
+            code: 'NOT_PENDING',
+            currentStatus: order.status,
+          },
+        };
+        return;
+      }
+
+      // 3. Idempotence : detection upsell existant.
+      const existingItems = Array.isArray(order.items) ? order.items : [];
+      const alreadyHas = existingItems.some((it: any) =>
+        String(it?.name || it?.productName || '').trim() === UPSELL_NAME,
+      );
+      if (alreadyHas) {
+        ctx.status = 409;
+        ctx.body = {
+          error: {
+            status: 409,
+            name: 'UpsellAlreadyAdded',
+            message: 'L\'offre est deja sur cette commande.',
+            code: 'ALREADY_ADDED',
+          },
+        };
+        return;
+      }
+
+      // 4. Construction du nouvel item + recalc cents.
+      // L'item respecte le shape attendu (name + productName en double pour
+      // compat avec le reste du code qui lit l'un ou l'autre selon la branche).
+      const newItem = {
+        name: UPSELL_NAME,
+        productName: UPSELL_NAME,
+        quantity: 1,
+        price: UPSELL_PRICE_DOLLARS,
+        totalPrice: UPSELL_PRICE_DOLLARS,
+        size: '2x2 inch',
+        finish: 'Holographique premium',
+      };
+      const newItems = [...existingItems, newItem];
+
+      const upsellCents = Math.round(UPSELL_PRICE_DOLLARS * 100);
+      const oldSubtotalCents = Number(order.subtotal) || 0;
+      const newSubtotalCents = oldSubtotalCents + upsellCents;
+      const shippingCents = Number(order.shipping) || 0;
+
+      // TPS 5% / TVQ 9.975% sur le nouveau subtotal (les taxes federales
+      // QC s'appliquent sur les biens, pas sur le shipping ni sur les
+      // taxes elles-memes).
+      const newTpsCents = Math.round(newSubtotalCents * 0.05);
+      const newTvqCents = Math.round(newSubtotalCents * 0.09975);
+      const newTotalCents = newSubtotalCents + shippingCents + newTpsCents + newTvqCents;
+
+      // 5. Update order (items + amounts).
+      const updatedOrder = await strapi.documents('api::order.order').update({
+        documentId: order.documentId,
+        data: {
+          items: newItems,
+          subtotal: newSubtotalCents,
+          tps: newTpsCents,
+          tvq: newTvqCents,
+          total: newTotalCents,
+        } as any,
+      });
+
+      // 6. Generation du nouveau Stripe Payment Link.
+      // Approche simple : un seul line_item couvrant le nouveau total. La
+      // ventilation TPS/TVQ/shipping est preservee dans la base (champs DB)
+      // et dans la facture PDF, ce qui suffit pour la comptabilite.
+      let newPaymentUrl: string | null = null;
+      const stripe = getStripe();
+      const currencyLower = (order.currency || 'cad').toLowerCase();
+      const customerName = order.customerName || 'Client';
+      const orderRefShort = (
+        String(order.stripePaymentIntentId || '').slice(-8) ||
+        String(order.documentId || '').slice(-8)
+      ).toUpperCase();
+      const upsellTs = Date.now();
+
+      try {
+        const product = await stripe.products.create(
+          {
+            name: `Massive Medias - Commande #${orderRefShort} (avec offre upsell)`,
+            metadata: {
+              orderId: order.documentId,
+              upsell: 'true',
+            },
+          },
+          { idempotencyKey: `upsell-prod-${order.documentId}-${upsellTs}` },
+        );
+        const price = await stripe.prices.create(
+          {
+            product: product.id,
+            unit_amount: newTotalCents,
+            currency: currencyLower,
+          },
+          { idempotencyKey: `upsell-price-${order.documentId}-${upsellTs}` },
+        );
+        const paymentLink = await stripe.paymentLinks.create(
+          {
+            line_items: [{ price: price.id, quantity: 1 }],
+            metadata: {
+              orderId: order.documentId,
+              type: 'upsell',
+              originalRef: orderRefShort,
+            },
+            payment_intent_data: {
+              metadata: {
+                orderId: order.documentId,
+                type: 'upsell',
+              },
+            },
+          },
+          { idempotencyKey: `upsell-plink-${order.documentId}-${upsellTs}` },
+        );
+        newPaymentUrl = paymentLink.url;
+
+        // 7. Patch invoice.stripePaymentLink si invoice liee.
+        const invoiceDocId = (order as any).invoice?.documentId;
+        if (invoiceDocId) {
+          await strapi.documents('api::invoice.invoice').update({
+            documentId: invoiceDocId,
+            data: { stripePaymentLink: newPaymentUrl } as any,
+          });
+        }
+      } catch (stripeErr: any) {
+        // Stripe a echoue : l'order est deja update avec les nouveaux
+        // items + total, mais le lien de paiement ne sera pas a jour.
+        // L'admin verra l'order avec le nouveau total et pourra utiliser
+        // le bouton "Regenerate Stripe link" pour corriger.
+        strapi.log.error(`[upsell] Stripe regen echoue pour ${order.documentId}: ${stripeErr?.message}`);
+      }
+
+      strapi.log.info(`[upsell] OK ${orderRefShort} - ${customerName} : +49$ upsell, total ${(newTotalCents / 100).toFixed(2)}$`);
+
+      ctx.status = 200;
+      ctx.body = {
+        success: true,
+        orderId: orderRefShort,
+        message: 'Offre ajoutee avec succes',
+        newTotal: newTotalCents,
+        currency: order.currency || 'cad',
+        paymentUrl: newPaymentUrl,
+        itemAdded: { name: UPSELL_NAME, price: UPSELL_PRICE_DOLLARS },
+      };
+    } catch (err: any) {
+      strapi.log.error(`[upsell] ECHEC : ${err?.message || err}`);
+      ctx.status = 500;
+      ctx.body = {
+        error: {
+          status: 500,
+          name: 'UpsellFailed',
+          message: 'Impossible d\'ajouter l\'offre. Contactez-nous a massivemedias@gmail.com.',
+          code: 'UPSELL_FAILED',
         },
       };
     }
