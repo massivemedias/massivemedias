@@ -17,6 +17,7 @@ import artistsData from '../data/artists';
 import { toFull } from '../utils/paths';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../services/api';
+import { trackArtworkView } from '../utils/analytics';
 
 function ContactArtisteForm({ artist, tx }) {
   const { user } = useAuth();
@@ -342,6 +343,16 @@ function ArtisteDetail({ subdomainSlug }) {
 
   const handleSelectPrint = (print) => {
     setSelectedPrint(print);
+    // GA4 (mission Top 3 oeuvres) : pageview virtuel par oeuvre. Le module
+    // analytics gate automatiquement si l'admin ou un artiste regarde sa
+    // propre page (cf setAnalyticsIdentity dans useAnalytics).
+    if (artist?.slug && (print?.slug || print?.id)) {
+      trackArtworkView(
+        artist.slug,
+        print.slug || String(print.id),
+        print.title || print.titleEn || print.titleFr || '',
+      );
+    }
     setTimeout(() => {
       configuratorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 100);

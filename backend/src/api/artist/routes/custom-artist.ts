@@ -1,5 +1,14 @@
 export default {
   routes: [
+    // MISSION TOP 3 GA4 (29 avril 2026) : top 3 oeuvres d'un artiste
+    // d'apres GA4 (90 derniers jours, trafic interne deja exclu cote
+    // frontend via setAnalyticsIdentity). Auth admin via requireAdminAuth.
+    {
+      method: 'GET',
+      path: '/admin/artists/:id/top-artworks',
+      handler: 'artist.adminTopArtworks',
+      config: { auth: false },
+    },
     {
       method: 'POST',
       path: '/artists/cleanup-sold-uniques',

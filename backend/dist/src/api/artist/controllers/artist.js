@@ -1,4 +1,27 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -971,6 +994,109 @@ exports.default = strapi_1.factories.createCoreController('api::artist.artist', 
         catch (err) {
             strapi.log.error('adminDeleteItem error:', err);
             ctx.throw(500, err.message);
+        }
+    },
+    /**
+     * GET /admin/artists/:id/top-artworks
+     *
+     * MISSION TOP 3 GA4 (29 avril 2026) : retourne les 3 oeuvres les plus
+     * vues d'un artiste sur les 90 derniers jours, en se basant sur les
+     * pageviews virtuels `/oeuvre/{artistSlug}/{printSlug}` emis cote
+     * frontend par trackArtworkView() apres exclusion du trafic interne
+     * (admin + artiste lui-meme).
+     *
+     * Auth admin via requireAdminAuth.
+     * Param :id  : peut etre soit le documentId Strapi, soit le slug
+     *               artiste (le frontend utilise souvent le slug pour
+     *               navigation simplifiee).
+     *
+     * GRACEFUL FALLBACK : si GA4 n'est pas configure (vars d'env Render
+     * absentes), on retourne { topArtworks: [], gaConfigured: false } -
+     * le frontend affichera un etat "configurer GA" plutot qu'une erreur.
+     */
+    async adminTopArtworks(ctx) {
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
+            return;
+        const { id } = ctx.params;
+        if (!id)
+            return ctx.badRequest('id ou slug requis');
+        // Lazy import - evite de charger la lib GA4 (et ses ~40MB de deps
+        // gRPC) si l'endpoint n'est jamais appele.
+        const { topPagesForPrefix, getGAClient } = await Promise.resolve().then(() => __importStar(require('../../../utils/ga4')));
+        // Lookup artiste par documentId puis fallback slug.
+        let artist = null;
+        try {
+            const byDoc = await strapi.documents('api::artist.artist').findOne({
+                documentId: id,
+            });
+            if (byDoc)
+                artist = byDoc;
+        }
+        catch { /* findOne throws si id invalide - on ignore */ }
+        if (!artist) {
+            const bySlug = await strapi.documents('api::artist.artist').findMany({
+                filters: { slug: { $eq: id } },
+                limit: 1,
+            });
+            if (bySlug && bySlug.length > 0)
+                artist = bySlug[0];
+        }
+        if (!artist)
+            return ctx.notFound(`Artiste ${id} introuvable`);
+        const artistSlug = String(artist.slug || '').trim();
+        if (!artistSlug) {
+            return ctx.badRequest('Cet artiste n\'a pas de slug');
+        }
+        // Fast path : si GA non configure, on renvoie un payload vide
+        // explicite plutot qu'une erreur 500 silencieuse.
+        if (!getGAClient()) {
+            ctx.body = {
+                artistSlug,
+                topArtworks: [],
+                gaConfigured: false,
+                message: 'GA4 non configure (GA_PROPERTY_ID / GA_CLIENT_EMAIL / GA_PRIVATE_KEY manquantes).',
+            };
+            return;
+        }
+        try {
+            const prefix = `/oeuvre/${artistSlug}/`;
+            const topPages = await topPagesForPrefix(prefix, 3, 90);
+            // Enrichissement : croiser les pagePath -> printSlug avec le
+            // tableau `prints` JSON de l'artiste pour recuperer titre +
+            // miniature.
+            const prints = Array.isArray(artist.prints) ? artist.prints : [];
+            const enriched = topPages.map((p) => {
+                // Le pagePath se termine par le slug du print : on extrait le
+                // dernier segment non vide.
+                const segments = p.pagePath.split('/').filter(Boolean);
+                const printSlugOrId = segments[segments.length - 1] || '';
+                const match = prints.find((pr) => String((pr === null || pr === void 0 ? void 0 : pr.slug) || '') === printSlugOrId ||
+                    String((pr === null || pr === void 0 ? void 0 : pr.id) || '') === printSlugOrId);
+                return {
+                    pagePath: p.pagePath,
+                    printSlug: printSlugOrId,
+                    views: p.views,
+                    title: (match === null || match === void 0 ? void 0 : match.title) || (match === null || match === void 0 ? void 0 : match.titleEn) || (match === null || match === void 0 ? void 0 : match.titleFr) || printSlugOrId,
+                    thumbnail: (match === null || match === void 0 ? void 0 : match.thumbnail) || (match === null || match === void 0 ? void 0 : match.image) || (match === null || match === void 0 ? void 0 : match.fullImage) || null,
+                    price: (match === null || match === void 0 ? void 0 : match.price) || null,
+                    unique: !!(match === null || match === void 0 ? void 0 : match.unique),
+                };
+            });
+            ctx.body = {
+                artistSlug,
+                topArtworks: enriched,
+                gaConfigured: true,
+                windowDays: 90,
+            };
+        }
+        catch (err) {
+            strapi.log.error(`[adminTopArtworks] echec GA4 pour ${artistSlug}: ${(err === null || err === void 0 ? void 0 : err.message) || err}`);
+            ctx.body = {
+                artistSlug,
+                topArtworks: [],
+                gaConfigured: true,
+                error: (err === null || err === void 0 ? void 0 : err.message) || 'Echec recuperation GA4',
+            };
         }
     },
 }));

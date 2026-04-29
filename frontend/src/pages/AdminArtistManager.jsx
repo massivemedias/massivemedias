@@ -14,13 +14,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search, Users, Loader2, ChevronLeft, Trash2, Save, CheckCircle,
   XCircle, Image as ImageIcon, Pencil, DollarSign, Sparkles, TrendingUp,
-  BarChart3, Banknote, Eye, Plus, Wallet, Lock, ShieldCheck,
+  BarChart3, Banknote, Eye, Plus, Wallet, Lock, ShieldCheck, Trophy, AlertTriangle,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import {
   getAdminArtistsList, getAdminArtistDetail,
   updateAdminArtistProfile, updateAdminArtistItem, deleteAdminArtistItem,
-  createArtistPayment, getCommissions,
+  createArtistPayment, getCommissions, getArtistTopArtworks,
 } from '../services/adminService';
 import ActivatePrivateSaleModal from '../components/ActivatePrivateSaleModal';
 
@@ -977,6 +977,32 @@ function StatsTab({ detail, tx }) {
   const stats = detail.stats || { profileViews: 0, itemsViews: [], totalItemViews: 0 };
   const topItems = [...(stats.itemsViews || [])].sort((a, b) => b.views - a.views).slice(0, 10);
 
+  // MISSION TOP 3 GA4 (29 avril 2026) : top 3 oeuvres reelles d'apres
+  // Google Analytics 4. Le backend filtre les pageviews virtuels emis
+  // par trackArtworkView() apres exclusion de l'admin et de l'artiste
+  // lui-meme via setAnalyticsIdentity. Tres deconnecte des stats
+  // internes (`stats.itemsViews`) qui peuvent rester en placeholder.
+  const [gaTop, setGaTop] = useState(null); // { topArtworks, gaConfigured, message? } | null
+  const [gaLoading, setGaLoading] = useState(true);
+  const [gaError, setGaError] = useState('');
+
+  useEffect(() => {
+    if (!detail?.slug) return;
+    let cancelled = false;
+    setGaLoading(true);
+    setGaError('');
+    setGaTop(null);
+    getArtistTopArtworks(detail.slug)
+      .then(({ data }) => { if (!cancelled) setGaTop(data); })
+      .catch((err) => {
+        if (cancelled) return;
+        const msg = err?.response?.data?.error?.message || err?.message || 'Erreur';
+        setGaError(msg);
+      })
+      .finally(() => { if (!cancelled) setGaLoading(false); });
+    return () => { cancelled = true; };
+  }, [detail?.slug]);
+
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
@@ -988,6 +1014,94 @@ function StatsTab({ detail, tx }) {
           value={stats.itemsViews?.length || 0} color="text-grey-muted" />
       </div>
 
+      {/* GA4 Top 3 oeuvres - source verite vue reelle */}
+      <div className="card-bg rounded-xl p-4 space-y-3 ring-1 ring-yellow-400/20">
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <h3 className="text-heading font-semibold text-sm uppercase tracking-wider flex items-center gap-2">
+            <Trophy size={14} className="text-yellow-400" />
+            {tx({
+              fr: 'Top 3 des oeuvres les plus populaires',
+              en: 'Top 3 most popular artworks',
+              es: 'Top 3 obras mas populares',
+            })}
+          </h3>
+          {gaTop?.windowDays && (
+            <span className="text-[10px] text-grey-muted">
+              {tx({
+                fr: `Source : Google Analytics · ${gaTop.windowDays} derniers jours`,
+                en: `Source: Google Analytics · last ${gaTop.windowDays} days`,
+                es: `Fuente: Google Analytics · ultimos ${gaTop.windowDays} dias`,
+              })}
+            </span>
+          )}
+        </div>
+
+        {gaLoading ? (
+          <div className="flex items-center justify-center py-6">
+            <Loader2 size={18} className="animate-spin text-yellow-400" />
+          </div>
+        ) : gaError ? (
+          <div className="flex items-start gap-2 rounded-lg bg-red-500/10 border border-red-500/30 px-3 py-2 text-xs text-red-400">
+            <AlertTriangle size={12} className="flex-shrink-0 mt-0.5" />
+            <span className="leading-relaxed">{gaError}</span>
+          </div>
+        ) : !gaTop?.gaConfigured ? (
+          <p className="text-xs text-grey-muted leading-relaxed">
+            {tx({
+              fr: 'GA4 n\'est pas encore configure cote serveur. Ajoute GA_PROPERTY_ID, GA_CLIENT_EMAIL et GA_PRIVATE_KEY dans les variables d\'environnement Render pour activer cette section.',
+              en: 'GA4 is not configured on the server yet. Add GA_PROPERTY_ID, GA_CLIENT_EMAIL and GA_PRIVATE_KEY to Render env variables to enable this section.',
+              es: 'GA4 no esta configurado todavia. Agrega las variables GA_* en Render.',
+            })}
+          </p>
+        ) : !gaTop?.topArtworks || gaTop.topArtworks.length === 0 ? (
+          <p className="text-xs text-grey-muted leading-relaxed">
+            {tx({
+              fr: 'Pas encore assez de donnees GA4 pour cet artiste sur les 90 derniers jours. Les compteurs se rempliront avec les visites publiques (le trafic admin / artiste lui-meme est exclu a la source).',
+              en: 'Not enough GA4 data yet for this artist over the last 90 days. Public traffic only (admin and the artist themselves are excluded at source).',
+              es: 'Aun no hay suficientes datos de GA4 en los ultimos 90 dias.',
+            })}
+          </p>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {gaTop.topArtworks.map((art, i) => (
+              <div
+                key={`${art.printSlug}-${i}`}
+                className="rounded-lg overflow-hidden bg-black/30 border border-white/5"
+              >
+                <div className="relative aspect-square bg-white/5">
+                  {art.thumbnail ? (
+                    <img
+                      src={art.thumbnail}
+                      alt={art.title}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-grey-muted/50">
+                      <ImageIcon size={24} />
+                    </div>
+                  )}
+                  <span className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-yellow-400/90 text-black text-[10px] font-bold uppercase tracking-wider">
+                    #{i + 1}
+                  </span>
+                </div>
+                <div className="p-3 space-y-1.5">
+                  <p className="text-sm text-heading font-semibold truncate" title={art.title}>
+                    {art.title}
+                  </p>
+                  <div className="flex items-center gap-1.5 text-xs">
+                    <Eye size={12} className="text-yellow-400" />
+                    <span className="text-yellow-400 font-bold tabular-nums">{art.views}</span>
+                    <span className="text-grey-muted">{tx({ fr: 'vues', en: 'views', es: 'vistas' })}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Top 10 internal counters (placeholder data, kept for legacy view) */}
       <div className="card-bg rounded-xl p-4 space-y-3">
         <h3 className="text-heading font-semibold text-sm uppercase tracking-wider">
           {tx({ fr: 'Top 10 oeuvres par vues', en: 'Top 10 items by views', es: 'Top 10 obras' })}

@@ -146,6 +146,11 @@ export const updateOrderProductionStage = (documentId, productionStage) =>
 // commandes (LTV + historique) + creation d'un code promo Stripe VIP.
 export const getCrmClient = (email) => api.get('/admin/crm/client', { params: { email } });
 export const createCrmPromo = (email) => api.post('/admin/crm/client/promo', { email });
+
+// MISSION TOP 3 GA4 (29 avril 2026) : top 3 oeuvres d'un artiste sur 90 jours.
+// idOrSlug = documentId Strapi OU slug artiste (le backend matche les deux).
+export const getArtistTopArtworks = (idOrSlug) =>
+  api.get(`/admin/artists/${encodeURIComponent(idOrSlug)}/top-artworks`);
 /**
  * Changement de statut d'une commande.
  * @param {string} documentId

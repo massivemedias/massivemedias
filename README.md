@@ -338,6 +338,13 @@ SITE_URL=https://massivemedias.com
 # Webhooks hub (Phase 7D) - dispatch externe Zapier / Make / n8n
 # Optionnel : si non defini, aucun event n'est envoye (graceful exit).
 EXTERNAL_WEBHOOK_URL=https://hooks.zapier.com/hooks/catch/...
+
+# GA4 Reporting API (mission Top 3 oeuvres) - Service Account Google Cloud
+# Optionnel : si non defini, le panneau admin "Top 3 oeuvres" affiche
+# un message d'invitation a configurer ces vars (graceful fallback).
+GA_PROPERTY_ID=123456789
+GA_CLIENT_EMAIL=ga-data@<project>.iam.gserviceaccount.com
+GA_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
 ```
 
 ---
