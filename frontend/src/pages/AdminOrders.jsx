@@ -238,6 +238,10 @@ function AdminOrders() {
   // sans avoir a fermer et chercher le bouton dans la liste.
   const [generatingInModal, setGeneratingInModal] = useState(false);
   const [previewLinkCopied, setPreviewLinkCopied] = useState(false);
+  // FIX-INCIDENT (29 avril 2026) : feedback visuel "Copie" sur le bouton
+  // Copier de la ligne. Set de documentIds recemment copies (auto-reset 2s).
+  // Decouple de previewLinkCopied (qui vit dans le modal de preview).
+  const [rowLinkCopied, setRowLinkCopied] = useState(null); // documentId | null
 
   // FIX-ADMIN (avril 2026) : interface minimaliste a 2 onglets seulement.
   // - 'all'      : tableau complet sans aucun filtre (recupere tout l'historique)
@@ -347,26 +351,24 @@ function AdminOrders() {
       const { data } = await regenerateStripeLink(order.documentId);
       const paymentUrl = data?.paymentUrl;
       const amount = data?.amount;
-      // Mise a jour optimiste : injecter le nouveau lien dans l'order locale
-      // pour que le bouton "Voir dans Stripe" et la facture PDF soient a jour
-      // sans refetch.
+      // Mise a jour optimiste : injecter le nouveau lien dans l'order locale.
+      // Le lien apparait alors dans le bandeau readonly + bouton Copier de la
+      // ligne. AUCUN courriel n'est envoye - l'admin reste seul maitre de la
+      // diffusion (WhatsApp, email manuel, etc).
       setOrders((prev) => prev.map((o) =>
         o.documentId === order.documentId ? { ...o, stripePaymentLink: paymentUrl } : o
       ));
-      // Copier automatiquement le lien dans le presse-papier pour que l'admin
-      // puisse l'envoyer immediatement au client par WhatsApp/email.
-      try {
-        if (paymentUrl && navigator.clipboard) {
-          await navigator.clipboard.writeText(paymentUrl);
-        }
-      } catch { /* clipboard non dispo, on continue */ }
+      // FIX-INCIDENT (29 avril 2026) : on NE COPIE PLUS automatiquement dans
+      // le presse-papier - l'admin DOIT cliquer sur "Copier" pour eviter toute
+      // confusion avec un envoi automatique. Le toast est aussi reformule
+      // pour clarifier qu'il faut envoyer manuellement.
       setInvoiceToast({
         type: 'success',
-        title: tx({ fr: 'Lien Stripe regenere', en: 'Stripe link regenerated', es: 'Enlace regenerado' }),
+        title: tx({ fr: 'Lien Stripe genere', en: 'Stripe link generated', es: 'Enlace generado' }),
         message: tx({
-          fr: `Lien copie dans le presse-papier${amount ? ` (${amount.toFixed(2)}$)` : ''}. Envoyer au client par email ou WhatsApp.`,
-          en: `Link copied to clipboard${amount ? ` ($${amount.toFixed(2)})` : ''}. Send to customer.`,
-          es: `Enlace copiado${amount ? ` ($${amount.toFixed(2)})` : ''}. Enviar al cliente.`,
+          fr: `Lien visible sur la ligne${amount ? ` (${amount.toFixed(2)}$)` : ''}. Clique sur "Copier" pour le partager au client.`,
+          en: `Link visible on the row${amount ? ` ($${amount.toFixed(2)})` : ''}. Click "Copy" to share with the customer.`,
+          es: `Enlace visible en la fila${amount ? ` ($${amount.toFixed(2)})` : ''}. Haz clic en "Copiar".`,
         }),
       });
     } catch (err) {
@@ -1796,33 +1798,76 @@ function AdminOrders() {
                                     <><Mail size={12} /> {tx({ fr: 'Envoyer la facture', en: 'Email invoice', es: 'Enviar factura' })}</>
                                   )}
                                 </button>
-                                {/* FIX-RECOVERY (27 avril 2026) : bouton de regeneration du lien
-                                    Stripe pour les commandes pending/draft. Affiche en orange
-                                    "critique" si le lien manque, ou en gris discret si un
-                                    lien existe deja (avec confirmation avant ecrasement).
-                                    Cas concret : commande Don Mescal sans lien suite a un
-                                    fix non encore deploye au moment de la creation. */}
+                                {/* FIX-RECOVERY (27 avril 2026) + FIX-INCIDENT (29 avril 2026) :
+                                    flux de regeneration / consultation du lien Stripe pour les
+                                    commandes pending/draft. Refonte UX apres incident : aucune
+                                    action ne declenche d'email automatique. Apres generation,
+                                    le lien est rendu VISIBLE sur la ligne (input readonly +
+                                    bouton Copier explicite) - l'admin choisit lui-meme s'il
+                                    le partage par WhatsApp / email manuel / sms. */}
                                 {(order.status === 'pending' || order.status === 'draft') && (
-                                  <button
-                                    onClick={(e) => { e.stopPropagation(); handleRegenerateStripe(order); }}
-                                    disabled={regeneratingId === order.documentId}
-                                    title={order.stripePaymentLink
-                                      ? tx({ fr: 'Lien Stripe deja present - regenerer un nouveau (l\'ancien sera ecrase dans la facture)', en: 'Stripe link already present - regenerate new one', es: 'Enlace Stripe ya existe' })
-                                      : tx({ fr: 'Cette commande n\'a PAS de lien Stripe - cliquer pour en generer un', en: 'This order has NO Stripe link - click to generate one', es: 'Sin enlace Stripe - generar uno' })}
-                                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
-                                      order.stripePaymentLink
-                                        ? 'bg-white/5 text-grey-muted hover:bg-white/10 border border-white/10'
-                                        : 'bg-orange-500/20 text-orange-400 hover:bg-orange-500/30 border border-orange-500/40 animate-pulse'
-                                    }`}
-                                  >
-                                    {regeneratingId === order.documentId ? (
-                                      <><Loader2 size={12} className="animate-spin" /> {tx({ fr: 'Generation...', en: 'Generating...', es: 'Generando...' })}</>
-                                    ) : (
-                                      <><CreditCard size={12} /> {order.stripePaymentLink
-                                        ? tx({ fr: 'Regenerer lien Stripe', en: 'Regenerate Stripe link', es: 'Regenerar enlace' })
-                                        : tx({ fr: 'Generer lien Stripe manquant', en: 'Generate missing Stripe link', es: 'Generar enlace faltante' })}</>
-                                    )}
-                                  </button>
+                                  order.stripePaymentLink ? (
+                                    <div
+                                      className="flex items-stretch gap-1.5 max-w-md w-full"
+                                      onClick={(e) => e.stopPropagation()}
+                                    >
+                                      <input
+                                        type="text"
+                                        readOnly
+                                        value={order.stripePaymentLink}
+                                        title={tx({ fr: 'Lien Stripe genere - clique sur Copier pour le partager manuellement', en: 'Generated Stripe link - click Copy to share manually', es: 'Enlace generado - haz clic en Copiar' })}
+                                        onClick={(e) => e.target.select()}
+                                        className="flex-1 min-w-0 px-2.5 py-1.5 rounded-lg bg-black/30 border border-green-500/30 text-heading text-xs font-mono truncate outline-none focus:outline-none focus:border-green-500/60 focus:ring-0"
+                                      />
+                                      <button
+                                        type="button"
+                                        onClick={async (e) => {
+                                          e.stopPropagation();
+                                          try {
+                                            if (navigator.clipboard) {
+                                              await navigator.clipboard.writeText(order.stripePaymentLink);
+                                              setRowLinkCopied(order.documentId);
+                                              setTimeout(() => setRowLinkCopied((cur) => (cur === order.documentId ? null : cur)), 2000);
+                                            }
+                                          } catch { /* clipboard unavailable - silent */ }
+                                        }}
+                                        title={tx({ fr: 'Copier le lien Stripe', en: 'Copy Stripe link', es: 'Copiar enlace' })}
+                                        className={`flex-shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors outline-none focus:outline-none focus:ring-0 ${
+                                          rowLinkCopied === order.documentId
+                                            ? 'bg-green-500/25 text-green-400'
+                                            : 'bg-white/10 text-heading hover:bg-white/20'
+                                        }`}
+                                      >
+                                        {rowLinkCopied === order.documentId
+                                          ? <><CheckCircle size={12} /> {tx({ fr: 'Copie', en: 'Copied', es: 'Copiado' })}</>
+                                          : <><Copy size={12} /> {tx({ fr: 'Copier', en: 'Copy', es: 'Copiar' })}</>}
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={(e) => { e.stopPropagation(); handleRegenerateStripe(order); }}
+                                        disabled={regeneratingId === order.documentId}
+                                        title={tx({ fr: 'Regenerer un nouveau lien Stripe (l\'ancien sera ecrase dans la facture)', en: 'Regenerate a new Stripe link (current one will be overwritten)', es: 'Regenerar enlace' })}
+                                        className="flex-shrink-0 inline-flex items-center gap-1 px-2 py-1.5 rounded-lg text-[11px] font-semibold bg-white/5 text-grey-muted hover:bg-white/10 border border-white/10 transition-colors disabled:opacity-40 disabled:cursor-not-allowed outline-none focus:outline-none focus:ring-0"
+                                      >
+                                        {regeneratingId === order.documentId
+                                          ? <Loader2 size={11} className="animate-spin" />
+                                          : <RotateCcw size={11} />}
+                                      </button>
+                                    </div>
+                                  ) : (
+                                    <button
+                                      onClick={(e) => { e.stopPropagation(); handleRegenerateStripe(order); }}
+                                      disabled={regeneratingId === order.documentId}
+                                      title={tx({ fr: 'Cette commande n\'a PAS de lien Stripe - cliquer pour en generer un (aucun envoi automatique)', en: 'This order has NO Stripe link - click to generate one (no auto-email)', es: 'Sin enlace Stripe - generar uno (sin envio automatico)' })}
+                                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed bg-orange-500/20 text-orange-400 hover:bg-orange-500/30 border border-orange-500/40 animate-pulse outline-none focus:outline-none focus:ring-0"
+                                    >
+                                      {regeneratingId === order.documentId ? (
+                                        <><Loader2 size={12} className="animate-spin" /> {tx({ fr: 'Generation...', en: 'Generating...', es: 'Generando...' })}</>
+                                      ) : (
+                                        <><CreditCard size={12} /> {tx({ fr: 'Generer lien Stripe manquant', en: 'Generate missing Stripe link', es: 'Generar enlace faltante' })}</>
+                                      )}
+                                    </button>
+                                  )
                                 )}
                               </div>
                             </div>
