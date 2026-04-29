@@ -2683,6 +2683,175 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
     }
   },
 
+  /**
+   * POST /admin/orders/:id/generate-portfolio
+   *
+   * PORTFOLIO WIZARD (Phase finale, 28 avril 2026) : transforme une commande
+   * livree en brouillon de projet pour le portfolio (api::project.project).
+   *
+   * Auth : admin uniquement.
+   * Payload : multipart/form-data
+   *   - files : 1..N images (champ name="files", repete pour chaque image)
+   *   - title (optionnel, fallback genere depuis customerName + items)
+   *   - description (optionnel, fallback markdown genere depuis items)
+   *   - category (optionnel, fallback = type du 1er item)
+   *
+   * Logique :
+   *   1. Lookup de la commande par documentId, gate status='delivered'.
+   *   2. Upload des fichiers via strapi.plugin('upload').service('upload')
+   *      pour beneficier des optimisations Strapi (provider, thumbnails,
+   *      formats responsive). Les media ids sont ensuite branches sur le
+   *      champ images du nouveau projet.
+   *   3. Genere un brouillon : titre, description markdown (recap items),
+   *      clientName depuis customerName/companyName, sourceOrderRef pour
+   *      l'audit.
+   *   4. Cree le projet en mode draft (publishedAt = null) via
+   *      strapi.documents API status='draft'. L'admin completera dans
+   *      Strapi avant publication.
+   *   5. Renvoie l'id + l'URL admin Strapi pour ouverture en 1 clic.
+   */
+  async generatePortfolio(ctx) {
+    if (!(await requireAdminAuth(ctx))) return;
+    const { id: documentId } = ctx.params;
+    if (!documentId) return ctx.badRequest('documentId requis');
+
+    // 1. Lookup commande
+    const order = await strapi.documents('api::order.order').findOne({
+      documentId,
+    });
+    if (!order) return ctx.notFound('Commande introuvable');
+    const o = order as any;
+    if (o.status !== 'delivered') {
+      return ctx.badRequest(
+        `Seules les commandes livrees peuvent generer un projet portfolio (status actuel: ${o.status}).`,
+      );
+    }
+
+    // 2. Upload des images si fournies. Strapi v5 : files passes via
+    // ctx.request.files.files (single ou array). Resilience : on continue
+    // meme si aucun fichier n'est fourni (le brouillon peut etre cree
+    // sans images, l'admin les ajoutera dans Strapi).
+    const filesPayload = (ctx.request as any).files;
+    let mediaIds: number[] = [];
+    if (filesPayload && filesPayload.files) {
+      const fileArray = Array.isArray(filesPayload.files)
+        ? filesPayload.files
+        : [filesPayload.files];
+      try {
+        const uploaded = await strapi.plugin('upload').service('upload').upload({
+          data: {},
+          files: fileArray,
+        });
+        mediaIds = (uploaded as any[]).map((m) => m.id).filter(Boolean);
+        strapi.log.info(`[generatePortfolio] ${mediaIds.length} image(s) uploadees pour ${documentId}`);
+      } catch (err: any) {
+        strapi.log.error(`[generatePortfolio] echec upload : ${err?.message || err}`);
+        return ctx.internalServerError('Echec du televersement des images');
+      }
+    }
+
+    // 3. Champs override eventuels (depuis le form admin)
+    const body = (ctx.request.body || {}) as any;
+
+    // Recap des items pour le brouillon
+    const items = Array.isArray(o.items) ? o.items : [];
+    const itemTypes = Array.from(
+      new Set(
+        items
+          .map((i: any) => i?.productName || i?.name || i?.type || '')
+          .map((s: string) => String(s).trim())
+          .filter(Boolean),
+      ),
+    ) as string[];
+    const itemTypesStr = itemTypes.slice(0, 3).join(', ') || 'Projet sur mesure';
+
+    const clientLabel = String(o.companyName || o.customerName || 'Client').trim();
+    const orderDate = new Date(o.createdAt || Date.now()).toLocaleDateString('fr-CA', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      timeZone: 'America/Toronto',
+    });
+
+    const draftTitle =
+      String(body.title || '').trim() ||
+      `Projet ${clientLabel} - ${itemTypesStr}`;
+
+    const itemLines = items
+      .map((i: any) => {
+        const qty = Number(i?.quantity) || 1;
+        const name = i?.productName || i?.name || 'item';
+        const sizePart = i?.size ? ` - ${i.size}` : '';
+        const finishPart = i?.finish ? ` (${i.finish})` : '';
+        return `- ${qty}x ${name}${sizePart}${finishPart}`;
+      })
+      .join('\n');
+
+    const draftDescription =
+      String(body.description || '').trim() ||
+      [
+        `# Projet ${clientLabel}`,
+        ``,
+        `**Type :** ${itemTypesStr}`,
+        `**Date de livraison :** ${orderDate}`,
+        ``,
+        `## Contexte`,
+        ``,
+        `Brouillon a completer : ajoute ici l'histoire du projet, le brief client, les contraintes creatives et le resultat final.`,
+        ``,
+        `## Realisation`,
+        ``,
+        itemLines || `- a detailler`,
+        ``,
+        `## Resultat`,
+        ``,
+        `Decris l'impact (visibilite, ROI, retours client) et les apprentissages cles.`,
+      ].join('\n');
+
+    const category = String(body.category || '').trim() || itemTypes[0] || null;
+
+    // 4. Creation du projet en draft. Strapi v5 documents API : `status:'draft'`
+    // garantit publishedAt = null.
+    let project: any;
+    try {
+      const projectData: any = {
+        title: draftTitle,
+        description: draftDescription,
+        clientName: clientLabel,
+        category,
+        sourceOrderRef: documentId,
+      };
+      if (mediaIds.length > 0) {
+        // Strapi v5 : on assigne directement l'array d'IDs sur le champ media multiple.
+        projectData.images = mediaIds;
+      }
+
+      project = await strapi.documents('api::project.project').create({
+        data: projectData,
+        status: 'draft',
+      });
+      strapi.log.info(`[generatePortfolio] Project draft cree pour ${documentId} -> ${project?.documentId}`);
+    } catch (err: any) {
+      strapi.log.error(`[generatePortfolio] echec creation projet : ${err?.message || err}`);
+      return ctx.internalServerError('Impossible de creer le brouillon de projet');
+    }
+
+    // 5. Reponse + URL admin pour ouverture en 1 clic. Strapi v5 utilise
+    // /admin/content-manager/collection-types/{uid}/{documentId}.
+    const adminUrl = `/admin/content-manager/collection-types/api::project.project/${project.documentId}`;
+
+    ctx.status = 201;
+    ctx.body = {
+      success: true,
+      message: 'Brouillon de projet cree',
+      projectId: project.id || project.documentId,
+      documentId: project.documentId,
+      title: project.title,
+      imagesCount: mediaIds.length,
+      adminUrl,
+    };
+  },
+
   // POST /orders/seed-legacy-april2026 - One-shot endpoint pour reinjecter 3 factures
   // B2B historiques (perdues lors d'un refactor) :
   //   - La Presse (Correction Zendesk) - 770$ HT - 9 avril 2026

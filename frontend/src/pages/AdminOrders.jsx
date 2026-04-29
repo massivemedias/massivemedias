@@ -6,7 +6,7 @@ import {
   RotateCcw, Loader2, ExternalLink, MapPin, Save, Image,
   FileText, ChevronLeft, ChevronRight, Phone, Mail, Hash, Palette,
   Download, Receipt, Trash2, Send, AlertTriangle, Pencil, Plus, Landmark, Copy,
-  TrendingUp, TrendingDown, Inbox,
+  TrendingUp, TrendingDown, Inbox, Sparkles,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import { getOrders, getOrderStats, getAdminMoneyBoard, updateOrderStatus, updateOrderNotes, updateOrderTracking, deleteOrder, getPrivateSales, deletePrivateSale, resendPrivateSaleEmail, sendOrderInvoice, getOrderTracking, getBillingSettings, regenerateStripeLink } from '../services/adminService';
@@ -15,6 +15,7 @@ import { generateInvoicePDF } from '../utils/generateInvoice';
 import EditOrderTotalModal from '../components/EditOrderTotalModal';
 import CreateManualOrderModal from '../components/CreateManualOrderModal';
 import StatusChangeModal from '../components/StatusChangeModal';
+import PortfolioWizardModal from '../components/PortfolioWizardModal';
 import AdminReglagesFacturation from './AdminReglagesFacturation';
 
 // FIX-UX (avril 2026) : vocabulaire "A remettre" adopte pour ready/delivered
@@ -123,6 +124,10 @@ function AdminOrders() {
   // controle admin. Refetched a chaque changement de filterStatus/search
   // pour suivre la liste affichee. Forme : { current, previous, trends }.
   const [moneyBoard, setMoneyBoard] = useState(null);
+  // PORTFOLIO WIZARD (Phase finale) : la commande active sur laquelle le
+  // wizard est ouvert. null = modal ferme. Le toast de succes vit dans
+  // actionToast (deja existant pour les autres mutations).
+  const [portfolioWizardOrder, setPortfolioWizardOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [searchDebounce, setSearchDebounce] = useState('');
@@ -1004,7 +1009,22 @@ function AdminOrders() {
                         ? tx({ fr: 'Succes', en: 'Success', es: 'Exito' })
                         : tx({ fr: 'Erreur', en: 'Error', es: 'Error' }))}
               </p>
-              <p className="text-white/90 text-xs mt-0.5 whitespace-pre-wrap">{actionToast.message}</p>
+              {/* PORTFOLIO WIZARD (Phase finale) : si le caller a fourni un
+                  link, on transforme le message en CTA cliquable qui ouvre
+                  le brouillon Strapi dans un nouvel onglet. */}
+              {actionToast.link ? (
+                <a
+                  href={actionToast.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-white text-xs mt-0.5 underline underline-offset-2 hover:opacity-80 transition-opacity inline-flex items-center gap-1"
+                >
+                  {actionToast.message}
+                  <ExternalLink size={11} />
+                </a>
+              ) : (
+                <p className="text-white/90 text-xs mt-0.5 whitespace-pre-wrap">{actionToast.message}</p>
+              )}
             </div>
             <button onClick={() => setInvoiceToast(null)} className="text-white/70 hover:text-white transition-colors">
               <XCircle size={16} />
@@ -1081,6 +1101,47 @@ function AdminOrders() {
           onCancel={cancelStatusChange}
           onConfirm={confirmStatusChange}
           submitting={updatingId === statusChangeTarget.order.documentId}
+        />
+      )}
+
+      {/* PORTFOLIO WIZARD (Phase finale) : transforme une commande livree en
+          brouillon de projet portfolio (api::project.project) avec upload
+          multi-images, guide de style et auto-fill markdown. Le toast de
+          succes (avec lien Strapi vers la fiche projet draft) reutilise le
+          systeme actionToast existant pour rester coherent. */}
+      {portfolioWizardOrder && (
+        <PortfolioWizardModal
+          order={portfolioWizardOrder}
+          onClose={() => setPortfolioWizardOrder(null)}
+          onSuccess={(data) => {
+            setPortfolioWizardOrder(null);
+            // Construit l'URL admin Strapi : VITE_API_URL = ".../api" -> on
+            // strip le suffix /api et on append adminUrl pour ouvrir la
+            // fiche en 1 clic dans un nouvel onglet.
+            const apiBase = import.meta.env.VITE_API_URL || '';
+            const strapiRoot = apiBase.replace(/\/api\/?$/, '');
+            const fullAdminUrl = data?.adminUrl ? `${strapiRoot}${data.adminUrl}` : null;
+            setInvoiceToast({
+              type: 'success',
+              title: tx({
+                fr: 'Brouillon cree avec succes !',
+                en: 'Draft created successfully!',
+                es: '¡Borrador creado!',
+              }),
+              message: fullAdminUrl
+                ? tx({
+                    fr: `Clique ici pour ouvrir le projet "${data?.title || 'Sans titre'}" dans Strapi.`,
+                    en: `Click here to open "${data?.title || 'Untitled'}" in Strapi.`,
+                    es: `Haz clic para abrir "${data?.title || 'Sin titulo'}" en Strapi.`,
+                  })
+                : tx({
+                    fr: 'Le projet est cree en mode brouillon dans Strapi.',
+                    en: 'The project is now a draft in Strapi.',
+                    es: 'El proyecto esta como borrador en Strapi.',
+                  }),
+              link: fullAdminUrl,
+            });
+          }}
         />
       )}
       {/* Ventes privees en attente (artistes) */}
@@ -2212,6 +2273,26 @@ function AdminOrders() {
                                 </button>
                               </div>
                             </div>
+
+                            {/* PORTFOLIO WIZARD (Phase finale) : visible
+                                uniquement sur les commandes livrees pour
+                                transformer la realisation en etude de cas. */}
+                            {order.status === 'delivered' && (
+                              <div className="flex-shrink-0 self-end">
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); setPortfolioWizardOrder(order); }}
+                                  title={tx({
+                                    fr: 'Generer un brouillon de projet pour le portfolio',
+                                    en: 'Generate a portfolio project draft',
+                                    es: 'Generar un borrador de proyecto',
+                                  })}
+                                  className="px-3 py-2 rounded-lg bg-accent/15 text-accent text-xs font-semibold hover:bg-accent/30 transition-colors flex items-center gap-1.5 border border-accent/30 hover:border-accent/60"
+                                >
+                                  <Sparkles size={12} />
+                                  {tx({ fr: 'Publier dans le portfolio', en: 'Publish to portfolio', es: 'Publicar en portafolio' })}
+                                </button>
+                              </div>
+                            )}
 
                             {/* Delete button (hard delete + window.confirm) */}
                             <div className="flex-shrink-0 self-end">

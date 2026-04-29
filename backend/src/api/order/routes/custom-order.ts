@@ -211,6 +211,18 @@ export default {
         auth: false,
       },
     },
+    // PORTFOLIO WIZARD (Phase finale, 28 avril 2026) : transforme une
+    // commande livree en brouillon de projet portfolio. Multipart upload
+    // (1..N images) + auto-fill titre/description depuis les items.
+    // Auth admin via requireAdminAuth dans le controller.
+    {
+      method: 'POST',
+      path: '/admin/orders/:id/generate-portfolio',
+      handler: 'order.generatePortfolio',
+      config: {
+        auth: false,
+      },
+    },
     {
       method: 'GET',
       path: '/orders/by-payment-intent/:paymentIntentId',
