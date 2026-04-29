@@ -3482,6 +3482,180 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
         });
         ctx.body = { clients, total: clients.length };
     },
+    /**
+     * GET /admin/crm/client?email=...
+     *
+     * MINI-CRM (Phase 7C, 29 avril 2026) : fiche "Super Client" agreggee a
+     * la volee depuis l'historique des commandes. Renvoie LTV (Lifetime
+     * Value) + count + nom le plus recent + historique court.
+     *
+     * Auth admin via requireAdminAuth.
+     * Query : email (string, required).
+     *
+     * LTV = SUM(total) WHERE customerEmail $eqi email AND status NOT IN
+     *   ('cancelled', 'refunded') - en centimes pour rester coherent avec
+     *   le reste des montants en DB.
+     *
+     * Le nom et le companyName retournes sont ceux de la commande la plus
+     * recente (les clients changent parfois de raison sociale entre 2
+     * commandes B2B - on prend la plus a jour).
+     */
+    async crmClient(ctx) {
+        var _a;
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
+            return;
+        const email = String(((_a = ctx.query) === null || _a === void 0 ? void 0 : _a.email) || '').trim().toLowerCase();
+        if (!email || !email.includes('@')) {
+            return ctx.badRequest('email valide requis');
+        }
+        const orders = await strapi.documents('api::order.order').findMany({
+            filters: { customerEmail: { $eqi: email } },
+            sort: 'createdAt:desc',
+            limit: 200,
+        });
+        if (!orders || orders.length === 0) {
+            ctx.body = {
+                email,
+                name: null,
+                companyName: null,
+                ltv: 0,
+                orderCount: 0,
+                orders: [],
+            };
+            return;
+        }
+        // LTV : exclure cancelled + refunded.
+        const REVENUE_EXCLUDED = new Set(['cancelled', 'refunded']);
+        const ltv = orders.reduce((sum, o) => {
+            if (REVENUE_EXCLUDED.has(o.status))
+                return sum;
+            return sum + (Number(o.total) || 0);
+        }, 0);
+        // Nom + companyName depuis la commande la plus recente (orders[0]
+        // car sort: createdAt:desc).
+        const mostRecent = orders[0];
+        const name = mostRecent.customerName || null;
+        const companyName = mostRecent.companyName || null;
+        // Historique court : on retourne les champs minimaux + orderRef calcule.
+        const ordersOut = orders.map((o) => {
+            const orderRef = (String(o.stripePaymentIntentId || '').slice(-8) ||
+                String(o.documentId || '').slice(-8)).toUpperCase();
+            return {
+                documentId: o.documentId,
+                orderRef,
+                status: o.status,
+                total: Number(o.total) || 0, // cents
+                currency: o.currency || 'cad',
+                createdAt: o.createdAt,
+                customerName: o.customerName || null,
+                companyName: o.companyName || null,
+            };
+        });
+        ctx.body = {
+            email,
+            name,
+            companyName,
+            ltv,
+            orderCount: orders.length,
+            orders: ordersOut,
+        };
+    },
+    /**
+     * POST /admin/crm/client/promo
+     *
+     * MINI-CRM (Phase 7C, 29 avril 2026) : genere un code promo Stripe
+     * VIP -15% (one-time) lie a un email client. Retourne le code clair a
+     * remettre au client. Le coupon est cree fresh a chaque appel - chaque
+     * code genere est independant et peut etre revoque depuis Stripe
+     * Dashboard si necessaire.
+     *
+     * Auth admin via requireAdminAuth.
+     * Body : { email: string }
+     *
+     * Code format : "VIP15-{PREFIX}" ou PREFIX = first 6 chars du local part
+     * de l'email, uppercase. Si Stripe retourne une collision (le code
+     * existe deja, ex: 2 clients qui partagent le meme prefix), on append
+     * un suffix 4-chiffres timestamp et on retry.
+     */
+    async crmCreatePromo(ctx) {
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
+            return;
+        const body = (ctx.request.body || {});
+        const email = String(body.email || '').trim().toLowerCase();
+        if (!email || !email.includes('@')) {
+            return ctx.badRequest('email valide requis');
+        }
+        const stripe = getStripe();
+        if (!stripe) {
+            return ctx.internalServerError('Stripe non configure cote serveur');
+        }
+        try {
+            // 1. Coupon Stripe : 15% off, one-time use.
+            const coupon = await stripe.coupons.create({
+                percent_off: 15,
+                duration: 'once',
+                name: `VIP -15% (${email})`,
+                metadata: { customerEmail: email, type: 'vip-crm' },
+            });
+            // 2. Code promo : prefix safe ASCII uppercase, fallback timestamp
+            // suffix sur collision.
+            const localPart = email.split('@')[0] || 'CLIENT';
+            const safePrefix = localPart
+                .replace(/[^a-zA-Z0-9]/g, '')
+                .toUpperCase()
+                .slice(0, 6) || 'CLIENT';
+            const baseCode = `VIP15-${safePrefix}`;
+            const tryCreatePromo = async (code) => {
+                // Stripe v20 SDK type ask for { promotion: { coupon } } mais l'API
+                // REST live accepte toujours `coupon` au top-level (cf docs Stripe).
+                // On cast en any pour eviter le mismatch de types sans casser le
+                // comportement d'execution.
+                return stripe.promotionCodes.create({
+                    coupon: coupon.id,
+                    code,
+                    metadata: { customerEmail: email },
+                });
+            };
+            let promo;
+            try {
+                promo = await tryCreatePromo(baseCode);
+            }
+            catch (err) {
+                // Stripe renvoie 400 "code is taken" en cas de collision. On
+                // append un suffix 4 derniers chiffres du timestamp et on retry.
+                const isTaken = /already|taken|exist/i.test((err === null || err === void 0 ? void 0 : err.message) || '');
+                if (!isTaken)
+                    throw err;
+                const suffix = String(Date.now()).slice(-4);
+                const fallbackCode = `${baseCode}-${suffix}`;
+                strapi.log.warn(`[crmCreatePromo] code ${baseCode} pris, fallback vers ${fallbackCode}`);
+                promo = await tryCreatePromo(fallbackCode);
+            }
+            strapi.log.info(`[crmCreatePromo] Code ${promo.code} cree pour ${email} (coupon ${coupon.id})`);
+            ctx.status = 201;
+            ctx.body = {
+                success: true,
+                code: promo.code,
+                couponId: coupon.id,
+                promoId: promo.id,
+                percentOff: 15,
+                duration: 'once',
+                email,
+            };
+        }
+        catch (err) {
+            strapi.log.error(`[crmCreatePromo] ECHEC pour ${email}: ${(err === null || err === void 0 ? void 0 : err.message) || err}`);
+            ctx.status = 500;
+            ctx.body = {
+                error: {
+                    status: 500,
+                    name: 'PromoCreationFailed',
+                    message: (err === null || err === void 0 ? void 0 : err.message) || 'Echec creation code promo Stripe',
+                    code: 'PROMO_FAILED',
+                },
+            };
+        }
+    },
     async adminList(ctx) {
         var _a;
         if (!(await (0, auth_1.requireAdminAuth)(ctx)))

@@ -141,6 +141,11 @@ export const getAdminMoneyBoard = (params) => api.get('/admin/stats', { params }
 // (auth admin). Stages : files_prep / printing / cutting / packaging.
 export const updateOrderProductionStage = (documentId, productionStage) =>
   api.put(`/orders/${documentId}/production-stage`, { productionStage });
+
+// MINI-CRM (Phase 7C) : fiche Super Client agreggee a la volee depuis les
+// commandes (LTV + historique) + creation d'un code promo Stripe VIP.
+export const getCrmClient = (email) => api.get('/admin/crm/client', { params: { email } });
+export const createCrmPromo = (email) => api.post('/admin/crm/client/promo', { email });
 /**
  * Changement de statut d'une commande.
  * @param {string} documentId

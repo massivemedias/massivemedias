@@ -60,6 +60,25 @@ export default {
         auth: false,
       },
     },
+    // MINI-CRM (Phase 7C, 29 avril 2026) : fiche "Super Client" - LTV +
+    // historique aggreges + generation de code promo Stripe VIP -15%.
+    // Auth admin via requireAdminAuth dans les controllers.
+    {
+      method: 'GET',
+      path: '/admin/crm/client',
+      handler: 'order.crmClient',
+      config: {
+        auth: false,
+      },
+    },
+    {
+      method: 'POST',
+      path: '/admin/crm/client/promo',
+      handler: 'order.crmCreatePromo',
+      config: {
+        auth: false,
+      },
+    },
     {
       method: 'POST',
       path: '/orders/upload',

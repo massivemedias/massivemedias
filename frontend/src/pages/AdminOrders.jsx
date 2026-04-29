@@ -17,6 +17,7 @@ import CreateManualOrderModal from '../components/CreateManualOrderModal';
 import StatusChangeModal from '../components/StatusChangeModal';
 import PortfolioWizardModal from '../components/PortfolioWizardModal';
 import ProductionBoard from '../components/ProductionBoard';
+import ClientCRMModal from '../components/ClientCRMModal';
 import AdminReglagesFacturation from './AdminReglagesFacturation';
 
 // FIX-UX (avril 2026) : vocabulaire "A remettre" adopte pour ready/delivered
@@ -129,6 +130,10 @@ function AdminOrders() {
   // wizard est ouvert. null = modal ferme. Le toast de succes vit dans
   // actionToast (deja existant pour les autres mutations).
   const [portfolioWizardOrder, setPortfolioWizardOrder] = useState(null);
+  // MINI-CRM (Phase 7C) : email du client a ouvrir dans la fiche CRM.
+  // null = modal ferme. Source de verite simple pour eviter de balader
+  // l'objet order entier (les emails sont uniques cote business).
+  const [crmEmail, setCrmEmail] = useState(null);
   // KANBAN PRODUCTION (Phase 7A) : 'list' = liste classique avec accordeon,
   // 'kanban' = ProductionBoard 4 colonnes (filtre status='processing').
   // Persiste dans sessionStorage pour eviter la perte d'etat sur refresh
@@ -1117,6 +1122,16 @@ function AdminOrders() {
         />
       )}
 
+      {/* MINI-CRM (Phase 7C) : fiche Super Client. Source = email (clic
+          sur le nom ou l'email d'un client dans la liste des commandes).
+          Le modal fetch tout seul son data au mount. */}
+      {crmEmail && (
+        <ClientCRMModal
+          email={crmEmail}
+          onClose={() => setCrmEmail(null)}
+        />
+      )}
+
       {/* PORTFOLIO WIZARD (Phase finale) : transforme une commande livree en
           brouillon de projet portfolio (api::project.project) avec upload
           multi-images, guide de style et auto-fill markdown. Le toast de
@@ -1585,14 +1600,41 @@ function AdminOrders() {
                     {/* Desktop row */}
                     <div className="hidden md:grid grid-cols-[1fr_100px_80px_120px_120px_40px] gap-3 px-4 py-3 items-center">
                       <div className="min-w-0">
-                        {/* FIX-B2B : nom + entreprise sur la meme ligne, email en dessous */}
+                        {/* FIX-B2B : nom + entreprise sur la meme ligne, email en dessous.
+                            CRM (Phase 7C) : nom + email cliquables -> ouvre la fiche client. */}
                         <p className="text-sm text-heading font-semibold truncate">
-                          {order.customerName}
+                          {order.customerEmail ? (
+                            <span
+                              role="button"
+                              tabIndex={0}
+                              onClick={(e) => { e.stopPropagation(); setCrmEmail(order.customerEmail); }}
+                              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); setCrmEmail(order.customerEmail); } }}
+                              className="cursor-pointer text-accent hover:underline outline-none focus:outline-none focus:ring-0"
+                              title={tx({ fr: 'Ouvrir la fiche client', en: 'Open client profile', es: 'Abrir ficha cliente' })}
+                            >
+                              {order.customerName}
+                            </span>
+                          ) : (
+                            order.customerName
+                          )}
                           {order.companyName && (
                             <span className="text-grey-muted font-normal"> - {order.companyName}</span>
                           )}
                         </p>
-                        <p className="text-xs text-grey-muted truncate">{order.customerEmail}</p>
+                        {order.customerEmail ? (
+                          <span
+                            role="button"
+                            tabIndex={0}
+                            onClick={(e) => { e.stopPropagation(); setCrmEmail(order.customerEmail); }}
+                            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); setCrmEmail(order.customerEmail); } }}
+                            className="text-xs text-grey-muted truncate cursor-pointer hover:text-accent transition-colors block outline-none focus:outline-none focus:ring-0"
+                            title={tx({ fr: 'Ouvrir la fiche client', en: 'Open client profile', es: 'Abrir ficha cliente' })}
+                          >
+                            {order.customerEmail}
+                          </span>
+                        ) : (
+                          <p className="text-xs text-grey-muted truncate">{order.customerEmail}</p>
+                        )}
                       </div>
                       <span className="text-xs text-grey-muted">{formatDateShort(order.createdAt)}</span>
                       <span className="text-sm text-heading">{items.length} {items.length > 1 ? 'items' : 'item'}</span>
@@ -1630,11 +1672,23 @@ function AdminOrders() {
                       </span>
                     </div>
 
-                    {/* Mobile row - compact */}
+                    {/* Mobile row - compact (CRM Phase 7C : nom cliquable) */}
                     <div className="md:hidden px-3 py-2.5">
                       <div className="flex items-center justify-between gap-2">
                         <p className="text-sm text-heading font-semibold truncate flex-1">
-                          {order.customerName}
+                          {order.customerEmail ? (
+                            <span
+                              role="button"
+                              tabIndex={0}
+                              onClick={(e) => { e.stopPropagation(); setCrmEmail(order.customerEmail); }}
+                              className="cursor-pointer text-accent hover:underline outline-none focus:outline-none focus:ring-0"
+                              title={tx({ fr: 'Ouvrir la fiche client', en: 'Open client profile', es: 'Abrir ficha cliente' })}
+                            >
+                              {order.customerName}
+                            </span>
+                          ) : (
+                            order.customerName
+                          )}
                           {order.companyName && (
                             <span className="text-grey-muted font-normal"> - {order.companyName}</span>
                           )}
