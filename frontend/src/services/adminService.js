@@ -132,6 +132,10 @@ export const activatePrivateSale = (slug, itemId, payload) => {
 // --- Commandes ---
 export const getOrders = (params) => api.get('/orders/admin', { params });
 export const getOrderStats = () => api.get('/orders/stats');
+// MONEY-BOARD (Phase 5) : KPIs financiers + leads pour le tableau de bord
+// admin. Optionnel : { month: 'YYYY-MM' } pour piloter le mois courant
+// (ex: navigation historique). Defaut backend = mois courant America/Toronto.
+export const getAdminMoneyBoard = (params) => api.get('/admin/stats', { params });
 /**
  * Changement de statut d'une commande.
  * @param {string} documentId

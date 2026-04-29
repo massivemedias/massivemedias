@@ -50,6 +50,18 @@ exports.default = {
                 auth: false,
             },
         },
+        // MONEY-BOARD (Phase 5, 28 avril 2026) : KPIs admin (CA mois, a encaisser,
+        // leads, commandes actives) avec comparaison MoM. Auth admin via
+        // requireAdminAuth dans le controller. Path /admin/stats pour separer
+        // visuellement des stats /orders/stats (orientees comptabilite annuelle).
+        {
+            method: 'GET',
+            path: '/admin/stats',
+            handler: 'order.adminStats',
+            config: {
+                auth: false,
+            },
+        },
         {
             method: 'POST',
             path: '/orders/upload',

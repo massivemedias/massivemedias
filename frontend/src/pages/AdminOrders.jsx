@@ -6,9 +6,10 @@ import {
   RotateCcw, Loader2, ExternalLink, MapPin, Save, Image,
   FileText, ChevronLeft, ChevronRight, Phone, Mail, Hash, Palette,
   Download, Receipt, Trash2, Send, AlertTriangle, Pencil, Plus, Landmark, Copy,
+  TrendingUp, TrendingDown, Inbox,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
-import { getOrders, getOrderStats, updateOrderStatus, updateOrderNotes, updateOrderTracking, deleteOrder, getPrivateSales, deletePrivateSale, resendPrivateSaleEmail, sendOrderInvoice, getOrderTracking, getBillingSettings, regenerateStripeLink } from '../services/adminService';
+import { getOrders, getOrderStats, getAdminMoneyBoard, updateOrderStatus, updateOrderNotes, updateOrderTracking, deleteOrder, getPrivateSales, deletePrivateSale, resendPrivateSaleEmail, sendOrderInvoice, getOrderTracking, getBillingSettings, regenerateStripeLink } from '../services/adminService';
 import { useNotifications } from '../contexts/NotificationContext';
 import { generateInvoicePDF } from '../utils/generateInvoice';
 import EditOrderTotalModal from '../components/EditOrderTotalModal';
@@ -118,6 +119,10 @@ function AdminOrders() {
   // 500 couvre largement l'historique Massive Medias sans overkill.
   const [meta, setMeta] = useState({ page: 1, pageSize: 500, total: 0, pageCount: 0 });
   const [stats, setStats] = useState(null);
+  // MONEY-BOARD (Phase 5) : KPIs financiers + leads pour la tour de
+  // controle admin. Refetched a chaque changement de filterStatus/search
+  // pour suivre la liste affichee. Forme : { current, previous, trends }.
+  const [moneyBoard, setMoneyBoard] = useState(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [searchDebounce, setSearchDebounce] = useState('');
@@ -580,6 +585,20 @@ function AdminOrders() {
     getOrderStats().then(({ data }) => setStats(data)).catch(() => {});
   }, []);
 
+  // MONEY-BOARD (Phase 5) : refetch des KPIs en miroir de fetchOrders. Le
+  // backend renvoie deja les buckets mois courant + mois precedent + trends,
+  // donc on n'a pas besoin de passer les filtres UI - les KPIs restent
+  // toujours bases sur "ce mois vs mois precedent". On refetch quand meme
+  // sur changement de filtres pour rester en sync apres une mutation
+  // (ex: passage d'une commande a delivered -> activeOrders doit baisser).
+  const fetchMoneyBoard = useCallback(() => {
+    getAdminMoneyBoard()
+      .then(({ data }) => setMoneyBoard(data))
+      .catch(() => { /* non bloquant : board reste sur son dernier snapshot */ });
+  }, []);
+
+  useEffect(() => { fetchMoneyBoard(); }, [fetchMoneyBoard, filterStatus, searchDebounce]);
+
   // Ventes privees en attente (prints artistes avec private: true && !paid)
   useEffect(() => {
     setPrivateSalesLoading(true);
@@ -757,9 +776,10 @@ function AdminOrders() {
         }),
       });
       // Refresh silencieux en arriere-plan pour confirmer parfaitement la sync
-      // avec la BDD (meta.total, stats). Non-bloquant et non-throw.
+      // avec la BDD (meta.total, stats, money board). Non-bloquant et non-throw.
       fetchOrders().catch(() => {});
       getOrderStats().then(({ data }) => setStats(data)).catch(() => {});
+      fetchMoneyBoard();
     } catch (err) {
       console.error('deleteOrder failed:', err);
       // ROLLBACK : restaurer l'ordre dans la liste + reouvrir le panel si l'user l'avait
@@ -854,7 +874,65 @@ function AdminOrders() {
     minimumFractionDigits: 2, maximumFractionDigits: 2,
   })} $`;
 
-  // Summary cards
+  // ============================================================
+  // MONEY BOARD (Phase 5) : 4 cartes KPI orientees tour de controle
+  // financiere et commerciale. Backend : GET /admin/stats renvoie
+  // { current: {...}, previous: {...}, trends: {...} } - centimes pour
+  // les revenus, count brut pour leads/activeOrders. trend = null si
+  // previous = 0 (pas de comparaison possible) ou si la metrique n'a
+  // pas de sens en MoM (cas de activeOrders = snapshot present).
+  // ============================================================
+  const moneyFmt = (cents) => `${((Number(cents) || 0) / 100).toLocaleString('fr-CA', {
+    minimumFractionDigits: 0, maximumFractionDigits: 0,
+  })} $`;
+
+  const mb = moneyBoard || null;
+  const moneyBoardCards = [
+    {
+      label: tx({ fr: 'CA du mois', en: 'Revenue this month', es: 'Facturacion del mes' }),
+      hint: tx({ fr: 'Ventes payées', en: 'Paid sales', es: 'Ventas pagadas' }),
+      value: mb ? moneyFmt(mb.current.totalRevenue) : '-',
+      icon: DollarSign,
+      accent: 'text-green-400',
+      ring: 'ring-green-400/20',
+      iconBg: 'bg-green-400/10',
+      trend: mb?.trends?.totalRevenue ?? null,
+    },
+    {
+      label: tx({ fr: 'À encaisser', en: 'To collect', es: 'Por cobrar' }),
+      hint: tx({ fr: 'En attente / production', en: 'Pending / processing', es: 'En espera' }),
+      value: mb ? moneyFmt(mb.current.pendingRevenue) : '-',
+      icon: Clock,
+      accent: 'text-orange-400',
+      ring: 'ring-orange-400/20',
+      iconBg: 'bg-orange-400/10',
+      trend: mb?.trends?.pendingRevenue ?? null,
+    },
+    {
+      label: tx({ fr: 'Nouveaux leads', en: 'New leads', es: 'Nuevos leads' }),
+      hint: tx({ fr: 'Contacts du mois', en: 'Contacts this month', es: 'Contactos del mes' }),
+      value: mb ? String(mb.current.leadCount) : '-',
+      icon: Inbox,
+      accent: 'text-sky-400',
+      ring: 'ring-sky-400/20',
+      iconBg: 'bg-sky-400/10',
+      trend: mb?.trends?.leadCount ?? null,
+    },
+    {
+      label: tx({ fr: 'Commandes actives', en: 'Active orders', es: 'Pedidos activos' }),
+      hint: tx({ fr: 'Sur ton bureau', en: 'On your desk', es: 'En tu mesa' }),
+      value: mb ? String(mb.current.activeOrders) : '-',
+      icon: Package,
+      accent: 'text-purple-400',
+      ring: 'ring-purple-400/20',
+      iconBg: 'bg-purple-400/10',
+      trend: null, // snapshot present : pas de MoM significatif
+    },
+  ];
+
+  // Summary cards (legacy : conservees au cas ou le bandeau Money Board
+  // doit afficher un fallback - mais plus rendues dans le retour JSX).
+  // eslint-disable-next-line no-unused-vars
   const summaryCards = [
     {
       label: tx({ fr: 'Total commandes', en: 'Total orders', es: 'Total pedidos' }),
@@ -988,6 +1066,7 @@ function AdminOrders() {
           onCreated={() => {
             fetchOrders();
             getOrderStats().then(({ data }) => setStats(data)).catch(() => {});
+            fetchMoneyBoard();
           }}
         />
       )}
@@ -1193,33 +1272,84 @@ function AdminOrders() {
         </div>
       )}
 
-      {/* Summary cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {summaryCards.map((card, i) => {
-          const Icon = card.icon;
-          return (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05 }}
-              className="rounded-xl p-3 md:p-4 card-bg shadow-lg shadow-black/20"
-            >
-              <div className="flex items-center gap-1.5 mb-1 md:mb-2">
-                <Icon size={14} className={card.accent} />
-                <span className="text-grey-muted text-[10px] md:text-xs">{card.label}</span>
-              </div>
-              <div className="flex items-baseline gap-2 flex-wrap">
-                <span className="text-xl md:text-2xl font-heading font-bold text-heading">{card.value}</span>
-                {card.subValue && (
-                  <span className={`text-xs md:text-sm font-semibold ${card.accent}`}>
-                    {card.subValue}
+      {/* ============================================================
+          MONEY BOARD (Phase 5) - tour de controle financiere et commerciale
+          Source : moneyBoard state alimente par GET /admin/stats. 4 cartes
+          fixes : CA mois (vert), A encaisser (orange), Leads (sky), Actives
+          (violet). Indicateur de tendance "+X% vs mois dernier" si trend
+          disponible (null si previous=0 ou metrique snapshot).
+          ============================================================ */}
+      <div className="space-y-2">
+        <div className="flex items-baseline gap-2 flex-wrap">
+          <h2 className="text-heading font-heading font-bold text-sm uppercase tracking-wider">
+            {tx({ fr: 'Tableau de bord', en: 'Money board', es: 'Cuadro de mando' })}
+          </h2>
+          {mb && (
+            <span className="text-[11px] text-grey-muted">
+              {tx({ fr: 'Mois en cours', en: 'Current month', es: 'Mes en curso' })} · {mb.current.month}
+            </span>
+          )}
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+          {moneyBoardCards.map((card, i) => {
+            const Icon = card.icon;
+            const t = card.trend;
+            const trendKnown = typeof t === 'number';
+            const trendUp = trendKnown && t > 0;
+            const trendDown = trendKnown && t < 0;
+            const TrendIcon = trendUp ? TrendingUp : trendDown ? TrendingDown : null;
+            // Pour CA/Leads, hausse = vert (bon). Pour "A encaisser",
+            // hausse = orange neutre (plus de cash en attente, c'est ambigu).
+            // Pour les autres on garde la convention vert/rose.
+            const trendColor = !trendKnown
+              ? 'text-grey-muted'
+              : card.label.toLowerCase().includes('encaisser') || card.label.toLowerCase().includes('collect') || card.label.toLowerCase().includes('cobrar')
+                ? (trendUp ? 'text-orange-400' : 'text-green-400')
+                : (trendUp ? 'text-green-400' : 'text-rose-400');
+            return (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.05 }}
+                className={`relative rounded-2xl p-4 md:p-5 card-bg shadow-lg shadow-black/20 ring-1 ${card.ring} overflow-hidden`}
+              >
+                {/* Halo de fond discret derriere l'icone */}
+                <div className={`absolute -top-6 -right-6 w-24 h-24 rounded-full ${card.iconBg} blur-2xl pointer-events-none`} />
+
+                <div className="relative flex items-start justify-between gap-2 mb-2 md:mb-3">
+                  <div className="flex flex-col">
+                    <span className="text-grey-muted text-[10px] md:text-[11px] uppercase tracking-wider font-semibold">{card.label}</span>
+                    <span className="text-grey-muted/60 text-[10px] mt-0.5">{card.hint}</span>
+                  </div>
+                  <span className={`w-9 h-9 rounded-xl ${card.iconBg} flex items-center justify-center flex-shrink-0`}>
+                    <Icon size={16} className={card.accent} />
                   </span>
-                )}
-              </div>
-            </motion.div>
-          );
-        })}
+                </div>
+
+                <div className="relative flex items-end justify-between gap-2 flex-wrap">
+                  <span className="text-2xl md:text-3xl font-heading font-bold text-heading leading-none tracking-tight">
+                    {card.value}
+                  </span>
+                  {trendKnown && TrendIcon && (
+                    <span className={`inline-flex items-center gap-1 text-[11px] md:text-xs font-semibold ${trendColor}`}>
+                      <TrendIcon size={12} />
+                      {t > 0 ? '+' : ''}{t}%
+                      <span className="text-grey-muted/70 font-normal hidden md:inline">
+                        {tx({ fr: 'vs mois dernier', en: 'vs last month', es: 'vs mes anterior' })}
+                      </span>
+                    </span>
+                  )}
+                  {!trendKnown && (
+                    <span className="text-[10px] text-grey-muted/60">
+                      {tx({ fr: 'snapshot', en: 'snapshot', es: 'snapshot' })}
+                    </span>
+                  )}
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
       </div>
 
       {/* Search + filters */}

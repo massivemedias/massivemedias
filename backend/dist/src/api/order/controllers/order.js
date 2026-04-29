@@ -3733,6 +3733,127 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
             artists: Object.values(commissionsByArtist),
         };
     },
+    /**
+     * GET /admin/stats
+     * MONEY-BOARD (Phase 5, 28 avril 2026) : KPIs admin orientes "tour de
+     * controle financiere" - calcule CA mensuel, montant a encaisser, nombre
+     * de leads et commandes actives. Renvoie le mois courant + le mois
+     * precedent pour permettre l'affichage d'un indicateur de tendance.
+     *
+     * Definitions (suivent strictement le brief Phase 5) :
+     *   - totalRevenue   : SUM(total) WHERE status='paid' (centimes, mois courant)
+     *   - pendingRevenue : SUM(total) WHERE status IN (pending, draft, processing)
+     *   - leadCount      : COUNT(contact_submissions) du mois
+     *   - activeOrders   : COUNT(orders) WHERE status NOT IN (delivered, cancelled)
+     *                      = snapshot present (pas de filtre mois - on veut le
+     *                      "ce qui est sur ton bureau maintenant")
+     *
+     * Auth : requireAdminAuth obligatoire (KPIs financiers).
+     * Query params optionnels : ?month=YYYY-MM pour piloter le mois courant
+     * (defaut = mois courant America/Toronto). Le "mois precedent" est calcule
+     * automatiquement.
+     */
+    async adminStats(ctx) {
+        var _a;
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
+            return;
+        const knex = strapi.db.connection;
+        // Calcul des bornes "mois courant" en TZ Montreal (America/Toronto) - meme
+        // logique que les dates affichees dans les emails (sendOrderConfirmationEmail).
+        // On accepte un override ?month=YYYY-MM pour piloter le board sur un mois
+        // archive.
+        const overrideMonth = String(((_a = ctx.query) === null || _a === void 0 ? void 0 : _a.month) || '').match(/^\d{4}-\d{2}$/)
+            ? String(ctx.query.month)
+            : null;
+        const now = new Date();
+        // Pivot : si override, on prend le 15 du mois cible (pour eviter les soucis
+        // de fin de mois lors du calcul du mois precedent).
+        const pivot = overrideMonth
+            ? new Date(`${overrideMonth}-15T12:00:00-04:00`)
+            : now;
+        const startOfMonth = (d) => new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1, 4, 0, 0)); // 04:00 UTC ~= 00:00 Montreal (EST/EDT differ - approximation conservative pour les bornes)
+        const startCurrent = new Date(Date.UTC(pivot.getUTCFullYear(), pivot.getUTCMonth(), 1, 4, 0, 0));
+        const startNextMonth = new Date(Date.UTC(pivot.getUTCFullYear(), pivot.getUTCMonth() + 1, 1, 4, 0, 0));
+        const startPrevious = new Date(Date.UTC(pivot.getUTCFullYear(), pivot.getUTCMonth() - 1, 1, 4, 0, 0));
+        void startOfMonth;
+        const fmtMonth = (d) => `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`;
+        const currentMonthStr = overrideMonth || fmtMonth(now);
+        // Mois precedent : on recalcule a partir du startPrevious pour eviter de
+        // se planter en janvier (decembre annee precedente).
+        const previousMonthStr = fmtMonth(new Date(Date.UTC(pivot.getUTCFullYear(), pivot.getUTCMonth() - 1, 15)));
+        // ----- Helper : agrege revenue (sum) + count par bucket statut/mois -----
+        // On lance UNE seule requete par bucket (current et previous), groupBy status.
+        const fetchBucket = async (start, end) => {
+            const rows = await knex('orders')
+                .select('status')
+                .sum({ total_cents: 'total' })
+                .count({ count: '*' })
+                .where('created_at', '>=', start.toISOString())
+                .andWhere('created_at', '<', end.toISOString())
+                .groupBy('status');
+            const byStatus = {};
+            for (const r of rows) {
+                byStatus[r.status] = {
+                    total: Number(r.total_cents) || 0,
+                    count: Number(r.count) || 0,
+                };
+            }
+            const sumOf = (statuses) => statuses.reduce((acc, s) => { var _a; return acc + (((_a = byStatus[s]) === null || _a === void 0 ? void 0 : _a.total) || 0); }, 0);
+            return {
+                totalRevenue: sumOf(['paid']),
+                pendingRevenue: sumOf(['pending', 'draft', 'processing']),
+            };
+        };
+        // ----- Helper : count leads (contact_submissions) sur intervalle -----
+        const fetchLeadCount = async (start, end) => {
+            const [row] = await knex('contact_submissions')
+                .count({ count: '*' })
+                .where('created_at', '>=', start.toISOString())
+                .andWhere('created_at', '<', end.toISOString());
+            return Number(row === null || row === void 0 ? void 0 : row.count) || 0;
+        };
+        // ----- Snapshot present : commandes actives (pas de filtre mois) -----
+        const [activeRow] = await knex('orders')
+            .count({ count: '*' })
+            .whereNotIn('status', ['delivered', 'cancelled', 'refunded']);
+        const activeOrders = Number(activeRow === null || activeRow === void 0 ? void 0 : activeRow.count) || 0;
+        // ----- Lance les 4 buckets en parallele -----
+        const [currentRevenue, previousRevenue, currentLeads, previousLeads] = await Promise.all([
+            fetchBucket(startCurrent, startNextMonth),
+            fetchBucket(startPrevious, startCurrent),
+            fetchLeadCount(startCurrent, startNextMonth),
+            fetchLeadCount(startPrevious, startCurrent),
+        ]);
+        // ----- Trends : pourcentage de variation MoM. null si previous=0
+        // (eviter divisions par zero qui retournent Infinity). -----
+        const trend = (curr, prev) => {
+            if (!prev || prev === 0)
+                return null;
+            return Math.round(((curr - prev) / prev) * 100);
+        };
+        ctx.body = {
+            current: {
+                month: currentMonthStr,
+                totalRevenue: currentRevenue.totalRevenue,
+                pendingRevenue: currentRevenue.pendingRevenue,
+                leadCount: currentLeads,
+                activeOrders,
+            },
+            previous: {
+                month: previousMonthStr,
+                totalRevenue: previousRevenue.totalRevenue,
+                pendingRevenue: previousRevenue.pendingRevenue,
+                leadCount: previousLeads,
+                activeOrders: null, // snapshot present uniquement, pas de comparaison historique
+            },
+            trends: {
+                totalRevenue: trend(currentRevenue.totalRevenue, previousRevenue.totalRevenue),
+                pendingRevenue: trend(currentRevenue.pendingRevenue, previousRevenue.pendingRevenue),
+                leadCount: trend(currentLeads, previousLeads),
+                activeOrders: null,
+            },
+        };
+    },
     async stats(ctx) {
         if (!(await (0, auth_1.requireAdminAuth)(ctx)))
             return;
