@@ -51,16 +51,12 @@ const servicesDataEn = {
             ['A2 (18x24")', 'N/A', '$110'],
           ],
         },
+        // FLYERS-QUOTE-ONLY (29 avril 2026) - cf. services.js
         {
           subtitle: 'Flyers & Distribution Posters (A6 / 4x6")',
-          headers: ['Quantity', 'Total Price', 'Price/unit'],
-          rows: [
-            ['50', '$40', '$0.80'],
-            ['100', '$70', '$0.70'],
-            ['150', '$98', '$0.65'],
-            ['250', '$138', '$0.55'],
-            ['500', '$250', '$0.50'],
-          ],
+          quoteOnly: true,
+          quoteText: 'Custom quote only. Each project is reviewed to optimise paper, format, finishes and deadlines based on your volume.',
+          quoteCta: { label: 'Get a quote', to: '/contact?service=flyers' },
         },
         // HIDE-BUSINESS-CARDS (29 avril 2026) - cf. services.js
         // {

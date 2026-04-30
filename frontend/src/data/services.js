@@ -51,16 +51,15 @@ const servicesData = {
             ['A2 (18x24")', 'N/A', '110$'],
           ],
         },
+        // FLYERS-QUOTE-ONLY (29 avril 2026) : la production en volume avec
+        // grille fixe n'est plus viable cote infrastructure - on bascule
+        // les flyers sur devis personnalise. Le rendu detecte quoteOnly
+        // et affiche une carte CTA "Obtenir un devis" a la place du tableau.
         {
           subtitle: 'Flyers et affiches de distribution (A6 / 4x6")',
-          headers: ['Quantite', 'Prix total', 'Prix/unite'],
-          rows: [
-            ['50', '40$', '0,80$'],
-            ['100', '70$', '0,70$'],
-            ['150', '98$', '0,65$'],
-            ['250', '138$', '0,55$'],
-            ['500', '250$', '0,50$'],
-          ],
+          quoteOnly: true,
+          quoteText: 'Uniquement sur devis personnalisé. Chaque projet est étudié pour optimiser papier, format, finitions et délais selon ton volume.',
+          quoteCta: { label: 'Obtenir un devis', to: '/contact?service=flyers' },
         },
         // HIDE-BUSINESS-CARDS (29 avril 2026) : les 3 tables de cartes
         // d'affaires (Standard 14pt, Lamine 16pt, Soft Touch 24pt) sont

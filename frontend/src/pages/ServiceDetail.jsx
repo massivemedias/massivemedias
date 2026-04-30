@@ -243,7 +243,7 @@ function WebProjectCard({ project, index }) {
  * Si un service a uniquement `pricing.tables` (pas de tabs), on continue de
  * l'afficher sans tabs (compat retro avec les autres services).
  */
-function PricingTabs({ tabs }) {
+function PricingTabs({ tabs, tx }) {
   const [activeId, setActiveId] = useState(tabs?.[0]?.id || null);
   if (!Array.isArray(tabs) || tabs.length === 0) return null;
   const active = tabs.find(t => t.id === activeId) || tabs[0];
@@ -269,32 +269,47 @@ function PricingTabs({ tabs }) {
       </div>
 
       {/* Active tab content : reuse the same `tables` rendering as below */}
-      <div className={`gap-6 mx-auto ${active.tables?.length === 1 ? '' : 'grid grid-cols-1 md:grid-cols-2'}`}>
+      <div className={`gap-6 mx-auto ${active.tables?.length === 1 ? '' : 'grid grid-cols-1 md:grid-cols-2 items-stretch'}`}>
         {(active.tables || []).map((table, tableIndex) => (
-          <div key={tableIndex} className="rounded-xl overflow-hidden card-shadow">
+          <div key={tableIndex} className="rounded-xl overflow-hidden card-shadow flex flex-col h-full">
             <div className="p-3 md:p-4 border-b border-purple-main/30 bg-glass-alt">
               <h3 className="text-heading font-heading font-bold text-sm md:text-base">{table.subtitle}</h3>
             </div>
-            <table className="price-table w-full">
-              <thead>
-                <tr>
-                  {table.headers.map((header, i) => (
-                    <th key={i} className="text-xs md:text-sm">{header}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {table.rows.map((row, i) => (
-                  <tr key={i}>
-                    {row.map((cell, j) => (
-                      <td key={j} className={`sm:whitespace-nowrap ${j === 0 ? 'text-heading font-semibold' : j === 1 ? 'text-gradient font-bold' : 'text-grey-muted'}`}>
-                        {cell}
-                      </td>
+            {table.quoteOnly ? (
+              <div className="flex-1 flex flex-col items-center justify-center gap-4 p-6 md:p-8 text-center bg-glass">
+                <p className="text-grey-muted text-sm md:text-[15px] leading-relaxed max-w-sm">
+                  {table.quoteText}
+                </p>
+                <Link
+                  to={table.quoteCta?.to || '/contact'}
+                  className="btn-primary inline-flex items-center gap-2 mt-1"
+                >
+                  {table.quoteCta?.label || (tx ? tx({ fr: 'Obtenir un devis', en: 'Get a quote', es: 'Solicitar cotización' }) : 'Get a quote')}
+                  <ArrowRight size={16} />
+                </Link>
+              </div>
+            ) : (
+              <table className="price-table w-full">
+                <thead>
+                  <tr>
+                    {table.headers.map((header, i) => (
+                      <th key={i} className="text-xs md:text-sm">{header}</th>
                     ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {table.rows.map((row, i) => (
+                    <tr key={i}>
+                      {row.map((cell, j) => (
+                        <td key={j} className={`sm:whitespace-nowrap ${j === 0 ? 'text-heading font-semibold' : j === 1 ? 'text-gradient font-bold' : 'text-grey-muted'}`}>
+                          {cell}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
         ))}
       </div>
@@ -831,35 +846,54 @@ function ServiceDetail() {
               les onglets (Standard/Medium/Large pour les stickers). Sinon on
               fallback sur l'ancien rendu pricing.tables (compat retro pour les
               services sans tier-pricing). */}
-          {service.pricing.tabs && <PricingTabs tabs={service.pricing.tabs} />}
+          {service.pricing.tabs && <PricingTabs tabs={service.pricing.tabs} tx={tx} />}
 
           {service.pricing.tables && !service.pricing.tabs && (
-            <div className={`gap-8 mx-auto ${service.pricing.tables.length === 1 ? 'max-w-5xl' : 'grid grid-cols-1 md:grid-cols-2 max-w-5xl'}`}>
+            <div className={`gap-8 mx-auto ${service.pricing.tables.length === 1 ? 'max-w-5xl' : 'grid grid-cols-1 md:grid-cols-2 max-w-5xl items-stretch'}`}>
               {service.pricing.tables.map((table, tableIndex) => (
-                <div key={tableIndex} className="rounded-xl overflow-hidden card-shadow">
+                <div key={tableIndex} className="rounded-xl overflow-hidden card-shadow flex flex-col h-full">
                   <div className="p-3 md:p-4 border-b border-purple-main/30 bg-glass-alt">
                     <h3 className="text-heading font-heading font-bold text-sm md:text-base">{table.subtitle}</h3>
                   </div>
-                  <table className="price-table w-full">
-                    <thead>
-                      <tr>
-                        {table.headers.map((header, i) => (
-                          <th key={i} className="text-xs md:text-sm">{header}</th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {table.rows.map((row, i) => (
-                        <tr key={i}>
-                          {row.map((cell, j) => (
-                            <td key={j} className={`sm:whitespace-nowrap ${j === 0 ? 'text-heading font-semibold' : j === 1 ? 'text-gradient font-bold' : 'text-grey-muted'}`}>
-                              {cell}
-                            </td>
+                  {/* FLYERS-QUOTE-ONLY (29 avril 2026) : si quoteOnly est
+                      vrai, on remplace le tableau par une carte CTA "Obtenir
+                      un devis" qui s'aligne en hauteur avec les vrais tableaux
+                      grace a flex-col h-full + flex-1 sur la zone CTA. */}
+                  {table.quoteOnly ? (
+                    <div className="flex-1 flex flex-col items-center justify-center gap-4 p-6 md:p-8 text-center bg-glass">
+                      <p className="text-grey-muted text-sm md:text-[15px] leading-relaxed max-w-sm">
+                        {table.quoteText}
+                      </p>
+                      <Link
+                        to={table.quoteCta?.to || '/contact'}
+                        className="btn-primary inline-flex items-center gap-2 mt-1"
+                      >
+                        {table.quoteCta?.label || tx({ fr: 'Obtenir un devis', en: 'Get a quote', es: 'Solicitar cotización' })}
+                        <ArrowRight size={16} />
+                      </Link>
+                    </div>
+                  ) : (
+                    <table className="price-table w-full">
+                      <thead>
+                        <tr>
+                          {table.headers.map((header, i) => (
+                            <th key={i} className="text-xs md:text-sm">{header}</th>
                           ))}
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody>
+                        {table.rows.map((row, i) => (
+                          <tr key={i}>
+                            {row.map((cell, j) => (
+                              <td key={j} className={`sm:whitespace-nowrap ${j === 0 ? 'text-heading font-semibold' : j === 1 ? 'text-gradient font-bold' : 'text-grey-muted'}`}>
+                                {cell}
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
                 </div>
               ))}
             </div>

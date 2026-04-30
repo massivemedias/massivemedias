@@ -51,16 +51,12 @@ const servicesDataEs = {
             ['A2 (18x24")', 'N/A', '$110'],
           ],
         },
+        // FLYERS-QUOTE-ONLY (29 avril 2026) - cf. services.js
         {
           subtitle: 'Flyers y afiches de distribucion (A6 / 4"x6")',
-          headers: ['Cantidad', 'Precio total', 'Precio/unidad'],
-          rows: [
-            ['50', '$40', '$0.80'],
-            ['100', '$70', '$0.70'],
-            ['150', '$98', '$0.65'],
-            ['250', '$138', '$0.55'],
-            ['500', '$250', '$0.50'],
-          ],
+          quoteOnly: true,
+          quoteText: 'Solo con cotización personalizada. Cada proyecto se estudia para optimizar papel, formato, acabados y plazos según tu volumen.',
+          quoteCta: { label: 'Solicitar cotización', to: '/contact?service=flyers' },
         },
         // HIDE-BUSINESS-CARDS (29 avril 2026) - cf. services.js
         // {
