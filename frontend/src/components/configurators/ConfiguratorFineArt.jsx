@@ -230,9 +230,17 @@ function ConfiguratorFineArt() {
             compact
             hidePreview
           />
-          {/* Carrousel unique: FramePreview + Mockups */}
+          {/* Carrousel unique: FramePreview + Mockups
+              MOCKUP-DEFAULT (30 avril 2026) : tant qu'aucun fichier n'est
+              upload, on injecte le mockup Massive en tant qu'`image` pour
+              que la FramePreview le rende DANS le cadre du format choisi
+              (avec ou sans cadre, couleur du cadre, etc.) comme s'il
+              s'agissait du print final du client. Le flag isDefaultPreview
+              cache les scenes mockup chambre/salon (le chroma-key ne
+              fonctionne pas sur le PNG brand). */}
           <PrintPreviewCarousel
-            image={previewImage}
+            image={previewImage || '/images/thumbs/mockup-massive-print.webp'}
+            isDefaultPreview={!previewImage}
             withFrame={withFrame}
             frameColor={frameColor}
             format={format}

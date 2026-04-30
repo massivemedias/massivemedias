@@ -20,7 +20,7 @@ const MOCKUP_SCENES = [
 
 const MAT_COLOR = { r: 240, g: 237, b: 232 };
 
-function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, tx, isLandscape, isSquare = false, onClickImage }) {
+function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, tx, isLandscape, isSquare = false, onClickImage, isDefaultPreview = false }) {
   const [slideIdx, setSlideIdx] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const canvasRefs = useRef({});
@@ -38,7 +38,12 @@ function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, t
   const currentFmt = formats?.find(f => f.id === format);
   const currentFmtShape = currentFmt?.shape
     || (Math.abs((currentFmt?.w || 1) - (currentFmt?.h || 1)) < 0.5 ? 'square' : 'rect');
-  const hideRoomMockups = currentFmtShape === 'square';
+  // MOCKUP-DEFAULT (30 avril 2026) : si on affiche l'image par defaut
+  // (mockup Massive avant upload), on cache aussi les scenes mockup
+  // (chambre/salon/bureau/zen) car le chroma-key ne fonctionne pas sur
+  // le PNG brand (fond purple, pas vert). Seul slide 0 (FramePreview
+  // CSS) reste actif - le mockup est rendu dans un cadre simule.
+  const hideRoomMockups = currentFmtShape === 'square' || isDefaultPreview;
   const visibleScenes = hideRoomMockups ? [] : MOCKUP_SCENES;
   const totalSlides = image ? 1 + visibleScenes.length : 0;
 
@@ -170,26 +175,12 @@ function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, t
     }
   }, [lightboxOpen, slideIdx, drawMockup]);
 
-  // MOCKUP-DEFAULT (30 avril 2026) : tant qu'aucune image n'est uploadee,
-  // on affiche le mockup Massive comme apercu par defaut a la place de
-  // ne rien rendre. Le client voit immediatement un exemple visuel
-  // d'un print rendu, ce qui guide la configuration et inspire l'upload.
-  if (!image) {
-    return (
-      <div className="flex items-center justify-center p-2">
-        <div
-          className="relative w-full max-w-[320px] aspect-[612/792] bg-white shadow-[0_4px_20px_rgba(0,0,0,0.15)] rounded-[2px] overflow-hidden"
-        >
-          <img
-            src="/images/thumbs/mockup-massive-print.webp"
-            alt={tx({ fr: 'Aperçu d\'un print Massive', en: 'Massive print preview', es: 'Vista previa de un print Massive' })}
-            className="absolute inset-0 w-full h-full object-cover"
-            loading="lazy"
-          />
-        </div>
-      </div>
-    );
-  }
+  // MOCKUP-DEFAULT : la fallback "no image" est traitee plus haut via
+  // le prop isDefaultPreview - le parent passe le mockup Massive en tant
+  // qu'image et on rend la FramePreview standard (avec cadre / format /
+  // couleur) comme si c'etait l'image du client. Resultat : l'apercu
+  // est tout de suite "un print" et pas une simple miniature plate.
+  if (!image) return null;
 
   // FramePreview inline (slide 0)
   // FIX-SQUARE (23 avril 2026) : si le format est carre (shape === 'square' OU
