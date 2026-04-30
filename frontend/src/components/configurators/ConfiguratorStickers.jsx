@@ -300,6 +300,17 @@ function ConfiguratorStickers({ onFinishChange }) {
                     {tx({ fr: 'Proof avant impression', en: 'Digital proof included', es: 'Prueba antes de imprimir' })}
                   </span>
                 </div>
+                {/* PREMIUM-VALUE-PROP (29 avril 2026) : justification du
+                    positionnement tarifaire haut de gamme. Typographie
+                    discrete (text-[11px] grey-muted/80) + separateur
+                    subtil pour rester aere avec le thème sombre. */}
+                <p className="mt-3 pt-2.5 border-t border-white/5 text-[11px] text-grey-muted/80 leading-relaxed">
+                  {tx({
+                    fr: 'Inclus : Vérification manuelle des fichiers, épreuve numérique et contrôle qualité studio.',
+                    en: 'Included: Manual file check, digital proof and studio quality control.',
+                    es: 'Incluido: Verificación manual de archivos, prueba digital y control de calidad del estudio.',
+                  })}
+                </p>
               </div>
             )}
           </div>
