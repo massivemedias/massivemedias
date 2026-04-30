@@ -531,6 +531,31 @@ function ServiceDetail() {
 
       <div className="section-container max-w-6xl mx-auto">
 
+        {/* ============ CONFIGURATEUR (above the fold) ============ */}
+        {/* UX-CONVERSION (29 avril 2026) : configurateur deplace en haut
+            de page pour maximiser le taux de conversion. Le visiteur
+            voit immediatement le calculateur de commande sous le hero
+            (above the fold), avant la description detaillee du service
+            et les sections marketing. mt-2 / mb-16 pour une transition
+            aeree depuis le hero sans surcharger l'interface. */}
+        {hasConfigurator && (() => {
+          const Comp = configuratorMap[service.boutiqueSlug];
+          if (!Comp) return null;
+          return (
+            <div ref={configuratorRef} id="configurateur" className="mt-2 mb-16 scroll-mt-24">
+              <div className="rounded-2xl p-4 md:p-8">
+                <Suspense fallback={
+                  <div className="text-center py-8 text-grey-muted">
+                    {tx({ fr: 'Chargement...', en: 'Loading...', es: 'Cargando...' })}
+                  </div>
+                }>
+                  <Comp />
+                </Suspense>
+              </div>
+            </div>
+          );
+        })()}
+
         {/* ============ DESCRIPTION + HIGHLIGHTS (or SHOWCASE) ============ */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -1110,28 +1135,10 @@ function ServiceDetail() {
           </motion.div>
         )}
 
-        {/* ============ CONFIGURATEUR (bas de page) ============ */}
-        {hasConfigurator && (() => {
-          const Comp = configuratorMap[service.boutiqueSlug];
-          if (!Comp) return null;
-          return (
-            <div ref={configuratorRef} id="configurateur" className="mb-20 scroll-mt-24">
-              <h2 className="text-3xl font-heading font-bold text-gradient mb-8 text-center flex items-center justify-center gap-3">
-                <ShoppingCart size={28} className="text-accent" />
-                {tx({ fr: 'Commander en ligne', en: 'Order online', es: 'Pedir en línea' })}
-              </h2>
-              <div className="rounded-2xl p-6 md:p-10">
-                <Suspense fallback={
-                  <div className="text-center py-8 text-grey-muted">
-                    {tx({ fr: 'Chargement...', en: 'Loading...', es: 'Cargando...' })}
-                  </div>
-                }>
-                  <Comp />
-                </Suspense>
-              </div>
-            </div>
-          );
-        })()}
+        {/* CONFIGURATEUR : deplace au-dessus de la ligne de flottaison
+            (cf. block en haut, juste sous le HERO). Cet emplacement de
+            bas de page est volontairement vide pour preserver l'ancre
+            #configurateur si jamais un lien externe pointe ici. */}
 
         {/* ============ NAVIGATION SERVICES ============ */}
         <div className="flex justify-between items-center py-8 footer-border">
