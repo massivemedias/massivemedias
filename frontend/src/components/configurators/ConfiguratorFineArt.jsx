@@ -219,13 +219,16 @@ function ConfiguratorFineArt() {
       {/* ========== COLONNE GAUCHE : Preview + Upload ========== */}
       <div className="md:w-[35%] lg:w-[30%] flex-shrink-0">
         <div className="md:sticky md:top-28 space-y-3">
-          {/* Upload au-dessus du cadre */}
+          {/* Upload au-dessus du cadre. Mockup Massive comme apercu par
+              defaut tant qu'aucun fichier n'est upload (sert d'exemple
+              visuel d'un print rendu - inspire le client a uploader). */}
           <FileUpload
             files={uploadedFiles}
             onFilesChange={setUploadedFiles}
             label={tx({ fr: 'Votre fichier', en: 'Your file', es: 'Tu archivo' })}
             compact
             hidePreview
+            defaultPreviewImage="/images/thumbs/mockup-massive-print.webp"
           />
           {/* Carrousel unique: FramePreview + Mockups */}
           <PrintPreviewCarousel
@@ -251,8 +254,8 @@ function ConfiguratorFineArt() {
             <div className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-colors ${withFrame ? 'bg-accent border-accent' : 'border-grey-muted/50'}`}>
               {withFrame && <Check size={10} className="text-white" />}
             </div>
-            <span className="text-heading text-sm">{tx({ fr: 'Cadre', en: 'Frame', es: 'Marco' })}</span>
-            <span className="text-accent text-xs font-semibold">+{fineArtFramePriceByFormat[format] || fineArtFramePrice}$</span>
+            <span className="text-heading text-base">{tx({ fr: 'Cadre', en: 'Frame', es: 'Marco' })}</span>
+            <span className="text-accent text-sm font-semibold">+{fineArtFramePriceByFormat[format] || fineArtFramePrice}$</span>
           </label>
           {withFrame && (
             <div className="flex gap-1.5">
@@ -266,7 +269,7 @@ function ConfiguratorFineArt() {
 
         {/* Qualite */}
         <div>
-          <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2">
+          <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-2.5">
             {tx({ fr: 'Qualite', en: 'Quality', es: 'Calidad' })}
           </label>
           <div className="flex gap-2">
@@ -282,13 +285,13 @@ function ConfiguratorFineArt() {
                   // s'il veut un format carre.
                   if (price == null) setFormat('a4');
                 }}
-                className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-semibold transition-all border-2 ${tier === t.id
+                className={`flex-1 py-3 px-4 rounded-lg text-base font-semibold transition-all border-2 ${tier === t.id
                   ? 'border-accent bg-accent/10 text-accent'
                   : 'border-transparent bg-white/5 text-grey-muted hover:bg-white/8 hover:text-heading'
                 }`}
               >
                 {tx({ fr: t.labelFr, en: t.labelEn, es: t.labelEn })}
-                <span className="block text-[10px] font-normal mt-0.5 opacity-60">
+                <span className="block text-xs font-normal mt-1 opacity-70">
                   {tx({ fr: t.descFr, en: t.descEn, es: t.descEn })}
                 </span>
               </button>
@@ -301,7 +304,7 @@ function ConfiguratorFineArt() {
             rectangulaires. L'utilisateur garde la liberte de choisir portrait
             meme pour une image 1:1 (cropping automatique via object-fit:cover). */}
         <div>
-          <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2">
+          <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-2.5">
             {tx({ fr: 'Format', en: 'Format', es: 'Formato' })}
             {isSquare && previewImage && (
               <span className="ml-2 text-[13px] font-normal text-grey-muted/70 normal-case tracking-normal">
@@ -340,15 +343,15 @@ function ConfiguratorFineArt() {
                     }`}
                     style={{ width: `${rectW}px`, height: `${rectH}px` }}
                   />
-                  <span className={`text-xs font-bold leading-tight ${format === f.id ? 'text-accent' : 'text-heading'}`}>
+                  <span className={`text-sm font-bold leading-tight ${format === f.id ? 'text-accent' : 'text-heading'}`}>
                     {f.label}
                   </span>
                   {f.typeName && (
-                    <span className={`text-[9px] ${format === f.id ? 'text-accent/60' : 'text-grey-muted/50'}`}>
+                    <span className={`text-[11px] ${format === f.id ? 'text-accent/70' : 'text-grey-muted/60'}`}>
                       {f.typeName}
                     </span>
                   )}
-                  <span className={`text-xs ${format === f.id ? 'text-accent' : 'text-grey-muted'}`}>
+                  <span className={`text-sm font-semibold ${format === f.id ? 'text-accent' : 'text-grey-muted'}`}>
                     {isAvailable ? `${price}$` : 'N/A'}
                   </span>
                 </button>
@@ -370,28 +373,28 @@ function ConfiguratorFineArt() {
 
         {/* Prix + bouton panier - aligne a droite */}
         {priceInfo && (
-          <div className="flex items-center justify-end gap-3">
+          <div className="flex items-center justify-end gap-3 flex-wrap">
             <div className="flex-shrink-0 text-right">
-              <span className="text-xl font-heading font-bold text-heading">{priceInfo.price * quantity}$</span>
+              <span className="text-2xl md:text-3xl font-heading font-bold text-heading">{priceInfo.price * quantity}$</span>
               {quantity > 1 && (
-                <span className="text-grey-muted text-xs ml-1">{quantity} × {priceInfo.price}$</span>
+                <span className="text-grey-muted text-sm ml-1.5">{quantity} × {priceInfo.price}$</span>
               )}
               {withFrame && quantity === 1 && (
-                <span className="text-grey-muted text-xs ml-1">
+                <span className="text-grey-muted text-sm ml-1.5">
                   ({priceInfo.basePrice}+{priceInfo.framePrice})
                 </span>
               )}
             </div>
             <div className="flex items-center gap-2">
-              <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="w-8 h-8 rounded-lg border border-white/10 text-heading font-bold text-sm flex items-center justify-center hover:border-accent/50">-</button>
-              <span className="text-heading font-bold w-6 text-center">{quantity}</span>
-              <button onClick={() => setQuantity(q => q + 1)} className="w-8 h-8 rounded-lg border border-white/10 text-heading font-bold text-sm flex items-center justify-center hover:border-accent/50">+</button>
+              <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="w-9 h-9 rounded-lg border border-white/10 text-heading font-bold text-base flex items-center justify-center hover:border-accent/50">-</button>
+              <span className="text-heading font-bold text-base w-6 text-center">{quantity}</span>
+              <button onClick={() => setQuantity(q => q + 1)} className="w-9 h-9 rounded-lg border border-white/10 text-heading font-bold text-base flex items-center justify-center hover:border-accent/50">+</button>
             </div>
-            <button onClick={handleAddToCart} disabled={!canAddToCart} className={`btn-primary justify-center text-sm py-2 px-5 ${!canAddToCart ? 'opacity-40 cursor-not-allowed' : ''}`}>
+            <button onClick={handleAddToCart} disabled={!canAddToCart} className={`btn-primary justify-center text-base py-2.5 px-6 ${!canAddToCart ? 'opacity-40 cursor-not-allowed' : ''}`}>
               {added ? (
-                <><Check size={14} className="mr-1" />{tx({ fr: 'Ajoute!', en: 'Added!', es: 'Agregado!' })}</>
+                <><Check size={16} className="mr-1.5" />{tx({ fr: 'Ajoute!', en: 'Added!', es: 'Agregado!' })}</>
               ) : (
-                <><ShoppingCart size={14} className="mr-1" />{tx({ fr: 'Ajouter au panier', en: 'Add to cart', es: 'Agregar' })}</>
+                <><ShoppingCart size={16} className="mr-1.5" />{tx({ fr: 'Ajouter au panier', en: 'Add to cart', es: 'Agregar' })}</>
               )}
             </button>
           </div>

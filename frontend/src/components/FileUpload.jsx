@@ -92,7 +92,7 @@ function formatSize(bytes) {
  *   - Logge: "{email} - cart-{cartId}"
  *   - Anonyme: "Guest_Cart_{cartId}"
  */
-function FileUpload({ files = [], onFilesChange, label, maxFiles = 5, compact = false, uploadFn, hidePreview = false, orderId, contextLabel }) {
+function FileUpload({ files = [], onFilesChange, label, maxFiles = 5, compact = false, uploadFn, hidePreview = false, orderId, contextLabel, defaultPreviewImage = null }) {
   const { tx } = useLang();
   const { user } = useAuth();
   const { cartId } = useCart();
@@ -235,6 +235,48 @@ function FileUpload({ files = [], onFilesChange, label, maxFiles = 5, compact = 
         )}
 
         {files.length === 0 ? (
+          defaultPreviewImage ? (
+            /* MOCKUP-DEFAULT (29 avril 2026) : aperçu par défaut quand le
+                client n'a pas encore uploadé son fichier - le mockup
+                Massive sert d'exemple visuel de ce qu'un print rendu
+                peut donner. La zone reste 100% clickable + drag&drop. */
+            <div
+              className={`relative rounded-xl cursor-pointer transition-all overflow-hidden shadow-lg group ${
+                dragOver ? 'ring-2 ring-accent' : 'hover:opacity-95'
+              }`}
+              onClick={() => inputRef.current?.click()}
+              onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+              onDragLeave={() => setDragOver(false)}
+              onDrop={handleDrop}
+            >
+              <input
+                ref={inputRef}
+                type="file"
+                accept={ACCEPTED_EXT}
+                multiple
+                className="hidden"
+                onChange={(e) => { if (e.target.files.length > 0) handleFiles(e.target.files); e.target.value = ''; }}
+              />
+              <img
+                src={defaultPreviewImage}
+                alt=""
+                className="w-full h-auto object-contain block"
+                loading="lazy"
+              />
+              <div className="absolute inset-x-0 bottom-0 px-3 py-2 bg-black/65 backdrop-blur-sm flex items-center justify-center gap-2">
+                {uploading ? (
+                  <Loader2 size={14} className="text-white animate-spin" />
+                ) : (
+                  <>
+                    <Upload size={14} className="text-white" />
+                    <span className="text-white text-xs font-semibold leading-tight">
+                      {tx({ fr: 'Glissez ou cliquez pour téléverser votre fichier', en: 'Drop or click to upload your file', es: 'Arrastra o haz clic para subir tu archivo' })}
+                    </span>
+                  </>
+                )}
+              </div>
+            </div>
+          ) : (
           /* Empty: small drop zone */
           <div
             className={`rounded-xl text-center cursor-pointer transition-all p-3 min-h-[100px] flex flex-col items-center justify-center shadow-lg ${
@@ -265,6 +307,7 @@ function FileUpload({ files = [], onFilesChange, label, maxFiles = 5, compact = 
               </>
             )}
           </div>
+          )
         ) : (
           /* Has files: show previews or just names */
           <div className="space-y-2">
