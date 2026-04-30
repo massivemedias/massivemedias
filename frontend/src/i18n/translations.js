@@ -61,7 +61,7 @@ const translations = {
       serviceCards: [
         {
           title: 'Prints',
-          description: "Tirages fine art, posters, affiches, flyers et cartes d'affaires. Impression professionnelle grand format et rapide, locale.",
+          description: "Tirages fine art, posters, affiches et flyers. Impression professionnelle grand format et rapide, locale.",
         },
         {
           title: 'Stickers',
@@ -421,7 +421,7 @@ const translations = {
       serviceCards: [
         {
           title: 'Prints',
-          description: 'Fine art prints, posters, flyers and business cards. Professional large format and fast local printing.',
+          description: 'Fine art prints, posters and flyers. Professional large format and fast local printing.',
         },
         {
           title: 'Stickers',
@@ -781,7 +781,7 @@ const translations = {
       serviceCards: [
         {
           title: 'Prints',
-          description: 'Impresiones fine art, posters, flyers y tarjetas de presentación. Impresión profesional de gran formato, rápida y local.',
+          description: 'Impresiones fine art, posters y flyers. Impresión profesional de gran formato, rápida y local.',
         },
         {
           title: 'Stickers',

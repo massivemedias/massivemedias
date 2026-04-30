@@ -13,7 +13,7 @@ const servicesData = {
     highlights: [
       'Qualité Galerie',
       'Couleurs Calibrées',
-      'Cartes Promo & Signalétique',
+      'Affiches & Signalétique',
     ],
     process: [
       { step: 1, title: 'Réception du fichier', desc: 'Envoi de ton fichier haute résolution (ou création graphique sur demande)' },
@@ -62,35 +62,40 @@ const servicesData = {
             ['500', '250$', '0,50$'],
           ],
         },
-        {
-          subtitle: 'Cartes d\'affaires - Standard 14pt (recto-verso inclus)',
-          headers: ['Quantite', 'Prix total', 'Prix/unite'],
-          rows: [
-            ['100', '55$', '0,55$'],
-            ['250', '75$', '0,30$'],
-            ['500', '95$', '0,19$'],
-            ['1000', '130$', '0,13$'],
-          ],
-        },
-        {
-          subtitle: 'Cartes d\'affaires - Lamine 16pt (recto-verso inclus)',
-          headers: ['Quantite', 'Prix total', 'Prix/unite'],
-          rows: [
-            ['100', '70$', '0,70$'],
-            ['250', '95$', '0,38$'],
-            ['500', '120$', '0,24$'],
-            ['1000', '165$', '0,17$'],
-          ],
-        },
-        {
-          subtitle: 'Cartes d\'affaires - Soft Touch 24pt Premium (recto-verso inclus)',
-          headers: ['Quantite', 'Prix total', 'Prix/unite'],
-          rows: [
-            ['100', '120$', '1,20$'],
-            ['250', '175$', '0,70$'],
-            ['500', '250$', '0,50$'],
-          ],
-        },
+        // HIDE-BUSINESS-CARDS (29 avril 2026) : les 3 tables de cartes
+        // d'affaires (Standard 14pt, Lamine 16pt, Soft Touch 24pt) sont
+        // commentees temporairement - le produit n'est plus expose au
+        // public sur /services/prints. Backend, BDD, BUSINESS_CARD_TIERS
+        // et TIERED_PRODUCTS sont intacts pour reactivation rapide.
+        // {
+        //   subtitle: 'Cartes d\'affaires - Standard 14pt (recto-verso inclus)',
+        //   headers: ['Quantite', 'Prix total', 'Prix/unite'],
+        //   rows: [
+        //     ['100', '55$', '0,55$'],
+        //     ['250', '75$', '0,30$'],
+        //     ['500', '95$', '0,19$'],
+        //     ['1000', '130$', '0,13$'],
+        //   ],
+        // },
+        // {
+        //   subtitle: 'Cartes d\'affaires - Lamine 16pt (recto-verso inclus)',
+        //   headers: ['Quantite', 'Prix total', 'Prix/unite'],
+        //   rows: [
+        //     ['100', '70$', '0,70$'],
+        //     ['250', '95$', '0,38$'],
+        //     ['500', '120$', '0,24$'],
+        //     ['1000', '165$', '0,17$'],
+        //   ],
+        // },
+        // {
+        //   subtitle: 'Cartes d\'affaires - Soft Touch 24pt Premium (recto-verso inclus)',
+        //   headers: ['Quantite', 'Prix total', 'Prix/unite'],
+        //   rows: [
+        //     ['100', '120$', '1,20$'],
+        //     ['250', '175$', '0,70$'],
+        //     ['500', '250$', '0,50$'],
+        //   ],
+        // },
       ],
     },
     showcaseRight: thumb('/images/prints/PrintsTaille.webp'),

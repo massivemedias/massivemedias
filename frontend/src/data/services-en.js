@@ -13,7 +13,7 @@ const servicesDataEn = {
     highlights: [
       'Gallery Quality',
       'Calibrated Colors',
-      'Promo Cards & Signage',
+      'Posters & Signage',
     ],
     process: [
       { step: 1, title: 'File reception', desc: 'Submit your high-resolution file (or graphic design on request)' },
@@ -62,35 +62,36 @@ const servicesDataEn = {
             ['500', '$250', '$0.50'],
           ],
         },
-        {
-          subtitle: 'Business Cards - Standard 14pt (double-sided included)',
-          headers: ['Quantity', 'Total Price', 'Price/unit'],
-          rows: [
-            ['100', '$55', '$0.55'],
-            ['250', '$75', '$0.30'],
-            ['500', '$95', '$0.19'],
-            ['1000', '$130', '$0.13'],
-          ],
-        },
-        {
-          subtitle: 'Business Cards - Laminated 16pt (double-sided included)',
-          headers: ['Quantity', 'Total Price', 'Price/unit'],
-          rows: [
-            ['100', '$70', '$0.70'],
-            ['250', '$95', '$0.38'],
-            ['500', '$120', '$0.24'],
-            ['1000', '$165', '$0.17'],
-          ],
-        },
-        {
-          subtitle: 'Business Cards - Soft Touch 24pt Premium (double-sided included)',
-          headers: ['Quantity', 'Total Price', 'Price/unit'],
-          rows: [
-            ['100', '$120', '$1.20'],
-            ['250', '$175', '$0.70'],
-            ['500', '$250', '$0.50'],
-          ],
-        },
+        // HIDE-BUSINESS-CARDS (29 avril 2026) - cf. services.js
+        // {
+        //   subtitle: 'Business Cards - Standard 14pt (double-sided included)',
+        //   headers: ['Quantity', 'Total Price', 'Price/unit'],
+        //   rows: [
+        //     ['100', '$55', '$0.55'],
+        //     ['250', '$75', '$0.30'],
+        //     ['500', '$95', '$0.19'],
+        //     ['1000', '$130', '$0.13'],
+        //   ],
+        // },
+        // {
+        //   subtitle: 'Business Cards - Laminated 16pt (double-sided included)',
+        //   headers: ['Quantity', 'Total Price', 'Price/unit'],
+        //   rows: [
+        //     ['100', '$70', '$0.70'],
+        //     ['250', '$95', '$0.38'],
+        //     ['500', '$120', '$0.24'],
+        //     ['1000', '$165', '$0.17'],
+        //   ],
+        // },
+        // {
+        //   subtitle: 'Business Cards - Soft Touch 24pt Premium (double-sided included)',
+        //   headers: ['Quantity', 'Total Price', 'Price/unit'],
+        //   rows: [
+        //     ['100', '$120', '$1.20'],
+        //     ['250', '$175', '$0.70'],
+        //     ['500', '$250', '$0.50'],
+        //   ],
+        // },
       ],
     },
     showcaseRight: thumb('/images/prints/PrintsTaille.webp'),

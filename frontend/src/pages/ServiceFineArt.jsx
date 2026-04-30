@@ -36,7 +36,7 @@ function ServiceFineArt() {
     { icon: Music, fr: 'Événements', en: 'Events', es: 'Eventos', descFr: 'Flyers de soirée, concert', descEn: 'Party flyers, concerts', descEs: 'Flyers de fiesta, conciertos' },
     { icon: Gift, fr: 'Cadeau', en: 'Gift', es: 'Regalo', descFr: 'Tirage personnalisé unique', descEn: 'Unique custom print', descEs: 'Impresión personalizada única' },
     { icon: Camera, fr: 'Photo d\'art', en: 'Art photo', es: 'Foto art\u00edstica', descFr: 'Tirages photo professionnels', descEn: 'Professional photo prints', descEs: 'Impresiones fotogr\u00e1ficas profesionales' },
-    { icon: Briefcase, fr: 'Cartes d\'affaires', en: 'Business cards', es: 'Tarjetas de presentación', descFr: 'Cartes pros sur papier épais', descEn: 'Pro cards on thick paper', descEs: 'Tarjetas profesionales en papel grueso' },
+    // HIDE-BUSINESS-CARDS (29 avril 2026) : tile cartes d'affaires retiree.
   ];
 
   const ctaLinks = [
@@ -59,15 +59,15 @@ function ServiceFineArt() {
       startingPrice={20}
       pageTitle={{ fr: 'Tirages Fine Art Montréal - Impression 12 Encres | Massive', en: 'Fine Art Prints Montreal - 12 Ink Printing | Massive', es: 'Impresiones Fine Art Montreal - 12 Tintas | Massive' }}
       metaDescription={{
-        fr: 'Tirages fine art, flyers, cartes d\'affaires. Impression professionnelle 12 couleurs. Qualit\u00e9 galerie.',
-        en: 'Fine art prints, flyers, business cards. Professional 12-color printing. Gallery quality.',
-        es: 'Impresiones fine art, flyers, tarjetas de presentaci\u00f3n. Impresi\u00f3n profesional 12 colores. Calidad galer\u00eda.',
+        fr: 'Tirages fine art et flyers. Impression professionnelle 12 couleurs. Qualit\u00e9 galerie.',
+        en: 'Fine art prints and flyers. Professional 12-color printing. Gallery quality.',
+        es: 'Impresiones fine art y flyers. Impresi\u00f3n profesional 12 colores. Calidad galer\u00eda.',
       }}
       productTitle={{ fr: 'Prints', en: 'Prints', es: 'Prints' }}
       productSubtitle={{
-        fr: 'Fine art, flyers, cartes - impression qualit\u00e9 pro.',
-        en: 'Fine art, flyers, cards - pro quality printing.',
-        es: 'Fine art, flyers, tarjetas - impresi\u00f3n de calidad profesional.',
+        fr: 'Fine art et flyers - impression qualit\u00e9 pro.',
+        en: 'Fine art and flyers - pro quality printing.',
+        es: 'Fine art y flyers - impresi\u00f3n de calidad profesional.',
       }}
       badge={{ fr: 'Soft proofing inclus', en: 'Soft proofing included', es: 'Soft proofing incluido', icon: Sparkles }}
       trustItems={trustItems}
@@ -103,7 +103,7 @@ function ServiceFineArt() {
               : 'bg-glass text-grey-muted hover:text-heading'
           }`}
         >
-          {tx({ fr: 'Flyers & Cartes', en: 'Flyers & Cards', es: 'Flyers y Tarjetas' })}
+          {tx({ fr: 'Flyers', en: 'Flyers', es: 'Flyers' })}
         </button>
       </div>
 

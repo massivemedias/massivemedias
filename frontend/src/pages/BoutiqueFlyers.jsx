@@ -22,9 +22,10 @@ function BoutiqueFlyers() {
     { icon: Sparkles, fr: 'Service rapide', en: 'Fast service', es: 'Servicio rapido', descFr: 'Production locale Mile-End. Service express disponible sur demande.', descEn: 'Local production Mile-End. Express service available on request.', descEs: 'Produccion local Mile-End. Servicio express disponible bajo pedido.' },
   ];
 
+  // HIDE-BUSINESS-CARDS (29 avril 2026) : tile "Cartes d'affaires" retiree
+  // de la grille des cas d'usage (le produit n'est plus expose au public).
   const useCases = [
     { icon: Music, fr: 'Evenements', en: 'Events', es: 'Eventos', descFr: 'Flyers de soiree, concert', descEn: 'Party flyers, concerts', descEs: 'Flyers de fiesta, conciertos' },
-    { icon: Briefcase, fr: 'Cartes d\'affaires', en: 'Business cards', es: 'Tarjetas de presentacion', descFr: 'Cartes pros sur papier epais', descEn: 'Pro cards on thick paper', descEs: 'Tarjetas profesionales en papel grueso' },
     { icon: Megaphone, fr: 'Marketing', en: 'Marketing', es: 'Marketing', descFr: 'Prospectus et promos', descEn: 'Leaflets and promos', descEs: 'Folletos y promos' },
     { icon: Users, fr: 'Networking', en: 'Networking', es: 'Networking', descFr: 'Distribution en main propre', descEn: 'Hand-to-hand distribution', descEs: 'Distribucion en mano' },
   ];
@@ -39,13 +40,13 @@ function BoutiqueFlyers() {
     <BoutiqueProductLayout
       serviceSlug="flyers-cartes"
       startingPrice={40}
-      pageTitle={{ fr: 'Impression Flyers & Cartes Montreal - Rapide et Pro | Massive', en: 'Flyers & Cards Printing Montreal - Fast & Pro | Massive', es: 'Impresion Flyers y Tarjetas Montreal - Rapido y Pro | Massive' }}
+      pageTitle={{ fr: 'Impression Flyers Montreal - Rapide et Pro | Massive', en: 'Flyer Printing Montreal - Fast & Pro | Massive', es: 'Impresion Flyers Montreal - Rapido y Pro | Massive' }}
       metaDescription={{
-        fr: 'Flyers, cartes postales, cartes d\'affaires. Impression rapide et locale a Montreal. Qualite pro.',
-        en: 'Flyers, postcards, business cards. Fast local printing in Montreal. Pro quality.',
-        es: 'Flyers, postales, tarjetas de presentacion. Impresion rapida y local en Montreal. Calidad profesional.',
+        fr: 'Flyers et cartes postales premium. Impression rapide et locale a Montreal. Qualite pro.',
+        en: 'Premium flyers and postcards. Fast local printing in Montreal. Pro quality.',
+        es: 'Flyers y postales premium. Impresion rapida y local en Montreal. Calidad profesional.',
       }}
-      productTitle={{ fr: 'Flyers & Cartes', en: 'Flyers & Cards', es: 'Flyers y Tarjetas' }}
+      productTitle={{ fr: 'Flyers Premium', en: 'Premium Flyers', es: 'Flyers Premium' }}
       productSubtitle={{
         fr: 'Impression rapide pour evenements et promotions.',
         en: 'Fast printing for events and promotions.',

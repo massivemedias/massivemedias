@@ -13,7 +13,7 @@ const servicesDataEs = {
     highlights: [
       'Calidad de Galería',
       'Colores Calibrados',
-      'Tarjetas Promocionales y Señalización',
+      'Carteles y Señalización',
     ],
     process: [
       { step: 1, title: 'Recepción del archivo', desc: 'Envía tu archivo de alta resolución (o diseño gráfico bajo pedido)' },
@@ -62,35 +62,36 @@ const servicesDataEs = {
             ['500', '$250', '$0.50'],
           ],
         },
-        {
-          subtitle: 'Tarjetas de presentacion - Estandar 14pt (doble cara incluida)',
-          headers: ['Cantidad', 'Precio total', 'Precio/unidad'],
-          rows: [
-            ['100', '$55', '$0.55'],
-            ['250', '$75', '$0.30'],
-            ['500', '$95', '$0.19'],
-            ['1000', '$130', '$0.13'],
-          ],
-        },
-        {
-          subtitle: 'Tarjetas de presentacion - Laminado 16pt (doble cara incluida)',
-          headers: ['Cantidad', 'Precio total', 'Precio/unidad'],
-          rows: [
-            ['100', '$70', '$0.70'],
-            ['250', '$95', '$0.38'],
-            ['500', '$120', '$0.24'],
-            ['1000', '$165', '$0.17'],
-          ],
-        },
-        {
-          subtitle: 'Tarjetas de presentacion - Soft Touch 24pt Premium (doble cara incluida)',
-          headers: ['Cantidad', 'Precio total', 'Precio/unidad'],
-          rows: [
-            ['100', '$120', '$1.20'],
-            ['250', '$175', '$0.70'],
-            ['500', '$250', '$0.50'],
-          ],
-        },
+        // HIDE-BUSINESS-CARDS (29 avril 2026) - cf. services.js
+        // {
+        //   subtitle: 'Tarjetas de presentacion - Estandar 14pt (doble cara incluida)',
+        //   headers: ['Cantidad', 'Precio total', 'Precio/unidad'],
+        //   rows: [
+        //     ['100', '$55', '$0.55'],
+        //     ['250', '$75', '$0.30'],
+        //     ['500', '$95', '$0.19'],
+        //     ['1000', '$130', '$0.13'],
+        //   ],
+        // },
+        // {
+        //   subtitle: 'Tarjetas de presentacion - Laminado 16pt (doble cara incluida)',
+        //   headers: ['Cantidad', 'Precio total', 'Precio/unidad'],
+        //   rows: [
+        //     ['100', '$70', '$0.70'],
+        //     ['250', '$95', '$0.38'],
+        //     ['500', '$120', '$0.24'],
+        //     ['1000', '$165', '$0.17'],
+        //   ],
+        // },
+        // {
+        //   subtitle: 'Tarjetas de presentacion - Soft Touch 24pt Premium (doble cara incluida)',
+        //   headers: ['Cantidad', 'Precio total', 'Precio/unidad'],
+        //   rows: [
+        //     ['100', '$120', '$1.20'],
+        //     ['250', '$175', '$0.70'],
+        //     ['500', '$250', '$0.50'],
+        //   ],
+        // },
       ],
     },
     showcaseRight: thumb('/images/prints/PrintsTaille.webp'),

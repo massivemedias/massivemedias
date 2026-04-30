@@ -443,25 +443,27 @@ export const flyerImages = [
 
 export const flyerFaq = {
   fr: [
-    { q: 'Quels formats proposez-vous?', a: 'Flyers A6 (4x6"), A5, lettre (8.5x11"). Cartes postales et cartes d\'affaires. Formats personnalisés disponibles sur demande.' },
+    // HIDE-BUSINESS-CARDS (29 avril 2026) : mentions "cartes d'affaires"
+    // retirees de la FAQ flyers - le produit n'est plus expose au public.
+    { q: 'Quels formats proposez-vous?', a: 'Flyers A6 (4x6"), A5, lettre (8.5x11"). Cartes postales et formats personnalisés disponibles sur demande.' },
     { q: 'Quel papier utilisez-vous?', a: 'Papier premium 300g+ en finition matte ou lustrée. Qualité professionnelle supérieure à l\'impression en ligne standard.' },
-    { q: 'Offrez-vous l\'impression recto-verso?', a: 'Oui! L\'option recto-verso est disponible avec un supplément de 30%. Parfait pour les cartes d\'affaires et flyers avec plus d\'informations.' },
+    { q: 'Offrez-vous l\'impression recto-verso?', a: 'Oui! L\'option recto-verso est disponible avec un supplément de 30%. Parfait pour les flyers avec plus d\'informations.' },
     { q: 'Quel est le délai de production?', a: 'Le délai varie selon la quantité. Service express disponible sur demande.' },
     { q: 'Puis-je faire faire le design aussi?', a: 'Oui, notre service de design graphique est disponible en option. Contactez-nous pour un devis incluant la création graphique.' },
     { q: 'La livraison est-elle disponible?', a: 'Pick-up gratuit au Mile-End. Livraison locale disponible à Montréal. Idéal pour les événements du Plateau et Mile-End.' },
   ],
   en: [
-    { q: 'What formats do you offer?', a: 'A6 (4x6"), A5, letter (8.5x11") flyers. Postcards and business cards. Custom formats available on request.' },
+    { q: 'What formats do you offer?', a: 'A6 (4x6"), A5, letter (8.5x11") flyers. Postcards and custom formats available on request.' },
     { q: 'What paper do you use?', a: 'Premium 300g+ paper in matte or glossy finish. Professional quality superior to standard online printing.' },
-    { q: 'Do you offer double-sided printing?', a: 'Yes! Double-sided option is available with a 30% surcharge. Perfect for business cards and flyers with more information.' },
+    { q: 'Do you offer double-sided printing?', a: 'Yes! Double-sided option is available with a 30% surcharge. Perfect for flyers with more information.' },
     { q: 'What is the production time?', a: 'Production time varies depending on quantity. Express service available on request.' },
     { q: 'Can you design my flyers too?', a: 'Yes, our graphic design service is available as an option. Contact us for a quote including graphic creation.' },
     { q: 'Is delivery available?', a: 'Free pick-up in Mile-End. Local delivery available in Montreal. Ideal for Plateau and Mile-End events.' },
   ],
   es: [
-    { q: '¿Qué formatos ofrecen?', a: 'Flyers A6 (4x6"), A5, carta (8.5x11"). Postales y tarjetas de presentación. Formatos personalizados disponibles bajo pedido.' },
+    { q: '¿Qué formatos ofrecen?', a: 'Flyers A6 (4x6"), A5, carta (8.5x11"). Postales y formatos personalizados disponibles bajo pedido.' },
     { q: '¿Qué papel utilizan?', a: 'Papel premium de 300g+ en acabado mate o brillante. Calidad profesional superior a la impresión en línea estándar.' },
-    { q: '¿Ofrecen impresión a doble cara?', a: '¡Sí! La opción a doble cara está disponible con un suplemento del 30%. Perfecto para tarjetas de presentación y flyers con más información.' },
+    { q: '¿Ofrecen impresión a doble cara?', a: '¡Sí! La opción a doble cara está disponible con un suplemento del 30%. Perfecto para flyers con más información.' },
     { q: '¿Cuál es el plazo de producción?', a: 'El plazo varía según la cantidad. Servicio express disponible bajo pedido.' },
     { q: '¿Pueden hacer el diseño también?', a: 'Sí, nuestro servicio de diseño gráfico está disponible como opción. Contáctanos para un presupuesto que incluya la creación gráfica.' },
     { q: '¿Hay entrega disponible?', a: 'Recogida gratuita en Mile-End. Entrega local disponible en Montreal. Ideal para eventos del Plateau y Mile-End.' },
