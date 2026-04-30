@@ -219,16 +219,16 @@ function ConfiguratorFineArt() {
       {/* ========== COLONNE GAUCHE : Preview + Upload ========== */}
       <div className="md:w-[35%] lg:w-[30%] flex-shrink-0">
         <div className="md:sticky md:top-28 space-y-3">
-          {/* Upload au-dessus du cadre. Mockup Massive comme apercu par
-              defaut tant qu'aucun fichier n'est upload (sert d'exemple
-              visuel d'un print rendu - inspire le client a uploader). */}
+          {/* Upload au-dessus du cadre. Le mockup Massive a ete deplace
+              dans PrintPreviewCarousel (sous la dropzone) - le client voit
+              le mockup en tant qu'apercu de print rendu, pas dans la
+              dropzone elle-meme qui reste un input simple icon+texte. */}
           <FileUpload
             files={uploadedFiles}
             onFilesChange={setUploadedFiles}
             label={tx({ fr: 'Votre fichier', en: 'Your file', es: 'Tu archivo' })}
             compact
             hidePreview
-            defaultPreviewImage="/images/thumbs/mockup-massive-print.webp"
           />
           {/* Carrousel unique: FramePreview + Mockups */}
           <PrintPreviewCarousel
@@ -247,25 +247,9 @@ function ConfiguratorFineArt() {
 
       {/* ========== COLONNE DROITE : Selecteurs ========== */}
       <div className="flex-1 min-w-0 space-y-4">
-        {/* Cadre - checkbox + couleurs (AVANT qualite) */}
-        <div className="flex items-center gap-3">
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input type="checkbox" checked={withFrame} onChange={(e) => setWithFrame(e.target.checked)} className="sr-only" />
-            <div className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-colors ${withFrame ? 'bg-accent border-accent' : 'border-grey-muted/50'}`}>
-              {withFrame && <Check size={10} className="text-white" />}
-            </div>
-            <span className="text-heading text-base">{tx({ fr: 'Cadre', en: 'Frame', es: 'Marco' })}</span>
-            <span className="text-accent text-sm font-semibold">+{fineArtFramePriceByFormat[format] || fineArtFramePrice}$</span>
-          </label>
-          {withFrame && (
-            <div className="flex gap-1.5">
-              <button onClick={() => setFrameColor('black')}
-                className={`w-6 h-6 rounded-full bg-black border-2 transition-all ${frameColor === 'black' ? 'border-accent scale-110' : 'border-grey-muted/30'}`} />
-              <button onClick={() => setFrameColor('white')}
-                className={`w-6 h-6 rounded-full bg-white border-2 transition-all ${frameColor === 'white' ? 'border-accent scale-110' : 'border-grey-muted/30'}`} />
-            </div>
-          )}
-        </div>
+        {/* HIERARCHIE-UI (30 avril 2026) : la case a cocher Cadre a ete
+            deplacee SOUS la section Format (cf. plus bas) pour suivre
+            l'ordre logique de selection : qualite -> format -> cadre. */}
 
         {/* Qualite */}
         <div>
@@ -360,7 +344,28 @@ function ConfiguratorFineArt() {
           </div>
         </div>
 
-        {/* (Cadre deplace avant Qualite) */}
+        {/* Cadre - case a cocher + couleurs. Position : APRES Format pour
+            respecter la hierarchie logique de selection (la presence d'un
+            cadre depend du format choisi - certains formats n'ont pas de
+            prix de cadre). */}
+        <div className="flex items-center gap-3 flex-wrap">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" checked={withFrame} onChange={(e) => setWithFrame(e.target.checked)} className="sr-only" />
+            <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${withFrame ? 'bg-accent border-accent' : 'border-grey-muted/50'}`}>
+              {withFrame && <Check size={12} className="text-white" />}
+            </div>
+            <span className="text-heading text-base font-semibold">{tx({ fr: 'Cadre', en: 'Frame', es: 'Marco' })}</span>
+            <span className="text-accent text-sm font-semibold">+{fineArtFramePriceByFormat[format] || fineArtFramePrice}$</span>
+          </label>
+          {withFrame && (
+            <div className="flex gap-1.5">
+              <button onClick={() => setFrameColor('black')}
+                className={`w-6 h-6 rounded-full bg-black border-2 transition-all ${frameColor === 'black' ? 'border-accent scale-110' : 'border-grey-muted/30'}`} />
+              <button onClick={() => setFrameColor('white')}
+                className={`w-6 h-6 rounded-full bg-white border-2 transition-all ${frameColor === 'white' ? 'border-accent scale-110' : 'border-grey-muted/30'}`} />
+            </div>
+          )}
+        </div>
 
         {/* Notes */}
         <textarea

@@ -277,9 +277,11 @@ function FileUpload({ files = [], onFilesChange, label, maxFiles = 5, compact = 
               </div>
             </div>
           ) : (
-          /* Empty: small drop zone */
+          /* Empty: drop zone simple icon+texte. Texte agrandi (text-base)
+             pour s'aligner sur le reste du configurateur. Aucune animation
+             de fondu/clignotement (mission UI 30 avril 2026). */
           <div
-            className={`rounded-xl text-center cursor-pointer transition-all p-3 min-h-[100px] flex flex-col items-center justify-center shadow-lg ${
+            className={`rounded-xl text-center cursor-pointer transition-colors p-5 min-h-[120px] flex flex-col items-center justify-center shadow-lg gap-2 ${
               dragOver ? 'bg-accent/10 ring-2 ring-accent' : 'bg-black/20 hover:bg-black/25'
             }`}
             onClick={() => inputRef.current?.click()}
@@ -296,14 +298,14 @@ function FileUpload({ files = [], onFilesChange, label, maxFiles = 5, compact = 
               onChange={(e) => { if (e.target.files.length > 0) handleFiles(e.target.files); e.target.value = ''; }}
             />
             {uploading ? (
-              <Loader2 size={20} className="text-accent animate-spin" />
+              <Loader2 size={22} className="text-accent animate-spin" />
             ) : (
               <>
-                <Upload size={18} className="text-grey-muted mb-1" />
-                <span className="text-grey-muted text-[11px] leading-tight">
-                  {tx({ fr: 'Glissez ou cliquez', en: 'Drop or click', es: 'Arrastra o haz clic' })}
+                <Upload size={22} className="text-grey-muted" />
+                <span className="text-heading text-base font-semibold leading-snug">
+                  {tx({ fr: 'Glissez ou cliquez pour téléverser votre fichier', en: 'Drop or click to upload your file', es: 'Arrastra o haz clic para subir tu archivo' })}
                 </span>
-                <span className="text-grey-muted/50 text-[9px] mt-0.5">PNG, JPG, PDF, AI</span>
+                <span className="text-grey-muted/70 text-xs">PNG, JPG, PDF, AI</span>
               </>
             )}
           </div>

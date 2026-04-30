@@ -170,7 +170,26 @@ function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, t
     }
   }, [lightboxOpen, slideIdx, drawMockup]);
 
-  if (!image) return null;
+  // MOCKUP-DEFAULT (30 avril 2026) : tant qu'aucune image n'est uploadee,
+  // on affiche le mockup Massive comme apercu par defaut a la place de
+  // ne rien rendre. Le client voit immediatement un exemple visuel
+  // d'un print rendu, ce qui guide la configuration et inspire l'upload.
+  if (!image) {
+    return (
+      <div className="flex items-center justify-center p-2">
+        <div
+          className="relative w-full max-w-[320px] aspect-[612/792] bg-white shadow-[0_4px_20px_rgba(0,0,0,0.15)] rounded-[2px] overflow-hidden"
+        >
+          <img
+            src="/images/thumbs/mockup-massive-print.webp"
+            alt={tx({ fr: 'Aperçu d\'un print Massive', en: 'Massive print preview', es: 'Vista previa de un print Massive' })}
+            className="absolute inset-0 w-full h-full object-cover"
+            loading="lazy"
+          />
+        </div>
+      </div>
+    );
+  }
 
   // FramePreview inline (slide 0)
   // FIX-SQUARE (23 avril 2026) : si le format est carre (shape === 'square' OU

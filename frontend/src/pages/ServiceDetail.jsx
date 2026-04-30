@@ -363,12 +363,34 @@ function ServiceDetail() {
   const [openFaq, setOpenFaq] = useState(null);
   const configuratorRef = useRef(null);
 
+  // STICKY-CTA (30 avril 2026) : bouton flottant "Commander en ligne" qui
+  // apparait quand le configurateur n'est plus visible (scroll au-dessous).
+  // Utilise IntersectionObserver pour eviter un scroll listener couteux.
+  // Aucune animation de fondu (per brief) : conditional render binaire.
+  const [configVisible, setConfigVisible] = useState(true);
+
   const openConfigurator = useCallback(() => {
     if (configuratorRef.current) {
       const y = configuratorRef.current.getBoundingClientRect().top + window.scrollY - 80;
       window.scrollTo({ top: y, behavior: 'smooth' });
     }
   }, []);
+
+  useEffect(() => {
+    const node = configuratorRef.current;
+    if (!node) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) setConfigVisible(entry.isIntersecting);
+      },
+      // threshold 0.05 : on considere "visible" des qu'un petit bout
+      // (5%) du configurateur est dans le viewport. Evite que le bouton
+      // apparaisse-disparaisse au passage de la limite exacte.
+      { threshold: 0.05 },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [slug]);
 
   // All images for lightbox navigation
   const allImages = useMemo(() => [
@@ -1236,10 +1258,12 @@ function ServiceDetail() {
       </AnimatePresence>
 
       {/* ============ BOUTON STICKY "Commander en ligne" ============
-          Audit UX: le bouton "retour en haut" a ete retire (redondant - les
-          users scrollent naturellement). Il reste seulement WhatsApp (global
-          via MainLayout) + Commander en ligne. */}
-      {hasConfigurator && (
+          STICKY-CTA (30 avril 2026) : conditionne sur !configVisible -
+          le bouton n'apparait QUE quand le configurateur n'est plus dans
+          le viewport (scroll vers le bas), pour ne pas dupliquer le
+          calculateur deja above-the-fold. Conditional render binaire
+          sans animation (per brief : aucun fade ni clignotement). */}
+      {hasConfigurator && !configVisible && (
         <div className="fixed bottom-6 right-20 z-50">
           <button
             onClick={openConfigurator}
