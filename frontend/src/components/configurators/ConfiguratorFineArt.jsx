@@ -221,10 +221,10 @@ function ConfiguratorFineArt() {
         <div className="md:sticky md:top-28">
           {/* FIX-OVERFLOW (1 mai 2026) : conteneurs strictement bornes pour
               eviter tout debordement d'image (mockup, upload, FramePreview).
-              - relative overflow-hidden w-full sur chaque conteneur
-              - mb-8 sur FileUpload pour separation visuelle nette du
-                carrousel d'apercu */}
-          <div className="relative overflow-hidden w-full mb-8">
+              COMPACT (1 mai 2026 v2) : mb-4 (au lieu de mb-8) pour
+              compacter la colonne et l'aligner verticalement avec la
+              colonne de droite qui finit au bouton "Ajouter au panier". */}
+          <div className="relative overflow-hidden w-full mb-4">
             <FileUpload
               files={uploadedFiles}
               onFilesChange={setUploadedFiles}
