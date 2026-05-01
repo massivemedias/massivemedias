@@ -238,7 +238,7 @@ function ConfiguratorFineArt() {
               Massive par defaut). Wrapper overflow-hidden + max-h pour
               garde-fou contre tout asset qui depasserait. */}
           {previewImage && (
-            <div className="relative overflow-hidden w-full max-h-[600px]">
+            <div className="relative overflow-hidden w-full">
               <PrintPreviewCarousel
                 image={previewImage}
                 withFrame={withFrame}

@@ -91,27 +91,79 @@ function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, t
       const ctx = canvas.getContext('2d');
       ctx.drawImage(roomImg, 0, 0, cw, ch);
 
-      // Chroma-key: remplacer le vert par mat + image
+      // Chroma-key: identifier les pixels verts (cadre photo + parasites
+      // dans le decor : plantes, canape vert, etc.).
+      // FIX-CHROMA (1 mai 2026) : algo connected-components pour ne garder
+      // que la plus grande zone verte CONNEXE = le cadre photo. L'ancien
+      // algo prenait le bounding box de TOUS les verts -> bbox enorme
+      // incluant la verdure du decor -> image utilisateur dessinee dans
+      // une zone deformee a la mauvaise position. Constate sur
+      // living_room_white (bbox vert x=8-521 y=230-778) et bedroom_white
+      // (x=0-523 y=174-766) - la moitie de l'image au lieu du cadre seul.
       const imageData = ctx.getImageData(0, 0, cw, ch);
       const pixels = imageData.data;
+      const totalPx = cw * ch;
+      const isGreen = new Uint8Array(totalPx);
+      for (let i = 0; i < totalPx; i++) {
+        const off = i * 4;
+        const r = pixels[off], g = pixels[off + 1], b = pixels[off + 2];
+        if (g > 100 && g > r * 1.3 && g > b * 1.3) isGreen[i] = 1;
+      }
+
+      // Flood-fill : assigner un id de composante a chaque pixel vert,
+      // tracker la taille + bbox de chaque composante, garder la plus
+      // grande comme cadre photo.
+      const compId = new Uint16Array(totalPx);
+      let nextId = 1;
+      let bestId = 0, bestSize = 0;
       let minX = cw, minY = ch, maxX = 0, maxY = 0;
-      for (let y = 0; y < ch; y++) {
-        for (let x = 0; x < cw; x++) {
-          const i = (y * cw + x) * 4;
-          const r = pixels[i], g = pixels[i + 1], b = pixels[i + 2];
-          if (g > 100 && g > r * 1.3 && g > b * 1.3) {
-            if (x < minX) minX = x;
-            if (x > maxX) maxX = x;
-            if (y < minY) minY = y;
-            if (y > maxY) maxY = y;
-            pixels[i] = MAT_COLOR.r;
-            pixels[i + 1] = MAT_COLOR.g;
-            pixels[i + 2] = MAT_COLOR.b;
-          }
+      const stack = [];
+      for (let i = 0; i < totalPx; i++) {
+        if (!isGreen[i] || compId[i]) continue;
+        // BFS iteratif (stack array, pas de recursion -> pas d'overflow)
+        stack.length = 0;
+        stack.push(i);
+        compId[i] = nextId;
+        let size = 0;
+        let cMinX = cw, cMaxX = 0, cMinY = ch, cMaxY = 0;
+        while (stack.length) {
+          const idx = stack.pop();
+          const x = idx % cw;
+          const y = (idx / cw) | 0;
+          size++;
+          if (x < cMinX) cMinX = x;
+          if (x > cMaxX) cMaxX = x;
+          if (y < cMinY) cMinY = y;
+          if (y > cMaxY) cMaxY = y;
+          // 4 voisins
+          if (x > 0 && isGreen[idx - 1] && !compId[idx - 1]) { compId[idx - 1] = nextId; stack.push(idx - 1); }
+          if (x < cw - 1 && isGreen[idx + 1] && !compId[idx + 1]) { compId[idx + 1] = nextId; stack.push(idx + 1); }
+          if (y > 0 && isGreen[idx - cw] && !compId[idx - cw]) { compId[idx - cw] = nextId; stack.push(idx - cw); }
+          if (y < ch - 1 && isGreen[idx + cw] && !compId[idx + cw]) { compId[idx + cw] = nextId; stack.push(idx + cw); }
+        }
+        if (size > bestSize) {
+          bestSize = size;
+          bestId = nextId;
+          minX = cMinX; maxX = cMaxX; minY = cMinY; maxY = cMaxY;
+        }
+        nextId++;
+        if (nextId >= 65535) break; // safe-guard Uint16
+      }
+
+      if (!bestId || maxX <= minX || maxY <= minY) return;
+
+      // Remplacer UNIQUEMENT les pixels du cadre photo (composante elue)
+      // par la couleur du mat. Les autres pixels verts (decor parasite)
+      // restent intacts pour ne pas trahir le mockup.
+      for (let i = 0; i < totalPx; i++) {
+        if (compId[i] === bestId) {
+          const off = i * 4;
+          pixels[off] = MAT_COLOR.r;
+          pixels[off + 1] = MAT_COLOR.g;
+          pixels[off + 2] = MAT_COLOR.b;
         }
       }
       ctx.putImageData(imageData, 0, 0);
-      if (maxX <= minX || maxY <= minY) return;
 
       // Reduire la zone pour eviter les bords verts et le debordement
       const margin = Math.max(4, Math.round(Math.min(maxX - minX, maxY - minY) * 0.02));
