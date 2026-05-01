@@ -231,25 +231,24 @@ function ConfiguratorFineArt() {
             hidePreview
           />
           {/* Carrousel unique: FramePreview + Mockups
-              MOCKUP-DEFAULT (30 avril 2026) : tant qu'aucun fichier n'est
-              upload, on injecte le mockup Massive en tant qu'`image` pour
-              que la FramePreview le rende DANS le cadre du format choisi
-              (avec ou sans cadre, couleur du cadre, etc.) comme s'il
-              s'agissait du print final du client. Le flag isDefaultPreview
-              cache les scenes mockup chambre/salon (le chroma-key ne
-              fonctionne pas sur le PNG brand). */}
-          <PrintPreviewCarousel
-            image={previewImage || '/images/thumbs/mockup-massive-print.webp'}
-            isDefaultPreview={!previewImage}
-            withFrame={withFrame}
-            frameColor={frameColor}
-            format={format}
-            formats={fineArtFormats}
-            tx={tx}
-            isLandscape={isLandscape}
-            isSquare={isSquare}
-            onClickImage={() => previewImage && setLightboxOpen(true)}
-          />
+              REVERT (1 mai 2026) : retire le mockup Massive par defaut. Les
+              tentatives de l'integrer dans le chroma-key salon donnaient un
+              rendu visuellement detache du cadre - mieux vaut ne rien afficher
+              tant que le client n'a pas upload son fichier. La dropzone reste
+              le focus visuel jusqu'a l'upload. */}
+          {previewImage && (
+            <PrintPreviewCarousel
+              image={previewImage}
+              withFrame={withFrame}
+              frameColor={frameColor}
+              format={format}
+              formats={fineArtFormats}
+              tx={tx}
+              isLandscape={isLandscape}
+              isSquare={isSquare}
+              onClickImage={() => setLightboxOpen(true)}
+            />
+          )}
         </div>
       </div>
 

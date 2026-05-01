@@ -20,14 +20,14 @@ const MOCKUP_SCENES = [
 
 const MAT_COLOR = { r: 240, g: 237, b: 232 };
 
-function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, tx, isLandscape, isSquare = false, onClickImage, isDefaultPreview = false }) {
+function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, tx, isLandscape, isSquare = false, onClickImage }) {
   const [slideIdx, setSlideIdx] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
-  // FIX-RACE (30 avril 2026) : on suit le chargement de l'image en STATE
-  // (pas seulement en ref) pour declencher un re-render des useEffect de
-  // dessin canvas une fois l'image prete. Sans ca, le pre-draw initial
-  // partait avec userImgRef.current === null -> canvas vide a vie pour
-  // le placeholder isDefaultPreview qui ne re-trigger jamais slideIdx.
+  // On suit le chargement de l'image en STATE (pas seulement en ref) pour
+  // declencher un re-render des useEffect de dessin canvas une fois l'image
+  // prete. Sans ca, le pre-draw initial partait parfois avec
+  // userImgRef.current === null -> canvas vide jusqu'a la premiere
+  // interaction utilisateur.
   const [userImgLoaded, setUserImgLoaded] = useState(false);
   const canvasRefs = useRef({});
   const lightboxCanvasRef = useRef(null);
@@ -45,38 +45,21 @@ function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, t
   const currentFmtShape = currentFmt?.shape
     || (Math.abs((currentFmt?.w || 1) - (currentFmt?.h || 1)) < 0.5 ? 'square' : 'rect');
   // FIX-SQUARE : on cache les scenes pour les formats carres (cadres
-  // mockup portrait incompatible). Pour isDefaultPreview en revanche on
-  // GARDE les rooms : le mockup PNG est just l'image du print, le
-  // chroma-key remplace le cadre vert dans la photo de salon par cette
-  // image - exactement le but recherche (montrer le print encadre dans
-  // un decor). C'etait l'erreur du commit precedent.
+  // mockup portrait incompatible).
   const hideRoomMockups = currentFmtShape === 'square';
   const visibleScenes = hideRoomMockups ? [] : MOCKUP_SCENES;
   const totalSlides = image ? 1 + visibleScenes.length : 0;
 
-  // MOCKUP-DEFAULT (30 avril 2026 v2) : quand l'image par defaut est
-  // affichee (mockup brand avant upload), on demarre directement sur le
-  // slide "Salon" (living_room = index 1 dans MOCKUP_SCENES, donc slide 2)
-  // pour montrer le print encadre dans un decor zoomable.
-  // L'utilisateur peut quand meme naviguer vers les autres scenes via
-  // les dots.
+  // Si on passe d'un format rect a square pendant la navigation, force le
+  // retour au slide 0 (les scenes ne sont plus rendues).
   useEffect(() => {
-    if (hideRoomMockups && slideIdx > 0) {
-      setSlideIdx(0);
-      return;
-    }
-    if (isDefaultPreview && !hideRoomMockups && slideIdx === 0) {
-      // index living_room dans MOCKUP_SCENES
-      const livingIdx = MOCKUP_SCENES.findIndex(s => s.id === 'living_room');
-      setSlideIdx(livingIdx >= 0 ? livingIdx + 1 : 1);
-    }
+    if (hideRoomMockups && slideIdx > 0) setSlideIdx(0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hideRoomMockups, isDefaultPreview]);
+  }, [hideRoomMockups]);
 
-  // Charger l'image du client (mockup ou upload).
-  // Le state userImgLoaded re-trigger les useEffect de dessin canvas
-  // une fois l'image prete (bug : sans ca, le placeholder isDefaultPreview
-  // partait avec userImgRef vide et restait vide).
+  // Charger l'image du client. Le state userImgLoaded re-trigger les
+  // useEffect de dessin canvas une fois l'image prete (sans ca, le
+  // pre-draw initial pouvait partir avec userImgRef vide).
   useEffect(() => {
     setUserImgLoaded(false);
     userImgRef.current = null;
@@ -93,13 +76,9 @@ function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, t
   // Pas d'auto-play - navigation manuelle seulement
 
   // Dessiner un mockup Canvas (chroma-key).
-  // MOCKUP-DEFAULT (30 avril 2026) : pour le mode placeholder, on force
-  // le cadre blanc (per brief utilisateur) ET on zoome sur la zone du
-  // cadre apres le compositing pour que le client voie clairement le
-  // print encadre, meme avant upload.
   const drawMockup = useCallback((canvas, targetWidth, sceneId) => {
     if (!canvas || !userImgRef.current) return;
-    const fc = isDefaultPreview ? 'white' : (withFrame ? frameColor : 'black');
+    const fc = withFrame ? frameColor : 'black';
     const roomKey = `${sceneId}_${fc}`;
     const roomSrc = `/images/mockups/${roomKey}.webp`;
 
@@ -163,50 +142,6 @@ function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, t
       ctx.clip();
       ctx.drawImage(userImg, sx, sy, sw, sh, printX, printY, printW, printH);
       ctx.restore();
-
-      // MOCKUP-DEFAULT zoom : quand l'image par defaut (mockup brand) est
-      // utilisee, on zoome sur la zone du cadre apres le compositing.
-      // FIX-OVERFLOW (30 avril 2026) : on preserve les dimensions originales
-      // du canvas (cw, ch) et on garde le meme aspect ratio pour le crop.
-      // L'ancienne version changeait canvas.height -> shift de layout +
-      // image qui debordait visuellement quand le client togglait Cadre.
-      if (isDefaultPreview) {
-        const frameCx = (minX + maxX) / 2;
-        const frameCy = (minY + maxY) / 2;
-        const fW = maxX - minX;
-        const fH = maxY - minY;
-        // On veut le cadre a ~60% de la dimension dominante du canvas.
-        // Calcule la zone source en respectant l'aspect ratio canvas (cw/ch)
-        // pour ne PAS changer les dimensions du canvas final.
-        const targetFraction = 0.6;
-        const canvasRatio = cw / ch;
-        const frameRatio = fW / Math.max(fH, 1);
-        let srcW, srcH;
-        if (frameRatio > canvasRatio) {
-          // cadre plus large que le canvas : on contraint sur W
-          srcW = Math.min(cw, fW / targetFraction);
-          srcH = srcW / canvasRatio;
-        } else {
-          // cadre plus haut/etroit : on contraint sur H
-          srcH = Math.min(ch, fH / targetFraction);
-          srcW = srcH * canvasRatio;
-        }
-        // Centre sur le cadre, clamp aux bornes du canvas
-        let srcX = Math.round(frameCx - srcW / 2);
-        let srcY = Math.round(frameCy - srcH / 2);
-        srcX = Math.max(0, Math.min(srcX, cw - srcW));
-        srcY = Math.max(0, Math.min(srcY, ch - srcH));
-        try {
-          // Copy + clear + redraw zoomed dans LES MEMES dimensions canvas.
-          // Pas de canvas.width/height mutation -> aucun layout shift cote DOM.
-          const tmp = document.createElement('canvas');
-          tmp.width = cw;
-          tmp.height = ch;
-          tmp.getContext('2d').drawImage(canvas, 0, 0);
-          ctx.clearRect(0, 0, cw, ch);
-          ctx.drawImage(tmp, srcX, srcY, srcW, srcH, 0, 0, cw, ch);
-        } catch (_) { /* best-effort, fallback to non-zoomed render */ }
-      }
     };
 
     if (roomImgCache.current[roomKey]) { doRender(roomImgCache.current[roomKey]); }
@@ -216,7 +151,7 @@ function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, t
       img.onload = () => { roomImgCache.current[roomKey] = img; doRender(img); };
       img.src = roomSrc;
     }
-  }, [withFrame, frameColor, format, formats, isDefaultPreview]);
+  }, [withFrame, frameColor, format, formats]);
 
   // Dessiner le mockup du slide actif quand les options changent
   useEffect(() => {
@@ -250,11 +185,6 @@ function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, t
     }
   }, [lightboxOpen, slideIdx, userImgLoaded, drawMockup]);
 
-  // MOCKUP-DEFAULT : la fallback "no image" est traitee plus haut via
-  // le prop isDefaultPreview - le parent passe le mockup Massive en tant
-  // qu'image et on rend la FramePreview standard (avec cadre / format /
-  // couleur) comme si c'etait l'image du client. Resultat : l'apercu
-  // est tout de suite "un print" et pas une simple miniature plate.
   if (!image) return null;
 
   // FramePreview inline (slide 0)
@@ -311,9 +241,6 @@ function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, t
             `outline-offset: -1px` - contrairement a `border`, outline n'entre
             PAS dans le box-sizing, donc zero decalage. */}
         <div className={slideIdx === 0 ? '' : 'hidden'}>
-          {/* FIX-PADDING (30 avril 2026) : retire le p-2 qui creait un
-              ecart visible entre le bord du wrapper et le cadre du print
-              (l'utilisateur voyait l'image mockup decalee de son cadre). */}
           <div className="flex items-center justify-center cursor-pointer" onClick={onClickImage}>
             <div
               className={`relative transition-all duration-500 ease-out ${renderSquare ? 'aspect-square' : ''}`}
@@ -408,15 +335,9 @@ function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, t
         </div>
 
         {/* Slides 1-4: Mockups Canvas (tous rendus, seul l'actif visible).
-            FIX-DIMENSIONS (30 avril 2026 v2) : aspect-square sur le
-            wrapper (les 4 rooms sont 875x875) + canvas en absolute
-            inset-0 w/h-full + object-contain. Resultat :
-            - Le wrapper RESERVE l'espace au mount (avant que drawMockup
-              ait fini), evitant le flash "petite image taille reelle"
-              avant compositing.
-            - Le canvas remplit toujours le wrapper sans deborder, peu
-              importe les dimensions internes que drawMockup lui assigne.
-            - object-contain preserve l'integrite visuelle (pas de skew). */}
+            Wrapper aspect-square (les 4 rooms sont 875x875) + canvas en
+            absolute inset-0 + object-contain pour reserver l'espace au
+            mount et eviter tout debordement quel que soit le draw. */}
         {visibleScenes.map((s, i) => (
           <div
             key={s.id}
