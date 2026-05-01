@@ -23,6 +23,12 @@ const MAT_COLOR = { r: 240, g: 237, b: 232 };
 function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, tx, isLandscape, isSquare = false, onClickImage, isDefaultPreview = false }) {
   const [slideIdx, setSlideIdx] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  // FIX-RACE (30 avril 2026) : on suit le chargement de l'image en STATE
+  // (pas seulement en ref) pour declencher un re-render des useEffect de
+  // dessin canvas une fois l'image prete. Sans ca, le pre-draw initial
+  // partait avec userImgRef.current === null -> canvas vide a vie pour
+  // le placeholder isDefaultPreview qui ne re-trigger jamais slideIdx.
+  const [userImgLoaded, setUserImgLoaded] = useState(false);
   const canvasRefs = useRef({});
   const lightboxCanvasRef = useRef(null);
   const userImgRef = useRef(null);
@@ -67,12 +73,20 @@ function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, t
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hideRoomMockups, isDefaultPreview]);
 
-  // Charger l'image du client
+  // Charger l'image du client (mockup ou upload).
+  // Le state userImgLoaded re-trigger les useEffect de dessin canvas
+  // une fois l'image prete (bug : sans ca, le placeholder isDefaultPreview
+  // partait avec userImgRef vide et restait vide).
   useEffect(() => {
+    setUserImgLoaded(false);
+    userImgRef.current = null;
     if (!image) return;
     const img = new Image();
     img.crossOrigin = 'anonymous';
-    img.onload = () => { userImgRef.current = img; };
+    img.onload = () => {
+      userImgRef.current = img;
+      setUserImgLoaded(true);
+    };
     img.src = image;
   }, [image]);
 
@@ -151,41 +165,46 @@ function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, t
       ctx.restore();
 
       // MOCKUP-DEFAULT zoom : quand l'image par defaut (mockup brand) est
-      // utilisee, on zoome sur la zone du cadre apres le compositing pour
-      // que le client voie clairement le print encadre. On crop autour du
-      // centre du cadre avec une marge de ~50% de la diagonale du cadre,
-      // puis on rescale a la taille canvas d'origine.
+      // utilisee, on zoome sur la zone du cadre apres le compositing.
+      // FIX-OVERFLOW (30 avril 2026) : on preserve les dimensions originales
+      // du canvas (cw, ch) et on garde le meme aspect ratio pour le crop.
+      // L'ancienne version changeait canvas.height -> shift de layout +
+      // image qui debordait visuellement quand le client togglait Cadre.
       if (isDefaultPreview) {
         const frameCx = (minX + maxX) / 2;
         const frameCy = (minY + maxY) / 2;
         const fW = maxX - minX;
         const fH = maxY - minY;
-        // Zone de zoom : on garde 1.6x la taille du cadre pour montrer
-        // un peu de mur autour mais cadrer franchement sur la pose.
-        const zoomFactor = 1.6;
-        const zW = Math.min(cw, fW * zoomFactor);
-        const zH = Math.min(ch, fH * zoomFactor);
-        let zX = Math.round(frameCx - zW / 2);
-        let zY = Math.round(frameCy - zH / 2);
-        // Clamp dans les bornes du canvas pour eviter les bords noirs
-        zX = Math.max(0, Math.min(zX, cw - zW));
-        zY = Math.max(0, Math.min(zY, ch - zH));
-        // On copie le canvas actuel, on resize a une nouvelle dimension
-        // qui garde le ratio du crop, puis on redessine la zone zoomee.
+        // On veut le cadre a ~60% de la dimension dominante du canvas.
+        // Calcule la zone source en respectant l'aspect ratio canvas (cw/ch)
+        // pour ne PAS changer les dimensions du canvas final.
+        const targetFraction = 0.6;
+        const canvasRatio = cw / ch;
+        const frameRatio = fW / Math.max(fH, 1);
+        let srcW, srcH;
+        if (frameRatio > canvasRatio) {
+          // cadre plus large que le canvas : on contraint sur W
+          srcW = Math.min(cw, fW / targetFraction);
+          srcH = srcW / canvasRatio;
+        } else {
+          // cadre plus haut/etroit : on contraint sur H
+          srcH = Math.min(ch, fH / targetFraction);
+          srcW = srcH * canvasRatio;
+        }
+        // Centre sur le cadre, clamp aux bornes du canvas
+        let srcX = Math.round(frameCx - srcW / 2);
+        let srcY = Math.round(frameCy - srcH / 2);
+        srcX = Math.max(0, Math.min(srcX, cw - srcW));
+        srcY = Math.max(0, Math.min(srcY, ch - srcH));
         try {
+          // Copy + clear + redraw zoomed dans LES MEMES dimensions canvas.
+          // Pas de canvas.width/height mutation -> aucun layout shift cote DOM.
           const tmp = document.createElement('canvas');
           tmp.width = cw;
           tmp.height = ch;
           tmp.getContext('2d').drawImage(canvas, 0, 0);
-          // Le canvas final garde sa taille mais affiche uniquement la
-          // zone zoomee, scaled-up.
-          const zRatio = zH / zW;
-          const newCw = cw;
-          const newCh = Math.round(newCw * zRatio);
-          canvas.width = newCw;
-          canvas.height = newCh;
-          ctx.clearRect(0, 0, newCw, newCh);
-          ctx.drawImage(tmp, zX, zY, zW, zH, 0, 0, newCw, newCh);
+          ctx.clearRect(0, 0, cw, ch);
+          ctx.drawImage(tmp, srcX, srcY, srcW, srcH, 0, 0, cw, ch);
         } catch (_) { /* best-effort, fallback to non-zoomed render */ }
       }
     };
@@ -201,7 +220,7 @@ function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, t
 
   // Dessiner le mockup du slide actif quand les options changent
   useEffect(() => {
-    if (!image || !userImgRef.current || slideIdx === 0) return;
+    if (!image || !userImgLoaded || slideIdx === 0) return;
     if (hideRoomMockups) return; // format carre : pas de rendu de scene
     const sceneId = visibleScenes[slideIdx - 1]?.id;
     if (!sceneId) return;
@@ -210,26 +229,26 @@ function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, t
       if (canvas) drawMockup(canvas, 600, sceneId);
     }, 100);
     return () => clearTimeout(timer);
-  }, [image, frameColor, withFrame, slideIdx, drawMockup]);
+  }, [image, userImgLoaded, frameColor, withFrame, slideIdx, drawMockup]);
 
   // Pre-dessiner tous les mockups au chargement initial
   useEffect(() => {
-    if (!image || !userImgRef.current) return;
+    if (!image || !userImgLoaded) return;
     const timer = setTimeout(() => {
       visibleScenes.forEach(s => {
         const canvas = canvasRefs.current[s.id];
         if (canvas) drawMockup(canvas, 600, s.id);
       });
-    }, 500);
+    }, 100);
     return () => clearTimeout(timer);
-  }, [image, drawMockup]);
+  }, [image, userImgLoaded, drawMockup]);
 
   // Lightbox mockup
   useEffect(() => {
-    if (lightboxOpen && slideIdx > 0 && lightboxCanvasRef.current && userImgRef.current) {
+    if (lightboxOpen && slideIdx > 0 && lightboxCanvasRef.current && userImgLoaded) {
       drawMockup(lightboxCanvasRef.current, 1400, visibleScenes[slideIdx - 1].id);
     }
-  }, [lightboxOpen, slideIdx, drawMockup]);
+  }, [lightboxOpen, slideIdx, userImgLoaded, drawMockup]);
 
   // MOCKUP-DEFAULT : la fallback "no image" est traitee plus haut via
   // le prop isDefaultPreview - le parent passe le mockup Massive en tant
@@ -385,14 +404,22 @@ function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, t
           </div>
         </div>
 
-        {/* Slides 1-4: Mockups Canvas (tous rendus, seul l'actif visible) */}
+        {/* Slides 1-4: Mockups Canvas (tous rendus, seul l'actif visible).
+            FIX-OVERFLOW (30 avril 2026) : chaque canvas est wrap dans un
+            div avec overflow-hidden + block + max-w-full pour eviter
+            tout debordement visuel meme si la dimension intrinseque du
+            canvas change entre deux scenes (ratio different par room). */}
         {visibleScenes.map((s, i) => (
-          <canvas
+          <div
             key={s.id}
-            ref={el => { canvasRefs.current[s.id] = el; }}
-            className={`w-full cursor-pointer ${slideIdx === i + 1 ? '' : 'hidden'}`}
-            onClick={() => setLightboxOpen(true)}
-          />
+            className={`relative w-full overflow-hidden ${slideIdx === i + 1 ? '' : 'hidden'}`}
+          >
+            <canvas
+              ref={el => { canvasRefs.current[s.id] = el; }}
+              className="block w-full h-auto max-w-full cursor-pointer"
+              onClick={() => setLightboxOpen(true)}
+            />
+          </div>
         ))}
       </div>
 
