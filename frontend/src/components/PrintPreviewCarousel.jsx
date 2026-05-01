@@ -38,21 +38,34 @@ function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, t
   const currentFmt = formats?.find(f => f.id === format);
   const currentFmtShape = currentFmt?.shape
     || (Math.abs((currentFmt?.w || 1) - (currentFmt?.h || 1)) < 0.5 ? 'square' : 'rect');
-  // MOCKUP-DEFAULT (30 avril 2026) : si on affiche l'image par defaut
-  // (mockup Massive avant upload), on cache aussi les scenes mockup
-  // (chambre/salon/bureau/zen) car le chroma-key ne fonctionne pas sur
-  // le PNG brand (fond purple, pas vert). Seul slide 0 (FramePreview
-  // CSS) reste actif - le mockup est rendu dans un cadre simule.
-  const hideRoomMockups = currentFmtShape === 'square' || isDefaultPreview;
+  // FIX-SQUARE : on cache les scenes pour les formats carres (cadres
+  // mockup portrait incompatible). Pour isDefaultPreview en revanche on
+  // GARDE les rooms : le mockup PNG est just l'image du print, le
+  // chroma-key remplace le cadre vert dans la photo de salon par cette
+  // image - exactement le but recherche (montrer le print encadre dans
+  // un decor). C'etait l'erreur du commit precedent.
+  const hideRoomMockups = currentFmtShape === 'square';
   const visibleScenes = hideRoomMockups ? [] : MOCKUP_SCENES;
   const totalSlides = image ? 1 + visibleScenes.length : 0;
 
-  // Si l'admin etait sur un slide room et bascule vers un format carre,
-  // on remet le carrousel sur le slide 0 (FramePreview) pour ne pas afficher
-  // un slide vide ou obsolete.
+  // MOCKUP-DEFAULT (30 avril 2026 v2) : quand l'image par defaut est
+  // affichee (mockup brand avant upload), on demarre directement sur le
+  // slide "Salon" (living_room = index 1 dans MOCKUP_SCENES, donc slide 2)
+  // pour montrer le print encadre dans un decor zoomable.
+  // L'utilisateur peut quand meme naviguer vers les autres scenes via
+  // les dots.
   useEffect(() => {
-    if (hideRoomMockups && slideIdx > 0) setSlideIdx(0);
-  }, [hideRoomMockups, slideIdx]);
+    if (hideRoomMockups && slideIdx > 0) {
+      setSlideIdx(0);
+      return;
+    }
+    if (isDefaultPreview && !hideRoomMockups && slideIdx === 0) {
+      // index living_room dans MOCKUP_SCENES
+      const livingIdx = MOCKUP_SCENES.findIndex(s => s.id === 'living_room');
+      setSlideIdx(livingIdx >= 0 ? livingIdx + 1 : 1);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hideRoomMockups, isDefaultPreview]);
 
   // Charger l'image du client
   useEffect(() => {
@@ -65,10 +78,14 @@ function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, t
 
   // Pas d'auto-play - navigation manuelle seulement
 
-  // Dessiner un mockup Canvas (chroma-key)
+  // Dessiner un mockup Canvas (chroma-key).
+  // MOCKUP-DEFAULT (30 avril 2026) : pour le mode placeholder, on force
+  // le cadre blanc (per brief utilisateur) ET on zoome sur la zone du
+  // cadre apres le compositing pour que le client voie clairement le
+  // print encadre, meme avant upload.
   const drawMockup = useCallback((canvas, targetWidth, sceneId) => {
     if (!canvas || !userImgRef.current) return;
-    const fc = withFrame ? frameColor : 'black';
+    const fc = isDefaultPreview ? 'white' : (withFrame ? frameColor : 'black');
     const roomKey = `${sceneId}_${fc}`;
     const roomSrc = `/images/mockups/${roomKey}.webp`;
 
@@ -132,6 +149,45 @@ function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, t
       ctx.clip();
       ctx.drawImage(userImg, sx, sy, sw, sh, printX, printY, printW, printH);
       ctx.restore();
+
+      // MOCKUP-DEFAULT zoom : quand l'image par defaut (mockup brand) est
+      // utilisee, on zoome sur la zone du cadre apres le compositing pour
+      // que le client voie clairement le print encadre. On crop autour du
+      // centre du cadre avec une marge de ~50% de la diagonale du cadre,
+      // puis on rescale a la taille canvas d'origine.
+      if (isDefaultPreview) {
+        const frameCx = (minX + maxX) / 2;
+        const frameCy = (minY + maxY) / 2;
+        const fW = maxX - minX;
+        const fH = maxY - minY;
+        // Zone de zoom : on garde 1.6x la taille du cadre pour montrer
+        // un peu de mur autour mais cadrer franchement sur la pose.
+        const zoomFactor = 1.6;
+        const zW = Math.min(cw, fW * zoomFactor);
+        const zH = Math.min(ch, fH * zoomFactor);
+        let zX = Math.round(frameCx - zW / 2);
+        let zY = Math.round(frameCy - zH / 2);
+        // Clamp dans les bornes du canvas pour eviter les bords noirs
+        zX = Math.max(0, Math.min(zX, cw - zW));
+        zY = Math.max(0, Math.min(zY, ch - zH));
+        // On copie le canvas actuel, on resize a une nouvelle dimension
+        // qui garde le ratio du crop, puis on redessine la zone zoomee.
+        try {
+          const tmp = document.createElement('canvas');
+          tmp.width = cw;
+          tmp.height = ch;
+          tmp.getContext('2d').drawImage(canvas, 0, 0);
+          // Le canvas final garde sa taille mais affiche uniquement la
+          // zone zoomee, scaled-up.
+          const zRatio = zH / zW;
+          const newCw = cw;
+          const newCh = Math.round(newCw * zRatio);
+          canvas.width = newCw;
+          canvas.height = newCh;
+          ctx.clearRect(0, 0, newCw, newCh);
+          ctx.drawImage(tmp, zX, zY, zW, zH, 0, 0, newCw, newCh);
+        } catch (_) { /* best-effort, fallback to non-zoomed render */ }
+      }
     };
 
     if (roomImgCache.current[roomKey]) { doRender(roomImgCache.current[roomKey]); }
@@ -141,7 +197,7 @@ function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, t
       img.onload = () => { roomImgCache.current[roomKey] = img; doRender(img); };
       img.src = roomSrc;
     }
-  }, [withFrame, frameColor, format, formats]);
+  }, [withFrame, frameColor, format, formats, isDefaultPreview]);
 
   // Dessiner le mockup du slide actif quand les options changent
   useEffect(() => {
