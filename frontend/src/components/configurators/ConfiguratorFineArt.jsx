@@ -215,16 +215,15 @@ function ConfiguratorFineArt() {
   };
 
   return (
-    <div className="flex flex-col md:flex-row gap-4 md:gap-5">
+    <div className="flex flex-col md:flex-row md:items-start gap-4 md:gap-5">
       {/* ========== COLONNE GAUCHE : Preview + Upload ========== */}
       <div className="md:w-[35%] lg:w-[30%] flex-shrink-0">
         <div className="md:sticky md:top-28">
-          {/* FIX-OVERFLOW (1 mai 2026) : conteneurs strictement bornes pour
-              eviter tout debordement d'image (mockup, upload, FramePreview).
-              COMPACT (1 mai 2026 v2) : mb-4 (au lieu de mb-8) pour
-              compacter la colonne et l'aligner verticalement avec la
-              colonne de droite qui finit au bouton "Ajouter au panier". */}
-          <div className="relative overflow-hidden w-full mb-4">
+          {/* FIX-OVERFLOW (1 mai 2026) : conteneurs strictement bornes.
+              COMPACT v3 (1 mai 2026) : mb-3 entre dropzone et apercu pour
+              maximiser le compactage de la colonne gauche et eliminer le
+              gap visible a droite quand la colonne droite est plus haute. */}
+          <div className="relative overflow-hidden w-full mb-3">
             <FileUpload
               files={uploadedFiles}
               onFilesChange={setUploadedFiles}
@@ -235,12 +234,15 @@ function ConfiguratorFineArt() {
           </div>
           {/* Apercu (mission UX 1 mai 2026) :
               - Pas d'upload : image statique par defaut (mockup brand
-                Massive print) plate, juste un visuel d'inspiration. Pas
-                de carrousel, pas de chroma-key, rien qui peut foirer.
+                Massive print) plate, juste un visuel d'inspiration.
               - Upload present : carrousel complet (FramePreview CSS +
-                slides mockups environnementaux filtrees par orientation). */}
+                slides mockups environnementaux filtres par orientation).
+              COMPACT v3 (1 mai 2026) : max-h-[400px] sur les deux
+              wrappers + object-contain pour borner la hauteur de
+              l'apercu et eviter qu'il pousse la colonne plus bas que
+              la colonne de droite. */}
           {previewImage ? (
-            <div className="relative overflow-hidden w-full">
+            <div className="relative overflow-hidden w-full max-h-[400px] flex items-center justify-center">
               <PrintPreviewCarousel
                 image={previewImage}
                 withFrame={withFrame}
@@ -254,11 +256,11 @@ function ConfiguratorFineArt() {
               />
             </div>
           ) : (
-            <div className="relative overflow-hidden w-full rounded-xl shadow-lg bg-black/10">
+            <div className="relative overflow-hidden w-full max-h-[400px] rounded-xl shadow-lg bg-black/10 flex items-center justify-center">
               <img
                 src="/images/thumbs/mockup-massive-print.webp"
                 alt=""
-                className="w-full h-auto object-contain block"
+                className="w-full h-full max-h-[400px] object-contain block"
                 loading="lazy"
               />
             </div>

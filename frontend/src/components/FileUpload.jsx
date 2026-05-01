@@ -229,7 +229,7 @@ function FileUpload({ files = [], onFilesChange, label, maxFiles = 5, compact = 
     return (
       <div>
         {label && (
-          <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-2.5">
+          <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-1.5">
             {label}
           </label>
         )}
@@ -283,7 +283,7 @@ function FileUpload({ files = [], onFilesChange, label, maxFiles = 5, compact = 
              la dropzone elle-meme - le preview a gauche se charge de
              montrer l'aspect du print. */
           <div
-            className={`rounded-xl text-center cursor-pointer transition-colors py-6 px-6 flex flex-col items-center justify-center shadow-lg gap-2 ${
+            className={`rounded-xl text-center cursor-pointer transition-colors py-4 px-6 flex flex-col items-center justify-center shadow-lg gap-1.5 ${
               dragOver ? 'bg-accent/10 ring-2 ring-accent' : 'bg-black/20 hover:bg-black/25'
             }`}
             onClick={() => inputRef.current?.click()}
@@ -301,18 +301,18 @@ function FileUpload({ files = [], onFilesChange, label, maxFiles = 5, compact = 
             />
             {uploading ? (
               <>
-                <Loader2 size={28} className="text-accent animate-spin" />
-                <span className="text-heading text-base font-semibold leading-snug">
+                <Loader2 size={22} className="text-accent animate-spin" />
+                <span className="text-heading text-sm font-semibold leading-snug">
                   {uploadStatus || tx({ fr: 'Upload en cours...', en: 'Uploading...', es: 'Subiendo...' })}
                 </span>
               </>
             ) : (
               <>
-                <Upload size={28} className="text-grey-muted" />
-                <span className="text-heading text-base font-semibold leading-snug">
+                <Upload size={22} className="text-grey-muted" />
+                <span className="text-heading text-sm font-semibold leading-snug">
                   {tx({ fr: 'Glissez ou cliquez pour téléverser votre fichier', en: 'Drop or click to upload your file', es: 'Arrastra o haz clic para subir tu archivo' })}
                 </span>
-                <span className="text-grey-muted/80 text-xs">PNG, JPG, TIFF, PDF, AI</span>
+                <span className="text-grey-muted/80 text-[10px]">PNG, JPG, TIFF, PDF, AI</span>
               </>
             )}
           </div>
