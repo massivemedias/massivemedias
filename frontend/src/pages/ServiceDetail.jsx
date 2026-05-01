@@ -462,6 +462,14 @@ function ServiceDetail() {
 
   return (
     <>
+      {/* DEBUG-MARKER (1 mai 2026) : marqueur visuel pour confirmer
+          le deploiement des derniers commits sur prod. A retirer apres
+          validation par l'utilisateur. */}
+      {slug === 'prints' && (
+        <div className="bg-yellow-400 text-black text-center py-2 text-2xl font-bold uppercase tracking-widest">
+          test
+        </div>
+      )}
       <SEO
         title={service.seo.title}
         description={service.seo.description}
