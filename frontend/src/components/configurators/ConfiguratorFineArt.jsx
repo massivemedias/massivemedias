@@ -233,11 +233,13 @@ function ConfiguratorFineArt() {
               hidePreview
             />
           </div>
-          {/* Carrousel unique: FramePreview + Mockups (rendu uniquement
-              apres upload - cf. revert du 1 mai 2026 retirant le mockup
-              Massive par defaut). Wrapper overflow-hidden + max-h pour
-              garde-fou contre tout asset qui depasserait. */}
-          {previewImage && (
+          {/* Apercu (mission UX 1 mai 2026) :
+              - Pas d'upload : image statique par defaut (mockup brand
+                Massive print) plate, juste un visuel d'inspiration. Pas
+                de carrousel, pas de chroma-key, rien qui peut foirer.
+              - Upload present : carrousel complet (FramePreview CSS +
+                slides mockups environnementaux filtrees par orientation). */}
+          {previewImage ? (
             <div className="relative overflow-hidden w-full">
               <PrintPreviewCarousel
                 image={previewImage}
@@ -249,6 +251,15 @@ function ConfiguratorFineArt() {
                 isLandscape={isLandscape}
                 isSquare={isSquare}
                 onClickImage={() => setLightboxOpen(true)}
+              />
+            </div>
+          ) : (
+            <div className="relative overflow-hidden w-full rounded-xl shadow-lg bg-black/10">
+              <img
+                src="/images/thumbs/mockup-massive-print.webp"
+                alt=""
+                className="w-full h-auto object-contain block"
+                loading="lazy"
               />
             </div>
           )}

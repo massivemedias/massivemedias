@@ -277,11 +277,13 @@ function FileUpload({ files = [], onFilesChange, label, maxFiles = 5, compact = 
               </div>
             </div>
           ) : (
-          /* Empty: drop zone simple icon+texte. Texte agrandi (text-base)
-             pour s'aligner sur le reste du configurateur. Aucune animation
-             de fondu/clignotement (mission UI 30 avril 2026). */
+          /* Empty state genereux (mission UX 1 mai 2026) : grande zone
+             drag&drop avec py-12, font-semibold text-lg pour incitation
+             claire. Plus aucune trace d'image preview prechargee dans
+             la dropzone elle-meme - le preview a gauche se charge de
+             montrer l'aspect du print. */
           <div
-            className={`rounded-xl text-center cursor-pointer transition-colors p-5 min-h-[120px] flex flex-col items-center justify-center shadow-lg gap-2 ${
+            className={`rounded-xl text-center cursor-pointer transition-colors py-12 px-6 flex flex-col items-center justify-center shadow-lg gap-3 ${
               dragOver ? 'bg-accent/10 ring-2 ring-accent' : 'bg-black/20 hover:bg-black/25'
             }`}
             onClick={() => inputRef.current?.click()}
@@ -298,20 +300,30 @@ function FileUpload({ files = [], onFilesChange, label, maxFiles = 5, compact = 
               onChange={(e) => { if (e.target.files.length > 0) handleFiles(e.target.files); e.target.value = ''; }}
             />
             {uploading ? (
-              <Loader2 size={22} className="text-accent animate-spin" />
+              <>
+                <Loader2 size={36} className="text-accent animate-spin" />
+                <span className="text-heading text-lg font-semibold leading-snug">
+                  {uploadStatus || tx({ fr: 'Upload en cours...', en: 'Uploading...', es: 'Subiendo...' })}
+                </span>
+              </>
             ) : (
               <>
-                <Upload size={22} className="text-grey-muted" />
-                <span className="text-heading text-base font-semibold leading-snug">
+                <Upload size={36} className="text-grey-muted" />
+                <span className="text-heading text-lg font-semibold leading-snug">
                   {tx({ fr: 'Glissez ou cliquez pour téléverser votre fichier', en: 'Drop or click to upload your file', es: 'Arrastra o haz clic para subir tu archivo' })}
                 </span>
-                <span className="text-grey-muted/70 text-xs">PNG, JPG, PDF, AI</span>
+                <span className="text-grey-muted/80 text-sm">PNG, JPG, TIFF, PDF, AI</span>
               </>
             )}
           </div>
           )
         ) : (
-          /* Has files: show previews or just names */
+          /* Has files (mission UX 1 mai 2026) : on masque la grande
+             dropzone, on montre la liste de fichiers (fond violet,
+             nom, poids, X) + un bouton pointille "+ Ajouter" en bas
+             pour remplacer/ajouter. Plus aucune dropzone visible quand
+             un fichier est present - le clic sur "+ Ajouter" ouvre
+             le picker. */
           <div className="space-y-2">
             {files.map((file, i) => {
               const fileKey = file.id || `${file.name}-${i}`;
@@ -327,37 +339,40 @@ function FileUpload({ files = [], onFilesChange, label, maxFiles = 5, compact = 
                       src={file.url}
                       alt=""
                       aria-label={file.name}
-                      className="w-full h-24 object-contain"
+                      className="w-full h-32 object-contain"
                       loading="lazy"
                       onError={() => markBroken(fileKey)}
                     />
-                    <div className="px-2 py-1 flex items-center gap-1 bg-black/30">
-                      <FileText size={10} className="text-accent flex-shrink-0" />
-                      <span className="text-heading text-[10px] truncate flex-1" title={file.name}>{file.name}</span>
+                    <div className="px-3 py-2 flex items-center gap-2 bg-black/40">
+                      <FileText size={14} className="text-accent flex-shrink-0" />
+                      <span className="text-heading text-sm font-medium truncate flex-1" title={file.name}>{file.name}</span>
+                      {file.size && (
+                        <span className="text-grey-muted text-xs flex-shrink-0">{formatSize(file.size)}</span>
+                      )}
                       <button
                         type="button"
                         onClick={() => handleRemove(i)}
                         aria-label={tx({ fr: 'Retirer', en: 'Remove', es: 'Quitar' })}
-                        className="p-0.5 text-grey-muted hover:text-red-400 transition-colors flex-shrink-0"
+                        className="p-1 text-grey-muted hover:text-red-400 transition-colors flex-shrink-0"
                       >
-                        <X size={12} />
+                        <X size={16} />
                       </button>
                     </div>
                   </div>
                 ) : (
-                  <div className="flex items-center gap-2 p-2 rounded-lg bg-glass">
-                    <FileText size={14} className="text-accent flex-shrink-0" />
-                    <span className="text-heading text-[11px] truncate flex-1" title={file.name}>{file.name}</span>
+                  <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-[#2a0050] border border-white/5">
+                    <FileText size={16} className="text-accent flex-shrink-0" />
+                    <span className="text-heading text-sm font-medium truncate flex-1" title={file.name}>{file.name}</span>
                     {file.size && (
-                      <span className="text-grey-muted text-[9px] flex-shrink-0">{formatSize(file.size)}</span>
+                      <span className="text-grey-muted text-xs flex-shrink-0">{formatSize(file.size)}</span>
                     )}
                     <button
                       type="button"
                       onClick={() => handleRemove(i)}
                       aria-label={tx({ fr: 'Retirer', en: 'Remove', es: 'Quitar' })}
-                      className="p-0.5 text-grey-muted hover:text-red-400 transition-colors flex-shrink-0"
+                      className="p-1 text-grey-muted hover:text-red-400 transition-colors flex-shrink-0"
                     >
-                      <X size={12} />
+                      <X size={16} />
                     </button>
                   </div>
                 )}
@@ -368,9 +383,9 @@ function FileUpload({ files = [], onFilesChange, label, maxFiles = 5, compact = 
               <button
                 type="button"
                 onClick={() => inputRef.current?.click()}
-                className="w-full flex items-center justify-center gap-1 py-1.5 rounded-lg border border-dashed border-grey-muted/30 text-grey-muted text-[10px] hover:border-accent hover:text-accent transition-colors"
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-lg border border-dashed border-grey-muted/40 text-grey-muted text-sm font-medium hover:border-accent hover:text-accent hover:bg-accent/5 transition-colors"
               >
-                <Plus size={12} />
+                <Plus size={16} />
                 {tx({ fr: 'Ajouter', en: 'Add more', es: 'Agregar' })}
               </button>
             )}
