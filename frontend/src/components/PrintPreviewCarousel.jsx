@@ -402,17 +402,23 @@ function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, t
         </div>
 
         {/* Slides 1-4: Mockups Canvas (tous rendus, seul l'actif visible).
-            Wrapper aspect-square (les 4 rooms sont 875x875) + canvas en
-            absolute inset-0 + object-contain pour reserver l'espace au
-            mount et eviter tout debordement quel que soit le draw. */}
+            CANVAS-FIT (1 mai 2026) : separation stricte entre la
+            resolution interne du canvas (canvas.width/height assignees
+            en JS dans drawMockup pour la qualite de rendu) et la taille
+            d'affichage CSS (w-full h-auto block). Resultat : le canvas
+            occupe 100% de la largeur du conteneur parent et conserve son
+            ratio natif comme une image statique. Le wrapper est un
+            simple w-full sans aspect-ratio impose - la hauteur s'aligne
+            sur la hauteur naturelle du canvas, identique a l'image
+            mockup pre-upload. */}
         {visibleScenes.map((s, i) => (
           <div
             key={s.id}
-            className={`relative w-full aspect-square overflow-hidden bg-black/10 ${slideIdx === i + 1 ? '' : 'hidden'}`}
+            className={`relative w-full ${slideIdx === i + 1 ? '' : 'hidden'}`}
           >
             <canvas
               ref={el => { canvasRefs.current[s.id] = el; }}
-              className="absolute inset-0 w-full h-full object-contain cursor-pointer"
+              className="w-full h-auto block cursor-pointer"
               onClick={() => setLightboxOpen(true)}
             />
           </div>
