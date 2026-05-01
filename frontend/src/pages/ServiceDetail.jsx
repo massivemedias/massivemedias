@@ -1262,9 +1262,12 @@ function ServiceDetail() {
           le bouton n'apparait QUE quand le configurateur n'est plus dans
           le viewport (scroll vers le bas), pour ne pas dupliquer le
           calculateur deja above-the-fold. Conditional render binaire
-          sans animation (per brief : aucun fade ni clignotement). */}
+          sans animation (per brief : aucun fade ni clignotement).
+          Position right-24 = 96px du bord pour laisser un gap de ~32px
+          avec la pile d'icones flottantes a right-6 (cf MainLayout) -
+          aucun chevauchement meme quand back-to-top est visible. */}
       {hasConfigurator && !configVisible && (
-        <div className="fixed bottom-6 right-20 z-50">
+        <div className="fixed bottom-6 right-24 z-50">
           <button
             onClick={openConfigurator}
             className="btn-primary shadow-lg shadow-accent/20 flex items-center gap-2 py-2.5 px-5 text-sm"
