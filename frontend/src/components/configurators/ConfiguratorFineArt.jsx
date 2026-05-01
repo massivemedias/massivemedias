@@ -218,36 +218,39 @@ function ConfiguratorFineArt() {
     <div className="flex flex-col md:flex-row gap-4 md:gap-5">
       {/* ========== COLONNE GAUCHE : Preview + Upload ========== */}
       <div className="md:w-[35%] lg:w-[30%] flex-shrink-0">
-        <div className="md:sticky md:top-28 space-y-5">
-          {/* Upload au-dessus du cadre. Le mockup Massive a ete deplace
-              dans PrintPreviewCarousel (sous la dropzone) - le client voit
-              le mockup en tant qu'apercu de print rendu, pas dans la
-              dropzone elle-meme qui reste un input simple icon+texte. */}
-          <FileUpload
-            files={uploadedFiles}
-            onFilesChange={setUploadedFiles}
-            label={tx({ fr: 'Votre fichier', en: 'Your file', es: 'Tu archivo' })}
-            compact
-            hidePreview
-          />
-          {/* Carrousel unique: FramePreview + Mockups
-              REVERT (1 mai 2026) : retire le mockup Massive par defaut. Les
-              tentatives de l'integrer dans le chroma-key salon donnaient un
-              rendu visuellement detache du cadre - mieux vaut ne rien afficher
-              tant que le client n'a pas upload son fichier. La dropzone reste
-              le focus visuel jusqu'a l'upload. */}
-          {previewImage && (
-            <PrintPreviewCarousel
-              image={previewImage}
-              withFrame={withFrame}
-              frameColor={frameColor}
-              format={format}
-              formats={fineArtFormats}
-              tx={tx}
-              isLandscape={isLandscape}
-              isSquare={isSquare}
-              onClickImage={() => setLightboxOpen(true)}
+        <div className="md:sticky md:top-28">
+          {/* FIX-OVERFLOW (1 mai 2026) : conteneurs strictement bornes pour
+              eviter tout debordement d'image (mockup, upload, FramePreview).
+              - relative overflow-hidden w-full sur chaque conteneur
+              - mb-8 sur FileUpload pour separation visuelle nette du
+                carrousel d'apercu */}
+          <div className="relative overflow-hidden w-full mb-8">
+            <FileUpload
+              files={uploadedFiles}
+              onFilesChange={setUploadedFiles}
+              label={tx({ fr: 'Votre fichier', en: 'Your file', es: 'Tu archivo' })}
+              compact
+              hidePreview
             />
+          </div>
+          {/* Carrousel unique: FramePreview + Mockups (rendu uniquement
+              apres upload - cf. revert du 1 mai 2026 retirant le mockup
+              Massive par defaut). Wrapper overflow-hidden + max-h pour
+              garde-fou contre tout asset qui depasserait. */}
+          {previewImage && (
+            <div className="relative overflow-hidden w-full max-h-[600px]">
+              <PrintPreviewCarousel
+                image={previewImage}
+                withFrame={withFrame}
+                frameColor={frameColor}
+                format={format}
+                formats={fineArtFormats}
+                tx={tx}
+                isLandscape={isLandscape}
+                isSquare={isSquare}
+                onClickImage={() => setLightboxOpen(true)}
+              />
+            </div>
           )}
         </div>
       </div>

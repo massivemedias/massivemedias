@@ -240,7 +240,7 @@ function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, t
             La couleur du cadre blanc utilise `outline: 1px solid` avec
             `outline-offset: -1px` - contrairement a `border`, outline n'entre
             PAS dans le box-sizing, donc zero decalage. */}
-        <div className={slideIdx === 0 ? '' : 'hidden'}>
+        <div className={`relative overflow-hidden w-full ${slideIdx === 0 ? '' : 'hidden'}`}>
           <div className="flex items-center justify-center cursor-pointer" onClick={onClickImage}>
             <div
               className={`relative transition-all duration-500 ease-out ${renderSquare ? 'aspect-square' : ''}`}
