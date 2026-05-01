@@ -218,7 +218,7 @@ function ConfiguratorFineArt() {
     <div className="flex flex-col md:flex-row gap-4 md:gap-5">
       {/* ========== COLONNE GAUCHE : Preview + Upload ========== */}
       <div className="md:w-[35%] lg:w-[30%] flex-shrink-0">
-        <div className="md:sticky md:top-28 space-y-3">
+        <div className="md:sticky md:top-28 space-y-5">
           {/* Upload au-dessus du cadre. Le mockup Massive a ete deplace
               dans PrintPreviewCarousel (sous la dropzone) - le client voit
               le mockup en tant qu'apercu de print rendu, pas dans la

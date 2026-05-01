@@ -311,7 +311,10 @@ function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, t
             `outline-offset: -1px` - contrairement a `border`, outline n'entre
             PAS dans le box-sizing, donc zero decalage. */}
         <div className={slideIdx === 0 ? '' : 'hidden'}>
-          <div className="flex items-center justify-center p-2 cursor-pointer" onClick={onClickImage}>
+          {/* FIX-PADDING (30 avril 2026) : retire le p-2 qui creait un
+              ecart visible entre le bord du wrapper et le cadre du print
+              (l'utilisateur voyait l'image mockup decalee de son cadre). */}
+          <div className="flex items-center justify-center cursor-pointer" onClick={onClickImage}>
             <div
               className={`relative transition-all duration-500 ease-out ${renderSquare ? 'aspect-square' : ''}`}
               style={{
@@ -405,18 +408,23 @@ function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, t
         </div>
 
         {/* Slides 1-4: Mockups Canvas (tous rendus, seul l'actif visible).
-            FIX-OVERFLOW (30 avril 2026) : chaque canvas est wrap dans un
-            div avec overflow-hidden + block + max-w-full pour eviter
-            tout debordement visuel meme si la dimension intrinseque du
-            canvas change entre deux scenes (ratio different par room). */}
+            FIX-DIMENSIONS (30 avril 2026 v2) : aspect-square sur le
+            wrapper (les 4 rooms sont 875x875) + canvas en absolute
+            inset-0 w/h-full + object-contain. Resultat :
+            - Le wrapper RESERVE l'espace au mount (avant que drawMockup
+              ait fini), evitant le flash "petite image taille reelle"
+              avant compositing.
+            - Le canvas remplit toujours le wrapper sans deborder, peu
+              importe les dimensions internes que drawMockup lui assigne.
+            - object-contain preserve l'integrite visuelle (pas de skew). */}
         {visibleScenes.map((s, i) => (
           <div
             key={s.id}
-            className={`relative w-full overflow-hidden ${slideIdx === i + 1 ? '' : 'hidden'}`}
+            className={`relative w-full aspect-square overflow-hidden bg-black/10 ${slideIdx === i + 1 ? '' : 'hidden'}`}
           >
             <canvas
               ref={el => { canvasRefs.current[s.id] = el; }}
-              className="block w-full h-auto max-w-full cursor-pointer"
+              className="absolute inset-0 w-full h-full object-contain cursor-pointer"
               onClick={() => setLightboxOpen(true)}
             />
           </div>
