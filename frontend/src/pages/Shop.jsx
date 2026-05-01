@@ -239,7 +239,7 @@ function Shop() {
                 className="mb-16"
               >
                 <Link to={`/artistes/${artist.slug}`} className="group flex items-center gap-4 mb-6 hover:opacity-80 transition-opacity">
-                  <div className="w-12 h-12 md:w-14 md:h-14 rounded-full overflow-hidden ring-2 ring-purple-main/20 group-hover:ring-accent/60 transition-all flex-shrink-0">
+                  <div className="w-12 h-12 md:w-14 md:h-14 rounded-full overflow-hidden transition-all flex-shrink-0">
                     <img src={artist.avatar || artist.heroImage} alt={artist.name} className="w-full h-full object-cover" loading="lazy" />
                   </div>
                   <div>
@@ -443,7 +443,7 @@ function Shop() {
                               <img
                                 src={artist.avatar}
                                 alt={`${artist.name} - Artiste Massive`}
-                                className="w-12 h-12 rounded-full ring-2 ring-white/20 object-cover mb-2"
+                                className="w-12 h-12 rounded-full object-cover mb-2"
                               />
                               <h3 className="text-lg font-heading font-bold text-white group-hover:text-accent transition-colors leading-tight">
                                 {artist.name}

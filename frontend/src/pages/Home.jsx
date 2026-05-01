@@ -297,7 +297,7 @@ function Home() {
               viewport={{ once: true }}
             >
               <Link to={`/artistes/${artist.slug}`} className="flex flex-col items-center gap-2 group">
-                <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-purple-main/30 group-hover:border-accent/70 transition-colors duration-300">
+                <div className="w-20 h-20 rounded-full overflow-hidden">
                   <img src={artist.avatar} alt={artist.name} className="w-full h-full object-cover" loading="lazy" />
                 </div>
                 <span className="text-sm font-heading font-bold text-heading">{artist.name}</span>

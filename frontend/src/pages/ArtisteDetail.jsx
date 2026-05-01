@@ -497,7 +497,7 @@ function ArtisteDetail({ subdomainSlug }) {
                   <img loading="lazy"
                     src={artist.avatar}
                     alt={artist.name}
-                    className="w-16 h-16 rounded-full object-cover border-2 border-accent/40"
+                    className="w-16 h-16 rounded-full object-cover"
                   />
                 ) : (
                   <div className="p-4 rounded-xl icon-bg-blur">
