@@ -10,12 +10,17 @@ import { X } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 
 // Import du FramePreview depuis ConfiguratorFineArt (on le duplique ici pour l'isoler)
-// Les scenes mockup
+// Les scenes mockup avec l'orientation du cadre photo present dans chaque
+// image (mesuree au pixel sur les .webp 875x875 - voir audit du 1 mai 2026).
+// On ne presente au client que les scenes dont l'orientation du cadre
+// correspond a l'orientation du print qu'il a choisi - sinon l'image est
+// distordue par le crop object-cover (le cadre office est landscape, les
+// autres sont portrait).
 const MOCKUP_SCENES = [
-  { id: 'bedroom', fr: 'Chambre', en: 'Bedroom' },
-  { id: 'living_room', fr: 'Salon', en: 'Living Room' },
-  { id: 'office', fr: 'Bureau', en: 'Office' },
-  { id: 'zen', fr: 'Zen', en: 'Zen' },
+  { id: 'bedroom', fr: 'Chambre', en: 'Bedroom', orientation: 'portrait' },
+  { id: 'living_room', fr: 'Salon', en: 'Living Room', orientation: 'portrait' },
+  { id: 'office', fr: 'Bureau', en: 'Office', orientation: 'landscape' },
+  { id: 'zen', fr: 'Zen', en: 'Zen', orientation: 'portrait' },
 ];
 
 const MAT_COLOR = { r: 240, g: 237, b: 232 };
@@ -45,17 +50,25 @@ function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, t
   const currentFmtShape = currentFmt?.shape
     || (Math.abs((currentFmt?.w || 1) - (currentFmt?.h || 1)) < 0.5 ? 'square' : 'rect');
   // FIX-SQUARE : on cache les scenes pour les formats carres (cadres
-  // mockup portrait incompatible).
+  // mockup non-carres incompatibles).
+  // FIX-ORIENTATION (1 mai 2026) : on filtre les scenes pour ne garder que
+  // celles dont l'orientation du cadre photo matche l'orientation du print
+  // selectionne. Sans ce filtre, un print portrait dans le cadre landscape
+  // de "Bureau" est crop object-cover et apparait deforme/decentre.
   const hideRoomMockups = currentFmtShape === 'square';
-  const visibleScenes = hideRoomMockups ? [] : MOCKUP_SCENES;
+  const printOrientation = isLandscape ? 'landscape' : 'portrait';
+  const visibleScenes = hideRoomMockups
+    ? []
+    : MOCKUP_SCENES.filter(s => s.orientation === printOrientation);
   const totalSlides = image ? 1 + visibleScenes.length : 0;
 
-  // Si on passe d'un format rect a square pendant la navigation, force le
-  // retour au slide 0 (les scenes ne sont plus rendues).
+  // Si le slide courant disparait apres un changement de format/orientation
+  // (filter visibleScenes), force le retour au slide 0 pour eviter d'afficher
+  // une slide vide.
   useEffect(() => {
-    if (hideRoomMockups && slideIdx > 0) setSlideIdx(0);
+    if (slideIdx > visibleScenes.length) setSlideIdx(0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hideRoomMockups]);
+  }, [hideRoomMockups, printOrientation]);
 
   // Charger l'image du client. Le state userImgLoaded re-trigger les
   // useEffect de dessin canvas une fois l'image prete (sans ca, le
@@ -189,6 +202,8 @@ function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, t
 
       // Clipper pour que l'image ne depasse jamais le cadre
       ctx.save();
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
       ctx.beginPath();
       ctx.rect(printX, printY, printW, printH);
       ctx.clip();
