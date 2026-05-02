@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const strapi_1 = require("@strapi/strapi");
+const promo_codes_1 = require("../../../utils/promo-codes");
 exports.default = strapi_1.factories.createCoreController('api::promo-code.promo-code', ({ strapi }) => ({
     // POST /promo-codes/validate - retrocompat avec l'ancien format
     async validate(ctx) {
@@ -10,6 +11,19 @@ exports.default = strapi_1.factories.createCoreController('api::promo-code.promo
             return;
         }
         const upperCode = code.toUpperCase().trim();
+        // FIX-CONSISTENCY (2 mai 2026) : check D'ABORD la table hardcodee
+        // (utilisee par order.ts pour le calcul final). Garantit qu'un code
+        // valide ici est appliquable au checkout. Si absent en hardcode,
+        // fallback sur la BDD pour les codes admin-managed.
+        const hardcoded = promo_codes_1.PROMO_CODES[upperCode];
+        if (hardcoded) {
+            ctx.body = {
+                valid: true,
+                discountPercent: hardcoded.discountPercent,
+                label: hardcoded.label,
+            };
+            return;
+        }
         const promo = await strapi.documents('api::promo-code.promo-code').findFirst({
             filters: { code: upperCode },
         });

@@ -1,4 +1,5 @@
 import { factories } from '@strapi/strapi';
+import { PROMO_CODES } from '../../../utils/promo-codes';
 
 export default factories.createCoreController('api::promo-code.promo-code' as any, ({ strapi }) => ({
 
@@ -12,6 +13,20 @@ export default factories.createCoreController('api::promo-code.promo-code' as an
     }
 
     const upperCode = code.toUpperCase().trim();
+
+    // FIX-CONSISTENCY (2 mai 2026) : check D'ABORD la table hardcodee
+    // (utilisee par order.ts pour le calcul final). Garantit qu'un code
+    // valide ici est appliquable au checkout. Si absent en hardcode,
+    // fallback sur la BDD pour les codes admin-managed.
+    const hardcoded = PROMO_CODES[upperCode];
+    if (hardcoded) {
+      ctx.body = {
+        valid: true,
+        discountPercent: hardcoded.discountPercent,
+        label: hardcoded.label,
+      };
+      return;
+    }
 
     const promo: any = await strapi.documents('api::promo-code.promo-code' as any).findFirst({
       filters: { code: upperCode },
