@@ -35,23 +35,25 @@ export function loadImage(source) {
 
 // Dessine l'image dans ctx avec un contour (stroke) autour des pixels non-transparents.
 //
-// Version LISSEE (2026-04): plus strokeWidth est grand, plus la silhouette est
-// arrondie pour obtenir un contour type "die-cut" adapte a la decoupe Cameo.
-// Les details fins (meches de cheveux, eclats d'eau, pointes de cristaux) sont
-// enveloppes dans une forme lisible au lieu d'etre suivis au pixel.
+// Version NETTE (2 mai 2026): contour dilate par stamps angulaires + threshold
+// binaire de l'alpha pour un edge 100% defini, sans blur ni degrade. Adapte
+// pour l'impression et la decoupe vinyle.
 //
 // Technique:
-//   1. Silhouette coloree (source-in) sur un canvas temporaire
-//   2. Application d'un filter CSS `blur(Npx) contrast(30)` pour lisser les
-//      points de masse faible (detail fin = peu de pixels opaques = le blur
-//      les fait tomber sous le seuil du contrast et ils disparaissent) tout
-//      en preservant les grandes zones.
-//   3. Dilation par 16 stamps angulaires sur cette silhouette lissee.
-//   4. L'image originale est dessinee par-dessus (non affectee par le lissage).
+//   1. Silhouette coloree nette (source-in) sur un canvas temporaire.
+//   2. Dilation par 32 stamps angulaires de la silhouette NETTE (pas blurree)
+//      sur un canvas dedilatation. Resultat : union des positions decalees
+//      d'un rayon strokeWidth dans toutes les directions = contour epaissi.
+//   3. Threshold binaire de l'alpha (>= 50% -> opaque, sinon transparent).
+//      Elimine le degrade transitoire de l'antialiasing aux jonctions de
+//      stamps -> bord parfaitement franc, peu importe l'epaisseur.
+//   4. Composition du contour dilate sous l'image originale.
+//   5. L'image originale est dessinee par-dessus, ses pixels opaques masquent
+//      le contour interieur et seul le "halo" exterieur reste visible.
 //
-// Le rayon de blur est proportionnel a strokeWidth (facteur 0.6) - a
-// strokeWidth=0 on ne blur pas du tout, a strokeWidth=30 le blur fait 18px
-// ce qui efface tous les details < 18px.
+// Note : on perd le "lissage des details fins" volontaire de l'ancienne
+// version - desormais chaque mech de cheveu fin recoit son contour net.
+// C'est exactement ce que demande l'impression : aucun degrade, aucun flou.
 export function drawStickerWithStroke(ctx, img, strokeColor, strokeWidth) {
   const w = ctx.canvas.width;
   const h = ctx.canvas.height;
@@ -64,35 +66,52 @@ export function drawStickerWithStroke(ctx, img, strokeColor, strokeWidth) {
     sharp.width = drawW;
     sharp.height = drawH;
     const sharpCtx = sharp.getContext('2d');
+    sharpCtx.imageSmoothingEnabled = true;
     sharpCtx.drawImage(img, 0, 0, drawW, drawH);
     sharpCtx.globalCompositeOperation = 'source-in';
     sharpCtx.fillStyle = strokeColor;
     sharpCtx.fillRect(0, 0, drawW, drawH);
 
-    // Etape 2: silhouette LISSEE via blur+contrast. Le contrast agressif
-    // "durcit" le degrade de blur et supprime les zones de faible opacite
-    // (donc les petits details).
-    const blurPx = Math.max(1, Math.round(strokeWidth * 0.6));
-    const smooth = document.createElement('canvas');
-    smooth.width = drawW;
-    smooth.height = drawH;
-    const smoothCtx = smooth.getContext('2d');
-    // filter CSS est supporte par tous les browsers modernes (Canvas 2D)
-    smoothCtx.filter = `blur(${blurPx}px) contrast(30)`;
-    smoothCtx.drawImage(sharp, 0, 0);
-    smoothCtx.filter = 'none';
-
-    // Etape 3: dilation par stamps angulaires sur la silhouette lissee
-    const steps = 16;
+    // Etape 2: dilation par 32 stamps angulaires de la silhouette NETTE
+    // sur un canvas dedie de la taille du canvas final, pour pouvoir lire
+    // l'imageData et thresholder.
+    const dilated = document.createElement('canvas');
+    dilated.width = w;
+    dilated.height = h;
+    const dctx = dilated.getContext('2d');
+    const steps = 32;
     for (let i = 0; i < steps; i++) {
       const angle = (i / steps) * Math.PI * 2;
       const dx = Math.cos(angle) * strokeWidth;
       const dy = Math.sin(angle) * strokeWidth;
-      ctx.drawImage(smooth, strokeWidth + dx, strokeWidth + dy, drawW, drawH);
+      dctx.drawImage(sharp, strokeWidth + dx, strokeWidth + dy, drawW, drawH);
     }
+
+    // Etape 3: threshold binaire de l'alpha pour un edge parfaitement franc
+    // (zero degrade aux jonctions de stamps). On force aussi la couleur
+    // exacte du stroke car les stamps superposes peuvent saturer la couleur.
+    const r = parseInt(strokeColor.slice(1, 3), 16);
+    const g = parseInt(strokeColor.slice(3, 5), 16);
+    const b = parseInt(strokeColor.slice(5, 7), 16);
+    const data = dctx.getImageData(0, 0, w, h);
+    const pixels = data.data;
+    for (let i = 0; i < pixels.length; i += 4) {
+      if (pixels[i + 3] >= 128) {
+        pixels[i] = r;
+        pixels[i + 1] = g;
+        pixels[i + 2] = b;
+        pixels[i + 3] = 255;
+      } else {
+        pixels[i + 3] = 0;
+      }
+    }
+    dctx.putImageData(data, 0, 0);
+
+    // Etape 4: poser le contour dilate net sur le canvas final
+    ctx.drawImage(dilated, 0, 0);
   }
 
-  // Etape 4: image originale dessinee par-dessus, nette
+  // Etape 5: image originale par-dessus, nette
   ctx.drawImage(img, strokeWidth, strokeWidth, drawW, drawH);
 }
 
