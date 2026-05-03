@@ -1,6 +1,52 @@
 import { factories } from '@strapi/strapi';
 import crypto from 'crypto';
+import geoip from 'geoip-lite';
 import { requireAdminAuth } from '../../../utils/auth';
+
+/**
+ * Resolves an IPv4/IPv6 address to { city, country } using the bundled
+ * geoip-lite MaxMind GeoLite2 database. Returns empty strings if the IP is
+ * private/loopback (e.g. ::1, 127.0.0.1) or not found in the dataset.
+ *
+ * Why geoip-lite : zero external API calls (latency-free, no rate limits,
+ * no GDPR concern around shipping IPs to 3rd parties), runs entirely in
+ * the same Render container that handles the request.
+ */
+function resolveGeo(ip: string): { city: string; country: string } {
+  if (!ip) return { city: '', country: '' };
+  // Strip IPv6-mapped IPv4 prefix (::ffff:1.2.3.4 -> 1.2.3.4)
+  const clean = ip.replace(/^::ffff:/, '').trim();
+  // Filter local/private networks - geoip-lite would just return null but we
+  // skip the lookup cost.
+  if (clean === '::1' || clean.startsWith('127.') || clean.startsWith('10.') || clean.startsWith('192.168.') || clean.startsWith('169.254.')) {
+    return { city: '', country: '' };
+  }
+  try {
+    const lookup = geoip.lookup(clean);
+    if (!lookup) return { city: '', country: '' };
+    return {
+      city: (lookup.city || '').slice(0, 120),
+      country: (lookup.country || '').slice(0, 4), // ISO 3166-1 alpha-2
+    };
+  } catch {
+    return { city: '', country: '' };
+  }
+}
+
+/**
+ * Lightweight User-Agent device classifier. We don't need a full UA parser
+ * (ua-parser-js etc.) for the scope of "mobile vs desktop vs tablet" buckets
+ * in the dashboard - regexes on a few well-known tokens are enough and avoid
+ * shipping a 200kB dependency for a single field.
+ */
+function classifyDevice(ua: string): string {
+  if (!ua) return 'unknown';
+  const u = ua.toLowerCase();
+  if (/ipad|tablet|kindle|silk|playbook/.test(u)) return 'tablet';
+  if (/mobi|iphone|android|phone|windows phone|blackberry/.test(u)) return 'mobile';
+  if (/bot|crawler|spider|slurp|httpclient|axios|curl|wget|postman/.test(u)) return 'bot';
+  return 'desktop';
+}
 
 /**
  * Generates a URL-safe short id for the trackable QR redirect endpoint.
@@ -126,25 +172,48 @@ export default factories.createCoreController('api::qr-code.qr-code', ({ strapi 
     // fetch TOUS les scans en une fois avec le qrCode relation populate (pour
     // connaitre le documentId parent), puis on group-by en memoire. Ancien
     // code lancait 1 query par QR code -> explosait a 500 QR codes ou plus.
+    // ANALYTICS (3 mai 2026) : on inclut aussi city/userAgent pour calculer
+    // le top-city et le device dominant par QR sans 2eme requete.
     const allScans = await strapi.db.query('api::qr-scan.qr-scan').findMany({
       populate: ['qrCode'],
-      select: ['scannedAt'],
+      select: ['scannedAt', 'city', 'userAgent'],
     });
 
-    const scansByQrCodeId = new Map<number, { count: number; lastScannedAt: string | null }>();
+    const scansByQrCodeId = new Map<number, {
+      count: number;
+      lastScannedAt: string | null;
+      cityCounts: Record<string, number>;
+      deviceCounts: Record<string, number>;
+    }>();
     for (const scan of allScans as any[]) {
       const qrCodeId = scan.qrCode?.id;
       if (!qrCodeId) continue;
-      const existing = scansByQrCodeId.get(qrCodeId) || { count: 0, lastScannedAt: null };
+      const existing = scansByQrCodeId.get(qrCodeId) || {
+        count: 0, lastScannedAt: null, cityCounts: {}, deviceCounts: {},
+      };
       existing.count++;
       if (!existing.lastScannedAt || scan.scannedAt > existing.lastScannedAt) {
         existing.lastScannedAt = scan.scannedAt;
       }
+      const city = scan.city || 'Inconnu';
+      existing.cityCounts[city] = (existing.cityCounts[city] || 0) + 1;
+      const device = classifyDevice(scan.userAgent || '');
+      existing.deviceCounts[device] = (existing.deviceCounts[device] || 0) + 1;
       scansByQrCodeId.set(qrCodeId, existing);
     }
 
+    // Helper : top entry d'un Record<string, number>.
+    const topOf = (counts: Record<string, number>): { name: string; count: number } | null => {
+      const entries = Object.entries(counts);
+      if (entries.length === 0) return null;
+      entries.sort((a, b) => b[1] - a[1]);
+      return { name: entries[0][0], count: entries[0][1] };
+    };
+
     const result = codes.map((c: any) => {
-      const agg = scansByQrCodeId.get(c.id) || { count: 0, lastScannedAt: null };
+      const agg = scansByQrCodeId.get(c.id) || {
+        count: 0, lastScannedAt: null, cityCounts: {}, deviceCounts: {},
+      };
       return {
         id: c.id,
         documentId: c.documentId,
@@ -156,6 +225,8 @@ export default factories.createCoreController('api::qr-code.qr-code', ({ strapi 
         active: c.active !== false,
         scansCount: agg.count,
         lastScannedAt: agg.lastScannedAt,
+        topCity: topOf(agg.cityCounts),
+        topDevice: topOf(agg.deviceCounts),
       };
     });
 
@@ -228,6 +299,10 @@ export default factories.createCoreController('api::qr-code.qr-code', ({ strapi 
       || '';
     const userAgent = String(ctx.request.headers['user-agent'] || '').slice(0, 500);
     const referer = String(ctx.request.headers['referer'] || '').slice(0, 500);
+    // GEOIP (3 mai 2026) : enrichissement local via geoip-lite (MaxMind
+    // GeoLite2). Aucune API externe -> pas de latence ajoutee, pas de
+    // rate-limit, pas de probleme GDPR cote IP shipping.
+    const { city, country } = resolveGeo(ipAddress);
 
     // Fire-and-forget - do NOT await, do NOT let it block the redirect.
     strapi.documents('api::qr-scan.qr-scan').create({
@@ -236,6 +311,8 @@ export default factories.createCoreController('api::qr-code.qr-code', ({ strapi 
         ipAddress: ipAddress.slice(0, 64),
         userAgent,
         referer,
+        city,
+        country,
         qrCode: entity.documentId,
       } as any,
     }).catch((err: any) => {
@@ -267,15 +344,44 @@ export default factories.createCoreController('api::qr-code.qr-code', ({ strapi 
       limit: 1000,
     });
 
-    ctx.body = {
-      qrCode: { shortId: (qr as any).shortId, destinationUrl: (qr as any).destinationUrl },
-      scans: scans.map((s: any) => ({
+    // ANALYTICS (3 mai 2026) : aggregation par ville + appareil pour la
+    // section "Mes QR" du dashboard. Calcule en memoire (limite 1000 scans
+    // par QR couvre largement les besoins courants ; au-dela on pourra
+    // passer en SQL group-by).
+    const byCity: Record<string, number> = {};
+    const byCountry: Record<string, number> = {};
+    const byDevice: Record<string, number> = { mobile: 0, desktop: 0, tablet: 0, bot: 0, unknown: 0 };
+    let lastScannedAt: string | null = null;
+    const enrichedScans = scans.map((s: any) => {
+      const city = s.city || 'Inconnu';
+      const country = s.country || 'XX';
+      const device = classifyDevice(s.userAgent || '');
+      byCity[city] = (byCity[city] || 0) + 1;
+      byCountry[country] = (byCountry[country] || 0) + 1;
+      byDevice[device] = (byDevice[device] || 0) + 1;
+      if (!lastScannedAt || s.scannedAt > lastScannedAt) lastScannedAt = s.scannedAt;
+      return {
         scannedAt: s.scannedAt,
         ipAddress: s.ipAddress,
         userAgent: s.userAgent,
         referer: s.referer,
-      })),
+        city: s.city || '',
+        country: s.country || '',
+        device,
+      };
+    });
+
+    ctx.body = {
+      qrCode: { shortId: (qr as any).shortId, destinationUrl: (qr as any).destinationUrl },
+      scans: enrichedScans,
       total: scans.length,
+      analytics: {
+        total: scans.length,
+        lastScannedAt,
+        byCity,
+        byCountry,
+        byDevice,
+      },
     };
   },
 }));

@@ -27,6 +27,14 @@
       "type": "string",
       "maxLength": 500
     },
+    "city": {
+      "type": "string",
+      "maxLength": 120
+    },
+    "country": {
+      "type": "string",
+      "maxLength": 4
+    },
     "qrCode": {
       "type": "relation",
       "relation": "manyToOne",
