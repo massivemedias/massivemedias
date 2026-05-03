@@ -163,7 +163,19 @@ exports.default = strapi_1.factories.createCoreController('api::client.client', 
             meta: { page, pageSize, total, pageCount: Math.ceil(total / pageSize) },
         };
     },
-    // Liste les utilisateurs inscrits via Supabase Auth
+    // Liste les utilisateurs inscrits via Supabase Auth.
+    //
+    // FIX-SORT (3 mai 2026) : Supabase Admin API /auth/v1/admin/users ne
+    // garantit aucun tri (ordre BDD arbitraire). Pour exposer la liste
+    // "plus recent en premier" comme demande par l'admin, on fetch TOUTES
+    // les pages en interne (boucle defensive avec safety cap), on trie par
+    // created_at descendant en memoire, PUIS on applique la pagination
+    // demandee. Ainsi page=1 contient toujours les dernieres inscriptions,
+    // peu importe combien d'users existent en BDD.
+    //
+    // Cap de securite : 20 pages * 1000 = 20 000 users. Au-dela on log un
+    // warning et on tronque - signe qu'il faudrait passer a une query SQL
+    // directe sur auth.users plutot que d'iterer l'admin API.
     async listSupabaseUsers(ctx) {
         const supabaseUrl = process.env.SUPABASE_API_URL;
         const supabaseKey = process.env.SUPABASE_API_KEY; // service_role key
@@ -175,19 +187,46 @@ exports.default = strapi_1.factories.createCoreController('api::client.client', 
         const page = parseInt(ctx.query.page) || 1;
         const perPage = parseInt(ctx.query.perPage) || 50;
         try {
-            const res = await fetch(`${supabaseUrl}/auth/v1/admin/users?page=${page}&per_page=${perPage}`, {
-                headers: {
-                    'Authorization': `Bearer ${supabaseKey}`,
-                    'apikey': supabaseKey,
-                },
-            });
-            if (!res.ok) {
-                ctx.status = res.status;
-                ctx.body = { error: 'Erreur Supabase Auth' };
-                return;
+            // 1. Fetch all users de Supabase, en boucle pour traverser toutes les pages.
+            const FETCH_PAGE_SIZE = 1000; // max admin API recommande
+            const MAX_PAGES = 20; // safety cap : 20 000 users
+            const allUsers = [];
+            let supabaseTotal = null;
+            for (let internalPage = 1; internalPage <= MAX_PAGES; internalPage++) {
+                const url = `${supabaseUrl}/auth/v1/admin/users?page=${internalPage}&per_page=${FETCH_PAGE_SIZE}`;
+                const res = await fetch(url, {
+                    headers: {
+                        'Authorization': `Bearer ${supabaseKey}`,
+                        'apikey': supabaseKey,
+                    },
+                });
+                if (!res.ok) {
+                    ctx.status = res.status;
+                    ctx.body = { error: 'Erreur Supabase Auth' };
+                    return;
+                }
+                const data = await res.json();
+                const pageUsers = data.users || [];
+                if (typeof data.total === 'number')
+                    supabaseTotal = data.total;
+                allUsers.push(...pageUsers);
+                // Stop si la page renvoyee est partielle (= derniere page)
+                if (pageUsers.length < FETCH_PAGE_SIZE)
+                    break;
+                if (internalPage === MAX_PAGES) {
+                    strapi.log.warn(`[listSupabaseUsers] Cap MAX_PAGES atteint a 20 000 users. ` +
+                        `Migrer vers une query SQL directe sur auth.users si la base depasse cette taille.`);
+                }
             }
-            const data = await res.json();
-            const users = (data.users || data || []).map((u) => {
+            // 2. Tri descendant par date de creation - garantit que la page 1
+            // contient toujours les inscriptions les plus recentes.
+            allUsers.sort((a, b) => {
+                const ta = new Date(a.created_at || 0).getTime() || 0;
+                const tb = new Date(b.created_at || 0).getTime() || 0;
+                return tb - ta;
+            });
+            // 3. Mapping vers la shape exposee au frontend.
+            const mapped = allUsers.map((u) => {
                 var _a;
                 const meta = u.user_metadata || {};
                 const profileAddress = meta.address ? {
@@ -214,9 +253,18 @@ exports.default = strapi_1.factories.createCoreController('api::client.client', 
                     profileAddress,
                 };
             });
+            // 4. Pagination APRES le tri global - page 1 = users les plus recents.
+            const total = supabaseTotal !== null && supabaseTotal !== void 0 ? supabaseTotal : mapped.length;
+            const start = (page - 1) * perPage;
+            const sliced = mapped.slice(start, start + perPage);
             ctx.body = {
-                data: users,
-                meta: { page, perPage, total: data.total || users.length },
+                data: sliced,
+                meta: {
+                    page,
+                    perPage,
+                    total,
+                    pageCount: Math.ceil(total / perPage),
+                },
             };
         }
         catch (err) {
