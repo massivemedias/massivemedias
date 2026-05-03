@@ -473,8 +473,12 @@ function buildContractSignedHtml(data, isForArtist) {
       <tr>
         <td style="width:50%;padding:16px;background:#f7f7f7;border-radius:10px 0 0 10px;border:1px solid #eee;border-right:none;vertical-align:top;">
           <p style="margin:0 0 8px;color:#666;font-size:11px;text-transform:uppercase;letter-spacing:1px;font-weight:600;">Massive Medias</p>
-          <p style="font-family:'Segoe Script','Comic Sans MS',cursive;color:#FF52A0;font-size:16px;margin:0;">Yan Morin</p>
-          <p style="color:#666;font-size:11px;margin:6px 0 0;">Proprietaire - NEQ: 2269057891</p>
+          <!-- FIX-CONTRACT (3 mai 2026) : retire "Yan Morin" en cursive rose
+               (nom errone). Restaure une signature institutionnelle propre :
+               nom legal en texte standard + NEQ. La cellule droite (artiste)
+               garde sa cursive verte dynamique. -->
+          <p style="color:#222;font-size:14px;font-weight:600;margin:0;">Massive Medias</p>
+          <p style="color:#666;font-size:11px;margin:6px 0 0;">NEQ: 2269057891</p>
         </td>
         <td style="width:50%;padding:16px;background:#f7f7f7;border-radius:0 10px 10px 0;border:1px solid #eee;border-left:none;vertical-align:top;">
           <p style="margin:0 0 8px;color:#666;font-size:11px;text-transform:uppercase;letter-spacing:1px;font-weight:600;">L'Artiste</p>
