@@ -5020,9 +5020,28 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
     };
 
     // ----- Snapshot present : commandes actives (pas de filtre mois) -----
+    // FIX-ACTIVE-COUNT (3 mai 2026) : restreint aux seuls statuts requerant
+    // une action materielle cote Massive. Avant on excluait juste delivered/
+    // cancelled/refunded - ce qui incluait draft (incomplete), pending (paiement
+    // en attente cote client) et shipped (en transit chez la poste). Le widget
+    // mentait sur la "charge de travail reelle".
+    //
+    // Statuts inclus :
+    //   - paid       : paiement OK, en file pour demarrer la production
+    //   - processing : en production active
+    //   - ready      : pret a remettre / cueillette / expedier
+    //
+    // Statuts exclus :
+    //   - draft      : panier abandonne, paiement jamais initie
+    //   - pending    : checkout cree mais paiement pas confirme - rien a faire
+    //                  cote nous tant que Stripe n'a pas valide
+    //   - shipped    : deja parti, plus d'action manuelle requise
+    //   - delivered  : livre, cycle clos
+    //   - cancelled / refunded : archives
+    const ACTIVE_WORK_STATUSES = ['paid', 'processing', 'ready'];
     const [activeRow]: Array<{ count: string }> = await knex('orders')
       .count({ count: '*' })
-      .whereNotIn('status', ['delivered', 'cancelled', 'refunded']);
+      .whereIn('status', ACTIVE_WORK_STATUSES);
     const activeOrders = Number(activeRow?.count) || 0;
 
     // ----- Lance les 4 buckets en parallele -----
