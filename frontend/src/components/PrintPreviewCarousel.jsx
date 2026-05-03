@@ -178,11 +178,24 @@ function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, t
       }
       ctx.putImageData(imageData, 0, 0);
 
-      // Reduire la zone pour eviter les bords verts et le debordement
-      const margin = Math.max(4, Math.round(Math.min(maxX - minX, maxY - minY) * 0.02));
-      const printX = minX + margin, printY = minY + margin;
-      const printW = maxX - minX + 1 - margin * 2, printH = maxY - minY + 1 - margin * 2;
-      if (printW <= 0 || printH <= 0) return;
+      // FIX-NO-WHITE-BORDER (3 mai 2026) : margin retire (etait 4-8px). Avant,
+      // on retrecissait la zone d'image de 2% pour eviter d'exposer un liseret
+      // vert d'antialiasing - mais ca laissait visible le mat (couleur claire
+      // de remplacement chroma-key) tout autour de l'image, donnant ces bords
+      // blancs disgracieux. Maintenant l'image utilisateur remplit pile la
+      // bbox du cadre detecte. Pour rattraper l'antialiasing du chroma-key
+      // sans deborder dans le decor, on overdraw de 2px et on clip strictement
+      // a la bbox vraie via ctx.clip(), donc 0 debordement et 0 bord visible.
+      const overdraw = 2;
+      const printX = minX - overdraw;
+      const printY = minY - overdraw;
+      const printW = maxX - minX + 1 + overdraw * 2;
+      const printH = maxY - minY + 1 + overdraw * 2;
+      // La bbox de clipping reste la bbox vraie (sans overdraw) pour ne pas
+      // laisser l'image deborder hors du cadre vers le decor.
+      const clipX = minX, clipY = minY;
+      const clipW = maxX - minX + 1, clipH = maxY - minY + 1;
+      if (clipW <= 0 || clipH <= 0) return;
 
       // REVERT (23 avril 2026) : l'ancien "mini cadre carre centre avec mat
       // top/bottom visible" a ete rejete par le proprietaire - le cadre au mur
@@ -193,19 +206,24 @@ function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, t
       //
       // Pour les formats RECT qui seuls atteignent drawMockup : comportement
       // historique (clip rectangulaire plein, object-fit:cover sur l'image).
-      const printRatio = printW / printH;
+      // Ratio calcule sur la bbox vraie (clip), pas sur la bbox overdraw,
+      // pour que le cover crop reflete l'apparence finale dans le cadre.
+      const printRatio = clipW / clipH;
       const userImg = userImgRef.current;
       const imgRatio = userImg.naturalWidth / userImg.naturalHeight;
       let sx = 0, sy = 0, sw = userImg.naturalWidth, sh = userImg.naturalHeight;
       if (imgRatio > printRatio) { sw = Math.round(sh * printRatio); sx = Math.round((userImg.naturalWidth - sw) / 2); }
       else { sh = Math.round(sw / printRatio); sy = Math.round((userImg.naturalHeight - sh) / 2); }
 
-      // Clipper pour que l'image ne depasse jamais le cadre
+      // Clip strict sur la bbox vraie du cadre + overdraw de l'image pour
+      // recouvrir l'antialiasing du chroma-key. Resultat : aucun pixel mat
+      // (blanc cassé) visible autour de l'image, aucun debordement dans le
+      // decor.
       ctx.save();
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = 'high';
       ctx.beginPath();
-      ctx.rect(printX, printY, printW, printH);
+      ctx.rect(clipX, clipY, clipW, clipH);
       ctx.clip();
       ctx.drawImage(userImg, sx, sy, sw, sh, printX, printY, printW, printH);
       ctx.restore();
