@@ -3980,6 +3980,7 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
 
   async adminList(ctx) {
     if (!(await requireAdminAuth(ctx))) return;
+    try {
     const page = parseInt(ctx.query.page as string) || 1;
     // FIX-ADMIN (avril 2026) : default 500 au lieu de 25 pour que tout
     // l'historique de commandes soit disponible en une seule page. L'admin
@@ -4067,6 +4068,19 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
         pageCount: Math.ceil(total / pageSize),
       },
     };
+    } catch (err: any) {
+      // FIX-CRASH-DASHBOARD (2 mai 2026) : si une seule commande corrompue
+      // (champ corrupted, populate qui crash, etc.) faisait crash la query
+      // entiere, le frontend recevait 500 et le tableau admin se vidait.
+      // Maintenant on log l'erreur et on retourne une structure vide valide
+      // pour que l'UI reste fonctionnelle (tableau vide vs tirets partout).
+      strapi.log.error(`[adminList] CRITICAL crash : ${err?.message || err}\n${err?.stack || ''}`);
+      ctx.body = {
+        data: [],
+        meta: { page: 1, pageSize: 500, total: 0, pageCount: 0 },
+        error: { message: 'Backend crash, voir logs Render', detail: err?.message || String(err) },
+      };
+    }
   },
 
   async updateStatus(ctx) {
@@ -4942,6 +4956,7 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
    */
   async adminStats(ctx) {
     if (!(await requireAdminAuth(ctx))) return;
+    try {
     const knex = (strapi.db as any).connection;
 
     // Calcul des bornes "mois courant" en TZ Montreal (America/Toronto) - meme
@@ -5047,10 +5062,24 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
         activeOrders: null,
       },
     };
+    } catch (err: any) {
+      // FIX-CRASH-DASHBOARD (2 mai 2026) : si une query SQL crash (ex:
+      // commande avec total non-numerique, status null, etc.), on retourne
+      // une structure valide a zeros au lieu de 500 pour eviter les
+      // tirets partout sur le board admin.
+      strapi.log.error(`[adminStats] CRITICAL crash : ${err?.message || err}\n${err?.stack || ''}`);
+      ctx.body = {
+        current: { month: '', totalRevenue: 0, pendingRevenue: 0, leadCount: 0, activeOrders: 0 },
+        previous: { month: '', totalRevenue: 0, pendingRevenue: 0, leadCount: 0, activeOrders: null },
+        trends: { totalRevenue: null, pendingRevenue: null, leadCount: null, activeOrders: null },
+        error: { message: 'Backend crash, voir logs Render', detail: err?.message || String(err) },
+      };
+    }
   },
 
   async stats(ctx) {
     if (!(await requireAdminAuth(ctx))) return;
+    try {
     // PERF-03: Aggregations SQL au lieu de findMany -> JS. Avant, on chargeait TOUTES
     // les orders + expenses en memoire et iterait en JS. A 10 000+ orders c'etait ~10K
     // objets en heap + CPU iteration. Maintenant 5 GROUP BY renvoient juste les stats
@@ -5176,6 +5205,22 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
       },
       topClients,
     };
+    } catch (err: any) {
+      // FIX-CRASH-DASHBOARD (2 mai 2026) : meme defense que adminStats /
+      // adminList. Retourne une structure valide a zeros plutot que 500
+      // pour eviter le catch silencieux frontend qui transformait le crash
+      // en "tirets partout" sans log visible.
+      strapi.log.error(`[stats] CRITICAL crash : ${err?.message || err}\n${err?.stack || ''}`);
+      ctx.body = {
+        revenue: { total: 0, totalDollars: 0, monthly: [] },
+        expenses: { total: 0, monthly: [], byCategory: {} },
+        taxes: { tpsCollected: 0, tvqCollected: 0, tpsPaid: 0, tvqPaid: 0, tpsNet: 0, tvqNet: 0 },
+        profit: { gross: 0, net: 0 },
+        orderStats: { total: 0, byStatus: {}, averageValue: 0 },
+        topClients: [],
+        error: { message: 'Backend crash, voir logs Render', detail: err?.message || String(err) },
+      };
+    }
   },
 
   /**

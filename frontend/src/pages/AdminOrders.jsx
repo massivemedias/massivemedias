@@ -606,8 +606,14 @@ function AdminOrders() {
   }, [meta.page, meta.pageSize, filterStatus, searchDebounce, orders.length, updatingId, deletingId, sendingInvoiceId, tx]);
 
   // Stats
+  // FIX-CATCH-SILENCIEUX (2 mai 2026) : on log explicitement les echecs
+  // pour ne plus avoir des "tirets partout" silencieux quand le backend
+  // crash. Le backend retourne maintenant un default safe en cas d'erreur,
+  // mais on garde le log pour les erreurs reseau/auth.
   useEffect(() => {
-    getOrderStats().then(({ data }) => setStats(data)).catch(() => {});
+    getOrderStats()
+      .then(({ data }) => setStats(data))
+      .catch(err => console.error('[AdminOrders] getOrderStats failed:', err?.response?.status, err?.message || err));
   }, []);
 
   // MONEY-BOARD (Phase 5) : refetch des KPIs en miroir de fetchOrders. Le
@@ -619,7 +625,7 @@ function AdminOrders() {
   const fetchMoneyBoard = useCallback(() => {
     getAdminMoneyBoard()
       .then(({ data }) => setMoneyBoard(data))
-      .catch(() => { /* non bloquant : board reste sur son dernier snapshot */ });
+      .catch(err => console.error('[AdminOrders] getAdminMoneyBoard failed:', err?.response?.status, err?.message || err));
   }, []);
 
   useEffect(() => { fetchMoneyBoard(); }, [fetchMoneyBoard, filterStatus, searchDebounce]);

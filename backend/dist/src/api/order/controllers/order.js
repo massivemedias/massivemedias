@@ -3769,94 +3769,109 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
         var _a;
         if (!(await (0, auth_1.requireAdminAuth)(ctx)))
             return;
-        const page = parseInt(ctx.query.page) || 1;
-        // FIX-ADMIN (avril 2026) : default 500 au lieu de 25 pour que tout
-        // l'historique de commandes soit disponible en une seule page. L'admin
-        // peut toujours passer pageSize=N pour reduire. Pas de cap max cote
-        // serveur : si Massive depasse un jour 10k orders, on mettra un slider.
-        const pageSize = parseInt(ctx.query.pageSize) || 500;
-        const status = ctx.query.status;
-        const search = ctx.query.search;
-        const filters = {};
-        if (status && status !== 'all') {
-            // FIX-FILTER (avril 2026) : support d'une liste virgule-separee pour les
-            // super-filtres inclusifs. Ex: status=paid,processing,ready,shipped,delivered
-            // envoye par l'onglet "Paye" du frontend pour que toutes les commandes
-            // POST-paiement (pas seulement celles figees a 'paid') y apparaissent.
-            // Conserve retro-compat : une valeur simple reste un match exact.
-            if (status.includes(',')) {
-                const list = status.split(',').map(s => s.trim()).filter(Boolean);
-                if (list.length > 0)
-                    filters.status = { $in: list };
+        try {
+            const page = parseInt(ctx.query.page) || 1;
+            // FIX-ADMIN (avril 2026) : default 500 au lieu de 25 pour que tout
+            // l'historique de commandes soit disponible en une seule page. L'admin
+            // peut toujours passer pageSize=N pour reduire. Pas de cap max cote
+            // serveur : si Massive depasse un jour 10k orders, on mettra un slider.
+            const pageSize = parseInt(ctx.query.pageSize) || 500;
+            const status = ctx.query.status;
+            const search = ctx.query.search;
+            const filters = {};
+            if (status && status !== 'all') {
+                // FIX-FILTER (avril 2026) : support d'une liste virgule-separee pour les
+                // super-filtres inclusifs. Ex: status=paid,processing,ready,shipped,delivered
+                // envoye par l'onglet "Paye" du frontend pour que toutes les commandes
+                // POST-paiement (pas seulement celles figees a 'paid') y apparaissent.
+                // Conserve retro-compat : une valeur simple reste un match exact.
+                if (status.includes(',')) {
+                    const list = status.split(',').map(s => s.trim()).filter(Boolean);
+                    if (list.length > 0)
+                        filters.status = { $in: list };
+                }
+                else {
+                    filters.status = status;
+                }
             }
             else {
-                filters.status = status;
+                // Exclude draft orders (payment not yet confirmed by Stripe webhook)
+                filters.status = { $ne: 'draft' };
             }
-        }
-        else {
-            // Exclude draft orders (payment not yet confirmed by Stripe webhook)
-            filters.status = { $ne: 'draft' };
-        }
-        if (search) {
-            filters.$or = [
-                { customerName: { $containsi: search } },
-                { customerEmail: { $containsi: search } },
-                { stripePaymentIntentId: { $containsi: search } },
-            ];
-        }
-        // PERF-02 : count() au lieu de findMany() pour le total. L'ancien code
-        // faisait 2 findMany identiques (une paginee + une full pour compter),
-        // donc a 10 000 orders on chargait tout en memoire juste pour obtenir
-        // un length. count() laisse Postgres faire l'aggregate et retourne juste
-        // un integer, bien plus rapide + pas de heap pressure.
-        const [orders, total] = await Promise.all([
-            strapi.documents('api::order.order').findMany({
-                filters,
-                sort: 'createdAt:desc',
-                limit: pageSize,
-                start: (page - 1) * pageSize,
-                populate: ['client'],
-            }),
-            strapi.db.query('api::order.order').count({ where: filters }),
-        ]);
-        // FIX-PDF (avril 2026) : enrichir chaque order avec le stripePaymentLink et
-        // l'invoiceNumber de l'Invoice liee. Permet au frontend d'injecter le lien
-        // Stripe dans le PDF et l'email de facture pour les commandes non-payees.
-        try {
-            const orderDocIds = (orders || []).map((o) => o.documentId).filter(Boolean);
-            if (orderDocIds.length > 0) {
-                const invoices = await strapi.documents('api::invoice.invoice').findMany({
-                    filters: { order: { documentId: { $in: orderDocIds } } },
-                    limit: orderDocIds.length * 2,
-                });
-                const invoiceByOrder = {};
-                for (const inv of (invoices || [])) {
-                    // Strapi populate can return either order.documentId or order.id - on best-effort
-                    const oid = ((_a = inv.order) === null || _a === void 0 ? void 0 : _a.documentId) || inv.orderDocumentId;
-                    if (oid)
-                        invoiceByOrder[oid] = inv;
-                }
-                for (const o of (orders || [])) {
-                    const inv = invoiceByOrder[o.documentId];
-                    if (inv) {
-                        o.stripePaymentLink = inv.stripePaymentLink || '';
-                        o.invoiceNumber = o.invoiceNumber || inv.invoiceNumber || '';
+            if (search) {
+                filters.$or = [
+                    { customerName: { $containsi: search } },
+                    { customerEmail: { $containsi: search } },
+                    { stripePaymentIntentId: { $containsi: search } },
+                ];
+            }
+            // PERF-02 : count() au lieu de findMany() pour le total. L'ancien code
+            // faisait 2 findMany identiques (une paginee + une full pour compter),
+            // donc a 10 000 orders on chargait tout en memoire juste pour obtenir
+            // un length. count() laisse Postgres faire l'aggregate et retourne juste
+            // un integer, bien plus rapide + pas de heap pressure.
+            const [orders, total] = await Promise.all([
+                strapi.documents('api::order.order').findMany({
+                    filters,
+                    sort: 'createdAt:desc',
+                    limit: pageSize,
+                    start: (page - 1) * pageSize,
+                    populate: ['client'],
+                }),
+                strapi.db.query('api::order.order').count({ where: filters }),
+            ]);
+            // FIX-PDF (avril 2026) : enrichir chaque order avec le stripePaymentLink et
+            // l'invoiceNumber de l'Invoice liee. Permet au frontend d'injecter le lien
+            // Stripe dans le PDF et l'email de facture pour les commandes non-payees.
+            try {
+                const orderDocIds = (orders || []).map((o) => o.documentId).filter(Boolean);
+                if (orderDocIds.length > 0) {
+                    const invoices = await strapi.documents('api::invoice.invoice').findMany({
+                        filters: { order: { documentId: { $in: orderDocIds } } },
+                        limit: orderDocIds.length * 2,
+                    });
+                    const invoiceByOrder = {};
+                    for (const inv of (invoices || [])) {
+                        // Strapi populate can return either order.documentId or order.id - on best-effort
+                        const oid = ((_a = inv.order) === null || _a === void 0 ? void 0 : _a.documentId) || inv.orderDocumentId;
+                        if (oid)
+                            invoiceByOrder[oid] = inv;
+                    }
+                    for (const o of (orders || [])) {
+                        const inv = invoiceByOrder[o.documentId];
+                        if (inv) {
+                            o.stripePaymentLink = inv.stripePaymentLink || '';
+                            o.invoiceNumber = o.invoiceNumber || inv.invoiceNumber || '';
+                        }
                     }
                 }
             }
+            catch (enrichErr) {
+                strapi.log.warn(`[adminList] Enrichment invoices echoue (non-bloquant): ${(enrichErr === null || enrichErr === void 0 ? void 0 : enrichErr.message) || enrichErr}`);
+            }
+            ctx.body = {
+                data: orders,
+                meta: {
+                    page,
+                    pageSize,
+                    total,
+                    pageCount: Math.ceil(total / pageSize),
+                },
+            };
         }
-        catch (enrichErr) {
-            strapi.log.warn(`[adminList] Enrichment invoices echoue (non-bloquant): ${(enrichErr === null || enrichErr === void 0 ? void 0 : enrichErr.message) || enrichErr}`);
+        catch (err) {
+            // FIX-CRASH-DASHBOARD (2 mai 2026) : si une seule commande corrompue
+            // (champ corrupted, populate qui crash, etc.) faisait crash la query
+            // entiere, le frontend recevait 500 et le tableau admin se vidait.
+            // Maintenant on log l'erreur et on retourne une structure vide valide
+            // pour que l'UI reste fonctionnelle (tableau vide vs tirets partout).
+            strapi.log.error(`[adminList] CRITICAL crash : ${(err === null || err === void 0 ? void 0 : err.message) || err}\n${(err === null || err === void 0 ? void 0 : err.stack) || ''}`);
+            ctx.body = {
+                data: [],
+                meta: { page: 1, pageSize: 500, total: 0, pageCount: 0 },
+                error: { message: 'Backend crash, voir logs Render', detail: (err === null || err === void 0 ? void 0 : err.message) || String(err) },
+            };
         }
-        ctx.body = {
-            data: orders,
-            meta: {
-                page,
-                pageSize,
-                total,
-                pageCount: Math.ceil(total / pageSize),
-            },
-        };
     },
     async updateStatus(ctx) {
         if (!(await (0, auth_1.requireAdminAuth)(ctx)))
@@ -4674,218 +4689,251 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
         var _a;
         if (!(await (0, auth_1.requireAdminAuth)(ctx)))
             return;
-        const knex = strapi.db.connection;
-        // Calcul des bornes "mois courant" en TZ Montreal (America/Toronto) - meme
-        // logique que les dates affichees dans les emails (sendOrderConfirmationEmail).
-        // On accepte un override ?month=YYYY-MM pour piloter le board sur un mois
-        // archive.
-        const overrideMonth = String(((_a = ctx.query) === null || _a === void 0 ? void 0 : _a.month) || '').match(/^\d{4}-\d{2}$/)
-            ? String(ctx.query.month)
-            : null;
-        const now = new Date();
-        // Pivot : si override, on prend le 15 du mois cible (pour eviter les soucis
-        // de fin de mois lors du calcul du mois precedent).
-        const pivot = overrideMonth
-            ? new Date(`${overrideMonth}-15T12:00:00-04:00`)
-            : now;
-        const startOfMonth = (d) => new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1, 4, 0, 0)); // 04:00 UTC ~= 00:00 Montreal (EST/EDT differ - approximation conservative pour les bornes)
-        const startCurrent = new Date(Date.UTC(pivot.getUTCFullYear(), pivot.getUTCMonth(), 1, 4, 0, 0));
-        const startNextMonth = new Date(Date.UTC(pivot.getUTCFullYear(), pivot.getUTCMonth() + 1, 1, 4, 0, 0));
-        const startPrevious = new Date(Date.UTC(pivot.getUTCFullYear(), pivot.getUTCMonth() - 1, 1, 4, 0, 0));
-        void startOfMonth;
-        const fmtMonth = (d) => `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`;
-        const currentMonthStr = overrideMonth || fmtMonth(now);
-        // Mois precedent : on recalcule a partir du startPrevious pour eviter de
-        // se planter en janvier (decembre annee precedente).
-        const previousMonthStr = fmtMonth(new Date(Date.UTC(pivot.getUTCFullYear(), pivot.getUTCMonth() - 1, 15)));
-        // ----- Helper : agrege revenue (sum) + count par bucket statut/mois -----
-        // On lance UNE seule requete par bucket (current et previous), groupBy status.
-        const fetchBucket = async (start, end) => {
-            const rows = await knex('orders')
-                .select('status')
-                .sum({ total_cents: 'total' })
-                .count({ count: '*' })
-                .where('created_at', '>=', start.toISOString())
-                .andWhere('created_at', '<', end.toISOString())
-                .groupBy('status');
-            const byStatus = {};
-            for (const r of rows) {
-                byStatus[r.status] = {
-                    total: Number(r.total_cents) || 0,
-                    count: Number(r.count) || 0,
+        try {
+            const knex = strapi.db.connection;
+            // Calcul des bornes "mois courant" en TZ Montreal (America/Toronto) - meme
+            // logique que les dates affichees dans les emails (sendOrderConfirmationEmail).
+            // On accepte un override ?month=YYYY-MM pour piloter le board sur un mois
+            // archive.
+            const overrideMonth = String(((_a = ctx.query) === null || _a === void 0 ? void 0 : _a.month) || '').match(/^\d{4}-\d{2}$/)
+                ? String(ctx.query.month)
+                : null;
+            const now = new Date();
+            // Pivot : si override, on prend le 15 du mois cible (pour eviter les soucis
+            // de fin de mois lors du calcul du mois precedent).
+            const pivot = overrideMonth
+                ? new Date(`${overrideMonth}-15T12:00:00-04:00`)
+                : now;
+            const startOfMonth = (d) => new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1, 4, 0, 0)); // 04:00 UTC ~= 00:00 Montreal (EST/EDT differ - approximation conservative pour les bornes)
+            const startCurrent = new Date(Date.UTC(pivot.getUTCFullYear(), pivot.getUTCMonth(), 1, 4, 0, 0));
+            const startNextMonth = new Date(Date.UTC(pivot.getUTCFullYear(), pivot.getUTCMonth() + 1, 1, 4, 0, 0));
+            const startPrevious = new Date(Date.UTC(pivot.getUTCFullYear(), pivot.getUTCMonth() - 1, 1, 4, 0, 0));
+            void startOfMonth;
+            const fmtMonth = (d) => `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`;
+            const currentMonthStr = overrideMonth || fmtMonth(now);
+            // Mois precedent : on recalcule a partir du startPrevious pour eviter de
+            // se planter en janvier (decembre annee precedente).
+            const previousMonthStr = fmtMonth(new Date(Date.UTC(pivot.getUTCFullYear(), pivot.getUTCMonth() - 1, 15)));
+            // ----- Helper : agrege revenue (sum) + count par bucket statut/mois -----
+            // On lance UNE seule requete par bucket (current et previous), groupBy status.
+            const fetchBucket = async (start, end) => {
+                const rows = await knex('orders')
+                    .select('status')
+                    .sum({ total_cents: 'total' })
+                    .count({ count: '*' })
+                    .where('created_at', '>=', start.toISOString())
+                    .andWhere('created_at', '<', end.toISOString())
+                    .groupBy('status');
+                const byStatus = {};
+                for (const r of rows) {
+                    byStatus[r.status] = {
+                        total: Number(r.total_cents) || 0,
+                        count: Number(r.count) || 0,
+                    };
+                }
+                const sumOf = (statuses) => statuses.reduce((acc, s) => { var _a; return acc + (((_a = byStatus[s]) === null || _a === void 0 ? void 0 : _a.total) || 0); }, 0);
+                return {
+                    totalRevenue: sumOf(['paid']),
+                    pendingRevenue: sumOf(['pending', 'draft', 'processing']),
                 };
-            }
-            const sumOf = (statuses) => statuses.reduce((acc, s) => { var _a; return acc + (((_a = byStatus[s]) === null || _a === void 0 ? void 0 : _a.total) || 0); }, 0);
-            return {
-                totalRevenue: sumOf(['paid']),
-                pendingRevenue: sumOf(['pending', 'draft', 'processing']),
             };
-        };
-        // ----- Helper : count leads (contact_submissions) sur intervalle -----
-        const fetchLeadCount = async (start, end) => {
-            const [row] = await knex('contact_submissions')
+            // ----- Helper : count leads (contact_submissions) sur intervalle -----
+            const fetchLeadCount = async (start, end) => {
+                const [row] = await knex('contact_submissions')
+                    .count({ count: '*' })
+                    .where('created_at', '>=', start.toISOString())
+                    .andWhere('created_at', '<', end.toISOString());
+                return Number(row === null || row === void 0 ? void 0 : row.count) || 0;
+            };
+            // ----- Snapshot present : commandes actives (pas de filtre mois) -----
+            const [activeRow] = await knex('orders')
                 .count({ count: '*' })
-                .where('created_at', '>=', start.toISOString())
-                .andWhere('created_at', '<', end.toISOString());
-            return Number(row === null || row === void 0 ? void 0 : row.count) || 0;
-        };
-        // ----- Snapshot present : commandes actives (pas de filtre mois) -----
-        const [activeRow] = await knex('orders')
-            .count({ count: '*' })
-            .whereNotIn('status', ['delivered', 'cancelled', 'refunded']);
-        const activeOrders = Number(activeRow === null || activeRow === void 0 ? void 0 : activeRow.count) || 0;
-        // ----- Lance les 4 buckets en parallele -----
-        const [currentRevenue, previousRevenue, currentLeads, previousLeads] = await Promise.all([
-            fetchBucket(startCurrent, startNextMonth),
-            fetchBucket(startPrevious, startCurrent),
-            fetchLeadCount(startCurrent, startNextMonth),
-            fetchLeadCount(startPrevious, startCurrent),
-        ]);
-        // ----- Trends : pourcentage de variation MoM. null si previous=0
-        // (eviter divisions par zero qui retournent Infinity). -----
-        const trend = (curr, prev) => {
-            if (!prev || prev === 0)
-                return null;
-            return Math.round(((curr - prev) / prev) * 100);
-        };
-        ctx.body = {
-            current: {
-                month: currentMonthStr,
-                totalRevenue: currentRevenue.totalRevenue,
-                pendingRevenue: currentRevenue.pendingRevenue,
-                leadCount: currentLeads,
-                activeOrders,
-            },
-            previous: {
-                month: previousMonthStr,
-                totalRevenue: previousRevenue.totalRevenue,
-                pendingRevenue: previousRevenue.pendingRevenue,
-                leadCount: previousLeads,
-                activeOrders: null, // snapshot present uniquement, pas de comparaison historique
-            },
-            trends: {
-                totalRevenue: trend(currentRevenue.totalRevenue, previousRevenue.totalRevenue),
-                pendingRevenue: trend(currentRevenue.pendingRevenue, previousRevenue.pendingRevenue),
-                leadCount: trend(currentLeads, previousLeads),
-                activeOrders: null,
-            },
-        };
+                .whereNotIn('status', ['delivered', 'cancelled', 'refunded']);
+            const activeOrders = Number(activeRow === null || activeRow === void 0 ? void 0 : activeRow.count) || 0;
+            // ----- Lance les 4 buckets en parallele -----
+            const [currentRevenue, previousRevenue, currentLeads, previousLeads] = await Promise.all([
+                fetchBucket(startCurrent, startNextMonth),
+                fetchBucket(startPrevious, startCurrent),
+                fetchLeadCount(startCurrent, startNextMonth),
+                fetchLeadCount(startPrevious, startCurrent),
+            ]);
+            // ----- Trends : pourcentage de variation MoM. null si previous=0
+            // (eviter divisions par zero qui retournent Infinity). -----
+            const trend = (curr, prev) => {
+                if (!prev || prev === 0)
+                    return null;
+                return Math.round(((curr - prev) / prev) * 100);
+            };
+            ctx.body = {
+                current: {
+                    month: currentMonthStr,
+                    totalRevenue: currentRevenue.totalRevenue,
+                    pendingRevenue: currentRevenue.pendingRevenue,
+                    leadCount: currentLeads,
+                    activeOrders,
+                },
+                previous: {
+                    month: previousMonthStr,
+                    totalRevenue: previousRevenue.totalRevenue,
+                    pendingRevenue: previousRevenue.pendingRevenue,
+                    leadCount: previousLeads,
+                    activeOrders: null, // snapshot present uniquement, pas de comparaison historique
+                },
+                trends: {
+                    totalRevenue: trend(currentRevenue.totalRevenue, previousRevenue.totalRevenue),
+                    pendingRevenue: trend(currentRevenue.pendingRevenue, previousRevenue.pendingRevenue),
+                    leadCount: trend(currentLeads, previousLeads),
+                    activeOrders: null,
+                },
+            };
+        }
+        catch (err) {
+            // FIX-CRASH-DASHBOARD (2 mai 2026) : si une query SQL crash (ex:
+            // commande avec total non-numerique, status null, etc.), on retourne
+            // une structure valide a zeros au lieu de 500 pour eviter les
+            // tirets partout sur le board admin.
+            strapi.log.error(`[adminStats] CRITICAL crash : ${(err === null || err === void 0 ? void 0 : err.message) || err}\n${(err === null || err === void 0 ? void 0 : err.stack) || ''}`);
+            ctx.body = {
+                current: { month: '', totalRevenue: 0, pendingRevenue: 0, leadCount: 0, activeOrders: 0 },
+                previous: { month: '', totalRevenue: 0, pendingRevenue: 0, leadCount: 0, activeOrders: null },
+                trends: { totalRevenue: null, pendingRevenue: null, leadCount: null, activeOrders: null },
+                error: { message: 'Backend crash, voir logs Render', detail: (err === null || err === void 0 ? void 0 : err.message) || String(err) },
+            };
+        }
     },
     async stats(ctx) {
         if (!(await (0, auth_1.requireAdminAuth)(ctx)))
             return;
-        // PERF-03: Aggregations SQL au lieu de findMany -> JS. Avant, on chargeait TOUTES
-        // les orders + expenses en memoire et iterait en JS. A 10 000+ orders c'etait ~10K
-        // objets en heap + CPU iteration. Maintenant 5 GROUP BY renvoient juste les stats
-        // dont on a besoin - RAM O(months + categories) au lieu de O(orders + expenses).
-        const knex = strapi.db.connection;
-        // Query 1: order counts + sums by status (pour orderStats + revenue paid)
-        // Considere 'paid' tout ce qui n'est ni 'cancelled' ni 'pending' - meme regle que l'ancien code
-        const orderByStatus = await knex('orders')
-            .select('status')
-            .count({ count: '*' })
-            .sum({ total_cents: 'total' })
-            .whereNot('status', 'cancelled')
-            .groupBy('status');
-        const statusBreakdown = {};
-        let totalOrders = 0;
-        let totalRevenue = 0;
-        for (const row of orderByStatus) {
-            const count = Number(row.count) || 0;
-            const total = Number(row.total_cents) || 0;
-            statusBreakdown[row.status] = count;
-            totalOrders += count;
-            if (row.status !== 'pending')
-                totalRevenue += total;
-        }
-        const paidOrdersCount = totalOrders - (statusBreakdown.pending || 0);
-        // Query 2: monthly revenue breakdown (paid only, meme filtre que l'ancien code)
-        const monthlyRevenueRows = await knex('orders')
-            .select(knex.raw(`TO_CHAR(created_at, 'YYYY-MM') AS month`))
-            .count({ orders: '*' })
-            .sum({ revenue: 'total' })
-            .whereNotIn('status', ['cancelled', 'pending'])
-            .groupByRaw(`TO_CHAR(created_at, 'YYYY-MM')`)
-            .orderByRaw(`TO_CHAR(created_at, 'YYYY-MM') ASC`);
-        const monthlyRevenue = monthlyRevenueRows.map((r) => ({
-            month: r.month,
-            orders: Number(r.orders) || 0,
-            revenue: Number(r.revenue) || 0,
-        }));
-        // Query 3: top 10 clients par revenu cumule (paid only)
-        const topClientRows = await knex('orders')
-            .select(knex.raw('MAX(customer_email) AS email'), knex.raw('MAX(customer_name) AS name'))
-            .count({ order_count: '*' })
-            .sum({ total_spent: 'total' })
-            .whereNotIn('status', ['cancelled', 'pending'])
-            .groupByRaw('LOWER(customer_email)')
-            .orderByRaw('SUM(total) DESC')
-            .limit(10);
-        const topClients = topClientRows.map((r) => ({
-            email: r.email,
-            name: r.name,
-            totalSpent: Number(r.total_spent) || 0,
-            orderCount: Number(r.order_count) || 0,
-        }));
-        // Query 4: expenses totals (sum amount + TPS/TVQ paid)
-        const [expenseTotals] = await knex('expenses')
-            .sum({ total: 'amount' })
-            .sum({ tps_paid: 'tps_amount' })
-            .sum({ tvq_paid: 'tvq_amount' });
-        const totalExpenses = Number(expenseTotals === null || expenseTotals === void 0 ? void 0 : expenseTotals.total) || 0;
-        const totalTpsPaid = Number(expenseTotals === null || expenseTotals === void 0 ? void 0 : expenseTotals.tps_paid) || 0;
-        const totalTvqPaid = Number(expenseTotals === null || expenseTotals === void 0 ? void 0 : expenseTotals.tvq_paid) || 0;
-        // Query 5: monthly expenses + by category (un seul GROUP BY month,category)
-        const expenseBreakdown = await knex('expenses')
-            .select(knex.raw(`TO_CHAR(date, 'YYYY-MM') AS month`), 'category')
-            .sum({ amount: 'amount' })
-            .groupByRaw(`TO_CHAR(date, 'YYYY-MM'), category`);
-        const monthlyExpensesMap = {};
-        const expensesByCategory = {};
-        for (const row of expenseBreakdown) {
-            const amt = Number(row.amount) || 0;
-            monthlyExpensesMap[row.month] = (monthlyExpensesMap[row.month] || 0) + amt;
-            if (row.category) {
-                expensesByCategory[row.category] = (expensesByCategory[row.category] || 0) + amt;
+        try {
+            // PERF-03: Aggregations SQL au lieu de findMany -> JS. Avant, on chargeait TOUTES
+            // les orders + expenses en memoire et iterait en JS. A 10 000+ orders c'etait ~10K
+            // objets en heap + CPU iteration. Maintenant 5 GROUP BY renvoient juste les stats
+            // dont on a besoin - RAM O(months + categories) au lieu de O(orders + expenses).
+            const knex = strapi.db.connection;
+            // Query 1: order counts + sums by status (pour orderStats + revenue paid)
+            // Considere 'paid' tout ce qui n'est ni 'cancelled' ni 'pending' - meme regle que l'ancien code
+            const orderByStatus = await knex('orders')
+                .select('status')
+                .count({ count: '*' })
+                .sum({ total_cents: 'total' })
+                .whereNot('status', 'cancelled')
+                .groupBy('status');
+            const statusBreakdown = {};
+            let totalOrders = 0;
+            let totalRevenue = 0;
+            for (const row of orderByStatus) {
+                const count = Number(row.count) || 0;
+                const total = Number(row.total_cents) || 0;
+                statusBreakdown[row.status] = count;
+                totalOrders += count;
+                if (row.status !== 'pending')
+                    totalRevenue += total;
             }
+            const paidOrdersCount = totalOrders - (statusBreakdown.pending || 0);
+            // Query 2: monthly revenue breakdown (paid only, meme filtre que l'ancien code)
+            const monthlyRevenueRows = await knex('orders')
+                .select(knex.raw(`TO_CHAR(created_at, 'YYYY-MM') AS month`))
+                .count({ orders: '*' })
+                .sum({ revenue: 'total' })
+                .whereNotIn('status', ['cancelled', 'pending'])
+                .groupByRaw(`TO_CHAR(created_at, 'YYYY-MM')`)
+                .orderByRaw(`TO_CHAR(created_at, 'YYYY-MM') ASC`);
+            const monthlyRevenue = monthlyRevenueRows.map((r) => ({
+                month: r.month,
+                orders: Number(r.orders) || 0,
+                revenue: Number(r.revenue) || 0,
+            }));
+            // Query 3: top 10 clients par revenu cumule (paid only)
+            const topClientRows = await knex('orders')
+                .select(knex.raw('MAX(customer_email) AS email'), knex.raw('MAX(customer_name) AS name'))
+                .count({ order_count: '*' })
+                .sum({ total_spent: 'total' })
+                .whereNotIn('status', ['cancelled', 'pending'])
+                .groupByRaw('LOWER(customer_email)')
+                .orderByRaw('SUM(total) DESC')
+                .limit(10);
+            const topClients = topClientRows.map((r) => ({
+                email: r.email,
+                name: r.name,
+                totalSpent: Number(r.total_spent) || 0,
+                orderCount: Number(r.order_count) || 0,
+            }));
+            // Query 4: expenses totals (sum amount + TPS/TVQ paid)
+            const [expenseTotals] = await knex('expenses')
+                .sum({ total: 'amount' })
+                .sum({ tps_paid: 'tps_amount' })
+                .sum({ tvq_paid: 'tvq_amount' });
+            const totalExpenses = Number(expenseTotals === null || expenseTotals === void 0 ? void 0 : expenseTotals.total) || 0;
+            const totalTpsPaid = Number(expenseTotals === null || expenseTotals === void 0 ? void 0 : expenseTotals.tps_paid) || 0;
+            const totalTvqPaid = Number(expenseTotals === null || expenseTotals === void 0 ? void 0 : expenseTotals.tvq_paid) || 0;
+            // Query 5: monthly expenses + by category (un seul GROUP BY month,category)
+            const expenseBreakdown = await knex('expenses')
+                .select(knex.raw(`TO_CHAR(date, 'YYYY-MM') AS month`), 'category')
+                .sum({ amount: 'amount' })
+                .groupByRaw(`TO_CHAR(date, 'YYYY-MM'), category`);
+            const monthlyExpensesMap = {};
+            const expensesByCategory = {};
+            for (const row of expenseBreakdown) {
+                const amt = Number(row.amount) || 0;
+                monthlyExpensesMap[row.month] = (monthlyExpensesMap[row.month] || 0) + amt;
+                if (row.category) {
+                    expensesByCategory[row.category] = (expensesByCategory[row.category] || 0) + amt;
+                }
+            }
+            const monthlyExpenses = Object.entries(monthlyExpensesMap)
+                .map(([month, amount]) => ({ month, amount }))
+                .sort((a, b) => a.month.localeCompare(b.month));
+            // Tax calculations (TPS 5%, TVQ 9.975% on revenue in dollars)
+            const revenueInDollars = totalRevenue / 100;
+            const tpsCollected = revenueInDollars * 0.05;
+            const tvqCollected = revenueInDollars * 0.09975;
+            ctx.body = {
+                revenue: {
+                    total: totalRevenue,
+                    totalDollars: revenueInDollars,
+                    monthly: monthlyRevenue, // deja trie par month ASC
+                },
+                expenses: {
+                    total: totalExpenses,
+                    monthly: monthlyExpenses, // deja trie par month ASC
+                    byCategory: expensesByCategory,
+                },
+                taxes: {
+                    tpsCollected: Math.round(tpsCollected * 100) / 100,
+                    tvqCollected: Math.round(tvqCollected * 100) / 100,
+                    tpsPaid: totalTpsPaid,
+                    tvqPaid: totalTvqPaid,
+                    tpsNet: Math.round((tpsCollected - totalTpsPaid) * 100) / 100,
+                    tvqNet: Math.round((tvqCollected - totalTvqPaid) * 100) / 100,
+                },
+                profit: {
+                    gross: Math.round((revenueInDollars - totalExpenses) * 100) / 100,
+                    net: Math.round((revenueInDollars - totalExpenses - (tpsCollected - totalTpsPaid) - (tvqCollected - totalTvqPaid)) * 100) / 100,
+                },
+                orderStats: {
+                    total: totalOrders,
+                    byStatus: statusBreakdown,
+                    averageValue: paidOrdersCount > 0 ? Math.round(totalRevenue / paidOrdersCount) : 0,
+                },
+                topClients,
+            };
         }
-        const monthlyExpenses = Object.entries(monthlyExpensesMap)
-            .map(([month, amount]) => ({ month, amount }))
-            .sort((a, b) => a.month.localeCompare(b.month));
-        // Tax calculations (TPS 5%, TVQ 9.975% on revenue in dollars)
-        const revenueInDollars = totalRevenue / 100;
-        const tpsCollected = revenueInDollars * 0.05;
-        const tvqCollected = revenueInDollars * 0.09975;
-        ctx.body = {
-            revenue: {
-                total: totalRevenue,
-                totalDollars: revenueInDollars,
-                monthly: monthlyRevenue, // deja trie par month ASC
-            },
-            expenses: {
-                total: totalExpenses,
-                monthly: monthlyExpenses, // deja trie par month ASC
-                byCategory: expensesByCategory,
-            },
-            taxes: {
-                tpsCollected: Math.round(tpsCollected * 100) / 100,
-                tvqCollected: Math.round(tvqCollected * 100) / 100,
-                tpsPaid: totalTpsPaid,
-                tvqPaid: totalTvqPaid,
-                tpsNet: Math.round((tpsCollected - totalTpsPaid) * 100) / 100,
-                tvqNet: Math.round((tvqCollected - totalTvqPaid) * 100) / 100,
-            },
-            profit: {
-                gross: Math.round((revenueInDollars - totalExpenses) * 100) / 100,
-                net: Math.round((revenueInDollars - totalExpenses - (tpsCollected - totalTpsPaid) - (tvqCollected - totalTvqPaid)) * 100) / 100,
-            },
-            orderStats: {
-                total: totalOrders,
-                byStatus: statusBreakdown,
-                averageValue: paidOrdersCount > 0 ? Math.round(totalRevenue / paidOrdersCount) : 0,
-            },
-            topClients,
-        };
+        catch (err) {
+            // FIX-CRASH-DASHBOARD (2 mai 2026) : meme defense que adminStats /
+            // adminList. Retourne une structure valide a zeros plutot que 500
+            // pour eviter le catch silencieux frontend qui transformait le crash
+            // en "tirets partout" sans log visible.
+            strapi.log.error(`[stats] CRITICAL crash : ${(err === null || err === void 0 ? void 0 : err.message) || err}\n${(err === null || err === void 0 ? void 0 : err.stack) || ''}`);
+            ctx.body = {
+                revenue: { total: 0, totalDollars: 0, monthly: [] },
+                expenses: { total: 0, monthly: [], byCategory: {} },
+                taxes: { tpsCollected: 0, tvqCollected: 0, tpsPaid: 0, tvqPaid: 0, tpsNet: 0, tvqNet: 0 },
+                profit: { gross: 0, net: 0 },
+                orderStats: { total: 0, byStatus: {}, averageValue: 0 },
+                topClients: [],
+                error: { message: 'Backend crash, voir logs Render', detail: (err === null || err === void 0 ? void 0 : err.message) || String(err) },
+            };
+        }
     },
     /**
      * GET /pricing-config
