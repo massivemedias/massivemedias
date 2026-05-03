@@ -90,6 +90,54 @@ const artistsData = {
       framePrice: 30,
     },
   },
+  'gallium': {
+    slug: 'gallium',
+    name: 'Gallium',
+    tagline: {
+      fr: 'Symbolisme spirituel & cosmologie visuelle',
+      en: 'Spiritual symbolism & visual cosmology',
+      es: 'Simbolismo espiritual y cosmología visual',
+    },
+    bio: {
+      fr: "Gallium explore les archetypes spirituels et les structures cosmiques a travers des compositions denses en symboles. Ses oeuvres - roues, mandalas, masques et figures mythiques - servent de portes meditatives entre l'inconscient collectif et la matiere visuelle.",
+      en: "Gallium explores spiritual archetypes and cosmic structures through symbol-dense compositions. Their works - wheels, mandalas, masks and mythic figures - serve as meditative gateways between the collective unconscious and the visual matter.",
+      es: "Gallium explora los arquetipos espirituales y las estructuras cósmicas a través de composiciones densas en símbolos. Sus obras - ruedas, mandalas, máscaras y figuras míticas - sirven como puertas meditativas entre el inconsciente colectivo y la materia visual.",
+    },
+    socials: {
+      // socials a remplir via /mm-admin > Artists > Gallium quand l'artiste fournit
+      // ses liens. user: null (relation non encore assignee per brief mission).
+    },
+    avatar: img('/images/artists/gallium/stickers/bardo.webp'),
+    heroImage: thumb('/images/artists/gallium/posters/wheel-of-time-20x20.webp'),
+    prints: [
+      { id: 'gallium-001', titleFr: 'Fearless', titleEn: 'Fearless', titleEs: 'Fearless', image: thumb('/images/artists/gallium/posters/fearless-16x20.webp'), fullImage: img('/images/artists/gallium/posters/fearless-16x20.webp'), limited: false },
+      { id: 'gallium-002', titleFr: 'Fire Body', titleEn: 'Fire Body', titleEs: 'Fire Body', image: thumb('/images/artists/gallium/posters/fire-body-20x20.webp'), fullImage: img('/images/artists/gallium/posters/fire-body-20x20.webp'), limited: false },
+      { id: 'gallium-003', titleFr: "La fin de l'illusion", titleEn: 'The End of Illusion', titleEs: 'El fin de la ilusión', image: thumb('/images/artists/gallium/posters/la-fin-de-l-illusion-20x20.webp'), fullImage: img('/images/artists/gallium/posters/la-fin-de-l-illusion-20x20.webp'), limited: false },
+      { id: 'gallium-004', titleFr: 'La merveilleuse catastrophe', titleEn: 'The Marvelous Catastrophe', titleEs: 'La maravillosa catástrofe', image: thumb('/images/artists/gallium/posters/la-merveilleuse-catastrophe-16x20.webp'), fullImage: img('/images/artists/gallium/posters/la-merveilleuse-catastrophe-16x20.webp'), limited: false },
+      { id: 'gallium-005', titleFr: 'Mask 111', titleEn: 'Mask 111', titleEs: 'Mask 111', image: thumb('/images/artists/gallium/posters/mask-111-16x20.webp'), fullImage: img('/images/artists/gallium/posters/mask-111-16x20.webp'), limited: false },
+      { id: 'gallium-006', titleFr: 'Musashi no kiai', titleEn: 'Musashi no kiai', titleEs: 'Musashi no kiai', image: thumb('/images/artists/gallium/posters/musashi-no-kiai-20x14.webp'), fullImage: img('/images/artists/gallium/posters/musashi-no-kiai-20x14.webp'), limited: false },
+      { id: 'gallium-007', titleFr: "Porte d'émeraude", titleEn: 'Emerald Gate', titleEs: 'Puerta de esmeralda', image: thumb('/images/artists/gallium/posters/porte-d-emeraude-20x20.webp'), fullImage: img('/images/artists/gallium/posters/porte-d-emeraude-20x20.webp'), limited: false },
+      { id: 'gallium-008', titleFr: 'Wheel of Zodiac', titleEn: 'Wheel of Zodiac', titleEs: 'Wheel of Zodiac', image: thumb('/images/artists/gallium/posters/wheel-of-zodiac-20x20.webp'), fullImage: img('/images/artists/gallium/posters/wheel-of-zodiac-20x20.webp'), limited: false },
+      { id: 'gallium-009', titleFr: 'Wheel of Manifestation', titleEn: 'Wheel of Manifestation', titleEs: 'Wheel of Manifestation', image: thumb('/images/artists/gallium/posters/wheel-of-manifestation-20x20.webp'), fullImage: img('/images/artists/gallium/posters/wheel-of-manifestation-20x20.webp'), limited: false },
+      { id: 'gallium-010', titleFr: 'Wheel of Time', titleEn: 'Wheel of Time', titleEs: 'Wheel of Time', image: thumb('/images/artists/gallium/posters/wheel-of-time-20x20.webp'), fullImage: img('/images/artists/gallium/posters/wheel-of-time-20x20.webp'), limited: false },
+      { id: 'gallium-011', titleFr: 'Chemins de traverse', titleEn: 'Crossroads', titleEs: 'Senderos cruzados', image: thumb('/images/artists/gallium/posters/chemins-de-traverse-16x20.webp'), fullImage: img('/images/artists/gallium/posters/chemins-de-traverse-16x20.webp'), limited: false },
+      { id: 'gallium-012', titleFr: 'Dancing Warrior', titleEn: 'Dancing Warrior', titleEs: 'Dancing Warrior', image: thumb('/images/artists/gallium/posters/dancing-warrior-16x20.webp'), fullImage: img('/images/artists/gallium/posters/dancing-warrior-16x20.webp'), limited: false },
+      { id: 'gallium-013', titleFr: 'Entity 333', titleEn: 'Entity 333', titleEs: 'Entity 333', image: thumb('/images/artists/gallium/posters/entity-333-16x20.webp'), fullImage: img('/images/artists/gallium/posters/entity-333-16x20.webp'), limited: false },
+      { id: 'gallium-014', titleFr: 'Pre-Incarnation Room', titleEn: 'Pre-Incarnation Room', titleEs: 'Pre-Incarnation Room', image: thumb('/images/artists/gallium/posters/pre-incarnation-room-16x20.webp'), fullImage: img('/images/artists/gallium/posters/pre-incarnation-room-16x20.webp'), limited: false },
+      { id: 'gallium-015', titleFr: 'Pulsation', titleEn: 'Pulsation', titleEs: 'Pulsación', image: thumb('/images/artists/gallium/posters/pulsation-print16x20.webp'), fullImage: img('/images/artists/gallium/posters/pulsation-print16x20.webp'), limited: false },
+      { id: 'gallium-016', titleFr: 'Serious Play', titleEn: 'Serious Play', titleEs: 'Serious Play', image: thumb('/images/artists/gallium/posters/seriousplay-print16x20.webp'), fullImage: img('/images/artists/gallium/posters/seriousplay-print16x20.webp'), limited: false },
+    ],
+    stickers: [
+      { id: 'gallium-stk-001', titleFr: 'Bardo', titleEn: 'Bardo', titleEs: 'Bardo', image: img('/images/artists/gallium/stickers/bardo.webp'), fullImage: img('/images/artists/gallium/stickers/bardo.webp') },
+      { id: 'gallium-stk-002', titleFr: 'Bardo (variante)', titleEn: 'Bardo (variant)', titleEs: 'Bardo (variante)', image: img('/images/artists/gallium/stickers/galliumb-bardo-sticker1.webp'), fullImage: img('/images/artists/gallium/stickers/galliumb-bardo-sticker1.webp') },
+      { id: 'gallium-stk-003', titleFr: "La fin de l'illusion", titleEn: 'The End of Illusion', titleEs: 'El fin de la ilusión', image: img('/images/artists/gallium/stickers/lafindelillusion.webp'), fullImage: img('/images/artists/gallium/stickers/lafindelillusion.webp') },
+    ],
+    pricing: {
+      studio: { postcard: 25, a4: 35, a3: 50, a3plus: 65, a2: 85 },
+      museum: { postcard: 50, a4: 75, a3: 120, a3plus: 160, a2: 190 },
+      framePrice: 30,
+    },
+  },
   'maudite-machine': {
     slug: 'maudite-machine',
     name: 'Maudite Machine',
