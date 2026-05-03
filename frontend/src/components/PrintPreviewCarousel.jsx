@@ -8,14 +8,18 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { X } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
+import { getImageOrientation, orientationToAspectRatio } from '../utils/imageOrientation';
 
-// Import du FramePreview depuis ConfiguratorFineArt (on le duplique ici pour l'isoler)
-// Les scenes mockup avec l'orientation du cadre photo present dans chaque
-// image (mesuree au pixel sur les .webp 875x875 - voir audit du 1 mai 2026).
-// On ne presente au client que les scenes dont l'orientation du cadre
-// correspond a l'orientation du print qu'il a choisi - sinon l'image est
-// distordue par le crop object-cover (le cadre office est landscape, les
-// autres sont portrait).
+// Mockup scenes : chaque scene a une orientation fixe (ratio du cadre photo
+// physique mesure au pixel sur les .webp 875x875). On ne presente que les
+// scenes dont l'orientation matche l'orientation de l'IMAGE source uploadee
+// par le client - garantit zero letterboxing / zero crop excessif.
+//   - portrait : bedroom, living_room, zen (cadres ~3:4 sur les 3 photos)
+//   - landscape : office (cadre ~4:3)
+//   - square   : aucun asset disponible pour l'instant. Quand client uploade
+//     une image carree, on retombe sur la FramePreview CSS (slide 0) qui
+//     supporte le 1:1 nativement. Pour ajouter une scene carree dans le
+//     futur : asset .webp avec cadre vert pur 1:1 + entree { id, orientation: 'square' }.
 const MOCKUP_SCENES = [
   { id: 'bedroom', fr: 'Chambre', en: 'Bedroom', orientation: 'portrait' },
   { id: 'living_room', fr: 'Salon', en: 'Living Room', orientation: 'portrait' },
@@ -40,35 +44,44 @@ function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, t
   const roomImgCache = useRef({});
   const autoPlayRef = useRef(null);
 
-  // FIX-SQUARE-MOCKUP (23 avril 2026 v2) : si le format est carre, on CACHE
-  // les slides environnementaux (chambre/salon/bureau/zen) car leurs cadres
-  // sont portrait et trompent visuellement le client. Seul le slide 0
-  // (FramePreview 1:1 CSS parfait) reste affiche pour les formats carres.
-  // On disposera peut-etre un jour d'assets chambre avec cadre carre ; en
-  // attendant, on protege l'acheteur de la fausse promesse visuelle.
-  const currentFmt = formats?.find(f => f.id === format);
-  const currentFmtShape = currentFmt?.shape
-    || (Math.abs((currentFmt?.w || 1) - (currentFmt?.h || 1)) < 0.5 ? 'square' : 'rect');
-  // FIX-SQUARE : on cache les scenes pour les formats carres (cadres
-  // mockup non-carres incompatibles).
-  // FIX-ORIENTATION (1 mai 2026) : on filtre les scenes pour ne garder que
-  // celles dont l'orientation du cadre photo matche l'orientation du print
-  // selectionne. Sans ce filtre, un print portrait dans le cadre landscape
-  // de "Bureau" est crop object-cover et apparait deforme/decentre.
-  const hideRoomMockups = currentFmtShape === 'square';
-  const printOrientation = isLandscape ? 'landscape' : 'portrait';
-  const visibleScenes = hideRoomMockups
-    ? []
-    : MOCKUP_SCENES.filter(s => s.orientation === printOrientation);
+  // RATIO-DRIVEN (3 mai 2026) : reecriture complete. Auparavant on
+  // categorisait sur le FORMAT du print choisi (A4 portrait, 16x20, etc.) -
+  // mais une image carree dans un format A4 portrait etait letterbox-cropped
+  // et ne correspondait pas a ce que le client voyait dans son fichier.
+  //
+  // Nouvelle regle : on categorise sur le RATIO de l'IMAGE source (square
+  // si |ratio - 1| <= 5%, portrait si <1, landscape si >1). Le format du
+  // print n'intervient plus dans la selection des scenes ni dans l'aspect
+  // ratio du slide 0. La FramePreview prend l'aspect ratio de l'image, et
+  // les scenes mockup sont filtrees sur le meme critere.
+  //
+  // useState pour orientation pilote par un useEffect qui detecte le ratio
+  // au load de l'image (asynchrone car on lit naturalWidth/naturalHeight).
+  const [imageOrientation, setImageOrientation] = useState('unknown');
+  useEffect(() => {
+    if (!image) { setImageOrientation('unknown'); return; }
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      setImageOrientation(getImageOrientation(img.naturalWidth, img.naturalHeight));
+    };
+    img.onerror = () => setImageOrientation('unknown');
+    img.src = image;
+  }, [image]);
+
+  // Filter strict : on n'affiche QUE les scenes dont l'orientation matche
+  // exactement l'orientation de l'image. Si aucune match (ex: image carree
+  // alors qu'on n'a pas encore de scene 1:1), seul slide 0 (FramePreview CSS)
+  // s'affiche - elle supporte tous les ratios via aspect-ratio CSS.
+  const visibleScenes = MOCKUP_SCENES.filter(s => s.orientation === imageOrientation);
   const totalSlides = image ? 1 + visibleScenes.length : 0;
 
-  // Si le slide courant disparait apres un changement de format/orientation
-  // (filter visibleScenes), force le retour au slide 0 pour eviter d'afficher
-  // une slide vide.
+  // Si le slide courant disparait apres un changement d'orientation (upload
+  // d'une nouvelle image), force le retour au slide 0.
   useEffect(() => {
     if (slideIdx > visibleScenes.length) setSlideIdx(0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hideRoomMockups, printOrientation]);
+  }, [imageOrientation]);
 
   // Charger l'image du client. Le state userImgLoaded re-trigger les
   // useEffect de dessin canvas une fois l'image prete (sans ca, le
@@ -273,24 +286,20 @@ function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, t
   if (!image) return null;
 
   // FramePreview inline (slide 0)
-  // FIX-SQUARE (23 avril 2026) : si le format est carre (shape === 'square' OU
-  // isSquare signale par le parent), le cadre preview rend un 1:1 exact,
-  // l'object-fit:cover garde l'image carree sans distorsion, et le rapport de
-  // landscape est ignore.
+  // RATIO-DRIVEN (3 mai 2026) : l'aspect-ratio du cadre suit l'IMAGE source,
+  // plus le format. Resultat : zero letterboxing - l'image carree apparait
+  // dans un cadre carre, portrait dans portrait, paysage dans paysage.
+  // Le format reste utilise pour le sizing (previewMaxW) afin que A2 affiche
+  // un cadre plus grand qu'A6.
   const fmt = formats?.find(f => f.id === format);
-  const fmtShape = fmt?.shape || (Math.abs((fmt?.w || 1) - (fmt?.h || 1)) < 0.5 ? 'square' : 'rect');
-  const renderSquare = fmtShape === 'square' || isSquare;
   const fmtW = fmt?.w || 8.5;
   const fmtH = fmt?.h || 11;
-  const useLandscape = !renderSquare && isLandscape;
-  const w = renderSquare ? 1 : (useLandscape ? Math.max(fmtW, fmtH) : Math.min(fmtW, fmtH));
-  const h = renderSquare ? 1 : (useLandscape ? Math.min(fmtW, fmtH) : Math.max(fmtW, fmtH));
   const maxDim = Math.max(fmtW, fmtH);
   const scaleFactor = 320 / 24;
   const previewMaxW = Math.max(180, Math.round(maxDim * scaleFactor));
+  // Le ratio CSS du cadre est entierement pilote par l'orientation de l'image.
+  const frameAspectRatio = orientationToAspectRatio(imageOrientation);
   const isPostcard = format === 'postcard';
-  const frameW = isPostcard && withFrame ? (useLandscape ? 7 : 5) : w;
-  const frameH = isPostcard && withFrame ? (useLandscape ? 5 : 7) : h;
   const frameThickness = withFrame ? Math.max(8, Math.round(previewMaxW * 0.04)) : 0;
   const matThickness = withFrame ? (isPostcard ? Math.max(16, Math.round(previewMaxW * 0.1)) : Math.max(12, Math.round(previewMaxW * 0.06))) : 0;
 
@@ -328,11 +337,14 @@ function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, t
         <div className={`relative overflow-hidden w-full ${slideIdx === 0 ? '' : 'hidden'}`}>
           <div className="flex items-center justify-center cursor-pointer" onClick={onClickImage}>
             <div
-              className={`relative transition-all duration-500 ease-out ${renderSquare ? 'aspect-square' : ''}`}
+              className={`relative transition-all duration-500 ease-out ${imageOrientation === 'square' ? 'aspect-square' : ''}`}
               style={{
-                // Si renderSquare, on force 1/1 (l'aspect-square Tailwind fait pareil
-                // mais on double-up en inline pour etre sur contre les purges CSS).
-                aspectRatio: renderSquare ? '1 / 1' : (withFrame ? `${frameW} / ${frameH}` : `${w} / ${h}`),
+                // RATIO-DRIVEN : aspectRatio pilote par l'image source via
+                // orientationToAspectRatio(). Plus de calcul base sur le
+                // format - une image carree donne un cadre 1:1 quoiqu'il
+                // arrive. Aspect-square Tailwind double-up en inline pour
+                // etre sur contre les purges CSS Tailwind.
+                aspectRatio: frameAspectRatio,
                 width: '100%',
                 maxWidth: `${previewMaxW}px`,
               }}
