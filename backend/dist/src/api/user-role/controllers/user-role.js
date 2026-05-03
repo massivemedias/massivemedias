@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const strapi_1 = require("@strapi/strapi");
 const auth_1 = require("../../../utils/auth");
+const email_1 = require("../../../utils/email");
 exports.default = strapi_1.factories.createCoreController('api::user-role.user-role', ({ strapi }) => ({
     // GET /user-roles/list - Liste tous les roles (admin only)
     async list(ctx) {
@@ -83,6 +84,12 @@ exports.default = strapi_1.factories.createCoreController('api::user-role.user-r
                 filters: { email: { $eqi: email } },
                 limit: 1,
             });
+            // FIX-WELCOME-EMAIL (3 mai 2026) : tracker la TRANSITION vers 'artist'
+            // pour ne declencher l'email de bienvenue qu'une seule fois (passage
+            // de 'user'/inexistant -> 'artist'). Si l'admin re-save un role deja
+            // 'artist' (ex: edition du slug), aucun email n'est renvoye.
+            const previousRole = existing && existing.length > 0 ? existing[0].role : null;
+            const isPromotion = role === 'artist' && previousRole !== 'artist';
             let entry;
             if (existing && existing.length > 0) {
                 // Mettre a jour
@@ -106,6 +113,19 @@ exports.default = strapi_1.factories.createCoreController('api::user-role.user-r
                         supabaseUserId: supabaseUserId || null,
                         displayName: displayName || null,
                     },
+                });
+            }
+            // Email de bienvenue artiste : fire-and-forget pour ne pas bloquer la
+            // reponse admin. Si Resend echoue, le role est quand meme assigne et
+            // un warn est logge dans les logs Render. L'admin peut renvoyer
+            // manuellement via /admin/clients > fiche utilisateur.
+            if (isPromotion) {
+                (0, email_1.sendArtistWelcomeEmail)({
+                    email: entry.email || email,
+                    displayName: entry.displayName || displayName || null,
+                    artistSlug: entry.artistSlug || artistSlug || null,
+                }).catch((err) => {
+                    strapi.log.warn(`[setRole] Email bienvenue artiste echoue pour ${email}: ${(err === null || err === void 0 ? void 0 : err.message) || err}`);
                 });
             }
             ctx.body = {

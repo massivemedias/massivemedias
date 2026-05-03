@@ -2032,3 +2032,149 @@ export async function sendPaymentReminderEmail(
     return false;
   }
 }
+
+// -----------------------------------------------------------
+// Email de bienvenue artiste (3 mai 2026)
+//
+// Declenche quand un admin assigne le role 'artist' a un compte utilisateur.
+// Le destinataire est l'email du compte cible. L'email liste les nouveaux
+// privileges acquis et invite a se reconnecter pour rafraichir la session
+// (les permissions JWT sont actualisees au login, pas au changement BDD).
+// -----------------------------------------------------------
+interface ArtistWelcomeData {
+  email: string;
+  displayName?: string | null;
+  artistSlug?: string | null;
+}
+
+function buildArtistWelcomeHtml(data: ArtistWelcomeData): string {
+  const greeting = data.displayName
+    ? `Bonjour ${data.displayName},`
+    : `Bonjour,`;
+  const dashboardUrl = data.artistSlug
+    ? `https://massivemedias.com/account?tab=artist`
+    : `https://massivemedias.com/account`;
+
+  return `
+    <h1 style="color:#222;font-size:24px;margin:0 0 16px;font-weight:700;">
+      ${greeting}
+    </h1>
+
+    <p style="color:#444;font-size:15px;line-height:1.6;margin:0 0 20px;">
+      Bonne nouvelle : ton compte vient d'etre eleve au rang
+      <strong style="color:#FF52A0;">Artiste Massive Medias</strong>.
+      Tu fais maintenant partie du roster officiel et tu as acces a
+      toutes les fonctionnalites reservees aux artistes du collectif.
+    </p>
+
+    <h2 style="color:#222;font-size:16px;margin:28px 0 12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">
+      Tes nouveaux privileges
+    </h2>
+
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 24px;">
+      <tr>
+        <td style="padding:14px 16px;background:#faf5ff;border-left:3px solid #FF52A0;border-radius:6px;">
+          <p style="margin:0 0 4px;color:#222;font-size:14px;font-weight:600;">
+            Tableau de bord artiste exclusif
+          </p>
+          <p style="margin:0;color:#666;font-size:13px;line-height:1.5;">
+            Espace dedie sur ton compte avec acces direct a ta page d'artiste,
+            tes prints, ton bio et tes stats.
+          </p>
+        </td>
+      </tr>
+      <tr><td style="height:8px;"></td></tr>
+      <tr>
+        <td style="padding:14px 16px;background:#faf5ff;border-left:3px solid #FF52A0;border-radius:6px;">
+          <p style="margin:0 0 4px;color:#222;font-size:14px;font-weight:600;">
+            Suivi des ventes et calcul automatique des commissions
+          </p>
+          <p style="margin:0;color:#666;font-size:13px;line-height:1.5;">
+            Statistiques en temps reel par print, par mois et par format.
+            Commissions calculees automatiquement a chaque vente.
+          </p>
+        </td>
+      </tr>
+      <tr><td style="height:8px;"></td></tr>
+      <tr>
+        <td style="padding:14px 16px;background:#faf5ff;border-left:3px solid #FF52A0;border-radius:6px;">
+          <p style="margin:0 0 4px;color:#222;font-size:14px;font-weight:600;">
+            Gestion des pieces uniques privees
+          </p>
+          <p style="margin:0;color:#666;font-size:13px;line-height:1.5;">
+            Mets en vente des originaux non listes publiquement, partages
+            par lien direct avec tes collectionneurs.
+          </p>
+        </td>
+      </tr>
+      <tr><td style="height:8px;"></td></tr>
+      <tr>
+        <td style="padding:14px 16px;background:#faf5ff;border-left:3px solid #FF52A0;border-radius:6px;">
+          <p style="margin:0 0 4px;color:#222;font-size:14px;font-weight:600;">
+            Tarifs preferentiels de production
+          </p>
+          <p style="margin:0;color:#666;font-size:13px;line-height:1.5;">
+            Acces aux tarifs membres pour tes propres tirages : impression
+            fine art, stickers, merchandising, sublimation.
+          </p>
+        </td>
+      </tr>
+    </table>
+
+    <h2 style="color:#222;font-size:16px;margin:28px 0 12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">
+      Action requise : reconnecte-toi
+    </h2>
+
+    <p style="color:#444;font-size:14px;line-height:1.6;margin:0 0 18px;">
+      Pour activer tes nouvelles permissions, tu dois te <strong>deconnecter
+      puis te reconnecter</strong> a ton compte. Cela actualise ta session
+      avec ton nouveau role artiste - sinon le tableau de bord reste
+      invisible jusqu'a ta prochaine connexion.
+    </p>
+
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin:24px 0;">
+      <tr><td align="center">
+        <a href="${dashboardUrl}"
+           style="display:inline-block;padding:14px 32px;background:#FF52A0;color:#ffffff;font-size:15px;font-weight:700;text-decoration:none;border-radius:8px;letter-spacing:0.3px;">
+          Aller a mon compte
+        </a>
+      </td></tr>
+    </table>
+
+    <p style="color:#666;font-size:12px;line-height:1.6;text-align:center;margin:8px 0 0;">
+      Une fois sur la page, deconnecte-toi via le menu et reconnecte-toi.
+    </p>
+
+    <p style="color:#666;font-size:13px;line-height:1.6;margin:32px 0 0;">
+      Bienvenue dans le collectif. Hate de voir ce que tu vas creer.<br>
+      <strong style="color:#222;">L'equipe Massive Medias</strong>
+    </p>
+  `;
+}
+
+export async function sendArtistWelcomeEmail(data: ArtistWelcomeData): Promise<boolean> {
+  const resend = getResend();
+  if (!resend) {
+    console.warn('[email] Resend non configure, email bienvenue artiste non envoye');
+    return false;
+  }
+  if (!data.email) {
+    console.warn('[email] Email manquant, bienvenue artiste annule');
+    return false;
+  }
+
+  const sender = getSender();
+  try {
+    await resend.emails.send({
+      ...sender,
+      to: data.email,
+      subject: 'Bienvenue parmi les artistes Massive Medias',
+      html: massiveEmailWrapper(buildArtistWelcomeHtml(data)),
+    });
+    console.log(`[email] Bienvenue artiste envoyee a ${data.email}`);
+    return true;
+  } catch (err: any) {
+    console.error('[email] Erreur envoi bienvenue artiste:', err?.message || err);
+    return false;
+  }
+}

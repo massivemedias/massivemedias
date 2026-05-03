@@ -1,5 +1,6 @@
 import { factories } from '@strapi/strapi';
 import { requireAdminAuth, requireUserAuth, assertOwnershipOrAdmin } from '../../../utils/auth';
+import { sendArtistWelcomeEmail } from '../../../utils/email';
 
 export default factories.createCoreController('api::user-role.user-role', ({ strapi }) => ({
 
@@ -87,6 +88,13 @@ export default factories.createCoreController('api::user-role.user-role', ({ str
         limit: 1,
       });
 
+      // FIX-WELCOME-EMAIL (3 mai 2026) : tracker la TRANSITION vers 'artist'
+      // pour ne declencher l'email de bienvenue qu'une seule fois (passage
+      // de 'user'/inexistant -> 'artist'). Si l'admin re-save un role deja
+      // 'artist' (ex: edition du slug), aucun email n'est renvoye.
+      const previousRole = existing && existing.length > 0 ? (existing[0] as any).role : null;
+      const isPromotion = role === 'artist' && previousRole !== 'artist';
+
       let entry: any;
 
       if (existing && existing.length > 0) {
@@ -110,6 +118,22 @@ export default factories.createCoreController('api::user-role.user-role', ({ str
             supabaseUserId: supabaseUserId || null,
             displayName: displayName || null,
           },
+        });
+      }
+
+      // Email de bienvenue artiste : fire-and-forget pour ne pas bloquer la
+      // reponse admin. Si Resend echoue, le role est quand meme assigne et
+      // un warn est logge dans les logs Render. L'admin peut renvoyer
+      // manuellement via /admin/clients > fiche utilisateur.
+      if (isPromotion) {
+        sendArtistWelcomeEmail({
+          email: entry.email || email,
+          displayName: entry.displayName || displayName || null,
+          artistSlug: entry.artistSlug || artistSlug || null,
+        }).catch((err: any) => {
+          strapi.log.warn(
+            `[setRole] Email bienvenue artiste echoue pour ${email}: ${err?.message || err}`
+          );
         });
       }
 
