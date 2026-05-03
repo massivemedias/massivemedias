@@ -169,9 +169,16 @@ function AdminUtilisateurs() {
     if (tab === 'artists') return role === 'artist';
     return true;
   }).sort((a, b) => {
-    // Buyers first, then by date
-    if (a.isBuyer !== b.isBuyer) return a.isBuyer ? -1 : 1;
-    return new Date(b.createdAt) - new Date(a.createdAt);
+    // FIX-SORT-STRICT (3 mai 2026) : tri chronologique STRICT par date
+    // d'inscription descendante. L'ancien tri primaire "buyers first"
+    // ecrasait l'ordre chronologique - les anciens acheteurs remontaient
+    // au-dessus de nouvelles inscriptions visiteurs. Maintenant chaque
+    // onglet (Tous/Acheteurs/Sans achat/Artistes) montre les inscriptions
+    // les plus recentes en haut, peu importe le statut commercial.
+    // Fallback "|| 0" sur getTime pour eviter NaN si createdAt manquant.
+    const ta = new Date(a?.createdAt || 0).getTime() || 0;
+    const tb = new Date(b?.createdAt || 0).getTime() || 0;
+    return tb - ta;
   });
 
   // Summary stats
