@@ -100,16 +100,18 @@ function getEmailPreview(status, order, tx) {
   }
 }
 
+// FIX-I18N (3 mai 2026) : ortografies FR/ES avec accents corrects, aligne
+// sur ORDER_STATUS dans AdminOrders.jsx pour coherence cross-composants.
 const STATUS_LABELS = {
-  draft:      { fr: 'Brouillon',            en: 'Draft',                es: 'Borrador' },
-  pending:    { fr: 'En attente',           en: 'Pending',              es: 'Pendiente' },
-  paid:       { fr: 'Paye',                 en: 'Paid',                 es: 'Pagado' },
-  processing: { fr: 'En production',        en: 'Processing',           es: 'En produccion' },
-  ready:      { fr: 'Pret / A remettre',    en: 'Ready / To hand over', es: 'Listo / Por entregar' },
-  shipped:    { fr: 'Expedie',              en: 'Shipped',              es: 'Enviado' },
-  delivered:  { fr: 'Livre / Remis',        en: 'Delivered',            es: 'Entregado' },
-  cancelled:  { fr: 'Annule',               en: 'Cancelled',            es: 'Cancelado' },
-  refunded:   { fr: 'Rembourse',            en: 'Refunded',             es: 'Reembolsado' },
+  draft:      { fr: 'Brouillon',            en: 'Draft',                  es: 'Borrador' },
+  pending:    { fr: 'En attente',           en: 'Pending',                es: 'Pendiente' },
+  paid:       { fr: 'Payé / En production', en: 'Paid / In production',   es: 'Pagado / En producción' },
+  processing: { fr: 'En production',        en: 'Processing',             es: 'En producción' },
+  ready:      { fr: 'Prêt / À remettre',    en: 'Ready / To hand over',   es: 'Listo / Por entregar' },
+  shipped:    { fr: 'Expédié',              en: 'Shipped',                es: 'Enviado' },
+  delivered:  { fr: 'Livré / Remis',        en: 'Delivered / Handed over', es: 'Entregado' },
+  cancelled:  { fr: 'Annulé',               en: 'Cancelled',              es: 'Cancelado' },
+  refunded:   { fr: 'Remboursé',            en: 'Refunded',               es: 'Reembolsado' },
 };
 
 function StatusChangeModal({ order, currentStatus, targetStatus, onCancel, onConfirm, submitting }) {

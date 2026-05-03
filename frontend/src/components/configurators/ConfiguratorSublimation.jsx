@@ -272,7 +272,7 @@ function ConfiguratorSublimation() {
                 {/* FRONT */}
                 <div>
                   <span className="block text-sm font-semibold text-heading mb-1.5">
-                    {hasSides ? tx({ fr: 'Devant', en: 'Front', es: 'Delante' }) : tx({ fr: 'Apercu', en: 'Preview', es: 'Vista previa' })}
+                    {hasSides ? tx({ fr: 'Devant', en: 'Front', es: 'Delante' }) : tx({ fr: 'Aperçu', en: 'Preview', es: 'Vista previa' })}
                     {frontLogoUrl && <span className="ml-1.5 inline-block w-1.5 h-1.5 rounded-full bg-green-400 align-middle" />}
                   </span>
                   <MerchPreview

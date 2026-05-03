@@ -34,16 +34,19 @@ const STATUS_COLORS = {
   refunded: 'text-orange-400',
 };
 
+// FIX-I18N (3 mai 2026) : ortografies FR avec accents corrects + libelles
+// metiers (Pret/A remettre, Livre/Remis) alignes sur ORDER_STATUS dans
+// AdminOrders.jsx pour coherence cross-composants.
 const STATUS_LABELS = {
   draft: { fr: 'Brouillon', en: 'Draft', es: 'Borrador' },
   pending: { fr: 'En attente', en: 'Pending', es: 'Pendiente' },
-  paid: { fr: 'Paye', en: 'Paid', es: 'Pagado' },
-  processing: { fr: 'En production', en: 'Processing', es: 'En produccion' },
-  ready: { fr: 'Pret', en: 'Ready', es: 'Listo' },
-  shipped: { fr: 'Expedie', en: 'Shipped', es: 'Enviado' },
-  delivered: { fr: 'Livre', en: 'Delivered', es: 'Entregado' },
-  cancelled: { fr: 'Annule', en: 'Cancelled', es: 'Cancelado' },
-  refunded: { fr: 'Rembourse', en: 'Refunded', es: 'Reembolsado' },
+  paid: { fr: 'Payé / En production', en: 'Paid / In production', es: 'Pagado / En producción' },
+  processing: { fr: 'En production', en: 'Processing', es: 'En producción' },
+  ready: { fr: 'Prêt / À remettre', en: 'Ready / To hand over', es: 'Listo / Por entregar' },
+  shipped: { fr: 'Expédié', en: 'Shipped', es: 'Enviado' },
+  delivered: { fr: 'Livré / Remis', en: 'Delivered / Handed over', es: 'Entregado' },
+  cancelled: { fr: 'Annulé', en: 'Cancelled', es: 'Cancelado' },
+  refunded: { fr: 'Remboursé', en: 'Refunded', es: 'Reembolsado' },
 };
 
 function ClientCRMModal({ email, onClose }) {

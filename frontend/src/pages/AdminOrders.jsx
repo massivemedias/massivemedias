@@ -27,7 +27,7 @@ import AdminReglagesFacturation from './AdminReglagesFacturation';
 const ORDER_STATUS = {
   draft:      { fr: 'Brouillon',            en: 'Draft',                  es: 'Borrador',           color: 'bg-gray-600/20 text-gray-500', icon: Clock },
   pending:    { fr: 'En attente',           en: 'Pending',                es: 'Pendiente',          color: 'bg-yellow-500/20 text-yellow-400', icon: Clock },
-  paid:       { fr: 'Payé',                 en: 'Paid',                   es: 'Pagado',             color: 'bg-green-500/20 text-green-400', icon: CreditCard },
+  paid:       { fr: 'Payé / En production', en: 'Paid / In production',   es: 'Pagado / En producción', color: 'bg-green-500/20 text-green-400', icon: CreditCard },
   processing: { fr: 'En production',        en: 'Processing',             es: 'En proceso',         color: 'bg-blue-500/20 text-blue-400', icon: Package },
   ready:      { fr: 'Prêt / À remettre',    en: 'Ready / To hand over',   es: 'Listo / Por entregar', color: 'bg-orange-500/20 text-orange-400', icon: MapPin },
   shipped:    { fr: 'Expédié',              en: 'Shipped',                es: 'Enviado',            color: 'bg-purple-500/20 text-purple-400', icon: Truck },

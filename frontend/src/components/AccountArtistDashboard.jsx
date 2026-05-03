@@ -1128,7 +1128,7 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
                   </div>
                   <div className="flex items-center gap-3">
                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${c.paid || c.status === 'paid' ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'}`}>
-                      {c.paid || c.status === 'paid' ? tx({ fr: 'Paye', en: 'Paid', es: 'Pagado' }) : tx({ fr: 'En attente', en: 'Pending', es: 'Pendiente' })}
+                      {c.paid || c.status === 'paid' ? tx({ fr: 'Payé', en: 'Paid', es: 'Pagado' }) : tx({ fr: 'En attente', en: 'Pending', es: 'Pendiente' })}
                     </span>
                     <span className="text-green-400 font-bold text-sm">+{formatMoney(c.artistEarning || c.commission || 0)}</span>
                   </div>

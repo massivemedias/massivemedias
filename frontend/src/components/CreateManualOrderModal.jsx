@@ -748,12 +748,12 @@ function CreateManualOrderModal({ onClose, onCreated }) {
                     })
                   : paymentMode === 'prepaid'
                     ? tx({
-                        fr: 'Creer la commande (Statut: Paye)',
+                        fr: 'Créer la commande (Statut: Payé)',
                         en: 'Create order (Status: Paid)',
                         es: 'Crear pedido (Estado: Pagado)',
                       })
                     : tx({
-                        fr: 'Creer et generer lien Stripe',
+                        fr: 'Créer et générer lien Stripe',
                         en: 'Create and generate Stripe link',
                         es: 'Crear y generar enlace Stripe',
                       })}

@@ -136,7 +136,7 @@ function MockupPreview({ imageUrl, frameColor = 'black', className = '' }) {
               className="text-accent text-xs hover:underline flex items-center gap-1 mx-auto"
             >
               <RefreshCw size={12} />
-              {tx({ fr: 'Reessayer', en: 'Retry', es: 'Reintentar' })}
+              {tx({ fr: 'Réessayer', en: 'Retry', es: 'Reintentar' })}
             </button>
           )}
         </div>
@@ -147,7 +147,7 @@ function MockupPreview({ imageUrl, frameColor = 'black', className = '' }) {
         <div className="space-y-2">
           <img
             src={mockupData}
-            alt={tx({ fr: 'Apercu mockup', en: 'Mockup preview', es: 'Vista previa mockup' })}
+            alt={tx({ fr: 'Aperçu mockup', en: 'Mockup preview', es: 'Vista previa mockup' })}
             className="w-full rounded-xl shadow-lg"
           />
 
@@ -179,7 +179,7 @@ function MockupPreview({ imageUrl, frameColor = 'black', className = '' }) {
               className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white/10 text-heading text-xs hover:bg-white/15 transition-colors"
             >
               <Download size={12} />
-              {tx({ fr: 'Telecharger', en: 'Download', es: 'Descargar' })}
+              {tx({ fr: 'Télécharger', en: 'Download', es: 'Descargar' })}
             </button>
             <button
               onClick={() => { reset(); setShowMockup(false); }}
