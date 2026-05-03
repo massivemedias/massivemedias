@@ -155,6 +155,20 @@ export function AuthProvider({ children }) {
     return { data, error };
   }, []);
 
+  // GOOGLE-ONE-TAP (3 mai 2026) : echange un ID token Google (recu via le
+  // prompt non-bloquant Google Identity Services) contre une session Supabase.
+  // Plus rapide que le flow redirect classique : pas de rechargement de page,
+  // l'utilisateur reste sur sa page d'origine apres login.
+  const signInWithIdToken = useCallback(async ({ provider, token, nonce }) => {
+    if (!supabase) return { error: { message: 'Supabase not configured' } };
+    const { data, error } = await supabase.auth.signInWithIdToken({
+      provider,
+      token,
+      ...(nonce ? { nonce } : {}),
+    });
+    return { data, error };
+  }, []);
+
   const updateProfile = useCallback(async (metadata) => {
     if (!supabase) return { error: { message: 'Supabase not configured' } };
     const { data, error } = await supabase.auth.updateUser({
@@ -172,8 +186,8 @@ export function AuthProvider({ children }) {
     loading: isInitializing,
     isInitializing,
     passwordRecovery,
-    signUp, signIn, signInWithOAuth, signOut, resetPassword, updatePassword, updateProfile, verifyOtp,
-  }), [user, session, isInitializing, passwordRecovery, signUp, signIn, signInWithOAuth, signOut, resetPassword, updatePassword, updateProfile, verifyOtp]);
+    signUp, signIn, signInWithOAuth, signInWithIdToken, signOut, resetPassword, updatePassword, updateProfile, verifyOtp,
+  }), [user, session, isInitializing, passwordRecovery, signUp, signIn, signInWithOAuth, signInWithIdToken, signOut, resetPassword, updatePassword, updateProfile, verifyOtp]);
 
   return (
     <AuthContext.Provider value={value}>

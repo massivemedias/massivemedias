@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowRight, Eye, EyeOff, CheckCircle, ShoppingBag, Truck, Heart, Shield } from 'lucide-react';
+import { ArrowRight, Eye, EyeOff, CheckCircle, Activity, RotateCcw, FileText, Tag } from 'lucide-react';
 import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -216,26 +216,45 @@ function Login() {
     return t('auth.loginSubtitle');
   }
 
+  // Benefits stricts (mission UX 3 mai 2026) : 4 valeurs concretes que
+  // la creation de compte apporte au client. Chaque item correspond a une
+  // fonctionnalite reelle deja implementee dans /account.
   const benefits = [
     {
-      icon: ShoppingBag,
-      title: tx({ fr: 'Suivi de commandes', en: 'Order tracking', es: 'Seguimiento de pedidos' }),
-      desc: tx({ fr: 'Suis tes commandes en temps réel', en: 'Track your orders in real time', es: 'Sigue tus pedidos en tiempo real' }),
+      icon: Activity,
+      title: tx({ fr: 'Suivi de production temps réel', en: 'Real-time production tracking', es: 'Seguimiento de producción en tiempo real' }),
+      desc: tx({
+        fr: 'Historique complet et étapes de fabrication mises à jour en direct.',
+        en: 'Full order history and live production stage updates.',
+        es: 'Historial completo y etapas de producción actualizadas en vivo.',
+      }),
     },
     {
-      icon: Heart,
-      title: tx({ fr: 'Offres exclusives', en: 'Exclusive offers', es: 'Ofertas exclusivas' }),
-      desc: tx({ fr: 'Acces aux promos membres', en: 'Access member-only promos', es: 'Acceso a promos para miembros' }),
+      icon: RotateCcw,
+      title: tx({ fr: 'Réimpression en un clic', en: 'One-click reorder', es: 'Reimpresión con un clic' }),
+      desc: tx({
+        fr: 'Commande à nouveau tes anciens designs sans tout reconfigurer.',
+        en: 'Reorder past designs without reconfiguring everything.',
+        es: 'Vuelve a pedir diseños antiguos sin reconfigurarlos.',
+      }),
     },
     {
-      icon: Truck,
-      title: tx({ fr: 'Commande rapide', en: 'Fast checkout', es: 'Compra rapida' }),
-      desc: tx({ fr: 'Adresse et infos sauvegardees', en: 'Saved address and info', es: 'Direccion e info guardadas' }),
+      icon: FileText,
+      title: tx({ fr: 'Factures centralisées', en: 'Centralized invoices', es: 'Facturas centralizadas' }),
+      desc: tx({
+        fr: 'Toutes tes factures PDF accessibles pour ta comptabilité.',
+        en: 'All your PDF invoices accessible for your accounting.',
+        es: 'Todas tus facturas PDF accesibles para tu contabilidad.',
+      }),
     },
     {
-      icon: Shield,
-      title: tx({ fr: 'Parrainage 10%', en: 'Referral 10%', es: 'Referidos 10%' }),
-      desc: tx({ fr: 'Invite un ami, reçois 10% de rabais', en: 'Invite a friend, get 10% off', es: 'Invita a un amigo, recibe 10% de descuento' }),
+      icon: Tag,
+      title: tx({ fr: 'Codes promo exclusifs', en: 'Exclusive promo codes', es: 'Códigos promo exclusivos' }),
+      desc: tx({
+        fr: 'Accès anticipé aux campagnes et codes promotionnels membres.',
+        en: 'Early access to promo campaigns and member-only codes.',
+        es: 'Acceso anticipado a campañas y códigos promocionales para miembros.',
+      }),
     },
   ];
 
