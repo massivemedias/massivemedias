@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import {
-  getAdminArtistsList, getAdminArtistDetail,
+  getAdminArtistsList, getAdminArtistDetail, initAdminArtistProfile,
   updateAdminArtistProfile, updateAdminArtistItem, deleteAdminArtistItem,
   createArtistPayment, getCommissions, getArtistTopArtworks,
 } from '../services/adminService';
@@ -134,25 +134,101 @@ function AdminArtistManager() {
   }, [artists, search, sortBy, commissionBySlug]);
 
   // ------- Detail -------
-  const loadDetail = useCallback(async (slug) => {
+  // FIX-INCOMPLETE-DETAIL (3 mai 2026) : pour les artistes qui ont un
+  // user-role role='artist' mais aucun api::artist.artist (flag incomplete=
+  // true dans la liste God Mode), le backend retourne 404 -> avant, on
+  // affichait un toast d'erreur bloquant + spinner infini. Maintenant on
+  // intercepte le 404 et on rebascule sur les donnees minimales connues
+  // depuis la liste, avec un flag _incomplete=true qui declenche la vue
+  // d'initialisation cote UI.
+  const loadDetail = useCallback(async (slug, fallbackEntry) => {
     setDetailLoading(true);
     try {
       const { data } = await getAdminArtistDetail(slug);
       setDetail(data?.data || null);
     } catch (err) {
-      showError(err);
-      setDetail(null);
+      const status = err?.response?.status;
+      if (status === 404 && fallbackEntry) {
+        // 404 attendu pour les artists incomplete - on construit un detail
+        // minimaliste a partir de l'entree de la liste (name, email, slug).
+        setDetail({
+          _incomplete: true,
+          slug: fallbackEntry.slug || '',
+          name: fallbackEntry.name || '',
+          email: fallbackEntry.email || '',
+          active: false,
+          commissionRate: fallbackEntry.commissionRate ?? 0.5,
+          prints: [],
+          stickers: [],
+        });
+      } else {
+        showError(err);
+        setDetail(null);
+      }
     } finally {
+      // Toujours debloquer le spinner, meme en cas d'erreur non-attendue
       setDetailLoading(false);
     }
   }, []);
 
-  const openArtist = (slug) => {
+  const openArtist = (entry) => {
+    // entry peut etre un objet artist (depuis la liste) ou un string (legacy)
+    const artist = typeof entry === 'string' ? { slug: entry } : entry;
+    const slug = artist.slug || '';
     setSelectedSlug(slug);
     setView('detail');
     setDetail(null);
     setActiveTab('items');
-    loadDetail(slug);
+
+    if (artist.incomplete || !slug) {
+      // Bypass backend - vue d'init directe avec les infos de la liste.
+      setDetail({
+        _incomplete: true,
+        slug,
+        name: artist.name || '',
+        email: artist.email || '',
+        active: false,
+        commissionRate: 0.5,
+        prints: [],
+        stickers: [],
+      });
+      setDetailLoading(false);
+      return;
+    }
+    loadDetail(slug, artist);
+  };
+
+  // ------- Init profil artiste (artist incomplete) -------
+  const [initSaving, setInitSaving] = useState(false);
+  const handleInitProfile = async () => {
+    if (!detail?._incomplete) return;
+    if (!detail.email) {
+      showError(new Error('Email manquant - impossible d\'initialiser le profil'));
+      return;
+    }
+    setInitSaving(true);
+    try {
+      const { data } = await initAdminArtistProfile({
+        email: detail.email,
+        name: detail.name || undefined,
+        slug: detail.slug || undefined,
+      });
+      const created = data?.data;
+      if (!created?.slug) throw new Error('Reponse backend invalide (slug manquant)');
+      showSuccess(tx({
+        fr: `Profil artiste cree (slug: ${created.slug})`,
+        en: `Artist profile created (slug: ${created.slug})`,
+        es: `Perfil de artista creado (slug: ${created.slug})`,
+      }));
+      // Refresh la liste + ouvre le detail complet du nouveau profil
+      loadList();
+      setSelectedSlug(created.slug);
+      loadDetail(created.slug);
+    } catch (err) {
+      showError(err);
+    } finally {
+      setInitSaving(false);
+    }
   };
 
   const backToList = () => {
@@ -462,14 +538,16 @@ function AdminArtistManager() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {filtered.map(a => (
-              <button key={a.documentId} onClick={() => openArtist(a.slug)}
-                className="text-left card-bg rounded-xl p-4 hover:bg-accent/5 transition-colors border border-white/5 hover:border-accent/40">
+              <button key={a.documentId || `incomplete-${a.email || a.slug || Math.random()}`} onClick={() => openArtist(a)}
+                className={`text-left card-bg rounded-xl p-4 hover:bg-accent/5 transition-colors border ${a.incomplete ? 'border-yellow-500/30 hover:border-yellow-500/60' : 'border-white/5 hover:border-accent/40'}`}>
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <div>
                     <h3 className="text-heading font-semibold text-base">{a.name}</h3>
-                    <p className="text-grey-muted text-xs">{a.slug}</p>
+                    <p className="text-grey-muted text-xs">{a.slug || a.email || '(profil non initialise)'}</p>
                   </div>
-                  {!a.active && <span className="text-[10px] bg-red-500/20 text-red-400 px-2 py-0.5 rounded">{tx({ fr: 'Inactif', en: 'Inactive', es: 'Inactivo' })}</span>}
+                  {a.incomplete
+                    ? <span className="text-[10px] bg-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded">{tx({ fr: 'À compléter', en: 'Incomplete', es: 'Por completar' })}</span>
+                    : !a.active && <span className="text-[10px] bg-red-500/20 text-red-400 px-2 py-0.5 rounded">{tx({ fr: 'Inactif', en: 'Inactive', es: 'Inactivo' })}</span>}
                 </div>
                 {a.email && <p className="text-xs text-grey-muted truncate">{a.email}</p>}
                 <div className="flex items-center gap-3 mt-3 text-xs">
@@ -506,6 +584,50 @@ function AdminArtistManager() {
       </button>
       {detailLoading || !detail ? (
         <div className="flex items-center justify-center py-12"><Loader2 size={24} className="animate-spin text-accent" /></div>
+      ) : detail._incomplete ? (
+        // VUE INCOMPLETE : artist promu mais sans api::artist.artist record.
+        // L'admin peut initialiser le profil pour debloquer le detail complet.
+        <div className="space-y-5">
+          <div className="card-bg rounded-2xl p-6 border border-yellow-500/30">
+            <div className="flex items-start gap-3 mb-4">
+              <div className="p-2 rounded-lg bg-yellow-500/15 flex-shrink-0">
+                <Loader2 size={20} className="text-yellow-400" />
+              </div>
+              <div>
+                <h2 className="text-xl font-heading font-bold text-heading">{detail.name || tx({ fr: '(Sans nom)', en: '(No name)', es: '(Sin nombre)' })}</h2>
+                {detail.email && <p className="text-grey-muted text-sm mt-0.5">{detail.email}</p>}
+                <span className="inline-block mt-2 text-[10px] bg-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded uppercase font-semibold">
+                  {tx({ fr: 'Profil à compléter', en: 'Incomplete profile', es: 'Perfil por completar' })}
+                </span>
+              </div>
+            </div>
+            <p className="text-grey-muted text-sm leading-relaxed mb-4">
+              {tx({
+                fr: "Ce compte a le rôle 'artiste' mais aucun profil détaillé n'existe encore (pas d'entrée dans la collection api::artist.artist). Initialise le profil pour débloquer la gestion des prints, stickers, bio, commission et statistiques.",
+                en: "This account has the 'artist' role but no detailed profile exists yet (no api::artist.artist record). Initialize the profile to unlock prints, stickers, bio, commission and stats management.",
+                es: "Esta cuenta tiene el rol 'artista' pero aún no existe un perfil detallado (sin registro api::artist.artist). Inicializa el perfil para desbloquear la gestión de prints, stickers, biografía, comisión y estadísticas.",
+              })}
+            </p>
+            <button
+              type="button"
+              onClick={handleInitProfile}
+              disabled={initSaving || !detail.email}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-accent text-white text-sm font-semibold hover:bg-accent/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {initSaving ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
+              {tx({ fr: 'Initialiser le profil artiste', en: 'Initialize artist profile', es: 'Inicializar perfil de artista' })}
+            </button>
+            {!detail.email && (
+              <p className="mt-3 text-xs text-red-400">
+                {tx({
+                  fr: 'Email manquant - impossible d\'initialiser. Vérifier le user-role dans /admin/utilisateurs.',
+                  en: 'Email missing - cannot initialize. Check the user-role in /admin/utilisateurs.',
+                  es: 'Email faltante - no se puede inicializar. Verificar el user-role.',
+                })}
+              </p>
+            )}
+          </div>
+        </div>
       ) : (
         <>
           {/* Header */}

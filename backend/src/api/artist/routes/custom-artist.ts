@@ -73,6 +73,15 @@ export default {
       config: { auth: false },
     },
     {
+      // Initialise une entree api::artist.artist a partir d'un user-role
+      // role='artist' qui n'a pas encore de profil artiste. Body : { email,
+      // name?, slug? }. Genere un slug auto depuis l'email si manquant.
+      method: 'POST',
+      path: '/admin/artists-init',
+      handler: 'artist.adminInitProfile',
+      config: { auth: false },
+    },
+    {
       method: 'PUT',
       path: '/admin/artists-profile/:slug',
       handler: 'artist.adminUpdateProfile',

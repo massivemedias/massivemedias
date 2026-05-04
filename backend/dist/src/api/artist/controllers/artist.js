@@ -554,6 +554,108 @@ exports.default = strapi_1.factories.createCoreController('api::artist.artist', 
             ctx.throw(500, err.message);
         }
     },
+    /**
+     * POST /admin/artists-init
+     *
+     * Initialise un profil api::artist.artist a partir d'un user-role
+     * role='artist' qui n'a pas encore de pendant dans la collection
+     * artists. Body : { email, name?, slug? }
+     *
+     * Comportement :
+     * 1. Verifie qu'un user-role role='artist' existe pour cet email - sinon
+     *    400 (le user doit etre promu 'artist' avant d'avoir un profil).
+     * 2. Genere un slug auto depuis l'email si non fourni (avant @, kebab-case,
+     *    lowercased). Verifie qu'il n'est pas deja pris dans api::artist.artist
+     *    - si oui, ajoute un suffixe -2, -3, etc.
+     * 3. Cree le record api::artist.artist avec champs de base : slug, name,
+     *    email, active=false (l'admin doit valider avant publication), commission
+     *    Rate=0.5 par defaut, prints=[], stickers=[].
+     * 4. Met a jour le user-role.artistSlug si vide pour lier les 2 sources.
+     * 5. Retourne le nouveau record (compatible avec adminGetDetail).
+     */
+    async adminInitProfile(ctx) {
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
+            return;
+        const body = ctx.request.body;
+        const email = String((body === null || body === void 0 ? void 0 : body.email) || '').trim().toLowerCase();
+        if (!email || !email.includes('@')) {
+            return ctx.badRequest('email valide requis');
+        }
+        try {
+            // 1. Verifier que le user-role existe avec role='artist'
+            const roleEntries = await strapi.documents('api::user-role.user-role').findMany({
+                filters: { email: { $eqi: email } },
+                limit: 1,
+            });
+            const role = (roleEntries || [])[0];
+            if (!role || role.role !== 'artist') {
+                return ctx.badRequest(`Aucun user-role 'artist' pour ${email}. Promouvoir d'abord via /admin/utilisateurs.`);
+            }
+            // 2. Slug : fourni explicite, sinon role.artistSlug, sinon genere depuis email
+            let slug = String((body === null || body === void 0 ? void 0 : body.slug) || role.artistSlug || '').trim().toLowerCase()
+                .replace(/[^a-z0-9-]/g, '-')
+                .replace(/-+/g, '-')
+                .replace(/^-|-$/g, '');
+            if (!slug) {
+                slug = email.split('@')[0]
+                    .toLowerCase()
+                    .replace(/[^a-z0-9]/g, '-')
+                    .replace(/-+/g, '-')
+                    .replace(/^-|-$/g, '');
+            }
+            if (!slug)
+                slug = 'artiste';
+            // Verifier l'unicite : si slug deja pris, ajouter suffixe -2, -3...
+            const baseSlug = slug;
+            let suffix = 1;
+            while (true) {
+                const existing = await strapi.documents('api::artist.artist').findMany({
+                    filters: { slug: { $eq: slug } },
+                    limit: 1,
+                });
+                if (!existing || existing.length === 0)
+                    break;
+                suffix++;
+                slug = `${baseSlug}-${suffix}`;
+                if (suffix > 50) {
+                    return ctx.internalServerError('Impossible de generer un slug unique apres 50 tentatives');
+                }
+            }
+            // 3. Nom : explicite > displayName du role > fragment d'email
+            const name = String((body === null || body === void 0 ? void 0 : body.name) || role.displayName || email.split('@')[0] || 'Artiste').trim();
+            // 4. Creer le record
+            const created = await strapi.documents('api::artist.artist').create({
+                data: {
+                    slug,
+                    name,
+                    email,
+                    active: false,
+                    commissionRate: 0.5,
+                    prints: [],
+                    stickers: [],
+                    taglineFr: '',
+                },
+            });
+            // 5. Lier le user-role au nouveau slug s'il etait null
+            if (!role.artistSlug || role.artistSlug !== slug) {
+                try {
+                    await strapi.documents('api::user-role.user-role').update({
+                        documentId: role.documentId,
+                        data: { artistSlug: slug },
+                    });
+                }
+                catch (linkErr) {
+                    strapi.log.warn(`[adminInitProfile] Echec link user-role.artistSlug pour ${email}: ${(linkErr === null || linkErr === void 0 ? void 0 : linkErr.message) || linkErr}`);
+                }
+            }
+            strapi.log.info(`[adminInitProfile] Profil artiste cree pour ${email} -> slug=${slug}`);
+            ctx.body = { data: created };
+        }
+        catch (err) {
+            strapi.log.error(`[adminInitProfile] Erreur sur ${email}: ${(err === null || err === void 0 ? void 0 : err.message) || err}\n${(err === null || err === void 0 ? void 0 : err.stack) || ''}`);
+            ctx.throw(500, (err === null || err === void 0 ? void 0 : err.message) || 'Erreur initialisation profil');
+        }
+    },
     // GET /admin/artists-detail/:slug - Profil complet + toutes les oeuvres (admin)
     async adminGetDetail(ctx) {
         var _a, _b;

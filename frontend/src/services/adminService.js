@@ -69,6 +69,11 @@ export const getAdminArtistDetail = (slug) => {
   return api.get(`/admin/artists-detail/${encodeURIComponent(slug)}`);
 };
 
+// Initialise un profil artiste pour un user-role role='artist' qui n'a
+// pas encore de pendant api::artist.artist. Body : { email, name?, slug? }.
+// Retourne le nouveau record cree par le backend.
+export const initAdminArtistProfile = (payload) => api.post('/admin/artists-init', payload);
+
 export const updateAdminArtistProfile = (slug, fields) => {
   if (!slug) throw new Error('updateAdminArtistProfile: slug requis');
   if (!fields || typeof fields !== 'object' || Object.keys(fields).length === 0) {
