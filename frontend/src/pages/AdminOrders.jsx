@@ -962,6 +962,30 @@ function AdminOrders() {
       iconBg: 'bg-purple-400/10',
       trend: null, // snapshot present : pas de MoM significatif
     },
+    // FEAT-LIFETIME (3 mai 2026) : metriques globales depuis le lancement.
+    // Statuts pris en compte cote backend : paid + processing + ready +
+    // shipped + delivered (tous les revenus reels, peu importe l'etat
+    // d'expedition). Cancelled et refunded exclus.
+    {
+      label: tx({ fr: 'CA total (depuis le début)', en: 'Lifetime revenue', es: 'Facturación total' }),
+      hint: tx({ fr: 'Toutes commandes finalisées', en: 'All finalized orders', es: 'Todos los pedidos finalizados' }),
+      value: mb?.lifetime ? moneyFmt(mb.lifetime.totalRevenue) : '-',
+      icon: DollarSign,
+      accent: 'text-emerald-400',
+      ring: 'ring-emerald-400/20',
+      iconBg: 'bg-emerald-400/10',
+      trend: null,
+    },
+    {
+      label: tx({ fr: 'Panier moyen', en: 'Average order value', es: 'Valor medio del pedido' }),
+      hint: tx({ fr: `Sur ${mb?.lifetime?.orderCount ?? 0} commandes`, en: `Over ${mb?.lifetime?.orderCount ?? 0} orders`, es: `Sobre ${mb?.lifetime?.orderCount ?? 0} pedidos` }),
+      value: mb?.lifetime ? moneyFmt(mb.lifetime.averageOrderValue) : '-',
+      icon: ShoppingBag,
+      accent: 'text-pink-400',
+      ring: 'ring-pink-400/20',
+      iconBg: 'bg-pink-400/10',
+      trend: null,
+    },
   ];
 
   // Summary cards (legacy : conservees au cas ou le bandeau Money Board
@@ -1390,7 +1414,7 @@ function AdminOrders() {
             </span>
           )}
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4">
           {moneyBoardCards.map((card, i) => {
             const Icon = card.icon;
             const t = card.trend;

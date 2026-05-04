@@ -5132,6 +5132,24 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
       .whereIn('status', ACTIVE_WORK_STATUSES);
     const activeOrders = Number(activeRow?.count) || 0;
 
+    // ----- LIFETIME (3 mai 2026) : chiffre d'affaires total et panier moyen
+    // depuis l'origine de la base, pour exposer une vue executive complete
+    // au-dela du mois courant. Statuts finalises = paid + processing + ready
+    // + shipped + delivered. On exclut explicitement draft, pending, cancelled
+    // et refunded car ils ne represented pas un revenu reel encaisse.
+    const FINALIZED_STATUSES = ['paid', 'processing', 'ready', 'shipped', 'delivered'];
+    const [lifetimeRow]: Array<{ total_cents: string; count: string }> = await knex('orders')
+      .sum({ total_cents: 'total' })
+      .count({ count: '*' })
+      .whereIn('status', FINALIZED_STATUSES);
+    const lifetimeRevenue = Number(lifetimeRow?.total_cents) || 0;
+    const lifetimeOrderCount = Number(lifetimeRow?.count) || 0;
+    // AOV (Average Order Value) : moyenne arrondie au cent. Zero si aucune
+    // commande pour eviter division par zero.
+    const averageOrderValue = lifetimeOrderCount > 0
+      ? Math.round(lifetimeRevenue / lifetimeOrderCount)
+      : 0;
+
     // ----- Lance les 4 buckets en parallele -----
     const [currentRevenue, previousRevenue, currentLeads, previousLeads] = await Promise.all([
       fetchBucket(startCurrent, startNextMonth),
@@ -5168,6 +5186,12 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
         leadCount: trend(currentLeads, previousLeads),
         activeOrders: null,
       },
+      // Metriques globales depuis le lancement (toutes les statuts finalises)
+      lifetime: {
+        totalRevenue: lifetimeRevenue,
+        orderCount: lifetimeOrderCount,
+        averageOrderValue,
+      },
     };
     } catch (err: any) {
       // FIX-CRASH-DASHBOARD (2 mai 2026) : si une query SQL crash (ex:
@@ -5179,6 +5203,7 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
         current: { month: '', totalRevenue: 0, pendingRevenue: 0, leadCount: 0, activeOrders: 0 },
         previous: { month: '', totalRevenue: 0, pendingRevenue: 0, leadCount: 0, activeOrders: null },
         trends: { totalRevenue: null, pendingRevenue: null, leadCount: null, activeOrders: null },
+        lifetime: { totalRevenue: 0, orderCount: 0, averageOrderValue: 0 },
         error: { message: 'Backend crash, voir logs Render', detail: err?.message || String(err) },
       };
     }
