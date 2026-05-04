@@ -460,14 +460,43 @@ exports.default = strapi_1.factories.createCoreController('api::artist.artist', 
     // par le systeme de edit-requests. Reserve a l'admin strict.
     // ============================================================
     // GET /admin/artists-list - Liste compacte de tous les artistes avec counts
+    //
+    // FIX-VISIBILITY (3 mai 2026) : merge des 2 sources de verite pour
+    // garantir qu'aucun artiste n'est invisible dans le panel God Mode :
+    //   1. api::artist.artist : profils complets avec prints/stickers/bio
+    //   2. api::user-role.user-role role='artist' : comptes promus par
+    //      l'admin via setRole, qui peuvent ne pas avoir de pendant
+    //      api::artist.artist (slug pas encore cree, profil pas initialise)
+    //
+    // Avant ce fix, un compte artist sans record api::artist.artist etait
+    // totalement invisible dans le hub admin -> impossible de completer
+    // son profil ou de le retrograder. Maintenant il apparait avec
+    // incomplete=true et l'admin peut agir.
     async adminListAll(ctx) {
         if (!(await (0, auth_1.requireAdminAuth)(ctx)))
             return;
         try {
-            const artists = await strapi.documents('api::artist.artist').findMany({
-                sort: { name: 'asc' },
-                limit: 200,
-            });
+            const [artists, artistRoles] = await Promise.all([
+                strapi.documents('api::artist.artist').findMany({
+                    sort: { name: 'asc' },
+                    limit: 200,
+                }),
+                strapi.documents('api::user-role.user-role').findMany({
+                    filters: { role: { $eq: 'artist' } },
+                    limit: 500,
+                }),
+            ]);
+            // Index des artistes existants par slug + par email (lowercased)
+            // pour deduplication.
+            const artistsBySlug = {};
+            const artistsByEmail = {};
+            for (const a of (artists || [])) {
+                if (a.slug)
+                    artistsBySlug[String(a.slug).toLowerCase()] = a;
+                if (a.email)
+                    artistsByEmail[String(a.email).toLowerCase()] = a;
+            }
+            // 1. Liste de base : tous les api::artist.artist (profils complets)
             const list = (artists || []).map((a) => {
                 var _a, _b;
                 return ({
@@ -481,7 +510,43 @@ exports.default = strapi_1.factories.createCoreController('api::artist.artist', 
                     stickersCount: Array.isArray(a.stickers) ? a.stickers.length : 0,
                     taglineFr: a.taglineFr || '',
                     sortOrder: (_b = a.sortOrder) !== null && _b !== void 0 ? _b : 0,
+                    incomplete: false,
                 });
+            });
+            // 2. Ajouter les user-roles role='artist' qui n'ont AUCUN matching
+            // artist record (ni par slug ni par email). Ces comptes sont promus
+            // mais leur profil artiste reste a creer.
+            for (const ur of (artistRoles || [])) {
+                const urSlug = ur.artistSlug ? String(ur.artistSlug).toLowerCase() : null;
+                const urEmail = ur.email ? String(ur.email).toLowerCase() : null;
+                const matchedBySlug = urSlug && artistsBySlug[urSlug];
+                const matchedByEmail = urEmail && artistsByEmail[urEmail];
+                if (matchedBySlug || matchedByEmail)
+                    continue;
+                list.push({
+                    documentId: null,
+                    slug: ur.artistSlug || '',
+                    name: ur.displayName || ur.email || '(Sans nom)',
+                    email: ur.email || '',
+                    active: false,
+                    commissionRate: 0.5,
+                    printsCount: 0,
+                    stickersCount: 0,
+                    taglineFr: '',
+                    sortOrder: 999, // bottom of sorts par defaut
+                    incomplete: true, // flag UI pour distinguer "profil a completer"
+                });
+            }
+            // Tri final par nom asc (mixe les profils complets et incomplets
+            // sans privilege - l'admin voit tout, peut agir sur tout).
+            list.sort((a, b) => {
+                const na = (a.name || '').toLowerCase();
+                const nb = (b.name || '').toLowerCase();
+                if (na < nb)
+                    return -1;
+                if (na > nb)
+                    return 1;
+                return 0;
             });
             ctx.body = { data: list };
         }
