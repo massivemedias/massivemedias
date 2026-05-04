@@ -953,7 +953,7 @@ function AdminOrders() {
       trend: mb?.trends?.leadCount ?? null,
     },
     {
-      label: tx({ fr: 'Commandes actives', en: 'Active orders', es: 'Pedidos activos' }),
+      label: tx({ fr: 'En cours', en: 'In progress', es: 'En curso' }),
       hint: tx({ fr: 'Sur ton bureau', en: 'On your desk', es: 'En tu mesa' }),
       value: mb ? String(mb.current.activeOrders) : '-',
       icon: Package,
@@ -967,7 +967,7 @@ function AdminOrders() {
     // shipped + delivered (tous les revenus reels, peu importe l'etat
     // d'expedition). Cancelled et refunded exclus.
     {
-      label: tx({ fr: 'CA total (depuis le début)', en: 'Lifetime revenue', es: 'Facturación total' }),
+      label: tx({ fr: 'CA global', en: 'Lifetime revenue', es: 'Facturación total' }),
       hint: tx({ fr: 'Toutes commandes finalisées', en: 'All finalized orders', es: 'Todos los pedidos finalizados' }),
       value: mb?.lifetime ? moneyFmt(mb.lifetime.totalRevenue) : '-',
       icon: DollarSign,
@@ -1414,7 +1414,7 @@ function AdminOrders() {
             </span>
           )}
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
           {moneyBoardCards.map((card, i) => {
             const Icon = card.icon;
             const t = card.trend;
