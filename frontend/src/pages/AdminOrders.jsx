@@ -13,6 +13,7 @@ import { getOrders, getOrderStats, getAdminMoneyBoard, updateOrderStatus, update
 import { useNotifications } from '../contexts/NotificationContext';
 import { generateInvoicePDF } from '../utils/generateInvoice';
 import EditOrderTotalModal from '../components/EditOrderTotalModal';
+import EditOrderBillingModal from '../components/EditOrderBillingModal';
 import CreateManualOrderModal from '../components/CreateManualOrderModal';
 import StatusChangeModal from '../components/StatusChangeModal';
 import PortfolioWizardModal from '../components/PortfolioWizardModal';
@@ -463,6 +464,8 @@ function AdminOrders() {
 
   // Modal d'edition du total d'une commande (ajustement rabais/balance)
   const [editTotalOrder, setEditTotalOrder] = useState(null);
+  // Modal d'edition des infos client/facturation (override checkout, regen PDF)
+  const [editBillingOrder, setEditBillingOrder] = useState(null);
   const onOrderTotalUpdated = useCallback((updatedOrder) => {
     // Mise a jour optimiste locale: remplace la commande dans l'etat sans refetch complet
     if (!updatedOrder) return;
@@ -1753,7 +1756,24 @@ function AdminOrders() {
                           {/* Infos client + reference */}
                           <div className="flex flex-wrap gap-4 items-start">
                             <div className="space-y-1">
-                              <h4 className="text-xs font-semibold text-grey-muted uppercase tracking-wider">{tx({ fr: 'Client', en: 'Client', es: 'Cliente' })}</h4>
+                              <div className="flex items-center gap-2">
+                                <h4 className="text-xs font-semibold text-grey-muted uppercase tracking-wider">{tx({ fr: 'Client', en: 'Client', es: 'Cliente' })}</h4>
+                                {/* FEAT-EDIT-BILLING (3 mai 2026) : bouton d'edition
+                                    rapide des infos client/facturation. Override les
+                                    donnees du checkout pour cette commande, sans
+                                    toucher au profil utilisateur. La facture PDF
+                                    regeneree utilise les nouveaux champs en priorite
+                                    absolue. */}
+                                <button
+                                  type="button"
+                                  onClick={(e) => { e.stopPropagation(); setEditBillingOrder(order); }}
+                                  className="p-1 rounded text-grey-muted hover:text-accent hover:bg-white/5 transition-colors"
+                                  title={tx({ fr: 'Modifier les infos client', en: 'Edit client info', es: 'Editar info cliente' })}
+                                  aria-label={tx({ fr: 'Modifier les infos client', en: 'Edit client info', es: 'Editar info cliente' })}
+                                >
+                                  <Pencil size={11} />
+                                </button>
+                              </div>
                               <p className="text-sm text-heading font-medium">{order.customerName}</p>
                               {order.companyName && (
                                 <p className="text-xs text-accent font-semibold">{order.companyName}</p>
@@ -2532,6 +2552,20 @@ function AdminOrders() {
           order={editTotalOrder}
           onClose={() => setEditTotalOrder(null)}
           onUpdated={onOrderTotalUpdated}
+        />
+      )}
+
+      {/* Modal d'edition des infos client/facturation - override checkout */}
+      {editBillingOrder && (
+        <EditOrderBillingModal
+          order={editBillingOrder}
+          onClose={() => setEditBillingOrder(null)}
+          onUpdated={(updated) => {
+            // Optimistic update : remplace dans le state sans refetch complet
+            setOrders(prev => prev.map(o =>
+              o.documentId === updated.documentId ? { ...o, ...updated } : o
+            ));
+          }}
         />
       )}
 

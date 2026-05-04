@@ -171,6 +171,11 @@ export const updateOrderStatus = (documentId, status, opts = {}) => {
 };
 export const updateOrderNotes = (documentId, notes) => api.put(`/orders/${documentId}/notes`, { notes });
 export const updateOrderTracking = (documentId, trackingNumber, carrier) => api.put(`/orders/${documentId}/tracking`, { trackingNumber, carrier });
+// Edition des champs client/facturation d'une commande (override des donnees
+// du checkout initial). Utilise par EditOrderBillingModal et reflete sur le
+// PDF facture car generateInvoice.js lit directement order.customerName/Email
+// /Phone/companyName/shippingAddress.
+export const updateOrderBilling = (documentId, payload) => api.put(`/orders/${documentId}/billing`, payload);
 
 /**
  * Interroge le provider de tracking (mock intelligent / 17Track / Shippo).

@@ -142,6 +142,19 @@ exports.default = {
             },
         },
         {
+            // Edition des informations de facturation/client d'une commande
+            // (nom, email, telephone, raison sociale, adresse). Override les
+            // donnees du checkout initial pour cette commande seulement, sans
+            // toucher au profil utilisateur. Le PDF facture est regenere a
+            // partir de ces champs via generateInvoice.js.
+            method: 'PUT',
+            path: '/orders/:documentId/billing',
+            handler: 'order.updateBilling',
+            config: {
+                auth: false,
+            },
+        },
+        {
             method: 'PUT',
             path: '/orders/:documentId/tracking',
             handler: 'order.addTracking',

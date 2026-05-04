@@ -4532,6 +4532,94 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
     };
   },
 
+  /**
+   * PUT /orders/:documentId/billing
+   *
+   * Edition des informations de facturation/client d'une commande (3 mai 2026) :
+   * permet a l'admin de corriger nom, email, telephone, raison sociale et
+   * adresse de livraison/facturation directement dans la commande, sans
+   * modifier le profil utilisateur. Les champs ecrits ici sont la source
+   * de verite absolue lors de la regeneration du PDF de facture - ils
+   * priment sur tout (Supabase Auth metadata, checkout payload Stripe,
+   * profil Client).
+   *
+   * Body : {
+   *   customerName: string (required, non-empty)
+   *   customerEmail: string (required, valide)
+   *   companyName?: string | null
+   *   customerPhone?: string | null
+   *   shippingAddress?: { address, city, province, postalCode, country } | null
+   * }
+   *
+   * Validation defensive : on rejette les payloads invalides (champs requis
+   * manquants, email malforme) plutot que de corrompre la commande.
+   */
+  async updateBilling(ctx) {
+    if (!(await requireAdminAuth(ctx))) return;
+    const { documentId } = ctx.params;
+    const body = ctx.request.body as any;
+
+    const customerName = String(body?.customerName || '').trim();
+    const customerEmail = String(body?.customerEmail || '').trim().toLowerCase();
+    if (!customerName) {
+      return ctx.badRequest('customerName is required');
+    }
+    if (!customerEmail || !customerEmail.includes('@')) {
+      return ctx.badRequest('valid customerEmail required');
+    }
+    if (customerName.length > 200) return ctx.badRequest('customerName max 200 chars');
+    if (customerEmail.length > 200) return ctx.badRequest('customerEmail max 200 chars');
+
+    // Champs optionnels : null explicite si vide (clear le champ).
+    const companyName = body?.companyName != null ? String(body.companyName).trim() : null;
+    const customerPhone = body?.customerPhone != null ? String(body.customerPhone).trim() : null;
+
+    // ShippingAddress : objet structure ou null. On normalise les sous-champs.
+    let shippingAddress: any = null;
+    if (body?.shippingAddress && typeof body.shippingAddress === 'object') {
+      const a = body.shippingAddress;
+      shippingAddress = {
+        address: String(a.address || '').trim(),
+        city: String(a.city || '').trim(),
+        province: String(a.province || '').trim(),
+        postalCode: String(a.postalCode || '').trim(),
+        country: String(a.country || 'CA').trim() || 'CA',
+      };
+      // Si tous les champs sont vides, store null (pickup local sans adresse).
+      const isEmpty = !shippingAddress.address && !shippingAddress.city
+        && !shippingAddress.postalCode;
+      if (isEmpty) shippingAddress = null;
+    }
+
+    const order = await strapi.documents('api::order.order').findFirst({
+      filters: { documentId },
+    }) as any;
+    if (!order) return ctx.notFound('Commande introuvable');
+
+    try {
+      const updated = await strapi.documents('api::order.order').update({
+        documentId,
+        data: {
+          customerName,
+          customerEmail,
+          companyName: companyName || null,
+          customerPhone: customerPhone || null,
+          shippingAddress,
+        } as any,
+      });
+
+      strapi.log.info(
+        `[updateBilling] Order ${documentId} : facturation mise a jour ` +
+        `(${customerName} <${customerEmail}>${companyName ? ` / ${companyName}` : ''})`
+      );
+
+      ctx.body = { data: updated };
+    } catch (err: any) {
+      strapi.log.error(`[updateBilling] Erreur sur ${documentId}: ${err?.message || err}`);
+      ctx.throw(500, err?.message || 'Erreur de mise a jour');
+    }
+  },
+
   // GET /orders/:documentId/tracking - Recupere le statut de livraison via le provider
   // (mock intelligent par defaut, branchement futur 17Track/Shippo via TRACKING_API_KEY).
   // Retourne aussi un `suggestStatusChange` si l'etat propose un changement automatique
