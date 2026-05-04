@@ -10,14 +10,28 @@ function ServiceFlyers() {
   const flyerFaq = cmsProduct ? { fr: cmsProduct.faqFr || defaultFaq.fr, en: cmsProduct.faqEn || defaultFaq.en, es: cmsProduct?.faqEs || defaultFaq.es } : defaultFaq;
   const cmsImages = cmsProduct?.images?.length ? cmsProduct.images.map(img => mediaUrl(img)) : null;
   const trustItems = [
-    { icon: FileText, fr: 'Papier premium 300g+', en: 'Premium 300g+ paper', es: 'Papel premium 300g+' },
-    { icon: Shield, fr: 'Qualite professionnelle', en: 'Professional quality', es: 'Calidad profesional' },
+    { icon: FileText, fr: 'Papier souple cartonné', en: 'Soft cardstock', es: 'Cartulina flexible' },
+    { icon: Shield, fr: 'Optimisé pour la distribution', en: 'Optimized for distribution', es: 'Optimizado para distribución' },
     { icon: Sparkles, fr: 'Production locale', en: 'Local production', es: 'Produccion local' },
     { icon: Truck, fr: 'Pick-up gratuit Mile-End', en: 'Free pick-up Mile-End', es: 'Recogida gratis Mile-End' },
   ];
 
+  // CONTENT-DISTRIBUTION (3 mai 2026) : description ajoutee pour clarifier
+  // que les flyers utilisent un papier souple cartonné optimise pour la
+  // distribution a grand volume, par opposition aux papiers d'art rigides
+  // des series Studio et Musee (collection Fine Art) qui sont destinees a
+  // l'affichage decoratif. Le client doit comprendre que ce n'est pas un
+  // produit premium d'art mais un materiel utilitaire de qualite pro.
   const features = [
-    { icon: FileText, fr: 'Papier premium', en: 'Premium paper', es: 'Papel premium', descFr: 'Papier 300g+ en finition matte ou lustree. Qualite superieure a l\'impression en ligne standard.', descEn: 'Premium 300g+ paper in matte or glossy finish. Quality superior to standard online printing.', descEs: 'Papel 300g+ en acabado mate o brillante. Calidad superior a la impresion en linea estandar.' },
+    {
+      icon: FileText,
+      fr: 'Papier souple cartonné',
+      en: 'Soft cardstock paper',
+      es: 'Papel cartulina flexible',
+      descFr: 'Imprimés sur un papier souple cartonné, optimisé pour la distribution à grand volume. Contrairement aux séries Studio et Musée qui utilisent des papiers d\'art rigides pour l\'affichage décoratif, ce matériel est conçu pour être manipulé et distribué efficacement.',
+      descEn: 'Printed on soft cardstock paper, optimized for high-volume distribution. Unlike the Studio and Museum series which use rigid art papers for decorative display, this material is designed to be handled and distributed efficiently.',
+      descEs: 'Impresos en papel cartulina flexible, optimizado para distribución a gran volumen. A diferencia de las series Studio y Museo que utilizan papeles de arte rígidos para exhibición decorativa, este material está diseñado para ser manipulado y distribuido eficientemente.',
+    },
     { icon: Shield, fr: 'Impression pro', en: 'Pro printing', es: 'Impresion profesional', descFr: 'Imprimante professionnelle 12 couleurs pigmentees. Couleurs vibrantes et precises meme pour les flyers.', descEn: 'Professional 12-color pigmented printer. Vibrant and precise colors even for flyers.', descEs: 'Impresora profesional de 12 colores pigmentados. Colores vibrantes y precisos incluso para flyers.' },
     { icon: Sparkles, fr: 'Service rapide', en: 'Fast service', es: 'Servicio rapido', descFr: 'Production locale Mile-End. Service express disponible sur demande.', descEn: 'Local production Mile-End. Express service available on request.', descEs: 'Produccion local Mile-End. Servicio express disponible bajo pedido.' },
   ];
