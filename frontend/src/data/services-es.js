@@ -55,7 +55,7 @@ const servicesDataEs = {
         {
           subtitle: 'Flyers y afiches de distribucion (A6 / 4"x6")',
           quoteOnly: true,
-          quoteText: 'Solo con cotización personalizada. Cada proyecto se estudia para optimizar papel, formato, acabados y plazos según tu volumen.',
+          quoteText: 'Impresos en papel cartulina flexible, optimizado para distribución a gran volumen. A diferencia de las series Studio y Museo que utilizan papeles de arte rígidos para exhibición decorativa, este material está diseñado para ser manipulado y distribuido eficientemente. Solo con cotización personalizada: cada proyecto se estudia para optimizar papel, formato, acabados y plazos según tu volumen.',
           quoteCta: { label: 'Solicitar cotización', to: '/contact?service=flyers' },
         },
         // HIDE-BUSINESS-CARDS (29 avril 2026) - cf. services.js

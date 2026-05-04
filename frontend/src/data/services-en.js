@@ -55,7 +55,7 @@ const servicesDataEn = {
         {
           subtitle: 'Flyers & Distribution Posters (A6 / 4x6")',
           quoteOnly: true,
-          quoteText: 'Custom quote only. Each project is reviewed to optimise paper, format, finishes and deadlines based on your volume.',
+          quoteText: 'Printed on soft cardstock paper, optimized for high-volume distribution. Unlike the Studio and Museum series which use rigid art papers for decorative display, this material is designed to be handled and distributed efficiently. Custom quote only: each project is reviewed to optimise paper, format, finishes and deadlines based on your volume.',
           quoteCta: { label: 'Get a quote', to: '/contact?service=flyers' },
         },
         // HIDE-BUSINESS-CARDS (29 avril 2026) - cf. services.js

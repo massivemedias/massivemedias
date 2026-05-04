@@ -58,7 +58,10 @@ const servicesData = {
         {
           subtitle: 'Flyers et affiches de distribution (A6 / 4x6")',
           quoteOnly: true,
-          quoteText: 'Uniquement sur devis personnalisé. Chaque projet est étudié pour optimiser papier, format, finitions et délais selon ton volume.',
+          // CONTENT-DISTRIBUTION (3 mai 2026) : description integree pour
+          // distinguer EXPLICITEMENT le papier souple cartonne (utilitaire)
+          // des papiers d'art rigides Studio/Musee (decoratif).
+          quoteText: 'Imprimés sur un papier souple cartonné, optimisé pour la distribution à grand volume. Contrairement aux séries Studio et Musée qui utilisent des papiers d\'art rigides pour l\'affichage décoratif, ce matériel est conçu pour être manipulé et distribué efficacement. Uniquement sur devis personnalisé : chaque projet est étudié pour optimiser papier, format, finitions et délais selon ton volume.',
           quoteCta: { label: 'Obtenir un devis', to: '/contact?service=flyers' },
         },
         // HIDE-BUSINESS-CARDS (29 avril 2026) : les 3 tables de cartes
