@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Tag, Plus, X, Save, Loader2, Trash2, Pencil,
   CheckCircle, XCircle, Clock, Hash, Percent, Search,
+  Copy, Check,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import api from '../services/api';
@@ -25,6 +26,23 @@ function AdminPromos() {
   const [form, setForm] = useState({ ...EMPTY_FORM });
   const [saving, setSaving] = useState(false);
   const [search, setSearch] = useState('');
+  // FEAT-COPY (3 mai 2026) : feedback visuel temporaire (~1.5s) quand
+  // l'admin copie un code promo. La cle est le documentId pour qu'un
+  // seul code puisse afficher "Copie !" a la fois.
+  const [copiedId, setCopiedId] = useState(null);
+
+  const handleCopy = async (promo, e) => {
+    e?.stopPropagation();
+    try {
+      await navigator.clipboard.writeText(promo.code || '');
+      setCopiedId(promo.documentId);
+      setTimeout(() => {
+        setCopiedId(prev => prev === promo.documentId ? null : prev);
+      }, 1500);
+    } catch (err) {
+      console.warn('[AdminPromos] Clipboard write echoue:', err?.message || err);
+    }
+  };
 
   const fetchPromos = useCallback(async () => {
     try {
@@ -300,8 +318,17 @@ function AdminPromos() {
           const maxed = isMaxedOut(p);
           const isValid = p.active && !expired && !maxed;
 
+          const isCopied = copiedId === p.documentId;
           return (
-            <div key={p.documentId} className="rounded-xl card-bg p-4">
+            <div
+              key={p.documentId}
+              onClick={(e) => handleCopy(p, e)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleCopy(p, e); } }}
+              title={tx({ fr: 'Cliquer pour copier le code', en: 'Click to copy code', es: 'Clic para copiar el código' })}
+              className="rounded-xl card-bg p-4 cursor-pointer hover:bg-white/5 transition-colors outline-none focus:ring-2 focus:ring-accent/40"
+            >
               <div className="flex items-center justify-between gap-4">
                 {/* Info gauche */}
                 <div className="flex items-center gap-3 min-w-0">
@@ -310,7 +337,22 @@ function AdminPromos() {
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="font-mono text-heading font-bold text-sm tracking-wider">{p.code}</span>
+                      {/* Click direct sur le code = copie aussi (stopPropagation
+                          inutile car le parent fait deja la meme action, mais
+                          le span garde un curseur explicite + feedback inline) */}
+                      <span
+                        className="font-mono text-heading font-bold text-sm tracking-wider inline-flex items-center gap-1 group"
+                      >
+                        {p.code}
+                        {isCopied
+                          ? <Check size={12} className="text-green-400" />
+                          : <Copy size={12} className="text-grey-muted/50 group-hover:text-accent transition-colors" />}
+                      </span>
+                      {isCopied && (
+                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-green-500/20 text-green-400 font-semibold uppercase">
+                          {tx({ fr: 'Copié !', en: 'Copied!', es: 'Copiado!' })}
+                        </span>
+                      )}
                       <span className="text-accent font-semibold text-sm">-{p.discountPercent}%</span>
                       {!p.active && (
                         <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-grey-muted/20 text-grey-muted font-semibold uppercase">
@@ -345,17 +387,18 @@ function AdminPromos() {
                   </div>
                 </div>
 
-                {/* Actions droite */}
-                <div className="flex items-center gap-1.5 flex-shrink-0">
+                {/* Actions droite. stopPropagation pour ne pas declencher
+                    le copy du parent quand on clique sur une action. */}
+                <div className="flex items-center gap-1.5 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
                   <button
-                    onClick={() => handleToggle(p)}
+                    onClick={(e) => { e.stopPropagation(); handleToggle(p); }}
                     className={`p-2 rounded-lg transition-colors ${p.active ? 'bg-green-500/10 text-green-400 hover:bg-green-500/20' : 'bg-grey-muted/10 text-grey-muted hover:bg-grey-muted/20'}`}
                     title={p.active ? 'Desactiver' : 'Activer'}
                   >
                     {p.active ? <CheckCircle size={16} /> : <XCircle size={16} />}
                   </button>
                   <button
-                    onClick={() => openEdit(p)}
+                    onClick={(e) => { e.stopPropagation(); openEdit(p); }}
                     className="p-2 rounded-lg bg-accent/10 text-accent hover:bg-accent/20 transition-colors"
                     title="Modifier"
                   >
@@ -363,7 +406,7 @@ function AdminPromos() {
                   </button>
                   {p.currentUses > 0 && (
                     <button
-                      onClick={() => handleResetUses(p)}
+                      onClick={(e) => { e.stopPropagation(); handleResetUses(p); }}
                       className="p-2 rounded-lg bg-yellow-500/10 text-yellow-400 hover:bg-yellow-500/20 transition-colors"
                       title={tx({ fr: 'Remettre compteur a 0', en: 'Reset counter', es: 'Restablecer contador' })}
                     >
@@ -371,7 +414,7 @@ function AdminPromos() {
                     </button>
                   )}
                   <button
-                    onClick={() => handleDelete(p)}
+                    onClick={(e) => { e.stopPropagation(); handleDelete(p); }}
                     className="p-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors"
                     title="Supprimer"
                   >
