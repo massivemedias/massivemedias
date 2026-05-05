@@ -304,30 +304,6 @@ function ArtisteDetail({ subdomainSlug }) {
     setIsLandscape(false);
   }, [selectedPrint?.id]);
 
-  // FIX-ORIENTATION-RACE (3 mai 2026) : detecte l'orientation de l'image
-  // SELECTED des que selectedPrint change, sans dependre du onLoad du
-  // slide 0 (qui ne se declenche que si on visite ce slide). Avant ce fix,
-  // si l'utilisateur cliquait directement un mockup sans passer par le
-  // print brut, isLandscape restait a false par defaut -> InstantMockup
-  // chargeait les cadres portrait pour des prints landscape (Mok 1600x900,
-  // etc.) -> mockups casses. Maintenant la detection est immediate au
-  // changement de print, garantit que isLandscape est correct AVANT que
-  // InstantMockup soit monte.
-  useEffect(() => {
-    if (!selectedPrint) return;
-    const url = selectedPrint.fullImage || toFull(selectedPrint.image);
-    if (!url) return;
-    let cancelled = false;
-    const probe = new Image();
-    probe.crossOrigin = 'anonymous';
-    probe.onload = () => {
-      if (cancelled) return;
-      setIsLandscape(probe.naturalWidth > probe.naturalHeight);
-    };
-    probe.src = url;
-    return () => { cancelled = true; };
-  }, [selectedPrint?.id]);
-
   if (!artist) {
     return (
       <div className="section-container pt-32 text-center">
@@ -613,10 +589,7 @@ function ArtisteDetail({ subdomainSlug }) {
 
           <div className="flex flex-col lg:flex-row gap-10">
             {/* Bio artiste - prend 1/3 en desktop, sticky */}
-            {/* FIX-Z : z-10 sur tous les sticky panels pour qu'aucun ne
-                cree un stacking context capable de remonter au-dessus de
-                la lightbox z-[99999]. */}
-            <div className="relative z-10 lg:w-1/3 lg:sticky lg:top-24 self-start order-2 lg:order-1">
+            <div className="lg:w-1/3 lg:sticky lg:top-24 self-start order-2 lg:order-1">
               <div className="p-6 rounded-2xl transition-colors duration-300 highlight-shadow">
                 <h3 className="text-xl font-heading font-bold text-gradient mb-4">
                   {tx({ fr: 'L\'artiste', en: 'The Artist', es: 'El artista' })}
@@ -862,11 +835,8 @@ function ArtisteDetail({ subdomainSlug }) {
                 </div>
               </div>
 
-              {/* Options
-                  FIX-Z (3 mai 2026) : z-10 force pour eviter que le panneau
-                  violet glassmorphism (highlight-shadow + sticky) ne cree un
-                  stacking context perturbant la lightbox z-[99999]. */}
-              <div className="relative z-10 p-4 sm:p-6 rounded-2xl transition-colors duration-300 highlight-shadow lg:sticky lg:top-24 self-start">
+              {/* Options */}
+              <div className="p-4 sm:p-6 rounded-2xl transition-colors duration-300 highlight-shadow lg:sticky lg:top-24 self-start">
                 <ConfiguratorArtistSticker
                   artist={artist}
                   selectedSticker={selectedSticker}
@@ -892,9 +862,7 @@ function ArtisteDetail({ subdomainSlug }) {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-8 max-w-5xl mx-auto items-start">
               {/* Slide mockup: 0=print brut, 1-4=pieces interieures */}
-              {/* FIX-Z : z-10 sur le panneau gauche (mockup) - cohérence
-                  avec les autres sticky pour eviter stacking conflicts. */}
-              <div className="relative z-10 lg:sticky lg:top-24">
+              <div className="lg:sticky lg:top-24">
                 <div className="relative flex items-center">
                   {/* Fleche gauche */}
                   <button
@@ -962,11 +930,8 @@ function ArtisteDetail({ subdomainSlug }) {
                 </div>
               </div>
 
-              {/* Options configurateur (panneau violet glassmorphism)
-                  FIX-Z : z-10 force pour qu'il ne perturbe pas la lightbox
-                  z-[99999]. C'est CE panneau qui contient le bloc
-                  highlight-shadow / ConfiguratorArtistPrint. */}
-              <div className="relative z-10 space-y-4 lg:sticky lg:top-24 self-start">
+              {/* Options configurateur */}
+              <div className="space-y-4 lg:sticky lg:top-24 self-start">
                 <div className="p-4 sm:p-6 rounded-2xl transition-colors duration-300 highlight-shadow">
                   <ConfiguratorArtistPrint
                     artist={artist}

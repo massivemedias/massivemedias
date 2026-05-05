@@ -13,12 +13,12 @@ export function ArtistsProvider({ children }) {
     let cancelled = false;
     async function fetchArtists() {
       try {
-        // FIX-401-CMS (3 mai 2026) : route publique dediee /artists-cms-list
-        // qui retourne uniquement les champs CMS modifiables (avatar, heroImage,
-        // taglines) sans auth. Avant, on tapait sur /api/artists auto-generee
-        // Strapi qui retourne 401 (collection protegee par defaut, et nos
-        // tokens Supabase ne sont pas reconnus comme tokens Strapi user).
-        const { data } = await api.get('/artists-cms-list');
+        const { data } = await api.get('/artists', {
+          params: {
+            populate: ['avatar', 'heroImage'],
+            pagination: { pageSize: 50 },
+          },
+        });
         if (!cancelled && data?.data) {
           // Indexer par slug
           const map = {};
@@ -28,7 +28,7 @@ export function ArtistsProvider({ children }) {
           setArtists(map);
         }
       } catch {
-        // Backend indispo - fallback silencieux sur artists.js hardcoded
+        // CMS indisponible - on utilise les donnees locales
       }
       if (!cancelled) setLoading(false);
     }
