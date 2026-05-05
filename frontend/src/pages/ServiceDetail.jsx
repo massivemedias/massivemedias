@@ -581,7 +581,14 @@ function ServiceDetail() {
             (above the fold), avant la description detaillee du service
             et les sections marketing. mt-2 / mb-16 pour une transition
             aeree depuis le hero sans surcharger l'interface. */}
-        {hasConfigurator && (() => {
+        {/* WEBDESIGN-BOTTOM (4 mai 2026) : pour le service web, le
+            configurateur est rendu EN BAS de page (juste avant le
+            footer/lightbox portal) plutot qu'above-the-fold. Decision
+            UX : la page web a beaucoup de contenu marketing/portfolio
+            que le visiteur doit voir avant de demander un devis. Pour
+            les autres services (prints, stickers, etc.) le calculateur
+            de prix reste en haut pour conversion immediate. */}
+        {hasConfigurator && service.slug !== 'web' && (() => {
           const Comp = configuratorMap[service.boutiqueSlug];
           if (!Comp) return null;
           return (
@@ -1193,26 +1200,41 @@ function ServiceDetail() {
           </motion.div>
         )}
 
-        {/* QUOTE-FORM (3 mai 2026) : formulaire de soumission pour le
-            service web, place juste au-dessus du footer (qui est dans
-            MainLayout). Ancre #quote-form ciblee par les CTA "Demander
-            une soumission" du hero et du bloc CTA bottom. */}
-        {service.slug === 'web' && (
-          <QuoteForm
-            id="quote-form"
-            service="web"
-            title={{
-              fr: 'Demander une soumission',
-              en: 'Request a quote',
-              es: 'Solicitar cotización',
-            }}
-            subtitle={{
-              fr: 'Décris ton projet web. On revient vers toi avec une estimation détaillée dans les 24h.',
-              en: 'Describe your web project. We get back to you with a detailed estimate within 24h.',
-              es: 'Describe tu proyecto web. Te enviamos una estimación detallada en 24h.',
-            }}
-          />
-        )}
+        {/* WEBDESIGN-CONFIGURATOR-BOTTOM (4 mai 2026) : on rend ici le
+            ConfiguratorWeb (deplace depuis le top-of-fold). Section avec
+            id="quote-form" pour ancre depuis les CTA "Demander une
+            soumission" du hero et du bloc CTA bottom. Le QuoteForm
+            standalone precedent (commit 4b3f0c7) faisait double emploi
+            avec ConfiguratorWeb qui a deja les memes champs - retire. */}
+        {service.slug === 'web' && hasConfigurator && (() => {
+          const Comp = configuratorMap[service.boutiqueSlug];
+          if (!Comp) return null;
+          return (
+            <section id="quote-form" ref={configuratorRef} className="scroll-mt-24 py-12 sm:py-16 bg-glass/30 border-y border-white/5">
+              <div className="max-w-3xl mx-auto px-4 sm:px-6">
+                <div className="text-center mb-8">
+                  <h2 className="text-3xl sm:text-4xl font-heading font-bold text-heading mb-3">
+                    {tx({ fr: 'Demander une soumission', en: 'Request a quote', es: 'Solicitar cotización' })}
+                  </h2>
+                  <p className="text-grey-muted text-base">
+                    {tx({
+                      fr: 'Décris ton projet web. On revient vers toi avec une estimation détaillée dans les 24h.',
+                      en: 'Describe your web project. We get back to you with a detailed estimate within 24h.',
+                      es: 'Describe tu proyecto web. Te enviamos una estimación detallada en 24h.',
+                    })}
+                  </p>
+                </div>
+                <Suspense fallback={
+                  <div className="text-center py-8 text-grey-muted">
+                    {tx({ fr: 'Chargement...', en: 'Loading...', es: 'Cargando...' })}
+                  </div>
+                }>
+                  <Comp />
+                </Suspense>
+              </div>
+            </section>
+          );
+        })()}
 
         {/* CONFIGURATEUR : deplace au-dessus de la ligne de flottaison
             (cf. block en haut, juste sous le HERO). Cet emplacement de
