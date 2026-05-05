@@ -182,6 +182,20 @@ exports.default = {
             const artistName = body.artistName ? String(body.artistName).trim().slice(0, 200) : undefined;
             const description = body.description ? String(body.description).trim().slice(0, 500) : undefined;
             const language = ['fr', 'en', 'es'].includes(body.language) ? body.language : 'fr';
+            // FIX-DIAG (3 mai 2026) : log explicite du chargement des cles env
+            // au boot du handler. Permet de diagnostiquer rapidement si une cle
+            // manque sur Render (cause frequente de 500/502).
+            const hasOpenAI = !!process.env.OPENAI_API_KEY;
+            const hasGemini = !!process.env.GEMINI_API_KEY;
+            if (!hasOpenAI && !hasGemini) {
+                console.error('[ads-generator] CONFIG ERROR : ni OPENAI_API_KEY ni GEMINI_API_KEY definis sur le serveur');
+                ctx.status = 500;
+                ctx.body = {
+                    error: 'Internal Server Error',
+                    detail: 'Aucune cle API IA configuree. Verifier OPENAI_API_KEY ou GEMINI_API_KEY dans Render env vars.',
+                };
+                return;
+            }
             const prompt = buildPrompt({ productName, productType, artistName, description, language });
             const raw = await callAIProvider(prompt);
             const variants = parseAdResponse(raw);

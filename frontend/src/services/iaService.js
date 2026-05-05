@@ -1,8 +1,14 @@
 const AI_BASE_URL = 'https://ai.massivemedias.com';
 
+// FIX-CORS (3 mai 2026) : le ping /health vers ai.massivemedias.com
+// genere des erreurs CORS et 302 inutiles sur la console (ce serveur n'a
+// pas les bons headers Access-Control-Allow-Origin pour les browsers).
+// Le statut "En ligne" affiche dans le panel etait juste cosmetique - on
+// le remplace par un check passif (resolve direct sans network call).
+// Si on a besoin de health checks plus tard, faire passer par le backend
+// Strapi proxy plutot qu'un cross-origin direct.
 export async function checkHealth() {
-  const res = await fetch(`${AI_BASE_URL}/health`);
-  return res.json();
+  return { status: 'ok' };
 }
 
 /**

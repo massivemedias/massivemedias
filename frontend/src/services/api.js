@@ -129,6 +129,18 @@ api.interceptors.response.use(
     // On rejette simplement la promesse. La gestion du 401 remonte au composant
     // qui peut afficher une erreur UX sans detruire la session. Pas de redirect,
     // pas de signOut, pas d'event auth:expired.
+    // FIX-DIAG (3 mai 2026) : log explicite des 401 pour aider l'admin a
+    // comprendre pourquoi sa session est rejetee (token expire, role
+    // insuffisant, endpoint mal protege). Visible dans la console browser.
+    if (error?.response?.status === 401) {
+      console.warn(
+        '[api] 401 sur',
+        error?.config?.method?.toUpperCase() || 'GET',
+        error?.config?.url,
+        '- token:', !!error?.config?.headers?.Authorization,
+        '- detail:', error?.response?.data?.error?.message || error?.response?.data?.message || '(no detail)'
+      );
+    }
     return Promise.reject(error);
   }
 );

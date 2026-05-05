@@ -229,7 +229,11 @@ function App() {
               {/* /admin/reglages-facturation -> onglet integre dans /admin/commandes (avril 2026) */}
               <Route path="reglages-facturation" element={<Navigate to="/admin/commandes" replace />} />
               <Route path="systeme" element={<AdminSystemStatus />} />
-              <Route path="massive-ia" element={<AdminMassiveIA />} />
+              {/* FIX-ROUTE (3 mai 2026) : route principale massive-ai
+                  (coherent avec le branding "ai.massive"). Alias massive-ia
+                  conserve pour la backward-compat des liens deja partages. */}
+              <Route path="massive-ai" element={<AdminMassiveIA />} />
+              <Route path="massive-ia" element={<Navigate to="/admin/massive-ai" replace />} />
             </Route>
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/checkout/success" element={<CheckoutSuccess />} />
