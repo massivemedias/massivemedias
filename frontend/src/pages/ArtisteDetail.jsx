@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { useParams, Link, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, MessageSquare, ChevronDown, ChevronLeft, ChevronRight, CheckCircle, Image, ExternalLink, X, ZoomIn, Send, LogIn, MessageCircle, LayoutGrid, Grid3X3, List } from 'lucide-react';
@@ -1116,7 +1117,14 @@ function ArtisteDetail({ subdomainSlug }) {
         </motion.div>
       </div>
 
-      {/* ============ LIGHTBOX ============ */}
+      {/* ============ LIGHTBOX ============
+          FIX-PORTAL-Z (3 mai 2026) : portal vers document.body + z-[99999].
+          La page artiste a 4 panneaux lg:sticky (bio + prints + stickers
+          + selecteur) qui creent chacun un stacking context. Le z-[100]
+          original etait piege dans ces contexts -> lightbox apparaissait
+          sous le panneau de droite. Portal sort du DOM tree, z-[99999]
+          garantit le rendu au-dessus de tout. */}
+      {typeof document !== 'undefined' && createPortal(
       <AnimatePresence>
         {lightbox !== null && (() => {
           const isSticker = typeof lightbox === 'object' && lightbox.type === 'sticker';
@@ -1138,7 +1146,7 @@ function ArtisteDetail({ subdomainSlug }) {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
-              className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4"
+              className="fixed inset-0 z-[99999] bg-black/90 flex items-center justify-center p-4"
               onClick={() => setLightbox(null)}
             >
               {/* Close */}
@@ -1196,7 +1204,9 @@ function ArtisteDetail({ subdomainSlug }) {
             </motion.div>
           );
         })()}
-      </AnimatePresence>
+      </AnimatePresence>,
+      document.body,
+      )}
     </>
   );
 }
