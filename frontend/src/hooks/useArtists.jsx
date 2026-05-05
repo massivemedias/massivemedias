@@ -13,15 +13,12 @@ export function ArtistsProvider({ children }) {
     let cancelled = false;
     async function fetchArtists() {
       try {
-        // Best-effort : la collection /api/artists est protegee par defaut
-        // Strapi -> 401 attendu, fallback silencieux sur artists.js. Le log
-        // 401 dans l'interceptor api.js skip cet endpoint via URL pattern.
-        const { data } = await api.get('/artists', {
-          params: {
-            populate: ['avatar', 'heroImage'],
-            pagination: { pageSize: 50 },
-          },
-        });
+        // FIX-401-CMS (3 mai 2026) : route publique dediee /artists-cms-list
+        // qui retourne uniquement les champs CMS modifiables (avatar, heroImage,
+        // taglines) sans auth. Avant, on tapait sur /api/artists auto-generee
+        // Strapi qui retourne 401 (collection protegee par defaut, et nos
+        // tokens Supabase ne sont pas reconnus comme tokens Strapi user).
+        const { data } = await api.get('/artists-cms-list');
         if (!cancelled && data?.data) {
           // Indexer par slug
           const map = {};
@@ -31,7 +28,7 @@ export function ArtistsProvider({ children }) {
           setArtists(map);
         }
       } catch {
-        // CMS indisponible - on utilise les donnees locales
+        // Backend indispo - fallback silencieux sur artists.js hardcoded
       }
       if (!cancelled) setLoading(false);
     }

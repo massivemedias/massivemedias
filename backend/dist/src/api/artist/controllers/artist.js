@@ -472,6 +472,44 @@ exports.default = strapi_1.factories.createCoreController('api::artist.artist', 
     // totalement invisible dans le hub admin -> impossible de completer
     // son profil ou de le retrograder. Maintenant il apparait avec
     // incomplete=true et l'admin peut agir.
+    /**
+     * GET /api/artists-cms-list - Route PUBLIQUE pour useArtists frontend.
+     *
+     * Retourne uniquement les champs CMS modifiables par l'artiste lui-meme
+     * (avatar, heroImage, taglineFr/En/Es) qui surchargent les donnees
+     * structurelles de src/data/artists.js. Aucun champ sensible expose.
+     *
+     * Sans cette route, le hook useArtists tombait sur /api/artists
+     * auto-generee Strapi -> 401 par defaut (collection protegee), polluant
+     * la console et empechant le live des avatars custom uploades.
+     */
+    async publicCmsList(ctx) {
+        try {
+            const artists = await strapi.documents('api::artist.artist').findMany({
+                sort: { name: 'asc' },
+                limit: 200,
+                populate: ['avatar', 'heroImage'],
+            });
+            // Whitelist stricte des champs exposes - rien de financier ni
+            // personnel (email, commissionRate, etc. exclus).
+            const data = (artists || []).map((a) => ({
+                slug: a.slug,
+                name: a.name,
+                avatar: a.avatar || null,
+                heroImage: a.heroImage || null,
+                taglineFr: a.taglineFr || '',
+                taglineEn: a.taglineEn || '',
+                taglineEs: a.taglineEs || '',
+            }));
+            ctx.body = { data };
+        }
+        catch (err) {
+            strapi.log.error(`[publicCmsList] ${(err === null || err === void 0 ? void 0 : err.message) || err}`);
+            // En cas de crash on retourne un array vide plutot qu'un 500
+            // pour que le frontend tombe gracieusement sur le fallback hardcoded.
+            ctx.body = { data: [] };
+        }
+    },
     async adminListAll(ctx) {
         if (!(await (0, auth_1.requireAdminAuth)(ctx)))
             return;

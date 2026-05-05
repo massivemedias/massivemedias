@@ -69,6 +69,18 @@ exports.default = {
             config: { auth: false },
         },
         {
+            // Route PUBLIQUE pour le hook frontend useArtists qui surcharge les
+            // donnees CMS modifiables (avatar, heroImage, taglineFr) sur les
+            // donnees structurelles hardcoded (artists.js). Sans cette route,
+            // useArtists tombait sur /api/artists auto-generee Strapi qui retourne
+            // 401 (collection protegee par defaut). Aucune donnee sensible exposee
+            // ici - juste les visuels publics.
+            method: 'GET',
+            path: '/artists-cms-list',
+            handler: 'artist.publicCmsList',
+            config: { auth: false },
+        },
+        {
             method: 'GET',
             path: '/admin/artists-detail/:slug',
             handler: 'artist.adminGetDetail',
