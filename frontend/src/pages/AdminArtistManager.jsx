@@ -403,11 +403,26 @@ function AdminArtistManager() {
   const [privateSaleTarget, setPrivateSaleTarget] = useState(null);
 
   const openEditItem = (item, category) => {
+    // PRINT-TYPE (5 mai 2026) : on derive le "type" depuis les flags existants
+    // pour pre-selectionner la bonne option dans le select. Mapping :
+    //   unique:true   -> 'unique'   (Piece unique)
+    //   limited:true  -> 'limited'  (Serie limitee)
+    //   private:true  -> 'private'  (Vente privee - read-only ici, via cadenas)
+    //   sinon         -> 'normal'   (Normale)
+    // Note : private prime visuellement car c'est l'etat qui gele la mutation.
+    let printType = 'normal';
+    if (item.unique) printType = 'unique';
+    else if (item.limited) printType = 'limited';
+    if (item.private) printType = 'private';
+
     setEditingItem({
       id: item.id,
       category,
       titleFr: item.titleFr || item.titleEn || '',
       customPrice: item.customPrice != null ? String(item.customPrice) : '',
+      printType,
+      limitedQty: item.limitedQty != null ? String(item.limitedQty) : '',
+      isPrivate: !!item.private,
     });
   };
 
@@ -420,13 +435,37 @@ function AdminArtistManager() {
       patch.customPrice = p;
     }
 
+    // PRINT-TYPE-MAPPING (5 mai 2026) : on traduit le printType selectionne
+    // par l'admin en flags backend (unique, limited, limitedQty). Le type
+    // 'private' est gere via la modal cadenas - on l'ignore ici (on ne touche
+    // pas au champ private pour ne pas casser une vente privee active par
+    // accident depuis l'edit modal).
+    if (editingItem.printType === 'unique') {
+      patch.unique = true;
+      patch.limited = false;
+    } else if (editingItem.printType === 'limited') {
+      patch.unique = false;
+      patch.limited = true;
+      if (editingItem.limitedQty !== '' && editingItem.limitedQty != null) {
+        const q = parseInt(String(editingItem.limitedQty).replace(/[^0-9]/g, ''), 10);
+        if (Number.isFinite(q) && q > 0) patch.limitedQty = q;
+      }
+    } else if (editingItem.printType === 'normal') {
+      patch.unique = false;
+      patch.limited = false;
+    }
+    // editingItem.printType === 'private' : on ne touche a rien (read-only)
+
     // OPTIMISTIC UI : patch local du item concerne dans detail.prints ou detail.stickers
     const snapshot = detail;
     const cat = editingItem.category;
     setDetail(prev => {
       if (!prev || !Array.isArray(prev[cat])) return prev;
       const updated = prev[cat].map(it => it.id === editingItem.id
-        ? { ...it, titleFr: patch.titleFr, titleEn: patch.titleEn, customPrice: patch.customPrice }
+        ? { ...it, titleFr: patch.titleFr, titleEn: patch.titleEn, customPrice: patch.customPrice,
+            unique: patch.unique ?? it.unique,
+            limited: patch.limited ?? it.limited,
+            limitedQty: patch.limitedQty ?? it.limitedQty }
         : it);
       return { ...prev, [cat]: updated };
     });
@@ -840,27 +879,68 @@ function AdminArtistManager() {
                   <TextareaField label="Bio FR" value={profileDraft?.bioFr ?? detail.bioFr} onChange={v => handleProfileField('bioFr', v)} />
                   <TextareaField label="Bio EN" value={profileDraft?.bioEn ?? detail.bioEn} onChange={v => handleProfileField('bioEn', v)} />
                   <TextareaField label="Bio ES" value={profileDraft?.bioEs ?? detail.bioEs} onChange={v => handleProfileField('bioEs', v)} />
-                  {/* FIX-COMMISSIONS (avril 2026) : deux champs distincts Prints /
-                      Stickers. Le legacy `commissionRate` est conserve en BDD
-                      comme fallback mais n'est plus edite depuis l'UI God Mode. */}
-                  <InputField
-                    label={tx({ fr: 'Commission Prints (0-1 = %)', en: 'Prints commission (0-1 = %)', es: 'Comision Prints (0-1)' })}
-                    type="number" step="0.01" min="0" max="1"
-                    value={profileDraft?.printCommissionRate ?? detail.printCommissionRate ?? detail.commissionRate ?? 0.5}
-                    onChange={v => handleProfileField('printCommissionRate', parseFloat(v))} />
-                  <InputField
-                    label={tx({ fr: 'Commission Stickers (0-1 = %)', en: 'Stickers commission (0-1 = %)', es: 'Comision Stickers (0-1)' })}
-                    type="number" step="0.01" min="0" max="1"
-                    value={profileDraft?.stickerCommissionRate ?? detail.stickerCommissionRate ?? 0.15}
-                    onChange={v => handleProfileField('stickerCommissionRate', parseFloat(v))} />
+                  {/* CLARTE (5 mai 2026) : labels explicites avec helper text
+                      pour comprendre que 0.5 = 50% du prix de vente. Slider
+                      visuel + valeur en pourcentage affichee a cote. */}
                   <div>
-                    <label className="text-xs text-grey-muted block mb-1">{tx({ fr: 'Actif', en: 'Active', es: 'Activo' })}</label>
+                    <label className="text-xs text-grey-muted block mb-1">
+                      {tx({ fr: 'Commission artiste sur les Prints', en: 'Artist commission on Prints', es: 'Comisión del artista en Prints' })}
+                      <span className="text-accent ml-2 font-bold">
+                        {Math.round((profileDraft?.printCommissionRate ?? detail.printCommissionRate ?? detail.commissionRate ?? 0.5) * 100)}%
+                      </span>
+                    </label>
+                    <input
+                      type="number" step="0.05" min="0" max="1"
+                      value={profileDraft?.printCommissionRate ?? detail.printCommissionRate ?? detail.commissionRate ?? 0.5}
+                      onChange={e => handleProfileField('printCommissionRate', parseFloat(e.target.value))}
+                      className="input-field text-sm w-full"
+                    />
+                    <p className="text-[10px] text-grey-muted/70 mt-1">
+                      {tx({
+                        fr: 'Part du prix de vente reversée à l\'artiste (ex: 0.5 = 50%, 0.7 = 70%).',
+                        en: 'Share of sale price paid to artist (ex: 0.5 = 50%, 0.7 = 70%).',
+                        es: 'Parte del precio de venta pagada al artista (ej: 0.5 = 50%).',
+                      })}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="text-xs text-grey-muted block mb-1">
+                      {tx({ fr: 'Commission artiste sur les Stickers', en: 'Artist commission on Stickers', es: 'Comisión en Stickers' })}
+                      <span className="text-purple-400 ml-2 font-bold">
+                        {Math.round((profileDraft?.stickerCommissionRate ?? detail.stickerCommissionRate ?? 0.15) * 100)}%
+                      </span>
+                    </label>
+                    <input
+                      type="number" step="0.05" min="0" max="1"
+                      value={profileDraft?.stickerCommissionRate ?? detail.stickerCommissionRate ?? 0.15}
+                      onChange={e => handleProfileField('stickerCommissionRate', parseFloat(e.target.value))}
+                      className="input-field text-sm w-full"
+                    />
+                    <p className="text-[10px] text-grey-muted/70 mt-1">
+                      {tx({
+                        fr: 'Souvent plus bas que les prints (ex: 0.15 = 15%).',
+                        en: 'Often lower than prints (ex: 0.15 = 15%).',
+                        es: 'Suele ser menor que prints (ej: 0.15 = 15%).',
+                      })}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="text-xs text-grey-muted block mb-1">
+                      {tx({ fr: 'Statut du profil artiste', en: 'Artist profile status', es: 'Estado del perfil del artista' })}
+                    </label>
                     <select value={(profileDraft?.active ?? detail.active) ? 'true' : 'false'}
                       onChange={e => handleProfileField('active', e.target.value === 'true')}
                       className="input-field text-sm w-full">
-                      <option value="true">{tx({ fr: 'Oui', en: 'Yes', es: 'Si' })}</option>
-                      <option value="false">{tx({ fr: 'Non', en: 'No', es: 'No' })}</option>
+                      <option value="true">{tx({ fr: 'Publié - visible sur le site public', en: 'Published - visible on public site', es: 'Publicado - visible en el sitio público' })}</option>
+                      <option value="false">{tx({ fr: 'Brouillon - caché du site public', en: 'Draft - hidden from public site', es: 'Borrador - oculto del sitio público' })}</option>
                     </select>
+                    <p className="text-[10px] text-grey-muted/70 mt-1">
+                      {tx({
+                        fr: 'Détermine si la page /artistes/' + detail.slug + ' est visible aux visiteurs.',
+                        en: 'Controls whether /artistes/' + detail.slug + ' is visible to visitors.',
+                        es: 'Controla si /artistes/' + detail.slug + ' es visible para los visitantes.',
+                      })}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -912,6 +992,52 @@ function AdminArtistManager() {
                     type="number" step="0.01" min="0"
                     value={editingItem.customPrice}
                     onChange={v => setEditingItem(prev => ({ ...prev, customPrice: v }))} />
+                  {/* PRINT-TYPE-UI (5 mai 2026) : selecteur 4 categories.
+                      Normal = pas de flag.
+                      Serie limitee = limited:true + limitedQty.
+                      Piece unique = unique:true (max 1 vente).
+                      Privee = read-only ici (gere par le bouton cadenas qui
+                      ouvre ActivatePrivateSaleModal avec email/prix/lien). */}
+                  <div>
+                    <label className="text-xs text-grey-muted block mb-1">
+                      {tx({ fr: 'Type d\'oeuvre', en: 'Item type', es: 'Tipo de obra' })}
+                    </label>
+                    <select
+                      value={editingItem.printType || 'normal'}
+                      onChange={e => setEditingItem(prev => ({ ...prev, printType: e.target.value }))}
+                      disabled={editingItem.isPrivate}
+                      className="input-field text-sm w-full disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
+                      <option value="normal">{tx({ fr: 'Normale - vente illimitee, prix standard', en: 'Normal - unlimited, standard price', es: 'Normal - ilimitada' })}</option>
+                      <option value="limited">{tx({ fr: 'Serie limitee - tirage numerote', en: 'Limited edition - numbered run', es: 'Edicion limitada' })}</option>
+                      <option value="unique">{tx({ fr: 'Piece unique - 1 seul exemplaire', en: 'Unique piece - 1 only', es: 'Pieza unica' })}</option>
+                      {editingItem.isPrivate && (
+                        <option value="private">{tx({ fr: 'Privee - vente sur lien dedie', en: 'Private - dedicated link sale', es: 'Privada' })}</option>
+                      )}
+                    </select>
+                    {editingItem.printType === 'limited' && (
+                      <input
+                        type="number" min="1" step="1"
+                        value={editingItem.limitedQty || ''}
+                        onChange={e => setEditingItem(prev => ({ ...prev, limitedQty: e.target.value }))}
+                        placeholder={tx({ fr: 'Nombre d\'exemplaires (ex: 50)', en: 'Quantity (ex: 50)', es: 'Cantidad' })}
+                        className="input-field text-sm w-full mt-2"
+                      />
+                    )}
+                    <p className="text-[10px] text-grey-muted/70 mt-1 leading-relaxed">
+                      {editingItem.isPrivate
+                        ? tx({
+                            fr: 'Vente privee deja active. Pour la modifier ou la supprimer, utiliser le bouton cadenas sur la vignette.',
+                            en: 'Private sale already active. Use the lock button on the thumbnail to modify or remove.',
+                            es: 'Venta privada ya activa. Use el boton candado.',
+                          })
+                        : tx({
+                            fr: 'Pour activer une vente "Privee" (lien unique avec email client), utiliser le bouton cadenas sur la vignette.',
+                            en: 'To enable a "Private" sale (unique link with client email), use the lock button on the thumbnail.',
+                            es: 'Para activar una venta "Privada", use el boton candado.',
+                          })}
+                    </p>
+                  </div>
                   <div className="flex gap-2">
                     <button onClick={() => setEditingItem(null)} className="flex-1 py-2 rounded-lg bg-white/5 text-grey-muted text-sm hover:bg-white/10">
                       {tx({ fr: 'Annuler', en: 'Cancel', es: 'Cancelar' })}
@@ -1027,7 +1153,16 @@ function ItemsGrid({ category, items, onEdit, onDelete, onPrivateSale, deletingI
               <p className="text-[9px] text-grey-muted font-mono truncate">{item.id}</p>
               {item.customPrice != null && <p className="text-[10px] text-accent mt-0.5">{item.customPrice}$</p>}
               <div className="flex flex-wrap gap-1 mt-1">
-                {item.unique && <span className="inline-block text-[9px] bg-purple-500/20 text-purple-400 px-1.5 py-0.5 rounded">unique</span>}
+                {item.unique && (
+                  <span className="inline-block text-[9px] bg-purple-500/20 text-purple-400 px-1.5 py-0.5 rounded font-semibold" title={tx({ fr: 'Piece unique - 1 seul exemplaire', en: 'Unique piece', es: 'Pieza unica' })}>
+                    {tx({ fr: 'unique', en: 'unique', es: 'unica' })}
+                  </span>
+                )}
+                {item.limited && !item.unique && (
+                  <span className="inline-block text-[9px] bg-blue-500/20 text-blue-400 px-1.5 py-0.5 rounded font-semibold" title={tx({ fr: 'Serie limitee', en: 'Limited edition', es: 'Edicion limitada' })}>
+                    {item.limitedQty ? `${tx({ fr: 'limitee', en: 'limited', es: 'limitada' })} (${item.limitedQty})` : tx({ fr: 'limitee', en: 'limited', es: 'limitada' })}
+                  </span>
+                )}
                 {item.sold && <span className="inline-block text-[9px] bg-red-500/20 text-red-400 px-1.5 py-0.5 rounded">sold</span>}
                 {item.private && !item.sold && (
                   <span className="inline-flex items-center gap-0.5 text-[9px] bg-accent/20 text-accent px-1.5 py-0.5 rounded font-semibold">
