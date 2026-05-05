@@ -68,17 +68,18 @@ function getFxOverlayStyle(fx, tilt) {
       };
     case 'broken-glass':
     case 'broken_glass': {
-      // FIX-BROKEN-GLASS (3 mai 2026) : reflets multiples ponctuels qui
-      // scintillent comme des facettes de verre brise quand on bouge la
-      // souris. 7 spots de lumiere brillants positionnes a des offsets
-      // angulaires fixes autour du curseur (constellations de fragments)
-      // - chaque spot a sa propre dispersion couleur (cyan / magenta /
-      // jaune / blanc) pour evoquer la refraction prismatique sur du
-      // verre fracture. L'amplitude des offsets suit le tilt -> les
-      // reflets se "baladent" entre les facettes au mouvement.
-      // Mix-blend-mode 'screen' fait briller les reflets au-dessus de
-      // l'image (au lieu d'overlay qui les mute trop sur les zones claires).
-      const amp = 18; // amplitude de dispersion des facettes (en %)
+      // FIX-BROKEN-GLASS-V2 (3 mai 2026) : double calque interactif :
+      //   1. Constellation de 7 reflets ponctuels (refraction prismatique
+      //      sur les facettes statiques dessinees par le canvas-side).
+      //   2. Balayage lumineux primaire (linear-gradient) qui suit la
+      //      position de la souris -> couche dominante qui "passe" sur
+      //      le sticker au survol et fait scintiller les arretes du verre.
+      // Mix-blend-mode 'color-dodge' : eclaire fortement les zones blanches
+      // de la texture de verre brisee dessinee par le canvas (les arretes
+      // brillent comme du cristal au passage de la lumiere).
+      // Le mask alpha + pointer-events-none du fix precedent restent
+      // intacts (geres au niveau du <div> overlay).
+      const amp = 18;
       const facets = [
         { ox: 0, oy: 0, color: 'rgba(255,255,255,0.9)', spread: 8 },
         { ox: -amp, oy: -amp * 0.6, color: 'rgba(180,230,255,0.7)', spread: 6 },
@@ -88,19 +89,42 @@ function getFxOverlayStyle(fx, tilt) {
         { ox: amp * 1.4, oy: -amp * 0.2, color: 'rgba(220,200,255,0.55)', spread: 4 },
         { ox: -amp * 0.7, oy: amp * 1.1, color: 'rgba(255,220,255,0.5)', spread: 4 },
       ];
-      // Tilt influe sur le decalage global (les spots glissent ensemble
-      // dans la direction opposee au tilt -> simule la parallax 3D)
       const driftX = -tilt.y * 1.5;
       const driftY = tilt.x * 1.5;
-      const layers = facets.map(f => {
+      const constellation = facets.map(f => {
         const cx = px + f.ox + driftX;
         const cy = py + f.oy + driftY;
         return `radial-gradient(circle ${f.spread}% at ${cx}% ${cy}%, ${f.color} 0%, transparent 60%)`;
-      });
+      }).join(', ');
+
+      // Balayage primaire : grand spot blanc tres brillant (radial 40% de
+      // la zone) suit DIRECTEMENT le curseur. C'est lui qui donne le
+      // ressenti "lumiere qui se balade dans le verre" au mouvement.
+      const sweep = `radial-gradient(circle 40% at ${px}% ${py}%, ` +
+        `rgba(255,255,255,0.55) 0%, ` +
+        `rgba(220,240,255,0.25) 25%, ` +
+        `rgba(255,220,250,0.1) 50%, ` +
+        `transparent 70%)`;
+
+      // Bandeau diagonale : linear-gradient qui balaie le sticker selon
+      // l'angle du tilt. Position d'arret se decale avec px/py pour
+      // simuler l'arc-en-ciel d'une lumiere reflechie sur du verre fracture.
+      const sweepAngle = 110 + tilt.y * 4;
+      const stop1 = Math.max(5, Math.min(45, 20 + tilt.x * 1.5));
+      const stop2 = Math.max(40, Math.min(80, 55 + tilt.y * 1.5));
+      const prismBand = `linear-gradient(${sweepAngle}deg, ` +
+        `transparent ${stop1 - 5}%, ` +
+        `rgba(255,200,240,0.35) ${stop1}%, ` +
+        `rgba(200,240,255,0.4) ${(stop1 + stop2) / 2}%, ` +
+        `rgba(255,240,200,0.3) ${stop2}%, ` +
+        `transparent ${stop2 + 5}%)`;
+
       return {
-        background: layers.join(', '),
-        mixBlendMode: 'screen',
-        opacity: 0.85,
+        // L'ordre est important : sweep primaire d'abord (le plus brillant
+        // au-dessus), prismBand ensuite, puis la constellation de facettes.
+        background: `${sweep}, ${prismBand}, ${constellation}`,
+        mixBlendMode: 'color-dodge',
+        opacity: 0.95,
       };
     }
     case 'stars':
