@@ -24,6 +24,7 @@ import {
 } from '../services/adminService';
 import ActivatePrivateSaleModal from '../components/ActivatePrivateSaleModal';
 import artistsHardcoded from '../data/artists';
+import { formatPrice } from '../utils/formatCurrency';
 
 function AdminArtistManager() {
   const { tx } = useLang();
@@ -1151,7 +1152,7 @@ function ItemsGrid({ category, items, onEdit, onDelete, onPrivateSale, deletingI
             <div className="p-2">
               <p className="text-[11px] text-heading font-semibold truncate">{item.titleFr || item.titleEn || item.id}</p>
               <p className="text-[9px] text-grey-muted font-mono truncate">{item.id}</p>
-              {item.customPrice != null && <p className="text-[10px] text-accent mt-0.5">{item.customPrice}$</p>}
+              {item.customPrice != null && <p className="text-[10px] text-accent mt-0.5">{formatPrice(item.customPrice)}</p>}
               <div className="flex flex-wrap gap-1 mt-1">
                 {item.unique && (
                   <span className="inline-block text-[9px] bg-purple-500/20 text-purple-400 px-1.5 py-0.5 rounded font-semibold" title={tx({ fr: 'Piece unique - 1 seul exemplaire', en: 'Unique piece', es: 'Pieza unica' })}>

@@ -20,6 +20,7 @@ import PortfolioWizardModal from '../components/PortfolioWizardModal';
 import ProductionBoard from '../components/ProductionBoard';
 import ClientCRMModal from '../components/ClientCRMModal';
 import AdminReglagesFacturation from './AdminReglagesFacturation';
+import { formatPrice } from '../utils/formatCurrency';
 
 // FIX-UX (avril 2026) : vocabulaire "A remettre" adopte pour ready/delivered
 // car une grande part des commandes est recuperee en cueillette locale a l'atelier.
@@ -1993,7 +1994,7 @@ function AdminOrders() {
                                               {item.quantity && <span className="text-xs text-accent font-semibold bg-accent/10 px-2 py-0.5 rounded">x{item.quantity}</span>}
                                             </div>
                                           </div>
-                                          <span className="text-lg font-bold text-heading flex-shrink-0">{item.totalPrice ? `${item.totalPrice}$` : ''}</span>
+                                          <span className="text-lg font-bold text-heading flex-shrink-0">{item.totalPrice ? formatPrice(item.totalPrice) : ''}</span>
                                         </div>
                                         {item.notes && (
                                           <p className="text-sm text-grey-muted mt-2 italic bg-glass rounded px-2 py-1">"{item.notes}"</p>

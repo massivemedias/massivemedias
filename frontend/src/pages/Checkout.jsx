@@ -10,6 +10,7 @@ import { trackBeginCheckout } from '../utils/analytics';
 import CheckoutForm from '../components/CheckoutForm';
 import AddressAutocomplete from '../components/AddressAutocomplete';
 import { calculateShipping as calcShipping } from '../utils/shipping';
+import { formatPrice } from '../utils/formatCurrency';
 
 const provinces = [
   { code: 'QC', fr: 'Quebec', en: 'Quebec', es: 'Quebec' },
@@ -421,11 +422,11 @@ function Checkout() {
                         <div className="flex-shrink-0 text-right">
                           {item.isArtistOwnPrint ? (
                             <>
-                              <p className="text-grey-muted text-xs line-through">{item.totalPrice}$</p>
-                              <p className="text-green-400 font-semibold text-sm">{Math.round(item.totalPrice * (1 - ARTIST_DISCOUNT))}$</p>
+                              <p className="text-grey-muted text-xs line-through">{formatPrice(item.totalPrice)}</p>
+                              <p className="text-green-400 font-semibold text-sm">{formatPrice(item.totalPrice * (1 - ARTIST_DISCOUNT))}</p>
                             </>
                           ) : (
-                            <p className="text-heading font-semibold text-sm">{item.totalPrice}$</p>
+                            <p className="text-heading font-semibold text-sm">{formatPrice(item.totalPrice)}</p>
                           )}
                         </div>
                       </div>

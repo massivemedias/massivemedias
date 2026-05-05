@@ -14,6 +14,7 @@ import {
   hoodieColors, merchHoodiePrice, getHoodieImage,
   crewneckColors, merchCrewneckPrice, getCrewneckImage,
 } from '../data/merchData';
+import { formatPrice } from '../utils/formatCurrency';
 
 const merchConfig = {
   tshirt: {
@@ -261,10 +262,10 @@ function MerchPage({ config, type }) {
 
             <div className="p-5 rounded-xl highlight-bordered">
               <div className="flex items-baseline gap-3">
-                <span className="text-3xl font-heading font-bold text-heading">{totalPrice}$</span>
+                <span className="text-3xl font-heading font-bold text-heading">{formatPrice(totalPrice)}</span>
                 {quantity > 1 && (
                   <span className="text-grey-muted text-sm">
-                    ({unitPrice}$ x {quantity})
+                    ({formatPrice(unitPrice)} x {quantity})
                   </span>
                 )}
               </div>

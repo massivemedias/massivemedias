@@ -7,6 +7,7 @@ import {
 import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
 import { getPrivateSaleByToken, createPrivateSaleCheckout } from '../services/privateSaleService';
+import { formatPrice, money } from '../utils/formatCurrency';
 
 /**
  * Page publique "Vente Privee" - acces exclusif via un token unique envoye
@@ -87,9 +88,9 @@ function VentePrivee() {
     if (!sale || submitting) return;
     if (!amountValid) {
       setSubmitError(tx({
-        fr: `Le montant minimum pour cette oeuvre est de ${sale.basePrice}$.`,
-        en: `The minimum amount for this artwork is ${sale.basePrice}$.`,
-        es: `El monto minimo para esta obra es ${sale.basePrice}$.`,
+        fr: `Le montant minimum pour cette oeuvre est de ${formatPrice(sale.basePrice)}.`,
+        en: `The minimum amount for this artwork is ${formatPrice(sale.basePrice)}.`,
+        es: `El monto minimo para esta obra es ${formatPrice(sale.basePrice)}.`,
       }));
       return;
     }
@@ -264,9 +265,9 @@ function VentePrivee() {
                   </p>
                   <p className="text-xs text-grey-muted">
                     {tx({
-                      fr: `Minimum requis : ${sale.basePrice}$`,
-                      en: `Minimum required: ${sale.basePrice}$`,
-                      es: `Minimo requerido: ${sale.basePrice}$`,
+                      fr: `Minimum requis : ${formatPrice(sale.basePrice)}`,
+                      en: `Minimum required: ${formatPrice(sale.basePrice)}`,
+                      es: `Minimo requerido: ${formatPrice(sale.basePrice)}`,
                     })}
                   </p>
                 </div>
@@ -294,9 +295,9 @@ function VentePrivee() {
                     <p className="flex items-center gap-1.5 mt-2 text-xs text-red-400">
                       <AlertTriangle size={12} />
                       {tx({
-                        fr: `Le montant minimum pour cette oeuvre est de ${sale.basePrice}$.`,
-                        en: `The minimum amount for this artwork is ${sale.basePrice}$.`,
-                        es: `El monto minimo para esta obra es ${sale.basePrice}$.`,
+                        fr: `Le montant minimum pour cette oeuvre est de ${formatPrice(sale.basePrice)}.`,
+                        en: `The minimum amount for this artwork is ${formatPrice(sale.basePrice)}.`,
+                        es: `El monto minimo para esta obra es ${formatPrice(sale.basePrice)}.`,
                       })}
                     </p>
                   )}
@@ -308,7 +309,7 @@ function VentePrivee() {
                   {tx({ fr: 'Prix', en: 'Price', es: 'Precio' })}
                 </p>
                 <p className="text-4xl font-heading font-bold text-heading">
-                  {sale.basePrice}$ <span className="text-sm text-grey-muted font-normal">CAD</span>
+                  {formatPrice(sale.basePrice)} <span className="text-sm text-grey-muted font-normal">CAD</span>
                 </p>
               </>
             )}

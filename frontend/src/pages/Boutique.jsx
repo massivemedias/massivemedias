@@ -9,6 +9,7 @@ import { useProducts } from '../hooks/useProducts';
 import artistsData from '../data/artists';
 import { useArtists } from '../hooks/useArtists';
 import { img } from '../utils/paths';
+import { formatPrice } from '../utils/formatCurrency';
 
 // Maudite Machine (Massive) en premier
 const artistOrder = ['cornelia-rose', 'psyqu33n', 'no-pixl', 'maudite-machine', 'adrift', 'quentin-delobel', 'mok'];
@@ -855,8 +856,8 @@ function Boutique() {
                               {tx({ fr: item.descFr, en: item.descEn, es: item.descEs })}
                             </p>
                             <div className="flex items-center gap-2 mt-2">
-                              <span className="text-accent text-base font-heading font-bold">{item.salePrice}$</span>
-                              <span className="text-grey-muted text-xs line-through">{item.originalPrice}$</span>
+                              <span className="text-accent text-base font-heading font-bold">{formatPrice(item.salePrice)}</span>
+                              <span className="text-grey-muted text-xs line-through">{formatPrice(item.originalPrice)}</span>
                             </div>
                             <div className="mt-2 flex items-center gap-1.5 text-xs font-semibold">
                               {justAdded ? (

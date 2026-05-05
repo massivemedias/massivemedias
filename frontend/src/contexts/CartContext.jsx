@@ -125,9 +125,14 @@ export function CartProvider({ children }) {
       );
       let updated;
       if (existingIndex >= 0) {
+        // FIX-FP-MONEY (5 mai 2026) : roundMoney sur le total ligne pour eviter
+        // les artefacts IEEE 754 (ex: 25 * 0.5 = 12.499999... apres plusieurs ops).
+        // Sans ca, un user a vu "125.99999999$" dans son total panier.
+        const newQty = existing.quantity + (item.quantity || 1);
+        const newTotal = Math.round(newQty * existing.unitPrice * 100) / 100;
         updated = prev.map((existing, i) =>
           i === existingIndex
-            ? { ...existing, quantity: existing.quantity + (item.quantity || 1), totalPrice: (existing.quantity + (item.quantity || 1)) * existing.unitPrice }
+            ? { ...existing, quantity: newQty, totalPrice: newTotal }
             : existing
         );
       } else {
@@ -156,8 +161,11 @@ export function CartProvider({ children }) {
       const updated = prev.map((item, i) => {
         if (i !== index) return item;
         // Pour les stickers, recalculer le prix selon le palier (anti-manipulation)
+        // FIX-FP-MONEY (5 mai 2026) : round le total a 2 decimales pour eviter
+        // les artefacts FP type "125.99999999" qui propageraient ensuite au
+        // cartTotal et au checkout.
         let finalUnitPrice = unitPrice;
-        let finalTotal = quantity * unitPrice;
+        let finalTotal = Math.round(quantity * unitPrice * 100) / 100;
         if (item.productId === 'sticker-custom' || item.productId === 'sticker-artist') {
           // FIX-PRICING-TIERS (27 avril 2026) : la taille IMPACTE le prix via 3
           // paliers (Standard/Medium/Large). On passe item.sizeId au lookup pour
@@ -202,11 +210,19 @@ export function CartProvider({ children }) {
 
   const cartCount = items.length;
   // Calculer le total depuis quantity * unitPrice (plus robuste que totalPrice stocke)
-  const cartTotal = items.reduce((sum, item) => {
-    const lineTotal = item.unitPrice != null ? item.quantity * item.unitPrice : item.totalPrice;
-    return sum + (lineTotal || 0);
-  }, 0);
-  const discountAmount = discountPercent > 0 ? Math.round(cartTotal * discountPercent / 100) : 0;
+  // FIX-FP-MONEY (5 mai 2026) : round chaque ligne ET le total final pour eviter
+  // l'accumulation d'erreurs FP. Sans ca : 25 * 0.5 + 30.99 + 12.50 = 68.49 mais
+  // sur certaines combinaisons -> 68.48999999. On round 2 fois (defense en profondeur).
+  const cartTotal = Math.round(items.reduce((sum, item) => {
+    const rawLineTotal = item.unitPrice != null ? item.quantity * item.unitPrice : item.totalPrice;
+    const lineTotal = Math.round((rawLineTotal || 0) * 100) / 100;
+    return sum + lineTotal;
+  }, 0) * 100) / 100;
+  // discountAmount : le rabais en $ arrondi a 2 decimales (pas Math.round entier
+  // qui rendait 12.50$ -> 13$ - bug a part qui faisait "perdre" 0.50$ au user).
+  const discountAmount = discountPercent > 0
+    ? Math.round(cartTotal * discountPercent) / 100
+    : 0;
 
   // cartId stable pour classer les uploads dans un sous-dossier Google Drive dedie
   const cartId = useMemo(() => ensureCartId(), []);

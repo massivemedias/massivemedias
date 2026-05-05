@@ -7,6 +7,7 @@ import { useUserRole } from '../../contexts/UserRoleContext';
 import {
   getArtistPrintPrice, artistPrinterTiers, artistFormats, isFormatAvailable, framePriceByFormat,
 } from '../../data/artists';
+import { formatPrice } from '../../utils/formatCurrency';
 
 function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {}, onFrameColorChange }) {
   const { lang, tx } = useLang();
@@ -174,7 +175,7 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {}, onF
             }
           </p>
           {customPrice && (
-            <p className="text-accent font-bold text-lg">{customPrice}$</p>
+            <p className="text-accent font-bold text-lg">{formatPrice(customPrice)}</p>
           )}
         </div>
       )}
@@ -371,7 +372,7 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {}, onF
       {isLocked ? (
         <div className="p-5 rounded-xl highlight-bordered">
           <div className="flex items-baseline gap-3">
-            <span className="text-3xl font-heading font-bold text-heading">{customPrice}$</span>
+            <span className="text-3xl font-heading font-bold text-heading">{formatPrice(customPrice)}</span>
           </div>
           <div className="flex items-center gap-2 mt-2">
             <span className="text-grey-muted text-xs">

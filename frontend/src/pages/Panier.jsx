@@ -8,6 +8,7 @@ import { useLang } from '../i18n/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 import { validatePromoCode } from '../services/orderService';
 import { getStickerPrice } from '../data/products';
+import { formatPrice } from '../utils/formatCurrency';
 
 const ARTIST_DISCOUNT = 0.25;
 // Produits a paliers fixes - pas de +/- libre
@@ -150,8 +151,8 @@ function Panier() {
                   {item.isArtistOwnPrint ? (
                     <>
                       <p className="font-bold text-heading">
-                        <span className="line-through text-grey-muted text-sm mr-1">{item.totalPrice}$</span>
-                        {Math.round(item.totalPrice * (1 - ARTIST_DISCOUNT))}$
+                        <span className="line-through text-grey-muted text-sm mr-1">{formatPrice(item.totalPrice)}</span>
+                        {formatPrice(item.totalPrice * (1 - ARTIST_DISCOUNT))}
                       </p>
                       <p className="text-green-400 text-xs font-semibold text-right">
                         -{Math.round(ARTIST_DISCOUNT * 100)}%
@@ -159,8 +160,8 @@ function Panier() {
                     </>
                   ) : (
                     <>
-                      <p className="font-bold text-heading">{item.totalPrice}$</p>
-                      {item.quantity > 1 && <p className="text-grey-muted text-xs">{item.unitPrice}$/u</p>}
+                      <p className="font-bold text-heading">{formatPrice(item.totalPrice)}</p>
+                      {item.quantity > 1 && <p className="text-grey-muted text-xs">{formatPrice(item.unitPrice)}/u</p>}
                     </>
                   )}
                 </div>
@@ -281,12 +282,12 @@ function Panier() {
             <>
               <div className="flex justify-between items-center mb-1">
                 <span className="text-grey-muted text-sm">{tx({ fr: 'Sous-total', en: 'Subtotal', es: 'Subtotal' })}</span>
-                <span className="text-grey-muted line-through">{cartTotal}$</span>
+                <span className="text-grey-muted line-through">{formatPrice(cartTotal)}</span>
               </div>
               {hasArtistOwnPrints && (
                 <div className="flex justify-between items-center mb-1">
                   <span className="text-green-400 text-sm">{tx({ fr: 'Rabais artiste (-25%)', en: 'Artist discount (-25%)', es: 'Descuento artista (-25%)' })}</span>
-                  <span className="text-green-400 font-semibold">-{artistDiscountTotal}$</span>
+                  <span className="text-green-400 font-semibold">-{formatPrice(artistDiscountTotal)}</span>
                 </div>
               )}
               {discountAmount > 0 && (
@@ -294,18 +295,18 @@ function Panier() {
                   <span className="text-green-400 text-sm">
                     {tx({ fr: 'Rabais', en: 'Discount', es: 'Descuento' })} ({promoCode}, -{discountPercent}%)
                   </span>
-                  <span className="text-green-400 font-semibold">-{discountAmount}$</span>
+                  <span className="text-green-400 font-semibold">-{formatPrice(discountAmount)}</span>
                 </div>
               )}
               <div className="flex justify-between items-center pt-2 border-t border-white/10">
                 <span className="text-heading font-semibold">{tx({ fr: 'Total', en: 'Total', es: 'Total' })}</span>
-                <span className="text-2xl font-heading font-bold text-heading">{adjustedTotal - discountAmount}$</span>
+                <span className="text-2xl font-heading font-bold text-heading">{formatPrice(adjustedTotal - discountAmount)}</span>
               </div>
             </>
           ) : (
             <div className="flex justify-between items-center mb-2">
               <span className="text-heading font-semibold">{tx({ fr: 'Sous-total', en: 'Subtotal', es: 'Subtotal' })}</span>
-              <span className="text-2xl font-heading font-bold text-heading">{cartTotal}$</span>
+              <span className="text-2xl font-heading font-bold text-heading">{formatPrice(cartTotal)}</span>
             </div>
           )}
           <p className="text-grey-muted text-sm mt-2">
