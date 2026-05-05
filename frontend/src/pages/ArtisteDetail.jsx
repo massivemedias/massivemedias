@@ -304,6 +304,30 @@ function ArtisteDetail({ subdomainSlug }) {
     setIsLandscape(false);
   }, [selectedPrint?.id]);
 
+  // FIX-ORIENTATION-RACE (3 mai 2026) : detecte l'orientation de l'image
+  // SELECTED des que selectedPrint change, sans dependre du onLoad du
+  // slide 0 (qui ne se declenche que si on visite ce slide). Avant ce fix,
+  // si l'utilisateur cliquait directement un mockup sans passer par le
+  // print brut, isLandscape restait a false par defaut -> InstantMockup
+  // chargeait les cadres portrait pour des prints landscape (Mok 1600x900,
+  // etc.) -> mockups casses. Maintenant la detection est immediate au
+  // changement de print, garantit que isLandscape est correct AVANT que
+  // InstantMockup soit monte.
+  useEffect(() => {
+    if (!selectedPrint) return;
+    const url = selectedPrint.fullImage || toFull(selectedPrint.image);
+    if (!url) return;
+    let cancelled = false;
+    const probe = new Image();
+    probe.crossOrigin = 'anonymous';
+    probe.onload = () => {
+      if (cancelled) return;
+      setIsLandscape(probe.naturalWidth > probe.naturalHeight);
+    };
+    probe.src = url;
+    return () => { cancelled = true; };
+  }, [selectedPrint?.id]);
+
   if (!artist) {
     return (
       <div className="section-container pt-32 text-center">
