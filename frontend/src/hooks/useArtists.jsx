@@ -13,17 +13,14 @@ export function ArtistsProvider({ children }) {
     let cancelled = false;
     async function fetchArtists() {
       try {
-        // FIX-401 (3 mai 2026) : marqueur custom sur la requete pour signaler
-        // a l'interceptor qu'un 401 est ATTENDU ici (collection Strapi protegee
-        // par defaut). Permet de catcher silencieusement sans polluer la
-        // console avec [api] 401 sur GET /artists - ce hook est best-effort,
-        // les donnees fallback viennent de artists.js si CMS indispo.
+        // Best-effort : la collection /api/artists est protegee par defaut
+        // Strapi -> 401 attendu, fallback silencieux sur artists.js. Le log
+        // 401 dans l'interceptor api.js skip cet endpoint via URL pattern.
         const { data } = await api.get('/artists', {
           params: {
             populate: ['avatar', 'heroImage'],
             pagination: { pageSize: 50 },
           },
-          headers: { 'X-Suppress-401-Log': '1' },
         });
         if (!cancelled && data?.data) {
           // Indexer par slug

@@ -132,9 +132,13 @@ api.interceptors.response.use(
     // FIX-DIAG (3 mai 2026) : log explicite des 401 pour aider l'admin a
     // comprendre pourquoi sa session est rejetee (token expire, role
     // insuffisant, endpoint mal protege). Visible dans la console browser.
-    // Header X-Suppress-401-Log=1 pour les call best-effort (ex: useArtists
-    // qui essaie de fetch CMS public, fallback sur artists.js si echec).
-    if (error?.response?.status === 401 && error?.config?.headers?.['X-Suppress-401-Log'] !== '1') {
+    // FIX-CORS (3 mai 2026 v2) : le header custom X-Suppress-401-Log
+    // declenche un preflight OPTIONS rejete par le serveur Strapi (header
+    // pas dans Access-Control-Allow-Headers). Switch vers un check URL
+    // pattern pour suppress le log sur les endpoints publics best-effort
+    // (ex: /artists protege par defaut, fallback hardcoded). Aucun header
+    // custom ajoute -> aucun preflight CORS additionnel.
+    if (error?.response?.status === 401 && !isExpected401(error?.config?.url)) {
       console.warn(
         '[api] 401 sur',
         error?.config?.method?.toUpperCase() || 'GET',
@@ -146,6 +150,21 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+/**
+ * URLs ou un 401 est attendu par design (collections Strapi protegees
+ * mais on essaie quand meme avec un fallback hardcoded). Ne pas polluer
+ * la console pour ces cas.
+ */
+function isExpected401(url) {
+  if (!url || typeof url !== 'string') return false;
+  const path = url.split('?')[0];
+  // /artists (sans /admin) : collection CMS publique mais protegee par
+  // defaut Strapi. Le hook useArtists fallback sur src/data/artists.js.
+  if (path === '/artists') return true;
+  if (path.startsWith('/artists/') && !path.includes('admin')) return true;
+  return false;
+}
 
 // Expose pour que le polling puisse verifier avant de spammer
 export function isServerDown() {
