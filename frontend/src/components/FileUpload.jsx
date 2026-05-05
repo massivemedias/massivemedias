@@ -140,10 +140,14 @@ function FileUpload({ files = [], onFilesChange, label, maxFiles = 5, compact = 
       const explicitFolder = contextLabel || window.__artistSlug || '';
 
       for (const file of toUpload) {
+        // FIX-UX-UPLOAD (5 mai 2026) : on retire la mention "30s si serveur
+        // en veille" qui inquietait inutilement le user. Le retry/timeout
+        // est gere transparentement par api.js (RETRY_DELAYS [4s/8s/15s])
+        // - le user voit juste un message d'attente progress simple.
         setUploadStatus(tx({
-          fr: `Upload de ${file.name}... (peut prendre 30s si serveur en veille)`,
-          en: `Uploading ${file.name}... (may take 30s if server is waking up)`,
-          es: `Subiendo ${file.name}... (puede tardar 30s si el servidor esta despertando)`,
+          fr: `Upload de ${file.name} en cours...`,
+          en: `Uploading ${file.name}...`,
+          es: `Subiendo ${file.name}...`,
         }));
         const formData = new FormData();
         formData.append('file', file);
@@ -181,10 +185,12 @@ function FileUpload({ files = [], onFilesChange, label, maxFiles = 5, compact = 
       const status = err?.response?.status;
       let friendly;
       if (err?.code === 'ECONNABORTED' || /timeout/i.test(err?.message || '')) {
+        // FIX-UX-UPLOAD (5 mai 2026) : message simplifie sans mention serveur
+        // veille - juste l'action que le user doit prendre.
         friendly = tx({
-          fr: "Temps d'attente depassé. Le serveur se reveillait peut-etre - reessayez dans 10 secondes.",
-          en: 'Request timed out. Server may have been waking up - please try again in 10 seconds.',
-          es: 'Tiempo de espera agotado. Reintenta en 10 segundos.',
+          fr: "L'upload a pris trop de temps. Reessaie dans quelques secondes.",
+          en: 'Upload took too long. Please try again in a few seconds.',
+          es: 'La carga tardo demasiado. Reintenta en unos segundos.',
         });
       } else if (status === 413) {
         friendly = tx({ fr: 'Fichier trop volumineux pour le serveur.', en: 'File too large for the server.', es: 'Archivo demasiado grande para el servidor.' });
