@@ -49,8 +49,15 @@ function InstantMockup({ imageUrl, frameColor = 'black', isLandscape = false, sc
     // doRender en cours est abandonne.
     const myGen = ++genRef.current;
 
-    // Paysage: sous-dossier /landscape/ avec cadres horizontaux
-    const roomKey = landscape ? `landscape/${sid}_${fc}` : `${sid}_${fc}`;
+    // FIX-MOCKUP-BEAU (4 mai 2026) : on utilise TOUJOURS les mockups
+    // portrait (vraies photos de salon ~29KB chacune) au lieu des
+    // mockups /landscape/ qui sont des placeholders quasi-vides (~2.7KB,
+    // sans decor reel). L'image landscape est centree+contain dans le
+    // cadre portrait via la logique destX/destY/destW/destH plus bas -
+    // mieux vaut un print landscape contained dans un beau salon que
+    // floating sur un fond beige uniforme. Le argument `landscape`
+    // est conserve pour compat mais ignore.
+    const roomKey = `${sid}_${fc}`;
     const roomSrc = `/images/mockups/${roomKey}.webp`;
 
     const doRender = (roomImg) => {
