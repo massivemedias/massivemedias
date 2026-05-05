@@ -294,7 +294,10 @@ function ConfiguratorStickers({ onFinishChange }) {
                 reel a chaque keystroke (controlled input -> useMemo). */}
             <div className="mt-3 p-3 rounded-lg bg-glass border border-white/5">
               <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
-                <label className="text-grey-muted text-xs uppercase tracking-wider sm:flex-shrink-0">
+                {/* FIX-LISIBILITE (5 mai 2026) : label en text-sm font-bold pour
+                    lisibilite + placeholder/heading plus contraste, helper
+                    text bumpe a text-xs (12px) au lieu de text-[10px]. */}
+                <label className="text-heading text-sm font-bold uppercase tracking-wider sm:flex-shrink-0">
                   {tx({ fr: 'Quantité personnalisée', en: 'Custom quantity', es: 'Cantidad personalizada' })}
                 </label>
                 <div className="flex items-center gap-2 flex-1">
@@ -310,7 +313,7 @@ function ConfiguratorStickers({ onFinishChange }) {
                       setCustomQty(cleaned);
                     }}
                     placeholder={tx({ fr: 'Ex: 150', en: 'Ex: 150', es: 'Ej: 150' })}
-                    className="flex-1 sm:max-w-[120px] rounded-lg border-2 border-grey-muted/20 bg-transparent px-3 py-2 text-sm text-heading placeholder:text-grey-muted/50 focus:border-accent focus:outline-none transition-colors"
+                    className="flex-1 sm:max-w-[120px] rounded-lg border-2 border-grey-muted/20 bg-transparent px-3 py-2 text-sm text-heading placeholder:text-grey-muted/80 focus:border-accent focus:outline-none transition-colors"
                   />
                   {customQty && customPriceInfo && (
                     <span className="text-accent text-sm font-semibold whitespace-nowrap">
@@ -324,9 +327,9 @@ function ConfiguratorStickers({ onFinishChange }) {
                   )}
                 </div>
               </div>
-              <p className="text-[10px] text-grey-muted/70 mt-1.5">
+              <p className="text-xs text-grey-muted mt-2 leading-relaxed">
                 {tx({
-                  fr: 'Tarif calculé entre les paliers ci-dessus (interpolation lineaire).',
+                  fr: 'Tarif calculé entre les paliers ci-dessus (interpolation linéaire).',
                   en: 'Price calculated between the tiers above (linear interpolation).',
                   es: 'Precio calculado entre los niveles arriba (interpolación lineal).',
                 })}
