@@ -3,19 +3,21 @@ import { motion } from 'framer-motion';
 import {
   MessageSquare, Sparkles, Image, Camera, Send, Plus, Settings2,
   Upload, Download, Loader2, X, AlertCircle, ImageDown, QrCode, Shirt,
-  BarChart3, Trash2, ExternalLink, Copy, Check,
+  BarChart3, Trash2, ExternalLink, Copy, Check, Megaphone, RefreshCw,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import { chatStream, generateMockup, checkHealth } from '../services/iaService';
 import MerchMockupTool from '../components/merch/MerchMockupTool';
 import StickerPreviewCanvas from '../components/StickerPreviewCanvas';
 import api from '../services/api';
+import { getAdminArtistsList, getAdminArtistDetail } from '../services/adminService';
 
 const TABS = [
   { id: 'chat', icon: MessageSquare, label: 'Chat' },
   { id: 'stickers', icon: Sparkles, label: 'Stickers' },
   { id: 'prints', icon: Image, label: 'Prints' },
   { id: 'merch', icon: Shirt, label: 'Merch' },
+  { id: 'ads', icon: Megaphone, label: 'Ads' },
   { id: 'resize', icon: ImageDown, label: 'Resize' },
   { id: 'qrcode', icon: QrCode, label: 'QR Code' },
   { id: 'lens', icon: Camera, label: 'Lens' },
@@ -2114,6 +2116,316 @@ function LensTab() {
 }
 
 // ---------------------------------------------------------------------------
+// Ads Tab : generateur de copy publicitaire pour Meta Ads (titre + corps + CTA)
+// 3 mai 2026. Backend POST /api/ads-generator/generate (Gemini ou OpenAI).
+// ---------------------------------------------------------------------------
+function AdsTab() {
+  const { tx } = useLang();
+  const [artists, setArtists] = useState([]);
+  const [loadingArtists, setLoadingArtists] = useState(true);
+  // Selection : on stocke un objet { artistSlug, productType, productId } ou null
+  const [selectedArtistSlug, setSelectedArtistSlug] = useState('');
+  const [selectedProductId, setSelectedProductId] = useState('');
+  const [products, setProducts] = useState([]); // prints + stickers du selectedArtist
+  const [loadingProducts, setLoadingProducts] = useState(false);
+  const [generating, setGenerating] = useState(false);
+  const [variants, setVariants] = useState([]);
+  const [error, setError] = useState('');
+  const [copiedKey, setCopiedKey] = useState('');
+
+  // 1. Charger la liste des artistes (avec leurs counts prints/stickers).
+  useEffect(() => {
+    let cancelled = false;
+    getAdminArtistsList()
+      .then(({ data }) => {
+        if (cancelled) return;
+        const list = (data?.data || []).filter(a => !a.incomplete && a.slug);
+        setArtists(list);
+      })
+      .catch(err => console.error('[AdsTab] artists fetch failed:', err))
+      .finally(() => { if (!cancelled) setLoadingArtists(false); });
+    return () => { cancelled = true; };
+  }, []);
+
+  // 2. Quand on change d'artiste, fetch ses prints + stickers via le detail.
+  useEffect(() => {
+    if (!selectedArtistSlug) { setProducts([]); setSelectedProductId(''); return; }
+    let cancelled = false;
+    setLoadingProducts(true);
+    getAdminArtistDetail(selectedArtistSlug)
+      .then(({ data }) => {
+        if (cancelled) return;
+        const detail = data?.data || {};
+        const prints = (detail.prints || []).map(p => ({
+          id: p.id || p.documentId || `print-${p.title}`,
+          name: p.titleFr || p.titleEn || p.title || 'Sans titre',
+          type: 'print',
+          imageUrl: p.imageFull || p.image || p.thumb || '',
+          description: p.descriptionFr || p.descriptionEn || '',
+        }));
+        const stickers = (detail.stickers || []).map(s => ({
+          id: s.id || s.documentId || `sticker-${s.title}`,
+          name: s.titleFr || s.titleEn || s.title || 'Sans titre',
+          type: 'sticker',
+          imageUrl: s.imageFull || s.image || s.thumb || '',
+          description: s.descriptionFr || s.descriptionEn || '',
+        }));
+        setProducts([...prints, ...stickers]);
+        setSelectedProductId('');
+      })
+      .catch(err => console.error('[AdsTab] detail fetch failed:', err))
+      .finally(() => { if (!cancelled) setLoadingProducts(false); });
+    return () => { cancelled = true; };
+  }, [selectedArtistSlug]);
+
+  const selectedArtist = useMemo(() => artists.find(a => a.slug === selectedArtistSlug) || null, [artists, selectedArtistSlug]);
+  const selectedProduct = useMemo(() => products.find(p => String(p.id) === String(selectedProductId)) || null, [products, selectedProductId]);
+
+  const handleGenerate = async () => {
+    if (!selectedProduct) return;
+    setError('');
+    setGenerating(true);
+    setVariants([]);
+    try {
+      const { data } = await api.post('/ads-generator/generate', {
+        productName: selectedProduct.name,
+        productType: selectedProduct.type,
+        artistName: selectedArtist?.name || '',
+        description: selectedProduct.description || '',
+        language: 'fr',
+      });
+      setVariants(data?.data?.variants || []);
+    } catch (err) {
+      const msg = err?.response?.data?.error?.message || err?.message || 'Erreur generation';
+      setError(msg);
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const handleCopy = async (key, text) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedKey(key);
+      setTimeout(() => setCopiedKey(prev => prev === key ? '' : prev), 1500);
+    } catch (err) {
+      console.warn('[AdsTab] clipboard failed:', err);
+    }
+  };
+
+  const handleCopyAll = (variant, idx) => {
+    const block = `${variant.headline}\n\n${variant.body}\n\n→ ${variant.cta}`;
+    handleCopy(`all-${idx}`, block);
+  };
+
+  const handleDownloadImage = async () => {
+    if (!selectedProduct?.imageUrl) return;
+    try {
+      const res = await fetch(selectedProduct.imageUrl, { mode: 'cors' });
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${selectedArtist?.slug || 'massive'}-${selectedProduct.id}.${(blob.type.split('/')[1] || 'webp').replace('jpeg', 'jpg')}`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (err) {
+      // Fallback : ouverture dans un nouvel onglet (le user fait save-as)
+      window.open(selectedProduct.imageUrl, '_blank', 'noopener,noreferrer');
+    }
+  };
+
+  return (
+    <div className="space-y-4 overflow-y-auto h-full">
+      {/* Header explicatif */}
+      <div className="rounded-xl bg-glass border border-white/5 p-4">
+        <div className="flex items-start gap-3">
+          <div className="p-2 rounded-lg bg-accent/15 flex-shrink-0">
+            <Megaphone size={18} className="text-accent" />
+          </div>
+          <div>
+            <h3 className="text-heading font-semibold text-base">
+              {tx({ fr: 'Générateur de publicités Meta', en: 'Meta ads generator', es: 'Generador de anuncios Meta' })}
+            </h3>
+            <p className="text-grey-muted text-xs mt-0.5">
+              {tx({
+                fr: 'Sélectionne un produit, génère 3 variantes (Titre / Corps / CTA), copie et colle dans Meta Ads Manager.',
+                en: 'Pick a product, generate 3 variants (Headline / Body / CTA), copy and paste into Meta Ads Manager.',
+                es: 'Elige un producto, genera 3 variantes (Título / Cuerpo / CTA), copia y pega en Meta Ads Manager.',
+              })}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Selectors : artiste + produit */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div>
+          <label className="block text-grey-muted text-xs font-medium mb-1.5">
+            {tx({ fr: 'Artiste', en: 'Artist', es: 'Artista' })}
+          </label>
+          <select
+            value={selectedArtistSlug}
+            onChange={e => setSelectedArtistSlug(e.target.value)}
+            disabled={loadingArtists}
+            className="w-full bg-black/30 border border-white/10 rounded-lg px-3 py-2 text-heading text-sm focus:outline-none focus:border-accent disabled:opacity-50"
+          >
+            <option value="">{loadingArtists ? tx({ fr: 'Chargement…', en: 'Loading…', es: 'Cargando…' }) : tx({ fr: '— Choisir un artiste —', en: '— Pick an artist —', es: '— Elige un artista —' })}</option>
+            {artists.map(a => (
+              <option key={a.slug} value={a.slug}>
+                {a.name} ({a.printsCount} prints, {a.stickersCount} stickers)
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-grey-muted text-xs font-medium mb-1.5">
+            {tx({ fr: 'Produit', en: 'Product', es: 'Producto' })}
+          </label>
+          <select
+            value={selectedProductId}
+            onChange={e => setSelectedProductId(e.target.value)}
+            disabled={!selectedArtistSlug || loadingProducts}
+            className="w-full bg-black/30 border border-white/10 rounded-lg px-3 py-2 text-heading text-sm focus:outline-none focus:border-accent disabled:opacity-50"
+          >
+            <option value="">
+              {!selectedArtistSlug ? tx({ fr: '— Choisir un artiste d\'abord —', en: '— Pick an artist first —', es: '— Elige un artista primero —' })
+                : loadingProducts ? tx({ fr: 'Chargement…', en: 'Loading…', es: 'Cargando…' })
+                : products.length === 0 ? tx({ fr: '— Aucun produit —', en: '— No products —', es: '— Sin productos —' })
+                : tx({ fr: '— Choisir un produit —', en: '— Pick a product —', es: '— Elige un producto —' })}
+            </option>
+            {products.map(p => (
+              <option key={p.id} value={p.id}>
+                [{p.type === 'sticker' ? 'STK' : 'PRT'}] {p.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {/* Bouton generer */}
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={handleGenerate}
+          disabled={!selectedProduct || generating}
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-accent text-white text-sm font-semibold hover:bg-accent/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {generating ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
+          {tx({ fr: 'Générer 3 variantes', en: 'Generate 3 variants', es: 'Generar 3 variantes' })}
+        </button>
+        {variants.length > 0 && (
+          <button
+            type="button"
+            onClick={handleGenerate}
+            disabled={generating}
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white/5 text-grey-muted text-xs hover:text-heading transition-colors"
+          >
+            <RefreshCw size={12} />
+            {tx({ fr: 'Régénérer', en: 'Regenerate', es: 'Regenerar' })}
+          </button>
+        )}
+      </div>
+
+      {error && (
+        <div className="flex items-start gap-2 p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-xs">
+          <AlertCircle size={14} className="flex-shrink-0 mt-0.5" />
+          <span>{error}</span>
+        </div>
+      )}
+
+      {/* Resultats : image produit + 3 variantes en grille */}
+      {variants.length > 0 && selectedProduct && (
+        <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-4">
+          {/* Image + bouton download */}
+          <div className="space-y-2">
+            <div className="rounded-xl overflow-hidden bg-black/20 border border-white/5 aspect-square flex items-center justify-center">
+              {selectedProduct.imageUrl ? (
+                <img src={selectedProduct.imageUrl} alt={selectedProduct.name} className="w-full h-full object-cover" />
+              ) : (
+                <Image size={48} className="text-grey-muted/40" />
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={handleDownloadImage}
+              disabled={!selectedProduct.imageUrl}
+              className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-white/5 text-heading text-xs font-medium hover:bg-white/10 transition-colors disabled:opacity-50"
+            >
+              <Download size={12} />
+              {tx({ fr: 'Télécharger le visuel', en: 'Download visual', es: 'Descargar visual' })}
+            </button>
+            <p className="text-[10px] text-grey-muted/70 text-center">
+              {selectedArtist?.name} - {selectedProduct.name}
+            </p>
+          </div>
+
+          {/* 3 variantes */}
+          <div className="space-y-3">
+            {variants.map((v, idx) => (
+              <div key={idx} className="rounded-xl bg-glass border border-white/10 p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] uppercase tracking-wider text-accent font-bold">
+                    {tx({ fr: 'Variante', en: 'Variant', es: 'Variante' })} {idx + 1}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => handleCopyAll(v, idx)}
+                    className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs text-grey-muted hover:text-accent transition-colors"
+                    title={tx({ fr: 'Copier tout (titre + corps + CTA)', en: 'Copy all (headline + body + CTA)', es: 'Copiar todo' })}
+                  >
+                    {copiedKey === `all-${idx}` ? <Check size={12} className="text-green-400" /> : <Copy size={12} />}
+                    {copiedKey === `all-${idx}` ? tx({ fr: 'Copié !', en: 'Copied!', es: '¡Copiado!' }) : tx({ fr: 'Copier tout', en: 'Copy all', es: 'Copiar todo' })}
+                  </button>
+                </div>
+                {[
+                  { key: 'headline', label: tx({ fr: 'Titre', en: 'Headline', es: 'Título' }) },
+                  { key: 'body', label: tx({ fr: 'Corps', en: 'Body', es: 'Cuerpo' }) },
+                  { key: 'cta', label: tx({ fr: 'CTA', en: 'CTA', es: 'CTA' }) },
+                ].map(({ key, label }) => {
+                  const fieldKey = `${key}-${idx}`;
+                  const isCopied = copiedKey === fieldKey;
+                  return (
+                    <div key={key} className="border-t border-white/5 pt-2 first:border-0 first:pt-0">
+                      <div className="flex items-center justify-between gap-2 mb-1">
+                        <span className="text-[10px] uppercase tracking-wider text-grey-muted/70 font-semibold">{label}</span>
+                        <button
+                          type="button"
+                          onClick={() => handleCopy(fieldKey, v[key])}
+                          className="p-1 rounded text-grey-muted hover:text-accent transition-colors"
+                          title={tx({ fr: 'Copier', en: 'Copy', es: 'Copiar' })}
+                        >
+                          {isCopied ? <Check size={11} className="text-green-400" /> : <Copy size={11} />}
+                        </button>
+                      </div>
+                      <p className={`text-sm leading-snug ${key === 'headline' ? 'text-heading font-semibold' : key === 'cta' ? 'text-accent font-medium' : 'text-grey-muted'}`}>
+                        {v[key]}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {!variants.length && !generating && selectedProduct && (
+        <div className="rounded-xl border border-dashed border-white/10 p-6 text-center text-grey-muted text-sm">
+          {tx({
+            fr: 'Clique sur "Générer 3 variantes" pour produire le copy publicitaire.',
+            en: 'Click "Generate 3 variants" to produce ad copy.',
+            es: 'Haz clic en "Generar 3 variantes" para producir el copy publicitario.',
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Main Page
 // ---------------------------------------------------------------------------
 function AdminMassiveIA() {
@@ -2168,6 +2480,7 @@ function AdminMassiveIA() {
         {activeTab === 'stickers' && <StickersTab />}
         {activeTab === 'prints' && <PrintsTab />}
         {activeTab === 'merch' && <MerchMockupTool />}
+        {activeTab === 'ads' && <AdsTab />}
         {activeTab === 'resize' && <ResizeTab />}
         {activeTab === 'qrcode' && <QRCodeTab />}
         {activeTab === 'lens' && <LensTab />}
