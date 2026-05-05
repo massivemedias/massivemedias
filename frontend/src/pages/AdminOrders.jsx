@@ -1178,11 +1178,8 @@ function AdminOrders() {
           onClose={() => setPortfolioWizardOrder(null)}
           onSuccess={(data) => {
             setPortfolioWizardOrder(null);
-            // Construit l'URL admin Strapi : VITE_API_URL = ".../api" -> on
-            // strip le suffix /api et on append adminUrl pour ouvrir la
-            // fiche en 1 clic dans un nouvel onglet.
-            const apiBase = import.meta.env.VITE_API_URL || '';
-            const strapiRoot = apiBase.replace(/\/api\/?$/, '');
+            // HARDCODE-PROD (3 mai 2026) : URL prod en dur, voir api.js
+            const strapiRoot = 'https://massivemedias-api.onrender.com';
             const fullAdminUrl = data?.adminUrl ? `${strapiRoot}${data.adminUrl}` : null;
             setInvoiceToast({
               type: 'success',

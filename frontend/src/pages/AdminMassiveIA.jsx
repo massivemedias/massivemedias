@@ -11,7 +11,7 @@ import MerchMockupTool from '../components/merch/MerchMockupTool';
 import StickerPreviewCanvas from '../components/StickerPreviewCanvas';
 import api from '../services/api';
 import { getAdminArtistsList, getAdminArtistDetail } from '../services/adminService';
-import { getApiUrl } from '../utils/apiUrl';
+// HARDCODE-PROD (3 mai 2026) : URL prod en dur, voir api.js
 
 const TABS = [
   { id: 'chat', icon: MessageSquare, label: 'Chat' },
@@ -917,7 +917,7 @@ function PrintsTab() {
     setError(null);
 
     try {
-      const apiUrl = getApiUrl();
+      const apiUrl = 'https://massivemedias-api.onrender.com/api';
       const res = await fetch(`${apiUrl}/mockup/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1492,7 +1492,7 @@ function QRCodeTab() {
   }, [fetchMyList]);
 
   const copyTrackingUrl = useCallback((shortId) => {
-    const backend = getApiUrl({ noApiSuffix: true });
+    const backend = 'https://massivemedias-api.onrender.com';
     const fullUrl = `${backend.replace(/\/api\/?$/, '').replace(/\/$/, '')}/api/qr/${shortId}`;
     navigator.clipboard.writeText(fullUrl);
     setCopiedId(shortId);

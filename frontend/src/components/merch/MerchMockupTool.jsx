@@ -17,7 +17,7 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { Upload, Download, RotateCcw, X, Shirt, Sparkles, Loader2, AlertCircle, Image as ImageIcon } from 'lucide-react';
 import { merchColors } from '../../data/merchData';
-import { getApiUrl } from '../../utils/apiUrl';
+// HARDCODE-PROD (3 mai 2026) : URL prod en dur, voir api.js
 
 // Catalogue des produits dispo. Chaque face a ses propres dimensions natives
 // pour un export HD fidele a l'image source.
@@ -692,7 +692,7 @@ function MerchAIMockup() {
     setError(null);
     setResult(null);
     try {
-      const apiUrl = getApiUrl();
+      const apiUrl = 'https://massivemedias-api.onrender.com/api';
       const body = {
         product,
         colorName: color.name,

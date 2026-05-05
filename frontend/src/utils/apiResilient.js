@@ -15,7 +15,8 @@
  *   import { pingBackend, onBackendStatusChange } from '@/utils/apiResilient';
  */
 
-const API_BASE = import.meta.env.VITE_API_URL || 'https://massivemedias-api.onrender.com';
+// HARDCODE-PROD (3 mai 2026) : URL prod en dur, voir api.js
+const API_BASE = 'https://massivemedias-api.onrender.com';
 
 // Retry config: 5 tentatives, backoff 1s/2s/4s/8s/16s (total ~31s)
 const MAX_RETRIES = 5;

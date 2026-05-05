@@ -26,7 +26,8 @@ import {
   holographicPriceTiers as FALLBACK_HOLO_TIERS,
 } from '../data/products';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'https://massivemedias-api.onrender.com';
+// HARDCODE-PROD (3 mai 2026) : URL prod en dur, voir api.js
+const API_BASE = 'https://massivemedias-api.onrender.com';
 const CACHE_TTL_MS = 10 * 60_000; // 10 minutes
 
 const FALLBACK_CONFIG = Object.freeze({

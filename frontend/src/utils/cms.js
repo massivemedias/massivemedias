@@ -1,4 +1,5 @@
-import { getApiUrl } from './apiUrl';
+// HARDCODE-PROD (3 mai 2026) : URL prod en dur, voir api.js
+const PROD_BASE = 'https://massivemedias-api.onrender.com';
 
 const LANG_SUFFIX = { fr: 'Fr', en: 'En', es: 'Es' };
 
@@ -28,10 +29,7 @@ export function mediaUrl(media, fallback = '') {
   if (!url) return fallback;
   // If URL is relative, prepend the API base
   if (url.startsWith('/')) {
-    // FIX-PROD-URL (3 mai 2026) : getApiUrl({ noApiSuffix: true }) garantit
-    // l'URL prod Render en build production meme sans VITE_API_URL injectee.
-    const apiBase = getApiUrl({ noApiSuffix: true });
-    return apiBase + url;
+    return PROD_BASE + url;
   }
   return url;
 }

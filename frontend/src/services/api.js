@@ -1,12 +1,12 @@
 import axios from 'axios';
 import { supabase } from '../lib/supabase';
-import { getApiUrl } from '../utils/apiUrl';
 
-// FIX-PROD-URL (3 mai 2026) : utility centralisee qui garantit qu'en
-// production on tape sur https://massivemedias-api.onrender.com/api meme
-// si VITE_API_URL n'est pas injectee au build (Cloudflare Pages oubli).
-// Plus jamais de fallback localhost silencieux en prod.
-const API_URL = getApiUrl();
+// HARDCODE-PROD (3 mai 2026) : URL prod en dur, bypass complet de la
+// resolution via env var ou utility. Decision temporaire pour eliminer
+// toute possibilite que VITE_API_URL non-injectee, MODE mal detecte ou
+// import.meta.env manquant casse l'app en prod. A revisiter quand le
+// pipeline env CF Pages sera fiabilise.
+const API_URL = 'https://massivemedias-api.onrender.com/api';
 
 const api = axios.create({
   baseURL: API_URL,

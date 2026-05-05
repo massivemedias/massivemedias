@@ -4,9 +4,9 @@ import { Calendar, Tag } from 'lucide-react';
 import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
 import api from '../services/api';
-import { getApiUrl } from '../utils/apiUrl';
 
-const API_URL = getApiUrl();
+// HARDCODE-PROD (3 mai 2026) : URL prod en dur, voir api.js
+const API_URL = 'https://massivemedias-api.onrender.com/api';
 
 const LOCALE_DATE = { fr: 'fr-CA', en: 'en-CA', es: 'es-419' };
 
