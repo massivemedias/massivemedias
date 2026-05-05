@@ -110,6 +110,15 @@ function StickerPreviewCanvas({
   const lastThumbRef = useRef(null);
   const [loaded, setLoaded] = useState(false);
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
+  // FIX-SHADER-MASK (3 mai 2026) : on capture le canvas en dataURL apres
+  // chaque redraw pour s'en servir comme mask CSS sur l'overlay shader.
+  // Resultat : l'effet holographic / glossy / etc. ne s'applique QUE sur
+  // les pixels opaques de l'image (la silhouette du sticker), au lieu de
+  // remplir le rectangle entier du wrapper.
+  const [maskDataUrl, setMaskDataUrl] = useState('');
+  // Aspect-ratio dynamique du canvas (pour que le wrapper s'adapte aux
+  // dimensions reelles du rendu plutot que d'imposer 1:1 ou 800x800).
+  const [canvasAspect, setCanvasAspect] = useState(1);
 
   // Charger l'image quand imageUrl change
   useEffect(() => {
@@ -144,6 +153,17 @@ function StickerPreviewCanvas({
     canvas.height = h;
 
     drawSticker(canvas, img, { shape, shader: finish, strokeColor, strokeWidth });
+
+    // FIX-SHADER-MASK : capture le canvas en dataURL apres chaque redraw
+    // pour servir de mask CSS a l'overlay shader. Try/catch car le canvas
+    // peut etre tainted si l'image source vient d'une origine sans CORS
+    // (rare car loadImage pose crossOrigin='anonymous', mais defensif).
+    try {
+      setMaskDataUrl(canvas.toDataURL('image/png'));
+      setCanvasAspect(canvas.width / canvas.height);
+    } catch (_) {
+      setMaskDataUrl('');
+    }
 
     // Generer le thumb blob pour le panier
     if (onThumbChange) {
@@ -234,13 +254,17 @@ function StickerPreviewCanvas({
           transform: `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg) scale(${tilting ? 1.02 : 1})`,
           transition: tilting ? 'transform 0.08s ease-out, filter 0.08s ease-out' : 'transform 0.55s cubic-bezier(0.25,0.8,0.25,1), filter 0.55s cubic-bezier(0.25,0.8,0.25,1)',
           transformStyle: 'preserve-3d',
-          // Diecut : on clippe physiquement la zone qui tilt via clip-path
-          // circle(50%) -> la div devient un disque rond, donc la rotation
-          // 3D est un disque qui tilt, pas un carre. Le drop-shadow respecte
-          // le clip -> ombre ronde. Zero trace de carre.
-          // round/square/rectangle : contour rectangulaire defini, on garde
-          // le box-shadow + overflow:hidden classiques.
-          clipPath: shape === 'diecut' ? 'circle(50%)' : undefined,
+          // FIX-SHAPE (3 mai 2026) : retire clipPath: circle(50%) du wrapper
+          // diecut. Avant, ca forcait un disque parfait quelle que soit la
+          // forme reelle de l'image -> stickers etoile/coeur/silhouette
+          // custom etaient cropees en cercle. Maintenant le canvas a sa
+          // propre alpha (transparence des pixels en dehors de l'image)
+          // et le drop-shadow s'applique sur la silhouette via filter.
+          // round/square/rectangle : on garde overflow:hidden + borderRadius
+          // car ces formes ont un contour rectangulaire defini par CSS.
+          // Aspect-ratio : suit la dimension reelle du canvas (canvasAspect)
+          // au lieu d'imposer 1:1 ou 3:2 hardcode.
+          aspectRatio: canvasAspect || 1,
           borderRadius: shape === 'diecut' ? undefined : shapeRadius,
           overflow: shape === 'diecut' ? 'visible' : 'hidden',
           boxShadow: shape === 'diecut'
@@ -262,7 +286,14 @@ function StickerPreviewCanvas({
           style={{ borderRadius: shape === 'diecut' ? undefined : shapeRadius }}
         />
 
-        {/* FX overlay dynamique - suit le curseur */}
+        {/* FX overlay dynamique - suit le curseur.
+            FIX-SHADER-MASK (3 mai 2026) : mask CSS base sur le canvas
+            dataURL pour que l'effet ne s'applique QUE sur les pixels opaques
+            de la silhouette du sticker. Avant, l'overlay remplissait le
+            rectangle entier via absolute inset-0 -> effet visible meme dans
+            les zones transparentes du diecut. Le mask alpha-channel garantit
+            que les pixels transparents du canvas masquent l'overlay au
+            meme endroit. */}
         {fxOverlay && (
           <div
             className="absolute inset-0 pointer-events-none"
@@ -270,6 +301,18 @@ function StickerPreviewCanvas({
               ...fxOverlay,
               borderRadius: shape === 'diecut' ? undefined : shapeRadius,
               transition: 'background 0.1s ease-out, opacity 0.1s ease-out',
+              // Mask base sur le canvas : seuls les pixels opaques recoivent
+              // l'effet. WebkitMask pour compat Safari.
+              ...(maskDataUrl ? {
+                WebkitMaskImage: `url(${maskDataUrl})`,
+                maskImage: `url(${maskDataUrl})`,
+                WebkitMaskSize: '100% 100%',
+                maskSize: '100% 100%',
+                WebkitMaskRepeat: 'no-repeat',
+                maskRepeat: 'no-repeat',
+                WebkitMaskPosition: 'center',
+                maskPosition: 'center',
+              } : {}),
             }}
           />
         )}
