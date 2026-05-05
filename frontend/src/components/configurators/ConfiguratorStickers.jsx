@@ -169,12 +169,17 @@ function ConfiguratorStickers({ onFinishChange }) {
         {/* Right: Selectors */}
         <div className="flex-1 min-w-0 space-y-4 md:space-y-5">
           {/* Votre design + Finition (cote a cote) */}
+          {/* FIX-UI (5 mai 2026) : on retire le label "Votre design (haute def)"
+              ET le preview image upload parce que le preview cote gauche
+              affiche deja exactement le meme visuel. Le user voit juste le
+              nom du fichier (FileUpload en mode compact + hidePreview).
+              Strict DRY : 2 previews du meme image en parallele = bruit. */}
           <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-3 md:gap-4 items-start">
             <FileUpload
               files={uploadedFiles}
               onFilesChange={handleFilesChange}
-              label={tx({ fr: 'Votre design (haute def)', en: 'Your design (high res)', es: 'Tu diseño (alta res)' })}
               compact
+              hidePreview
             />
             <div>
               <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-2">
