@@ -12,6 +12,7 @@ import {
   SUBLIMATION_BLANK_COST,
   SUBLIMATION_BYOT_ALLOWED,
   lookupStickerPrice,
+  lookupStickerPriceCustomQty,
   lookupFineArtPrice,
   lookupFlyerPrice,
   lookupSublimationPrice,
@@ -106,28 +107,30 @@ export function getStickerPrice(finish, shape, qty, size) {
 
 /**
  * Calcule le prix proportionnel pour une quantite quelconque (pack builder).
- * Utilise le unitPrice du palier le plus eleve que la quantite atteint.
  *
- * FIX-PRICING-TIERS : utilise STICKER_GRID[tier][kind] selon la taille fournie.
+ * STICKER-CUSTOM-QTY (5 mai 2026) : delegate vers lookupStickerPriceCustomQty
+ * qui fait l'INTERPOLATION LINEAIRE entre paliers (au lieu de l'ancien
+ * tier-floor qui appliquait le rate du palier inferieur). Resout le probleme
+ * historique : un client avec 240 stickers se voyait charger le rate du
+ * palier 100 (0.85$/u) au lieu d'un rate proche de 250 (0.80$/u).
+ *
+ * Signature retro-compatible : retourne le meme shape que l'ancienne
+ * version + champ tierQty + interpolated/exact pour debug.
  * Retourne null si total < 25 (minimum d'impression).
  */
 export function getStickerPriceForTotal(finish, shape, total, size) {
-  if (!total || total < 25) return null;
-  const grid = getStickerGridForSize(size, finish);
-  const tierQtys = Object.keys(grid).map(Number).sort((a, b) => a - b);
-  let tierQty = tierQtys[0];
-  for (const q of tierQtys) {
-    if (total >= q) tierQty = q;
-  }
-  const tierUnitPrice = Math.round((grid[tierQty] / tierQty) * 100) / 100;
+  const r = lookupStickerPriceCustomQty(finish, total, size);
+  if (!r) return null;
   return {
-    qty: total,
-    unitPrice: tierUnitPrice,
-    price: Math.round(total * tierUnitPrice * 100) / 100,
-    tierQty,
-    tier: getStickerSizeTier(size),
+    qty: r.qty,
+    unitPrice: r.unitPrice,
+    price: r.price,
+    tierQty: r.lowQty || r.qty, // legacy alias - tier d'origine pour les composants qui en dependent
+    tier: r.tier,
     sizeMultiplier: 1.0,
-    baseUnitPrice: tierUnitPrice,
+    baseUnitPrice: r.unitPrice,
+    interpolated: !!r.interpolated,
+    exact: !!r.exact,
   };
 }
 

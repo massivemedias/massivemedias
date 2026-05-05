@@ -161,6 +161,70 @@ export function lookupStickerPrice(finish, qty, size) {
 }
 
 /**
+ * STICKER-CUSTOM-QTY (5 mai 2026) : prix interpole pour une quantite custom
+ * (input libre du client). Resout le probleme historique : un client qui
+ * tape 150 ou 240 stickers se voyait appliquer le prix unitaire du palier
+ * INFERIEUR (ex: 150 -> rate du palier 100 = 0.85$/u) - cliff non lineaire,
+ * peu intuitif et pas optimal pour la conversion.
+ *
+ * Strategie : interpolation LINEAIRE du unit price entre les 2 paliers qui
+ * encadrent la quantite. Exemples (grille standard matte) :
+ *   25  -> 1.20$/u (palier exact)
+ *   50  -> 0.95$/u (palier exact)
+ *   60  -> entre 0.95 et 0.85 -> interpole = 0.93$/u
+ *   100 -> 0.85$/u (palier exact)
+ *   150 -> entre 0.85 et 0.80 -> interpole = 0.83$/u
+ *   240 -> proche de 250 -> interpole = 0.80$/u
+ *   500 -> 0.75$/u (palier exact)
+ *
+ * Au-dela de 500 : on extrapole pas (risque mauvais pricing) - on utilise
+ * le rate du palier 500. En dessous de 25 : null (minimum production).
+ * Tous les prix arrondis a 2 decimales (anti FP IEEE 754).
+ */
+export function lookupStickerPriceCustomQty(finish, qty, size) {
+  const q = parseInt(String(qty == null ? '' : qty).replace(/[^0-9]/g, ''), 10);
+  if (!Number.isFinite(q) || q < 25) return null;
+
+  const grid = getStickerGridForSize(size, finish);
+  const tierQtys = Object.keys(grid).map(Number).sort((a, b) => a - b);
+  const tier = getStickerSizeTier(size);
+
+  // Cas 1 : palier exact -> retour direct (pas d'interpolation)
+  if (grid[q] != null) {
+    const unitPrice = Math.round((grid[q] / q) * 100) / 100;
+    return { qty: q, price: grid[q], unitPrice, tier, exact: true };
+  }
+
+  // Cas 2 : qty au-dessus du dernier palier -> rate du dernier palier (pas
+  // d'extrapolation pour eviter pricing absurde si quelqu'un tape 10000).
+  const maxQty = tierQtys[tierQtys.length - 1];
+  if (q >= maxQty) {
+    const maxUnitPrice = Math.round((grid[maxQty] / maxQty) * 100) / 100;
+    const total = Math.round(q * maxUnitPrice * 100) / 100;
+    return { qty: q, price: total, unitPrice: maxUnitPrice, tier, exact: false, capped: true };
+  }
+
+  // Cas 3 : interpolation lineaire entre les 2 paliers qui encadrent q.
+  let lowQty = tierQtys[0];
+  let highQty = tierQtys[1];
+  for (let i = 0; i < tierQtys.length - 1; i++) {
+    if (q >= tierQtys[i] && q < tierQtys[i + 1]) {
+      lowQty = tierQtys[i];
+      highQty = tierQtys[i + 1];
+      break;
+    }
+  }
+  const lowUnit = grid[lowQty] / lowQty;
+  const highUnit = grid[highQty] / highQty;
+  const factor = (q - lowQty) / (highQty - lowQty);
+  const interpolatedUnit = lowUnit + factor * (highUnit - lowUnit);
+  // ROUND a 2 decimales pour le display et le panier - jamais 0.83333$/u.
+  const unitPrice = Math.round(interpolatedUnit * 100) / 100;
+  const total = Math.round(q * unitPrice * 100) / 100;
+  return { qty: q, price: total, unitPrice, tier, exact: false, interpolated: true, lowQty, highQty };
+}
+
+/**
  * Prix fine art : lookup strict dans FINE_ART_GRID.
  * Retourne null si format invalide ou combinaison tier/format indisponible (ex: a2 studio).
  */

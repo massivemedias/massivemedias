@@ -8,6 +8,7 @@ import {
   stickerFinishes as defaultFinishes, stickerShapes as defaultShapes, stickerSizes as defaultSizes,
   getStickerPriceForTotal,
 } from '../../data/products';
+import { formatPrice, money } from '../../utils/formatCurrency';
 
 const MIN_TOTAL = 25; // Minimum d'impression
 
@@ -404,9 +405,9 @@ function ConfiguratorArtistSticker({ artist, selectedSticker, allStickers = [] }
       {priceInfo && canCheckout && (
         <div className="p-4 rounded-xl highlight-bordered">
           <div className="flex items-baseline gap-3">
-            <span className="text-2xl font-heading font-bold text-heading">{priceInfo.price}$</span>
+            <span className="text-2xl font-heading font-bold text-heading">{formatPrice(priceInfo.price)}</span>
             <span className="text-grey-muted text-sm">
-              ({priceInfo.unitPrice.toFixed(2)}$/sticker)
+              ({money(priceInfo.unitPrice)}$/sticker)
             </span>
           </div>
           <div className="text-grey-muted text-xs mt-1">

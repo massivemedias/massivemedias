@@ -10,6 +10,8 @@ import {
   stickerFinishes as defaultFinishes, stickerShapes as defaultShapes, stickerSizes as defaultSizes,
   stickerPriceTiers as defaultTiers, getStickerPrice as defaultGetPrice, stickerImages,
 } from '../../data/products';
+import { lookupStickerPriceCustomQty } from '../../utils/pricingData';
+import { formatPrice, money } from '../../utils/formatCurrency';
 
 // Image par defaut quand le client n'a rien upload (logo Massive Medias)
 const DEFAULT_STICKER_URL = '/images/graphism/massive_sticker.webp';
@@ -31,6 +33,12 @@ function ConfiguratorStickers({ onFinishChange }) {
   const [shape, setShape] = useState('diecut');
   const [size, setSize] = useState('2.5in');
   const [qtyIndex, setQtyIndex] = useState(0);
+  // CUSTOM-QTY (5 mai 2026) : input libre du client. Quand non vide et valide
+  // (>= 25), il PRIME sur qtyIndex et le prix est calcule par interpolation
+  // lineaire entre les paliers via lookupStickerPriceCustomQty.
+  // Format : string pour permettre la saisie progressive ('1' -> '15' -> '150').
+  // Vide ('') = mode palier classique (les boutons gerent qtyIndex).
+  const [customQty, setCustomQty] = useState('');
   const [added, setAdded] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [notes, setNotes] = useState('');
@@ -47,7 +55,15 @@ function ConfiguratorStickers({ onFinishChange }) {
   const getStickerPrice = defaultGetPrice;
   const tiers = defaultTiers;
   const currentTier = tiers[qtyIndex] || tiers[0];
-  const priceInfo = getStickerPrice(finish, shape, currentTier.qty, size);
+
+  // CUSTOM-QTY-RESOLVE : si customQty saisie >= 25, on remplace priceInfo par
+  // l'interpolation. Sinon mode palier classique. useMemo evite recalcul a
+  // chaque keystroke pour les autres deps.
+  const customPriceInfo = useMemo(() => {
+    if (!customQty || String(customQty).trim() === '') return null;
+    return lookupStickerPriceCustomQty(finish, customQty, size);
+  }, [customQty, finish, size]);
+  const priceInfo = customPriceInfo || getStickerPrice(finish, shape, currentTier.qty, size);
 
   const finishLabel = stickerFinishes.find(f => f.id === finish);
   const shapeLabel = stickerShapes.find(s => s.id === shape);
@@ -242,7 +258,7 @@ function ConfiguratorStickers({ onFinishChange }) {
             </p>
           </div>
 
-          {/* Quantite - grille 5 egale */}
+          {/* Quantite - grille 5 paliers + input custom */}
           <div>
             <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-2.5">
               {tx({ fr: 'Quantité', en: 'Quantity', es: 'Cantidad' })}
@@ -250,20 +266,71 @@ function ConfiguratorStickers({ onFinishChange }) {
             <div className="grid grid-cols-5 gap-2">
               {tiers.map((tier, i) => {
                 const p = getStickerPrice(finish, shape, tier.qty, size);
+                // Bouton actif si on est en mode palier (pas de customQty) ET qtyIndex matche
+                const isActive = !customPriceInfo && qtyIndex === i;
                 return (
                   <button
                     key={tier.qty}
-                    onClick={() => setQtyIndex(i)}
-                    className={`flex flex-col items-center justify-center py-3 px-2 rounded-lg transition-all border-2 ${qtyIndex === i
+                    onClick={() => {
+                      setQtyIndex(i);
+                      // Sortir du mode custom quand on clique un palier preset
+                      setCustomQty('');
+                    }}
+                    className={`flex flex-col items-center justify-center py-3 px-2 rounded-lg transition-all border-2 ${isActive
                       ? 'border-accent option-selected'
                       : 'border-transparent hover:border-grey-muted/30 option-default'
                     }`}
                   >
                     <span className="text-heading font-bold text-sm">{tier.qty}</span>
-                    <span className="text-grey-muted mt-0.5 text-sm">{p ? `${p.unitPrice.toFixed(2)}$/u` : ''}</span>
+                    <span className="text-grey-muted mt-0.5 text-sm">{p ? `${money(p.unitPrice)}$/u` : ''}</span>
                   </button>
                 );
               })}
+            </div>
+
+            {/* CUSTOM-QTY-INPUT (5 mai 2026) : input numerique pour quantite
+                exacte. Le prix unitaire est calcule par interpolation lineaire
+                entre paliers (lookupStickerPriceCustomQty). Mise a jour temps
+                reel a chaque keystroke (controlled input -> useMemo). */}
+            <div className="mt-3 p-3 rounded-lg bg-glass border border-white/5">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+                <label className="text-grey-muted text-xs uppercase tracking-wider sm:flex-shrink-0">
+                  {tx({ fr: 'Quantité personnalisée', en: 'Custom quantity', es: 'Cantidad personalizada' })}
+                </label>
+                <div className="flex items-center gap-2 flex-1">
+                  <input
+                    type="number"
+                    min="25"
+                    step="1"
+                    inputMode="numeric"
+                    value={customQty}
+                    onChange={(e) => {
+                      // Strip non-numeric pour eviter les saisies louches type "1e10"
+                      const cleaned = e.target.value.replace(/[^0-9]/g, '');
+                      setCustomQty(cleaned);
+                    }}
+                    placeholder={tx({ fr: 'Ex: 150', en: 'Ex: 150', es: 'Ej: 150' })}
+                    className="flex-1 sm:max-w-[120px] rounded-lg border-2 border-grey-muted/20 bg-transparent px-3 py-2 text-sm text-heading placeholder:text-grey-muted/50 focus:border-accent focus:outline-none transition-colors"
+                  />
+                  {customQty && customPriceInfo && (
+                    <span className="text-accent text-sm font-semibold whitespace-nowrap">
+                      {money(customPriceInfo.unitPrice)}$/u
+                    </span>
+                  )}
+                  {customQty && !customPriceInfo && (
+                    <span className="text-yellow-400 text-xs">
+                      {tx({ fr: 'Min. 25', en: 'Min. 25', es: 'Mín. 25' })}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <p className="text-[10px] text-grey-muted/70 mt-1.5">
+                {tx({
+                  fr: 'Tarif calculé entre les paliers ci-dessus (interpolation lineaire).',
+                  en: 'Price calculated between the tiers above (linear interpolation).',
+                  es: 'Precio calculado entre los niveles arriba (interpolación lineal).',
+                })}
+              </p>
             </div>
           </div>
 
@@ -284,9 +351,9 @@ function ConfiguratorStickers({ onFinishChange }) {
             {priceInfo && (
               <div className="p-4 rounded-xl highlight-bordered">
                 <div className="flex items-baseline gap-2 flex-wrap">
-                  <span className="text-2xl md:text-3xl font-heading font-bold text-heading">{priceInfo.price}$</span>
+                  <span className="text-2xl md:text-3xl font-heading font-bold text-heading">{formatPrice(priceInfo.price)}</span>
                   <span className="text-grey-muted text-xs">
-                    ({priceInfo.unitPrice.toFixed(2)}$/u)
+                    ({money(priceInfo.unitPrice)}$/u × {priceInfo.qty})
                   </span>
                 </div>
                 <div className="flex items-center gap-2 mt-1.5 flex-wrap">
