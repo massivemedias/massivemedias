@@ -1,4 +1,5 @@
 import { useParams, Link, Navigate } from 'react-router-dom';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import { ArrowRight, ArrowLeft, CheckCircle, Wrench, Users, ChevronLeft, ChevronRight, X, ExternalLink, Globe, Palette, Code as CodeIcon, Smartphone, Search, Gauge, Shield, ChevronDown, ShoppingCart } from 'lucide-react';
 import { useState, useCallback, useEffect, useMemo, useRef, lazy, Suspense } from 'react';
@@ -1192,7 +1193,14 @@ function ServiceDetail() {
         </div>
       </div>
 
-      {/* ============ LIGHTBOX ============ */}
+      {/* ============ LIGHTBOX ============
+          FIX-PORTAL-Z (3 mai 2026) : portal vers document.body + z-[9999].
+          Avant : z-[100] dans le DOM tree de ServiceDetail = piege par le
+          stacking context du configurateur sticky/transform/willChange.
+          La lightbox apparaissait SOUS le panneau de config transparent.
+          Maintenant : sortie du DOM tree via createPortal -> garantit le
+          rendu au-dessus de tout. */}
+      {typeof document !== 'undefined' && createPortal(
       <AnimatePresence>
         {lightboxImage && (
           <motion.div
@@ -1200,7 +1208,7 @@ function ServiceDetail() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4 cursor-pointer lightbox-overlay"
+            className="fixed inset-0 z-[9999] flex items-center justify-center p-4 cursor-pointer lightbox-overlay"
             onClick={closeLightbox}
           >
             {/* Flèche gauche */}
@@ -1255,7 +1263,9 @@ function ServiceDetail() {
             )}
           </motion.div>
         )}
-      </AnimatePresence>
+      </AnimatePresence>,
+      document.body,
+      )}
 
       {/* ============ BOUTON STICKY "Commander en ligne" ============
           STICKY-CTA (30 avril 2026) : conditionne sur !configVisible -
