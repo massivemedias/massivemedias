@@ -23,6 +23,7 @@ import {
   createArtistPayment, getCommissions, getArtistTopArtworks,
 } from '../services/adminService';
 import ActivatePrivateSaleModal from '../components/ActivatePrivateSaleModal';
+import { artists as artistsHardcoded } from '../data/artists';
 
 function AdminArtistManager() {
   const { tx } = useLang();
@@ -59,11 +60,38 @@ function AdminArtistManager() {
   };
 
   // ------- Liste -------
+  // FIX-COUNT-MOK (3 mai 2026) : la BDD Strapi (api::artist.artist) stocke
+  // prints/stickers comme champ JSON. Quand l'admin a cree l'entree initiale
+  // mais que les vraies oeuvres ont ete ajoutees seulement dans le file
+  // hardcoded artists.js (source de verite produit), le compte backend
+  // affichait 1 print pour Mok au lieu des 36 reels.
+  // Fix : on merge le listing backend avec artists.js et on prend le MAX
+  // des 2 sources pour printsCount/stickersCount. La BDD reste la source
+  // pour active/commissionRate/email/etc., mais les counts visibles cote
+  // admin reflettent la realite produit.
   const loadList = useCallback(async () => {
     setListLoading(true);
     try {
       const { data } = await getAdminArtistsList();
-      setArtists(Array.isArray(data?.data) ? data.data : []);
+      const list = Array.isArray(data?.data) ? data.data : [];
+      // Index artists.js par slug pour lookup O(1)
+      const hardcodedBySlug = {};
+      for (const a of artistsHardcoded) {
+        if (a.slug) hardcodedBySlug[a.slug] = a;
+      }
+      const enriched = list.map(item => {
+        const hard = item.slug ? hardcodedBySlug[item.slug] : null;
+        if (!hard) return item;
+        const hardPrintsCount = Array.isArray(hard.prints) ? hard.prints.length : 0;
+        const hardStickersCount = Array.isArray(hard.stickers) ? hard.stickers.length : 0;
+        return {
+          ...item,
+          // Override avec le max BDD vs hardcoded - reflet de la realite produit
+          printsCount: Math.max(item.printsCount || 0, hardPrintsCount),
+          stickersCount: Math.max(item.stickersCount || 0, hardStickersCount),
+        };
+      });
+      setArtists(enriched);
     } catch (err) {
       showError(err);
     } finally {

@@ -132,7 +132,9 @@ api.interceptors.response.use(
     // FIX-DIAG (3 mai 2026) : log explicite des 401 pour aider l'admin a
     // comprendre pourquoi sa session est rejetee (token expire, role
     // insuffisant, endpoint mal protege). Visible dans la console browser.
-    if (error?.response?.status === 401) {
+    // Header X-Suppress-401-Log=1 pour les call best-effort (ex: useArtists
+    // qui essaie de fetch CMS public, fallback sur artists.js si echec).
+    if (error?.response?.status === 401 && error?.config?.headers?.['X-Suppress-401-Log'] !== '1') {
       console.warn(
         '[api] 401 sur',
         error?.config?.method?.toUpperCase() || 'GET',
