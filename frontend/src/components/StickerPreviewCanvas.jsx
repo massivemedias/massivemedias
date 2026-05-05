@@ -249,7 +249,7 @@ function StickerPreviewCanvas({
       onMouseLeave={handleMouseLeave}
     >
       <div
-        className="relative"
+        className="relative w-full"
         style={{
           transform: `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg) scale(${tilting ? 1.02 : 1})`,
           transition: tilting ? 'transform 0.08s ease-out, filter 0.08s ease-out' : 'transform 0.55s cubic-bezier(0.25,0.8,0.25,1), filter 0.55s cubic-bezier(0.25,0.8,0.25,1)',
@@ -264,6 +264,11 @@ function StickerPreviewCanvas({
           // car ces formes ont un contour rectangulaire defini par CSS.
           // Aspect-ratio : suit la dimension reelle du canvas (canvasAspect)
           // au lieu d'imposer 1:1 ou 3:2 hardcode.
+          // FIX-LAYOUT (3 mai 2026 v2) : ajout w-full pour que aspectRatio
+          // ait une largeur de reference (sinon collapse a 0 sans children
+          // sized) -> le wrapper interne occupe la zone complete du parent
+          // perspective, garantit que onMouseMove du parent recoit les
+          // events sur toute la silhouette du sticker.
           aspectRatio: canvasAspect || 1,
           borderRadius: shape === 'diecut' ? undefined : shapeRadius,
           overflow: shape === 'diecut' ? 'visible' : 'hidden',
@@ -301,6 +306,12 @@ function StickerPreviewCanvas({
               ...fxOverlay,
               borderRadius: shape === 'diecut' ? undefined : shapeRadius,
               transition: 'background 0.1s ease-out, opacity 0.1s ease-out',
+              // FIX-POINTER (3 mai 2026 v2) : pointerEvents: 'none' EN PLUS
+              // de la classe Tailwind, defense en profondeur. Si Tailwind est
+              // purge ou si un style inline override par accident, l'inline
+              // prime et garantit que l'overlay laisse passer mouseMove vers
+              // le parent perspective qui calcule le tilt 3D.
+              pointerEvents: 'none',
               // Mask base sur le canvas : seuls les pixels opaques recoivent
               // l'effet. WebkitMask pour compat Safari.
               ...(maskDataUrl ? {
