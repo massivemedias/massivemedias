@@ -70,11 +70,25 @@ function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, t
     img.src = image;
   }, [image]);
 
-  // Filter strict : on n'affiche QUE les scenes dont l'orientation matche
-  // exactement l'orientation de l'image. Si aucune match (ex: image carree
-  // alors qu'on n'a pas encore de scene 1:1), seul slide 0 (FramePreview CSS)
-  // s'affiche - elle supporte tous les ratios via aspect-ratio CSS.
-  const visibleScenes = MOCKUP_SCENES.filter(s => s.orientation === imageOrientation);
+  // FIX-RESTORE-MOCKUPS (3 mai 2026) : avant, le filter strict
+  //   filter(s => s.orientation === imageOrientation)
+  // retournait [] dans 2 cas frequents :
+  //   1. imageOrientation === 'unknown' (etat initial avant chargement
+  //      async de l'image) -> aucun mockup pendant 100-500ms a chaque load
+  //   2. imageOrientation === 'square' -> aucune scene 1:1 dans les assets
+  //      donc ZERO mockup visible pour les images carrees
+  // Resultat : les clients voyaient juste un cadre dessine basique (slide 0
+  // FramePreview CSS) au lieu des mockups photorealistes (Salon, Chambre, etc.).
+  //
+  // Maintenant : fallback sur 'portrait' (3 scenes : bedroom, living_room, zen)
+  // pour les cas 'unknown' et 'square'. La majorite des prints sont portrait
+  // donc c'est le default le plus naturel. Object-cover gere le crop si l'image
+  // n'est pas exactement portrait. Au moins les mockups environnementaux
+  // photorealistes sont toujours visibles.
+  const effectiveOrientation = (imageOrientation === 'unknown' || imageOrientation === 'square')
+    ? 'portrait'
+    : imageOrientation;
+  const visibleScenes = MOCKUP_SCENES.filter(s => s.orientation === effectiveOrientation);
   const totalSlides = image ? 1 + visibleScenes.length : 0;
 
   // Si le slide courant disparait apres un changement d'orientation (upload
