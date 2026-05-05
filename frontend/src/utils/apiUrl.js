@@ -58,5 +58,8 @@ export function getApiUrl(opts = {}) {
     // l'origine seule, ex: cms mediaUrl()).
     return url.replace(/\/api$/, '');
   }
+  // DEBUG-NETWORK (3 mai 2026) : log brutal pour tracer la resolution
+  // d'URL en production. A retirer une fois le diagnostic termine.
+  console.error('[DEBUG NETWORK] Resolved URL:', url, '| VITE_API_URL:', fromEnv, '| MODE:', import.meta.env.MODE);
   return url;
 }
