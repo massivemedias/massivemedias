@@ -6,6 +6,7 @@
  * Auto-play 3 secondes, dots en dessous, swipe mobile
  */
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import { getImageOrientation, orientationToAspectRatio } from '../utils/imageOrientation';
@@ -468,8 +469,12 @@ function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, t
         ))}
       </div>
 
-      {/* Lightbox */}
-      {lightboxOpen && (
+      {/* Lightbox - FIX-PORTAL (3 mai 2026) : rendue via createPortal vers
+          document.body. Le composant parent (configurateur, sticky panel,
+          carrousel transform) crée un stacking context qui isolait z-[9999]
+          - le portal sort du DOM tree, garantit que la lightbox rend
+          au-dessus de TOUT, incluant le panneau de config transparent. */}
+      {lightboxOpen && typeof document !== 'undefined' && createPortal(
         <div className="fixed inset-0 z-[9999] bg-black/90 flex items-center justify-center p-4 sm:p-8"
           onClick={() => setLightboxOpen(false)}>
           <button onClick={() => setLightboxOpen(false)}
@@ -485,7 +490,8 @@ function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, t
               </div>
             )}
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
     </div>
   );
