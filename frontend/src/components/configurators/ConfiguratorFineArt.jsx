@@ -246,7 +246,10 @@ function ConfiguratorFineArt() {
               l'apercu et eviter qu'il pousse la colonne plus bas que
               la colonne de droite. */}
           {previewImage ? (
-            <div className="relative overflow-hidden w-full max-h-[400px] flex items-center justify-center">
+            // FIX-PREVIEW (4 mai 2026) : retire max-h-[400px] + flex centering
+            // qui ecrasaient le carrousel a quelques pixels. Maintenant
+            // le wrapper s'expand avec le contenu, w-full pour reactivite.
+            <div className="relative w-full overflow-hidden">
               <PrintPreviewCarousel
                 image={previewImage}
                 withFrame={withFrame}
@@ -260,11 +263,11 @@ function ConfiguratorFineArt() {
               />
             </div>
           ) : (
-            <div className="relative overflow-hidden w-full max-h-[400px] rounded-xl shadow-lg bg-black/10 flex items-center justify-center">
+            <div className="relative w-full rounded-xl shadow-lg bg-black/10 overflow-hidden">
               <img
                 src="/images/thumbs/mockup-massive-print.webp"
                 alt=""
-                className="w-full h-full max-h-[400px] object-contain block"
+                className="w-full h-auto max-h-96 object-contain block"
                 loading="lazy"
               />
             </div>

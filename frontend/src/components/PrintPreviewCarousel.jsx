@@ -271,7 +271,11 @@ function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, t
   // Dessiner le mockup du slide actif quand les options changent
   useEffect(() => {
     if (!image || !userImgLoaded || slideIdx === 0) return;
-    if (hideRoomMockups) return; // format carre : pas de rendu de scene
+    // FIX-CRASH (4 mai 2026) : hideRoomMockups etait une variable de l'ancienne
+    // logique (avant ratio-driven du commit 9a5760c). Remplacee par le check
+    // direct sur visibleScenes.length - couvre tous les cas ou aucune scene
+    // n'est dispo (image carree sans asset 1:1, fallback non-applicable, etc.)
+    if (visibleScenes.length === 0) return;
     const sceneId = visibleScenes[slideIdx - 1]?.id;
     if (!sceneId) return;
     const timer = setTimeout(() => {
@@ -312,8 +316,11 @@ function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, t
   const fmtW = fmt?.w || 8.5;
   const fmtH = fmt?.h || 11;
   const maxDim = Math.max(fmtW, fmtH);
-  const scaleFactor = 320 / 24;
-  const previewMaxW = Math.max(180, Math.round(maxDim * scaleFactor));
+  // FIX-PREVIEW (4 mai 2026) : scaleFactor x2 + min 360 (au lieu de 180)
+  // pour que la preview FramePreview ne s'affiche pas en miniature ridicule
+  // dans la colonne du configurateur. A4 -> ~360px au lieu de 180px.
+  const scaleFactor = 640 / 24;
+  const previewMaxW = Math.max(360, Math.round(maxDim * scaleFactor));
   // Le ratio CSS du cadre est entierement pilote par l'orientation de l'image.
   const frameAspectRatio = orientationToAspectRatio(imageOrientation);
   const isPostcard = format === 'postcard';
