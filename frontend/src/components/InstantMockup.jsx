@@ -18,14 +18,6 @@ function InstantMockup({ imageUrl, frameColor = 'black', isLandscape = false, sc
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [ready, setReady] = useState(false);
 
-  // FEAT-ESCAPE (4 mai 2026) : ferme la lightbox au keydown Escape.
-  useEffect(() => {
-    if (!lightboxOpen) return;
-    const onKey = (e) => { if (e.key === 'Escape') setLightboxOpen(false); };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [lightboxOpen]);
-
   const roomImgCache = useRef({});
   const userImgRef = useRef(null);
 

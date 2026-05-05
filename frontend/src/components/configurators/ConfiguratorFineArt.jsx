@@ -111,15 +111,6 @@ function ConfiguratorFineArt() {
   const [notes, setNotes] = useState('');
   const [lightboxOpen, setLightboxOpen] = useState(false);
 
-  // FEAT-ESCAPE (4 mai 2026) : ferme la lightbox de zoom cadre au keydown
-  // Escape. Listener attache uniquement quand la lightbox est ouverte.
-  useEffect(() => {
-    if (!lightboxOpen) return;
-    const onKey = (e) => { if (e.key === 'Escape') setLightboxOpen(false); };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [lightboxOpen]);
-
   // PRIX-HARDCODE : lookup strict dans pricingData.FINE_ART_GRID via defaultGetPrice.
   const getFineArtPrice = defaultGetPrice;
 

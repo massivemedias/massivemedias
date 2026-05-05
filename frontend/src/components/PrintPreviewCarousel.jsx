@@ -33,16 +33,6 @@ const MAT_COLOR = { r: 240, g: 237, b: 232 };
 function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, tx, isLandscape, isSquare = false, onClickImage }) {
   const [slideIdx, setSlideIdx] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
-
-  // FEAT-ESCAPE (4 mai 2026) : ferme la lightbox au keydown Escape.
-  // Listener attache uniquement quand la lightbox est ouverte, removed
-  // au unmount/close pour eviter de polluer les events globaux.
-  useEffect(() => {
-    if (!lightboxOpen) return;
-    const onKey = (e) => { if (e.key === 'Escape') setLightboxOpen(false); };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [lightboxOpen]);
   // On suit le chargement de l'image en STATE (pas seulement en ref) pour
   // declencher un re-render des useEffect de dessin canvas une fois l'image
   // prete. Sans ca, le pre-draw initial partait parfois avec
