@@ -200,6 +200,38 @@ function AdminMessages() {
 
   useEffect(() => { fetchItems(); }, [fetchItems]);
 
+  // FIX-SYNC-READ-CROSS-DEVICE (5 mai 2026) :
+  //   Probleme : un message marque "lu" sur desktop apparaissait toujours
+  //   "nouveau" sur mobile parce que la liste etait fetchee une seule fois
+  //   au mount. Pas de WebSocket, pas de polling.
+  //   Solution : refetch automatique quand l'onglet redevient visible
+  //   (visibilitychange) OU quand la fenetre reprend le focus (focus).
+  //   - visibilitychange = sortie/retour sur l'onglet, le plus fiable
+  //     sur mobile iOS/Android (focus est moins reliable sur mobile).
+  //   - focus = retour depuis une autre app/fenetre desktop.
+  //   - On debounce a 500ms pour eviter des refetch en rafale si les 2
+  //     events fire ensemble (ce qui arrive sur certains browsers).
+  //   - Pas de fetch si la page est cachee (visibilityState !== 'visible')
+  //     pour eviter du trafic inutile.
+  //   - Refetch silencieux : ne montre PAS le spinner global (loading=true
+  //     ferait flicker l'UI). Le user voit juste les nouveaux statuts
+  //     apparaitre quand le serveur a repondu.
+  useEffect(() => {
+    let debounceTimer = null;
+    const refetchSilent = () => {
+      if (typeof document !== 'undefined' && document.visibilityState !== 'visible') return;
+      if (debounceTimer) clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => { fetchItems(); }, 500);
+    };
+    window.addEventListener('focus', refetchSilent);
+    document.addEventListener('visibilitychange', refetchSilent);
+    return () => {
+      if (debounceTimer) clearTimeout(debounceTimer);
+      window.removeEventListener('focus', refetchSilent);
+      document.removeEventListener('visibilitychange', refetchSilent);
+    };
+  }, [fetchItems]);
+
   // Apply filters client-side since we fetch all
   // 'all' exclut les archives, 'archived' montre seulement les archives
   const filtered = items.filter(i => {
@@ -211,6 +243,15 @@ function AdminMessages() {
 
   const handleStatusChange = async (item, newStatus) => {
     setUpdatingId(item._uid);
+    // FIX-SYNC-READ-CROSS-DEVICE (5 mai 2026) :
+    //   Optimistic update LOCAL immediat + appel API + ROLLBACK en cas
+    //   d'echec. Avant : si l'API echouait silencieusement (catch vide),
+    //   l'UI montrait l'ancien statut mais le serveur n'avait pas mis a
+    //   jour - donc l'autre device voyait toujours "nouveau". Maintenant
+    //   on log les erreurs au moins en console et on rollback la state
+    //   locale pour rester aligne avec le serveur.
+    const snapshot = items;
+    setItems(prev => prev.map(i => i._uid === item._uid ? { ...i, status: newStatus } : i));
     try {
       if (item._type === 'contact') {
         await updateContactStatus(item.documentId, newStatus);
@@ -219,9 +260,14 @@ function AdminMessages() {
       } else {
         await updateArtistStatus(item.documentId, newStatus);
       }
-      setItems(prev => prev.map(i => i._uid === item._uid ? { ...i, status: newStatus } : i));
       refreshNotifs();
-    } catch { /* silent */ } finally { setUpdatingId(null); }
+    } catch (err) {
+      // ROLLBACK : restaurer l'ancien statut si l'API a echoue
+      console.error('[AdminMessages] Status update failed for', item._uid, err);
+      setItems(snapshot);
+    } finally {
+      setUpdatingId(null);
+    }
   };
 
   const handleReply = async (item) => {

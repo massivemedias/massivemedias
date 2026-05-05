@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef, lazy, Suspense } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 
@@ -1298,13 +1298,52 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
     const [replySending, setReplySending] = useState(false);
     const [showArchived, setShowArchived] = useState(false);
 
+    // FIX-SYNC-READ-CROSS-DEVICE (5 mai 2026) :
+    //   Avant : fetch unique au mount + reload quand artist.slug change.
+    //   Pas de re-sync si l'artiste lit un message sur desktop puis revient
+    //   sur mobile plus tard. Le badge "nouveau" persistait sur mobile
+    //   tant que la page n'etait pas rechargee a la main.
+    //   Solution : extraction du fetch en useCallback puis ajout des
+    //   listeners visibilitychange + focus pour refetch silencieusement
+    //   au retour sur l'onglet (debounce 500ms pour eviter rafale).
+    const fetchInbox = useCallback((opts = {}) => {
+      if (!artist?.slug) return;
+      const { showSpinner = false } = opts;
+      if (showSpinner) setInboxLoading(true);
+      api.get(`/artist-messages/inbox?artistSlug=${artist.slug}`)
+        .then(res => setInboxMessages(res.data?.data || []))
+        .catch(() => {})
+        .finally(() => { if (showSpinner) setInboxLoading(false); });
+    }, [artist?.slug]);
+
+    // Fetch initial avec spinner (premier chargement de la section)
     useEffect(() => {
       if (!artist?.slug) return;
+      setInboxLoading(true);
       api.get(`/artist-messages/inbox?artistSlug=${artist.slug}`)
         .then(res => setInboxMessages(res.data?.data || []))
         .catch(() => {})
         .finally(() => setInboxLoading(false));
     }, [artist?.slug]);
+
+    // Refetch silencieux quand l'onglet redevient visible/focus (sync
+    // cross-device : si l'admin/artiste a lu sur desktop, mobile recoit
+    // les nouveaux statuts au retour sur l'app sans avoir a reload).
+    useEffect(() => {
+      let debounceTimer = null;
+      const refetchSilent = () => {
+        if (typeof document !== 'undefined' && document.visibilityState !== 'visible') return;
+        if (debounceTimer) clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => fetchInbox({ showSpinner: false }), 500);
+      };
+      window.addEventListener('focus', refetchSilent);
+      document.addEventListener('visibilitychange', refetchSilent);
+      return () => {
+        if (debounceTimer) clearTimeout(debounceTimer);
+        window.removeEventListener('focus', refetchSilent);
+        document.removeEventListener('visibilitychange', refetchSilent);
+      };
+    }, [fetchInbox]);
 
     const handleReply = async (documentId) => {
       if (!replyText.trim()) return;
@@ -1381,9 +1420,21 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
                       onClick={() => {
                         setExpandedId(isExpanded ? null : msg.documentId);
                         if (!isExpanded && isNew) {
+                          // FIX-SYNC-READ-CROSS-DEVICE (5 mai 2026) :
+                          //   Avant : optimistic update apres l'API resolved -
+                          //   si l'API echouait silencieusement, l'UI restait
+                          //   "new" mais l'utilisateur avait l'impression que
+                          //   c'etait lu. Et l'autre device voyait toujours
+                          //   "new" parce que rien n'avait change cote serveur.
+                          //   Maintenant : optimistic LOCAL immediat + appel
+                          //   API + ROLLBACK si echec (avec log console pour
+                          //   debug). Plus consistent cross-device.
+                          setInboxMessages(msgs => msgs.map(m => m.documentId === msg.documentId ? { ...m, status: 'read' } : m));
                           api.put(`/artist-messages/${msg.documentId}/status`, { status: 'read' })
-                            .then(() => setInboxMessages(msgs => msgs.map(m => m.documentId === msg.documentId ? { ...m, status: 'read' } : m)))
-                            .catch(() => {});
+                            .catch(err => {
+                              console.error('[ArtistInbox] Mark-as-read failed for', msg.documentId, err);
+                              setInboxMessages(msgs => msgs.map(m => m.documentId === msg.documentId ? { ...m, status: 'new' } : m));
+                            });
                         }
                       }}
                       className="w-full flex items-center gap-3 px-4 py-3 bg-black/20 hover:bg-black/30 transition-colors text-left focus:outline-none"
