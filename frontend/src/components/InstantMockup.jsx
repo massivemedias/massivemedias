@@ -7,6 +7,7 @@
  * Cliquer sur le canvas ouvre la lightbox haute resolution.
  */
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 
 const MAT_COLOR = { r: 240, g: 237, b: 232 }; // #f0ede8
@@ -231,9 +232,14 @@ function InstantMockup({ imageUrl, frameColor = 'black', isLandscape = false, sc
         onClick={() => setLightboxOpen(true)}
       />
 
-      {lightboxOpen && (
+      {/* FIX-PORTAL-Z (3 mai 2026) : portal vers document.body + z-[99999].
+          C'est CETTE lightbox qu'on voit quand on navigue les dots sous le
+          print de la page artiste pour afficher un mockup environnement
+          (Salon/Chambre/etc.) puis qu'on clique sur la loupe. Sans portal
+          elle etait piegee par le panneau violet sticky du configurateur. */}
+      {lightboxOpen && typeof document !== 'undefined' && createPortal(
         <div
-          className="fixed inset-0 z-[9999] bg-black/90 flex items-center justify-center p-4 sm:p-8"
+          className="fixed inset-0 z-[99999] bg-black/90 flex items-center justify-center p-4 sm:p-8"
           onClick={() => setLightboxOpen(false)}
         >
           <button
@@ -245,7 +251,8 @@ function InstantMockup({ imageUrl, frameColor = 'black', isLandscape = false, sc
           <div className="w-full max-w-5xl" onClick={(e) => e.stopPropagation()}>
             <canvas ref={lightboxCanvasRef} className="w-full rounded-lg" />
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
     </div>
   );
