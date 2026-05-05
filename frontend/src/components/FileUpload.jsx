@@ -335,11 +335,17 @@ function FileUpload({ files = [], onFilesChange, label, maxFiles = 5, compact = 
               <div key={fileKey} className="relative group">
                 {showPreview ? (
                   <div className="rounded-lg overflow-hidden bg-[#2a0050] border border-white/5">
+                    {/* FIX-PREVIEW (4 mai 2026) : h-32 (128px) -> h-auto
+                        max-h-64 (256px max). object-contain garde le ratio
+                        de l'image source, max-h cap la hauteur pour rester
+                        compact dans les colonnes etroites des configurateurs.
+                        Wrapper parent w-full + overflow-hidden permet
+                        l'expansion sans deborder du panneau. */}
                     <img
                       src={file.url}
                       alt=""
                       aria-label={file.name}
-                      className="w-full h-32 object-contain"
+                      className="w-full h-auto max-h-64 object-contain block"
                       loading="lazy"
                       onError={() => markBroken(fileKey)}
                     />
