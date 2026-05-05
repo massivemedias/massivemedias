@@ -83,75 +83,120 @@ function parseAdResponse(raw) {
 /**
  * Appel OpenAI (si OPENAI_API_KEY) sinon fallback Gemini. On retourne
  * toujours du texte brut, le parsing est fait apres.
+ *
+ * FIX-502 (3 mai 2026) : ajout AbortController avec timeout 30s pour
+ * eviter qu'un fetch IA lent fasse timeout le worker Render (qui
+ * repond alors 502 a l'upstream Cloudflare). Erreurs reseau sont
+ * loggees explicitement avec console.error (visible dans Render logs).
  */
 async function callAIProvider(prompt) {
     var _a, _b, _c, _d, _e, _f, _g, _h;
-    const openaiKey = process.env.OPENAI_API_KEY;
-    if (openaiKey) {
-        const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    const TIMEOUT_MS = 30000;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
+    try {
+        const openaiKey = process.env.OPENAI_API_KEY;
+        if (openaiKey) {
+            const res = await fetch('https://api.openai.com/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${openaiKey}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    model: 'gpt-4o-mini',
+                    messages: [
+                        { role: 'system', content: 'You are a copywriter for Massive Medias. Output strict JSON only.' },
+                        { role: 'user', content: prompt },
+                    ],
+                    temperature: 0.85,
+                    response_format: { type: 'json_object' },
+                }),
+                signal: controller.signal,
+            });
+            if (!res.ok) {
+                const body = await res.text().catch(() => '');
+                throw new Error(`OpenAI HTTP ${res.status}: ${body.slice(0, 200)}`);
+            }
+            const data = await res.json();
+            return ((_c = (_b = (_a = data === null || data === void 0 ? void 0 : data.choices) === null || _a === void 0 ? void 0 : _a[0]) === null || _b === void 0 ? void 0 : _b.message) === null || _c === void 0 ? void 0 : _c.content) || '';
+        }
+        const geminiKey = process.env.GEMINI_API_KEY;
+        if (!geminiKey) {
+            throw new Error('Aucune cle API IA configuree sur le serveur (OPENAI_API_KEY ou GEMINI_API_KEY).');
+        }
+        const res = await fetch(`${GEMINI_TEXT_API}?key=${geminiKey}`, {
             method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${openaiKey}`,
-                'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                model: 'gpt-4o-mini',
-                messages: [
-                    { role: 'system', content: 'You are a copywriter for Massive Medias. Output strict JSON only.' },
-                    { role: 'user', content: prompt },
-                ],
-                temperature: 0.85,
-                response_format: { type: 'json_object' },
+                contents: [{ parts: [{ text: prompt }] }],
+                generationConfig: {
+                    temperature: 0.85,
+                    maxOutputTokens: 800,
+                    responseMimeType: 'application/json',
+                },
             }),
+            signal: controller.signal,
         });
-        if (!res.ok)
-            throw new Error(`OpenAI ${res.status} ${await res.text().catch(() => '')}`);
+        if (!res.ok) {
+            const body = await res.text().catch(() => '');
+            throw new Error(`Gemini HTTP ${res.status}: ${body.slice(0, 200)}`);
+        }
         const data = await res.json();
-        return ((_c = (_b = (_a = data === null || data === void 0 ? void 0 : data.choices) === null || _a === void 0 ? void 0 : _a[0]) === null || _b === void 0 ? void 0 : _b.message) === null || _c === void 0 ? void 0 : _c.content) || '';
+        return ((_h = (_g = (_f = (_e = (_d = data === null || data === void 0 ? void 0 : data.candidates) === null || _d === void 0 ? void 0 : _d[0]) === null || _e === void 0 ? void 0 : _e.content) === null || _f === void 0 ? void 0 : _f.parts) === null || _g === void 0 ? void 0 : _g[0]) === null || _h === void 0 ? void 0 : _h.text) || '';
     }
-    const geminiKey = process.env.GEMINI_API_KEY;
-    if (!geminiKey)
-        throw new Error('Aucune cle API configuree (OPENAI_API_KEY ou GEMINI_API_KEY)');
-    const res = await fetch(`${GEMINI_TEXT_API}?key=${geminiKey}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: {
-                temperature: 0.85,
-                maxOutputTokens: 800,
-                responseMimeType: 'application/json',
-            },
-        }),
-    });
-    if (!res.ok)
-        throw new Error(`Gemini ${res.status} ${await res.text().catch(() => '')}`);
-    const data = await res.json();
-    return ((_h = (_g = (_f = (_e = (_d = data === null || data === void 0 ? void 0 : data.candidates) === null || _d === void 0 ? void 0 : _d[0]) === null || _e === void 0 ? void 0 : _e.content) === null || _f === void 0 ? void 0 : _f.parts) === null || _g === void 0 ? void 0 : _g[0]) === null || _h === void 0 ? void 0 : _h.text) || '';
+    catch (err) {
+        if ((err === null || err === void 0 ? void 0 : err.name) === 'AbortError') {
+            throw new Error(`Timeout ${TIMEOUT_MS}ms depasse sur l'API IA`);
+        }
+        throw err;
+    }
+    finally {
+        clearTimeout(timeoutId);
+    }
 }
 exports.default = {
     async generate(ctx) {
-        var _a, _b, _c, _d, _e, _f;
-        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
-            return;
-        const body = ctx.request.body || {};
-        const productName = String(body.productName || '').trim();
-        if (!productName)
-            return ctx.badRequest('productName requis');
-        if (productName.length > 200)
-            return ctx.badRequest('productName max 200 chars');
-        const productType = ['sticker', 'print'].includes(body.productType) ? body.productType : 'print';
-        const artistName = body.artistName ? String(body.artistName).trim().slice(0, 200) : undefined;
-        const description = body.description ? String(body.description).trim().slice(0, 500) : undefined;
-        const language = ['fr', 'en', 'es'].includes(body.language) ? body.language : 'fr';
+        var _a, _b, _c;
+        // FIX-502 (3 mai 2026) : try/catch GLOBAL qui englobe TOUT le handler,
+        // y compris la validation. Avant : un throw dans buildPrompt ou
+        // requireAdminAuth qui rejette la promise pouvait remonter au worker
+        // Strapi et faire 502 cote Render. Maintenant, garantit qu'on retourne
+        // TOUJOURS un JSON valide avec un status HTTP propre.
         try {
+            if (!(await (0, auth_1.requireAdminAuth)(ctx)))
+                return;
+            const body = ctx.request.body || {};
+            const productName = String(body.productName || '').trim();
+            if (!productName) {
+                ctx.status = 400;
+                ctx.body = { error: 'productName requis' };
+                return;
+            }
+            if (productName.length > 200) {
+                ctx.status = 400;
+                ctx.body = { error: 'productName max 200 chars' };
+                return;
+            }
+            const productType = ['sticker', 'print'].includes(body.productType) ? body.productType : 'print';
+            const artistName = body.artistName ? String(body.artistName).trim().slice(0, 200) : undefined;
+            const description = body.description ? String(body.description).trim().slice(0, 500) : undefined;
+            const language = ['fr', 'en', 'es'].includes(body.language) ? body.language : 'fr';
             const prompt = buildPrompt({ productName, productType, artistName, description, language });
             const raw = await callAIProvider(prompt);
             const variants = parseAdResponse(raw);
             if (variants.length === 0) {
-                (_c = (_b = (_a = ctx.strapi) === null || _a === void 0 ? void 0 : _a.log) === null || _b === void 0 ? void 0 : _b.warn) === null || _c === void 0 ? void 0 : _c.call(_b, `[ads-generator] Aucune variante parsable depuis la reponse AI : ${raw.slice(0, 300)}`);
-                return ctx.internalServerError('L\'IA n\'a pas retourne de variantes parsables. Reessaie ou ajuste le prompt.');
+                // console.error en plus de strapi.log pour etre SUR de voir le warning
+                // dans les logs Render meme si strapi.log n'est pas init.
+                console.error('[ads-generator] Aucune variante parsable depuis la reponse AI:', raw.slice(0, 500));
+                ctx.status = 502;
+                ctx.body = {
+                    error: 'L\'IA n\'a pas retourne de variantes parsables. Reessaie ou ajuste le prompt.',
+                    rawSample: raw.slice(0, 200),
+                };
+                return;
             }
+            ctx.status = 200;
             ctx.body = {
                 data: {
                     productName,
@@ -162,8 +207,21 @@ exports.default = {
             };
         }
         catch (err) {
-            (_f = (_e = (_d = ctx.strapi) === null || _d === void 0 ? void 0 : _d.log) === null || _e === void 0 ? void 0 : _e.error) === null || _f === void 0 ? void 0 : _f.call(_e, `[ads-generator] Erreur generation : ${(err === null || err === void 0 ? void 0 : err.message) || err}\n${(err === null || err === void 0 ? void 0 : err.stack) || ''}`);
-            ctx.throw(500, (err === null || err === void 0 ? void 0 : err.message) || 'Erreur generation publicite');
+            // FIX-502 : log explicite via console.error (visible Render) en plus
+            // de strapi.log (qui peut etre filtre/manquer). Toujours retourner un
+            // JSON 500 propre, JAMAIS ctx.throw qui peut remonter au worker.
+            const errMsg = (err === null || err === void 0 ? void 0 : err.message) || String(err) || 'Unknown error';
+            const errStack = (err === null || err === void 0 ? void 0 : err.stack) || '';
+            console.error('AI Error:', errMsg, '\n', errStack);
+            try {
+                (_c = (_b = (_a = ctx === null || ctx === void 0 ? void 0 : ctx.strapi) === null || _a === void 0 ? void 0 : _a.log) === null || _b === void 0 ? void 0 : _b.error) === null || _c === void 0 ? void 0 : _c.call(_b, `[ads-generator] CRITICAL: ${errMsg}\n${errStack}`);
+            }
+            catch (_) { /* strapi.log peut etre indispo */ }
+            ctx.status = 500;
+            ctx.body = {
+                error: 'Internal Server Error',
+                detail: errMsg,
+            };
         }
     },
 };
