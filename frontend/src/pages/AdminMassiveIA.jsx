@@ -11,6 +11,7 @@ import MerchMockupTool from '../components/merch/MerchMockupTool';
 import StickerPreviewCanvas from '../components/StickerPreviewCanvas';
 import api from '../services/api';
 import { getAdminArtistsList, getAdminArtistDetail } from '../services/adminService';
+import artistsHardcoded from '../data/artists';
 // HARDCODE-PROD (3 mai 2026) : URL prod en dur, voir api.js
 
 const TABS = [
@@ -2134,50 +2135,107 @@ function AdsTab() {
   const [error, setError] = useState('');
   const [copiedKey, setCopiedKey] = useState('');
 
+  // FIX-ADS-PRODUCTS (5 mai 2026) : la BDD Strapi (api::artist.artist) ne
+  // contient souvent qu'une coquille minimale - les vraies oeuvres vivent
+  // dans frontend/src/data/artists.js. Avant ce fix, le select Produit
+  // restait vide pour beaucoup d'artistes (ex: Mok = 1 print en BDD vs
+  // 36 dans artists.js). On merge defensivement : artists.js prime sur
+  // les arrays prints/stickers quand il en a plus que la BDD. Type-safe
+  // car artistsHardcoded est un OBJET { [slug]: artist } pas un array.
+  const hardcodedBySlug = useMemo(() => {
+    const map = {};
+    try {
+      if (artistsHardcoded && typeof artistsHardcoded === 'object') {
+        const list = Array.isArray(artistsHardcoded)
+          ? artistsHardcoded
+          : Object.values(artistsHardcoded);
+        for (const a of list) {
+          if (a && typeof a === 'object' && a.slug) map[a.slug] = a;
+        }
+      }
+    } catch (err) {
+      console.error('[AdsTab] artistsHardcoded indexing failed:', err);
+    }
+    return map;
+  }, []);
+
   // 1. Charger la liste des artistes (avec leurs counts prints/stickers).
+  // On enrichit chaque artiste avec le MAX des counts entre BDD et artists.js
+  // pour que l'admin sache d'avance combien d'oeuvres sont disponibles.
   useEffect(() => {
     let cancelled = false;
     getAdminArtistsList()
       .then(({ data }) => {
         if (cancelled) return;
         const list = (data?.data || []).filter(a => !a.incomplete && a.slug);
-        setArtists(list);
+        const enriched = list.map(a => {
+          const hard = hardcodedBySlug[a.slug];
+          if (!hard) return a;
+          const hardPrints = Array.isArray(hard.prints) ? hard.prints.length : 0;
+          const hardStickers = Array.isArray(hard.stickers) ? hard.stickers.length : 0;
+          return {
+            ...a,
+            printsCount: Math.max(Number(a.printsCount) || 0, hardPrints),
+            stickersCount: Math.max(Number(a.stickersCount) || 0, hardStickers),
+          };
+        });
+        setArtists(enriched);
       })
       .catch(err => console.error('[AdsTab] artists fetch failed:', err))
       .finally(() => { if (!cancelled) setLoadingArtists(false); });
     return () => { cancelled = true; };
-  }, []);
+  }, [hardcodedBySlug]);
+
+  // Helper : normalise un item (print ou sticker) - tolerant aux schemas
+  // legacy (artists.js) ET au schema BDD (camelCase). Image: priorite a
+  // imageFull > image > thumb (tous 3 supportes par le backend et le file).
+  const normalizeItem = useCallback((p, type) => ({
+    id: p.id || p.documentId || `${type}-${p.title || p.titleFr || Math.random()}`,
+    name: p.titleFr || p.titleEn || p.title || 'Sans titre',
+    type,
+    imageUrl: p.imageFull || p.image || p.thumb || p.thumbnail || '',
+    description: p.descriptionFr || p.descriptionEn || p.description || '',
+  }), []);
 
   // 2. Quand on change d'artiste, fetch ses prints + stickers via le detail.
+  // Strategie merge identique a AdminArtistManager.loadDetail : on prend la
+  // source la plus riche (artists.js si > BDD).
   useEffect(() => {
     if (!selectedArtistSlug) { setProducts([]); setSelectedProductId(''); return; }
     let cancelled = false;
     setLoadingProducts(true);
+
+    const hard = hardcodedBySlug[selectedArtistSlug] || null;
+    const hardPrints = Array.isArray(hard?.prints) ? hard.prints : [];
+    const hardStickers = Array.isArray(hard?.stickers) ? hard.stickers : [];
+
     getAdminArtistDetail(selectedArtistSlug)
       .then(({ data }) => {
         if (cancelled) return;
         const detail = data?.data || {};
-        const prints = (detail.prints || []).map(p => ({
-          id: p.id || p.documentId || `print-${p.title}`,
-          name: p.titleFr || p.titleEn || p.title || 'Sans titre',
-          type: 'print',
-          imageUrl: p.imageFull || p.image || p.thumb || '',
-          description: p.descriptionFr || p.descriptionEn || '',
-        }));
-        const stickers = (detail.stickers || []).map(s => ({
-          id: s.id || s.documentId || `sticker-${s.title}`,
-          name: s.titleFr || s.titleEn || s.title || 'Sans titre',
-          type: 'sticker',
-          imageUrl: s.imageFull || s.image || s.thumb || '',
-          description: s.descriptionFr || s.descriptionEn || '',
-        }));
+        const backendPrints = Array.isArray(detail.prints) ? detail.prints : [];
+        const backendStickers = Array.isArray(detail.stickers) ? detail.stickers : [];
+        // Source la plus riche gagne, item par item
+        const prints = (hardPrints.length > backendPrints.length ? hardPrints : backendPrints)
+          .map(p => normalizeItem(p, 'print'));
+        const stickers = (hardStickers.length > backendStickers.length ? hardStickers : backendStickers)
+          .map(s => normalizeItem(s, 'sticker'));
         setProducts([...prints, ...stickers]);
         setSelectedProductId('');
       })
-      .catch(err => console.error('[AdsTab] detail fetch failed:', err))
+      .catch(err => {
+        // Si le backend echoue (404 sur artiste sans api::artist.artist),
+        // on rebascule sur les hardcoded uniquement - mieux que rien.
+        if (cancelled) return;
+        console.warn('[AdsTab] detail fetch failed, falling back to artists.js:', err?.message);
+        const prints = hardPrints.map(p => normalizeItem(p, 'print'));
+        const stickers = hardStickers.map(s => normalizeItem(s, 'sticker'));
+        setProducts([...prints, ...stickers]);
+        setSelectedProductId('');
+      })
       .finally(() => { if (!cancelled) setLoadingProducts(false); });
     return () => { cancelled = true; };
-  }, [selectedArtistSlug]);
+  }, [selectedArtistSlug, hardcodedBySlug, normalizeItem]);
 
   const selectedArtist = useMemo(() => artists.find(a => a.slug === selectedArtistSlug) || null, [artists, selectedArtistSlug]);
   const selectedProduct = useMemo(() => products.find(p => String(p.id) === String(selectedProductId)) || null, [products, selectedProductId]);
@@ -2239,14 +2297,24 @@ function AdsTab() {
   };
 
   return (
-    <div className="space-y-4 overflow-y-auto h-full">
+    // FIX-AI-ADS-LAYOUT (5 mai 2026) :
+    //   - pr-2 : breathing room a droite pour eviter que la scrollbar interne
+    //     rose (theme-driven, rgba(accent, 0.4)) colle au bord de la card
+    //     header et donne l'impression d'une "barre rose mal alignee".
+    //   - overflow-y-auto reste necessaire car le parent (calc(100vh - 750px))
+    //     contraint la hauteur et le contenu (selectors + 3 variantes generees)
+    //     deborde regulierement.
+    <div className="space-y-4 overflow-y-auto h-full pr-2">
       {/* Header explicatif */}
       <div className="rounded-xl bg-glass border border-white/5 p-4">
         <div className="flex items-start gap-3">
           <div className="p-2 rounded-lg bg-accent/15 flex-shrink-0">
             <Megaphone size={18} className="text-accent" />
           </div>
-          <div>
+          {/* FIX header text container : ajout flex-1 min-w-0 pour que le texte
+              s'etende correctement sur toute la largeur disponible et wrap si
+              besoin au lieu de creer un layout shrink-fit avec espace mort. */}
+          <div className="flex-1 min-w-0">
             <h3 className="text-heading font-semibold text-base">
               {tx({ fr: 'Générateur de publicités Meta', en: 'Meta ads generator', es: 'Generador de anuncios Meta' })}
             </h3>
