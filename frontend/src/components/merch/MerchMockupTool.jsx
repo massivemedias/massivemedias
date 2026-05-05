@@ -17,6 +17,7 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { Upload, Download, RotateCcw, X, Shirt, Sparkles, Loader2, AlertCircle, Image as ImageIcon } from 'lucide-react';
 import { merchColors } from '../../data/merchData';
+import { getApiUrl } from '../../utils/apiUrl';
 
 // Catalogue des produits dispo. Chaque face a ses propres dimensions natives
 // pour un export HD fidele a l'image source.
@@ -691,7 +692,7 @@ function MerchAIMockup() {
     setError(null);
     setResult(null);
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:1337/api';
+      const apiUrl = getApiUrl();
       const body = {
         product,
         colorName: color.name,

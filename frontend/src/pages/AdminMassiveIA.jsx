@@ -11,6 +11,7 @@ import MerchMockupTool from '../components/merch/MerchMockupTool';
 import StickerPreviewCanvas from '../components/StickerPreviewCanvas';
 import api from '../services/api';
 import { getAdminArtistsList, getAdminArtistDetail } from '../services/adminService';
+import { getApiUrl } from '../utils/apiUrl';
 
 const TABS = [
   { id: 'chat', icon: MessageSquare, label: 'Chat' },
@@ -916,7 +917,7 @@ function PrintsTab() {
     setError(null);
 
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:1337/api';
+      const apiUrl = getApiUrl();
       const res = await fetch(`${apiUrl}/mockup/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1491,7 +1492,7 @@ function QRCodeTab() {
   }, [fetchMyList]);
 
   const copyTrackingUrl = useCallback((shortId) => {
-    const backend = import.meta.env.VITE_API_URL || 'https://massivemedias-api.onrender.com';
+    const backend = getApiUrl({ noApiSuffix: true });
     const fullUrl = `${backend.replace(/\/api\/?$/, '').replace(/\/$/, '')}/api/qr/${shortId}`;
     navigator.clipboard.writeText(fullUrl);
     setCopiedId(shortId);

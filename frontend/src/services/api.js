@@ -1,7 +1,12 @@
 import axios from 'axios';
 import { supabase } from '../lib/supabase';
+import { getApiUrl } from '../utils/apiUrl';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:1337/api';
+// FIX-PROD-URL (3 mai 2026) : utility centralisee qui garantit qu'en
+// production on tape sur https://massivemedias-api.onrender.com/api meme
+// si VITE_API_URL n'est pas injectee au build (Cloudflare Pages oubli).
+// Plus jamais de fallback localhost silencieux en prod.
+const API_URL = getApiUrl();
 
 const api = axios.create({
   baseURL: API_URL,

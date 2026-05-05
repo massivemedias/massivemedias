@@ -12,6 +12,7 @@ import { useLang } from '../i18n/LanguageContext';
 import { getOrders, getContactSubmissions, getExpenses, getAnalytics } from '../services/adminService';
 import api from '../services/api';
 import AnnualBalanceCard from '../components/AnnualBalanceCard';
+import { getApiUrl } from '../utils/apiUrl';
 
 // FIX-NOTES-FETCH (23 avril 2026) : on abandonne le wrapper getAdminNotes
 // et on utilise api.get('/admin-notes/list') EN DIRECT, exactement comme
@@ -697,7 +698,7 @@ function SystemStatusWidget({ tx }) {
 
     try {
       const start = Date.now();
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'https://massivemedias-api.onrender.com/api'}/artists?pagination[pageSize]=1`, { signal: AbortSignal.timeout(8000) });
+      const res = await fetch(`${getApiUrl()}/artists?pagination[pageSize]=1`, { signal: AbortSignal.timeout(8000) });
       results.push({ name: 'Render', ok: res.ok, ms: Date.now() - start });
     } catch {
       results.push({ name: 'Render', ok: false, ms: 0 });

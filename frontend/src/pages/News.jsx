@@ -4,8 +4,9 @@ import { Calendar, Tag } from 'lucide-react';
 import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
 import api from '../services/api';
+import { getApiUrl } from '../utils/apiUrl';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:1337/api';
+const API_URL = getApiUrl();
 
 const LOCALE_DATE = { fr: 'fr-CA', en: 'en-CA', es: 'es-419' };
 
