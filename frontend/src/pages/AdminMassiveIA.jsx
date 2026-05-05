@@ -2427,10 +2427,18 @@ function AdsTab() {
         </div>
       )}
 
-      {/* Resultats : image produit + 3 variantes en grille */}
-      {variants.length > 0 && selectedProduct && (
+      {/* PREVIEW-IMMEDIAT (5 mai 2026) : avant, l'image+infos n'apparaissaient
+          QU'APRES avoir genere des variantes (variants.length > 0). Resultat :
+          quand l'admin choisissait artiste+print, rien ne se passait visuel-
+          lement avant de cliquer Generer - feedback froid, pas de validation
+          visuelle de la selection.
+          Maintenant : la grille s'affiche des que selectedProduct est truthy
+          (aussitot que le produit est choisi). Le panneau de droite montre
+          un placeholder "Clique Generer pour afficher 3 variantes" tant que
+          variants.length === 0, puis les variantes une fois generees. */}
+      {selectedProduct && (
         <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-4">
-          {/* Image + bouton download */}
+          {/* Image + bouton download + meta produit */}
           <div className="space-y-2">
             <div className="rounded-xl overflow-hidden bg-black/20 border border-white/5 aspect-square flex items-center justify-center">
               {selectedProduct.imageUrl ? (
@@ -2448,13 +2456,57 @@ function AdsTab() {
               <Download size={12} />
               {tx({ fr: 'Télécharger le visuel', en: 'Download visual', es: 'Descargar visual' })}
             </button>
-            <p className="text-[10px] text-grey-muted/70 text-center">
-              {selectedArtist?.name} - {selectedProduct.name}
-            </p>
+            {/* Meta produit visible des la selection - plus de feedback que
+                le seul changement du <select>. Affichage : nom artiste + nom
+                produit + type (PRT/STK) + description si dispo. */}
+            <div className="rounded-lg bg-black/20 border border-white/5 p-3 space-y-1.5">
+              <p className="text-[10px] uppercase tracking-wider text-accent font-bold">
+                {selectedProduct.type === 'sticker' ? 'Sticker' : tx({ fr: 'Print', en: 'Print', es: 'Print' })}
+              </p>
+              <p className="text-heading font-semibold text-sm leading-tight">{selectedProduct.name}</p>
+              <p className="text-grey-muted text-xs">
+                {tx({ fr: 'par', en: 'by', es: 'por' })} <span className="text-heading">{selectedArtist?.name || '-'}</span>
+              </p>
+              {selectedProduct.description && (
+                <p className="text-grey-muted text-[11px] mt-1 pt-1.5 border-t border-white/5 leading-relaxed line-clamp-3">
+                  {selectedProduct.description}
+                </p>
+              )}
+            </div>
           </div>
 
-          {/* 3 variantes */}
+          {/* Panneau droit : variantes generees OU placeholder d'attente */}
           <div className="space-y-3">
+            {/* PLACEHOLDER (5 mai 2026) : etat zero quand l'admin a choisi un
+                produit mais n'a pas encore clique Generer. CTA visuel pour
+                guider l'action suivante au lieu d'un panneau vide. */}
+            {variants.length === 0 && !generating && (
+              <div className="rounded-xl bg-glass border border-dashed border-white/10 p-6 text-center space-y-2">
+                <Sparkles size={24} className="text-accent/60 mx-auto" />
+                <p className="text-heading text-sm font-semibold">
+                  {tx({
+                    fr: 'Pret a generer 3 variantes',
+                    en: 'Ready to generate 3 variants',
+                    es: 'Listo para generar 3 variantes',
+                  })}
+                </p>
+                <p className="text-grey-muted text-xs leading-relaxed max-w-md mx-auto">
+                  {tx({
+                    fr: 'Clique "Generer 3 variantes" ci-dessus pour produire 3 copy publicitaires (Titre / Corps / CTA) optimises pour ce produit.',
+                    en: 'Click "Generate 3 variants" above to produce 3 ad copies (Headline / Body / CTA) optimized for this product.',
+                    es: 'Haz clic en "Generar 3 variantes" para producir 3 copys publicitarios optimizados.',
+                  })}
+                </p>
+              </div>
+            )}
+            {generating && variants.length === 0 && (
+              <div className="rounded-xl bg-glass border border-white/10 p-6 flex items-center justify-center gap-2">
+                <Loader2 size={20} className="text-accent animate-spin" />
+                <span className="text-grey-muted text-sm">
+                  {tx({ fr: 'Generation en cours...', en: 'Generating...', es: 'Generando...' })}
+                </span>
+              </div>
+            )}
             {variants.map((v, idx) => (
               <div key={idx} className="rounded-xl bg-glass border border-white/10 p-4 space-y-3">
                 <div className="flex items-center justify-between">
