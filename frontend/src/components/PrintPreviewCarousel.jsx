@@ -85,9 +85,11 @@ function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, t
   // donc c'est le default le plus naturel. Object-cover gere le crop si l'image
   // n'est pas exactement portrait. Au moins les mockups environnementaux
   // photorealistes sont toujours visibles.
-  const effectiveOrientation = (imageOrientation === 'unknown' || imageOrientation === 'square')
-    ? 'portrait'
-    : imageOrientation;
+  // RESTORE-MOCKUPS (4 mai 2026) : fallback portrait pour 'unknown' (etat
+  // initial avant detection async) et 'square' (pas d'asset 1:1 dispo).
+  // Garantit qu'au moins les 3 scenes portrait (bedroom, living_room, zen)
+  // sont toujours visibles, peu importe le ratio image source.
+  const effectiveOrientation = (imageOrientation === 'unknown' || imageOrientation === 'square') ? 'portrait' : imageOrientation;
   const visibleScenes = MOCKUP_SCENES.filter(s => s.orientation === effectiveOrientation);
   const totalSlides = image ? 1 + visibleScenes.length : 0;
 
