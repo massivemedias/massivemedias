@@ -413,7 +413,7 @@ const servicesData = {
     slug: 'web',
     boutiqueSlug: 'web',
     icon: Globe,
-    title: 'Expériences Numériques & Direction Artistique',
+    title: 'Webdesign et Developpement web',
     subtitle: 'Des plateformes web qui vibrent au même rythme que votre art.',
     heroImage: thumb('/images/web/DevWebHero.webp'),
     description: `Pas de templates corporatifs ennuyeux. Nous codons des sites sur mesure pour la scène culturelle : portfolios d'artistes, sites de festivals avec intégration de billetterie, et expériences immersives. On s'occupe de la technique, vous gardez le contrôle de votre image.`,

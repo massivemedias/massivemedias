@@ -396,7 +396,7 @@ const servicesDataEs = {
     slug: 'web',
     boutiqueSlug: 'web',
     icon: Globe,
-    title: 'Experiencias Digitales y Plataformas Web',
+    title: 'Diseño y Desarrollo Web',
     subtitle: 'Plataformas web que vibran al ritmo de tu arte.',
     heroImage: thumb('/images/web/DevWebHero.webp'),
     description: `Nada de plantillas corporativas aburridas. Codificamos sitios web a medida para la escena cultural: portafolios de artistas, sitios de festivales con integración de entradas y experiencias inmersivas. Nosotros manejamos la tecnología, tú mantienes el control de tu imagen.`,

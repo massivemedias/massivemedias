@@ -12,6 +12,7 @@ import getServicesData from '../data/getServicesData';
 import { useServicePages } from '../hooks/useServicePages';
 import { bl, mediaUrl } from '../utils/cms';
 import { getIcon } from '../utils/iconMap';
+import QuoteForm from '../components/QuoteForm';
 
 // Lazy-load configurators per boutiqueSlug
 const configuratorMap = {
@@ -523,10 +524,29 @@ function ServiceDetail() {
                     <ChevronDown className="ml-2" size={20} />
                   </button>
                 )}
-                <Link to="/contact" className={service.boutiqueSlug && configuratorMap[service.boutiqueSlug] ? 'btn-outline' : 'btn-primary'}>
-                  {t('serviceDetail.requestQuote')}
-                  <ArrowRight className="ml-2" size={20} />
-                </Link>
+                {/* QUOTE-CTA (3 mai 2026) : pour le service web, le bouton
+                    scroll vers le formulaire #quote-form en bas de page
+                    (smooth scroll natif via href anchor + scroll-mt-24).
+                    Les autres services gardent le Link vers /contact. */}
+                {service.slug === 'web' ? (
+                  <a
+                    href="#quote-form"
+                    className={service.boutiqueSlug && configuratorMap[service.boutiqueSlug] ? 'btn-outline' : 'btn-primary'}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      const target = document.getElementById('quote-form');
+                      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }}
+                  >
+                    {t('serviceDetail.requestQuote')}
+                    <ArrowRight className="ml-2" size={20} />
+                  </a>
+                ) : (
+                  <Link to="/contact" className={service.boutiqueSlug && configuratorMap[service.boutiqueSlug] ? 'btn-outline' : 'btn-primary'}>
+                    {t('serviceDetail.requestQuote')}
+                    <ArrowRight className="ml-2" size={20} />
+                  </Link>
+                )}
                 <a href="#tarifs" className="btn-outline">
                   {t('serviceDetail.viewPricing')}
                 </a>
@@ -1150,12 +1170,48 @@ function ServiceDetail() {
               {t('serviceDetail.ctaSubtitle')}
             </p>
             <div className="flex justify-center">
-              <Link to="/contact" className="btn-primary">
-                {t('serviceDetail.requestQuote')}
-                <ArrowRight className="ml-2" size={20} />
-              </Link>
+              {service.slug === 'web' ? (
+                <a
+                  href="#quote-form"
+                  className="btn-primary"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    const target = document.getElementById('quote-form');
+                    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }}
+                >
+                  {t('serviceDetail.requestQuote')}
+                  <ArrowRight className="ml-2" size={20} />
+                </a>
+              ) : (
+                <Link to="/contact" className="btn-primary">
+                  {t('serviceDetail.requestQuote')}
+                  <ArrowRight className="ml-2" size={20} />
+                </Link>
+              )}
             </div>
           </motion.div>
+        )}
+
+        {/* QUOTE-FORM (3 mai 2026) : formulaire de soumission pour le
+            service web, place juste au-dessus du footer (qui est dans
+            MainLayout). Ancre #quote-form ciblee par les CTA "Demander
+            une soumission" du hero et du bloc CTA bottom. */}
+        {service.slug === 'web' && (
+          <QuoteForm
+            id="quote-form"
+            service="web"
+            title={{
+              fr: 'Demander une soumission',
+              en: 'Request a quote',
+              es: 'Solicitar cotización',
+            }}
+            subtitle={{
+              fr: 'Décris ton projet web. On revient vers toi avec une estimation détaillée dans les 24h.',
+              en: 'Describe your web project. We get back to you with a detailed estimate within 24h.',
+              es: 'Describe tu proyecto web. Te enviamos una estimación detallada en 24h.',
+            }}
+          />
         )}
 
         {/* CONFIGURATEUR : deplace au-dessus de la ligne de flottaison

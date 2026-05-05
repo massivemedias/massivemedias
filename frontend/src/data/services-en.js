@@ -396,7 +396,7 @@ const servicesDataEn = {
     slug: 'web',
     boutiqueSlug: 'web',
     icon: Globe,
-    title: 'Digital Experiences & Web Platforms',
+    title: 'Webdesign and Web Development',
     subtitle: 'Web platforms that pulse to the beat of your art.',
     heroImage: thumb('/images/web/DevWebHero.webp'),
     description: `No boring corporate templates. We code custom websites for the cultural scene: artist portfolios, festival sites with ticketing integration, and immersive experiences. We handle the tech, you keep control of your image.`,
