@@ -93,6 +93,12 @@ function AdminArtistManager() {
       });
       setArtists(enriched);
     } catch (err) {
+      // DEBUG-CRASH (3 mai 2026) : log brut de l'erreur native pour
+      // diagnostic. Inclut response.status, response.data, message, stack.
+      // A retirer une fois la cause racine identifiee.
+      console.error('[CRASH ADMIN ARTISTS]', err);
+      console.error('[CRASH ADMIN ARTISTS] response:', err?.response?.status, err?.response?.data);
+      console.error('[CRASH ADMIN ARTISTS] config:', err?.config?.method, err?.config?.url, '- token sent:', !!err?.config?.headers?.Authorization);
       showError(err);
     } finally {
       setListLoading(false);
