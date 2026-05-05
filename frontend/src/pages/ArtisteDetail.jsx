@@ -317,7 +317,11 @@ function ArtisteDetail({ subdomainSlug }) {
     const url = selectedPrint.fullImage || toFull(selectedPrint.image);
     if (!url) return;
     let cancelled = false;
-    const probe = new Image();
+    // FIX-CRASH (4 mai 2026) : Image est SHADOWED par l'import lucide-react
+    // ligne 5 (icone Image). new Image() essayait d'instancier l'icone React
+    // -> "Image$1 is not a constructor". Workaround : window.Image pour
+    // bypass le shadowing et acceder au constructeur global du browser.
+    const probe = new window.Image();
     probe.crossOrigin = 'anonymous';
     probe.onload = () => {
       if (cancelled) return;

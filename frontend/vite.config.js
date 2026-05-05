@@ -13,16 +13,10 @@ export default defineConfig({
     base: '/',
   build: {
     outDir: 'dist',
-    // FIX-DEBUG (4 mai 2026) : sourcemap activee + minify desactivee
-    // temporairement pour avoir des stack traces lisibles en prod et
-    // identifier le composant qui crash avec "Ie is not a constructor".
-    // A retirer une fois le diagnostic termine - les bundles seront
-    // significativement plus gros (~3x) sans minification.
-    sourcemap: true,
-    minify: false,
+    sourcemap: false,
     // FRONT-02 : limite raisonnable par chunk pour que vite warn si un chunk
     // commence a gonfler (par defaut 500KB, on descend a 400 pour etre pushy).
-    chunkSizeWarningLimit: 1500,
+    chunkSizeWarningLimit: 400,
     rollupOptions: {
       output: {
         manualChunks(id) {
