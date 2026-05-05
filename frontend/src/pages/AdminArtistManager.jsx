@@ -69,37 +69,60 @@ function AdminArtistManager() {
   // des 2 sources pour printsCount/stickersCount. La BDD reste la source
   // pour active/commissionRate/email/etc., mais les counts visibles cote
   // admin reflettent la realite produit.
+  // FIX-CRASH-ITERABLE (5 mai 2026) : src/data/artists.js exporte un OBJET
+  // (const artistsData = { adrift: {...}, mok: {...} }), PAS un array.
+  // Le `for (const a of artistsHardcoded)` plantait avec "ee is not iterable"
+  // dans le bundle minifie -> page admin/artists totalement cassee.
+  // Fix : convertir defensivement via Object.values quand l'input est un
+  // objet, garder Array.isArray comme nominal au cas ou la structure
+  // changerait dans le futur. Try/catch sur l'indexation pour eviter
+  // qu'une donnee corrompue casse tout le panel.
   const loadList = useCallback(async () => {
     setListLoading(true);
     try {
+      // Index artists.js par slug pour lookup O(1) - TYPE-SAFE
+      const hardcodedBySlug = {};
+      try {
+        if (artistsHardcoded && typeof artistsHardcoded === 'object') {
+          const hardcodedList = Array.isArray(artistsHardcoded)
+            ? artistsHardcoded
+            : Object.values(artistsHardcoded);
+          for (const a of hardcodedList) {
+            if (a && typeof a === 'object' && a.slug) {
+              hardcodedBySlug[a.slug] = a;
+            }
+          }
+        }
+      } catch (indexErr) {
+        // Si l'indexation echoue, on continue avec un index vide -
+        // les counts seront ceux du backend pur.
+        console.error('[ADMIN ARTISTS] Indexation artists.js echouee:', indexErr);
+      }
+
       const { data } = await getAdminArtistsList();
       const list = Array.isArray(data?.data) ? data.data : [];
-      // Index artists.js par slug pour lookup O(1)
-      const hardcodedBySlug = {};
-      for (const a of artistsHardcoded) {
-        if (a.slug) hardcodedBySlug[a.slug] = a;
-      }
+
       const enriched = list.map(item => {
+        if (!item || typeof item !== 'object') return item;
         const hard = item.slug ? hardcodedBySlug[item.slug] : null;
         if (!hard) return item;
         const hardPrintsCount = Array.isArray(hard.prints) ? hard.prints.length : 0;
         const hardStickersCount = Array.isArray(hard.stickers) ? hard.stickers.length : 0;
         return {
           ...item,
-          // Override avec le max BDD vs hardcoded - reflet de la realite produit
-          printsCount: Math.max(item.printsCount || 0, hardPrintsCount),
-          stickersCount: Math.max(item.stickersCount || 0, hardStickersCount),
+          printsCount: Math.max(Number(item.printsCount) || 0, hardPrintsCount),
+          stickersCount: Math.max(Number(item.stickersCount) || 0, hardStickersCount),
         };
       });
       setArtists(enriched);
     } catch (err) {
-      // DEBUG-CRASH (3 mai 2026) : log brut de l'erreur native pour
-      // diagnostic. Inclut response.status, response.data, message, stack.
-      // A retirer une fois la cause racine identifiee.
       console.error('[CRASH ADMIN ARTISTS]', err);
       console.error('[CRASH ADMIN ARTISTS] response:', err?.response?.status, err?.response?.data);
       console.error('[CRASH ADMIN ARTISTS] config:', err?.config?.method, err?.config?.url, '- token sent:', !!err?.config?.headers?.Authorization);
       showError(err);
+      // Set artists vide pour que la liste affiche "aucun artiste" plutot
+      // que de garder un state stale corrompu qui pourrait crasher le rendu.
+      setArtists([]);
     } finally {
       setListLoading(false);
     }
