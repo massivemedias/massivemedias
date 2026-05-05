@@ -60,46 +60,77 @@ function AdminArtistManager() {
   };
 
   // ------- Liste -------
-  // FIX-COUNT-MOK (3 mai 2026) : la BDD Strapi (api::artist.artist) stocke
-  // prints/stickers comme champ JSON. Quand l'admin a cree l'entree initiale
-  // mais que les vraies oeuvres ont ete ajoutees seulement dans le file
-  // hardcoded artists.js (source de verite produit), le compte backend
-  // affichait 1 print pour Mok au lieu des 36 reels.
-  // Fix : on merge le listing backend avec artists.js et on prend le MAX
-  // des 2 sources pour printsCount/stickersCount. La BDD reste la source
-  // pour active/commissionRate/email/etc., mais les counts visibles cote
-  // admin reflettent la realite produit.
+  // REFACTOR-SAFE (3 mai 2026) : reecriture defensive de loadList apres un
+  // crash silencieux "artistsHardcoded is not iterable". Cause racine :
+  // src/data/artists.js exporte un OBJET (const artistsData = { adrift: {...},
+  // mok: {...}, ... }), pas un array. Le precedent for...of plantait avant
+  // meme le rendu du composant, masquant en plus toute erreur reseau.
+  //
+  // Garanties strictes :
+  //   1. Toutes les operations sur artistsHardcoded passent par Object.values
+  //      apres verification typeof === 'object', jamais d'iteration directe.
+  //   2. La reponse API est typee defensivement avec safeArtists qui supporte
+  //      data.data, data direct, ou fallback [].
+  //   3. .map / .filter ne sont appliques que sur des arrays verifies.
+  //   4. Try/catch englobe TOUT, log natif sans casser le rendu.
+  //   5. Aucun composant public touche - changements localises a ce file.
   const loadList = useCallback(async () => {
     setListLoading(true);
     try {
-      const { data } = await getAdminArtistsList();
-      const list = Array.isArray(data?.data) ? data.data : [];
-      // Index artists.js par slug pour lookup O(1)
+      // Index artists.js par slug en mode TYPE-SAFE :
+      // artistsHardcoded peut etre objet, array ou undefined - on normalise.
       const hardcodedBySlug = {};
-      for (const a of artistsHardcoded) {
-        if (a.slug) hardcodedBySlug[a.slug] = a;
+      try {
+        if (artistsHardcoded && typeof artistsHardcoded === 'object') {
+          const hardcodedList = Array.isArray(artistsHardcoded)
+            ? artistsHardcoded
+            : Object.values(artistsHardcoded);
+          for (const a of hardcodedList) {
+            if (a && typeof a === 'object' && a.slug) {
+              hardcodedBySlug[a.slug] = a;
+            }
+          }
+        }
+      } catch (indexErr) {
+        console.error('[ADMIN ARTISTS] Indexation artists.js echouee:', indexErr);
+        // On continue avec hardcodedBySlug = {} - les counts seront ceux du backend.
       }
-      const enriched = list.map(item => {
+
+      // Appel API via instance Axios (token auto-injecte par interceptor).
+      const res = await getAdminArtistsList();
+      // TYPE-SAFE extraction supportant 3 shapes possibles de reponse :
+      //   { data: { data: [...] } } (Strapi v5 nominal)
+      //   { data: [...] } (custom controllers a plat)
+      //   fallback []
+      const safeArtists = Array.isArray(res?.data?.data)
+        ? res.data.data
+        : (Array.isArray(res?.data) ? res.data : []);
+
+      // Enrichissement defensif : si pas de match hardcoded, on garde l'item
+      // tel quel. Si match, on prend le max des 2 sources sur les counts.
+      const enriched = safeArtists.map(item => {
+        if (!item || typeof item !== 'object') return item;
         const hard = item.slug ? hardcodedBySlug[item.slug] : null;
         if (!hard) return item;
         const hardPrintsCount = Array.isArray(hard.prints) ? hard.prints.length : 0;
         const hardStickersCount = Array.isArray(hard.stickers) ? hard.stickers.length : 0;
         return {
           ...item,
-          // Override avec le max BDD vs hardcoded - reflet de la realite produit
-          printsCount: Math.max(item.printsCount || 0, hardPrintsCount),
-          stickersCount: Math.max(item.stickersCount || 0, hardStickersCount),
+          printsCount: Math.max(Number(item.printsCount) || 0, hardPrintsCount),
+          stickersCount: Math.max(Number(item.stickersCount) || 0, hardStickersCount),
         };
       });
       setArtists(enriched);
     } catch (err) {
-      // DEBUG-CRASH (3 mai 2026) : log brut de l'erreur native pour
-      // diagnostic. Inclut response.status, response.data, message, stack.
-      // A retirer une fois la cause racine identifiee.
-      console.error('[CRASH ADMIN ARTISTS]', err);
-      console.error('[CRASH ADMIN ARTISTS] response:', err?.response?.status, err?.response?.data);
-      console.error('[CRASH ADMIN ARTISTS] config:', err?.config?.method, err?.config?.url, '- token sent:', !!err?.config?.headers?.Authorization);
+      // Log natif pour diagnostic - ne crash JAMAIS le rendu.
+      console.error('[ADMIN ARTISTS] loadList failed:', err);
+      console.error('[ADMIN ARTISTS] response:', err?.response?.status, err?.response?.data);
+      console.error('[ADMIN ARTISTS] config:', err?.config?.method, err?.config?.url, '- token sent:', !!err?.config?.headers?.Authorization);
       showError(err);
+      // Important : on set un array vide plutot que de laisser un state stale,
+      // pour que la liste affiche "aucun artiste" et soit re-loadable au lieu
+      // de crasher l'UI sur l'ancien state.
+      setArtists([]);
     } finally {
       setListLoading(false);
     }
