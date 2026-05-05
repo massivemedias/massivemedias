@@ -67,14 +67,42 @@ function getFxOverlayStyle(fx, tilt) {
         opacity: 0.7,
       };
     case 'broken-glass':
-    case 'broken_glass':
+    case 'broken_glass': {
+      // FIX-BROKEN-GLASS (3 mai 2026) : reflets multiples ponctuels qui
+      // scintillent comme des facettes de verre brise quand on bouge la
+      // souris. 7 spots de lumiere brillants positionnes a des offsets
+      // angulaires fixes autour du curseur (constellations de fragments)
+      // - chaque spot a sa propre dispersion couleur (cyan / magenta /
+      // jaune / blanc) pour evoquer la refraction prismatique sur du
+      // verre fracture. L'amplitude des offsets suit le tilt -> les
+      // reflets se "baladent" entre les facettes au mouvement.
+      // Mix-blend-mode 'screen' fait briller les reflets au-dessus de
+      // l'image (au lieu d'overlay qui les mute trop sur les zones claires).
+      const amp = 18; // amplitude de dispersion des facettes (en %)
+      const facets = [
+        { ox: 0, oy: 0, color: 'rgba(255,255,255,0.9)', spread: 8 },
+        { ox: -amp, oy: -amp * 0.6, color: 'rgba(180,230,255,0.7)', spread: 6 },
+        { ox: amp * 0.8, oy: -amp * 0.4, color: 'rgba(255,200,240,0.6)', spread: 6 },
+        { ox: -amp * 1.2, oy: amp * 0.5, color: 'rgba(200,255,230,0.55)', spread: 5 },
+        { ox: amp * 0.5, oy: amp, color: 'rgba(255,240,200,0.6)', spread: 5 },
+        { ox: amp * 1.4, oy: -amp * 0.2, color: 'rgba(220,200,255,0.55)', spread: 4 },
+        { ox: -amp * 0.7, oy: amp * 1.1, color: 'rgba(255,220,255,0.5)', spread: 4 },
+      ];
+      // Tilt influe sur le decalage global (les spots glissent ensemble
+      // dans la direction opposee au tilt -> simule la parallax 3D)
+      const driftX = -tilt.y * 1.5;
+      const driftY = tilt.x * 1.5;
+      const layers = facets.map(f => {
+        const cx = px + f.ox + driftX;
+        const cy = py + f.oy + driftY;
+        return `radial-gradient(circle ${f.spread}% at ${cx}% ${cy}%, ${f.color} 0%, transparent 60%)`;
+      });
       return {
-        background: `conic-gradient(from ${angle}deg at ${px}% ${py}%,
-          rgba(200,230,255,0.15), rgba(255,200,255,0.1), rgba(200,255,230,0.15),
-          rgba(200,230,255,0.15))`,
-        mixBlendMode: 'overlay',
-        opacity: 0.5,
+        background: layers.join(', '),
+        mixBlendMode: 'screen',
+        opacity: 0.85,
       };
+    }
     case 'stars':
       return {
         background: `conic-gradient(from ${angle + 45}deg at ${px}% ${py}%,
