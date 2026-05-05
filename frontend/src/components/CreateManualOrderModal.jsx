@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { X, Loader2, AlertCircle, CheckCircle, Copy, ExternalLink, Plus, Trash2, CreditCard, Banknote } from 'lucide-react';
+import { X, Loader2, AlertCircle, CheckCircle, Copy, ExternalLink, Plus, Trash2, CreditCard, Banknote, Mail, Send } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import api from '../services/api';
 
@@ -30,6 +30,15 @@ function CreateManualOrderModal({ onClose, onCreated }) {
   const [error, setError] = useState('');
   const [result, setResult] = useState(null);
   const [copied, setCopied] = useState(false);
+  // SEND-EMAIL (5 mai 2026) : etats pour le bouton "Envoyer par courriel"
+  // qui appelle POST /orders/:id/send-invoice apres creation reussie de la
+  // commande manuelle. 4 etats logiques :
+  //   idle    : bouton dispo, pret a cliquer
+  //   sending : loading spinner pendant l'envoi Resend
+  //   sent    : confirmation 4s apres succes
+  //   error   : message d'erreur sous le bouton
+  const [emailStatus, setEmailStatus] = useState('idle');
+  const [emailError, setEmailError] = useState('');
   const firstInputRef = useRef(null);
   // FIX-DOUBLE-SUBMIT (27 avril 2026) : useRef pour guard SYNCHRONE.
   //
@@ -275,6 +284,45 @@ function CreateManualOrderModal({ onClose, onCreated }) {
     }
   };
 
+  // SEND-EMAIL (5 mai 2026) : envoie la facture + lien Stripe au client par
+  // Resend. L'admin a desormais le choix entre :
+  //   - Copier le lien et l'envoyer manuellement par WhatsApp/SMS
+  //   - Cliquer "Envoyer par courriel" pour que Massive expedie un email
+  //     formate avec PDF facture + bouton paiement Stripe inline
+  // Backend : POST /orders/:orderId/send-invoice (existait deja, on
+  // l'expose juste depuis ce modal).
+  const sendByEmail = async () => {
+    if (!result?.orderId) return;
+    if (!customerEmail.trim()) {
+      setEmailError(tx({
+        fr: 'Email client manquant - reviens en arriere et remplis le champ courriel.',
+        en: 'Customer email missing - go back and fill the email field.',
+        es: 'Falta el correo del cliente.',
+      }));
+      setEmailStatus('error');
+      return;
+    }
+    setEmailStatus('sending');
+    setEmailError('');
+    try {
+      await api.post(`/orders/${result.orderId}/send-invoice`, {
+        customerEmail: customerEmail.trim(),
+      });
+      setEmailStatus('sent');
+      // Reset apres 4s pour permettre un re-envoi si besoin (l'admin
+      // peut vouloir tester ou renvoyer si le client n'a pas recu).
+      setTimeout(() => setEmailStatus('idle'), 4000);
+    } catch (err) {
+      console.error('sendInvoice failed:', err);
+      const msg = err?.response?.data?.error?.message
+        || err?.response?.data?.message
+        || err?.message
+        || 'Erreur inconnue';
+      setEmailError(msg);
+      setEmailStatus('error');
+    }
+  };
+
   // FIX-UI (avril 2026) : styles theme-adaptatifs. On utilise les CSS variables
   // globales (--bg-card-solid / --bg-input / --bg-input-border / --color-heading)
   // definies dans index.css pour que la modale suive automatiquement le theme
@@ -376,6 +424,56 @@ function CreateManualOrderModal({ onClose, onCreated }) {
                     es: 'Envia este enlace al cliente por correo o WhatsApp. Cuando pague, el pedido pasara a "pagado" y la factura a "liquidada".',
                   })}
                 </p>
+
+                {/* SEND-EMAIL CTA (5 mai 2026) : bouton optionnel pour
+                    automatiser l'envoi du courriel via Resend (au lieu
+                    de copier+paster manuellement). Disabled si pas
+                    d'email client ou si deja envoye il y a < 4s. */}
+                <div className="mt-4 pt-4 border-t" style={dividerBorder}>
+                  <button
+                    type="button"
+                    onClick={sendByEmail}
+                    disabled={emailStatus === 'sending' || emailStatus === 'sent' || !customerEmail.trim()}
+                    className={`w-full inline-flex items-center justify-center gap-2 py-2.5 rounded-lg font-semibold text-sm transition-all ${
+                      emailStatus === 'sent'
+                        ? 'bg-green-500/20 text-green-400 cursor-default'
+                        : emailStatus === 'sending'
+                        ? 'bg-accent/60 text-white cursor-wait'
+                        : !customerEmail.trim()
+                        ? 'bg-white/5 text-grey-muted/50 cursor-not-allowed'
+                        : 'bg-accent text-white hover:brightness-110'
+                    }`}
+                    title={
+                      !customerEmail.trim()
+                        ? tx({ fr: 'Aucun email client renseigne', en: 'No customer email', es: 'Sin correo' })
+                        : ''
+                    }
+                  >
+                    {emailStatus === 'sending' ? (
+                      <><Loader2 size={14} className="animate-spin" /> {tx({ fr: 'Envoi...', en: 'Sending...', es: 'Enviando...' })}</>
+                    ) : emailStatus === 'sent' ? (
+                      <><CheckCircle size={14} /> {tx({ fr: 'Courriel envoye', en: 'Email sent', es: 'Correo enviado' })}</>
+                    ) : (
+                      <><Send size={14} /> {customerEmail.trim()
+                        ? tx({ fr: `Envoyer par courriel a ${customerEmail.trim()}`, en: `Send by email to ${customerEmail.trim()}`, es: `Enviar por correo a ${customerEmail.trim()}` })
+                        : tx({ fr: 'Envoyer par courriel (email manquant)', en: 'Send by email (missing)', es: 'Enviar por correo (falta)' })}
+                      </>
+                    )}
+                  </button>
+                  <p className="text-[11px] text-grey-muted mt-2 leading-relaxed">
+                    {tx({
+                      fr: 'Optionnel : envoie automatiquement la facture PDF + le lien de paiement Stripe au client. Sinon, copie le lien ci-dessus et envoie-le toi-meme.',
+                      en: 'Optional: auto-send the PDF invoice + Stripe payment link to the customer. Otherwise, copy the link above and send it yourself.',
+                      es: 'Opcional: enviar la factura + enlace Stripe al cliente. O copia el enlace de arriba y envialo manualmente.',
+                    })}
+                  </p>
+                  {emailStatus === 'error' && emailError && (
+                    <div className="mt-2 flex items-start gap-1.5 p-2 rounded-md bg-red-500/10 border border-red-500/30 text-red-400 text-[11px]">
+                      <AlertCircle size={12} className="flex-shrink-0 mt-0.5" />
+                      <span>{emailError}</span>
+                    </div>
+                  )}
+                </div>
               </div>
             ) : (
               /* Mode prepaid : pas de lien Stripe, message de confirmation */
