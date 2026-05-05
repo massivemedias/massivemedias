@@ -2255,8 +2255,24 @@ function AdsTab() {
       });
       setVariants(data?.data?.variants || []);
     } catch (err) {
-      const msg = err?.response?.data?.error?.message || err?.message || 'Erreur generation';
-      setError(msg);
+      // FIX-ADS-ERROR (5 mai 2026) : le backend ads-generator retourne
+      //   { error: 'message string', detail: '...' }   (PAS { error: { message } })
+      // L'ancien code lisait err.response.data.error.message qui etait
+      // toujours undefined -> message generique "Erreur generation".
+      // Maintenant on lit error directement (string) + detail/rawSample
+      // pour donner plus de contexte a l'admin (ex: "L'IA n'a pas retourne
+      // de variantes parsables" + sample brut pour debug).
+      const data = err?.response?.data || {};
+      const status = err?.response?.status;
+      // error peut etre soit string (notre backend) soit objet (Strapi standard)
+      const errStr = typeof data.error === 'string'
+        ? data.error
+        : (data.error?.message || data.message || err?.message || 'Erreur generation');
+      const detail = data.detail || data.rawSample || '';
+      const finalMsg = status
+        ? `[${status}] ${errStr}${detail ? ` - ${String(detail).slice(0, 150)}` : ''}`
+        : errStr;
+      setError(finalMsg);
     } finally {
       setGenerating(false);
     }
@@ -2297,14 +2313,20 @@ function AdsTab() {
   };
 
   return (
-    // FIX-AI-ADS-LAYOUT (5 mai 2026) :
-    //   - pr-2 : breathing room a droite pour eviter que la scrollbar interne
-    //     rose (theme-driven, rgba(accent, 0.4)) colle au bord de la card
-    //     header et donne l'impression d'une "barre rose mal alignee".
-    //   - overflow-y-auto reste necessaire car le parent (calc(100vh - 750px))
-    //     contraint la hauteur et le contenu (selectors + 3 variantes generees)
-    //     deborde regulierement.
-    <div className="space-y-4 overflow-y-auto h-full pr-2">
+    // FIX-AI-ADS-LAYOUT (5 mai 2026 v2) :
+    //   La scrollbar interne de ce tab est theme-driven en rose Massive
+    //   (rgba(accent, 0.4) via brightnessEngine.js applique a :root) et
+    //   apparaissait comme une "barre rose verticale mal alignee" a droite
+    //   de l'en-tete - parce qu'elle vit dans la bounding box du tab, donc
+    //   PAS au bord du viewport mais au milieu de la page.
+    //   pr-2 (v1) ne suffit pas : la scrollbar reste visible avec juste 8px
+    //   de padding entre elle et le contenu - l'effet "barre flottante"
+    //   reste.
+    //   Fix definitif : .scrollbar-hide (defini dans index.css ligne 814) qui
+    //   masque totalement la scrollbar via scrollbar-width: none +
+    //   ::-webkit-scrollbar { display: none }. Le scroll fonctionne toujours
+    //   via molette/touch/clavier, juste la barre n'est plus dessinee.
+    <div className="space-y-4 overflow-y-auto h-full scrollbar-hide">
       {/* Header explicatif */}
       <div className="rounded-xl bg-glass border border-white/5 p-4">
         <div className="flex items-start gap-3">
