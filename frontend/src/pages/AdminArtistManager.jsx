@@ -175,32 +175,94 @@ function AdminArtistManager() {
   // intercepte le 404 et on rebascule sur les donnees minimales connues
   // depuis la liste, avec un flag _incomplete=true qui declenche la vue
   // d'initialisation cote UI.
+  // FIX-DETAIL-MERGE (4 mai 2026) : meme strategie de merge que loadList -
+  // le panel God Mode doit afficher TOUTES les oeuvres + bio + pricing +
+  // socials de chaque artiste. La BDD Strapi ne contient que la coquille
+  // initiale (ex: Mok = 1 print en BDD) tandis que artists.js hardcoded
+  // detient la source de verite produit (ex: Mok = 36 prints).
+  // Strategie merge :
+  //   - Backend BDD : source pour active/commissionRate/email/createdByEmail
+  //   - artists.js : source pour prints/stickers/bio/tagline/pricing/socials
+  //     (uniquement utilise si la BDD est vide ou plus pauvre)
+  //   - Marquage _hardcodedFallback : true sur les items issus du fallback
+  //     pour que l'UI puisse afficher un badge "data hardcoded"
   const loadDetail = useCallback(async (slug, fallbackEntry) => {
     setDetailLoading(true);
     try {
-      const { data } = await getAdminArtistDetail(slug);
-      setDetail(data?.data || null);
-    } catch (err) {
-      const status = err?.response?.status;
-      if (status === 404 && fallbackEntry) {
-        // 404 attendu pour les artists incomplete - on construit un detail
-        // minimaliste a partir de l'entree de la liste (name, email, slug).
+      // Lookup hardcoded data en parallele
+      const hard = (slug && artistsHardcoded && typeof artistsHardcoded === 'object')
+        ? (artistsHardcoded[slug] || null)
+        : null;
+
+      let backendDetail = null;
+      try {
+        const { data } = await getAdminArtistDetail(slug);
+        backendDetail = data?.data || null;
+      } catch (err) {
+        const status = err?.response?.status;
+        if (status === 404) {
+          // 404 attendu pour les artists incomplete OU artists qui n'ont
+          // pas encore de api::artist.artist - on rebascule sur hardcoded.
+          backendDetail = null;
+        } else {
+          throw err; // erreur reseau/auth -> remonte au catch global
+        }
+      }
+
+      // Si rien en backend ET rien en hardcoded -> mode incomplete
+      if (!backendDetail && !hard) {
         setDetail({
           _incomplete: true,
-          slug: fallbackEntry.slug || '',
-          name: fallbackEntry.name || '',
-          email: fallbackEntry.email || '',
+          slug: fallbackEntry?.slug || slug || '',
+          name: fallbackEntry?.name || '',
+          email: fallbackEntry?.email || '',
           active: false,
-          commissionRate: fallbackEntry.commissionRate ?? 0.5,
+          commissionRate: fallbackEntry?.commissionRate ?? 0.5,
           prints: [],
           stickers: [],
         });
-      } else {
-        showError(err);
-        setDetail(null);
+        setDetailLoading(false);
+        return;
       }
+
+      // Merge defensif : backend prime sur les champs admin, hardcoded
+      // prend le relais pour le contenu produit si plus riche.
+      const safeArr = (a) => Array.isArray(a) ? a : [];
+      const backendPrints = safeArr(backendDetail?.prints);
+      const backendStickers = safeArr(backendDetail?.stickers);
+      const hardPrints = safeArr(hard?.prints);
+      const hardStickers = safeArr(hard?.stickers);
+      // On garde celui qui a le plus d'items (et on tag les hardcoded)
+      const finalPrints = hardPrints.length > backendPrints.length
+        ? hardPrints.map(p => ({ ...p, _hardcodedFallback: true }))
+        : backendPrints;
+      const finalStickers = hardStickers.length > backendStickers.length
+        ? hardStickers.map(s => ({ ...s, _hardcodedFallback: true }))
+        : backendStickers;
+
+      setDetail({
+        ...(hard || {}),       // socials/pricing/tagline depuis hardcoded
+        ...(backendDetail || {}), // backend prime pour active/commission/email/etc.
+        // Si backend n'a pas la bio, fallback sur hardcoded (objet { fr, en, es })
+        bioFr: backendDetail?.bioFr || hard?.bio?.fr || '',
+        bioEn: backendDetail?.bioEn || hard?.bio?.en || '',
+        bioEs: backendDetail?.bioEs || hard?.bio?.es || '',
+        taglineFr: backendDetail?.taglineFr || hard?.tagline?.fr || '',
+        taglineEn: backendDetail?.taglineEn || hard?.tagline?.en || '',
+        taglineEs: backendDetail?.taglineEs || hard?.tagline?.es || '',
+        prints: finalPrints,
+        stickers: finalStickers,
+        // Flag pour l'UI : si on utilise du hardcoded, l'admin doit le savoir
+        _hasHardcodedFallback: (
+          (hardPrints.length > backendPrints.length) ||
+          (hardStickers.length > backendStickers.length)
+        ),
+      });
+    } catch (err) {
+      console.error('[ADMIN ARTISTS] loadDetail failed:', err);
+      showError(err);
+      setDetail(null);
     } finally {
-      // Toujours debloquer le spinner, meme en cas d'erreur non-attendue
       setDetailLoading(false);
     }
   }, []);
@@ -670,14 +732,36 @@ function AdminArtistManager() {
               <h2 className="text-2xl font-heading font-bold text-heading">{detail.name}</h2>
               <p className="text-grey-muted text-sm">/artistes/{detail.slug}</p>
               {detail.email && <p className="text-grey-muted text-xs mt-1">{detail.email}</p>}
+              {/* COUNT-VISIBLE (4 mai 2026) : compteurs explicites de prints +
+                  stickers + autres data importantes (bio, socials) pour que
+                  l'admin voie d'un coup d'oeil ce qui est dispo. */}
+              <div className="flex items-center gap-3 mt-2 text-xs">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-accent/15 text-accent font-semibold">
+                  <ImageIcon size={11} />
+                  {(detail.prints || []).length} prints
+                </span>
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-purple-500/15 text-purple-400 font-semibold">
+                  <Sparkles size={11} />
+                  {(detail.stickers || []).length} stickers
+                </span>
+                {(detail.bioFr || detail.bioEn || detail.bioEs) && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-green-500/15 text-green-400 font-semibold">
+                    <CheckCircle size={11} />
+                    bio
+                  </span>
+                )}
+                {detail.socials && Object.keys(detail.socials).length > 0 && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-blue-500/15 text-blue-400 font-semibold">
+                    <CheckCircle size={11} />
+                    {Object.keys(detail.socials).length} socials
+                  </span>
+                )}
+              </div>
             </div>
             <div className="flex items-center gap-2">
               <span className={`text-xs px-2 py-1 rounded ${detail.active ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
                 {detail.active ? tx({ fr: 'Actif', en: 'Active', es: 'Activo' }) : tx({ fr: 'Inactif', en: 'Inactive', es: 'Inactivo' })}
               </span>
-              {/* FIX-COMMISSIONS (avril 2026) : affichage des deux taux separement
-                  dans le header (prints violet, stickers accent) pour que l'admin
-                  voie tout de suite la structure. */}
               <span className="text-xs bg-accent/20 text-accent px-2 py-1 rounded">
                 {tx({ fr: 'Prints', en: 'Prints', es: 'Prints' })}: {Math.round((detail.printCommissionRate ?? detail.commissionRate ?? 0.5) * 100)}%
               </span>
@@ -686,6 +770,17 @@ function AdminArtistManager() {
               </span>
             </div>
           </div>
+
+          {/* HARDCODED-WARN (4 mai 2026) : si on a fallback sur artists.js
+              hardcoded pour les prints/stickers (BDD vide ou plus pauvre),
+              on prevent l'admin que les modifs via cette UI ne touchent
+              QUE la BDD - pour synchroniser les data hardcoded il faut
+              passer par src/data/artists.js (ou un script de sync). */}
+          {detail._hasHardcodedFallback && (
+            <div className="rounded-lg p-3 bg-yellow-500/10 border border-yellow-500/30 text-xs text-yellow-200/90 leading-relaxed">
+              <strong className="text-yellow-300">Données depuis artists.js :</strong> les prints / stickers visibles ci-dessous proviennent du fichier source <code className="px-1 rounded bg-black/30">frontend/src/data/artists.js</code> (la BDD Strapi en a moins ou aucun). Les modifications faites ici écrivent dans la BDD - pour synchroniser le file hardcoded, modifier directement <code className="px-1 rounded bg-black/30">artists.js</code>.
+            </div>
+          )}
 
           {/* Tabs */}
           <div className="border-b border-white/10 flex items-center gap-0 flex-wrap">
@@ -718,8 +813,10 @@ function AdminArtistManager() {
                   <InputField label="Email" value={profileDraft?.email ?? detail.email} onChange={v => handleProfileField('email', v)} />
                   <InputField label="Tagline FR" value={profileDraft?.taglineFr ?? detail.taglineFr} onChange={v => handleProfileField('taglineFr', v)} />
                   <InputField label="Tagline EN" value={profileDraft?.taglineEn ?? detail.taglineEn} onChange={v => handleProfileField('taglineEn', v)} />
+                  <InputField label="Tagline ES" value={profileDraft?.taglineEs ?? detail.taglineEs} onChange={v => handleProfileField('taglineEs', v)} />
                   <TextareaField label="Bio FR" value={profileDraft?.bioFr ?? detail.bioFr} onChange={v => handleProfileField('bioFr', v)} />
                   <TextareaField label="Bio EN" value={profileDraft?.bioEn ?? detail.bioEn} onChange={v => handleProfileField('bioEn', v)} />
+                  <TextareaField label="Bio ES" value={profileDraft?.bioEs ?? detail.bioEs} onChange={v => handleProfileField('bioEs', v)} />
                   {/* FIX-COMMISSIONS (avril 2026) : deux champs distincts Prints /
                       Stickers. Le legacy `commissionRate` est conserve en BDD
                       comme fallback mais n'est plus edite depuis l'UI God Mode. */}
@@ -914,37 +1011,49 @@ function ItemsGrid({ category, items, onEdit, onDelete, onPrivateSale, deletingI
                     <Lock size={8} /> {tx({ fr: 'prive', en: 'private', es: 'privado' })}
                   </span>
                 )}
+                {/* HARDCODED-BADGE (4 mai 2026) : visuel pour distinguer les
+                    items qui viennent du file artists.js (read-only depuis
+                    l'UI - mod via Strapi admin necessaire) vs ceux en BDD. */}
+                {item._hardcodedFallback && (
+                  <span className="inline-block text-[9px] bg-yellow-500/20 text-yellow-400 px-1.5 py-0.5 rounded font-semibold" title="Donnée depuis artists.js - non éditable via cette UI">
+                    file
+                  </span>
+                )}
               </div>
             </div>
             {/* Hover overlay : Edit / Private Sale / Delete. Sur mobile on affiche
-                en permanence (touch-only) via opacity conditionnelle sur le groupe. */}
-            <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-              {/* Bouton Create/Edit Private Sale - masque si deja vendu */}
-              {onPrivateSale && !item.sold && (
-                <button
-                  onClick={() => onPrivateSale(item)}
-                  title={item.private
-                    ? tx({ fr: 'Modifier la vente privee', en: 'Edit private sale', es: 'Editar venta privada' })
-                    : tx({ fr: 'Creer une vente privee', en: 'Create private sale', es: 'Crear venta privada' })}
-                  className={`p-1.5 rounded-lg text-white shadow-lg transition-colors ${
-                    item.private
-                      ? 'bg-accent/90 hover:bg-accent'
-                      : 'bg-purple-500/80 hover:bg-purple-500'
-                  }`}
-                >
-                  <Lock size={11} />
+                en permanence (touch-only) via opacity conditionnelle sur le groupe.
+                Items hardcoded (file artists.js) : read-only -> pas de boutons d'edition
+                pour eviter une mutation BDD qui ne refleterait pas la realite. */}
+            {!item._hardcodedFallback && (
+              <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                {/* Bouton Create/Edit Private Sale - masque si deja vendu */}
+                {onPrivateSale && !item.sold && (
+                  <button
+                    onClick={() => onPrivateSale(item)}
+                    title={item.private
+                      ? tx({ fr: 'Modifier la vente privee', en: 'Edit private sale', es: 'Editar venta privada' })
+                      : tx({ fr: 'Creer une vente privee', en: 'Create private sale', es: 'Crear venta privada' })}
+                    className={`p-1.5 rounded-lg text-white shadow-lg transition-colors ${
+                      item.private
+                        ? 'bg-accent/90 hover:bg-accent'
+                        : 'bg-purple-500/80 hover:bg-purple-500'
+                    }`}
+                  >
+                    <Lock size={11} />
+                  </button>
+                )}
+                <button onClick={() => onEdit(item)} title={tx({ fr: 'Editer', en: 'Edit', es: 'Editar' })}
+                  className="p-1.5 rounded-lg bg-accent/80 text-white hover:bg-accent shadow-lg">
+                  <Pencil size={11} />
                 </button>
-              )}
-              <button onClick={() => onEdit(item)} title={tx({ fr: 'Editer', en: 'Edit', es: 'Editar' })}
-                className="p-1.5 rounded-lg bg-accent/80 text-white hover:bg-accent shadow-lg">
-                <Pencil size={11} />
-              </button>
-              <button onClick={() => onDelete(item)} disabled={deletingItemId === item.id}
-                title={tx({ fr: 'Supprimer definitivement', en: 'Delete permanently', es: 'Eliminar' })}
-                className="p-1.5 rounded-lg bg-red-500/80 text-white hover:bg-red-500 shadow-lg disabled:opacity-50">
-                {deletingItemId === item.id ? <Loader2 size={11} className="animate-spin" /> : <Trash2 size={11} />}
-              </button>
-            </div>
+                <button onClick={() => onDelete(item)} disabled={deletingItemId === item.id}
+                  title={tx({ fr: 'Supprimer definitivement', en: 'Delete permanently', es: 'Eliminar' })}
+                  className="p-1.5 rounded-lg bg-red-500/80 text-white hover:bg-red-500 shadow-lg disabled:opacity-50">
+                  {deletingItemId === item.id ? <Loader2 size={11} className="animate-spin" /> : <Trash2 size={11} />}
+                </button>
+              </div>
+            )}
           </div>
         ))}
       </div>
