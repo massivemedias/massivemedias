@@ -1194,7 +1194,7 @@ function ServiceDetail() {
       </div>
 
       {/* ============ LIGHTBOX ============
-          FIX-PORTAL-Z (3 mai 2026) : portal vers document.body + z-[9999].
+          FIX-PORTAL-Z (3 mai 2026) : portal vers document.body + z-[99999].
           Avant : z-[100] dans le DOM tree de ServiceDetail = piege par le
           stacking context du configurateur sticky/transform/willChange.
           La lightbox apparaissait SOUS le panneau de config transparent.
@@ -1208,7 +1208,7 @@ function ServiceDetail() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="fixed inset-0 z-[9999] flex items-center justify-center p-4 cursor-pointer lightbox-overlay"
+            className="fixed inset-0 z-[99999] flex items-center justify-center p-4 cursor-pointer lightbox-overlay"
             onClick={closeLightbox}
           >
             {/* Flèche gauche */}

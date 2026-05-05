@@ -216,10 +216,13 @@ function ConfiguratorFineArt() {
   };
 
   return (
-    <div className="flex flex-col md:flex-row md:items-start gap-4 md:gap-5">
+    // FIX-Z (3 mai 2026) : z-10 sur le wrapper du configurateur + ses
+    // colonnes pour qu'aucun stacking context interne (sticky, transform)
+    // ne puisse remonter au-dessus des lightboxes (qui sont a z-[99999]).
+    <div className="relative z-10 flex flex-col md:flex-row md:items-start gap-4 md:gap-5">
       {/* ========== COLONNE GAUCHE : Preview + Upload ========== */}
-      <div className="md:w-[35%] lg:w-[30%] flex-shrink-0">
-        <div className="md:sticky md:top-28">
+      <div className="md:w-[35%] lg:w-[30%] flex-shrink-0 relative z-10">
+        <div className="md:sticky md:top-28 z-10">
           {/* FIX-OVERFLOW (1 mai 2026) : conteneurs strictement bornes.
               COMPACT v3 (1 mai 2026) : mb-3 entre dropzone et apercu pour
               maximiser le compactage de la colonne gauche et eliminer le
@@ -270,7 +273,7 @@ function ConfiguratorFineArt() {
       </div>
 
       {/* ========== COLONNE DROITE : Selecteurs ========== */}
-      <div className="flex-1 min-w-0 space-y-4">
+      <div className="flex-1 min-w-0 space-y-4 relative z-10">
         {/* HIERARCHIE-UI (30 avril 2026) : la case a cocher Cadre a ete
             deplacee SOUS la section Format (cf. plus bas) pour suivre
             l'ordre logique de selection : qualite -> format -> cadre. */}
@@ -435,7 +438,7 @@ function ConfiguratorFineArt() {
           FIX-PORTAL (3 mai 2026) : createPortal vers document.body. Le
           parent (column sticky md:sticky top-28 + transform AnimatePresence
           + le wrapper du configurateur) cree un stacking context qui
-          isolait z-[9999] - la lightbox restait sous le panneau de config
+          isolait z-[99999] - la lightbox restait sous le panneau de config
           transparent. Le portal sort completement du DOM tree, garantit
           que la modale rend au-dessus de tout. */}
       {typeof document !== 'undefined' && createPortal(
@@ -454,7 +457,7 @@ function ConfiguratorFineArt() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 z-[9999] bg-black/90 flex items-center justify-center cursor-zoom-out"
+                className="fixed inset-0 z-[99999] bg-black/90 flex items-center justify-center cursor-zoom-out"
                 onClick={() => setLightboxOpen(false)}
               >
                 <motion.div
